@@ -31,7 +31,7 @@ class ForeachHandler(object):
 
     def _handle_foreach_rendering_for_resource(self, resources_blocks: list[int]) -> None:
         block_index_to_statement = self._get_statements(resources_blocks)
-        self._create_new_foreach_resources(block_index_to_statement)
+        self._create_new_resources(block_index_to_statement)
 
     def _get_statements(self, resources_blocks: list[int]) -> FOR_EACH_BLOCK_TYPE:
         block_index_to_statement: FOR_EACH_BLOCK_TYPE = {}
@@ -155,9 +155,10 @@ class ForeachHandler(object):
         sub_graph.out_edges = deepcopy(self.local_graph.out_edges)
         return sub_graph
 
-    def _create_new_resources_count(self, statement: int, main_resource: TerraformBlock) -> None:
+    def _create_new_resources_count(self, statement: int, block_idx: int) -> None:
+        main_resource = self.local_graph.vertices[block_idx]
         for i in range(statement):
-            self._create_new_resource(main_resource, i)
+            self._create_new_resource(main_resource, i, resource_idx=block_idx, foreach_idx=i)
 
     @staticmethod
     def _pop_foreach_attrs(attrs: dict[str, Any]) -> None:
@@ -200,7 +201,14 @@ class ForeachHandler(object):
             EACH_KEY: new_key
         }
 
-    def _create_new_resource(self, main_resource: TerraformBlock, new_value: int | str, new_key: Optional[str] = None):
+    def _create_new_resource(
+            self,
+            main_resource: TerraformBlock,
+            new_value: int | str,
+            resource_idx: int,
+            foreach_idx: int,
+            new_key: Optional[str] = None,
+    ):
         new_resource = deepcopy(main_resource)
         block_type, block_name = new_resource.name.split('.')
         if main_resource.attributes.get(COUNT_STRING):
@@ -216,21 +224,19 @@ class ForeachHandler(object):
 
         idx_to_change = new_key or new_value
         self._add_index_to_block_properties(new_resource, idx_to_change)
-        self.local_graph.vertices.append(new_resource)
+        if foreach_idx == 0:
+            self.local_graph.vertices[resource_idx] = new_resource
+        else:
+            self.local_graph.vertices.append(new_resource)
 
-    def _create_new_resources_foreach(self, statement: list[str] | dict[str, Any], main_resource: TerraformBlock) -> None:
+    def _create_new_resources_foreach(self, statement: list[str] | dict[str, Any], block_idx: int) -> None:
+        main_resource = self.local_graph.vertices[block_idx]
         if isinstance(statement, list):
-            for new_value in statement:
-                self._create_new_resource(main_resource, new_value, new_key=new_value)
+            for i, new_value in enumerate(statement):
+                self._create_new_resource(main_resource, new_value, new_key=new_value, resource_idx=block_idx, foreach_idx=i)
         if isinstance(statement, dict):
-            for new_key, new_value in statement.items():
-                self._create_new_resource(main_resource, new_value, new_key=new_key)
-
-    def _delete_main_resource(self, block_index_to_statement: FOR_EACH_BLOCK_TYPE) -> None:
-        new_vertices = [
-            block for i, block in enumerate(self.local_graph.vertices) if i not in block_index_to_statement or not block_index_to_statement[i]
-        ]
-        self.local_graph.vertices = new_vertices
+            for i, (new_key, new_value) in enumerate(statement.items()):
+                self._create_new_resource(main_resource, new_value, new_key=new_key, resource_idx=block_idx, foreach_idx=i)
 
     @staticmethod
     def _add_index_to_block_properties(block: TerraformBlock, idx: str | int) -> None:
@@ -240,12 +246,11 @@ class ForeachHandler(object):
         if block.config.get(block_type) and block.config.get(block_type, {}).get(block_name):
             block.config[block_type][f"{block_name}[{idx}]"] = block.config[block_type].pop(block_name)
 
-    def _create_new_foreach_resources(self, block_index_to_statement: FOR_EACH_BLOCK_TYPE) -> None:
+    def _create_new_resources(self, block_index_to_statement: FOR_EACH_BLOCK_TYPE) -> None:
         for block_idx, statement in block_index_to_statement.items():
             if not statement:
                 continue
             if isinstance(statement, int):
-                self._create_new_resources_count(statement, self.local_graph.vertices[block_idx])
+                self._create_new_resources_count(statement, block_idx)
             else:
-                self._create_new_resources_foreach(statement, self.local_graph.vertices[block_idx])
-        self._delete_main_resource(block_index_to_statement)
+                self._create_new_resources_foreach(statement, block_idx)
