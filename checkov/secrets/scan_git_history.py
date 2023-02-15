@@ -7,7 +7,6 @@ from detect_secrets.core import scan
 
 if TYPE_CHECKING:
     from detect_secrets import SecretsCollection
-    from git import Commit  # type: ignore
 
 
 def get_commits_diff(root_folder: str) -> Dict[str, Dict[str, str]]:
