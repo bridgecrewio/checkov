@@ -4,7 +4,6 @@ FROM public.ecr.aws/lambda/python:3.9
 
 ENV PIP_ENV_VERSION="2022.1.8"
 
-
 COPY Pipfile Pipfile.lock ./
 
 RUN pip install pipenv==${PIP_ENV_VERSION} \

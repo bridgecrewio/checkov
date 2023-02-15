@@ -86,7 +86,6 @@ schema = "*"
 requests = ">=2.27.0"
 yarl = "*"
 pytest-git = "*"
-pickle = "*"
 
 [requires]
 python_version = "3.7"
