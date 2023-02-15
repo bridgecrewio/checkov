@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import pickle
 from unittest import mock
 
@@ -13,7 +14,8 @@ from detect_secrets.settings import transient_settings
 
 
 def mock_git_repo_commits(root_folder: str) -> list[Commit] | None:
-    with open('./git_history/mock_git_commits.pkl', 'rb') as f:
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    with open(f'{current_dir}/git_history/mock_git_commits.pkl', 'rb') as f:
         mock_repo = pickle.load(f)
     return mock_repo  # type: ignore
 
