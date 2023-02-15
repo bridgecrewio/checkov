@@ -1,6 +1,6 @@
 metadata:
   id: "CKV2_DOCKER_10"
-  name: "Ensure that packages with untrusted or missing signatures are not used"
+  name: "Ensure that packages with untrusted or missing signatures are not used by rpm via the '--nodigest', '--nosignature', '--noverify', or '--nofiledigest' options"
   category: "APPLICATION_SECURITY"
 definition:
     cond_type: attribute

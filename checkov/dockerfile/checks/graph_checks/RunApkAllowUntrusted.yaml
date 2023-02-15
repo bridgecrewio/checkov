@@ -1,6 +1,6 @@
 metadata:
   id: "CKV2_DOCKER_7"
-  name: "Ensure that packages with untrusted or missing signatures are not used"
+  name: "Ensure that packages with untrusted or missing signatures are not used by apk via the '--allow-untrusted' option"
   category: "APPLICATION_SECURITY"
 definition:
     cond_type: attribute
