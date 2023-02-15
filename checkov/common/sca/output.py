@@ -9,7 +9,7 @@ from checkov.common.bridgecrew.integration_features.features.policy_metadata_int
     integration as metadata_integration,
 )
 from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.common.bridgecrew.severities import Severities, Severity
+from checkov.common.bridgecrew.severities import Severities
 from checkov.common.models.enums import CheckResult, ScanDataFormat
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.record import Record, DEFAULT_SEVERITY, SCA_PACKAGE_SCAN_CHECK_NAME, SCA_LICENSE_CHECK_NAME
@@ -40,7 +40,6 @@ def create_report_license_record(
         licenses_status: _LicenseStatus,
         package_registry: str,
         sca_details: SCADetails | None = None,
-        severity: Severity | None = None
 ) -> Record:
     package_name = licenses_status["package_name"]
     package_version = licenses_status["package_version"]
@@ -82,7 +81,6 @@ def create_report_license_record(
         file_abs_path=file_abs_path,
         short_description=f"License {licenses_status['license']} - {package_name}: {package_version}",
         vulnerability_details=details,
-        severity=severity
     )
     return record
 
@@ -226,7 +224,6 @@ def _add_to_report_licenses_statuses(
         licenses_per_package_map[package_alias].append(license)
 
         policy = license_status["policy"]
-        severity = metadata_integration.get_severity(policy)
 
         license_record = create_report_license_record(
             rootless_file_path=rootless_file_path,
@@ -235,13 +232,12 @@ def _add_to_report_licenses_statuses(
             licenses_status=license_status,
             package_registry=packages_map.get(package_alias, {}).get("registry", ""),
             sca_details=sca_details,
-            severity=severity
         )
 
         if not runner_filter.should_run_check(
                 check_id=policy,
                 bc_check_id=policy,
-                severity=severity,
+                severity=metadata_integration.get_severity(policy),
                 report_type=report_type,
         ):
             if runner_filter.checks:
