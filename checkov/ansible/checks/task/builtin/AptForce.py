@@ -8,7 +8,7 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 
 class AptForce(BaseAnsibleTaskValueCheck):
     def __init__(self) -> None:
-        name = "Ensure that packages with untrusted or missing signatures are not used"
+        name = "Ensure that the force parameter is not used, as it disables signature validation and allows packages to be downgraded which can leave the system in a broken or inconsistent state"
         id = "CKV_ANSIBLE_6"
         super().__init__(
             name=name,
