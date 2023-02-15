@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 import git
 
 from detect_secrets.core import scan
-from git import InvalidGitRepositoryError, GitCommandError, Commit  # type: ignore
+from git import InvalidGitRepositoryError, Commit  # type: ignore
 
 if TYPE_CHECKING:
     from detect_secrets import SecretsCollection
@@ -18,7 +18,7 @@ def get_commits(root_folder: str) -> list[Commit] | None:
     except InvalidGitRepositoryError:
         logging.error(f"Folder {root_folder} is not a GIT project")
         return None
-    return list(repo.iter_commits(repo.active_branch, max_count=7))
+    return list(repo.iter_commits(repo.active_branch))
 
 
 def scan_history(root_folder: str, secrets: SecretsCollection) -> None:
