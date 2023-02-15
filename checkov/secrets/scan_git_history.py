@@ -53,7 +53,6 @@ def scan_history(root_folder: str, secrets: SecretsCollection) -> None:
                 logging.info(file_results)
             for secret in file_results:
                 secrets[
-                    f'{commit_hash}-{secret.filename}-{secret.secret_hash}-' \
-                    f'{"added" if secret.is_added else "removed"}'].add(secret)
+                    f'{commit_hash}-{secret.filename}-{secret.secret_hash}-{"added" if secret.is_added else "removed"}'].add(secret)
             scanned_file_count += 1
     logging.info(f"Scanned {scanned_file_count} git history files")
