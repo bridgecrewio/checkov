@@ -48,18 +48,21 @@ def scan_result_2() -> Dict[str, Dict[str, Any]]:
                     "name": "requests",
                     "version": "2.26.0",
                     "path": "/path/to/requirements.txt",
+                    "registry": "https://pypi.python.org/",
                 },
                 {
                     "type": "python",
                     "name": "django",
                     "version": "1.2",
                     "path": "/path/to/requirements.txt",
+                    "registry": "https://pypi.python.org/"
                 },
                 {
                     "type": "python",
                     "name": "flask",
                     "version": "0.6",
                     "path": "/path/to/requirements.txt",
+                    "registry": "https://pypi.python.org/"
                 },
             ],
             "complianceIssues": None,
