@@ -1,6 +1,18 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.14...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.18...HEAD)
+
+## [2.3.18](https://github.com/bridgecrewio/checkov/compare/2.3.14...2.3.18) - 2023-02-15
+
+### Feature
+
+- **sca:** add registry urls and description to the output report and to the csv report - [#4485](https://github.com/bridgecrewio/checkov/pull/4485)
+
+### Bug Fix
+
+- **ansible:** skip unsupported Ansible resources - [#4504](https://github.com/bridgecrewio/checkov/pull/4504)
+- **terraform:** Fix an str split edge case in function - [#4507](https://github.com/bridgecrewio/checkov/pull/4507)
+- **terraform:** fix enforcement rules mapping - [#4509](https://github.com/bridgecrewio/checkov/pull/4509)
 
 ## [2.3.14](https://github.com/bridgecrewio/checkov/compare/2.3.7...2.3.14) - 2023-02-14
 
