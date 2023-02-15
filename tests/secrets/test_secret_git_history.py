@@ -13,7 +13,7 @@ from detect_secrets.settings import transient_settings
 
 
 def mock_git_repo_commits(root_folder: str) -> list[Commit] | None:
-    with open('git_history/mock_git_commits.pkl', 'rb') as f:
+    with open('./git_history/mock_git_commits.pkl', 'rb') as f:
         mock_repo = pickle.load(f)
     return mock_repo  # type: ignore
 
