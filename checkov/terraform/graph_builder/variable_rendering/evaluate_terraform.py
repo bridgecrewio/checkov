@@ -236,7 +236,7 @@ def _handle_for_loop_in_dict(object_to_run_on: str, statement: str, start_expres
     except JSONDecodeError:
         return
     expression = _extract_expression_from_statement(statement, start_expression_idx)
-    if renderer.FOR_EXPRESSION_DICT not in expression:
+    if renderer.FOR_EXPRESSION_DICT not in expression or len(expression.replace(' ', '').split(renderer.FOR_EXPRESSION_DICT)) != 2:
         return
     k_expression, v_expression = expression.replace(' ', '').split(renderer.FOR_EXPRESSION_DICT)
     obj_key = statement.split(' ')[1]
