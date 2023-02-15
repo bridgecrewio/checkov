@@ -1,0 +1,7 @@
+---
+
+- name: Sample play
+  hosts:
+    - test
+  roles:
+    - role: somerole
