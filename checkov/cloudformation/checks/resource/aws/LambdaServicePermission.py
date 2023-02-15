@@ -7,7 +7,7 @@ from checkov.common.models.enums import CheckCategories, CheckResult
 class LambdaPermission(BaseResourceCheck):
     def __init__(self) -> None:
         name = "Ensure that AWS Lambda function permissions delegated to AWS services are limited by SourceArn or SourceAccount"
-        id = "CKV_AWS_286"
+        id = "CKV_AWS_287"
         supported_resources = ["AWS::Lambda::Permission"]
         categories = [CheckCategories.GENERAL_SECURITY, ]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
