@@ -8,7 +8,7 @@ class LambdaServicePermission(BaseResourceCheck):
         description = "Ensure that when a Lambda Function Permission is delegated to a service as principal, that the permission is scoped to either a SourceArn or a SourceAccount."
 
         # This is the Unique ID for your check
-        id = "CKV_AWS_287"
+        id = "CKV_AWS_293"
 
         # These are the terraform objects supported by this check (ex: aws_iam_policy_document)
         supported_resources = ['aws_lambda_permission']
