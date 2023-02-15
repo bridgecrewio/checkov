@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 import git
 
 from detect_secrets.core import scan
-from git import Commit
+from git import Commit  # type: ignore
 
 if TYPE_CHECKING:
     from detect_secrets import SecretsCollection
