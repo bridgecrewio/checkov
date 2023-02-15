@@ -6,12 +6,13 @@ from typing import TYPE_CHECKING
 import git
 
 from detect_secrets.core import scan
+from git import Commit
 
 if TYPE_CHECKING:
     from detect_secrets import SecretsCollection
 
 
-def get_commits(root_folder: str) -> list[git.Commit] | None:
+def get_commits(root_folder: str) -> list[Commit] | None:
     try:
         repo = git.Repo(root_folder)
     except Exception:
