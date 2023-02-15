@@ -3,19 +3,18 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-import git
-
-from detect_secrets.core import scan
-from git import Commit  # type: ignore
 
 if TYPE_CHECKING:
+    import git
     from detect_secrets import SecretsCollection
+    from detect_secrets.core import scan
+    from git import InvalidGitRepositoryError, GitCommandError, Commit  # type: ignore
 
 
 def get_commits(root_folder: str) -> list[Commit] | None:
     try:
         repo = git.Repo(root_folder)
-    except Exception:
+    except InvalidGitRepositoryError:
         logging.error(f"Folder {root_folder} is not a GIT project")
         return None
     return list(repo.iter_commits(repo.active_branch))
@@ -55,7 +54,7 @@ def scan_history(root_folder: str, secrets: SecretsCollection) -> None:
                             f'{current_commit_hash}-{secret.filename}-{secret.secret_hash}-{"added" if secret.is_added else "removed"}'].add(
                             secret)
                     scanned_file_count += 1
-            except Exception:
+            except GitCommandError:
                 logging.info(f"File path {file_diff.b_path} does not exist in commit {current_commit_hash}")
                 continue
     logging.info(f"Scanned {scanned_file_count} historical files, skipped_file_count {skipped_file_count}")
