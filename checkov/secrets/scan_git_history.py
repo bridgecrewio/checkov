@@ -43,7 +43,8 @@ def scan_history(root_folder: str, secrets: SecretsCollection) -> None:
                     logging.warning(f"File {file_diff.b_path} was delete")
                     pass
                 else:
-                    base_diff_format = f'diff --git a/{file_diff.a_path} b/{file_diff.b_path}\nindex 0000..0000 0000\n--- a/{file_diff.a_path}\n+++ b/{file_diff.b_path}\n'
+                    base_diff_format = f'diff --git a/{file_diff.a_path} b/{file_diff.b_path}' \
+                                       f'\nindex 0000..0000 0000\n--- a/{file_diff.a_path}\n+++ b/{file_diff.b_path}\n'
                     file_results = [*scan.scan_diff(base_diff_format + file_diff.diff.decode())]
                     if file_results:
                         logging.info(
