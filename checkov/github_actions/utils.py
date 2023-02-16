@@ -57,7 +57,7 @@ def is_workflow_file(file_path: str | Path) -> bool:
     return get_workflow_dir() in abspath and abspath.endswith(("yml", "yaml"))
 
 
-def get_workflow_dir():
+def get_workflow_dir() -> str:
     """
     Detects os and uses different dir string
     """
