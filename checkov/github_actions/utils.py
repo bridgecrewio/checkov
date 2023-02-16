@@ -62,7 +62,7 @@ def get_workflow_dir() -> str:
     """
     Detects os and uses different dir string
     """
-    if os.name == 'nt':
+    if platform.system() == "Windows":
         return WIN_WORKFLOW_DIRECTORY
     return WORKFLOW_DIRECTORY
 
