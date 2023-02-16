@@ -1,16 +1,26 @@
 from __future__ import annotations
 
-import git
 import logging
+import os
 from typing import TYPE_CHECKING, Dict
 from detect_secrets.core import scan
 
 if TYPE_CHECKING:
     from detect_secrets import SecretsCollection
 
+os.environ["GIT_PYTHON_REFRESH"] = "quiet"
+try:
+    import git
+    git_import_error = None
+except ImportError as e:
+    git_import_error = e
+
 
 def get_commits_diff(root_folder: str) -> Dict[str, Dict[str, str]]:
     commits_diff: Dict[str, Dict[str, str]] = {}
+    if git_import_error is not None:
+        logging.warning(f"Unable to load git module (is the git executable available?) {git_import_error}")
+        return commits_diff
     try:
         repo = git.Repo(root_folder)
     except Exception as e:
