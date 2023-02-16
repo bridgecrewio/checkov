@@ -580,14 +580,11 @@ class BcPlatformIntegration:
         else:
             self.get_public_run_config()
 
-    def _get_run_config_query_params(self) -> str:
-        return f'module={"bc" if self.is_bc_token(self.bc_api_key) else "pc"}&enforcementv2=true'
-
     def get_run_config_url(self) -> str:
-        return f'{self.platform_run_config_url}?{self._get_run_config_query_params()}'
+        return f'{self.platform_run_config_url}?module={"bc" if self.is_bc_token(self.bc_api_key) else "pc"}'
 
     def get_run_config_url_backoff(self) -> str:
-        return f'{self.platform_run_config_url_backoff}?{self._get_run_config_query_params()}'
+        return f'{self.platform_run_config_url_backoff}?module={"bc" if self.is_bc_token(self.bc_api_key) else "pc"}'
 
     def get_customer_run_config(self) -> None:
         if self.skip_download is True:

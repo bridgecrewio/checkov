@@ -78,11 +78,6 @@ class _ExitCodeThresholds(TypedDict):
     hard_fail_threshold: Severity | None
 
 
-class _ScaExitCodeThresholds(TypedDict):
-    LICENSES: _ExitCodeThresholds
-    VULNERABILITIES: _ExitCodeThresholds
-
-
 class _LicenseStatus(TypedDict):
     package_name: str
     package_version: str
