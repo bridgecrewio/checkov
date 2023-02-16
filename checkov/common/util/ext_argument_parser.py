@@ -516,7 +516,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
         )
         self.add(
             "--scan-secrets-history",
-            action="append",
+            action="store_true",
             default=None,
             help="will scan the history of commits for secrets"
         )
