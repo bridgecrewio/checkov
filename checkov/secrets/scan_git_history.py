@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import logging
+import os
 from typing import TYPE_CHECKING, Dict
 from detect_secrets.core import scan
 
 if TYPE_CHECKING:
     from detect_secrets import SecretsCollection
 
+os.environ["GIT_PYTHON_REFRESH"] = "quiet"
 try:
     import git
     git_import_error = None
