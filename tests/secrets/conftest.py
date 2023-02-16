@@ -1,9 +1,4 @@
-from __future__ import annotations
-
-import pickle
-
 import pytest
-from git import Commit
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.enums import CheckResult
@@ -71,11 +66,3 @@ def secrets_report_invalid_status() -> Report:
     report.add_record(record_5)
 
     return report
-
-
-@pytest.fixture
-def mock_git_repo_commits(root_folder: str) -> list[Commit] | None:
-    with open('git_history/mock_git_commits.pkl', 'rb') as f:
-        mock_repo = pickle.load(f)
-    return mock_repo
-
