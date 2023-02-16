@@ -1,10 +1,8 @@
 import unittest
 
-from checkov.common.bridgecrew.code_categories import CodeCategoryType, CodeCategoryConfiguration
 from checkov.common.bridgecrew.integration_features.features.repo_config_integration import \
     RepoConfigIntegration
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
-from checkov.common.bridgecrew.severities import BcSeverities, Severities
 
 
 class TestRepoConfigIntegration(unittest.TestCase):
@@ -41,12 +39,12 @@ class TestRepoConfigIntegration(unittest.TestCase):
                     "mainRule": True,
                     "editable": True,
                     "codeCategories": {
-                        "LICENSES": {
+                        "OPEN_SOURCE": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "CRITICAL",
                             "commentsBotThreshold": "LOW"
                         },
-                        "VULNERABILITIES": {
+                        "IMAGES": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "CRITICAL",
                             "commentsBotThreshold": "LOW"
@@ -57,11 +55,6 @@ class TestRepoConfigIntegration(unittest.TestCase):
                             "commentsBotThreshold": "LOW"
                         },
                         "SECRETS": {
-                            "softFailThreshold": "LOW",
-                            "hardFailThreshold": "LOW",
-                            "commentsBotThreshold": "LOW"
-                        },
-                        "BUILD_INTEGRITY": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "LOW",
                             "commentsBotThreshold": "LOW"
@@ -90,12 +83,12 @@ class TestRepoConfigIntegration(unittest.TestCase):
                     "mainRule": True,
                     "editable": True,
                     "codeCategories": {
-                        "LICENSES": {
+                        "OPEN_SOURCE": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "CRITICAL",
                             "commentsBotThreshold": "LOW"
                         },
-                        "VULNERABILITIES": {
+                        "IMAGES": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "CRITICAL",
                             "commentsBotThreshold": "LOW"
@@ -106,11 +99,6 @@ class TestRepoConfigIntegration(unittest.TestCase):
                             "commentsBotThreshold": "LOW"
                         },
                         "SECRETS": {
-                            "softFailThreshold": "LOW",
-                            "hardFailThreshold": "LOW",
-                            "commentsBotThreshold": "LOW"
-                        },
-                        "BUILD_INTEGRITY": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "LOW",
                             "commentsBotThreshold": "LOW"
@@ -126,12 +114,12 @@ class TestRepoConfigIntegration(unittest.TestCase):
                     "mainRule": False,
                     "editable": True,
                     "codeCategories": {
-                        "LICENSES": {
+                        "OPEN_SOURCE": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "CRITICAL",
                             "commentsBotThreshold": "LOW"
                         },
-                        "VULNERABILITIES": {
+                        "IMAGES": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "CRITICAL",
                             "commentsBotThreshold": "LOW"
@@ -142,11 +130,6 @@ class TestRepoConfigIntegration(unittest.TestCase):
                             "commentsBotThreshold": "LOW"
                         },
                         "SECRETS": {
-                            "softFailThreshold": "LOW",
-                            "hardFailThreshold": "LOW",
-                            "commentsBotThreshold": "LOW"
-                        },
-                        "BUILD_INTEGRITY": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "LOW",
                             "commentsBotThreshold": "LOW"
@@ -180,12 +163,12 @@ class TestRepoConfigIntegration(unittest.TestCase):
                     "mainRule": True,
                     "editable": True,
                     "codeCategories": {
-                        "LICENSES": {
+                        "OPEN_SOURCE": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "CRITICAL",
                             "commentsBotThreshold": "LOW"
                         },
-                        "VULNERABILITIES": {
+                        "IMAGES": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "CRITICAL",
                             "commentsBotThreshold": "LOW"
@@ -196,11 +179,6 @@ class TestRepoConfigIntegration(unittest.TestCase):
                             "commentsBotThreshold": "LOW"
                         },
                         "SECRETS": {
-                            "softFailThreshold": "LOW",
-                            "hardFailThreshold": "LOW",
-                            "commentsBotThreshold": "LOW"
-                        },
-                        "BUILD_INTEGRITY": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "LOW",
                             "commentsBotThreshold": "LOW"
@@ -216,12 +194,12 @@ class TestRepoConfigIntegration(unittest.TestCase):
                     "mainRule": False,
                     "editable": True,
                     "codeCategories": {
-                        "LICENSES": {
+                        "OPEN_SOURCE": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "CRITICAL",
                             "commentsBotThreshold": "LOW"
                         },
-                        "VULNERABILITIES": {
+                        "IMAGES": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "CRITICAL",
                             "commentsBotThreshold": "LOW"
@@ -232,11 +210,6 @@ class TestRepoConfigIntegration(unittest.TestCase):
                             "commentsBotThreshold": "LOW"
                         },
                         "SECRETS": {
-                            "softFailThreshold": "LOW",
-                            "hardFailThreshold": "LOW",
-                            "commentsBotThreshold": "LOW"
-                        },
-                        "BUILD_INTEGRITY": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "LOW",
                             "commentsBotThreshold": "LOW"
@@ -270,12 +243,12 @@ class TestRepoConfigIntegration(unittest.TestCase):
                     "mainRule": True,
                     "editable": True,
                     "codeCategories": {
-                        "LICENSES": {
+                        "OPEN_SOURCE": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "CRITICAL",
                             "commentsBotThreshold": "LOW"
                         },
-                        "VULNERABILITIES": {
+                        "IMAGES": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "CRITICAL",
                             "commentsBotThreshold": "LOW"
@@ -286,11 +259,6 @@ class TestRepoConfigIntegration(unittest.TestCase):
                             "commentsBotThreshold": "LOW"
                         },
                         "SECRETS": {
-                            "softFailThreshold": "LOW",
-                            "hardFailThreshold": "LOW",
-                            "commentsBotThreshold": "LOW"
-                        },
-                        "BUILD_INTEGRITY": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "LOW",
                             "commentsBotThreshold": "LOW"
@@ -306,12 +274,12 @@ class TestRepoConfigIntegration(unittest.TestCase):
                     "mainRule": False,
                     "editable": True,
                     "codeCategories": {
-                        "LICENSES": {
+                        "OPEN_SOURCE": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "CRITICAL",
                             "commentsBotThreshold": "LOW"
                         },
-                        "VULNERABILITIES": {
+                        "IMAGES": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "CRITICAL",
                             "commentsBotThreshold": "LOW"
@@ -322,11 +290,6 @@ class TestRepoConfigIntegration(unittest.TestCase):
                             "commentsBotThreshold": "LOW"
                         },
                         "SECRETS": {
-                            "softFailThreshold": "LOW",
-                            "hardFailThreshold": "LOW",
-                            "commentsBotThreshold": "LOW"
-                        },
-                        "BUILD_INTEGRITY": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "LOW",
                             "commentsBotThreshold": "LOW"
@@ -360,12 +323,12 @@ class TestRepoConfigIntegration(unittest.TestCase):
                     "mainRule": True,
                     "editable": True,
                     "codeCategories": {
-                        "LICENSES": {
+                        "OPEN_SOURCE": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "CRITICAL",
                             "commentsBotThreshold": "LOW"
                         },
-                        "VULNERABILITIES": {
+                        "IMAGES": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "CRITICAL",
                             "commentsBotThreshold": "LOW"
@@ -376,11 +339,6 @@ class TestRepoConfigIntegration(unittest.TestCase):
                             "commentsBotThreshold": "LOW"
                         },
                         "SECRETS": {
-                            "softFailThreshold": "LOW",
-                            "hardFailThreshold": "LOW",
-                            "commentsBotThreshold": "LOW"
-                        },
-                        "BUILD_INTEGRITY": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "LOW",
                             "commentsBotThreshold": "LOW"
@@ -396,12 +354,12 @@ class TestRepoConfigIntegration(unittest.TestCase):
                     "mainRule": False,
                     "editable": True,
                     "codeCategories": {
-                        "LICENSES": {
+                        "OPEN_SOURCE": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "CRITICAL",
                             "commentsBotThreshold": "LOW"
                         },
-                        "VULNERABILITIES": {
+                        "IMAGES": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "CRITICAL",
                             "commentsBotThreshold": "LOW"
@@ -412,11 +370,6 @@ class TestRepoConfigIntegration(unittest.TestCase):
                             "commentsBotThreshold": "LOW"
                         },
                         "SECRETS": {
-                            "softFailThreshold": "LOW",
-                            "hardFailThreshold": "LOW",
-                            "commentsBotThreshold": "LOW"
-                        },
-                        "BUILD_INTEGRITY": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "LOW",
                             "commentsBotThreshold": "LOW"
@@ -454,12 +407,12 @@ class TestRepoConfigIntegration(unittest.TestCase):
                     "mainRule": True,
                     "editable": True,
                     "codeCategories": {
-                        "LICENSES": {
+                        "OPEN_SOURCE": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "CRITICAL",
                             "commentsBotThreshold": "LOW"
                         },
-                        "VULNERABILITIES": {
+                        "IMAGES": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "CRITICAL",
                             "commentsBotThreshold": "LOW"
@@ -470,11 +423,6 @@ class TestRepoConfigIntegration(unittest.TestCase):
                             "commentsBotThreshold": "LOW"
                         },
                         "SECRETS": {
-                            "softFailThreshold": "LOW",
-                            "hardFailThreshold": "LOW",
-                            "commentsBotThreshold": "LOW"
-                        },
-                        "BUILD_INTEGRITY": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "LOW",
                             "commentsBotThreshold": "LOW"
@@ -490,12 +438,12 @@ class TestRepoConfigIntegration(unittest.TestCase):
                     "mainRule": False,
                     "editable": True,
                     "codeCategories": {
-                        "LICENSES": {
+                        "OPEN_SOURCE": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "CRITICAL",
                             "commentsBotThreshold": "LOW"
                         },
-                        "VULNERABILITIES": {
+                        "IMAGES": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "CRITICAL",
                             "commentsBotThreshold": "LOW"
@@ -506,11 +454,6 @@ class TestRepoConfigIntegration(unittest.TestCase):
                             "commentsBotThreshold": "LOW"
                         },
                         "SECRETS": {
-                            "softFailThreshold": "LOW",
-                            "hardFailThreshold": "LOW",
-                            "commentsBotThreshold": "LOW"
-                        },
-                        "BUILD_INTEGRITY": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "LOW",
                             "commentsBotThreshold": "LOW"
@@ -531,12 +474,12 @@ class TestRepoConfigIntegration(unittest.TestCase):
                     "mainRule": False,
                     "editable": True,
                     "codeCategories": {
-                        "LICENSES": {
+                        "OPEN_SOURCE": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "CRITICAL",
                             "commentsBotThreshold": "LOW"
                         },
-                        "VULNERABILITIES": {
+                        "IMAGES": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "CRITICAL",
                             "commentsBotThreshold": "LOW"
@@ -547,11 +490,6 @@ class TestRepoConfigIntegration(unittest.TestCase):
                             "commentsBotThreshold": "LOW"
                         },
                         "SECRETS": {
-                            "softFailThreshold": "LOW",
-                            "hardFailThreshold": "LOW",
-                            "commentsBotThreshold": "LOW"
-                        },
-                        "BUILD_INTEGRITY": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "LOW",
                             "commentsBotThreshold": "LOW"
@@ -585,12 +523,12 @@ class TestRepoConfigIntegration(unittest.TestCase):
                     "mainRule": True,
                     "editable": True,
                     "codeCategories": {
-                        "LICENSES": {
+                        "OPEN_SOURCE": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "CRITICAL",
                             "commentsBotThreshold": "LOW"
                         },
-                        "VULNERABILITIES": {
+                        "IMAGES": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "CRITICAL",
                             "commentsBotThreshold": "LOW"
@@ -601,11 +539,6 @@ class TestRepoConfigIntegration(unittest.TestCase):
                             "commentsBotThreshold": "LOW"
                         },
                         "SECRETS": {
-                            "softFailThreshold": "LOW",
-                            "hardFailThreshold": "LOW",
-                            "commentsBotThreshold": "LOW"
-                        },
-                        "BUILD_INTEGRITY": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "LOW",
                             "commentsBotThreshold": "LOW"
@@ -621,12 +554,12 @@ class TestRepoConfigIntegration(unittest.TestCase):
                     "mainRule": False,
                     "editable": True,
                     "codeCategories": {
-                        "LICENSES": {
+                        "OPEN_SOURCE": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "CRITICAL",
                             "commentsBotThreshold": "LOW"
                         },
-                        "VULNERABILITIES": {
+                        "IMAGES": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "CRITICAL",
                             "commentsBotThreshold": "LOW"
@@ -637,11 +570,6 @@ class TestRepoConfigIntegration(unittest.TestCase):
                             "commentsBotThreshold": "LOW"
                         },
                         "SECRETS": {
-                            "softFailThreshold": "LOW",
-                            "hardFailThreshold": "LOW",
-                            "commentsBotThreshold": "LOW"
-                        },
-                        "BUILD_INTEGRITY": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "LOW",
                             "commentsBotThreshold": "LOW"
@@ -662,12 +590,12 @@ class TestRepoConfigIntegration(unittest.TestCase):
                     "mainRule": False,
                     "editable": True,
                     "codeCategories": {
-                        "LICENSES": {
+                        "OPEN_SOURCE": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "CRITICAL",
                             "commentsBotThreshold": "LOW"
                         },
-                        "VULNERABILITIES": {
+                        "IMAGES": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "CRITICAL",
                             "commentsBotThreshold": "LOW"
@@ -678,11 +606,6 @@ class TestRepoConfigIntegration(unittest.TestCase):
                             "commentsBotThreshold": "LOW"
                         },
                         "SECRETS": {
-                            "softFailThreshold": "LOW",
-                            "hardFailThreshold": "LOW",
-                            "commentsBotThreshold": "LOW"
-                        },
-                        "BUILD_INTEGRITY": {
                             "softFailThreshold": "LOW",
                             "hardFailThreshold": "LOW",
                             "commentsBotThreshold": "LOW"
@@ -704,20 +627,6 @@ class TestRepoConfigIntegration(unittest.TestCase):
         repo_config_integration = RepoConfigIntegration(instance)
         repo_config_integration._set_enforcement_rules(enforcement_rule_config)
         self.assertEqual(repo_config_integration.enforcement_rule['id'], '2')
-
-    def test_enforcement_rule_constants(self):
-        # tests to ensure that the correct constants get updated as rules and runners change
-        module_keys = [e.value for e in CodeCategoryType]
-        self.assertEqual(set(module_keys), {'IAC', 'SECRETS', 'VULNERABILITIES', 'LICENSES', 'BUILD_INTEGRITY'})
-
-    def test_global_soft_fail(self):
-        self.assertFalse(CodeCategoryConfiguration('', Severities[BcSeverities.LOW], Severities[BcSeverities.LOW]).is_global_soft_fail())
-        self.assertFalse(CodeCategoryConfiguration('', Severities[BcSeverities.LOW], Severities[BcSeverities.MEDIUM]).is_global_soft_fail())
-        self.assertFalse(CodeCategoryConfiguration('', Severities[BcSeverities.LOW], Severities[BcSeverities.HIGH]).is_global_soft_fail())
-        self.assertFalse(CodeCategoryConfiguration('', Severities[BcSeverities.LOW], Severities[BcSeverities.CRITICAL]).is_global_soft_fail())
-        self.assertFalse(CodeCategoryConfiguration('', Severities[BcSeverities.LOW], Severities[BcSeverities.INFO]).is_global_soft_fail())
-        self.assertFalse(CodeCategoryConfiguration('', Severities[BcSeverities.LOW], Severities[BcSeverities.MODERATE]).is_global_soft_fail())
-        self.assertTrue(CodeCategoryConfiguration('', Severities[BcSeverities.LOW], Severities[BcSeverities.OFF]).is_global_soft_fail())
 
     def test_skip_paths_empty(self):
         vcs_config = {
