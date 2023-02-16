@@ -1,6 +1,18 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.18...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.22...HEAD)
+
+## [2.3.22](https://github.com/bridgecrewio/checkov/compare/2.3.18...2.3.22) - 2023-02-16
+
+### Feature
+
+- **sca:** adding registry-url to the cyclonedx output report - [#4511](https://github.com/bridgecrewio/checkov/pull/4511)
+- **secrets:**  Add capability to iterate over git history - [#4469](https://github.com/bridgecrewio/checkov/pull/4469)
+- **terraform:** Adding yaml based build time policies for corresponding PC run time policies - [#4425](https://github.com/bridgecrewio/checkov/pull/4425)
+
+### Bug Fix
+
+- **secrets:**  import git - [#4514](https://github.com/bridgecrewio/checkov/pull/4514)
 
 ## [2.3.18](https://github.com/bridgecrewio/checkov/compare/2.3.14...2.3.18) - 2023-02-15
 
