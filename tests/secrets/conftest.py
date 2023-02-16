@@ -1,9 +1,4 @@
-from __future__ import annotations
-
-import pickle
-
 import pytest
-from git import Commit
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.enums import CheckResult
@@ -71,4 +66,3 @@ def secrets_report_invalid_status() -> Report:
     report.add_record(record_5)
 
     return report
-
