@@ -16,6 +16,9 @@ except ImportError as e:
 
 def get_commits_diff(root_folder: str) -> Dict[str, Dict[str, str]]:
     commits_diff: Dict[str, Dict[str, str]] = {}
+    if git_import_error is not None:
+        logging.warning(f"Unable to load git module (is the git executable available?) {git_import_error}")
+        return commits_diff
     try:
         repo = git.Repo(root_folder)
     except Exception as e:
