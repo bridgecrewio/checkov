@@ -1,12 +1,17 @@
 from __future__ import annotations
 
-import git
 import logging
 from typing import TYPE_CHECKING, Dict
 from detect_secrets.core import scan
 
 if TYPE_CHECKING:
     from detect_secrets import SecretsCollection
+
+try:
+    import git
+    git_import_error = None
+except ImportError as e:
+    git_import_error = e
 
 
 def get_commits_diff(root_folder: str) -> Dict[str, Dict[str, str]]:
