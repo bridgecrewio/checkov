@@ -40,6 +40,7 @@ from checkov.common.util.secrets import omit_secret_value_from_line
 from checkov.runner_filter import RunnerFilter
 from checkov.secrets.consts import ValidationStatus, VerifySecretsResult
 from checkov.secrets.coordinator import EnrichedSecret, SecretsCoordinator
+from checkov.secrets.scan_git_history import scan_history
 from checkov.secrets.plugins.load_detectors import get_runnable_plugins
 
 if TYPE_CHECKING:
@@ -150,33 +151,40 @@ class Runner(BaseRunner[None]):
             # Implement non IaC files (including .terraform dir)
             files_to_scan = files or []
             excluded_paths = (runner_filter.excluded_paths or []) + ignored_directories + [DEFAULT_EXTERNAL_MODULES_DIR]
+            self._add_custom_detectors_to_metadata_integration()
             if root_folder:
-                enable_secret_scan_all_files = runner_filter.enable_secret_scan_all_files
-                block_list_secret_scan = runner_filter.block_list_secret_scan or []
-                block_list_secret_scan_lower = [file_type.lower() for file_type in block_list_secret_scan]
-                for root, d_names, f_names in os.walk(root_folder):
-                    filter_ignored_paths(root, d_names, excluded_paths)
-                    filter_ignored_paths(root, f_names, excluded_paths)
-                    for file in f_names:
-                        if enable_secret_scan_all_files:
-                            if is_docker_file(file):
-                                if 'dockerfile' not in block_list_secret_scan_lower:
+                if runner_filter.enable_git_history_secret_scan:
+                    settings.disable_filters(*['detect_secrets.filters.common.is_invalid_file'])
+                    scan_history(root_folder, secrets)
+                    logging.info(f'Secrets scanning git history for root folder {root_folder}')
+                else:
+                    enable_secret_scan_all_files = runner_filter.enable_secret_scan_all_files
+                    block_list_secret_scan = runner_filter.block_list_secret_scan or []
+                    block_list_secret_scan_lower = [file_type.lower() for file_type in block_list_secret_scan]
+                    for root, d_names, f_names in os.walk(root_folder):
+                        filter_ignored_paths(root, d_names, excluded_paths)
+                        filter_ignored_paths(root, f_names, excluded_paths)
+                        for file in f_names:
+                            if enable_secret_scan_all_files:
+                                if is_docker_file(file):
+                                    if 'dockerfile' not in block_list_secret_scan_lower:
+                                        files_to_scan.append(os.path.join(root, file))
+                                elif f".{file.split('.')[-1]}" not in block_list_secret_scan_lower:
                                     files_to_scan.append(os.path.join(root, file))
-                            elif f".{file.split('.')[-1]}" not in block_list_secret_scan_lower:
+                            elif file not in PROHIBITED_FILES and f".{file.split('.')[-1]}" in SUPPORTED_FILE_EXTENSIONS or is_docker_file(
+                                    file):
                                 files_to_scan.append(os.path.join(root, file))
-                        elif file not in PROHIBITED_FILES and f".{file.split('.')[-1]}" in SUPPORTED_FILE_EXTENSIONS or is_docker_file(
-                                file):
-                            files_to_scan.append(os.path.join(root, file))
-            logging.info(f'Secrets scanning will scan {len(files_to_scan)} files')
+                    logging.info(f'Secrets scanning will scan {len(files_to_scan)} files')
 
             settings.disable_filters(*['detect_secrets.filters.heuristic.is_indirect_reference'])
             settings.disable_filters(*['detect_secrets.filters.heuristic.is_potential_uuid'])
 
-            self.pbar.initiate(len(files_to_scan))
-            self._scan_files(files_to_scan, secrets, self.pbar)
-            self.pbar.close()
+            if not runner_filter.enable_git_history_secret_scan:
+                self.pbar.initiate(len(files_to_scan))
+                self._scan_files(files_to_scan, secrets, self.pbar)
+                self.pbar.close()
             secrets_duplication: dict[str, bool] = {}
-            self._add_custom_detectors_to_metadata_integration()
+
             for _, secret in secrets:
                 check_id = getattr(secret, "check_id", SECRET_TYPE_TO_ID.get(secret.type))
                 if not check_id:
