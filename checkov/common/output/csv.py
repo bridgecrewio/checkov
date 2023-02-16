@@ -30,9 +30,6 @@ HEADER_OSS_PACKAGES = [
     "Licenses",
 ]
 if CHECKOV_DISPLAY_REGISTRY_URL:
-    # for now, getting "Registry URL" from the platform isn't fully supported yet, so in case it wasn't attached to
-    # the report, we will hide this column here.
-    # after it is fully supported, we can delete this function, and always set "Registry URL" to be one of the headers
     HEADER_OSS_PACKAGES.append("Registry URL")
 
 HEADER_CONTAINER_IMAGE = HEADER_OSS_PACKAGES

@@ -5,7 +5,6 @@ from packaging import version as packaging_version
 from pytest_mock import MockerFixture
 
 from checkov.common.bridgecrew.check_type import CheckType
-from checkov.common.bridgecrew.code_categories import CodeCategoryType
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.common.models.enums import CheckResult
@@ -102,12 +101,7 @@ def test_runner_honors_enforcement_rules(mocker: MockerFixture, scan_result):
     filter = RunnerFilter(framework=['sca_package'], use_enforcement_rules=True)
     # this is not quite a true test, because the checks don't have severities. However, this shows that the check registry
     # passes the report type properly to RunnerFilter.should_run_check, and we have tests for that method
-    filter.enforcement_rule_configs = {
-        CheckType.SCA_PACKAGE: {
-            CodeCategoryType.LICENSES: Severities[BcSeverities.OFF],
-            CodeCategoryType.VULNERABILITIES: Severities[BcSeverities.OFF]
-        }
-    }
+    filter.enforcement_rule_configs = {CheckType.SCA_PACKAGE: Severities[BcSeverities.OFF]}
     report = runner.run(root_folder=EXAMPLES_DIR, runner_filter=filter)
 
     # then
