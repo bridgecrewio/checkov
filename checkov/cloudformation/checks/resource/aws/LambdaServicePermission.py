@@ -4,7 +4,7 @@ from checkov.cloudformation.checks.resource.base_resource_check import BaseResou
 from checkov.common.models.enums import CheckCategories, CheckResult
 
 
-class LambdaPermission(BaseResourceCheck):
+class LambdaServicePermission(BaseResourceCheck):
     def __init__(self) -> None:
         name = "Ensure that AWS Lambda function permissions delegated to AWS services are limited by SourceArn or SourceAccount"
         id = "CKV_AWS_293"
@@ -32,4 +32,4 @@ class LambdaPermission(BaseResourceCheck):
         return ['Properties/Principal', 'Properties/SourceArn', 'Properties/SourceAccount']
 
 
-check = LambdaPermission()
+check = LambdaServicePermission()

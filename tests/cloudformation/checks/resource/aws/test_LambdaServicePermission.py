@@ -19,7 +19,7 @@ class TestLambdaServicePermission(unittest.TestCase):
             "AWS::Lambda::Permission.FunctionPassingArnPermission",
             "AWS::Lambda::Permission.FunctionPassingAccountPermission",
             "AWS::Lambda::Permission.FunctionNotServicePrincipalPermission",
-            "AWS::Lambda::Permission.ExampleS3ServicePermission"
+            "AWS::Lambda::Permission.ExampleS3ServicePermission",
             "AWS::Lambda::Permission.ExampleEventsServicePermission"
         }
         failing_resources = {
