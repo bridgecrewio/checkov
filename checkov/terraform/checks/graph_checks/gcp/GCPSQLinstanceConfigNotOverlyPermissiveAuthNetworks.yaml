@@ -1,0 +1,15 @@
+metadata:
+  id: "CKV2_GCP_21"
+  name: "Ensure SQL instance is not configured with overly permissive authorized networks"
+  category: "GENERAL_SECURITY"
+
+definition:
+  cond_type: "attribute"
+  resource_types: "google_sql_database_instance"
+  attribute: "settings.ip_configuration.authorized_networks.value"
+  operator: "not_within"
+  value: 
+    - "::/0"
+    - "::0"
+    - "0.0.0.0"
+    - "0.0.0.0/0"
