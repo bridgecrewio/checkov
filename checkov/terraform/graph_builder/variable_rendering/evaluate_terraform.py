@@ -236,9 +236,10 @@ def _handle_for_loop_in_dict(object_to_run_on: str, statement: str, start_expres
     except JSONDecodeError:
         return
     expression = _extract_expression_from_statement(statement, start_expression_idx)
-    if renderer.FOR_EXPRESSION_DICT not in expression:
+    split_expression = expression.replace(' ', '').split(renderer.FOR_EXPRESSION_DICT)
+    if len(split_expression) != 2:
         return
-    k_expression, v_expression = expression.replace(' ', '').split(renderer.FOR_EXPRESSION_DICT)
+    k_expression, v_expression = split_expression
     obj_key = statement.split(' ')[1]
     if k_expression.startswith(f'{obj_key}.'):
         k_expression = k_expression.replace(f'{obj_key}.', '')
@@ -247,7 +248,7 @@ def _handle_for_loop_in_dict(object_to_run_on: str, statement: str, start_expres
         val_to_assign = obj if statement.startswith(f'{renderer.LEFT_CURLY}{renderer.FOR_LOOP} {v_expression}') else evaluate_terraform(v_expression)
         try:
             rendered_result[obj[k_expression]] = val_to_assign
-        except TypeError:
+        except (TypeError, KeyError):
             return
     return json.dumps(rendered_result)
 
