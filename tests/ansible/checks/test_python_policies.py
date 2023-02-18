@@ -29,6 +29,14 @@ def test_YumValidateCerts():
     run_check(base_path=BASE_DIR / "task/builtin", check="YumValidateCerts")
 
 
+def test_AptAllowUnauthenticated():
+    run_check(base_path=BASE_DIR / "task/builtin", check="AptAllowUnauthenticated")
+
+
+def test_AptForce():
+    run_check(base_path=BASE_DIR / "task/builtin", check="AptForce")
+
+
 # AWS module checks
 def test_EC2EBSOptimized():
     run_check(base_path=BASE_DIR / "task/aws", check="EC2EBSOptimized")
