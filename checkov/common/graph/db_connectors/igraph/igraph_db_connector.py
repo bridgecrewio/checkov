@@ -65,7 +65,7 @@ class IgraphConnector(DBConnector[Graph]):
                 "block_index": index,
             }
             if PLOT_GRAPH:
-                vertex_attr["color"] = PLOT_RANDOM_COLORS[randrange(PLOT_RANDOM_COLORS_LEN)]
+                vertex_attr["color"] = PLOT_RANDOM_COLORS[randrange(PLOT_RANDOM_COLORS_LEN)]  # nosec
                 vertex_attr["label"] = ".".join((attr[CustomAttributes.BLOCK_TYPE], attr[CustomAttributes.BLOCK_NAME]))
 
             self.graph.add_vertex(
@@ -84,7 +84,7 @@ class IgraphConnector(DBConnector[Graph]):
             "label": [e.label for e in local_graph.edges],
         }
         if PLOT_GRAPH:
-            edge_colors = [PLOT_RANDOM_COLORS[randrange(PLOT_RANDOM_COLORS_LEN)] for _ in range(len(local_graph.edges))]
+            edge_colors = [PLOT_RANDOM_COLORS[randrange(PLOT_RANDOM_COLORS_LEN)] for _ in range(len(local_graph.edges))]  # nosec
             edge_attributes["color"] = edge_colors
             edge_attributes["label_color"] = edge_colors
 
