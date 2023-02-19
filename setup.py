@@ -23,13 +23,8 @@ version = mod.version  # type: ignore
 
 setup(
     extras_require={
-        "dev": [
-            "pytest==5.3.1",
-            "coverage==5.5",
-            "coverage-badge",
-            "GitPython==3.1.7",
-            "bandit",
-            "jsonschema",
+        "graph": [
+            "pycairo",
         ]
     },
     install_requires=[
@@ -53,7 +48,6 @@ setup(
         "cloudsplaining>=0.4.3",
         "networkx<2.7",
         "igraph",
-        "pycairo",
         "dockerfile-parse",
         "docker",
         "configargparse",
