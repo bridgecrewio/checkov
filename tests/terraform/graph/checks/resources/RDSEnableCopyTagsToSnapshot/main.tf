@@ -11,7 +11,8 @@ resource "aws_db_instance" "pass" {
   skip_final_snapshot  = true
   copy_tags_to_snapshot = true
 }
-# Fails
+
+# Fail case 1:
 resource "aws_db_instance" "fail_1" {
   allocated_storage    = 10
   db_name              = "mydb"
@@ -25,6 +26,7 @@ resource "aws_db_instance" "fail_1" {
   copy_tags_to_snapshot = true
 }
 
+# Fail case 2:
 resource "aws_db_instance" "fail_2" {
   allocated_storage    = 10
   db_name              = "mydb"
