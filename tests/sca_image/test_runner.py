@@ -10,6 +10,7 @@ from aioresponses import aioresponses
 from yarl import URL
 
 from checkov.common.bridgecrew.check_type import CheckType
+from checkov.common.bridgecrew.code_categories import CodeCategoryType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.common.models.enums import CheckResult
 from checkov.github_actions.runner import Runner as GHA_Runner
@@ -107,8 +108,13 @@ def test_runner_honors_enforcement_rules(mock_bc_integration, image_name, cached
         runner_filter = RunnerFilter(use_enforcement_rules=True, run_image_referencer=True)
         # this is not quite a true test, because the checks don't have severities. However, this shows that the check registry
         # passes the report type properly to RunnerFilter.should_run_check, and we have tests for that method
-        runner_filter.enforcement_rule_configs = {CheckType.GITHUB_ACTIONS: Severities[BcSeverities.OFF],
-                                                  CheckType.SCA_IMAGE: Severities[BcSeverities.OFF]}
+        runner_filter.enforcement_rule_configs = {
+            CheckType.GITHUB_ACTIONS: Severities[BcSeverities.OFF],
+            CheckType.SCA_IMAGE: {
+                CodeCategoryType.LICENSES: Severities[BcSeverities.OFF],
+                CodeCategoryType.VULNERABILITIES: Severities[BcSeverities.OFF]
+            }
+        }
 
         reports = GHA_Runner().run(root_folder=str(WORKFLOW_EXAMPLES_DIR), runner_filter=runner_filter)
         sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
