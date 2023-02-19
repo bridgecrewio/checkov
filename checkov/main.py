@@ -210,7 +210,8 @@ def run(banner: str = checkov_banner, argv: list[str] = sys.argv[1:]) -> int | N
                                  enable_secret_scan_all_files=bool(convert_str_to_bool(config.enable_secret_scan_all_files)),
                                  block_list_secret_scan=config.block_list_secret_scan,
                                  deep_analysis=config.deep_analysis,
-                                 repo_root_for_plan_enrichment=config.repo_root_for_plan_enrichment)
+                                 repo_root_for_plan_enrichment=config.repo_root_for_plan_enrichment,
+                                 enable_git_history_secret_scan=config.scan_secrets_history)
 
     source_env_val = os.getenv('BC_SOURCE', 'cli')
     source = get_source_type(source_env_val)
@@ -651,7 +652,8 @@ class Checkov:
                 block_list_secret_scan=self.config.block_list_secret_scan,
                 deep_analysis=self.config.deep_analysis,
                 repo_root_for_plan_enrichment=self.config.repo_root_for_plan_enrichment,
-                resource_attr_to_omit=self.config.mask
+                resource_attr_to_omit=self.config.mask,
+                enable_git_history_secret_scan=self.config.scan_secrets_history,
             )
 
             source_env_val = os.getenv('BC_SOURCE', 'cli')
