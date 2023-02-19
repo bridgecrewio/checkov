@@ -42,11 +42,11 @@ class AnsibleLocalGraph(ObjectLocalGraph):
         if not task or not isinstance(task, dict):
             return
 
-        if "block" in task and isinstance(task["block"], list):
+        if ResourceType.BLOCK in task and isinstance(task[ResourceType.BLOCK], list):
             prefix += f"{ResourceType.BLOCK}."  # with each nested level an extra block prefix is added
             self._create_block_vertices(file_path=file_path, block=task, prefix=prefix)
 
-            for block_task in task["block"]:
+            for block_task in task[ResourceType.BLOCK]:
                 self._process_blocks(file_path=file_path, task=block_task, prefix=prefix)
         else:
             self._create_tasks_vertices(file_path=file_path, task=task, prefix=prefix)
@@ -64,6 +64,9 @@ class AnsibleLocalGraph(ObjectLocalGraph):
             if name in TASK_RESERVED_KEYWORDS:
                 continue
             if name in (START_LINE, END_LINE):
+                continue
+            if isinstance(config, list):
+                # either it is actually not an Ansible file or a playbook without tasks refs
                 continue
 
             resource_type = f"{ResourceType.TASKS}.{name}"

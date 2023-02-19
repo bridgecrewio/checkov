@@ -181,6 +181,9 @@ class BcPlatformIntegration:
         if request.status == 401:
             logging.error(f'Received 401 response from Prisma /login endpoint: {request.data.decode("utf8")}')
             raise BridgecrewAuthError()
+        elif request.status == 403:
+            logging.error('Received 403 (Forbidden) response from Prisma /login endpoint')
+            raise BridgecrewAuthError()
         token: str = json.loads(request.data.decode("utf8"))['token']
         return token
 
