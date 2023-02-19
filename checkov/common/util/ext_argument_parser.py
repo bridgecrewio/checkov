@@ -520,3 +520,10 @@ class ExtArgumentParser(configargparse.ArgumentParser):
             default=False,
             help="will scan the history of commits for secrets"
         )
+        self.add(
+            "--secrets-history-timeout",
+            action="append",
+            default='12h',
+            help="maximum time to stop the scan "
+        )
+

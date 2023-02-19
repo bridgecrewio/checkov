@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import fnmatch
+import signal
 from collections import defaultdict
 from collections.abc import Iterable
 from typing import Any, Set, Optional, Union, List, TYPE_CHECKING, Dict, DefaultDict, cast
@@ -13,6 +14,7 @@ from checkov.common.bridgecrew.code_categories import CodeCategoryMapping, CodeC
 from checkov.common.bridgecrew.severities import Severity, Severities
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
+from checkov.common.util.str_utils import convert_to_seconds
 
 if TYPE_CHECKING:
     from checkov.common.checks.base_check import BaseCheck
@@ -49,7 +51,8 @@ class RunnerFilter(object):
             deep_analysis: bool = False,
             repo_root_for_plan_enrichment: Optional[List[str]] = None,
             resource_attr_to_omit: Optional[Dict[str, Set[str]]] = None,
-            enable_git_history_secret_scan: bool = False
+            enable_git_history_secret_scan: bool = False,
+            git_history_timeout: str = None
     ) -> None:
 
         checks = convert_csv_string_arg_to_list(checks)
@@ -129,6 +132,8 @@ class RunnerFilter(object):
             resource_attr_to_omit
         )
         self.enable_git_history_secret_scan: bool = enable_git_history_secret_scan
+        if self.enable_git_history_secret_scan:
+            self.git_history_timeout = convert_to_seconds(git_history_timeout)
 
     @staticmethod
     def _load_resource_attr_to_omit(resource_attr_to_omit_input: Optional[Dict[str, Set[str]]]) -> DefaultDict[str, Set[str]]:
@@ -354,3 +359,4 @@ class RunnerFilter(object):
     def set_suppressed_policies(self, policy_level_suppressions: List[str]) -> None:
         logging.debug(f"Received the following policy-level suppressions, that will be skipped from running: {policy_level_suppressions}")
         self.suppressed_policies = policy_level_suppressions
+
