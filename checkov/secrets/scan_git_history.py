@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
+import signal
 from typing import TYPE_CHECKING, Dict
 from detect_secrets.core import scan
 
@@ -47,22 +48,39 @@ def get_commits_diff(root_folder: str) -> Dict[str, Dict[str, str]]:
     return commits_diff
 
 
-def scan_history(root_folder: str, secrets: SecretsCollection) -> None:
-    commits_diff = get_commits_diff(root_folder)
-    if not commits_diff:
-        return
-    scanned_file_count = 0
-    for commit_hash in commits_diff.keys():
-        commit = commits_diff[commit_hash]
-        for file_name in commit.keys():
-            file_diff = commit[file_name]
-            file_results = [*scan.scan_diff(file_diff)]
-            if file_results:
-                logging.info(
-                    f"Found {len(file_results)} secrets in file path {file_name} in commit {commit_hash}")
-                logging.info(file_results)
-            for secret in file_results:
-                secrets[
-                    f'{commit_hash}-{secret.filename}-{secret.secret_hash}-{"added" if secret.is_added else "removed"}'].add(secret)
-            scanned_file_count += 1
-    logging.info(f"Scanned {scanned_file_count} git history files")
+def scan_history(root_folder: str, secrets: SecretsCollection, timeout: int) -> None:
+    # mark the scan to finish within the timeout
+    signal.signal(signal.SIGALRM, exit_from_timeout(timeout))
+    signal.alarm(timeout)
+    try:
+        commits_diff = get_commits_diff(root_folder)
+        if not commits_diff:
+            return
+        scanned_file_count = 0
+        for commit_hash in commits_diff.keys():
+            commit = commits_diff[commit_hash]
+            for file_name in commit.keys():
+                file_diff = commit[file_name]
+                file_results = [*scan.scan_diff(file_diff)]
+                if file_results:
+                    logging.info(
+                        f"Found {len(file_results)} secrets in file path {file_name} in commit {commit_hash}")
+                    logging.info(file_results)
+                for secret in file_results:
+                    secrets[
+                        f'{commit_hash}-{secret.filename}-{secret.secret_hash}-{"added" if secret.is_added else "removed"}'].add(secret)
+                scanned_file_count += 1
+        logging.info(f"Scanned {scanned_file_count} git history files")
+    except TimeoutException:
+        return  # just finish the run
+
+
+def exit_from_timeout(timeout: int):
+    logging.info(f"timeout reached ({timeout}), stopping scan.")
+    raise TimeoutException
+
+
+class TimeoutException(Exception):
+    """Raised when timeout reached"""
+    pass
+
