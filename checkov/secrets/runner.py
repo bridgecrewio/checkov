@@ -190,6 +190,7 @@ class Runner(BaseRunner[None]):
                 if not check_id:
                     logging.debug(f'Secret was filtered - no check_id for line_number {secret.line_number}')
                     continue
+                # TODO add commit to the key
                 secret_key = f'{secret.filename}_{secret.line_number}_{secret.secret_hash}'
                 if secret.secret_value and is_potential_uuid(secret.secret_value):
                     logging.info(f"Removing secret due to UUID filtering: {hashlib.sha256(secret.secret_value.encode('utf-8')).hexdigest()}")
@@ -208,6 +209,7 @@ class Runner(BaseRunner[None]):
                     continue
                 result: _CheckResult = {'result': CheckResult.FAILED}
                 try:
+                    # TODO maybe will be a problem to read the line
                     line_text = linecache.getline(secret.filename, secret.line_number)
                 except SyntaxError as e:
                     # If encoding is a problem, this is probably not human-readable source code
@@ -225,12 +227,15 @@ class Runner(BaseRunner[None]):
                     root_folder=root_folder
                 ) or result
                 relative_file_path = f'/{os.path.relpath(secret.filename, root_folder)}'
+                # TODO maybe add 'commit' to the resource
                 resource = f'{relative_file_path}:{secret.secret_hash}'
                 report.add_resource(resource)
                 # 'secret.secret_value' can actually be 'None', but only when 'PotentialSecret' was created
                 # via 'load_secret_from_dict'
+                # TODO use the EnrichedSecret to add the data
                 self.save_secret_to_coordinator(secret.secret_value, bc_check_id, resource, secret.line_number, result)
                 line_text_censored = omit_secret_value_from_line(cast(str, secret.secret_value), line_text)
+                #TODO add the date to here
                 report.add_record(SecretsRecord(
                     check_id=check_id,
                     bc_check_id=bc_check_id,

@@ -23,7 +23,7 @@ TEXT_BY_SECRET_VALIDATION_STATUS = {
     ValidationStatus.UNAVAILABLE.value: ''
 }
 
-
+#TODO add commit data
 class SecretsRecord(Record):
     def __init__(self,
                  check_id: str,
