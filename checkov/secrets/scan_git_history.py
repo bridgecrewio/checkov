@@ -2,8 +2,11 @@ from __future__ import annotations
 
 import git
 import logging
-from typing import TYPE_CHECKING, Dict
+from typing import TYPE_CHECKING, Dict, Tuple
 from detect_secrets.core import scan
+from detect_secrets.core.potential_secret import PotentialSecret
+
+from checkov.common.output.secrets_record import SecretsRecord
 
 if TYPE_CHECKING:
     from detect_secrets import SecretsCollection
@@ -16,7 +19,7 @@ def get_commits_diff(root_folder: str) -> Dict[str, Dict[str, str]]:
     except Exception as e:
         logging.error(f"Folder {root_folder} is not a GIT project {e}")
         return commits_diff
-    commits = list(repo.iter_commits(repo.active_branch))
+    commits = list(repo.iter_commits(repo.active_branch, max_count=2))
     for previous_commit_idx in range(len(commits) - 1, 0, -1):
         current_commit_idx = previous_commit_idx - 1
         current_commit_hash = commits[current_commit_idx].hexsha
@@ -53,6 +56,19 @@ def scan_history(root_folder: str, secrets: SecretsCollection) -> None:
                 logging.info(file_results)
             for secret in file_results:
                 secrets[
-                    f'{commit_hash}-{secret.filename}-{secret.secret_hash}-{"added" if secret.is_added else "removed"}'].add(secret)
+                    f'{commit_hash}_{secret.filename}'].add(secret)
             scanned_file_count += 1
     logging.info(f"Scanned {scanned_file_count} git history files")
+
+
+def get_added_and_removed_commit_hash(
+        key: str, enable_git_history_secret_scan: bool, secret: PotentialSecret) -> Tuple[str | None, str | None]:
+    """
+    now we have only the current commit_hash - in the added_commit_hash or in the removed_commit_hash.
+    in the next step we will add the connection and the missing data
+    """
+    if not enable_git_history_secret_scan:
+        return None, None
+    added_commit_hash = key.split('_')[0] if secret.is_added else None
+    removed_commit_hash = key.split('_')[0] if secret.is_removed else None
+    return added_commit_hash, removed_commit_hash

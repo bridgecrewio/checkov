@@ -23,7 +23,7 @@ TEXT_BY_SECRET_VALIDATION_STATUS = {
     ValidationStatus.UNAVAILABLE.value: ''
 }
 
-#TODO add commit data
+
 class SecretsRecord(Record):
     def __init__(self,
                  check_id: str,
@@ -51,7 +51,9 @@ class SecretsRecord(Record):
                  details: Optional[List[str]] = None,
                  check_len: int | None = None,
                  definition_context_file_path: Optional[str] = None,
-                 validation_status: Optional[str] = None
+                 validation_status: Optional[str] = None,
+                 added_commit_hash: Optional[str] = None,
+                 removed_commit_hash: Optional[str] = None
                  ):
         super().__init__(check_id=check_id,
                          check_name=check_name,
@@ -80,6 +82,8 @@ class SecretsRecord(Record):
                          definition_context_file_path=definition_context_file_path
                          )
         self.validation_status = validation_status
+        self.added_commit_hash = added_commit_hash
+        self.removed_commit_hash = removed_commit_hash
 
     def to_string(self, compact: bool = False, use_bc_ids: bool = False) -> str:
         processed_record = super().to_string(compact=compact, use_bc_ids=use_bc_ids)

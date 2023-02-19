@@ -41,12 +41,13 @@ def test_scan_git_history() -> None:
     runner = Runner()
     report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                         runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
-    # we have 7 secret but for now the secret runner filter secret from the same file and the same value
-    assert len(report.failed_checks) == 4
+    assert len(report.failed_checks) == 6
     assert len(report.parsing_errors) == 0
     assert len(report.passed_checks) == 0
     assert len(report.parsing_errors) == 0
     assert len(report.skipped_checks) == 0
+    for failed_check in report.failed_checks:
+        assert failed_check.added_commit_hash or failed_check.removed_commit_hash
 
 
 @mock.patch('checkov.secrets.scan_git_history.get_commits_diff', mock_git_repo_commits)
