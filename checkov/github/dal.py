@@ -5,7 +5,7 @@ import shutil
 from typing import Any
 from pathlib import Path
 
-from checkov.common.runners.base_runner import strtobool
+from checkov.common.util.str_utils import strtobool
 from checkov.common.vcs.base_vcs_dal import BaseVCSDAL
 from checkov.github.schemas.org_security import schema as org_security_schema
 

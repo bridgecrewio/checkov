@@ -2,7 +2,7 @@ import os
 from typing import List, Dict, Any, Tuple
 
 from checkov.common.graph.graph_builder import CustomAttributes
-from checkov.common.runners.base_runner import strtobool
+from checkov.common.util.str_utils import strtobool
 from checkov.common.util.parser_utils import get_tf_definition_key_from_module_dependency
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock

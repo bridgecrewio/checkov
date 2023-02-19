@@ -32,6 +32,7 @@ class CloudformationGraphManager(GraphManager[CloudformationLocalGraph, "dict[st
         parsing_errors = {} if parsing_errors is None else parsing_errors
         definitions, definitions_raw = get_folder_definitions(source_dir, excluded_paths, parsing_errors)  # type:ignore[arg-type]
         local_graph = self.build_graph_from_definitions(definitions, render_variables)
+        local_graph.source = self.source
         rendered_definitions, _ = convert_graph_vertices_to_definitions(local_graph.vertices, source_dir)
 
         # TODO: replace with real graph rendering
@@ -51,5 +52,6 @@ class CloudformationGraphManager(GraphManager[CloudformationLocalGraph, "dict[st
     ) -> CloudformationLocalGraph:
         local_graph = CloudformationLocalGraph(definitions, source=self.source)
         local_graph.build_graph(render_variables=render_variables)
+        local_graph.source = self.source
 
         return local_graph

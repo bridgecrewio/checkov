@@ -21,7 +21,7 @@ from checkov.circleci_pipelines.registry import registry as circleci_pipelines_r
 from checkov.cloudformation.checks.resource.registry import cfn_registry as cfn_registry
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.checks_infra.registry import BaseRegistry as BaseGraphRegistry, get_graph_checks_registry
-from checkov.common.runners.base_runner import strtobool
+from checkov.common.util.str_utils import strtobool
 from checkov.dockerfile.registry import registry as dockerfile_registry
 from checkov.github.registry import registry as github_configuration_registry
 from checkov.github_actions.checks.registry import registry as github_actions_jobs_registry

@@ -17,6 +17,7 @@ _Block = TypeVar("_Block", bound="Block")
 
 class LocalGraph(Generic[_Block]):
     def __init__(self) -> None:
+        self.source: str = ""
         self.vertices: List[_Block] = []
         self.edges: List[Edge] = []
         self.in_edges: Dict[int, List[Edge]] = defaultdict(list)  # map between vertex index and the edges entering it

@@ -31,6 +31,7 @@ class DockerfileGraphManager(GraphManager[DockerfileLocalGraph, "dict[str, dict[
         definitions, _ = get_files_definitions(files=file_paths, filepath_fn=filepath_fn)
 
         local_graph = self.build_graph_from_definitions(definitions=definitions)
+        local_graph.source = self.source
 
         return local_graph, definitions
 
@@ -41,5 +42,6 @@ class DockerfileGraphManager(GraphManager[DockerfileLocalGraph, "dict[str, dict[
     ) -> DockerfileLocalGraph:
         local_graph = DockerfileLocalGraph(definitions=definitions)
         local_graph.build_graph(render_variables=render_variables)
+        local_graph.source = self.source
 
         return local_graph

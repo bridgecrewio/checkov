@@ -48,7 +48,7 @@ from checkov.terraform.image_referencer.manager import TerraformImageReferencerM
 from checkov.terraform.parser import Parser
 from checkov.terraform.plan_utils import get_resource_id_without_nested_modules
 from checkov.terraform.tag_providers import get_resource_tags
-from checkov.common.runners.base_runner import strtobool
+from checkov.common.util.str_utils import strtobool
 
 if TYPE_CHECKING:
     from networkx import DiGraph

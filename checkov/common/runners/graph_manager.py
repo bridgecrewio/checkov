@@ -26,6 +26,7 @@ class ObjectGraphManager(GraphManager[ObjectLocalGraph, "dict[str | Path, dict[s
     ) -> tuple[ObjectLocalGraph, dict[str | Path, dict[str, Any] | list[dict[str, Any]]]]:
         definitions = local_graph_class.get_files_definitions(root_folder=source_dir)
         local_graph = self.build_graph_from_definitions(definitions=definitions, graph_class=local_graph_class)
+        local_graph.source = self.source
 
         return local_graph, definitions
 
@@ -37,4 +38,5 @@ class ObjectGraphManager(GraphManager[ObjectLocalGraph, "dict[str | Path, dict[s
     ) -> ObjectLocalGraph:
         local_graph = graph_class(definitions)
         local_graph.build_graph(render_variables)
+        local_graph.source = self.source
         return local_graph

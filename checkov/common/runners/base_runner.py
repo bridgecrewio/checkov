@@ -7,11 +7,13 @@ import re
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
 from typing import List, Any, TYPE_CHECKING, TypeVar, Generic, Dict
+from warnings import warn
 
 from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.util.tqdm_utils import ProgressBar
+from checkov.common.util.str_utils import strtobool as strtobool_v2
 
 from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 from checkov.common.output.report import Report
@@ -27,24 +29,14 @@ _GraphManager = TypeVar("_GraphManager", bound="GraphManager[Any, Any]|None")
 
 
 def strtobool(val: str) -> int:
-    """Convert a string representation of truth to true (1) or false (0).
+    warn('This method is deprecated, please use checkov.common.util.str_utils.strtobool()', DeprecationWarning, stacklevel=2)
 
-    True values are 'y', 'yes', 't', 'true', 'on', and '1'; false values
-    are 'n', 'no', 'f', 'false', 'off', and '0'.  Raises ValueError if
-    'val' is anything else.
-    """
-    val = val.lower()
-    if val in ('y', 'yes', 't', 'true', 'on', '1'):
-        return 1
-    elif val in ('n', 'no', 'f', 'false', 'off', '0'):
-        return 0
-    else:
-        raise ValueError("invalid boolean value %r for environment variable CKV_IGNORE_HIDDEN_DIRECTORIES" % (val,))
+    return strtobool_v2(val=val)
 
 
-CHECKOV_CREATE_GRAPH = strtobool(os.getenv("CHECKOV_CREATE_GRAPH", "True"))
+CHECKOV_CREATE_GRAPH = strtobool_v2(os.getenv("CHECKOV_CREATE_GRAPH", "True"))
 IGNORED_DIRECTORIES_ENV = os.getenv("CKV_IGNORED_DIRECTORIES", "node_modules,.terraform,.serverless")
-IGNORE_HIDDEN_DIRECTORY_ENV = strtobool(os.getenv("CKV_IGNORE_HIDDEN_DIRECTORIES", "True"))
+IGNORE_HIDDEN_DIRECTORY_ENV = strtobool_v2(os.getenv("CKV_IGNORE_HIDDEN_DIRECTORIES", "True"))
 
 ignored_directories = IGNORED_DIRECTORIES_ENV.split(",")
 

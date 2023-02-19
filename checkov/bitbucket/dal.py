@@ -6,7 +6,7 @@ from typing import Any
 
 import requests
 
-from checkov.common.runners.base_runner import strtobool
+from checkov.common.util.str_utils import strtobool
 from checkov.common.vcs.base_vcs_dal import BaseVCSDAL
 
 

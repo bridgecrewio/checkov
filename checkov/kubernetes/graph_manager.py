@@ -36,4 +36,5 @@ class KubernetesGraphManager(GraphManager[KubernetesLocalGraph, "dict[str, list[
         if self.graph_flags is None:
             self.graph_flags = K8sGraphFlags()
         local_graph.build_graph(render_variables=False, graph_flags=self.graph_flags)
+        local_graph.source = self.source
         return local_graph

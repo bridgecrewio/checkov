@@ -18,12 +18,13 @@ from checkov.common.output.report import Report, merge_reports
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.output.common import ImageDetails
 from checkov.common.models.enums import ErrorStatus
-from checkov.common.runners.base_runner import filter_ignored_paths, strtobool
+from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.sca.commons import should_run_scan
 from checkov.common.sca.output import add_to_report_sca_data, get_license_statuses
 from checkov.common.util.file_utils import compress_file_gzip_base64
 from checkov.common.util.dockerfile import is_docker_file
 from checkov.common.util.http_utils import request_wrapper
+from checkov.common.util.str_utils import strtobool
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.runner import Runner as PackageRunner
 

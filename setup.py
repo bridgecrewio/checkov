@@ -53,6 +53,7 @@ setup(
         "cloudsplaining>=0.4.3",
         "networkx<2.7",
         "igraph",
+        "pycairo",
         "dockerfile-parse",
         "docker",
         "configargparse",

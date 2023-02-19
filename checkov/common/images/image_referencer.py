@@ -16,7 +16,7 @@ from checkov.common.bridgecrew.vulnerability_scanning.integrations.docker_image_
     docker_image_scanning_integration
 from checkov.common.output.common import ImageDetails
 from checkov.common.output.report import Report, CheckType
-from checkov.common.runners.base_runner import strtobool
+from checkov.common.util.str_utils import strtobool
 from checkov.common.sca.commons import should_run_scan
 from checkov.common.sca.output import add_to_report_sca_data, get_license_statuses_async
 from checkov.common.typing import _LicenseStatus

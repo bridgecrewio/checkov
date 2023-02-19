@@ -30,6 +30,7 @@ class BicepGraphManager(GraphManager[BicepLocalGraph, "dict[Path, BicepJson]"]):
         file_paths = get_scannable_file_paths(root_folder=source_dir)
         definitions, definitions_raw, parsing_errors = Parser().get_files_definitions(file_paths)  # type:ignore[assignment]
         local_graph = self.build_graph_from_definitions(definitions)
+        local_graph.source = self.source
 
         return local_graph, definitions
 
@@ -38,4 +39,5 @@ class BicepGraphManager(GraphManager[BicepLocalGraph, "dict[Path, BicepJson]"]):
     ) -> BicepLocalGraph:
         local_graph = BicepLocalGraph(definitions)
         local_graph.build_graph(render_variables)
+        local_graph.source = self.source
         return local_graph

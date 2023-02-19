@@ -5,7 +5,7 @@ import os
 from copy import deepcopy
 from typing import List, Dict, Any, Set, Callable, Tuple, TYPE_CHECKING
 
-from checkov.common.runners.base_runner import strtobool
+from checkov.common.util.str_utils import strtobool
 from checkov.common.util.parser_utils import get_abs_path, get_module_from_full_path
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType

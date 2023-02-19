@@ -1,6 +1,6 @@
 import os
 from typing import List
-from checkov.common.runners.base_runner import strtobool
+from checkov.common.util.str_utils import strtobool
 
 PATH_SEPARATOR = "->"
 

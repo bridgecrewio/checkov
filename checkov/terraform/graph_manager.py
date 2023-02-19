@@ -46,6 +46,7 @@ class TerraformGraphManager(GraphManager[TerraformLocalGraph, "dict[str, dict[st
             logging.info("Building graph from parsed module")
             local_graph = local_graph_class(module)
             local_graph.build_graph(render_variables=render_variables)
+            local_graph.source = self.source
 
         return local_graph, tf_definitions
 
@@ -55,5 +56,6 @@ class TerraformGraphManager(GraphManager[TerraformLocalGraph, "dict[str, dict[st
         module, _ = self.parser.parse_hcl_module_from_tf_definitions(definitions, "", self.source)
         local_graph = TerraformLocalGraph(module)
         local_graph.build_graph(render_variables=render_variables)
+        local_graph.source = self.source
 
         return local_graph

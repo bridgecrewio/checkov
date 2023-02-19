@@ -5,12 +5,11 @@ from typing import Union, Dict, Any, List, Optional, Set
 import dpath.util
 import re
 
-from checkov.common.runners.base_runner import strtobool
-from checkov.terraform.graph_builder.utils import INTERPOLATION_EXPR
 from checkov.common.graph.graph_builder.graph_components.blocks import Block
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
+from checkov.common.util.str_utils import strtobool
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
-from checkov.terraform.graph_builder.utils import remove_module_dependency_in_path
+from checkov.terraform.graph_builder.utils import remove_module_dependency_in_path, INTERPOLATION_EXPR
 
 
 class TerraformBlock(Block):
