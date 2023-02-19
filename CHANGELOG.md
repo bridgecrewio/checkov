@@ -1,6 +1,91 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.0...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.23...HEAD)
+
+## [2.3.23](https://github.com/bridgecrewio/checkov/compare/2.3.22...2.3.23) - 2023-02-18
+
+### Feature
+
+- **ansible:** Add checks for the ansible builtin apt module - [#4500](https://github.com/bridgecrewio/checkov/pull/4500)
+
+### Bug Fix
+
+- **gha:** now looks for GHA on windows - [#4515](https://github.com/bridgecrewio/checkov/pull/4515)
+
+## [2.3.22](https://github.com/bridgecrewio/checkov/compare/2.3.18...2.3.22) - 2023-02-16
+
+### Feature
+
+- **sca:** adding registry-url to the cyclonedx output report - [#4511](https://github.com/bridgecrewio/checkov/pull/4511)
+- **secrets:**  Add capability to iterate over git history - [#4469](https://github.com/bridgecrewio/checkov/pull/4469)
+- **terraform:** Adding yaml based build time policies for corresponding PC run time policies - [#4425](https://github.com/bridgecrewio/checkov/pull/4425)
+
+### Bug Fix
+
+- **secrets:**  import git - [#4514](https://github.com/bridgecrewio/checkov/pull/4514)
+
+## [2.3.18](https://github.com/bridgecrewio/checkov/compare/2.3.14...2.3.18) - 2023-02-15
+
+### Feature
+
+- **sca:** add registry urls and description to the output report and to the csv report - [#4485](https://github.com/bridgecrewio/checkov/pull/4485)
+
+### Bug Fix
+
+- **ansible:** skip unsupported Ansible resources - [#4504](https://github.com/bridgecrewio/checkov/pull/4504)
+- **terraform:** Fix an str split edge case in function - [#4507](https://github.com/bridgecrewio/checkov/pull/4507)
+- **terraform:** fix enforcement rules mapping - [#4509](https://github.com/bridgecrewio/checkov/pull/4509)
+
+## [2.3.14](https://github.com/bridgecrewio/checkov/compare/2.3.7...2.3.14) - 2023-02-14
+
+### Feature
+
+- **secrets:** log and filter potential uuid case - [#4486](https://github.com/bridgecrewio/checkov/pull/4486)
+- **terraform:** Assign/override main vertices by the first new vertice. - [#4493](https://github.com/bridgecrewio/checkov/pull/4493)
+- **terraform:** Support for loops in foreach statements - [#4483](https://github.com/bridgecrewio/checkov/pull/4483)
+
+### Bug Fix
+
+- **terraform:** Handle KeyError in hadle_for_loop func - [#4501](https://github.com/bridgecrewio/checkov/pull/4501)
+- **terraform:** Handle type error in `_handle_for_loop_in_dict` - [#4495](https://github.com/bridgecrewio/checkov/pull/4495)
+- **terraform:** skip loading module that calls to the same dir - [#4499](https://github.com/bridgecrewio/checkov/pull/4499)
+
+### Platform
+
+- **general:** Use new enforcement categories - [#4456](https://github.com/bridgecrewio/checkov/pull/4456)
+
+### Documentation
+
+- **general:** update installation on Alpine docs - [#4474](https://github.com/bridgecrewio/checkov/pull/4474)
+
+## [2.3.7](https://github.com/bridgecrewio/checkov/compare/2.3.3...2.3.7) - 2023-02-13
+
+### Feature
+
+- **graph:** Add UT as an example of not-exists for the nested list. - [#4484](https://github.com/bridgecrewio/checkov/pull/4484)
+- **secrets:** Save secrets line number - [#4488](https://github.com/bridgecrewio/checkov/pull/4488)
+- **terraform:** AWS:check global DocDB cluster is encrypted - [#4405](https://github.com/bridgecrewio/checkov/pull/4405)
+- **terraform:** check msk nodes are private - [#4392](https://github.com/bridgecrewio/checkov/pull/4392)
+- **terraform:** support more json encoded objects as part of terraform resource and fix evaluation of true/false in json - [#4487](https://github.com/bridgecrewio/checkov/pull/4487)
+
+### Bug Fix
+
+- **ansible:** support nested blocks and empty module values - [#4479](https://github.com/bridgecrewio/checkov/pull/4479)
+- **cloudformation:** Updated AWS_CKV_7 to not require rotation on asymmetric keys - [#4476](https://github.com/bridgecrewio/checkov/pull/4476)
+
+## [2.3.3](https://github.com/bridgecrewio/checkov/compare/2.3.0...2.3.3) - 2023-02-09
+
+### Feature
+
+- **secrets:** limit multiline regex detector run - [#4453](https://github.com/bridgecrewio/checkov/pull/4453)
+- **terraform:** Add foreach_attrs to config objects + UTs - [#4463](https://github.com/bridgecrewio/checkov/pull/4463)
+- **terraform:** GCP: Ensure Basic role are not used at Org/Folder/Project level (CKV_GCP_115, CKV_GCP_116, CKV_GCP_117) - [#4390](https://github.com/bridgecrewio/checkov/pull/4390)
+
+### Bug Fix
+
+- **kustomize:** fix kustomize file path cli - [#4466](https://github.com/bridgecrewio/checkov/pull/4466)
+- **terraform:** Allow different type of value in BaseResourceValueCheck - [#4470](https://github.com/bridgecrewio/checkov/pull/4470)
+- **terraform:** deny statements with wildcards are valid - [#4440](https://github.com/bridgecrewio/checkov/pull/4440)
 
 ## [2.3.0](https://github.com/bridgecrewio/checkov/compare/2.2.356...2.3.0) - 2023-02-09
 
