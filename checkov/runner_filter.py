@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 import fnmatch
-import signal
 from collections import defaultdict
 from collections.abc import Iterable
 from typing import Any, Set, Optional, Union, List, TYPE_CHECKING, Dict, DefaultDict, cast
