@@ -33,9 +33,12 @@ class AbsNACLUnrestrictedIngress(BaseResourceCheck):
             if isinstance(ingress, list):
                 entry = ingress[0]
                 if isinstance(entry, list):
-                    ingress[0].sort(key=lambda x: x['rule_no'])
+                    entry = ingress[0]
+                    if entry[0].get('rule_no'):
+                        ingress[0].sort(key=lambda x: x.get('rule_no'))
                 else:
-                    ingress.sort(key=lambda x: x['rule_no'])
+                    if ingress[0].get('rule_no'):
+                        ingress.sort(key=lambda x: x.get('rule_no'))
 
             for rule in ingress:
                 rule_lst = rule
