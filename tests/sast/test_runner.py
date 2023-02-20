@@ -81,46 +81,44 @@ def get_generic_ast_mock():
 
 
 def get_raw_rule():
-    return {'id': 'tests.sast.checks.CKV_SAST_1', 'patterns': [{'pattern': 'set_port($ARG)'}, {
+    return {'id': 'checks.temp_parsed_rules.CKV_SAST_1', 'patterns': [{'pattern': 'set_port($ARG)'}, {
         'metavariable-comparison': {'metavariable': '$ARG', 'comparison': '$ARG < 1024'}}],
                 'message': 'module setting superuser port', 'languages': ['python'], 'severity': 'INFO',
-                'metadata': {'cwe': ['CWE-289: Authentication Bypass by Alternate Name'], 'name': 'superuser port',
-                             'category': 'security', 'technology': ['gorilla'], 'confidence': 'MEDIUM',
-                             'license': 'Commons Clause License Condition v1.0[LGPL-2.1-only]',
-                             'references': ['https://cwe.mitre.org/data/definitions/289.html'],
-                             'subcategory': ['audit'], 'impact': 'MEDIUM', 'likelihood': 'LOW'}}
+                'metadata': {'cwe': 'CWE-289: Authentication Bypass by Alternate Name', 'name': 'superuser port'}}
 
 
 def test_sast_runner_python():
     runner = Runner()
     source = os.path.join(pathlib.Path(__file__).parent.resolve(), 'source_code')
-    report = runner.run(source, runner_filter=RunnerFilter(framework=['sast_python']))
-    assert report.check_type == CheckType.SAST
-    assert len(report.failed_checks) == 1
-    assert report.failed_checks[0].check_id == 'CKV_SAST_1'
-    assert report.failed_checks[0].severity.name == 'LOW'
-    assert report.failed_checks[0].file_path == 'file.py'
-    assert report.failed_checks[0].check_name == 'superuser port'
-    assert report.failed_checks[0].code_block == [(2, 'set_port(443)\n')]
-    assert report.failed_checks[0].file_abs_path == os.path.join(source, 'file.py')
-    assert report.failed_checks[0].file_line_range == [2, 2]
-    assert report.failed_checks[0].check_result.get('result') == CheckResult.FAILED
+    reports = runner.run(source, runner_filter=RunnerFilter(framework=['sast_python']))
+    assert len(reports) == 1
+    assert reports[0].check_type == CheckType.SAST_PYTHON
+    python_report = reports[0]
+    assert len(python_report.failed_checks) == 1
+    assert python_report.failed_checks[0].check_id == 'CKV_SAST_1'
+    assert python_report.failed_checks[0].severity.name == 'LOW'
+    assert python_report.failed_checks[0].file_path == 'file.py'
+    assert python_report.failed_checks[0].check_name == 'Ensure superuser port is not set'
+    assert python_report.failed_checks[0].code_block == [(2, 'set_port(443)\n')]
+    assert python_report.failed_checks[0].file_abs_path == os.path.join(source, 'file.py')
+    assert python_report.failed_checks[0].file_line_range == [2, 2]
+    assert python_report.failed_checks[0].check_result.get('result') == CheckResult.FAILED
 
 
 def test_sast_runner_get_semgrep_output():
     runner = Runner()
     output_settings = OutputSettings(output_format=OutputFormat.JSON)
     output_handler = OutputHandler(output_settings)
-    checks_dir = os.path.join(pathlib.Path(__file__).parent.resolve(), 'checks')
+    temp_semgrep_rules_path = os.path.join(pathlib.Path(__file__).parent.resolve(), 'checks', 'temp_parsed_rules')
     source_dir = os.path.join(pathlib.Path(__file__).parent.resolve(), 'source_code')
-    output = runner._get_semgrep_output([source_dir], [checks_dir], output_handler)
+    output = runner._get_semgrep_output([source_dir], [temp_semgrep_rules_path], output_handler)
     raw_rule = get_raw_rule()
     rule = Rule(raw=raw_rule)
     assert output.matches[rule][0].match.location.path == f'{source_dir}/file.py'
     assert output.matches[rule][0].match.location.start.line == 2
     assert output.matches[rule][0].match.location.end.line == 2
     assert output.matches[rule][0].severity == RuleSeverity.INFO
-    assert output.matches[rule][0].rule_id == 'tests.sast.checks.CKV_SAST_1'
+    assert output.matches[rule][0].rule_id == 'checks.temp_parsed_rules.CKV_SAST_1'
 
 
 def test_sast_runner_create_report():
@@ -141,11 +139,11 @@ def test_sast_runner_create_report():
                       match_based_index=0,
                       match_formula_string='$ARG $ARG < 1024 set_port($ARG)',
                       is_ignored=False,
-                      message='module setting superuser port')
-    filtered_matches_by_rule = {rule: [match]}
+                      message='module setting superuser port',
+                      metadata=rule.metadata)
     runner = Runner()
-    report = runner._create_report(filtered_matches_by_rule)
-    assert report.check_type == CheckType.SAST
+    report = runner._create_report(SastLanguages.PYTHON.value, [match])
+    assert report.check_type == CheckType.SAST_PYTHON
     assert len(report.failed_checks) == 1
     assert report.failed_checks[0].check_id == 'CKV_SAST_1'
     assert report.failed_checks[0].severity.name == 'LOW'
@@ -169,35 +167,39 @@ def test_sast_runner():
     cur_dir = pathlib.Path(__file__).parent.resolve()
     source = os.path.join(cur_dir, 'source_code')
     external_dir_checks = os.path.join(cur_dir, 'external_checks')
-    report = runner.run(source, runner_filter=RunnerFilter(framework=['sast']), external_checks_dir=[external_dir_checks])
-    assert report.check_type == CheckType.SAST
-    assert len(report.failed_checks) == 3
-    assert report.failed_checks[0].check_id == 'CKV_SAST_1'
-    assert report.failed_checks[0].severity.name == 'LOW'
-    assert report.failed_checks[0].file_path == 'file.py'
-    assert report.failed_checks[0].check_name == 'superuser port'
-    assert report.failed_checks[0].code_block == [(2, 'set_port(443)\n')]
-    assert report.failed_checks[0].file_abs_path == os.path.join(source, 'file.py')
-    assert report.failed_checks[0].file_line_range == [2, 2]
-    assert report.failed_checks[0].check_result.get('result') == CheckResult.FAILED
+    reports = runner.run(source, runner_filter=RunnerFilter(framework=['sast']), external_checks_dir=[external_dir_checks])
+    assert len(reports) == 2
+    python_report = reports[0]
+    assert python_report.check_type == CheckType.SAST_PYTHON
+    assert len(python_report.failed_checks) == 1
+    assert python_report.failed_checks[0].check_id == 'CKV_SAST_1'
+    assert python_report.failed_checks[0].severity.name == 'LOW'
+    assert python_report.failed_checks[0].file_path == 'file.py'
+    assert python_report.failed_checks[0].check_name == 'Ensure superuser port is not set'
+    assert python_report.failed_checks[0].code_block == [(2, 'set_port(443)\n')]
+    assert python_report.failed_checks[0].file_abs_path == os.path.join(source, 'file.py')
+    assert python_report.failed_checks[0].file_line_range == [2, 2]
+    assert python_report.failed_checks[0].check_result.get('result') == CheckResult.FAILED
 
-    assert report.failed_checks[1].check_id == 'seam-log-injection'
-    assert report.failed_checks[1].severity.name == 'HIGH'
-    assert report.failed_checks[1].file_path == 'file.java'
-    assert report.failed_checks[1].check_name == 'seam log injection'
-    assert report.failed_checks[1].code_block == [(31, 'log.info("request: method="+httpRequest.getMethod()+", URL="+httpRequest.getRequestURI());\n')]
-    assert report.failed_checks[1].file_abs_path == os.path.join(source, 'file.java')
-    assert report.failed_checks[1].file_line_range == [31, 31]
-    assert report.failed_checks[1].check_result.get('result') == CheckResult.FAILED
+    java_report = reports[1]
+    assert len(java_report.failed_checks) == 2
+    assert java_report.failed_checks[0].check_id == 'seam-log-injection'
+    assert java_report.failed_checks[0].severity.name == 'HIGH'
+    assert java_report.failed_checks[0].file_path == 'file.java'
+    assert java_report.failed_checks[0].check_name == 'seam log injection'
+    assert java_report.failed_checks[0].code_block == [(31, 'log.info("request: method="+httpRequest.getMethod()+", URL="+httpRequest.getRequestURI());\n')]
+    assert java_report.failed_checks[0].file_abs_path == os.path.join(source, 'file.java')
+    assert java_report.failed_checks[0].file_line_range == [31, 31]
+    assert java_report.failed_checks[0].check_result.get('result') == CheckResult.FAILED
 
-    assert report.failed_checks[2].check_id == 'seam-log-injection'
-    assert report.failed_checks[2].severity.name == 'HIGH'
-    assert report.failed_checks[2].file_path == 'file.java'
-    assert report.failed_checks[2].check_name == 'seam log injection'
-    assert report.failed_checks[2].code_block == [(40, 'log.info("Current logged in user : " + user.getUsername());\n')]
-    assert report.failed_checks[2].file_abs_path == os.path.join(source, 'file.java')
-    assert report.failed_checks[2].file_line_range == [40, 40]
-    assert report.failed_checks[2].check_result.get('result') == CheckResult.FAILED
+    assert java_report.failed_checks[1].check_id == 'seam-log-injection'
+    assert java_report.failed_checks[1].severity.name == 'HIGH'
+    assert java_report.failed_checks[1].file_path == 'file.java'
+    assert java_report.failed_checks[1].check_name == 'seam log injection'
+    assert java_report.failed_checks[1].code_block == [(40, 'log.info("Current logged in user : " + user.getUsername());\n')]
+    assert java_report.failed_checks[1].file_abs_path == os.path.join(source, 'file.java')
+    assert java_report.failed_checks[1].file_line_range == [40, 40]
+    assert java_report.failed_checks[1].check_result.get('result') == CheckResult.FAILED
 
 
 def test_code_block_cut_ident():
