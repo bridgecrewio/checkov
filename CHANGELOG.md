@@ -1,6 +1,45 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.18...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.28...HEAD)
+
+## [2.3.28](https://github.com/bridgecrewio/checkov/compare/2.3.23...2.3.28) - 2023-02-19
+
+### Feature
+
+- **secrets:** add flag for scan secrets history - [#4513](https://github.com/bridgecrewio/checkov/pull/4513)
+- **terraform:** Used parentheses in key for foreach attributes but not count - [#4520](https://github.com/bridgecrewio/checkov/pull/4520)
+
+### Bug Fix
+
+- **gha:** fix output flag for usage in checkov-action - [#4517](https://github.com/bridgecrewio/checkov/pull/4517)
+- **terraform:** add datasource option for headers check - [#4496](https://github.com/bridgecrewio/checkov/pull/4496)
+- **terraform:** optimize check CKV2_AWS_60 - [#4512](https://github.com/bridgecrewio/checkov/pull/4512)
+
+### Platform
+
+- **general:** Use new enforcement categories (#4456) - [#4519](https://github.com/bridgecrewio/checkov/pull/4519)
+
+## [2.3.23](https://github.com/bridgecrewio/checkov/compare/2.3.22...2.3.23) - 2023-02-18
+
+### Feature
+
+- **ansible:** Add checks for the ansible builtin apt module - [#4500](https://github.com/bridgecrewio/checkov/pull/4500)
+
+### Bug Fix
+
+- **gha:** now looks for GHA on windows - [#4515](https://github.com/bridgecrewio/checkov/pull/4515)
+
+## [2.3.22](https://github.com/bridgecrewio/checkov/compare/2.3.18...2.3.22) - 2023-02-16
+
+### Feature
+
+- **sca:** adding registry-url to the cyclonedx output report - [#4511](https://github.com/bridgecrewio/checkov/pull/4511)
+- **secrets:**  Add capability to iterate over git history - [#4469](https://github.com/bridgecrewio/checkov/pull/4469)
+- **terraform:** Adding yaml based build time policies for corresponding PC run time policies - [#4425](https://github.com/bridgecrewio/checkov/pull/4425)
+
+### Bug Fix
+
+- **secrets:**  import git - [#4514](https://github.com/bridgecrewio/checkov/pull/4514)
 
 ## [2.3.18](https://github.com/bridgecrewio/checkov/compare/2.3.14...2.3.18) - 2023-02-15
 

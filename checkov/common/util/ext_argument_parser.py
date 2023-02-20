@@ -514,3 +514,9 @@ class ExtArgumentParser(configargparse.ArgumentParser):
                  "Notice: one entry can contain several variables, seperated with a comma. For example:"
                  "<resource_type>:<variable1>,<variable2> OR <variable1>,<variable2>"
         )
+        self.add(
+            "--scan-secrets-history",
+            action="store_true",
+            default=False,
+            help="will scan the history of commits for secrets"
+        )
