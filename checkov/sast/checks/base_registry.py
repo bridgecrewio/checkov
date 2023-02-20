@@ -8,6 +8,7 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.sast.checks.base_check import BaseSastCheck
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.runner_filter import RunnerFilter
+from checkov.sast.checks.checks_parser import SastCheckParser
 from checkov.sast.consts import SastLanguages
 from checkov.common.checks_infra.registry import CHECKS_POSSIBLE_ENDING
 
@@ -18,7 +19,9 @@ class Registry(BaseCheckRegistry):
         self.rules: List[str] = []
         self.checks_dir = checks_dir
         self.logger = logging.getLogger(__name__)
+        self.parser = SastCheckParser()
         self.runner_filter: Optional[RunnerFilter] = None
+        self.temp_semgrep_rules_path = os.path.join(self.checks_dir, 'temp_semgrep_rules.yaml')
 
     def extract_entity_details(self, entity: dict[str, Any]) -> tuple[str, str, dict[str, Any]]:
         # TODO
@@ -38,7 +41,7 @@ class Registry(BaseCheckRegistry):
     def _load_checks_from_dir(self, directory: str, sast_languages: Set[SastLanguages]) -> None:
         dir = os.path.expanduser(directory)
         self.logger.debug(f'Loading external checks from {dir}')
-        checks = set()
+        rules = {}  # constructed as be a dict of {rule_id: rule_object} to avoid duplications
         for root, d_names, f_names in os.walk(dir):
             self.logger.debug(f"Searching through {d_names} and {f_names}")
             for file in f_names:
@@ -47,18 +50,18 @@ class Registry(BaseCheckRegistry):
                     continue
                 with open(os.path.join(root, file), "r") as f:
                     try:
-                        rules = yaml.safe_load(f).get('rules', [])
+                        raw_check = yaml.safe_load(f)
+                        parsed_rule = self.parser.parse_raw_check_to_semgrep(raw_check)
                     except Exception:
                         logging.warning(f'cant parse rule file {file}')
                         continue
-                    for rule in rules:
-                        if self._should_skip_check(rule):
+                    if self._should_skip_check(parsed_rule):
+                        break
+                    for lang in parsed_rule.get('languages', []):
+                        if lang in [lan.value for lan in sast_languages]:
+                            rules[parsed_rule['id']] = parsed_rule
                             break
-                        for lang in rule.get('languages', []):
-                            if lang in [lan.value for lan in sast_languages]:
-                                checks.add(os.path.join(root, file))
-                                break
-        self.rules += list(checks)
+        self.rules += rules.values()
 
     @staticmethod
     def _get_check_from_rule(rule: Dict[str, Any]) -> Optional[BaseSastCheck]:
@@ -79,3 +82,23 @@ class Registry(BaseCheckRegistry):
         if self.runner_filter.should_run_check(check):
             return False
         return True
+
+
+    def create_temp_rules_file(self) -> None:
+        rules_obj = {'rules': self.rules}
+
+        def _str_presenter(dumper, data):
+            if len(data.splitlines()) > 1:  # check for multiline string
+                return dumper.represent_scalar('tag:yaml.org,2002:str', data, style='|')
+            return dumper.represent_scalar('tag:yaml.org,2002:str', data)
+
+        yaml.add_representer(str, _str_presenter)
+        yaml.representer.SafeRepresenter.add_representer(str, _str_presenter)
+
+        with open(self.temp_semgrep_rules_path, 'w') as tempfile:
+            yaml.safe_dump(rules_obj, tempfile)
+        logging.debug(f'created semgrep temporary rules file at: {self.temp_semgrep_rules_path}')
+
+    def delete_temp_rules_file(self) -> None:
+        os.remove(self.temp_semgrep_rules_path)
+        logging.debug('deleted semgrep temporary rules file')

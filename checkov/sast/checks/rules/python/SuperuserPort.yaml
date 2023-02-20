@@ -1,26 +1,18 @@
-rules:
-  - id: CKV_SAST_1
-    patterns:
-      - pattern: set_port($ARG)
-      - metavariable-comparison:
-          metavariable: $ARG
-          comparison: $ARG < 1024
-    message: module setting superuser port
-    languages:
-      - python
-    severity: INFO
-    metadata:
-      cwe:
-      - 'CWE-289: Authentication Bypass by Alternate Name'
-      name: 'superuser port'
-      category: security
-      technology:
-      - gorilla
-      confidence: MEDIUM
-      license: Commons Clause License Condition v1.0[LGPL-2.1-only]
-      references:
-      - https://cwe.mitre.org/data/definitions/289.html
-      subcategory:
-      - audit
-      impact: MEDIUM
-      likelihood: LOW
+metadata:
+  id: CKV_SAST_1
+  name: 'Ensure superuser port is not set'
+  guidelines: 'module setting superuser port'
+  category: 'sast'
+  cwe: 'CWE-289: Authentication Bypass by Alternate Name'
+  severity: 'LOW'
+scope:
+  languages:
+    - python
+definition:
+  - cond_type: "pattern"
+    operator: "equals"
+    value: "set_port($ARG)"
+  - cond_type: "variable"
+    variable: "$ARG"
+    operator: less_than
+    value: 1024
