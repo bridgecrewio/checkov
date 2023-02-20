@@ -4,11 +4,10 @@ import logging
 import os
 from typing import TYPE_CHECKING, Dict, Tuple
 from detect_secrets.core import scan
-from detect_secrets.core.potential_secret import PotentialSecret
-
 
 if TYPE_CHECKING:
     from detect_secrets import SecretsCollection
+    from detect_secrets.core.potential_secret import PotentialSecret
 
 os.environ["GIT_PYTHON_REFRESH"] = "quiet"
 try:
@@ -28,7 +27,7 @@ def get_commits_diff(root_folder: str) -> Dict[str, Dict[str, str]]:
     except Exception as e:
         logging.error(f"Folder {root_folder} is not a GIT project {e}")
         return commits_diff
-    commits = list(repo.iter_commits(repo.active_branch))
+    commits = list(repo.iter_commits(repo.active_branch, max_count=3))
     for previous_commit_idx in range(len(commits) - 1, 0, -1):
         current_commit_idx = previous_commit_idx - 1
         current_commit_hash = commits[current_commit_idx].hexsha
