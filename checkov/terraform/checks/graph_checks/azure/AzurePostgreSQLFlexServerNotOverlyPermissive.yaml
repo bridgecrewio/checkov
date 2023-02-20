@@ -1,6 +1,6 @@
 metadata:
   id: "CKV2_AZURE_26"
-  name: "Ensure Azure PostgreSQL Flexible server does not allow all traffic"
+  name: "Ensure Azure PostgreSQL Flexible server is not configured with overly permissive network access"
   category: "GENERAL_SECURITY"
 
 definition:
