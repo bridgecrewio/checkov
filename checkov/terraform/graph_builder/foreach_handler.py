@@ -241,10 +241,15 @@ class ForeachHandler(object):
     @staticmethod
     def _add_index_to_block_properties(block: TerraformBlock, idx: str | int) -> None:
         block_type, block_name = block.name.split('.')
-        block.id = f"{block.id}[{idx}]"
-        block.name = f"{block.name}[{idx}]"
+        # Note it is important to use `\"` inside the string,
+        # as the string `["` is the separator for `foreach` in terraform.
+        # In `count` it is just `[`
+        idx_with_separator = f'\"{idx}\"' if isinstance(idx, str) else f'{idx}'
+
+        block.id = f"{block.id}[{idx_with_separator}]"
+        block.name = f"{block.name}[{idx_with_separator}]"
         if block.config.get(block_type) and block.config.get(block_type, {}).get(block_name):
-            block.config[block_type][f"{block_name}[{idx}]"] = block.config[block_type].pop(block_name)
+            block.config[block_type][f"{block_name}[{idx_with_separator}]"] = block.config[block_type].pop(block_name)
 
     def _create_new_resources(self, block_index_to_statement: FOR_EACH_BLOCK_TYPE) -> None:
         for block_idx, statement in block_index_to_statement.items():

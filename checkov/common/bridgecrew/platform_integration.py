@@ -181,6 +181,9 @@ class BcPlatformIntegration:
         if request.status == 401:
             logging.error(f'Received 401 response from Prisma /login endpoint: {request.data.decode("utf8")}')
             raise BridgecrewAuthError()
+        elif request.status == 403:
+            logging.error('Received 403 (Forbidden) response from Prisma /login endpoint')
+            raise BridgecrewAuthError()
         token: str = json.loads(request.data.decode("utf8"))['token']
         return token
 
@@ -580,11 +583,14 @@ class BcPlatformIntegration:
         else:
             self.get_public_run_config()
 
+    def _get_run_config_query_params(self) -> str:
+        return f'module={"bc" if self.is_bc_token(self.bc_api_key) else "pc"}&enforcementv2=true'
+
     def get_run_config_url(self) -> str:
-        return f'{self.platform_run_config_url}?module={"bc" if self.is_bc_token(self.bc_api_key) else "pc"}'
+        return f'{self.platform_run_config_url}?{self._get_run_config_query_params()}'
 
     def get_run_config_url_backoff(self) -> str:
-        return f'{self.platform_run_config_url_backoff}?module={"bc" if self.is_bc_token(self.bc_api_key) else "pc"}'
+        return f'{self.platform_run_config_url_backoff}?{self._get_run_config_query_params()}'
 
     def get_customer_run_config(self) -> None:
         if self.skip_download is True:
