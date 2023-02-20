@@ -38,7 +38,7 @@ def create_report_license_record(
         file_abs_path: str,
         check_class: str,
         licenses_status: _LicenseStatus,
-        package_registry: str,
+        package: dict[str, Any],
         sca_details: SCADetails | None = None,
         severity: Severity | None = None
 ) -> Record:
@@ -61,7 +61,8 @@ def create_report_license_record(
     details = {
         "package_name": package_name,
         "package_version": package_version,
-        "package_registry": package_registry,
+        "package_registry": package.get("registry", ""),
+        "is_private_registry": package.get("isPrivateRegistry", False),
         "license": licenses_status["license"],
         "status": status,
         "policy": policy,
@@ -121,7 +122,7 @@ def create_report_cve_record(
         check_class: str,
         vulnerability_details: dict[str, Any],
         licenses: str,
-        package_registry: str,
+        package: dict[str, Any],
         root_package_version: str | None = None,
         root_package_name: str | None = None,
         root_package_fixed_version: str | None = None,
@@ -162,7 +163,8 @@ def create_report_cve_record(
         "severity": severity,
         "package_name": package_name,
         "package_version": package_version,
-        "package_registry": package_registry,
+        "package_registry": package.get("registry", ""),
+        "is_private_registry": package.get("isPrivateRegistry", False),
         "package_type": package_type,
         "link": vulnerability_details.get("link"),
         "cvss": vulnerability_details.get("cvss"),
@@ -233,7 +235,7 @@ def _add_to_report_licenses_statuses(
             file_abs_path=scanned_file_path,
             check_class=check_class or "",
             licenses_status=license_status,
-            package_registry=packages_map.get(package_alias, {}).get("registry", ""),
+            package=packages_map.get(package_alias, {}),
             sca_details=sca_details,
             severity=severity
         )
@@ -373,7 +375,7 @@ def add_cve_record_to_report(vulnerability_details: dict[str, Any], package_name
         check_class=check_class or "",
         vulnerability_details=vulnerability_details,
         licenses=format_licenses_to_string(licenses_per_package_map[package_alias]),
-        package_registry=packages_map.get(package_alias, {}).get("registry", ""),
+        package=packages_map.get(package_alias, {}),
         runner_filter=runner_filter,
         sca_details=sca_details,
         scan_data_format=scan_data_format,
@@ -440,7 +442,7 @@ def add_extra_resources_to_report(report: Report, scanned_file_path: str, rootle
                                   package: dict[str, Any], package_alias: str,
                                   licenses_per_package_map: dict[str, list[str]],
                                   sca_details: Optional[SCADetails]) -> None:
-    package_name, package_version, package_registry = package["name"], package["version"], package.get("registry", "")
+    package_name, package_version = package["name"], package["version"]
     report.extra_resources.add(
         ExtraResource(
             file_abs_path=scanned_file_path,
@@ -449,7 +451,8 @@ def add_extra_resources_to_report(report: Report, scanned_file_path: str, rootle
             vulnerability_details={
                 "package_name": package_name,
                 "package_version": package_version,
-                "package_registry": package_registry,
+                "package_registry": package.get("registry", ""),
+                "is_private_registry": package.get("isPrivateRegistry", False),
                 "licenses": format_licenses_to_string(
                     licenses_per_package_map[package_alias]),
                 "package_type": get_package_type(package_name, package_version, sca_details),
