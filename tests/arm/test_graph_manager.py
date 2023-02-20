@@ -36,7 +36,7 @@ def test_build_graph_from_definitions(graph_connector):
     assert len(local_graph.edges) == 0
 
     # resource name will change, when variable rendering is supported
-    container_idx = local_graph.vertices_by_path_and_name[(test_file, "[parameters('containerGroupName')]")]
+    container_idx = local_graph.vertices_by_path_and_id[(test_file, "Microsoft.ContainerInstance/containerGroups.[parameters('containerGroupName')]")]
     container = local_graph.vertices[container_idx]
 
     assert container.block_type == BlockType.RESOURCE

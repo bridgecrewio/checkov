@@ -20,7 +20,7 @@ class ArmGraphManager(GraphManager[ArmLocalGraph, "dict[str, dict[str, Any]]"]):
         self,
         source_dir: str,
         local_graph_class: type[ArmLocalGraph] = ArmLocalGraph,
-        render_variables: bool = True,
+        render_variables: bool = False,
         parsing_errors: dict[str, Exception] | None = None,
         download_external_modules: bool = False,
         excluded_paths: list[str] | None = None,

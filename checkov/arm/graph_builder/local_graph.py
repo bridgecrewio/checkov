@@ -8,7 +8,6 @@ from checkov.arm.graph_builder.graph_components.block_types import BlockType
 from checkov.arm.graph_builder.graph_components.blocks import ArmBlock
 from checkov.arm.utils import ArmElements
 from checkov.common.graph.graph_builder import CustomAttributes
-from checkov.common.graph.graph_builder.graph_components.blocks import Block
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.util.consts import START_LINE, END_LINE
 
@@ -16,12 +15,12 @@ if TYPE_CHECKING:
     from checkov.common.graph.graph_builder.local_graph import _Block
 
 
-class ArmLocalGraph(LocalGraph[Block]):
+class ArmLocalGraph(LocalGraph[ArmBlock]):
     def __init__(self, definitions: dict[str, dict[str, Any]]) -> None:
         super().__init__()
-        self.vertices: list[Block] = []
+        self.vertices: list[ArmBlock] = []
         self.definitions = definitions
-        self.vertices_by_path_and_name: dict[tuple[str, str], int] = {}
+        self.vertices_by_path_and_id: dict[tuple[str, str], int] = {}
 
     def build_graph(self, render_variables: bool = False) -> None:
         self._create_vertices()
@@ -38,10 +37,7 @@ class ArmLocalGraph(LocalGraph[Block]):
         for i, vertex in enumerate(self.vertices):
             self.vertices_by_block_type[vertex.block_type].append(i)
             self.vertices_block_name_map[vertex.block_type][vertex.name].append(i)
-            self.vertices_by_path_and_name[(vertex.path, vertex.name)] = i
-
-            self.in_edges[i] = []
-            self.out_edges[i] = []
+            self.vertices_by_path_and_id[(vertex.path, vertex.id)] = i
 
     def _create_parameter_vertices(self, file_path: str, parameters: dict[str, dict[str, Any]] | None) -> None:
         if not parameters:
