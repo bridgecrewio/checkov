@@ -101,50 +101,6 @@ def get_added_and_removed_commit_hash(
 
 def set_secret_map(file_results: List[PotentialSecret], secret_map: Dict[str, List[EnrichedPotentialSecret]],
                    file_name: str, commit_hash: str) -> None:
-    equal_secret_in_commit: Dict[str, List[str]] = defaultdict(List[str])
-    # the first run is to find if secret was moved
-    for secret in file_results:
-        secret_key = f'{secret.filename}_{secret.secret_hash}_{secret.type.replace(" ", "-")}'
-        equal_secret_in_commit.setdefault(secret_key, [])
-        equal_secret_in_commit[secret_key].append('added' if secret.is_added else 'removed')
-
-    for secret in file_results:
-        secret_key = f'{secret.filename}_{secret.secret_hash}_{secret.type.replace(" ", "-")}'
-        # if a secret is added and removed it means it moved.
-        if not all(value in equal_secret_in_commit[secret_key] for value in ['added', 'removed']):
-            if secret.is_added:
-                if secret_key not in secret_map:
-                    secret_map.setdefault(secret_key, [])
-                    secret_map[secret_key].append({
-                        'added_commit_hash': commit_hash,
-                        'removed_commit_hash': '',
-                        'potential_secret': secret
-                    })
-                else:
-                    all_removed = all(
-                        potential_secret.get('removed_commit_hash') for potential_secret in secret_map[secret_key])
-                    # Update secret map with the new potential secret
-                    if all_removed:
-                        secret_map[secret_key][0].update({'potential_secret': secret, 'removed_commit_hash': ''})
-                    else:
-                        secret_map[secret_key].append(
-                            {'added_commit_hash': commit_hash, 'removed_commit_hash': '', 'potential_secret': secret})
-
-
-            if secret.is_removed:
-                try:
-                    for secret_in_file in secret_map[secret_key]:
-                        # compared by filename, secret_hash, and type
-                        if secret.__eq__(secret_in_file):
-                            if secret_in_file['potential_secret'].is_added:
-                                secret_in_file['removed_commit_hash'] = commit_hash
-                                secret_in_file['potential_secret'] = secret
-                                continue
-                except Exception as e:
-                    logging.error(f"Added secret commit not fount for secret in file {file_name}. {e}")
-
-def set_secret_map(file_results: List[PotentialSecret], secret_map: Dict[str, List[EnrichedPotentialSecret]],
-                   file_name: str, commit_hash: str) -> None:
     # First find if secret was moved in the file
     equal_secret_in_commit: Dict[str, List[str]] = defaultdict(list)
     for secret in file_results:
@@ -157,14 +113,15 @@ def set_secret_map(file_results: List[PotentialSecret], secret_map: Dict[str, Li
             if secret.is_added:
                 if secret_key not in secret_map:
                     secret_map[secret_key] = []
-                all_removed = all(
-                    potential_secret.get('removed_commit_hash') for potential_secret in secret_map[secret_key])
-                # Update secret map with the new potential secret
-                if all_removed:
-                    secret_map[secret_key][0].update({'potential_secret': secret, 'removed_commit_hash': ''})
                 else:
-                    secret_map[secret_key].append(
-                        {'added_commit_hash': commit_hash, 'removed_commit_hash': '', 'potential_secret': secret})
+                    all_removed = all(
+                        potential_secret.get('removed_commit_hash') for potential_secret in secret_map[secret_key])
+                    # Update secret map with the new potential secret
+                    if all_removed:
+                        secret_map[secret_key][0].update({'potential_secret': secret, 'removed_commit_hash': ''})
+                        continue
+                secret_map[secret_key].append(
+                    {'added_commit_hash': commit_hash, 'removed_commit_hash': '', 'potential_secret': secret})
 
             if secret.is_removed:
                 # Try to find the corresponding added secret in the git history secret map
