@@ -12,6 +12,7 @@ if TYPE_CHECKING:
 os.environ["GIT_PYTHON_REFRESH"] = "quiet"
 try:
     import git
+
     git_import_error = None
 except ImportError as e:
     git_import_error = e
