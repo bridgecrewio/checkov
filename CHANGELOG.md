@@ -1,6 +1,23 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.23...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.28...HEAD)
+
+## [2.3.28](https://github.com/bridgecrewio/checkov/compare/2.3.23...2.3.28) - 2023-02-19
+
+### Feature
+
+- **secrets:** add flag for scan secrets history - [#4513](https://github.com/bridgecrewio/checkov/pull/4513)
+- **terraform:** Used parentheses in key for foreach attributes but not count - [#4520](https://github.com/bridgecrewio/checkov/pull/4520)
+
+### Bug Fix
+
+- **gha:** fix output flag for usage in checkov-action - [#4517](https://github.com/bridgecrewio/checkov/pull/4517)
+- **terraform:** add datasource option for headers check - [#4496](https://github.com/bridgecrewio/checkov/pull/4496)
+- **terraform:** optimize check CKV2_AWS_60 - [#4512](https://github.com/bridgecrewio/checkov/pull/4512)
+
+### Platform
+
+- **general:** Use new enforcement categories (#4456) - [#4519](https://github.com/bridgecrewio/checkov/pull/4519)
 
 ## [2.3.23](https://github.com/bridgecrewio/checkov/compare/2.3.22...2.3.23) - 2023-02-18
 
