@@ -171,7 +171,7 @@ def _prepare_resource_block(
         name_from_address = resource_address.split("." + resource["name"])[1]
         if name_from_address:
             resource_block[resource["type"]][name_from_address] = resource_conf
-        else:    
+        else:
             resource_block[resource["type"]][resource.get("name", "default")] = resource_conf
         prepared = True
     return resource_block, prepared
