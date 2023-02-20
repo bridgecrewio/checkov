@@ -1,4 +1,5 @@
 from __future__ import annotations
+import itertools
 
 import logging
 from dataclasses import dataclass
@@ -10,7 +11,8 @@ from checkov.common.typing import _CheckResult
 from checkov.runner_filter import RunnerFilter
 from checkov.common.output.record import Record
 from checkov.sast.checks.registry import registry
-from checkov.sast.consts import SastLanguages, SUPPORT_FILE_EXT, SEMGREP_SEVERITY_TO_CHECKOV_SEVERITY
+from checkov.sast.consts import SastLanguages, SUPPORT_FILE_EXT, SEMGREP_SEVERITY_TO_CHECKOV_SEVERITY, \
+    FILE_EXT_TO_SAST_LANG
 from semgrep.semgrep_main import main as run_semgrep
 from semgrep.output import OutputSettings, OutputHandler
 from semgrep.constants import OutputFormat, RuleSeverity, EngineType, DEFAULT_TIMEOUT
@@ -83,14 +85,13 @@ class Runner():
             targets = files
 
         semgrep_output = Runner._get_semgrep_output(targets=targets, config=config, output_handler=output_handler)
-        semgrep_results_by_language = {
-            lang.value:
-                [match[0][0] for match in zip(semgrep_output.matches.values()) if
-                 (match[0] and match[0][0].path.suffix.lstrip('.') in SUPPORT_FILE_EXT[lang])]
-            for lang in SastLanguages
-        }
+        semgrep_results_by_language = {}
+        for matches in semgrep_output.matches.values():
+            for rule_match in matches:
+                match_lang = FILE_EXT_TO_SAST_LANG.get(rule_match.path.suffix.lstrip('.'))
+                semgrep_results_by_language.setdefault(match_lang.value, []).append(rule_match)
 
-        # registry.delete_temp_rules_file()
+        registry.delete_temp_rules_file()
 
         reports = []
         for language, results in semgrep_results_by_language.items():

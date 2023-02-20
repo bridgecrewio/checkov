@@ -1,7 +1,7 @@
 metadata:
   id: CKV_SAST_1
   name: 'superuser port'
-  severity: INFO
+  severity: LOW
   cwe: 'CWE-289: Authentication Bypass by Alternate Name'
   category: sast
   guidelines: module setting superuser port
