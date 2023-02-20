@@ -51,7 +51,7 @@ class RunnerFilter(object):
             repo_root_for_plan_enrichment: Optional[List[str]] = None,
             resource_attr_to_omit: Optional[Dict[str, Set[str]]] = None,
             enable_git_history_secret_scan: bool = False,
-            git_history_timeout: str = None
+            git_history_timeout: str = '12h'
     ) -> None:
 
         checks = convert_csv_string_arg_to_list(checks)
