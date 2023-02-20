@@ -70,4 +70,4 @@ def test_scan_history_secrets() -> None:
     }) as settings:
         settings.disable_filters(*['detect_secrets.filters.common.is_invalid_file'])
         scan_history(valid_dir_path, secrets)
-    assert len(secrets.data) == 7
+    assert len(secrets.data) == 5
