@@ -41,7 +41,7 @@ def test_scan_git_history() -> None:
     runner = Runner()
     report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                         runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
-    assert len(report.failed_checks) == 6
+    assert len(report.failed_checks) == 3
     assert len(report.parsing_errors) == 0
     assert len(report.passed_checks) == 0
     assert len(report.parsing_errors) == 0
@@ -71,3 +71,21 @@ def test_scan_history_secrets() -> None:
         settings.disable_filters(*['detect_secrets.filters.common.is_invalid_file'])
         scan_history(valid_dir_path, secrets)
     assert len(secrets.data) == 5
+
+
+def test_scan_git_history_merge_added_removed() -> None:
+    """
+    add, move, remove, add, move = secret with the first commit for add and not removed commit
+    """
+    valid_dir_path = "/Users/lshindelman/development/test2"
+
+    runner = Runner()
+    report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
+                        runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
+    assert len(report.failed_checks) == 1
+    assert len(report.parsing_errors) == 0
+    assert len(report.passed_checks) == 0
+    assert len(report.parsing_errors) == 0
+    assert len(report.skipped_checks) == 0
+    for failed_check in report.failed_checks:
+        assert failed_check.added_commit_hash or failed_check.removed_commit_hash
