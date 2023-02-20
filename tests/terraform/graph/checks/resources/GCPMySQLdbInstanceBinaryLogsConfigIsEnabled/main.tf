@@ -8,8 +8,6 @@ resource "google_sql_database_instance" "pass_1" {
 
   deletion_protection = false
   settings {
-    # Second-generation instance tiers are based on the machine
-    # type. See argument reference below.
     tier = "db-custom-2-5120"
     }
       root_password = "pud123"
@@ -26,7 +24,7 @@ resource "google_sql_database_instance" "pass_2" {
   settings {
     tier              = "db-custom-2-5120"
     availability_type = "REGIONAL"
-    disk_size         = 10  # 10 GB is the smallest disk size
+    disk_size         = 10 
     ip_configuration {
       ipv4_enabled    = false
       private_network = google_compute_network.dep-vpc-j1-2-rlp-87327.self_link
@@ -71,8 +69,6 @@ resource "google_sql_database_instance" "fail_2" {
 
   deletion_protection = false
   settings {
-    # Second-generation instance tiers are based on the machine
-    # type. See argument reference below.
     tier = "db-custom-2-5120"
     ip_configuration {
       authorized_networks {
