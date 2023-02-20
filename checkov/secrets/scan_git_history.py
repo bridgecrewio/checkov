@@ -74,4 +74,3 @@ def scan_history(root_folder: str, secrets: SecretsCollection, timeout: int) -> 
     if to_ctx_mgr.state == to_ctx_mgr.TIMED_OUT:
         logging.info(f"timeout reached ({timeout}), stopping scan.")
     # else: everything was OK
-
