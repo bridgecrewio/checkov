@@ -135,8 +135,7 @@ class RunnerFilter(object):
             self.git_history_timeout = convert_to_seconds(git_history_timeout)
 
     @staticmethod
-    def _load_resource_attr_to_omit(resource_attr_to_omit_input: Optional[Dict[str, Set[str]]]) -> DefaultDict[
-        str, Set[str]]:
+    def _load_resource_attr_to_omit(resource_attr_to_omit_input: Optional[Dict[str, Set[str]]]) -> DefaultDict[str, Set[str]]:
         resource_attributes_to_omit: DefaultDict[str, Set[str]] = defaultdict(lambda: set())
         # In order to create new object (and not a reference to the given one)
         if resource_attr_to_omit_input:
@@ -147,23 +146,18 @@ class RunnerFilter(object):
         self.enforcement_rule_configs = {}
         for report_type, code_category in CodeCategoryMapping.items():
             if isinstance(code_category, list):
-                self.enforcement_rule_configs[report_type] = {c: enforcement_rule_configs.get(c).soft_fail_threshold for
-                                                              c in
-                                                              code_category}  # type:ignore[union-attr] # will not be None
+                self.enforcement_rule_configs[report_type] = {c: enforcement_rule_configs.get(c).soft_fail_threshold for c in code_category}  # type:ignore[union-attr] # will not be None
             else:
                 config = enforcement_rule_configs.get(code_category)
                 if not config:
-                    raise Exception(
-                        f'Could not find an enforcement rule config for category {code_category} (runner: {report_type})')
+                    raise Exception(f'Could not find an enforcement rule config for category {code_category} (runner: {report_type})')
                 self.enforcement_rule_configs[report_type] = config.soft_fail_threshold
 
     def extract_enforcement_rule_threshold(self, check_id: str, report_type: str) -> Severity:
         if 'sca_' in report_type and '_LIC_' in check_id:
-            return cast("dict[CodeCategoryType, Severity]", self.enforcement_rule_configs[report_type])[
-                CodeCategoryType.LICENSES]
+            return cast("dict[CodeCategoryType, Severity]", self.enforcement_rule_configs[report_type])[CodeCategoryType.LICENSES]
         elif 'sca_' in report_type:  # vulnerability
-            return cast("dict[CodeCategoryType, Severity]", self.enforcement_rule_configs[report_type])[
-                CodeCategoryType.VULNERABILITIES]
+            return cast("dict[CodeCategoryType, Severity]", self.enforcement_rule_configs[report_type])[CodeCategoryType.VULNERABILITIES]
         else:
             return cast(Severity, self.enforcement_rule_configs[report_type])
 
@@ -198,8 +192,7 @@ class RunnerFilter(object):
         else:
             if self.use_enforcement_rules:
                 # this is a warning for us (but there is nothing the user can do about it)
-                logging.debug(
-                    f'Use enforcement rules is true, but check {check_id} was not passed to the runner filter with a report type')
+                logging.debug(f'Use enforcement rules is true, but check {check_id} was not passed to the runner filter with a report type')
             check_threshold = self.check_threshold
             skip_check_threshold = self.skip_check_threshold
 
@@ -211,10 +204,10 @@ class RunnerFilter(object):
         # True if this check is present in the allow list, or if there is no allow list
         # this is not necessarily the return value (need to apply other filters)
         should_run_check = (
-                run_severity or
-                explicit_run or
-                implicit_run or
-                (is_external and self.all_external)
+            run_severity or
+            explicit_run or
+            implicit_run or
+            (is_external and self.all_external)
         )
 
         if not should_run_check:
@@ -231,14 +224,13 @@ class RunnerFilter(object):
         explicit_skip = self.skip_checks and self.check_matches(check_id, bc_check_id, self.skip_checks)
         regex_match = self._match_regex_pattern(check_id, file_origin_paths, root_folder)
         should_skip_check = (
-                skip_severity or
-                explicit_skip or
-                regex_match or
-                (not bc_check_id and not self.include_all_checkov_policies and not is_external and not explicit_run) or
-                (bc_check_id in self.suppressed_policies and bc_check_id not in self.bc_cloned_checks)
+            skip_severity or
+            explicit_skip or
+            regex_match or
+            (not bc_check_id and not self.include_all_checkov_policies and not is_external and not explicit_run) or
+            (bc_check_id in self.suppressed_policies and bc_check_id not in self.bc_cloned_checks)
         )
-        logging.debug(
-            f'skip_severity = {skip_severity}, explicit_skip = {explicit_skip}, regex_match = {regex_match}, suppressed_policies: {self.suppressed_policies}')
+        logging.debug(f'skip_severity = {skip_severity}, explicit_skip = {explicit_skip}, regex_match = {regex_match}, suppressed_policies: {self.suppressed_policies}')
         logging.debug(
             f'bc_check_id = {bc_check_id}, include_all_checkov_policies = {self.include_all_checkov_policies}, is_external = {is_external}, explicit_run: {explicit_run}')
 
@@ -364,6 +356,5 @@ class RunnerFilter(object):
         return runner_filter
 
     def set_suppressed_policies(self, policy_level_suppressions: List[str]) -> None:
-        logging.debug(
-            f"Received the following policy-level suppressions, that will be skipped from running: {policy_level_suppressions}")
+        logging.debug(f"Received the following policy-level suppressions, that will be skipped from running: {policy_level_suppressions}")
         self.suppressed_policies = policy_level_suppressions
