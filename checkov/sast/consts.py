@@ -74,6 +74,12 @@ SUPPORT_FILE_EXT = {
     SastLanguages.JAVASCRIPT: ['js']
 }
 
+FILE_EXT_TO_SAST_LANG = {
+    'py': SastLanguages.PYTHON,
+    'java': SastLanguages.JAVA,
+    'js': SastLanguages.JAVASCRIPT
+}
+
 COMPARISON_VALUES = [
     Operators.EQUALS,
     Operators.NOT_EQUALS,
