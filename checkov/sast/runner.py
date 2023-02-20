@@ -10,7 +10,7 @@ from checkov.common.typing import _CheckResult
 from checkov.runner_filter import RunnerFilter
 from checkov.common.output.record import Record
 from checkov.sast.checks.registry import registry
-from checkov.sast.consts import SastLanguages, SUPPORT_FILE_EXT
+from checkov.sast.consts import SastLanguages, SUPPORT_FILE_EXT, SEMGREP_SEVERITY_TO_CHECKOV_SEVERITY
 from semgrep.semgrep_main import main as run_semgrep
 from semgrep.output import OutputSettings, OutputHandler
 from semgrep.constants import OutputFormat, RuleSeverity, EngineType, DEFAULT_TIMEOUT
@@ -19,6 +19,7 @@ from typing import Collection, List, Set, Dict, Tuple, Optional, Any, TYPE_CHECK
 from io import StringIO
 from pathlib import Path
 
+from checkov.sast.record import SastRecord
 
 if TYPE_CHECKING:
     from semgrep.rule_match import RuleMatchMap, RuleMatch
@@ -30,13 +31,6 @@ if TYPE_CHECKING:
 
 
 logger = logging.getLogger(__name__)
-
-
-SEMGREP_SEVERITY_TO_CHECKOV_SEVERITY = {
-    RuleSeverity.ERROR: 'HIGH',
-    RuleSeverity.WARNING: 'MEDIUM',
-    RuleSeverity.INFO: 'LOW',
-}
 
 
 @dataclass
@@ -63,10 +57,10 @@ class Runner():
         return False
 
     def run(self, root_folder: Optional[str], external_checks_dir: Optional[List[str]] = None, files: Optional[List[str]] = None,
-            runner_filter: Optional[RunnerFilter] = None, collect_skip_comments: bool = True) -> Report:
+            runner_filter: Optional[RunnerFilter] = None, collect_skip_comments: bool = True) -> list[Report]:
         if not runner_filter:
             logger.warning('no runner filter')
-            return Report(self.check_type)
+            return [Report(self.check_type)]
 
         StringIO()
         output_settings = OutputSettings(output_format=OutputFormat.JSON)
@@ -77,19 +71,33 @@ class Runner():
         if external_checks_dir:
             for external_checks in external_checks_dir:
                 registry.load_external_rules(external_checks, runner_filter.sast_languages)
+        registry.create_temp_rules_file()
+        config = [registry.temp_semgrep_rules_path]
+        if not config:
+            logger.warning('no valid checks')
+            return [Report(self.check_type)]
 
         if root_folder:
             targets = [root_folder]
         if files:
             targets = files
-        config = registry.rules
-        if not config:
-            logger.warning('no valid checks')
-            return Report(self.check_type)
 
         semgrep_output = Runner._get_semgrep_output(targets=targets, config=config, output_handler=output_handler)
-        report = self._create_report(semgrep_output.matches)
-        return report
+        semgrep_results_by_language = {
+            lang.value:
+                [match[0][0] for match in zip(semgrep_output.matches.values()) if
+                 (match[0] and match[0][0].path.suffix.lstrip('.') in SUPPORT_FILE_EXT[lang])]
+            for lang in SastLanguages
+        }
+
+        # registry.delete_temp_rules_file()
+
+        reports = []
+        for language, results in semgrep_results_by_language.items():
+            if results:
+                reports.append(self._create_report(language, results))
+
+        return reports
 
     @staticmethod
     def _get_semgrep_output(targets: List[str], config: List[str], output_handler: OutputHandler) -> SemgrepOutput:
@@ -108,24 +116,25 @@ class Runner():
                                        output_extra, shown_severities, target_manager_lockfile_scan_info)
         return semgrep_output
 
-    def _create_report(self, filtered_matches_by_rule: Dict[Rule, List[RuleMatch]]) -> Report:
-        report = Report(self.check_type)
-        for rule, matches in filtered_matches_by_rule.items():
-            for match in matches:
-                check_id = rule.id.split('.')[-1]
-                check_name = rule.metadata.get('name', '')
-                code_block = Runner._get_code_block(match.lines, match.start.line)
-                file_abs_path = match.match.location.path
-                file_path = file_abs_path.split('/')[-1]
-                severity = get_severity(SEMGREP_SEVERITY_TO_CHECKOV_SEVERITY.get(rule.severity))
-                file_line_range = [match.start.line, match.end.line]
-                check_result = _CheckResult(result=CheckResult.FAILED)
+    def _create_report(self, lang: SastLanguages, semgrep_matches: List[RuleMatch]) -> Report:
+        report = Report(f'{self.check_type}_{lang}')
+        for match in semgrep_matches:
+            check_id = match.rule_id.split('.')[-1]
+            check_name = match.metadata.get('name', '')
+            check_cwe = match.metadata.get('cwe')
+            check_owasp = match.metadata.get('owasp')
+            code_block = Runner._get_code_block(match.lines, match.start.line)
+            file_abs_path = match.match.location.path
+            file_path = file_abs_path.split('/')[-1]
+            severity = get_severity(SEMGREP_SEVERITY_TO_CHECKOV_SEVERITY.get(match.severity))
+            file_line_range = [match.start.line, match.end.line]
+            check_result = _CheckResult(result=CheckResult.FAILED)
 
-                record = Record(check_id=check_id, check_name=check_name, resource="", evaluations={},
-                                check_class="", check_result=check_result, code_block=code_block,
-                                file_path=file_path, file_line_range=file_line_range,
-                                file_abs_path=file_abs_path, severity=severity)
-                report.add_record(record)
+            record = SastRecord(check_id=check_id, check_name=check_name, resource="", evaluations={},
+                            check_class="", check_result=check_result, code_block=code_block,
+                            file_path=file_path, file_line_range=file_line_range,
+                            file_abs_path=file_abs_path, severity=severity, cwe=check_cwe, owasp=check_owasp)
+            report.add_record(record)
         return report
 
     @staticmethod
