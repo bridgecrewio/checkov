@@ -57,7 +57,7 @@ class TestYamlPolicies(TestYamlPoliciesBase):
         self.assertCountEqual(expected_evaluated_keys, evaluated_keys_results)
 
     def create_report_from_graph_checks_results(self, checks_results, check):
-        report = Report(CheckType.BICEP)
+        report = Report(CheckType.ARM)
         first_results_key = list(checks_results.keys())[0]
         for check_result in checks_results[first_results_key]:
             entity = check_result["entity"]

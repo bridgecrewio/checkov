@@ -143,7 +143,7 @@ class Runner(BaseRunner[ArmGraphManager]):
                                         if isinstance(new_resource, dict):
                                             new_resource["parent_name"] = resource.get("name", "")
                                             new_resource["parent_type"] = resource.get("type", "")
-                                            self.definitions[arm_file]["resources"].append(new_resource)
+                                            self.definitions[arm_file][ArmElements.RESOURCES].append(new_resource)
 
                     for resource in self.definitions[arm_file][ArmElements.RESOURCES]:
                         resource_id = arm_context_parser.extract_arm_resource_id(resource)
