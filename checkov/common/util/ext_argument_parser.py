@@ -526,4 +526,3 @@ class ExtArgumentParser(configargparse.ArgumentParser):
             default='12h',
             help="maximum time to stop the scan "
         )
-

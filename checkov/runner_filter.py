@@ -358,4 +358,3 @@ class RunnerFilter(object):
     def set_suppressed_policies(self, policy_level_suppressions: List[str]) -> None:
         logging.debug(f"Received the following policy-level suppressions, that will be skipped from running: {policy_level_suppressions}")
         self.suppressed_policies = policy_level_suppressions
-
