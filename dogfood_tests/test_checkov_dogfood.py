@@ -54,6 +54,7 @@ def test_all_frameworks_are_tested() -> None:
         CheckType.SAST,
         CheckType.SAST_JAVA,
         CheckType.SAST_PYTHON,
+        CheckType.SAST_JAVASCRIPT,
         CheckType.SECRETS,
         CheckType.SERVERLESS,
         CheckType.TERRAFORM,
