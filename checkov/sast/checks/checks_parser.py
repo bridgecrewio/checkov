@@ -62,40 +62,33 @@ class SastCheckParser:
         conf = {}
         if len(definitions) > 1:
             conf[SemgrepAttribute.PATTERNS.value] = self.get_definitions_list_items(definitions)
-        else:
-            for definition in definitions:
-                if definition.get(BqlConditionType.OR.value):
-                    conf[SemgrepAttribute.PATTERN_EITHER.value] = self.get_definitions_list_items(
-                        definition[BqlConditionType.OR.value])
-                elif definition.get(BqlConditionType.AND.value):
-                    conf[SemgrepAttribute.PATTERNS.value] = self.get_definitions_list_items(
-                        definition[BqlConditionType.AND.value])
-                else:
-                    conf[SemgrepAttribute.PATTERNS.value] = self.get_definitions_list_items(definitions)
-        return conf
-
-    def get_definitions_list_items(self, definitions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        conf = []
-        for definition in definitions:
-            # handle nested OR / AND definitions
+        else:  # since definitions has only one value, we check only definitions[0]
+            definition = definitions[0]
+            if not isinstance(definition, dict):
+                raise TypeError(f'bad definition type, got {type(definition)} instead of dict')
             if definition.get(BqlConditionType.OR.value):
-                conf.append({SemgrepAttribute.PATTERN_EITHER.value: self.get_definitions_list_items(
-                    definition[BqlConditionType.OR.value])})
+                conf[SemgrepAttribute.PATTERN_EITHER.value] = self.get_definitions_list_items(
+                    definition[BqlConditionType.OR.value])
             elif definition.get(BqlConditionType.AND.value):
-                conf.append({SemgrepAttribute.PATTERNS.value: self.get_definitions_list_items(
-                    definition[BqlConditionType.AND.value])})
-
+                conf[SemgrepAttribute.PATTERNS.value] = self.get_definitions_list_items(
+                    definition[BqlConditionType.AND.value])
             else:
                 # handle a single definition
                 cond_type = definition.get('cond_type', '')
+                if not cond_type:
+                    raise AttributeError('BQL policy is missing a condition type')
                 operator = definition.get('operator', '')
+                if not operator:
+                    raise AttributeError(f'BQL policy condition type: {cond_type} is missing an operator')
                 definition_value = definition.get('value')
+                if not definition_value:
+                    raise AttributeError(f'BQL policy condition type: {cond_type} is missing a definition value')
 
                 if cond_type == BqlConditionType.PATTERN:
                     semgrep_attr = PATTERN_OPERATOR_TO_SEMGREP_ATTR.get(operator, '')
                     if not semgrep_attr:
                         raise AttributeError(f'BQL policy pattern condition contains an unknown operator: {operator}')
-                    conf.append({semgrep_attr: definition_value})
+                    return {semgrep_attr: definition_value}
 
                 elif cond_type == BqlConditionType.VARIABLE:
                     metavariable_condition_object = {}
@@ -119,12 +112,26 @@ class SastCheckParser:
                         metavariable_condition_object[
                             SemgrepAttribute.COMPARISON.value] = f'{metavariable} {COMPARISON_VALUE_TO_SYMBOL[operator]} {definition_value}'
 
-                    conf.append({metavariable_condition_key: metavariable_condition_object})
+                    return {metavariable_condition_key: metavariable_condition_object}
 
                 elif cond_type == BqlConditionType.FILTER:
                     semgrep_attr = FILTER_OPERATOR_TO_SEMGREP_ATTR.get(operator)
                     if not semgrep_attr:
                         raise AttributeError(f'BQL filter condition contains an unknown operator: {operator}')
-                    conf.append({semgrep_attr: definition_value})
+                    return {semgrep_attr: definition_value}
+
+        return conf
+
+    def get_definitions_list_items(self, definitions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        conf = []
+        for definition in definitions:
+            if definition.get(BqlConditionType.OR.value):
+                conf.append({SemgrepAttribute.PATTERN_EITHER.value: self.get_definitions_list_items(
+                    definition[BqlConditionType.OR.value])})
+            elif definition.get(BqlConditionType.AND.value):
+                conf.append({SemgrepAttribute.PATTERNS.value: self.get_definitions_list_items(
+                    definition[BqlConditionType.AND.value])})
+            else:
+                conf.append(self.parse_definition(definition))
 
         return conf
