@@ -128,9 +128,7 @@ class RunnerFilter(object):
         self.resource_attr_to_omit: DefaultDict[str, Set[str]] = RunnerFilter._load_resource_attr_to_omit(
             resource_attr_to_omit
         )
-        # TODO modify the output for git_history secret and remove the rewrite of enable_git_history_secret_scan
-        # self.enable_git_history_secret_scan: bool = enable_git_history_secret_scan
-        self.enable_git_history_secret_scan: bool = False
+        self.enable_git_history_secret_scan: bool = enable_git_history_secret_scan
 
     @staticmethod
     def _load_resource_attr_to_omit(resource_attr_to_omit_input: Optional[Dict[str, Set[str]]]) -> DefaultDict[str, Set[str]]:
