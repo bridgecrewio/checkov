@@ -30,4 +30,4 @@ class VerifySecretsResult(Enum):
         return self.value
 
 
-GIT_HISTORY_SECRET_NOT_BEEN_REMOVED = 'not-removed'
+GIT_HISTORY_NOT_BEEN_REMOVED = 'not-removed'

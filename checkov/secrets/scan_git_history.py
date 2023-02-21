@@ -6,7 +6,7 @@ from collections import defaultdict
 from typing import TYPE_CHECKING, Dict, Tuple, List, TypedDict
 from detect_secrets.core import scan
 
-from checkov.secrets.consts import GIT_HISTORY_SECRET_NOT_BEEN_REMOVED
+from checkov.secrets.consts import GIT_HISTORY_NOT_BEEN_REMOVED
 
 if TYPE_CHECKING:
     from detect_secrets import SecretsCollection
@@ -78,7 +78,7 @@ def scan_history(root_folder: str, secrets: SecretsCollection) -> None:
             scanned_file_count += 1
     for secrets_data in secret_map.values():
         for secret_data in secrets_data:
-            removed = secret_data["removed_commit_hash"] if secret_data["removed_commit_hash"] else GIT_HISTORY_SECRET_NOT_BEEN_REMOVED
+            removed = secret_data["removed_commit_hash"] if secret_data["removed_commit_hash"] else GIT_HISTORY_NOT_BEEN_REMOVED
             key = f'{secret_data["added_commit_hash"]}_{removed}_{secret_data["potential_secret"].filename}'
             secrets[key].add(secret_data["potential_secret"])
     logging.info(f"Scanned {scanned_file_count} git history files")
@@ -95,7 +95,7 @@ def get_added_and_removed_commit_hash(
     if not enable_git_history_secret_scan:
         return None, None
     added_commit_hash = key.split('_')[0] if secret.is_added else None
-    removed_commit_hash = key.split('_')[1] if secret.is_removed and key.split('_')[1] != GIT_HISTORY_SECRET_NOT_BEEN_REMOVED else None
+    removed_commit_hash = key.split('_')[1] if secret.is_removed and key.split('_')[1] != GIT_HISTORY_NOT_BEEN_REMOVED else None
     return added_commit_hash, removed_commit_hash
 
 
