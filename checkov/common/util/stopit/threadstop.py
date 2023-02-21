@@ -49,7 +49,7 @@ class ThreadingTimeout(BaseTimeout):
         """Called by timer thread at timeout. Raises a Timeout exception in the
         caller thread
         """
-        self.state = BaseTimeout.TIMED_OUT
+        self.state = self.TIMED_OUT
         async_raise(self.target_tid, TimeoutException)
 
     # Required overrides
