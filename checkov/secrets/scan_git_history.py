@@ -3,8 +3,9 @@ from __future__ import annotations
 import logging
 import os
 from collections import defaultdict
-from typing import TYPE_CHECKING, Dict, Tuple, List, TypedDict
+from typing import TYPE_CHECKING, Dict, Tuple, List
 from detect_secrets.core import scan
+from typing_extensions import TypedDict
 
 from checkov.secrets.consts import GIT_HISTORY_NOT_BEEN_REMOVED
 
@@ -15,7 +16,6 @@ if TYPE_CHECKING:
 os.environ["GIT_PYTHON_REFRESH"] = "quiet"
 try:
     import git
-
     git_import_error = None
 except ImportError as e:
     git_import_error = e
