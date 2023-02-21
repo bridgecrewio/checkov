@@ -25,7 +25,7 @@ class SignalTimeout(BaseTimeout):
         super(SignalTimeout, self).__init__(seconds, swallow_exc)
 
     def handle_timeout(self, signum, frame):
-        self.state = BaseTimeout.TIMED_OUT
+        self.state = self.TIMED_OUT
         raise TimeoutException('Block exceeded maximum timeout '
                                'value (%d seconds).' % self.seconds)
 
@@ -46,4 +46,5 @@ class signal_timeoutable(base_timeoutable):
 
     See :class:`.utils.base_timoutable`` class for further comments.
     """
-    to_ctx_mgr = SignalTimeout
+    def __init__(self):
+        self.to_ctx_mgr = SignalTimeout

@@ -72,4 +72,5 @@ class threading_timeoutable(base_timeoutable):
 
     See :class:`.utils.base_timoutable`` class for further comments.
     """
-    to_ctx_mgr = ThreadingTimeout
+    def __init__(self):
+        self.to_ctx_mgr = ThreadingTimeout
