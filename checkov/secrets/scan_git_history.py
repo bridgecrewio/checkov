@@ -49,12 +49,13 @@ def get_commits_diff(root_folder: str) -> Dict[str, Dict[str, str]]:
     return commits_diff
 
 
-def scan_history(root_folder: str, secrets: SecretsCollection, timeout: int) -> None:
+def scan_history(root_folder: str, secrets: SecretsCollection, timeout: int) -> bool:
+    """return true if the scan finished without timeout"""
     # mark the scan to finish within the timeout
     with stopit.ThreadingTimeout(timeout) as to_ctx_mgr:
         commits_diff = get_commits_diff(root_folder)
         if not commits_diff:
-            return
+            return True
         scanned_file_count = 0
         for commit_hash in commits_diff.keys():
             commit = commits_diff[commit_hash]
@@ -74,4 +75,6 @@ def scan_history(root_folder: str, secrets: SecretsCollection, timeout: int) -> 
 
     if to_ctx_mgr.state == to_ctx_mgr.TIMED_OUT:
         logging.info(f"timeout reached ({timeout}), stopping scan.")
+        return False
     # else: everything was OK
+    return True
