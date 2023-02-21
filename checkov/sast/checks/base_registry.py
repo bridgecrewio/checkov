@@ -4,6 +4,7 @@ import logging
 import os
 import yaml
 from typing import List, Any, Optional, Set, Dict
+
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.sast.checks.base_check import BaseSastCheck
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
@@ -16,7 +17,7 @@ from checkov.common.checks_infra.registry import CHECKS_POSSIBLE_ENDING
 class Registry(BaseCheckRegistry):
     def __init__(self, checks_dir: str) -> None:
         super().__init__(report_type=CheckType.SAST)
-        self.rules: List[str] = []
+        self.rules: List[Dict[str, Any]] = []
         self.checks_dir = checks_dir
         self.logger = logging.getLogger(__name__)
         self.parser = SastCheckParser()
@@ -85,15 +86,6 @@ class Registry(BaseCheckRegistry):
 
     def create_temp_rules_file(self) -> None:
         rules_obj = {'rules': self.rules}
-
-        def _str_presenter(dumper, data):
-            if len(data.splitlines()) > 1:  # check for multiline string
-                return dumper.represent_scalar('tag:yaml.org,2002:str', data, style='|')
-            return dumper.represent_scalar('tag:yaml.org,2002:str', data)
-
-        yaml.add_representer(str, _str_presenter)
-        yaml.representer.SafeRepresenter.add_representer(str, _str_presenter)
-
         with open(self.temp_semgrep_rules_path, 'w') as tempfile:
             yaml.safe_dump(rules_obj, tempfile)
         logging.debug(f'created semgrep temporary rules file at: {self.temp_semgrep_rules_path}')
