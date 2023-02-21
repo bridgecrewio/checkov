@@ -153,6 +153,8 @@ class Runner(BaseRunner[None]):
             excluded_paths = (runner_filter.excluded_paths or []) + ignored_directories + [DEFAULT_EXTERNAL_MODULES_DIR]
             self._add_custom_detectors_to_metadata_integration()
             if root_folder:
+                # TODO modify the output for git_history secret and remove the rewrite of enable_git_history_secret_scan
+                runner_filter.enable_git_history_secret_scan = False
                 if runner_filter.enable_git_history_secret_scan:
                     settings.disable_filters(*['detect_secrets.filters.common.is_invalid_file'])
                     scan_history(root_folder, secrets)

@@ -9,7 +9,7 @@ from checkov.runner_filter import RunnerFilter
 from detect_secrets.settings import transient_settings
 
 
-def mock_git_repo_commits(root_folder: str) -> Dict[str, Dict[str, str]]:
+def mock_git_repo_commits1(root_folder: str) -> Dict[str, Dict[str, str]]:
     """
         add secret (secret1 added) - +1
         move the secret to different line - 0
@@ -91,7 +91,7 @@ def mock_git_repo_commits3(root_folder: str) -> Dict[str, Dict[str, str]]:
     }
 
 
-@mock.patch('checkov.secrets.scan_git_history.get_commits_diff', mock_git_repo_commits)
+@mock.patch('checkov.secrets.scan_git_history.get_commits_diff', mock_git_repo_commits1)
 def test_scan_git_history() -> None:
     valid_dir_path = "test"
 
@@ -107,7 +107,7 @@ def test_scan_git_history() -> None:
         assert failed_check.added_commit_hash or failed_check.removed_commit_hash
 
 
-@mock.patch('checkov.secrets.scan_git_history.get_commits_diff', mock_git_repo_commits)
+@mock.patch('checkov.secrets.scan_git_history.get_commits_diff', mock_git_repo_commits1)
 def test_scan_history_secrets() -> None:
     valid_dir_path = "test"
     secrets = SecretsCollection()
