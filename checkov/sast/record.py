@@ -12,6 +12,7 @@ from checkov.common.typing import _CheckResult
         file_abs_path: str,
 '''
 
+
 class SastRecord(Record):
     def __init__(self,
                  check_id: str,

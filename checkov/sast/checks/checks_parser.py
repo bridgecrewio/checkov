@@ -26,13 +26,13 @@ class SastCheckParser:
     def raw_check_is_valid(self, raw_check: Dict[str, Any]) -> bool:
         metadata = raw_check.get('metadata')
         if not metadata:
-            raise AttributeError(f'BQL policy is missing the metadata field')
+            raise AttributeError('BQL policy is missing the metadata field')
         if not metadata.get('id'):
-            raise AttributeError(f'BQL policy metadata is missing an id value')
+            raise AttributeError('BQL policy metadata is missing an id value')
         if not metadata.get('severity'):
-            raise AttributeError(f'BQL policy metadata is missing a severity')
+            raise AttributeError('BQL policy metadata is missing a severity')
         if not raw_check.get('scope', {}).get('languages'):
-            raise AttributeError(f'BQL policy metadata is missing languages')
+            raise AttributeError('BQL policy metadata is missing languages')
 
         else:
             return True
