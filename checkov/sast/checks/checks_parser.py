@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import logging
-from typing import Dict, Any
+from typing import Dict, Any, List
 
 from checkov.common.graph.checks_infra.enums import Operators
 from checkov.sast.consts import COMPARISON_VALUES, COMPARISON_VALUE_TO_SYMBOL, SemgrepAttribute, \
@@ -10,7 +12,7 @@ from checkov.common.util.type_forcers import force_list
 
 class SastCheckParser:
     def parse_raw_check_to_semgrep(self, raw_check: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
-        semgrep_rule = {}
+        semgrep_rule: Dict[str, Any] = {}
         if not self.raw_check_is_valid(raw_check):
             logging.error(f'cant parse the following policy: {raw_check}')
         try:
@@ -21,7 +23,7 @@ class SastCheckParser:
 
         return semgrep_rule
 
-    def raw_check_is_valid(self, raw_check):
+    def raw_check_is_valid(self, raw_check: Dict[str, Any]) -> bool:
         metadata = raw_check.get('metadata')
         if not metadata:
             raise AttributeError(f'BQL policy is missing the metadata field')
@@ -35,26 +37,27 @@ class SastCheckParser:
         else:
             return True
 
-    def parse_rule_metadata(self, bql_policy, semgrep_policy):
+    def parse_rule_metadata(self, bql_policy: Dict[str, Any], semgrep_rule: Dict[str, Any]) \
+            -> Dict[str, Any]:
         metadata = bql_policy['metadata']
-        semgrep_policy[SemgrepAttribute.ID.value] = metadata['id']
-        semgrep_policy[SemgrepAttribute.MESSAGE.value] = metadata.get('guidelines', '')
-        semgrep_policy[SemgrepAttribute.SEVERITY.value] = CHECKOV_SEVERITY_TO_SEMGREP_SEVERITY[metadata['severity']]
+        semgrep_rule[SemgrepAttribute.ID.value] = metadata['id']
+        semgrep_rule[SemgrepAttribute.MESSAGE.value] = metadata.get('guidelines', '')
+        semgrep_rule[SemgrepAttribute.SEVERITY.value] = CHECKOV_SEVERITY_TO_SEMGREP_SEVERITY[metadata['severity']]
         languages = bql_policy['scope']['languages']
-        semgrep_policy[SemgrepAttribute.LANGUAGES.value] = languages
-        semgrep_policy['metadata'] = {'name': metadata['name']}
+        semgrep_rule[SemgrepAttribute.LANGUAGES.value] = languages
+        semgrep_rule['metadata'] = {'name': metadata['name']}
 
         # add optional cwe and owasp metadata
         cwe = metadata.get('cwe')
         if cwe:
-            semgrep_policy['metadata'][SemgrepAttribute.CWE.value] = cwe
+            semgrep_rule['metadata'][SemgrepAttribute.CWE.value] = cwe
         owasp = metadata.get('owasp')
         if owasp:
-            semgrep_policy['metadata'][SemgrepAttribute.OWASP.value] = owasp
+            semgrep_rule['metadata'][SemgrepAttribute.OWASP.value] = owasp
 
-        return semgrep_policy
+        return semgrep_rule
 
-    def parse_definition(self, definition):
+    def parse_definition(self, definition: Dict[str, Any]) -> Dict[str, Any]:
         definitions = force_list(definition)
         conf = {}
         if len(definitions) > 1:
@@ -71,7 +74,7 @@ class SastCheckParser:
                     conf[SemgrepAttribute.PATTERNS.value] = self.get_definitions_list_items(definitions)
         return conf
 
-    def get_definitions_list_items(self, definitions):
+    def get_definitions_list_items(self, definitions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         conf = []
         for definition in definitions:
             # handle nested OR / AND definitions
@@ -84,12 +87,12 @@ class SastCheckParser:
 
             else:
                 # handle a single definition
-                cond_type = definition.get('cond_type')
-                operator = definition.get('operator')
+                cond_type = definition.get('cond_type', '')
+                operator = definition.get('operator', '')
                 definition_value = definition.get('value')
 
                 if cond_type == BqlConditionType.PATTERN:
-                    semgrep_attr = PATTERN_OPERATOR_TO_SEMGREP_ATTR.get(operator)
+                    semgrep_attr = PATTERN_OPERATOR_TO_SEMGREP_ATTR.get(operator, '')
                     if not semgrep_attr:
                         raise AttributeError(f'BQL policy pattern condition contains an unknown operator: {operator}')
                     conf.append({semgrep_attr: definition_value})
@@ -98,7 +101,7 @@ class SastCheckParser:
                     metavariable_condition_object = {}
                     metavariable = definition.get('variable')
                     metavariable_condition_object[SemgrepAttribute.METAVARIABLE.value] = metavariable
-                    metavariable_condition_key = VARIABLE_OPERATOR_TO_SEMGREP_ATTR.get(operator)
+                    metavariable_condition_key = VARIABLE_OPERATOR_TO_SEMGREP_ATTR.get(operator, '')
                     if not metavariable_condition_key:
                         raise AttributeError(f'BQL policy variable condition contains an unknown operator: {operator}')
 
@@ -106,8 +109,11 @@ class SastCheckParser:
                         metavariable_condition_object[SemgrepAttribute.REGEX.value] = definition_value
 
                     elif operator == Operators.PATTERN_MATCH:
-                        metavariable_condition = self.parse_definition(definition_value)
-                        metavariable_condition_object.update(metavariable_condition)
+                        if isinstance(definition_value, str):
+                            metavariable_condition_object[SemgrepAttribute.PATTERN.value] = definition_value
+                        else:
+                            metavariable_condition = self.parse_definition(definition_value)
+                            metavariable_condition_object.update(metavariable_condition)
 
                     elif operator in COMPARISON_VALUES:
                         metavariable_condition_object[

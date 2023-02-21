@@ -32,7 +32,7 @@ class CheckType:
     SAST = 'sast'
     SAST_PYTHON = 'sast_python'
     SAST_JAVA = 'sast_java'
-    SAAST_JAVASCRIPT = 'sast_javascript'
+    SAST_JAVASCRIPT = 'sast_javascript'
     POLICY_3D = "3d_policy"
 
 
