@@ -653,7 +653,9 @@ class Checkov:
                 deep_analysis=self.config.deep_analysis,
                 repo_root_for_plan_enrichment=self.config.repo_root_for_plan_enrichment,
                 resource_attr_to_omit=self.config.mask,
-                enable_git_history_secret_scan=self.config.scan_secrets_history,
+                # TODO modify the output for git_history secret and remove the rewrite of enable_git_history_secret_scan
+                # enable_git_history_secret_scan=self.config.scan_secrets_history,
+                enable_git_history_secret_scan=False
             )
 
             source_env_val = os.getenv('BC_SOURCE', 'cli')
