@@ -53,11 +53,11 @@ def test_scan_git_history() -> None:
 @mock.patch('checkov.secrets.scan_git_history.get_commits_diff', mock_git_repo_commits)
 def test_scan_history_secrets() -> None:
     """
-    add secret - 1
-    move the secret to different line -2
-    modify the secret value - 2
-    remove the secret - 1
-    add file with new secret - 1
+    add secret (secret1 added) - +1
+    move the secret to different line - 0
+    modify the secret value (secret1 removed=update + secret2 added) - +1
+    remove the secret (secret2 removed=update) - 0
+    add file with new secret (secret3 added) - +1
     """
     valid_dir_path = "test"
     secrets = SecretsCollection()
