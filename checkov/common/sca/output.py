@@ -21,6 +21,7 @@ from checkov.common.sca.commons import (
     UNFIXABLE_VERSION,
     get_package_type,
     normalize_twistcli_language,
+    get_registry_url,
 )
 from checkov.common.util.http_utils import request_wrapper
 from checkov.runner_filter import RunnerFilter
@@ -61,7 +62,7 @@ def create_report_license_record(
     details = {
         "package_name": package_name,
         "package_version": package_version,
-        "package_registry": package.get("registry", ""),
+        "package_registry": get_registry_url(package),
         "is_private_registry": package.get("isPrivateRegistry", False),
         "license": licenses_status["license"],
         "status": status,
@@ -163,7 +164,7 @@ def create_report_cve_record(
         "severity": severity,
         "package_name": package_name,
         "package_version": package_version,
-        "package_registry": package.get("registry", ""),
+        "package_registry": get_registry_url(package),
         "is_private_registry": package.get("isPrivateRegistry", False),
         "package_type": package_type,
         "link": vulnerability_details.get("link"),
@@ -451,7 +452,7 @@ def add_extra_resources_to_report(report: Report, scanned_file_path: str, rootle
             vulnerability_details={
                 "package_name": package_name,
                 "package_version": package_version,
-                "package_registry": package.get("registry", ""),
+                "package_registry": get_registry_url(package),
                 "is_private_registry": package.get("isPrivateRegistry", False),
                 "licenses": format_licenses_to_string(
                     licenses_per_package_map[package_alias]),
