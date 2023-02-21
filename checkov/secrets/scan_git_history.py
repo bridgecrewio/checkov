@@ -18,7 +18,7 @@ try:
 except ImportError as e:
     git_import_error = e
 
-SECRET_NOT_BEEN_REMOVED = 'not-removed'
+SECRET_NOT_BEEN_REMOVED = 'secret-not-removed'
 
 
 class EnrichedPotentialSecret(TypedDict):
