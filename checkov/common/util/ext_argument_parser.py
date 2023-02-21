@@ -522,7 +522,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
         )
         self.add(
             "--secrets-history-timeout",
-            action="append",
+            action="store",
             default='12h',
             help="maximum time to stop the scan "
         )
