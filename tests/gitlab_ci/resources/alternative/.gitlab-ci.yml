@@ -1,0 +1,13 @@
+image: registry.gitlab.com/myimage/builder-base-image:stable
+
+stop-dev:
+  stage: destroy
+  script:
+    - terraform-pipeline destroy
+      --application-state-key $APPLICATION_STATE_KEY
+      --environment $AWS_ENVIRONMENT
+    - rm -rf ./aws/terraform/.terraform
+  variables:
+    AWS_ENVIRONMENT: dev
+  environment:
+    name: $CI_COMMIT_REF_NAME-DEV
