@@ -178,6 +178,9 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
                 # result record
                 if result_config:
                     end, start = self.get_start_end_lines(end, result_config, start)
+                    if start == -1 and end == -1:
+                        logging.info(f"Skipping line in file path {file_path} in key {key}")
+                        continue
                 if platform.system() == "Windows":
                     root_folder = os.path.split(file_path)[0]
 
