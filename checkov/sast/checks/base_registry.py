@@ -83,7 +83,6 @@ class Registry(BaseCheckRegistry):
             return False
         return True
 
-
     def create_temp_rules_file(self) -> None:
         rules_obj = {'rules': self.rules}
 

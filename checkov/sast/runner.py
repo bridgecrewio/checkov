@@ -1,5 +1,4 @@
 from __future__ import annotations
-import itertools
 
 import logging
 from dataclasses import dataclass
@@ -9,7 +8,6 @@ from checkov.common.models.enums import CheckResult
 from checkov.common.output.report import Report
 from checkov.common.typing import _CheckResult
 from checkov.runner_filter import RunnerFilter
-from checkov.common.output.record import Record
 from checkov.sast.checks.registry import registry
 from checkov.sast.consts import SastLanguages, SUPPORT_FILE_EXT, SEMGREP_SEVERITY_TO_CHECKOV_SEVERITY, \
     FILE_EXT_TO_SAST_LANG
@@ -30,7 +28,6 @@ if TYPE_CHECKING:
     from semgrep.output_extra import OutputExtra
     from semgrep.error import SemgrepError
     from semgrep.rule import Rule
-
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +55,8 @@ class Runner():
                     return True
         return False
 
-    def run(self, root_folder: Optional[str], external_checks_dir: Optional[List[str]] = None, files: Optional[List[str]] = None,
+    def run(self, root_folder: Optional[str], external_checks_dir: Optional[List[str]] = None,
+            files: Optional[List[str]] = None,
             runner_filter: Optional[RunnerFilter] = None, collect_skip_comments: bool = True) -> list[Report]:
         if not runner_filter:
             logger.warning('no runner filter')
@@ -134,9 +132,9 @@ class Runner():
             check_result = _CheckResult(result=CheckResult.FAILED)
 
             record = SastRecord(check_id=check_id, check_name=check_name, resource="", evaluations={},
-                            check_class="", check_result=check_result, code_block=code_block,
-                            file_path=file_path, file_line_range=file_line_range,
-                            file_abs_path=file_abs_path, severity=severity, cwe=check_cwe, owasp=check_owasp)
+                                check_class="", check_result=check_result, code_block=code_block,
+                                file_path=file_path, file_line_range=file_line_range,
+                                file_abs_path=file_abs_path, severity=severity, cwe=check_cwe, owasp=check_owasp)
             report.add_record(record)
         return report
 
@@ -170,7 +168,8 @@ class Runner():
             runner = StreamingSemgrepCore(cmd, 1)
             runner.vfs_map = {}
             returncode = runner.execute()
-            output_json: Dict[str, Any] = core_runner._extract_core_output([], returncode, " ".join(cmd), runner.stdout, runner.stderr)
+            output_json: Dict[str, Any] = core_runner._extract_core_output([], returncode, " ".join(cmd), runner.stdout,
+                                                                           runner.stderr)
             return output_json
         except Exception:
             logger.error(f'Cant parse AST for this file: {target}, for {language.value}', exc_info=True)
