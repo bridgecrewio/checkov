@@ -83,11 +83,11 @@ class Runner():
             targets = files
 
         semgrep_output = Runner._get_semgrep_output(targets=targets, config=config, output_handler=output_handler)
-        semgrep_results_by_language: Dict[SastLanguages.value, List[RuleMatch]] = {}
+        semgrep_results_by_language: Dict[str, List[RuleMatch]] = {}
         for matches in semgrep_output.matches.values():
             for rule_match in matches:
                 match_lang = FILE_EXT_TO_SAST_LANG.get(rule_match.path.suffix.lstrip('.'), '')
-                if not match_lang:
+                if not match_lang or not isinstance(match_lang, SastLanguages):  # 2nd condition for typing
                     raise TypeError(f'file type {rule_match.path.suffix} is not supported by sast framework')
                 semgrep_results_by_language.setdefault(match_lang.value, []).append(rule_match)
 
@@ -117,7 +117,7 @@ class Runner():
                                        output_extra, shown_severities, target_manager_lockfile_scan_info)
         return semgrep_output
 
-    def _create_report(self, lang: SastLanguages, semgrep_matches: List[RuleMatch]) -> Report:
+    def _create_report(self, lang: str, semgrep_matches: List[RuleMatch]) -> Report:
         report = Report(f'{self.check_type}_{lang}')
         for match in semgrep_matches:
             check_id = match.rule_id.split('.')[-1]
