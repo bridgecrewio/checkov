@@ -229,8 +229,7 @@ class Runner(BaseRunner[None]):
                     root_folder=root_folder
                 ) or result
                 relative_file_path = f'/{os.path.relpath(secret.filename, root_folder)}'
-                # TODO add 'commit_hash' to the resource
-                resource = f'{relative_file_path}:{secret.secret_hash}'
+                resource = f'{relative_file_path}:{added_commit_hash}:{secret.secret_hash}' if added_commit_hash else f'{relative_file_path}:{secret.secret_hash}'
                 report.add_resource(resource)
                 # 'secret.secret_value' can actually be 'None', but only when 'PotentialSecret' was created
                 # via 'load_secret_from_dict'
