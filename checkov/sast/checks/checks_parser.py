@@ -115,7 +115,7 @@ class SastCheckParser:
                     return {metavariable_condition_key: metavariable_condition_object}
 
                 elif cond_type == BqlConditionType.FILTER:
-                    semgrep_attr = FILTER_OPERATOR_TO_SEMGREP_ATTR.get(operator)
+                    semgrep_attr = FILTER_OPERATOR_TO_SEMGREP_ATTR.get(operator, '')
                     if not semgrep_attr:
                         raise AttributeError(f'BQL filter condition contains an unknown operator: {operator}')
                     return {semgrep_attr: definition_value}
