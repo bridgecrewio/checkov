@@ -37,7 +37,7 @@ def get_commits_diff(root_folder: str) -> Dict[str, Dict[str, str]]:
     except Exception as e:
         logging.error(f"Folder {root_folder} is not a GIT project {e}")
         return commits_diff
-    commits = list(repo.iter_commits(repo.active_branch))
+    commits = list(repo.iter_commits(repo.active_branch, max_count=5))
     for previous_commit_idx in range(len(commits) - 1, 0, -1):
         current_commit_idx = previous_commit_idx - 1
         current_commit_hash = commits[current_commit_idx].hexsha
@@ -94,8 +94,8 @@ def get_added_and_removed_commit_hash(
     """
     if not enable_git_history_secret_scan:
         return None, None
-    added_commit_hash = key.split('_')[0] if secret.is_added else None
-    removed_commit_hash = key.split('_')[1] if secret.is_removed and key.split('_')[1] != GIT_HISTORY_NOT_BEEN_REMOVED else None
+    added_commit_hash = key.split('_')[0]
+    removed_commit_hash = key.split('_')[1] if key.split('_')[1] != GIT_HISTORY_NOT_BEEN_REMOVED else None
     return added_commit_hash, removed_commit_hash
 
 
