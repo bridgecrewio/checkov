@@ -50,18 +50,18 @@ class BaseTimeout(object):
       structure. ``True`` (default) if you just want to check the execution of
       the block with the ``state`` attribute of the context manager.
     """
-    # Possible values for the ``state`` attribute, self explanative
-    EXECUTED, EXECUTING, TIMED_OUT, INTERRUPTED, CANCELED = range(5)
 
     def __init__(self, seconds, swallow_exc=True):
+
+        # Possible values for the ``state`` attribute, self explanative
+        self.EXECUTED, self.EXECUTING, self.TIMED_OUT, self.INTERRUPTED, self.CANCELED = range(5)
+
         self.seconds = seconds
         self.swallow_exc = swallow_exc
-        self.state = BaseTimeout.EXECUTED
+        self.state = self.EXECUTED
 
     def __bool__(self):
-        return self.state in (BaseTimeout.EXECUTED, BaseTimeout.EXECUTING, BaseTimeout.CANCELED)
-
-    __nonzero__ = __bool__  # Python 2.x
+        return self.state in (self.EXECUTED, self.EXECUTING, self.CANCELED)
 
     def __repr__(self):
         """Debug helper
@@ -69,28 +69,28 @@ class BaseTimeout(object):
         return "<{0} in state: {1}>".format(self.__class__.__name__, self.state)
 
     def __enter__(self):
-        self.state = BaseTimeout.EXECUTING
+        self.state = self.EXECUTING
         self.setup_interrupt()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_type is TimeoutException:
-            if self.state != BaseTimeout.TIMED_OUT:
-                self.state = BaseTimeout.INTERRUPTED
+            if self.state != self.TIMED_OUT:
+                self.state = self.INTERRUPTED
                 self.suppress_interrupt()
             LOG.warning("Code block execution exceeded {0} seconds timeout".format(self.seconds),
                         exc_info=(exc_type, exc_val, exc_tb))
             return self.swallow_exc
         else:
             if exc_type is None:
-                self.state = BaseTimeout.EXECUTED
+                self.state = self.EXECUTED
             self.suppress_interrupt()
         return False
 
     def cancel(self):
         """In case in the block you realize you don't need anymore
        limitation"""
-        self.state = BaseTimeout.CANCELED
+        self.state = self.CANCELED
         self.suppress_interrupt()
 
     # Methods must be provided by subclasses
@@ -105,7 +105,7 @@ class BaseTimeout(object):
         raise NotImplementedError
 
 
-class base_timeoutable(object):  # noqa
+class base_timeoutable(object):
     """A base for function or method decorator that raises a ``TimeoutException`` to
     decorated functions that should not last a certain amount of time.
 
@@ -129,9 +129,9 @@ class base_timeoutable(object):  # noqa
        thz ``to_ctx_mgr`` with a timeout  context manager class which in turn
        must subclasses of above ``BaseTimeout`` class.
     """
-    to_ctx_mgr = None
 
     def __init__(self, default=None, timeout_param='timeout'):
+        self.to_ctx_mgr = None
         self.default, self.timeout_param = default, timeout_param
 
     def __call__(self, func):
