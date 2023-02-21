@@ -6,6 +6,8 @@ from collections import defaultdict
 from typing import TYPE_CHECKING, Dict, Tuple, List, TypedDict
 from detect_secrets.core import scan
 
+from checkov.secrets.consts import SECRET_NOT_BEEN_REMOVED
+
 if TYPE_CHECKING:
     from detect_secrets import SecretsCollection
     from detect_secrets.core.potential_secret import PotentialSecret
@@ -17,8 +19,6 @@ try:
     git_import_error = None
 except ImportError as e:
     git_import_error = e
-
-SECRET_NOT_BEEN_REMOVED = 'secret-not-removed'
 
 
 class EnrichedPotentialSecret(TypedDict):
