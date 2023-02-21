@@ -39,7 +39,7 @@ class SignalTimeout(BaseTimeout):
         signal.signal(signal.SIGALRM, signal.SIG_DFL)
 
 
-class signal_timeoutable(base_timeoutable):
+class signal_timeoutable(base_timeoutable):  # noqa: B903
     """A function or method decorator that raises a ``TimeoutException`` to
     decorated functions that should not last a certain amount of time.
     this one uses ``SignalTimeout`` context manager.
