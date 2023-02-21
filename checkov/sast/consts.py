@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Any
+from typing import List, Any, MutableMapping
 
 from semgrep.constants import RuleSeverity
 from checkov.common.graph.checks_infra.enums import Operators
@@ -13,6 +13,7 @@ class SastLanguages(Enum):
     PYTHON = 'python'
     JAVA = 'java'
     JAVASCRIPT = 'javascript'
+
 
 class SemgrepAttribute(str, Enum):
     ID = 'id'
@@ -44,6 +45,13 @@ class BqlConditionType(str, Enum):
     OR = 'or'
     AND = 'and'
 
+from collections.abc import MutableMapping
+from enum import Enum
+
+class Color(Enum):
+    RED = "RED"
+    GREEN = "GREEN"
+    BLUE = "BLUE"
 
 PATTERN_OPERATOR_TO_SEMGREP_ATTR = {
     Operators.EQUALS: SemgrepAttribute.PATTERN.value,
