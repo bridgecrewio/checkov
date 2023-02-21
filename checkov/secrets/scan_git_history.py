@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
-import stopit
+from checkov.common.util import stopit
 from typing import TYPE_CHECKING, Dict
 from detect_secrets.core import scan
 
