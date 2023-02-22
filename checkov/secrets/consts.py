@@ -28,3 +28,6 @@ class VerifySecretsResult(Enum):
     def __str__(self) -> str:
         # needed, because of a Python 3.11 change
         return self.value
+
+
+GIT_HISTORY_NOT_BEEN_REMOVED = 'not-removed'
