@@ -1,5 +1,5 @@
 metadata:
-  id: CKV_SAST_1
+  id: CKV3_SAST_11
   name: 'Ensure superuser port is not set'
   guidelines: 'module setting superuser port'
   category: 'sast'
