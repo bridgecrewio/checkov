@@ -155,7 +155,7 @@ class Runner(BaseRunner[None]):
             if root_folder:
                 if runner_filter.enable_git_history_secret_scan:
                     settings.disable_filters(*['detect_secrets.filters.common.is_invalid_file'])
-                    scan_history(root_folder, secrets)
+                    scan_history(root_folder, secrets, runner_filter.git_history_timeout)
                     logging.info(f'Secrets scanning git history for root folder {root_folder}')
                 else:
                     enable_secret_scan_all_files = runner_filter.enable_secret_scan_all_files

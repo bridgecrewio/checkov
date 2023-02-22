@@ -1,3 +1,6 @@
+import random
+import string
+
 from typing import Dict
 from unittest import mock
 
@@ -34,6 +37,41 @@ def mock_git_repo_commits(root_folder: str) -> Dict[str, Dict[str, str]]:
     }
 
 
+def get_random_string(length: int) -> str:
+    chars = string.ascii_lowercase + string.ascii_letters
+    result_str = ''.join(random.choice(chars) for _i in range(length))
+    return result_str
+
+
+def mock_case() -> Dict[str, str]:
+    cases = [
+        {
+            "Dockerfile": "diff --git a/Dockerfile b/Dockerfile\nindex 0000..0000 0000\n--- a/Dockerfile\n+++ b/Dockerfile\n@@ -4,6 +4,8 @@ FROM public.ecr.aws/lambda/python:3.9\n \n ENV PIP_ENV_VERSION=\"2022.1.8\"\n \n+ENV AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n+\n COPY Pipfile Pipfile.lock ./\n \n RUN pip install pipenv==${PIP_ENV_VERSION} \\\n"
+        },
+        {
+            "Dockerfile": "diff --git a/Dockerfile b/Dockerfile\nindex 0000..0000 0000\n--- a/Dockerfile\n+++ b/Dockerfile\n@@ -1,10 +1,9 @@\n #checkov:skip=CKV_DOCKER_2:Healthcheck is not relevant for ephemral containers\n #checkov:skip=CKV_DOCKER_3:User is created automatically by lambda runtime\n FROM public.ecr.aws/lambda/python:3.9\n-\n+ENV AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n ENV PIP_ENV_VERSION=\"2022.1.8\"\n \n-ENV AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n \n COPY Pipfile Pipfile.lock ./\n \n"
+        },
+        {
+            "Dockerfile": "diff --git a/Dockerfile b/Dockerfile\nindex 0000..0000 0000\n--- a/Dockerfile\n+++ b/Dockerfile\n@@ -1,7 +1,7 @@\n #checkov:skip=CKV_DOCKER_2:Healthcheck is not relevant for ephemral containers\n #checkov:skip=CKV_DOCKER_3:User is created automatically by lambda runtime\n FROM public.ecr.aws/lambda/python:3.9\n-ENV AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n+ENV AWS_ACCESS_KEY_ID=\"AKIAZZZZZZZZZZZZZZZZ\"\n ENV PIP_ENV_VERSION=\"2022.1.8\"\n \n \n"
+        },
+        {
+            "Dockerfile": "diff --git a/Dockerfile b/Dockerfile\nindex 0000..0000 0000\n--- a/Dockerfile\n+++ b/Dockerfile\n@@ -1,7 +1,7 @@\n #checkov:skip=CKV_DOCKER_2:Healthcheck is not relevant for ephemral containers\n #checkov:skip=CKV_DOCKER_3:User is created automatically by lambda runtime\n FROM public.ecr.aws/lambda/python:3.9\n-ENV AWS_ACCESS_KEY_ID=\"AKIAZZZZZZZZZZZZZZZZ\"\n+\n ENV PIP_ENV_VERSION=\"2022.1.8\"\n \n \n"
+        },
+        {
+            "null": "diff --git a/None b/main.py\nindex 0000..0000 0000\n--- a/None\n+++ b/main.py\n@@ -0,0 +1,4 @@\n+AWS_ACCESS_TOKEN=\"AKIAZZZZZZZZZZZZZZZZ\"\n+\n+if __name__ == \"__main__\":\n+    print(AWS_ACCESS_TOKEN)\n\\ No newline at end of file\n"
+        }
+    ]
+    return random.choice(cases)
+
+
+def mock_git_repo_commits_too_much(root_folder: str) -> Dict[str, Dict[str, str]]:
+    res: Dict[str, Dict[str, str]] = {}
+    keys = [get_random_string(40) for _i in range(10000)]
+    for k in keys:
+        res[k] = mock_case()
+    return res
+
+
 @mock.patch('checkov.secrets.scan_git_history.get_commits_diff', mock_git_repo_commits)
 def test_scan_git_history() -> None:
     valid_dir_path = "test"
@@ -68,5 +106,25 @@ def test_scan_history_secrets() -> None:
         'plugins_used': plugins_used
     }) as settings:
         settings.disable_filters(*['detect_secrets.filters.common.is_invalid_file'])
-        scan_history(valid_dir_path, secrets)
+        scan_history(valid_dir_path, secrets, 3600)
     assert len(secrets.data) == 7
+
+
+@mock.patch('checkov.secrets.scan_git_history.get_commits_diff', mock_git_repo_commits_too_much)
+def test_scan_history_secrets_timeout() -> None:
+    """
+    add way too many cases to check in 1 second
+    """
+    valid_dir_path = "test"
+    secrets = SecretsCollection()
+    plugins_used = [
+        {'name': 'AWSKeyDetector'},
+    ]
+    with transient_settings({
+        # Only run scans with only these plugins.
+        'plugins_used': plugins_used
+    }) as settings:
+        settings.disable_filters(*['detect_secrets.filters.common.is_invalid_file'])
+        finished = scan_history(valid_dir_path, secrets, 1)
+
+    assert finished is False
