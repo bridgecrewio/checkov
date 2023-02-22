@@ -114,6 +114,7 @@ def test_sast_runner_get_semgrep_output():
     output = runner._get_semgrep_output([str(source_dir)], [str(temp_semgrep_rules_path)], output_handler)
     raw_rule = get_raw_rule()
     rule = Rule(raw=raw_rule)
+    assert output.matches.get(rule), str(output.matches)
     assert output.matches[rule][0].match.location.path == f'{source_dir}/file.py'
     assert output.matches[rule][0].match.location.start.line == 2
     assert output.matches[rule][0].match.location.end.line == 2
