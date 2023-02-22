@@ -253,6 +253,10 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
                                 start_line = line[0]
                                 end_line = line[0]
                                 break
+
+                    entity[CustomAttributes.ID] = self.get_resource(entity_file_path, entity[CustomAttributes.ID],
+                                                                    entity[CustomAttributes.RESOURCE_TYPE],
+                                                                    start_line, end_line)
                     record: "Record" = GithubActionsRecord(
                         check_id=check.id,
                         bc_check_id=check.bc_id,

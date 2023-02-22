@@ -94,6 +94,8 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
             if 'jobs.*.steps[]' in supported_entities and key.split('.')[1] == '*':
                 step_name = self.resolve_step_name(definition['jobs'].get(job_name), start_line, end_line)
                 new_key = f'jobs({job_name}).steps{step_name}'
+        elif 'permissions' in supported_entities:
+            new_key = 'permissions'
         return new_key
 
     def run(
