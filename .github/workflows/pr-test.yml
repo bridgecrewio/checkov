@@ -68,9 +68,9 @@ jobs:
       - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-#      - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
-#        with:
-#          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install pipenv
         run: |
           python -m pip install --no-cache-dir --upgrade pipenv
@@ -113,10 +113,10 @@ jobs:
       - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-#      - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
-#        if: ${{ runner.os != 'windows' }}
-#        with:
-#          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
+        if: ${{ runner.os != 'windows' }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install pipenv
         run: |
           python -m pip install --no-cache-dir --upgrade pipenv
@@ -163,9 +163,9 @@ jobs:
       - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-#      - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
-#        with:
-#          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install pipenv
         run: |
           python -m pip install --no-cache-dir --upgrade pipenv
@@ -216,9 +216,9 @@ jobs:
       - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-#      - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
-#        with:
-#          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install pipenv
         run: |
           python -m pip install --no-cache-dir --upgrade pipenv
