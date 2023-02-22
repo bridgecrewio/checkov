@@ -8,7 +8,6 @@ from checkov.common.util import stopit
 from detect_secrets.core import scan
 from typing_extensions import TypedDict
 
-from checkov.common.util.str_utils import convert_to_seconds
 from checkov.secrets.consts import GIT_HISTORY_NOT_BEEN_REMOVED
 
 if TYPE_CHECKING:
