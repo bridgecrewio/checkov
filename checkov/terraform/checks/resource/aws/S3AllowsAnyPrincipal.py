@@ -15,25 +15,30 @@ class S3AllowsAnyPrincipal(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        if 'policy' not in conf.keys() or not isinstance(conf['policy'][0], str):
-            return CheckResult.PASSED
-        try:
-            policy_block = json.loads(conf['policy'][0])
-            if 'Statement' in policy_block.keys():
-                for statement in force_list(policy_block['Statement']):
-                    if statement['Effect'] == 'Deny' or 'Principal' not in statement:
-                        continue
+        if 'policy' not in conf.keys():
+            return CheckResult.UNKNOWN
+        if not isinstance(conf['policy'][0], str):
+            policy_block = conf['policy'][0]
+        else:
+            try:
+                policy_block = json.loads(conf['policy'][0])
+            except Exception:  # nosec
+                return CheckResult.UNKNOWN
 
-                    principal = statement['Principal']
-                    if principal == '*':
+        if 'Statement' in policy_block.keys():
+            for statement in force_list(policy_block['Statement']):
+                if statement['Effect'] == 'Deny' or 'Principal' not in statement:
+                    continue
+
+                principal = statement['Principal']
+                if principal == '*':
+                    return CheckResult.FAILED
+                if 'AWS' in statement['Principal']:
+                    # Can be a string or an array of strings
+                    aws = statement['Principal']['AWS']
+                    if (isinstance(aws, str) and aws == '*') or (isinstance(aws, list) and '*' in aws):
                         return CheckResult.FAILED
-                    if 'AWS' in statement['Principal']:
-                        # Can be a string or an array of strings
-                        aws = statement['Principal']['AWS']
-                        if (isinstance(aws, str) and aws == '*') or (isinstance(aws, list) and '*' in aws):
-                            return CheckResult.FAILED
-        except Exception:  # nosec
-            pass
+
         return CheckResult.PASSED
 
     def get_evaluated_keys(self) -> List[str]:
