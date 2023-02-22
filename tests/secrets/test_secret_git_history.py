@@ -94,6 +94,20 @@ def mock_git_repo_commits3(root_folder: str) -> Dict[str, Dict[str, str]]:
     }
 
 
+def mock_git_repo_commits_remove_file(root_folder: str) -> Dict[str, Dict[str, str]]:
+    return {
+        "63342dbee285973a37770bbb1ff4258a3184901e": {
+            "Dockerfile": "diff --git a/Dockerfile b/Dockerfile\nindex 0000..0000 0000\n--- a/Dockerfile\n+++ b/Dockerfile\n@@ -4,6 +4,7 @@ FROM public.ecr.aws/lambda/python:3.9\n \n ENV PIP_ENV_VERSION=\"2022.1.8\"\n \n+ENV AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n COPY Pipfile Pipfile.lock ./\n \n RUN pip install pipenv==${PIP_ENV_VERSION} \\\n"
+        },
+        "bca377900d08d442b1080893e50b8dc8276cfcc0": {
+            "Dockerfile": "diff --git a/Dockerfile b/Dockerfile\nindex 0000..0000 0000\n--- a/Dockerfile\n+++ b/Dockerfile\n@@ -13,6 +13,7 @@ RUN pip install pipenv==${PIP_ENV_VERSION} \\\n  && rm -f requirements.txt Pipfile Pipfile.lock \\\n  && pip uninstall -y pipenv\n \n+\n COPY src/ \"${LAMBDA_TASK_ROOT}/src/\"\n COPY utilsPython/ \"${LAMBDA_TASK_ROOT}/utilsPython/\"\n \n"
+        },
+        "4bd08cd0b2874025ce32d0b1e9cd84ca20d59ce1": {
+            "Dockerfile": "diff --git a/Dockerfile b/None\nindex 0000..0000 0000\n--- a/Dockerfile\n+++ b/None\n@@ -1,20 +0,0 @@\n-#checkov:skip=CKV_DOCKER_2:Healthcheck is not relevant for ephemral containers\n-#checkov:skip=CKV_DOCKER_3:User is created automatically by lambda runtime\n-FROM public.ecr.aws/lambda/python:3.9\n-\n-ENV PIP_ENV_VERSION=\"2022.1.8\"\n-\n-ENV AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n-COPY Pipfile Pipfile.lock ./\n-\n-RUN pip install pipenv==${PIP_ENV_VERSION} \\\n- && pipenv lock -r > requirements.txt \\\n- && pipenv run pip install -r requirements.txt --target \"${LAMBDA_TASK_ROOT}\" \\\n- && rm -f requirements.txt Pipfile Pipfile.lock \\\n- && pip uninstall -y pipenv\n-\n-\n-COPY src/ \"${LAMBDA_TASK_ROOT}/src/\"\n-COPY utilsPython/ \"${LAMBDA_TASK_ROOT}/utilsPython/\"\n-\n-CMD [\"src.secrets_setup.image.src.app.handler\"]\n"
+        }
+    }
+
+
 def get_random_string(length: int) -> str:
     chars = string.ascii_lowercase + string.ascii_letters
     result_str = ''.join(random.choice(chars) for _i in range(length))
@@ -206,14 +220,13 @@ def test_scan_git_history_merge_added_removed2() -> None:
                         runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
     assert len(report.failed_checks) == 2
     assert ((report.failed_checks[0].removed_commit_hash == '697308e61171e33224757e620aaf67b1a877c99d'
-            and report.failed_checks[1].removed_commit_hash is None)
+             and report.failed_checks[1].removed_commit_hash is None)
             or (report.failed_checks[1].removed_commit_hash == '697308e61171e33224757e620aaf67b1a877c99d'
-            and report.failed_checks[0].removed_commit_hash is None))
+                and report.failed_checks[0].removed_commit_hash is None))
     assert ((report.failed_checks[0].added_commit_hash == '900b1e8f6f336a92e8f5fca3babca764e32c3b3d'
-            and report.failed_checks[1].added_commit_hash == '3c8cb7eedb3986308c96713fc65b006adcf3bc44')
+             and report.failed_checks[1].added_commit_hash == '3c8cb7eedb3986308c96713fc65b006adcf3bc44')
             or (report.failed_checks[1].added_commit_hash == '900b1e8f6f336a92e8f5fca3babca764e32c3b3d'
-            and report.failed_checks[0].added_commit_hash == '3c8cb7eedb3986308c96713fc65b006adcf3bc44'))
-
+                and report.failed_checks[0].added_commit_hash == '3c8cb7eedb3986308c96713fc65b006adcf3bc44'))
 
 
 @mock.patch('checkov.secrets.scan_git_history.get_commits_diff', mock_git_repo_commits_too_much)
@@ -234,3 +247,15 @@ def test_scan_history_secrets_timeout() -> None:
         finished = scan_history(valid_dir_path, secrets, 1)
 
     assert finished is False
+
+
+@mock.patch('checkov.secrets.scan_git_history.get_commits_diff', mock_git_repo_commits_remove_file)
+def test_scan_git_history_remove_file() -> None:
+    valid_dir_path = "/Users/lshindelman/development/test4"
+
+    runner = Runner()
+    report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
+                        runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
+    assert len(report.failed_checks) == 1
+    assert (report.failed_checks[0].removed_commit_hash == '4bd08cd0b2874025ce32d0b1e9cd84ca20d59ce1' and
+            report.failed_checks[0].added_commit_hash == '63342dbee285973a37770bbb1ff4258a3184901e')
