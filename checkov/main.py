@@ -211,7 +211,8 @@ def run(banner: str = checkov_banner, argv: list[str] = sys.argv[1:]) -> int | N
                                  block_list_secret_scan=config.block_list_secret_scan,
                                  deep_analysis=config.deep_analysis,
                                  repo_root_for_plan_enrichment=config.repo_root_for_plan_enrichment,
-                                 enable_git_history_secret_scan=config.scan_secrets_history)
+                                 enable_git_history_secret_scan=config.scan_secrets_history,
+                                 git_history_timeout=config.secrets_history_timeout)
 
     source_env_val = os.getenv('BC_SOURCE', 'cli')
     source = get_source_type(source_env_val)
@@ -655,7 +656,8 @@ class Checkov:
                 resource_attr_to_omit=self.config.mask,
                 # TODO modify the output for git_history secret and remove the rewrite of enable_git_history_secret_scan
                 # enable_git_history_secret_scan=self.config.scan_secrets_history,
-                enable_git_history_secret_scan=False
+                enable_git_history_secret_scan=False,
+                git_history_timeout=self.config.secrets_history_timeout
             )
 
             source_env_val = os.getenv('BC_SOURCE', 'cli')

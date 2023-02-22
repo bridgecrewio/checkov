@@ -4,6 +4,7 @@ import logging
 import os
 from collections import defaultdict
 from typing import TYPE_CHECKING, Dict, Tuple, List
+from checkov.common.util import stopit
 from detect_secrets.core import scan
 from typing_extensions import TypedDict
 
@@ -58,31 +59,38 @@ def get_commits_diff(root_folder: str) -> Dict[str, Dict[str, str]]:
     return commits_diff
 
 
-def scan_history(root_folder: str, secrets: SecretsCollection) -> None:
-    commits_diff = get_commits_diff(root_folder)
-    if not commits_diff:
-        return
-    scanned_file_count = 0
-    # the secret key will be {file name}_{hash_value}_{type}
-    secret_map: Dict[str, List[EnrichedPotentialSecret]] = {}
-    for commit_hash in commits_diff.keys():
-        commit = commits_diff[commit_hash]
-        for file_name in commit.keys():
-            file_diff = commit[file_name]
-            file_results = [*scan.scan_diff(file_diff)]
-            if file_results:
-                logging.info(
-                    f"Found {len(file_results)} secrets in file path {file_name} in commit {commit_hash}")
-                logging.info(file_results)
-                set_secret_map(file_results, secret_map, file_name, commit_hash)
-            scanned_file_count += 1
-    for secrets_data in secret_map.values():
-        for secret_data in secrets_data:
-            removed = secret_data["removed_commit_hash"] if secret_data["removed_commit_hash"] else GIT_HISTORY_NOT_BEEN_REMOVED
-            key = f'{secret_data["added_commit_hash"]}_{removed}_{secret_data["potential_secret"].filename}'
-            secrets[key].add(secret_data["potential_secret"])
-    logging.info(f"Scanned {scanned_file_count} git history files")
-
+def scan_history(root_folder: str, secrets: SecretsCollection, timeout: int = 1) -> bool:
+    """return true if the scan finished without timeout"""
+    # mark the scan to finish within the timeout
+    with stopit.ThreadingTimeout(timeout) as to_ctx_mgr:
+        commits_diff = get_commits_diff(root_folder)
+        if not commits_diff:
+            return
+        scanned_file_count = 0
+        # the secret key will be {file name}_{hash_value}_{type}
+        secret_map: Dict[str, List[EnrichedPotentialSecret]] = {}
+        for commit_hash in commits_diff.keys():
+            commit = commits_diff[commit_hash]
+            for file_name in commit.keys():
+                file_diff = commit[file_name]
+                file_results = [*scan.scan_diff(file_diff)]
+                if file_results:
+                    logging.info(
+                        f"Found {len(file_results)} secrets in file path {file_name} in commit {commit_hash}")
+                    logging.info(file_results)
+                    set_secret_map(file_results, secret_map, file_name, commit_hash)
+                scanned_file_count += 1
+        for secrets_data in secret_map.values():
+            for secret_data in secrets_data:
+                removed = secret_data["removed_commit_hash"] if secret_data["removed_commit_hash"] else GIT_HISTORY_NOT_BEEN_REMOVED
+                key = f'{secret_data["added_commit_hash"]}_{removed}_{secret_data["potential_secret"].filename}'
+                secrets[key].add(secret_data["potential_secret"])
+        logging.info(f"Scanned {scanned_file_count} git history files")
+    if to_ctx_mgr.state == to_ctx_mgr.TIMED_OUT:
+        logging.info(f"timeout reached ({timeout}), stopping scan.")
+        return False
+    # else: everything was OK
+    return True
 
 def get_added_and_removed_commit_hash(
         key: str, enable_git_history_secret_scan: bool, secret: PotentialSecret) -> Tuple[str | None, str | None]:
