@@ -1,7 +1,7 @@
 metadata:
   name: "Ensure S3 bucket policy does not allow an action with any Principal"
   category: "IAM"
-  id: "CKV_AWS_27"
+  id: "CKV2_AWS_57"
 definition:
   and:
       - cond_type: filter
