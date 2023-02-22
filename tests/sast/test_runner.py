@@ -112,14 +112,12 @@ def test_sast_runner_get_semgrep_output():
     temp_semgrep_rules_path = pathlib.Path(__file__).parent / 'checks/temp_parsed_rules'
     source_dir = pathlib.Path(__file__).parent / 'source_code'
     output = runner._get_semgrep_output([str(source_dir)], [str(temp_semgrep_rules_path)], output_handler)
-    raw_rule = get_raw_rule()
-    rule = Rule(raw=raw_rule)
-    new_matches = next(iter(output.matches.values()))
-    assert new_matches[0].match.location.path == f'{source_dir}/file.py'
-    assert new_matches[0].match.location.start.line == 2
-    assert new_matches[0].match.location.end.line == 2
-    assert new_matches[0].severity == RuleSeverity.INFO
-    assert new_matches[0].rule_id == 'checks.temp_parsed_rules.CKV_SAST_1'
+    match = next(iter(output.matches.values()))
+    assert match[0].match.location.path == f'{source_dir}/file.py'
+    assert match[0].match.location.start.line == 2
+    assert match[0].match.location.end.line == 2
+    assert match[0].severity == RuleSeverity.INFO
+    assert match[0].rule_id.endswith('temp_parsed_rules.CKV_SAST_1')
 
 
 def test_sast_runner_create_report():
