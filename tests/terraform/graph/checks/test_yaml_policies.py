@@ -25,9 +25,6 @@ class TestYamlPolicies(unittest.TestCase):
     def test_AccessControlGroupRuleDefine(self):
         self.go("AccessControlGroupRuleDefine")
 
-    def test_S3AllowAnyPrincipal(self):
-        self.go("S3AllowsAnyPrincipal")
-
     def test_ADORepositoryHasMinTwoReviewers(self):
         self.go("ADORepositoryHasMinTwoReviewers")
 

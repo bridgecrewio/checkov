@@ -29,7 +29,6 @@ class S3AllowsAnyPrincipal(BaseResourceCheck):
             for statement in force_list(policy_block['Statement']):
                 if statement['Effect'] == 'Deny' or 'Principal' not in statement:
                     continue
-
                 principal = statement['Principal']
                 if principal == '*':
                     return CheckResult.FAILED

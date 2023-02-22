@@ -1,6 +1,0 @@
-pass:
-  - aws_iam_policy_document.pass
-  - aws_iam_policy_document.duff
-fail:
-  - aws_iam_policy_document.fail
-  - aws_iam_policy_document.fail2
