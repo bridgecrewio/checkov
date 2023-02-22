@@ -22,9 +22,3 @@ definition:
           attribute: "statement.[*].principals.identifiers[*]"
           operator: jsonpath_not_equals
           value: "*"
-#      - cond_type: attribute
-#        resource_types:
-#          - data.aws_iam_policy_document
-#        attribute: statement.principals.identifiers
-#        operator: "equals"
-#        value: "*"
