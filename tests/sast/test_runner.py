@@ -109,9 +109,9 @@ def test_sast_runner_get_semgrep_output():
     runner = Runner()
     output_settings = OutputSettings(output_format=OutputFormat.JSON)
     output_handler = OutputHandler(output_settings)
-    temp_semgrep_rules_path = os.path.join(pathlib.Path(__file__).parent.resolve(), 'checks', 'temp_parsed_rules')
-    source_dir = os.path.join(pathlib.Path(__file__).parent.resolve(), 'source_code')
-    output = runner._get_semgrep_output([source_dir], [temp_semgrep_rules_path], output_handler)
+    temp_semgrep_rules_path = pathlib.Path(__file__).parent / 'checks/temp_parsed_rules'
+    source_dir = pathlib.Path(__file__).parent / 'source_code'
+    output = runner._get_semgrep_output([str(source_dir)], [str(temp_semgrep_rules_path)], output_handler)
     raw_rule = get_raw_rule()
     rule = Rule(raw=raw_rule)
     assert output.matches[rule][0].match.location.path == f'{source_dir}/file.py'
