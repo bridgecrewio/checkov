@@ -42,7 +42,7 @@ class Registry(BaseCheckRegistry):
     def _load_checks_from_dir(self, directory: str, sast_languages: Set[SastLanguages]) -> None:
         dir = os.path.expanduser(directory)
         self.logger.debug(f'Loading external checks from {dir}')
-        rules = {}  # constructed as be a dict of {rule_id: rule_object} to avoid duplications
+        rules = {}  # constructed as a dict of {rule_id: rule_object} to avoid duplications
         for root, d_names, f_names in os.walk(dir):
             self.logger.debug(f"Searching through {d_names} and {f_names}")
             for file in f_names:
