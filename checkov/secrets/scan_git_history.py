@@ -8,6 +8,7 @@ from checkov.common.util import stopit
 from detect_secrets.core import scan
 from typing_extensions import TypedDict
 
+from checkov.common.util.str_utils import convert_to_seconds
 from checkov.secrets.consts import GIT_HISTORY_NOT_BEEN_REMOVED
 
 if TYPE_CHECKING:
@@ -59,7 +60,7 @@ def get_commits_diff(root_folder: str) -> Dict[str, Dict[str, str]]:
     return commits_diff
 
 
-def scan_history(root_folder: str, secrets: SecretsCollection, timeout: int = 1) -> bool:
+def scan_history(root_folder: str, secrets: SecretsCollection, timeout: int = convert_to_seconds('12h')) -> bool:
     """return true if the scan finished without timeout"""
     # mark the scan to finish within the timeout
     with stopit.ThreadingTimeout(timeout) as to_ctx_mgr:
