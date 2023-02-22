@@ -92,6 +92,7 @@ def scan_history(root_folder: str, secrets: SecretsCollection, timeout: int = co
     # else: everything was OK
     return True
 
+
 def get_added_and_removed_commit_hash(
         key: str, enable_git_history_secret_scan: bool, secret: PotentialSecret) -> Tuple[str | None, str | None]:
     """
