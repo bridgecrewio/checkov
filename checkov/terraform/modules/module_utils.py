@@ -14,6 +14,7 @@ import hcl2
 from lark import Tree
 import re
 
+from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.json_utils import CustomJSONEncoder
 
 if TYPE_CHECKING:
@@ -28,6 +29,7 @@ from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_PREFIX
 ENTITY_NAME_PATTERN = re.compile(r"[^\W0-9][\w-]*")
 RESOLVED_MODULE_PATTERN = re.compile(r"\[.+\#.+\]")
 _Hcl2Payload: TypeAlias = "dict[str, list[dict[str, Any]]]"
+external_modules_download_path = os.environ.get('EXTERNAL_MODULES_DIR', DEFAULT_EXTERNAL_MODULES_DIR)
 
 
 def is_valid_block(block: Any) -> bool:

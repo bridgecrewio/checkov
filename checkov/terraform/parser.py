@@ -23,8 +23,6 @@ from checkov.terraform.modules.module_utils import load_or_die_quietly, safe_ind
     remove_module_dependency_from_path, get_module_dependency_map, get_module_dependency_map_support_nested_modules, \
     clean_parser_types, serialize_definitions, get_new_module
 
-external_modules_download_path = os.environ.get('EXTERNAL_MODULES_DIR', DEFAULT_EXTERNAL_MODULES_DIR)
-
 
 def _filter_ignored_paths(root: str, paths: list[str], excluded_paths: list[str] | None) -> None:
     filter_ignored_paths(root, paths, excluded_paths)
