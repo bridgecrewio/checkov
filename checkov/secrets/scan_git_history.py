@@ -171,8 +171,8 @@ def handle_renamed_file(rename_from: str,
                 new_secret = copy.deepcopy(secret_data['potential_secret'])
                 new_secret.filename = rename_to
                 temp_map[new_secret_key].append({'added_commit_hash': commit_hash,
-                                                   'removed_commit_hash': '',
-                                                   'potential_secret': new_secret})
+                                                 'removed_commit_hash': '',
+                                                 'potential_secret': new_secret})
     secret_map.update(temp_map)
 
 
@@ -182,7 +182,8 @@ def get_added_and_removed_commit_hash(
     now we have only the current commit_hash - in the added_commit_hash or in the removed_commit_hash.
     in the next step we will add the connection and the missing data
     The key is built like this:
-    '{added_commit_hash}_{removed_commit_hash or the string SECRET_NOT_BEEN_REMOVED if the secret not been removed}_{file_name}'
+    '{added_commit_hash}_{removed_commit_hash or the string SECRET_NOT_BEEN_REMOVED
+    if the secret not been removed}_{file_name}'
     """
     if not enable_git_history_secret_scan:
         return None, None
