@@ -110,6 +110,34 @@ def mock_git_repo_commits_remove_file(root_folder: str) -> Dict[str, Dict[str, s
     }
 
 
+def mock_remove_file_with_two_equal_secret(root_folder: str) -> Dict[str, Dict[str, str | Dict[str, str]]]:
+    return {
+        "d76977ac656abdaa77a7791a11adfb96efb48a35": {
+            "test3.py": "diff --git a/test3.py b/test3.py\nindex 0000..0000 0000\n--- a/test3.py\n+++ b/test3.py\n@@ -1,4 +1,4 @@\n-\n+AWS_ACCESS_KEY_ID=\"AKIAZZZZZZZZZZZZZZZZ\"\n \n if __name__ == '__main__':\n     print('test')\n"
+        },
+        "c211bfc4ae4514627f104ce0bf664dd9521d9c16": {
+            "test3.py": "diff --git a/test3.py b/test3.py\nindex 0000..0000 0000\n--- a/test3.py\n+++ b/test3.py\n@@ -1,4 +1,5 @@\n AWS_ACCESS_KEY_ID=\"AKIAZZZZZZZZZZZZZZZZ\"\n \n if __name__ == '__main__':\n+    AWS_ACCESS_KEY_ID = \"AKIAZZZZZZZZZZZZZZZZ\"\n     print('test')\n"
+        },
+        "8d96e18c1c924ba396211bf2d4fdd8d2418b8420": {
+            "test3.py": "diff --git a/test3.py b/None\nindex 0000..0000 0000\n--- a/test3.py\n+++ b/None\n@@ -1,5 +0,0 @@\n-AWS_ACCESS_KEY_ID=\"AKIAZZZZZZZZZZZZZZZZ\"\n-\n-if __name__ == '__main__':\n-    AWS_ACCESS_KEY_ID = \"AKIAZZZZZZZZZZZZZZZZ\"\n-    print('test')\n"
+        }
+    }
+
+
+def mock_remove_file_with_two_secret(root_folder: str) -> Dict[str, Dict[str, str | Dict[str, str]]]:
+    return {
+        "f0d117c1d65e90d4d6d7a1b6aaf4e23f4fd33b82": {
+            "main.py": "diff --git a/main.py b/main.py\nindex 0000..0000 0000\n--- a/main.py\n+++ b/main.py\n@@ -1,3 +1,4 @@\n+AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n \n if __name__ == '__main__':\n \n"
+        },
+        "1166ee830a03f6721fb8cba794496ee82895a0ba": {
+            "main.py": "diff --git a/main.py b/main.py\nindex 0000..0000 0000\n--- a/main.py\n+++ b/main.py\n@@ -1,5 +1,5 @@\n AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n \n if __name__ == '__main__':\n-\n+    TEST_PASSWORD_1 = \"Zo5Zhexnf9TUggdn+zBKGEkmUUvuKzVN+/fKPaMBA4zVyef4irH5H5YfwoC4IqAX0DNoMD12yIF67nIdIMg13atW4WM33eNMfXlE\"\n     print('test')\n"
+        },
+        "bdb3678fc44702132fa7d661a1c425e65c1e9dde": {
+            "main.py": "diff --git a/main.py b/None\nindex 0000..0000 0000\n--- a/main.py\n+++ b/None\n@@ -1,5 +0,0 @@\n-AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n-\n-if __name__ == '__main__':\n-    TEST_PASSWORD_1 = \"Zo5Zhexnf9TUggdn+zBKGEkmUUvuKzVN+/fKPaMBA4zVyef4irH5H5YfwoC4IqAX0DNoMD12yIF67nIdIMg13atW4WM33eNMfXlE\"\n-    print('test')\n"
+        }
+    }
+
+
 def mock_git_repo_commits_rename_file(root_folder: str) -> Dict[str, Dict[str, str | Dict[str, str]]]:
     return {
         "adef7360b86c62666f0a70521214220763b9c593": {
@@ -321,3 +349,26 @@ def test_scan_git_history_modify_and_rename_file() -> None:
     assert len(report.failed_checks) == 1
     assert (report.failed_checks[0].removed_commit_hash == '61ee79aea3d151a40c8e054295f330d233eaf7d5' and
             report.failed_checks[0].added_commit_hash == '62da8e5e04ec5c3a474467e9012bf3427cff0407')
+
+
+@mock.patch('checkov.secrets.scan_git_history.get_commits_diff', mock_remove_file_with_two_equal_secret)
+def test_scan_git_history_rename_file_with_two_equal_secrets() -> None:
+    valid_dir_path = "/Users/lshindelman/development/test4"
+
+    runner = Runner()
+    report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
+                        runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
+    assert len(report.failed_checks) == 2
+    assert (report.failed_checks[0].removed_commit_hash == report.failed_checks[1].removed_commit_hash and
+            report.failed_checks[1].removed_commit_hash is not None)
+
+
+@mock.patch('checkov.secrets.scan_git_history.get_commits_diff', mock_remove_file_with_two_secret)
+def test_scan_git_history_rename_file_with_two_secrets() -> None:
+    valid_dir_path = "/Users/lshindelman/development/test4"
+    runner = Runner()
+    report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
+                        runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
+    assert len(report.failed_checks) == 2
+    assert (report.failed_checks[0].removed_commit_hash == report.failed_checks[1].removed_commit_hash and
+            report.failed_checks[1].removed_commit_hash is not None)

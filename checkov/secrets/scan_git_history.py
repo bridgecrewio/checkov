@@ -82,8 +82,8 @@ def scan_history(root_folder: str, secrets: SecretsCollection, timeout: int = 43
                         file_results = [*scan.scan_diff(file_diff)]
                         if file_results:
                             logging.info(
-                                f"Found {len(file_results)} secrets in file path {file_name} in commit {commit_hash}")
-                            logging.info(file_results)
+                                f"Found {len(file_results)} secrets in file path {file_name} in commit {commit_hash}, file_results = {file_results}")
+
                             set_secret_map(file_results, secret_map, file_name, commit_hash)
                     elif isinstance(file_diff, dict):
                         rename_from = file_diff['rename_from']
