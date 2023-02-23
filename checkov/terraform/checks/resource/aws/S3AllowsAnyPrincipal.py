@@ -1,3 +1,5 @@
+from json import JSONDecodeError
+
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.util.type_forcers import force_list
@@ -20,10 +22,13 @@ class S3AllowsAnyPrincipal(BaseResourceCheck):
         if not isinstance(conf['policy'][0], str):
             policy_block = conf['policy'][0]
         else:
-            try:
-                policy_block = json.loads(conf['policy'][0])
-            except Exception:  # nosec
+            if "data.aws_iam_policy_document" in conf['policy'][0]:
                 return CheckResult.UNKNOWN
+            else:
+                try:
+                    policy_block = json.loads(conf['policy'][0])
+                except JSONDecodeError:  # nosec
+                    return CheckResult.UNKNOWN
 
         if isinstance(policy_block, dict) and 'Statement' in policy_block.keys():
             for statement in force_list(policy_block['Statement']):
