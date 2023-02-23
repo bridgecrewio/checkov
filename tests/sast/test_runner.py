@@ -184,19 +184,19 @@ def test_sast_runner():
     assert len(java_report.failed_checks) == 2
     assert java_report.failed_checks[0].check_id == 'seam-log-injection'
     assert java_report.failed_checks[0].severity.name == 'HIGH'
-    assert java_report.failed_checks[0].file_path == 'file.java'
+    assert java_report.failed_checks[0].file_path == 'fail.java'
     assert java_report.failed_checks[0].check_name == 'seam log injection'
     assert java_report.failed_checks[0].code_block == [(31, 'log.info("request: method="+httpRequest.getMethod()+", URL="+httpRequest.getRequestURI());\n')]
-    assert java_report.failed_checks[0].file_abs_path == os.path.join(source, 'file.java')
+    assert java_report.failed_checks[0].file_abs_path == os.path.join(source, 'fail.java')
     assert java_report.failed_checks[0].file_line_range == [31, 31]
     assert java_report.failed_checks[0].check_result.get('result') == CheckResult.FAILED
 
     assert java_report.failed_checks[1].check_id == 'seam-log-injection'
     assert java_report.failed_checks[1].severity.name == 'HIGH'
-    assert java_report.failed_checks[1].file_path == 'file.java'
+    assert java_report.failed_checks[1].file_path == 'fail.java'
     assert java_report.failed_checks[1].check_name == 'seam log injection'
     assert java_report.failed_checks[1].code_block == [(40, 'log.info("Current logged in user : " + user.getUsername());\n')]
-    assert java_report.failed_checks[1].file_abs_path == os.path.join(source, 'file.java')
+    assert java_report.failed_checks[1].file_abs_path == os.path.join(source, 'fail.java')
     assert java_report.failed_checks[1].file_line_range == [40, 40]
     assert java_report.failed_checks[1].check_result.get('result') == CheckResult.FAILED
 

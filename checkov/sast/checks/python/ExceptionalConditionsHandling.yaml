@@ -16,5 +16,11 @@ definition:
     attribute: pattern
     operator: not_within
     value: |
-    import pytest
-    ...
+      import pytest
+      ...
+  - cond_type: filter
+    attribute: pattern
+    operator: not_within
+    value: |
+      import unittest
+      ...

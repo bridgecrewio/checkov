@@ -1,4 +1,4 @@
-from checkov.sast.checks.checks_parser import SastCheckParser
+from checkov.sast.checks_infra.checks_parser import SastCheckParser
 
 
 def test_metadata_parsing():
