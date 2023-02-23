@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import List, Optional, Any
 
 from checkov.common.output.common import SCADetails
 
@@ -29,6 +29,12 @@ def get_package_type(package_name: str, package_version: str, sca_details: SCADe
         return str(sca_details.package_types.get(f"{package_name}@{package_version}", ""))
     else:
         return ""
+
+
+def get_registry_url(package: dict[str, Any]) -> str:
+    if "registry" in package:
+        return package.get("registry", "")
+    return package.get("registryUrl", "")
 
 
 def normalize_twistcli_language(language: str) -> str:
