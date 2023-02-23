@@ -26,7 +26,7 @@ if sys.version_info < (2, 7):
             pass
 
         def createLock(self):
-            self.lock = None  # noqa
+            self.lock = None
 else:
     from logging import NullHandler
 
@@ -140,7 +140,7 @@ class base_timeoutable(object):
             timeout = kwargs.pop(self.timeout_param, None)
             if timeout:
                 with self.to_ctx_mgr(timeout, swallow_exc=True):
-                    result = self.default  # noqa
+                    result = self.default
                     # ``result`` may not be assigned below in case of timeout
                     result = func(*args, **kwargs)
                 return result
