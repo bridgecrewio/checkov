@@ -40,7 +40,7 @@ from checkov.common.util.secrets import omit_secret_value_from_line
 from checkov.runner_filter import RunnerFilter
 from checkov.secrets.consts import ValidationStatus, VerifySecretsResult
 from checkov.secrets.coordinator import EnrichedSecret, SecretsCoordinator
-from checkov.secrets.scan_git_history import scan_history
+from checkov.secrets.scan_git_history import scan_history, get_added_and_removed_commit_hash
 from checkov.secrets.plugins.load_detectors import get_runnable_plugins
 
 if TYPE_CHECKING:
@@ -155,7 +155,7 @@ class Runner(BaseRunner[None]):
             if root_folder:
                 if runner_filter.enable_git_history_secret_scan:
                     settings.disable_filters(*['detect_secrets.filters.common.is_invalid_file'])
-                    scan_history(root_folder, secrets)
+                    scan_history(root_folder, secrets, runner_filter.git_history_timeout)
                     logging.info(f'Secrets scanning git history for root folder {root_folder}')
                 else:
                     enable_secret_scan_all_files = runner_filter.enable_secret_scan_all_files
@@ -185,12 +185,16 @@ class Runner(BaseRunner[None]):
                 self.pbar.close()
             secrets_duplication: dict[str, bool] = {}
 
-            for _, secret in secrets:
+            for key, secret in secrets:
+                added_commit_hash, removed_commit_hash = get_added_and_removed_commit_hash(
+                    key,
+                    runner_filter.enable_git_history_secret_scan,
+                    secret)
                 check_id = getattr(secret, "check_id", SECRET_TYPE_TO_ID.get(secret.type))
                 if not check_id:
                     logging.debug(f'Secret was filtered - no check_id for line_number {secret.line_number}')
                     continue
-                secret_key = f'{secret.filename}_{secret.line_number}_{secret.secret_hash}'
+                secret_key = f'{key}_{secret.line_number}_{secret.secret_hash}'
                 if secret.secret_value and is_potential_uuid(secret.secret_value):
                     logging.info(f"Removing secret due to UUID filtering: {hashlib.sha256(secret.secret_value.encode('utf-8')).hexdigest()}")
                     continue
@@ -225,7 +229,7 @@ class Runner(BaseRunner[None]):
                     root_folder=root_folder
                 ) or result
                 relative_file_path = f'/{os.path.relpath(secret.filename, root_folder)}'
-                resource = f'{relative_file_path}:{secret.secret_hash}'
+                resource = f'{relative_file_path}:{added_commit_hash}:{secret.secret_hash}' if added_commit_hash else f'{relative_file_path}:{secret.secret_hash}'
                 report.add_resource(resource)
                 # 'secret.secret_value' can actually be 'None', but only when 'PotentialSecret' was created
                 # via 'load_secret_from_dict'
@@ -244,7 +248,9 @@ class Runner(BaseRunner[None]):
                     check_class="",
                     evaluations=None,
                     file_abs_path=os.path.abspath(secret.filename),
-                    validation_status=ValidationStatus.UNAVAILABLE.value
+                    validation_status=ValidationStatus.UNAVAILABLE.value,
+                    added_commit_hash=added_commit_hash,
+                    removed_commit_hash=removed_commit_hash
                 ))
 
             enriched_secrets_s3_path = bc_integration.persist_enriched_secrets(self.secrets_coordinator.get_secrets())
