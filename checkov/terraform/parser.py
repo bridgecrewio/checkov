@@ -3,15 +3,12 @@ from __future__ import annotations
 import logging
 import os
 from copy import deepcopy
-from json import dumps, loads
 from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List
 
 import deep_merge
-from lark import Tree
 
 from checkov.common.runners.base_runner import filter_ignored_paths, IGNORE_HIDDEN_DIRECTORY_ENV, strtobool
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
-from checkov.common.util.json_utils import CustomJSONEncoder
 from checkov.common.util.type_forcers import force_list
 from checkov.common.variables.context import EvaluationContext
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
@@ -22,8 +19,9 @@ from checkov.terraform.module_loading.registry import module_loader_registry as 
     ModuleLoaderRegistry
 from checkov.common.util.parser_utils import get_tf_definition_key_from_module_dependency, \
     TERRAFORM_NESTED_MODULE_PATH_ENDING, is_acceptable_module_param
-from checkov.terraform.modules.module_utils import _load_or_die_quietly, _Hcl2Payload, _safe_index, \
-    _remove_module_dependency_in_path, get_module_dependency_map, get_module_dependency_map_support_nested_modules
+from checkov.terraform.modules.module_utils import load_or_die_quietly, safe_index, \
+    remove_module_dependency_from_path, get_module_dependency_map, get_module_dependency_map_support_nested_modules, \
+    clean_parser_types, serialize_definitions, get_new_module
 
 external_modules_download_path = os.environ.get('EXTERNAL_MODULES_DIR', DEFAULT_EXTERNAL_MODULES_DIR)
 
@@ -110,10 +108,10 @@ class Parser:
 
     def parse_file(self, file: str, parsing_errors: Optional[Dict[str, Exception]] = None) -> Optional[Dict[str, Any]]:
         if file.endswith(".tf") or file.endswith(".tf.json") or file.endswith(".hcl"):
-            parse_result = _load_or_die_quietly(file, parsing_errors)
+            parse_result = load_or_die_quietly(file, parsing_errors)
             if parse_result:
-                parse_result = self._serialize_definitions(parse_result)
-                parse_result = self._clean_parser_types(parse_result)
+                parse_result = serialize_definitions(parse_result)
+                parse_result = clean_parser_types(parse_result)
                 return parse_result
 
         return None
@@ -266,12 +264,12 @@ class Parser:
             var_value_and_file_map[key[7:]] = value, f"env:{key}"
             self.external_variables_data.append((key[7:], value, f"env:{key}"))
         if hcl_tfvars:  # terraform.tfvars
-            data = _load_or_die_quietly(hcl_tfvars, self.out_parsing_errors, clean_definitions=False)
+            data = load_or_die_quietly(hcl_tfvars, self.out_parsing_errors, clean_definitions=False)
             if data:
-                var_value_and_file_map.update({k: (_safe_index(v, 0), hcl_tfvars.path) for k, v in data.items()})
-                self.external_variables_data.extend([(k, _safe_index(v, 0), hcl_tfvars.path) for k, v in data.items()])
+                var_value_and_file_map.update({k: (safe_index(v, 0), hcl_tfvars.path) for k, v in data.items()})
+                self.external_variables_data.extend([(k, safe_index(v, 0), hcl_tfvars.path) for k, v in data.items()])
         if json_tfvars:  # terraform.tfvars.json
-            data = _load_or_die_quietly(json_tfvars, self.out_parsing_errors)
+            data = load_or_die_quietly(json_tfvars, self.out_parsing_errors)
             if data:
                 var_value_and_file_map.update({k: (v, json_tfvars.path) for k, v in data.items()})
                 self.external_variables_data.extend([(k, v, json_tfvars.path) for k, v in data.items()])
@@ -326,7 +324,7 @@ class Parser:
     def _load_files(self, files: list[os.DirEntry]):
         def _load_file(file: os.DirEntry):
             parsing_errors = {}
-            result = _load_or_die_quietly(file, parsing_errors)
+            result = load_or_die_quietly(file, parsing_errors)
             # the exceptions type can un-pickleable
             for path, e in parsing_errors.items():
                 parsing_errors[path] = e
@@ -434,7 +432,7 @@ class Parser:
                     # Special handling for local sources to make sure we aren't double-parsing
                     if source.startswith("./") or source.startswith("../"):
                         source = os.path.normpath(
-                            os.path.join(os.path.dirname(_remove_module_dependency_in_path(file)), source))
+                            os.path.join(os.path.dirname(remove_module_dependency_from_path(file)), source))
 
                     version = module_call_data.get("version", "latest")
                     if version and isinstance(version, list):
@@ -545,8 +543,8 @@ class Parser:
                              download_external_modules=download_external_modules,
                              external_modules_download_path=external_modules_download_path, excluded_paths=excluded_paths,
                              vars_files=vars_files, external_modules_content_cache=external_modules_content_cache)
-        tf_definitions = self._clean_parser_types(tf_definitions)
-        tf_definitions = self._serialize_definitions(tf_definitions)
+        tf_definitions = clean_parser_types(tf_definitions)
+        tf_definitions = serialize_definitions(tf_definitions)
 
         module = None
         if create_graph:
@@ -587,7 +585,7 @@ class Parser:
             module_dependency_map, tf_definitions, dep_index_mapping = get_module_dependency_map_support_nested_modules(tf_definitions)
         else:
             module_dependency_map, tf_definitions, dep_index_mapping = get_module_dependency_map(tf_definitions)
-        module = self.get_new_module(
+        module = get_new_module(
             source_dir=source_dir,
             module_dependency_map=module_dependency_map,
             module_address_map=self.module_address_map,
@@ -605,36 +603,6 @@ class Parser:
                     logging.warning(e, exc_info=False)
         return module, tf_definitions
 
-    @staticmethod
-    def _clean_parser_types(conf: dict[str, Any]) -> dict[str, Any]:
-        if not conf:
-            return conf
-
-        sorted_keys = list(conf.keys())
-        first_key_type = type(sorted_keys[0])
-        if first_key_type is None:
-            return {}
-
-        if all(isinstance(x, first_key_type) for x in sorted_keys):
-            sorted_keys.sort()
-
-        # Create a new dict where the keys are sorted alphabetically
-        sorted_conf = {key: conf[key] for key in sorted_keys}
-        for attribute, values in sorted_conf.items():
-            if attribute == 'alias':
-                continue
-            if isinstance(values, list):
-                sorted_conf[attribute] = Parser._clean_parser_types_lst(values)
-            elif isinstance(values, dict):
-                sorted_conf[attribute] = Parser._clean_parser_types(values)
-            elif isinstance(values, str) and values in ('true', 'false'):
-                sorted_conf[attribute] = True if values == 'true' else False
-            elif isinstance(values, set):
-                sorted_conf[attribute] = Parser._clean_parser_types_lst(list(values))
-            elif isinstance(values, Tree):
-                sorted_conf[attribute] = str(values)
-        return sorted_conf
-
     def get_file_key_with_nested_data(self, file, nested_data):
         if not nested_data:
             return file
@@ -651,46 +619,6 @@ class Parser:
                                                     nested_data.get('module_index'),
                                                     nested_data.get('nested_modules_data'))
         return get_tf_definition_key_from_module_dependency(key, f"{file}{nested_key}", module_index)
-
-    @staticmethod
-    def _clean_parser_types_lst(values: list[Any]) -> list[Any]:
-        for idx, val in enumerate(values):
-            if isinstance(val, dict):
-                values[idx] = Parser._clean_parser_types(val)
-            elif isinstance(val, list):
-                values[idx] = Parser._clean_parser_types_lst(val)
-            elif isinstance(val, str):
-                if val == 'true':
-                    values[idx] = True
-                elif val == 'false':
-                    values[idx] = False
-            elif isinstance(val, set):
-                values[idx] = Parser._clean_parser_types_lst(list(val))
-        str_values_in_lst = [val for val in values if isinstance(val, str)]
-        str_values_in_lst.sort()
-        result_values = [val for val in values if not isinstance(val, str)]
-        result_values.extend(str_values_in_lst)
-        return result_values
-
-    @staticmethod
-    def _serialize_definitions(tf_definitions: dict[str, _Hcl2Payload]) -> dict[str, _Hcl2Payload]:
-        return loads(dumps(tf_definitions, cls=CustomJSONEncoder))
-
-    @staticmethod
-    def get_new_module(
-            source_dir: str,
-            module_dependency_map: Dict[str, List[List[str]]],
-            module_address_map: Dict[Tuple[str, str], str],
-            external_modules_source_map: Dict[Tuple[str, str], str],
-            dep_index_mapping: Dict[Tuple[str, str], List[str]],
-    ) -> Module:
-        return Module(
-            source_dir=source_dir,
-            module_dependency_map=module_dependency_map,
-            module_address_map=module_address_map,
-            external_modules_source_map=external_modules_source_map,
-            dep_index_mapping=dep_index_mapping
-        )
 
     def add_tfvars(self, module: Module, source: str) -> None:
         if not self.external_variables_data:

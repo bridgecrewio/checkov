@@ -11,12 +11,17 @@ from pathlib import Path
 from typing import Any, Optional, TYPE_CHECKING
 
 import hcl2
+from lark import Tree
 import re
+
+from checkov.common.util.json_utils import CustomJSONEncoder
+
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
 
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
 from checkov.terraform.graph_builder.utils import remove_module_dependency_in_path
+from checkov.terraform.graph_builder.graph_components.module import Module
 from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_PREFIX, TERRAFORM_NESTED_MODULE_PATH_ENDING, \
     is_nested, get_abs_path, get_module_from_full_path
 
@@ -25,7 +30,7 @@ RESOLVED_MODULE_PATTERN = re.compile(r"\[.+\#.+\]")
 _Hcl2Payload: TypeAlias = "dict[str, list[dict[str, Any]]]"
 
 
-def _is_valid_block(block: Any) -> bool:
+def is_valid_block(block: Any) -> bool:
     if not isinstance(block, dict):
         return True
 
@@ -41,12 +46,12 @@ def _is_valid_block(block: Any) -> bool:
 
 def validate_malformed_definitions(raw_data: _Hcl2Payload) -> _Hcl2Payload:
     return {
-        block_type: [block for block in blocks if _is_valid_block(block)]
+        block_type: [block for block in blocks if is_valid_block(block)]
         for block_type, blocks in raw_data.items()
     }
 
 
-def _load_or_die_quietly(
+def load_or_die_quietly(
     file: str | Path, parsing_errors: dict[str, Exception], clean_definitions: bool = True
 ) -> Optional[_Hcl2Payload]:
     """
@@ -87,7 +92,7 @@ def clean_bad_definitions(tf_definition_list: _Hcl2Payload) -> _Hcl2Payload:
     }
 
 
-def _safe_index(sequence_hopefully: Sequence[Any], index: int) -> Any:
+def safe_index(sequence_hopefully: Sequence[Any], index: int) -> Any:
     try:
         return sequence_hopefully[index]
     except IndexError:
@@ -95,7 +100,7 @@ def _safe_index(sequence_hopefully: Sequence[Any], index: int) -> Any:
         return None
 
 
-def _remove_module_dependency_in_path(path: str) -> str:
+def remove_module_dependency_from_path(path: str) -> str:
     """
     :param path: path that looks like "dir/main.tf[other_dir/x.tf#0]
     :return: only the outer path: dir/main.tf
@@ -222,3 +227,73 @@ def get_nested_modules_data_as_list(file_path):
         file_path = module
     modules_list.reverse()
     return modules_list, path
+
+
+def clean_parser_types(conf: dict[str, Any]) -> dict[str, Any]:
+    if not conf:
+        return conf
+
+    sorted_keys = list(conf.keys())
+    first_key_type = type(sorted_keys[0])
+    if first_key_type is None:
+        return {}
+
+    if all(isinstance(x, first_key_type) for x in sorted_keys):
+        sorted_keys.sort()
+
+    # Create a new dict where the keys are sorted alphabetically
+    sorted_conf = {key: conf[key] for key in sorted_keys}
+    for attribute, values in sorted_conf.items():
+        if attribute == 'alias':
+            continue
+        if isinstance(values, list):
+            sorted_conf[attribute] = clean_parser_types_lst(values)
+        elif isinstance(values, dict):
+            sorted_conf[attribute] = clean_parser_types(values)
+        elif isinstance(values, str) and values in ('true', 'false'):
+            sorted_conf[attribute] = True if values == 'true' else False
+        elif isinstance(values, set):
+            sorted_conf[attribute] = clean_parser_types_lst(list(values))
+        elif isinstance(values, Tree):
+            sorted_conf[attribute] = str(values)
+    return sorted_conf
+
+
+def clean_parser_types_lst(values: list[Any]) -> list[Any]:
+    for idx, val in enumerate(values):
+        if isinstance(val, dict):
+            values[idx] = clean_parser_types(val)
+        elif isinstance(val, list):
+            values[idx] = clean_parser_types_lst(val)
+        elif isinstance(val, str):
+            if val == 'true':
+                values[idx] = True
+            elif val == 'false':
+                values[idx] = False
+        elif isinstance(val, set):
+            values[idx] = clean_parser_types_lst(list(val))
+    str_values_in_lst = [val for val in values if isinstance(val, str)]
+    str_values_in_lst.sort()
+    result_values = [val for val in values if not isinstance(val, str)]
+    result_values.extend(str_values_in_lst)
+    return result_values
+
+
+def serialize_definitions(tf_definitions: dict[str, _Hcl2Payload]) -> dict[str, _Hcl2Payload]:
+    return json.loads(json.dumps(tf_definitions, cls=CustomJSONEncoder))
+
+
+def get_new_module(
+        source_dir: str,
+        module_dependency_map: dict[str, list[list[str]]],
+        module_address_map: dict[tuple[str, str], str],
+        external_modules_source_map: dict[tuple[str, str], str],
+        dep_index_mapping: dict[tuple[str, str], list[str]],
+) -> Module:
+    return Module(
+        source_dir=source_dir,
+        module_dependency_map=module_dependency_map,
+        module_address_map=module_address_map,
+        external_modules_source_map=external_modules_source_map,
+        dep_index_mapping=dep_index_mapping
+    )
