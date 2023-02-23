@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import itertools
 import json
 import logging
 import os
+from collections import defaultdict
 from collections.abc import Sequence
+from copy import deepcopy
 from pathlib import Path
 from typing import Any, Optional
 
@@ -12,6 +15,10 @@ import re
 
 from typing_extensions import TypeAlias
 
+from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
+from checkov.terraform.graph_builder.utils import remove_module_dependency_in_path
+from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_PREFIX, TERRAFORM_NESTED_MODULE_PATH_ENDING, \
+    is_nested, get_abs_path, get_module_from_full_path
 
 ENTITY_NAME_PATTERN = re.compile(r"[^\W0-9][\w-]*")
 RESOLVED_MODULE_PATTERN = re.compile(r"\[.+\#.+\]")
@@ -96,3 +103,122 @@ def _remove_module_dependency_in_path(path: str) -> str:
     if re.findall(RESOLVED_MODULE_PATTERN, path):
         path = re.sub(RESOLVED_MODULE_PATTERN, '', path)
     return path
+
+
+def get_module_dependency_map(tf_definitions):
+    """
+    :param tf_definitions, with paths in format 'dir/main.tf[module_dir/main.tf#0]'
+    :return module_dependency_map: mapping between directories and the location of its module definition:
+            {'dir': 'module_dir/main.tf'}
+    :return tf_definitions: with paths in format 'dir/main.tf'
+    """
+    module_dependency_map = {}
+    copy_of_tf_definitions = {}
+    dep_index_mapping: dict[tuple[str, str], list[str]] = {}
+    origin_keys = list(filter(lambda k: not k.endswith(TERRAFORM_NESTED_MODULE_PATH_ENDING), tf_definitions.keys()))
+    unevaluated_keys = list(filter(lambda k: k.endswith(TERRAFORM_NESTED_MODULE_PATH_ENDING), tf_definitions.keys()))
+    for file_path in origin_keys:
+        dir_name = os.path.dirname(file_path)
+        module_dependency_map[dir_name] = [[]]
+        copy_of_tf_definitions[file_path] = deepcopy(tf_definitions[file_path])
+
+    next_level, unevaluated_keys = get_next_vertices(origin_keys, unevaluated_keys)
+    while next_level:
+        for file_path in next_level:
+            path, module_dependency, module_dependency_num = remove_module_dependency_in_path(file_path)
+            dir_name = os.path.dirname(path)
+            current_deps = deepcopy(module_dependency_map[os.path.dirname(module_dependency)])
+            for dep in current_deps:
+                dep.append(module_dependency)
+            if dir_name not in module_dependency_map:
+                module_dependency_map[dir_name] = current_deps
+            elif current_deps not in module_dependency_map[dir_name]:
+                module_dependency_map[dir_name] += current_deps
+            copy_of_tf_definitions[path] = deepcopy(tf_definitions[file_path])
+            origin_keys.append(path)
+            dep_index_mapping.setdefault((path, module_dependency), []).append(module_dependency_num)
+        next_level, unevaluated_keys = get_next_vertices(origin_keys, unevaluated_keys)
+    for key, dep_trails in module_dependency_map.items():
+        hashes = set()
+        deduped = []
+        for trail in dep_trails:
+            trail_hash = unify_dependency_path(trail)
+            if trail_hash in hashes:
+                continue
+            hashes.add(trail_hash)
+            deduped.append(trail)
+        module_dependency_map[key] = deduped
+    return module_dependency_map, copy_of_tf_definitions, dep_index_mapping
+
+
+def get_next_vertices(evaluated_files: list[str], unevaluated_files: list[str]) -> tuple[list[str], list[str]]:
+    """
+    This function implements a lazy separation of levels for the evaluated files. It receives the evaluated
+    files, and returns 2 lists:
+    1. The next level of files - files from the unevaluated_files which have no unresolved dependency (either
+        no dependency or all dependencies were evaluated).
+    2. unevaluated - files which have yet to be evaluated, and still have pending dependencies
+
+    Let's say we have this dependency tree:
+    a -> b
+    x -> b
+    y -> c
+    z -> b
+    b -> c
+    c -> d
+
+    The first run will return [a, y, x, z] as the next level since all of them have no dependencies
+    The second run with the evaluated being [a, y, x, z] will return [b] as the next level.
+    Please mind that [c] has some resolved dependencies (from y), but has unresolved dependencies from [b].
+    The third run will return [c], and the fourth will return [d].
+    """
+
+    next_level, unevaluated, do_not_eval_yet = [], [], []
+    for key in unevaluated_files:
+        found = False
+        for eval_key in evaluated_files:
+            if eval_key in key:
+                found = True
+                break
+        if not found:
+            do_not_eval_yet.append(key.split(TERRAFORM_NESTED_MODULE_PATH_PREFIX)[0])
+            unevaluated.append(key)
+        else:
+            next_level.append(key)
+
+    move_to_uneval = list(filter(lambda k: k.split(TERRAFORM_NESTED_MODULE_PATH_PREFIX)[0] in do_not_eval_yet, next_level))
+    for k in move_to_uneval:
+        next_level.remove(k)
+        unevaluated.append(k)
+    return next_level, unevaluated
+
+
+def get_module_dependency_map_support_nested_modules(tf_definitions):
+    module_dependency_map = defaultdict(list)
+    dep_index_mapping = defaultdict(list)
+    for tf_definition_key in tf_definitions.keys():
+        if not is_nested(tf_definition_key):
+            dir_name = os.path.dirname(tf_definition_key)
+            module_dependency_map[dir_name].append([])
+            continue
+        modules_list, path = get_nested_modules_data_as_list(tf_definition_key)
+        dir_name = os.path.dirname(path)
+        module_dependency_map[dir_name].append([m for m, i in modules_list])
+        dep_index_mapping[(path, modules_list[-1][0])].append(modules_list[-1][1])
+
+    for key, dir_list in module_dependency_map.items():
+        dir_list.sort()
+        module_dependency_map[key] = list(dir_list for dir_list, _ in itertools.groupby(dir_list))
+    return module_dependency_map, tf_definitions, dep_index_mapping
+
+
+def get_nested_modules_data_as_list(file_path):
+    path = get_abs_path(file_path)
+    modules_list = []
+
+    while is_nested(file_path):
+        module, index = get_module_from_full_path(file_path)
+        modules_list.append((module, index))
+        file_path = module
+    modules_list.reverse()
+    return modules_list, path
