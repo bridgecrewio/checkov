@@ -188,8 +188,7 @@ class Runner(BaseRunner[None]):
             for key, secret in secrets:
                 added_commit_hash, removed_commit_hash = get_added_and_removed_commit_hash(
                     key,
-                    runner_filter.enable_git_history_secret_scan,
-                    secret)
+                    runner_filter.enable_git_history_secret_scan)
                 check_id = getattr(secret, "check_id", SECRET_TYPE_TO_ID.get(secret.type))
                 if not check_id:
                     logging.debug(f'Secret was filtered - no check_id for line_number {secret.line_number}')
