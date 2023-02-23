@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional
+from typing import Optional, Any
 
 
 class TFModule:
@@ -11,7 +11,9 @@ class TFModule:
         self.name = name
         self.foreach_idx = foreach_idx
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, TFModule):
+            return False
         return self.path == other.path and self.name == other.name and self.foreach_idx == other.foreach_idx
 
     def __repr__(self) -> str:
@@ -19,12 +21,14 @@ class TFModule:
 
 
 class TFSourceModules:
-    __slots__ = "tf_source_modules"
+    __slots__ = ("tf_source_modules", )
 
     def __init__(self, tf_source_modules: list[TFModule]) -> None:
         self.tf_source_modules = tf_source_modules
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, TFSourceModules):
+            return False
         return self.tf_source_modules == other.tf_source_modules
 
     def __repr__(self) -> str:
@@ -38,7 +42,9 @@ class TFDefinitionKey:
         self.tf_source_modules = tf_source_modules
         self.file_path = file_path
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, TFDefinitionKey):
+            return False
         return self.tf_source_modules == other.tf_source_modules and self.file_path == other.file_path
 
     def __repr__(self) -> str:
