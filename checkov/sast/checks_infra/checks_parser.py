@@ -11,12 +11,12 @@ from checkov.common.util.type_forcers import force_list
 
 
 class SastCheckParser:
-    def parse_raw_check_to_semgrep(self, raw_check: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
+    def parse_raw_check_to_semgrep(self, raw_check: Dict[str, Dict[str, Any]], check_path: str | None = None) -> Dict[str, Any]:
         semgrep_rule: Dict[str, Any] = {}
         if not self.raw_check_is_valid(raw_check):
             logging.error(f'cant parse the following policy: {raw_check}')
         try:
-            semgrep_rule = self.parse_rule_metadata(raw_check, semgrep_rule)
+            semgrep_rule = self.parse_rule_metadata(raw_check, check_path, semgrep_rule)
             semgrep_rule.update(self.parse_definition(raw_check['definition']))
         except Exception as e:
             raise e
@@ -37,7 +37,7 @@ class SastCheckParser:
         else:
             return True
 
-    def parse_rule_metadata(self, bql_policy: Dict[str, Any], semgrep_rule: Dict[str, Any]) \
+    def parse_rule_metadata(self, bql_policy: Dict[str, Any], check_path, semgrep_rule: Dict[str, Any]) \
             -> Dict[str, Any]:
         metadata = bql_policy['metadata']
         semgrep_rule[SemgrepAttribute.ID.value] = metadata['id']
@@ -45,16 +45,19 @@ class SastCheckParser:
         semgrep_rule[SemgrepAttribute.SEVERITY.value] = CHECKOV_SEVERITY_TO_SEMGREP_SEVERITY[metadata['severity']]
         languages = bql_policy['scope']['languages']
         semgrep_rule[SemgrepAttribute.LANGUAGES.value] = languages
-        semgrep_rule['metadata'] = {'name': metadata['name']}
-
-        # add optional cwe and owasp metadata
+        metadata_obj = {
+            'name': metadata['name']
+        }
+        # add optional metadata fields
+        if check_path:
+            metadata_obj['check_path'] = check_path
         cwe = metadata.get('cwe')
         if cwe:
-            semgrep_rule['metadata'][SemgrepAttribute.CWE.value] = cwe
+            metadata_obj[SemgrepAttribute.CWE.value] = cwe
         owasp = metadata.get('owasp')
         if owasp:
-            semgrep_rule['metadata'][SemgrepAttribute.OWASP.value] = owasp
-
+            metadata_obj[SemgrepAttribute.OWASP.value] = owasp
+        semgrep_rule['metadata'] = metadata_obj
         return semgrep_rule
 
     def parse_definition(self, definition: Dict[str, Any]) -> Dict[str, Any]:

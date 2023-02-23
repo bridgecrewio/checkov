@@ -6,10 +6,10 @@ import yaml
 from typing import List, Any, Optional, Set, Dict
 
 from checkov.common.bridgecrew.check_type import CheckType
-from checkov.sast.checks.base_check import BaseSastCheck
+from checkov.sast.checks_infra.base_check import BaseSastCheck
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.runner_filter import RunnerFilter
-from checkov.sast.checks.checks_parser import SastCheckParser
+from checkov.sast.checks_infra.checks_parser import SastCheckParser
 from checkov.sast.consts import SastLanguages
 from checkov.common.checks_infra.registry import CHECKS_POSSIBLE_ENDING
 
@@ -49,10 +49,11 @@ class Registry(BaseCheckRegistry):
                 file_ending = os.path.splitext(file)[1]
                 if file_ending not in CHECKS_POSSIBLE_ENDING:
                     continue
-                with open(os.path.join(root, file), "r") as f:
+                check_path = os.path.join(root, file)
+                with open(check_path, "r") as f:
                     try:
                         raw_check = yaml.safe_load(f)
-                        parsed_rule = self.parser.parse_raw_check_to_semgrep(raw_check)
+                        parsed_rule = self.parser.parse_raw_check_to_semgrep(raw_check, str(check_path))
                     except Exception:
                         logging.warning(f'cant parse rule file {file}')
                         continue

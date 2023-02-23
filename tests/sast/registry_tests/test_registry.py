@@ -1,6 +1,6 @@
 from checkov.runner_filter import RunnerFilter
 from checkov.sast.consts import SastLanguages
-from checkov.sast.checks.base_registry import Registry
+from checkov.sast.checks_infra.base_registry import Registry
 import pathlib
 import os
 import unittest

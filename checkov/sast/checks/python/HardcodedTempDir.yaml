@@ -8,7 +8,6 @@ metadata:
 scope:
   languages:
     - python
-
 definition:
   - cond_type: pattern
     operator: equals
