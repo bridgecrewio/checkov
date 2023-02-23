@@ -73,6 +73,9 @@ class TestYamlPolicies(TestYamlPoliciesBase):
     def test_RunRpmNoSignature(self):
         self.go("RunRpmNoSignature")
 
+    def test_RunAptGetForceYes(self):
+        self.go("RunAptGetForceYes")
+
     def test_registry_load(self):
         registry = self.get_checks_registry()
         self.assertGreater(len(registry.checks), 0)
