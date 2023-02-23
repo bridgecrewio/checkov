@@ -1,19 +1,14 @@
 from __future__ import annotations
 
-import json
 import logging
 import os
-import re
-from collections.abc import Sequence
 from collections import defaultdict
 from copy import deepcopy
 from json import dumps, loads
-from pathlib import Path
-from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, TYPE_CHECKING
+from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List
 import itertools
 
 import deep_merge
-import hcl2
 from lark import Tree
 
 from checkov.common.runners.base_runner import filter_ignored_paths, IGNORE_HIDDEN_DIRECTORY_ENV, strtobool
@@ -29,21 +24,14 @@ from checkov.terraform.module_loading.content import ModuleContent
 from checkov.terraform.module_loading.module_finder import load_tf_modules
 from checkov.terraform.module_loading.registry import module_loader_registry as default_ml_registry, \
     ModuleLoaderRegistry
-from checkov.common.util.parser_utils import eval_string, find_var_blocks, is_nested, \
+from checkov.common.util.parser_utils import is_nested, \
     get_tf_definition_key_from_module_dependency, \
-    get_module_from_full_path, get_abs_path, TERRAFORM_NESTED_MODULE_PATH_ENDING, TERRAFORM_NESTED_MODULE_PATH_PREFIX
-
-if TYPE_CHECKING:
-    from typing_extensions import TypeAlias
-
-
-_Hcl2Payload: TypeAlias = "dict[str, list[dict[str, Any]]]"
+    get_module_from_full_path, get_abs_path, TERRAFORM_NESTED_MODULE_PATH_ENDING, TERRAFORM_NESTED_MODULE_PATH_PREFIX, \
+    is_acceptable_module_param
+from checkov.terraform.modules.module_utils import _load_or_die_quietly, _Hcl2Payload, _safe_index, \
+    _remove_module_dependency_in_path
 
 external_modules_download_path = os.environ.get('EXTERNAL_MODULES_DIR', DEFAULT_EXTERNAL_MODULES_DIR)
-GOOD_BLOCK_TYPES = {BlockType.LOCALS, BlockType.TERRAFORM}  # used for cleaning bad tf definitions
-
-ENTITY_NAME_PATTERN = re.compile(r"[^\W0-9][\w-]*")
-RESOLVED_MODULE_PATTERN = re.compile(r"\[.+\#.+\]")
 
 
 def _filter_ignored_paths(root: str, paths: list[str], excluded_paths: list[str] | None) -> None:
@@ -843,116 +831,3 @@ class Parser:
             self.dirname_cache[path] = dirname_path
         return dirname_path
 
-
-def _load_or_die_quietly(
-    file: str | Path, parsing_errors: dict[str, Exception], clean_definitions: bool = True
-) -> _Hcl2Payload | None:
-    """
-Load JSON or HCL, depending on filename.
-    :return: None if the file can't be loaded
-    """
-
-    file_path = os.fspath(file)
-    file_name = os.path.basename(file_path)
-
-    try:
-        logging.debug(f"Parsing {file_path}")
-
-        with open(file_path, "r", encoding="utf-8-sig") as f:
-            if file_name.endswith(".json"):
-                return json.load(f)
-            else:
-                raw_data = hcl2.load(f)
-                non_malformed_definitions = validate_malformed_definitions(raw_data)
-                if clean_definitions:
-                    return clean_bad_definitions(non_malformed_definitions)
-                else:
-                    return non_malformed_definitions
-    except Exception as e:
-        logging.debug(f'failed while parsing file {file_path}', exc_info=True)
-        parsing_errors[file_path] = e
-        return None
-
-
-def _is_valid_block(block: Any) -> bool:
-    if not isinstance(block, dict):
-        return True
-
-    # if the block is empty, there's no need to process it further
-    if not block:
-        return False
-
-    entity_name = next(iter(block.keys()))
-    if re.fullmatch(ENTITY_NAME_PATTERN, entity_name):
-        return True
-    return False
-
-
-def validate_malformed_definitions(raw_data: _Hcl2Payload) -> _Hcl2Payload:
-    return {
-        block_type: [block for block in blocks if _is_valid_block(block)]
-        for block_type, blocks in raw_data.items()
-    }
-
-
-def clean_bad_definitions(tf_definition_list: _Hcl2Payload) -> _Hcl2Payload:
-    return {
-        block_type: [
-            definition
-            for definition in definition_list
-            if block_type in GOOD_BLOCK_TYPES or not isinstance(definition, dict) or len(definition) == 1
-        ]
-        for block_type, definition_list in tf_definition_list.items()
-    }
-
-
-def _to_native_value(value: str) -> Any:
-    if value.startswith('"') or value.startswith("'"):
-        return value[1:-1]
-    else:
-        return eval_string(value)
-
-
-def _remove_module_dependency_in_path(path: str) -> str:
-    """
-    :param path: path that looks like "dir/main.tf[other_dir/x.tf#0]
-    :return: only the outer path: dir/main.tf
-    """
-    if re.findall(RESOLVED_MODULE_PATTERN, path):
-        path = re.sub(RESOLVED_MODULE_PATTERN, '', path)
-    return path
-
-
-def _safe_index(sequence_hopefully: Sequence[Any], index: int) -> Any:
-    try:
-        return sequence_hopefully[index]
-    except IndexError:
-        logging.debug(f'Failed to parse index int ({index}) out of {sequence_hopefully}', exc_info=True)
-        return None
-
-
-def is_acceptable_module_param(value: Any) -> bool:
-    """
-    This function determines if a value should be passed to a module as a parameter. We don't want to pass
-    unresolved var, local or module references because they can't be resolved from the module, so they need
-    to be resolved prior to being passed down.
-    """
-    value_type = type(value)
-    if value_type is dict:
-        for k, v in value.items():
-            if not is_acceptable_module_param(v) or not is_acceptable_module_param(k):
-                return False
-        return True
-    if value_type is set or value_type is list:
-        for v in value:
-            if not is_acceptable_module_param(v):
-                return False
-        return True
-
-    if value_type is not str:
-        return True
-
-    for vbm in find_var_blocks(value):
-        if vbm.is_simple_var():
-            return False
-    return True
