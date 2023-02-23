@@ -18,10 +18,10 @@ from checkov.common.util.json_utils import CustomJSONEncoder
 
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
+    from checkov.terraform.graph_builder.graph_components.module import Module
 
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
 from checkov.terraform.graph_builder.utils import remove_module_dependency_in_path
-from checkov.terraform.graph_builder.graph_components.module import Module
 from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_PREFIX, TERRAFORM_NESTED_MODULE_PATH_ENDING, \
     is_nested, get_abs_path, get_module_from_full_path
 
@@ -110,7 +110,9 @@ def remove_module_dependency_from_path(path: str) -> str:
     return path
 
 
-def get_module_dependency_map(tf_definitions):
+def get_module_dependency_map(tf_definitions: dict[str, Any]) -> (
+        dict[str, list[list] | list], dict[str, Any], dict[tuple[str, str], list[str]]
+):
     """
     :param tf_definitions, with paths in format 'dir/main.tf[module_dir/main.tf#0]'
     :return module_dependency_map: mapping between directories and the location of its module definition:
@@ -198,7 +200,9 @@ def get_next_vertices(evaluated_files: list[str], unevaluated_files: list[str]) 
     return next_level, unevaluated
 
 
-def get_module_dependency_map_support_nested_modules(tf_definitions):
+def get_module_dependency_map_support_nested_modules(tf_definitions: dict[str, Any]) -> (
+        dict[str, list[str]], dict[str, Any], dict[str, Any]
+):
     module_dependency_map = defaultdict(list)
     dep_index_mapping = defaultdict(list)
     for tf_definition_key in tf_definitions.keys():
@@ -217,7 +221,7 @@ def get_module_dependency_map_support_nested_modules(tf_definitions):
     return module_dependency_map, tf_definitions, dep_index_mapping
 
 
-def get_nested_modules_data_as_list(file_path):
+def get_nested_modules_data_as_list(file_path: str) -> (list[tuple[str | None, str | None]], str):
     path = get_abs_path(file_path)
     modules_list = []
 
@@ -290,6 +294,7 @@ def get_new_module(
         external_modules_source_map: dict[tuple[str, str], str],
         dep_index_mapping: dict[tuple[str, str], list[str]],
 ) -> Module:
+    from checkov.terraform.graph_builder.graph_components.module import Module
     return Module(
         source_dir=source_dir,
         module_dependency_map=module_dependency_map,
