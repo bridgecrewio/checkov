@@ -51,8 +51,8 @@ class Runner(YamlRunner):
         return None
 
     def get_resource(
-        self, file_path: str, key: str, supported_entities: Iterable[str], start_line: int = -1, end_line: int = -1
-    ) -> str:
+        self, file_path: str, key: str, supported_entities: Iterable[str],
+            start_line: int = -1, end_line: int = -1, graph_resource: bool = False) -> str:
         if not self.definitions or not isinstance(self.definitions, dict):
             return key
 

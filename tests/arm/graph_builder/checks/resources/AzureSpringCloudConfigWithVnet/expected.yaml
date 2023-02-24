@@ -1,0 +1,7 @@
+pass:
+  - 'Microsoft.AppPlatform/Spring.pass'
+fail:
+  - 'Microsoft.AppPlatform/Spring.fail'
+evaluated_keys:
+  - 'sku/name'
+  - 'properties/networkProfile/serviceRuntimeSubnetId'

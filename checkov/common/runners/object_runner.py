@@ -178,6 +178,9 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
                 # result record
                 if result_config:
                     end, start = self.get_start_end_lines(end, result_config, start)
+                    if start == -1 and end == -1:
+                        logging.info(f"Skipping line in file path {file_path} in key {key}")
+                        continue
                 if platform.system() == "Windows":
                     root_folder = os.path.split(file_path)[0]
 
@@ -250,6 +253,10 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
                                 start_line = line[0]
                                 end_line = line[0]
                                 break
+
+                    entity[CustomAttributes.ID] = self.get_resource(entity_file_path, entity[CustomAttributes.ID],
+                                                                    entity[CustomAttributes.RESOURCE_TYPE],
+                                                                    start_line, end_line, graph_resource=True)
                     record: "Record" = GithubActionsRecord(
                         check_id=check.id,
                         bc_check_id=check.bc_id,
@@ -292,7 +299,7 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
         return []
 
     def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str],
-                     start_line: int = -1, end_line: int = -1) -> str:
+                     start_line: int = -1, end_line: int = -1, graph_resource: bool = False) -> str:
         return f"{file_path}.{key}"
 
     @abstractmethod

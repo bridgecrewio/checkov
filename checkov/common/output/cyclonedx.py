@@ -211,7 +211,8 @@ class CycloneDX:
             purl_type = FILE_NAME_TO_PURL_TYPE.get(file_name, "generic")
             namespace = f"{self.repo_id}/{resource.file_path}"
             registry_url = resource.vulnerability_details.get("package_registry")
-            if CHECKOV_DISPLAY_REGISTRY_URL and registry_url:
+            is_private_registry = resource.vulnerability_details.get("is_private_registry", False)
+            if CHECKOV_DISPLAY_REGISTRY_URL and registry_url and is_private_registry:
                 qualifiers = f'registry_url={registry_url}'
         package_group = None
         package_name = resource.vulnerability_details["package_name"]

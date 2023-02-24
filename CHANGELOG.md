@@ -1,6 +1,43 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.28...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.39...HEAD)
+
+## [2.3.39](https://github.com/bridgecrewio/checkov/compare/2.3.36...2.3.39) - 2023-02-23
+
+### Feature
+
+- **dockerfile:** Add checks for disabling signature checks for apk, apt-get, rpm, yum, dnf - [#4404](https://github.com/bridgecrewio/checkov/pull/4404)
+- **terraform:** New classes for the TF module model - [#4546](https://github.com/bridgecrewio/checkov/pull/4546)
+
+### Bug Fix
+
+- **gha:** Align GHA resource ids (Graph vs Python checks) - [#4549](https://github.com/bridgecrewio/checkov/pull/4549)
+
+## [2.3.36](https://github.com/bridgecrewio/checkov/compare/2.3.33...2.3.36) - 2023-02-22
+
+### Feature
+
+- **arm:** add graph capabilities to ARM framework - [#4526](https://github.com/bridgecrewio/checkov/pull/4526)
+- **secrets:** add timeout for scan history checks - [#4523](https://github.com/bridgecrewio/checkov/pull/4523)
+- **secrets:** Support secret findings in git history - [#4525](https://github.com/bridgecrewio/checkov/pull/4525)
+
+## [2.3.33](https://github.com/bridgecrewio/checkov/compare/2.3.29...2.3.33) - 2023-02-21
+
+### Feature
+
+- **gitlab:** fix gitlab ci yaml file processing - [#4536](https://github.com/bridgecrewio/checkov/pull/4536)
+- **sca:** adding is_registry_url and printing in the cyclonedx only private registries urls - [#4533](https://github.com/bridgecrewio/checkov/pull/4533)
+- **sca:** support also the key "registryUrl" when extracting registry_url for the report - [#4535](https://github.com/bridgecrewio/checkov/pull/4535)
+
+### Bug Fix
+
+- **terraform:** Optional module content path - [#4537](https://github.com/bridgecrewio/checkov/pull/4537)
+
+## [2.3.29](https://github.com/bridgecrewio/checkov/compare/2.3.28...2.3.29) - 2023-02-20
+
+### Bug Fix
+
+- **cloudformation:** Update CKV_AWS_46 to handle base64 encoded userdata - [#4530](https://github.com/bridgecrewio/checkov/pull/4530)
 
 ## [2.3.28](https://github.com/bridgecrewio/checkov/compare/2.3.23...2.3.28) - 2023-02-19
 
