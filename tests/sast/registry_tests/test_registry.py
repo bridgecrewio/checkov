@@ -7,7 +7,8 @@ import unittest
 
 python_rule = {'id': 'CKV_SAST_1', 'message': 'module setting superuser port', 'severity': 'INFO',
                        'languages': ['python'], 'metadata': {'name': 'superuser port',
-                                                             'cwe': 'CWE-289: Authentication Bypass by Alternate Name'},
+                                                             'cwe': 'CWE-289: Authentication Bypass by Alternate Name',
+                                                             'check_file': 'python_rule.yaml'},
                        'patterns': [{'pattern': 'set_port($ARG)'}, {'metavariable-comparison': {
                            'metavariable': '$ARG', 'comparison': '$ARG < 1024'}}]}
 
@@ -16,7 +17,8 @@ java_rule = {'id': 'seam-log-injection', 'message': 'Seam Logging API support an
              'severity': 'ERROR', 'languages': ['java'], 'metadata': {
                 'name': 'seam log injection',
                 'cwe': "CWE-95: Improper Neutralization of Directives in Dynamically Evaluated Code ('Eval Injection')",
-                'owasp': 'A03:2021 - Injection'},
+                'owasp': 'A03:2021 - Injection',
+                'check_file': 'java_rule.yaml'},
                 'patterns': [{'pattern': '$LOG.$INFO($X + $Y,...)'},
                     {'pattern-either': [{'pattern-inside': 'import org.jboss.seam.log.Log\n...\n'},
                           {'pattern-inside': 'org.jboss.seam.log.Log $LOG = ...\n...\n'}]},
@@ -28,6 +30,7 @@ class TestRegistry(unittest.TestCase):
         registry = Registry(checks_dir)
 
         registry.load_rules([SastLanguages.PYTHON])
+        registry.rules
         assert registry.rules == [python_rule]
 
 

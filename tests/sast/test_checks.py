@@ -69,7 +69,7 @@ def setup():
     runner_filter = RunnerFilter(framework=['sast'])
     registry.set_runner_filter(runner_filter=runner_filter)
     registry.load_rules(runner_filter.sast_languages)
-    CHECK_ID_MAP = {Path(check['metadata']['check_path']).stem: check['id'] for check in registry.rules}
+    CHECK_ID_MAP = {check['metadata']['check_file'].split('.')[0]: check['id'] for check in registry.rules}
 
 
 def run_check(lang: str, check: str) -> None:
