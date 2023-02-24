@@ -1,5 +1,5 @@
 metadata:
-  id: BC_SAST_5
+  id: CKV3_SAST_5
   name: Ensure servers are not publicly exposed
   guidelines: Running `socket.bind` to 0.0.0.0, ::, or empty string could unexpectedly expose the server publicly as it binds to all available interfaces. Consider instead getting correct address from an environment variable or configuration file.
   category: sast

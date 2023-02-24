@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import logging
 import os
+from pathlib import Path
+
 import yaml
 from typing import List, Any, Optional, Set, Dict
 
@@ -46,6 +48,8 @@ class Registry(BaseCheckRegistry):
         for root, d_names, f_names in os.walk(dir):
             self.logger.debug(f"Searching through {d_names} and {f_names}")
             for file in f_names:
+                if file == 'SuperuserPort.yaml':
+                    print(file)
                 file_ending = os.path.splitext(file)[1]
                 if file_ending not in CHECKS_POSSIBLE_ENDING:
                     continue
@@ -58,7 +62,7 @@ class Registry(BaseCheckRegistry):
                         logging.warning(f'cant parse rule file {file}')
                         continue
                     if self._should_skip_check(parsed_rule):
-                        break
+                        continue
                     for lang in parsed_rule.get('languages', []):
                         if lang in [lan.value for lan in sast_languages]:
                             rules[parsed_rule['id']] = parsed_rule
