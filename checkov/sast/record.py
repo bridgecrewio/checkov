@@ -7,11 +7,6 @@ from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
 from checkov.common.typing import _CheckResult
 
-'''
-        check_class: str,
-        file_abs_path: str,
-'''
-
 
 class SastRecord(Record):
     def __init__(self,
