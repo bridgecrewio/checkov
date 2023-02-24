@@ -1,5 +1,4 @@
 pass:
   - "google_container_cluster.pass"
 fail:
-  - "google_container_cluster.fail_1"
-  - "google_container_cluster.fail_2"
+  - "google_container_cluster.fail"

@@ -7,5 +7,5 @@ definition:
   cond_type: attribute
   resource_types: "google_container_cluster"
   attribute: "enable_kubernetes_alpha"
-  operator: "equals_ignore_case"
+  operator: "not_equals_ignore_case"
   value: "true"
