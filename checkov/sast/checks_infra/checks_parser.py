@@ -11,12 +11,12 @@ from checkov.common.util.type_forcers import force_list
 
 
 class SastCheckParser:
-    def parse_raw_check_to_semgrep(self, raw_check: Dict[str, Dict[str, Any]], check_path: str | None = None) -> Dict[str, Any]:
+    def parse_raw_check_to_semgrep(self, raw_check: Dict[str, Dict[str, Any]], check_file: str | None = None) -> Dict[str, Any]:
         semgrep_rule: Dict[str, Any] = {}
         if not self.raw_check_is_valid(raw_check):
             logging.error(f'cant parse the following policy: {raw_check}')
         try:
-            semgrep_rule = self.parse_rule_metadata(raw_check, check_path, semgrep_rule)
+            semgrep_rule = self.parse_rule_metadata(raw_check, check_file, semgrep_rule)
             semgrep_rule.update(self.parse_definition(raw_check['definition']))
         except Exception as e:
             raise e
@@ -37,7 +37,7 @@ class SastCheckParser:
         else:
             return True
 
-    def parse_rule_metadata(self, bql_policy: Dict[str, Any], check_path, semgrep_rule: Dict[str, Any]) \
+    def parse_rule_metadata(self, bql_policy: Dict[str, Any], check_file, semgrep_rule: Dict[str, Any]) \
             -> Dict[str, Any]:
         metadata = bql_policy['metadata']
         semgrep_rule[SemgrepAttribute.ID.value] = metadata['id']
@@ -49,8 +49,8 @@ class SastCheckParser:
             'name': metadata['name']
         }
         # add optional metadata fields
-        if check_path:
-            metadata_obj['check_path'] = check_path
+        if check_file:
+            metadata_obj['check_file'] = check_file
         cwe = metadata.get('cwe')
         if cwe:
             metadata_obj[SemgrepAttribute.CWE.value] = cwe

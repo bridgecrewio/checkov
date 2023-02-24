@@ -48,16 +48,13 @@ class Registry(BaseCheckRegistry):
         for root, d_names, f_names in os.walk(dir):
             self.logger.debug(f"Searching through {d_names} and {f_names}")
             for file in f_names:
-                if file == 'SuperuserPort.yaml':
-                    print(file)
                 file_ending = os.path.splitext(file)[1]
                 if file_ending not in CHECKS_POSSIBLE_ENDING:
                     continue
-                check_path = os.path.join(root, file)
-                with open(check_path, "r") as f:
+                with open(os.path.join(root, file), "r") as f:
                     try:
                         raw_check = yaml.safe_load(f)
-                        parsed_rule = self.parser.parse_raw_check_to_semgrep(raw_check, str(check_path))
+                        parsed_rule = self.parser.parse_raw_check_to_semgrep(raw_check, str(file))
                     except Exception:
                         logging.warning(f'cant parse rule file {file}')
                         continue
