@@ -9,6 +9,7 @@ from checkov.common.output.report import Report
 from checkov.common.typing import _CheckResult
 from checkov.runner_filter import RunnerFilter
 from checkov.sast.checks_infra.registry import registry
+from checkov.sast.checks_infra.base_registry import Registry
 from checkov.sast.consts import SastLanguages, SUPPORT_FILE_EXT, SEMGREP_SEVERITY_TO_CHECKOV_SEVERITY, \
     FILE_EXT_TO_SAST_LANG
 from semgrep.semgrep_main import main as run_semgrep
@@ -47,6 +48,9 @@ class SemgrepOutput:
 
 class Runner():
     check_type = CheckType.SAST  # noqa: CCE003  # a static attribute
+
+    def __init__(self) -> None:
+        self.registry = registry
 
     def should_scan_file(self, file: str) -> bool:
         for extensions in SUPPORT_FILE_EXT.values():
