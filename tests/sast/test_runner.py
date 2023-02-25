@@ -89,6 +89,7 @@ def get_parsed_rule():
 
 def test_sast_runner_python():
     runner = Runner()
+    runner.registry.temp_semgrep_rules_path = os.path.join(pathlib.Path(__file__).parent.resolve(), 'test_runner_python_temp_rules.yaml')
     source = os.path.join(pathlib.Path(__file__).parent.resolve(), 'source_code')
     reports = runner.run(source, runner_filter=RunnerFilter(framework=['sast_python']))
     assert len(reports) == 1

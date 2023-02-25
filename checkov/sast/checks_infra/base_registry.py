@@ -17,14 +17,15 @@ from checkov.common.checks_infra.registry import CHECKS_POSSIBLE_ENDING
 
 
 class Registry(BaseCheckRegistry):
-    def __init__(self, checks_dir: str) -> None:
+    def __init__(self, checks_dir: str, temp_semgrep_rules_path: str | None = None) -> None:
         super().__init__(report_type=CheckType.SAST)
         self.rules: List[Dict[str, Any]] = []
         self.checks_dir = checks_dir
         self.logger = logging.getLogger(__name__)
         self.parser = SastCheckParser()
         self.runner_filter: Optional[RunnerFilter] = None
-        self.temp_semgrep_rules_path = os.path.join(self.checks_dir, 'temp_semgrep_rules.yaml')
+        self.temp_semgrep_rules_path = temp_semgrep_rules_path if  temp_semgrep_rules_path else \
+            os.path.join(self.checks_dir, 'temp_semgrep_rules.yaml')
 
     def extract_entity_details(self, entity: dict[str, Any]) -> tuple[str, str, dict[str, Any]]:
         # TODO
