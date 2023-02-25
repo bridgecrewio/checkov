@@ -54,7 +54,7 @@ class BaseCheck(metaclass=MultiSignatureMeta):
         self.details = []
         check_result: _CheckResult = {}
         if skip_info:
-            check_result["result"] = (CheckResult.SKIPPED, entity_configuration)
+            check_result["result"] = CheckResult.SKIPPED
             check_result["suppress_comment"] = skip_info["suppress_comment"]
             message = 'File {}, {} "{}.{}" check "{}" Result: {}, Suppression comment: {} '.format(
                 scanned_file,

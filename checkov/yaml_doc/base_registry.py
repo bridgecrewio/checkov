@@ -268,7 +268,7 @@ class Registry(BaseCheckRegistry):
                 "check": check,
                 "result": result,
                 "suppress_comment": check_result["suppress_comment"],
-                "results_configuration": None,
+                "results_configuration": entity_configuration,
             }
             return result
 
