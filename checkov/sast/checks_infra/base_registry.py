@@ -94,5 +94,8 @@ class Registry(BaseCheckRegistry):
         logging.debug(f'created semgrep temporary rules file at: {self.temp_semgrep_rules_path}')
 
     def delete_temp_rules_file(self) -> None:
-        os.remove(self.temp_semgrep_rules_path)
-        logging.debug('deleted semgrep temporary rules file')
+        try:
+            os.remove(self.temp_semgrep_rules_path)
+            logging.debug('deleted semgrep temporary rules file')
+        except FileNotFoundError as e:
+            logging.error(f'Tried to delete the semgrep temporary rules file but no such file was found.\n{e}')
