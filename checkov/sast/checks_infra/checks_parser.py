@@ -19,7 +19,7 @@ class SastCheckParser:
             semgrep_rule = self.parse_rule_metadata(raw_check, check_file, semgrep_rule)
             semgrep_rule.update(self.parse_definition(raw_check['definition']))
         except Exception as e:
-            raise e
+            logging.error(f'the policy in file {check_file} is misconfigured so it could not be parsed properly.\n{e}')
 
         return semgrep_rule
 
@@ -65,7 +65,7 @@ class SastCheckParser:
         conf = {}
         if len(definitions) > 1:
             conf[SemgrepAttribute.PATTERNS.value] = self.get_definitions_list_items(definitions)
-        else:  # since definitions has only one value, we check only definitions[0]
+        elif len(definitions) == 1:
             definition = definitions[0]
             if not isinstance(definition, dict):
                 raise TypeError(f'bad definition type, got {type(definition)} instead of dict')
