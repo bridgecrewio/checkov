@@ -93,7 +93,31 @@ class SecretsRecord(Record):
             splitted_record = processed_record.split("\n")
             splitted_record.insert(2, validation_status_message)
             processed_record = "\n".join(splitted_record)
+
+        processed_record = self._add_commit_details(processed_record)
         return processed_record
+
+    def _add_commit_details(self, processed_record):
+        splitted_record = processed_record.split("\n")
+        file_idx = 0
+        file_line = ''
+        for idx, line in enumerate(splitted_record):
+            if line.__contains__('File:'):
+                file_idx = idx
+                file_line = line
+                break
+        added = False
+        if self.added_commit_hash:
+            file_line = file_line + f'; Commit Added: {self.added_commit_hash}'
+            added = True
+        if self.removed_commit_hash:
+            file_line = file_line + f'; Commit Removed: {self.removed_commit_hash}'
+            added = True
+        if added:
+            splitted_record[file_idx] = file_line
+            processed_record = "\n".join(splitted_record)
+        return processed_record
+
 
     def _get_secret_validation_status_message(self) -> str:
         message = None

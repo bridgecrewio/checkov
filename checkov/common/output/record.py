@@ -204,6 +204,7 @@ class Record:
         file_details = colored(
             "\tFile: {}:{}\n".format(self.file_path, "-".join([str(x) for x in self.file_line_range])), "magenta"
         )
+        # if isinstance(self, secretsRecord) TODO: change file details
         code_lines = self.get_code_lines_string(self.code_block)
         detail = self.get_details_string(self.details)
         caller_file_details = self.get_caller_file_details_string(self.caller_file_path, self.caller_file_line_range)
