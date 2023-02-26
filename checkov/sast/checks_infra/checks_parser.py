@@ -39,11 +39,11 @@ class SastCheckParser:
     def _parse_rule_metadata(self, bql_policy: Dict[str, Any], check_file, semgrep_rule: Dict[str, Any]) \
             -> Dict[str, Any]:
         metadata = bql_policy['metadata']
-        semgrep_rule[SemgrepAttribute.ID.value] = metadata['id']
-        semgrep_rule[SemgrepAttribute.MESSAGE.value] = metadata.get('guidelines', '')
-        semgrep_rule[SemgrepAttribute.SEVERITY.value] = CHECKOV_SEVERITY_TO_SEMGREP_SEVERITY[metadata['severity']]
+        semgrep_rule[str(SemgrepAttribute.ID)] = metadata['id']
+        semgrep_rule[str(SemgrepAttribute.MESSAGE)] = metadata.get('guidelines', '')
+        semgrep_rule[str(SemgrepAttribute.SEVERITY)] = CHECKOV_SEVERITY_TO_SEMGREP_SEVERITY[metadata['severity']]
         languages = bql_policy['scope']['languages']
-        semgrep_rule[SemgrepAttribute.LANGUAGES.value] = languages
+        semgrep_rule[str(SemgrepAttribute.LANGUAGES)] = languages
         metadata_obj = {
             'name': metadata['name']
         }
@@ -63,22 +63,22 @@ class SastCheckParser:
         definitions = force_list(definition)
         conf = {}
         if len(definitions) > 1:
-            return {SemgrepAttribute.PATTERNS.value: self._get_definitions_list_items(definitions)}
+            return {str(SemgrepAttribute.PATTERNS): self._get_definitions_list_items(definitions)}
         elif len(definitions) == 1:
             definition = definitions[0]
             if not isinstance(definition, dict):
                 raise TypeError(f'bad definition type, got {type(definition)} instead of dict')
-            if definition.get(BqlConditionType.OR.value):
-                return {SemgrepAttribute.PATTERN_EITHER.value: self._get_definitions_list_items(
-                    definition[BqlConditionType.OR.value])}
-            elif definition.get(BqlConditionType.AND.value):
-                return {SemgrepAttribute.PATTERNS.value: self._get_definitions_list_items(
-                    definition[BqlConditionType.AND.value])}
+            if definition.get(str(BqlConditionType.OR)):
+                return {str(SemgrepAttribute.PATTERN_EITHER): self._get_definitions_list_items(
+                    definition[str(BqlConditionType.OR)])}
+            elif definition.get(str(BqlConditionType.AND)):
+                return {str(SemgrepAttribute.PATTERNS): self._get_definitions_list_items(
+                    definition[str(BqlConditionType.AND)])}
             else:
                 return self._parse_single_definition(definition)
         return conf
 
-    def _parse_single_definition(self, definition):
+    def _parse_single_definition(self, definition: Dict[str, Any]):
         cond_type = definition.get('cond_type', '')
         if not cond_type:
             raise AttributeError('BQL policy is missing a condition type')
@@ -137,12 +137,12 @@ class SastCheckParser:
     def _get_definitions_list_items(self, definitions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         conf = []
         for definition in definitions:
-            if definition.get(BqlConditionType.OR.value):
+            if definition.get(str(BqlConditionType.OR)):
                 conf.append({SemgrepAttribute.PATTERN_EITHER.value: self._get_definitions_list_items(
-                    definition[BqlConditionType.OR.value])})
-            elif definition.get(BqlConditionType.AND.value):
+                    definition[str(BqlConditionType.OR)])})
+            elif definition.get(str(BqlConditionType.AND)):
                 conf.append({SemgrepAttribute.PATTERNS.value: self._get_definitions_list_items(
-                    definition[BqlConditionType.AND.value])})
+                    definition[str(BqlConditionType.AND)])})
             else:
                 conf.append(self._parse_definition(definition))
 

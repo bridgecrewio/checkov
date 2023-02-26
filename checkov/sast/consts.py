@@ -16,6 +16,9 @@ class SastLanguages(Enum):
 
 
 class SemgrepAttribute(str, Enum):
+    def __str__(self):
+        return self.value
+
     ID = 'id'
     MESSAGE = 'message'
     SEVERITY = 'severity'
@@ -39,6 +42,9 @@ class SemgrepAttribute(str, Enum):
 
 
 class BqlConditionType(str, Enum):
+    def __str__(self):
+        return self.value
+
     PATTERN = "pattern"
     VARIABLE = "variable"
     FILTER = 'filter'
