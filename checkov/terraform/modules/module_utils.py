@@ -19,7 +19,6 @@ from checkov.common.util.json_utils import CustomJSONEncoder
 
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
-    from checkov.terraform.graph_builder.graph_components.module import Module
 
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
 from checkov.terraform.graph_builder.utils import remove_module_dependency_in_path
