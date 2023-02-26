@@ -255,11 +255,12 @@ class Runner(TerraformRunner):
         return raw_context, None
 
     def get_entity_context(self, definition_path, full_file_path, entity):
-        resource_type = definition_path[0]
-        resource_name = ''
-        if resource_type in entity.keys():
+        if len(definition_path) > 1:
+            resource_type = definition_path[0]
             resource_name = definition_path[1]
-        entity_id = entity.get(resource_type, {}).get(resource_name).get(TF_PLAN_RESOURCE_ADDRESS)
+            entity_id = entity.get(resource_type, {}).get(resource_name, {}).get(TF_PLAN_RESOURCE_ADDRESS)
+        else:
+            entity_id = definition_path[0]
         return self.context.get(full_file_path, {}).get(entity_id)
 
     @property

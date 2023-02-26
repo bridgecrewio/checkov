@@ -73,12 +73,12 @@ def build_definitions_context(definitions: Dict[str, DictNode], definitions_raw:
             context_parser = parser_registry.context_parsers[block_type]
             definition_path = context_parser.get_entity_context_path(entity)
 
-            resource_type = definition_path[0]
-            resource_name = ''
-            if resource_type in entity.keys():
+            if len(definition_path) > 1:
+                resource_type = definition_path[0]
                 resource_name = definition_path[1]
-
-            entity_id = entity[resource_type][resource_name].get(TF_PLAN_RESOURCE_ADDRESS)
+                entity_id = entity.get(resource_type, {}).get(resource_name, {}).get(TF_PLAN_RESOURCE_ADDRESS)
+            else:
+                entity_id = definition_path[0]
 
             # Entity can exist only once per dir, for file as well
             entity_context = get_entity_context(definitions, definitions_raw, definition_path, full_file_path, entity_id)
