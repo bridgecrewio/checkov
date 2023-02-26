@@ -149,8 +149,10 @@ def run_sast_scan(lang_key, repo_name):
     test_files_dir = os.path.join(current_dir, repo_name)
     runner_filter = RunnerFilter(framework=[lang_key])
     runner_registry = RunnerRegistry(banner, runner_filter, sast_runner())
-    reports = runner_registry.run(root_folder=test_files_dir)
+    runner_registry.run(root_folder=test_files_dir)
+
     # TODO - find java + js + python repos that violate our sast policies to replace these, and then check for actual reports
+    # reports = runner_registry.run(root_folder=test_files_dir)
     # assert len(reports) > 0
 
 
