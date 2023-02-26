@@ -337,8 +337,17 @@ class TestYamlPolicies(unittest.TestCase):
     def test_GCPPostgreSQLDatabaseFlaglog_statement_statsIsSetToOFF(self):
         self.go("GCPPostgreSQLDatabaseFlaglog_statement_statsIsSetToOFF")
 
-    def test_GCPComputeFirewallOverlyPermissiveToAllTraffic(self):
-        self.go("GCPComputeFirewallOverlyPermissiveToAllTraffic")
+    def test_AzureConfigMSSQLwithAD(self):
+        self.go("AzureConfigMSSQLwithAD")
+
+    def test_AzurePostgreSQLFlexServerNotOverlyPermissive(self):
+        self.go("AzurePostgreSQLFlexServerNotOverlyPermissive")
+
+    def test_GCPMySQLdbInstancePoint_In_TimeRecoveryBackupIsEnabled(self):
+        self.go("GCPMySQLdbInstancePoint_In_TimeRecoveryBackupIsEnabled")
+
+    def test_GCPdisableAlphaClusterFeatureInKubernetesEngineClusters(self):
+        self.go("GCPdisableAlphaClusterFeatureInKubernetesEngineClusters")
 
     def test_registry_load(self):
         registry = Registry(parser=GraphCheckParser(), checks_dir=str(
