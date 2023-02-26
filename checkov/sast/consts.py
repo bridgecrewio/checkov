@@ -16,7 +16,7 @@ class SastLanguages(Enum):
 
 
 class SemgrepAttribute(str, Enum):
-    def __str__(self):
+    def __str__(self) -> str:
         return self.value
 
     ID = 'id'
@@ -42,7 +42,7 @@ class SemgrepAttribute(str, Enum):
 
 
 class BqlConditionType(str, Enum):
-    def __str__(self):
+    def __str__(self) -> str:
         return self.value
 
     PATTERN = "pattern"
