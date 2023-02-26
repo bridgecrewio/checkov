@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 import os
-from pathlib import Path
 
 import yaml
 from typing import List, Any, Optional, Set, Dict
@@ -24,7 +23,7 @@ class Registry(BaseCheckRegistry):
         self.logger = logging.getLogger(__name__)
         self.parser = SastCheckParser()
         self.runner_filter: Optional[RunnerFilter] = None
-        self.temp_semgrep_rules_path = temp_semgrep_rules_path if  temp_semgrep_rules_path else \
+        self.temp_semgrep_rules_path = temp_semgrep_rules_path if temp_semgrep_rules_path else \
             os.path.join(self.checks_dir, 'temp_semgrep_rules.yaml')
 
     def extract_entity_details(self, entity: dict[str, Any]) -> tuple[str, str, dict[str, Any]]:

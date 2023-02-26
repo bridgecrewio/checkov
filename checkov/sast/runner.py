@@ -9,7 +9,6 @@ from checkov.common.output.report import Report
 from checkov.common.typing import _CheckResult
 from checkov.runner_filter import RunnerFilter
 from checkov.sast.checks_infra.registry import registry
-from checkov.sast.checks_infra.base_registry import Registry
 from checkov.sast.consts import SastLanguages, SUPPORT_FILE_EXT, SEMGREP_SEVERITY_TO_CHECKOV_SEVERITY, \
     FILE_EXT_TO_SAST_LANG
 from semgrep.semgrep_main import main as run_semgrep
