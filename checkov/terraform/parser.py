@@ -641,7 +641,6 @@ class Parser:
             external_modules_source_map: dict[tuple[str, str], str],
             dep_index_mapping: dict[tuple[str, str], list[str]],
     ) -> Module:
-        from checkov.terraform.graph_builder.graph_components.module import Module
         return Module(
             source_dir=source_dir,
             module_dependency_map=module_dependency_map,
