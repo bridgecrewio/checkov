@@ -248,21 +248,18 @@ class Runner(TerraformRunner):
                     report.add_record(record=record)
 
     def get_entity_context_and_evaluations(self, entity):
-        raw_context = self.get_entity_context(entity[CustomAttributes.BLOCK_NAME].split("."),
-                                              entity[CustomAttributes.FILE_PATH], None)
+        entity_id = entity[TF_PLAN_RESOURCE_ADDRESS]
+        raw_context = self.context.get(entity[CustomAttributes.FILE_PATH], {}).get(entity_id)
         if raw_context:
             raw_context['definition_path'] = entity[CustomAttributes.BLOCK_NAME].split('.')
         return raw_context, None
 
     def get_entity_context(self, definition_path, full_file_path, entity):
-        if not entity:
-            entity_id = ".".join(definition_path)
-        else:
-            resource_type = definition_path[0]
-            resource_name = ''
-            if resource_type in entity.keys():
-                resource_name = definition_path[1]
-            entity_id = entity.get(resource_type, {}).get(resource_name).get(TF_PLAN_RESOURCE_ADDRESS)
+        resource_type = definition_path[0]
+        resource_name = ''
+        if resource_type in entity.keys():
+            resource_name = definition_path[1]
+        entity_id = entity.get(resource_type, {}).get(resource_name).get(TF_PLAN_RESOURCE_ADDRESS)
         return self.context.get(full_file_path, {}).get(entity_id)
 
     @property
