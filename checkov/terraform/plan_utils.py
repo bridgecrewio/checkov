@@ -5,9 +5,7 @@ import json
 import logging
 import os
 from typing import Dict, List, Tuple, Any, TYPE_CHECKING
-import dpath
 from charset_normalizer import from_fp
-from traitlets import default
 
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.plan_parser import parse_tf_plan, TF_PLAN_RESOURCE_ADDRESS
