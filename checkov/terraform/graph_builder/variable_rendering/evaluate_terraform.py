@@ -94,7 +94,7 @@ def replace_string_value(original_str: Any, str_to_replace: str, replaced_value:
     if str_to_replace not in original_str:
         return original_str if keep_origin else str_to_replace
 
-    string_without_interpolation = remove_interpolation(original_str, str_to_replace, escape_unrendered=False)
+    string_without_interpolation = remove_interpolation(original_str, str_to_replace, escape_unrendered=True)
     return string_without_interpolation.replace(str_to_replace, str(replaced_value))
 
 
