@@ -76,6 +76,9 @@ class TestYamlPolicies(TestYamlPoliciesBase):
     def test_RunAptGetForceYes(self):
         self.go("RunAptGetForceYes")
 
+    def test_EnvNpmConfigStrictSsl(self):
+        self.go("EnvNpmConfigStrictSsl")
+
     def test_registry_load(self):
         registry = self.get_checks_registry()
         self.assertGreater(len(registry.checks), 0)
