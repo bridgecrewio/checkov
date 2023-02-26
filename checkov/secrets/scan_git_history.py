@@ -4,7 +4,7 @@ import copy
 import logging
 import os
 from collections import defaultdict
-from typing import TYPE_CHECKING, Dict, Tuple, List
+from typing import TYPE_CHECKING, Dict, List
 from checkov.common.util import stopit
 from detect_secrets.core import scan
 from typing_extensions import TypedDict
