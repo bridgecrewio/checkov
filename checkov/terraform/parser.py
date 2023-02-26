@@ -21,7 +21,7 @@ from checkov.common.util.parser_utils import get_tf_definition_key_from_module_d
     TERRAFORM_NESTED_MODULE_PATH_ENDING, is_acceptable_module_param
 from checkov.terraform.modules.module_utils import load_or_die_quietly, safe_index, \
     remove_module_dependency_from_path, get_module_dependency_map, get_module_dependency_map_support_nested_modules, \
-    clean_parser_types, serialize_definitions, get_new_module
+    clean_parser_types, serialize_definitions
 
 
 def _filter_ignored_paths(root: str, paths: list[str], excluded_paths: list[str] | None) -> None:
@@ -583,7 +583,7 @@ class Parser:
             module_dependency_map, tf_definitions, dep_index_mapping = get_module_dependency_map_support_nested_modules(tf_definitions)
         else:
             module_dependency_map, tf_definitions, dep_index_mapping = get_module_dependency_map(tf_definitions)
-        module = get_new_module(
+        module = self.get_new_module(
             source_dir=source_dir,
             module_dependency_map=module_dependency_map,
             module_address_map=self.module_address_map,
@@ -632,3 +632,20 @@ class Parser:
             dirname_path = os.path.dirname(path)
             self.dirname_cache[path] = dirname_path
         return dirname_path
+
+    @staticmethod
+    def get_new_module(
+            source_dir: str,
+            module_dependency_map: dict[str, list[list[str]]],
+            module_address_map: dict[tuple[str, str], str],
+            external_modules_source_map: dict[tuple[str, str], str],
+            dep_index_mapping: dict[tuple[str, str], list[str]],
+    ) -> Module:
+        from checkov.terraform.graph_builder.graph_components.module import Module
+        return Module(
+            source_dir=source_dir,
+            module_dependency_map=module_dependency_map,
+            module_address_map=module_address_map,
+            external_modules_source_map=external_modules_source_map,
+            dep_index_mapping=dep_index_mapping
+        )
