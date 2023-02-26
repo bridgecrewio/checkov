@@ -135,8 +135,6 @@ class EntropyKeywordCombinator(BasePlugin):
             line_number: int = 0,
             context: CodeSnippet | None = None,
             raw_context: CodeSnippet | None = None,
-            is_added: bool = False,
-            is_removed: bool = False,
             **kwargs: Any,
     ) -> set[PotentialSecret]:
         if len(line) > self.max_line_length:
@@ -144,7 +142,7 @@ class EntropyKeywordCombinator(BasePlugin):
             return set()
 
         is_iac = f".{filename.split('.')[-1]}" not in SOURCE_CODE_EXTENSION
-        keyword_on_key = self.keyword_scanner.analyze_line(filename, line, line_number, context, raw_context, is_added, is_removed, **kwargs)
+        keyword_on_key = self.keyword_scanner.analyze_line(filename, line, line_number, **kwargs)
         if is_iac:
             filetype = determine_file_type(filename)
             single_line_parser = SINGLE_LINE_PARSER.get(filetype)
@@ -174,8 +172,6 @@ class EntropyKeywordCombinator(BasePlugin):
                         filename=filename,
                         line=line,
                         line_number=line_number,
-                        is_added=is_added,
-                        is_removed=is_removed,
                         kwargs=kwargs
                     )
                     # postprocess detected secrets - filter out potential secrets on keyword
@@ -213,8 +209,6 @@ class EntropyKeywordCombinator(BasePlugin):
                 filename=filename,
                 line=line,
                 line_number=line_number,
-                is_added=is_added,
-                is_removed=is_removed,
                 kwargs=kwargs
             )
 

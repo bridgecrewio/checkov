@@ -341,7 +341,7 @@ def test_scan_git_history_rename_file() -> None:
 
 @mock.patch('checkov.secrets.scan_git_history.get_commits_diff', mock_git_repo_commits_modify_and_rename_file)
 def test_scan_git_history_modify_and_rename_file() -> None:
-    valid_dir_path = "/Users/lshindelman/development/test4"
+    valid_dir_path = "test_scan_git_history_modify_and_rename_file"
 
     runner = Runner()
     report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
@@ -353,8 +353,7 @@ def test_scan_git_history_modify_and_rename_file() -> None:
 
 @mock.patch('checkov.secrets.scan_git_history.get_commits_diff', mock_remove_file_with_two_equal_secret)
 def test_scan_git_history_rename_file_with_two_equal_secrets() -> None:
-    valid_dir_path = "/Users/lshindelman/development/test4"
-
+    valid_dir_path = "test_scan_git_history_rename_file_with_two_equal_secrets"
     runner = Runner()
     report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                         runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
@@ -365,7 +364,7 @@ def test_scan_git_history_rename_file_with_two_equal_secrets() -> None:
 
 @mock.patch('checkov.secrets.scan_git_history.get_commits_diff', mock_remove_file_with_two_secret)
 def test_scan_git_history_rename_file_with_two_secrets() -> None:
-    valid_dir_path = "/Users/lshindelman/development/test4"
+    valid_dir_path = "test_scan_git_history_rename_file_with_two_secrets"
     runner = Runner()
     report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                         runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
