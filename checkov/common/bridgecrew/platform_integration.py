@@ -113,7 +113,7 @@ class BcPlatformIntegration:
         self.cicd_details: _CicdDetails = {}
 
     def set_bc_api_url(self, new_url: str) -> None:
-        self.bc_api_url = new_url
+        self.bc_api_url = normalize_bc_url(new_url)
         self.setup_api_urls()
 
     def setup_api_urls(self) -> None:
