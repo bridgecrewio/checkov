@@ -56,6 +56,12 @@ class TestYamlPolicies(TestYamlPoliciesBase):
     def test_DnfDisableGpgCheck(self):
         self.go("DnfDisableGpgCheck", local_graph_class=AnsibleLocalGraph)
 
+    def test_DnfSslVerify(self):
+        self.go("DnfSslVerify", local_graph_class=AnsibleLocalGraph)
+
+    def test_DnfValidateCerts(self):
+        self.go("DnfValidateCerts", local_graph_class=AnsibleLocalGraph)
+
     def test_registry_load(self):
         registry = self.get_checks_registry()
         self.assertGreater(len(registry.checks), 0)
