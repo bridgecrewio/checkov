@@ -123,7 +123,7 @@ def _find_new_value_for_interpolation(origin_str: str, str_to_replace: str, new_
         escaped_new_value = f"'{new_value}'"
         escaped = origin_str.replace(str_to_replace, escaped_new_value)
         first_evaluated = evaluate_terraform(escaped)
-        if escaped != first_evaluated and abs(len(not_escaped) - len(first_evaluated)) != 3:
+        if escaped != first_evaluated and abs(len(escaped) - len(first_evaluated)) != 3:
             return escaped_new_value
         second_evaluated = _try_evaluate(first_evaluated)
         if first_evaluated != second_evaluated:
