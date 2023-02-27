@@ -1,6 +1,31 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.36...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.44...HEAD)
+
+## [2.3.44](https://github.com/bridgecrewio/checkov/compare/2.3.39...2.3.44) - 2023-02-26
+
+### Feature
+
+- **dockerfile:** Add check for the environment variable NPM_CONFIG_STRICT_SSL - [#4553](https://github.com/bridgecrewio/checkov/pull/4553)
+- **terraform:** TF Parser  - Move funcs and consts to utils file - [#4550](https://github.com/bridgecrewio/checkov/pull/4550)
+
+### Bug Fix
+
+- **terraform_plan:** Fix tf plan nested modules - [#4562](https://github.com/bridgecrewio/checkov/pull/4562)
+- **terraform:** fix for #4518 - [#4528](https://github.com/bridgecrewio/checkov/pull/4528)
+- **terraform:** Move get_module back to parser - [#4560](https://github.com/bridgecrewio/checkov/pull/4560)
+- **terraform:** remove dynamic warning exc_info - [#4563](https://github.com/bridgecrewio/checkov/pull/4563)
+
+## [2.3.39](https://github.com/bridgecrewio/checkov/compare/2.3.36...2.3.39) - 2023-02-23
+
+### Feature
+
+- **dockerfile:** Add checks for disabling signature checks for apk, apt-get, rpm, yum, dnf - [#4404](https://github.com/bridgecrewio/checkov/pull/4404)
+- **terraform:** New classes for the TF module model - [#4546](https://github.com/bridgecrewio/checkov/pull/4546)
+
+### Bug Fix
+
+- **gha:** Align GHA resource ids (Graph vs Python checks) - [#4549](https://github.com/bridgecrewio/checkov/pull/4549)
 
 ## [2.3.36](https://github.com/bridgecrewio/checkov/compare/2.3.33...2.3.36) - 2023-02-22
 
