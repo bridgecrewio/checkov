@@ -1,82 +1,44 @@
-# Pass case 1: No authorised networks set
-
-resource "google_sql_database_instance" "pass_1" {
-  name             = "sqldbi"
-  database_version = "SQLSERVER_2017_STANDARD"
-  region           = "us-central1"
-
-
+#PASS case 1: 
+resource "google_sql_database_instance" "pass" {
+  name             = "pud_pass_sqldb"
+  database_version = "MYSQL_5_7"
+ 
   deletion_protection = false
   settings {
-    tier = "db-custom-2-5120"
-    }
-      root_password = "pud123"
-}
-
-
-# Pass case 2- Authorised n/w not overly permissive 
-
-resource "google_sql_database_instance" "pass_2" {
-  name             = "sqldbi"
-  database_version = "SQLSERVER_2017_STANDARD"
-  deletion_protection = false
-  depends_on       = [google_service_networking_connection.dep-vpc-j3-1-rlp-87327]
-  settings {
-    tier              = "db-custom-2-5120"
-    availability_type = "REGIONAL"
-    disk_size         = 10 
-    ip_configuration {
-      ipv4_enabled    = false
-      private_network = google_compute_network.dep-vpc-j1-2-rlp-87327.self_link
-      authorized_networks {
-        value           = "101.0.0.0/16"
-        name            = "first"
-        expiration_time = "2023-11-15T16:19:00.094Z"
-      }
+    tier = "db-f1-micro"
+    
+    backup_configuration {
+        binary_log_enabled = "true"
     }
   }
-  root_password = "pud123"
 }
 
-
-
-# FAIL case 1 - overly permissive IPV4 authorised n/w (0.0.0.0)
-
+#FAIL case 2: database_version is not starting with "MYSQL_"
 resource "google_sql_database_instance" "fail_1" {
-  name             = "sqldbi"
-  database_version = "SQLSERVER_2017_STANDARD"
-  region           = "us-central1"
-
+  name             = "pud_sqldb"
+  database_version = "POSTGRES_14"
 
   deletion_protection = false
   settings {
-    tier = "db-custom-2-5120"
-    ip_configuration {
-      authorized_networks {
-        value = "0.0.0.0/0"
-      }
+    tier = "db-f1-micro"
+    
+    backup_configuration {
+        binary_log_enabled = "true"
     }
   }
-  root_password = "pud123"
 }
 
-# FAIL case 2: overly permissive IPV6 authorised n/w (::/0)
+#FAIL case 3: binary_log_enabled is not True
 resource "google_sql_database_instance" "fail_2" {
-  name             = "sqldbi"
-  database_version = "SQLSERVER_2017_STANDARD"
-  region           = "us-central1"
-
+  name             = "pud_sqldb"
+  database_version = "MYSQL_5_7"
 
   deletion_protection = false
   settings {
-    tier = "db-custom-2-5120"
-    ip_configuration {
-      authorized_networks {
-        value = "::/0"
-      }
+    tier = "db-f1-micro"
+    
+    backup_configuration {
+        binary_log_enabled = "false"
     }
   }
-  root_password = "pud123"
 }
-
-
