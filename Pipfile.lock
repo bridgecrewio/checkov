@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "3a557f07cd4db4a175695256f4db5db21c0ad59e9474e8d3e19222cbd326d6a6"
+            "sha256": "9f2d90882d462be9da73fe4fc2258495d3fd97fc9a8ba8f1be30a856aa8b896c"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -167,11 +167,11 @@
         },
         "bc-detect-secrets": {
             "hashes": [
-                "sha256:a97365419bce6ab159b22a98fe1b19460b650153ed5b342627a7b741d31a970d",
-                "sha256:eedf3f8192ae3eb1a360f98c832c02e0d9facec1e0b54c8daaebbe0336b570fb"
+                "sha256:166a3da9ad228824e11793e7eca0a1ee8b2846997d3887a3ebbe0289cf247b3d",
+                "sha256:380dfe2c4a724aef6814351f93a7c59a86ae73351fa34c2f4f0ad0980f21af98"
             ],
             "index": "pypi",
-            "version": "==1.4.12"
+            "version": "==1.4.13"
         },
         "bc-jsonpath-ng": {
             "hashes": [
@@ -1034,6 +1034,7 @@
                 "sha256:eb1f88d0594edc40b7d7fc4880e0aef33a69c97b4af0b14c91e8b5f4847ac618",
                 "sha256:f983b89f0f79ee527f2cadf167bc8c72b3e1c40574f71f12717a4cb13c75ed47"
             ],
+            "index": "pypi",
             "markers": "python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64' and implementation_name == 'cpython'",
             "version": "==2.3.5"
         },
@@ -1055,6 +1056,7 @@
                 "sha256:f2c191a1cbcee2ed70d65510dd540edb5d5d2b3288b74be89be401456ae747d1",
                 "sha256:fbedb3013c93d52959c543bc9493572401d8f8e928bc265af6fdf6a2fb0258e8"
             ],
+            "index": "pypi",
             "markers": "python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64' and implementation_name == 'cpython'",
             "version": "==2.3.5"
         },
