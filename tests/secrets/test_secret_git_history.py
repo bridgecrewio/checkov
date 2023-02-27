@@ -10,6 +10,7 @@ from checkov.secrets.scan_git_history import scan_history
 from checkov.secrets.runner import Runner
 from checkov.runner_filter import RunnerFilter
 from detect_secrets.settings import transient_settings
+from checkov.common.output.secrets_record import COMMIT_REMOVED_STR, COMMIT_ADDED_STR
 
 
 def mock_git_repo_commits1(root_folder: str) -> Dict[str, Dict[str, str]]:
@@ -175,6 +176,9 @@ def test_scan_git_history_merge_added_removed() -> None:
     for failed_check in report.failed_checks:
         assert failed_check.removed_commit_hash is None
         assert failed_check.added_commit_hash == '11e59e4e578c6ebcb48aae1e5e078a54c62920eb'
+        assert_for_commit_str(failed_check.to_string(), COMMIT_ADDED_STR, '11e59e4e578c6ebcb48aae1e5e078a54c62920eb')
+        assert_for_commit_str(failed_check.to_string(), COMMIT_REMOVED_STR,
+                              '11e59e4e578c6ebcb48aae1e5e078a54c62920eb', found=False)
 
 
 @mock.patch('checkov.secrets.scan_git_history.get_commits_diff', mock_git_repo_commits2)
@@ -206,14 +210,23 @@ def test_scan_git_history_merge_added_removed2() -> None:
                         runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
     assert len(report.failed_checks) == 2
     assert ((report.failed_checks[0].removed_commit_hash == '697308e61171e33224757e620aaf67b1a877c99d'
-            and report.failed_checks[1].removed_commit_hash is None)
+             and report.failed_checks[1].removed_commit_hash is None)
             or (report.failed_checks[1].removed_commit_hash == '697308e61171e33224757e620aaf67b1a877c99d'
-            and report.failed_checks[0].removed_commit_hash is None))
+                and report.failed_checks[0].removed_commit_hash is None))
     assert ((report.failed_checks[0].added_commit_hash == '900b1e8f6f336a92e8f5fca3babca764e32c3b3d'
-            and report.failed_checks[1].added_commit_hash == '3c8cb7eedb3986308c96713fc65b006adcf3bc44')
+             and report.failed_checks[1].added_commit_hash == '3c8cb7eedb3986308c96713fc65b006adcf3bc44')
             or (report.failed_checks[1].added_commit_hash == '900b1e8f6f336a92e8f5fca3babca764e32c3b3d'
-            and report.failed_checks[0].added_commit_hash == '3c8cb7eedb3986308c96713fc65b006adcf3bc44'))
-
+                and report.failed_checks[0].added_commit_hash == '3c8cb7eedb3986308c96713fc65b006adcf3bc44'))
+    # print testing
+    assert_for_commit_str(report.failed_checks[0].to_string() + report.failed_checks[1].to_string(),
+                          commit_type=COMMIT_REMOVED_STR,
+                          commit_hash='697308e61171e33224757e620aaf67b1a877c99d')
+    assert_for_commit_str(report.failed_checks[0].to_string() + report.failed_checks[1].to_string(),
+                          commit_type=COMMIT_ADDED_STR,
+                          commit_hash='3c8cb7eedb3986308c96713fc65b006adcf3bc44')
+    assert_for_commit_str(report.failed_checks[0].to_string() + report.failed_checks[1].to_string(),
+                          commit_type=COMMIT_ADDED_STR,
+                          commit_hash='900b1e8f6f336a92e8f5fca3babca764e32c3b3d')
 
 
 @mock.patch('checkov.secrets.scan_git_history.get_commits_diff', mock_git_repo_commits_too_much)
@@ -234,3 +247,8 @@ def test_scan_history_secrets_timeout() -> None:
         finished = scan_history(valid_dir_path, secrets, 1)
 
     assert finished is False
+
+
+def assert_for_commit_str(report_str: [str], commit_type: str, commit_hash: str, found: bool = True) -> None:
+    to_find = f'; {commit_type}: {commit_hash}'
+    assert (to_find in report_str) == found

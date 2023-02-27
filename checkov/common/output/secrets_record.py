@@ -14,6 +14,9 @@ from checkov.common.bridgecrew.severities import Severity
 from checkov.common.output.record import Record
 from checkov.common.typing import _CheckResult
 
+COMMIT_ADDED_STR = 'Commit Added'
+COMMIT_REMOVED_STR = 'Commit Removed'
+
 WARNING_SIGN_UNICODE = '\u26a0'
 TEXT_BY_SECRET_VALIDATION_STATUS = {
     ValidationStatus.VALID.value: colored(f'\t{WARNING_SIGN_UNICODE} This secret has been validated'
@@ -97,7 +100,7 @@ class SecretsRecord(Record):
         processed_record = self._add_commit_details(processed_record)
         return processed_record
 
-    def _add_commit_details(self, processed_record):
+    def _add_commit_details(self, processed_record) -> str:
         splitted_record = processed_record.split("\n")
         file_idx = 0
         file_line = ''
@@ -108,16 +111,15 @@ class SecretsRecord(Record):
                 break
         added = False
         if self.added_commit_hash:
-            file_line = file_line + f'; Commit Added: {self.added_commit_hash}'
+            file_line = file_line + f'; {COMMIT_ADDED_STR}: {self.added_commit_hash}'
             added = True
         if self.removed_commit_hash:
-            file_line = file_line + f'; Commit Removed: {self.removed_commit_hash}'
+            file_line = file_line + f'; {COMMIT_REMOVED_STR}: {self.removed_commit_hash}'
             added = True
         if added:
             splitted_record[file_idx] = file_line
             processed_record = "\n".join(splitted_record)
         return processed_record
-
 
     def _get_secret_validation_status_message(self) -> str:
         message = None
