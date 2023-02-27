@@ -464,14 +464,6 @@ class TestTerraformEvaluation(TestCase):
         expected = "{for val in ['k', 'v'] : val.name :> true}"
         self.assertEqual(expected, evaluate_terraform(input_str))
 
-    # def test_lookup_http(self):
-    #
-    #     f = lambda map_input, key, default: map_input.get(key, default)
-    #     input_str = '${lookup({\'a\': http},"a","https")}'
-    #     # res = f(input_str)
-    #     expected = "http"
-    #     self.assertEqual(expected, evaluate_terraform(input_str))
-
 
 @pytest.mark.parametrize(
     "origin_str,str_to_replace,new_value,expected",
