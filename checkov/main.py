@@ -38,6 +38,7 @@ from checkov.common.bridgecrew.integration_features.features.custom_policies_int
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.integration_features.features.licensing_integration import integration as licensing_integration
+from checkov.common.bridgecrew.severities import BcSeverities
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.output.baseline import Baseline
 from checkov.common.bridgecrew.check_type import checkov_runners
@@ -627,6 +628,15 @@ class Checkov:
             self.config.repo_id = bc_integration.persist_repo_id(self.config)
             # if a bc_api_key is passed it'll save it.  Otherwise it will check ~/.bridgecrew/credentials
             self.config.bc_api_key = bc_integration.persist_bc_api_key(self.config)
+
+            if not self.config.bc_api_key:
+                # check, if someone tries to use a severity filter without an API key
+                severities = {severity for severity in BcSeverities.__dict__.values() if isinstance(severity, str)}
+                if (
+                    (self.config.check and any(check in severities for check in self.config.check))
+                    or (self.config.skip_check and any(check in severities for check in self.config.skip_check))
+                ):
+                    logging.warning("Filtering checks by severity is only possible with an API key")
 
             excluded_paths = self.config.skip_path or []
 
