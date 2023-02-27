@@ -471,7 +471,11 @@ class Runner(BaseRunner[None]):
         """
         if not enable_git_history_secret_scan:
             return None, None
-        split_key = key.split('_')
-        added_commit_hash = split_key[0]
-        removed_commit_hash = split_key[1] if split_key[1] != GIT_HISTORY_NOT_BEEN_REMOVED else None
-        return added_commit_hash, removed_commit_hash
+        try:
+            split_key = key.split('_')
+            added_commit_hash = split_key[0]
+            removed_commit_hash = split_key[1] if split_key[1] != GIT_HISTORY_NOT_BEEN_REMOVED else None
+            return added_commit_hash, removed_commit_hash
+        except Exception as e:
+            logging.warning(f"Failed set added_commit_hash and removed_commit_hash due to: {e}")
+            return None, None
