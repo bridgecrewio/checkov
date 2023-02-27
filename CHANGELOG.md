@@ -1,6 +1,18 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.44...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.48...HEAD)
+
+## [2.3.48](https://github.com/bridgecrewio/checkov/compare/2.3.44...2.3.48) - 2023-02-27
+
+### Feature
+
+- **secrets:** track complete file deletion and renaming - [#4551](https://github.com/bridgecrewio/checkov/pull/4551)
+- **terraform:** Adding yaml based build time policies for corresponding PC runtime policies - [#4529](https://github.com/bridgecrewio/checkov/pull/4529)
+
+### Bug Fix
+
+- **ansible:** support skip check for Ansible Python-based checks - [#4556](https://github.com/bridgecrewio/checkov/pull/4556)
+- **terraform:** Handle unescaped lookup values - [#4565](https://github.com/bridgecrewio/checkov/pull/4565)
 
 ## [2.3.44](https://github.com/bridgecrewio/checkov/compare/2.3.39...2.3.44) - 2023-02-26
 
