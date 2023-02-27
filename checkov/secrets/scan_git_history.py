@@ -136,10 +136,12 @@ class GitHistorySecretStore:
             self.secrets_by_file_value_type[secret_key] = []
         else:
             all_removed = all(
-                potential_secret.get('removed_commit_hash') for potential_secret in self.secrets_by_file_value_type[secret_key])
+                potential_secret.get('removed_commit_hash') for potential_secret in
+                self.secrets_by_file_value_type[secret_key])
             # Update secret map with the new potential secret
             if all_removed:
-                self.secrets_by_file_value_type[secret_key][0].update({'potential_secret': secret, 'removed_commit_hash': ''})
+                self.secrets_by_file_value_type[secret_key][0].update(
+                    {'potential_secret': secret, 'removed_commit_hash': ''})
                 return
         self.secrets_by_file_value_type[secret_key].append(
             {'added_commit_hash': commit_hash, 'removed_commit_hash': '', 'potential_secret': secret})
@@ -173,6 +175,6 @@ class GitHistorySecretStore:
                     new_secret = copy.deepcopy(secret_data['potential_secret'])
                     new_secret.filename = rename_to
                     temp_secrets_by_file_value_type[new_secret_key].append({'added_commit_hash': commit_hash,
-                                                     'removed_commit_hash': '',
-                                                     'potential_secret': new_secret})
+                                                                            'removed_commit_hash': '',
+                                                                            'potential_secret': new_secret})
         self.secrets_by_file_value_type.update(temp_secrets_by_file_value_type)
