@@ -1,0 +1,6 @@
+pass:
+  - "azurerm_postgresql_flexible_server_firewall_rule.pass"
+fail:
+  - "azurerm_postgresql_flexible_server_firewall_rule.fail_1"
+  - "azurerm_postgresql_flexible_server_firewall_rule.fail_2"
+  - "azurerm_postgresql_flexible_server_firewall_rule.fail_3"
