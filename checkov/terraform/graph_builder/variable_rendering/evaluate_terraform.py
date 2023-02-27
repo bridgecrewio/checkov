@@ -98,6 +98,10 @@ def replace_string_value(original_str: Any, str_to_replace: str, replaced_value:
     return string_without_interpolation.replace(str_to_replace, str(replaced_value))
 
 
+def _string_changed_except_interpolation(str_before: str, str_after: str) -> bool:
+    return abs(len(str_before) - len(str_after)) != 3
+
+
 def _find_new_value_for_interpolation(origin_str: str, str_to_replace: str, new_value: str) -> str:
     """
     This function checks whether we should escape the interpolated value, to avoid syntax error.
@@ -112,18 +116,18 @@ def _find_new_value_for_interpolation(origin_str: str, str_to_replace: str, new_
         # First part - checking if not-escaped is valid.
         not_escaped = origin_str.replace(str_to_replace, new_value)
         first_evaluated = evaluate_terraform(not_escaped)
-        if abs(len(not_escaped) - len(first_evaluated)) != 3:
+        if _string_changed_except_interpolation(not_escaped, first_evaluated):
             # checking if the len difference != 3 checks if we didn't only remove the '${}'
             return new_value
         second_evaluated = _try_evaluate(first_evaluated)
-        if first_evaluated != second_evaluated and abs(len(not_escaped) - len(second_evaluated)) != 3:
+        if first_evaluated != second_evaluated and _string_changed_except_interpolation(not_escaped, second_evaluated):
             return new_value
 
         # Second part - checking if escaped is valid
         escaped_new_value = f"'{new_value}'"
         escaped = origin_str.replace(str_to_replace, escaped_new_value)
         first_evaluated = evaluate_terraform(escaped)
-        if escaped != first_evaluated and abs(len(escaped) - len(first_evaluated)) != 3:
+        if escaped != first_evaluated and _string_changed_except_interpolation(escaped, first_evaluated):
             return escaped_new_value
         second_evaluated = _try_evaluate(first_evaluated)
         if first_evaluated != second_evaluated:
