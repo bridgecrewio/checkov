@@ -161,18 +161,18 @@ class GitHistorySecretStore:
     def handle_renamed_file(self, rename_from: str,
                             rename_to: str,
                             commit_hash: str) -> None:
-        temp_map: Dict[str, List[EnrichedPotentialSecret]] = {}
+        temp_secrets_by_file_value_type: Dict[str, List[EnrichedPotentialSecret]] = {}
         for secret_key in self.secrets_by_file_value_type.keys():
             if rename_from in secret_key:
                 new_secret_key = secret_key.replace(rename_from, rename_to)
-                temp_map[new_secret_key] = []
+                temp_secrets_by_file_value_type[new_secret_key] = []
                 secret_in_file = self.secrets_by_file_value_type[secret_key]
                 for secret_data in secret_in_file:
                     # defines the secret in the old file as removed and add the secret to the new file
                     secret_data['removed_commit_hash'] = commit_hash
                     new_secret = copy.deepcopy(secret_data['potential_secret'])
                     new_secret.filename = rename_to
-                    temp_map[new_secret_key].append({'added_commit_hash': commit_hash,
+                    temp_secrets_by_file_value_type[new_secret_key].append({'added_commit_hash': commit_hash,
                                                      'removed_commit_hash': '',
                                                      'potential_secret': new_secret})
-        self.secrets_by_file_value_type.update(temp_map)
+        self.secrets_by_file_value_type.update(temp_secrets_by_file_value_type)
