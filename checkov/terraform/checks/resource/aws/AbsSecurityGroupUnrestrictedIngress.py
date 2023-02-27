@@ -11,7 +11,7 @@ from checkov.common.util.type_forcers import force_int
 class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
     def __init__(self, check_id: str, port: int) -> None:
         name = f"Ensure no security groups allow ingress from 0.0.0.0:0 to port {port}"
-        supported_resources = ('aws_security_group', 'aws_security_group_rule')
+        supported_resources = ('aws_security_group', 'aws_security_group_rule', 'aws_vpc_security_group_ingress_rule')
         categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name, id=check_id, categories=categories, supported_resources=supported_resources)
         self.port = port
@@ -61,8 +61,13 @@ class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
                     return CheckResult.FAILED
                 return CheckResult.PASSED
             return CheckResult.UNKNOWN
+        else:
+            self.evaluated_keys = ['from_port', 'to_port', 'cidr_ipv4', 'cidr_ipv6']
+            if 'from_port' in conf or 'to_port' in conf:
+                if self.contains_violation(conf):
+                    return CheckResult.FAILED
+                return CheckResult.PASSED
 
-        # The result for an SG with no ingress block
         return CheckResult.PASSED
 
     def contains_violation(self, conf: dict[str, list[Any]]) -> bool:
@@ -73,14 +78,24 @@ class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
             to_port = 65535
 
         if from_port is not None and to_port is not None and (from_port <= self.port <= to_port):
-            conf_cidr_blocks = conf.get('cidr_blocks', [[]])
+            if conf.get('cidr_blocks'):
+                conf_cidr_blocks = conf.get('cidr_blocks', [[]])
+            else:
+                conf_cidr_blocks = conf.get('cidr_ipv4', [[]])
             if conf_cidr_blocks and len(conf_cidr_blocks) > 0:
                 conf_cidr_blocks = conf_cidr_blocks[0]
             cidr_blocks = force_list(conf_cidr_blocks)
             if "0.0.0.0/0" in cidr_blocks:
                 return True
-            ipv6_cidr_blocks = conf.get('ipv6_cidr_blocks', [])
+            if conf.get('ipv6_cidr_blocks'):
+                ipv6_cidr_blocks = conf.get('ipv6_cidr_blocks', [])
+            else:
+                ipv6_cidr_blocks = conf.get('cidr_ipv6', [])
             if ipv6_cidr_blocks and ipv6_cidr_blocks[0] is not None and \
                     any(ip in ['::/0', '0000:0000:0000:0000:0000:0000:0000:0000/0'] for ip in ipv6_cidr_blocks[0]):
+                return True
+            if len(ipv6_cidr_blocks) == 0 and len(cidr_blocks) == 0 \
+                    and conf.get('security_groups') is None \
+                    and conf.get('source_security_group_id') is None:
                 return True
         return False
