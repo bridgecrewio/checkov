@@ -123,7 +123,7 @@ def test_sast_runner_get_semgrep_output():
 
 
 def test_sast_runner_create_report():
-    file = os.path.join(pathlib.Path(__file__).parent.resolve(), 'source_code', 'python', 'SuperUserPort', 'fail.py')
+    file = os.path.join(pathlib.Path(__file__).parent.resolve(), 'source_code', 'python', 'SuperuserPort', 'fail.py')
     raw_rule = get_parsed_rule()
     rule = Rule(raw_rule)
     rule_match = core.CoreMatch(rule_id=core.RuleId(value='tests.sast.checks.CKV3_SAST_11'),
