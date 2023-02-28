@@ -59,6 +59,46 @@ def test_EncryptionKeySize():
     run_check(lang="python", check="EncryptionKeySize")
 
 
+def test_HazelcastSymmetricEncryption():
+    run_check(lang="java", check="HazelcastSymmetricEncryption")
+
+
+def test_HttpOnlyCookie():
+    run_check(lang="java", check="HttpOnlyCookie")
+
+
+def test_InadequateAlgorithmStrength():
+    run_check(lang="java", check="InadequateAlgorithmStrength")
+
+
+def test_CrossDomainUntrusted():
+    run_check(lang="java", check="CrossDomainUntrusted")
+
+
+def test_BrokenCryptographicAlgorithm():
+    run_check(lang="java", check="BrokenCryptographicAlgorithm")
+
+
+def test_InadequateKeyStrength():
+    run_check(lang="java", check="InadequateKeyStrength")
+
+
+def test_InsecureCookie():
+    run_check(lang="java", check="InsecureCookie")
+
+
+def test_PersistentCookie():
+    run_check(lang="java", check="PersistentCookie")
+
+
+def test_SensitiveInfoInCookie():
+    run_check(lang="java", check="SensitiveInfoInCookie")
+
+
+def test_TrustBoundary():
+    run_check(lang="java", check="TrustBoundary")
+
+
 def test_DataIntegrityInTransmition():
     run_check(lang="java", check="DataIntegrityInTransmition")
 
