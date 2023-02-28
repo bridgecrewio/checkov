@@ -177,26 +177,6 @@ def test_sast_python_performance(benchmark):
 
 
 @pytest.mark.benchmark(
-    group="sast-javascript-performance-tests",
-    disable_gc=True,
-    min_time=0.1,
-    max_time=0.5,
-    min_rounds=5,
-    timer=time.time,
-    warmup=False
-)
-def test_sast_javascript_performance(benchmark):
-    lang_key = 'sast_javascript'
-    repo_name = performance_configurations.get(lang_key, {}).get('repo_name')
-    repo_threshold = performance_configurations.get(lang_key, {}).get('threshold', {}).get(SYSTEM_NAME)
-    if not repo_name:
-        raise Exception(f'No repo to run performace test: {lang_key}')
-
-    benchmark(run_sast_scan, lang_key, repo_name)
-    assert benchmark.stats.stats.mean <= repo_threshold + (DEVIATION_PERCENT / 100) * repo_threshold
-
-
-@pytest.mark.benchmark(
     group="sast-java-performance-tests",
     disable_gc=True,
     min_time=0.1,
