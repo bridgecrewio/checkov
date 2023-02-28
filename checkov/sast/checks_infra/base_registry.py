@@ -88,21 +88,13 @@ class Registry(BaseCheckRegistry):
 
     def create_temp_rules_file(self) -> None:
         rules_obj = {'rules': self.rules}
-        try:
-            with open(self.temp_semgrep_rules_path, "r") as stream:
-                logging.warning(f'this is the file content in path {self.temp_semgrep_rules_path} before writing to it:')
-                logging.warning(yaml.safe_load(stream))
-        except FileNotFoundError:
-            logging.warning(f'(create_temp_rules_file) temp file dont exist yet at path {self.temp_semgrep_rules_path}')
         with open(self.temp_semgrep_rules_path, 'w') as tempfile:
             yaml.safe_dump(rules_obj, tempfile)
         logging.debug(f'created semgrep temporary rules file at: {self.temp_semgrep_rules_path}')
-        logging.warning(f'created semgrep temporary rules file at: {self.temp_semgrep_rules_path}')
 
     def delete_temp_rules_file(self) -> None:
         try:
             os.remove(self.temp_semgrep_rules_path)
             logging.debug('deleted semgrep temporary rules file')
-            logging.warning(f'deleted semgrep temporary rules file in path {self.temp_semgrep_rules_path}')
         except FileNotFoundError as e:
             logging.error(f'Tried to delete the semgrep temporary rules file but no such file was found.\n{e}')

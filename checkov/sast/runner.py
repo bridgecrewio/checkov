@@ -75,12 +75,8 @@ class Runner():
         output_handler = OutputHandler(output_settings)
 
         self.registry.set_runner_filter(runner_filter)
-        logging.warning(f'(sast_runner_run) total rules before load rules: {len(self.registry.rules)}')
         self.registry.load_rules(runner_filter.sast_languages)
-        logging.warning(
-            f'(sast_runner_run) total rules after load rules: {len(self.registry.rules)}, registry.rules: {self.registry.rules}')
         if external_checks_dir:
-            logging.warning(f'adding external checks from dir {external_checks_dir}')
             for external_checks in external_checks_dir:
                 self.registry.load_external_rules(external_checks, runner_filter.sast_languages)
 
