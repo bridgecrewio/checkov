@@ -1,3 +1,4 @@
+import javax.servlet.http.Cookie;
 class Connector {
     @javax.jws.WebMethod
     void connect(HttpServletRequest req){
