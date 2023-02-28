@@ -91,10 +91,12 @@ class Registry(BaseCheckRegistry):
         with open(self.temp_semgrep_rules_path, 'w') as tempfile:
             yaml.safe_dump(rules_obj, tempfile)
         logging.debug(f'created semgrep temporary rules file at: {self.temp_semgrep_rules_path}')
+        logging.debug(f'created semgrep temporary rules file at: {self.temp_semgrep_rules_path}')
 
     def delete_temp_rules_file(self) -> None:
         try:
             os.remove(self.temp_semgrep_rules_path)
             logging.debug('deleted semgrep temporary rules file')
+            logging.warning(f'deleted semgrep temporary rules file in path {self.temp_semgrep_rules_path}')
         except FileNotFoundError as e:
             logging.error(f'Tried to delete the semgrep temporary rules file but no such file was found.\n{e}')
