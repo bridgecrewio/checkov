@@ -27,11 +27,8 @@ java_rule = {'id': 'seam-log-injection', 'message': 'Seam Logging API support an
 class TestRegistry(unittest.TestCase):
     def test_sast_registry_only_python(self):
         checks_dir = os.path.join(pathlib.Path(__file__).parent.resolve(), '..', 'checks')
-        registry = Registry(checks_dir)
-        registry.temp_semgrep_rules_path
-
+        registry = Registry(checks_dir=checks_dir)
         registry.load_rules([SastLanguages.PYTHON])
-        registry.rules
         assert registry.rules == [python_rule]
 
 
