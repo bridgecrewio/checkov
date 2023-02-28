@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 from typing import Any, List
 
-from checkov.common.bridgecrew.bc_source import BCSourceType
+from checkov.common.bridgecrew.bc_source import IDEsSourceTypes
 from checkov.common.sca.commons import should_run_scan
 from checkov.common.sca.output import add_to_report_sca_data
 from checkov.common.typing import _LicenseStatus
@@ -46,9 +46,9 @@ class Runner(BaseRunner[None]):
             logging.info("The --bc-api-key flag needs to be set to run SCA package scanning")
             return None
 
-        if bc_integration.bc_source and bc_integration.bc_source.name in [BCSourceType.VSCODE, BCSourceType.JETBRAINS] \
+        if bc_integration.bc_source and bc_integration.bc_source.name in IDEsSourceTypes \
                 and not bc_integration.is_prisma_integration():
-            logging.info("The --bc-api-key flag needs to be set to Prisma token for SCA scan for vscode or jetbrains extention")
+            logging.info("The --bc-api-key flag needs to be set to a Prisma token for SCA scan for vscode or jetbrains extention")
             return None
 
         self._code_repo_path = Path(root_folder) if root_folder else None
