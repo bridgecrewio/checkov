@@ -241,57 +241,60 @@ class BcPlatformIntegration:
         self.skip_download = skip_download
         self.bc_source = source
         self.bc_source_version = source_version
-        region = DEFAULT_REGION
-        use_accelerate_endpoint = True
 
         if prisma_api_url:
             self.prisma_api_url = normalize_prisma_url(prisma_api_url)
             self.setup_api_urls()
-            if self.prisma_api_url == PRISMA_GOV_API_URL:
-                region = GOV_CLOUD_REGION
-                use_accelerate_endpoint = False
             logging.info(f'Using Prisma API URL: {self.prisma_api_url}')
 
         if self.bc_source and self.bc_source.upload_results:
-            try:
-                self.skip_fixes = True  # no need to run fixes on CI integration
-                repo_full_path, response = self.get_s3_role(repo_id)
-                self.bucket, self.repo_path = repo_full_path.split("/", 1)
-                self.timestamp = self.repo_path.split("/")[-2]
-                self.credentials = cast("dict[str, str]", response["creds"])
-                config = Config(
-                    s3={
-                        "use_accelerate_endpoint": use_accelerate_endpoint,
-                    }
-                )
-                self.s3_client = boto3.client(
-                    "s3",
-                    aws_access_key_id=self.credentials["AccessKeyId"],
-                    aws_secret_access_key=self.credentials["SecretAccessKey"],
-                    aws_session_token=self.credentials["SessionToken"],
-                    region_name=region,
-                    config=config,
-                )
-                self.platform_integration_configured = True
-                self.use_s3_integration = True
-            except MaxRetryError:
-                logging.error("An SSL error occurred connecting to the platform. If you are on a VPN, please try "
-                              "disabling it and re-running the command.", exc_info=True)
-                raise
-            except HTTPError:
-                logging.error("Failed to get customer assumed role", exc_info=True)
-                raise
-            except ClientError:
-                logging.error(f"Failed to initiate client with credentials {self.credentials}", exc_info=True)
-                raise
-            except JSONDecodeError:
-                logging.error(f"Response of {self.integrations_api_url} is not a valid JSON", exc_info=True)
-                raise
-            except BridgecrewAuthError:
-                logging.error("Received an error response during authentication")
-                raise
+            self.set_s3_integration()
 
         self.platform_integration_configured = True
+
+    def set_s3_integration(self) -> None:
+        region = DEFAULT_REGION
+        use_accelerate_endpoint = True
+        if self.prisma_api_url == PRISMA_GOV_API_URL:
+            region = GOV_CLOUD_REGION
+            use_accelerate_endpoint = False
+
+        try:
+            self.skip_fixes = True  # no need to run fixes on CI integration
+            repo_full_path, response = self.get_s3_role(self.repo_id)  # type: ignore
+            self.bucket, self.repo_path = repo_full_path.split("/", 1)
+            self.timestamp = self.repo_path.split("/")[-2]
+            self.credentials = cast("dict[str, str]", response["creds"])
+            config = Config(
+                s3={
+                    "use_accelerate_endpoint": use_accelerate_endpoint,
+                }
+            )
+            self.s3_client = boto3.client(
+                "s3",
+                aws_access_key_id=self.credentials["AccessKeyId"],
+                aws_secret_access_key=self.credentials["SecretAccessKey"],
+                aws_session_token=self.credentials["SessionToken"],
+                region_name=region,
+                config=config,
+            )
+            self.use_s3_integration = True
+        except MaxRetryError:
+            logging.error("An SSL error occurred connecting to the platform. If you are on a VPN, please try "
+                          "disabling it and re-running the command.", exc_info=True)
+            raise
+        except HTTPError:
+            logging.error("Failed to get customer assumed role", exc_info=True)
+            raise
+        except ClientError:
+            logging.error(f"Failed to initiate client with credentials {self.credentials}", exc_info=True)
+            raise
+        except JSONDecodeError:
+            logging.error(f"Response of {self.integrations_api_url} is not a valid JSON", exc_info=True)
+            raise
+        except BridgecrewAuthError:
+            logging.error("Received an error response during authentication")
+            raise
 
     def get_s3_role(self, repo_id: str) -> tuple[str, dict[str, Any]]:
         token = self.get_auth_token()
