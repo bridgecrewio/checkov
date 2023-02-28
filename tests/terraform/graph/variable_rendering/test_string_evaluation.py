@@ -2,8 +2,11 @@ import os
 from unittest import TestCase, mock
 from datetime import datetime
 
-from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform import evaluate_terraform, replace_string_value, \
-    remove_interpolation
+import pytest
+
+from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform import evaluate_terraform, \
+    replace_string_value, \
+    remove_interpolation, _find_new_value_for_interpolation
 
 
 class TestTerraformEvaluation(TestCase):
@@ -460,3 +463,17 @@ class TestTerraformEvaluation(TestCase):
         input_str = "{for val in ['k', 'v'] : val.name => true}"
         expected = "{for val in ['k', 'v'] : val.name :> true}"
         self.assertEqual(expected, evaluate_terraform(input_str))
+
+
+@pytest.mark.parametrize(
+    "origin_str,str_to_replace,new_value,expected",
+    [
+
+        ("${lookup({'a': ${local.protocol1}},\"a\",\"https\")}", '${local.protocol1}', 'local.protocol1', "'local.protocol1'"),
+        ('${length(keys(var.identity)) > 0 ? [${var.identity}] : []}', '${var.identity}', 'var.identity', 'var.identity'),
+    ],
+    ids=["escaped", "not escaped"],
+)
+def test_find_new_value_for_interpolation(origin_str: str, str_to_replace: str, new_value: str, expected: str):
+    actual = _find_new_value_for_interpolation(origin_str, str_to_replace, new_value)
+    assert actual == expected

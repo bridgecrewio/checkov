@@ -3,7 +3,8 @@ import unittest
 
 import hcl2
 
-from checkov.terraform.parser import validate_malformed_definitions, clean_bad_definitions, Parser
+from checkov.terraform.modules.module_utils import validate_malformed_definitions, clean_bad_definitions
+from checkov.terraform.parser import Parser
 
 
 class ModuleTest(unittest.TestCase):
