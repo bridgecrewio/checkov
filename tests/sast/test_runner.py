@@ -101,7 +101,7 @@ def test_sast_runner_python():
         logging.warning(report.check_type)
         logging.warning(report.failed_checks)
 
-    assert len(reports) == 1
+    assert len(reports) != 1, json.dumps({k: v for report in reports for k, v in zip(['type', 'failed'], [report.check_type, len(report.failed_checks)])})
     assert reports[0].check_type == CheckType.SAST_PYTHON
     python_report = reports[0]
     assert len(python_report.failed_checks) > 0
