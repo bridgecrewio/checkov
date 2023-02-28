@@ -71,9 +71,12 @@ class Runner():
 
         registry.set_runner_filter(runner_filter)
         registry.load_rules(runner_filter.sast_languages)
+        logging.warning(f'(sast_runner_run) registry.rules: {registry.rules}')
         if external_checks_dir:
+            logging.warning(f'adding external checks from dir {external_checks_dir}')
             for external_checks in external_checks_dir:
                 registry.load_external_rules(external_checks, runner_filter.sast_languages)
+
         registry.create_temp_rules_file()
         config = [registry.temp_semgrep_rules_path]
         if not config:
