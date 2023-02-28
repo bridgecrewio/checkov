@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import logging
+import os
+import pathlib
 from dataclasses import dataclass
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import get_severity
@@ -8,6 +10,7 @@ from checkov.common.models.enums import CheckResult
 from checkov.common.output.report import Report
 from checkov.common.typing import _CheckResult
 from checkov.runner_filter import RunnerFilter
+from checkov.sast.checks_infra.base_registry import Registry
 from checkov.sast.checks_infra.registry import registry
 from checkov.sast.consts import SastLanguages, SUPPORT_FILE_EXT, SEMGREP_SEVERITY_TO_CHECKOV_SEVERITY, \
     FILE_EXT_TO_SAST_LANG
@@ -69,17 +72,18 @@ class Runner():
         output_settings = OutputSettings(output_format=OutputFormat.JSON)
         output_handler = OutputHandler(output_settings)
 
-        registry.set_runner_filter(runner_filter)
+        self.registry.set_runner_filter(runner_filter)
         logging.warning(f'(sast_runner_run) total rules before load rules: {len(registry.rules)}')
-        registry.load_rules(runner_filter.sast_languages)
-        logging.warning(f'(sast_runner_run) total rules after load rules: {len(registry.rules)}, registry.rules: {registry.rules}')
+        self.registry.load_rules(runner_filter.sast_languages)
+        logging.warning(
+            f'(sast_runner_run) total rules after load rules: {len(registry.rules)}, registry.rules: {registry.rules}')
         if external_checks_dir:
             logging.warning(f'adding external checks from dir {external_checks_dir}')
             for external_checks in external_checks_dir:
                 registry.load_external_rules(external_checks, runner_filter.sast_languages)
 
-        registry.create_temp_rules_file()
-        config = [registry.temp_semgrep_rules_path]
+        self.registry.create_temp_rules_file()
+        config = [self.registry.temp_semgrep_rules_path]
         if not config:
             logger.warning('no valid checks')
             return [Report(self.check_type)]
@@ -98,7 +102,7 @@ class Runner():
                     raise TypeError(f'file type {rule_match.path.suffix} is not supported by sast framework')
                 semgrep_results_by_language.setdefault(match_lang.value, []).append(rule_match)
 
-        registry.delete_temp_rules_file()
+        self.registry.delete_temp_rules_file()
 
         reports = []
         for language, results in semgrep_results_by_language.items():
