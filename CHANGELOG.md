@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.48...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.50...HEAD)
+
+## [2.3.50](https://github.com/bridgecrewio/checkov/compare/2.3.48...2.3.50) - 2023-02-28
+
+### Bug Fix
+
+- **terraform:** add not exists conditional to CKV2_AWS_16 to account for defaults - [#4578](https://github.com/bridgecrewio/checkov/pull/4578)
 
 ## [2.3.48](https://github.com/bridgecrewio/checkov/compare/2.3.44...2.3.48) - 2023-02-27
 
