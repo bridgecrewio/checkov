@@ -83,7 +83,6 @@ def run_check(lang: str, check: str) -> None:
 
     cur_dir = pathlib.Path(__file__).parent.resolve()
     test_files_dir = os.path.join(cur_dir, 'source_code', lang, check)
-    test_dir = os.path.join(cur_dir, 'checks')
 
     # run actual check
     reports = runner.run(test_files_dir, runner_filter=RunnerFilter(framework=['sast'], checks=CHECK_ID_MAP[check]))
