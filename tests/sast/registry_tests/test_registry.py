@@ -28,6 +28,7 @@ class TestRegistry(unittest.TestCase):
     def test_sast_registry_only_python(self):
         checks_dir = os.path.join(pathlib.Path(__file__).parent.resolve(), '..', 'checks')
         registry = Registry(checks_dir)
+        registry.temp_semgrep_rules_path
 
         registry.load_rules([SastLanguages.PYTHON])
         registry.rules

@@ -118,6 +118,7 @@ def test_sast_runner_python():
 
 def test_sast_runner_get_semgrep_output():
     runner = Runner()
+    runner.registry.temp_semgrep_rules_path = os.path.join(pathlib.Path(__file__).parent.resolve(), 'test_runner_get_semgrep_output_temp_rules.yaml')
     output_settings = OutputSettings(output_format=OutputFormat.JSON)
     output_handler = OutputHandler(output_settings)
     temp_semgrep_rules_path = pathlib.Path(__file__).parent / 'checks/temp_parsed_rules'
@@ -152,6 +153,8 @@ def test_sast_runner_create_report():
                       message='module setting superuser port',
                       metadata=rule.metadata)
     runner = Runner()
+    runner.registry.temp_semgrep_rules_path = os.path.join(pathlib.Path(__file__).parent.resolve(),
+                                                           'test_runner_create_report_temp_rules.yaml')
     report = runner._create_report(SastLanguages.PYTHON.value, [match])
     assert report.check_type == CheckType.SAST_PYTHON
     assert len(report.failed_checks) == 1
@@ -174,6 +177,8 @@ def test_sast_runner_get_code_block():
 
 def test_sast_runner():
     runner = Runner()
+    runner.registry.temp_semgrep_rules_path = os.path.join(pathlib.Path(__file__).parent.resolve(),
+                                                           'test_runner_temp_rules.yaml')
     cur_dir = pathlib.Path(__file__).parent.resolve()
     source = os.path.join(cur_dir / 'source_code' / 'external_check')
     external_dir_checks = os.path.join(cur_dir, 'external_checks')
