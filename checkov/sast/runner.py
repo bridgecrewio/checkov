@@ -11,7 +11,6 @@ from checkov.common.output.report import Report
 from checkov.common.typing import _CheckResult
 from checkov.runner_filter import RunnerFilter
 from checkov.sast.checks_infra.base_registry import Registry
-from checkov.sast.checks_infra.registry import registry
 from checkov.sast.consts import SastLanguages, SUPPORT_FILE_EXT, SEMGREP_SEVERITY_TO_CHECKOV_SEVERITY, \
     FILE_EXT_TO_SAST_LANG
 from semgrep.semgrep_main import main as run_semgrep
@@ -48,11 +47,14 @@ class SemgrepOutput:
     target_manager_lockfile_scan_info: Dict[str, int]
 
 
+CHECKS_DIR = (os.path.join(pathlib.Path(__file__).parent.resolve(), 'checks'))
+
+
 class Runner():
     check_type = CheckType.SAST  # noqa: CCE003  # a static attribute
 
     def __init__(self) -> None:
-        self.registry = registry
+        self.registry = Registry(checks_dir=CHECKS_DIR)
 
     def should_scan_file(self, file: str) -> bool:
         for extensions in SUPPORT_FILE_EXT.values():
@@ -73,14 +75,14 @@ class Runner():
         output_handler = OutputHandler(output_settings)
 
         self.registry.set_runner_filter(runner_filter)
-        logging.warning(f'(sast_runner_run) total rules before load rules: {len(registry.rules)}')
+        logging.warning(f'(sast_runner_run) total rules before load rules: {len(self.registry.rules)}')
         self.registry.load_rules(runner_filter.sast_languages)
         logging.warning(
-            f'(sast_runner_run) total rules after load rules: {len(registry.rules)}, registry.rules: {registry.rules}')
+            f'(sast_runner_run) total rules after load rules: {len(self.registry.rules)}, registry.rules: {self.registry.rules}')
         if external_checks_dir:
             logging.warning(f'adding external checks from dir {external_checks_dir}')
             for external_checks in external_checks_dir:
-                registry.load_external_rules(external_checks, runner_filter.sast_languages)
+                self.registry.load_external_rules(external_checks, runner_filter.sast_languages)
 
         self.registry.create_temp_rules_file()
         config = [self.registry.temp_semgrep_rules_path]
