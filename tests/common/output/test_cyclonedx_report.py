@@ -87,6 +87,7 @@ def test_valid_cyclonedx_image_bom():
         vulnerability_details=vulnerability,
         licenses="BSD-3-Clause",
         sca_details=image_details,
+        package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
     )
     report = Report(check_type='sca_image')
     report.add_record(record)
@@ -165,6 +166,7 @@ def test_sca_packages_cyclonedx_bom():
         check_class=check_class,
         vulnerability_details=vulnerability_details,
         licenses='OSI_BDS',
+        package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
     )
 
     report = Report(CheckType.SCA_PACKAGE)

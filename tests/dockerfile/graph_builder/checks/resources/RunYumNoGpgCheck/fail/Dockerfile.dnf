@@ -1,0 +1,10 @@
+FROM fedora:rawhide
+RUN dnf install -y --nogpgcheck python3
+RUN dnf --nogpgcheck install -y python3
+RUN dnf \
+    --nogpgcheck \
+    install python3
+RUN dnf \
+    install -y python3 \
+    --nogpgcheck
+RUN echo "prodsec" && dnf --nogpgcheck -y install python3

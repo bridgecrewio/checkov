@@ -46,6 +46,7 @@ def test_create_report_cve_record():
         check_class=check_class,
         vulnerability_details=vulnerability_details,
         licenses='OSI_BDS',
+        package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
         root_package_version="1.12",
         root_package_name="django"
     )
@@ -134,6 +135,7 @@ def test_create_report_cve_record_results_from_platform():
         check_class=check_class,
         vulnerability_details=vulnerability_details,
         licenses='OSI_BDS',
+        package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
         scan_data_format=ScanDataFormat.PLATFORM,
         root_package_version="1.2",
         root_package_name='django'
@@ -181,6 +183,7 @@ def test_create_report_cve_record_moderate_severity():
         check_class=check_class,
         vulnerability_details=vulnerability_details,
         licenses='OSI_BDS',
+        package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
         root_package_version="1.2",
         root_package_name='django'
     )
@@ -222,6 +225,7 @@ def test_create_report_cve_record_severity_filter():
         vulnerability_details=vulnerability_details,
         runner_filter=RunnerFilter(checks=['HIGH']),
         licenses='OSI_BDS',
+        package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
         root_package_version="1.2",
         root_package_name='django'
     )
@@ -286,6 +290,7 @@ def test_create_report_cve_record_package_filter():
         vulnerability_details=vulnerability_details,
         runner_filter=RunnerFilter(skip_cve_package=['django', 'requests']),
         licenses='OSI_BDS',
+        package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
         root_package_version="1.2",
         root_package_name='django'
     )
@@ -514,6 +519,7 @@ def test_create_cli_output():
             check_class=check_class,
             vulnerability_details=details,
             licenses='Unknown',
+            package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
             root_package_name='django',
             root_package_version='1.2'
         )
@@ -525,6 +531,7 @@ def test_create_cli_output():
             file_abs_path=file_abs_path,
             check_class=check_class,
             licenses_status=license_status,
+            package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
         )
         for license_status in license_statuses
     ]
@@ -570,6 +577,7 @@ def test_create_cli_output_without_license_records():
             check_class=check_class,
             vulnerability_details=details,
             licenses='Unknown',
+            package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
             root_package_version='1.2',
             root_package_name='django'
         )
@@ -622,6 +630,7 @@ def test_create_cli_output_without_cve_records():
             file_abs_path=file_abs_path,
             check_class=check_class,
             licenses_status=license_status,
+            package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
         )
         for license_status in license_statuses
     ]
@@ -656,6 +665,7 @@ def test_create_cli_table_for_sca_package_with_dependencies():
             check_class=check_class,
             vulnerability_details=details["details"],
             licenses='Unknown',
+            package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
             root_package_version=details["root_package_version"],
             root_package_name=details["root_package_name"],
             root_package_fixed_version=details.get('root_package_fix_version', None)
@@ -726,6 +736,7 @@ def test_create_cli_output_without_dependencies():
             check_class=check_class,
             vulnerability_details=details,
             licenses='Unknown',
+            package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
             root_package_name=details["packageName"],
             root_package_version=details["packageVersion"]
         )
@@ -766,6 +777,7 @@ def test_create_cli_table_for_package_with_diff_CVEs():
             check_class=check_class,
             vulnerability_details=details["details"],
             licenses='Unknown',
+            package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
             root_package_version=details["root_package_version"],
             root_package_name=details["root_package_name"],
             root_package_fixed_version=details.get('root_package_fix_version', None)

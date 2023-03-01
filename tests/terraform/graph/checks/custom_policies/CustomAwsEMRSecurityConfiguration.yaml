@@ -1,0 +1,35 @@
+metadata:
+ name: "Elastic Testing"
+ category: "general"
+ id: "emrbackup1"
+ guidelines: "testing"
+ severity: "high"
+scope:
+  provider: "aws"
+definition:
+  or:
+    - cond_type: "filter"
+      attribute: "resource_type"
+      operator: "within"
+      value:
+        - "aws_emr_cluster"
+    - or:
+        - cond_type: "connection"
+          resource_types:
+            - "aws_emr_cluster"
+          connected_resource_types:
+            - "aws_emr_security_configuration"
+          operator: "not_exists"
+        - and:
+            - cond_type: "connection"
+              resource_types:
+                - "aws_emr_cluster"
+              connected_resource_types:
+                - "aws_emr_security_configuration"
+              operator: "exists"
+            - cond_type: attribute
+              resource_types:
+                - aws_emr_security_configuration
+              attribute: configuration.EncryptionConfiguration.EnableInTransitEncryption
+              operator: equals
+              value: true

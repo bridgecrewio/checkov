@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import json
 import re
 from copy import deepcopy
 from typing import Any, Optional, TypeVar
@@ -30,7 +31,7 @@ class ForeachHandler(object):
 
     def _handle_foreach_rendering_for_resource(self, resources_blocks: list[int]) -> None:
         block_index_to_statement = self._get_statements(resources_blocks)
-        self._create_new_foreach_resources(block_index_to_statement)
+        self._create_new_resources(block_index_to_statement)
 
     def _get_statements(self, resources_blocks: list[int]) -> FOR_EACH_BLOCK_TYPE:
         block_index_to_statement: FOR_EACH_BLOCK_TYPE = {}
@@ -38,8 +39,9 @@ class ForeachHandler(object):
             foreach_statement = self._get_static_foreach_statement(block_index)
             block_index_to_statement[block_index] = foreach_statement
         blocks_to_render = [block_idx for block_idx, statement in block_index_to_statement.items() if statement is None]
-        rendered_statements = self._handle_dynamic_statement(blocks_to_render)
-        block_index_to_statement.update(rendered_statements)
+        if blocks_to_render:
+            rendered_statements = self._handle_dynamic_statement(blocks_to_render)
+            block_index_to_statement.update(rendered_statements)
         return block_index_to_statement
 
     def _get_static_foreach_statement(self, block_index: int) -> Optional[list[str] | dict[str, Any]]:
@@ -94,6 +96,11 @@ class ForeachHandler(object):
         if isinstance(statement, list):
             statement = self.extract_from_list(statement)
         evaluated_statement = evaluate_terraform(statement)
+        if isinstance(evaluated_statement, str):
+            try:
+                evaluated_statement = json.loads(evaluated_statement)
+            except ValueError:
+                pass
         if isinstance(evaluated_statement, set):
             evaluated_statement = list(evaluated_statement)
         if isinstance(evaluated_statement, (dict, list)) and all(isinstance(val, str) for val in evaluated_statement):
@@ -149,22 +156,39 @@ class ForeachHandler(object):
         sub_graph.out_edges = deepcopy(self.local_graph.out_edges)
         return sub_graph
 
-    def _create_new_resources_count(self, statement: int, main_resource: TerraformBlock) -> None:
+    def _create_new_resources_count(self, statement: int, block_idx: int) -> None:
+        main_resource = self.local_graph.vertices[block_idx]
         for i in range(statement):
-            self._create_new_resource(main_resource, i)
+            self._create_new_resource(main_resource, i, resource_idx=block_idx, foreach_idx=i)
 
     @staticmethod
     def _pop_foreach_attrs(attrs: dict[str, Any]) -> None:
         attrs.pop(COUNT_STRING, None)
         attrs.pop(FOREACH_STRING, None)
 
+    @staticmethod
+    def __update_str_attrs(attrs: dict[str, Any], key_to_change: str, val_to_change: str, k: str | int) -> bool:
+        if attrs[k] == "${" + key_to_change + "}":
+            attrs[k] = val_to_change
+            return True
+        else:
+            attrs[k] = attrs[k].replace("${" + key_to_change + "}", str(val_to_change))
+            attrs[k] = attrs[k].replace(key_to_change, str(val_to_change))
+            return True
+
     def _update_attributes(self, attrs: dict[str, Any], key_to_val_changes: dict[str, Any]) -> list[str]:
         foreach_attributes: list[str] = []
         for key_to_change, val_to_change in key_to_val_changes.items():
             for k, v in attrs.items():
                 v_changed = False
+                if isinstance(v, str):
+                    v_changed = self.__update_str_attrs(attrs, key_to_change, val_to_change, k)
                 if isinstance(v, dict):
-                    foreach_attributes.extend(self._update_attributes(v, {key_to_change: val_to_change}))
+                    nested_attrs = self._update_attributes(v, {key_to_change: val_to_change})
+                    foreach_attributes.extend([k + '.' + na for na in nested_attrs])
+                if isinstance(v, list) and len(v) == 1 and isinstance(v[0], dict):
+                    nested_attrs = self._update_attributes(v[0], {key_to_change: val_to_change})
+                    foreach_attributes.extend([k + '.' + na for na in nested_attrs])
                 elif isinstance(v, list) and len(v) == 1 and isinstance(v[0], str) and key_to_change in v[0]:
                     if attrs[k][0] == "${" + key_to_change + "}":
                         attrs[k][0] = val_to_change
@@ -194,7 +218,14 @@ class ForeachHandler(object):
             EACH_KEY: new_key
         }
 
-    def _create_new_resource(self, main_resource: TerraformBlock, new_value: int | str, new_key: Optional[str] = None):
+    def _create_new_resource(
+            self,
+            main_resource: TerraformBlock,
+            new_value: int | str,
+            resource_idx: int,
+            foreach_idx: int,
+            new_key: Optional[str] = None,
+    ):
         new_resource = deepcopy(main_resource)
         block_type, block_name = new_resource.name.split('.')
         if main_resource.attributes.get(COUNT_STRING):
@@ -206,40 +237,42 @@ class ForeachHandler(object):
         self._pop_foreach_attrs(config_attrs)
         self._update_attributes(new_resource.attributes, key_to_val_changes)
         foreach_attrs = self._update_attributes(config_attrs, key_to_val_changes)
-        config_attrs['foreach_attrs'] = foreach_attrs
+        new_resource.foreach_attrs = foreach_attrs
 
         idx_to_change = new_key or new_value
         self._add_index_to_block_properties(new_resource, idx_to_change)
-        self.local_graph.vertices.append(new_resource)
+        if foreach_idx == 0:
+            self.local_graph.vertices[resource_idx] = new_resource
+        else:
+            self.local_graph.vertices.append(new_resource)
 
-    def _create_new_resources_foreach(self, statement: list[str] | dict[str, Any], main_resource: TerraformBlock) -> None:
+    def _create_new_resources_foreach(self, statement: list[str] | dict[str, Any], block_idx: int) -> None:
+        main_resource = self.local_graph.vertices[block_idx]
         if isinstance(statement, list):
-            for new_value in statement:
-                self._create_new_resource(main_resource, new_value, new_key=new_value)
+            for i, new_value in enumerate(statement):
+                self._create_new_resource(main_resource, new_value, new_key=new_value, resource_idx=block_idx, foreach_idx=i)
         if isinstance(statement, dict):
-            for new_key, new_value in statement.items():
-                self._create_new_resource(main_resource, new_value, new_key=new_key)
-
-    def _delete_main_resource(self, block_index_to_statement: FOR_EACH_BLOCK_TYPE) -> None:
-        new_vertices = [
-            block for i, block in enumerate(self.local_graph.vertices) if i not in block_index_to_statement or not block_index_to_statement[i]
-        ]
-        self.local_graph.vertices = new_vertices
+            for i, (new_key, new_value) in enumerate(statement.items()):
+                self._create_new_resource(main_resource, new_value, new_key=new_key, resource_idx=block_idx, foreach_idx=i)
 
     @staticmethod
     def _add_index_to_block_properties(block: TerraformBlock, idx: str | int) -> None:
         block_type, block_name = block.name.split('.')
-        block.id = f"{block.id}[{idx}]"
-        block.name = f"{block.name}[{idx}]"
-        if block.config.get(block_type) and block.config.get(block_type, {}).get(block_name):
-            block.config[block_type][f"{block_name}[{idx}]"] = block.config[block_type].pop(block_name)
+        # Note it is important to use `\"` inside the string,
+        # as the string `["` is the separator for `foreach` in terraform.
+        # In `count` it is just `[`
+        idx_with_separator = f'\"{idx}\"' if isinstance(idx, str) else f'{idx}'
 
-    def _create_new_foreach_resources(self, block_index_to_statement: FOR_EACH_BLOCK_TYPE) -> None:
+        block.id = f"{block.id}[{idx_with_separator}]"
+        block.name = f"{block.name}[{idx_with_separator}]"
+        if block.config.get(block_type) and block.config.get(block_type, {}).get(block_name):
+            block.config[block_type][f"{block_name}[{idx_with_separator}]"] = block.config[block_type].pop(block_name)
+
+    def _create_new_resources(self, block_index_to_statement: FOR_EACH_BLOCK_TYPE) -> None:
         for block_idx, statement in block_index_to_statement.items():
             if not statement:
                 continue
             if isinstance(statement, int):
-                self._create_new_resources_count(statement, self.local_graph.vertices[block_idx])
+                self._create_new_resources_count(statement, block_idx)
             else:
-                self._create_new_resources_foreach(statement, self.local_graph.vertices[block_idx])
-        self._delete_main_resource(block_index_to_statement)
+                self._create_new_resources_foreach(statement, block_idx)

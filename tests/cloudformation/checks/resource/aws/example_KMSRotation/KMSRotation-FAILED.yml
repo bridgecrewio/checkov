@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: KMS key example template
 Resources:
-  myKey:
+  SymmetricKey:
     Type: AWS::KMS::Key
     Properties:
       KeyPolicy:
