@@ -18,4 +18,3 @@ definition:
         variable: "$ALG"
         operator: "regex_match"
         value: "^(DES)/.*"
-
