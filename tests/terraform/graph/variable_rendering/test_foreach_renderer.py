@@ -190,6 +190,9 @@ def test_tf_definitions_and_breadcrumbs():
     expected_breadcrumbs = expected_data['breadcrumbs']
     assert len(breadcrumbs) == len(expected_breadcrumbs)
     assert len(breadcrumbs[list(breadcrumbs.keys())[0]]) == len(expected_breadcrumbs[list(expected_breadcrumbs.keys())[0]])
+    resource_vertices = [vertex for vertex in local_graph.vertices if vertex.block_type == 'resource']
+    for resource_vertex in resource_vertices:
+        assert len(resource_vertex.foreach_attrs) == 2
 
     for name in ['["bucket_a"]', '["bucket_b"]']:
         assert f'aws_s3_bucket.foreach_map{name}' in breadcrumbs[list(breadcrumbs.keys())[0]]
