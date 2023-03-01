@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 from typing import Any, List
 
+from checkov.common.bridgecrew.bc_source import IDEsSourceTypes
 from checkov.common.sca.commons import should_run_scan
 from checkov.common.sca.output import add_to_report_sca_data
 from checkov.common.typing import _LicenseStatus
@@ -45,7 +46,15 @@ class Runner(BaseRunner[None]):
             logging.info("The --bc-api-key flag needs to be set to run SCA package scanning")
             return None
 
+        if bc_integration.bc_source and bc_integration.bc_source.name in IDEsSourceTypes \
+                and not bc_integration.is_prisma_integration():
+            logging.info("The --bc-api-key flag needs to be set to a Prisma token for SCA scan for vscode or jetbrains extention")
+            return None
+
         self._code_repo_path = Path(root_folder) if root_folder else None
+
+        if not bc_integration.timestamp and bc_integration.bc_source and not bc_integration.bc_source.upload_results:
+            bc_integration.set_s3_integration()
 
         excluded_paths = {*ignored_directories}
         if runner_filter.excluded_paths:
@@ -60,6 +69,7 @@ class Runner(BaseRunner[None]):
         if uploaded_files is None:
             # failure happened during uploading
             return None
+
         if len(uploaded_files) == 0:
             # no packages were uploaded. we can skip the scanning
             return {}
@@ -70,6 +80,7 @@ class Runner(BaseRunner[None]):
 
         if scan_results is not None:
             logging.info(f"SCA package scanning successfully scanned {len(scan_results)} files")
+
         return scan_results
 
     def run(
@@ -85,7 +96,6 @@ class Runner(BaseRunner[None]):
             self.pbar.turn_off_progress_bar()
 
         report = Report(self.check_type)
-
         scan_results = self.prepare_and_scan(root_folder, files, runner_filter)
         if scan_results is None:
             report.set_error_status(ErrorStatus.ERROR)
