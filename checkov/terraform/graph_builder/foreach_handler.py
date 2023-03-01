@@ -184,9 +184,11 @@ class ForeachHandler(object):
                 if isinstance(v, str):
                     v_changed = self.__update_str_attrs(attrs, key_to_change, val_to_change, k)
                 if isinstance(v, dict):
-                    foreach_attributes.extend(self._update_attributes(v, {key_to_change: val_to_change}))
+                    nested_attrs = self._update_attributes(v, {key_to_change: val_to_change})
+                    foreach_attributes.extend([k + '.' + na for na in nested_attrs])
                 if isinstance(v, list) and len(v) == 1 and isinstance(v[0], dict):
-                    foreach_attributes.extend(self._update_attributes(v[0], {key_to_change: val_to_change}))
+                    nested_attrs = self._update_attributes(v[0], {key_to_change: val_to_change})
+                    foreach_attributes.extend([k + '.' + na for na in nested_attrs])
                 elif isinstance(v, list) and len(v) == 1 and isinstance(v[0], str) and key_to_change in v[0]:
                     if attrs[k][0] == "${" + key_to_change + "}":
                         attrs[k][0] = val_to_change
