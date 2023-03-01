@@ -32,7 +32,7 @@ def _filter_ignored_paths(root: str, paths: list[str], excluded_paths: list[str]
             paths.remove(path)
 
 
-class ParserModulesModule:
+class TFParser:
     def __init__(self, module_class: type[Module] = Module) -> None:
         self.module_class = module_class
         self._parsed_directories: set[str] = set()

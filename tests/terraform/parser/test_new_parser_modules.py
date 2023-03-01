@@ -9,7 +9,7 @@ import pytest
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_PREFIX, TERRAFORM_NESTED_MODULE_PATH_ENDING, \
     TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR
-from checkov.terraform.parser_modules_model import ParserModulesModule
+from checkov.terraform.tf_parser import TFParser
 
 
 
@@ -41,7 +41,7 @@ class TestParserInternals(unittest.TestCase):
         self.load_inner_registry_module_new_parser(True)
 
     def load_inner_registry_module_new_parser(self, nested_modules):
-        parser = ParserModulesModule()
+        parser = TFParser()
         directory = os.path.join(self.resources_dir, "registry_security_group_inner_module")
         self.external_module_path = os.path.join(self.tmp_path, DEFAULT_EXTERNAL_MODULES_DIR)
         out_definitions = parser.parse_directory(
@@ -79,7 +79,7 @@ class TestParserInternals(unittest.TestCase):
                     self.fail(f"expected file {expected_file_name} to be in out_definitions")
 
     def test_invalid_module_sources_new_parser(self):
-        parser = ParserModulesModule()
+        parser = TFParser()
         directory = os.path.join(self.resources_dir, "failing_module_address")
         self.external_module_path = os.path.join(directory, DEFAULT_EXTERNAL_MODULES_DIR)
         out_definitions = parser.parse_directory(
@@ -91,7 +91,7 @@ class TestParserInternals(unittest.TestCase):
         self.assertEqual(1, len(list(out_definitions.keys())))
 
     def test_malformed_output_blocks_new_parser(self):
-        parser = ParserModulesModule()
+        parser = TFParser()
         directory = os.path.join(self.resources_dir, "malformed_outputs")
         self.external_module_path = os.path.join(directory, DEFAULT_EXTERNAL_MODULES_DIR)
         out_definitions = parser.parse_directory(
@@ -104,7 +104,7 @@ class TestParserInternals(unittest.TestCase):
 
     def test_load_local_module_new_parser(self):
         # given
-        parser = ParserModulesModule()
+        parser = TFParser()
         directory = os.path.join(self.resources_dir, "local_module")
 
         # when
