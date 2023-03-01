@@ -451,10 +451,7 @@ class TestRunnerFilter(unittest.TestCase):
 
         enforcement_rule_configs = {
             CodeCategoryType.IAC: CodeCategoryConfiguration(CodeCategoryType.IAC, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.MEDIUM]),
-            CodeCategoryType.SUPPLY_CHAIN: CodeCategoryConfiguration(CodeCategoryType.SUPPLY_CHAIN, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.OPEN_SOURCE: CodeCategoryConfiguration(CodeCategoryType.OPEN_SOURCE, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.IMAGES: CodeCategoryConfiguration(CodeCategoryType.IMAGES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
+             CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.SAST: CodeCategoryConfiguration(CodeCategoryType.SAST, Severities[BcSeverities.HIGH],Severities[BcSeverities.HIGH]),
             CodeCategoryType.BUILD_INTEGRITY: CodeCategoryConfiguration(CodeCategoryType.BUILD_INTEGRITY, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
             CodeCategoryType.LICENSES: CodeCategoryConfiguration(CodeCategoryType.LICENSES, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
@@ -474,9 +471,6 @@ class TestRunnerFilter(unittest.TestCase):
 
         enforcement_rule_configs = {
             CodeCategoryType.IAC: CodeCategoryConfiguration(CodeCategoryType.IAC, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.MEDIUM]),
-            CodeCategoryType.SUPPLY_CHAIN: CodeCategoryConfiguration(CodeCategoryType.SUPPLY_CHAIN, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.OPEN_SOURCE: CodeCategoryConfiguration(CodeCategoryType.OPEN_SOURCE, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.IMAGES: CodeCategoryConfiguration(CodeCategoryType.IMAGES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.SAST: CodeCategoryConfiguration(CodeCategoryType.SAST, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.BUILD_INTEGRITY: CodeCategoryConfiguration(CodeCategoryType.BUILD_INTEGRITY, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
@@ -503,9 +497,6 @@ class TestRunnerFilter(unittest.TestCase):
 
         enforcement_rule_configs = {
             CodeCategoryType.IAC: CodeCategoryConfiguration(CodeCategoryType.IAC, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.MEDIUM]),
-            CodeCategoryType.SUPPLY_CHAIN: CodeCategoryConfiguration(CodeCategoryType.SUPPLY_CHAIN, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.OPEN_SOURCE: CodeCategoryConfiguration(CodeCategoryType.OPEN_SOURCE, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.IMAGES: CodeCategoryConfiguration(CodeCategoryType.IMAGES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.SAST: CodeCategoryConfiguration(CodeCategoryType.SAST, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.BUILD_INTEGRITY: CodeCategoryConfiguration(CodeCategoryType.BUILD_INTEGRITY, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
@@ -532,9 +523,6 @@ class TestRunnerFilter(unittest.TestCase):
 
         enforcement_rule_configs = {
             CodeCategoryType.IAC: CodeCategoryConfiguration(CodeCategoryType.IAC, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.MEDIUM]),
-            CodeCategoryType.SUPPLY_CHAIN: CodeCategoryConfiguration(CodeCategoryType.SUPPLY_CHAIN, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.OPEN_SOURCE: CodeCategoryConfiguration(CodeCategoryType.OPEN_SOURCE, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.IMAGES: CodeCategoryConfiguration(CodeCategoryType.IMAGES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.SAST: CodeCategoryConfiguration(CodeCategoryType.SAST, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.BUILD_INTEGRITY: CodeCategoryConfiguration(CodeCategoryType.BUILD_INTEGRITY, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
@@ -560,9 +548,6 @@ class TestRunnerFilter(unittest.TestCase):
 
         enforcement_rule_configs = {
             CodeCategoryType.IAC: CodeCategoryConfiguration(CodeCategoryType.IAC, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.MEDIUM]),
-            CodeCategoryType.SUPPLY_CHAIN: CodeCategoryConfiguration(CodeCategoryType.SUPPLY_CHAIN, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.OPEN_SOURCE: CodeCategoryConfiguration(CodeCategoryType.OPEN_SOURCE, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.IMAGES: CodeCategoryConfiguration(CodeCategoryType.IMAGES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.SAST: CodeCategoryConfiguration(CodeCategoryType.SAST, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.BUILD_INTEGRITY: CodeCategoryConfiguration(CodeCategoryType.BUILD_INTEGRITY, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
@@ -588,9 +573,6 @@ class TestRunnerFilter(unittest.TestCase):
 
         enforcement_rule_configs = {
             CodeCategoryType.IAC: CodeCategoryConfiguration(CodeCategoryType.IAC, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.MEDIUM]),
-            CodeCategoryType.SUPPLY_CHAIN: CodeCategoryConfiguration(CodeCategoryType.SUPPLY_CHAIN, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.OPEN_SOURCE: CodeCategoryConfiguration(CodeCategoryType.OPEN_SOURCE, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.IMAGES: CodeCategoryConfiguration(CodeCategoryType.IMAGES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.SAST: CodeCategoryConfiguration(CodeCategoryType.SAST, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.BUILD_INTEGRITY: CodeCategoryConfiguration(CodeCategoryType.BUILD_INTEGRITY, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
@@ -622,9 +604,6 @@ class TestRunnerFilter(unittest.TestCase):
 
         enforcement_rule_configs = {
             CodeCategoryType.IAC: CodeCategoryConfiguration(CodeCategoryType.IAC, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.MEDIUM]),
-            CodeCategoryType.SUPPLY_CHAIN: CodeCategoryConfiguration(CodeCategoryType.SUPPLY_CHAIN, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.OPEN_SOURCE: CodeCategoryConfiguration(CodeCategoryType.OPEN_SOURCE, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.IMAGES: CodeCategoryConfiguration(CodeCategoryType.IMAGES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.SAST: CodeCategoryConfiguration(CodeCategoryType.SAST, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.BUILD_INTEGRITY: CodeCategoryConfiguration(CodeCategoryType.BUILD_INTEGRITY, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
@@ -650,9 +629,6 @@ class TestRunnerFilter(unittest.TestCase):
 
         enforcement_rule_configs = {
             CodeCategoryType.IAC: CodeCategoryConfiguration(CodeCategoryType.IAC, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.MEDIUM]),
-            CodeCategoryType.SUPPLY_CHAIN: CodeCategoryConfiguration(CodeCategoryType.SUPPLY_CHAIN, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.OPEN_SOURCE: CodeCategoryConfiguration(CodeCategoryType.OPEN_SOURCE, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.IMAGES: CodeCategoryConfiguration(CodeCategoryType.IMAGES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.SAST: CodeCategoryConfiguration(CodeCategoryType.SAST, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.BUILD_INTEGRITY: CodeCategoryConfiguration(CodeCategoryType.BUILD_INTEGRITY, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
