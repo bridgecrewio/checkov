@@ -228,7 +228,7 @@ def run(banner: str = checkov_banner, argv: list[str] = sys.argv[1:]) -> int | N
         logger.debug('Using --list; setting source to DISABLED')
         source = SourceTypes[BCSourceType.DISABLED]
 
-    if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 and source.upload_results:
+    if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2:
         DEFAULT_RUNNERS.append(sca_package_runner_2())
     else:
         DEFAULT_RUNNERS.append(sca_package_runner())
@@ -683,7 +683,7 @@ class Checkov:
                 logger.debug('Using --list; setting source to DISABLED')
                 source = SourceTypes[BCSourceType.DISABLED]
 
-            if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 and source.upload_results:
+            if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2:
                 self.runners.append(sca_package_runner_2())
             else:
                 self.runners.append(sca_package_runner())
@@ -846,7 +846,7 @@ class Checkov:
                         self.exit_run()
                     if baseline:
                         baseline.compare_and_reduce_reports(self.scan_reports)
-                    if bc_integration.is_integration_configured():
+                    if bc_integration.is_integration_configured() and bc_integration.bc_source and bc_integration.bc_source.upload_results:
                         self.upload_results(
                             root_folder=root_folder,
                             excluded_paths=runner_filter.excluded_paths,
