@@ -1,0 +1,39 @@
+metadata:
+  id: CKV3_SAST_8
+  name: Ensure the neutralization of wildcards or matching symbols is handled properly
+  guidelines: Detected use of the wildcard character in a system call that spawns a shell. This subjects the wildcard to normal shell expansion, which can have unintended consequences if there exist any non-standard file names. Consider a file named '-e sh script.sh' -- this will execute a script when 'rsync' is called. See https://www.defensecode.com/public/DefenseCode_Unix_WildCards_Gone_Wild.tx for more information.
+  category: sast
+  cwe: "CWE-155: Improper Neutralization of Wildcards or Matching Symbols"
+  owasp: "A1: Injection"
+scope:
+  languages:
+    - python
+definition:
+  - or:
+      - cond_type: filter
+        attribute: pattern
+        operator: within
+        value: os.system("...")
+      - cond_type: filter
+        attribute: pattern
+        operator: within
+        value: os.popen("...")
+      - cond_type: filter
+        attribute: pattern
+        operator: within
+        value: os.popen2("...")
+      - cond_type: filter
+        attribute: pattern
+        operator: within
+        value: os.popen3("...")
+      - cond_type: filter
+        attribute: pattern
+        operator: within
+        value: os.popen4("...")
+      - cond_type: filter
+        attribute: pattern
+        operator: within
+        value: subprocess.$W(..., shell=True, ...)
+  - cond_type: pattern
+    operator: regex_match
+    value: (tar|chmod|chown|rsync)(.*?)\*

@@ -161,7 +161,7 @@ def evaluate_compare(input_str: str) -> Union[str, bool]:
             if a and b and op:
                 try:
                     return apply_binary_op(evaluate_terraform(a), evaluate_terraform(b), op)
-                except TypeError or SyntaxError:
+                except (TypeError, SyntaxError):
                     return input_str
 
     return input_str

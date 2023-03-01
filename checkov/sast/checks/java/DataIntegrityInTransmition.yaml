@@ -1,0 +1,30 @@
+metadata:
+  id: CKV3_SAST_12
+  name: Ensure that the integrity of the data during transmission is being verified
+  guidelines: The ciphertext produced is susceptible to alteration by an adversary. This mean that the cipher provides no way to detect that the data has been tampered with. If the ciphertext can be controlled by an attacker, it could be altered without detection.
+  category: sast
+  cwe: "CWE-353: Missing Support for Integrity Check"
+scope:
+  languages:
+    - java
+definition:
+  - cond_type: filter
+    attribute: pattern
+    operator: within
+    value: javax.crypto.Cipher.getInstance("...")
+  - or:
+      - cond_type: pattern
+        operator: regex_match
+        value: (/CBC/PKCS5Padding)
+      - cond_type: pattern
+        operator: regex_match
+        value: (AES|DES(ede)?)(/ECB/*)
+  - cond_type: pattern
+    operator: not_regex_match
+    value: .*/(CCM|CWC|OCB|EAX|GCM)/.*
+  - cond_type: pattern
+    operator: not_regex_match
+    value: ^(RSA)/.*
+  - cond_type: pattern
+    operator: not_regex_match
+    value: ^(ECIES)$

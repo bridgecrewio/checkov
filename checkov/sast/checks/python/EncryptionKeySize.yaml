@@ -1,0 +1,70 @@
+metadata:
+  id: CKV3_SAST_10
+  name: Ensure that encryption keys are of size 2048 or higher
+  guidelines: Detected an insufficient key size for DSA. NIST recommends a key size of 2048 or higher.
+  category: sast
+  cwe: "CWE-326: Inadequate Encryption Strength"
+  owasp: "A3: Sensitive Data Exposure"
+scope:
+  languages:
+    - python
+definition:
+  - or:
+      - cond_type: pattern
+        operator: equals
+        value: cryptography.hazmat.primitives.asymmetric.rsa.generate_private_key(..., key_size=$SIZE, ...)
+      - cond_type: pattern
+        operator: equals
+        value: cryptography.hazmat.primitives.asymmetric.rsa.generate_private_key($EXP, $SIZE, ...)
+      - cond_type: pattern
+        operator: equals
+        value: cryptography.hazmat.primitives.asymmetric.rsa.generate_private_key($SIZE, ...)
+      - cond_type: pattern
+        operator: equals
+        value: cryptography.hazmat.primitives.asymmetric.dsa.generate_private_key(..., key_size=$SIZE, ...)
+      - cond_type: pattern
+        operator: equals
+        value: cryptography.hazmat.primitives.asymmetric.dsa.generate_private_key($EXP, $SIZE, ...)
+      - cond_type: pattern
+        operator: equals
+        value: cryptography.hazmat.primitives.asymmetric.dsa.generate_private_key($SIZE, ...)
+      - cond_type: pattern
+        operator: equals
+        value: Crypto.PublicKey.RSA.generate($SIZE, ...)
+      - cond_type: pattern
+        operator: equals
+        value: Crypto.PublicKey.DSA.generate($SIZE, ...)
+      - cond_type: pattern
+        operator: equals
+        value: Cryptodome.PublicKey.DSA.generate($SIZE, ...)
+      - cond_type: pattern
+        operator: equals
+        value: Cryptodome.PublicKey.RSA.generate($SIZE, ...)
+      - cond_type: pattern
+        operator: equals
+        value: Crypto.PublicKey.DSA.generate(bits=$SIZE, ...)
+      - cond_type: pattern
+        operator: equals
+        value: Cryptodome.PublicKey.DSA.generate(bits=$SIZE, ...)
+      - cond_type: pattern
+        operator: equals
+        value: pycrypto_rsa.generate(bits=$SIZE, ...)
+      - cond_type: pattern
+        operator: equals
+        value: pycrypto_dsa.generate(bits=$SIZE, ...)
+      - cond_type: pattern
+        operator: equals
+        value: pycryptodomex_rsa.generate(bits=$SIZE, ...)
+      - cond_type: pattern
+        operator: equals
+        value: pycryptodomex_rsa.generate($SIZE, ...)
+      - cond_type: pattern
+        operator: equals
+        value: pycryptodomex_dsa.generate(bits=$SIZE, ...)
+      - cond_type: pattern
+        operator: equals
+        value: pycryptodomex_dsa.generate($SIZE, ...)
+  - cond_type: variable
+    variable: $SIZE
+    operator: less_than
+    value: 2048

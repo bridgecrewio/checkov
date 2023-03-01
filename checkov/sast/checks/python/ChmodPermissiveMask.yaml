@@ -1,0 +1,19 @@
+metadata:
+  id: CKV3_SAST_3
+  name: Ensure chmod does not set a permissive mask on file
+  guidelines: Chmod setting a permissive mask on file.
+  category: sast
+  cwe: "CWE-732: Incorrect Permission Assignment for Critical Resource"
+  owasp: "A6: Security Misconfiguration"
+scope:
+  languages:
+    - python
+definition:
+  and:
+    - cond_type: pattern
+      operator: equals
+      value: os.chmod(...,$MASK)
+    - cond_type: variable
+      variable: $MASK
+      operator: regex_match
+      value: (0x..f|0o..[2,3,7]|stat.S_IXGRP|stat.S_IWOTH)

@@ -30,6 +30,9 @@ class CheckType:
     TERRAFORM = "terraform"
     TERRAFORM_PLAN = "terraform_plan"
     SAST = 'sast'
+    SAST_PYTHON = 'sast_python'
+    SAST_JAVA = 'sast_java'
+    SAST_JAVASCRIPT = 'sast_javascript'
     POLICY_3D = "3d_policy"
 
 

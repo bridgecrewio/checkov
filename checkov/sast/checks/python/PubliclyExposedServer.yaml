@@ -1,0 +1,30 @@
+metadata:
+  id: CKV3_SAST_5
+  name: Ensure servers are not publicly exposed
+  guidelines: Running `socket.bind` to 0.0.0.0, ::, or empty string could unexpectedly expose the server publicly as it binds to all available interfaces. Consider instead getting correct address from an environment variable or configuration file.
+  category: sast
+  cwe: "CWE-200: Exposure of Sensitive Information to an Unauthorized Actor"
+  owasp: "A6: Security Misconfiguration"
+scope:
+  languages:
+    - python
+definition:
+  or:
+    - cond_type: pattern
+      operator: equals
+      value: |
+        $S = socket.socket(...)
+        ...
+        $S.bind(("0.0.0.0", ...))
+    - cond_type: pattern
+      operator: equals
+      value: |
+        $S = socket.socket(...)
+        ...
+        $S.bind(("::", ...))
+    - cond_type: pattern
+      operator: equals
+      value: |
+        $S = socket.socket(...)
+        ...
+        $S.bind(("", ...))

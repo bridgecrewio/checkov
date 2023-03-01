@@ -1,0 +1,23 @@
+metadata:
+  id: CKV3_SAST_7
+  name: Ensure neutralization of input during web page generation is handled properly
+  guidelines: The function "mark_safe()" is used to mark a string as "safe" for HTML output. This disables escaping and could therefore subject the content to XSS attacks. Use "django.utils.html.format_html()" to build HTML for rendering instead.
+  category: sast
+  cwe: "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+  owasp: "A7: Cross-Site Scripting (XSS)"
+scope:
+  languages:
+    - python
+definition:
+  - cond_type: filter
+    attribute: pattern
+    operator: not_within
+    value: django.utils.html.format_html(...)
+  - or:
+      - and:
+          - cond_type: pattern
+            operator: equals
+            value: django.utils.safestring.mark_safe(...)
+          - cond_type: pattern
+            operator: not_equals
+            value: django.utils.safestring.mark_safe("...")

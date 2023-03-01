@@ -8,7 +8,7 @@ from typing import Any, Set, Optional, Union, List, TYPE_CHECKING, Dict, Default
 import re
 
 from checkov.common.bridgecrew.check_type import CheckType
-from checkov.sast.checks.base_check import BaseSastCheck
+from checkov.sast.checks_infra.base_check import BaseSastCheck
 from checkov.secrets.consts import ValidationStatus
 
 from checkov.common.bridgecrew.code_categories import CodeCategoryMapping, CodeCategoryConfiguration

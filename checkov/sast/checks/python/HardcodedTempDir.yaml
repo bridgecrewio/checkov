@@ -1,0 +1,13 @@
+metadata:
+  id: CKV3_SAST_1
+  name: Ensure no hardcoded temp directory is used
+  guidelines: Detected hardcoded temp directory. Consider using "tempfile.TemporaryFile" instead.
+  category: sast
+  cwe: "CWE-377: Insecure Temporary File"
+scope:
+  languages:
+    - python
+definition:
+  - cond_type: pattern
+    operator: equals
+    value: open("=~/^\/tmp.*/", ...)

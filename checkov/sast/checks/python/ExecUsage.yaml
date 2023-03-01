@@ -1,0 +1,18 @@
+metadata:
+  id: CKV3_SAST_2
+  name: Ensure 'exec' is not used
+  guidelines: The use of "exec" is risky.
+  category: sast
+  cwe: 'CWE-78: Improper Neutralization of Special Elements used in an OS Command ("OS Command Injection")'
+  owasp: "A1: Injection"
+scope:
+  languages:
+    - python
+definition:
+  or:
+    - cond_type: pattern
+      operator: equals
+      value: exec(...)
+    - cond_type: pattern
+      operator: equals
+      value: exec("...")

@@ -1,0 +1,49 @@
+metadata:
+  id: CKV3_SAST_9
+  name: Ensure the neutralization of special elements used in a SQL command is handled properly
+  guidelines: This is a last resort. You should be careful when using `QuerySet.extra` due to SQL injection.
+  category: sast
+  cwe: "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+  owasp: "A1: Injection"
+scope:
+  languages:
+    - python
+definition:
+  - cond_type: pattern
+    operator: equals
+    value: $X.objects. ... .extra(..., $K = $V, ...)
+  - cond_type: filter
+    attribute: pattern
+    operator: not_within
+    value: |
+      $V = ["..."]
+      ...
+  - cond_type: variable
+    variable: $V
+    operator: pattern_match
+    value:
+      and:
+        - cond_type: pattern
+          operator: equals
+          value: $V
+        - cond_type: pattern
+          operator: not_equals
+          value: '[..., "...", ...]'
+        - cond_type: pattern
+          operator: not_equals
+          value: '{..., "...": "...", ...}'
+        - cond_type: pattern
+          operator: not_equals
+          value: '"..."'
+        - cond_type: pattern
+          operator: not_equals
+          value: '[..., "..." % "...", ...]'
+        - cond_type: pattern
+          operator: not_equals
+          value: '{..., $L: "..." % "...", ...}'
+        - cond_type: pattern
+          operator: not_equals
+          value: '{..., $L: "...".format("..."), ...}'
+        - cond_type: pattern
+          operator: not_equals
+          value: '[..., "...".format("..."), ...]'
