@@ -21,10 +21,11 @@ class TerraformBlock(Block):
         "source_module",
         "has_dynamic_block",
         "dynamic_attributes",
+        "foreach_attrs"
     )
 
     def __init__(self, name: str, config: Dict[str, Any], path: str, block_type: BlockType, attributes: Dict[str, Any],
-                 id: str = "", source: str = "", has_dynamic_block: bool = False, dynamic_attributes: dict[str, Any] | None = None,) -> None:
+                 id: str = "", source: str = "", has_dynamic_block: bool = False, dynamic_attributes: dict[str, Any] | None = None) -> None:
         """
             :param name: unique name given to the terraform block, for example: 'aws_vpc.example_name'
             :param config: the section in tf_definitions that belong to this block
@@ -32,7 +33,7 @@ class TerraformBlock(Block):
             :param block_type: BlockType
             :param attributes: dictionary of the block's original attributes in the terraform file
         """
-        super(TerraformBlock, self).__init__(name, config, path, block_type, attributes, id, source, has_dynamic_block, dynamic_attributes)
+        super(TerraformBlock, self).__init__(name, config, path, str(block_type), attributes, id, source, has_dynamic_block, dynamic_attributes)
         self.module_dependency = ""
         self.module_dependency_num = ""
         if path:
