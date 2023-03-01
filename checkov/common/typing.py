@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 _BaseRunner = TypeVar("_BaseRunner", bound="BaseRunner[Any]")
 
 _ScannerCallableAlias: TypeAlias = Callable[
-    [str, "BaseCheck", "_SkippedCheck", "dict[str, Any]", str, str, "dict[str, Any]"], None
+    [str, "BaseCheck", "list[_SkippedCheck]", "dict[str, Any]", str, str, "dict[str, Any]"], None
 ]
 
 _Resource: TypeAlias = str

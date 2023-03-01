@@ -39,8 +39,9 @@ class ForeachHandler(object):
             foreach_statement = self._get_static_foreach_statement(block_index)
             block_index_to_statement[block_index] = foreach_statement
         blocks_to_render = [block_idx for block_idx, statement in block_index_to_statement.items() if statement is None]
-        rendered_statements = self._handle_dynamic_statement(blocks_to_render)
-        block_index_to_statement.update(rendered_statements)
+        if blocks_to_render:
+            rendered_statements = self._handle_dynamic_statement(blocks_to_render)
+            block_index_to_statement.update(rendered_statements)
         return block_index_to_statement
 
     def _get_static_foreach_statement(self, block_index: int) -> Optional[list[str] | dict[str, Any]]:
@@ -220,7 +221,7 @@ class ForeachHandler(object):
         self._pop_foreach_attrs(config_attrs)
         self._update_attributes(new_resource.attributes, key_to_val_changes)
         foreach_attrs = self._update_attributes(config_attrs, key_to_val_changes)
-        config_attrs['foreach_attrs'] = foreach_attrs
+        new_resource.foreach_attrs = foreach_attrs
 
         idx_to_change = new_key or new_value
         self._add_index_to_block_properties(new_resource, idx_to_change)

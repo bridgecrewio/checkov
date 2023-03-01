@@ -6,6 +6,7 @@ import logging
 from pathlib import Path
 from typing import Tuple, List
 
+from charset_normalizer import from_path
 from yaml import MappingNode
 from yaml import ScalarNode
 from yaml import SequenceNode
@@ -205,7 +206,12 @@ def load(filename: Path) -> Tuple[DictNode, List[Tuple[int, str]]]:
     """
 
     file_path = filename if isinstance(filename, Path) else Path(filename)
-    content = file_path.read_text()
+
+    try:
+        content = file_path.read_text()
+    except UnicodeDecodeError:
+        logging.debug(f"Encoding for file {file_path} is not UTF-8, trying to detect it")
+        content = str(from_path(file_path).best())
 
     if not all(key in content for key in ("$schema", "contentVersion")):
         return {}, []
