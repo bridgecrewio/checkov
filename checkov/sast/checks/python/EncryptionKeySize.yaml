@@ -3,7 +3,6 @@ metadata:
   name: Ensure that encryption keys are of size 2048 or higher
   guidelines: Detected an insufficient key size for DSA. NIST recommends a key size of 2048 or higher.
   category: sast
-  severity: MEDIUM
   cwe: "CWE-326: Inadequate Encryption Strength"
   owasp: "A3: Sensitive Data Exposure"
 scope:

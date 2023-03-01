@@ -99,7 +99,7 @@ def test_sast_runner_python():
     assert len(python_report.failed_checks) > 0
     python_record = next((record for record in python_report.failed_checks if record.check_id == 'CKV3_SAST_11'), None)
     assert python_record
-    assert python_record.severity.name == 'LOW'
+    assert python_record.severity.name == 'MEDIUM'
     assert python_record.file_path == 'fail.py'
     assert python_record.check_name == 'Ensure superuser port is not set'
     assert python_record.code_block == [(2, 'set_port(443)\n')]
@@ -182,7 +182,7 @@ def test_sast_runner():
     assert python_report.check_type == CheckType.SAST_PYTHON
     assert len(python_report.failed_checks) == 1
     assert python_report.failed_checks[0].check_id == 'CKV3_SAST_11'
-    assert python_report.failed_checks[0].severity.name == 'LOW'
+    assert python_report.failed_checks[0].severity.name == 'MEDIUM'
     assert python_report.failed_checks[0].file_path == 'fail.py'
     assert python_report.failed_checks[0].check_name == 'Ensure superuser port is not set'
     assert python_report.failed_checks[0].code_block == [(2, 'set_port(443)\n')]

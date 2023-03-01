@@ -29,8 +29,6 @@ class SastCheckParser:
             raise AttributeError('BQL policy is missing the metadata field')
         if not metadata.get('id'):
             raise AttributeError('BQL policy metadata is missing an id value')
-        if not metadata.get('severity'):
-            raise AttributeError('BQL policy metadata is missing a severity')
         if not raw_check.get('scope', {}).get('languages'):
             raise AttributeError('BQL policy metadata is missing languages')
         else:
@@ -41,13 +39,14 @@ class SastCheckParser:
         metadata = bql_policy['metadata']
         semgrep_rule[str(SemgrepAttribute.ID)] = metadata['id']
         semgrep_rule[str(SemgrepAttribute.MESSAGE)] = metadata.get('guidelines', '')
-        semgrep_rule[str(SemgrepAttribute.SEVERITY)] = CHECKOV_SEVERITY_TO_SEMGREP_SEVERITY[metadata['severity']]
+
         languages = bql_policy['scope']['languages']
         semgrep_rule[str(SemgrepAttribute.LANGUAGES)] = languages
         metadata_obj = {
             'name': metadata['name']
         }
         # add optional metadata fields
+        semgrep_rule[str(SemgrepAttribute.SEVERITY)] = CHECKOV_SEVERITY_TO_SEMGREP_SEVERITY[metadata.get('severity', 'MEDIUM')]
         if check_file:
             metadata_obj['check_file'] = check_file
         cwe = metadata.get('cwe')

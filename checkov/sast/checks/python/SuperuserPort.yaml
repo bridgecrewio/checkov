@@ -4,7 +4,6 @@ metadata:
   guidelines: 'module setting superuser port'
   category: 'sast'
   cwe: 'CWE-289: Authentication Bypass by Alternate Name'
-  severity: 'LOW'
 scope:
   languages:
     - python
