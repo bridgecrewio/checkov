@@ -49,7 +49,7 @@ class ParserModulesModule:
               download_external_modules: bool,
               external_modules_download_path: str,
               excluded_paths: Optional[List[str]] = None,
-              tf_var_files: Optional[List[str]] = None):
+              tf_var_files: Optional[List[str]] = None) -> None:
         self.directory = directory
         self.out_definitions = {}
         self.out_evaluations_context = out_evaluations_context
@@ -140,7 +140,7 @@ class ParserModulesModule:
                            specified_vars: Optional[Mapping[str, str]] = None,
                            vars_files: Optional[List[str]] = None,
                            excluded_paths: Optional[List[str]] = None,
-                           nested_modules_data=None):
+                           nested_modules_data=None) -> None:
 
         dir_contents = list(os.scandir(directory))
         if excluded_paths or IGNORE_HIDDEN_DIRECTORY_ENV:
@@ -171,8 +171,8 @@ class ParserModulesModule:
             elif not made_var_changes:
                 force_final_module_load = True
 
-    def _load_files(self, files: list[os.DirEntry]):
-        def _load_file(file: os.DirEntry):
+    def _load_files(self, files: list[os.DirEntry]) -> list[tuple[str | bytes, Any | None] | tuple[str | bytes, dict[str, list[dict[str, Any]]] | None]]:
+        def _load_file(file: os.DirEntry) -> tuple[tuple[str | bytes, dict[str, list[dict[str, Any]]] | None], dict]:
             parsing_errors = {}
             result = load_or_die_quietly(file, parsing_errors)
             for path, e in parsing_errors.items():
@@ -331,7 +331,7 @@ class ParserModulesModule:
 
         return module, tf_definitions
 
-    def _remove_unused_path_recursive(self, path):
+    def _remove_unused_path_recursive(self, path) -> None:
         self.out_definitions.pop(path, None)
         for key in list(self.module_to_resolved.keys()):
             file_key, module_index, module_name = key
@@ -340,7 +340,7 @@ class ParserModulesModule:
                     self._remove_unused_path_recursive(resolved_path)
                 self.module_to_resolved.pop(key, None)
 
-    def _update_resolved_modules(self):
+    def _update_resolved_modules(self) -> None:
         for key in list(self.module_to_resolved.keys()):
             file_key, module_index, module_name = key
             if file_key in self.keys_to_remove:
@@ -379,14 +379,14 @@ class ParserModulesModule:
                     logging.warning(e, exc_info=False)
         return module, tf_definitions
 
-    def get_file_key_with_nested_data(self, file, nested_data):
+    def get_file_key_with_nested_data(self, file: str, nested_data: Optional[dict[str, Any]]) -> str:
         if not nested_data:
             return file
         nested_str = self.get_file_key_with_nested_data(nested_data.get("file"), nested_data.get('nested_modules_data'))
         nested_module_index = nested_data.get('module_index')
         return get_tf_definition_key_from_module_dependency(file, nested_str, nested_module_index)
 
-    def get_new_nested_module_key(self, key, file, module_index, nested_data) -> str:
+    def get_new_nested_module_key(self, key: str, file: str, module_index: str, nested_data: Optional[dict[str, Any]]) -> str:
         if not nested_data:
             return get_tf_definition_key_from_module_dependency(key, file, module_index)
         visited_key_to_add = get_tf_definition_key_from_module_dependency(key, file, module_index)
@@ -502,7 +502,7 @@ class ParserModulesModule:
         return tf_files_to_load
 
     @staticmethod
-    def get_module_version(module_call_data: dict[str, Any]):
+    def get_module_version(module_call_data: dict[str, Any]) -> str:
         version = module_call_data.get("version", "latest")
         if version and isinstance(version, list):
             version = version[0]
