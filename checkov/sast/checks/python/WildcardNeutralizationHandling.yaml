@@ -3,7 +3,6 @@ metadata:
   name: Ensure the neutralization of wildcards or matching symbols is handled properly
   guidelines: Detected use of the wildcard character in a system call that spawns a shell. This subjects the wildcard to normal shell expansion, which can have unintended consequences if there exist any non-standard file names. Consider a file named '-e sh script.sh' -- this will execute a script when 'rsync' is called. See https://www.defensecode.com/public/DefenseCode_Unix_WildCards_Gone_Wild.tx for more information.
   category: sast
-  severity: MEDIUM
   cwe: "CWE-155: Improper Neutralization of Wildcards or Matching Symbols"
   owasp: "A1: Injection"
 scope:

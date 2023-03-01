@@ -3,7 +3,6 @@ metadata:
   name: Ensure chmod does not set a permissive mask on file
   guidelines: Chmod setting a permissive mask on file.
   category: sast
-  severity: MEDIUM
   cwe: "CWE-732: Incorrect Permission Assignment for Critical Resource"
   owasp: "A6: Security Misconfiguration"
 scope:

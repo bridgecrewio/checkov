@@ -3,7 +3,6 @@ metadata:
   name: Ensure no hardcoded temp directory is used
   guidelines: Detected hardcoded temp directory. Consider using "tempfile.TemporaryFile" instead.
   category: sast
-  severity: MEDIUM
   cwe: "CWE-377: Insecure Temporary File"
 scope:
   languages:

@@ -23,7 +23,8 @@ class SastRecord(Record):
                  severity: Optional[Severity],
                  bc_check_id: Optional[str] = None,
                  cwe: Optional[str] = None,
-                 owasp: Optional[str] = None
+                 owasp: Optional[str] = None,
+                 show_severity: Optional[bool] = False  # should be false in case the severities are just a default value, as we deafult the semgrep result to warning severity
                  ) -> None:
         super().__init__(
             check_id=check_id,
@@ -41,6 +42,7 @@ class SastRecord(Record):
         )
         self.cwe = cwe
         self.owasp = owasp
+        self.show_severity = show_severity
 
     def to_string(self, compact: bool = False, use_bc_ids: bool = False) -> str:
         status = ""
@@ -61,7 +63,7 @@ class SastRecord(Record):
                                 "white")
         guideline_message = self.get_guideline_string(self.guideline)
 
-        severity_message = f'\tSeverity: {self.severity.name}\n' if self.severity else ''
+        severity_message = f'\tSeverity: {self.severity.name}\n' if self.severity and self.show_severity else ''
 
         file_details = f'{self.file_path}:{"-".join([str(x) for x in self.file_line_range])}'
         code_lines = self.get_code_lines_string(self.code_block)

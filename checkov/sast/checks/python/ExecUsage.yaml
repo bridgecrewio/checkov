@@ -3,7 +3,6 @@ metadata:
   name: Ensure 'exec' is not used
   guidelines: The use of "exec" is risky.
   category: sast
-  severity: MEDIUM
   cwe: 'CWE-78: Improper Neutralization of Special Elements used in an OS Command ("OS Command Injection")'
   owasp: "A1: Injection"
 scope:
