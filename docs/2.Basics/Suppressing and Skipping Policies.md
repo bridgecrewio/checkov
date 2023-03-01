@@ -31,8 +31,8 @@ In the example, the bucket is configured with a public read access; Adding the s
 
 ```python
 resource "aws_s3_bucket" "foo-bucket" {
+  # checkov:skip=CKV_AWS_20:The bucket is a public static content host
   region        = var.region
-    #checkov:skip=CKV_AWS_20:The bucket is a public static content host
   bucket        = local.bucket_name
   force_destroy = true
   acl           = "public-read"
