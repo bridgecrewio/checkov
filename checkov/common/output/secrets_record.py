@@ -12,6 +12,7 @@ from checkov.secrets.consts import ValidationStatus
 from checkov.common.bridgecrew.severities import Severity
 
 from checkov.common.output.record import Record
+from checkov.secrets.consts import GIT_HISTORY_NOT_BEEN_REMOVED
 from checkov.common.typing import _CheckResult
 
 COMMIT_ADDED_STR = 'Commit Added'
@@ -101,6 +102,8 @@ class SecretsRecord(Record):
         return processed_record
 
     def _add_commit_details(self, processed_record) -> str:
+        if not self.added_commit_hash and not self.is_empty_removed_commit():
+            return processed_record
         splitted_record = processed_record.split("\n")
         file_idx = 0
         file_line = ''
@@ -120,6 +123,9 @@ class SecretsRecord(Record):
             splitted_record[file_idx] = file_line
             processed_record = "\n".join(splitted_record)
         return processed_record
+
+    def is_empty_removed_commit(self) -> bool:
+        return (not self.removed_commit_hash) or (self.removed_commit_hash == GIT_HISTORY_NOT_BEEN_REMOVED)
 
     def _get_secret_validation_status_message(self) -> str:
         message = None
