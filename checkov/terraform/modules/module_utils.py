@@ -19,7 +19,6 @@ from checkov.common.util.json_utils import CustomJSONEncoder
 
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
-    from checkov.terraform.graph_builder.graph_components.module import Module
 
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
 from checkov.terraform.graph_builder.utils import remove_module_dependency_in_path
@@ -287,20 +286,3 @@ def clean_parser_types_lst(values: list[Any]) -> list[Any]:
 
 def serialize_definitions(tf_definitions: dict[str, _Hcl2Payload]) -> dict[str, _Hcl2Payload]:
     return json.loads(json.dumps(tf_definitions, cls=CustomJSONEncoder))
-
-
-def get_new_module(
-        source_dir: str,
-        module_dependency_map: dict[str, list[list[str]]],
-        module_address_map: dict[tuple[str, str], str],
-        external_modules_source_map: dict[tuple[str, str], str],
-        dep_index_mapping: dict[tuple[str, str], list[str]],
-) -> Module:
-    from checkov.terraform.graph_builder.graph_components.module import Module
-    return Module(
-        source_dir=source_dir,
-        module_dependency_map=module_dependency_map,
-        module_address_map=module_address_map,
-        external_modules_source_map=external_modules_source_map,
-        dep_index_mapping=dep_index_mapping
-    )

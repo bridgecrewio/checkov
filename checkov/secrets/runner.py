@@ -7,7 +7,7 @@ import logging
 import os
 import re
 from pathlib import Path
-from typing import TYPE_CHECKING, cast, Optional, Iterable, Any, List
+from typing import TYPE_CHECKING, cast, Optional, Iterable, Any, List, Tuple
 
 import requests
 from detect_secrets.filters.heuristic import is_potential_uuid
@@ -38,10 +38,10 @@ from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.dockerfile import is_docker_file
 from checkov.common.util.secrets import omit_secret_value_from_line
 from checkov.runner_filter import RunnerFilter
-from checkov.secrets.consts import ValidationStatus, VerifySecretsResult
+from checkov.secrets.consts import ValidationStatus, VerifySecretsResult, GIT_HISTORY_NOT_BEEN_REMOVED
 from checkov.secrets.coordinator import EnrichedSecret, SecretsCoordinator
-from checkov.secrets.scan_git_history import scan_history, get_added_and_removed_commit_hash
 from checkov.secrets.plugins.load_detectors import get_runnable_plugins
+from checkov.secrets.scan_git_history import GitHistoryScanner
 
 if TYPE_CHECKING:
     from checkov.common.util.tqdm_utils import ProgressBar
@@ -154,8 +154,9 @@ class Runner(BaseRunner[None]):
             self._add_custom_detectors_to_metadata_integration()
             if root_folder:
                 if runner_filter.enable_git_history_secret_scan:
+                    git_history_scanner = GitHistoryScanner(root_folder, secrets, runner_filter.git_history_timeout)
                     settings.disable_filters(*['detect_secrets.filters.common.is_invalid_file'])
-                    scan_history(root_folder, secrets, runner_filter.git_history_timeout)
+                    git_history_scanner.scan_history()
                     logging.info(f'Secrets scanning git history for root folder {root_folder}')
                 else:
                     enable_secret_scan_all_files = runner_filter.enable_secret_scan_all_files
@@ -186,10 +187,9 @@ class Runner(BaseRunner[None]):
             secrets_duplication: dict[str, bool] = {}
 
             for key, secret in secrets:
-                added_commit_hash, removed_commit_hash = get_added_and_removed_commit_hash(
+                added_commit_hash, removed_commit_hash = self._get_added_and_removed_commit_hash(
                     key,
-                    runner_filter.enable_git_history_secret_scan,
-                    secret)
+                    runner_filter.enable_git_history_secret_scan)
                 check_id = getattr(secret, "check_id", SECRET_TYPE_TO_ID.get(secret.type))
                 if not check_id:
                     logging.debug(f'Secret was filtered - no check_id for line_number {secret.line_number}')
@@ -458,3 +458,24 @@ class Runner(BaseRunner[None]):
                 logging.error(f"Failed to remove suppressed secrets violations from failed_checks, report is corrupted."
                               f"Tried to delete entry {idx} from failed_checks of length {len(report.failed_checks)}",
                               exc_info=True)
+
+    @staticmethod
+    def _get_added_and_removed_commit_hash(
+            key: str, enable_git_history_secret_scan: bool) -> Tuple[str | None, str | None]:
+        """
+        now we have only the current commit_hash - in the added_commit_hash or in the removed_commit_hash.
+        in the next step we will add the connection and the missing data
+        The key is built like this:
+        '{added_commit_hash}_{removed_commit_hash or the string SECRET_NOT_BEEN_REMOVED
+        if the secret not been removed}_{file_name}'
+        """
+        if not enable_git_history_secret_scan:
+            return None, None
+        try:
+            split_key = key.split('_')
+            added_commit_hash = split_key[0]
+            removed_commit_hash = split_key[1] if split_key[1] != GIT_HISTORY_NOT_BEEN_REMOVED else None
+            return added_commit_hash, removed_commit_hash
+        except Exception as e:
+            logging.warning(f"Failed set added_commit_hash and removed_commit_hash due to: {e}")
+            return None, None
