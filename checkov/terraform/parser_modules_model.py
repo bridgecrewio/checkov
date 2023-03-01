@@ -361,7 +361,7 @@ class ParserModulesModule:
         source: str,
     ) -> Tuple[Module, Dict[str, Dict[str, Any]]]:
         module_dependency_map, tf_definitions, dep_index_mapping = get_module_dependency_map_support_nested_modules(tf_definitions)
-        module = get_new_module(
+        module = self.get_new_module(
             source_dir=source_dir,
             module_dependency_map=module_dependency_map,
             module_address_map=self.module_address_map,

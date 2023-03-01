@@ -9,7 +9,8 @@ import pytest
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_PREFIX, TERRAFORM_NESTED_MODULE_PATH_ENDING, \
     TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR
-from checkov.terraform.parser import Parser
+from checkov.terraform.parser_modules_model import ParserModulesModule
+
 
 
 @pytest.fixture
@@ -35,36 +36,19 @@ class TestParserInternals(unittest.TestCase):
         if os.path.exists(self.external_module_path):
             shutil.rmtree(self.external_module_path)
 
-    def test_load_registry_module(self):
-        parser = Parser()
-        directory = os.path.join(self.resources_dir, "registry_security_group")
-        self.external_module_path = os.path.join(directory, DEFAULT_EXTERNAL_MODULES_DIR)
-        out_definitions = {}
-        parser.parse_directory(directory=directory, out_definitions=out_definitions,
-                               out_evaluations_context={},
-                               download_external_modules=True,
-                               external_modules_download_path=DEFAULT_EXTERNAL_MODULES_DIR)
-
-        external_aws_modules_path = os.path.join(self.external_module_path, 'github.com/terraform-aws-modules/terraform-aws-security-group/v3.18.0')
-        assert os.path.exists(external_aws_modules_path)
-
     @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "True"})
-    def test_load_inner_registry_module_with_nested_modules(self):
-        self.load_inner_registry_module(True)
+    def test_load_inner_registry_module_with_nested_modules_new_parser(self):
+        self.load_inner_registry_module_new_parser(True)
 
-    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "False"})
-    def test_load_inner_registry_module_without_nested_modules(self):
-        self.load_inner_registry_module(False)
-
-    def load_inner_registry_module(self, nested_modules):
-        parser = Parser()
+    def load_inner_registry_module_new_parser(self, nested_modules):
+        parser = ParserModulesModule()
         directory = os.path.join(self.resources_dir, "registry_security_group_inner_module")
         self.external_module_path = os.path.join(self.tmp_path, DEFAULT_EXTERNAL_MODULES_DIR)
-        out_definitions = {}
-        parser.parse_directory(directory=directory, out_definitions=out_definitions,
-                               out_evaluations_context={},
-                               download_external_modules=True,
-                               external_modules_download_path=self.external_module_path)
+        out_definitions = parser.parse_directory(
+            directory=directory,
+            out_evaluations_context={},
+            download_external_modules=True,
+            external_modules_download_path=self.external_module_path)
         self.assertEqual(11, len(list(out_definitions.keys())))
         expected_remote_module_path = f'{self.external_module_path}/github.com/terraform-aws-modules/terraform-aws-security-group/v4.0.0'
         expected_inner_remote_module_path = f'{expected_remote_module_path}/modules/http-80'
@@ -94,40 +78,37 @@ class TestParserInternals(unittest.TestCase):
                 if not any(definition for definition in out_definitions.keys() if definition.startswith(expected_file_name[:-3])):
                     self.fail(f"expected file {expected_file_name} to be in out_definitions")
 
-    def test_invalid_module_sources(self):
-        parser = Parser()
+    def test_invalid_module_sources_new_parser(self):
+        parser = ParserModulesModule()
         directory = os.path.join(self.resources_dir, "failing_module_address")
         self.external_module_path = os.path.join(directory, DEFAULT_EXTERNAL_MODULES_DIR)
-        out_definitions = {}
-        parser.parse_directory(directory=directory, out_definitions=out_definitions,
-                               out_evaluations_context={},
-                               download_external_modules=True,
-                               external_modules_download_path=DEFAULT_EXTERNAL_MODULES_DIR)
+        out_definitions = parser.parse_directory(
+            directory=directory,
+            out_evaluations_context={},
+            download_external_modules=True,
+            external_modules_download_path=DEFAULT_EXTERNAL_MODULES_DIR)
         # check that only the original file was parsed successfully without getting bad external modules
         self.assertEqual(1, len(list(out_definitions.keys())))
 
-    def test_malformed_output_blocks(self):
-        parser = Parser()
+    def test_malformed_output_blocks_new_parser(self):
+        parser = ParserModulesModule()
         directory = os.path.join(self.resources_dir, "malformed_outputs")
         self.external_module_path = os.path.join(directory, DEFAULT_EXTERNAL_MODULES_DIR)
-        out_definitions = {}
-        parser.parse_directory(directory=directory, out_definitions=out_definitions,
-                               out_evaluations_context={},
-                               download_external_modules=True,
-                               external_modules_download_path=DEFAULT_EXTERNAL_MODULES_DIR)
+        out_definitions = parser.parse_directory(
+            directory=directory,
+            out_evaluations_context={},
+            download_external_modules=True,
+            external_modules_download_path=DEFAULT_EXTERNAL_MODULES_DIR)
         file_path, entity_definitions = next(iter(out_definitions.items()))
         self.assertEqual(2, len(list(out_definitions[file_path]['output'])))
 
-    def test_load_local_module(self):
+    def test_load_local_module_new_parser(self):
         # given
-        parser = Parser()
+        parser = ParserModulesModule()
         directory = os.path.join(self.resources_dir, "local_module")
-        out_definitions = {}
 
         # when
-        parser.parse_directory(
-            directory=directory, out_definitions=out_definitions, out_evaluations_context={}
-        )
+        out_definitions = parser.parse_directory(directory=directory, out_evaluations_context={})
 
         # then
         self.assertEqual(len(out_definitions), 3)  # root file + 2x module file
