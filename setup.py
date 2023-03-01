@@ -77,7 +77,7 @@ setup(
         "requests>=2.27.0",
         "yarl",
         "igraph",
-        "semgrep"
+        "semgrep==1.10.0"
     ],
     dependency_links=[],  # keep it empty, needed for pipenv-setup
     license="Apache License 2.0",

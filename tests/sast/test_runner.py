@@ -92,13 +92,14 @@ def test_sast_runner_python():
     runner.registry.temp_semgrep_rules_path = os.path.join(pathlib.Path(__file__).parent.resolve(), 'test_runner_python_temp_rules.yaml')
     source = os.path.join(pathlib.Path(__file__).parent.resolve(), 'source_code')
     reports = runner.run(source, runner_filter=RunnerFilter(framework=['sast_python']))
+
     assert len(reports) == 1
     assert reports[0].check_type == CheckType.SAST_PYTHON
     python_report = reports[0]
     assert len(python_report.failed_checks) > 0
     python_record = next((record for record in python_report.failed_checks if record.check_id == 'CKV3_SAST_11'), None)
     assert python_record
-    assert python_record.severity.name == 'LOW'
+    assert python_record.severity.name == 'MEDIUM'
     assert python_record.file_path == 'fail.py'
     assert python_record.check_name == 'Ensure superuser port is not set'
     assert python_record.code_block == [(2, 'set_port(443)\n')]
@@ -109,6 +110,7 @@ def test_sast_runner_python():
 
 def test_sast_runner_get_semgrep_output():
     runner = Runner()
+    runner.registry.temp_semgrep_rules_path = os.path.join(pathlib.Path(__file__).parent.resolve(), 'test_runner_get_semgrep_output_temp_rules.yaml')
     output_settings = OutputSettings(output_format=OutputFormat.JSON)
     output_handler = OutputHandler(output_settings)
     temp_semgrep_rules_path = pathlib.Path(__file__).parent / 'checks/temp_parsed_rules'
@@ -123,7 +125,7 @@ def test_sast_runner_get_semgrep_output():
 
 
 def test_sast_runner_create_report():
-    file = os.path.join(pathlib.Path(__file__).parent.resolve(), 'source_code', 'python', 'SuperUserPort', 'fail.py')
+    file = os.path.join(pathlib.Path(__file__).parent.resolve(), 'source_code', 'python', 'SuperuserPort', 'fail.py')
     raw_rule = get_parsed_rule()
     rule = Rule(raw_rule)
     rule_match = core.CoreMatch(rule_id=core.RuleId(value='tests.sast.checks.CKV3_SAST_11'),
@@ -143,6 +145,8 @@ def test_sast_runner_create_report():
                       message='module setting superuser port',
                       metadata=rule.metadata)
     runner = Runner()
+    runner.registry.temp_semgrep_rules_path = os.path.join(pathlib.Path(__file__).parent.resolve(),
+                                                           'test_runner_create_report_temp_rules.yaml')
     report = runner._create_report(SastLanguages.PYTHON.value, [match])
     assert report.check_type == CheckType.SAST_PYTHON
     assert len(report.failed_checks) == 1
@@ -165,6 +169,8 @@ def test_sast_runner_get_code_block():
 
 def test_sast_runner():
     runner = Runner()
+    runner.registry.temp_semgrep_rules_path = os.path.join(pathlib.Path(__file__).parent.resolve(),
+                                                           'test_runner_temp_rules.yaml')
     cur_dir = pathlib.Path(__file__).parent.resolve()
     source = os.path.join(cur_dir / 'source_code' / 'external_check')
     external_dir_checks = os.path.join(cur_dir, 'external_checks')
@@ -176,7 +182,7 @@ def test_sast_runner():
     assert python_report.check_type == CheckType.SAST_PYTHON
     assert len(python_report.failed_checks) == 1
     assert python_report.failed_checks[0].check_id == 'CKV3_SAST_11'
-    assert python_report.failed_checks[0].severity.name == 'LOW'
+    assert python_report.failed_checks[0].severity.name == 'MEDIUM'
     assert python_report.failed_checks[0].file_path == 'fail.py'
     assert python_report.failed_checks[0].check_name == 'Ensure superuser port is not set'
     assert python_report.failed_checks[0].code_block == [(2, 'set_port(443)\n')]

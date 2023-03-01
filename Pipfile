@@ -31,7 +31,7 @@ types-tabulate = "*"
 types-tqdm = "*"
 types-urllib3 = "*"
 pre-commit = "*"
-flake8 = "*"
+flake8 = "==5.0.4"
 dlint = "*"
 mypy = "*"
 flake8-bugbear = "*"
@@ -85,7 +85,7 @@ pyston = {version = "==2.3.5", markers="python_version < '3.11' and (sys_platfor
 schema = "*"
 requests = ">=2.27.0"
 yarl = "*"
-semgrep = "*"
+semgrep = "==1.10.0"
 
 [requires]
 python_version = "3.7"

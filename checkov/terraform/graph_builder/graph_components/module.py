@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import os
 from copy import deepcopy
-from typing import List, Dict, Any, Set, Callable, Tuple, TYPE_CHECKING  # noqa: F401
+from typing import List, Dict, Any, Set, Callable, Tuple, TYPE_CHECKING
 
 from checkov.common.runners.base_runner import strtobool
 from checkov.common.util.parser_utils import get_abs_path, get_module_from_full_path

@@ -29,25 +29,24 @@ class SastCheckParser:
             raise AttributeError('BQL policy is missing the metadata field')
         if not metadata.get('id'):
             raise AttributeError('BQL policy metadata is missing an id value')
-        if not metadata.get('severity'):
-            raise AttributeError('BQL policy metadata is missing a severity')
         if not raw_check.get('scope', {}).get('languages'):
             raise AttributeError('BQL policy metadata is missing languages')
         else:
             return True
 
-    def _parse_rule_metadata(self, bql_policy: Dict[str, Any], check_file, semgrep_rule: Dict[str, Any]) \
+    def _parse_rule_metadata(self, bql_policy: Dict[str, Any], check_file: str | None, semgrep_rule: Dict[str, Any]) \
             -> Dict[str, Any]:
         metadata = bql_policy['metadata']
         semgrep_rule[str(SemgrepAttribute.ID)] = metadata['id']
         semgrep_rule[str(SemgrepAttribute.MESSAGE)] = metadata.get('guidelines', '')
-        semgrep_rule[str(SemgrepAttribute.SEVERITY)] = CHECKOV_SEVERITY_TO_SEMGREP_SEVERITY[metadata['severity']]
+
         languages = bql_policy['scope']['languages']
         semgrep_rule[str(SemgrepAttribute.LANGUAGES)] = languages
         metadata_obj = {
             'name': metadata['name']
         }
         # add optional metadata fields
+        semgrep_rule[str(SemgrepAttribute.SEVERITY)] = CHECKOV_SEVERITY_TO_SEMGREP_SEVERITY[metadata.get('severity', 'MEDIUM')]
         if check_file:
             metadata_obj['check_file'] = check_file
         cwe = metadata.get('cwe')
@@ -61,7 +60,7 @@ class SastCheckParser:
 
     def _parse_definition(self, definition: Dict[str, Any]) -> Dict[str, Any]:
         definitions = force_list(definition)
-        conf = {}
+        conf: Dict[str, Any] = {}
         if len(definitions) > 1:
             return {str(SemgrepAttribute.PATTERNS): self._get_definitions_list_items(definitions)}
         elif len(definitions) == 1:
@@ -78,7 +77,7 @@ class SastCheckParser:
                 return self._parse_single_definition(definition)
         return conf
 
-    def _parse_single_definition(self, definition: Dict[str, Any]):
+    def _parse_single_definition(self, definition: Dict[str, Any]) -> Dict[str, Any]:
         cond_type = definition.get('cond_type', '')
         if not cond_type:
             raise AttributeError('BQL policy is missing a condition type')
@@ -98,13 +97,16 @@ class SastCheckParser:
         elif cond_type == BqlConditionType.FILTER:
             return self._parse_filter_cond_type(operator, definition_value)
 
-    def _parse_pattern_cond_type(self, operator, definition_value):
+        return {}
+
+    def _parse_pattern_cond_type(self, operator: str, definition_value: str) -> Dict[str, Any]:
         semgrep_attr = PATTERN_OPERATOR_TO_SEMGREP_ATTR.get(operator, '')
         if not semgrep_attr:
             raise AttributeError(f'BQL policy pattern condition contains an unknown operator: {operator}')
         return {semgrep_attr: definition_value}
 
-    def _parse_variable_cond_type(self, operator, definition, definition_value):
+    def _parse_variable_cond_type(self, operator: str, definition: Dict[str, Any],
+                                  definition_value: str | Dict[str, Any]) -> Dict[str, Any]:
         metavariable_condition_object = {}
         metavariable = definition.get('variable')
         metavariable_condition_object[SemgrepAttribute.METAVARIABLE.value] = metavariable
@@ -128,7 +130,7 @@ class SastCheckParser:
 
         return {metavariable_condition_key: metavariable_condition_object}
 
-    def _parse_filter_cond_type(self, operator, definition_value):
+    def _parse_filter_cond_type(self, operator: str, definition_value: str | Dict[str, Any]) -> Dict[str, Any]:
         semgrep_attr = FILTER_OPERATOR_TO_SEMGREP_ATTR.get(operator, '')
         if not semgrep_attr:
             raise AttributeError(f'BQL filter condition contains an unknown operator: {operator}')

@@ -3,7 +3,6 @@ metadata:
   name: Ensure the neutralization of special elements used in a SQL command is handled properly
   guidelines: This is a last resort. You should be careful when using `QuerySet.extra` due to SQL injection.
   category: sast
-  severity: HIGH
   cwe: "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
   owasp: "A1: Injection"
 scope:

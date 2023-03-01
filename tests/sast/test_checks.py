@@ -118,10 +118,11 @@ def run_check(lang: str, check: str) -> None:
 
     # setup sast runner
     runner = Runner()
+    runner.registry.temp_semgrep_rules_path = os.path.join(pathlib.Path(__file__).parent.resolve(),
+                                                           f'test_{check}_temp_rules.yaml')
 
     cur_dir = pathlib.Path(__file__).parent.resolve()
     test_files_dir = os.path.join(cur_dir, 'source_code', lang, check)
-    test_dir = os.path.join(cur_dir, 'checks')
 
     # run actual check
     reports = runner.run(test_files_dir, runner_filter=RunnerFilter(framework=['sast'], checks=CHECK_ID_MAP[check]))
