@@ -2,8 +2,7 @@ metadata:
   id: CKV_SAST_25
   name: 'Ensure cookie does not contain sensitive session info'
   guidelines: 'The information stored in a custom cookie should not be sensitive or related to the session.
-    In most cases, sensitive data should only be stored in session and referenced by the user's
-    session cookie.'
+    In most cases, sensitive data should only be stored in session and referenced by the users session cookie.'
   category: 'sast'
   cwe: "CWE-614: Sensitive Cookie in HTTPS Session Without 'Secure' Attribute"
 scope:
@@ -24,7 +23,7 @@ definition:
           operator: "within"
           value: |
                  for (Cookie $C : $REQ.getCookies()) {
-                 ...
+                   ...
                  }
         - or:
           - cond_type: "pattern"

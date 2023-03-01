@@ -4,7 +4,7 @@ metadata:
   guidelines: 'Prior to HTML5, Web browsers enforced the Same Origin Policy which ensures that in order for
     JavaScript to access the contents of a Web page, both the JavaScript and the Web page must
     originate from the same domain. Without the Same Origin Policy, a malicious website could serve
-    up JavaScript that loads sensitive information from other websites using a client's
+    up JavaScript that loads sensitive information from other websites using client
     credentials, cull through it, and communicate it back to the attacker. HTML5 makes it possible
     for JavaScript to access data across domains if a new HTTP header called
     Access-Control-Allow-Origin is defined. With this header, a Web server defines which other
@@ -34,4 +34,3 @@ definition:
       variable: "$VAL"
       operator: "regex_match"
       value: "(\\*|null)"
-
