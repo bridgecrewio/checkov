@@ -1070,6 +1070,12 @@ def sca_package_2_report(package_mocker: MockerFixture, scan_result_2: Dict[str,
     scanner_mock = MagicMock()
     scanner_mock.return_value.scan.return_value = scan_result_2
     package_mocker.patch("checkov.sca_package_2.runner.Scanner", side_effect=scanner_mock)
+    # package_mocker.patch()
+    def none() -> None:
+        pass
+
+    bc_integration.set_s3_integration = none
+
 
     return Runner().run(root_folder=EXAMPLES_DIR)
 

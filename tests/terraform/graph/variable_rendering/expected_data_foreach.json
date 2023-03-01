@@ -67,7 +67,6 @@
               "region": [
                 "us-west-2"
               ],
-              "foreach_attrs": ["region", "name"],
               "__address__": "aws_s3_bucket.foreach_map[\"bucket_a\"]"
             }
           }
@@ -86,7 +85,6 @@
               "region": [
                 "us-east-2"
               ],
-              "foreach_attrs": ["region", "name"],
               "__address__": "aws_s3_bucket.foreach_map[\"bucket_b\"]"
             }
           }

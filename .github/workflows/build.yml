@@ -201,7 +201,7 @@ jobs:
           export CHECKOV_CREATE_MARKDOWN_HYPERLINKS='True'
           git pull
 
-          for i in cloudformation terraform kubernetes serverless arm dockerfile secrets github_configuration gitlab_configuration bitbucket_configuration github_actions gitlab_ci bicep openapi bitbucket_pipelines argo_workflows circleci_pipelines azure_pipelines all
+          for i in cloudformation terraform kubernetes serverless arm dockerfile secrets github_configuration gitlab_configuration bitbucket_configuration github_actions gitlab_ci bicep openapi bitbucket_pipelines argo_workflows circleci_pipelines azure_pipelines ansible all
           do
             export scansdoc="docs/5.Policy Index/$i.md"
             echo "---" > "$scansdoc"
