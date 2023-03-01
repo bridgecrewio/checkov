@@ -221,7 +221,7 @@ class ForeachHandler(object):
         self._pop_foreach_attrs(config_attrs)
         self._update_attributes(new_resource.attributes, key_to_val_changes)
         foreach_attrs = self._update_attributes(config_attrs, key_to_val_changes)
-        config_attrs['foreach_attrs'] = foreach_attrs
+        new_resource.foreach_attrs = foreach_attrs
 
         idx_to_change = new_key or new_value
         self._add_index_to_block_properties(new_resource, idx_to_change)
