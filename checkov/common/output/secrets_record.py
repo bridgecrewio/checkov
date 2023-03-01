@@ -121,7 +121,7 @@ class SecretsRecord(Record):
             added = True
         if added:
             splitted_record[file_idx] = file_line
-            processed_record = "\n".join(splitted_record)
+            processed_record = "\n".join(splitted_record) + '\n'
         return processed_record
 
     def is_empty_removed_commit(self) -> bool:
