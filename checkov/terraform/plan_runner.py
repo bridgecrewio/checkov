@@ -23,6 +23,7 @@ from checkov.common.runners.base_runner import CHECKOV_CREATE_GRAPH
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.context_parsers.registry import parser_registry
+from checkov.terraform.plan_parser import TF_PLAN_RESOURCE_ADDRESS
 from checkov.terraform.plan_utils import create_definitions, build_definitions_context, \
     get_resource_id_without_nested_modules
 from checkov.terraform.runner import Runner as TerraformRunner, merge_reports
@@ -208,7 +209,7 @@ class Runner(TerraformRunner):
                 context_parser = parser_registry.context_parsers[block_type]
                 definition_path = context_parser.get_entity_context_path(entity)
                 # Entity can exist only once per dir, for file as well
-                entity_context = self.get_entity_context(definition_path, full_file_path)
+                entity_context = self.get_entity_context(definition_path, full_file_path, entity)
                 entity_lines_range = [entity_context.get('start_line'), entity_context.get('end_line')]
                 entity_code_lines = entity_context.get('code_lines')
                 entity_address = entity_context.get('address')
@@ -247,14 +248,19 @@ class Runner(TerraformRunner):
                     report.add_record(record=record)
 
     def get_entity_context_and_evaluations(self, entity):
-        raw_context = self.get_entity_context(entity[CustomAttributes.BLOCK_NAME].split("."),
-                                              entity[CustomAttributes.FILE_PATH])
+        entity_id = entity[TF_PLAN_RESOURCE_ADDRESS]
+        raw_context = self.context.get(entity[CustomAttributes.FILE_PATH], {}).get(entity_id)
         if raw_context:
             raw_context['definition_path'] = entity[CustomAttributes.BLOCK_NAME].split('.')
         return raw_context, None
 
-    def get_entity_context(self, definition_path, full_file_path):
-        entity_id = ".".join(definition_path)
+    def get_entity_context(self, definition_path, full_file_path, entity):
+        if len(definition_path) > 1:
+            resource_type = definition_path[0]
+            resource_name = definition_path[1]
+            entity_id = entity.get(resource_type, {}).get(resource_name, {}).get(TF_PLAN_RESOURCE_ADDRESS)
+        else:
+            entity_id = definition_path[0]
         return self.context.get(full_file_path, {}).get(entity_id)
 
     @property

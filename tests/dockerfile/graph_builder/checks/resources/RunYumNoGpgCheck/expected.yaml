@@ -1,0 +1,22 @@
+pass:
+  - 'pass/Dockerfile.RUN'
+  - 'pass/Dockerfile.RUN'
+  - 'pass/Dockerfile.RUN'
+  - 'pass/Dockerfile.RUN'
+  - 'pass/Dockerfile.RUN'
+  - 'pass/Dockerfile.RUN'
+  - 'pass/Dockerfile.RUN'
+  - 'pass/Dockerfile.RUN'
+fail:
+  - 'fail/Dockerfile.yum.RUN'
+  - 'fail/Dockerfile.yum.RUN'
+  - 'fail/Dockerfile.yum.RUN'
+  - 'fail/Dockerfile.yum.RUN'
+  - 'fail/Dockerfile.yum.RUN'
+  - 'fail/Dockerfile.dnf.RUN'
+  - 'fail/Dockerfile.dnf.RUN'
+  - 'fail/Dockerfile.dnf.RUN'
+  - 'fail/Dockerfile.dnf.RUN'
+  - 'fail/Dockerfile.dnf.RUN'
+evaluated_keys:
+  - 'value'

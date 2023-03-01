@@ -1,0 +1,11 @@
+metadata:
+  id: "CKV2_DOCKER_11"
+  name: "Ensure that the '--force-yes' option is not used, as it disables signature validation and allows packages to be downgraded which can leave the system in a broken or inconsistent state"
+  category: "APPLICATION_SECURITY"
+definition:
+    cond_type: attribute
+    resource_types:
+      - RUN
+    attribute: value
+    operator: not_regex_match
+    value: ".*(apt-get[^\\|&;]*\\s+--force-yes).*"

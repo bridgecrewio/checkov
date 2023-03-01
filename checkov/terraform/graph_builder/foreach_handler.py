@@ -39,8 +39,9 @@ class ForeachHandler(object):
             foreach_statement = self._get_static_foreach_statement(block_index)
             block_index_to_statement[block_index] = foreach_statement
         blocks_to_render = [block_idx for block_idx, statement in block_index_to_statement.items() if statement is None]
-        rendered_statements = self._handle_dynamic_statement(blocks_to_render)
-        block_index_to_statement.update(rendered_statements)
+        if blocks_to_render:
+            rendered_statements = self._handle_dynamic_statement(blocks_to_render)
+            block_index_to_statement.update(rendered_statements)
         return block_index_to_statement
 
     def _get_static_foreach_statement(self, block_index: int) -> Optional[list[str] | dict[str, Any]]:
