@@ -242,37 +242,6 @@ class ImageReferencerMixin(Generic[_Definitions]):
                 report_type=report_type,
                 license_statuses=license_statuses,
             )
-        elif strtobool(os.getenv("CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING", "False")):
-            # experimental flag on running image referencers via local twistcli
-            from checkov.sca_image.runner import Runner as sca_image_runner
-
-            runner = sca_image_runner()
-
-            image_id = ImageReferencer.inspect(image.name)
-            if not image_id:
-                logging.info(f"(IR debug) No image with image.name={image.name} found. hence image_id={image_id}.")
-                return None
-
-            scan_result = runner.scan(image_id, dockerfile_path, runner_filter)
-            if scan_result is None:
-                return None
-
-            self.raw_report = scan_result
-            result = scan_result.get('results', [{}])[0]
-            rootless_file_path_to_report = f"{dockerfile_path} ({image.name} lines:{image.start_line}-" \
-                                           f"{image.end_line} ({image_id}))"
-
-            self._add_vulnerability_records(
-                report=report,
-                result=result,
-                check_class=check_class,
-                dockerfile_path=dockerfile_path,
-                rootless_file_path=rootless_file_path_to_report,
-                image_details=None,
-                runner_filter=runner_filter,
-                report_type=report_type,
-                license_statuses=license_statuses,
-            )
         else:
             logging.info(f"No cache hit for image {image.name}")
 
