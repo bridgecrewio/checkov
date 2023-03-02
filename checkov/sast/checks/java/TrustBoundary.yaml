@@ -1,5 +1,5 @@
 metadata:
-  id: CKV_SAST_26
+  id: CKV3_SAST_22
   name: 'Ensure trust boundary is not violated'
   guidelines: 'A trust boundary can be thought of as line drawn through a program. On one side
     of the line, data is untrusted. On the other side of the line, data is assumed
@@ -15,19 +15,18 @@ scope:
   languages:
     - java
 definition:
-  - and:
-    - or:
-      - and:
-        - cond_type: "pattern"
-          operator: "equals"
-          value: (HttpServletRequest $H). ... .setAttribute($ARG1, $ARG2);
-        - cond_type: "pattern"
-          operator: "not_equals"
-          value: "(HttpServletRequest $H). ... .setAttribute(\"...\", \"...\");"
-      - and:
-        - cond_type: "pattern"
-          operator: "equals"
-          value: (HttpServletRequest $H). ... .putValue($ARG1, $ARG2);
-        - cond_type: "pattern"
-          operator: "not_equals"
-          value: "(HttpServletRequest $H). ... .putValue(\"...\", \"...\");"
+  - or:
+    - and:
+      - cond_type: "pattern"
+        operator: "equals"
+        value: (HttpServletRequest $H). ... .setAttribute($ARG1, $ARG2);
+      - cond_type: "pattern"
+        operator: "not_equals"
+        value: "(HttpServletRequest $H). ... .setAttribute(\"...\", \"...\");"
+    - and:
+      - cond_type: "pattern"
+        operator: "equals"
+        value: (HttpServletRequest $H). ... .putValue($ARG1, $ARG2);
+      - cond_type: "pattern"
+        operator: "not_equals"
+        value: "(HttpServletRequest $H). ... .putValue(\"...\", \"...\");"

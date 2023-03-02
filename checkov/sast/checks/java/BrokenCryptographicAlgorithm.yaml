@@ -1,5 +1,5 @@
 metadata:
-  id: CKV_SAST_30
+  id: CKV3_SAST_13
   name: 'Ensure no custom MessageDigest is implemented'
   guidelines: 'Implementing a custom MessageDigest is error-prone. National Institute of Standards and
     Technology(NIST) recommends the use of SHA-224, SHA-256, SHA-384, SHA-512, SHA-512/224, or SHA-512/256.'
@@ -9,9 +9,8 @@ scope:
   languages:
     - java
 definition:
-  - and:
-    - cond_type: "pattern"
-      operator: "equals"
-      value: class $CLAZZ extends java.security.MessageDigest {
-               ...
-             }
+  - cond_type: "pattern"
+    operator: "equals"
+    value: class $CLAZZ extends java.security.MessageDigest {
+              ...
+            }

@@ -1,5 +1,5 @@
 metadata:
-  id: CKV_SAST_29
+  id: CKV3_SAST_17
   name: 'Ensure DES algorithm is not used'
   guidelines: 'Triple DES (also known as 3DES or DESede) is considered strong ciphers for modern
     applications. NIST recommends the usage of AES block ciphers instead of 3DES.'
@@ -9,12 +9,11 @@ scope:
   languages:
     - java
 definition:
-  - and:
-      - cond_type: "filter"
-        attribute: "pattern"
-        operator: "within"
-        value: javax.crypto.Cipher.getInstance("$ALG")
-      - cond_type: "variable"
-        variable: "$ALG"
-        operator: "regex_match"
-        value: "^(DES)/.*"
+  - cond_type: "filter"
+    attribute: "pattern"
+    operator: "within"
+    value: javax.crypto.Cipher.getInstance("$ALG")
+  - cond_type: "variable"
+    variable: "$ALG"
+    operator: "regex_match"
+    value: "^(DES)/.*"

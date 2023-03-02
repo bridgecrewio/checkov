@@ -55,8 +55,8 @@ class Registry(BaseCheckRegistry):
                     try:
                         raw_check = yaml.safe_load(f)
                         parsed_rule = self.parser.parse_raw_check_to_semgrep(raw_check, str(file))
-                    except Exception:
-                        logging.warning(f'cant parse rule file {file}')
+                    except Exception as e:
+                        logging.warning(f'Cannot parse rule file {file} due to: {e}')
                         continue
                     if self._should_skip_check(parsed_rule):
                         continue
