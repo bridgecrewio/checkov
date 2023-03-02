@@ -7,7 +7,7 @@ import logging
 import os
 import re
 from pathlib import Path
-from typing import TYPE_CHECKING, cast, Optional, Iterable, Any, List, Tuple
+from typing import TYPE_CHECKING, cast, Optional, Iterable, Any, List
 
 import requests
 from detect_secrets.filters.heuristic import is_potential_uuid
@@ -38,7 +38,7 @@ from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.dockerfile import is_docker_file
 from checkov.common.util.secrets import omit_secret_value_from_line
 from checkov.runner_filter import RunnerFilter
-from checkov.secrets.consts import ValidationStatus, VerifySecretsResult, GIT_HISTORY_NOT_BEEN_REMOVED
+from checkov.secrets.consts import ValidationStatus, VerifySecretsResult
 from checkov.secrets.coordinator import EnrichedSecret, SecretsCoordinator
 from checkov.secrets.plugins.load_detectors import get_runnable_plugins
 from checkov.secrets.scan_git_history import GitHistoryScanner

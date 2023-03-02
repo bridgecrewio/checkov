@@ -10,7 +10,7 @@ from detect_secrets.core import scan
 from typing_extensions import TypedDict
 
 from checkov.secrets.consts import GIT_HISTORY_NOT_BEEN_REMOVED
-from checkov.common.output.secrets_record import COMMIT_REMOVED_STR, COMMIT_ADDED_STR
+
 if TYPE_CHECKING:
     from detect_secrets import SecretsCollection
     from detect_secrets.core.potential_secret import PotentialSecret
