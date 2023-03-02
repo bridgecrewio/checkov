@@ -217,7 +217,7 @@ class Runner(BaseRunner[None]):
                 result: _CheckResult = {'result': CheckResult.FAILED}
                 try:
                     if runner_filter.enable_git_history_secret_scan and code_line is not None:
-                        line_text = code_line or ''
+                        line_text = code_line
                     else:
                         line_text = linecache.getline(secret.filename, secret.line_number)
                 except SyntaxError as e:
