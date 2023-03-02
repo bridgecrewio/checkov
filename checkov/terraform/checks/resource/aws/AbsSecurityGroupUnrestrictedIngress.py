@@ -94,7 +94,7 @@ class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
             if ipv6_cidr_blocks and ipv6_cidr_blocks[0] is not None and \
                     any(ip in ['::/0', '0000:0000:0000:0000:0000:0000:0000:0000/0'] for ip in ipv6_cidr_blocks[0]):
                 return True
-            if len(ipv6_cidr_blocks) == 0 and len(cidr_blocks) == 0 \
+            if not ipv6_cidr_blocks and not cidr_blocks \
                     and conf.get('security_groups') is None \
                     and conf.get('source_security_group_id') is None:
                 return True
