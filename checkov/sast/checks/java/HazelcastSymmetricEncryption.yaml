@@ -1,5 +1,5 @@
 metadata:
-  id: CKV_SAST_31
+  id: CKV3_SAST_15
   name: 'Ensure hazelcast symmetric encryption is not used'
   guidelines: 'The network communications for Hazelcast is configured to use a symmetric cipher (probably DES
     or Blowfish). Those ciphers alone do not provide integrity or secure authentication. The use of
@@ -10,8 +10,7 @@ scope:
   languages:
     - java
 definition:
-  - and:
-    - cond_type: "pattern"
-      operator: "equals"
-      value: "new com.hazelcast.config.SymmetricEncryptionConfig()"
+  - cond_type: "pattern"
+    operator: "equals"
+    value: "new com.hazelcast.config.SymmetricEncryptionConfig()"
 

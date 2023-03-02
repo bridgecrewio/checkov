@@ -1,5 +1,5 @@
 metadata:
-  id: CKV_SAST_27
+  id: CKV3_SAST_14
   name: 'Ensure CORS is not enabled'
   guidelines: 'Prior to HTML5, Web browsers enforced the Same Origin Policy which ensures that in order for
     JavaScript to access the contents of a Web page, both the JavaScript and the Web page must
@@ -18,19 +18,18 @@ scope:
   languages:
     - java
 definition:
-  - and:
-    - or:
-      - cond_type: "pattern"
-        operator: "equals"
-        value: "(HttpServletResponse $RES).setHeader(\"$HEADER\", \"$VAL\")"
-      - cond_type: "pattern"
-        operator: "equals"
-        value: "(HttpServletResponse $RES).addHeader(\"$HEADER\", \"$VAL\")"
-    - cond_type: "variable"
-      variable: "$HEADER"
-      operator: "regex_match"
-      value: "(?i)(Access-Control-Allow-Origin)"
-    - cond_type: "variable"
-      variable: "$VAL"
-      operator: "regex_match"
-      value: "(\\*|null)"
+  - or:
+    - cond_type: "pattern"
+      operator: "equals"
+      value: (HttpServletResponse $RES).setHeader("$HEADER", "$VAL")
+    - cond_type: "pattern"
+      operator: "equals"
+      value: (HttpServletResponse $RES).addHeader("$HEADER", "$VAL")
+  - cond_type: "variable"
+    variable: "$HEADER"
+    operator: "regex_match"
+    value: "(?i)(Access-Control-Allow-Origin)"
+  - cond_type: "variable"
+    variable: "$VAL"
+    operator: "regex_match"
+    value: "(\\*|null)"

@@ -1,5 +1,5 @@
 metadata:
-  id: CKV_SAST_23
+  id: CKV3_SAST_19
   name: 'Ensure cookie is created with Secure flag set'
   guidelines: 'A new cookie is created without the Secure flag set. The Secure flag is a directive to the
     browser to make sure that the cookie is not sent for insecure communication (http://)'
