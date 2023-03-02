@@ -133,7 +133,8 @@ class GitHistorySecretStore:
     def __init__(self) -> None:
         self.secrets_by_file_value_type: Dict[str, List[EnrichedPotentialSecret]] = {}
 
-    def set_secret_map(self, file_results: List[PotentialSecret], file_name: str, commit_hash: str, commit: Dict[str, str]) -> None:
+    def set_secret_map(self, file_results: List[PotentialSecret],
+                       file_name: str, commit_hash: str, commit: Dict[str, str | Dict[str, str]]) -> None:
         # First find if secret was moved in the file
         equal_secret_in_commit: Dict[str, List[str]] = defaultdict(list)
         for secret in file_results:
@@ -154,7 +155,7 @@ class GitHistorySecretStore:
     def _add_new_secret(self, secret_key: str,
                         commit_hash: str,
                         secret: PotentialSecret,
-                        commit: Dict[str, str]) -> None:
+                        commit: Dict[str, str | Dict[str, str]]) -> None:
         if secret_key not in self.secrets_by_file_value_type:
             self.secrets_by_file_value_type[secret_key] = []
         else:
