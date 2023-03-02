@@ -133,7 +133,7 @@ class GitHistorySecretStore:
     def __init__(self) -> None:
         self.secrets_by_file_value_type: Dict[str, List[EnrichedPotentialSecret]] = {}
 
-    def set_secret_map(self, file_results: List[PotentialSecret], file_name: str, commit_hash: str, commit: Dict) -> None:
+    def set_secret_map(self, file_results: List[PotentialSecret], file_name: str, commit_hash: str, commit: Dict[str: str]) -> None:
         # First find if secret was moved in the file
         equal_secret_in_commit: Dict[str, List[str]] = defaultdict(list)
         for secret in file_results:
@@ -154,7 +154,7 @@ class GitHistorySecretStore:
     def _add_new_secret(self, secret_key: str,
                         commit_hash: str,
                         secret: PotentialSecret,
-                        commit: Dict) -> None:
+                        commit: Dict[str: str]) -> None:
         if secret_key not in self.secrets_by_file_value_type:
             self.secrets_by_file_value_type[secret_key] = []
         else:
@@ -202,10 +202,11 @@ class GitHistorySecretStore:
                     secret_data['removed_commit_hash'] = commit_hash
                     new_secret = copy.deepcopy(secret_data['potential_secret'])
                     new_secret.filename = rename_to
+                    code = secret_data.get('code_line')
                     temp_secrets_by_file_value_type[new_secret_key].append({'added_commit_hash': commit_hash,
                                                                             'removed_commit_hash': '',
                                                                             'potential_secret': new_secret,
-                                                                            'code_line': secret_data.get('code_line')})
+                                                                            'code_line': code})
         self.secrets_by_file_value_type.update(temp_secrets_by_file_value_type)
 
     def get_added_and_removed_commit_hash(self, key: str, secret: PotentialSecret) -> Tuple[str | None, str | None, str | None]:
