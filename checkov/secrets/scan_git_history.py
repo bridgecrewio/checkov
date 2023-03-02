@@ -203,7 +203,7 @@ class GitHistorySecretStore:
                     temp_secrets_by_file_value_type[new_secret_key].append({'added_commit_hash': commit_hash,
                                                                             'removed_commit_hash': '',
                                                                             'potential_secret': new_secret,
-                                                                            'code_line': secret_data['code_line']})
+                                                                            'code_line': secret_data.get('code_line')})
         self.secrets_by_file_value_type.update(temp_secrets_by_file_value_type)
 
     def get_added_and_removed_commit_hash(self, key: str, secret: PotentialSecret) -> Tuple[str | None, str | None, str | None]:
