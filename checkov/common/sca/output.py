@@ -33,6 +33,8 @@ if TYPE_CHECKING:
     from checkov.common.output.report import Report
     from checkov.common.typing import _LicenseStatus, _CheckResult
 
+logger = logging.getLogger(__name__)
+
 
 def create_report_license_record(
         rootless_file_path: str,
@@ -522,7 +524,7 @@ def get_license_statuses(packages: list[dict[str, Any]]) -> list[_LicenseStatus]
             "failing when trying to get licenses-violations. it is apparently some unexpected "
             "connection issue. please try later. in case it keep happening. please report."
         )
-        logging.info(error_message, exc_info=True)
+        logger.info(error_message, exc_info=True)
 
     return []
 
@@ -550,7 +552,7 @@ async def get_license_statuses_async(session: ClientSession, packages: list[dict
             "connection issue. please try later. in case it keeps happening, please report."
             f"Error: {str(e)}"
         )
-        logging.info(error_message, exc_info=True)
+        logger.info(error_message, exc_info=True)
 
         return {'image_name': image_name, 'licenses': []}
 

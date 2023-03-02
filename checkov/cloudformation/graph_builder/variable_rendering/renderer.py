@@ -22,6 +22,8 @@ if TYPE_CHECKING:
 _EdgeEvaluationMethodsEntry: TypeAlias = "dict[str, Callable[[Any, dict[str, Any]], tuple[str | None, str | None]]]"
 _VertexEvaluationMethodsEntry: TypeAlias = "dict[str, Callable[[Any], str | None]]"
 
+logger = logging.getLogger(__name__)
+
 
 class _EvaluatedEdge(TypedDict):
     vertex_index: int
@@ -303,7 +305,7 @@ class CloudformationVariableRenderer(VariableRenderer["CloudformationLocalGraph"
                         dest_vertex_attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.RESOURCE:
                     return str(evaluated_value), attribute_at_dest
         except TypeError as e:
-            logging.debug(f"unable to _evaluate_getatt_connection: {e}")
+            logger.debug(f"unable to _evaluate_getatt_connection: {e}")
 
         return None, None
 
@@ -365,7 +367,7 @@ class CloudformationVariableRenderer(VariableRenderer["CloudformationLocalGraph"
             operand_if_true = value[1]
             operand_if_false = value[2]
         except KeyError:
-            logging.info(f'Unexpected input for cfn if evaluation: {value}. '
+            logger.info(f'Unexpected input for cfn if evaluation: {value}. '
                          f'Template: {condition_vertex_attributes[CustomAttributes.FILE_PATH]}'
                          f'Block: {condition_vertex_attributes[CustomAttributes.BLOCK_NAME]}')
             return evaluated_value, evaluated_value_hierarchy
@@ -454,7 +456,7 @@ class CloudformationVariableRenderer(VariableRenderer["CloudformationLocalGraph"
                     (evaluated_value, changed_origin_id, attribute_at_dest) = self._evaluate_cfn_function(
                         edge, origin_vertex, cfn_evaluation_function, val_to_eval, dest_vertex_attributes)
                 except KeyError:
-                    logging.info(f'Failed to evalue cfn function. val_to_eval: {val_to_eval}')
+                    logger.info(f'Failed to evalue cfn function. val_to_eval: {val_to_eval}')
                     continue
 
                 if evaluated_value and evaluated_value != original_value:

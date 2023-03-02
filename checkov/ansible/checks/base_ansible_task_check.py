@@ -13,6 +13,8 @@ from checkov.common.models.enums import CheckResult
 if TYPE_CHECKING:
     from checkov.common.models.enums import CheckCategories
 
+logger = logging.getLogger(__name__)
+
 
 class BaseAnsibleTaskCheck(BaseCheck):
     def __init__(
@@ -66,7 +68,7 @@ class BaseAnsibleTaskCheck(BaseCheck):
         module_conf = next((conf[module] for module in self.supported_modules if module in conf), None)
         if not module_conf:
             # this should actually never happen, but better to be safe, than sorry
-            logging.info(f"Failed to find supported module {self.supported_modules} in {json.dumps(conf)}")
+            logger.info(f"Failed to find supported module {self.supported_modules} in {json.dumps(conf)}")
             return CheckResult.UNKNOWN, conf
 
         return self.scan_conf(module_conf)

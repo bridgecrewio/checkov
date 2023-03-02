@@ -41,10 +41,10 @@ class RunnerDependencyHandler():
                         runner_names.append(result)
                         runners_with_unmatched_deps.append(runner)
             else:
-                logging.debug(f"{runner.check_type}_runner declares no system dependency checks required.")
+                logger.debug(f"{runner.check_type}_runner declares no system dependency checks required.")
                 continue
 
         if runners_with_unmatched_deps:
-            logging.info(f"The following frameworks will automatically be disabled due to missing system dependencies: {','.join(runner_names)}")
+            logger.info(f"The following frameworks will automatically be disabled due to missing system dependencies: {','.join(runner_names)}")
             for runner in runners_with_unmatched_deps:
                 self.runner_registry.remove_runner(runner)

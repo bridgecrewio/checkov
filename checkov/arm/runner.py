@@ -28,6 +28,8 @@ if TYPE_CHECKING:
     from checkov.common.graph.checks_infra.registry import BaseRegistry
     from checkov.common.typing import LibraryGraphConnector, _CheckResult
 
+logger = logging.getLogger(__name__)
+
 
 class Runner(BaseRunner[ArmGraphManager]):
     check_type = CheckType.ARM  # noqa: CCE003  # a static attribute
@@ -89,9 +91,9 @@ class Runner(BaseRunner[ArmGraphManager]):
         self.definitions, self.definitions_raw = get_files_definitions(files_list, filepath_fn)
 
         if CHECKOV_CREATE_GRAPH and self.graph_registry and self.graph_manager:
-            logging.info("Creating ARM graph")
+            logger.info("Creating ARM graph")
             local_graph = self.graph_manager.build_graph_from_definitions(definitions=self.definitions)
-            logging.info("Successfully created ARM graph")
+            logger.info("Successfully created ARM graph")
 
             self.graph_manager.save_graph(local_graph)
 
@@ -124,7 +126,7 @@ class Runner(BaseRunner[ArmGraphManager]):
 
             if isinstance(self.definitions[arm_file], dict):
                 arm_context_parser = ContextParser(arm_file, self.definitions[arm_file], self.definitions_raw[arm_file])
-                logging.debug(f"Template Dump for {arm_file}: {self.definitions[arm_file]}")
+                logger.debug(f"Template Dump for {arm_file}: {self.definitions[arm_file]}")
 
                 if ArmElements.RESOURCES in self.definitions[arm_file]:
                     arm_context_parser.evaluate_default_parameters()
@@ -149,7 +151,7 @@ class Runner(BaseRunner[ArmGraphManager]):
                         resource_id = arm_context_parser.extract_arm_resource_id(resource)
                         resource_name = arm_context_parser.extract_arm_resource_name(resource)
                         if resource_id is None or resource_name is None:
-                            logging.info(f"Could not determine 'resource_id' of Resource {resource}")
+                            logger.info(f"Could not determine 'resource_id' of Resource {resource}")
                             continue
 
                         report.add_resource(f"{arm_file}:{resource_id}")

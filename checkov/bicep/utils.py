@@ -19,6 +19,8 @@ BICEP_POSSIBLE_ENDINGS = [".bicep"]
 BICEP_START_LINE = "__start_line__"
 BICEP_END_LINE = "__end_line__"
 
+logger = logging.getLogger(__name__)
+
 
 def get_scannable_file_paths(
     root_folder: str | Path | None = None, files: list[str] | None = None, excluded_paths: list[str] | None = None
@@ -85,7 +87,7 @@ def create_definitions(
         definitions, definitions_raw, parsing_errors = get_folder_definitions(root_folder, runner_filter.excluded_paths)
 
     if parsing_errors:
-        logging.warning(f"[bicep] found errors while parsing definitions: {parsing_errors}")
+        logger.warning(f"[bicep] found errors while parsing definitions: {parsing_errors}")
 
     return definitions, definitions_raw
 

@@ -17,6 +17,8 @@ if TYPE_CHECKING:
     from dockerfile_parse.parser import _Instruction  # only in extra_stubs
     from checkov.common.graph.graph_builder.local_graph import _Block
 
+logger = logging.getLogger(__name__)
+
 
 class DockerfileLocalGraph(LocalGraph[Block]):
     def __init__(self, definitions: dict[str, dict[str, list[_Instruction]]]) -> None:
@@ -27,7 +29,7 @@ class DockerfileLocalGraph(LocalGraph[Block]):
 
     def build_graph(self, render_variables: bool = False) -> None:
         self._create_vertices()
-        logging.debug(f"[DockerfileLocalGraph] created {len(self.vertices)} vertices")
+        logger.debug(f"[DockerfileLocalGraph] created {len(self.vertices)} vertices")
 
         for i, vertex in enumerate(self.vertices):
             self.vertices_by_block_type[vertex.block_type].append(i)
@@ -38,7 +40,7 @@ class DockerfileLocalGraph(LocalGraph[Block]):
             self.out_edges[i] = []
 
         self._create_edges()
-        logging.debug(f"[DockerfileLocalGraph] created {len(self.edges)} edges")
+        logger.debug(f"[DockerfileLocalGraph] created {len(self.edges)} edges")
 
     def _create_vertices(self) -> None:
         for file_path, definition in self.definitions.items():
@@ -61,7 +63,7 @@ class DockerfileLocalGraph(LocalGraph[Block]):
         for instruction in instructions:
             resource_type = ResourceType.__dict__.get(instruction_type)
             if not resource_type:
-                logging.warning(f"An unsupported instruction {instruction_type} was used in {file_path}")
+                logger.warning(f"An unsupported instruction {instruction_type} was used in {file_path}")
                 continue
 
             config = {

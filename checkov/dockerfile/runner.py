@@ -39,6 +39,8 @@ if TYPE_CHECKING:
     from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
     from checkov.common.images.image_referencer import Image
 
+logger = logging.getLogger(__name__)
+
 
 class Runner(ImageReferencerMixin["dict[str, dict[str, list[_Instruction]]]"], BaseRunner[DockerfileGraphManager]):
     check_type = CheckType.DOCKERFILE  # noqa: CCE003  # a static attribute
@@ -100,9 +102,9 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, list[_Instruction]]]"], B
         self.definitions, self.definitions_raw = get_files_definitions(files_list, filepath_fn)
 
         if CHECKOV_CREATE_GRAPH and self.graph_registry and self.graph_manager:
-            logging.info("Creating Dockerfile graph")
+            logger.info("Creating Dockerfile graph")
             local_graph = self.graph_manager.build_graph_from_definitions(definitions=self.definitions)
-            logging.info("Successfully created Dockerfile graph")
+            logger.info("Successfully created Dockerfile graph")
 
             self.graph_manager.save_graph(local_graph)
 

@@ -30,6 +30,8 @@ _Definitions = TypeVar("_Definitions")
 
 INVALID_IMAGE_NAME_CHARS = ("[", "{", "(", "<", "$")
 
+logger = logging.getLogger(__name__)
+
 
 def fix_related_resource_ids(report: Report | None, tmp_dir: str) -> None:
     """Remove tmp dir prefix from 'relatedResourceId'"""
@@ -99,7 +101,7 @@ class ImageReferencer:
         :return: short image id sha that is inspected. In case inspect has failed None will be returned.
         """
         try:
-            logging.info("Inspecting docker image {}".format(image_name))
+            logger.info("Inspecting docker image {}".format(image_name))
             client = docker.from_env()
             try:
                 image = client.images.get(image_name)
@@ -108,7 +110,7 @@ class ImageReferencer:
                 return cast(str, image.short_id)
             return cast(str, image.short_id)
         except Exception:
-            logging.debug(f"failed to pull docker image={image_name}", exc_info=True)
+            logger.debug(f"failed to pull docker image={image_name}", exc_info=True)
             return ""
 
 
@@ -146,7 +148,7 @@ class ImageReferencerMixin(Generic[_Definitions]):
         if not images:
             return None
 
-        logging.info(f"Found {len(images)} image references {[image.name for image in images]}")
+        logger.info(f"Found {len(images)} image references {[image.name for image in images]}")
 
         report = Report(CheckType.SCA_IMAGE)
         root_path = Path(root_path) if root_path else None
@@ -206,7 +208,7 @@ class ImageReferencerMixin(Generic[_Definitions]):
     ) -> None:
         """Adds an image record to the given report, if possible"""
         if cached_results:
-            logging.info(f"Found cached scan results of image {image.name}")
+            logger.info(f"Found cached scan results of image {image.name}")
             image_scanning_report: dict[str, Any] = docker_image_scanning_integration.create_report(
                 twistcli_scan_result=cached_results,
                 bc_platform_integration=bc_integration,
@@ -250,7 +252,7 @@ class ImageReferencerMixin(Generic[_Definitions]):
 
             image_id = ImageReferencer.inspect(image.name)
             if not image_id:
-                logging.info(f"(IR debug) No image with image.name={image.name} found. hence image_id={image_id}.")
+                logger.info(f"(IR debug) No image with image.name={image.name} found. hence image_id={image_id}.")
                 return None
 
             scan_result = runner.scan(image_id, dockerfile_path, runner_filter)
@@ -274,7 +276,7 @@ class ImageReferencerMixin(Generic[_Definitions]):
                 license_statuses=license_statuses,
             )
         else:
-            logging.info(f"No cache hit for image {image.name}")
+            logger.info(f"No cache hit for image {image.name}")
 
     @staticmethod
     def _extract_image_short_id(scan_result: dict[str, Any]) -> str:

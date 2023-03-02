@@ -11,6 +11,8 @@ from json.scanner import NUMBER_RE  # type:ignore[import]  # is not explicitly e
 from checkov.common.parsers.node import StrNode, DictNode, ListNode
 from checkov.common.parsers.json.errors import NullError, DuplicateError, DecodeError
 
+logger = logging.getLogger(__name__)
+
 
 class SimpleDecoder(JSONDecoder):
     def __init__(
@@ -349,7 +351,7 @@ class Decoder(JSONDecoder):
             try:
                 value, end = scan_once(s, end)
             except StopIteration as err:
-                logging.debug("Failed to scan string", exc_info=True)
+                logger.debug("Failed to scan string", exc_info=True)
                 raise DecodeError('Expecting value', s, end_mark.line) from err
             key_str = StrNode(key, beg_mark, end_mark)
             pairs_append((key_str, value))

@@ -42,7 +42,7 @@ if TYPE_CHECKING:
 UNCONVERTED_SUFFIXES = ['Ref', 'Condition']
 FN_PREFIX = 'Fn::'
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class ContentType(str, Enum):
@@ -250,23 +250,23 @@ def load(filename: str | Path, content_type: ContentType) -> tuple[dict[str, Any
         try:
             content = str(from_path(file_path).best())
         except UnicodeDecodeError as e:
-            LOGGER.error(f"Encoding for file {file_path} could not be detected or read. Please try encoding the file as UTF-8.")
+            logger.error(f"Encoding for file {file_path} could not be detected or read. Please try encoding the file as UTF-8.")
             raise e
     else:
         try:
             content = file_path.read_text()
         except UnicodeDecodeError:
-            LOGGER.info(f"Encoding for file {file_path} is not UTF-8, trying to detect it")
+            logger.info(f"Encoding for file {file_path} is not UTF-8, trying to detect it")
             content = str(from_path(file_path).best())
 
     if content_type == ContentType.CFN and "Resources" not in content:
-        logging.debug(f'File {file_path} is expected to be a CFN template but has no Resources attribute')
+        logger.debug(f'File {file_path} is expected to be a CFN template but has no Resources attribute')
         return {}, []
     elif content_type == ContentType.SLS and "provider" not in content:
-        logging.debug(f'File {file_path} is expected to be an SLS template but has no provider attribute')
+        logger.debug(f'File {file_path} is expected to be an SLS template but has no provider attribute')
         return {}, []
     elif content_type == ContentType.TFPLAN and "planned_values" not in content:
-        logging.debug(f'File {file_path} is expected to be a TFPLAN file but has no planned_values attribute')
+        logger.debug(f'File {file_path} is expected to be a TFPLAN file but has no planned_values attribute')
         return {}, []
 
     file_lines = [(idx + 1, line) for idx, line in enumerate(content.splitlines(keepends=True))]
@@ -276,7 +276,7 @@ def load(filename: str | Path, content_type: ContentType) -> tuple[dict[str, Any
         if file_size > MAX_IAC_FILE_SIZE:
             # large JSON files take too much time, when parsed with `pyyaml`, compared to a normal 'json.loads()'
             # with start/end line numbers of 0 takes only a few seconds
-            logging.info(
+            logger.info(
                 f"File {file_path} has a size of {file_size} which is bigger than the supported 50mb, "
                 "therefore file lines will default to 0."
                 "This limit can be adjusted via the environment variable 'CHECKOV_MAX_IAC_FILE_SIZE'."

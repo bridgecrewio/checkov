@@ -41,6 +41,8 @@ if TYPE_CHECKING:
     from typing_extensions import Literal
 
 
+logger = logging.getLogger(__name__)
+
 class Runner(ImageReferencerMixin[None], BaseRunner[BicepGraphManager]):
     check_type = CheckType.BICEP  # noqa: CCE003  # a static attribute
 
@@ -108,9 +110,9 @@ class Runner(ImageReferencerMixin[None], BaseRunner[BicepGraphManager]):
             self.context = build_definitions_context(definitions=self.definitions, definitions_raw=self.definitions_raw)
 
             if CHECKOV_CREATE_GRAPH:
-                logging.info("Creating Bicep graph")
+                logger.info("Creating Bicep graph")
                 local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
-                logging.info("Successfully created Bicep graph")
+                logger.info("Successfully created Bicep graph")
 
                 self.graph_manager.save_graph(local_graph)
                 self.definitions, self.breadcrumbs = convert_graph_vertices_to_tf_definitions(

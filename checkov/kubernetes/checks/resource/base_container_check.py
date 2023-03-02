@@ -7,6 +7,8 @@ from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
 from checkov.kubernetes.checks.resource.registry import registry
 
+logger = logging.getLogger(__name__)
+
 
 class BaseK8sContainerCheck(BaseK8Check):
     TEMPLATE_ENTITIES = (
@@ -58,7 +60,7 @@ class BaseK8sContainerCheck(BaseK8Check):
                 spec = conf["spec"]
                 metadata = conf.get("metadata", {})
             except KeyError:
-                logging.info(f"failed to extract {evaluated_key_prefix} for {self.entity_path}")
+                logger.info(f"failed to extract {evaluated_key_prefix} for {self.entity_path}")
                 return CheckResult.UNKNOWN
         elif self.entity_type in "PodTemplate":
             evaluated_key_prefix = "template/spec"
@@ -66,7 +68,7 @@ class BaseK8sContainerCheck(BaseK8Check):
                 spec = conf["template"]["spec"]
                 metadata = conf["template"].get("metadata", {})
             except KeyError:
-                logging.info(f"failed to extract {evaluated_key_prefix} for {self.entity_path}")
+                logger.info(f"failed to extract {evaluated_key_prefix} for {self.entity_path}")
                 return CheckResult.UNKNOWN
         elif self.entity_type in BaseK8sContainerCheck.TEMPLATE_ENTITIES:
             evaluated_key_prefix = "spec/template/spec"
@@ -83,7 +85,7 @@ class BaseK8sContainerCheck(BaseK8Check):
             except (KeyError, TypeError):
                 return CheckResult.UNKNOWN
         else:
-            logging.info(f"entity type {self.entity_type} not supported")
+            logger.info(f"entity type {self.entity_type} not supported")
             return CheckResult.UNKNOWN
 
         containers: List[Dict[str, Any]] = (

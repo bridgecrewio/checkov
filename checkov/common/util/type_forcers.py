@@ -9,6 +9,8 @@ import yaml
 
 T = TypeVar("T")
 
+logger = logging.getLogger(__name__)
+
 
 @overload
 def force_list(var: list[T]) -> list[T]:
@@ -72,7 +74,7 @@ def is_json(data: str) -> bool:
         parsed = json.loads(data)
         return isinstance(parsed, dict)
     except (TypeError, ValueError):
-        logging.debug(f"could not parse json data: {data}")
+        logger.debug(f"could not parse json data: {data}")
         return False
 
 
@@ -81,7 +83,7 @@ def is_yaml(data: str) -> bool:
         parsed = yaml.safe_load(data)
         return isinstance(parsed, dict)
     except yaml.YAMLError:
-        logging.debug(f"could not parse yaml data: {data}")
+        logger.debug(f"could not parse yaml data: {data}")
         return False
 
 
@@ -142,5 +144,5 @@ def convert_prisma_policy_filter_to_dict(filter_string: str) -> Dict[Any, Any]:
                 f_name, f_value = f.split('=')
                 filter_params[f_name] = f_value
         except (IndexError, ValueError) as e:
-            logging.debug(f"Invalid filter format: {e}")
+            logger.debug(f"Invalid filter format: {e}")
     return filter_params

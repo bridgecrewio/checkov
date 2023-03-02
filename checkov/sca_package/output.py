@@ -17,6 +17,9 @@ from checkov.common.sca.commons import UNFIXABLE_VERSION
 from checkov.common.typing import _LicenseStatus
 
 
+logger = logging.getLogger(__name__)
+
+
 @dataclass
 class CveCount:
     total: int = 0
@@ -80,7 +83,7 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
     for record in itertools.chain(*cve_records):
         if not record.vulnerability_details:
             #  this shouldn't happen
-            logging.error(f"'vulnerability_details' is not set for {record.check_id}")
+            logger.error(f"'vulnerability_details' is not set for {record.check_id}")
             continue
 
         group_by_file_path_package_map[record.file_path].setdefault(
@@ -99,7 +102,7 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
             for record in records:
                 if not record.vulnerability_details:
                     #  this shouldn't happen
-                    logging.error(f"'vulnerability_details' is not set for {record.check_id}")
+                    logger.error(f"'vulnerability_details' is not set for {record.check_id}")
                     continue
 
                 if record.check_name == SCA_PACKAGE_SCAN_CHECK_NAME:

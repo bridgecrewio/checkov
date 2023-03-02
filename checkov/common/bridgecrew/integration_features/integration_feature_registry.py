@@ -8,17 +8,19 @@ if TYPE_CHECKING:
     from checkov.common.output.report import Report
     from checkov.common.typing import _BaseRunner
 
+logger = logging.getLogger(__name__)
+
 
 class IntegrationFeatureRegistry:
     def __init__(self) -> None:
         self.features: list[BaseIntegrationFeature] = []
 
     def register(self, integration_feature: BaseIntegrationFeature) -> None:
-        logging.debug(f"Adding the IntegrationFeatureRegistry {integration_feature} with order {integration_feature.order}")
+        logger.debug(f"Adding the IntegrationFeatureRegistry {integration_feature} with order {integration_feature.order}")
         self.features.append(integration_feature)
         self.features.sort(key=lambda f: f.order)
-        logging.debug("self.features after the sort:")
-        logging.debug(self.features)
+        logger.debug("self.features after the sort:")
+        logger.debug(self.features)
 
     def run_pre_scan(self) -> None:
         for integration in self.features:

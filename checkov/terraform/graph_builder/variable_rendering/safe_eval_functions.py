@@ -19,6 +19,8 @@ https://www.terraform.io/docs/configuration/functions.html
 Not all of the functions are implemented yet. If a function doesn't exist, the original value is returned.
 """
 
+logger = logging.getLogger(__name__)
+
 
 def _find_regex_groups(pattern: str, input_str: str) -> Optional[Union[Dict[str, str], List[str]]]:
     match = re.match(pattern, input_str)
@@ -331,7 +333,7 @@ SAFE_EVAL_DICT["formatdate"] = formatdate
 
 def evaluate(input_str: str) -> Any:
     if "__" in input_str:
-        logging.debug(f"got a substring with double underscore, which is not allowed. origin string: {input_str}")
+        logger.debug(f"got a substring with double underscore, which is not allowed. origin string: {input_str}")
         return input_str
     evaluated = eval(input_str, {"__builtins__": None}, SAFE_EVAL_DICT)  # nosec
     return evaluated if not isinstance(evaluated, str) else remove_unicode_null(evaluated)

@@ -16,6 +16,8 @@ from checkov.terraform.module_loading.loaders.versions_parser import (
 )
 from checkov.terraform.module_loading.module_params import ModuleParams
 
+logger = logging.getLogger(__name__)
+
 
 class RegistryLoader(ModuleLoader):
     modules_versions_cache: Dict[str, List[str]] = {}  # noqa: CCE003  # public data
@@ -83,7 +85,7 @@ class RegistryLoader(ModuleLoader):
             return ModuleContent(dir=module_params.dest_dir)
 
         best_version = module_params.best_version
-        logging.debug(
+        logger.debug(
             f"Best version for {module_params.module_source} is {best_version} based on the version constraint {module_params.version}")
         request_download_url = "/".join((module_params.REGISTRY_URL_PREFIX, module_params.module_source, best_version, "download"))
         try:

@@ -15,6 +15,8 @@ from checkov.policies_3d.record import Policy3dRecord
 from checkov.policies_3d.checks_infra.base_check import Base3dPolicyCheck
 from checkov.runner_filter import RunnerFilter
 
+logger = logging.getLogger(__name__)
+
 
 class CVECheckAttribute(str, Enum):
     RISK_FACTORS = "risk_factors"
@@ -48,7 +50,7 @@ class Policy3dRunner(BasePostRunner):
         report = Report(self.check_type)
 
         if not checks or not scan_reports:
-            logging.debug("No checks or reports scan.")
+            logger.debug("No checks or reports scan.")
             return report
 
         self.pbar.initiate(len(checks))
@@ -116,7 +118,7 @@ class Policy3dRunner(BasePostRunner):
                             image_related_resource = image_result.get('relatedResourceId')
                             image_name = image_result.get('dockerImageName')
                             if not image_related_resource or not image_name:
-                                logging.debug(
+                                logger.debug(
                                     "[policies3d/runner](solve_check_cve) Found vulnerabilities of an image without a related resource or image name, skipping")
                                 break
                             for cve in matching_cves:

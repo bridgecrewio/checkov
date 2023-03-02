@@ -24,6 +24,8 @@ from checkov.common.util.tqdm_utils import ProgressBar
 SLEEP_DURATION = 2
 MAX_SLEEP_DURATION = 60
 
+logger = logging.getLogger(__name__)
+
 
 class Scanner:
     def __init__(self, pbar: ProgressBar | None = None, root_folder: str | Path | None = None) -> None:
@@ -55,7 +57,7 @@ class Scanner:
         if os.getenv("PYCHARM_HOSTED") == "1":
             # PYCHARM_HOSTED env variable equals 1 when running via Pycharm.
             # it avoids us from crashing, which happens when using multiprocessing via Pycharm's debug-mode
-            logging.warning("Running the scans in sequence for avoiding crashing when running via Pycharm")
+            logger.warning("Running the scans in sequence for avoiding crashing when running via Pycharm")
             scan_results: list[dict[str, Any] | None] = []
             for input_path in input_paths:
                 scan_results.append(await self.run_scan(input_path))
@@ -70,7 +72,7 @@ class Scanner:
             if os.getenv("PYCHARM_HOSTED") == "1":
                 # PYCHARM_HOSTED env variable equals 1 when running via Pycharm.
                 # it avoids us from crashing, which happens when using multiprocessing via Pycharm's debug-mode
-                logging.warning("Running the scans in sequence for avoiding crashing when running via Pycharm")
+                logger.warning("Running the scans in sequence for avoiding crashing when running via Pycharm")
                 scan_results = [
                     await self.execute_twistcli_scan(input_path) if self.should_rescan_for_result(scan_results[idx])
                     else scan_results[idx] for idx, input_path in enumerate(input_paths)
@@ -103,7 +105,7 @@ class Scanner:
     async def run_scan(self, input_path: Path) -> dict[str, Any] | None:
         try:
             self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(input_path, self.root_folder)})
-            logging.info(f"Start to scan package file {input_path}")
+            logger.info(f"Start to scan package file {input_path}")
 
             request_body = {
                 "compressedFileBody": compress_file_gzip_base64(str(input_path)),
@@ -121,12 +123,12 @@ class Scanner:
             response_json = response.json()
 
             if response_json["status"] == "already_exist":
-                logging.info(f"result for {input_path} exists in the cache")
+                logger.info(f"result for {input_path} exists in the cache")
                 return self.parse_api_result(input_path, response_json["outputData"])
 
             return self.run_scan_busy_wait(input_path, response_json['id'])
         except Exception:
-            logging.debug(
+            logger.debug(
                 "[sca_package] - Unexpected failure happened during package scanning.\n"
                 "the scanning is terminating. details are below.\n"
                 "please try again. if it is repeated, please report.", exc_info=True)
@@ -147,11 +149,11 @@ class Scanner:
             current_state = response_json["outputType"]
 
             if current_state == "Error":
-                logging.error(response_json["outputData"])
+                logger.error(response_json["outputData"])
                 return {}
 
             if total_sleeping_time > MAX_SLEEP_DURATION:
-                logging.info(f"Timeout, slept for {total_sleeping_time}")
+                logger.info(f"Timeout, slept for {total_sleeping_time}")
                 return {}
 
             time.sleep(SLEEP_DURATION)
@@ -179,12 +181,12 @@ class Scanner:
         stdout, stderr = await process.communicate()
 
         # log output for debugging
-        logging.debug(stdout.decode())
+        logger.debug(stdout.decode())
 
         exit_code = await process.wait()
 
         if exit_code:
-            logging.error(stderr.decode())
+            logger.error(stderr.decode())
             return {}
 
         # read the report file

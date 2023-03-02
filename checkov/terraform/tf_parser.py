@@ -24,6 +24,8 @@ from checkov.terraform.modules.module_utils import load_or_die_quietly, safe_ind
     clean_parser_types, serialize_definitions
 from checkov.terraform.modules.module_objects import TFModule, TFDefinitionKey
 
+logger = logging.getLogger(__name__)
+
 
 def _filter_ignored_paths(root: str, paths: list[str], excluded_paths: list[str] | None) -> None:
     filter_ignored_paths(root, paths, excluded_paths)
@@ -158,7 +160,7 @@ class TFParser:
 
         force_final_module_load = False
         for i in range(0, 10):
-            logging.debug(f"Module load loop {i}")
+            logger.debug(f"Module load loop {i}")
             dir_filter(directory)
             has_more_modules = self._load_modules(
                 directory, module_loader_registry, dir_filter,
@@ -295,7 +297,7 @@ class TFParser:
 
                         self.external_modules_source_map[(source, version)] = content_path
                     except Exception as e:
-                        logging.warning(f"Unable to load module - source: {source}, version: {version}, error: {str(e)}")
+                        logger.warning(f"Unable to load module - source: {source}, version: {version}, error: {str(e)}")
 
         if all_module_definitions:
             deep_merge.merge(self.out_definitions, all_module_definitions)
@@ -375,8 +377,8 @@ class TFParser:
                 try:
                     module.add_blocks(block_type, blocks[block_type], file_path, source)
                 except Exception as e:
-                    logging.warning(f'Failed to add block {blocks[block_type]}. Error:')
-                    logging.warning(e, exc_info=False)
+                    logger.warning(f'Failed to add block {blocks[block_type]}. Error:')
+                    logger.warning(e, exc_info=False)
         return module, tf_definitions
 
     def get_file_key_with_nested_data(self, file: str, nested_data: Optional[dict[str, Any]]) -> str:
@@ -519,10 +521,10 @@ class TFParser:
     @staticmethod
     def is_valid_source(source: Any, module_call_name: str) -> bool:
         if not isinstance(source, str):
-            logging.debug(f"Skipping loading of {module_call_name} as source is not a string, it is: {source}")
+            logger.debug(f"Skipping loading of {module_call_name} as source is not a string, it is: {source}")
             return False
         elif source in ['./', '.']:
-            logging.debug(f"Skipping loading of {module_call_name} as source is the current dir")
+            logger.debug(f"Skipping loading of {module_call_name} as source is the current dir")
             return False
         return True
 
@@ -549,7 +551,7 @@ class TFParser:
     def get_content_path(module_loader_registry: ModuleLoaderRegistry, root_dir: str, source: str, version: str) -> Optional[str]:
         content = module_loader_registry.load(root_dir, source, version)
         if not content.loaded():
-            logging.info(f'Got no content for {source}:{version}')
+            logger.info(f'Got no content for {source}:{version}')
             return
         return content.path()
 

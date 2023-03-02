@@ -76,6 +76,8 @@ PROHIBITED_FILES = ['Pipfile.lock', 'yarn.lock', 'package-lock.json', 'requireme
 
 MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is default limit
 
+logger = logging.getLogger(__name__)
+
 
 class Runner(BaseRunner[None]):
     check_type = CheckType.SECRETS  # noqa: CCE003  # a static attribute
@@ -120,7 +122,7 @@ class Runner(BaseRunner[None]):
             policies_list = customer_run_config.get('secretsPolicies', [])
             if policies_list:
                 runnable_plugins: dict[str, str] = get_runnable_plugins(policies_list)
-                logging.info(f"Found {len(runnable_plugins)} runnable plugins")
+                logger.info(f"Found {len(runnable_plugins)} runnable plugins")
                 if len(runnable_plugins) > 0:
                     plugins_index += 1
                 for name, runnable_plugin in runnable_plugins.items():
@@ -132,10 +134,10 @@ class Runner(BaseRunner[None]):
                         'path': f'file://{work_path}/runnable_plugin_{plugins_index}.py'
                     })
                     plugins_index += 1
-                    logging.info(f"Loaded runnable plugin {name}")
+                    logger.info(f"Loaded runnable plugin {name}")
         # load internal regex detectors
         detector_path = f"{current_dir}/plugins/custom_regex_detector.py"
-        logging.info(f"Custom detector found at {detector_path}. Loading...")
+        logger.info(f"Custom detector found at {detector_path}. Loading...")
         plugins_used.append({
             'name': 'CustomRegexDetector',
             'path': f'file://{detector_path}'
@@ -157,7 +159,7 @@ class Runner(BaseRunner[None]):
                     git_history_scanner = GitHistoryScanner(root_folder, secrets, runner_filter.git_history_timeout)
                     settings.disable_filters(*['detect_secrets.filters.common.is_invalid_file'])
                     git_history_scanner.scan_history()
-                    logging.info(f'Secrets scanning git history for root folder {root_folder}')
+                    logger.info(f'Secrets scanning git history for root folder {root_folder}')
                 else:
                     enable_secret_scan_all_files = runner_filter.enable_secret_scan_all_files
                     block_list_secret_scan = runner_filter.block_list_secret_scan or []
@@ -175,7 +177,7 @@ class Runner(BaseRunner[None]):
                             elif file not in PROHIBITED_FILES and f".{file.split('.')[-1]}" in SUPPORTED_FILE_EXTENSIONS or is_docker_file(
                                     file):
                                 files_to_scan.append(os.path.join(root, file))
-                    logging.info(f'Secrets scanning will scan {len(files_to_scan)} files')
+                    logger.info(f'Secrets scanning will scan {len(files_to_scan)} files')
 
             settings.disable_filters(*['detect_secrets.filters.heuristic.is_indirect_reference'])
             settings.disable_filters(*['detect_secrets.filters.heuristic.is_potential_uuid'])
@@ -192,14 +194,14 @@ class Runner(BaseRunner[None]):
                     runner_filter.enable_git_history_secret_scan)
                 check_id = getattr(secret, "check_id", SECRET_TYPE_TO_ID.get(secret.type))
                 if not check_id:
-                    logging.debug(f'Secret was filtered - no check_id for line_number {secret.line_number}')
+                    logger.debug(f'Secret was filtered - no check_id for line_number {secret.line_number}')
                     continue
                 secret_key = f'{key}_{secret.line_number}_{secret.secret_hash}'
                 if secret.secret_value and is_potential_uuid(secret.secret_value):
-                    logging.info(f"Removing secret due to UUID filtering: {hashlib.sha256(secret.secret_value.encode('utf-8')).hexdigest()}")
+                    logger.info(f"Removing secret due to UUID filtering: {hashlib.sha256(secret.secret_value.encode('utf-8')).hexdigest()}")
                     continue
                 if secret_key in secrets_duplication:
-                    logging.debug(f'Secret was filtered - secrets_duplication. line_number {secret.line_number}, check_id {check_id}')
+                    logger.debug(f'Secret was filtered - secrets_duplication. line_number {secret.line_number}, check_id {check_id}')
                     continue
                 else:
                     secrets_duplication[secret_key] = True
@@ -207,7 +209,7 @@ class Runner(BaseRunner[None]):
                 severity = metadata_integration.get_severity(check_id)
                 if not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id, severity=severity,
                                                       report_type=CheckType.SECRETS):
-                    logging.debug(
+                    logger.debug(
                         f'Check was suppress - should_run_check. check_id {check_id}')
                     continue
                 result: _CheckResult = {'result': CheckResult.FAILED}
@@ -216,7 +218,7 @@ class Runner(BaseRunner[None]):
                 except SyntaxError as e:
                     # If encoding is a problem, this is probably not human-readable source code
                     # hence there's no need in flagging this secret
-                    logging.info(f'Failed to log secret {secret.type} for file {secret.filename} because of {e}')
+                    logger.info(f'Failed to log secret {secret.type} for file {secret.filename} because of {e}')
                     continue
                 if line_text and line_text.startswith('git_commit'):
                     continue
@@ -256,7 +258,7 @@ class Runner(BaseRunner[None]):
             enriched_secrets_s3_path = bc_integration.persist_enriched_secrets(self.secrets_coordinator.get_secrets())
             if enriched_secrets_s3_path:
                 self.verify_secrets(report, enriched_secrets_s3_path)
-            logging.debug(f'report fail checks len: {len(report.failed_checks)}')
+            logger.debug(f'report fail checks len: {len(report.failed_checks)}')
 
             self.cleanup_plugin_files(work_path, plugins_index)
             if runner_filter.skip_invalid_secrets:
@@ -267,9 +269,9 @@ class Runner(BaseRunner[None]):
         for index in range(1, amount):
             try:
                 os.remove(f"{work_path}/runnable_plugin_{index}.py")
-                logging.info(f"Removed runnable plugin at index {index}")
+                logger.info(f"Removed runnable plugin at index {index}")
             except Exception as e:
-                logging.info(f"Failed removing file at index {index} due to: {e}")
+                logger.info(f"Failed removing file at index {index} due to: {e}")
 
     @staticmethod
     def _scan_files(files_to_scan: list[str], secrets: SecretsCollection, pbar: ProgressBar) -> None:
@@ -292,7 +294,7 @@ class Runner(BaseRunner[None]):
         full_file_path = os.path.join(base_path, file_path)
         file_size = os.path.getsize(full_file_path)
         if file_size > MAX_FILE_SIZE > 0:
-            logging.info(
+            logger.info(
                 f'Skipping secret scanning on {full_file_path} due to file size. To scan this file for '
                 'secrets, run this command again with the environment variable "CHECKOV_MAX_FILE_SIZE" '
                 f'to 0 or {file_size + 1}'
@@ -301,15 +303,15 @@ class Runner(BaseRunner[None]):
         try:
             start_time = datetime.datetime.now()
             file_results = [*scan.scan_file(full_file_path)]
-            logging.info(f'file {full_file_path} results len {len(file_results)}')
+            logger.info(f'file {full_file_path} results len {len(file_results)}')
             end_time = datetime.datetime.now()
             run_time = end_time - start_time
             if run_time > datetime.timedelta(seconds=10):
-                logging.info(f'Secret scanning for {full_file_path} took {run_time} seconds')
+                logger.info(f'Secret scanning for {full_file_path} took {run_time} seconds')
             return file_path, file_results
         except Exception as e:
-            logging.warning(f"Secret scanning: could not process file {full_file_path}")
-            logging.debug(e, exc_info=True)
+            logger.warning(f"Secret scanning: could not process file {full_file_path}")
+            logger.debug(e, exc_info=True)
             return file_path, []
 
     @staticmethod
@@ -357,12 +359,12 @@ class Runner(BaseRunner[None]):
     @time_it
     def verify_secrets(self, report: Report, enriched_secrets_s3_path: str) -> VerifySecretsResult:
         if not bc_integration.bc_api_key or not convert_str_to_bool(os.getenv("CKV_VALIDATE_SECRETS", False)):
-            logging.debug(
+            logger.debug(
                 'Secrets verification is off, enabled it via env var CKV_VALIDATE_SECRETS and provide an api key')
             return VerifySecretsResult.INSUFFICIENT_PARAMS
 
         if bc_integration.skip_download:
-            logging.debug('Skipping secrets verification as flag skip-download was specified')
+            logger.debug('Skipping secrets verification as flag skip-download was specified')
             return VerifySecretsResult.INSUFFICIENT_PARAMS
 
         request_body = {
@@ -378,14 +380,14 @@ class Runner(BaseRunner[None]):
                 log_json_body=False
             )
         except Exception:
-            logging.error('Failed to perform secrets verification', exc_info=True)
+            logger.error('Failed to perform secrets verification', exc_info=True)
 
         if not response:
             return VerifySecretsResult.FAILURE
 
         verification_report_presigned_url = response.json().get('verificationReportSignedUrl')
         if not verification_report_presigned_url:
-            logging.error("Response is missing verificationReportSignedUrl key, aborting")
+            logger.error("Response is missing verificationReportSignedUrl key, aborting")
             return VerifySecretsResult.FAILURE
 
         verification_report = self.get_json_verification_report(verification_report_presigned_url)
@@ -396,13 +398,13 @@ class Runner(BaseRunner[None]):
         validation_status_by_check_id_and_resource = {}
         for validation_status_entity in verification_report:
             if not all(required_key in validation_status_entity.keys() for required_key in ["violationId", "resourceId", "status"]):
-                logging.debug(f"{validation_status_entity} does not have all required keys, skipping")
+                logger.debug(f"{validation_status_entity} does not have all required keys, skipping")
                 continue
 
             key = f'{validation_status_entity["violationId"]}_{validation_status_entity["resourceId"]}'
             validation_status_by_check_id_and_resource[key] = validation_status_entity['status']
 
-        logging.debug(f'secrets verification api returned with {len(validation_status_by_check_id_and_resource.keys())} unique entries')
+        logger.debug(f'secrets verification api returned with {len(validation_status_by_check_id_and_resource.keys())} unique entries')
 
         for secrets_record in report.failed_checks:
             if hasattr(secrets_record, "validation_status"):
@@ -410,7 +412,7 @@ class Runner(BaseRunner[None]):
                 secrets_record.validation_status = validation_status_by_check_id_and_resource.get(key)
 
                 if secrets_record.validation_status is None:
-                    logging.debug(f'Failed to find verification status of {key}, setting by default to Unknown')
+                    logger.debug(f'Failed to find verification status of {key}, setting by default to Unknown')
                     secrets_record.validation_status = ValidationStatus.UNAVAILABLE.value
 
         return VerifySecretsResult.SUCCESS
@@ -421,7 +423,7 @@ class Runner(BaseRunner[None]):
         try:
             response = requests.get(presigned_url)
         except Exception:
-            logging.error('Unable to download verification report')
+            logger.error('Unable to download verification report')
 
         return response.json() if response else None
 
@@ -455,7 +457,7 @@ class Runner(BaseRunner[None]):
             try:
                 del report.failed_checks[idx]
             except Exception:
-                logging.error(f"Failed to remove suppressed secrets violations from failed_checks, report is corrupted."
+                logger.error(f"Failed to remove suppressed secrets violations from failed_checks, report is corrupted."
                               f"Tried to delete entry {idx} from failed_checks of length {len(report.failed_checks)}",
                               exc_info=True)
 
@@ -477,5 +479,5 @@ class Runner(BaseRunner[None]):
             removed_commit_hash = split_key[1] if split_key[1] != GIT_HISTORY_NOT_BEEN_REMOVED else None
             return added_commit_hash, removed_commit_hash
         except Exception as e:
-            logging.warning(f"Failed set added_commit_hash and removed_commit_hash due to: {e}")
+            logger.warning(f"Failed set added_commit_hash and removed_commit_hash due to: {e}")
             return None, None

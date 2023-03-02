@@ -17,6 +17,8 @@ if TYPE_CHECKING:
 DOCKERFILE_STARTLINE: Literal["startline"] = "startline"
 DOCKERFILE_ENDLINE: Literal["endline"] = "endline"
 
+logger = logging.getLogger(__name__)
+
 
 def get_scannable_file_paths(
     root_folder: str | Path | None = None, excluded_paths: list[str] | None = None
@@ -53,9 +55,9 @@ def get_files_definitions(
             path = filepath_fn(file) if filepath_fn else file
             definitions[path], definitions_raw[path] = result
         except TypeError:
-            logging.info(f"Dockerfile skipping {file} as it is not a valid dockerfile template")
+            logger.info(f"Dockerfile skipping {file} as it is not a valid dockerfile template")
         except UnicodeDecodeError:
-            logging.info(f"Dockerfile skipping {file} as it can't be read as text file")
+            logger.info(f"Dockerfile skipping {file} as it can't be read as text file")
 
     return definitions, definitions_raw
 

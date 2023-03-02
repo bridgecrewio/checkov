@@ -44,6 +44,8 @@ SINGLE_ITEM_SECTIONS = [
     ("service", service_registry)
 ]
 
+logger = logging.getLogger(__name__)
+
 
 class Runner(BaseRunner):
     check_type = CheckType.SERVERLESS  # noqa: CCE003  # a static attribute
@@ -119,7 +121,7 @@ class Runner(BaseRunner):
                 cf_sub_resources = cf_sub_template.get("Resources")
                 if cf_sub_resources and isinstance(cf_sub_resources, dict):
                     cf_context_parser = CfnContextParser(sls_file, cf_sub_template, definitions_raw[sls_file])
-                    logging.debug(f"Template Dump for {sls_file}: {sls_file_data}")
+                    logger.debug(f"Template Dump for {sls_file}: {sls_file_data}")
                     cf_context_parser.evaluate_default_refs()
                     for resource_name, resource in cf_sub_resources.items():
                         if not isinstance(resource, DictNode):

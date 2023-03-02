@@ -14,6 +14,8 @@ from checkov.common.graph.graph_manager import GraphManager
 if TYPE_CHECKING:
     from checkov.common.typing import LibraryGraphConnector
 
+logger = logging.getLogger(__name__)
+
 
 class CloudformationGraphManager(GraphManager[CloudformationLocalGraph, "dict[str, dict[str, Any]]"]):
     def __init__(self, db_connector: LibraryGraphConnector, source: str = GraphSource.CLOUDFORMATION) -> None:
@@ -28,7 +30,7 @@ class CloudformationGraphManager(GraphManager[CloudformationLocalGraph, "dict[st
         download_external_modules: bool = False,
         excluded_paths: Optional[List[str]] = None,
     ) -> Tuple[CloudformationLocalGraph, dict[str, dict[str, Any]]]:
-        logging.info(f"[CloudformationGraphManager] Parsing files in source dir {source_dir}")
+        logger.info(f"[CloudformationGraphManager] Parsing files in source dir {source_dir}")
         parsing_errors = {} if parsing_errors is None else parsing_errors
         definitions, definitions_raw = get_folder_definitions(source_dir, excluded_paths, parsing_errors)  # type:ignore[arg-type]
         local_graph = self.build_graph_from_definitions(definitions, render_variables)
@@ -40,7 +42,7 @@ class CloudformationGraphManager(GraphManager[CloudformationLocalGraph, "dict[st
             file_definition_raw = definitions_raw.get(cf_file, None)
             if file_definition is not None and file_definition_raw is not None:
                 cf_context_parser = ContextParser(cf_file, file_definition, file_definition_raw)
-                logging.debug(
+                logger.debug(
                     f"Template Dump for {cf_file}: {json.dumps(file_definition, indent=2, default=str)}"
                 )
                 cf_context_parser.evaluate_default_refs()

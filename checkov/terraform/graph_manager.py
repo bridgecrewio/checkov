@@ -12,6 +12,8 @@ from checkov.common.graph.graph_manager import GraphManager
 if TYPE_CHECKING:
     from checkov.common.typing import LibraryGraphConnector
 
+logger = logging.getLogger(__name__)
+
 
 class TerraformGraphManager(GraphManager[TerraformLocalGraph, "dict[str, dict[str, Any]]"]):
     def __init__(self, db_connector: LibraryGraphConnector, source: str = "") -> None:
@@ -29,7 +31,7 @@ class TerraformGraphManager(GraphManager[TerraformLocalGraph, "dict[str, dict[st
         vars_files: list[str] | None = None,
         create_graph: bool = True,
     ) -> tuple[TerraformLocalGraph | None, dict[str, dict[str, Any]]]:
-        logging.info("Parsing HCL files in source dir")
+        logger.info("Parsing HCL files in source dir")
         module, tf_definitions = self.parser.parse_hcl_module(
             source_dir=source_dir,
             source=self.source,
@@ -43,7 +45,7 @@ class TerraformGraphManager(GraphManager[TerraformLocalGraph, "dict[str, dict[st
 
         local_graph = None
         if create_graph and module:
-            logging.info("Building graph from parsed module")
+            logger.info("Building graph from parsed module")
             local_graph = local_graph_class(module)
             local_graph.build_graph(render_variables=render_variables)
 

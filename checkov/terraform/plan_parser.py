@@ -24,6 +24,8 @@ RESOURCE_TYPES_JSONIFY = {
     "aws_ssoadmin_permission_set_inline_policy": "inline_policy",
 }
 
+logger = logging.getLogger(__name__)
+
 
 def _is_simple_type(obj: Any) -> bool:
     if obj is None:
@@ -124,7 +126,7 @@ def jsonify(obj: dict[str, Any], resource_type: str) -> None:
         try:
             obj[jsonify_key] = json.loads(obj[jsonify_key])
         except json.JSONDecodeError:
-            logging.debug(
+            logger.debug(
                 f"Attribute {jsonify_key} of resource type {resource_type} is not json encoded {obj[jsonify_key]}"
             )
 

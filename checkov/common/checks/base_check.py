@@ -11,6 +11,8 @@ from checkov.common.util.type_forcers import force_list
 from checkov.common.models.enums import CheckResult, CheckCategories, CheckFailLevel
 from checkov.common.multi_signature import MultiSignatureMeta, multi_signature
 
+logger = logging.getLogger(__name__)
+
 
 class BaseCheck(metaclass=MultiSignatureMeta):
     def __init__(
@@ -39,7 +41,7 @@ class BaseCheck(metaclass=MultiSignatureMeta):
         self.severity = None
         self.bc_category = None
         if self.guideline:
-            logging.debug(f'Found custom guideline for check {id}')
+            logger.debug(f'Found custom guideline for check {id}')
         self.details: List[str] = []
         self.check_fail_level = os.environ.get('CHECKOV_CHECK_FAIL_LEVEL', CheckFailLevel.ERROR)
 
@@ -114,8 +116,8 @@ class BaseCheck(metaclass=MultiSignatureMeta):
     def log_check_error(self, scanned_file: str, entity_type: str, entity_name: str,
                         entity_configuration: Dict[str, List[Any]]) -> None:
         if self.check_fail_level == CheckFailLevel.ERROR:
-            logging.error(f'Failed to run check {self.id} on {scanned_file}:{entity_type}.{entity_name}',
+            logger.error(f'Failed to run check {self.id} on {scanned_file}:{entity_type}.{entity_name}',
                           exc_info=True)
         if self.check_fail_level == CheckFailLevel.WARNING:
-            logging.warning(f'Failed to run check {self.id} on {scanned_file}:{entity_type}.{entity_name}')
-        logging.info(f'Entity configuration: {entity_configuration}')
+            logger.warning(f'Failed to run check {self.id} on {scanned_file}:{entity_type}.{entity_name}')
+        logger.info(f'Entity configuration: {entity_configuration}')

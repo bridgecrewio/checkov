@@ -10,6 +10,8 @@ if TYPE_CHECKING:
     from checkov.common.graph.checks_infra.base_parser import BaseGraphCheckParser
     from checkov.common.typing import _CheckResult, LibraryGraph
 
+logger = logging.getLogger(__name__)
+
 
 class BaseRegistry:
     def __init__(self, parser: BaseGraphCheckParser) -> None:
@@ -36,7 +38,7 @@ class BaseRegistry:
             self, check: BaseGraphCheck, check_results: dict[BaseGraphCheck, list[_CheckResult]],
             graph_connector: LibraryGraph
     ) -> None:
-        logging.debug(f'Running graph check: {check.id}')
+        logger.debug(f'Running graph check: {check.id}')
         passed, failed, unknown = check.run(graph_connector)
         evaluated_keys = check.get_evaluated_keys()
         check_result = self._process_check_result(passed, [], CheckResult.PASSED, evaluated_keys)

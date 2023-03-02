@@ -63,6 +63,8 @@ RESOURCE_ATTRIBUTES_TO_OMIT = {
     'google_kms_secret_ciphertext': ['plaintext']
 }
 
+logger = logging.getLogger(__name__)
+
 
 class Runner(TerraformRunner):
     check_type = CheckType.TERRAFORM_PLAN  # noqa: CCE003  # a static attribute
@@ -192,7 +194,7 @@ class Runner(TerraformRunner):
                 scanned_file = f"/{os.path.relpath(full_file_path,temp)}"
             else:
                 scanned_file = f"/{os.path.relpath(full_file_path, root_folder)}"
-            logging.debug(f"Scanning file: {scanned_file}")
+            logger.debug(f"Scanning file: {scanned_file}")
             for block_type in definition.keys():
                 if block_type in self.block_type_registries.keys():
                     self.run_block(definition[block_type], None, full_file_path, root_folder, report, scanned_file,

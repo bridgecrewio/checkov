@@ -34,6 +34,8 @@ if TYPE_CHECKING:
     from checkov.common.checks_infra.registry import Registry
     from checkov.common.images.image_referencer import Image
 
+logger = logging.getLogger(__name__)
+
 
 class Runner(ImageReferencerMixin[None], BaseRunner[CloudformationGraphManager]):
     check_type = CheckType.CLOUDFORMATION  # noqa: CCE003  # a static attribute
@@ -90,9 +92,9 @@ class Runner(ImageReferencerMixin[None], BaseRunner[CloudformationGraphManager])
             self.context = build_definitions_context(self.definitions, self.definitions_raw)
 
             if CHECKOV_CREATE_GRAPH:
-                logging.info("creating CloudFormation graph")
+                logger.info("creating CloudFormation graph")
                 local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
-                logging.info("Successfully created CloudFormation graph")
+                logger.info("Successfully created CloudFormation graph")
 
                 for vertex in local_graph.vertices:
                     if vertex.block_type == BlockType.RESOURCE:
@@ -109,7 +111,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[CloudformationGraphManager])
             file_definition_raw = self.definitions_raw.get(cf_file, None)
             if file_definition is not None and file_definition_raw is not None:
                 cf_context_parser = ContextParser(cf_file, file_definition, file_definition_raw)
-                logging.debug(
+                logger.debug(
                     "Template Dump for {}: {}".format(cf_file, json.dumps(file_definition, indent=2, default=str))
                 )
                 cf_context_parser.evaluate_default_refs()

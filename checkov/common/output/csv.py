@@ -43,6 +43,8 @@ CTA_NO_API_KEY = (
     "https://www.bridgecrew.cloud/login/signUp and add your API key to include those findings. "
 )
 
+logger = logging.getLogger(__name__)
+
 
 class CSVSBOM:
     def __init__(self) -> None:
@@ -70,7 +72,7 @@ class CSVSBOM:
     def add_sca_package_resources(self, resource: Record | ExtraResource, git_org: str, git_repository: str, check_type: str) -> None:
         if not resource.vulnerability_details:
             # this shouldn't happen
-            logging.error(f"Resource {resource.resource} doesn't have 'vulnerability_details' set")
+            logger.error(f"Resource {resource.resource} doesn't have 'vulnerability_details' set")
             return
 
         severity = None

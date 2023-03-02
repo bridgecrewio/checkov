@@ -18,6 +18,8 @@ COMMENT_REGEX = re.compile(r'([A-Z_\d]+)(:[^\n]+)?')
 PARAMETERS_PATTERN = re.compile(r"\[parameters\('|'\)]")
 VARIABLES_PATTERN = re.compile(r"\[variables\('|'\)]")
 
+logger = logging.getLogger(__name__)
+
 
 class ContextParser:
     """
@@ -59,10 +61,10 @@ class ContextParser:
                     self._get_from_dict(dict(self.arm_template), key_entry[:-1])[key_entry[-1]],  # type:ignore[index]  # this will be a str
                 )
                 if param in parameter_defaults:
-                    logging.debug(f"Replacing parameter {param} in file {self.arm_file} with default value: {parameter_defaults[param]}")
+                    logger.debug(f"Replacing parameter {param} in file {self.arm_file} with default value: {parameter_defaults[param]}")
                     self._set_in_dict(dict(self.arm_template), key_entry, parameter_defaults[param])
             except TypeError:
-                logging.debug(f"Failed to evaluate param in {self.arm_file}", exc_info=True)
+                logger.debug(f"Failed to evaluate param in {self.arm_file}", exc_info=True)
 
         for key_entry in keys_w_vars:
             try:
@@ -73,13 +75,13 @@ class ContextParser:
                 )
                 if param in variable_values.keys():
                     self._set_in_dict(dict(self.arm_template), key_entry, variable_values[param])
-                    logging.debug(
+                    logger.debug(
                         "Replacing variable {} in file {} with default value: {}".format(param, self.arm_file,
                                                                                          variable_values[param]))
                 else:
-                    logging.debug("Variable {} not found in evaluated variables in file {}".format(param, self.arm_file))
+                    logger.debug("Variable {} not found in evaluated variables in file {}".format(param, self.arm_file))
             except TypeError:
-                logging.debug(f"Failed to evaluate param in {self.arm_file}", exc_info=True)
+                logger.debug(f"Failed to evaluate param in {self.arm_file}", exc_info=True)
 
     @staticmethod
     def extract_arm_resource_id(arm_resource: dict[str, Any]) -> str | None:

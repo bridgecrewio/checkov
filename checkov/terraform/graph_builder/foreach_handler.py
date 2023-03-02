@@ -20,6 +20,8 @@ COUNT_KEY = 'count.index'
 EACH_KEY = 'each.key'
 EACH_VALUE = 'each.value'
 
+logger = logging.getLogger(__name__)
+
 
 class ForeachHandler(object):
     def __init__(self, local_graph: l_graph.TerraformLocalGraph) -> None:
@@ -54,7 +56,7 @@ class ForeachHandler(object):
             else:
                 return None
         except Exception as e:
-            logging.info(f"Cant get foreach statement for block: {self.local_graph.vertices[block_index]}, error: {str(e)}")
+            logger.info(f"Cant get foreach statement for block: {self.local_graph.vertices[block_index]}, error: {str(e)}")
             return None
 
     def _is_static_foreach_statement(self, statement: list[str] | dict[str, Any]) -> bool:

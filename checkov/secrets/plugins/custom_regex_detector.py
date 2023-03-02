@@ -18,6 +18,8 @@ MAX_CHARACTERS = 100
 if TYPE_CHECKING:
     from detect_secrets.util.code_snippet import CodeSnippet
 
+logger = logging.getLogger(__name__)
+
 
 class CustomRegexDetector(RegexBasedDetector):
     secret_type = "Regex Detector"  # noqa: CCE003 # nosec
@@ -144,7 +146,7 @@ class CustomRegexDetector(RegexBasedDetector):
             elif len(cast(str, ps.secret_value)) in range(MIN_CHARACTERS, MAX_CHARACTERS) or not regex_data['isCustom']:
                 output.add(ps)
             else:
-                logging.info(
+                logger.info(
                     f'Finding for check {ps.check_id} are not 5-100 characters in length, was ignored')  # type: ignore
 
     def analyze_string(self, string: str, **kwargs: Optional[Dict[str, Any]]) -> Generator[Tuple[str, Pattern[str]], None, None]:  # type:ignore[override]

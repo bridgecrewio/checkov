@@ -26,6 +26,8 @@ PARENT_RESOURCE_KEY_NAME = "_parent_resource"
 PARENT_RESOURCE_ID_KEY_NAME = "_parent_resource_id"
 FILTERED_RESOURCES_FOR_EDGE_BUILDERS = ["NetworkPolicy"]
 
+logger = logging.getLogger(__name__)
+
 
 def get_folder_definitions(
         root_folder: str, excluded_paths: list[str] | None
@@ -61,7 +63,7 @@ def _parse_file(filename: str) -> tuple[str, tuple[list[dict[str, Any]], list[tu
     try:
         return filename, parse(filename)
     except (TypeError, ValueError):
-        logging.warning(f"Kubernetes skipping {filename} as it is not a valid Kubernetes template", exc_info=True)
+        logger.warning(f"Kubernetes skipping {filename} as it is not a valid Kubernetes template", exc_info=True)
 
     return None
 
@@ -79,7 +81,7 @@ def get_skipped_checks(entity_conf: dict[str, Any]) -> list[_SkippedCheck]:
             metadata["annotations"] = force_list(metadata["annotations"])
         for annotation in metadata["annotations"]:
             if not isinstance(annotation, dict):
-                logging.debug(f"Parse of Annotation Failed for {annotation}: {entity_conf}")
+                logger.debug(f"Parse of Annotation Failed for {annotation}: {entity_conf}")
                 continue
             for key in annotation:
                 skipped_item: "_SkippedCheck" = {}
@@ -99,7 +101,7 @@ def get_skipped_checks(entity_conf: dict[str, Any]) -> list[_SkippedCheck]:
                             skipped_item["bc_id"] = metadata_integration.get_bc_id(skipped_item["id"])
                         skipped.append(skipped_item)
                     else:
-                        logging.debug(f"Parse of Annotation Failed for {metadata['annotations'][key]}: {entity_conf}")
+                        logger.debug(f"Parse of Annotation Failed for {metadata['annotations'][key]}: {entity_conf}")
                         continue
     return skipped
 

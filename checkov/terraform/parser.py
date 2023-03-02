@@ -23,6 +23,8 @@ from checkov.terraform.modules.module_utils import load_or_die_quietly, safe_ind
     remove_module_dependency_from_path, get_module_dependency_map, get_module_dependency_map_support_nested_modules, \
     clean_parser_types, serialize_definitions
 
+logger = logging.getLogger(__name__)
+
 
 def _filter_ignored_paths(root: str, paths: list[str], excluded_paths: list[str] | None) -> None:
     filter_ignored_paths(root, paths, excluded_paths)
@@ -300,7 +302,7 @@ class Parser:
         #          and there are still modules to be loaded, they will be forced on the next pass.
         force_final_module_load = False
         for i in range(0, 10):  # circuit breaker - no more than 10 loops
-            logging.debug("Module load loop %d", i)
+            logger.debug("Module load loop %d", i)
 
             # Stage 4a: Load eligible modules
             # Add directory to self._parsed_directories to avoid loading it as sub dir
@@ -421,10 +423,10 @@ class Parser:
                         continue
                     source = source[0]
                     if not isinstance(source, str):
-                        logging.debug(f"Skipping loading of {module_call_name} as source is not a string, it is: {source}")
+                        logger.debug(f"Skipping loading of {module_call_name} as source is not a string, it is: {source}")
                         continue
                     elif source in ['./', '.']:
-                        logging.debug(f"Skipping loading of {module_call_name} as source is the current dir")
+                        logger.debug(f"Skipping loading of {module_call_name} as source is the current dir")
                         continue
 
                     # Special handling for local sources to make sure we aren't double-parsing
@@ -438,7 +440,7 @@ class Parser:
                     try:
                         content = module_loader_registry.load(root_dir, source, version)
                         if not content.loaded():
-                            logging.info(f'Got no content for {source}:{version}')
+                            logger.info(f'Got no content for {source}:{version}')
                             continue
 
                         new_nested_modules_data = {'module_index': module_index, 'file': file,
@@ -514,7 +516,7 @@ class Parser:
 
                         self.external_modules_source_map[(source, version)] = content.path()
                     except Exception as e:
-                        logging.warning("Unable to load module (source=\"%s\" version=\"%s\"): %s",
+                        logger.warning("Unable to load module (source=\"%s\" version=\"%s\"): %s",
                                         source, version, e)
 
         if all_module_definitions:
@@ -597,8 +599,8 @@ class Parser:
                 try:
                     module.add_blocks(block_type, blocks[block_type], file_path, source)
                 except Exception as e:
-                    logging.warning(f'Failed to add block {blocks[block_type]}. Error:')
-                    logging.warning(e, exc_info=False)
+                    logger.warning(f'Failed to add block {blocks[block_type]}. Error:')
+                    logger.warning(e, exc_info=False)
         return module, tf_definitions
 
     def get_file_key_with_nested_data(self, file, nested_data):

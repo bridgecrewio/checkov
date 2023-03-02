@@ -44,6 +44,8 @@ SEVERITY_TO_SARIF_LEVEL = {
     "none": "none",
 }
 
+logger = logging.getLogger(__name__)
+
 
 class Report:
     def __init__(self, check_type: str):
@@ -137,14 +139,14 @@ class Report:
         """
 
         hard_fail_on_parsing_errors = os.getenv(PARSE_ERROR_FAIL_FLAG, "false").lower() == 'true'
-        logging.debug(f'In get_exit_code; exit code thresholds: {exit_code_thresholds}, hard_fail_on_parsing_errors: {hard_fail_on_parsing_errors}')
+        logger.debug(f'In get_exit_code; exit code thresholds: {exit_code_thresholds}, hard_fail_on_parsing_errors: {hard_fail_on_parsing_errors}')
 
         if self.parsing_errors and hard_fail_on_parsing_errors:
-            logging.debug('hard_fail_on_parsing_errors is True and there were parsing errors - returning 1')
+            logger.debug('hard_fail_on_parsing_errors is True and there were parsing errors - returning 1')
             return 1
 
         if not self.failed_checks:
-            logging.debug('No failed checks in this report - returning 0')
+            logger.debug('No failed checks in this report - returning 0')
             return 0
 
         # we will have two different sets of logic in this method, determined by this variable.
@@ -182,7 +184,7 @@ class Report:
                 )
                 for c in sca_thresholds.keys()
             ):
-                logging.debug(
+                logger.debug(
                     'No failed checks, or soft_fail is True and soft_fail_on and hard_fail_on are empty for all SCA types - returning 0')
                 return 0
 
@@ -190,7 +192,7 @@ class Report:
                 not has_soft_fail_values and not (hard_fail_threshold[c] or hard_fail_on_checks) and failed_checks_by_category[cast(CodeCategoryType, c)]
                 for c in sca_thresholds.keys()
             ):
-                logging.debug('There are failed checks and all soft/hard fail args are empty for one or more SCA reports - returning 1')
+                logger.debug('There are failed checks and all soft/hard fail args are empty for one or more SCA reports - returning 1')
                 return 1
         else:
             non_sca_thresholds = cast(_ExitCodeThresholds, exit_code_thresholds)
@@ -204,10 +206,10 @@ class Report:
             has_hard_fail_values = hard_fail_threshold or hard_fail_on_checks
 
             if not has_soft_fail_values and not has_hard_fail_values and soft_fail:
-                logging.debug('Soft_fail is True and soft_fail_on and hard_fail_on are empty - returning 0')
+                logger.debug('Soft_fail is True and soft_fail_on and hard_fail_on are empty - returning 0')
                 return 0
             elif not has_soft_fail_values and not has_hard_fail_values:
-                logging.debug('There are failed checks and all soft/hard fail args are empty - returning 1')
+                logger.debug('There are failed checks and all soft/hard fail args are empty - returning 1')
                 return 1
 
         for failed_check in self.failed_checks:
@@ -243,10 +245,10 @@ class Report:
             if explicit_hard_fail or \
                     (hard_fail_severity and not explicit_soft_fail) or \
                     (implicit_hard_fail and not implicit_soft_fail and not sf):
-                logging.debug(f'Check {check_id} (BC ID: {bc_check_id}, severity: {severity.level if severity else None} triggered hard fail - returning 1')
+                logger.debug(f'Check {check_id} (BC ID: {bc_check_id}, severity: {severity.level if severity else None} triggered hard fail - returning 1')
                 return 1
 
-        logging.debug('No failed check triggered hard fail - returning 0')
+        logger.debug('No failed check triggered hard fail - returning 0')
         return 0
 
     def is_empty(self, full: bool = False) -> bool:
@@ -495,7 +497,7 @@ class Report:
                     continue
                 if not record.vulnerability_details:
                     # this shouldn't normally happen
-                    logging.warning(f"Vulnerability check without details {record.file_path}")
+                    logger.warning(f"Vulnerability check without details {record.file_path}")
                     continue
 
                 check_id = record.vulnerability_details["id"]
@@ -596,7 +598,7 @@ class Report:
                 )
             else:
                 # this shouldn't normally happen
-                logging.warning(f"Vulnerability check without details {record.file_path}")
+                logger.warning(f"Vulnerability check without details {record.file_path}")
 
         failure_output.extend(
             [

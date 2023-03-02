@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from checkov.common.parsers.json.decoder import Mark
 
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class TemplateAttributeError(AttributeError):

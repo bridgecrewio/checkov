@@ -12,6 +12,8 @@ from checkov.common.util.http_utils import request_wrapper
 
 from checkov.common.util.tqdm_utils import ProgressBar
 
+logger = logging.getLogger(__name__)
+
 SLEEP_DURATION = 5
 MAX_SLEEP_DURATION = 240
 
@@ -35,7 +37,7 @@ class Scanner:
 
     def run_scan(self) -> bool:
         try:
-            logging.info("Start to scan package files.")
+            logger.info("Start to scan package files.")
 
             request_body = {
                 "branch": "",
@@ -56,11 +58,11 @@ class Scanner:
             response_json = response.json()
 
             if not response_json["startedSuccessfully"]:
-                logging.info("Failed to run package scanning.")
+                logger.info("Failed to run package scanning.")
                 return False
             return True
         except Exception:
-            logging.debug(
+            logger.debug(
                 "[sca_package_2] - Unexpected failure happened during package scanning.\n"
                 "the scanning is terminating. details are below.\n"
                 "please try again. if it is repeated, please report.", exc_info=True)
@@ -79,26 +81,26 @@ class Scanner:
             try:
                 response_json = response.json()
             except JSONDecodeError:
-                logging.error(f"Unexpected response from {self.bc_cli_scan_api_url}: {response.text}")
+                logger.error(f"Unexpected response from {self.bc_cli_scan_api_url}: {response.text}")
                 return {}
 
             current_state = response_json.get("status", "")
             if not current_state:
-                logging.error("Failed to poll scan results.")
+                logger.error("Failed to poll scan results.")
                 return {}
 
             if current_state == "COMPLETED":
-                logging.info(response_json)
+                logger.info(response_json)
                 report_url = response_json['reportUrl']
                 report_response = request_wrapper("GET", report_url, headers={'Accept': 'application/json'})
                 return report_response.json()  # type: ignore
 
             if current_state == "FAILED":
-                logging.error(response_json)
+                logger.error(response_json)
                 return {}
 
             time.sleep(SLEEP_DURATION)
             total_sleeping_time += SLEEP_DURATION
 
-        logging.info(f"Timeout, slept for {total_sleeping_time}")
+        logger.info(f"Timeout, slept for {total_sleeping_time}")
         return {}

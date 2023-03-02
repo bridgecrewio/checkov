@@ -22,6 +22,8 @@ from checkov.cloudformation.graph_builder.graph_components.generic_resource_encr
 if TYPE_CHECKING:
     from checkov.common.graph.graph_builder.graph_components.blocks import Block
 
+logger = logging.getLogger(__name__)
+
 TOKENIZED_FIELD_PATTERN = re.compile(r'\${([a-zA-Z0-9.]*)}')
 
 
@@ -48,12 +50,12 @@ class CloudformationLocalGraph(LocalGraph[CloudformationBlock]):
 
     def build_graph(self, render_variables: bool) -> None:
         self._create_vertices()
-        logging.info(f"[CloudformationLocalGraph] created {len(self.vertices)} vertices")
+        logger.info(f"[CloudformationLocalGraph] created {len(self.vertices)} vertices")
         self._add_sam_globals()
         self._create_edges()
-        logging.info(f"[CloudformationLocalGraph] created {len(self.edges)} edges")
+        logger.info(f"[CloudformationLocalGraph] created {len(self.edges)} edges")
         if render_variables:
-            logging.info(f"Rendering variables, graph has {len(self.vertices)} vertices and {len(self.edges)} edges")
+            logger.info(f"Rendering variables, graph has {len(self.vertices)} vertices and {len(self.edges)} edges")
             renderer = CloudformationVariableRenderer(self)
             renderer.render_variables_from_local_graph()
             self.update_vertices_breadcrumbs()
@@ -194,12 +196,12 @@ class CloudformationLocalGraph(LocalGraph[CloudformationBlock]):
                             if dest_vertex_index is not None:
                                 self._create_edge(origin_node_index, dest_vertex_index, label=attribute)
                         else:
-                            logging.debug(
+                            logger.debug(
                                 f"[CloudformationLocalGraph] didnt create edge for target_id {target_id}"
                                 f"and vertex_path {vertex_path} as target_id is not a string"
                             )
                 else:
-                    logging.debug(
+                    logger.debug(
                         f"[CloudformationLocalGraph] didnt create edge for target_ids {target_ids}"
                         f"and vertex_path {vertex_path} as target_ids is not a list"
                     )
@@ -238,7 +240,7 @@ class CloudformationLocalGraph(LocalGraph[CloudformationBlock]):
             Search for a key in all parts of the template.
             :return if searchText is "Ref", an array like ['Resources', 'myInstance', 'Properties', 'ImageId', 'Ref', 'Ec2ImageId']
         """
-        logging.debug(f'Search for key {searchText} as far down as the template goes')
+        logger.debug(f'Search for key {searchText} as far down as the template goes')
 
         results: "list[list[int | str]]" = []
         results.extend(search_deep_keys(searchText, cfndict, []))

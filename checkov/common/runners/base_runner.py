@@ -25,6 +25,8 @@ if TYPE_CHECKING:
 
 _GraphManager = TypeVar("_GraphManager", bound="GraphManager[Any, Any]|None")
 
+logger = logging.getLogger(__name__)
+
 
 def strtobool(val: str) -> int:
     """Convert a string representation of truth to true (1) or false (0).
@@ -126,7 +128,7 @@ class BaseRunner(ABC, Generic[_GraphManager]):
         checks_results: "dict[BaseGraphCheck, list[_CheckResult]]" = {}
         if not self.graph_manager or not self.graph_registry:
             # should not happen
-            logging.warning("Graph components were not initialized")
+            logger.warning("Graph components were not initialized")
             return checks_results
 
         for r in itertools.chain(self.external_registries or [], [self.graph_registry]):

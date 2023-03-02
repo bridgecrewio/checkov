@@ -16,6 +16,8 @@ from checkov.kubernetes.graph_builder.graph_components.edge_builders.LabelSelect
 from checkov.kubernetes.graph_builder.graph_components.edge_builders.KeywordEdgeBuilder import KeywordEdgeBuilder
 from checkov.kubernetes.graph_builder.graph_components.edge_builders.NetworkPolicyEdgeBuilder import NetworkPolicyEdgeBuilder
 
+logger = logging.getLogger(__name__)
+
 
 class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
     def __init__(self, definitions: dict[str, list[dict[str, Any]]]) -> None:
@@ -44,13 +46,13 @@ class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
 
                 if resource_type == DEFAULT_NESTED_RESOURCE_TYPE:
                     if is_invalid_k8_pod_definition(resource):
-                        logging.info(f"failed to create a vertex in file {file_path}")
+                        logger.info(f"failed to create a vertex in file {file_path}")
                         file_conf.remove(resource)
                         continue
 
                 else:
                     if is_invalid_k8_definition(resource) or not metadata.get('name'):
-                        logging.info(f"failed to create a vertex in file {file_path}")
+                        logger.info(f"failed to create a vertex in file {file_path}")
                         file_conf.remove(resource)
                         continue
 

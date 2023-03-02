@@ -30,6 +30,8 @@ RESOLVED_MODULE_PATTERN = re.compile(r"\[.+\#.+\]")
 _Hcl2Payload: TypeAlias = "dict[str, list[dict[str, Any]]]"
 external_modules_download_path = os.environ.get('EXTERNAL_MODULES_DIR', DEFAULT_EXTERNAL_MODULES_DIR)
 
+logger = logging.getLogger(__name__)
+
 
 def is_valid_block(block: Any) -> bool:
     if not isinstance(block, dict):
@@ -64,7 +66,7 @@ Load JSON or HCL, depending on filename.
     file_name = os.path.basename(file_path)
 
     try:
-        logging.debug(f"Parsing {file_path}")
+        logger.debug(f"Parsing {file_path}")
 
         with open(file_path, "r", encoding="utf-8-sig") as f:
             if file_name.endswith(".json"):
@@ -77,7 +79,7 @@ Load JSON or HCL, depending on filename.
                 else:
                     return non_malformed_definitions
     except Exception as e:
-        logging.debug(f'failed while parsing file {file_path}', exc_info=True)
+        logger.debug(f'failed while parsing file {file_path}', exc_info=True)
         parsing_errors[file_path] = e
         return None
 
@@ -97,7 +99,7 @@ def safe_index(sequence_hopefully: Sequence[Any], index: int) -> Any:
     try:
         return sequence_hopefully[index]
     except IndexError:
-        logging.debug(f'Failed to parse index int ({index}) out of {sequence_hopefully}', exc_info=True)
+        logger.debug(f'Failed to parse index int ({index}) out of {sequence_hopefully}', exc_info=True)
         return None
 
 

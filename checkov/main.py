@@ -125,7 +125,7 @@ def commit_repository(config: Namespace) -> str | None:
     try:
         return bc_integration.commit_repository(config.branch)
     except Exception:
-        logging.debug("commit_repository failed, exiting", exc_info=True)
+        logger.debug("commit_repository failed, exiting", exc_info=True)
         exit_run(config.no_fail_on_crash)
         return ""
 
@@ -636,7 +636,7 @@ class Checkov:
                     (self.config.check and any(check in severities for check in self.config.check))
                     or (self.config.skip_check and any(check in severities for check in self.config.skip_check))
                 ):
-                    logging.warning("Filtering checks by severity is only possible with an API key")
+                    logger.warning("Filtering checks by severity is only possible with an API key")
 
             excluded_paths = self.config.skip_path or []
 
@@ -948,7 +948,7 @@ class Checkov:
                 bc_integration.onboarding()
             return None
         except BaseException:
-            logging.error("Exception traceback:", exc_info=True)
+            logger.error("Exception traceback:", exc_info=True)
             raise
 
         finally:
@@ -962,7 +962,7 @@ class Checkov:
         try:
             return bc_integration.commit_repository(self.config.branch)
         except Exception:
-            logging.debug("commit_repository failed, exiting", exc_info=True)
+            logger.debug("commit_repository failed, exiting", exc_info=True)
             self.exit_run()
             return ""
 

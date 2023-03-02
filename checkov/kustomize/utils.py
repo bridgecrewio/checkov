@@ -3,6 +3,8 @@ from __future__ import annotations
 import logging
 import subprocess  # nosec
 
+logger = logging.getLogger(__name__)
+
 
 def get_kustomize_version(kustomize_command: str) -> str | None:
     try:
@@ -20,6 +22,6 @@ def get_kustomize_version(kustomize_command: str) -> str | None:
 
         return kustomize_version
     except Exception:
-        logging.debug(f"An error occured testing the {kustomize_command} command:", exc_info=True)
+        logger.debug(f"An error occured testing the {kustomize_command} command:", exc_info=True)
 
     return None

@@ -11,6 +11,8 @@ from pycep import BicepParser
 if TYPE_CHECKING:
     from pycep.typing import BicepJson
 
+logger = logging.getLogger(__name__)
+
 
 class Parser:
     def __init__(self) -> None:
@@ -22,7 +24,7 @@ class Parser:
         try:
             template = self.bicep_parser.parse(text=content)
         except Exception:
-            logging.debug(f"[bicep] Couldn't parse {file_path}", exc_info=True)
+            logger.debug(f"[bicep] Couldn't parse {file_path}", exc_info=True)
             return None, None
 
         file_lines = [(idx + 1, line) for idx, line in enumerate(content.splitlines(keepends=True))]
@@ -32,7 +34,7 @@ class Parser:
     def get_files_definitions(
         self, file_paths: "Collection[Path]"
     ) -> tuple[dict[Path, BicepJson], dict[Path, list[tuple[int, str]]], list[str]]:
-        logging.info(f"[bicep] start to parse {len(file_paths)} files")
+        logger.info(f"[bicep] start to parse {len(file_paths)} files")
 
         definitions: dict[Path, BicepJson] = {}
         definitions_raw: dict[Path, list[tuple[int, str]]] = {}
@@ -46,6 +48,6 @@ class Parser:
             else:
                 parsing_errors.append(os.path.normpath(file_path.absolute()))
 
-        logging.info(f"[bicep] successfully parsed {len(definitions)} files")
+        logger.info(f"[bicep] successfully parsed {len(definitions)} files")
 
         return definitions, definitions_raw, parsing_errors

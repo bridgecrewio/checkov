@@ -11,6 +11,8 @@ from checkov.common.models.enums import CheckResult
 if typing.TYPE_CHECKING:
     from cloudsplaining.scan.policy_document import PolicyDocument
 
+logger = logging.getLogger(__name__)
+
 
 class BaseTerraformCloudsplainingIAMScanner:
     # creating a PolicyDocument is computational expensive,
@@ -28,10 +30,10 @@ class BaseTerraformCloudsplainingIAMScanner:
                 )
             except Exception:
                 # this might occur with templated iam policies where ARN is not in place or similar
-                logging.debug(f"could not run cloudsplaining analysis on policy {conf}")
+                logger.debug(f"could not run cloudsplaining analysis on policy {conf}")
                 return CheckResult.UNKNOWN
             if violations:
-                logging.debug(f"detailed cloudsplainging finding: {json.dumps(violations, indent=2, default=str)}")
+                logger.debug(f"detailed cloudsplainging finding: {json.dumps(violations, indent=2, default=str)}")
                 return CheckResult.FAILED
         return CheckResult.PASSED
 

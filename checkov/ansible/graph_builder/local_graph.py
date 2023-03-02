@@ -14,6 +14,8 @@ from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.ansible.graph_builder.graph_components.resource_types import ResourceType
 from checkov.ansible.utils import get_scannable_file_paths, TASK_RESERVED_KEYWORDS, parse_file
 
+logger = logging.getLogger(__name__)
+
 
 class AnsibleLocalGraph(ObjectLocalGraph):
     def __init__(self, definitions: dict[str | Path, dict[str, Any] | list[dict[str, Any]]]) -> None:
@@ -24,7 +26,7 @@ class AnsibleLocalGraph(ObjectLocalGraph):
     def _create_vertices(self) -> None:
         for file_path, definition in self.definitions.items():
             if not isinstance(definition, list):
-                logging.debug(f"definition of file {file_path} has the wrong type {type(definition)}")
+                logger.debug(f"definition of file {file_path} has the wrong type {type(definition)}")
                 continue
 
             file_path = str(file_path)

@@ -28,6 +28,8 @@ check_reduced_keys = (
 secrets_check_reduced_keys = check_reduced_keys + ('validation_status',)
 check_metadata_keys = ('evaluations', 'code_block', 'workflow_name', 'triggers', 'job')
 
+logger = logging.getLogger(__name__)
+
 
 def _is_scanned_file(file: str) -> bool:
     file_ending = os.path.splitext(file)[1]
@@ -38,7 +40,7 @@ def _put_json_object(s3_client: BaseClient, json_obj: Any, bucket: str, object_p
     try:
         s3_client.put_object(Bucket=bucket, Key=object_path, Body=json.dumps(json_obj, cls=CustomJSONEncoder))
     except Exception:
-        logging.error(f"failed to persist object into S3 bucket {bucket}", exc_info=True)
+        logger.error(f"failed to persist object into S3 bucket {bucket}", exc_info=True)
         raise
 
 
@@ -105,7 +107,7 @@ def persist_run_metadata(
         s3_client.put_object(Bucket=bucket, Key=object_path, Body=json.dumps(run_metadata, indent=2))
 
     except Exception:
-        logging.error(f"failed to persist run metadata into S3 bucket {bucket}", exc_info=True)
+        logger.error(f"failed to persist run metadata into S3 bucket {bucket}", exc_info=True)
         raise
 
 
@@ -115,7 +117,7 @@ def persist_logs_stream(logs_stream: StringIO, s3_client: BaseClient, bucket: st
     try:
         s3_client.put_object(Bucket=bucket, Key=object_path, Body=file_io)
     except Exception:
-        logging.error(f"failed to persist logs stream into S3 bucket {bucket}", exc_info=True)
+        logger.error(f"failed to persist logs stream into S3 bucket {bucket}", exc_info=True)
         raise
 
 

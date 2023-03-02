@@ -59,6 +59,8 @@ dpath.options.ALLOW_EMPTY_STRING_KEYS = True
 
 CHECK_BLOCK_TYPES = frozenset(['resource', 'data', 'provider', 'module'])
 
+logger = logging.getLogger(__name__)
+
 
 class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
     check_type = CheckType.TERRAFORM  # noqa: CCE003  # a static attribute
@@ -116,7 +118,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
 
         if self.context is None or self.definitions is None or self.breadcrumbs is None:
             self.definitions = {}
-            logging.info("Scanning root folder and producing fresh tf_definitions and context")
+            logger.info("Scanning root folder and producing fresh tf_definitions and context")
             if root_folder:
                 root_folder = os.path.abspath(root_folder)
 
@@ -155,7 +157,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                     root_folder,
                 )
         else:
-            logging.info("Scanning root folder using existing tf_definitions")
+            logger.info("Scanning root folder using existing tf_definitions")
 
         self.pbar.initiate(len(self.definitions))
         self.check_tf_definition(report, root_folder, runner_filter, collect_skip_comments)
@@ -303,11 +305,11 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                 if k in entity_context:
                     entity_context = entity_context[k]
                 else:
-                    logging.warning(f'Failed to find context for {".".join(entity_context_path)}')
+                    logger.warning(f'Failed to find context for {".".join(entity_context_path)}')
                     return None, None
             entity_context['definition_path'] = definition_path
         except StopIteration:
-            logging.debug(f"Did not find context for key {full_file_path}")
+            logger.debug(f"Did not find context for key {full_file_path}")
         return entity_context, entity_evaluations
 
     def check_tf_definition(self, report: Report, root_folder: Path, runner_filter: RunnerFilter,
@@ -318,7 +320,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
             for definition in self.definitions.items():
                 definitions_context = parser_registry.enrich_definitions_context(definition, collect_skip_comments)
             self.context = definitions_context
-            logging.debug('Created definitions context')
+            logger.debug('Created definitions context')
 
         if self.enable_nested_modules:
             self.push_skipped_checks_down_from_modules(self.context)
@@ -330,7 +332,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
             else:
                 abs_scanned_file, abs_referrer = self._strip_module_referrer(full_file_path)
             scanned_file = f"/{os.path.relpath(abs_scanned_file, root_folder)}"
-            logging.debug(f"Scanning file: {scanned_file}")
+            logger.debug(f"Scanning file: {scanned_file}")
             self.run_all_blocks(definition, self.context, full_file_path, root_folder, report,
                                 scanned_file, runner_filter, abs_referrer)
             self.pbar.update()
@@ -339,7 +341,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
     def run_all_blocks(self, definition, definitions_context, full_file_path, root_folder, report,
                        scanned_file, runner_filter, module_referrer: Optional[str]):
         if not definition:
-            logging.debug("Empty definition, skipping run (root_folder=%s)", root_folder)
+            logger.debug("Empty definition, skipping run (root_folder=%s)", root_folder)
             return
         block_types = set(definition.keys())
         for block_type in block_types & CHECK_BLOCK_TYPES:
@@ -391,13 +393,13 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                         for part in referrer_id.split("."):
                             caller_context = caller_context[part]
                     except KeyError:
-                        logging.debug("Unable to find caller context for: %s", abs_caller_file)
+                        logger.debug("Unable to find caller context for: %s", abs_caller_file)
                         caller_context = None
 
                     if caller_context:
                         caller_file_line_range = [caller_context.get('start_line'), caller_context.get('end_line')]
                 else:
-                    logging.debug(f"Unable to find referrer ID for full path: {full_file_path}")
+                    logger.debug(f"Unable to find referrer ID for full path: {full_file_path}")
 
             if entity_context_path_header is None:
                 entity_context_path = [block_type] + definition_path

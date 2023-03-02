@@ -82,6 +82,8 @@ SIGNUP_HEADER = merge_dicts({
     get_user_agent_header())
 CI_METADATA_EXTRACTOR = registry.get_extractor()
 
+logger = logging.getLogger(__name__)
+
 
 class BcPlatformIntegration:
     def __init__(self) -> None:
@@ -183,10 +185,10 @@ class BcPlatformIntegration:
                                     body=json.dumps({"username": username, "password": password}),
                                     headers=merge_dicts({"Content-Type": "application/json"}, get_user_agent_header()))
         if request.status == 401:
-            logging.error(f'Received 401 response from Prisma /login endpoint: {request.data.decode("utf8")}')
+            logger.error(f'Received 401 response from Prisma /login endpoint: {request.data.decode("utf8")}')
             raise BridgecrewAuthError()
         elif request.status == 403:
-            logging.error('Received 403 (Forbidden) response from Prisma /login endpoint')
+            logger.error('Received 403 (Forbidden) response from Prisma /login endpoint')
             raise BridgecrewAuthError()
         token: str = json.loads(request.data.decode("utf8"))['token']
         return token
@@ -245,7 +247,7 @@ class BcPlatformIntegration:
         if prisma_api_url:
             self.prisma_api_url = normalize_prisma_url(prisma_api_url)
             self.setup_api_urls()
-            logging.info(f'Using Prisma API URL: {self.prisma_api_url}')
+            logger.info(f'Using Prisma API URL: {self.prisma_api_url}')
 
         if self.bc_source and self.bc_source.upload_results:
             self.set_s3_integration()
@@ -280,20 +282,20 @@ class BcPlatformIntegration:
             )
             self.use_s3_integration = True
         except MaxRetryError:
-            logging.error("An SSL error occurred connecting to the platform. If you are on a VPN, please try "
+            logger.error("An SSL error occurred connecting to the platform. If you are on a VPN, please try "
                           "disabling it and re-running the command.", exc_info=True)
             raise
         except HTTPError:
-            logging.error("Failed to get customer assumed role", exc_info=True)
+            logger.error("Failed to get customer assumed role", exc_info=True)
             raise
         except ClientError:
-            logging.error(f"Failed to initiate client with credentials {self.credentials}", exc_info=True)
+            logger.error(f"Failed to initiate client with credentials {self.credentials}", exc_info=True)
             raise
         except JSONDecodeError:
-            logging.error(f"Response of {self.integrations_api_url} is not a valid JSON", exc_info=True)
+            logger.error(f"Response of {self.integrations_api_url} is not a valid JSON", exc_info=True)
             raise
         except BridgecrewAuthError:
-            logging.error("Received an error response during authentication")
+            logger.error("Received an error response during authentication")
             raise
 
     def get_s3_role(self, repo_id: str) -> tuple[str, dict[str, Any]]:
@@ -407,7 +409,7 @@ class BcPlatformIntegration:
         if not self.use_s3_integration:
             return
         if not self.bucket or not self.repo_path:
-            logging.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
+            logger.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
             return
 
         # just process reports with actual results in it
@@ -421,7 +423,7 @@ class BcPlatformIntegration:
 
     def persist_image_scan_results(self, report: dict[str, Any] | None, file_path: str, image_name: str, branch: str) -> None:
         if not self.bucket or not self.repo_path:
-            logging.error("Bucket or repo_path was not set")
+            logger.error("Bucket or repo_path was not set")
             return
 
         repo_path_without_src = os.path.dirname(self.repo_path)
@@ -431,13 +433,13 @@ class BcPlatformIntegration:
 
     def persist_enriched_secrets(self, enriched_secrets: list[EnrichedSecret]) -> str | None:
         if not enriched_secrets or not self.repo_path or not self.bucket:
-            logging.debug(f'One of enriched secrets, repo path, or bucket are empty, aborting. values:'
+            logger.debug(f'One of enriched secrets, repo path, or bucket are empty, aborting. values:'
                           f'enriched_secrets={"Valid" if enriched_secrets else "Empty"},'
                           f' repo_path={self.repo_path}, bucket={self.bucket}')
             return None
 
         if not bc_integration.bc_api_key or not os.getenv("CKV_VALIDATE_SECRETS"):
-            logging.debug('Skipping persistence of enriched secrets object as secrets verification is off,'
+            logger.debug('Skipping persistence of enriched secrets object as secrets verification is off,'
                           ' enabled it via env var CKV_VALIDATE_SECRETS and provide an api key')
             return None
 
@@ -446,12 +448,12 @@ class BcPlatformIntegration:
         try:
             _put_json_object(self.s3_client, enriched_secrets, self.bucket, s3_path)
         except ClientError:
-            logging.warning("Got access denied, retrying as s3 role changes should be propagated")
+            logger.warning("Got access denied, retrying as s3 role changes should be propagated")
             sleep(4)
             try:
                 _put_json_object(self.s3_client, enriched_secrets, self.bucket, s3_path)
             except ClientError:
-                logging.error("Getting access denied consistently, aborting secrets verification")
+                logger.error("Getting access denied consistently, aborting secrets verification")
                 return None
 
         return s3_path
@@ -460,7 +462,7 @@ class BcPlatformIntegration:
         if not self.use_s3_integration:
             return
         if not self.bucket or not self.repo_path:
-            logging.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
+            logger.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
             return
         persist_run_metadata(run_metadata, self.s3_client, self.bucket, self.repo_path)
 
@@ -468,7 +470,7 @@ class BcPlatformIntegration:
         if not self.use_s3_integration:
             return
         if not self.bucket or not self.repo_path:
-            logging.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
+            logger.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
             return
         persist_logs_stream(logs_stream, self.s3_client, self.bucket, self.repo_path)
 
@@ -486,10 +488,10 @@ class BcPlatformIntegration:
             response = None
             try:
                 if not self.http:
-                    logging.error("HTTP manager was not correctly created")
+                    logger.error("HTTP manager was not correctly created")
                     return None
                 if not self.bc_source:
-                    logging.error("Source was not set")
+                    logger.error("Source was not set")
                     return None
 
                 request = self.http.request("PUT", f"{self.integrations_api_url}?source={self.bc_source.name}",  # type:ignore[no-untyped-call]
@@ -515,22 +517,22 @@ class BcPlatformIntegration:
                 url: str = response.get("url", None)
                 return url
             except HTTPError:
-                logging.error(f"Failed to commit repository {self.repo_path}", exc_info=True)
+                logger.error(f"Failed to commit repository {self.repo_path}", exc_info=True)
                 raise
             except JSONDecodeError:
                 if request:
-                    logging.warning(f"Response (status: {request.status}) of {self.integrations_api_url}: {request.data.decode('utf8')}")
-                logging.error(f"Response of {self.integrations_api_url} is not a valid JSON", exc_info=True)
+                    logger.warning(f"Response (status: {request.status}) of {self.integrations_api_url}: {request.data.decode('utf8')}")
+                logger.error(f"Response of {self.integrations_api_url} is not a valid JSON", exc_info=True)
                 raise
             finally:
                 if request and request.status == 201 and response and response.get("result") == "Success":
-                    logging.info(f"Finalize repository {self.repo_id} in bridgecrew's platform")
+                    logger.info(f"Finalize repository {self.repo_id} in bridgecrew's platform")
                 elif (
                     response
                     and try_num < MAX_RETRIES
                     and re.match("The integration ID .* in progress", response.get("message", ""))
                 ):
-                    logging.info(
+                    logger.info(
                         f"Failed to persist for repo {self.repo_id}, sleeping for {SLEEP_SECONDS} seconds before retrying")
                     try_num += 1
                     sleep(SLEEP_SECONDS)
@@ -541,21 +543,21 @@ class BcPlatformIntegration:
         return None
 
     def persist_files(self, files_to_persist: list[FileToPersist]) -> None:
-        logging.info(f"Persisting {len(files_to_persist)} files")
+        logger.info(f"Persisting {len(files_to_persist)} files")
         with futures.ThreadPoolExecutor() as executor:
             futures.wait(
                 [executor.submit(self._persist_file, file_to_persist.full_file_path, file_to_persist.s3_file_key) for
                  file_to_persist in files_to_persist],
                 return_when=futures.FIRST_EXCEPTION,
             )
-        logging.info(f"Done persisting {len(files_to_persist)} files")
+        logger.info(f"Done persisting {len(files_to_persist)} files")
 
     def _persist_file(self, full_file_path: str, s3_file_key: str) -> None:
         tries = MAX_RETRIES
         curr_try = 0
 
         if not self.s3_client or not self.bucket or not self.repo_path:
-            logging.error(
+            logger.error(
                 f"Something went wrong: S3 client {self.s3_client} bucket {self.bucket}, repo path {self.repo_path}"
             )
             return
@@ -570,19 +572,19 @@ class BcPlatformIntegration:
                     sleep(SLEEP_SECONDS)
                     curr_try += 1
                 else:
-                    logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}",
+                    logger.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}",
                                   exc_info=True)
                     raise
             except Exception:
-                logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}", exc_info=True)
+                logger.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}", exc_info=True)
                 raise
         if curr_try == tries:
-            logging.error(
+            logger.error(
                 f"failed to persist file {full_file_path} into S3 bucket {self.bucket} - gut AccessDenied {tries} times")
 
     def get_platform_run_config(self) -> None:
         if self.skip_download is True:
-            logging.debug("Skipping downloading configs from platform")
+            logger.debug("Skipping downloading configs from platform")
             return
 
         if self.is_integration_configured():
@@ -601,7 +603,7 @@ class BcPlatformIntegration:
 
     def get_customer_run_config(self) -> None:
         if self.skip_download is True:
-            logging.debug("Skipping customer run config API call")
+            logger.debug("Skipping customer run config API call")
             return
 
         if not self.bc_api_key or not self.is_integration_configured():
@@ -609,7 +611,7 @@ class BcPlatformIntegration:
                 "Tried to get customer run config, but the API key was missing or the integration was not set up")
 
         if not self.bc_source:
-            logging.error("Source was not set")
+            logger.error("Source was not set")
             return
 
         try:
@@ -619,27 +621,27 @@ class BcPlatformIntegration:
 
             self.setup_http_manager()
             if not self.http:
-                logging.error("HTTP manager was not correctly created")
+                logger.error("HTTP manager was not correctly created")
                 return
 
             platform_type = PRISMA_PLATFORM if self.is_prisma_integration() else BRIDGECREW_PLATFORM
 
             url = self.get_run_config_url()
-            logging.debug(f'Platform run config URL: {url}')
+            logger.debug(f'Platform run config URL: {url}')
             request = self.http.request("GET", url, headers=headers)  # type:ignore[no-untyped-call]
             if request.status != 200:
                 url = self.get_run_config_url_backoff()
-                logging.debug(f'Platform run config URL: {url}')
+                logger.debug(f'Platform run config URL: {url}')
                 request = self.http.request("GET", url, headers=headers)  # type:ignore[no-untyped-call]
                 if request.status != 200:
                     error_message = get_auth_error_message(request.status, self.is_prisma_integration(), False)
-                    logging.error(error_message)
+                    logger.error(error_message)
                     raise BridgecrewAuthError(error_message)
             self.customer_run_config_response = json.loads(request.data.decode("utf8"))
 
-            logging.debug(f"Got customer run config from {platform_type} platform")
+            logger.debug(f"Got customer run config from {platform_type} platform")
         except Exception:
-            logging.warning(f"Failed to get the customer run config from {self.platform_run_config_url}", exc_info=True)
+            logger.warning(f"Failed to get the customer run config from {self.platform_run_config_url}", exc_info=True)
             raise
 
     def get_prisma_build_policies(self, policy_filter: str) -> None:
@@ -650,7 +652,7 @@ class BcPlatformIntegration:
         :return:
         """
         if self.skip_download is True:
-            logging.debug("Skipping prisma policy API call")
+            logger.debug("Skipping prisma policy API call")
             return
         if not policy_filter:
             return
@@ -666,10 +668,10 @@ class BcPlatformIntegration:
 
             self.setup_http_manager()
             if not self.http:
-                logging.error("HTTP manager was not correctly created")
+                logger.error("HTTP manager was not correctly created")
                 return
 
-            logging.debug(f'Prisma policy URL: {self.prisma_policies_url}')
+            logger.debug(f'Prisma policy URL: {self.prisma_policies_url}')
             query_params = convert_prisma_policy_filter_to_dict(policy_filter)
             if self.is_valid_policy_filter(query_params, valid_filters=self.get_prisma_policy_filters()):
                 # If enabled and subtype are not explicitly set, use the only acceptable values.
@@ -677,11 +679,11 @@ class BcPlatformIntegration:
                 query_params['policy.subtype'] = 'build'
                 request = self.http.request("GET", self.prisma_policies_url, headers=headers, fields=query_params)  # type:ignore[no-untyped-call]
                 self.prisma_policies_response = json.loads(request.data.decode("utf8"))
-                logging.debug("Got Prisma build policy metadata")
+                logger.debug("Got Prisma build policy metadata")
             else:
-                logging.warning("Skipping get prisma build policies. --policy-metadata-filter will not be applied.")
+                logger.warning("Skipping get prisma build policies. --policy-metadata-filter will not be applied.")
         except Exception:
-            logging.warning(f"Failed to get prisma build policy metadata from {self.platform_run_config_url}", exc_info=True)
+            logger.warning(f"Failed to get prisma build policy metadata from {self.platform_run_config_url}", exc_info=True)
 
     def get_prisma_policy_filters(self) -> Dict[str, Dict[str, Any]]:
         try:
@@ -690,16 +692,16 @@ class BcPlatformIntegration:
 
             self.setup_http_manager()
             if not self.http:
-                logging.error("HTTP manager was not correctly created")
+                logger.error("HTTP manager was not correctly created")
                 return {}
 
-            logging.debug(f'Prisma filter URL: {self.prisma_policy_filters_url}')
+            logger.debug(f'Prisma filter URL: {self.prisma_policy_filters_url}')
             request = self.http.request("GET", self.prisma_policy_filters_url, headers=headers)  # type:ignore[no-untyped-call]
             policy_filters: dict[str, dict[str, Any]] = json.loads(request.data.decode("utf8"))
-            logging.debug(f'Prisma filter suggestion response: {policy_filters}')
+            logger.debug(f'Prisma filter suggestion response: {policy_filters}')
             return policy_filters
         except Exception:
-            logging.warning(f"Failed to get prisma build policy metadata from {self.platform_run_config_url}", exc_info=True)
+            logger.warning(f"Failed to get prisma build policy metadata from {self.platform_run_config_url}", exc_info=True)
             return {}
 
     @staticmethod
@@ -715,30 +717,30 @@ class BcPlatformIntegration:
             return False
         for filter_name, filter_value in policy_filter.items():
             if filter_name not in valid_filters.keys():
-                logging.warning(f"Invalid filter name: {filter_name}")
-                logging.warning(f"Available filter names: {', '.join(valid_filters.keys())}")
+                logger.warning(f"Invalid filter name: {filter_name}")
+                logger.warning(f"Available filter names: {', '.join(valid_filters.keys())}")
                 return False
             elif filter_name == 'policy.subtype' and filter_value != 'build':
-                logging.warning(f"Filter value not allowed: {filter_value}")
-                logging.warning("Available options: build")
+                logger.warning(f"Filter value not allowed: {filter_value}")
+                logger.warning("Available options: build")
                 return False
             elif filter_name == 'policy.enabled' and not convert_str_to_bool(filter_value):
-                logging.warning(f"Filter value not allowed: {filter_value}")
-                logging.warning("Available options: True")
+                logger.warning(f"Filter value not allowed: {filter_value}")
+                logger.warning("Available options: True")
                 return False
-        logging.debug("--policy-metadata-filter is valid")
+        logger.debug("--policy-metadata-filter is valid")
         return True
 
     def get_public_run_config(self) -> None:
         if self.skip_download is True:
-            logging.debug("Skipping checkov mapping and guidelines API call")
+            logger.debug("Skipping checkov mapping and guidelines API call")
             return
         try:
             headers: dict[str, Any] = {}
 
             self.setup_http_manager()
             if not self.http:
-                logging.error("HTTP manager was not correctly created")
+                logger.error("HTTP manager was not correctly created")
                 return
 
             request = self.http.request("GET", self.guidelines_api_url, headers=headers)  # type:ignore[no-untyped-call]
@@ -747,9 +749,9 @@ class BcPlatformIntegration:
 
             self.public_metadata_response = json.loads(request.data.decode("utf8"))
             platform_type = PRISMA_PLATFORM if self.is_prisma_integration() else BRIDGECREW_PLATFORM
-            logging.debug(f"Got checkov mappings and guidelines from {platform_type} platform")
+            logger.debug(f"Got checkov mappings and guidelines from {platform_type} platform")
         except Exception:
-            logging.warning(f"Failed to get the checkov mappings and guidelines from {self.guidelines_api_url}. Skips using BC_* IDs will not work.",
+            logger.warning(f"Failed to get the checkov mappings and guidelines from {self.guidelines_api_url}. Skips using BC_* IDs will not work.",
                             exc_info=True)
 
     def onboarding(self) -> None:
@@ -968,7 +970,7 @@ class BcPlatformIntegration:
 
     def get_default_headers(self, request_type: str) -> dict[str, Any]:
         if not self.bc_source:
-            logging.warning("Source was not set")
+            logger.warning("Source was not set")
             return {}
 
         if request_type.upper() == "GET":
@@ -978,7 +980,7 @@ class BcPlatformIntegration:
             return merge_dicts(get_default_post_headers(self.bc_source, self.bc_source_version),
                                {"Authorization": self.get_auth_token()})
 
-        logging.info(f"Unsupported request {request_type}")
+        logger.info(f"Unsupported request {request_type}")
         return {}
 
 

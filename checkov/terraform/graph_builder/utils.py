@@ -22,6 +22,8 @@ from checkov.terraform.graph_builder.variable_rendering.vertex_reference import 
 MODULE_DEPENDENCY_PATTERN_IN_PATH = re.compile(r"\(\[\{.+\#\*\#.+\}\]\)")
 CHECKOV_RENDER_MAX_LEN = force_int(os.getenv("CHECKOV_RENDER_MAX_LEN", "10000"))
 
+logger = logging.getLogger(__name__)
+
 
 def is_local_path(root_dir: str, source: str) -> bool:
     # https://www.terraform.io/docs/modules/sources.html#local-paths
@@ -200,7 +202,7 @@ def get_referenced_vertices_in_value(
     if isinstance(value, str):
         value_len = len(value)
         if CHECKOV_RENDER_MAX_LEN and 0 < CHECKOV_RENDER_MAX_LEN < value_len:
-            logging.debug(f'Rendering was skipped for a {value_len}-character-long string. If you wish to have it '
+            logger.debug(f'Rendering was skipped for a {value_len}-character-long string. If you wish to have it '
                           f'evaluated, please set the environment variable CHECKOV_RENDER_MAX_LEN '
                           f'to {str(value_len + 1)} or to 0 to allow rendering of any length')
         else:

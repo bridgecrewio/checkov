@@ -15,6 +15,8 @@ if TYPE_CHECKING:
     from checkov.common.output.report import Report
     from checkov.common.typing import _BaseRunner
 
+logger = logging.getLogger(__name__)
+
 
 class Policies3DIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration: BcPlatformIntegration) -> None:
@@ -61,31 +63,31 @@ class Policies3DIntegration(BaseIntegrationFeature):
     def post_scan(self, scan_reports: list[Report]) -> Report | None:
         try:
             if not self.bc_integration.customer_run_config_response:
-                logging.debug('In the post scan for 3d policies, but nothing was fetched from the platform')
+                logger.debug('In the post scan for 3d policies, but nothing was fetched from the platform')
                 self.integration_feature_failures = True
                 return None
 
             policies = self.bc_integration.customer_run_config_response.get('Policies3D')
-            logging.debug(f'Got {len(policies)} 3d policies from the platform.')
+            logger.debug(f'Got {len(policies)} 3d policies from the platform.')
             checks = []
             runner = Policy3dRunner()
             for policy in policies:
                 try:
-                    logging.debug(f"Loading 3d policy id: {policy.get('id')}")
+                    logger.debug(f"Loading 3d policy id: {policy.get('id')}")
                     converted_check = self._convert_raw_check(policy)
                     check = self.platform_policy_parser.parse_raw_check(converted_check)
                     check.severity = Severities[policy['severity']]
                     check.bc_id = check.id
                     checks.append(check)
                 except Exception:
-                    logging.debug(f"Failed to load 3d policy id: {policy.get('id')}", exc_info=True)
+                    logger.debug(f"Failed to load 3d policy id: {policy.get('id')}", exc_info=True)
 
             report = runner.run(checks=checks, scan_reports=scan_reports)
             return report
 
         except Exception as e:
             self.integration_feature_failures = True
-            logging.debug(f'Scanning without applying 3d policies from the platform.\n{e}')
+            logger.debug(f'Scanning without applying 3d policies from the platform.\n{e}')
             return None
 
 

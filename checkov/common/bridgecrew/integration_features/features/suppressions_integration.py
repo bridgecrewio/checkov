@@ -20,6 +20,8 @@ if TYPE_CHECKING:
     from checkov.common.output.record import Record
     from checkov.common.typing import _BaseRunner
 
+logger = logging.getLogger(__name__)
+
 
 class SuppressionsIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration: BcPlatformIntegration) -> None:
@@ -45,7 +47,7 @@ class SuppressionsIntegration(BaseIntegrationFeature):
     def pre_scan(self) -> None:
         try:
             if not self.bc_integration.customer_run_config_response:
-                logging.debug('In the pre-scan for suppressions, but nothing was fetched from the platform')
+                logger.debug('In the pre-scan for suppressions, but nothing was fetched from the platform')
                 self.integration_feature_failures = True
                 return
 
@@ -63,12 +65,12 @@ class SuppressionsIntegration(BaseIntegrationFeature):
             # group and map by policy ID
             self.suppressions = {policy_id: list(sup) for policy_id, sup in
                                  groupby(suppressions, key=lambda s: s['checkovPolicyId'])}
-            logging.debug(f'Found {len(self.suppressions)} valid suppressions from the platform.')
-            logging.debug('The found suppression rules are:')
-            logging.debug(self.suppressions)
+            logger.debug(f'Found {len(self.suppressions)} valid suppressions from the platform.')
+            logger.debug('The found suppression rules are:')
+            logger.debug(self.suppressions)
         except Exception:
             self.integration_feature_failures = True
-            logging.debug("Scanning without applying suppressions configured in the platform.", exc_info=True)
+            logger.debug("Scanning without applying suppressions configured in the platform.", exc_info=True)
 
     def post_runner(self, scan_report: Report) -> None:
         self._apply_suppressions_to_report(scan_report)
@@ -91,7 +93,7 @@ class SuppressionsIntegration(BaseIntegrationFeature):
             applied_suppression = self._check_suppressions(check, relevant_suppressions) if relevant_suppressions else None
             if applied_suppression:
                 suppress_comment = applied_suppression['comment']
-                logging.debug(f'Applying suppression to the check {check.check_id} with the comment: {suppress_comment}')
+                logger.debug(f'Applying suppression to the check {check.check_id} with the comment: {suppress_comment}')
                 check.check_result = {
                     'result': CheckResult.SKIPPED,
                     'suppress_comment': suppress_comment

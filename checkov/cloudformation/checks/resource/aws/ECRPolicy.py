@@ -9,6 +9,8 @@ from checkov.cloudformation.checks.resource.base_resource_check import BaseResou
 from checkov.common.models.consts import SLS_DEFAULT_VAR_PATTERN
 from checkov.common.models.enums import CheckResult, CheckCategories
 
+logger = logging.getLogger(__name__)
+
 
 class ECRPolicy(BaseResourceCheck):
     def __init__(self) -> None:
@@ -39,9 +41,9 @@ class ECRPolicy(BaseResourceCheck):
                 if re.match(SLS_DEFAULT_VAR_PATTERN, str(policy_text)):
                     # Case where the template is a sub-CFN configuration inside a serverless configuration,
                     # and the policy is a variable expression
-                    logging.info(f"Encountered variable expression {str(policy_text)} in resource ${self.entity_path}")
+                    logger.info(f"Encountered variable expression {str(policy_text)} in resource ${self.entity_path}")
                 else:
-                    logging.error(
+                    logger.error(
                         f"Malformed policy configuration {str(policy_text)} of resource {self.entity_path}\n{e}"
                     )
                 return CheckResult.UNKNOWN

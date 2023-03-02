@@ -7,6 +7,8 @@ import yaml
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.util.file_utils import decompress_file_gzip_base64
 
+logger = logging.getLogger(__name__)
+
 
 def load_detectors() -> list[dict[str, Any]]:
     detectors: List[dict[str, Any]] = []
@@ -16,19 +18,19 @@ def load_detectors() -> list[dict[str, Any]]:
         if customer_run_config_response:
             policies_list = customer_run_config_response.get('secretsPolicies', [])
     except Exception as e:
-        logging.error(f"Failed to get detectors from customer_run_config_response, error: {e}")
+        logger.error(f"Failed to get detectors from customer_run_config_response, error: {e}")
         return []
 
     if policies_list:
         detectors = modify_secrets_policy_to_detectors(policies_list)
     if detectors:
-        logging.info(f"Successfully loaded {len(detectors)} detectors from bc_integration")
+        logger.info(f"Successfully loaded {len(detectors)} detectors from bc_integration")
     return detectors
 
 
 def modify_secrets_policy_to_detectors(policies_list: List[dict[str, Any]]) -> List[dict[str, Any]]:
     secrets_list = transforms_policies_to_detectors_list(policies_list)
-    logging.debug(f"(modify_secrets_policy_to_detectors) len secrets_list = {len(secrets_list)}")
+    logger.debug(f"(modify_secrets_policy_to_detectors) len secrets_list = {len(secrets_list)}")
     return secrets_list
 
 
@@ -96,7 +98,7 @@ def transforms_policies_to_detectors_list(custom_secrets: List[Dict[str, Any]]) 
         elif code:
             parsed = add_detectors_from_code(custom_detectors, code, secret_policy, check_id)
         if not parsed:
-            logging.info(f"policy : {secret_policy} could not be parsed")
+            logger.info(f"policy : {secret_policy} could not be parsed")
     return custom_detectors
 
 
@@ -116,5 +118,5 @@ def get_runnable_plugins(policies: List[Dict[str, Any]]) -> Dict[str, str]:
                         name: str = policy['title']
                         runnables[name] = decoded_payload.decode('utf8')
             except Exception as e:
-                logging.warning(f"Could not parse runnable policy {policy['title']} due to: {e}")
+                logger.warning(f"Could not parse runnable policy {policy['title']} due to: {e}")
     return runnables

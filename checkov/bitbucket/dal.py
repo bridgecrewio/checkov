@@ -9,6 +9,8 @@ import requests
 from checkov.common.runners.base_runner import strtobool
 from checkov.common.vcs.base_vcs_dal import BaseVCSDAL
 
+logger = logging.getLogger(__name__)
+
 
 class Bitbucket(BaseVCSDAL):
     def setup_conf_dir(self) -> None:
@@ -51,7 +53,7 @@ class Bitbucket(BaseVCSDAL):
             else:
                 request.raise_for_status()
         except Exception:
-            logging.debug(f"Query failed to run by returning code of {url_endpoint}", exc_info=True)
+            logger.debug(f"Query failed to run by returning code of {url_endpoint}", exc_info=True)
 
         return None
 
@@ -64,7 +66,7 @@ class Bitbucket(BaseVCSDAL):
             branch_restrictions = self._request(endpoint=f"repositories/{self.current_repository}/branch-restrictions",
                                                 allowed_status_codes=[200])
             return branch_restrictions
-        logging.debug("Environment variable BITBUCKET_REPO_FULL_NAME was not set. Cannot fetch branch restrictions.")
+        logger.debug("Environment variable BITBUCKET_REPO_FULL_NAME was not set. Cannot fetch branch restrictions.")
         return None
 
     def persist_branch_restrictions(self) -> None:

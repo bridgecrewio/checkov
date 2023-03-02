@@ -14,6 +14,8 @@ from checkov.common.multi_signature import multi_signature
 from checkov.cloudformation.checks.utils.iam_cloudformation_document_to_policy_converter import \
     convert_cloudformation_conf_to_iam_policy
 
+logger = logging.getLogger(__name__)
+
 
 class BaseCloudsplainingIAMCheck(BaseResourceCheck):
     # creating a PolicyDocument is computational expensive,
@@ -68,11 +70,11 @@ class BaseCloudsplainingIAMCheck(BaseResourceCheck):
                             self.policy_document_cache[self.entity_path][policy.get("PolicyName")] = policy_statement
                     violations = self.cloudsplaining_analysis(policy_statement)
                     if violations:
-                        logging.debug(f"detailed cloudsplaining finding: {json.dumps(violations)}")
+                        logger.debug(f"detailed cloudsplaining finding: {json.dumps(violations)}")
                         return CheckResult.FAILED
                 except Exception:
                     # this might occur with templated iam policies where ARN is not in place or similar
-                    logging.debug(f"could not run cloudsplaining analysis on policy {conf}")
+                    logger.debug(f"could not run cloudsplaining analysis on policy {conf}")
                     return CheckResult.UNKNOWN
             return CheckResult.PASSED
 

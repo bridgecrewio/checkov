@@ -15,6 +15,8 @@ from checkov.runner_filter import RunnerFilter
 if TYPE_CHECKING:
     from checkov.common.parsers.node import DictNode
 
+logger = logging.getLogger(__name__)
+
 
 def create_definitions(
     root_folder: str,
@@ -39,13 +41,13 @@ def create_definitions(
                             try:
                                 content = json.load(f)
                             except UnicodeDecodeError:
-                                logging.debug(f"Encoding for file {file_path} is not UTF-8, trying to detect it")
+                                logger.debug(f"Encoding for file {file_path} is not UTF-8, trying to detect it")
                                 content = str(from_fp(f).best())
 
                         if isinstance(content, dict) and content.get('terraform_version'):
                             files.append(file_path)
                     except Exception as e:
-                        logging.debug(f'Failed to load json file {file_path}, skipping', stack_info=True)
+                        logger.debug(f'Failed to load json file {file_path}, skipping', stack_info=True)
                         out_parsing_errors[file_path] = str(e)
 
     tf_definitions = {}
@@ -59,7 +61,7 @@ def create_definitions(
                     tf_definitions[file] = current_tf_definitions
                     definitions_raw[file] = current_definitions_raw
             else:
-                logging.debug(f'Failed to load {file} as is not a .json file, skipping')
+                logger.debug(f'Failed to load {file} as is not a .json file, skipping')
     return tf_definitions, definitions_raw
 
 
@@ -91,7 +93,7 @@ def get_entity_context(definitions, definitions_raw, definition_path, full_file_
     entity_context = {}
 
     if full_file_path not in definitions:
-        logging.debug(
+        logger.debug(
             f'Tried to look up file {full_file_path} in TF plan entity definitions, but it does not exist')
         return entity_context
 

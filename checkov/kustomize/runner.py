@@ -36,6 +36,8 @@ if TYPE_CHECKING:
     from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
     from checkov.kubernetes.graph_manager import KubernetesGraphManager
 
+logger = logging.getLogger(__name__)
+
 
 class K8sKustomizeRunner(K8sRunner):
     def __init__(
@@ -101,7 +103,7 @@ class K8sKustomizeRunner(K8sRunner):
         # Where Kubernetes CHECKS are needed, but the specific file references are to another framework for the user output (or a mix of both).
         if not self.context:
             # this shouldn't happen
-            logging.error("context was not set correctly")
+            logger.error("context was not set correctly")
             return report
 
         kustomize_metadata = self.report_mutator_data['kustomizeMetadata'],
@@ -109,13 +111,13 @@ class K8sKustomizeRunner(K8sRunner):
         for check, check_result in results.items():
             resource_id = get_resource_id(entity_conf)
             if not resource_id:
-                logging.error(f"Couldn't get resource ID for {entity_conf}")
+                logger.error(f"Couldn't get resource ID for {entity_conf}")
                 continue
 
             entity_context = self.context[k8_file][resource_id]
 
             if file_abs_path not in kustomize_file_mappings:
-                logging.warning(f"couldn't find {file_abs_path} path in kustomizeFileMappings")
+                logger.warning(f"couldn't find {file_abs_path} path in kustomizeFileMappings")
                 continue
 
             realKustomizeEnvMetadata = kustomize_metadata[0][kustomize_file_mappings[file_abs_path]]
@@ -168,7 +170,7 @@ class K8sKustomizeRunner(K8sRunner):
         if not self.context:
             if self.context is None:
                 # this shouldn't happen
-                logging.error("Context for Kustomize runner was not set")
+                logger.error("Context for Kustomize runner was not set")
             return report
 
         kustomize_metadata = self.report_mutator_data['kustomizeMetadata'],
@@ -189,7 +191,7 @@ class K8sKustomizeRunner(K8sRunner):
                     else:
                         kustomizeResourceID = f'{realKustomizeEnvMetadata["type"]}:{entity_id}'
                 else:
-                    logging.warning(f"couldn't find {entity_file_abs_path} path in kustomizeFileMappings")
+                    logger.warning(f"couldn't find {entity_file_abs_path} path in kustomizeFileMappings")
                     continue
                 code_lines = entity_context["code_lines"]
                 file_line_range = self.line_range(code_lines)
@@ -258,20 +260,20 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
             try:
                 fileContent = yaml.safe_load(kustomizationFile)
             except yaml.YAMLError:
-                logging.info(f"Failed to load Kustomize metadata from {kustomization_path}.", exc_info=True)
+                logger.info(f"Failed to load Kustomize metadata from {kustomization_path}.", exc_info=True)
 
             if 'resources' in fileContent:
-                logging.debug(f"Kustomization contains resources: section. Likley a base. {kustomization_path}")
+                logger.debug(f"Kustomization contains resources: section. Likley a base. {kustomization_path}")
                 metadata['type'] = "base"
 
             elif 'patchesStrategicMerge' in fileContent:
-                logging.debug(f"Kustomization contains patchesStrategicMerge: section. Likley an overlay/env. {kustomization_path}")
+                logger.debug(f"Kustomization contains patchesStrategicMerge: section. Likley an overlay/env. {kustomization_path}")
                 metadata['type'] = "overlay"
                 if 'bases' in fileContent:
                     metadata['referenced_bases'] = fileContent['bases']
 
             elif 'bases' in fileContent:
-                logging.debug(f"Kustomization contains bases: section. Likley an overlay/env. {kustomization_path}")
+                logger.debug(f"Kustomization contains bases: section. Likley an overlay/env. {kustomization_path}")
                 metadata['type'] = "overlay"
                 metadata['referenced_bases'] = fileContent['bases']
 
@@ -288,7 +290,7 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
     def check_system_deps(self) -> str | None:
         # Ensure local system dependancies are available and of the correct version.
         # Returns framework names to skip if deps **fail** (ie, return None for a successful deps check).
-        logging.info(f"Checking necessary system dependancies for {self.check_type} checks.")
+        logger.info(f"Checking necessary system dependancies for {self.check_type} checks.")
 
         if shutil.which(self.kubectl_command) is not None:
             try:
@@ -300,17 +302,17 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
                     kubectl_version_minor = version_output.split('\n')[0].split('Minor:\"')[1].split('"')[0]
                     kubectl_version = float(f"{kubectl_version_major}.{kubectl_version_minor}")
                     if kubectl_version >= 1.14:
-                        logging.info(f"Found working version of {self.check_type} dependancy {self.kubectl_command}: {kubectl_version}")
+                        logger.info(f"Found working version of {self.check_type} dependancy {self.kubectl_command}: {kubectl_version}")
                         self.templateRendererCommand = self.kubectl_command
                         return None
 
             except Exception:
-                logging.debug(f"An error occured testing the {self.kubectl_command} command:", exc_info=True)
+                logger.debug(f"An error occured testing the {self.kubectl_command} command:", exc_info=True)
 
         elif shutil.which(self.kustomize_command) is not None:
             kustomize_version = get_kustomize_version(kustomize_command=self.kustomize_command)
             if kustomize_version:
-                logging.info(
+                logger.info(
                     f"Found working version of {self.check_type} dependency {self.kustomize_command}: {kustomize_version}"
                 )
                 self.templateRendererCommand = self.kustomize_command
@@ -318,7 +320,7 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
             else:
                 return self.check_type
         else:
-            logging.info(f"Could not find usable tools locally to process {self.check_type} checks. Framework will be disabled for this run.")
+            logger.info(f"Could not find usable tools locally to process {self.check_type} checks. Framework will be disabled for this run.")
             return self.check_type
 
         return None
@@ -336,16 +338,16 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
                 self.kustomizeProcessedFolderAndMeta[file_path]['validated_base'] = str(pathlib.Path(self.kustomizeProcessedFolderAndMeta[file_path]['calculated_bases']))
                 checkov_kustomize_env_name_by_path = str(pathlib.Path(file_path).relative_to(pathlib.Path(self.kustomizeProcessedFolderAndMeta[file_path]['calculated_bases']).parent))
                 self.kustomizeProcessedFolderAndMeta[file_path]['overlay_name'] = checkov_kustomize_env_name_by_path
-                logging.debug(f"Overlay based on {self.kustomizeProcessedFolderAndMeta[file_path]['validated_base']}, naming overlay {checkov_kustomize_env_name_by_path} for Checkov Results.")
+                logger.debug(f"Overlay based on {self.kustomizeProcessedFolderAndMeta[file_path]['validated_base']}, naming overlay {checkov_kustomize_env_name_by_path} for Checkov Results.")
             else:
                 checkov_kustomize_env_name_by_path = pathlib.Path(file_path).stem
                 self.kustomizeProcessedFolderAndMeta[file_path]['overlay_name'] = checkov_kustomize_env_name_by_path
-                logging.debug(f"Could not confirm base dir for Kustomize overlay/env. Using {checkov_kustomize_env_name_by_path} for Checkov Results.")
+                logger.debug(f"Could not confirm base dir for Kustomize overlay/env. Using {checkov_kustomize_env_name_by_path} for Checkov Results.")
 
         except KeyError:
             checkov_kustomize_env_name_by_path = pathlib.Path(file_path).stem
             self.kustomizeProcessedFolderAndMeta[file_path]['overlay_name'] = checkov_kustomize_env_name_by_path
-            logging.debug(f"Could not confirm base dir for Kustomize overlay/env. Using {checkov_kustomize_env_name_by_path} for Checkov Results.")
+            logger.debug(f"Could not confirm base dir for Kustomize overlay/env. Using {checkov_kustomize_env_name_by_path} for Checkov Results.")
 
     @staticmethod
     def _get_parsed_output(
@@ -401,7 +403,7 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
             template_render_command_options = "build"
         proc = subprocess.Popen([template_renderer_command, template_render_command_options, filePath], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
         output, _ = proc.communicate()
-        logging.info(
+        logger.info(
             f"Ran kubectl to build Kustomize output. DIR: {filePath}. TYPE: {source_type}.")
         return output
 
@@ -412,7 +414,7 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
         env_or_base_path_prefix = None
         if kustomize_processed_folder_and_meta[file_path].get('type') == "overlay":
             if 'calculated_bases' not in kustomize_processed_folder_and_meta[file_path]:
-                logging.debug(f"Kustomize: Overlay with unknown base. User may have specified overlay dir directly. {file_path}")
+                logger.debug(f"Kustomize: Overlay with unknown base. User may have specified overlay dir directly. {file_path}")
                 env_or_base_path_prefix = ""
             else:
                 base_path_parts = pathlib.Path(kustomize_processed_folder_and_meta[file_path]['calculated_bases']).parts
@@ -434,12 +436,12 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
         template_renderer_command: str,
     ) -> tuple[bytes, str] | tuple[None, None]:
         source_type = kustomize_processed_folder_and_meta[file_path].get('type')
-        logging.debug(f"Kustomization at {file_path} likley a {source_type}")
+        logger.debug(f"Kustomization at {file_path} likley a {source_type}")
         try:
             output = Runner._get_kubectl_output(file_path, template_renderer_command, source_type)
             return output, file_path
         except Exception:
-            logging.warning(f"Error building Kustomize output at dir: {file_path}.", exc_info=True)
+            logger.warning(f"Error building Kustomize output at dir: {file_path}.", exc_info=True)
             return None, None
 
     @staticmethod
@@ -452,13 +454,13 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
     ) -> None:
         env_or_base_path_prefix = Runner._get_env_or_base_path_prefix(file_path, kustomize_processed_folder_and_meta)
         if env_or_base_path_prefix is None:
-            logging.warning(f"env_or_base_path_prefix is None, filePath: {file_path}", exc_info=True)
+            logger.warning(f"env_or_base_path_prefix is None, filePath: {file_path}", exc_info=True)
             return
 
         extract_dir = target_folder_path + env_or_base_path_prefix
         os.makedirs(extract_dir, exist_ok=True)
 
-        logging.debug(f"Kustomize: Temporary directory for {file_path} at {extract_dir}")
+        logger.debug(f"Kustomize: Temporary directory for {file_path} at {extract_dir}")
         output_str = output.decode("utf-8")
         cur_writer = Runner._get_parsed_output(file_path, extract_dir, output_str, shared_kustomize_file_mappings)
         if cur_writer:
@@ -494,7 +496,7 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
 
         if platform.system() == 'Windows':
             if not self.templateRendererCommand:
-                logging.error("The 'templateRendererCommand' was not set correctly")
+                logger.error("The 'templateRendererCommand' was not set correctly")
                 return
 
             shared_kustomize_file_mappings: dict[str, str] = {}
@@ -563,14 +565,14 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
 
             # the returned report can be a list of reports, which also includes an SCA image report
             report = k8s_runner.run(target_dir, external_checks_dir=None, runner_filter=runner_filter)
-            logging.debug(f"Sucessfully ran k8s scan on Kustomization templated files in tmp scan dir : {target_dir}")
+            logger.debug(f"Sucessfully ran k8s scan on Kustomization templated files in tmp scan dir : {target_dir}")
 
             shutil.rmtree(target_dir)
 
         except Exception:
-            logging.warning("Failed to run Kubernetes runner", exc_info=True)
+            logger.warning("Failed to run Kubernetes runner", exc_info=True)
             with tempfile.TemporaryDirectory() as save_error_dir:
-                logging.debug(
+                logger.debug(
                     f"Error running k8s scan on Scan dir: {target_dir}. Saved context dir: {save_error_dir}")
                 shutil.move(target_dir, save_error_dir)
 
@@ -618,7 +620,7 @@ def find_kustomize_directories(
     if not excluded_paths:
         excluded_paths = []
     if files:
-        logging.info('Running with --file argument; file must be a kustomization.yaml file')
+        logger.info('Running with --file argument; file must be a kustomization.yaml file')
         for file in files:
             if os.path.basename(file) in Runner.kustomizeSupportedFileTypes:
                 kustomize_directories.append(os.path.dirname(file))

@@ -11,6 +11,8 @@ if TYPE_CHECKING:
     from checkov.common.output.record import Record
     from checkov.common.output.report import Report
 
+logger = logging.getLogger(__name__)
+
 
 class SecretsOmitterStatus(Enum):
     SUCCESS = 0
@@ -74,7 +76,7 @@ class SecretsOmitter:
 
     def omit(self) -> SecretsOmitterStatus:
         if not self.reports or not self.secrets_report:
-            logging.debug("Insufficient reports to omit secrets")
+            logger.debug("Insufficient reports to omit secrets")
             return SecretsOmitterStatus.INSUFFICIENT_REPORTS
 
         files_with_secrets: set[str] = {secret_check.get("file_path", "") for secret_check in self._secret_check()}
@@ -96,7 +98,7 @@ class SecretsOmitter:
                     continue
 
                 if len(secrets_check_lines) != secret_check_line_range[1] - secret_check_line_range[0] + 1:
-                    logging.error("Secrets lines does not match the length of the line range, sanity check failed")
+                    logger.error("Secrets lines does not match the length of the line range, sanity check failed")
                     continue
 
                 for secret_line_index, omitted_line in \

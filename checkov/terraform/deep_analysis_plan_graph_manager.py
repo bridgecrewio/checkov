@@ -7,6 +7,8 @@ from checkov.common.output.report import Report
 from checkov.terraform.plan_parser import TF_PLAN_RESOURCE_ADDRESS
 from typing import Dict
 
+logger = logging.getLogger(__name__)
+
 
 class DeepAnalysisGraphManager:
     def __init__(self, tf_graph: TerraformLocalGraph, tf_plan_graph: TerraformLocalGraph) -> None:
@@ -32,7 +34,7 @@ class DeepAnalysisGraphManager:
         for address, tf_plan_vertex in self._address_to_tf_plan_vertex_map.items():
             tf_vertex = self._address_to_tf_vertex_map.get(address)
             if not tf_vertex:
-                logging.info(f'Cant find this address: {address} in tf graph')
+                logger.info(f'Cant find this address: {address} in tf graph')
                 continue
             tf_vertex.attributes = {**tf_vertex.attributes, **tf_plan_vertex.attributes}
             tf_vertex.path = tf_plan_vertex.path

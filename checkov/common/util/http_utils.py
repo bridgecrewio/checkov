@@ -71,7 +71,7 @@ def extract_error_message(response: requests.Response | HTTPResponse) -> Optiona
             elif 'Message' in content:
                 return cast(str, content['Message'])
         except Exception:
-            logging.debug(f'Failed to parse the response content: {raw.decode()}')
+            logger.debug(f'Failed to parse the response content: {raw.decode()}')
 
     return response.reason
 
@@ -142,10 +142,10 @@ def request_wrapper(
                 response.raise_for_status()
             return response
         except requests.exceptions.ConnectionError as connection_error:
-            logging.error(f"Connection error on request {method}:{url},\ndata:\n{data}\njson:{json if log_json_body else 'Redacted'}\nheaders:{headers}")
+            logger.error(f"Connection error on request {method}:{url},\ndata:\n{data}\njson:{json if log_json_body else 'Redacted'}\nheaders:{headers}")
             if i != request_max_tries - 1:
                 sleep_secs = sleep_between_request_tries * (i + 1)
-                logging.info(f"retrying attempt number {i + 2} in {sleep_secs} seconds")
+                logger.info(f"retrying attempt number {i + 2} in {sleep_secs} seconds")
                 time.sleep(sleep_secs)
                 continue
 
@@ -153,10 +153,10 @@ def request_wrapper(
             raise connection_error
         except requests.exceptions.HTTPError as http_error:
             status_code = http_error.response.status_code
-            logging.error(f"HTTP error on request {method}:{url},\ndata:\n{data}\njson:{json if log_json_body else 'Redacted'}\nheaders:{headers}")
+            logger.error(f"HTTP error on request {method}:{url},\ndata:\n{data}\njson:{json if log_json_body else 'Redacted'}\nheaders:{headers}")
             if (status_code >= 500 or status_code == 403) and i != request_max_tries - 1:
                 sleep_secs = sleep_between_request_tries * (i + 1)
-                logging.info(f"retrying attempt number {i + 2} in {sleep_secs} seconds")
+                logger.info(f"retrying attempt number {i + 2} in {sleep_secs} seconds")
                 time.sleep(sleep_secs)
                 continue
 
@@ -186,7 +186,7 @@ async def aiohttp_client_session_wrapper(
     # 2. ClientOSError
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(resolver=resolver)) as session:
         for i in range(request_max_tries):
-            logging.info(
+            logger.info(
                 f"[http_utils](aiohttp_client_session_wrapper) reporting attempt {i + 1} out of {request_max_tries}")
             try:
                 async with session.post(
@@ -194,26 +194,26 @@ async def aiohttp_client_session_wrapper(
                 ) as response:
                     content = await response.text()
                 if response.ok:
-                    logging.info(f"[http_utils](aiohttp_client_session_wrapper) - done successfully to url: \'{url}\'")
+                    logger.info(f"[http_utils](aiohttp_client_session_wrapper) - done successfully to url: \'{url}\'")
                     return 0
                 elif i != request_max_tries - 1:
                     await asyncio.sleep(sleep_between_request_tries * (i + 1))
                     continue
                 else:
-                    logging.error(f"[http_utils](aiohttp_client_session_wrapper) - Failed to send report to "
+                    logger.error(f"[http_utils](aiohttp_client_session_wrapper) - Failed to send report to "
                                   f"url \'{url}\'")
-                    logging.error(f"Status code: {response.status}, Reason: {response.reason}, Content: {content}")
+                    logger.error(f"Status code: {response.status}, Reason: {response.reason}, Content: {content}")
                     return 1
             except aiohttp.ClientOSError:
                 if i != request_max_tries - 1:
                     await asyncio.sleep(sleep_between_request_tries * (i + 1))
                     continue
                 else:
-                    logging.error(f"[http_utils](aiohttp_client_session_wrapper) - ClientOSError when sending report "
+                    logger.error(f"[http_utils](aiohttp_client_session_wrapper) - ClientOSError when sending report "
                                   f"to url: \'{url}\'")
                     raise
             except Exception as e:
-                logging.error(f"[http_utils](aiohttp_client_session_wrapper) - exception when sending report "
+                logger.error(f"[http_utils](aiohttp_client_session_wrapper) - exception when sending report "
                               f"to url: \'{url}\':\n\'{e}\'")
                 raise
 

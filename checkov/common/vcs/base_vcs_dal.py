@@ -12,6 +12,8 @@ import urllib3
 from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.http_utils import get_user_agent_header
 
+logger = logging.getLogger(__name__)
+
 
 class BaseVCSDAL:
     def __init__(self) -> None:
@@ -80,7 +82,7 @@ class BaseVCSDAL:
                         return None
                     return data
         except Exception:
-            logging.debug(f"Query failed to run by returning code of {url_endpoint}", exc_info=True)
+            logger.debug(f"Query failed to run by returning code of {url_endpoint}", exc_info=True)
         return None
 
     @abstractmethod
@@ -103,19 +105,19 @@ class BaseVCSDAL:
                 if request.status == 200:
                     data = json.loads(request.data.decode("utf8"))
                     if isinstance(data, dict) and 'errors' in data.keys():
-                        logging.debug("received errors %s", data)
+                        logger.debug("received errors %s", data)
                         return None
                     return data
                 else:
-                    logging.debug("Query failed to run by returning code of {}. {}".format(request.data, query))
+                    logger.debug("Query failed to run by returning code of {}. {}".format(request.data, query))
         except Exception:
-            logging.debug(f"Query failed {query}", exc_info=True)
+            logger.debug(f"Query failed {query}", exc_info=True)
 
     @staticmethod
     def persist(path: str | Path, conf: dict[str, Any] | list[dict[str, Any]]) -> None:
         BaseVCSDAL.ensure_dir(path)
         with open(path, "w+", encoding='utf-8') as f:
-            logging.debug(f"Persisting to {path}")
+            logger.debug(f"Persisting to {path}")
             json.dump(conf, f, ensure_ascii=False, indent=4)
 
     @staticmethod

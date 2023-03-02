@@ -12,8 +12,9 @@ from checkov.yaml_doc.enums import BlockType
 import jmespath
 
 STARTLINE_MARK = "__startline__"
-
 ENDLINE_MARK = "__endline__"
+
+logger = logging.getLogger(__name__)
 
 
 class Registry(BaseCheckRegistry):
@@ -171,7 +172,7 @@ class Registry(BaseCheckRegistry):
                     if skip["id"] == check.id and e[STARTLINE_MARK] <= skip['line_number'] <= e[ENDLINE_MARK]
                 ] or [{}]
             else:
-                logging.info(f"Unexpected entity type {type(entity)} for {entity}")
+                logger.info(f"Unexpected entity type {type(entity)} for {entity}")
 
             if runner_filter.should_run_check(check=check, report_type=self.report_type):
                 scanner = self._scanner.get(check.block_type, self._scan_yaml_document)

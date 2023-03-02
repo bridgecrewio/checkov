@@ -18,6 +18,8 @@ from checkov.common.runners.base_runner import BaseRunner, ignored_directories
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package_2.scanner import Scanner
 
+logger = logging.getLogger(__name__)
+
 
 class Runner(BaseRunner[None]):
     check_type = CheckType.SCA_PACKAGE  # noqa: CCE003  # a static attribute
@@ -43,12 +45,12 @@ class Runner(BaseRunner[None]):
             return None
 
         if not bc_integration.bc_api_key:
-            logging.info("The --bc-api-key flag needs to be set to run SCA package scanning")
+            logger.info("The --bc-api-key flag needs to be set to run SCA package scanning")
             return None
 
         if bc_integration.bc_source and bc_integration.bc_source.name in IDEsSourceTypes \
                 and not bc_integration.is_prisma_integration():
-            logging.info("The --bc-api-key flag needs to be set to a Prisma token for SCA scan for vscode or jetbrains extention")
+            logger.info("The --bc-api-key flag needs to be set to a Prisma token for SCA scan for vscode or jetbrains extention")
             return None
 
         self._code_repo_path = Path(root_folder) if root_folder else None
@@ -79,7 +81,7 @@ class Runner(BaseRunner[None]):
         scan_results = scanner.scan()
 
         if scan_results is not None:
-            logging.info(f"SCA package scanning successfully scanned {len(scan_results)} files")
+            logger.info(f"SCA package scanning successfully scanned {len(scan_results)} files")
 
         return scan_results
 
@@ -143,7 +145,7 @@ class Runner(BaseRunner[None]):
             excluded_file_names: set[str] | None = None,
     ) -> List[FileToPersist] | None:
         """ upload package files to s3"""
-        logging.info("SCA package scanning upload for package files")
+        logger.info("SCA package scanning upload for package files")
         excluded_file_names = excluded_file_names or set()
         package_files_to_persist: List[FileToPersist] = []
         try:
@@ -160,16 +162,16 @@ class Runner(BaseRunner[None]):
                 for file in files:
                     file_path = Path(file)
                     if not file_path.exists():
-                        logging.warning(f"File {file_path} doesn't exist")
+                        logger.warning(f"File {file_path} doesn't exist")
                         continue
                     if file_path.name in SCANNABLE_PACKAGE_FILES or file_path.suffix in SCANNABLE_PACKAGE_FILES_EXTENSIONS:
                         package_files_to_persist.append(FileToPersist(file, os.path.relpath(file, root_folder)))
 
-            logging.info(f"{len(package_files_to_persist)} sca package files found.")
+            logger.info(f"{len(package_files_to_persist)} sca package files found.")
             bc_integration.persist_files(package_files_to_persist)
             return package_files_to_persist
         except Exception:
-            logging.debug("Unexpected failure happened during uploading files for package scanning.\n"
+            logger.debug("Unexpected failure happened during uploading files for package scanning.\n"
                           "the scanning is terminating. details are below.\n"
                           "please try again. if it is repeated, please report.", exc_info=True)
             return None

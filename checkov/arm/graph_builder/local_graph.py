@@ -14,6 +14,8 @@ from checkov.common.util.consts import START_LINE, END_LINE
 if TYPE_CHECKING:
     from checkov.common.graph.graph_builder.local_graph import _Block
 
+logger = logging.getLogger(__name__)
+
 
 class ArmLocalGraph(LocalGraph[ArmBlock]):
     def __init__(self, definitions: dict[str, dict[str, Any]]) -> None:
@@ -24,10 +26,10 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
 
     def build_graph(self, render_variables: bool = False) -> None:
         self._create_vertices()
-        logging.debug(f"[ArmLocalGraph] created {len(self.vertices)} vertices")
+        logger.debug(f"[ArmLocalGraph] created {len(self.vertices)} vertices")
 
         self._create_edges()
-        logging.debug(f"[ArmLocalGraph] created {len(self.edges)} edges")
+        logger.debug(f"[ArmLocalGraph] created {len(self.edges)} edges")
 
     def _create_vertices(self) -> None:
         for file_path, definition in self.definitions.items():
@@ -47,7 +49,7 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
             if name in (START_LINE, END_LINE):
                 continue
             if not isinstance(config, dict):
-                logging.debug(f"[ArmLocalGraph] parameter {name} has wrong type {type(config)}")
+                logger.debug(f"[ArmLocalGraph] parameter {name} has wrong type {type(config)}")
                 continue
 
             attributes = deepcopy(config)

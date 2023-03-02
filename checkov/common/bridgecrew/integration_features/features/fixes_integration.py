@@ -20,6 +20,8 @@ if TYPE_CHECKING:
 
 SUPPORTED_FIX_FRAMEWORKS = ['terraform', 'cloudformation']
 
+logger = logging.getLogger(__name__)
+
 
 class FixesIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration: BcPlatformIntegration) -> None:
@@ -43,7 +45,7 @@ class FixesIntegration(BaseIntegrationFeature):
             self._get_platform_fixes(scan_report)
         except Exception:
             self.integration_feature_failures = True
-            logging.debug("Fixes will not be applied.", exc_info=True)
+            logger.debug("Fixes will not be applied.", exc_info=True)
 
     def _get_platform_fixes(self, scan_report: Report) -> None:
 
@@ -73,12 +75,12 @@ class FixesIntegration(BaseIntegrationFeature):
             for fix in all_fixes:
                 ckv_id = metadata_integration.get_ckv_id_from_bc_id(fix['policyId'])
                 if not ckv_id:
-                    logging.debug(f"BC ID {fix['policyId']} has no checkov ID - might be a cloned policy")
+                    logger.debug(f"BC ID {fix['policyId']} has no checkov ID - might be a cloned policy")
                     ckv_id = fix.get('policyId', '')
 
                 failed_check = failed_check_by_check_resource.get((ckv_id, fix['resourceId']))  # type:ignore[arg-type]  # ckv_id is not None here
                 if not failed_check:
-                    logging.warning(f'Could not find the corresponding failed check for the fix for ID {ckv_id} and resource {fix["resourceId"]}')
+                    logger.warning(f'Could not find the corresponding failed check for the fix for ID {ckv_id} and resource {fix["resourceId"]}')
                     continue
                 failed_check.fixed_definition = fix['fixedDefinition']
 
@@ -86,7 +88,7 @@ class FixesIntegration(BaseIntegrationFeature):
         self, check_type: str, filename: str, file_contents: str, failed_checks: Iterable[Record]
     ) -> dict[str, Any] | None:
         if not self.bc_integration.bc_source:
-            logging.error("Source was not set")
+            logger.error("Source was not set")
             return None
 
         errors = list(map(lambda c: {
@@ -117,11 +119,11 @@ class FixesIntegration(BaseIntegrationFeature):
             error_message = extract_error_message(request)
             raise Exception(f'Get fixes request failed with response code {request.status}: {error_message}')
 
-        logging.debug(f'Response from fixes API: {request.data}')
+        logger.debug(f'Response from fixes API: {request.data}')
 
         fixes: list[dict[str, Any]] = json.loads(request.data) if request.data else None
         if not fixes or not isinstance(fixes, list):
-            logging.warning(f'Unexpected fixes API response for file {filename}; skipping fixes for this file')
+            logger.warning(f'Unexpected fixes API response for file {filename}; skipping fixes for this file')
             return None
         return fixes[0]
 

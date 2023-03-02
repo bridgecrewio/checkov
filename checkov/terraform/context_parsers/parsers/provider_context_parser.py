@@ -6,6 +6,8 @@ from hcl2 import START_LINE, END_LINE
 
 from checkov.terraform.context_parsers.base_parser import BaseContextParser
 
+logger = logging.getLogger(__name__)
+
 
 class ProviderContextParser(BaseContextParser):
     def __init__(self) -> None:
@@ -50,7 +52,7 @@ class ProviderContextParser(BaseContextParser):
                 )
             )["provider"][0]
         except Exception as e:
-            logging.info(f'got exception while loading file {self.tf_file}\n {e}')
+            logger.info(f'got exception while loading file {self.tf_file}\n {e}')
             return False
         alias = provider_obj[provider_type].get("alias", ["default"])
         return super()._is_block_signature(line_num, line_tokens + alias, entity_context_path)

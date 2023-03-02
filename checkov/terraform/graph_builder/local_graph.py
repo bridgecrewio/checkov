@@ -35,6 +35,8 @@ from checkov.terraform.graph_builder.variable_rendering.renderer import Terrafor
 MODULE_RESERVED_ATTRIBUTES = ("source", "version")
 CROSS_VARIABLE_EDGE_PREFIX = '[cross-variable] '
 
+logger = logging.getLogger(__name__)
+
 
 class Undetermined(TypedDict):
     module_vertex_id: int
@@ -58,35 +60,35 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
 
     def build_graph(self, render_variables: bool) -> None:
         self._create_vertices()
-        logging.info(f"[TerraformLocalGraph] created {len(self.vertices)} vertices")
+        logger.info(f"[TerraformLocalGraph] created {len(self.vertices)} vertices")
         self._build_edges()
-        logging.info(f"[TerraformLocalGraph] created {len(self.edges)} edges")
+        logger.info(f"[TerraformLocalGraph] created {len(self.edges)} edges")
         if self.enable_foreach_handling:
             try:
                 foreach_handler = foreach_module.ForeachHandler(self)
                 foreach_handler.handle_foreach_rendering(self.foreach_blocks)
                 self._arrange_graph_data()
                 self._build_edges()
-                logging.info(f"[TerraformLocalGraph] finished handling foreach values with {len(self.vertices)} vertices and {len(self.edges)} edges")
+                logger.info(f"[TerraformLocalGraph] finished handling foreach values with {len(self.vertices)} vertices and {len(self.edges)} edges")
             except Exception as e:
-                logging.info(f'Failed to process foreach handling, error: {str(e)}', exc_info=True)
+                logger.info(f'Failed to process foreach handling, error: {str(e)}', exc_info=True)
 
         self.calculate_encryption_attribute(ENCRYPTION_BY_RESOURCE_TYPE)
         if render_variables:
-            logging.info(f"Rendering variables, graph has {len(self.vertices)} vertices and {len(self.edges)} edges")
+            logger.info(f"Rendering variables, graph has {len(self.vertices)} vertices and {len(self.edges)} edges")
             renderer = TerraformVariableRenderer(self)
             renderer.render_variables_from_local_graph()
             self.update_vertices_breadcrumbs_and_module_connections()
             self.update_nested_modules_address()
             if strtobool(os.getenv("CHECKOV_EXPERIMENTAL_CROSS_VARIABLE_EDGES", "True")):
                 # experimental flag on building cross variable edges for terraform graph
-                logging.info("Building cross variable edges")
+                logger.info("Building cross variable edges")
                 edges_count = len(self.edges)
                 self._build_cross_variable_edges()
-                logging.info(f"Found {len(self.edges) - edges_count} cross variable edges")
+                logger.info(f"Found {len(self.edges) - edges_count} cross variable edges")
 
     def _create_vertices(self) -> None:
-        logging.info("Creating vertices")
+        logger.info("Creating vertices")
         self.vertices: List[TerraformBlock] = [None] * len(self.module.blocks)
         for i, block in enumerate(self.module.blocks):
             self.vertices[i] = block
@@ -212,7 +214,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                     vertex.source_module = module_indices
 
     def _build_edges(self) -> None:
-        logging.info("Creating edges")
+        logger.info("Creating edges")
         self.get_module_vertices_mapping()
         aliases = self._get_aliases()
         resources_types = self.get_resources_types_in_graph()
@@ -266,7 +268,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                                     cross_variable_edges
                                 )
                             except Exception:
-                                logging.warning(
+                                logger.warning(
                                     f"Module {self.vertices[dest_node_index]} does not have source attribute, skipping"
                                 )
                         else:
@@ -394,7 +396,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                     (path for path in self.relative_paths_cache.get(dest_module_source)), dest_module_path
                 )
             except (OSError, ValueError):
-                logging.debug(f"Error to get dest_module_path {dest_module_source}", exc_info=True)
+                logger.debug(f"Error to get dest_module_path {dest_module_source}", exc_info=True)
                 return ""
             except NotImplementedError as e:
                 if 'Non-relative patterns are unsupported' in str(e):

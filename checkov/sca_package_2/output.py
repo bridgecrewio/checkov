@@ -16,6 +16,8 @@ from checkov.common.sca.commons import UNFIXABLE_VERSION, get_package_alias
 from checkov.common.typing import _LicenseStatus
 from checkov.common.output.common import compare_table_items_severity
 
+logger = logging.getLogger(__name__)
+
 
 @dataclass
 class CveCount:
@@ -80,7 +82,7 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
     for record in itertools.chain(*cve_records):
         if not record.vulnerability_details:
             #  this shouldn't happen
-            logging.error(f"'vulnerability_details' is not set for {record.check_id}")
+            logger.error(f"'vulnerability_details' is not set for {record.check_id}")
             continue
 
         if record.vulnerability_details.get("root_package_name"):
@@ -106,7 +108,7 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
             for record in records:
                 if not record.vulnerability_details:
                     #  this shouldn't happen
-                    logging.error(f"'vulnerability_details' is not set for {record.check_id}")
+                    logger.error(f"'vulnerability_details' is not set for {record.check_id}")
                     continue
 
                 package_name = record.vulnerability_details["package_name"]

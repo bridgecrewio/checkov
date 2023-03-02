@@ -16,6 +16,8 @@ if TYPE_CHECKING:
 
 _LocalGraph = TypeVar("_LocalGraph", bound="LocalGraph[Any]")
 
+logger = logging.getLogger(__name__)
+
 
 class VariableRenderer(ABC, Generic[_LocalGraph]):
     MAX_NUMBER_OF_LOOPS = 50
@@ -56,11 +58,11 @@ class VariableRenderer(ABC, Generic[_LocalGraph]):
             if match_percent > self.duplicate_percent:
                 duplicates_count += 1
             if duplicates_count > self.duplicate_iter_count:
-                logging.info(f"Reached too many edge duplications of {self.duplicate_percent}% for {self.duplicate_iter_count} iterations. breaking.")
+                logger.info(f"Reached too many edge duplications of {self.duplicate_percent}% for {self.duplicate_iter_count} iterations. breaking.")
                 break
             evaluated_edges_cache.append(edges_to_render)
 
-            logging.debug(f"evaluating {len(edges_to_render)} edges")
+            logger.debug(f"evaluating {len(edges_to_render)} edges")
             # group edges that have the same origin and label together
             edges_groups = self.group_edges_by_origin_and_label(edges_to_render)
             if self.run_async:
@@ -90,15 +92,15 @@ class VariableRenderer(ABC, Generic[_LocalGraph]):
 
             loops += 1
             if loops >= self.MAX_NUMBER_OF_LOOPS:
-                logging.warning("Reached 50 graph edge iterations, breaking.")
+                logger.warning("Reached 50 graph edge iterations, breaking.")
                 break
 
         if self.vertices_index_to_render:
             return
         self.local_graph.update_vertices_configs()
-        logging.debug("done evaluating edges")
+        logger.debug("done evaluating edges")
         self.evaluate_non_rendered_values()
-        logging.debug("done evaluate_non_rendered_values")
+        logger.debug("done evaluate_non_rendered_values")
 
     @abstractmethod
     def _render_variables_from_vertices(self) -> None:

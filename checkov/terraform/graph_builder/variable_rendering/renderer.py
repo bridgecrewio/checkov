@@ -57,6 +57,8 @@ KEY_VALUE_SEPERATOR = ' : '
 TYPE_REGEX = re.compile(r'^(\${)?([a-z]+)')
 CHECKOV_RENDER_MAX_LEN = force_int(os.getenv("CHECKOV_RENDER_MAX_LEN", "10000"))
 
+logger = logging.getLogger(__name__)
+
 
 class TerraformVariableRenderer(VariableRenderer):
     def __init__(self, local_graph: "TerraformLocalGraph") -> None:
@@ -199,7 +201,7 @@ class TerraformVariableRenderer(VariableRenderer):
                     if isinstance(default_val_eval, dict):
                         value = self.extract_value_from_vertex(key_path, default_val_eval)
                 except Exception:
-                    logging.debug(f"cant evaluate this rendered value: {default_val}")
+                    logger.debug(f"cant evaluate this rendered value: {default_val}")
             return default_val if not value else value
         if attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.OUTPUT:
             return attributes.get("value")
@@ -313,7 +315,7 @@ class TerraformVariableRenderer(VariableRenderer):
                     try:
                         rendered_blocks = self._process_dynamic_blocks(dynamic_blocks)
                     except Exception:
-                        logging.info(f'Failed to process dynamic blocks in file {vertex.path} of resource {vertex.name}'
+                        logger.info(f'Failed to process dynamic blocks in file {vertex.path} of resource {vertex.name}'
                                      f' for blocks: {dynamic_blocks}')
                         continue
                     changed_attributes = []
@@ -343,7 +345,7 @@ class TerraformVariableRenderer(VariableRenderer):
         rendered_blocks: dict[str, list[dict[str, Any]] | dict[str, Any]] = {}
 
         if not isinstance(dynamic_blocks, list) and not isinstance(dynamic_blocks, dict):
-            logging.info(f"Dynamic blocks found, but of type {type(dynamic_blocks)}")
+            logger.info(f"Dynamic blocks found, but of type {type(dynamic_blocks)}")
 
         dynamic_type = DYNAMIC_BLOCKS_LISTS
         if isinstance(dynamic_blocks, dict):
@@ -520,7 +522,7 @@ class TerraformVariableRenderer(VariableRenderer):
     def evaluate_value(self, val: Any) -> Any:
         val_length: int = len(str(val))
         if CHECKOV_RENDER_MAX_LEN and 0 < CHECKOV_RENDER_MAX_LEN < val_length:
-            logging.debug(f'Rendering was skipped for a {val_length}-character-long string. If you wish to have it '
+            logger.debug(f'Rendering was skipped for a {val_length}-character-long string. If you wish to have it '
                           f'evaluated, please set the environment variable CHECKOV_RENDER_MAX_LEN '
                           f'to {str(val_length + 1)} or to 0 to allow rendering of any length')
             return val
@@ -556,12 +558,12 @@ def find_match_bracket_index(s: str, open_bracket_idx: int) -> int:
             pstack.append(i)
         elif c == RIGHT_BRACKET:
             if len(pstack) == 0:
-                logging.debug("No matching closing brackets at: " + str(i))
+                logger.debug("No matching closing brackets at: " + str(i))
                 return -1
             res[pstack.pop()] = i
 
     if len(pstack) > 0:
-        logging.debug("No matching opening brackets at: " + str(pstack.pop()))
+        logger.debug("No matching opening brackets at: " + str(pstack.pop()))
 
     return res.get(open_bracket_idx) or -1
 

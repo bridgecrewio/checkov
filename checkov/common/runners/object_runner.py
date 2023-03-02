@@ -28,6 +28,8 @@ if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
     from checkov.common.runners.graph_builder.local_graph import ObjectLocalGraph
 
+logger = logging.getLogger(__name__)
+
 
 class GhaMetadata(TypedDict):
     triggers: set[str]
@@ -105,11 +107,11 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
         report = Report(self.check_type)
 
         if not files and not root_folder:
-            logging.debug("No resources to scan.")
+            logger.debug("No resources to scan.")
             return report
 
         if not external_checks_dir and self.require_external_checks():
-            logging.debug("The runner requires that external checks are defined.")
+            logger.debug("The runner requires that external checks are defined.")
             return report
         if external_checks_dir:
             for directory in external_checks_dir:
@@ -132,16 +134,16 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
                     self._load_files(files_to_load=files_to_load)
 
             if CHECKOV_CREATE_GRAPH and self.graph_registry and self.graph_manager:
-                logging.info(f"Creating {self.source} graph")
+                logger.info(f"Creating {self.source} graph")
                 local_graph = self.graph_manager.build_graph_from_definitions(
                     definitions=self.definitions, graph_class=self.graph_class  # type:ignore[arg-type]  # the paths are just `str`
                 )
 
-                logging.info(f"Successfully created {self.source} graph")
+                logger.info(f"Successfully created {self.source} graph")
 
                 self.graph_manager.save_graph(local_graph)
         else:
-            logging.info("Going to use existing graph")
+            logger.info("Going to use existing graph")
             self.populate_metadata_dict()
 
         self.pbar.initiate(len(self.definitions))
@@ -179,7 +181,7 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
                 if result_config:
                     end, start = self.get_start_end_lines(end, result_config, start)
                     if start == -1 and end == -1:
-                        logging.info(f"Skipping line in file path {file_path} in key {key}")
+                        logger.info(f"Skipping line in file path {file_path} in key {key}")
                         continue
                 if platform.system() == "Windows":
                     root_folder = os.path.split(file_path)[0]
@@ -329,7 +331,7 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
                 triggers_set = {key for key in triggers.keys() if key != START_LINE and key != END_LINE}
 
         except Exception as e:
-            logging.info(f"failed to parse workflow triggers due to:{str(e)}")
+            logger.info(f"failed to parse workflow triggers due to:{str(e)}")
         return triggers_set
 
     def _get_jobs(self, definition: dict[str, Any]) -> dict[int, str]:

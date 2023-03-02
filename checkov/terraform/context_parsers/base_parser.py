@@ -19,6 +19,8 @@ from checkov.terraform.context_parsers.registry import parser_registry
 OPEN_CURLY = "{"
 CLOSE_CURLY = "}"
 
+logger = logging.getLogger(__name__)
+
 
 class BaseContextParser(ABC):
     def __init__(self, definition_type: str) -> None:
@@ -115,7 +117,7 @@ class BaseContextParser(ABC):
                 if k in entity_context:
                     entity_context = entity_context[k]
                 else:
-                    logging.warning(f'Failed to find context for {".".join(entity_context_path)}')
+                    logger.warning(f'Failed to find context for {".".join(entity_context_path)}')
                     found = False
                     break
             if not found:

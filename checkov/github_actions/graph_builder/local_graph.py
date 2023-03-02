@@ -15,6 +15,8 @@ from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.github_actions.graph_builder.graph_components.resource_types import ResourceType
 from checkov.github_actions.utils import get_scannable_file_paths, parse_file
 
+logger = logging.getLogger(__name__)
+
 
 class GitHubActionsLocalGraph(ObjectLocalGraph):
     def __init__(self, definitions: dict[str | Path, dict[str, Any] | list[dict[str, Any]]]) -> None:
@@ -26,7 +28,7 @@ class GitHubActionsLocalGraph(ObjectLocalGraph):
     def _create_vertices(self) -> None:
         for file_path, definition in self.definitions.items():
             if not isinstance(definition, dict):
-                logging.debug(f"definition of file {file_path} has the wrong type {type(definition)}")
+                logger.debug(f"definition of file {file_path} has the wrong type {type(definition)}")
                 return
 
             file_path = str(file_path)

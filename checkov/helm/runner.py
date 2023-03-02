@@ -27,6 +27,8 @@ import signal
 if TYPE_CHECKING:
     from checkov.kubernetes.graph_manager import KubernetesGraphManager
 
+logger = logging.getLogger(__name__)
+
 
 class K8sHelmRunner(k8_runner):
     def __init__(
@@ -78,11 +80,11 @@ class K8sHelmRunner(k8_runner):
 
             return chart_results
         except Exception:
-            logging.warning(f"Failed to run Kubernetes runner on charts {self.chart_dir_and_meta}", exc_info=True)
+            logger.warning(f"Failed to run Kubernetes runner on charts {self.chart_dir_and_meta}", exc_info=True)
             # with tempfile.TemporaryDirectory() as save_error_dir:
             # TODO this will crash the run when target_dir gets cleaned up, since it no longer exists
             # we either need to copy or find another way to extract whatever we want to get from this (the TODO below)
-            # logging.debug(
+            # logger.debug(
             #    f"Error running k8s scan on {chart_meta['name']}. Scan dir: {target_dir}. Saved context dir: {save_error_dir}")
             # shutil.move(target_dir, save_error_dir)
 
@@ -111,14 +113,14 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
             try:
                 chart_meta: dict[str, Any] = yaml.safe_load(chartyaml)
             except (yaml.YAMLError, UnicodeDecodeError):
-                logging.info(f"Failed to load chart metadata from {chart_path}/Chart.yaml.", exc_info=True)
+                logger.info(f"Failed to load chart metadata from {chart_path}/Chart.yaml.", exc_info=True)
                 return None
         return chart_meta
 
     def check_system_deps(self) -> str | None:
         # Ensure local system dependancies are available and of the correct version.
         # Returns framework names to skip if deps fail.
-        logging.info(f"Checking necessary system dependancies for {self.check_type} checks.")
+        logger.info(f"Checking necessary system dependancies for {self.check_type} checks.")
         try:
             proc = subprocess.Popen([self.helm_command, 'version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
             o, e = proc.communicate()
@@ -126,12 +128,12 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
             if "Version:" in oString:
                 helmVersionOutput = oString[oString.find(':') + 2: oString.find(',') - 1]
                 if "v3" in helmVersionOutput:
-                    logging.info(f"Found working version of {self.check_type} dependancies: {helmVersionOutput}")
+                    logger.info(f"Found working version of {self.check_type} dependancies: {helmVersionOutput}")
                     return None
             else:
                 return self.check_type
         except Exception:
-            logging.info(f"Error running necessary tools to process {self.check_type} checks.")
+            logger.info(f"Error running necessary tools to process {self.check_type} checks.")
 
         return self.check_type
 
@@ -190,7 +192,7 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
         target_dir.replace("//", "/")
         chart_name = chart_meta.get('name', chart_meta.get('Name'))
         if not chart_name:
-            logging.info(
+            logger.info(
                 f"Error parsing chart located {chart_dir}, chart has no name available",
                 exc_info=True,
             )
@@ -207,27 +209,27 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
     ) -> tuple[bytes, tuple[str, dict[str, Any]]] | tuple[None, None]:
         (chart_dir, chart_meta) = chart_item
         if not isinstance(chart_meta, dict):
-            logging.error(f"invalid chart meta {chart_meta}")
+            logger.error(f"invalid chart meta {chart_meta}")
             return None, None
         chart_name = chart_meta.get('name', chart_meta.get('Name'))
         chart_version = chart_meta.get('version', chart_meta.get('Version'))
-        logging.info(
+        logger.info(
             f"Processing chart found at: {chart_dir}, name: {chart_name}, version: {chart_version}")
         # dependency list is nicer to parse than dependency update.
         try:
             helm_binary_list_chart_deps = subprocess.Popen([helm_command, 'dependency', 'list', chart_dir], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
             o, e = helm_binary_list_chart_deps.communicate()
         except Exception:
-            logging.error('Error run helm command', exc_info=True)
+            logger.error('Error run helm command', exc_info=True)
             return None, None
-        logging.debug(
+        logger.debug(
             f"Ran helm command to get dependency output. Chart: {chart_name}. dir: {target_dir}. Output: {str(o, 'utf-8')}. Errors: {str(e, 'utf-8')}")
         if e:
             if "Warning: Dependencies" in str(e, 'utf-8'):
-                logging.warning(
+                logger.warning(
                     f"V1 API chart without Chart.yaml dependancies. Skipping chart dependancy list for {chart_name} at dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
             else:
-                logging.warning(
+                logger.warning(
                     f"Error processing helm dependancies for {chart_name} at source dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
 
         helm_command_args = [helm_command, 'template', '--dependency-update', chart_dir]
@@ -247,23 +249,23 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
             if threading.current_thread() is threading.main_thread():
                 signal.alarm(0)
             if e:
-                logging.warning(
+                logger.warning(
                     f"Error processing helm chart {chart_name} at dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
                 return None, None
-            logging.debug(
+            logger.debug(
                 f"Ran helm command to template chart output. Chart: {chart_name}. dir: {target_dir}. Output: {str(o, 'utf-8')}. Errors: {str(e, 'utf-8')}")
-            logging.info(f'Done helm run for: {chart_dir}')
+            logger.info(f'Done helm run for: {chart_dir}')
             return o, chart_item
 
         except Exception as e:
             if threading.current_thread() is threading.main_thread():
                 signal.alarm(0)
             if isinstance(e, TimeoutError):
-                logging.info(
+                logger.info(
                     f"Error processing helm chart {chart_name} at dir: {chart_dir}. Working dir: {target_dir}. got timeout"
                 )
             else:
-                logging.info(
+                logger.info(
                     f"Error processing helm chart {chart_name} at dir: {chart_dir}. Working dir: {target_dir}.",
                     exc_info=True,
                 )
@@ -290,7 +292,7 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
         except Exception:
             (chart_dir, chart_meta) = chart_item
             chart_name = chart_meta.get('name', chart_meta.get('Name'))
-            logging.info(
+            logger.info(
                 f"Error parsing output {chart_name} at dir: {chart_dir}. Working dir: {target_dir}.",
                 exc_info=True,
             )
@@ -382,7 +384,7 @@ def get_skipped_checks(entity_conf: dict[str, Any]) -> list[dict[str, str]]:
                         skipped_item["suppress_comment"] = "No comment provided"
                     skipped.append(skipped_item)
                 else:
-                    logging.info(f"Parse of Annotation Failed for {metadata['annotations'][key]}: {entity_conf}")
+                    logger.info(f"Parse of Annotation Failed for {metadata['annotations'][key]}: {entity_conf}")
                     continue
     return skipped
 
@@ -392,7 +394,7 @@ def find_chart_directories(root_folder: str | None, files: list[str] | None, exc
     if not excluded_paths:
         excluded_paths = []
     if files:
-        logging.info('Running with --file argument; checking for Helm Chart.yaml files')
+        logger.info('Running with --file argument; checking for Helm Chart.yaml files')
         for file in files:
             if os.path.basename(file) == 'Chart.yaml':
                 chart_directories.append(os.path.dirname(file))

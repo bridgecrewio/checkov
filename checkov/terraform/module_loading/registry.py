@@ -33,10 +33,10 @@ information, see `loader.ModuleLoader.load`.
         """
         module_address = f'{source}:{source_version}'
         if module_address in self.module_content_cache:
-            logging.debug(f'Used the cache for module {module_address}')
+            logger.debug(f'Used the cache for module {module_address}')
             return self.module_content_cache[module_address]
         else:
-            logging.debug(f'Cache miss for {module_address}')
+            logger.debug(f'Cache miss for {module_address}')
 
         if os.name == 'nt':
             # For windows, due to limitations in the allowed characters for path names, the hash of the source is used.
@@ -67,7 +67,7 @@ information, see `loader.ModuleLoader.load`.
                                                  inner_module=inner_module)
                     content = loader.load(module_params)
                 except Exception as e:
-                    logging.warning(f'Module {module_address} failed to load via {loader.__class__}')
+                    logger.warning(f'Module {module_address} failed to load via {loader.__class__}')
                     last_exception = e
                     continue
                 if content.next_url:

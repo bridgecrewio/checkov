@@ -20,6 +20,8 @@ if TYPE_CHECKING:
     from checkov.common.checks.base_check import BaseCheck
     from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 
+logger = logging.getLogger(__name__)
+
 
 class RunnerFilter(object):
     # NOTE: This needs to be static because different filters may be used at load time versus runtime
@@ -112,7 +114,7 @@ class RunnerFilter(object):
                 self.framework = set(runners) - set(skip_framework)
             else:
                 self.framework = set(self.framework) - set(skip_framework)
-        logging.debug(f"Resultant set of frameworks (removing skipped frameworks): {','.join(self.framework)}")
+        logger.debug(f"Resultant set of frameworks (removing skipped frameworks): {','.join(self.framework)}")
 
         self.download_external_modules = download_external_modules
         self.external_modules_download_path = external_modules_download_path
@@ -135,7 +137,7 @@ class RunnerFilter(object):
         if self.enable_git_history_secret_scan:
             self.git_history_timeout = convert_to_seconds(git_history_timeout)
             self.framework = [CheckType.SECRETS]
-            logging.debug("Scan secrets history was enabled ignoring other frameworks")
+            logger.debug("Scan secrets history was enabled ignoring other frameworks")
 
     @staticmethod
     def _load_resource_attr_to_omit(resource_attr_to_omit_input: Optional[Dict[str, Set[str]]]) -> DefaultDict[str, Set[str]]:
@@ -195,7 +197,7 @@ class RunnerFilter(object):
         else:
             if self.use_enforcement_rules:
                 # this is a warning for us (but there is nothing the user can do about it)
-                logging.debug(f'Use enforcement rules is true, but check {check_id} was not passed to the runner filter with a report type')
+                logger.debug(f'Use enforcement rules is true, but check {check_id} was not passed to the runner filter with a report type')
             check_threshold = self.check_threshold
             skip_check_threshold = self.skip_check_threshold
 
@@ -214,13 +216,13 @@ class RunnerFilter(object):
         )
 
         if not should_run_check:
-            logging.debug(f'Should run check {check_id}: False')
+            logger.debug(f'Should run check {check_id}: False')
             return False
 
         # If a policy is not present in the list of filtered policies, it should not be run - implicitly or explicitly.
         # It can, however, be skipped.
         if not is_policy_filtered:
-            logging.debug(f'not is_policy_filtered {check_id}: should_run_check = False')
+            logger.debug(f'not is_policy_filtered {check_id}: should_run_check = False')
             should_run_check = False
 
         skip_severity = severity and skip_check_threshold and severity.level <= skip_check_threshold.level
@@ -233,19 +235,19 @@ class RunnerFilter(object):
             (not bc_check_id and not self.include_all_checkov_policies and not is_external and not explicit_run) or
             (bc_check_id in self.suppressed_policies and bc_check_id not in self.bc_cloned_checks)
         )
-        logging.debug(f'skip_severity = {skip_severity}, explicit_skip = {explicit_skip}, regex_match = {regex_match}, suppressed_policies: {self.suppressed_policies}')
-        logging.debug(
+        logger.debug(f'skip_severity = {skip_severity}, explicit_skip = {explicit_skip}, regex_match = {regex_match}, suppressed_policies: {self.suppressed_policies}')
+        logger.debug(
             f'bc_check_id = {bc_check_id}, include_all_checkov_policies = {self.include_all_checkov_policies}, is_external = {is_external}, explicit_run: {explicit_run}')
 
         if should_skip_check:
             result = False
-            logging.debug(f'should_skip_check {check_id}: {should_skip_check}')
+            logger.debug(f'should_skip_check {check_id}: {should_skip_check}')
         elif should_run_check:
             result = True
-            logging.debug(f'should_run_check {check_id}: {result}')
+            logger.debug(f'should_run_check {check_id}: {result}')
         else:
             result = False
-            logging.debug(f'default {check_id}: {result}')
+            logger.debug(f'default {check_id}: {result}')
 
         return result
 
@@ -271,7 +273,7 @@ class RunnerFilter(object):
                 if any(re.search(full_regex_pattern, path) for path in file_origin_paths):
                     return True
             except Exception as exc:
-                logging.error(
+                logger.error(
                     "Invalid regex pattern has been supplied",
                     extra={"regex_pattern": pattern, "exc": str(exc)}
                 )
@@ -359,5 +361,5 @@ class RunnerFilter(object):
         return runner_filter
 
     def set_suppressed_policies(self, policy_level_suppressions: List[str]) -> None:
-        logging.debug(f"Received the following policy-level suppressions, that will be skipped from running: {policy_level_suppressions}")
+        logger.debug(f"Received the following policy-level suppressions, that will be skipped from running: {policy_level_suppressions}")
         self.suppressed_policies = policy_level_suppressions

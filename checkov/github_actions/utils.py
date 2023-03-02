@@ -21,6 +21,8 @@ from checkov.runner_filter import RunnerFilter
 WORKFLOW_DIRECTORY = ".github/workflows/"
 WIN_WORKFLOW_DIRECTORY = ".github\\workflows\\"
 
+logger = logging.getLogger(__name__)
+
 
 def get_scannable_file_paths(root_folder: str | Path) -> set[Path]:
     """Finds yaml files"""
@@ -78,7 +80,7 @@ def is_schema_valid(config: dict[str, Any] | list[dict[str, Any]]) -> bool:
             validate(config_dict, gha_schema)
             return True
         except ValidationError:
-            logging.info(
+            logger.info(
                 "Given entity configuration does not match the schema\n" f"config={json.dumps(config_dict, indent=4)}\n"
             )
 

@@ -9,7 +9,7 @@ from checkov.cloudformation.parser.cfn_keywords import TemplateSections
 from yaml.scanner import ScannerError
 from yaml import YAMLError
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def parse(
@@ -30,26 +30,26 @@ def parse(
     except IOError as err:
         if err.errno == 2:
             error = f"Template file not found: {filename} - {err}"
-            LOGGER.error(error)
+            logger.error(error)
         elif err.errno == 21:
             error = f"Template references a directory, not a file: {filename} - {err}"
-            LOGGER.error(error)
+            logger.error(error)
         elif err.errno == 13:
             error = f"Permission denied when accessing template file: {filename} - {err}"
-            LOGGER.error(error)
+            logger.error(error)
     except UnicodeDecodeError as err:
         error = f"Cannot read file contents: {filename} - {err}"
-        LOGGER.error(error)
+        logger.error(error)
     except cfn_yaml.CfnParseError as err:
         if "Null value at" in err.message:
-            LOGGER.info(f"Null values do not exist in CFN templates: {filename} - {err}")
+            logger.info(f"Null values do not exist in CFN templates: {filename} - {err}")
             return None, None
 
         error = f"Parsing error in file: {filename} - {err}"
-        LOGGER.info(error)
+        logger.info(error)
     except ValueError as err:
         error = f"Parsing error in file: {filename} - {err}"
-        LOGGER.info(error)
+        logger.info(error)
     except ScannerError as err:
         if err.problem in ["found character '\\t' that cannot start any token", "found unknown escape character"]:
             try:
@@ -58,7 +58,7 @@ def parse(
                     template, template_lines = result
             except Exception as json_err:  # pylint: disable=W0703
                 error = f"Template {filename} is malformed: {err.problem}. Tried to parse {filename} as JSON but got error: {json_err}"
-                LOGGER.info(error)
+                logger.info(error)
     except YAMLError as err:
         if hasattr(err, 'problem') and err.problem in ["expected ',' or '}', but got '<scalar>'"]:
             try:
@@ -67,10 +67,10 @@ def parse(
                     template, template_lines = result
             except Exception as json_err:  # pylint: disable=W0703
                 error = f"Template {filename} is malformed: {err.problem}. Tried to parse {filename} as JSON but got error: {json_err}"
-                LOGGER.info(error)
+                logger.info(error)
         else:
             error = f"Parsing error in file: {filename} - {err}"
-            LOGGER.info(error)
+            logger.info(error)
 
     if error:
         out_parsing_errors[filename] = error

@@ -17,6 +17,8 @@ from checkov.policies_3d.record import Policy3dRecord
 
 TABLE_WIDTH = 136
 
+logger = logging.getLogger(__name__)
+
 
 def merge_line_with_previous_table(line: str, table: PrettyTable) -> str:
     # hack to make multiple package tables look like one
@@ -85,7 +87,7 @@ def create_cli_output(*records: list[Policy3dRecord]) -> str:
 def render_cve_output(record: Policy3dRecord) -> str | None:
     if not record.vulnerabilities:
         #  this shouldn't happen
-        logging.error(f"'vulnerabilities' is not set for {record.check_id}")
+        logger.error(f"'vulnerabilities' is not set for {record.check_id}")
         return None
 
     package_cves_details_map: dict[str, dict[str, Any]] = defaultdict(dict)
@@ -192,7 +194,7 @@ def create_package_overview_table_part(
 def render_iac_violations_table(record: Policy3dRecord) -> str | None:
     if not record.iac_records:
         #  this shouldn't happen
-        logging.error(f"'iac_records' is not set for {record.check_id}")
+        logger.error(f"'iac_records' is not set for {record.check_id}")
         return None
 
     resource_violation_details_map: dict[str, dict[str, Any]] = defaultdict(dict)

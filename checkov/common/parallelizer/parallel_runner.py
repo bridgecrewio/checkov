@@ -12,6 +12,8 @@ if TYPE_CHECKING:
 
 _T = TypeVar("_T")
 
+logger = logging.getLogger(__name__)
+
 
 class ParallelRunner:
     def __init__(self, workers_number: int | None = None) -> None:
@@ -38,7 +40,7 @@ class ParallelRunner:
                 try:
                     result = original_func(item)
                 except Exception:
-                    logging.error(
+                    logger.error(
                         f"Failed to invoke function {func.__code__.co_filename.replace('.py', '')}.{func.__name__} with {item}"
                         , exc_info=True
                     )

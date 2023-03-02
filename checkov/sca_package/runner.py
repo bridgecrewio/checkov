@@ -16,6 +16,8 @@ from checkov.common.runners.base_runner import BaseRunner, ignored_directories
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.scanner import Scanner
 
+logger = logging.getLogger(__name__)
+
 
 class Runner(BaseRunner[None]):
     check_type = CheckType.SCA_PACKAGE  # noqa: CCE003  # a static attribute
@@ -42,10 +44,10 @@ class Runner(BaseRunner[None]):
             return []
 
         if not bc_integration.bc_api_key:
-            logging.info("The --bc-api-key flag needs to be set to run SCA package scanning")
+            logger.info("The --bc-api-key flag needs to be set to run SCA package scanning")
             return []
 
-        logging.info("SCA package scanning searching for scannable files")
+        logger.info("SCA package scanning searching for scannable files")
 
         self._code_repo_path = Path(root_folder) if root_folder else None
 
@@ -64,7 +66,7 @@ class Runner(BaseRunner[None]):
             # no packages found
             return []
 
-        logging.info(f"SCA package scanning will scan {len(input_paths)} files")
+        logger.info(f"SCA package scanning will scan {len(input_paths)} files")
 
         scanner = Scanner(self.pbar, root_folder)
         self._check_class = f"{scanner.__module__}.{scanner.__class__.__qualname__}"
@@ -72,7 +74,7 @@ class Runner(BaseRunner[None]):
         # it will be None in case of unexpected failure during the scanning
         scan_results: Sequence[dict[str, Any]] | None = scanner.scan(input_paths)
         if scan_results is not None:
-            logging.info(f"SCA package scanning successfully scanned {len(scan_results)} files")
+            logger.info(f"SCA package scanning successfully scanned {len(scan_results)} files")
         return scan_results
 
     def run(
@@ -164,7 +166,7 @@ class Runner(BaseRunner[None]):
         for file in files or []:
             file_path = Path(file)
             if not file_path.exists():
-                logging.warning(f"File {file_path} doesn't exist")
+                logger.warning(f"File {file_path} doesn't exist")
                 continue
 
             input_paths.add(file_path)

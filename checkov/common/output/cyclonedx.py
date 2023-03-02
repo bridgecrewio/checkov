@@ -58,6 +58,8 @@ if TYPE_CHECKING:
     from checkov.common.output.record import Record
     from checkov.common.output.report import Report
 
+logger = logging.getLogger(__name__)
+
 
 class CycloneDX:
     def __init__(self, reports: list[Report], repo_id: str | None, export_iac_only: bool = False) -> None:
@@ -192,7 +194,7 @@ class CycloneDX:
 
         if not resource.vulnerability_details:
             # this shouldn't happen
-            logging.error(f"Resource {resource.resource} doesn't have 'vulnerability_details' set")
+            logger.error(f"Resource {resource.resource} doesn't have 'vulnerability_details' set")
             return Component(name="unknown")
         qualifiers = None
         file_name = Path(resource.file_path).name
@@ -358,7 +360,7 @@ class CycloneDX:
 
         if not resource.vulnerability_details:
             # this shouldn't happen
-            logging.error(f"Resource {resource.resource} doesn't have 'vulnerability_details' set")
+            logger.error(f"Resource {resource.resource} doesn't have 'vulnerability_details' set")
             return Vulnerability()
 
         severity = VulnerabilitySeverity.UNKNOWN

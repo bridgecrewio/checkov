@@ -6,6 +6,8 @@ from typing import List, Dict, Any, Optional
 from checkov.common.graph.graph_builder.graph_components.blocks import Block
 from checkov.common.graph.graph_builder.variable_rendering.breadcrumb_metadata import BreadcrumbMetadata
 
+logger = logging.getLogger(__name__)
+
 
 class CloudformationBlock(Block):
     __slots__ = ("condition", "metadata")
@@ -71,7 +73,7 @@ class CloudformationBlock(Block):
             if isinstance(obj_to_update, (dict, list)):
                 obj_to_update[key_to_update] = attribute_value
             else:
-                logging.info(f"Failed to update an attribute, values: {obj_to_update}, {key_to_update}, {attribute_value}")
+                logger.info(f"Failed to update an attribute, values: {obj_to_update}, {key_to_update}, {attribute_value}")
 
     def update_inner_attribute(
         self, attribute_key: str, nested_attributes: list[Any] | dict[str, Any], value_to_update: Any

@@ -11,6 +11,8 @@ from typing_extensions import ParamSpec
 T = TypeVar("T")
 P = ParamSpec("P")
 
+logger = logging.getLogger(__name__)
+
 
 def time_it(func: Callable[P, T]) -> Callable[P, T]:
     """Prints the time it took to execute the function"""
@@ -22,7 +24,7 @@ def time_it(func: Callable[P, T]) -> Callable[P, T]:
         end = default_timer()
 
         func_path = f"{func.__code__.co_filename.replace('.py', '')}.{func.__name__}"
-        logging.info(f"'{func_path}' took: {timedelta(seconds=end - start)}")
+        logger.info(f"'{func_path}' took: {timedelta(seconds=end - start)}")
 
         return output
     return wrapper

@@ -148,6 +148,8 @@ condition_type_to_solver_type = {
 
 JSONPATH_PREFIX = "jsonpath_"
 
+logger = logging.getLogger(__name__)
+
 
 class GraphCheckParser(BaseGraphCheckParser):
     def validate_check_config(self, file_path: str, raw_check: dict[str, dict[str, Any]]) -> bool:
@@ -170,13 +172,13 @@ class GraphCheckParser(BaseGraphCheckParser):
             missing_fields.append("definition")
 
         if missing_fields:
-            logging.warning(f"Custom policy {file_path} is missing required fields {', '.join(missing_fields)}")
+            logger.warning(f"Custom policy {file_path} is missing required fields {', '.join(missing_fields)}")
             return False
 
         # check if definition block is not obviously invalid
         definition = raw_check["definition"]
         if not isinstance(definition, (list, dict)):
-            logging.warning(
+            logger.warning(
                 f"Custom policy {file_path} has an invalid 'definition' block type '{type(definition).__name__}', "
                 "needs to be either a 'list' or 'dict'"
             )

@@ -19,6 +19,8 @@ from checkov.common.models.consts import YAML_COMMENT_MARK
 CF_POSSIBLE_ENDINGS = frozenset((".yml", ".yaml", ".json", ".template"))
 TAG_FIELD_NAMES = ("Key", "Value")
 
+logger = logging.getLogger(__name__)
+
 
 def get_resource_tags(entity: dict[str, dict[str, Any]], registry: Registry = cfn_registry) -> Optional[Dict[str, str]]:
     entity_details = registry.extract_entity_details(entity)
@@ -38,7 +40,7 @@ def get_resource_tags(entity: dict[str, dict[str, Any]], registry: Registry = cf
             if tags:
                 return parse_entity_tags(tags)
     except Exception:
-        logging.warning(f"Failed to parse tags for entity {entity}")
+        logger.warning(f"Failed to parse tags for entity {entity}")
 
     return None
 
@@ -213,10 +215,10 @@ def get_files_definitions(
                     out_parsing_errors.update({file: 'Resource Properties is not a dictionary'})
             else:
                 if parsing_errors:
-                    logging.debug(f'File {file} had the following parsing errors: {parsing_errors}')
-                logging.debug(f"Parsed file {file} incorrectly {template}")
+                    logger.debug(f'File {file} had the following parsing errors: {parsing_errors}')
+                logger.debug(f"Parsed file {file} incorrectly {template}")
         except (TypeError, ValueError):
-            logging.warning(f"CloudFormation skipping {file} as it is not a valid CF template")
+            logger.warning(f"CloudFormation skipping {file} as it is not a valid CF template")
             continue
 
     return definitions, definitions_raw

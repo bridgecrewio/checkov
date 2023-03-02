@@ -8,6 +8,8 @@ from typing import List, Callable
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.terraform.module_loading.registry import module_loader_registry
 
+logger = logging.getLogger(__name__)
+
 
 class ModuleDownload:
     def __init__(self, source_dir: str) -> None:
@@ -45,7 +47,7 @@ def find_modules(path: str) -> List[ModuleDownload]:
                             if line.startswith('}'):
                                 in_module = False
                                 if curr_md.module_link is None:
-                                    logging.warning(f'A module at {curr_md.source_dir} had no source, skipping')
+                                    logger.warning(f'A module at {curr_md.source_dir} had no source, skipping')
                                 else:
                                     modules_found.append(curr_md)
                                 curr_md = None
@@ -60,7 +62,7 @@ def find_modules(path: str) -> List[ModuleDownload]:
                             if match:
                                 curr_md.version = f"{match.group('operator')}{match.group('version')}" if match.group('operator') else match.group('version')
                 except (UnicodeDecodeError, FileNotFoundError) as e:
-                    logging.warning(f"Skipping {os.path.join(path, root, file_name)} because of {e}")
+                    logger.warning(f"Skipping {os.path.join(path, root, file_name)} because of {e}")
                     continue
 
     return modules_found
@@ -78,7 +80,7 @@ def load_tf_modules(path: str, should_download_module: Callable[[str], bool] = s
 
     def _download_module(m):
         if should_download_module(m.module_link):
-            logging.info(f'Downloading module {m.address}')
+            logger.info(f'Downloading module {m.address}')
             try:
                 content = module_loader_registry.load(m.source_dir, m.module_link,
                                                       "latest" if not m.version else m.version)
@@ -86,9 +88,9 @@ def load_tf_modules(path: str, should_download_module: Callable[[str], bool] = s
                     log_message = f'Failed to download module {m.address}'
                     if not module_loader_registry.download_external_modules:
                         log_message += ' (for external modules, the --download-external-modules flag is required)'
-                    logging.warning(log_message)
+                    logger.warning(log_message)
             except Exception as e:
-                logging.warning(f"Unable to load module ({m.address}): {e}")
+                logger.warning(f"Unable to load module ({m.address}): {e}")
 
     # To avoid duplicate work, we need to get the distinct module sources
     distinct_modules = list({m.address: m for m in modules_to_load}.values())

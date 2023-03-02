@@ -56,6 +56,8 @@ OUTPUT_CHOICES = ["cli", "cyclonedx", "cyclonedx_json", "json", "junitxml", "git
 SUMMARY_POSITIONS = frozenset(['top', 'bottom'])
 OUTPUT_DELIMITER = "\n--- OUTPUT DELIMITER ---\n"
 
+logger = logging.getLogger(__name__)
+
 
 class RunnerRegistry:
     def __init__(self, banner: str, runner_filter: RunnerFilter, *runners: _BaseRunner,
@@ -84,7 +86,7 @@ class RunnerRegistry:
             repo_root_for_plan_enrichment: list[str | Path] | None = None,
     ) -> list[Report]:
         if not self.runners:
-            logging.error('There are no runners to run. This can happen if you specify a file type and a framework that are not compatible '
+            logger.error('There are no runners to run. This can happen if you specify a file type and a framework that are not compatible '
                           '(e.g., `--file xyz.yaml --framework terraform`), or if you specify a framework with missing dependencies (e.g., '
                           'helm or kustomize, which require those tools to be on your system). Running with LOG_LEVEL=DEBUG may provide more information.')
             return []
@@ -109,7 +111,7 @@ class RunnerRegistry:
                 )
                 if report is None:
                     # this only happens, when an uncaught exception inside the runner occurs
-                    logging.error(f"Failed to create report for {runner.check_type} framework")
+                    logger.error(f"Failed to create report for {runner.check_type} framework")
                     report = Report(check_type=runner.check_type)
 
                 return report
@@ -132,12 +134,12 @@ class RunnerRegistry:
                 runners_categories = os.linesep.join([f'{runner.check_type}: {self.licensing_integration.get_subscription_for_runner(runner.check_type).name}' for runner in invalid_runners])
                 error_message = f'All the frameworks are disabled because they are not enabled in the platform. ' \
                                 f'You must subscribe to one or more of the categories below to get results for these frameworks.{os.linesep}{runners_categories}'
-                logging.error(error_message)
+                logger.error(error_message)
                 raise ModuleNotEnabledError(error_message)
             elif invalid_runners:
                 level = logging.WARNING if frameworks_specified else logging.INFO
                 for runner in invalid_runners:
-                    logging.log(level, f'The framework "{runner.check_type}" is part of the "{self.licensing_integration.get_subscription_for_runner(runner.check_type).name}" module, which is not enabled in the platform')
+                    logger.log(level, f'The framework "{runner.check_type}" is part of the "{self.licensing_integration.get_subscription_for_runner(runner.check_type).name}" module, which is not enabled in the platform')
 
             reports = [r for r in parallel_runner.run_function(func=_parallel_run, items=valid_runners, group_size=1) if r]
 
@@ -191,9 +193,9 @@ class RunnerRegistry:
             file_path = Path(file_name)
             file_path.parent.mkdir(parents=True, exist_ok=True)
             file_path.write_text(data)
-            logging.info(f"\nWrote output in {data_format} format to the file '{file_name}')")
+            logger.info(f"\nWrote output in {data_format} format to the file '{file_name}')")
         except EnvironmentError:
-            logging.error(f"\nAn error occurred while writing {data_format} results to file: {file_name}",
+            logger.error(f"\nAn error occurred while writing {data_format} results to file: {file_name}",
                           exc_info=True)
 
     @staticmethod
@@ -222,8 +224,8 @@ class RunnerRegistry:
             else:
                 soft_fail_on_checks.append(val)
 
-        logging.debug(f'Soft fail severity threshold: {soft_fail_threshold.level if soft_fail_threshold else None}')
-        logging.debug(f'Soft fail checks: {soft_fail_on_checks}')
+        logger.debug(f'Soft fail severity threshold: {soft_fail_threshold.level if soft_fail_threshold else None}')
+        logger.debug(f'Soft fail checks: {soft_fail_on_checks}')
 
         hard_fail_on_checks = []
         hard_fail_threshold = None
@@ -238,11 +240,11 @@ class RunnerRegistry:
             else:
                 hard_fail_on_checks.append(val)
 
-        logging.debug(f'Hard fail severity threshold: {hard_fail_threshold.level if hard_fail_threshold else None}')
-        logging.debug(f'Hard fail checks: {hard_fail_on_checks}')
+        logger.debug(f'Hard fail severity threshold: {hard_fail_threshold.level if hard_fail_threshold else None}')
+        logger.debug(f'Hard fail checks: {hard_fail_on_checks}')
 
         if not config.use_enforcement_rules:
-            logging.debug('Use enforcement rules is FALSE')
+            logger.debug('Use enforcement rules is FALSE')
 
         # if there is a severity in either the soft-fail-on list or hard-fail-on list, then we will ignore enforcement rules and skip this
         # it means that SCA will not be treated as having two different thresholds in that case
@@ -267,14 +269,14 @@ class RunnerRegistry:
                 enf_rule = repo_config_integration.code_category_configs[code_category_type]
 
                 if enf_rule:
-                    logging.debug('Use enforcement rules is TRUE')
+                    logger.debug('Use enforcement rules is TRUE')
                     hard_fail_threshold = enf_rule.hard_fail_threshold
                     soft_fail = enf_rule.is_global_soft_fail()
-                    logging.debug(f'Using enforcement rule hard fail threshold for this report: {hard_fail_threshold.name}')
+                    logger.debug(f'Using enforcement rule hard fail threshold for this report: {hard_fail_threshold.name}')
                 else:
-                    logging.debug(f'Use enforcement rules is TRUE, but did not find an enforcement rule for report type {report_type}, so falling back to CLI args')
+                    logger.debug(f'Use enforcement rules is TRUE, but did not find an enforcement rule for report type {report_type}, so falling back to CLI args')
         else:
-            logging.debug('Soft fail was true or a severity was used in soft fail on / hard fail on; ignoring enforcement rules')
+            logger.debug('Soft fail was true or a severity was used in soft fail on / hard fail on; ignoring enforcement rules')
 
         return {
             'soft_fail': soft_fail,
@@ -343,7 +345,7 @@ class RunnerRegistry:
                     if 'repo_id' in config and config.repo_id is not None:
                         git_org, git_repository = config.repo_id.split('/')
                     csv_sbom_report.add_report(report=report, git_org=git_org, git_repository=git_repository)
-            logging.debug(f'Getting exit code for report {report.check_type}')
+            logger.debug(f'Getting exit code for report {report.check_type}')
             exit_code_thresholds = self.get_fail_thresholds(config, report.check_type)
             exit_codes.append(report.get_exit_code(exit_code_thresholds))
 
@@ -468,7 +470,7 @@ class RunnerRegistry:
                     cyclonedx_output = cyclonedx.get_json_output()
                 else:
                     # this shouldn't happen
-                    logging.error(f"CycloneDX output format '{cyclonedx_format}' not supported")
+                    logger.error(f"CycloneDX output format '{cyclonedx_format}' not supported")
                     continue
 
                 self._print_to_console(
@@ -584,7 +586,7 @@ class RunnerRegistry:
             return
 
         self.runners = [runner for runner in self.runners if any(runner.should_scan_file(file) for file in files)]
-        logging.debug(f'Filtered runners based on file type(s). Result: {[r.check_type for r in self.runners]}')
+        logger.debug(f'Filtered runners based on file type(s). Result: {[r.check_type for r in self.runners]}')
 
     def remove_runner(self, runner: _BaseRunner) -> None:
         if runner in self.runners:

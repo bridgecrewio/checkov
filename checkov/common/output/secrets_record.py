@@ -23,6 +23,8 @@ TEXT_BY_SECRET_VALIDATION_STATUS = {
     ValidationStatus.UNAVAILABLE.value: ''
 }
 
+logger = logging.getLogger(__name__)
+
 
 class SecretsRecord(Record):
     def __init__(self,
@@ -101,6 +103,6 @@ class SecretsRecord(Record):
             message = TEXT_BY_SECRET_VALIDATION_STATUS.get(self.validation_status)
 
             if not message and self.validation_status != ValidationStatus.UNAVAILABLE.value:
-                logging.debug(f'Got empty message for secret validation status = {self.validation_status}')
+                logger.debug(f'Got empty message for secret validation status = {self.validation_status}')
 
         return message or ''

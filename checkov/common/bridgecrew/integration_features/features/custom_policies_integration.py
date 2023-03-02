@@ -22,6 +22,8 @@ if TYPE_CHECKING:
 # service-provider::service-name::data-type-name
 CFN_RESOURCE_TYPE_IDENTIFIER = re.compile(r"^[a-zA-Z0-9]+::[a-zA-Z0-9]+::[a-zA-Z0-9]+$")
 
+logger = logging.getLogger(__name__)
+
 
 class CustomPoliciesIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration: BcPlatformIntegration) -> None:
@@ -44,14 +46,14 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
     def pre_scan(self) -> None:
         try:
             if not self.bc_integration.customer_run_config_response:
-                logging.debug('In the pre-scan for custom policies, but nothing was fetched from the platform')
+                logger.debug('In the pre-scan for custom policies, but nothing was fetched from the platform')
                 self.integration_feature_failures = True
                 return
 
             policies = self.bc_integration.customer_run_config_response.get('customPolicies')
             for policy in policies:
                 try:
-                    logging.debug(f"Loading policy id: {policy.get('id')}")
+                    logger.debug(f"Loading policy id: {policy.get('id')}")
                     converted_check = self._convert_raw_check(policy)
                     source_incident_id = policy.get('sourceIncidentId')
                     if source_incident_id:
@@ -75,11 +77,11 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
                     else:
                         get_graph_checks_registry("terraform").checks.append(check)
                 except Exception:
-                    logging.debug(f"Failed to load policy id: {policy.get('id')}", exc_info=True)
-            logging.debug(f'Found {len(policies)} custom policies from the platform.')
+                    logger.debug(f"Failed to load policy id: {policy.get('id')}", exc_info=True)
+            logger.debug(f'Found {len(policies)} custom policies from the platform.')
         except Exception:
             self.integration_feature_failures = True
-            logging.debug("Scanning without applying custom policies from the platform.", exc_info=True)
+            logger.debug("Scanning without applying custom policies from the platform.", exc_info=True)
 
     @staticmethod
     def _convert_raw_check(policy: dict[str, Any]) -> dict[str, Any]:
@@ -105,10 +107,10 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
         bc_check_ids = [record.bc_check_id for record in records]
         for idx, bc_check_id in enumerate(bc_check_ids):
             cloned_policies = self.bc_cloned_checks.get(bc_check_id, [])  # type:ignore[arg-type]  # bc_check_id can be None
-            logging.debug('Cloned policies to be deep copied:')
-            logging.debug(cloned_policies)
-            logging.debug('From origin policy:')
-            logging.debug(records[idx].get_unique_string())
+            logger.debug('Cloned policies to be deep copied:')
+            logger.debug(cloned_policies)
+            logger.debug('From origin policy:')
+            logger.debug(records[idx].get_unique_string())
             for cloned_policy in cloned_policies:
                 new_record = deepcopy(records[idx])
                 new_record.check_id = cloned_policy['id']

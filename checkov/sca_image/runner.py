@@ -27,6 +27,8 @@ from checkov.common.util.http_utils import request_wrapper
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.runner import Runner as PackageRunner
 
+logger = logging.getLogger(__name__)
+
 
 class Runner(PackageRunner):
     check_type = CheckType.SCA_IMAGE  # noqa: CCE003  # a static attribute
@@ -56,14 +58,14 @@ class Runner(PackageRunner):
             return {}
 
         if not bc_integration.bc_api_key:
-            logging.info("The --bc-api-key flag needs to be set to run SCA package scanning")
+            logger.info("The --bc-api-key flag needs to be set to run SCA package scanning")
             return {}
 
-        logging.info(f"SCA image scanning is scanning the image {image_id}")
+        logger.info(f"SCA image scanning is scanning the image {image_id}")
 
         cached_results: Dict[str, Any] | None = image_scanner.get_scan_results_from_cache(image_id)
         if cached_results:
-            logging.info(f"Found cached scan results of image {image_id}")
+            logger.info(f"Found cached scan results of image {image_id}")
             return cached_results
 
         setup_status: bool = image_scanner.setup_scan(image_id, dockerfile_path, skip_extract_image_name=False)
@@ -74,7 +76,7 @@ class Runner(PackageRunner):
         output_path = Path(f'results-{image_id}.json')
         scan_result = asyncio.run(self.execute_scan(image_id, output_path))
         self.upload_results_to_cache(output_path, image_id)
-        logging.info(f"SCA image scanning successfully scanned the image {image_id}")
+        logger.info(f"SCA image scanning successfully scanned the image {image_id}")
         return scan_result
 
     async def execute_scan(
@@ -91,16 +93,16 @@ class Runner(PackageRunner):
 
         # log output for debugging
         try:
-            logging.debug(stdout.decode())
+            logger.debug(stdout.decode())
         except UnicodeDecodeError:
-            logging.error("error was caught when trying to decode the \'stdout\' from twistcli.\n"
+            logger.error("error was caught when trying to decode the \'stdout\' from twistcli.\n"
                           f"file content is:\n{image_scanner.dockerfile_content}.\n"
                           f"twistcli command is \'{command}\'", exc_info=True)
 
         exit_code = await process.wait()
 
         if exit_code:
-            logging.error(stderr.decode())
+            logger.error(stderr.decode())
             return {}
 
         # read the report file
@@ -123,13 +125,13 @@ class Runner(PackageRunner):
             )
 
             if response.ok:
-                logging.info(f"Successfully uploaded scan results to cache with id={image_id}")
+                logger.info(f"Successfully uploaded scan results to cache with id={image_id}")
             else:
-                logging.info(f"Failed to upload scan results to cache with id={image_id}")
+                logger.info(f"Failed to upload scan results to cache with id={image_id}")
 
             output_path.unlink()
         except Exception:
-            logging.debug(
+            logger.debug(
                 "Unexpected failure happened during uploading results to cache. details are below.\n"
                 "Note that the scan is still running. if this is repeated, please report.", exc_info=True)
 
@@ -154,7 +156,7 @@ class Runner(PackageRunner):
             return self.get_image_id_report(dockerfile_path, image_id, runner_filter)
         report = Report(self.check_type)
         if not files and not root_folder:
-            logging.debug("No resources to scan.")
+            logger.debug("No resources to scan.")
             return report
         if files:
             self.pbar.initiate(len(files))
@@ -239,7 +241,7 @@ class Runner(PackageRunner):
 
         if not image_cached_result:
             # TODO: do we want to trigger a scan in this case?
-            logging.info(
+            logger.info(
                 f"No cache hit for image {image.name} when getting cached results for dockerfile {dockerfile_path}")
             return {}
         payload: dict[str, Any] = docker_image_scanning_integration.create_report(
@@ -266,7 +268,7 @@ class Runner(PackageRunner):
             return Report(self.check_type)
 
         if image_cached_result:
-            logging.info(f"Found cached scan results of image {image.name}")
+            logger.info(f"Found cached scan results of image {image.name}")
             self.raw_report = image_cached_result
             result = image_cached_result.get('results', [{}])[0]
             image_id = self.extract_image_short_id(result)
@@ -289,7 +291,7 @@ class Runner(PackageRunner):
             # experimental flag on running image referencers via local twistcli
             image_id = ImageReferencer.inspect(image.name)
             if not image_id:
-                logging.info(f"Unable to extract image id from {image.name}")
+                logger.info(f"Unable to extract image id from {image.name}")
                 return Report(self.check_type)
             scan_result = self.scan(image_id, dockerfile_path, runner_filter)
             if scan_result is None:
@@ -304,7 +306,7 @@ class Runner(PackageRunner):
             return self.get_report_from_scan_result(result, dockerfile_path, rootless_file_path_to_report, None,
                                                     runner_filter)
         else:
-            logging.info(f"No cache hit for image {image.name}")
+            logger.info(f"No cache hit for image {image.name}")
 
         return Report(self.check_type)
 

@@ -18,6 +18,8 @@ if TYPE_CHECKING:
 LICENSE_KEY = 'platformLicense'
 MODULES_KEY = 'modules'
 
+logger = logging.getLogger(__name__)
+
 
 class LicensingIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration: BcPlatformIntegration) -> None:
@@ -36,29 +38,29 @@ class LicensingIntegration(BaseIntegrationFeature):
 
     def pre_scan(self) -> None:
         if not self.bc_integration.bc_api_key:
-            logging.debug('Running without API key, so only open source runners will be enabled')
+            logger.debug('Running without API key, so only open source runners will be enabled')
             self.open_source_only = True
         elif not self.bc_integration.customer_run_config_response:
-            logging.debug('Customer run config response does not exist, but there is an API key, so there may be some integration issue. Proceeding with open source runners.')
+            logger.debug('Customer run config response does not exist, but there is an API key, so there may be some integration issue. Proceeding with open source runners.')
             self.open_source_only = True
         else:
-            logging.debug('Found customer run config and using it for licensing')
+            logger.debug('Found customer run config and using it for licensing')
             license_details = self.bc_integration.customer_run_config_response.get(LICENSE_KEY)
-            logging.debug(f'User license details: {license_details}')
+            logger.debug(f'User license details: {license_details}')
 
             self.open_source_only = False
             # the API will return True for all modules if they are on resource mode, so we don't actually need the billing plan explicitly here
             self.enabled_modules = [CustomerSubscription(m) for m, e in license_details.get(MODULES_KEY).items() if e]
 
     def is_runner_valid(self, runner_check_type: str) -> bool:
-        logging.debug(f'Checking if {runner_check_type} is valid for license')
+        logger.debug(f'Checking if {runner_check_type} is valid for license')
         if self.open_source_only:
             enabled = CodeCategoryMapping[runner_check_type] in open_source_categories  # new secrets are disabled, but the runner is valid
-            logging.debug(f'Open source mode - the runner is {"en" if enabled else "dis"}abled')
+            logger.debug(f'Open source mode - the runner is {"en" if enabled else "dis"}abled')
         else:
             sub_type = LicensingIntegration.get_subscription_for_runner(runner_check_type)
             enabled = sub_type in self.enabled_modules
-            logging.debug(f'Customer mode - the {sub_type} subscription is {"en" if enabled else "dis"}abled')
+            logger.debug(f'Customer mode - the {sub_type} subscription is {"en" if enabled else "dis"}abled')
 
         return enabled
 

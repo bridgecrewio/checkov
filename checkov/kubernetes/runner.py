@@ -39,6 +39,8 @@ if TYPE_CHECKING:
     from checkov.common.images.image_referencer import Image
     from checkov.common.typing import _CheckResult, _EntityContext
 
+logger = logging.getLogger(__name__)
+
 
 class TimeoutError(Exception):
     pass
@@ -103,9 +105,9 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
             self.spread_list_items()
 
             if CHECKOV_CREATE_GRAPH and self.graph_manager:
-                logging.info("creating Kubernetes graph")
+                logger.info("creating Kubernetes graph")
                 local_graph = self.graph_manager.build_graph_from_definitions(deepcopy(self.definitions))
-                logging.info("Successfully created Kubernetes graph")
+                logger.info("Successfully created Kubernetes graph")
 
                 for vertex in local_graph.vertices:
                     file_abs_path = _get_entity_abs_path(root_folder, vertex.path)
@@ -197,7 +199,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
         if results:
             if not self.context:
                 # this shouldn't happen
-                logging.error("Context for Kubernetes runner was not set")
+                logger.error("Context for Kubernetes runner was not set")
                 return report
 
             for check, check_result in results.items():
@@ -295,7 +297,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
                 # self.context not being None is checked in the caller method
                 entity_context = self.context[entity_file_path][entity[PARENT_RESOURCE_ID_KEY_NAME]]  # type:ignore[index]
             else:
-                logging.info(
+                logger.info(
                     "Unsupported nested resource type for Kubernetes graph edges. "
                     f"Type: {entity[CustomAttributes.RESOURCE_TYPE]} Parent: {entity[PARENT_RESOURCE_ID_KEY_NAME]}"
                 )

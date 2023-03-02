@@ -33,6 +33,8 @@ if TYPE_CHECKING:
 
 BicepElementsAlias: TypeAlias = Literal["globals", "parameters", "variables", "resources", "modules", "outputs"]
 
+logger = logging.getLogger(__name__)
+
 
 class BicepElements(str, Enum):
     GLOBALS: Literal["globals"] = "globals"
@@ -52,9 +54,9 @@ class BicepLocalGraph(LocalGraph[BicepBlock]):
 
     def build_graph(self, render_variables: bool) -> None:
         self._create_vertices()
-        logging.info(f"[BicepLocalGraph] created {len(self.vertices)} vertices")
+        logger.info(f"[BicepLocalGraph] created {len(self.vertices)} vertices")
         self._create_edges()
-        logging.info(f"[BicepLocalGraph] created {len(self.edges)} edges")
+        logger.info(f"[BicepLocalGraph] created {len(self.edges)} edges")
 
         if render_variables:
             renderer = BicepVariableRenderer(self)

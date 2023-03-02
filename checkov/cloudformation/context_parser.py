@@ -14,6 +14,8 @@ from checkov.common.util.suppression import collect_suppressions_for_context
 ENDLINE = "__endline__"
 STARTLINE = "__startline__"
 
+logger = logging.getLogger(__name__)
+
 
 class ContextParser:
     """
@@ -36,7 +38,7 @@ class ContextParser:
             # TODO refactor into evaluations
             default_value = self.cf_template.get("Parameters", {}).get(refname, {}).get("Properties", {}).get("Default")
             if default_value is not None:
-                logging.debug(
+                logger.debug(
                     "Replacing Ref {} in file {} with default parameter value: {}".format(
                         refname, self.cf_file, default_value
                     )
@@ -127,7 +129,7 @@ class ContextParser:
                         skip_id = skip.get("id")
                         skip_comment = skip.get("comment", "No comment provided")
                         if skip_id is None:
-                            logging.warning("Check suppression is missing key 'id'")
+                            logger.warning("Check suppression is missing key 'id'")
                             continue
 
                         skipped_check: "_SkippedCheck" = {"id": skip_id, "suppress_comment": skip_comment}

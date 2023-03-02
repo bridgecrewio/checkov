@@ -23,6 +23,8 @@ try:
 except ImportError as e:
     git_import_error = e
 
+logger = logging.getLogger(__name__)
+
 
 class EnrichedPotentialSecret(TypedDict):
     added_commit_hash: str
@@ -52,7 +54,7 @@ class GitHistoryScanner:
                         if isinstance(file_diff, str):
                             file_results = [*scan.scan_diff(file_diff)]
                             if file_results:
-                                logging.info(
+                                logger.info(
                                     f"Found {len(file_results)} secrets in file path {file_name} in commit {commit_hash}, file_results = {file_results}")
 
                                 self.secret_store.set_secret_map(file_results, file_name, commit_hash)
@@ -67,9 +69,9 @@ class GitHistoryScanner:
                             "removed_commit_hash"] else GIT_HISTORY_NOT_BEEN_REMOVED
                         key = f'{secret_data["added_commit_hash"]}_{removed}_{secret_data["potential_secret"].filename}'
                         self.secrets[key].add(secret_data["potential_secret"])
-                logging.info(f"Scanned {scanned_file_count} git history files")
+                logger.info(f"Scanned {scanned_file_count} git history files")
         if to_ctx_mgr.state == to_ctx_mgr.TIMED_OUT:
-            logging.info(f"timeout reached ({self.timeout}), stopping scan.")
+            logger.info(f"timeout reached ({self.timeout}), stopping scan.")
             return False
         # else: everything was OK
         return True
@@ -77,12 +79,12 @@ class GitHistoryScanner:
     def _get_commits_diff(self) -> Dict[str, Dict[str, str | Dict[str, str]]]:
         commits_diff: Dict[str, Dict[str, str | Dict[str, str]]] = {}
         if git_import_error is not None:
-            logging.warning(f"Unable to load git module (is the git executable available?) {git_import_error}")
+            logger.warning(f"Unable to load git module (is the git executable available?) {git_import_error}")
             return commits_diff
         try:
             repo = git.Repo(self.root_folder)
         except Exception as e:
-            logging.error(f"Folder {self.root_folder} is not a GIT project {e}")
+            logger.error(f"Folder {self.root_folder} is not a GIT project {e}")
             return commits_diff
         commits = list(repo.iter_commits(repo.active_branch, max_count=2))
         for previous_commit_idx in range(len(commits) - 1, 0, -1):
@@ -92,7 +94,7 @@ class GitHistoryScanner:
 
             for file_diff in git_diff:
                 if file_diff.renamed:
-                    logging.info(f"File was renamed from {file_diff.rename_from} to {file_diff.rename_to}")
+                    logger.info(f"File was renamed from {file_diff.rename_from} to {file_diff.rename_to}")
                     commits_diff.setdefault(current_commit_hash, {})
                     commits_diff[current_commit_hash][file_diff.a_path] = {
                         'rename_from': file_diff.rename_from,
@@ -100,7 +102,7 @@ class GitHistoryScanner:
                     }
                     continue
                 elif file_diff.deleted_file:
-                    logging.info(f"File {file_diff.b_path} was delete")
+                    logger.info(f"File {file_diff.b_path} was delete")
 
                 base_diff_format = f'diff --git a/{file_diff.a_path} b/{file_diff.b_path}' \
                                    f'\nindex 0000..0000 0000\n--- a/{file_diff.a_path}\n+++ b/{file_diff.b_path}\n'
@@ -158,7 +160,7 @@ class GitHistorySecretStore:
                     secret_in_file['potential_secret'] = secret
                     break
         except KeyError:
-            logging.error(f"No added secret commit found for secret in file {file_name}.")
+            logger.error(f"No added secret commit found for secret in file {file_name}.")
 
     def handle_renamed_file(self, rename_from: str,
                             rename_to: str,

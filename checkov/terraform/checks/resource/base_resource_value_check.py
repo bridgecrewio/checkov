@@ -13,6 +13,8 @@ from checkov.terraform.graph_builder.utils import get_referenced_vertices_in_val
 from checkov.terraform.parser_functions import handle_dynamic_values
 
 
+logger = logging.getLogger(__name__)
+
 class BaseResourceValueCheck(BaseResourceCheck):
     def __init__(
         self,
@@ -64,7 +66,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
             if value in expected_values:
                 return CheckResult.PASSED
             if not isinstance(value, str) and str(value) in expected_values:
-                logging.debug(f"Check {self.id} is set to pass even though the type of value {value} is not str (it is {type(value)}), while {str(value)} is an expected value")
+                logger.debug(f"Check {self.id} is set to pass even though the type of value {value} is not str (it is {type(value)}), while {str(value)} is an expected value")
                 return CheckResult.PASSED
             if get_referenced_vertices_in_value(value=value, aliases={}, resources_types=[]):
                 # we don't provide resources_types as we want to stay provider agnostic

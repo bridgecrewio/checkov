@@ -25,6 +25,8 @@ if TYPE_CHECKING:
 SUPPORTED_BLOCK_TYPES = {BlockType.RESOURCE, TerraformBlockType.DATA, TerraformBlockType.MODULE}
 WILDCARD_PATTERN = re.compile(r"(\S+[.][*][.]*)+")
 
+logger = logging.getLogger(__name__)
+
 
 class BaseAttributeSolver(BaseSolver):
     operator = ""  # noqa: CCE003  # a static attribute
@@ -162,7 +164,7 @@ class BaseAttributeSolver(BaseSolver):
 
             return attribute_matches
         except Exception:
-            logging.debug('Error parsing or evaluating jsonpath expression', exc_info=True)
+            logger.debug('Error parsing or evaluating jsonpath expression', exc_info=True)
             raise
 
     @staticmethod
@@ -223,5 +225,5 @@ class BaseAttributeSolver(BaseSolver):
                 value_to_check = json.loads(value_to_check)
                 return value_to_check
         except Exception as e:
-            logging.info(f'cant parse policy str to object, {str(e)}')
+            logger.info(f'cant parse policy str to object, {str(e)}')
         return value_to_check

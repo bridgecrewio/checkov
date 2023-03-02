@@ -71,6 +71,8 @@ _patterns['all'] = list(itertools.chain.from_iterable(_patterns.values()))
 
 _hash_patterns = list(map(lambda regex: re.compile(regex, re.IGNORECASE), ['^[a-f0-9]{32}$', '^[a-f0-9]{40}$']))
 
+logger = logging.getLogger(__name__)
+
 
 def is_hash(s: str) -> bool:
     """
@@ -166,7 +168,7 @@ def omit_secret_value_from_checks(
                 secrets.add(secret[0])
 
     if not secrets:
-        logging.debug(f"Secret was not saved in {check.id}, can't omit")
+        logger.debug(f"Secret was not saved in {check.id}, can't omit")
         return entity_code_lines
 
     for idx, line in entity_code_lines:
@@ -210,7 +212,7 @@ def omit_secret_value_from_graph_checks(
                         secrets.add(secret[0])
 
     if not secrets:
-        logging.debug(f"Secret was not saved in {check.id}, can't omit")
+        logger.debug(f"Secret was not saved in {check.id}, can't omit")
         return entity_code_lines
 
     for idx, line in entity_code_lines:

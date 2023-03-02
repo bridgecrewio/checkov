@@ -5,6 +5,8 @@ from typing import Any, TypeVar
 
 _T = TypeVar("_T")
 
+logger = logging.getLogger(__name__)
+
 
 def get_inner_dict(source_dict: dict[str, Any], path_as_list: list[str]) -> dict[str, Any]:
     result = source_dict
@@ -82,7 +84,7 @@ def find_in_dict(input_dict: dict[str, Any], key_path: str) -> Any:
             if value is None:
                 return None
     except (AttributeError, IndexError, KeyError, TypeError, ValueError):
-        logging.debug(f"Could not find {key_path} in dict")
+        logger.debug(f"Could not find {key_path} in dict")
         return None
 
     return value

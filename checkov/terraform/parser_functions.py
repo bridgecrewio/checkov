@@ -20,6 +20,8 @@ from checkov.common.util.parser_utils import eval_string, split_merge_args, stri
 
 FUNCTION_FAILED = "____FUNCTION_FAILED____"
 
+logger = logging.getLogger(__name__)
+
 
 def merge(original, var_resolver, **_):
     # https://www.terraform.io/docs/language/functions/merge.html
@@ -51,7 +53,7 @@ def concat(original, var_resolver, **_):
         if arg.startswith("["):
             value = eval_string(arg)
             if value is None:
-                logging.debug("Unable to convert to list: %s", arg)
+                logger.debug("Unable to convert to list: %s", arg)
                 return FUNCTION_FAILED
         else:
             value = var_resolver(arg)

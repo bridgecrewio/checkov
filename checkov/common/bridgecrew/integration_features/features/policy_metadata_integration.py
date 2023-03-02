@@ -16,6 +16,8 @@ if TYPE_CHECKING:
     from checkov.common.output.report import Report
     from checkov.common.typing import _BaseRunner
 
+logger = logging.getLogger(__name__)
+
 
 class PolicyMetadataIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration: BcPlatformIntegration) -> None:
@@ -41,7 +43,7 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
             elif self.bc_integration.public_metadata_response:
                 self._handle_public_metadata(self.bc_integration.public_metadata_response)
             else:
-                logging.debug('In the pre-scan for policy metadata, but nothing was fetched from the platform')
+                logger.debug('In the pre-scan for policy metadata, but nothing was fetched from the platform')
                 self.integration_feature_failures = True
                 return
 
@@ -77,7 +79,7 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
                     check.bc_id = None
         except Exception:
             self.integration_feature_failures = True
-            logging.debug('An error occurred loading policy metadata. Some metadata may be missing from the run.', exc_info=True)
+            logger.debug('An error occurred loading policy metadata. Some metadata may be missing from the run.', exc_info=True)
 
     def get_bc_id(self, checkov_id: str) -> str:
         return cast(str, self.check_metadata.get(checkov_id, {}).get('id'))
@@ -148,7 +150,7 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
     def _handle_customer_prisma_policy_metadata(self, prisma_policy_metadata: list[dict[str, Any]]) -> None:
         if isinstance(prisma_policy_metadata, list):
             for metadata in prisma_policy_metadata:
-                logging.debug(f"Parsing filtered_policy_ids from metadata: {json.dumps(metadata)}")
+                logger.debug(f"Parsing filtered_policy_ids from metadata: {json.dumps(metadata)}")
                 pc_id = metadata.get('policyId')
                 if pc_id:
                     ckv_id = self.get_ckv_id_from_pc_id(pc_id)

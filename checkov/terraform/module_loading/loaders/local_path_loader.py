@@ -7,6 +7,8 @@ from checkov.terraform.module_loading.content import ModuleContent
 from checkov.terraform.module_loading.loader import ModuleLoader
 from checkov.terraform.module_loading.module_params import ModuleParams
 
+logger = logging.getLogger(__name__)
+
 
 class LocalPathLoader(ModuleLoader):
     def __init__(self) -> None:
@@ -26,7 +28,7 @@ class LocalPathLoader(ModuleLoader):
             return True
 
         if platform.system() == "Windows":
-            logging.debug("Platform: Windows")
+            logger.debug("Platform: Windows")
             if re.match(re.compile("[a-zA-Z]:\\\\"), module_params.module_source):
                 return True
 

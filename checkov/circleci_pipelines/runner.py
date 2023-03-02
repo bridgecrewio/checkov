@@ -16,6 +16,8 @@ if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
     from networkx import DiGraph
 
+logger = logging.getLogger(__name__)
+
 WORKFLOW_DIRECTORY = "circleci"
 
 
@@ -55,7 +57,7 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
             orbs.{orbs: @}
         """
         if len(list(supported_entities)) > 1:
-            logging.debug("order of entities might cause extracting the wrong key for resource_id")
+            logger.debug("order of entities might cause extracting the wrong key for resource_id")
         new_key = key
         definition = self.definitions.get(file_path, {})
         if not definition or not isinstance(definition, dict):

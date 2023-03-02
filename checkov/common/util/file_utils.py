@@ -5,6 +5,8 @@ import gzip
 import io
 import logging
 
+logger = logging.getLogger(__name__)
+
 
 def convert_to_unix_path(path: str) -> str:
     return path.replace('\\', '/')
@@ -66,7 +68,7 @@ def read_file_safe(file_path: str) -> str:
             file_content = f.read()
             return file_content
     except Exception:
-        logging.warning(
+        logger.warning(
             "Could not open file",
             extra={"file_path": file_path}
         )
@@ -77,7 +79,7 @@ def get_file_size_safe(file_path: str) -> int:
     try:
         return os.path.getsize(file_path)
     except Exception:
-        logging.warning(
+        logger.warning(
             "Could not obtain file size",
             extra={"file_path": file_path}
         )
