@@ -1,0 +1,5 @@
+pass:
+  - "azurerm_network_security_group.pass"
+fail:
+  - "azurerm_network_security_group.fail_1"
+  - "azurerm_network_security_group.fail_2"

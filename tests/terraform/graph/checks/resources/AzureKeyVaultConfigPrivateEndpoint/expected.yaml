@@ -1,0 +1,4 @@
+pass:
+  "azurerm_private_endpoint.pass"
+fail:
+  "azurerm_private_endpoint.fail"
