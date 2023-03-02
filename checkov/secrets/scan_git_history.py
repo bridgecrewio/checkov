@@ -141,6 +141,8 @@ class GitHistorySecretStore:
             equal_secret_in_commit[secret_key].append('added' if secret.is_added else 'removed')
 
         for secret in file_results:
+            if secret.filename in ['None', '']:
+                secret.filename = file_name
             secret_key = get_secret_key(file_name, secret.secret_hash, secret.type)
             if all(value in equal_secret_in_commit[secret_key] for value in ['added', 'removed']):
                 continue
@@ -213,6 +215,7 @@ class GitHistorySecretStore:
         The key is built like this:
         '{added_commit_hash}_{removed_commit_hash or the string GIT_HISTORY_NOT_BEEN_REMOVED
         if the secret not been removed}_{file_name}'
+        returns (added, removed, code)
         """
         try:
             secret_key = get_secret_key(secret.filename, secret.secret_hash, secret.type)  # by value type
