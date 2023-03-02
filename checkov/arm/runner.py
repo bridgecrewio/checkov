@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import TYPE_CHECKING, Any
+from collections.abc import Iterable
+from typing import TYPE_CHECKING, Any, cast
 
 from checkov.arm.graph_builder.local_graph import ArmLocalGraph
 from checkov.arm.graph_manager import ArmGraphManager
@@ -19,7 +20,6 @@ from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
 from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.common.util.secrets import omit_secret_value_from_checks
 from checkov.runner_filter import RunnerFilter
-from checkov.common.parsers.node import DictNode
 from checkov.arm.context_parser import ContextParser
 
 if TYPE_CHECKING:
@@ -68,7 +68,7 @@ class Runner(BaseRunner[ArmGraphManager]):
             self.pbar.turn_off_progress_bar()
 
         report = Report(self.check_type)
-        files_list = []
+        files_list: "Iterable[str]" = []
         filepath_fn = None
         if external_checks_dir:
             for directory in external_checks_dir:
@@ -122,7 +122,7 @@ class Runner(BaseRunner[ArmGraphManager]):
 
             file_abs_path = os.path.abspath(path_to_convert)
 
-            if isinstance(self.definitions[arm_file], DictNode):
+            if isinstance(self.definitions[arm_file], dict):
                 arm_context_parser = ContextParser(arm_file, self.definitions[arm_file], self.definitions_raw[arm_file])
                 logging.debug(f"Template Dump for {arm_file}: {self.definitions[arm_file]}")
 
@@ -147,14 +147,18 @@ class Runner(BaseRunner[ArmGraphManager]):
 
                     for resource in self.definitions[arm_file][ArmElements.RESOURCES]:
                         resource_id = arm_context_parser.extract_arm_resource_id(resource)
-                        report.add_resource(f"{arm_file}:{resource_id}")
                         resource_name = arm_context_parser.extract_arm_resource_name(resource)
+                        if resource_id is None or resource_name is None:
+                            logging.info(f"Could not determine 'resource_id' of Resource {resource}")
+                            continue
+
+                        report.add_resource(f"{arm_file}:{resource_id}")
                         entity_lines_range, entity_code_lines = arm_context_parser.extract_arm_resource_code_lines(
                             resource
                         )
                         if entity_lines_range and entity_code_lines:
                             # TODO - Variable Eval Message!
-                            variable_evaluations = {}
+                            variable_evaluations: "dict[str, Any]" = {}
 
                             skipped_checks = ContextParser.collect_skip_comments(resource)
 
@@ -201,7 +205,7 @@ class Runner(BaseRunner[ArmGraphManager]):
                         variable_evaluations = {}
 
                         resource_id = f"parameter.{parameter_name}"
-                        resource_name = parameter_name
+                        resource_name = cast(str, parameter_name)
                         entity_lines_range, entity_code_lines = arm_context_parser.extract_arm_resource_code_lines(
                             parameter_details
                         )
