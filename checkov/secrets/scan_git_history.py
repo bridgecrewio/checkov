@@ -111,6 +111,8 @@ class GitHistoryScanner:
 
 
 def search_for_code_line(commit: str, secret_value: Optional[str], is_added: Optional[bool]) -> str:
+    if secret_value is None:
+        return ''
     splitted = commit.split('\n')
     start_char = '+' if is_added else '-'
     for line in splitted:
@@ -131,7 +133,7 @@ class GitHistorySecretStore:
     def __init__(self) -> None:
         self.secrets_by_file_value_type: Dict[str, List[EnrichedPotentialSecret]] = {}
 
-    def set_secret_map(self, file_results: List[PotentialSecret], file_name: str, commit_hash: str, commit: dict) -> None:
+    def set_secret_map(self, file_results: List[PotentialSecret], file_name: str, commit_hash: str, commit: Dict) -> None:
         # First find if secret was moved in the file
         equal_secret_in_commit: Dict[str, List[str]] = defaultdict(list)
         for secret in file_results:
@@ -201,7 +203,7 @@ class GitHistorySecretStore:
                     temp_secrets_by_file_value_type[new_secret_key].append({'added_commit_hash': commit_hash,
                                                                             'removed_commit_hash': '',
                                                                             'potential_secret': new_secret,
-                                                                            'code_line': ""})
+                                                                            'code_line': secret_data['code_line']})
         self.secrets_by_file_value_type.update(temp_secrets_by_file_value_type)
 
     def get_added_and_removed_commit_hash(self, key: str, secret: PotentialSecret) -> Tuple[str | None, str | None, str | None]:
