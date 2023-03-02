@@ -1,6 +1,110 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.23...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.53...HEAD)
+
+## [2.3.53](https://github.com/bridgecrewio/checkov/compare/2.3.50...2.3.53) - 2023-03-01
+
+### Feature
+
+- **terraform:** Add foreach_attrs in saved graph - [#4587](https://github.com/bridgecrewio/checkov/pull/4587)
+- **terraform:** Set foreach_attrs directly under the block - [#4586](https://github.com/bridgecrewio/checkov/pull/4586)
+- **terraform:** TF foreach - Support updating each.value in nested dict - [#4588](https://github.com/bridgecrewio/checkov/pull/4588)
+
+### Bug Fix
+
+- **sca:** Set prisma token and scan packages by v2 for IDE scans - [#4580](https://github.com/bridgecrewio/checkov/pull/4580)
+- **terraform:** fix CKV_AWS_70 test and add graph for coverage of data source - [#4542](https://github.com/bridgecrewio/checkov/pull/4542)
+- **terraform:** TF foreach - Avoid rendering in static statements - [#4583](https://github.com/bridgecrewio/checkov/pull/4583)
+
+### Documentation
+
+- **ansible:** add Ansible policy docs generation - [#4582](https://github.com/bridgecrewio/checkov/pull/4582)
+
+## [2.3.50](https://github.com/bridgecrewio/checkov/compare/2.3.48...2.3.50) - 2023-02-28
+
+### Bug Fix
+
+- **terraform:** add not exists conditional to CKV2_AWS_16 to account for defaults - [#4578](https://github.com/bridgecrewio/checkov/pull/4578)
+
+## [2.3.48](https://github.com/bridgecrewio/checkov/compare/2.3.44...2.3.48) - 2023-02-27
+
+### Feature
+
+- **secrets:** track complete file deletion and renaming - [#4551](https://github.com/bridgecrewio/checkov/pull/4551)
+- **terraform:** Adding yaml based build time policies for corresponding PC runtime policies - [#4529](https://github.com/bridgecrewio/checkov/pull/4529)
+
+### Bug Fix
+
+- **ansible:** support skip check for Ansible Python-based checks - [#4556](https://github.com/bridgecrewio/checkov/pull/4556)
+- **terraform:** Handle unescaped lookup values - [#4565](https://github.com/bridgecrewio/checkov/pull/4565)
+
+## [2.3.44](https://github.com/bridgecrewio/checkov/compare/2.3.39...2.3.44) - 2023-02-26
+
+### Feature
+
+- **dockerfile:** Add check for the environment variable NPM_CONFIG_STRICT_SSL - [#4553](https://github.com/bridgecrewio/checkov/pull/4553)
+- **terraform:** TF Parser  - Move funcs and consts to utils file - [#4550](https://github.com/bridgecrewio/checkov/pull/4550)
+
+### Bug Fix
+
+- **terraform_plan:** Fix tf plan nested modules - [#4562](https://github.com/bridgecrewio/checkov/pull/4562)
+- **terraform:** fix for #4518 - [#4528](https://github.com/bridgecrewio/checkov/pull/4528)
+- **terraform:** Move get_module back to parser - [#4560](https://github.com/bridgecrewio/checkov/pull/4560)
+- **terraform:** remove dynamic warning exc_info - [#4563](https://github.com/bridgecrewio/checkov/pull/4563)
+
+## [2.3.39](https://github.com/bridgecrewio/checkov/compare/2.3.36...2.3.39) - 2023-02-23
+
+### Feature
+
+- **dockerfile:** Add checks for disabling signature checks for apk, apt-get, rpm, yum, dnf - [#4404](https://github.com/bridgecrewio/checkov/pull/4404)
+- **terraform:** New classes for the TF module model - [#4546](https://github.com/bridgecrewio/checkov/pull/4546)
+
+### Bug Fix
+
+- **gha:** Align GHA resource ids (Graph vs Python checks) - [#4549](https://github.com/bridgecrewio/checkov/pull/4549)
+
+## [2.3.36](https://github.com/bridgecrewio/checkov/compare/2.3.33...2.3.36) - 2023-02-22
+
+### Feature
+
+- **arm:** add graph capabilities to ARM framework - [#4526](https://github.com/bridgecrewio/checkov/pull/4526)
+- **secrets:** add timeout for scan history checks - [#4523](https://github.com/bridgecrewio/checkov/pull/4523)
+- **secrets:** Support secret findings in git history - [#4525](https://github.com/bridgecrewio/checkov/pull/4525)
+
+## [2.3.33](https://github.com/bridgecrewio/checkov/compare/2.3.29...2.3.33) - 2023-02-21
+
+### Feature
+
+- **gitlab:** fix gitlab ci yaml file processing - [#4536](https://github.com/bridgecrewio/checkov/pull/4536)
+- **sca:** adding is_registry_url and printing in the cyclonedx only private registries urls - [#4533](https://github.com/bridgecrewio/checkov/pull/4533)
+- **sca:** support also the key "registryUrl" when extracting registry_url for the report - [#4535](https://github.com/bridgecrewio/checkov/pull/4535)
+
+### Bug Fix
+
+- **terraform:** Optional module content path - [#4537](https://github.com/bridgecrewio/checkov/pull/4537)
+
+## [2.3.29](https://github.com/bridgecrewio/checkov/compare/2.3.28...2.3.29) - 2023-02-20
+
+### Bug Fix
+
+- **cloudformation:** Update CKV_AWS_46 to handle base64 encoded userdata - [#4530](https://github.com/bridgecrewio/checkov/pull/4530)
+
+## [2.3.28](https://github.com/bridgecrewio/checkov/compare/2.3.23...2.3.28) - 2023-02-19
+
+### Feature
+
+- **secrets:** add flag for scan secrets history - [#4513](https://github.com/bridgecrewio/checkov/pull/4513)
+- **terraform:** Used parentheses in key for foreach attributes but not count - [#4520](https://github.com/bridgecrewio/checkov/pull/4520)
+
+### Bug Fix
+
+- **gha:** fix output flag for usage in checkov-action - [#4517](https://github.com/bridgecrewio/checkov/pull/4517)
+- **terraform:** add datasource option for headers check - [#4496](https://github.com/bridgecrewio/checkov/pull/4496)
+- **terraform:** optimize check CKV2_AWS_60 - [#4512](https://github.com/bridgecrewio/checkov/pull/4512)
+
+### Platform
+
+- **general:** Use new enforcement categories (#4456) - [#4519](https://github.com/bridgecrewio/checkov/pull/4519)
 
 ## [2.3.23](https://github.com/bridgecrewio/checkov/compare/2.3.22...2.3.23) - 2023-02-18
 

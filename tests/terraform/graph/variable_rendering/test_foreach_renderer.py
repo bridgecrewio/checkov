@@ -190,6 +190,9 @@ def test_tf_definitions_and_breadcrumbs():
     expected_breadcrumbs = expected_data['breadcrumbs']
     assert len(breadcrumbs) == len(expected_breadcrumbs)
     assert len(breadcrumbs[list(breadcrumbs.keys())[0]]) == len(expected_breadcrumbs[list(expected_breadcrumbs.keys())[0]])
+    resource_vertices = [vertex for vertex in local_graph.vertices if vertex.block_type == 'resource']
+    for resource_vertex in resource_vertices:
+        assert len(resource_vertex.foreach_attrs) == 2
 
     for name in ['["bucket_a"]', '["bucket_b"]']:
         assert f'aws_s3_bucket.foreach_map{name}' in breadcrumbs[list(breadcrumbs.keys())[0]]
@@ -214,10 +217,12 @@ def test_tf_definitions_and_breadcrumbs():
         ({"test_key": ["${test_val}"]}, {"test_val": "new_val"}, {"test_key": ["new_val"]}, ['test_key']),
         ({"test_key": ["${test}"]}, {"test_val": "new_val"}, {"test_key": ["${test}"]}, []),
         ({"test_key": ["${test_val} ${test_val}"]}, {"test_val": "new_val"}, {"test_key": ["new_val new_val"]}, ['test_key']),
-        ({"test_key": {"nested_key": ["${test_val}"]}}, {"test_val": "new_val"}, {"test_key": {"nested_key": ["new_val"]}}, ['nested_key']),
+        ({"test_key": {"nested_key": ["${test_val}"]}}, {"test_val": "new_val"}, {"test_key": {"nested_key": ["new_val"]}}, ['test_key.nested_key']),
         ({"test_key": ["${test_val} test_val"]}, {"test_val": "new_val"}, {"test_key": ["new_val new_val"]}, ['test_key']),
         ({"test_key": ["${test_val}"]}, {"test_val": 123}, {"test_key": [123]}, ['test_key']),
-        ({"test_key": ["${test_val}"]}, {"test_val": True}, {"test_key": [True]}, ['test_key'])
+        ({"test_key": ["${test_val}"]}, {"test_val": True}, {"test_key": [True]}, ['test_key']),
+        ({"test_key": {"a": "${test_val}"}}, {"test_val": "new_val"}, {"test_key": {"a": "new_val"}}, ['test_key.a']),
+        ({"test_key": {"a": {"b": "${test_val}"}}}, {"test_val": "new_val"}, {"test_key": {"a": {"b": "new_val"}}}, ['test_key.a.b'])
     ]
 )
 def test_update_attrs(attrs, k_v_to_change, expected_attrs, expected_res):

@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from checkov.arm.parser.cfn_yaml import load
+from checkov.arm.parser.parser import load
 
 EXAMPLES_DIR = Path(__file__).parent / "examples"
 
