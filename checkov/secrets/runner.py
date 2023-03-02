@@ -189,7 +189,7 @@ class Runner(BaseRunner[None]):
             for key, secret in secrets:
                 if runner_filter.enable_git_history_secret_scan:
                     added_commit_hash, removed_commit_hash, code_line = \
-                        git_history_scanner.secret_store.get_added_and_removed_commit_hash(secret)
+                        git_history_scanner.secret_store.get_added_and_removed_commit_hash(key, secret)
                 else:
                     added_commit_hash, removed_commit_hash, code_line = None, None, None
                 check_id = getattr(secret, "check_id", SECRET_TYPE_TO_ID.get(secret.type))

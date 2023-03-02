@@ -204,7 +204,7 @@ class GitHistorySecretStore:
                                                                             'code_line': ""})
         self.secrets_by_file_value_type.update(temp_secrets_by_file_value_type)
 
-    def get_added_and_removed_commit_hash(self, secret: PotentialSecret) -> Tuple[str | None, str | None, str | None]:
+    def get_added_and_removed_commit_hash(self, key: str, secret: PotentialSecret) -> Tuple[str | None, str | None, str | None]:
         """
         now we have only the current commit_hash - in the added_commit_hash or in the removed_commit_hash.
         in the next step we will add the connection and the missing data
@@ -213,13 +213,21 @@ class GitHistorySecretStore:
         if the secret not been removed}_{file_name}'
         """
         try:
-            secret_key = get_secret_key(secret.filename, secret.secret_hash, secret.type)
-            enriched_secret = self.secrets_by_file_value_type[secret_key]
-            added_commit_hash = enriched_secret[0].get('added_commit_hash')
+            secret_key = get_secret_key(secret.filename, secret.secret_hash, secret.type)  # by value type
+            enriched_secrets = self.secrets_by_file_value_type[secret_key]
+            chosen_secret = enriched_secrets[0]
+            if len(enriched_secrets) > 1:
+                added, removed, _file = key.split("_")
+                if removed == GIT_HISTORY_NOT_BEEN_REMOVED:
+                    removed = ''
+                for enriched_secret in enriched_secrets:
+                    if added == enriched_secret.get('added_commit_hash') and removed == enriched_secret.get('removed_commit_hash'):
+                        chosen_secret = enriched_secret
+                        break
 
-            removed_commit_hash = enriched_secret[0].get('removed_commit_hash') or None
-            s = enriched_secret[0]
-            code = s.get('code_line')
+            added_commit_hash = chosen_secret.get('added_commit_hash')
+            removed_commit_hash = chosen_secret.get('removed_commit_hash') or None
+            code = chosen_secret.get('code_line')
             return added_commit_hash, removed_commit_hash, code
         except Exception as e:
             logging.warning(f"Failed set added_commit_hash and removed_commit_hash due to: {e}")
