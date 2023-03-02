@@ -4,7 +4,7 @@ import os
 from enum import Enum
 from typing import Iterable, Callable, Any
 
-from checkov.arm.parser import parse
+from checkov.arm.parser.parser import parse
 from checkov.common.runners.base_runner import filter_ignored_paths
 
 ARM_POSSIBLE_ENDINGS = [".json"]
