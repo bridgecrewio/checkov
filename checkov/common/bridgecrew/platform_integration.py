@@ -191,7 +191,7 @@ class BcPlatformIntegration:
         token: str = json.loads(request.data.decode("utf8"))['token']
         return token
 
-    def setup_http_manager(self, ca_certificate: str | None = None) -> None:
+    def setup_http_manager(self, ca_certificate: str | None = None, no_cert_verify = False) -> None:
         """
         bridgecrew uses both the urllib3 and requests libraries, while checkov uses the requests library.
         :param ca_certificate: an optional CA bundle to be used by both libraries.
@@ -202,20 +202,24 @@ class BcPlatformIntegration:
             return
         if ca_certificate:
             os.environ['REQUESTS_CA_BUNDLE'] = ca_certificate
-            try:
-                parsed_url = urllib3.util.parse_url(os.environ['https_proxy'])
-                self.http = urllib3.ProxyManager(os.environ['https_proxy'], cert_reqs='REQUIRED',
-                                                 ca_certs=ca_certificate,
-                                                 proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth))  # type:ignore[no-untyped-call]
-            except KeyError:
-                self.http = urllib3.PoolManager(cert_reqs='REQUIRED', ca_certs=ca_certificate)
-        else:
+            cert_reqs = 'CERT_NONE' if no_cert_verify else 'REQUIRED'
             try:
                 parsed_url = urllib3.util.parse_url(os.environ['https_proxy'])
                 self.http = urllib3.ProxyManager(os.environ['https_proxy'],
+                                                 cert_reqs=cert_reqs,
+                                                 ca_certs=ca_certificate,
                                                  proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth))  # type:ignore[no-untyped-call]
             except KeyError:
-                self.http = urllib3.PoolManager()
+                self.http = urllib3.PoolManager(cert_reqs=cert_reqs, ca_certs=ca_certificate)
+        else:
+            cert_reqs = 'CERT_NONE' if no_cert_verify else None
+            try:
+                parsed_url = urllib3.util.parse_url(os.environ['https_proxy'])
+                self.http = urllib3.ProxyManager(os.environ['https_proxy'],
+                                                 cert_reqs=cert_reqs,
+                                                 proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth))  # type:ignore[no-untyped-call]
+            except KeyError:
+                self.http = urllib3.PoolManager(cert_reqs=cert_reqs)
 
     def setup_bridgecrew_credentials(
         self,

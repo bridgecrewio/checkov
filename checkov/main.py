@@ -187,7 +187,7 @@ def run(banner: str = checkov_banner, argv: list[str] = sys.argv[1:]) -> int | N
 
     # bridgecrew uses both the urllib3 and requests libraries, while checkov uses the requests library.
     # Allow the user to specify a CA bundle to be used by both libraries.
-    bc_integration.setup_http_manager(config.ca_certificate)
+    bc_integration.setup_http_manager(config.ca_certificate, config.no_cert_verify)
 
     # if a repo is passed in it'll save it.  Otherwise a default will be created based on the file or dir
     config.repo_id = bc_integration.persist_repo_id(config)
@@ -622,7 +622,7 @@ class Checkov:
 
             # bridgecrew uses both the urllib3 and requests libraries, while checkov uses the requests library.
             # Allow the user to specify a CA bundle to be used by both libraries.
-            bc_integration.setup_http_manager(self.config.ca_certificate)
+            bc_integration.setup_http_manager(self.config.ca_certificate, self.config.no_cert_verify)
 
             # if a repo is passed in it'll save it.  Otherwise a default will be created based on the file or dir
             self.config.repo_id = bc_integration.persist_repo_id(self.config)
