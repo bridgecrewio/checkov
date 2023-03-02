@@ -101,7 +101,7 @@ class SecretsRecord(Record):
         processed_record = self._add_commit_details(processed_record)
         return processed_record
 
-    def _add_commit_details(self, processed_record) -> str:
+    def _add_commit_details(self, processed_record: str) -> str:
         if not self.added_commit_hash and not self.is_empty_removed_commit():
             return processed_record
         splitted_record = processed_record.split("\n")

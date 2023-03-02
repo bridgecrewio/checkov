@@ -4,7 +4,7 @@ import copy
 import logging
 import os
 from collections import defaultdict
-from typing import TYPE_CHECKING, Dict, List, Tuple
+from typing import TYPE_CHECKING, Dict, List, Tuple, Optional
 from checkov.common.util import stopit
 from detect_secrets.core import scan
 from typing_extensions import TypedDict
@@ -110,7 +110,7 @@ class GitHistoryScanner:
         return commits_diff
 
 
-def search_for_code_line(commit: str, secret_value: str, is_added: bool) -> str:
+def search_for_code_line(commit: str, secret_value: Optional[str], is_added: Optional[bool]) -> str:
     splitted = commit.split('\n')
     start_char = '+' if is_added else '-'
     for line in splitted:
@@ -119,7 +119,7 @@ def search_for_code_line(commit: str, secret_value: str, is_added: bool) -> str:
     return ''  # not found
 
 
-def get_secret_key(file_name, secret_hash, secret_type) -> str:
+def get_secret_key(file_name: str, secret_hash: str, secret_type: str) -> str:
     """
     One way to create a secret key for the secret map
     """
@@ -150,7 +150,7 @@ class GitHistorySecretStore:
     def _add_new_secret(self, secret_key: str,
                         commit_hash: str,
                         secret: PotentialSecret,
-                        commit: dict) -> None:
+                        commit: Dict) -> None:
         if secret_key not in self.secrets_by_file_value_type:
             self.secrets_by_file_value_type[secret_key] = []
         else:
@@ -221,7 +221,8 @@ class GitHistorySecretStore:
                 if removed == GIT_HISTORY_NOT_BEEN_REMOVED:
                     removed = ''
                 for enriched_secret in enriched_secrets:
-                    if added == enriched_secret.get('added_commit_hash') and removed == enriched_secret.get('removed_commit_hash'):
+                    if added == enriched_secret.get('added_commit_hash') and\
+                            removed == enriched_secret.get('removed_commit_hash'):
                         chosen_secret = enriched_secret
                         break
 
