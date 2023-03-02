@@ -28,7 +28,7 @@ class EnrichedPotentialSecret(TypedDict):
     added_commit_hash: str
     removed_commit_hash: str
     potential_secret: PotentialSecret
-    code_line: str
+    code_line: Optional[str]
 
 
 class GitHistoryScanner:
@@ -55,7 +55,6 @@ class GitHistoryScanner:
                             if file_results:
                                 logging.info(
                                     f"Found {len(file_results)} secrets in file path {file_name} in commit {commit_hash}, file_results = {file_results}")
-
                                 self.secret_store.set_secret_map(file_results, file_name, commit_hash, commit)
                         elif isinstance(file_diff, dict):
                             rename_from = file_diff['rename_from']
@@ -110,9 +109,11 @@ class GitHistoryScanner:
         return commits_diff
 
 
-def search_for_code_line(commit: str, secret_value: Optional[str], is_added: Optional[bool]) -> str:
+def search_for_code_line(commit: str | Dict[str, str], secret_value: Optional[str], is_added: Optional[bool]) -> str:
     if secret_value is None:
         return ''
+    if isinstance(commit, Dict):
+        return ''  # no need to support rename
     splitted = commit.split('\n')
     start_char = '+' if is_added else '-'
     for line in splitted:
