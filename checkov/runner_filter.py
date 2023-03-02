@@ -135,7 +135,7 @@ class RunnerFilter(object):
         if self.enable_git_history_secret_scan:
             self.git_history_timeout = convert_to_seconds(git_history_timeout)
             self.framework = [CheckType.SECRETS]
-            logging.debug("Scan secrets history was enabled ignoring oter frameworks")
+            logging.debug("Scan secrets history was enabled ignoring other frameworks")
 
     @staticmethod
     def _load_resource_attr_to_omit(resource_attr_to_omit_input: Optional[Dict[str, Set[str]]]) -> DefaultDict[str, Set[str]]:
