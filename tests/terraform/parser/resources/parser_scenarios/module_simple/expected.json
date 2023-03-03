@@ -4,21 +4,23 @@
       {
         "bucket": {
           "source": ["./bucket"],
-          "__resolved__": ["bucket/bucket.tf[main.tf#0]"],
+          "__resolved__": ["bucket/bucket.tf([{main.tf#*#0}])"],
           "__start_line__": 1,
-          "__end_line__": 3
+          "__end_line__": 3,
+          "__address__": "bucket"
         }
       }
     ]
   },
-  "bucket/bucket.tf[main.tf#0]": {
+  "bucket/bucket.tf([{main.tf#*#0}])": {
     "resource": [
       {
         "aws_s3_bucket": {
           "mybucket": {
             "bucket": ["MyBucket"],
             "__start_line__": 1,
-            "__end_line__": 3
+            "__end_line__": 3,
+            "__address__": "module.bucket.aws_s3_bucket.mybucket"
           }
         }
       }

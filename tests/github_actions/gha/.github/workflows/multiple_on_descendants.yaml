@@ -1,0 +1,27 @@
+name: Handle branches
+on:
+  pull_request:
+    types: [ opened, synchronize, labeled, unlabeled ]
+  workflow_dispatch:
+
+jobs:
+  handle_branches:
+    runs-on: ubuntu-latest
+    if: github.repository == 'org/content'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.9'
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+      - name: Delete Branches
+        env:
+          ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+        run: |
+          echo "Deleting branches"
+          pipenv sync
+          pipenv run ./delete_branches.py

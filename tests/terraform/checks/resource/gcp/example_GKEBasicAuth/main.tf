@@ -1,5 +1,5 @@
 
-resource "google_container_cluster" "fail4" {
+resource "google_container_cluster" "fail2" {
   name               = "marcellus-wallace"
   location           = "us-central1-a"
   initial_node_count = 3
@@ -11,18 +11,6 @@ resource "google_container_cluster" "fail4" {
       issue_client_certificate = false
     }
   }
-
-  timeouts {
-    create = "30m"
-    update = "40m"
-  }
-}
-
-
-resource "google_container_cluster" "fail3" {
-  name               = "marcellus-wallace"
-  location           = "us-central1-a"
-  initial_node_count = 3
 
   timeouts {
     create = "30m"
@@ -47,13 +35,6 @@ resource "google_container_cluster" "fail" {
   }
 
 }
-
-resource "google_container_cluster" "fail2" {
-  name               = "google_cluster"
-  monitoring_service = "monitoring.googleapis.com"
-  master_authorized_networks_config {}
-}
-
 
 resource "google_container_cluster" "pass" {
   name               = "google_cluster"
@@ -80,3 +61,13 @@ resource "google_container_cluster" "pass2" {
 
 }
 
+resource "google_container_cluster" "pass3" {
+  name               = "marcellus-wallace"
+  location           = "us-central1-a"
+  initial_node_count = 3
+
+  timeouts {
+    create = "30m"
+    update = "40m"
+  }
+}

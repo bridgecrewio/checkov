@@ -1,0 +1,18 @@
+pass:
+  - "tasks.ansible.builtin.dnf.long_unused"
+  - "tasks.dnf.short_unused"
+  - "tasks.ansible.builtin.dnf.long_true"
+  - "tasks.dnf.short_true"
+  - "tasks.ansible.builtin.dnf.long_yes"
+  - "tasks.dnf.short_yes"
+  - "tasks.ansible.builtin.dnf.long_on"
+  - "tasks.dnf.short_ON"
+fail:
+  - "tasks.ansible.builtin.dnf.long_false"
+  - "tasks.dnf.short_false"
+  - "tasks.ansible.builtin.dnf.long_no"
+  - "tasks.dnf.short_no"
+  - "tasks.ansible.builtin.dnf.long_NO"
+  - "tasks.dnf.short_FALSE"
+evaluated_keys:
+  - validate_certs

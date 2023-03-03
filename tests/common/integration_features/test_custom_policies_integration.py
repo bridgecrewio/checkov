@@ -5,7 +5,7 @@ import unittest
 from checkov.common.bridgecrew.integration_features.features.custom_policies_integration import \
     CustomPoliciesIntegration
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
-from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
+from checkov.common.checks_infra.checks_parser import GraphCheckParser
 from checkov.common.checks_infra.registry import Registry, get_graph_checks_registry
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
@@ -20,6 +20,7 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
     def tearDown(self) -> None:
         get_graph_checks_registry("cloudformation").checks = []
         get_graph_checks_registry("terraform").checks = []
+        get_graph_checks_registry("kubernetes").checks = []
 
     def test_integration_valid(self):
         instance = BcPlatformIntegration()
@@ -162,9 +163,9 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         # for this test, we simulate some of the check registry manipulation; otherwise the singleton
         # instance will be modified and break other tests.
 
-        parser = NXGraphCheckParser()
+        parser = GraphCheckParser()
 
-        registry = Registry(parser=NXGraphCheckParser(), checks_dir=str(
+        registry = Registry(parser=GraphCheckParser(), checks_dir=str(
             Path(__file__).parent.parent.parent.parent / "checkov" / "terraform" / "checks" / "graph_checks"))
         checks = [parser.parse_raw_check(CustomPoliciesIntegration._convert_raw_check(p)) for p in policies]
         registry.checks = checks  # simulate that the policy downloader will do
@@ -252,6 +253,39 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         custom_policies_integration.post_runner(scan_reports)
         self.assertEqual(2, len(scan_reports.failed_checks))
         self.assertEqual('mikepolicies_cloned_AWS_1625063607541', scan_reports.failed_checks[1].check_id)
+
+    def test_post_runner_with_cloned_checks_with_suppression(self):
+        instance = BcPlatformIntegration()
+        instance.skip_download = False
+        instance.platform_integration_configured = True
+        custom_policies_integration = CustomPoliciesIntegration(instance)
+
+        # mock _get_policies_from_platform method
+        instance.customer_run_config_response = mock_custom_policies_response()
+        custom_policies_integration.pre_scan()
+
+        scan_reports = Report("terraform")
+        record = Record(
+            check_id="CKV_AWS_5",
+            check_name="Ensure all data stored in the Elasticsearch is securely encrypted at rest",
+            check_result={"result": CheckResult.FAILED},
+            code_block=[],
+            file_path="./main.tf",
+            file_line_range=[7, 10],
+            resource="aws_elasticsearch_domain.enabled",
+            evaluations=None,
+            check_class='',
+            file_abs_path=",.",
+            entity_tags={"tag1": "value1"},
+            bc_check_id="BC_AWS_ELASTICSEARCH_3"
+        )
+
+        scan_reports.failed_checks.append(record)
+        custom_policies_integration.policy_level_suppression = ['BC_AWS_ELASTICSEARCH_3']
+        custom_policies_integration.post_runner(scan_reports)
+        self.assertEqual(1, len(scan_reports.failed_checks))
+        self.assertEqual('mikepolicies_cloned_AWS_1625063607541', scan_reports.failed_checks[0].check_id)
+
 
     def test_policy_load_with_resources_types_as_str(self):
         # response from API
@@ -371,9 +405,9 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         # for this test, we simulate some of the check registry manipulation; otherwise the singleton
         # instance will be modified and break other tests.
 
-        parser = NXGraphCheckParser()
+        parser = GraphCheckParser()
 
-        registry = Registry(parser=NXGraphCheckParser(), checks_dir=str(
+        registry = Registry(parser=GraphCheckParser(), checks_dir=str(
             Path(__file__).parent.parent.parent.parent / "checkov" / "terraform" / "checks" / "graph_checks"))
         checks = [parser.parse_raw_check(CustomPoliciesIntegration._convert_raw_check(p)) for p in policies]
         registry.checks = checks  # simulate that the policy downloader will do

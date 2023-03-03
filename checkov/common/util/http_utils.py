@@ -119,7 +119,8 @@ def request_wrapper(
         data: Any | None = None,
         json: dict[str, Any] | None = None,
         should_call_raise_for_status: bool = False,
-        params: dict[str, Any] | None = None
+        params: dict[str, Any] | None = None,
+        log_json_body: bool = True
 ) -> Response:
     # using of "retry" mechanism for 'requests.request' due to unpredictable 'ConnectionError' and 'HttpError'
     # instances that appears from time to time.
@@ -141,7 +142,7 @@ def request_wrapper(
                 response.raise_for_status()
             return response
         except requests.exceptions.ConnectionError as connection_error:
-            logging.error(f"Connection error on request {method}:{url},\ndata:\n{data}\njson:{json}\nheaders:{headers}")
+            logging.error(f"Connection error on request {method}:{url},\ndata:\n{data}\njson:{json if log_json_body else 'Redacted'}\nheaders:{headers}")
             if i != request_max_tries - 1:
                 sleep_secs = sleep_between_request_tries * (i + 1)
                 logging.info(f"retrying attempt number {i + 2} in {sleep_secs} seconds")
@@ -152,7 +153,7 @@ def request_wrapper(
             raise connection_error
         except requests.exceptions.HTTPError as http_error:
             status_code = http_error.response.status_code
-            logging.error(f"HTTP error on request {method}:{url},\ndata:\n{data}\njson:{json}\nheaders:{headers}")
+            logging.error(f"HTTP error on request {method}:{url},\ndata:\n{data}\njson:{json if log_json_body else 'Redacted'}\nheaders:{headers}")
             if (status_code >= 500 or status_code == 403) and i != request_max_tries - 1:
                 sleep_secs = sleep_between_request_tries * (i + 1)
                 logging.info(f"retrying attempt number {i + 2} in {sleep_secs} seconds")

@@ -12,7 +12,7 @@ from checkov.common.checks_infra.solvers.filter_solvers.base_filter_solver impor
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 
 if TYPE_CHECKING:
-    from networkx import DiGraph
+    from checkov.common.typing import LibraryGraph
 
 
 class ComplexConnectionSolver(BaseConnectionSolver):
@@ -33,8 +33,12 @@ class ComplexConnectionSolver(BaseConnectionSolver):
         super().__init__(list(resource_types), list(connected_resources_types))
 
     @staticmethod
+    def get_check_identifier(check: Dict[str, Any]) -> Tuple[str, str, Optional[Any]]:
+        return check[CustomAttributes.ID], check[CustomAttributes.FILE_PATH], check.get(CustomAttributes.TF_RESOURCE_ADDRESS)
+
+    @staticmethod
     def filter_duplicates(checks: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        return list({(check[CustomAttributes.ID], check[CustomAttributes.FILE_PATH]): check for check in checks}.values())
+        return list({(ComplexConnectionSolver.get_check_identifier(check)): check for check in checks}.values())
 
     def filter_results(
         self, passed: List[Dict[str, Any]], failed: List[Dict[str, Any]], unknown: List[Dict[str, Any]]
@@ -73,7 +77,7 @@ class ComplexConnectionSolver(BaseConnectionSolver):
         sorted_connection_solvers.extend(connection_solvers_with_filtered_resource_types)
         return sorted_connection_solvers
 
-    def run_attribute_solvers(self, graph_connector: DiGraph) -> \
+    def run_attribute_solvers(self, graph_connector: LibraryGraph) -> \
             Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         attribute_solvers = [
             sub_solver

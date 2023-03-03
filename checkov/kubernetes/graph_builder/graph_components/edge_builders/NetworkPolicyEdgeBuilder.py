@@ -36,7 +36,10 @@ class NetworkPolicyEdgeBuilder(K8SEdgeBuilder):
             network_policy = vertex
             pod = potential_vertex
 
-            pod_selector = network_policy.attributes.get("spec", {}).get("podSelector")
+            pod_spec = network_policy.attributes.get("spec", {})
+            if pod_spec is None:
+                continue
+            pod_selector = pod_spec.get("podSelector")
             if not pod_selector:
                 continue
             match_labels = pod_selector.get("matchLabels")

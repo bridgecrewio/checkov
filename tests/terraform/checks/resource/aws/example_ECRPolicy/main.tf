@@ -193,6 +193,34 @@ resource "aws_ecr_repository_policy" "cond_any_pass" {
   )
 }
 
+resource "aws_ecr_repository_policy" "pass_without_principal" {
+  repository = "example"
+
+  policy = jsonencode(
+    {
+      Version   = "2008-10-17",
+      Statement = [
+        {
+          Effect    = "Allow",
+          Action    = [
+            "ecr:BatchGetImage",
+            "ecr:BatchCheckLayerAvailability",
+            "ecr:DescribeImages",
+            "ecr:DescribeRepositories",
+            "ecr:GetDownloadUrlForLayer",
+            "ecr:ListImages"
+          ],
+          Condition = {
+            "ForAnyValue:StringEquals" = {
+              "aws:PrincipalOrgID" = local.org_ids
+            }
+          }
+        }
+      ]
+    }
+  )
+}
+
 resource "aws_ecr_repository_policy" "cond_equals_pass" {
   repository = "example"
 

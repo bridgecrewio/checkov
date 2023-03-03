@@ -45,6 +45,8 @@ class KeywordEdgeBuilder(K8SEdgeBuilder):
                     # not really a loop, just extracting the dict's key
                     for base_key_attribute, reference_definitions_items in references_definition[0].items():
                         vertex_attribute_references_list: list[dict[str, str]] = vertex.attributes.get(base_key_attribute)  # type: ignore[assignment]
+                        if not vertex_attribute_references_list:
+                            continue
                         # iterate every item on the list as a separate resource
                         for i in range(len(vertex_attribute_references_list)):
                             match = True

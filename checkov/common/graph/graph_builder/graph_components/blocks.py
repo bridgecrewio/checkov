@@ -23,6 +23,7 @@ class Block:
         "source",
         "has_dynamic_block",
         "dynamic_attributes",
+        "foreach_attrs"
     )
 
     def __init__(
@@ -35,7 +36,7 @@ class Block:
             id: str = "",
             source: str = "",
             has_dynamic_block: bool = False,
-            dynamic_attributes: dict[str, Any] | None = None,
+            dynamic_attributes: dict[str, Any] | None = None
     ) -> None:
         """
             :param name: unique name given to the block, for example
@@ -96,6 +97,9 @@ class Block:
             sorted_breadcrumbs = dict(sorted(self.breadcrumbs.items()))
             base_attributes[CustomAttributes.RENDERING_BREADCRUMBS] = sorted_breadcrumbs
 
+        if hasattr(self, 'foreach_attrs'):
+            base_attributes[CustomAttributes.FOREACH_ATTRS] = self.foreach_attrs
+
         if add_hash:
             base_attributes[CustomAttributes.HASH] = calculate_hash(base_attributes)
 
@@ -136,9 +140,9 @@ class Block:
         self,
         attribute_key: str,
         attribute_value: Any,
-        change_origin_id: int,
+        change_origin_id: int | None,
         previous_breadcrumbs: list[BreadcrumbMetadata],
-        attribute_at_dest: str,
+        attribute_at_dest: str | None,
         transform_step: bool = False,
     ) -> None:
         self.update_inner_attribute(
@@ -147,7 +151,10 @@ class Block:
             value_to_update=attribute_value
         )
 
-        if self._should_add_previous_breadcrumbs(change_origin_id, previous_breadcrumbs, attribute_at_dest):
+        if (
+            self._should_add_previous_breadcrumbs(change_origin_id, previous_breadcrumbs, attribute_at_dest)
+            and change_origin_id is not None
+        ):
             previous_breadcrumbs.append(BreadcrumbMetadata(change_origin_id, attribute_at_dest))
 
         # update the numbered attributes, if the new value is a list

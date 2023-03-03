@@ -3,18 +3,19 @@ from __future__ import annotations
 import logging
 import os
 from typing import Type, Any, TYPE_CHECKING
+from copy import deepcopy
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.checks_infra.registry import BaseRegistry
-from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.typing import LibraryGraphConnector
 from checkov.common.graph.graph_builder import CustomAttributes
+from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.images.image_referencer import ImageReferencerMixin
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, merge_reports
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
-from checkov.common.typing import _CheckResult
 from checkov.kubernetes.checks.resource.registry import registry
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
 from checkov.kubernetes.graph_manager import KubernetesGraphManager
@@ -25,6 +26,8 @@ from checkov.kubernetes.kubernetes_utils import (
     get_skipped_checks,
     get_resource_id,
     K8_POSSIBLE_ENDINGS,
+    PARENT_RESOURCE_ID_KEY_NAME,
+    create_check_result,
 )
 from checkov.runner_filter import RunnerFilter
 
@@ -34,6 +37,7 @@ if TYPE_CHECKING:
     from checkov.common.checks.base_check import BaseCheck
     from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
     from checkov.common.images.image_referencer import Image
+    from checkov.common.typing import _CheckResult, _EntityContext
 
 
 class TimeoutError(Exception):
@@ -50,15 +54,15 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
     def __init__(
         self,
         graph_class: Type[KubernetesLocalGraph] = KubernetesLocalGraph,
-        db_connector: NetworkxConnector | None = None,
-        source: str = "Kubernetes",
+        db_connector: LibraryGraphConnector | None = None,
+        source: str = GraphSource.KUBERNETES,
         graph_manager: KubernetesGraphManager | None = None,
         external_registries: list[BaseRegistry] | None = None,
         report_type: str = check_type
     ) -> None:
-        db_connector = db_connector or NetworkxConnector()
 
         super().__init__(file_extensions=K8_POSSIBLE_ENDINGS)
+        db_connector = db_connector or self.db_connector
         self.external_registries = [] if external_registries is None else external_registries
         self.graph_class = graph_class
         self.graph_manager = \
@@ -96,17 +100,17 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
                         self.graph_registry.load_external_checks(directory)
 
             self.context = build_definitions_context(self.definitions, self.definitions_raw)
+            self.spread_list_items()
 
             if CHECKOV_CREATE_GRAPH and self.graph_manager:
                 logging.info("creating Kubernetes graph")
-                local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
+                local_graph = self.graph_manager.build_graph_from_definitions(deepcopy(self.definitions))
                 logging.info("Successfully created Kubernetes graph")
 
                 for vertex in local_graph.vertices:
                     file_abs_path = _get_entity_abs_path(root_folder, vertex.path)
                     report.add_resource(f'{file_abs_path}:{vertex.id}')
                 self.graph_manager.save_graph(local_graph)
-                self.definitions = local_graph.definitions
         self.pbar.initiate(len(self.definitions))
         report = self.check_definitions(root_folder, runner_filter, report, collect_skip_comments=collect_skip_comments)
 
@@ -130,6 +134,13 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
                     return [report, image_report]
 
         return report
+
+    def spread_list_items(self) -> None:
+        for _, file_conf in self.definitions.items():
+            for resource in file_conf:
+                if resource.get('kind') == "List":
+                    file_conf.extend(item for item in resource.get("items", []) if item)
+                    file_conf.remove(resource)
 
     def check_definitions(
         self, root_folder: str | None, runner_filter: RunnerFilter, report: Report, collect_skip_comments: bool = True
@@ -182,12 +193,13 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
         # Moves report generation logic out of run() method in Runner class.
         # Allows function overriding of a much smaller function than run() for other "child" frameworks such as Kustomize, Helm
         # Where Kubernetes CHECKS are needed, but the specific file references are to another framework for the user output (or a mix of both).
-        if not self.context:
-            # this shouldn't happen
-            logging.error("Context for Kubernetes runner was not set")
-            return report
 
         if results:
+            if not self.context:
+                # this shouldn't happen
+                logging.error("Context for Kubernetes runner was not set")
+                return report
+
             for check, check_result in results.items():
                 resource_id = get_resource_id(entity_conf)
                 if not resource_id:
@@ -240,31 +252,24 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
         if not checks_results:
             return report
 
-        if not self.context:
-            # this shouldn't happen
-            logging.error("Context for Kubernetes runner was not set")
-            return report
-
         for check, check_results in checks_results.items():
             for check_result in check_results:
                 entity = check_result["entity"]
                 entity_file_path = entity[CustomAttributes.FILE_PATH]
                 entity_file_abs_path = _get_entity_abs_path(root_folder, entity_file_path)
-                entity_id = entity[CustomAttributes.ID]
-                entity_context = self.context[entity_file_path][entity_id]
+                entity_context = self.get_entity_context(entity=entity, entity_file_path=entity_file_path)
 
-                clean_check_result: _CheckResult = {
-                    "result": check_result["result"],
-                    "evaluated_keys": check_result["evaluated_keys"],
-                }
+                clean_check_result = create_check_result(
+                    check_result=check_result, entity_context=entity_context, check_id=check.id
+                )
 
                 record = Record(
                     check_id=check.id,
                     check_name=check.name,
                     check_result=clean_check_result,
-                    code_block=entity_context.get("code_lines"),
+                    code_block=entity_context.get("code_lines") or [],
                     file_path=get_relative_file_path(entity_file_abs_path, root_folder),
-                    file_line_range=[entity_context.get("start_line"), entity_context.get("end_line")],
+                    file_line_range=[entity_context.get("start_line") or 0, entity_context.get("end_line") or 0],
                     resource=entity[CustomAttributes.ID],
                     evaluations={},
                     check_class=check.__class__.__module__,
@@ -274,6 +279,32 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
                 record.set_guideline(check.guideline)
                 report.add_record(record=record)
         return report
+
+    def get_entity_context(self, entity: dict[str, Any], entity_file_path: str) -> _EntityContext:
+        """Extract the context for the given entity
+
+        Deal with nested pods within a deployment.
+        May have K8S graph adjacencies, but will not be in the self.context map of objects.
+        (Consider them 'virtual' objects created for the sake of graph lookups)
+        """
+
+        entity_context: _EntityContext = {}
+
+        if PARENT_RESOURCE_ID_KEY_NAME in entity:
+            if entity[CustomAttributes.RESOURCE_TYPE] == "Pod":
+                # self.context not being None is checked in the caller method
+                entity_context = self.context[entity_file_path][entity[PARENT_RESOURCE_ID_KEY_NAME]]  # type:ignore[index]
+            else:
+                logging.info(
+                    "Unsupported nested resource type for Kubernetes graph edges. "
+                    f"Type: {entity[CustomAttributes.RESOURCE_TYPE]} Parent: {entity[PARENT_RESOURCE_ID_KEY_NAME]}"
+                )
+        else:
+            entity_id = entity[CustomAttributes.ID]
+            # self.context not being None is checked in the caller method
+            entity_context = self.context[entity_file_path][entity_id]  # type:ignore[index]
+
+        return entity_context
 
     def extract_images(
         self,

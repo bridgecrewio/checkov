@@ -69,8 +69,8 @@ resource "aws_s3_bucket" "bucket_unknown3" {
   bucket = "bucket_good"
 }
 
-resource "aws_s3_bucket" "bucket_bad_1" {
-  bucket = "bucket_bad_1"
+resource "aws_s3_bucket" "default_encryption_bucket" {
+  bucket = "default_encryption_bucket"
 }
 
 resource "aws_s3_bucket" "bucket_bad_2" {

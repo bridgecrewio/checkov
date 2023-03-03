@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List
+import logging
+from typing import Any, Dict, List, cast
 
 from checkov.common.checks.base_check import BaseCheck
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
@@ -24,9 +25,14 @@ class Registry(BaseCheckRegistry):
         }
 
     def _scan_yaml_array(
-            self, scanned_file: str, check: BaseCheck, skip_info: _SkippedCheck, entity: Dict[str, Any],
-            entity_name: str,
-            entity_type: str, results: Dict[str, Any]
+        self,
+        scanned_file: str,
+        check: BaseCheck,
+        skip_infos: list[_SkippedCheck],
+        entity: Dict[str, Any],
+        entity_name: str,
+        entity_type: str,
+        results: Dict[str, Any],
     ) -> None:
         if isinstance(entity, dict):
             analyzed_entities = jmespath.search(entity_type, entity)
@@ -34,19 +40,24 @@ class Registry(BaseCheckRegistry):
                 for item, item_conf in analyzed_entities.items():
                     if STARTLINE_MARK != item and ENDLINE_MARK != item:
                         self.update_result(
-                            check,
-                            item_conf,
-                            item,
-                            entity_type,
-                            results,
-                            scanned_file,
-                            skip_info
+                            check=check,
+                            entity_configuration=cast("dict[str, Any]", item_conf),
+                            entity_name=item,
+                            entity_type=entity_type,
+                            results=results,
+                            scanned_file=scanned_file,
+                            skip_info=skip_infos[0],
                         )
             if isinstance(analyzed_entities, list):
                 for item in analyzed_entities:
                     if isinstance(item, str):
                         item = self.set_lines_for_item(item)
                     if STARTLINE_MARK != item and ENDLINE_MARK != item:
+                        skip_info: "_SkippedCheck" = {}
+                        if skip_infos and skip_infos[0]:
+                            # multiple items could be found, so we need to skip the correct one(s)
+                            skip_info = ([skip for skip in skip_infos if item[STARTLINE_MARK] <= skip["line_number"] <= item[ENDLINE_MARK]] or [{}])[0]
+
                         self.update_result(
                             check,
                             item,
@@ -57,24 +68,50 @@ class Registry(BaseCheckRegistry):
                             skip_info
                         )
         if isinstance(entity, list):
-            for item in entity:
-                if entity_name in item:
-                    result = self.update_result(
-                        check,
-                        item[entity_name],
-                        entity_name,
-                        entity_type,
-                        results,
-                        scanned_file,
-                        skip_info
-                    )
-                    if result == CheckResult.FAILED:
-                        break
+            analyzed_entities = jmespath.search(entity_type, entity)
+            if isinstance(analyzed_entities, list):
+                for item in analyzed_entities:
+                    if isinstance(item, str):
+                        item = self.set_lines_for_item(item)
+                    if STARTLINE_MARK != item and ENDLINE_MARK != item:
+                        skip_info = {}
+                        if skip_infos and skip_infos[0]:
+                            # multiple items could be found, so we need to skip the correct one(s)
+                            skip_info = ([skip for skip in skip_infos if item[STARTLINE_MARK] <= skip["line_number"] <= item[ENDLINE_MARK]] or [{}])[0]
+
+                        self.update_result(
+                            check,
+                            item,
+                            entity_type,
+                            entity_type,
+                            results,
+                            scanned_file,
+                            skip_info
+                        )
+            else:
+                for item in entity:
+                    if entity_name in item:
+                        result = self.update_result(
+                            check,
+                            item[entity_name],
+                            entity_name,
+                            entity_type,
+                            results,
+                            scanned_file,
+                            skip_infos[0]
+                        )
+                        if result == CheckResult.FAILED:
+                            break
 
     def _scan_yaml_object(
-            self, scanned_file: str, check: BaseCheck, skip_info: _SkippedCheck, entity: Dict[str, Any],
-            entity_name: str,
-            entity_type: str, results: Dict[str, Any]
+        self,
+        scanned_file: str,
+        check: BaseCheck,
+        skip_infos: list[_SkippedCheck],
+        entity: Dict[str, Any],
+        entity_name: str,
+        entity_type: str,
+        results: Dict[str, Any],
     ) -> None:
         if entity_name in entity:
             self.update_result(
@@ -84,16 +121,27 @@ class Registry(BaseCheckRegistry):
                 entity_type,
                 results,
                 scanned_file,
-                skip_info
+                skip_infos[0]
             )
 
     def _scan_yaml_document(
-            self, scanned_file: str, check: BaseCheck, skip_info: _SkippedCheck, entity: Dict[str, Any],
-            entity_name: str,
-            entity_type: str, results: Dict[str, Any]
+        self,
+        scanned_file: str,
+        check: BaseCheck,
+        skip_info: list[_SkippedCheck],
+        entity: Dict[str, Any],
+        entity_name: str,
+        entity_type: str,
+        results: Dict[str, Any],
     ) -> None:
         self.update_result(
-            check, entity, entity_name, entity_type, results, scanned_file, skip_info
+            check,
+            entity,
+            entity_name,
+            entity_type,
+            results,
+            scanned_file,
+            skip_info[0]
         )
 
     def _scan_yaml(
@@ -108,7 +156,22 @@ class Registry(BaseCheckRegistry):
             results: Dict[str, Any],
     ) -> None:
         for check in checks:
-            skip_info = ([x for x in skipped_checks if (x["id"] == check.id and entity[STARTLINE_MARK] <= x['line_number'] <= entity[ENDLINE_MARK])] or [{}])[0]
+            skip_infos: "list[_SkippedCheck]" = [{}]
+            if isinstance(entity, dict):
+                skip_infos = [
+                    skip
+                    for skip in skipped_checks
+                    if skip["id"] == check.id and entity[STARTLINE_MARK] <= skip["line_number"] <= entity[ENDLINE_MARK]
+                ] or [{}]
+            elif isinstance(entity, list):
+                skip_infos = [
+                    skip
+                    for skip in skipped_checks
+                    for e in entity
+                    if skip["id"] == check.id and e[STARTLINE_MARK] <= skip['line_number'] <= e[ENDLINE_MARK]
+                ] or [{}]
+            else:
+                logging.info(f"Unexpected entity type {type(entity)} for {entity}")
 
             if runner_filter.should_run_check(check=check, report_type=self.report_type):
                 scanner = self._scanner.get(check.block_type, self._scan_yaml_document)
@@ -127,7 +190,7 @@ class Registry(BaseCheckRegistry):
                 scanner(
                     scanned_file,
                     check,
-                    skip_info,
+                    skip_infos,
                     target,
                     entity_name,
                     entity_type,
@@ -205,7 +268,7 @@ class Registry(BaseCheckRegistry):
                 "check": check,
                 "result": result,
                 "suppress_comment": check_result["suppress_comment"],
-                "results_configuration": None,
+                "results_configuration": entity_configuration,
             }
             return result
 
