@@ -1,0 +1,50 @@
+---
+- name: Verify tests
+  hosts: all
+  gather_facts: False
+  tasks:
+    - name: long_unused
+      ansible.builtin.dnf:
+        name: httpd
+        state: latest
+
+    - name: short_unused
+      dnf:
+        name: nikto
+        state: latest
+
+    - name: long_false
+      ansible.builtin.dnf:
+        name: nikto
+        state: latest
+        disable_gpg_check: false
+
+    - name: short_false
+      dnf:
+        name: nikto
+        state: latest
+        disable_gpg_check: False
+
+    - name: long_no
+      ansible.builtin.dnf:
+        name: disable_gpg_check
+        state: latest
+        disable_gpg_check: no
+
+    - name: short_no
+      dnf:
+        name: disable_gpg_check
+        state: latest
+        disable_gpg_check: No
+    
+    - name: long_off
+      ansible.builtin.dnf:
+        name: disable_gpg_check
+        state: latest
+        disable_gpg_check: off
+
+    - name: short_off
+      dnf:
+        name: disable_gpg_check
+        state: latest
+        disable_gpg_check: OFF
