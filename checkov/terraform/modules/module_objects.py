@@ -4,24 +4,24 @@ from typing import Optional, Any
 
 
 class TFModule:
-    __slots__ = ("path", "name", "foreach_idx", "nested_tf_module")
+    __slots__ = ("path", "index", "foreach_idx", "nested_tf_module")
 
-    def __init__(self, path: str, name: str, nested_tf_module: Optional[TFModule] = None, foreach_idx: Optional[int | str] = None) -> None:
+    def __init__(self, path: str, index: int, nested_tf_module: Optional[TFModule] = None, foreach_idx: Optional[int | str] = None) -> None:
         self.path = path
-        self.name = name
+        self.index = index
         self.foreach_idx = foreach_idx
         self.nested_tf_module = nested_tf_module
 
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, TFModule):
             return False
-        return self.path == other.path and self.name == other.name and self.nested_tf_module == other.nested_tf_module and self.foreach_idx == other.foreach_idx
+        return self.path == other.path and self.index == other.index and self.nested_tf_module == other.nested_tf_module and self.foreach_idx == other.foreach_idx
 
     def __repr__(self) -> str:
-        return f'path:{self.path}, name:{self.name}, nested_tf_module:{self.nested_tf_module}, foreach_idx:{self.foreach_idx}'
+        return f'path:{self.path}, name:{self.index}, nested_tf_module:{self.nested_tf_module}, foreach_idx:{self.foreach_idx}'
 
     def __hash__(self) -> int:
-        return hash((self.path, self.name, self.nested_tf_module, self.foreach_idx))
+        return hash((self.path, self.index, self.nested_tf_module, self.foreach_idx))
 
 
 class TFDefinitionKey:

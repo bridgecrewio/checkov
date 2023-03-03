@@ -7,10 +7,8 @@ from unittest import mock
 import pytest
 
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
-from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_PREFIX, TERRAFORM_NESTED_MODULE_PATH_ENDING, \
-    TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR
+from checkov.terraform import TFDefinitionKey, TFModule
 from checkov.terraform.tf_parser import TFParser
-
 
 
 @pytest.fixture
@@ -38,9 +36,9 @@ class TestParserInternals(unittest.TestCase):
 
     @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "True"})
     def test_load_inner_registry_module_with_nested_modules_new_parser(self):
-        self.load_inner_registry_module_new_parser(True)
+        self.load_inner_registry_module_new_parser()
 
-    def load_inner_registry_module_new_parser(self, nested_modules):
+    def load_inner_registry_module_new_parser(self):
         parser = TFParser()
         directory = os.path.join(self.resources_dir, "registry_security_group_inner_module")
         self.external_module_path = os.path.join(self.tmp_path, DEFAULT_EXTERNAL_MODULES_DIR)
@@ -53,30 +51,20 @@ class TestParserInternals(unittest.TestCase):
         expected_remote_module_path = f'{self.external_module_path}/github.com/terraform-aws-modules/terraform-aws-security-group/v4.0.0'
         expected_inner_remote_module_path = f'{expected_remote_module_path}/modules/http-80'
         expected_main_file = os.path.join(directory, 'main.tf')
-        expected_inner_main_file = os.path.join(directory, expected_inner_remote_module_path, 'main.tf')
-        expected_file_names = [
-            expected_main_file,
-            os.path.join(directory, expected_inner_remote_module_path, f'auto_values.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_main_file}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
-            os.path.join(directory, expected_inner_remote_module_path, f'main.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_main_file}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
-            os.path.join(directory, expected_inner_remote_module_path, f'outputs.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_main_file}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
-            os.path.join(directory, expected_inner_remote_module_path, f'variables.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_main_file}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
-            os.path.join(directory, expected_inner_remote_module_path, f'versions.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_main_file}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
 
-            os.path.join(directory, expected_remote_module_path, f'main.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_inner_main_file}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
-            os.path.join(directory, expected_remote_module_path, f'outputs.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_inner_main_file}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
-            os.path.join(directory, expected_remote_module_path, f'rules.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_inner_main_file}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
-            os.path.join(directory, expected_remote_module_path, f'variables.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_inner_main_file}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
-            os.path.join(directory, expected_remote_module_path, f'versions.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_inner_main_file}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
-        ]
+        assert TFDefinitionKey(file_path=expected_main_file) in out_definitions
 
-        if not nested_modules:
-            for expected_file_name in expected_file_names:
-                if expected_file_name not in list(out_definitions.keys()):
-                    self.fail(f"expected file {expected_file_name} to be in out_definitions")
-        else:
-            for expected_file_name in expected_file_names:
-                if not any(definition for definition in out_definitions.keys() if definition.startswith(expected_file_name[:-3])):
-                    self.fail(f"expected file {expected_file_name} to be in out_definitions")
+        assert TFDefinitionKey(file_path=f"{expected_inner_remote_module_path}/auto_values.tf", tf_source_modules=TFModule(index=0, path=expected_main_file)) in out_definitions
+        assert TFDefinitionKey(file_path=f"{expected_inner_remote_module_path}/main.tf", tf_source_modules=TFModule(index=0, path=expected_main_file)) in out_definitions
+        assert TFDefinitionKey(file_path=f"{expected_inner_remote_module_path}/outputs.tf", tf_source_modules=TFModule(index=0, path=expected_main_file)) in out_definitions
+        assert TFDefinitionKey(file_path=f"{expected_inner_remote_module_path}/variables.tf", tf_source_modules=TFModule(index=0, path=expected_main_file)) in out_definitions
+        assert TFDefinitionKey(file_path=f"{expected_inner_remote_module_path}/versions.tf", tf_source_modules=TFModule(index=0, path=expected_main_file)) in out_definitions
+
+        assert TFDefinitionKey(file_path=f"{expected_remote_module_path}/main.tf", tf_source_modules=TFModule(index=0, path=f"{expected_inner_remote_module_path}/main.tf", nested_tf_module=TFModule(path=expected_main_file, index=0))) in out_definitions
+        assert TFDefinitionKey(file_path=f"{expected_remote_module_path}/outputs.tf", tf_source_modules=TFModule(index=0, path=f"{expected_inner_remote_module_path}/main.tf", nested_tf_module=TFModule(path=expected_main_file, index=0))) in out_definitions
+        assert TFDefinitionKey(file_path=f"{expected_remote_module_path}/rules.tf", tf_source_modules=TFModule(index=0, path=f"{expected_inner_remote_module_path}/main.tf", nested_tf_module=TFModule(path=expected_main_file, index=0))) in out_definitions
+        assert TFDefinitionKey(file_path=f"{expected_remote_module_path}/variables.tf", tf_source_modules=TFModule(index=0, path=f"{expected_inner_remote_module_path}/main.tf", nested_tf_module=TFModule(path=expected_main_file, index=0))) in out_definitions
+        assert TFDefinitionKey(file_path=f"{expected_remote_module_path}/versions.tf", tf_source_modules=TFModule(index=0, path=f"{expected_inner_remote_module_path}/main.tf", nested_tf_module=TFModule(path=expected_main_file, index=0))) in out_definitions
 
     def test_invalid_module_sources_new_parser(self):
         parser = TFParser()
@@ -103,13 +91,108 @@ class TestParserInternals(unittest.TestCase):
         self.assertEqual(2, len(list(out_definitions[file_path]['output'])))
 
     def test_load_local_module_new_parser(self):
-        # given
         parser = TFParser()
         directory = os.path.join(self.resources_dir, "local_module")
-
-        # when
         out_definitions = parser.parse_directory(directory=directory, out_evaluations_context={})
 
-        # then
-        self.assertEqual(len(out_definitions), 3)  # root file + 2x module file
-        self.assertEqual(len(parser.loaded_files_map), 2)  # root file + 1x module file
+        self.assertEqual(len(out_definitions), 3)
+        self.assertEqual(len(parser.loaded_files_map), 2)
+
+        local_module_path = '/Users/cshayner/development/checkov/tests/terraform/parser/resources/local_module/main.tf'
+        module_path = "/Users/cshayner/development/checkov/tests/terraform/parser/resources/local_module/module/main.tf"
+        main_key = TFDefinitionKey(file_path=local_module_path)
+        key_idx_0 = TFDefinitionKey(file_path=module_path, tf_source_modules=TFModule(path=local_module_path, index=0))
+        key_idx_1 = TFDefinitionKey(file_path=module_path, tf_source_modules=TFModule(path=local_module_path, index=1))
+
+        assert main_key in out_definitions
+        assert key_idx_0 in out_definitions
+        assert key_idx_1 in out_definitions
+        assert out_definitions[main_key]['module'][0]['mod']['__resolved__'] == [key_idx_0]
+        assert out_definitions[main_key]['module'][1]['mod2']['__resolved__'] == [key_idx_1]
+
+        assert parser.external_modules_source_map == {('/Users/cshayner/development/checkov/tests/terraform/parser/resources/local_module/module', 'latest'): '/Users/cshayner/development/checkov/tests/terraform/parser/resources/local_module/module'}
+        assert parser.external_variables_data == [
+            ('versioning', True, 'manual specification'),
+            ('__start_line__', 1, 'manual specification'),
+            ('__end_line__', 4, 'manual specification'),
+            ('versioning', False, 'manual specification'),
+            ('__start_line__', 6, 'manual specification'),
+            ('__end_line__', 9, 'manual specification')
+        ]
+        assert parser.keys_to_remove == {TFDefinitionKey(file_path=module_path)}
+        assert parser._parsed_directories == {
+            '/Users/cshayner/development/checkov/tests/terraform/parser/resources/local_module',
+            '/Users/cshayner/development/checkov/tests/terraform/parser/resources/local_module/module'
+        }
+
+    def test_load_nested_module_new_parser(self):
+        parser = TFParser()
+        directory = os.path.join(self.resources_dir, "parser_nested_modules")
+        o_definitions = parser.parse_directory(directory=directory, out_evaluations_context={})
+
+        self.assertEqual(len(o_definitions), 5)
+        self.assertEqual(len(parser.loaded_files_map), 5)
+
+        main_module_path = '/Users/cshayner/development/checkov/tests/terraform/parser/resources/parser_nested_modules/main.tf'
+        module2_main_path = '/Users/cshayner/development/checkov/tests/terraform/parser/resources/parser_nested_modules/module/module2/main.tf'
+        module2_var_path = '/Users/cshayner/development/checkov/tests/terraform/parser/resources/parser_nested_modules/module/module2/variable.tf'
+        module1_main_path = '/Users/cshayner/development/checkov/tests/terraform/parser/resources/parser_nested_modules/module/main.tf'
+        module1_var_path = '/Users/cshayner/development/checkov/tests/terraform/parser/resources/parser_nested_modules/module/variable.tf'
+
+        main_module = TFDefinitionKey(file_path=main_module_path)
+        module_main_key = TFDefinitionKey(file_path=module1_main_path, tf_source_modules=TFModule(path=main_module_path, index=0))
+        module_var_key = TFDefinitionKey(file_path=module1_var_path, tf_source_modules=TFModule(path=main_module_path, index=0))
+        module2_main_key = TFDefinitionKey(file_path=module2_main_path, tf_source_modules=TFModule(path=module1_main_path, index=0, nested_tf_module=TFModule(path=main_module_path, index=0)))
+        module2_var_key = TFDefinitionKey(file_path=module2_var_path, tf_source_modules=TFModule(path=module1_main_path, index=0, nested_tf_module=TFModule(path=main_module_path, index=0)))
+
+        assert main_module in o_definitions
+        assert module_main_key in o_definitions
+        assert module_var_key in o_definitions
+        assert module2_main_key in o_definitions
+        assert module2_var_key in o_definitions
+
+        assert o_definitions[main_module]['module'][0]['s3_module']['__resolved__'] == [module_main_key, module_var_key]
+        assert o_definitions[module_main_key]['module'][0]['inner_s3_module']['__resolved__'] == [module2_main_key, module2_var_key]
+
+    def test_load_nested_dup_module(self):
+        parser = TFParser()
+        directory = os.path.join(self.resources_dir, "parser_dup_nested")
+        o_definitions = parser.parse_directory(directory=directory, out_evaluations_context={})
+
+        self.assertEqual(len(o_definitions), 7)
+        self.assertEqual(len(parser.loaded_files_map), 3)
+
+        main_module_path = '/Users/cshayner/development/checkov/tests/terraform/parser/resources/parser_dup_nested/main.tf'
+        module1_path = '/Users/cshayner/development/checkov/tests/terraform/parser/resources/parser_dup_nested/module/main.tf'
+        module2_path = '/Users/cshayner/development/checkov/tests/terraform/parser/resources/parser_dup_nested/module/module2/main.tf'
+
+        main_module = TFDefinitionKey(file_path=main_module_path)
+        module1_key0 = TFDefinitionKey(file_path=module1_path, tf_source_modules=TFModule(path=main_module_path, index=0))
+        module1_key1 = TFDefinitionKey(file_path=module1_path, tf_source_modules=TFModule(path=main_module_path, index=1))
+        module2_key0_nest0 = TFDefinitionKey(file_path=module2_path, tf_source_modules=TFModule(path=module1_path, index=0, nested_tf_module=TFModule(path=main_module_path, index=0)))
+        module2_key1_nest0 = TFDefinitionKey(file_path=module2_path, tf_source_modules=TFModule(path=module1_path, index=1, nested_tf_module=TFModule(path=main_module_path, index=0)))
+        module2_key0_nest1 = TFDefinitionKey(file_path=module2_path, tf_source_modules=TFModule(path=module1_path, index=0, nested_tf_module=TFModule(path=main_module_path, index=1)))
+        module2_key1_nest1 = TFDefinitionKey(file_path=module2_path, tf_source_modules=TFModule(path=module1_path, index=1, nested_tf_module=TFModule(path=main_module_path, index=1)))
+
+        assert main_module in o_definitions
+        assert module1_key0 in o_definitions
+        assert module1_key1 in o_definitions
+        assert module2_key0_nest1 in o_definitions
+        assert module2_key1_nest1 in o_definitions
+        assert module2_key0_nest0 in o_definitions
+        assert module2_key1_nest0 in o_definitions
+
+
+# a = TFDefinitionKey(file_path='a.tf')
+# b = TFDefinitionKey(file_path='b.tf', TFModule(path='a.tf', name='0'))
+# c = TFDefinitionKey(file_path='b.tf', TFModule(path='a.tf', name='1'))
+# d = TFDefinitionKey(file_path='c.tf', TFModule(path='b.tf', name='0', TFModule('a.tf', name='0')))
+# e = TFDefinitionKey(file_path='c.tf', TFModule(path='b.tf', name='1', TFModule('a.tf', name='0')))
+# d = TFDefinitionKey(file_path='c.tf', TFModule(path='b.tf', name='0', TFModule('a.tf', name='1')))
+# e = TFDefinitionKey(file_path='c.tf', TFModule(path='b.tf', name='1', TFModule('a.tf', name='1')))
+#
+#
+# 'c.tf[b.tf#0[a.tf#0]]'
+# 'c.tf[b.tf#0[a.tf#1]]'
+# 'c.tf[b.tf#1[a.tf#0]]'
+# 'c.tf[b.tf#1[a.tf#1]]'
