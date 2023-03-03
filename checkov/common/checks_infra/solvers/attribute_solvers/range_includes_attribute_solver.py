@@ -31,7 +31,7 @@ class RangeIncludesAttributeSolver(BaseAttributeSolver):
             try:
                 start, end = attr.split("-")
                 return True if force_int(start) <= self.value <= force_int(end) else False
-            except ValueError:
+            except (TypeError, ValueError):
                 # Occurs if there are not two entries or if one is not an int, in which case we just give up
                 return False
 

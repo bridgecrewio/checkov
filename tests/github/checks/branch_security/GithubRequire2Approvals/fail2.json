@@ -1,0 +1,32 @@
+{
+  "url": "https://api.github.com/repos/marynaKK/terragoat/branches/master/protection",
+  "required_signatures": {
+    "url": "https://api.github.com/repos/marynaKK/terragoat/branches/master/protection/required_signatures",
+    "enabled": false
+  },
+  "enforce_admins": {
+    "url": "https://api.github.com/repos/marynaKK/terragoat/branches/master/protection/enforce_admins",
+    "enabled": false
+  },
+  "required_linear_history": {
+    "enabled": false
+  },
+  "allow_force_pushes": {
+    "enabled": false
+  },
+  "allow_deletions": {
+    "enabled": false
+  },
+  "block_creations": {
+    "enabled": false
+  },
+  "required_conversation_resolution": {
+    "enabled": false
+  },
+  "lock_branch": {
+    "enabled": false
+  },
+  "allow_fork_syncing": {
+    "enabled": false
+  }
+}

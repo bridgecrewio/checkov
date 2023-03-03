@@ -2,9 +2,12 @@ import json
 import os
 import re
 from unittest.case import TestCase
+from unittest import mock
 
 import jmespath
 
+from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_PREFIX, TERRAFORM_NESTED_MODULE_PATH_ENDING, \
+    TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR, TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH
 from checkov.terraform.checks.utils.dependency_path_handler import PATH_SEPARATOR, unify_dependency_path
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
@@ -76,8 +79,47 @@ class TestRendererScenarios(TestCase):
     def test_module_simple_up_dir_ref(self):
         self.go("module_simple_up_dir_ref")
 
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "True"})
+    def test_nested_modules_instances_enable(self):
+        dir_name = 'nested_modules_instances_enable'
+        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../../parser/resources/parser_scenarios', dir_name))
+
+        from checkov.terraform.parser import Parser
+        parser = Parser()
+        tf_definitions = {}
+        parser.parse_directory(directory=resources_dir, out_definitions=tf_definitions)
+
+        with open(f'{resources_dir}/expected.json') as fp:
+            expected = json.load(fp)
+        result, expected = json.dumps(tf_definitions, sort_keys=True), json.dumps(expected, sort_keys=True)
+        result = result.replace(resources_dir, '')
+        expected = expected.replace(resources_dir, '')
+        assert result == expected
+
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "False"})
+    def test_nested_modules_instances_disable(self):
+        dir_name = 'nested_modules_instances_disable'
+        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../../parser/resources/parser_scenarios', dir_name))
+
+        from checkov.terraform.parser import Parser
+        parser = Parser()
+        tf_definitions = {}
+        parser.parse_directory(directory=resources_dir, out_definitions=tf_definitions)
+
+        with open(f'{resources_dir}/expected.json') as fp:
+            expected = json.load(fp)
+        result, expected = json.dumps(tf_definitions, sort_keys=True), json.dumps(expected, sort_keys=True)
+        result = result.replace(resources_dir, '')
+        expected = expected.replace(resources_dir, '')
+        assert result == expected
+
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "False"})
     def test_module_matryoshka(self):
         self.go("module_matryoshka")
+
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "True"})
+    def test_module_matryoshka_nested_module_enable(self):
+        self.go("module_matryoshka_nested_module_enable", remove_abs_dir=True)
 
     def test_list_default_622(self):  # see https://github.com/bridgecrewio/checkov/issues/622
         different_expected = {
@@ -94,7 +136,8 @@ class TestRendererScenarios(TestCase):
                     ],
                 'type': ['list(string)'],
                 "__start_line__": 11,
-                "__end_line__": 14
+                "__end_line__": 14,
+                "__address__": "log_types_enabled"
             }
         }
         self.go("list_default_622", different_expected)
@@ -111,9 +154,15 @@ class TestRendererScenarios(TestCase):
     def test_doc_evaluations_verify(self):
         self.go("doc_evaluations_verify", replace_expected=True)
 
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "False"})
     def test_bad_tf(self):
         # Note: this hits the _clean_bad_definitions internal function
         self.go("bad_tf")
+
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "True"})
+    def test_bad_tf_nested_modules_enable(self):
+        # Note: this hits the _clean_bad_definitions internal function
+        self.go("bad_tf_nested_modules_enable")
 
     def test_colon(self):
         # Note: this hits the _clean_bad_definitions internal function
@@ -155,7 +204,8 @@ class TestRendererScenarios(TestCase):
                     "hello-nimrodIsCöol-${nine}-${dev}-abc-xyz-qwerty"
                 ],
                 "__start_line__": 17,
-                "__end_line__": 19
+                "__end_line__": 19,
+                "__address__": "aws_s3_bucket.my_bucket"
             }
         }
         self.go("tfvars", vars_files=['other3.tfvars', 'other2.tfvars'], different_expected=different_expected)
@@ -170,9 +220,8 @@ class TestRendererScenarios(TestCase):
     def test_default_var_types(self):
         self.go("default_var_types")
 
-    def go(self, dir_name, different_expected=None, replace_expected=False, vars_files=None):
-        os.environ['RENDER_VARIABLES_ASYNC'] = 'False'
-        os.environ['LOG_LEVEL'] = 'INFO'
+    @mock.patch.dict(os.environ, {"RENDER_VARIABLES_ASYNC": "False", "LOG_LEVEL": "INFO"})
+    def go(self, dir_name, different_expected=None, replace_expected=False, vars_files=None, remove_abs_dir=False):
         different_expected = {} if not different_expected else different_expected
         resources_dir = os.path.realpath(
             os.path.join(TEST_DIRNAME, '../../parser/resources/parser_scenarios', dir_name))
@@ -182,7 +231,11 @@ class TestRendererScenarios(TestCase):
         local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True,
                                                                          vars_files=vars_files)
         got_tf_definitions, _ = convert_graph_vertices_to_tf_definitions(local_graph.vertices, resources_dir)
-        expected = load_expected(replace_expected, dir_name, resources_dir)
+        expected = load_expected(replace_expected, dir_name, resources_dir, remove_abs_dir)
+
+        if remove_abs_dir:
+            got_tf_definitions = remove_prefix_dir_from_path(resources_dir, got_tf_definitions)
+            expected = remove_prefix_dir_from_path(resources_dir, expected)
 
         for expected_file, expected_block_type_dict in expected.items():
             module_removed_path = expected_file
@@ -236,7 +289,7 @@ class TestRendererScenarios(TestCase):
         return found
 
 
-def load_expected(replace_expected, dir_name, resources_dir):
+def load_expected(replace_expected, dir_name, resources_dir, remove_abs_dir=False):
     if replace_expected:
         expected_file_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources")
         old_expected = load_expected_data(f"{dir_name}_expected.json", expected_file_dir)
@@ -245,11 +298,11 @@ def load_expected(replace_expected, dir_name, resources_dir):
             new_file_path = file_path.replace(expected_file_dir, resources_dir)
             expected[new_file_path] = old_expected[file_path]
     else:
-        expected = load_expected_data("expected.json", resources_dir)
+        expected = load_expected_data("expected.json", resources_dir, remove_abs_dir)
     return expected
 
 
-def load_expected_data(source_file_name, dir_path):
+def load_expected_data(source_file_name, dir_path, remove_abs_dir=False):
     expected_path = os.path.join(dir_path, source_file_name)
     if not os.path.exists(expected_path):
         return None
@@ -257,11 +310,14 @@ def load_expected_data(source_file_name, dir_path):
     with open(expected_path, "r") as f:
         expected_data = json.load(f)
 
-    # Convert to absolute path:   "buckets/bucket.tf[main.tf#0]"
+    if remove_abs_dir:
+        return expected_data
+
+    # Convert to absolute path:   "buckets/bucket.tf([{main.tf#*#0}])"
     #                              ^^^^^^^^^^^^^^^^^ ^^^^^^^
     #                                    HERE       & HERE
     #
-    resolved_pattern = re.compile(r"(.+)\[(.+)#(\d+)]")  # groups:  location (1), referrer (2), index (3)
+    resolved_pattern = re.compile(r"(.+)\(\[\{(.+)#\*#(\d+)}]\)")  # groups:  location (1), referrer (2), index (3)
 
     # Expected files should have the filenames relative to their base directory, but the parser will
     # use the absolute path. This loop with replace relative filenames with absolute.
@@ -297,12 +353,19 @@ def _make_module_ref_absolute(match, dir_path) -> str:
     module_referrer = match[2]
     if PATH_SEPARATOR in module_referrer:
         module_referrer_fixed = []
-        if '#' in module_referrer:
-            module_referrer = module_referrer[:-2]
+        if TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR in module_referrer:
+            module_referrer = module_referrer[:-(TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH + 1)]
         for ref in module_referrer.split(PATH_SEPARATOR):
             if not os.path.isabs(ref):
                 module_referrer_fixed.append(os.path.join(dir_path, ref))
         module_referrer = unify_dependency_path(module_referrer_fixed)
     else:
         module_referrer = os.path.join(dir_path, module_referrer)
-    return f"{module_location}[{module_referrer}#{match[3]}]"
+    return f"{module_location}{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{module_referrer}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}{match[3]}{TERRAFORM_NESTED_MODULE_PATH_ENDING}"
+
+
+def remove_prefix_dir_from_path(prefix_to_remove, dict_to_handle):
+    json_data = json.dumps(dict_to_handle)
+    json_data = json_data.replace(prefix_to_remove, '')
+    dict_to_handle = json.loads(json_data)
+    return dict_to_handle

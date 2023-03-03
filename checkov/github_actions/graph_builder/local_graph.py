@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from checkov.common.graph.graph_builder import CustomAttributes
+from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
 from checkov.common.graph.graph_builder.graph_components.blocks import Block
 from checkov.common.runners.graph_builder.local_graph import ObjectLocalGraph
@@ -19,13 +20,13 @@ class GitHubActionsLocalGraph(ObjectLocalGraph):
     def __init__(self, definitions: dict[str | Path, dict[str, Any] | list[dict[str, Any]]]) -> None:
         super().__init__(definitions=definitions)
 
-        self.source = "GitHubActions"
+        self.source = GraphSource.GITHUB_ACTIONS
         self.job_steps_map: "dict[tuple[str, str], list[tuple[str, str]]]" = defaultdict(list)
 
     def _create_vertices(self) -> None:
         for file_path, definition in self.definitions.items():
             if not isinstance(definition, dict):
-                logging.warning(f"definition of file {file_path} has the wrong type {type(definition)}")
+                logging.debug(f"definition of file {file_path} has the wrong type {type(definition)}")
                 return
 
             file_path = str(file_path)
@@ -33,6 +34,7 @@ class GitHubActionsLocalGraph(ObjectLocalGraph):
             self._create_jobs_vertices(file_path=file_path, jobs=definition.get(ResourceType.JOBS))
             self._create_steps_vertices(file_path=file_path, jobs=definition.get(ResourceType.JOBS))
             self._create_permissions_vertices(file_path=file_path, permissions=definition.get(ResourceType.PERMISSIONS))
+            self._create_on_vertices(file_path=file_path, on=definition.get(ResourceType.ON))
 
     def _create_jobs_vertices(self, file_path: str, jobs: Any) -> None:
         """Creates jobs vertices"""
@@ -103,11 +105,7 @@ class GitHubActionsLocalGraph(ObjectLocalGraph):
 
         if permissions is None:
             # if 'permissions' is not set in a file, then it is automatically 'write-all'
-            permissions = {
-                "permissions": "write-all",
-                START_LINE: 0,
-                END_LINE: 0,
-            }
+            permissions = "write-all"
 
         if not permissions or not isinstance(permissions, (str, dict)):
             return
@@ -120,12 +118,52 @@ class GitHubActionsLocalGraph(ObjectLocalGraph):
                 END_LINE: 0,
             }
         else:
-            config = permissions
+            config = {
+                "permissions": permissions,
+                START_LINE: permissions[START_LINE],
+                END_LINE: permissions[END_LINE],
+            }
 
         attributes = deepcopy(config)
         attributes[CustomAttributes.RESOURCE_TYPE] = ResourceType.PERMISSIONS
 
         block_name = ResourceType.PERMISSIONS
+
+        block = Block(
+            name=block_name,
+            config=config,
+            path=file_path,
+            block_type=BlockType.RESOURCE,
+            attributes=attributes,
+            id=block_name,
+            source=self.source,
+        )
+        self.vertices.append(block)
+
+    def _create_on_vertices(self, file_path: str, on: Any) -> None:
+        if not on:
+            return
+
+        if isinstance(on, (str, list)):
+            # to get the correct line numbers we would need to check the raw definition
+            config: "dict[str, Any]" = {
+                "on": on,
+                START_LINE: 0,
+                END_LINE: 0,
+            }
+        elif isinstance(on, dict):
+            config = {
+                "on": on,
+                START_LINE: on[START_LINE],
+                END_LINE: on[END_LINE],
+            }
+        else:
+            return
+
+        attributes = deepcopy(config)
+        attributes[CustomAttributes.RESOURCE_TYPE] = ResourceType.ON
+
+        block_name = ResourceType.ON
 
         block = Block(
             name=block_name,

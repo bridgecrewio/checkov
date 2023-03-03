@@ -1,0 +1,16 @@
+pass:
+  - 'pass/Dockerfile.RUN'
+  - 'pass/Dockerfile.RUN'
+  - 'pass/Dockerfile.RUN'
+  - 'pass/Dockerfile.RUN'
+  - 'pass/Dockerfile.RUN'
+  - 'pass/Dockerfile.RUN'
+  - 'pass/Dockerfile.RUN'
+fail:
+  - 'fail/Dockerfile.combo.RUN'
+  - 'fail/Dockerfile.long.RUN'
+  - 'fail/Dockerfile.multiline.RUN'
+  - 'fail/Dockerfile.shell.RUN'
+  - 'fail/Dockerfile.short.RUN'
+evaluated_keys:
+  - 'value'

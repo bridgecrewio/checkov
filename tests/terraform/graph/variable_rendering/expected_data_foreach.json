@@ -1,0 +1,95 @@
+{
+  "breadcrumbs": {
+    "depend_resources/main.tf": {
+      "aws_s3_bucket.foreach_map[\"bucket_a\"]": {
+        "location": [
+          {
+            "type": "variable",
+            "name": "test",
+            "path": "/Users/cshayner/development/checkov/tests/terraform/graph/variable_rendering/resources/foreach_examples/depend_resources/variable.tf",
+            "module_connection": false
+          }
+        ]
+      },
+      "aws_s3_bucket.foreach_map[\"bucket_b\"]": {
+        "location": [
+          {
+            "type": "variable",
+            "name": "test",
+            "path": "/Users/cshayner/development/checkov/tests/terraform/graph/variable_rendering/resources/foreach_examples/depend_resources/variable.tf",
+            "module_connection": false
+          }
+        ]
+      }
+    }
+  },
+  "tf_definitions": {
+    "depend_resources/variable.tf": {
+      "variable": [
+        {
+          "foreach_map": {
+            "__end_line__": 6,
+            "__start_line__": 1,
+            "default": [
+              {
+                "bucket_a": "us-west-2",
+                "bucket_b": "us-east-2"
+              }
+            ],
+            "__address__": "foreach_map"
+          }
+        },
+        {
+          "test": {
+            "__end_line__": 10,
+            "__start_line__": 8,
+            "default": [
+              "test"
+            ],
+            "__address__": "test"
+          }
+        }
+      ]
+    },
+    "depend_resources/main.tf": {
+      "resource": [
+        {
+          "aws_s3_bucket": {
+            "foreach_map[\"bucket_a\"]": {
+              "__end_line__": 6,
+              "__start_line__": 1,
+              "location": [
+                "test"
+              ],
+              "name": [
+                "bucket_a"
+              ],
+              "region": [
+                "us-west-2"
+              ],
+              "__address__": "aws_s3_bucket.foreach_map[\"bucket_a\"]"
+            }
+          }
+        },
+        {
+          "aws_s3_bucket": {
+            "foreach_map[\"bucket_b\"]": {
+              "__end_line__": 6,
+              "__start_line__": 1,
+              "location": [
+                "test"
+              ],
+              "name": [
+                "bucket_b"
+              ],
+              "region": [
+                "us-east-2"
+              ],
+              "__address__": "aws_s3_bucket.foreach_map[\"bucket_b\"]"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -45,7 +45,7 @@ class TestAKSRbacEnabled(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
-    def test_failure_default(self):
+    def test_success_default(self):
         resource_conf = {
             "name": ["example-aks1"],
             "location": ["${azurerm_resource_group.example.location}"],
@@ -64,7 +64,7 @@ class TestAKSRbacEnabled(unittest.TestCase):
         }
 
         scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        self.assertEqual(CheckResult.PASSED, scan_result)
 
     # azurerm < 2.99.0
     def test_success(self):

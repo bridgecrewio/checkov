@@ -41,7 +41,7 @@ Checkov also powers [**Bridgecrew**](https://bridgecrew.io/?utm_source=github&ut
  ## Features
 
  * [Over 1000 built-in policies](docs/5.Policy%20Index/all.md) cover security and compliance best practices for AWS, Azure and Google Cloud.
- * Scans Terraform, Terraform Plan, CloudFormation, AWS SAM, Kubernetes, Dockerfile, Serverless framework, Bicep and ARM template files.
+ * Scans Terraform, Terraform Plan, CloudFormation, AWS SAM, Kubernetes, Dockerfile, Serverless framework, Ansible, Bicep and ARM template files.
  * Scans Argo Workflows, Azure Pipelines, BitBucket Pipelines, Circle CI Pipelines, GitHub Actions and GitLab CI workflow files
  * Supports Context-awareness policies based on in-memory graph-based scanning.
  * Supports Python format for attribute policies and YAML format for both attribute and composite policies.
@@ -203,7 +203,11 @@ The `--workdir /tf` flag is optional to change the working directory to the moun
 ### Running or skipping checks 
 
 By using command line flags, you can specify to run only named checks (allow list) or run all checks except 
-those listed (deny list). If you are using the platform integration via API key, you can also specify a severity threshold to skip and / or include. See the docs for more detailed information about how these flags work together.
+those listed (deny list). If you are using the platform integration via API key, you can also specify a severity threshold to skip and / or include.
+Moreover, as json files can't contain comments, one can pass regex pattern to skip json file secret scan.
+
+See the docs for more detailed information about how these flags work together.
+   
 
 ## Examples
 
@@ -265,6 +269,11 @@ checkov --framework sca_image --docker-image sha256:1234example --dockerfile-pat
 checkov --docker-image <image-name>:tag --dockerfile-path /User/path/to/Dockerfile --bc-api-key ...
 ```
 
+You can use --image flag also to scan container image instead of --docker-image for shortener:
+```sh
+checkov --image <image-name>:tag --dockerfile-path /User/path/to/Dockerfile --bc-api-key ...
+```
+
 Run an SCA scan of packages in a repo:
 ```sh
 checkov -d . --framework sca_package --bc-api-key ... --repo-id <repo_id(arbitrary)>
@@ -279,6 +288,28 @@ OR enable the environment variables for multiple runs
 export PYTHONUNBUFFERED=1 LOG_LEVEL=DEBUG CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING=TRUE
 checkov -d .
 ```
+
+Run secrets scanning on all files in MyDirectory. Skip CKV_SECRET_6 check on json files that their suffix is DontScan
+```sh
+checkov -d /MyDirectory --framework secrets --bc-api-key ... --skip-check CKV_SECRET_6:.*DontScan.json$
+```
+
+Run secrets scanning on all files in MyDirectory. Skip CKV_SECRET_6 check on json files that contains "skip_test" in path
+```sh
+checkov -d /MyDirectory --framework secrets --bc-api-key ... --skip-check CKV_SECRET_6:.*skip_test.*json$
+```
+
+One can mask values from scanning results by supplying a configuration file (using --config-file flag) with mask entry.
+The masking can apply on resource & value (or multiple values, seperated with a comma). 
+Examples:
+```sh
+mask:
+- aws_instance:user_data
+- azurerm_key_vault_secret:admin_password,user_passwords
+```
+In the example above, the following values will be masked:
+- user_data for aws_instance resource
+- both admin_password &user_passwords for azurerm_key_vault_secret
 
 
 ### Suppressing/Ignoring a check
@@ -359,7 +390,7 @@ Default is `LOG_LEVEL=WARNING`.
 To skip files or directories, use the argument `--skip-path`, which can be specified multiple times. This argument accepts regular expressions for paths relative to the current working directory. You can use it to skip entire directories and / or specific files.
 
 By default, all directories named `node_modules`, `.terraform`, and `.serverless` will be skipped, in addition to any files or directories beginning with `.`.
-To cancel skipping directories beginning with `.` override `IGNORE_HIDDEN_DIRECTORY_ENV` environment variable `export IGNORE_HIDDEN_DIRECTORY_ENV=false`
+To cancel skipping directories beginning with `.` override `CKV_IGNORE_HIDDEN_DIRECTORIES` environment variable `export CKV_IGNORE_HIDDEN_DIRECTORIES=false`
 
 You can override the default set of directories to skip by setting the environment variable `CKV_IGNORED_DIRECTORIES`.
  Note that if you want to preserve this list and add to it, you must include these values. For example, `CKV_IGNORED_DIRECTORIES=mynewdir` will skip only that directory, but not the others mentioned above. This variable is legacy functionality; we recommend using the `--skip-file` flag.
@@ -467,3 +498,6 @@ To skip this API call use the flag `--no-guide`.
 Start with our [Documentation](https://bridgecrewio.github.io/checkov/) for quick tutorials and examples.
 
 If you need direct support you can contact us at info@bridgecrew.io.
+
+## Python Version Support
+We follow the official support cycle of Python and we use automated tests for all supported versions of Python. This means we currently support Python 3.7 - 3.11, inclusive. Note that Python 3.7 is reaching EOL on June 2023. After that time, we will have a short grace period where we will continue 3.7 support until September 2023, and then it will no longer be considered supported for Checkov. If you run into any issues with any non-EOL Python version, please open an Issue.

@@ -1,0 +1,781 @@
+{
+  "format_version": "1.0",
+  "terraform_version": "1.1.5",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_codebuild_project.alias",
+          "mode": "managed",
+          "type": "aws_codebuild_project",
+          "name": "alias",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "artifacts": [
+              {
+                "artifact_identifier": null,
+                "bucket_owner_access": null,
+                "encryption_disabled": false,
+                "location": null,
+                "name": null,
+                "namespace_type": null,
+                "override_artifact_name": false,
+                "packaging": null,
+                "path": null,
+                "type": "NO_ARTIFACTS"
+              }
+            ],
+            "badge_enabled": false,
+            "build_batch_config": [],
+            "build_timeout": 5,
+            "cache": [],
+            "concurrent_build_limit": null,
+            "description": "test_codebuild_project_cache",
+            "environment": [
+              {
+                "certificate": null,
+                "compute_type": "BUILD_GENERAL1_SMALL",
+                "environment_variable": [
+                  {
+                    "name": "SOME_KEY1",
+                    "type": "PLAINTEXT",
+                    "value": "SOME_VALUE1"
+                  }
+                ],
+                "image": "aws/codebuild/amazonlinux2-x86_64-standard:4.0",
+                "image_pull_credentials_type": "CODEBUILD",
+                "privileged_mode": false,
+                "registry_credential": [],
+                "type": "LINUX_CONTAINER"
+              }
+            ],
+            "file_system_locations": [],
+            "logs_config": [],
+            "name": "test-project-cache",
+            "project_visibility": "PRIVATE",
+            "queued_timeout": 5,
+            "resource_access_role": null,
+            "secondary_artifacts": [],
+            "secondary_source_version": [],
+            "secondary_sources": [],
+            "source": [
+              {
+                "auth": [],
+                "build_status_config": [],
+                "buildspec": null,
+                "git_clone_depth": 1,
+                "git_submodules_config": [],
+                "insecure_ssl": null,
+                "location": "https://github.com/mitchellh/packer.git",
+                "report_build_status": null,
+                "type": "GITHUB"
+              }
+            ],
+            "source_version": null,
+            "tags": {
+              "Environment": "Test"
+            },
+            "tags_all": {
+              "Environment": "Test"
+            },
+            "vpc_config": []
+          },
+          "sensitive_values": {
+            "artifacts": [
+              {}
+            ],
+            "build_batch_config": [],
+            "cache": [],
+            "environment": [
+              {
+                "environment_variable": [
+                  {}
+                ],
+                "registry_credential": []
+              }
+            ],
+            "file_system_locations": [],
+            "logs_config": [],
+            "secondary_artifacts": [],
+            "secondary_source_version": [],
+            "secondary_sources": [],
+            "source": [
+              {
+                "auth": [],
+                "build_status_config": [],
+                "git_submodules_config": []
+              }
+            ],
+            "tags": {},
+            "tags_all": {},
+            "vpc_config": []
+          }
+        },
+        {
+          "address": "aws_codebuild_project.image",
+          "mode": "managed",
+          "type": "aws_codebuild_project",
+          "name": "image",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "artifacts": [
+              {
+                "artifact_identifier": null,
+                "bucket_owner_access": null,
+                "encryption_disabled": false,
+                "location": null,
+                "name": null,
+                "namespace_type": null,
+                "override_artifact_name": false,
+                "packaging": null,
+                "path": null,
+                "type": "NO_ARTIFACTS"
+              }
+            ],
+            "badge_enabled": false,
+            "build_batch_config": [],
+            "build_timeout": 5,
+            "cache": [],
+            "concurrent_build_limit": null,
+            "description": "test_codebuild_project_cache",
+            "environment": [
+              {
+                "certificate": null,
+                "compute_type": "BUILD_GENERAL1_SMALL",
+                "environment_variable": [
+                  {
+                    "name": "SOME_KEY1",
+                    "type": "PLAINTEXT",
+                    "value": "SOME_VALUE1"
+                  }
+                ],
+                "image": "public.ecr.aws/codebuild/amazonlinux2-x86_64-standard:4.0",
+                "image_pull_credentials_type": "CODEBUILD",
+                "privileged_mode": false,
+                "registry_credential": [],
+                "type": "LINUX_CONTAINER"
+              }
+            ],
+            "file_system_locations": [],
+            "logs_config": [],
+            "name": "test-project-cache",
+            "project_visibility": "PRIVATE",
+            "queued_timeout": 5,
+            "resource_access_role": null,
+            "secondary_artifacts": [],
+            "secondary_source_version": [],
+            "secondary_sources": [],
+            "source": [
+              {
+                "auth": [],
+                "build_status_config": [],
+                "buildspec": null,
+                "git_clone_depth": 1,
+                "git_submodules_config": [],
+                "insecure_ssl": null,
+                "location": "https://github.com/mitchellh/packer.git",
+                "report_build_status": null,
+                "type": "GITHUB"
+              }
+            ],
+            "source_version": null,
+            "tags": {
+              "Environment": "Test"
+            },
+            "tags_all": {
+              "Environment": "Test"
+            },
+            "vpc_config": []
+          },
+          "sensitive_values": {
+            "artifacts": [
+              {}
+            ],
+            "build_batch_config": [],
+            "cache": [],
+            "environment": [
+              {
+                "environment_variable": [
+                  {}
+                ],
+                "registry_credential": []
+              }
+            ],
+            "file_system_locations": [],
+            "logs_config": [],
+            "secondary_artifacts": [],
+            "secondary_source_version": [],
+            "secondary_sources": [],
+            "source": [
+              {
+                "auth": [],
+                "build_status_config": [],
+                "git_submodules_config": []
+              }
+            ],
+            "tags": {},
+            "tags_all": {},
+            "vpc_config": []
+          }
+        },
+        {
+          "address": "aws_iam_role.example",
+          "mode": "managed",
+          "type": "aws_iam_role",
+          "name": "example",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "assume_role_policy": "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"codebuild.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}",
+            "description": null,
+            "force_detach_policies": false,
+            "max_session_duration": 3600,
+            "name": "example",
+            "path": "/",
+            "permissions_boundary": null,
+            "tags": null
+          },
+          "sensitive_values": {
+            "inline_policy": [],
+            "managed_policy_arns": [],
+            "tags_all": {}
+          }
+        }
+      ]
+    }
+  },
+  "resource_changes": [
+    {
+      "address": "aws_codebuild_project.alias",
+      "mode": "managed",
+      "type": "aws_codebuild_project",
+      "name": "alias",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "artifacts": [
+            {
+              "artifact_identifier": null,
+              "bucket_owner_access": null,
+              "encryption_disabled": false,
+              "location": null,
+              "name": null,
+              "namespace_type": null,
+              "override_artifact_name": false,
+              "packaging": null,
+              "path": null,
+              "type": "NO_ARTIFACTS"
+            }
+          ],
+          "badge_enabled": false,
+          "build_batch_config": [],
+          "build_timeout": 5,
+          "cache": [],
+          "concurrent_build_limit": null,
+          "description": "test_codebuild_project_cache",
+          "environment": [
+            {
+              "certificate": null,
+              "compute_type": "BUILD_GENERAL1_SMALL",
+              "environment_variable": [
+                {
+                  "name": "SOME_KEY1",
+                  "type": "PLAINTEXT",
+                  "value": "SOME_VALUE1"
+                }
+              ],
+              "image": "aws/codebuild/amazonlinux2-x86_64-standard:4.0",
+              "image_pull_credentials_type": "CODEBUILD",
+              "privileged_mode": false,
+              "registry_credential": [],
+              "type": "LINUX_CONTAINER"
+            }
+          ],
+          "file_system_locations": [],
+          "logs_config": [],
+          "name": "test-project-cache",
+          "project_visibility": "PRIVATE",
+          "queued_timeout": 5,
+          "resource_access_role": null,
+          "secondary_artifacts": [],
+          "secondary_source_version": [],
+          "secondary_sources": [],
+          "source": [
+            {
+              "auth": [],
+              "build_status_config": [],
+              "buildspec": null,
+              "git_clone_depth": 1,
+              "git_submodules_config": [],
+              "insecure_ssl": null,
+              "location": "https://github.com/mitchellh/packer.git",
+              "report_build_status": null,
+              "type": "GITHUB"
+            }
+          ],
+          "source_version": null,
+          "tags": {
+            "Environment": "Test"
+          },
+          "tags_all": {
+            "Environment": "Test"
+          },
+          "vpc_config": []
+        },
+        "after_unknown": {
+          "arn": true,
+          "artifacts": [
+            {}
+          ],
+          "badge_url": true,
+          "build_batch_config": [],
+          "cache": [],
+          "encryption_key": true,
+          "environment": [
+            {
+              "environment_variable": [
+                {}
+              ],
+              "registry_credential": []
+            }
+          ],
+          "file_system_locations": [],
+          "id": true,
+          "logs_config": [],
+          "public_project_alias": true,
+          "secondary_artifacts": [],
+          "secondary_source_version": [],
+          "secondary_sources": [],
+          "service_role": true,
+          "source": [
+            {
+              "auth": [],
+              "build_status_config": [],
+              "git_submodules_config": []
+            }
+          ],
+          "tags": {},
+          "tags_all": {},
+          "vpc_config": []
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "artifacts": [
+            {}
+          ],
+          "build_batch_config": [],
+          "cache": [],
+          "environment": [
+            {
+              "environment_variable": [
+                {}
+              ],
+              "registry_credential": []
+            }
+          ],
+          "file_system_locations": [],
+          "logs_config": [],
+          "secondary_artifacts": [],
+          "secondary_source_version": [],
+          "secondary_sources": [],
+          "source": [
+            {
+              "auth": [],
+              "build_status_config": [],
+              "git_submodules_config": []
+            }
+          ],
+          "tags": {},
+          "tags_all": {},
+          "vpc_config": []
+        }
+      }
+    },
+    {
+      "address": "aws_codebuild_project.image",
+      "mode": "managed",
+      "type": "aws_codebuild_project",
+      "name": "image",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "artifacts": [
+            {
+              "artifact_identifier": null,
+              "bucket_owner_access": null,
+              "encryption_disabled": false,
+              "location": null,
+              "name": null,
+              "namespace_type": null,
+              "override_artifact_name": false,
+              "packaging": null,
+              "path": null,
+              "type": "NO_ARTIFACTS"
+            }
+          ],
+          "badge_enabled": false,
+          "build_batch_config": [],
+          "build_timeout": 5,
+          "cache": [],
+          "concurrent_build_limit": null,
+          "description": "test_codebuild_project_cache",
+          "environment": [
+            {
+              "certificate": null,
+              "compute_type": "BUILD_GENERAL1_SMALL",
+              "environment_variable": [
+                {
+                  "name": "SOME_KEY1",
+                  "type": "PLAINTEXT",
+                  "value": "SOME_VALUE1"
+                }
+              ],
+              "image": "public.ecr.aws/codebuild/amazonlinux2-x86_64-standard:4.0",
+              "image_pull_credentials_type": "CODEBUILD",
+              "privileged_mode": false,
+              "registry_credential": [],
+              "type": "LINUX_CONTAINER"
+            }
+          ],
+          "file_system_locations": [],
+          "logs_config": [],
+          "name": "test-project-cache",
+          "project_visibility": "PRIVATE",
+          "queued_timeout": 5,
+          "resource_access_role": null,
+          "secondary_artifacts": [],
+          "secondary_source_version": [],
+          "secondary_sources": [],
+          "source": [
+            {
+              "auth": [],
+              "build_status_config": [],
+              "buildspec": null,
+              "git_clone_depth": 1,
+              "git_submodules_config": [],
+              "insecure_ssl": null,
+              "location": "https://github.com/mitchellh/packer.git",
+              "report_build_status": null,
+              "type": "GITHUB"
+            }
+          ],
+          "source_version": null,
+          "tags": {
+            "Environment": "Test"
+          },
+          "tags_all": {
+            "Environment": "Test"
+          },
+          "vpc_config": []
+        },
+        "after_unknown": {
+          "arn": true,
+          "artifacts": [
+            {}
+          ],
+          "badge_url": true,
+          "build_batch_config": [],
+          "cache": [],
+          "encryption_key": true,
+          "environment": [
+            {
+              "environment_variable": [
+                {}
+              ],
+              "registry_credential": []
+            }
+          ],
+          "file_system_locations": [],
+          "id": true,
+          "logs_config": [],
+          "public_project_alias": true,
+          "secondary_artifacts": [],
+          "secondary_source_version": [],
+          "secondary_sources": [],
+          "service_role": true,
+          "source": [
+            {
+              "auth": [],
+              "build_status_config": [],
+              "git_submodules_config": []
+            }
+          ],
+          "tags": {},
+          "tags_all": {},
+          "vpc_config": []
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "artifacts": [
+            {}
+          ],
+          "build_batch_config": [],
+          "cache": [],
+          "environment": [
+            {
+              "environment_variable": [
+                {}
+              ],
+              "registry_credential": []
+            }
+          ],
+          "file_system_locations": [],
+          "logs_config": [],
+          "secondary_artifacts": [],
+          "secondary_source_version": [],
+          "secondary_sources": [],
+          "source": [
+            {
+              "auth": [],
+              "build_status_config": [],
+              "git_submodules_config": []
+            }
+          ],
+          "tags": {},
+          "tags_all": {},
+          "vpc_config": []
+        }
+      }
+    },
+    {
+      "address": "aws_iam_role.example",
+      "mode": "managed",
+      "type": "aws_iam_role",
+      "name": "example",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "assume_role_policy": "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"codebuild.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}",
+          "description": null,
+          "force_detach_policies": false,
+          "max_session_duration": 3600,
+          "name": "example",
+          "path": "/",
+          "permissions_boundary": null,
+          "tags": null
+        },
+        "after_unknown": {
+          "arn": true,
+          "create_date": true,
+          "id": true,
+          "inline_policy": true,
+          "managed_policy_arns": true,
+          "name_prefix": true,
+          "tags_all": true,
+          "unique_id": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "inline_policy": [],
+          "managed_policy_arns": [],
+          "tags_all": {}
+        }
+      }
+    }
+  ],
+  "configuration": {
+    "provider_config": {
+      "aws": {
+        "name": "aws",
+        "expressions": {
+          "profile": {
+            "constant_value": "dev2"
+          },
+          "region": {
+            "constant_value": "us-west-2"
+          }
+        }
+      }
+    },
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_codebuild_project.alias",
+          "mode": "managed",
+          "type": "aws_codebuild_project",
+          "name": "alias",
+          "provider_config_key": "aws",
+          "expressions": {
+            "artifacts": [
+              {
+                "type": {
+                  "constant_value": "NO_ARTIFACTS"
+                }
+              }
+            ],
+            "build_timeout": {
+              "constant_value": "5"
+            },
+            "description": {
+              "constant_value": "test_codebuild_project_cache"
+            },
+            "environment": [
+              {
+                "compute_type": {
+                  "constant_value": "BUILD_GENERAL1_SMALL"
+                },
+                "environment_variable": [
+                  {
+                    "name": {
+                      "constant_value": "SOME_KEY1"
+                    },
+                    "value": {
+                      "constant_value": "SOME_VALUE1"
+                    }
+                  }
+                ],
+                "image": {
+                  "constant_value": "aws/codebuild/amazonlinux2-x86_64-standard:4.0"
+                },
+                "image_pull_credentials_type": {
+                  "constant_value": "CODEBUILD"
+                },
+                "type": {
+                  "constant_value": "LINUX_CONTAINER"
+                }
+              }
+            ],
+            "name": {
+              "constant_value": "test-project-cache"
+            },
+            "queued_timeout": {
+              "constant_value": "5"
+            },
+            "service_role": {
+              "references": [
+                "aws_iam_role.example.arn",
+                "aws_iam_role.example"
+              ]
+            },
+            "source": [
+              {
+                "git_clone_depth": {
+                  "constant_value": 1
+                },
+                "location": {
+                  "constant_value": "https://github.com/mitchellh/packer.git"
+                },
+                "type": {
+                  "constant_value": "GITHUB"
+                }
+              }
+            ],
+            "tags": {
+              "constant_value": {
+                "Environment": "Test"
+              }
+            }
+          },
+          "schema_version": 0
+        },
+        {
+          "address": "aws_codebuild_project.image",
+          "mode": "managed",
+          "type": "aws_codebuild_project",
+          "name": "image",
+          "provider_config_key": "aws",
+          "expressions": {
+            "artifacts": [
+              {
+                "type": {
+                  "constant_value": "NO_ARTIFACTS"
+                }
+              }
+            ],
+            "build_timeout": {
+              "constant_value": "5"
+            },
+            "description": {
+              "constant_value": "test_codebuild_project_cache"
+            },
+            "environment": [
+              {
+                "compute_type": {
+                  "constant_value": "BUILD_GENERAL1_SMALL"
+                },
+                "environment_variable": [
+                  {
+                    "name": {
+                      "constant_value": "SOME_KEY1"
+                    },
+                    "value": {
+                      "constant_value": "SOME_VALUE1"
+                    }
+                  }
+                ],
+                "image": {
+                  "constant_value": "public.ecr.aws/codebuild/amazonlinux2-x86_64-standard:4.0"
+                },
+                "image_pull_credentials_type": {
+                  "constant_value": "CODEBUILD"
+                },
+                "type": {
+                  "constant_value": "LINUX_CONTAINER"
+                }
+              }
+            ],
+            "name": {
+              "constant_value": "test-project-cache"
+            },
+            "queued_timeout": {
+              "constant_value": "5"
+            },
+            "service_role": {
+              "references": [
+                "aws_iam_role.example.arn",
+                "aws_iam_role.example"
+              ]
+            },
+            "source": [
+              {
+                "git_clone_depth": {
+                  "constant_value": 1
+                },
+                "location": {
+                  "constant_value": "https://github.com/mitchellh/packer.git"
+                },
+                "type": {
+                  "constant_value": "GITHUB"
+                }
+              }
+            ],
+            "tags": {
+              "constant_value": {
+                "Environment": "Test"
+              }
+            }
+          },
+          "schema_version": 0
+        },
+        {
+          "address": "aws_iam_role.example",
+          "mode": "managed",
+          "type": "aws_iam_role",
+          "name": "example",
+          "provider_config_key": "aws",
+          "expressions": {
+            "assume_role_policy": {},
+            "name": {
+              "constant_value": "example"
+            }
+          },
+          "schema_version": 0
+        }
+      ]
+    }
+  }
+}

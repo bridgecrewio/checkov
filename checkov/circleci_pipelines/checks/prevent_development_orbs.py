@@ -25,7 +25,7 @@ class PreventDevelopmentOrbs(BaseCircleCIPipelinesCheck):
                     # We only get one return per orb: section, regardless of how many orbs, so set a flag and error later.
                     # Potentially more JMEpath reflection-foo can resolve this so we end up with a call to scan_entity_conf per orb.
                     return CheckResult.FAILED, conf
-        
+
         return CheckResult.PASSED, conf
 
 

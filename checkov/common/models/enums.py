@@ -1,4 +1,5 @@
-from enum import Enum
+from dataclasses import dataclass
+from enum import Enum, IntEnum
 
 
 class CheckResult(str, Enum):
@@ -47,3 +48,14 @@ class ScanDataFormat(Enum):
     TWISTCLI = 1
     PLATFORM = 2
     DEPENDENCY_TREE = 3
+
+
+class ErrorStatus(IntEnum):
+    SUCCESS = 0
+    ERROR = 2
+
+
+@dataclass
+class CheckFailLevel:
+    WARNING = 'WARNING'
+    ERROR = 'ERROR'

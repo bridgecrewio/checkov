@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import itertools
 import logging
 import operator
 from functools import reduce
-from typing import List, Tuple, Optional, Union, Generator
+from typing import List, Tuple, Optional, Union, Generator, Any
 
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.parsers.node import DictNode, StrNode, ListNode
@@ -13,12 +15,12 @@ ENDLINE = "__endline__"
 STARTLINE = "__startline__"
 
 
-class ContextParser(object):
+class ContextParser:
     """
     CloudFormation template context parser
     """
 
-    def __init__(self, cf_file: str, cf_template: DictNode, cf_template_lines: List[Tuple[int, str]]) -> None:
+    def __init__(self, cf_file: str, cf_template: dict[str, Any], cf_template_lines: List[Tuple[int, str]]) -> None:
         self.cf_file = cf_file
         self.cf_template = cf_template
         self.cf_template_lines = cf_template_lines
@@ -128,7 +130,7 @@ class ContextParser(object):
                             logging.warning("Check suppression is missing key 'id'")
                             continue
 
-                        skipped_check = {"id": skip_id, "suppress_comment": skip_comment}
+                        skipped_check: "_SkippedCheck" = {"id": skip_id, "suppress_comment": skip_comment}
                         if bc_id_mapping and skipped_check["id"] in bc_id_mapping:
                             skipped_check["bc_id"] = skipped_check["id"]
                             skipped_check["id"] = bc_id_mapping[skipped_check["id"]]
@@ -141,10 +143,10 @@ class ContextParser(object):
 
     @staticmethod
     def search_deep_keys(
-        search_text: str, cfn_dict: Union[StrNode, ListNode, DictNode], path: List[str]
-    ) -> List[List[Union[int, str]]]:
+        search_text: str, cfn_dict: str | list[Any] | dict[str, Any], path: list[int | str]
+    ) -> list[list[int | str]]:
         """Search deep for keys and get their values"""
-        keys: List[List[Union[int, str]]] = []
+        keys: list[list[int | str]] = []
         if isinstance(cfn_dict, dict):
             for key in cfn_dict:
                 pathprop = path[:]
@@ -164,13 +166,13 @@ class ContextParser(object):
                         keys.extend(ContextParser.search_deep_keys(search_text, item, pathproparr))
         elif isinstance(cfn_dict, list):
             for index, item in enumerate(cfn_dict):
-                pathprop = path[:]
+                pathprop = list(path)
                 pathprop.append(index)
                 keys.extend(ContextParser.search_deep_keys(search_text, item, pathprop))
 
         return keys
 
-    def _set_in_dict(self, data_dict: DictNode, map_list: List[Union[int, str]], value: StrNode) -> None:
+    def _set_in_dict(self, data_dict: dict[str, Any], map_list: list[Any], value: str) -> None:
         v = self._get_from_dict(data_dict, map_list[:-1])
         # save the original marks so that we do not copy in the line numbers of the parameter element
         # but not all ref types will have these attributes
@@ -187,5 +189,5 @@ class ContextParser(object):
             v[map_list[-1]].end_mark = end
 
     @staticmethod
-    def _get_from_dict(data_dict: DictNode, map_list: List[Union[int, str]]) -> Union[ListNode, DictNode]:
+    def _get_from_dict(data_dict: dict[str, Any], map_list: list[Any]) -> list[Any] | dict[str, Any]:
         return reduce(operator.getitem, map_list, data_dict)

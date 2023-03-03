@@ -1,5 +1,6 @@
 import argparse
 import json
+import shutil
 import unittest
 
 import os
@@ -8,6 +9,9 @@ from pathlib import Path
 from unittest.mock import patch
 
 from _pytest.capture import CaptureFixture
+
+from checkov.common.models.enums import CheckResult
+from checkov.common.output.extra_resource import ExtraResource
 
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.check_type import CheckType
@@ -18,6 +22,8 @@ from checkov.common.util.banner import banner
 from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.main import DEFAULT_RUNNERS
 from checkov.runner_filter import RunnerFilter
+from checkov.sca_package_2.runner import Runner as sca_package_runner_2
+from checkov.sca_package.runner import Runner as sca_package_runner
 from checkov.terraform.runner import Runner as tf_runner
 from checkov.bicep.runner import Runner as bicep_runner
 import re
@@ -45,7 +51,7 @@ class TestRunnerRegistry(unittest.TestCase):
         reports = runner_registry.run(root_folder=test_files_dir)
 
         # The number of resources that will get scan results. Note that this may change if we add policies covering new resource types.
-        counts_by_type = {"kubernetes": 10, "terraform": 3, "cloudformation": 4}
+        counts_by_type = {"kubernetes": 14, "terraform": 3, "cloudformation": 4}
 
         for report in reports:
             self.assertEqual(
@@ -155,9 +161,79 @@ class TestRunnerRegistry(unittest.TestCase):
         with open(oss_file_path) as file:
             content = file.readlines()
             header = content[:1][0]
-            self.assertEqual('Package,Version,Path,Git Org,Git Repository,Vulnerability,Severity,Licenses\n', header)
+            self.assertEqual('Package,Version,Path,Git Org,Git Repository,Vulnerability,Severity,Description,Licenses\n', header)
             row = content[1:][0]
             self.assertIn('bridgecrew.cloud', row)
+
+    def test_csv_invulnerable_report(self):
+        report = Report('sca_package')
+        report.extra_resources.add(
+            ExtraResource(
+                file_abs_path='/package.json',
+                file_path='/package.json',
+                resource='package.json.babel-jest',
+                vulnerability_details={'package_name': 'babel-jest',
+                                       'package_version': '',
+                                       'licenses': 'Unknown',
+                                       'package_type': ''},
+            )
+        )
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        results_path_dir = Path(current_dir) / 'packages_csv_results'
+        if results_path_dir.exists() and results_path_dir.is_dir():
+            shutil.rmtree(results_path_dir)
+
+        os.mkdir(results_path_dir)
+        config = argparse.Namespace(
+            file=['./example_s3_tf/main.tf'],
+            compact=False,
+            output=['csv'],
+            quiet=False,
+            soft_fail=False,
+            soft_fail_on=None,
+            hard_fail_on=None,
+            output_file_path=str(results_path_dir),
+            use_enforcement_rules=None,
+            bc_api_key='121223'
+        )
+
+        # when
+        runner_filter = RunnerFilter(framework=None, checks=None, skip_checks=None)
+        runner_registry = RunnerRegistry(banner, runner_filter)
+        runner_registry.print_reports(scan_reports=[report], config=config)
+
+        oss_packages_csv_file_name = ""
+        for f in os.listdir(results_path_dir):
+            if f.endswith('oss_packages.csv'):
+                oss_packages_csv_file_name = f
+                break
+
+        assert oss_packages_csv_file_name
+
+        oss_packages_csv = open(f'{results_path_dir}/{oss_packages_csv_file_name}')
+        results = oss_packages_csv.read()
+        expected_results = 'Package,Version,Path,Git Org,Git Repository,Vulnerability,Severity,Description,Licenses' \
+                           '\nbabel-jest,,/package.json,,,,,,Unknown\n'
+
+        assert results == expected_results
+
+
+    def test_run_with_empty_frameworks(self):
+        # ensures that a run with a framework that gets filtered out (e.g. --framework terraform --file abc.yaml)
+        # returns an empty report
+
+        checkov_runners = [value for attr, value in CheckType.__dict__.items() if not attr.startswith("__")]
+        scan_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'plan_with_hcl_for_enrichment', 'tfplan.json')
+
+        runner_filter = RunnerFilter(framework=['terraform'], runners=checkov_runners)
+        runner_registry = RunnerRegistry('', runner_filter, *DEFAULT_RUNNERS)
+        runner_registry.filter_runners_for_files(['tfplan.json'])
+        with self.assertLogs(level='ERROR') as log:
+            reports = runner_registry.run(root_folder=None, files=[scan_file])
+            self.assertEqual(len(reports), 0)  # checking that we get an empty report, not an exception
+            self.assertIn(
+                'There are no runners to run. This can happen if you specify a file type and a framework that are not compatible',
+                ''.join(log.output))
 
     def test_runner_file_filter(self):
         checkov_runners = [value for attr, value in CheckType.__dict__.items() if not attr.startswith("__")]
@@ -177,7 +253,13 @@ class TestRunnerRegistry(unittest.TestCase):
         self.assertEqual(set(r.check_type for r in runner_registry.runners), {'terraform', 'secrets'})
 
         runner_registry = RunnerRegistry(
-            banner, runner_filter, *DEFAULT_RUNNERS
+            banner, runner_filter, *DEFAULT_RUNNERS, sca_package_runner()
+        )
+        runner_registry.filter_runners_for_files(['main.tf', 'requirements.txt'])
+        self.assertEqual(set(r.check_type for r in runner_registry.runners), {'terraform', 'secrets', 'sca_package'})
+
+        runner_registry = RunnerRegistry(
+            banner, runner_filter, *DEFAULT_RUNNERS, sca_package_runner_2()
         )
         runner_registry.filter_runners_for_files(['main.tf', 'requirements.txt'])
         self.assertEqual(set(r.check_type for r in runner_registry.runners), {'terraform', 'secrets', 'sca_package'})
@@ -494,6 +576,83 @@ def test_output_file_path_with_output_mapping(tmp_path: Path, capsys: CaptureFix
 
     assert xml_file_path.exists()
     assert "<testcase " in xml_file_path.read_text()
+
+
+def test_strip_code_blocks_from_json():
+    # given
+    reports = [
+        {
+            "check_type": "terraform",
+            "results": {
+                "passed_checks": [
+                    {
+                        "check_id": "CKV_AWS_88",
+                        "bc_check_id": "BC_AWS_PUBLIC_12",
+                        "check_name": "EC2 instance should not have public IP.",
+                        "check_result": {
+                            "result": CheckResult.PASSED,
+                            "evaluated_keys": ["associate_public_ip_address"],
+                        },
+                        "code_block": [
+                            (1, 'resource "aws_instance" "web_host" {\n'),
+                            (2, "  # ec2 have plain text secrets in user data\n"),
+                            (3, '  ami           = "${var.ami}"\n'),
+                            (4, '  instance_type = "t2.nano"\n'),
+                            (5, "\n"),
+                            (6, "  vpc_security_group_ids = [\n"),
+                            (7, '  "${aws_security_group.web-node.id}"]\n'),
+                            (8, '  subnet_id = "${aws_subnet.web_subnet.id}"\n'),
+                            (31, "}\n"),
+                        ],
+                        "file_path": "/ec2.tf",
+                        "file_abs_path": "/ec2.tf",
+                        "repo_file_path": "/ec2.tf",
+                        "file_line_range": [1, 31],
+                        "resource": "aws_instance.web_host",
+                        "evaluations": None,
+                        "check_class": "checkov.terraform.checks.resource.aws.EC2PublicIP",
+                        "fixed_definition": None,
+                        "entity_tags": {},
+                        "caller_file_path": None,
+                        "caller_file_line_range": None,
+                        "resource_address": None,
+                        "severity": None,
+                        "bc_category": None,
+                        "benchmarks": None,
+                        "description": None,
+                        "short_description": None,
+                        "vulnerability_details": None,
+                        "connected_node": None,
+                        "guideline": "https://docs.bridgecrew.io/docs/public_12",
+                        "details": [],
+                        "check_len": None,
+                        "definition_context_file_path": "/ec2.tf",
+                    }
+                ],
+                "failed_checks": [],
+                "skipped_checks": [],
+                "parsing_errors": [
+                    "/main.tf",
+                ],
+            },
+            "summary": {
+                "passed": 1,
+                "failed": 0,
+                "skipped": 0,
+                "parsing_errors": 1,
+                "resource_count": 0,
+                "checkov_version": "2.2.330",
+            },
+            "url": "Add an api key '--bc-api-key <api-key>' to see more detailed insights via https://bridgecrew.cloud",
+        }
+    ]
+
+    # when
+    RunnerRegistry.strip_code_blocks_from_json(report_jsons=reports)
+
+    # then
+    assert reports[0]["results"]["passed_checks"][0]["code_block"] is None
+    assert reports[0]["results"]["passed_checks"][0]["connected_node"] is None
 
 
 if __name__ == "__main__":

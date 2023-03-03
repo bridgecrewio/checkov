@@ -3,7 +3,10 @@ import os
 import warnings
 from typing import List
 
+from parameterized import parameterized_class
+
 from checkov.cloudformation.graph_manager import CloudformationGraphManager
+from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.models.enums import CheckResult
@@ -15,15 +18,23 @@ from tests.common.graph.checks.test_yaml_policies_base import TestYamlPoliciesBa
 file_dir = os.path.dirname(__file__)
 
 
+@parameterized_class([
+   {"graph_framework": "NETWORKX"},
+   {"graph_framework": "IGRAPH"}
+])
 class TestYamlPolicies(TestYamlPoliciesBase):
     def __init__(self, args):
-        graph_manager = CloudformationGraphManager(db_connector=NetworkxConnector())
+        db_connector = None
+        if self.graph_framework == 'NETWORKX':
+            db_connector = NetworkxConnector()
+        elif self.graph_framework == 'IGRAPH':
+            db_connector = IgraphConnector()
+        graph_manager = CloudformationGraphManager(db_connector=db_connector)
         super().__init__(graph_manager,
                          os.path.abspath(os.path.join(file_dir, "../../../../checkov/cloudformation/checks/graph_checks")),
                          os.path.join(file_dir, "test_checks"), "cloudformation", __file__, args)
 
     def setUp(self) -> None:
-        os.environ['UNIQUE_TAG'] = ''
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 

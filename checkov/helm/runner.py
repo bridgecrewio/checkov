@@ -12,7 +12,9 @@ import yaml
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.graph.checks_infra.registry import BaseRegistry
-from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.typing import LibraryGraphConnector
+from checkov.common.graph.graph_builder.consts import GraphSource
+from checkov.common.images.image_referencer import fix_related_resource_ids
 from checkov.common.output.report import Report
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
@@ -30,13 +32,11 @@ class K8sHelmRunner(k8_runner):
     def __init__(
         self,
         graph_class: Type[KubernetesLocalGraph] = KubernetesLocalGraph,
-        db_connector: NetworkxConnector | None = None,
-        source: str = "Kubernetes",
+        db_connector: LibraryGraphConnector | None = None,
+        source: str = GraphSource.KUBERNETES,
         graph_manager: KubernetesGraphManager | None = None,
         external_registries: list[BaseRegistry] | None = None
     ) -> None:
-        db_connector = db_connector or NetworkxConnector()
-
         self.check_type = CheckType.HELM
         super().__init__(graph_class, db_connector, source, graph_manager, external_registries)
         self.chart_dir_and_meta: list[tuple[str, dict[str, Any]]] = []
@@ -62,12 +62,19 @@ class K8sHelmRunner(k8_runner):
             chart_results = super().run(root_folder, external_checks_dir=external_checks_dir, runner_filter=runner_filter)
 
             if isinstance(chart_results, list):
-                helm_report = next(chart_result for chart_result in chart_results if chart_result.check_type == self.check_type)
+                helm_report = next(
+                    chart_result for chart_result in chart_results if chart_result.check_type == self.check_type
+                )
+                sca_image_report = next(
+                    chart_result for chart_result in chart_results if chart_result.check_type == CheckType.SCA_IMAGE
+                )
             else:
                 helm_report = chart_results
+                sca_image_report = None
 
             if root_folder is not None:
-                fix_report_paths(helm_report, root_folder)
+                fix_report_paths(report=helm_report, tmp_dir=root_folder)
+                fix_related_resource_ids(report=sca_image_report, tmp_dir=root_folder)
 
             return chart_results
         except Exception:
@@ -199,6 +206,9 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
         chart_item: tuple[str, dict[str, Any]], target_dir: str, helm_command: str, runner_filter: RunnerFilter, timeout: int = 3600
     ) -> tuple[bytes, tuple[str, dict[str, Any]]] | tuple[None, None]:
         (chart_dir, chart_meta) = chart_item
+        if not isinstance(chart_meta, dict):
+            logging.error(f"invalid chart meta {chart_meta}")
+            return None, None
         chart_name = chart_meta.get('name', chart_meta.get('Name'))
         chart_version = chart_meta.get('version', chart_meta.get('Version'))
         logging.info(

@@ -1,0 +1,12 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: passing-crb2
+subjects:
+- kind: ServiceAccount
+  name: over-privileged-sa2
+  namespace: prod
+roleRef:
+  kind: ClusterRole
+  name: passing-cr2
+  apiGroup: rbac.authorization.k8s.io

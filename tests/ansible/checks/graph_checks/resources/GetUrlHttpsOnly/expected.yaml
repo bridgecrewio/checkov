@@ -1,0 +1,6 @@
+pass:
+  - "tasks.ansible.builtin.get_url.https"
+fail:
+  - "tasks.get_url.http"
+evaluated_keys:
+  - "url"

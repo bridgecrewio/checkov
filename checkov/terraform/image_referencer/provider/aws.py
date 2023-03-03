@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Union
+
 
 from checkov.common.util.data_structures_utils import find_in_dict
 from checkov.common.util.type_forcers import force_list, extract_json
@@ -8,10 +9,11 @@ from checkov.terraform.image_referencer.base_provider import BaseTerraformProvid
 
 if TYPE_CHECKING:
     from networkx import DiGraph
+    import igraph
 
 
 class AwsTerraformProvider(BaseTerraformProvider):
-    def __init__(self, graph_connector: DiGraph) -> None:
+    def __init__(self, graph_connector: Union[igraph.Graph, DiGraph]) -> None:
         super().__init__(
             graph_connector=graph_connector,
             supported_resource_types=SUPPORTED_AWS_IMAGE_RESOURCE_TYPES,
@@ -64,9 +66,10 @@ def extract_images_from_aws_ecs_task_definition(resource: dict[str, Any]) -> lis
     definitions = extract_json(resource.get("container_definitions"))
     if isinstance(definitions, list):
         for definition in definitions:
-            name = definition.get("image")
-            if name and isinstance(name, str):
-                image_names.append(name)
+            if isinstance(definition, dict):
+                name = definition.get("image")
+                if name and isinstance(name, str):
+                    image_names.append(name)
 
     return image_names
 
@@ -77,9 +80,10 @@ def extract_images_from_aws_lightsail_container_service_deployment_version(resou
     containers = resource.get("container")
     if containers:
         for container in force_list(containers):
-            name = container.get("image")
-            if name and isinstance(name, str):
-                image_names.append(name)
+            if isinstance(container, dict):
+                name = container.get("image")
+                if name and isinstance(name, str):
+                    image_names.append(name)
 
     return image_names
 

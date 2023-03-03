@@ -21,7 +21,7 @@ class ApiServerAuthorizationModeRBAC(BaseK8sContainerCheck):
                         if "RBAC" in modes.split(","):
                             hasRBACAuthorizationMode = True
                 return CheckResult.PASSED if hasRBACAuthorizationMode else CheckResult.FAILED
-           
+
         return CheckResult.PASSED
 
 

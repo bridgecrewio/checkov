@@ -8,10 +8,14 @@ from checkov.common.checks_infra.solvers.attribute_solvers.less_than_attribute_s
 from checkov.common.checks_infra.solvers.attribute_solvers.less_than_or_equal_attribute_solver import \
     LessThanOrEqualAttributeSolver
 from tests.terraform.graph.checks_infra.test_base import TestBaseSolver
+from parameterized import parameterized_class
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
-
+@parameterized_class([
+   {"graph_framework": "NETWORKX"},
+   {"graph_framework": "IGRAPH"}
+])
 class TestGreaterThanLessThanSolvers(TestBaseSolver):
     def setUp(self):
         self.checks_dir = TEST_DIRNAME

@@ -5,6 +5,7 @@ from packaging import version as packaging_version
 from pytest_mock import MockerFixture
 
 from checkov.common.bridgecrew.check_type import CheckType
+from checkov.common.bridgecrew.code_categories import CodeCategoryType
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.common.models.enums import CheckResult
@@ -101,7 +102,12 @@ def test_runner_honors_enforcement_rules(mocker: MockerFixture, scan_result):
     filter = RunnerFilter(framework=['sca_package'], use_enforcement_rules=True)
     # this is not quite a true test, because the checks don't have severities. However, this shows that the check registry
     # passes the report type properly to RunnerFilter.should_run_check, and we have tests for that method
-    filter.enforcement_rule_configs = {CheckType.SCA_PACKAGE: Severities[BcSeverities.OFF]}
+    filter.enforcement_rule_configs = {
+        CheckType.SCA_PACKAGE: {
+            CodeCategoryType.LICENSES: Severities[BcSeverities.OFF],
+            CodeCategoryType.VULNERABILITIES: Severities[BcSeverities.OFF]
+        }
+    }
     report = runner.run(root_folder=EXAMPLES_DIR, runner_filter=filter)
 
     # then
@@ -213,6 +219,59 @@ def test_find_scannable_files_exclude_go_and_requirements():
         files=[],
         excluded_paths=set(),
         excluded_file_names=set({"go.sum", "package-lock.json"})
+    )
+
+    # then
+    assert len(input_output_paths) == 1
+
+    assert input_output_paths == {
+        EXAMPLES_DIR / "requirements.txt"
+    }
+
+def test_find_scannable_files_extra_supported_packages():
+    # when
+    input_output_paths = Runner().find_scannable_files(
+        root_path=EXAMPLES_DIR,
+        files=[],
+        excluded_paths=set(),
+        excluded_file_names={"go.sum", "yarn.lock"},
+        extra_supported_package_files={'yarn.lock'}
+    )
+
+    # then
+    assert len(input_output_paths) == 2
+
+    assert input_output_paths == {
+        EXAMPLES_DIR / "requirements.txt",
+        EXAMPLES_DIR / "package-lock.json"
+    }
+
+def test_find_scannable_files_extra_supported_packages2():
+    # when
+    input_output_paths = Runner().find_scannable_files(
+        root_path=EXAMPLES_DIR,
+        files=[],
+        excluded_paths=set(),
+        excluded_file_names={"go.sum", "yarn.lock"},
+        extra_supported_package_files={'yarn.lock', 'package-lock.json'}
+    )
+
+    # then
+    assert len(input_output_paths) == 2
+
+    assert input_output_paths == {
+        EXAMPLES_DIR / "requirements.txt",
+        EXAMPLES_DIR / "package-lock.json"
+    }
+
+def test_find_scannable_files_extra_supported_packages3():
+    # when
+    input_output_paths = Runner().find_scannable_files(
+        root_path=EXAMPLES_DIR,
+        files=[],
+        excluded_paths=set(),
+        excluded_file_names={"go.sum", "yarn.lock", 'package-lock.json'},
+        extra_supported_package_files={'yarn.lock', 'package-lock.json'}
     )
 
     # then
