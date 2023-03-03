@@ -14,7 +14,7 @@ nav_order: 4
 metadata:
   name: "Check that all resources are tagged with the key - env"
   id: "CKV2_AWS_1"
-  category: "GENERAL_SECURITY"
+  category: "GENERAL"
 scope:
   provider: aws
 definition:
