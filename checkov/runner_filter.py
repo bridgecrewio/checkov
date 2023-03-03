@@ -7,6 +7,7 @@ from collections.abc import Iterable
 from typing import Any, Set, Optional, Union, List, TYPE_CHECKING, Dict, DefaultDict, cast
 import re
 
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.secrets.consts import ValidationStatus
 
 from checkov.common.bridgecrew.code_categories import CodeCategoryMapping, CodeCategoryConfiguration, CodeCategoryType
@@ -133,6 +134,8 @@ class RunnerFilter(object):
         self.enable_git_history_secret_scan: bool = enable_git_history_secret_scan
         if self.enable_git_history_secret_scan:
             self.git_history_timeout = convert_to_seconds(git_history_timeout)
+            self.framework = [CheckType.SECRETS]
+            logging.debug("Scan secrets history was enabled ignoring other frameworks")
 
     @staticmethod
     def _load_resource_attr_to_omit(resource_attr_to_omit_input: Optional[Dict[str, Set[str]]]) -> DefaultDict[str, Set[str]]:
