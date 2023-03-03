@@ -32,7 +32,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
             return True
         return False
 
-    def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
+    def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:  # type:ignore[override]  # issue with multi_signature annotation
         inspected_key = self.get_inspected_key()
         expected_values = self.get_expected_values()
         value = find_in_dict(conf, inspected_key)

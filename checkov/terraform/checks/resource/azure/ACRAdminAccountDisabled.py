@@ -2,6 +2,7 @@ from checkov.common.models.enums import CheckCategories
 from typing import List, Any
 from checkov.terraform.checks.resource.base_resource_negative_value_check import BaseResourceNegativeValueCheck
 
+
 class ACRAdminAccountDisabled(BaseResourceNegativeValueCheck):
     def __init__(self):
         name = "Ensure ACR admin account is disabled"

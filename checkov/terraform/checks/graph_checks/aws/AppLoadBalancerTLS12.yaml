@@ -1,0 +1,81 @@
+metadata:
+  id: "CKV_AWS_103"
+  name: "Ensure that load balancer is using at least TLS 1.2"
+  category: "NETWORKING"
+definition:
+  or:
+    - cond_type: "attribute"
+      resource_types:
+        - "aws_lb_listener"
+        - "aws_alb_listener"
+      attribute: "protocol"
+      operator: "within"
+      value:
+        - "TCP"
+        - "UDP"
+        - "TCP_UDP"
+    - and:
+        - cond_type: "attribute"
+          resource_types:
+            - "aws_lb_listener"
+            - "aws_alb_listener"
+          attribute: "protocol"
+          operator: "within"
+          value:
+            - "HTTPS"
+            - "TLS"
+        - or:
+            - cond_type: "attribute"
+              resource_types:
+                - "aws_lb_listener"
+                - "aws_alb_listener"
+              attribute: "ssl_policy"
+              operator: "starting_with"
+              value: "ELBSecurityPolicy-FS-1-2"
+            - cond_type: "attribute"
+              resource_types:
+                - "aws_lb_listener"
+                - "aws_alb_listener"
+              attribute: "ssl_policy"
+              operator: "starting_with"
+              value: "ELBSecurityPolicy-TLS-1-2"
+            - cond_type: "attribute"
+              resource_types:
+                - "aws_lb_listener"
+                - "aws_alb_listener"
+              attribute: "ssl_policy"
+              operator: "starting_with"
+              value: "ELBSecurityPolicy-TLS13"
+    - and:
+        - cond_type: "attribute"
+          resource_types:
+            - "aws_lb_listener"
+            - "aws_alb_listener"
+          attribute: "default_action.type"
+          operator: "equals"
+          value: "redirect"
+        - cond_type: "attribute"
+          resource_types:
+            - "aws_lb_listener"
+            - "aws_alb_listener"
+          attribute: "default_action.redirect.protocol"
+          operator: "equals"
+          value: "HTTPS"
+    - and:
+        - resource_types:
+            - "aws_lb_listener"
+          connected_resource_types:
+            - "aws_lb"
+          operator: exists
+          cond_type: connection
+        - cond_type: attribute
+          resource_types:
+            - aws_lb
+          attribute: load_balancer_type
+          operator: equals
+          value: gateway
+        - cond_type: filter
+          value:
+            - "aws_lb_listener"
+          attribute: resource_type
+          operator: within

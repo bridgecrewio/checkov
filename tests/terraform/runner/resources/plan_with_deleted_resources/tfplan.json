@@ -1,0 +1,105 @@
+{
+  "format_version": "1.1",
+  "terraform_version": "1.2.4",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_secretsmanager_secret.default",
+          "mode": "managed",
+          "type": "aws_secretsmanager_secret",
+          "name": "default",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 0,
+          "values": {
+            "description": null,
+            "force_overwrite_replica_secret": false,
+            "kms_key_id": null,
+            "name": "test",
+            "recovery_window_in_days": 30,
+            "tags": null
+          },
+          "sensitive_values": {
+            "replica": [],
+            "rotation_rules": [],
+            "tags_all": {}
+          }
+        }
+      ]
+    }
+  },
+  "resource_changes": [
+    {
+      "address": "aws_secretsmanager_secret.default",
+      "mode": "managed",
+      "type": "aws_secretsmanager_secret",
+      "name": "default",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create",
+          "delete"
+        ],
+        "before": null,
+        "after": {
+          "description": null,
+          "force_overwrite_replica_secret": false,
+          "kms_key_id": null,
+          "name": "test",
+          "recovery_window_in_days": 30,
+          "tags": null
+        },
+        "after_unknown": {
+          "arn": true,
+          "id": true,
+          "name_prefix": true,
+          "policy": true,
+          "replica": true,
+          "rotation_enabled": true,
+          "rotation_lambda_arn": true,
+          "rotation_rules": true,
+          "tags_all": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "replica": [],
+          "rotation_rules": [],
+          "tags_all": {}
+        }
+      }
+    }
+  ],
+  "configuration": {
+    "provider_config": {
+      "aws": {
+        "name": "aws",
+        "full_name": "registry.terraform.io/hashicorp/aws",
+        "expressions": {
+          "profile": {
+            "constant_value": "dev2"
+          },
+          "region": {
+            "constant_value": "us-west-2"
+          }
+        }
+      }
+    },
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_secretsmanager_secret.default",
+          "mode": "managed",
+          "type": "aws_secretsmanager_secret",
+          "name": "default",
+          "provider_config_key": "aws",
+          "expressions": {
+            "name": {
+              "constant_value": "test"
+            }
+          },
+          "schema_version": 0
+        }
+      ]
+    }
+  }
+}

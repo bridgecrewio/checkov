@@ -1,0 +1,13 @@
+metadata:
+  name: "example"
+  category: "GENERAL_SECURITY"
+  id: "FalseValue"
+scope:
+  provider: "AWS"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "aws_lb"
+  attribute: "internal"
+  operator: "is_true"
+

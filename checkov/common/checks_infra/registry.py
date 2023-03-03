@@ -8,7 +8,7 @@ from typing import Any, TYPE_CHECKING
 
 import yaml
 
-from checkov.common.checks_infra.checks_parser import NXGraphCheckParser
+from checkov.common.checks_infra.checks_parser import GraphCheckParser
 from checkov.common.graph.checks_infra.base_parser import BaseGraphCheckParser
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.runner_filter import RunnerFilter
@@ -21,10 +21,11 @@ CHECKS_POSSIBLE_ENDING = [".yaml", ".yml"]
 
 
 class Registry(BaseRegistry):
-    def __init__(self, checks_dir: str, parser: BaseGraphCheckParser = BaseGraphCheckParser()) -> None:
+    def __init__(self, checks_dir: str, parser: BaseGraphCheckParser | None = None) -> None:
+        parser = parser or BaseGraphCheckParser()
+
         super().__init__(parser)
         self.checks: list[BaseGraphCheck] = []
-        self.parser = parser
         self.checks_dir = checks_dir
         self.logger = logging.getLogger(__name__)
 
@@ -47,8 +48,13 @@ class Registry(BaseRegistry):
                         if not isinstance(check_json, dict):
                             self.logger.error(f"Loaded data from JSON is not Dict. Skipping. Data: {check_json}.")
                             continue
+
+                        if not self.parser.validate_check_config(file_path=f.name, raw_check=check_json):
+                            # proper log messages are generated inside the method
+                            continue
+
                         check = self.parser.parse_raw_check(
-                            check_json, resources_types=self._get_resource_types(check_json)
+                            check_json, resources_types=self._get_resource_types(check_json), check_path=f'{root}/{file}'
                         )
                         if not any(c for c in self.checks if check.id == c.id):
                             if external_check:
@@ -70,6 +76,8 @@ _registry_instances: dict[str, Registry] = {}
 
 def get_graph_checks_registry(check_type: str) -> Registry:
     if not _registry_instances.get(check_type):
-        _registry_instances[check_type] = Registry(parser=NXGraphCheckParser(),
-                             checks_dir=f"{Path(__file__).parent.parent.parent}/{check_type}/checks/graph_checks")
+        _registry_instances[check_type] = Registry(
+            parser=GraphCheckParser(),
+            checks_dir=f"{Path(__file__).parent.parent.parent}/{check_type}/checks/graph_checks",
+        )
     return _registry_instances[check_type]

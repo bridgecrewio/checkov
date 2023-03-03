@@ -34,3 +34,6 @@ def test_examples():
 
     assert passed_check_resources == passing_resources
     assert failed_check_resources == failing_resources
+
+    secret = report.failed_checks[0].code_block[2][1].split('=')[1]
+    assert '*' in secret

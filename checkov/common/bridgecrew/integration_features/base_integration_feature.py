@@ -8,6 +8,7 @@ from checkov.common.bridgecrew.integration_features.integration_feature_registry
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
     from checkov.common.output.report import Report
+    from checkov.common.typing import _BaseRunner
 
 
 class BaseIntegrationFeature(ABC):
@@ -21,14 +22,22 @@ class BaseIntegrationFeature(ABC):
     def is_valid(self) -> bool:
         raise NotImplementedError()
 
+    @abstractmethod
     def pre_scan(self) -> None:
         """Runs before any runners"""
         pass
 
-    def pre_runner(self) -> None:
+    @abstractmethod
+    def pre_runner(self, runner: _BaseRunner) -> None:
         """Runs before each runner"""
         pass
 
+    @abstractmethod
     def post_runner(self, scan_reports: Report) -> None:
         """Runs after each runner completes"""
+        pass
+
+    @abstractmethod
+    def post_scan(self, merged_reports: list[Report]) -> Report | None:
+        """Runs after all runners complete"""
         pass

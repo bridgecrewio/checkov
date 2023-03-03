@@ -1,16 +1,19 @@
+from __future__ import annotations
+
 import logging
 import re
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from itertools import islice
 from pathlib import Path
-from typing import List, Dict, Any, Tuple, Optional
+from typing import List, Dict, Any, Tuple
 
 import dpath.util
 
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.comment.enum import COMMENT_REGEX
 from checkov.common.models.enums import ContextCategories
+from checkov.common.util.parser_utils import get_abs_path
 from checkov.terraform.context_parsers.registry import parser_registry
 
 OPEN_CURLY = "{"
@@ -18,14 +21,6 @@ CLOSE_CURLY = "}"
 
 
 class BaseContextParser(ABC):
-    definition_type = ""
-    tf_file = ""
-    tf_file_path: Optional[Path] = None
-    file_lines: List[Tuple[int, str]] = []
-    filtered_lines: List[Tuple[int, str]] = []
-    filtered_line_numbers: List[int] = []
-    context: Dict[str, Any] = defaultdict(dict)
-
     def __init__(self, definition_type: str) -> None:
         # bc_integration.setup_http_manager()
         self.logger = logging.getLogger("{}".format(self.__module__))
@@ -33,6 +28,13 @@ class BaseContextParser(ABC):
             self.logger.error("Terraform context parser type not supported yet")
             raise Exception()
         self.definition_type = definition_type
+        self.tf_file = ""
+        self.tf_file_path: Path | None = None
+        self.file_lines: list[tuple[int, str]] = []
+        self.filtered_lines: list[tuple[int, str]] = []
+        self.filtered_line_numbers: list[int] = []
+        self.context: dict[str, Any] = defaultdict(dict)
+
         parser_registry.register(self)
 
     @abstractmethod
@@ -43,6 +45,14 @@ class BaseContextParser(ABC):
         :return: list of nested entity's keys in the context parser
         """
         raise NotImplementedError
+
+    def get_entity_definition_path(self, entity_block: Dict[str, Dict[str, Any]]) -> List[str]:
+        """
+        returns the entity's path in the entity definition block
+        :param entity_block: entity definition block
+        :return: list of nested entity's keys in the entity definition block
+        """
+        return self.get_entity_context_path(entity_block)
 
     def _is_block_signature(self, line_num: int, line_tokens: List[str], entity_context_path: List[str]) -> bool:
         """
@@ -147,12 +157,8 @@ class BaseContextParser(ABC):
     ) -> Dict[str, Any]:
         # TF files for loaded modules have this formation:  <file>[<referrer>#<index>]
         # Chop off everything after the file name for our purposes here
-        if tf_file.endswith("]") and "[" in tf_file:
-            self.tf_file = tf_file[: tf_file.index("[")]
-            self.tf_file_path = Path(tf_file[: tf_file.index("[")])
-        else:
-            self.tf_file = tf_file
-            self.tf_file_path = Path(tf_file)
+        self.tf_file = get_abs_path(tf_file)
+        self.tf_file_path = Path(self.tf_file)
         self.context = defaultdict(dict)
         self.file_lines = self._read_file_lines()
         self.context = self.enrich_definition_block(definition_blocks)

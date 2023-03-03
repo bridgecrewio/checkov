@@ -1,0 +1,19 @@
+metadata:
+  name: "example"
+  category: "GENERAL_SECURITY"
+  id: "SGPortsJsonpath"
+scope:
+  provider: "AWS"
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "aws_security_group"
+      attribute: "ingress.protocol"
+      operator: "jsonpath_is_empty"
+    - cond_type: "attribute"
+      resource_types:
+        - "aws_security_group"
+      attribute: "ingress.cidr_blocks"
+      operator: "jsonpath_is_empty"
+

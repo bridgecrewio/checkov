@@ -12,7 +12,7 @@ class PeerClientCertAuthTrue(BaseK8Check):
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
     def scan_spec_conf(self, conf, entity_type=None):
-        if conf.get("metadata")['name'] == 'etcd':
+        if conf.get("metadata", {}).get('name') == 'etcd':
             containers = conf.get('spec')['containers']
             for container in containers:
                 if container.get("args") is not None:

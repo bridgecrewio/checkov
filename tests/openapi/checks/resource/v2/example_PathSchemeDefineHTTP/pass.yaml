@@ -1,0 +1,14 @@
+swagger: "2.0"
+info:
+  title: test_pass
+  version: 1.0.0
+paths:
+  "/":
+    get:
+      operationId: example
+      summary: example
+      schemes:
+        - https
+      responses:
+        "200":
+          description: 200 response

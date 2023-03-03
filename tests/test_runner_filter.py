@@ -17,7 +17,10 @@ from checkov.runner_filter import RunnerFilter
             ["all"],
             ["terraform", "secrets"],
             {
+                "ansible",
+                "argo_workflows",
                 "arm",
+                "azure_pipelines",
                 "bicep",
                 "cloudformation",
                 "dockerfile",
@@ -33,10 +36,12 @@ from checkov.runner_filter import RunnerFilter
                 "gitlab_ci",
                 "bitbucket_configuration",
                 "bitbucket_pipelines",
+                "circleci_pipelines",
                 "kustomize",
                 "sca_package",
                 "openapi",
-                "sca_image"
+                "sca_image",
+                "3d_policy"
             },
         ),
         (["cloudformation", "serverless"], ["serverless", "secrets"], {"cloudformation"}),

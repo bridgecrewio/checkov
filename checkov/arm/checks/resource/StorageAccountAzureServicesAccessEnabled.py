@@ -27,6 +27,8 @@ class StorageAccountAzureServicesAccessEnabled(BaseResourceCheck):
         if "properties" in conf:
             if "networkAcls" in conf["properties"]:
                 if "defaultAction" in conf["properties"]["networkAcls"]:
+                    if not isinstance(conf["properties"]["networkAcls"], dict):
+                        return CheckResult.UNKNOWN
                     if conf["properties"]["networkAcls"]["defaultAction"] == "Allow":
                         return CheckResult.PASSED
                     elif "bypass" in conf["properties"]["networkAcls"] and \

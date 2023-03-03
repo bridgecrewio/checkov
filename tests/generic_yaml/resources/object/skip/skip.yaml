@@ -1,0 +1,6 @@
+foo:
+  prop: value
+  # checkov:skip=CKV_FOO_1: test justification
+  otherProp: otherValue
+
+

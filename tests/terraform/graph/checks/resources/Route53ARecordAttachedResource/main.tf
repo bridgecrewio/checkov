@@ -74,7 +74,7 @@ resource "aws_route53_record" "ignore2" {
   records = ["1.1.1.1"]
 }
 
-resource "aws_route53_record" "pass3" {
+resource "aws_route53_record" "unknown" {
   zone_id = var.zone_id
   name = "test.example.com"
   type = "A"
@@ -85,7 +85,7 @@ resource "aws_route53_record" "pass3" {
   }
 }
 
-resource "aws_route53_record" "pass4" {
+resource "aws_route53_record" "unknown2" {
   zone_id = data.aws_route53_zone.example.zone_id
   name    = "example"
   type    = "A"
@@ -131,7 +131,7 @@ resource "aws_route53_record" "pass5" {
 variable "aws_alb_dns_name" {}
 variable "aws_alb_zone_id" {}
 
-resource "aws_route53_record" "pass_var" {
+resource "aws_route53_record" "unknown3" {
   zone_id = data.aws_route53_zone.example.zone_id
   name    = "example"
   type    = "A"

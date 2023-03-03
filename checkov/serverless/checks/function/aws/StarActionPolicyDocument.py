@@ -19,10 +19,14 @@ class StarActionPolicyDocument(BaseFunctionCheck):
         :return: <CheckResult>
         """
         key = IAM_ROLE_STATEMENTS_TOKEN
-        if key in conf.keys():
-            for statement in conf[key]:
-                if 'Action' in statement and '*' in statement['Action'] and statement.get('Effect') == 'Allow':
-                    return CheckResult.FAILED
+        statements = conf.get(key)
+        if not statements:
+            return CheckResult.PASSED
+        for statement in statements:
+            if not isinstance(statement, dict):
+                return CheckResult.UNKNOWN
+            if 'Action' in statement and '*' in statement['Action'] and statement.get('Effect') == 'Allow':
+                return CheckResult.FAILED
         return CheckResult.PASSED
 
 

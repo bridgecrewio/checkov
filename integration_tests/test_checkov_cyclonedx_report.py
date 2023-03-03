@@ -16,10 +16,13 @@ class TestCheckovCyclonedxReport(unittest.TestCase):
             self.validate_report_not_empty(data)
 
     def validate_report_not_empty(self, report):
-        vulnrability_file = \
-            report.getElementsByTagName('components')[0].getElementsByTagName('component')[0].getElementsByTagName(
-                'name')[0].firstChild.nodeValue
-        self.assertTrue(vulnrability_file.endswith('.tf'))
+        vulnrability_file = (
+            report.getElementsByTagName("vulnerabilities")[0]
+            .getElementsByTagName("vulnerability")[0]
+            .getElementsByTagName("id")[0]
+            .firstChild.nodeValue
+        )
+        self.assertTrue(vulnrability_file.startswith("CKV"))
 
 
 if __name__ == "__main__":

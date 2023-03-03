@@ -1,7 +1,12 @@
 from unittest import TestCase
+import os
 
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
+from checkov.terraform.graph_manager import TerraformGraphManager
+from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+
+TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
 
 class TestBlocks(TestCase):
@@ -425,3 +430,13 @@ class TestBlocks(TestCase):
             block.attributes[attribute_key],
             f"failed to update provisioner/remote-exec.inline.3, got {block.attributes[attribute_key]}",
         )
+
+    def test_malformed_provider_block(self):
+        resources_dir = os.path.join(TEST_DIRNAME, '../../resources/malformed_provider')
+
+        graph_manager = TerraformGraphManager(db_connector=NetworkxConnector())
+        graph, tf_definitions = graph_manager.build_graph_from_source_directory(resources_dir)
+
+        expected_num_of_provider_nodes = 0
+        vertices_by_block_type = graph.vertices_by_block_type
+        self.assertEqual(expected_num_of_provider_nodes, len(vertices_by_block_type[BlockType.PROVIDER]))

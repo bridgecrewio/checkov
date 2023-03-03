@@ -1,0 +1,15 @@
+planOnlySubset:
+  script: echo "This job creates double pipelines!"
+  rules:
+    - changes:
+        - $DOCKERFILES_DIR/*
+    - if: $CI_PIPELINE_SOURCE == "push"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+job:
+  script: echo "This job also creates double pipelines!"
+  rules:
+    - changes:
+        - $DOCKERFILES_DIR/*
+    - if: $CI_PIPELINE_SOURCE == "push"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"

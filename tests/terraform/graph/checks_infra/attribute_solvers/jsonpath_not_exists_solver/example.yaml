@@ -1,0 +1,13 @@
+metadata:
+  name: "example"
+  category: "GENERAL_SECURITY"
+  id: "example"
+scope:
+  provider: "AWS"
+definition:
+  cond_type: "attribute"
+  resource_types:
+  - "xyz"
+  attribute: "arr[?(@.name == 'a')]"
+  operator: "jsonpath_not_exists"
+

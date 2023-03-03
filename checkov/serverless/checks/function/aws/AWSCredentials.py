@@ -18,13 +18,15 @@ class AWSCredentials(BaseFunctionCheck):
         """
         see: https://www.terraform.io/docs/providers/aws/index.html#static-credentials
         """
+        result = CheckResult.PASSED
         if conf.get(ENVIRONMENT_TOKEN) and isinstance(conf[ENVIRONMENT_TOKEN], dict):
             env_variables_strings = {key: value for key, value in conf.get(ENVIRONMENT_TOKEN).items() if
                                      isinstance(value, str)}
-            for env_var_value in env_variables_strings.values():
+            for idx, env_var_value in enumerate(env_variables_strings.values()):
                 if any([re.match(access_key_pattern, env_var_value), re.match(secret_key_pattern, env_var_value)]):
-                    return CheckResult.FAILED
-        return CheckResult.PASSED
+                    conf[f'{self.id}_secret_{idx}'] = env_var_value
+                    result = CheckResult.FAILED
+        return result
 
 
 check = AWSCredentials()

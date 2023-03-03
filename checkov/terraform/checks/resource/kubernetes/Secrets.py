@@ -9,7 +9,8 @@ class Secrets(BaseResourceCheck):
         name = "Prefer using secrets as files over secrets as environment variables"
         id = "CKV_K8S_35"
 
-        supported_resources = ['kubernetes_pod']
+        supported_resources = ['kubernetes_pod', "kubernetes_pod_v1",
+                               'kubernetes_deployment', 'kubernetes_deployment_v1']
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
@@ -18,6 +19,18 @@ class Secrets(BaseResourceCheck):
             self.evaluated_keys = [""]
             return CheckResult.FAILED
         spec = conf['spec'][0]
+        evaluated_keys_path = "spec"
+        if not spec:
+            return CheckResult.UNKNOWN
+
+        template = spec.get("template")
+        if template and isinstance(template, list):
+            template = template[0]
+            template_spec = template.get("spec")
+            if template_spec and isinstance(template_spec, list):
+                spec = template_spec[0]
+                evaluated_keys_path = f'{evaluated_keys_path}/[0]/template/[0]/spec'
+
         containers = spec.get("container")
         if containers:
 
@@ -33,14 +46,14 @@ class Secrets(BaseResourceCheck):
                                 value_from = env.get("value_from")[0]
                                 if value_from.get("secret_key_ref"):
                                     self.evaluated_keys = \
-                                        [f"spec/[0]/container/[{idx}]/env/[{idy}]/value_from/secret_key_ref"]
+                                        [f"{evaluated_keys_path}/[0]/container/[{idx}]/env/[{idy}]/value_from/secret_key_ref"]
                                     return CheckResult.FAILED
                 if container.get("env_from") and isinstance(container.get("env_from"), list):
                     env_from = container.get("env_from")[0]
                     for idy, ef in enumerate(env_from):
                         if "secret_ref" in ef:
                             self.evaluated_keys = \
-                                [f"spec/[0]/container/[{idx}]/env_from/[{idy}]/secret_ref"]
+                                [f"{evaluated_keys_path}/[0]/container/[{idx}]/env_from/[{idy}]/secret_ref"]
                             return CheckResult.FAILED
             return CheckResult.PASSED
 

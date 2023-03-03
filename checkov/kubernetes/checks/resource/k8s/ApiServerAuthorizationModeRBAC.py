@@ -3,6 +3,7 @@ from typing import Dict, Any
 from checkov.common.models.enums import CheckResult
 from checkov.kubernetes.checks.resource.base_container_check import BaseK8sContainerCheck
 
+
 class ApiServerAuthorizationModeRBAC(BaseK8sContainerCheck):
     def __init__(self) -> None:
         id = "CKV_K8S_77"
@@ -20,7 +21,8 @@ class ApiServerAuthorizationModeRBAC(BaseK8sContainerCheck):
                         if "RBAC" in modes.split(","):
                             hasRBACAuthorizationMode = True
                 return CheckResult.PASSED if hasRBACAuthorizationMode else CheckResult.FAILED
-           
+
         return CheckResult.PASSED
+
 
 check = ApiServerAuthorizationModeRBAC()

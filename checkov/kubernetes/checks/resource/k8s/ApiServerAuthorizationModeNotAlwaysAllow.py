@@ -3,6 +3,7 @@ from typing import Dict, Any
 from checkov.common.models.enums import CheckResult
 from checkov.kubernetes.checks.resource.base_container_check import BaseK8sContainerCheck
 
+
 class ApiServerAuthorizationModeNotAlwaysAllow(BaseK8sContainerCheck):
     def __init__(self) -> None:
         id = "CKV_K8S_74"
@@ -19,7 +20,8 @@ class ApiServerAuthorizationModeNotAlwaysAllow(BaseK8sContainerCheck):
                         if "AlwaysAllow" in modes.split(","):
                             return CheckResult.FAILED
                         break
-           
+
         return CheckResult.PASSED
+
 
 check = ApiServerAuthorizationModeNotAlwaysAllow()

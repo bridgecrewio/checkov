@@ -23,7 +23,7 @@ When running Checkov, you can also:
 * [Suppress or skip](https://www.checkov.io/2.Basics/Suppressing%20and%20Skipping%20Policies.html)
 * [Scan credentials and secrets](https://www.checkov.io/2.Basics/Scanning%20Credentials%20and%20Secrets.html)
 * [Scan Kubernetes clusters](https://www.checkov.io/4.Integrations/Kubernetes.html)
-* [Scan Terraform plan output and 3rd party modules](https://www.checkov.io/4.Integrations/Terraform%20Scanning.html)
+* [Scan Terraform plan output and 3rd party modules](https://www.checkov.io/7.Scan%20Examples/Terraform%20Plan%20Scanning.html)
 
 ## Integrating with CI/CD
 In addition to integrating with your code repository, Checkov can also integrate with your automated build pipeline via CI/CD providers. When your build tests run, Checkov will scan your infrastructure as code files for misconfigurations and you can review the output directly in your CI pipeline.

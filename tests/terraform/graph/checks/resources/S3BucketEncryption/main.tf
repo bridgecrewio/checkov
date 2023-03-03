@@ -19,8 +19,8 @@ resource "aws_s3_bucket" "bucket_good_3" {
   }
 }
 
-resource "aws_s3_bucket" "bucket_good_4" {
-  bucket = "bucket_good"
+resource "aws_s3_bucket" "bucket_unknown" {
+  bucket = "bucket_unknown"
 
   server_side_encryption_configuration {
     rule {
@@ -52,8 +52,8 @@ resource "aws_s3_bucket" "bucket_good_6" {
   bucket = "bucket_good"
 }
 
-resource "aws_s3_bucket" "bucket_good_7" {
-  bucket = "bucket_good"
+resource "aws_s3_bucket" "bucket_unknown2" {
+  bucket = "bucket_unknown"
 
   server_side_encryption_configuration {
     rule {
@@ -65,12 +65,12 @@ resource "aws_s3_bucket" "bucket_good_7" {
   }
 }
 
-resource "aws_s3_bucket" "bucket_good_8" {
+resource "aws_s3_bucket" "bucket_unknown3" {
   bucket = "bucket_good"
 }
 
-resource "aws_s3_bucket" "bucket_bad_1" {
-  bucket = "bucket_bad_1"
+resource "aws_s3_bucket" "default_encryption_bucket" {
+  bucket = "default_encryption_bucket"
 }
 
 resource "aws_s3_bucket" "bucket_bad_2" {
@@ -149,8 +149,8 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "good_sse_3" {
   }
 }
 
-resource "aws_s3_bucket_server_side_encryption_configuration" "good_sse_4" {
-  bucket = aws_s3_bucket.bucket_good_8.bucket
+resource "aws_s3_bucket_server_side_encryption_configuration" "unknown_sse_4" {
+  bucket = aws_s3_bucket.bucket_unknown3.bucket
 
   rule {
     apply_server_side_encryption_by_default {

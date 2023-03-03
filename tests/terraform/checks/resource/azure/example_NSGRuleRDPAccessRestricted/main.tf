@@ -165,3 +165,39 @@ resource "azurerm_network_security_rule" "range_prefix_lower_case" {
   destination_port_range = "3000-4000"
   source_address_prefix  = "internet"
 }
+
+resource "azurerm_network_security_group" "snet_nsgs" {
+  count               = length(local.subnets)
+  name                = "${local.root}-snet-${lookup(local.subnets[count.index], "name")}-nsg"
+  location            = azurerm_resource_group.net_rg.location
+  resource_group_name = azurerm_resource_group.net_rg.name
+  tags                = local.tags
+
+
+  dynamic "security_rule" {
+    for_each = [for s in local.subnets[count.index].nsg_rules : {
+      name                       = s.name
+      priority                   = s.priority
+      direction                  = s.direction
+      access                     = s.access
+      protocol                   = s.protocol
+      source_port_range          = s.source_port_range
+      destination_port_range     = s.destination_port_range
+      source_address_prefix      = s.source_address_prefix
+      destination_address_prefix = s.destination_address_prefix
+      description                = s.description
+    }]
+    content {
+      name                       = security_rule.value.name
+      priority                   = security_rule.value.priority
+      direction                  = security_rule.value.direction
+      access                     = security_rule.value.access
+      protocol                   = security_rule.value.protocol
+      source_port_range          = security_rule.value.source_port_range
+      destination_port_range     = security_rule.value.destination_port_range
+      source_address_prefix      = security_rule.value.source_address_prefix
+      destination_address_prefix = security_rule.value.destination_address_prefix
+      description                = security_rule.value.description
+    }
+  }
+}

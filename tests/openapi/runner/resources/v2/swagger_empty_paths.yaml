@@ -1,0 +1,14 @@
+---
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: Prophet Assumptions Manager service to connect to AM API
+schemes:
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
+definitions: {}
+paths:
+host: localhost:1083

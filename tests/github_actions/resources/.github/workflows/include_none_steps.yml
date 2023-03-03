@@ -1,0 +1,24 @@
+name: Include Empty/None steps
+
+on:
+  push:
+    branches: [ dev ]
+
+jobs:
+  Dev-Deployment:
+    name: Dev-Deployment
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    -
+
+    - name: Output summary to console
+      run: echo ${{ steps.run-newman.outputs.summary }}

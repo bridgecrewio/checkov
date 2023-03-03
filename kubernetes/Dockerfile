@@ -1,4 +1,6 @@
-FROM python:3.10-slim
+FROM python:3.8-slim
+
+ENV RUN_IN_DOCKER=True
 
 COPY kubernetes/requirements.txt /requirements.txt
 

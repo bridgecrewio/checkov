@@ -127,3 +127,21 @@ resource "aws_s3_bucket_acl" "grant_public_write_all" {
     }
   }
 }
+
+# pass
+resource "aws_s3_bucket" "bucket_with_read_acl" {
+  bucket = "abc"
+}
+
+resource "aws_s3_bucket_acl" "acl_for_bucket_with_read_acl" {
+  bucket = aws_s3_bucket.bucket_with_read_acl.id
+  access_control_policy {
+    grant {
+      grantee {
+        uri   = "http://acs.amazonaws.com/groups/global/AllUsers"
+        type = "Group"
+      }
+      permission = "READ"
+    }
+  }
+}

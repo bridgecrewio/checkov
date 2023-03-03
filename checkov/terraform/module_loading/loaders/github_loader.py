@@ -1,18 +1,19 @@
 from checkov.terraform.module_loading.loaders.git_loader import GenericGitLoader
+from checkov.terraform.module_loading.module_params import ModuleParams
 
 
 class GithubLoader(GenericGitLoader):
-    def discover(self):
+    def discover(self, module_params: ModuleParams):
         self.module_source_prefix = "github.com"
 
-    def _is_matching_loader(self) -> bool:
+    def _is_matching_loader(self, module_params: ModuleParams) -> bool:
         # https://www.terraform.io/docs/modules/sources.html#github
-        if self.module_source.startswith(self.module_source_prefix):
-            self.module_source = f"git::https://{self.module_source}"
+        if module_params.module_source.startswith(self.module_source_prefix):
+            module_params.module_source = f"git::https://{module_params.module_source}"
             return True
-        if self.module_source.startswith(f"git@{self.module_source_prefix}"):
-            source = self.module_source.replace(":", "/")
-            self.module_source = f"git::ssh://{source}"
+        if module_params.module_source.startswith(f"git@{self.module_source_prefix}"):
+            source = module_params.module_source.replace(":", "/")
+            module_params.module_source = f"git::ssh://{source}"
             return True
         return False
 

@@ -1,0 +1,11 @@
+metadata:
+  name: "example"
+  category: "GENERAL_SECURITY"
+  id: "NumberOfWordsEquals"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - aws_security_group
+  attribute: ingress.description
+  operator: number_of_words_equals
+  value: 6

@@ -1,0 +1,16 @@
+metadata:
+  name: "example"
+  category: "GENERAL_SECURITY"
+  id: "NameNotWithin"
+scope:
+  provider: "AWS"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "aws_subnet"
+  attribute: "tags.Name"
+  operator: "not_within"
+  value:
+    - "first-tf-example"
+    - "third-tf-example"
+

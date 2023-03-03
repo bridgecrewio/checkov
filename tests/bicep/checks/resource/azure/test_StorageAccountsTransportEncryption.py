@@ -28,10 +28,11 @@ def test_examples():
     passed_check_resources = {c.resource for c in report.passed_checks}
     failed_check_resources = {c.resource for c in report.failed_checks}
 
-    assert summary["passed"] == 2
-    assert summary["failed"] == 2
+    assert summary["passed"] == len(passing_resources)
+    assert summary["failed"] == len(failing_resources)
     assert summary["skipped"] == 0
     assert summary["parsing_errors"] == 0
+    assert summary["resource_count"] == len(passing_resources) + len(failing_resources) + 1  # unknown
 
     assert passed_check_resources == passing_resources
     assert failed_check_resources == failing_resources

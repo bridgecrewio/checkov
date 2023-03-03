@@ -6,7 +6,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 
 class PreventSecretsEnabled(BaseResourceValueCheck):
     def __init__(self) -> None:
-        name = "Ensure prevent secrets is enabled"
+        name = "Ensure GitLab prevent secrets is enabled"
         id = "CKV_GLB_3"
         supported_resources = ["gitlab_project"]
         categories = [CheckCategories.SECRETS]

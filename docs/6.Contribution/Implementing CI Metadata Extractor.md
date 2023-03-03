@@ -1,0 +1,60 @@
+# Implementing CI Metadata extractor
+CI/CD jobs have environment variables that can enrich the execution context.
+Attributes like:
+1. Author of the run
+2. Commit sha
+3. Pull request ID
+4. Link to the host running the CI 
+
+Those attributes can be added by reading environment variables published on the public docs of CI/CD vendors.
+Examples: 
+https://docs.gitlab.com/ee/ci/variables/predefined_variables.html
+https://docs.github.com/en/actions/learn-github-actions/environment-variables
+
+## How to implement a new Run metadata extractor?
+You'll need to implement a new class derived from RunMetaDataExtractor and commit it into the directory `checkov/common/bridgecrew/run_metadata/extractors`.
+Example:
+
+```python
+import os
+
+from checkov.common.bridgecrew.run_metadata.abstract_run_metadata_extractor import RunMetaDataExtractor
+
+
+class GithubActionsRunMetadataExtractor(RunMetaDataExtractor):
+    def is_current_ci(self):
+        if os.getenv("GITHUB_ACTIONS", ""):
+            return True
+        return False
+
+    def __init__(self):
+        server_url = os.getenv('GITHUB_SERVER_URL', '')
+        from_branch = os.getenv('GIT_BRANCH', "master")
+        to_branch = os.getenv('GITHUB_BASE_REF', "")
+        pr_id = os.getenv("$GITHUB_REF", "//").split("/")
+        repository = os.getenv('GITHUB_REPOSITORY', "")
+        pr_url = f"{server_url}/{repository}/pull/{pr_id}"
+        commit_hash = os.getenv("GITHUB_SHA", "")
+        commit_url = f"{server_url}/{repository}/commit/${commit_hash}"
+        author_name = os.getenv("GITHUB_ACTOR", "")
+        author_url = f"{server_url}/{author_name}"
+        run_id = os.getenv("GITHUB_RUN_NUMBER", "")
+        run_url = f"{server_url}/{repository}/actions/runs/{run_id}"
+        repository_url = f"{server_url}/{repository}"
+
+        super().__init__(from_branch=from_branch,
+                         to_branch=to_branch,
+                         pr_id=pr_id,
+                         pr_url=pr_url,
+                         commit_hash=commit_hash,
+                         commit_url=commit_url,
+                         author_name=author_name,
+                         author_url=author_url,
+                         run_id=run_id,
+                         run_url=run_url,
+                         repository_url=repository_url)
+
+
+extractor = GithubActionsRunMetadataExtractor()
+
+```

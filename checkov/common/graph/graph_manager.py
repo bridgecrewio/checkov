@@ -1,19 +1,19 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from pathlib import Path
-from typing import Type, Any, TYPE_CHECKING
-
-from checkov.common.graph.db_connectors.db_connector import DBConnector
-from checkov.common.graph.graph_builder.local_graph import LocalGraph
+from typing import Type, TYPE_CHECKING, TypeVar, Generic, Any
 
 if TYPE_CHECKING:
-    import networkx as nx
+    from checkov.common.graph.graph_builder.local_graph import LocalGraph  # noqa
     from checkov.terraform.parser import Parser
+    from checkov.common.typing import LibraryGraph, LibraryGraphConnector
+
+_LocalGraph = TypeVar("_LocalGraph", bound="LocalGraph[Any]")
+_Definitions = TypeVar("_Definitions")
 
 
-class GraphManager:
-    def __init__(self, db_connector: DBConnector, parser: Parser | None, source: str = "") -> None:
+class GraphManager(Generic[_LocalGraph, _Definitions]):
+    def __init__(self, db_connector: LibraryGraphConnector, parser: Parser | None, source: str = "") -> None:
         self.db_connector = db_connector
         self.source = source
         self.parser = parser
@@ -22,27 +22,27 @@ class GraphManager:
     def build_graph_from_source_directory(
         self,
         source_dir: str,
+        local_graph_class: Type[_LocalGraph],
         render_variables: bool = True,
-        local_graph_class: Type[LocalGraph] = LocalGraph,
         parsing_errors: dict[str, Exception] | None = None,
         download_external_modules: bool = False,
         excluded_paths: list[str] | None = None,
-    ) -> tuple[LocalGraph, dict[str, dict[str, Any]]]:
+    ) -> tuple[_LocalGraph, _Definitions]:
         pass
 
     @abstractmethod
     def build_graph_from_definitions(
-        self, definitions: dict[str | Path, dict[str, Any]], render_variables: bool = True
-    ) -> LocalGraph:
+        self, definitions: _Definitions, render_variables: bool = True
+    ) -> _LocalGraph:
         pass
 
-    def save_graph(self, graph: LocalGraph) -> nx.DiGraph:
+    def save_graph(self, graph: _LocalGraph) -> LibraryGraph:
         return self.db_connector.save_graph(graph)
 
-    def get_reader_endpoint(self) -> nx.DiGraph:
+    def get_reader_endpoint(self) -> LibraryGraph:
         return self.db_connector.get_reader_endpoint()
 
-    def get_writer_endpoint(self) -> nx.DiGraph:
+    def get_writer_endpoint(self) -> LibraryGraph:
         return self.db_connector.get_writer_endpoint()
 
     def disconnect_from_db(self) -> None:

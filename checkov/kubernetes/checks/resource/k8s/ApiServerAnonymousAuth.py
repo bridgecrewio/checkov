@@ -14,7 +14,7 @@ class ApiServerAnonymousAuth(BaseK8sContainerCheck):
         self.evaluated_container_keys = ["command"]
         if conf.get("command"):
             if "kube-apiserver" in conf["command"]:
-                if "--anonymous-auth=true" in conf["command"] or "--anonymous-auth=false" not in conf["command"]:
+                if "--anonymous-auth=false" not in conf["command"]:
                     return CheckResult.FAILED
 
         return CheckResult.PASSED

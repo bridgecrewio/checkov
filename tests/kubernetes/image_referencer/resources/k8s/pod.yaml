@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: webserver
+  labels:
+    app2: webserver
+spec:
+  serviceAccountName: over-privileged-sa2
+  containers:
+  - name: webserver
+    image: nginx:latest
+    ports:
+    - containerPort: 80

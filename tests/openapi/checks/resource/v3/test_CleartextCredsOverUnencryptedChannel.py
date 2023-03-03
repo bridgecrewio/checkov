@@ -21,6 +21,8 @@ class TestCleartextCredsOverUnencryptedChannel(unittest.TestCase):
         passing_resources = {
             "/pass.yaml",
             "/pass.json",
+            "/pass2.yaml",
+            "/pass2.json",
         }
         failing_resources = {
             "/fail.yaml",

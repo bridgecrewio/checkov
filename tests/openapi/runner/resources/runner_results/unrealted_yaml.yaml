@@ -1,0 +1,25 @@
+root: true
+env:
+  es2021: true
+extends:
+  - airbnb-base
+  - eslint:recommended
+  - plugin:@typescript-eslint/recommended
+  - plugin:import/recommended
+  - plugin:import/typescript
+  - plugin:playwright/playwright-test
+parser: '@typescript-eslint/parser'
+parserOptions:
+  ecmaVersion: latest
+  sourceType: module
+plugins:
+  - '@typescript-eslint'
+  - 'eslint-plugin-tsdoc'
+rules: {
+  'no-console': 0,
+  'tsdoc/syntax': 'warn',
+  'import/extensions': 0, # Overwriting Airbnb-base settings for Typescript
+  # Eslint confuses TypeScript Enums: https://github.com/typescript-eslint/typescript-eslint/issues/2466
+  'no-shadow': 'off',
+  '@typescript-eslint/no-shadow': ['error']
+}

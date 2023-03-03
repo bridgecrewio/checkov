@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Resources: 
-  MyRepository: 
+  Public:
     Type: AWS::ECR::Repository
     Properties: 
       RepositoryName: "test-repository"

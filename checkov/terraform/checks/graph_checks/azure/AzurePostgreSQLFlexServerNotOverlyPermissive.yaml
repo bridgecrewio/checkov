@@ -1,0 +1,20 @@
+metadata:
+  id: "CKV2_AZURE_26"
+  name: "Ensure Azure PostgreSQL Flexible server is not configured with overly permissive network access"
+  category: "GENERAL_SECURITY"
+
+definition:
+  
+  and:
+
+    - cond_type: attribute
+      resource_types: "azurerm_postgresql_flexible_server_firewall_rule"
+      attribute: "start_ip_address"
+      operator: "not_equals"
+      value: "0.0.0.0"
+
+    - cond_type: attribute
+      resource_types: "azurerm_postgresql_flexible_server_firewall_rule"
+      attribute: "end_ip_address"
+      operator: "not_equals"
+      value: "255.255.255.255"

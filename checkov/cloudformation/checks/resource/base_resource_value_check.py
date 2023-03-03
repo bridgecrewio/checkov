@@ -5,11 +5,11 @@ from typing import List, Any, Dict
 
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.cloudformation.context_parser import ContextParser
-from checkov.cloudformation.parser import DictNode
-from checkov.common.parsers.node import StrNode
+from checkov.common.parsers.node import StrNode, DictNode
 from checkov.common.models.consts import ANY_VALUE
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.util.type_forcers import force_list
+from checkov.common.util.var_utils import is_cloudformation_variable_dependent
 
 VARIABLE_DEPENDANT_REGEX = re.compile(r"(?:Ref)\.[^\s]+")
 
@@ -38,9 +38,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
 
     @staticmethod
     def _is_variable_dependant(value: Any) -> bool:
-        if isinstance(value, str) and re.match(VARIABLE_DEPENDANT_REGEX, value):
-            return True
-        return False
+        return is_cloudformation_variable_dependent(value)
 
     @staticmethod
     def _is_nesting_key(inspected_attributes: List[str], key: str) -> bool:
@@ -62,7 +60,8 @@ class BaseResourceValueCheck(BaseResourceCheck):
                 # CFN files are parsed differently from terraform, which causes the path search above to behave differently.
                 # The tesult is path parts with integer indexes, instead of strings like '[0]'. This logic replaces
                 # those, allowing inspected_keys in checks to use the same syntax.
-                for i in range(0, len(match)):
+                # The last value shouldn't be changed, because it could be indeed a valid number
+                for i in range(0, len(match) - 1):
                     if type(match[i]) == int:
                         match[i] = f"[{match[i]}]"
 

@@ -2,10 +2,13 @@ import os
 import shutil
 import unittest
 from pathlib import Path
+from unittest import mock
 
 import pytest
 
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
+from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_PREFIX, TERRAFORM_NESTED_MODULE_PATH_ENDING, \
+    TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR
 from checkov.terraform.parser import Parser
 
 
@@ -45,7 +48,15 @@ class TestParserInternals(unittest.TestCase):
         external_aws_modules_path = os.path.join(self.external_module_path, 'github.com/terraform-aws-modules/terraform-aws-security-group/v3.18.0')
         assert os.path.exists(external_aws_modules_path)
 
-    def test_load_inner_registry_module(self):
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "True"})
+    def test_load_inner_registry_module_with_nested_modules(self):
+        self.load_inner_registry_module(True)
+
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "False"})
+    def test_load_inner_registry_module_without_nested_modules(self):
+        self.load_inner_registry_module(False)
+
+    def load_inner_registry_module(self, nested_modules):
         parser = Parser()
         directory = os.path.join(self.resources_dir, "registry_security_group_inner_module")
         self.external_module_path = os.path.join(self.tmp_path, DEFAULT_EXTERNAL_MODULES_DIR)
@@ -61,22 +72,27 @@ class TestParserInternals(unittest.TestCase):
         expected_inner_main_file = os.path.join(directory, expected_inner_remote_module_path, 'main.tf')
         expected_file_names = [
             expected_main_file,
-            os.path.join(directory, expected_inner_remote_module_path, f'auto_values.tf[{expected_main_file}#0]'),
-            os.path.join(directory, expected_inner_remote_module_path, f'main.tf[{expected_main_file}#0]'),
-            os.path.join(directory, expected_inner_remote_module_path, f'outputs.tf[{expected_main_file}#0]'),
-            os.path.join(directory, expected_inner_remote_module_path, f'variables.tf[{expected_main_file}#0]'),
-            os.path.join(directory, expected_inner_remote_module_path, f'versions.tf[{expected_main_file}#0]'),
+            os.path.join(directory, expected_inner_remote_module_path, f'auto_values.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_main_file}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
+            os.path.join(directory, expected_inner_remote_module_path, f'main.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_main_file}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
+            os.path.join(directory, expected_inner_remote_module_path, f'outputs.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_main_file}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
+            os.path.join(directory, expected_inner_remote_module_path, f'variables.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_main_file}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
+            os.path.join(directory, expected_inner_remote_module_path, f'versions.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_main_file}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
 
-            os.path.join(directory, expected_remote_module_path, f'main.tf[{expected_inner_main_file}#0]'),
-            os.path.join(directory, expected_remote_module_path, f'outputs.tf[{expected_inner_main_file}#0]'),
-            os.path.join(directory, expected_remote_module_path, f'rules.tf[{expected_inner_main_file}#0]'),
-            os.path.join(directory, expected_remote_module_path, f'variables.tf[{expected_inner_main_file}#0]'),
-            os.path.join(directory, expected_remote_module_path, f'versions.tf[{expected_inner_main_file}#0]'),
+            os.path.join(directory, expected_remote_module_path, f'main.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_inner_main_file}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
+            os.path.join(directory, expected_remote_module_path, f'outputs.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_inner_main_file}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
+            os.path.join(directory, expected_remote_module_path, f'rules.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_inner_main_file}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
+            os.path.join(directory, expected_remote_module_path, f'variables.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_inner_main_file}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
+            os.path.join(directory, expected_remote_module_path, f'versions.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{expected_inner_main_file}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_ENDING}'),
         ]
 
-        for expected_file_name in expected_file_names:
-            if expected_file_name not in list(out_definitions.keys()):
-                self.fail(f"expected file {expected_file_name} to be in out_definitions")
+        if not nested_modules:
+            for expected_file_name in expected_file_names:
+                if expected_file_name not in list(out_definitions.keys()):
+                    self.fail(f"expected file {expected_file_name} to be in out_definitions")
+        else:
+            for expected_file_name in expected_file_names:
+                if not any(definition for definition in out_definitions.keys() if definition.startswith(expected_file_name[:-3])):
+                    self.fail(f"expected file {expected_file_name} to be in out_definitions")
 
     def test_invalid_module_sources(self):
         parser = Parser()

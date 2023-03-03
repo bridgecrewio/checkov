@@ -20,11 +20,11 @@ class SQSQueuePolicyAnyPrincipal(BaseResourceCheck):
         conf_policy = conf.get("policy")
         if conf_policy:
             if isinstance(conf_policy[0], dict):
-                policy = Policy(conf_policy[0])
                 try:
+                    policy = Policy(conf_policy[0])
                     if policy.is_internet_accessible():
                         return CheckResult.FAILED
-                except TypeError:
+                except (TypeError, AttributeError):
                     return CheckResult.UNKNOWN
             else:
                 return CheckResult.UNKNOWN

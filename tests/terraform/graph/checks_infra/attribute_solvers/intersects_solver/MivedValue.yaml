@@ -1,0 +1,14 @@
+metadata:
+  name: "example"
+  category: "GENERAL_SECURITY"
+  id: "MixedValue"
+scope:
+  provider: "AWS"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "aws_default_security_group"
+  attribute: "ingress.cidr_blocks"
+  operator: "intersects"
+  value: "0.0.0.0/0"
+

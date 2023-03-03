@@ -1,0 +1,11 @@
+metadata:
+  id: "CKV2_GCP_19"
+  name: "Ensure GCP Kubernetes engine clusters have 'alpha cluster' feature disabled"
+  category: "KUBERNETES"
+
+definition:
+  cond_type: attribute
+  resource_types: "google_container_cluster"
+  attribute: "enable_kubernetes_alpha"
+  operator: "not_equals_ignore_case"
+  value: "true"

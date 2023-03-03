@@ -7,7 +7,7 @@ nav_order: 1
 
 # What is Checkov?
 
-Checkov is a static code analysis tool for scanning infrastructure as code (IaC) files for misconfigurations that may lead to security or compliance problems. Checkov includes more than 750 predefined policies to check for common misconfiguration issues. Checkov also supports the creation and contribution of [custom policies](../3.Custom%20Policies/Custom%20Policies%20Overview.md).
+Checkov is a static code analysis tool for scanning infrastructure as code (IaC) files for misconfigurations that may lead to security or compliance problems. Checkov includes more than 750 predefined policies to check for common misconfiguration issues. Checkov also supports the creation and contribution of [custom policies](https://www.checkov.io/3.Custom%20Policies/Custom%20Policies%20Overview.html).
 
 ## Supported IaC types
 
@@ -31,7 +31,7 @@ In addition, Checkov scans for compliance with common industry standards such as
 
 ## Integrates seamlessly with Bridgecrew
 
-Checkov integrates with advanced features in the [Bridgecew platform](https://bridgecrew.io/platform). You can sign up for a free Bridgecrew account by running Checkov with no arguments and following the CLI prompts, or directly via the [Bridgecrew website](https://www.bridgecrew.cloud/login/signUp). Bridgecrew extends Checkov's capabilities to provide runtime scanning and visibility, native VCS integrations, compliance benchmarking, and more.
+Checkov integrates with advanced features in the [Bridgecrew platform](https://bridgecrew.io/platform). You can sign up for a free Bridgecrew account by running Checkov with no arguments and following the CLI prompts, or directly via the [Bridgecrew website](https://www.bridgecrew.cloud/login/signUp). Bridgecrew extends Checkov's capabilities to provide runtime scanning and visibility, native VCS integrations, compliance benchmarking, and more.
 
 ### Runtime Scanning
 

@@ -1,0 +1,14 @@
+metadata:
+  name: "example"
+  category: "GENERAL_SECURITY"
+  id: "BooleanString"
+scope:
+  provider: "Azure"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "azurerm_storage_account"
+  attribute: "allow_blob_public_access"
+  operator: "not_equals_ignore_case"
+  value: "FALSE"
+

@@ -1,9 +1,10 @@
 import os
-from unittest import TestCase
 
 from lark import Tree
 
+from checkov.terraform.modules.module_utils import clean_parser_types
 from checkov.terraform.parser import Parser
+from unittest import TestCase, mock
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
@@ -11,36 +12,31 @@ TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 class TestParser(TestCase):
     def test_bool_parsing_avoid_remove_non_existing(self):
         conf = {'test': ['Bool'], 'variable': ['aws:SecureTransport'], 'values': [['false']]}
-        config_parser = Parser()
-        actual = config_parser._clean_parser_types(conf)
+        actual = clean_parser_types(conf)
         expected = {'test': ['Bool'], 'variable': ['aws:SecureTransport'], 'values': [[False]]}
         self.assertDictEqual(expected, actual)
 
     def test_bool_parsing_sort_only_lists(self):
         conf = {'enabled_metrics': [['a', 'c', 'b'], 'b', 'a', 'c']}
-        config_parser = Parser()
-        actual = config_parser._clean_parser_types(conf)
+        actual = clean_parser_types(conf)
         expected = {'enabled_metrics': [['a', 'b', 'c'], 'a', 'b', 'c']}
         self.assertDictEqual(expected, actual)
 
     def test_bool_parsing_sort_only_lists_with_bools(self):
         conf = {'enabled_metrics': [['a', 'true', 'false'], 'b', 'true', 'false']}
-        config_parser = Parser()
-        actual = config_parser._clean_parser_types(conf)
+        actual = clean_parser_types(conf)
         expected = {'enabled_metrics': [[True, False, 'a'], True, False, 'b']}
         self.assertDictEqual(expected, actual)
 
     def test_set_parsing_to_list(self):
         conf = {'enabled_metrics': [['a', 'true', 'false'], 'b', 'true', 'false'], 'example_set': [{'1', '2', '3'}]}
-        config_parser = Parser()
-        actual = config_parser._clean_parser_types(conf)
+        actual = clean_parser_types(conf)
         expected = {'enabled_metrics': [[True, False, 'a'], True, False, 'b'], 'example_set': [['1', '2', '3']]}
         self.assertDictEqual(expected, actual)
 
     def test_tree_parsing_to_str(self):
         conf = {'enabled_metrics': [['a', 'true', 'false'], 'b', 'true', 'false'], 'example_set': Tree("data", ["child1", "child2"])}
-        config_parser = Parser()
-        actual = config_parser._clean_parser_types(conf)
+        actual = clean_parser_types(conf)
         expected = {'enabled_metrics': [[True, False, 'a'], True, False, 'b'], 'example_set': 'Tree(\'data\', [\'child1\', \'child2\'])'}
         self.assertDictEqual(expected, actual)
 
@@ -176,3 +172,18 @@ class TestParser(TestCase):
                     'https://www.googleapis.com/auth/servicecontrol', 'https://www.googleapis.com/auth/trace.append']
         result_resource = tf_definitions[source_dir + '/main.tf']['resource'][0]['google_compute_instance']['tfer--test3']['service_account'][0]['scopes'][0]
         self.assertListEqual(result_resource, expected)
+
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "True"})
+    def test_build_graph_with_linked_modules(self):
+        source_dir = os.path.realpath(os.path.join(TEST_DIRNAME,
+                                                   '../resources/nested_modules_double_call'))
+        config_parser = Parser()
+        definitions = {}
+
+        config_parser.parse_directory(source_dir, definitions)
+        assert len(definitions.keys()) == 13
+        assert '/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/nested_modules_double_call/main.tf' not in definitions
+        assert '/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/nested_modules_double_call/third/main.tf[/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/nested_modules_double_call/main.tf#0]' not in definitions
+        assert '/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/nested_modules_double_call/four/main.tf[/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/nested_modules_double_call/third/main.tf#0[/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/nested_modules_double_call/main.tf#0]]' not in definitions
+        assert '/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/nested_modules_double_call/third/main.tf' not in definitions
+        assert '/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/nested_modules_double_call/four/main.tf[/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/nested_modules_double_call/third/main.tf#0]' not in definitions

@@ -11,6 +11,7 @@ from checkov.kubernetes.checks.resource.registry import registry
 class BaseK8sContainerCheck(BaseK8Check):
     TEMPLATE_ENTITIES = (
         "Deployment",
+        "DeploymentConfig",
         "DaemonSet",
         "Job",
         "ReplicaSet",
@@ -72,34 +73,34 @@ class BaseK8sContainerCheck(BaseK8Check):
             try:
                 spec = conf["spec"]["template"]["spec"]
                 metadata = conf["spec"]["template"].get("metadata", {})
-            except KeyError:
-                logging.info(f"failed to extract {evaluated_key_prefix} for {self.entity_path}")
+            except (KeyError, TypeError):
                 return CheckResult.UNKNOWN
         elif self.entity_type == "CronJob":
             evaluated_key_prefix = "spec/jobTemplate/spec/template/spec"
             try:
                 spec = conf["spec"]["jobTemplate"]["spec"]["template"]["spec"]
                 metadata = conf["spec"]["jobTemplate"]["spec"]["template"].get("metadata", {})
-            except KeyError:
-                logging.info(f"failed to extract {evaluated_key_prefix} for {self.entity_path}")
+            except (KeyError, TypeError):
                 return CheckResult.UNKNOWN
         else:
             logging.info(f"entity type {self.entity_type} not supported")
             return CheckResult.UNKNOWN
 
         containers: List[Dict[str, Any]] = (
-            spec.get("containers", []) if "containers" in self.supported_container_types else []
+            spec.get("containers", []) if "containers" in self.supported_container_types and isinstance(spec, dict) else []
         ) or []
         init_containers: List[Dict[str, Any]] = (
-            spec.get("initContainers", []) if "initContainers" in self.supported_container_types else []
+            spec.get("initContainers", []) if "initContainers" in self.supported_container_types and isinstance(spec, dict) else []
         ) or []
 
+        results = set()
         result = self._check_containers(
             evaluated_key_prefix=evaluated_key_prefix,
             container_type="containers",
             metadata=metadata,
             containers=containers,
         )
+        results.add(result)
         if result == CheckResult.FAILED:
             return CheckResult.FAILED
 
@@ -109,10 +110,11 @@ class BaseK8sContainerCheck(BaseK8Check):
             metadata=metadata,
             containers=init_containers,
         )
+        results.add(result)
         if result == CheckResult.FAILED:
             return CheckResult.FAILED
 
-        return CheckResult.PASSED
+        return CheckResult.PASSED if CheckResult.PASSED in results else CheckResult.UNKNOWN
 
     def _check_containers(
         self, evaluated_key_prefix: str, container_type: str, metadata: Dict[str, Any], containers: List[Dict[str, Any]]
@@ -120,8 +122,10 @@ class BaseK8sContainerCheck(BaseK8Check):
         """Check containers for possible violations."""
         if not isinstance(containers, list):
             return CheckResult.UNKNOWN
+        results = set()
         for idx, container in enumerate(containers):
             result = self.scan_container_conf(metadata, container)
+            results.add(result)
 
             # fail with the first occurrence
             if result == CheckResult.FAILED:
@@ -134,7 +138,7 @@ class BaseK8sContainerCheck(BaseK8Check):
                     self.evaluated_keys = [f"{evaluated_key_prefix}/initContainers/[{idx}]"]
                 return CheckResult.FAILED
 
-        return CheckResult.PASSED
+        return CheckResult.PASSED if CheckResult.PASSED in results else CheckResult.UNKNOWN
 
     @abstractmethod
     def scan_container_conf(self, metadata: Dict[str, Any], conf: Dict[str, Any]) -> CheckResult:

@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment_name
+spec:
+  selector:
+    matchLabels:
+      app: myapp
+  minReadySeconds: 5
+  template:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      containers:
+      - name: podName
+        image: ngnix
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 80

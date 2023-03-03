@@ -1,0 +1,12 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: passing-crb3
+subjects:
+- kind: ServiceAccount
+  name: over-privileged-sa1
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: not-existing-role  # Should pass, as no such ClusterRole exists
+  apiGroup: rbac.authorization.k8s.io

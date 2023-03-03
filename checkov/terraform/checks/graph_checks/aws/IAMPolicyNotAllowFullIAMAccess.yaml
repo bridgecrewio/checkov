@@ -1,0 +1,51 @@
+---
+metadata:
+  id: "CKV2_AWS_40"
+  name: "Ensure AWS IAM policy does not allow full IAM privileges"
+  category: "IAM"
+definition:
+  and:
+    - or:
+      - cond_type: "attribute"
+        resource_types:
+        - "aws_iam_policy"
+        - "aws_iam_role_policy"
+        - "aws_iam_group_policy"
+        - "aws_iam_user_policy"
+        attribute: "policy.Statement[?(@.Effect == Allow)].Action[*]"
+        operator: "jsonpath_not_equals"
+        value: "iam:*"
+      - cond_type: "attribute"
+        resource_types:
+        - "aws_ssoadmin_permission_set_inline_policy"
+        attribute: "inline_policy.Statement[?(@.Effect == Allow)].Action[*]"
+        operator: "jsonpath_not_equals"
+        value: "iam:*"
+      - cond_type: "attribute"
+        resource_types:
+        - "data.aws_iam_policy_document"
+        attribute: "statement[?(@.effect == Allow)].actions[*]"
+        operator: "jsonpath_not_equals"
+        value: "iam:*"
+    - or:
+      - cond_type: "attribute"
+        resource_types:
+        - "aws_iam_policy"
+        - "aws_iam_role_policy"
+        - "aws_iam_group_policy"
+        - "aws_iam_user_policy"
+        attribute: "policy.Statement[?(@.Effect == Allow)].Action[*]"
+        operator: "jsonpath_not_equals"
+        value: "*"
+      - cond_type: "attribute"
+        resource_types:
+        - "aws_ssoadmin_permission_set_inline_policy"
+        attribute: "inline_policy.Statement[?(@.Effect == Allow)].Action[*]"
+        operator: "jsonpath_not_equals"
+        value: "*"
+      - cond_type: "attribute"
+        resource_types:
+        - "data.aws_iam_policy_document"
+        attribute: "statement[?(@.effect == Allow)].actions[*]"
+        operator: "jsonpath_not_equals"
+        value: "*"

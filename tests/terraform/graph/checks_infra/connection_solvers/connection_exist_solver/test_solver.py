@@ -1,12 +1,18 @@
 import os
 from pathlib import Path
 
+from parameterized import parameterized_class
+
 from checkov.runner_filter import RunnerFilter
 from tests.terraform.graph.checks_infra.test_base import TestBaseSolver
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
 
+@parameterized_class([
+   {"graph_framework": "NETWORKX"},
+   {"graph_framework": "IGRAPH"}
+])
 class ConnectionSolver(TestBaseSolver):
     def setUp(self):
         self.checks_dir = TEST_DIRNAME
@@ -30,6 +36,14 @@ class ConnectionSolver(TestBaseSolver):
 
         self.run_test(root_folder=root_folder, expected_results=expected_results, check_id=check_id)
 
+    def test_data_connection(self):
+        root_folder = "../../../resources/s3_bucket_policy"
+        check_id = "S3BucketPolicyDataSource"
+        should_pass = ["aws_s3_bucket.good"]
+        should_fail = ["aws_s3_bucket.bad"]
+        expected_results = {check_id: {"should_pass": should_pass, "should_fail": should_fail}}
+
+        self.run_test(root_folder=root_folder, expected_results=expected_results, check_id=check_id)
 
     def test_reduce_graph_by_target_types(self):
         # given
@@ -43,8 +57,15 @@ class ConnectionSolver(TestBaseSolver):
         reduced_graph = check.solver.reduce_graph_by_target_types(graph_connector)
 
         # then
-        assert len(graph_connector.nodes) >= 661
-        assert len(graph_connector.edges) >= 327
+        if self.graph_framework == 'NETWORKX':
+            assert len(graph_connector.nodes) >= 661
+            assert len(graph_connector.edges) >= 327
 
-        assert len(reduced_graph.nodes) <= 52
-        assert len(reduced_graph.edges) <= 12
+            assert len(reduced_graph.nodes) <= 85
+            assert len(reduced_graph.edges) <= 15
+        elif self.graph_framework == 'IGRAPH':
+            assert len(graph_connector.vs) >= 661
+            assert len(graph_connector.es) >= 327
+
+            assert len(reduced_graph.vs) <= 85
+            assert len(reduced_graph.es) <= 15

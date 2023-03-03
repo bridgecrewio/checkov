@@ -8,6 +8,8 @@ from checkov.common.graph.graph_builder.variable_rendering.breadcrumb_metadata i
 
 
 class CloudformationBlock(Block):
+    __slots__ = ("condition", "metadata")
+
     def __init__(
         self,
         name: str,
@@ -34,9 +36,9 @@ class CloudformationBlock(Block):
     def update_attribute(
         self, attribute_key: str,
         attribute_value: Any,
-        change_origin_id: int,
+        change_origin_id: int | None,
         previous_breadcrumbs: List[BreadcrumbMetadata],
-        attribute_at_dest: str,
+        attribute_at_dest: str | None,
         transform_step: bool = False,
     ) -> None:
         super().update_attribute(
@@ -80,7 +82,7 @@ class CloudformationBlock(Block):
     @staticmethod
     def _should_add_previous_breadcrumbs(change_origin_id: Optional[int],
                                          previous_breadcrumbs: List[BreadcrumbMetadata],
-                                         attribute_at_dest: Optional[str]):
+                                         attribute_at_dest: Optional[str]) -> bool:
         return (
             change_origin_id is not None
             and attribute_at_dest is not None
@@ -88,5 +90,5 @@ class CloudformationBlock(Block):
         )
 
     @staticmethod
-    def _should_set_changed_attributes(change_origin_id: Optional[int], attribute_at_dest: Optional[str]):
+    def _should_set_changed_attributes(change_origin_id: Optional[int], attribute_at_dest: Optional[str]) -> bool:
         return change_origin_id is not None and attribute_at_dest is not None

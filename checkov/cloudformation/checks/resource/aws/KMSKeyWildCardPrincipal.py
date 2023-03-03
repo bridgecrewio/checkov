@@ -48,7 +48,7 @@ class KMSKeyWildCardPrincipal(BaseResourceValueCheck):
                 principals_list = get_recursively(policy_block, 'Principal')
                 for principal in principals_list:
                     if isinstance(principal, dict):
-                        for principal_key, principal_value in principal.items():
+                        for principal_value in principal.values():
                             if principal_value == '*':
                                 return CheckResult.FAILED
                     else:

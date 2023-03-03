@@ -1,0 +1,14 @@
+metadata:
+  name: "example"
+  category: "GENERAL_SECURITY"
+  id: "PublicDBSG"
+scope:
+  provider: "AWS"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "aws_db_security_group"
+    - "aws_security_group"
+  attribute: "ingress.cidr_blocks"
+  operator: "jsonpath_not_exists"
+

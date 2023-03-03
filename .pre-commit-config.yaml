@@ -1,14 +1,34 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.2.0
+    rev: v4.4.0
     hooks:
       - id: debug-statements
   - repo: https://github.com/PyCQA/flake8
-    rev: 4.0.1
+    rev: 5.0.4
     hooks:
       - id: flake8
-        additional_dependencies: ['dlint', 'typing_extensions']
+        language_version: python3.9
+        additional_dependencies:
+          - dlint
+          - flake8-bugbear
+          - flake8-type-checking
   - repo: https://github.com/isidentical/teyit  # unit test formatter
-    rev: 0.4.2
+    rev: 0.4.3
     hooks:
       - id: teyit
+        language_version: python3.9
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.6.23
+    hooks:
+      - id: actionlint-docker
+        # SC2129 - Consider using { cmd1; cmd2; } >> file instead of individual redirects.
+        args: ["-ignore", "SC2129"]
+  - repo: https://github.com/Madoshakalaka/pipenv-setup  # Pipfile to setup.py sync checker
+    rev: v3.2.0
+    hooks:
+      - id: pipenv-setup
+        language_version: python3.9
+        entry: pipenv-setup check
+        args: []
+        additional_dependencies:
+          - vistir<0.7.0  # can be removed, when v4.0.0 of pipenv-setup comes out

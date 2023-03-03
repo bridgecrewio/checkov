@@ -1,0 +1,16 @@
+metadata:
+  name: "example"
+  category: "GENERAL_SECURITY"
+  id: "EncryptedResources"
+scope:
+  provider: "AWS"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "aws_rds_cluster"
+    - "aws_neptune_cluster"
+    - "aws_s3_bucket"
+  attribute: "encryption_"
+  operator: "equals_ignore_case"
+  value: "encrypted"
+

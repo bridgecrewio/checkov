@@ -1,0 +1,11 @@
+metadata:
+  id: "CKV2_GCP_10"
+  name: "Ensure GCP Cloud Function HTTP trigger is secured"
+  category: "NETWORKING"
+definition:
+  cond_type: "attribute"
+  resource_types:
+  - "google_cloudfunctions_function"
+  attribute: "https_trigger_security_level"
+  operator: "equals"
+  value: "SECURE_ALWAYS"

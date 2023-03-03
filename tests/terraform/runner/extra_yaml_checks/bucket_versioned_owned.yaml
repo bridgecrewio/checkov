@@ -2,6 +2,7 @@ metadata:
   id: "CKV2_CUSTOM_1"
   name: "Ensure bucket has versioning and owner tag"
   category: "BACKUP_AND_RECOVERY"
+  guideline: "https://docs.bridgecrew.io/docs/ckv2_custom_1"
 definition:
   and:
     - cond_type: "attribute"

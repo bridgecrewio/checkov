@@ -51,3 +51,47 @@ resource "aws_launch_template" "public" {
     associate_public_ip_address = true
   }
 }
+
+variable "public" {
+  default = {
+    "key1": true,
+    "key2": false
+  }
+}
+
+resource "aws_instance" "public_foreach" {
+  for_each = var.public
+  ami           = "ami-12345"
+  instance_type = "t3.micro"
+
+  associate_public_ip_address = each.value
+}
+
+variable "public_loop" {
+  default = [{
+    "name": "key3",
+  },
+  {
+    "name": "key4",
+  }]
+}
+
+variable "loop_list" {
+  default = ["k", "v"]
+}
+
+resource "aws_instance" "public_foreach_loop" {
+  for_each = { for val in var.public_loop : val.name => true }
+  ami           = "ami-12345"
+  instance_type = "t3.micro"
+
+  associate_public_ip_address = each.value
+}
+
+resource "aws_instance" "public_foreach_loop_list" {
+  for_each = [ for val in var.loop_list : val ]
+  ami           = "ami-12345"
+  instance_type = "t3.micro"
+  associate_public_ip_address = each.value
+}
+

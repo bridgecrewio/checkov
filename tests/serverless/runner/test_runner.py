@@ -7,12 +7,20 @@ from pathlib import Path
 from typing import Dict, Any
 
 from checkov.cloudformation.checks.resource.aws import *  # noqa - prevent circular import
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.runner_filter import RunnerFilter
 from checkov.serverless.checks.function.base_function_check import BaseFunctionCheck
 from checkov.serverless.runner import Runner
 from checkov.serverless.checks.function.registry import function_registry
+from checkov.serverless.checks.provider.registry import provider_registry
+from checkov.serverless.checks.complete.registry import complete_registry
+from checkov.serverless.checks.custom.registry import custom_registry
+from checkov.serverless.checks.layer.registry import layer_registry
+from checkov.serverless.checks.package.registry import package_registry
+from checkov.serverless.checks.plugin.registry import plugin_registry
+from checkov.serverless.checks.service.registry import service_registry
 
 
 class TestRunnerValid(unittest.TestCase):
@@ -20,6 +28,32 @@ class TestRunnerValid(unittest.TestCase):
     def setUp(self) -> None:
         self.orig_checks = function_registry.checks
 
+    def test_registry_has_type(self):
+        self.assertEqual(function_registry.report_type, CheckType.SERVERLESS)
+        self.assertEqual(provider_registry.report_type, CheckType.SERVERLESS)
+        self.assertEqual(complete_registry.report_type, CheckType.SERVERLESS)
+        self.assertEqual(custom_registry.report_type, CheckType.SERVERLESS)
+        self.assertEqual(layer_registry.report_type, CheckType.SERVERLESS)
+        self.assertEqual(package_registry.report_type, CheckType.SERVERLESS)
+        self.assertEqual(plugin_registry.report_type, CheckType.SERVERLESS)
+        self.assertEqual(service_registry.report_type, CheckType.SERVERLESS)
+
+    def test_runner_honors_enforcement_rules(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        scan_dir_path = os.path.join(current_dir, "resources")
+
+        runner = Runner()
+        filter = RunnerFilter(framework=['serverless'], use_enforcement_rules=True)
+        # this is not quite a true test, because the checks don't have severities. However, this shows that the check registry
+        # passes the report type properly to RunnerFilter.should_run_check, and we have tests for that method
+        filter.enforcement_rule_configs = {CheckType.SERVERLESS: Severities[BcSeverities.OFF]}
+        report = runner.run(root_folder=scan_dir_path, external_checks_dir=None,
+                            runner_filter=filter)
+
+        self.assertEqual(len(report.failed_checks), 0)
+        self.assertEqual(len(report.passed_checks), 0)
+        self.assertEqual(len(report.skipped_checks), 0)
+        self.assertEqual(len(report.parsing_errors), 0)
 
     def test_record_relative_path_with_relative_dir(self):
 

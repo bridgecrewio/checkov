@@ -1,7 +1,9 @@
-from typing import Any
+from typing import Any, Dict
 
 
 class Edge:
+    __slots__ = ("dest", "label", "origin")
+
     def __init__(self, origin: int, dest: int, label: str) -> None:
         self.origin = origin
         self.dest = dest
@@ -18,3 +20,10 @@ class Edge:
 
     def __hash__(self) -> int:
         return hash(str(self))
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            'origin': self.origin,
+            'dest': self.dest,
+            'label': self.label
+        }

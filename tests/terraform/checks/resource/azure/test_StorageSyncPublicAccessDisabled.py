@@ -45,7 +45,7 @@ class TestStorageSyncPublicAccessDisabled(unittest.TestCase):
               name                = "example-storage-sync"
               resource_group_name = azurerm_resource_group.test.name
               location            = azurerm_resource_group.test.location
-              incoming_traffic_policy = AllowVirtualNetworksOnly
+              incoming_traffic_policy = "AllowVirtualNetworksOnly"
               tags = {
                 foo = "bar"
               }

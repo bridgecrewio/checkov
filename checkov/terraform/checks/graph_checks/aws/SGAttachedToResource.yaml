@@ -17,11 +17,12 @@ definition:
         - aws_cloudwatch_event_target
         - aws_codebuild_project
         - aws_codestarconnections_host
+        - aws_dax_cluster
         - aws_db_instance
         - aws_dms_replication_instance
         - aws_docdb_cluster
-        - aws_dax_cluster
         - aws_ec2_client_vpn_network_association
+        - aws_ec2_spot_fleet_request
         - aws_ecs_service
         - aws_efs_mount_target
         - aws_eks_cluster
@@ -37,6 +38,7 @@ definition:
         - aws_launch_configuration
         - aws_launch_template
         - aws_lb
+        - aws_memorydb_cluster
         - aws_mq_broker
         - aws_msk_cluster
         - aws_mwaa_environment
@@ -44,9 +46,10 @@ definition:
         - aws_network_interface
         - aws_rds_cluster
         - aws_redshift_cluster
+        - aws_route53_resolver_endpoint
         - aws_sagemaker_notebook_instance
+        - aws_transfer_server
         - aws_vpc_endpoint
-        - aws_mq_broker
       operator:  exists
       attribute: networking
       cond_type: connection

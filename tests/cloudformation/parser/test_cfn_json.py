@@ -33,6 +33,14 @@ class TestCfnJson(unittest.TestCase):
 
         # then
         self.assertEqual(0, len(report.parsing_errors))
+        
+    def test_triple_quotes_string(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+
+        test_files = f'{current_dir}/success_triple_quotes_string.json'
+        cfn = load(test_files)
+        self.assertEqual(cfn[0]['Metadata']['AWS::CloudFormation::Interface']['ParameterLabels']['NewTrailLogFilePrefix']['default'], 'Log file prefix\n hello')
+        Runner().run(None, files=[test_files], runner_filter=RunnerFilter())
 
 
 if __name__ == '__main__':

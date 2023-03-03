@@ -19,13 +19,14 @@ class TestSeccomp(unittest.TestCase):
         passed_resources = [check.resource for check in report.passed_checks]
         failed_resources = [check.resource for check in report.failed_checks]
 
-        self.assertEqual(summary["passed"], 7)
+        self.assertEqual(summary["passed"], 8)
         self.assertEqual(summary["failed"], 2)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
         expected_passed_resources = [
             "CronJob.default.cronjob-passed",
+            "CronJob.default.cronjob-securityContext-passed",
             "Deployment.default.seccomp-passed-deployment",
             "Deployment.default.seccomp-passed-metadata-annotations",
             "Pod.default.seccomp-passed-metadata-annotations-docker",

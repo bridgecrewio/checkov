@@ -8,7 +8,7 @@ resource "aws_security_group" "pass_batch" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = 0.0.0.0/0
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -32,7 +32,7 @@ resource "aws_security_group" "pass_codebuild" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = 0.0.0.0/0
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -66,7 +66,7 @@ resource "aws_security_group" "pass_codestar" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = 0.0.0.0/0
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -90,7 +90,7 @@ resource "aws_security_group" "pass_dms" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = 0.0.0.0/0
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -108,7 +108,7 @@ resource "aws_security_group" "pass_docdb" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = 0.0.0.0/0
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -124,13 +124,13 @@ resource "aws_security_group" "pass_ec2" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = 0.0.0.0/0
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
 resource "aws_instance" "pass_ec2" {
-  ami           = "data.aws_ami.ubuntu.id"
-  instance_type = "t3.micro"
+  ami             = "data.aws_ami.ubuntu.id"
+  instance_type   = "t3.micro"
   security_groups = [aws_security_group.pass_ec2.id]
 }
 
@@ -140,7 +140,7 @@ resource "aws_security_group" "pass_ec2_client_vpn" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = 0.0.0.0/0
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -156,7 +156,7 @@ resource "aws_security_group" "pass_ec2_launch_config" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = 0.0.0.0/0
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -172,7 +172,7 @@ resource "aws_security_group" "pass_ec2_launch_template" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = 0.0.0.0/0
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -180,6 +180,22 @@ resource "aws_launch_template" "pass_ec2_launch_template" {
   image_id               = "data.aws_ami.ubuntu.id"
   instance_type          = "t3.micro"
   vpc_security_group_ids = [aws_security_group.pass_ec2_launch_template.id]
+}
+
+resource "aws_security_group" "pass_ec2_spot_fleet_request" {
+  ingress {
+    description = "TLS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_ec2_spot_fleet_request" "pass_ec2_spot_fleet_request" {
+  ami             = "aws_ec2_spot_fleet_request.this.id"
+  instance_type   = "t3.micro"
+  security_groups = [aws_security_group.pass_ec2_spot_fleet_request.id]
 }
 
 # ECS
@@ -190,7 +206,7 @@ resource "aws_security_group" "pass_ecs" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = 0.0.0.0/0
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -211,7 +227,7 @@ resource "aws_security_group" "pass_efs" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = 0.0.0.0/0
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -229,7 +245,7 @@ resource "aws_security_group" "pass_eks" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = 0.0.0.0/0
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -248,7 +264,7 @@ resource "aws_security_group" "pass_eks_node" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = 0.0.0.0/0
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -277,7 +293,7 @@ resource "aws_security_group" "pass_elasticache" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = 0.0.0.0/0
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -294,12 +310,12 @@ resource "aws_security_group" "pass_elasticache_replication_group" {
 }
 
 resource "aws_security_group_rule" "elasticache_ingress" {
-  description              = "elasticache ingress rule"
-  type                     = "ingress"
-  from_port                = 1234
-  to_port                  = 1234
-  protocol                 = "TCP"
-  security_group_id        = aws_security_group.pass_elasticache_replication_group.id
+  description       = "elasticache ingress rule"
+  type              = "ingress"
+  from_port         = 1234
+  to_port           = 1234
+  protocol          = "TCP"
+  security_group_id = aws_security_group.pass_elasticache_replication_group.id
 }
 
 resource "aws_security_group_rule" "elasticache_egress" {
@@ -331,7 +347,7 @@ resource "aws_security_group" "pass_alb" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = 0.0.0.0/0
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -346,7 +362,7 @@ resource "aws_security_group" "pass_elb" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = 0.0.0.0/0
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -367,7 +383,7 @@ resource "aws_security_group" "pass_lb" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = 0.0.0.0/0
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -384,7 +400,7 @@ resource "aws_security_group" "pass_eni" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = 0.0.0.0/0
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -401,7 +417,7 @@ resource "aws_security_group" "pass_es" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = 0.0.0.0/0
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -421,7 +437,7 @@ resource "aws_security_group" "pass_glue" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = 0.0.0.0/0
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -440,7 +456,7 @@ resource "aws_security_group" "pass_lambda" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = 0.0.0.0/0
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -464,7 +480,7 @@ resource "aws_security_group" "pass_mq" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = 0.0.0.0/0
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -489,7 +505,7 @@ resource "aws_security_group" "pass_msk" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = 0.0.0.0/0
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -514,7 +530,7 @@ resource "aws_security_group" "pass_mwaa" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = 0.0.0.0/0
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -539,7 +555,7 @@ resource "aws_security_group" "pass_neptune" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = 0.0.0.0/0
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -555,7 +571,7 @@ resource "aws_security_group" "pass_rds" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = 0.0.0.0/0
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -570,7 +586,7 @@ resource "aws_security_group" "pass_rds_cluster" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = 0.0.0.0/0
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -586,7 +602,7 @@ resource "aws_security_group" "pass_redshift" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = 0.0.0.0/0
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -604,7 +620,7 @@ resource "aws_security_group" "pass_sagemaker" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = 0.0.0.0/0
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -623,7 +639,7 @@ resource "aws_security_group" "pass_vpc_endpoint" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = 0.0.0.0/0
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -642,7 +658,7 @@ resource "aws_security_group" "fail" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = 0.0.0.0/0
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -688,8 +704,8 @@ resource "aws_cloudwatch_event_target" "pass_cloudwatch_event" {
   role_arn  = var.role_arn
 
   ecs_target {
-    launch_type = var.launch_type
-    task_count  = var.task_count
+    launch_type         = var.launch_type
+    task_count          = var.task_count
     task_definition_arn = var.task_definition_arn
 
     network_configuration {
@@ -800,12 +816,12 @@ resource "aws_security_group" "pass_dax_cluster" {
 }
 
 resource "aws_security_group_rule" "dax_cluster_ingress" {
-  description              = "dax ingress rule"
-  type                     = "ingress"
-  from_port                = 1234
-  to_port                  = 1234
-  protocol                 = "TCP"
-  security_group_id        = aws_security_group.pass_dax_cluster.id
+  description       = "dax ingress rule"
+  type              = "ingress"
+  from_port         = 1234
+  to_port           = 1234
+  protocol          = "TCP"
+  security_group_id = aws_security_group.pass_dax_cluster.id
 }
 
 resource "aws_security_group_rule" "dax_cluster_egress" {
@@ -818,4 +834,62 @@ resource "aws_security_group_rule" "dax_cluster_egress" {
   security_group_id = aws_security_group.pass_dax_cluster.id
 }
 
+# Memory DB
 
+resource "aws_security_group" "pass_memorydb_cluster" {
+  name        = "redis-secgrp"
+  description = "Redis Security Group"
+  vpc_id      = var.vpc_id
+}
+
+resource "aws_memorydb_cluster" "pass_memorydb_cluster" {
+  acl_name           = "open-access"
+  name               = "test-memorydb"
+  node_type          = "db.t4g.small"
+  security_group_ids = [aws_security_group.pass_memorydb_cluster.id]
+  depends_on         = [aws_security_group.pass_memorydb_cluster]
+}
+
+# Route 53
+
+resource "aws_security_group" "pass_route53_resolver_endpoint" {
+  ingress {
+    description = "DNS UDP"
+    from_port   = 53
+    to_port     = 53
+    protocol    = "udp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_route53_resolver_endpoint" "pass_route53_resolver_endpoint" {
+  direction          = "OUTBOUND"
+  security_group_ids = [aws_security_group.pass_route53_resolver_endpoint.id]
+
+  ip_address {
+    subnet_id = var.subnet_id
+  }
+}
+
+# Transfer Family
+
+resource "aws_security_group" "pass_transfer_server" {
+  ingress {
+    description = "SFTP"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_transfer_server" "pass_transfer_server" {
+  endpoint_type = "VPC"
+
+  endpoint_details {
+    address_allocation_ids = [var.eip_id]
+    subnet_ids             = [var.subnet_id]
+    vpc_id                 = var.vpc_id
+    security_group_ids     = [aws_security_group.pass_transfer_server.id]
+  }
+}

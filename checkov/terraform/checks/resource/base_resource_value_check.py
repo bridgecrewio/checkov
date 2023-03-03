@@ -1,3 +1,4 @@
+import logging
 from abc import abstractmethod
 from collections.abc import Iterable
 from typing import List, Dict, Any
@@ -58,9 +59,12 @@ class BaseResourceValueCheck(BaseResourceCheck):
                 # Key is found on the configuration - if it accepts any value, the check is PASSED
                 return CheckResult.PASSED
             if self._is_variable_dependant(value):
-                # If the tested attribute is variable-dependant, then result is PASSED
-                return CheckResult.PASSED
+                # If the tested attribute is variable-dependant, then result is UNKNOWN
+                return CheckResult.UNKNOWN
             if value in expected_values:
+                return CheckResult.PASSED
+            if not isinstance(value, str) and str(value) in expected_values:
+                logging.debug(f"Check {self.id} is set to pass even though the type of value {value} is not str (it is {type(value)}), while {str(value)} is an expected value")
                 return CheckResult.PASSED
             if get_referenced_vertices_in_value(value=value, aliases={}, resources_types=[]):
                 # we don't provide resources_types as we want to stay provider agnostic
@@ -80,8 +84,8 @@ class BaseResourceValueCheck(BaseResourceCheck):
                             if sub_conf in self.get_expected_values():
                                 return CheckResult.PASSED
                             if self._is_variable_dependant(sub_conf):
-                                # If the tested attribute is variable-dependant, then result is PASSED
-                                return CheckResult.PASSED
+                                # If the tested attribute is variable-dependant, then result is UNKNOWN
+                                return CheckResult.UNKNOWN
 
         return self.missing_block_result
 

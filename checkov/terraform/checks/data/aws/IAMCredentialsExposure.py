@@ -1,12 +1,15 @@
-from typing import List, Union, Dict, Any
+from __future__ import annotations
 
-from cloudsplaining.scan.policy_document import PolicyDocument
+from typing import List, Union, Dict, Any, TYPE_CHECKING
 
-from checkov.terraform.checks.data.BaseCloudsplainingIAMCheck import BaseCloudsplainingIAMCheck
+from checkov.terraform.checks.data.base_cloudsplaining_data_iam_check import BaseTerraformCloudsplainingDataIAMCheck
+
+if TYPE_CHECKING:
+    from cloudsplaining.scan.policy_document import PolicyDocument
 
 
-class CloudSplainingCredentialsExposure(BaseCloudsplainingIAMCheck):
-    excluded_actions = {"ecr:GetAuthorizationToken"}
+class CloudSplainingCredentialsExposure(BaseTerraformCloudsplainingDataIAMCheck):
+    excluded_actions = {"ecr:GetAuthorizationToken"}  # noqa: CCE003  # a static attribute
 
     def __init__(self) -> None:
         name = "Ensure IAM policies does not allow credentials exposure"

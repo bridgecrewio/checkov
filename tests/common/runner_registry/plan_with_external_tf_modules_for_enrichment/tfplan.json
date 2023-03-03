@@ -1,0 +1,106 @@
+{
+    "format_version": "0.1",
+    "terraform_version": "0.15.1",
+    "planned_values": {
+        "root_module": {
+            "child_modules": [
+                {
+                    "resources": [
+                        {
+                            "address": "module.log_group_external.aws_cloudwatch_log_group.this[0]",
+                            "mode": "managed",
+                            "type": "aws_cloudwatch_log_group",
+                            "name": "this",
+                            "index": 0,
+                            "provider_name": "registry.terraform.io/hashicorp/aws",
+                            "schema_version": 0,
+                            "values": {"kms_key_id": null, "name_prefix": null, "retention_in_days": 0, "tags": null}
+                        }
+                    ],
+                    "address": "module.log_group_external"
+                }
+            ]
+        }
+    },
+    "resource_changes": [
+        {
+            "address": "module.log_group_external.aws_cloudwatch_log_group.this[0]",
+            "module_address": "module.log_group_external",
+            "mode": "managed",
+            "type": "aws_cloudwatch_log_group",
+            "name": "this",
+            "index": 0,
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "change": {
+                "actions": ["create"],
+                "before": null,
+                "after": {"kms_key_id": null, "name_prefix": null, "retention_in_days": 0, "tags": null},
+                "after_unknown": {"arn": true, "id": true, "name": true, "tags_all": true},
+                "before_sensitive": false,
+                "after_sensitive": {"tags_all": {}}
+            }
+        }
+    ],
+    "configuration": {
+        "provider_config": {
+            "aws": {"name": "aws", "expressions": {"region": {"constant_value": "eu-central-1"}}},
+            "module.log_group_external:aws": {
+                "name": "aws",
+                "version_constraint": "\u003e= 2.55.0",
+                "module_address": "module.log_group_external"
+            }
+        },
+        "root_module": {
+            "module_calls": {
+                "log_group_external": {
+                    "source": "terraform-aws-modules/cloudwatch/aws//modules/log-group",
+                    "module": {
+                        "outputs": {
+                            "cloudwatch_log_group_arn": {
+                                "expression": {"references": ["aws_cloudwatch_log_group.this"]},
+                                "description": "ARN of Cloudwatch log group"
+                            },
+                            "cloudwatch_log_group_name": {
+                                "expression": {"references": ["aws_cloudwatch_log_group.this"]},
+                                "description": "Name of Cloudwatch log group"
+                            }
+                        },
+                        "resources": [
+                            {
+                                "address": "aws_cloudwatch_log_group.this",
+                                "mode": "managed",
+                                "type": "aws_cloudwatch_log_group",
+                                "name": "this",
+                                "provider_config_key": "log_group_external:aws",
+                                "expressions": {
+                                    "kms_key_id": {"references": ["var.kms_key_id"]},
+                                    "name": {"references": ["var.name"]},
+                                    "name_prefix": {"references": ["var.name_prefix"]},
+                                    "retention_in_days": {"references": ["var.retention_in_days"]},
+                                    "tags": {"references": ["var.tags"]}
+                                },
+                                "schema_version": 0,
+                                "count_expression": {"references": ["var.create"]}
+                            }
+                        ],
+                        "variables": {
+                            "create": {"default": true, "description": "Whether to create the Cloudwatch log group"},
+                            "kms_key_id": {
+                                "default": null,
+                                "description": "The ARN of the KMS Key to use when encrypting logs"
+                            },
+                            "name": {"default": null, "description": "A name for the log group"},
+                            "name_prefix": {"default": null, "description": "A name prefix for the log group"},
+                            "retention_in_days": {
+                                "default": null,
+                                "description": "Specifies the number of days you want to retain log events in the specified log group"
+                            },
+                            "tags": {"default": {}, "description": "A map of tags to add to Cloudwatch log group"}
+                        }
+                    },
+                    "version_constraint": "~\u003e 2.0"
+                }
+            }
+        }
+    }
+}

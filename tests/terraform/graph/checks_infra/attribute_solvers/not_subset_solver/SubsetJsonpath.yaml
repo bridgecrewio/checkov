@@ -1,0 +1,17 @@
+metadata:
+  name: "example"
+  category: "GENERAL_SECURITY"
+  id: "NotSubsetJsonpath"
+scope:
+  provider: "AWS"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "x"
+  attribute: "arr"
+  operator: "jsonpath_not_subset"
+  value:
+    - "allowed1"
+    - "allowed2"
+    - "allowed3"
+

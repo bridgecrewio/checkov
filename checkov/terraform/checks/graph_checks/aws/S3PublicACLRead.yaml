@@ -34,36 +34,6 @@ definition:
           attribute: acl
           operator: not_equals
           value: authenticated-read
-    - cond_type: attribute
-      resource_types:
-        - aws_s3_bucket
-      attribute: acl
-      operator: starting_with
-      value: "module."
-    - cond_type: attribute
-      resource_types:
-        - aws_s3_bucket
-      attribute: acl
-      operator: starting_with
-      value: "data."
-    - cond_type: attribute
-      resource_types:
-        - aws_s3_bucket
-      attribute: acl
-      operator: starting_with
-      value: "var."
-    - cond_type: attribute
-      resource_types:
-        - aws_s3_bucket
-      attribute: acl
-      operator: starting_with
-      value: "local."
-    - cond_type: attribute
-      resource_types:
-        - aws_s3_bucket
-      attribute: acl
-      operator: starting_with
-      value: "\"${"
     - and:
         - cond_type: filter
           attribute: resource_type
@@ -77,36 +47,6 @@ definition:
             - aws_s3_bucket_acl
           operator: exists
         - or:
-            - cond_type: attribute
-              resource_types:
-                - aws_s3_bucket_acl
-              attribute: acl
-              operator: starting_with
-              value: "module."
-            - cond_type: attribute
-              resource_types:
-                - aws_s3_bucket_acl
-              attribute: acl
-              operator: starting_with
-              value: "data."
-            - cond_type: attribute
-              resource_types:
-                - aws_s3_bucket_acl
-              attribute: acl
-              operator: starting_with
-              value: "var."
-            - cond_type: attribute
-              resource_types:
-                - aws_s3_bucket_acl
-              attribute: acl
-              operator: starting_with
-              value: "local."
-            - cond_type: attribute
-              resource_types:
-                - aws_s3_bucket_acl
-              attribute: acl
-              operator: starting_with
-              value: "\"${"
             - and:
                 - cond_type: attribute
                   resource_types:

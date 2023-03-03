@@ -2,6 +2,7 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.util.type_forcers import force_int
 
+
 class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
     def __init__(self, check_id: str, port: int) -> None:
         name = f"Ensure no security groups rules allow ingress from 0.0.0.0/0 to port {port}"
@@ -29,10 +30,10 @@ class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
 
     def scan_protocol_conf(self, protocol_name):
         """ scan tcp_options configuration"""
-        if 'source_port_range' not in protocol_name[0]:
+        if 'destination_port_range' not in protocol_name[0]:
             return False
-        max_port = force_int(protocol_name[0]['source_port_range'][0]['max'][0])
-        min_port = force_int(protocol_name[0]['source_port_range'][0]['min'][0])
+        max_port = force_int(protocol_name[0]['destination_port_range'][0]['max'][0])
+        min_port = force_int(protocol_name[0]['destination_port_range'][0]['min'][0])
         if max_port and min_port and min_port <= self.port <= max_port:
             return False
         return True

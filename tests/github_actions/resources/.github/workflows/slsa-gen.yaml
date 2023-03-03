@@ -1,0 +1,151 @@
+### This workflow uses the SLSA generic provenenace generator workflow
+### (see https://github.com/slsa-framework/slsa-github-generator/blob/main/internal/builders/generic/README.md)
+### to generate a SLSA provenance type predicate for a container image built by ko (go container builder) 
+### and attesting to it and others, using a user-controlled key, 
+### stored as a secret in this GitHub repository, rather than keyless signing.
+### This is based on https://github.com/chipzoller/zulu
+name: slsa-generic
+on: [push, workflow_dispatch]
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+jobs:
+  # Publish with ko build
+  build:
+    runs-on: ubuntu-20.04
+    permissions:
+      packages: write
+      contents: read
+    outputs:
+      image: ${{ steps.ko-build.outputs.image }}
+      base64digest: ${{ steps.set-digest.outputs.base64digest }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # v3.0.2
+    - name: Setup Golang
+      uses: actions/setup-go@b22fbbc2921299758641fab08929b4ac52b32923 # v3.2.0
+      with:
+        go-version: 1.18
+    - name: Setup ko
+      run: go install github.com/google/ko@cefd28f093ffb342237aa9d692eee247e82235d5 # v0.11.2
+    - name: Log in to GHCR
+      uses: docker/login-action@49ed152c8eca782a232dede0303416e8f356c37b # v2.0.0
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Publish image and SBOM (CycloneDX)
+      id: ko-build
+      run: |
+        IMAGE=$(ko build ./ --bare -t latest -t ${{ github.sha }} --sbom=cyclonedx)
+        echo "The image generated is: $IMAGE"
+        echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+        echo "::set-output name=image::$IMAGE"
+      env:
+        KO_DOCKER_REPO: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+    - name: Set base64 encoded digest
+      id: set-digest
+      run: |
+        BASE64_DIGEST=$(echo -n $IMAGE image.tar | awk -F':' '{print $2}' | base64 -w0)
+        echo "Base64 encoded digest from image is: $BASE64_DIGEST"
+        echo "::set-output name=base64digest::$BASE64_DIGEST"
+  # Use the generic SLSA provenance generator to create a provenance predicate by providing, as the subject,
+  # the hash of the image built by ko and a "dummy" filename called image.tar. The provenance, after attestation in the
+  # last job, can be verified by the digest of the image matching the subject's hash.
+  provenance:
+    permissions:
+      id-token: write
+      contents: write
+      actions: read
+    needs: build
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v1.1.0
+    with:
+      base64-subjects: "${{ needs.build.outputs.base64digest }}"
+      # TODO: Specify a custom output file for the attestation JSONL file rather than accepting defaults.
+  # Scan the image using Trivy and add to it who produced the scan (i.e., "trivy") and a timestamp when
+  # the scan was produced.
+  scan:
+    runs-on: ubuntu-20.04
+    needs: [provenance, build]
+    permissions:
+      contents: read
+    env:
+      IMAGE: "${{ needs.build.outputs.image }}"
+    steps:
+    - name: Scan for vulnerabilities
+      uses: aquasecurity/trivy-action@4b9b6fb4ef28b31450391a93ade098bb00de584e # v0.3.0
+      with: 
+        # scan-type: 'image'
+        image-ref: ${{ env.IMAGE }}
+        format: 'json'
+        ignore-unfixed: true
+        # vuln-type: 'os,library'
+        output: trivy-scan.json
+    - name: Add scan metadata
+      uses: sergeysova/jq-action@9ac92a6da6d616b4cebdddc0059e36a1ad43fab1 # v2.1.0
+      with:
+        cmd: cat trivy-scan.json | jq '. + {timestamp:(now|todateiso8601)}' | jq '. + {scanner:"trivy"}' > scan.json
+    # TODO: step which generates a hash of the previously-augmented scan report which is then checked in the
+    # subsequent job to ensure tamper proof state prior to attestation.
+    - name: Upload vulnerability scan report
+      uses: actions/upload-artifact@6673cd052c4cd6fcf4b4e6e60ea986c889389535 # v3.0.0
+      with:
+        name: scan.json
+        path: scan.json
+        if-no-files-found: error
+  # Uses Cosign to sign and attest to the provenance, scans, and SBOM predicates.
+  attest:
+    runs-on: ubuntu-20.04
+    permissions:
+      contents: write
+      actions: read
+      packages: write
+    env:
+      IMAGE: "${{ needs.build.outputs.image }}"
+    needs: [provenance, scan, build]
+    steps:
+    - name: Download attestations
+      uses: actions/download-artifact@fb598a63ae348fa914e94cd0ff38f362e927b741 # v3.0.0
+      with:
+        name: attestation.intoto.jsonl
+    - name: Download scan
+      uses: actions/download-artifact@fb598a63ae348fa914e94cd0ff38f362e927b741 # v3.0.0
+      with:
+        name: scan.json
+    - name: Strip predicate
+      run: jq -r .payload attestation.intoto.jsonl | base64 --decode | jq .predicate > provenance.json
+    - name: Install Cosign
+      uses: sigstore/cosign-installer@7e0881f8fe90b25e305bbf0309761e9314607e25 # v2.4.0
+      with:
+        cosign-release: 'v1.9.0'
+    - name: Fetch SBOM
+      run: cosign download sbom ${{ env.IMAGE }} > sbom.json
+    # optional troubleshooting step to show all files and show the cleaned provenance file
+    # - name: List files
+    #   run: ls -lahF && cat provenance.json
+    - name: Log in to GHCR
+      uses: docker/login-action@49ed152c8eca782a232dede0303416e8f356c37b # v2.0.0
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Sign image
+      run: cosign sign --key env://COSIGN_PRIVATE_KEY -a sha=${{ github.sha }} -a run_id=${{ github.run_id }} ${{ env.IMAGE }}
+      env:
+        COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+        COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+    - name: Attest provenance
+      run: cosign attest --predicate provenance.json --type slsaprovenance --key env://COSIGN_PRIVATE_KEY ${{ env.IMAGE }}
+      env:
+        COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+        COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+    - name: Attest SBOM
+      run: cosign attest --predicate sbom.json --type https://cyclonedx.org/bom --key env://COSIGN_PRIVATE_KEY ${{ env.IMAGE }}
+      env:
+        COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+        COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+    - name: Attest Scan
+      run: cosign attest --predicate scan.json --type https://trivy.aquasec.com/scan/v2 --key env://COSIGN_PRIVATE_KEY ${{ env.IMAGE }}
+      env:
+        COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+        COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}

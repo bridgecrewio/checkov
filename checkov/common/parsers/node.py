@@ -5,7 +5,7 @@ from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Type, Generator
 
 if TYPE_CHECKING:
-    from yaml._yaml import Mark
+    from checkov.common.parsers.json.decoder import Mark
 
 
 LOGGER = logging.getLogger(__name__)
@@ -18,7 +18,7 @@ class TemplateAttributeError(AttributeError):
 class StrNode(str):
     """Node class created based on the input class"""
 
-    def __init__(self, x: str, start_mark: Mark, end_mark: Mark) -> None:
+    def __init__(self, x: str, start_mark: Mark | Any, end_mark: Mark | Any) -> None:
         try:
             super().__init__(x)  # type:ignore[call-arg]
         except TypeError:
@@ -42,10 +42,10 @@ class StrNode(str):
         return self
 
 
-class DictNode(dict):
+class DictNode(dict):  # type:ignore[type-arg]  # either typing works or runtime, but not both
     """Node class created based on the input class"""
 
-    def __init__(self, x: dict[str, Any], start_mark: Mark, end_mark: Mark):
+    def __init__(self, x: dict[str, Any], start_mark: Mark | Any, end_mark: Mark | Any):
         try:
             super().__init__(x)
         except TypeError:
@@ -147,10 +147,10 @@ class DictNode(dict):
         raise TemplateAttributeError(f'{name} is invalid')
 
 
-class ListNode(list):
+class ListNode(list):  # type:ignore[type-arg]  # either typing works or runtime, but not both
     """Node class created based on the input class"""
 
-    def __init__(self, x: list[Any], start_mark: Mark, end_mark: Mark) -> None:
+    def __init__(self, x: list[Any], start_mark: Mark | Any, end_mark: Mark | Any) -> None:
         try:
             super().__init__(x)
         except TypeError:

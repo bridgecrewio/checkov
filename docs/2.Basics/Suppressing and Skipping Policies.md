@@ -245,3 +245,16 @@ kube-system namespace:
 ```sh
 checkov -d . --skip-check kube-system
 ```
+
+# Platform enforcement rules
+
+Checkov can download [enforcement rules](https://docs.bridgecrew.io/docs/enforcement) that you configure in the Bridgecrew or Prisma Cloud platform. This allows you to centralize the failure and check threshold configurations, instead of defining them in each pipeline.
+
+To use enforcement rules, use the `--use-enforcement-rules` flag along with a platform API key.
+
+Enforcement rules allow you to specify a severity soft-fail threshold equivalent to using the `--check <SEVERITY>` argument in Checkov. Note that the enforcement rule "soft fail" option is different from the `--soft-fail` options in Checkov. The enforcement rule setting specifies a threshold such that any lower severity policies get skipped, so it is equivalent to the `--check` option. However, whereas this argument is global, the enforcement rules settings are more granular, for each major category of scanner that Checkov has (IaC, secrets, etc). So, for example, you can set the soft-fail level any IaC scan to `MEDIUM` severity or higher (skip all `LOW`), and hard-fail the SCA scan on `HIGH` severity or higher (skip all `MEDIUM` and lower).
+
+You can combine the platform enforcement rules with the `--check` and `---skip-check` arguments to customize the options for a specific run. It will have the following effects. Note that these flags are still global and will get merged with the relevant enforcement rule for the particular framework being scanned.
+
+* If you use `--check` and / or `--skip-check` with only check IDs (not severities), then it combines those lists with the soft fail threshold from the enforcement rule.
+* If you use `--check` and / or `--skip-check` with a severity, then those severities override the enforcement rule soft fail threshold for all runners.

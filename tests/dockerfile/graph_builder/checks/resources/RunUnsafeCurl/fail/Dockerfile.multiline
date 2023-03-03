@@ -1,0 +1,4 @@
+FROM alpine:3.5
+RUN curl \
+    --insecure \
+    https://example.com

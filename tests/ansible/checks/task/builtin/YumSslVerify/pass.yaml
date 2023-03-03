@@ -1,0 +1,15 @@
+---
+- name: Verify tests
+  hosts: all
+  gather_facts: False
+  tasks:
+    - name: default
+      ansible.builtin.yum:
+        name: httpd
+        state: latest
+
+    - name: enabled
+      yum:
+        name: httpd>=2.4
+        state: present
+        sslverify: true

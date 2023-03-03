@@ -11,8 +11,8 @@ paths:
         "200":
           description: Success
 securityDefinitions:
-  oAuth2AuthCodeNeg2:
-    type: oauth2
+  some_auth:
+    type: basic
     description: For more information, see https://api.my.company.com/docs/oauth
     flow: authorizationCode
     authorizationUrl: https://api.my.company.com/oauth/authorize
@@ -20,5 +20,5 @@ securityDefinitions:
     scopes:
       read:api: read your apis
 security:
-  oAuth2AuthCodeNeg2:
-    - read:api
+  - some_auth:
+      - read:api

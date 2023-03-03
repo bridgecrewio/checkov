@@ -11,8 +11,8 @@ from checkov.runner_filter import RunnerFilter
 
 
 class Registry(BaseCheckRegistry):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, report_type: str) -> None:  # TODO set default to JSON
+        super().__init__(report_type=report_type)
         self._scanner: Dict[str, Callable[[str, Any, Any, Any, str, str, Dict[str, Any]], None]] = {
             BlockType.ARRAY: self._scan_json_array,
             BlockType.OBJECT: self._scan_json_object,
@@ -74,7 +74,7 @@ class Registry(BaseCheckRegistry):
         for check in checks:
             skip_info = ([x for x in skipped_checks if x["id"] == check.id] or [{}])[0]
 
-            if runner_filter.should_run_check(check=check):
+            if runner_filter.should_run_check(check=check, report_type=self.report_type):
                 scanner: Callable[[str, Any, Any, Any, str, str, Dict[str, Any]], None] = self._scanner.get(check.block_type, self._scan_json_document)
                 if check.path:
                     target = entity
@@ -158,7 +158,7 @@ class Registry(BaseCheckRegistry):
         result = check_result["result"]
         result_key = f'{entity_type}.{entity_name}.{check.id}'
 
-        if result == CheckResult.SKIPPED:
+        if isinstance(result, CheckResult) and result == CheckResult.SKIPPED:
             results[result_key] = {
                 "check": check,
                 "result": result,
@@ -174,13 +174,28 @@ class Registry(BaseCheckRegistry):
                 "results_configuration": result[1],
             }
             return result[0]
+        evaluated_keys = check_result.get('evaluated_keys', [])
         results[result_key] = {
             "check": check,
             "result": result,
-            "results_configuration": entity_configuration,
+            "results_configuration": self.get_result_configuration(evaluated_keys, entity_configuration),
         }
         return result
 
     def extract_entity_details(self, entity: dict[str, Any]) -> tuple[str, str, dict[str, Any]]:
         # not used, but is an abstractmethod
-        pass
+        return "", "", {}
+
+    @staticmethod
+    def get_result_configuration(evaluated_keys: list[str], entity_conf: dict[str, Any] | list[Any]) \
+            -> dict[str, Any] | list[str | dict[str, Any]]:
+        if len(evaluated_keys) == 1 and isinstance(entity_conf, dict):
+            # the result configuration should be the smallest code block found by the evaluated_key path, that is of \
+            # type dict or list - the only types that currently have start_mark and end_mark lines configured
+            for path in evaluated_keys[0].split('/'):
+                reduced_conf = entity_conf.get(path)  # type:ignore[union-attr]
+                if not reduced_conf or isinstance(reduced_conf, str):
+                    return entity_conf
+                entity_conf = reduced_conf
+
+        return entity_conf

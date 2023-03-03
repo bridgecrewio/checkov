@@ -1,12 +1,10 @@
 pass:
   - "aws_s3_bucket.private_acl"
-  - "aws_s3_bucket.unknown_var"
   - "aws_s3_bucket.private_acl_v4"
   - "aws_s3_bucket.no_acl"
-  - "aws_s3_bucket.unknown_var_legacy"
-  - "aws_s3_bucket.unknown_var_v4_legacy"
   - "aws_s3_bucket.no_grant"
   - "aws_s3_bucket.grant_onwer"
+  - "aws_s3_bucket.bucket_with_read_acl"
 fail:
   - "aws_s3_bucket.public_read_write"
   - "aws_s3_bucket.public_read_write_v4"

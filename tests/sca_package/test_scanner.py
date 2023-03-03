@@ -1,6 +1,7 @@
 import asyncio
 from pathlib import Path
 import responses
+from checkov.common.util.tqdm_utils import ProgressBar
 
 from checkov.sca_package.scanner import Scanner
 
@@ -26,7 +27,9 @@ def test_run_scan(mock_bc_integration, scan_result2, scan_result_success_respons
     )
 
     # when
-    scanner = Scanner()
+    pbar = ProgressBar('')
+    pbar.turn_off_progress_bar()
+    scanner = Scanner(pbar)
     result = asyncio.run(scanner.run_scan((Path(EXAMPLES_DIR / "requirements.txt"))))
 
     # then
@@ -66,7 +69,9 @@ def test_run_scan_fail_on_scan(mock_bc_integration):
     )
 
     # when
-    result = asyncio.run(Scanner().run_scan(input_path=Path(EXAMPLES_DIR / "requirements.txt")))
+    pbar = ProgressBar('')
+    pbar.turn_off_progress_bar()
+    result = asyncio.run(Scanner(pbar).run_scan(input_path=Path(EXAMPLES_DIR / "requirements.txt")))
 
     # then
     assert result == {}

@@ -1,0 +1,13 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  Test bad IAM policies
+Resources:
+  rIamPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+      - Fn::If:
+        - cCondition
+        - Statement: {}
+        - Statement: []

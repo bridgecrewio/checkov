@@ -23,13 +23,14 @@ class TestApiServerTlsCertAndKey(unittest.TestCase):
         failing_resources = {
             "Pod.kube-system.kube-apiserver-no-key",
             "Pod.kube-system.kube-apiserver-missing",
+            "Pod.kube-system.kube-apiserver-key-and-cert-empty",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
         self.assertEqual(summary["passed"], 1)
-        self.assertEqual(summary["failed"], 2)
+        self.assertEqual(summary["failed"], 3)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 

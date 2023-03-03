@@ -1,0 +1,21 @@
+metadata:
+  name: "example"
+  category: "GENERAL_SECURITY"
+  id: "CkSshPortOpenForAll"
+scope:
+  provider: "AWS"
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "aws_security_group"
+      attribute: "ingress[?(@.to_port == 22 & @.from_port == 22)].cidr_blocks[*]"
+      operator: "jsonpath_not_equals"
+      value: 0.0.0.0/0
+    - cond_type: "attribute"
+      resource_types:
+        - "aws_security_group"
+      attribute: "ingress[?(@.to_port == 443 & @.from_port == 443)].cidr_blocks[?(@ == '8.0.4.19/92')]"
+      operator: "jsonpath_not_equals"
+      value: 8.0.4.19/92
+

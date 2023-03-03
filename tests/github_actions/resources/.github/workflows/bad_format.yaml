@@ -1,0 +1,19 @@
+name: "stuff"
+on:
+  workflow_dispatch:
+    inputs:
+      NODE_ENV:
+        description: 'empty'
+        required: true
+        type: choice
+
+jobs:
+  runs-on: [ ubuntu-latest ]
+  CHG_Cleanup:
+    name: "a_job"
+  steps:
+      - name: "something"
+        run: |
+          npm ci
+          node src/index.js
+

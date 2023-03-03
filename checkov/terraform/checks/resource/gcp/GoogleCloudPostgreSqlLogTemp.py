@@ -34,9 +34,9 @@ class GoogleCloudPostgreSqlLogTemp(BaseResourceCheck):
                         # treating use cases of the following database_flags parsing
                         # (list of dictionaries with arrays): 'database_flags':
                         # [{'name': ['<key>'], 'value': ['<value>']},{'name': ['<key>'], 'value': ['<value>']}]
-                        flags = [{key: flag[key][0] for key in flag} for flag in flags]
+                        flags = [{key: flag[key][0] for key in flag if key in ['name', 'value']} for flag in flags]
                     for flag in flags:
-                        if (flag['name'] == 'log_temp_files') and (flag['value'] != '0'):
+                        if (isinstance(flag, dict) and flag['name'] == 'log_temp_files') and (flag['value'] != '0'):
                             self.evaluated_keys = ['database_version/[0]/POSTGRES',
                                                    f'{evaluated_keys_prefix}/[{flags.index(flag)}]/name',
                                                    f'{evaluated_keys_prefix}/[{flags.index(flag)}]/value']

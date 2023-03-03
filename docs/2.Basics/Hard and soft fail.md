@@ -57,8 +57,22 @@ The table below shows how different values of `--soft-fail`, `--soft-fail-on`, a
 |Soft Fail|Soft Fail On|Hard Fail On|Scan Result|Comments|
 |-|-|-|-|-|
 |True | - | - |0 (soft fail)|All errors are soft fails|
-|False|CKV_123|-|1 (hard fail)|Soft fail requires all failures to match a soft fail critera|
+|False|CKV_123|-|1 (hard fail)|Soft fail requires all failures to match a soft fail criteria|
 |False|-|CKV_999|0|Every failed check did not match a hard fail criteria, so the result is implicitly soft fail|
 |False|LOW,CKV_789|CKV_123|1|The explicit match of the hard fail criteria results in a hard fail|
 |False|CKV_789|HIGH|1|CKV_789 explicitly matches a soft fail criteria, which overrides the hard fail. But CKV_123 is not in either list, so defaults to the value of `--soft-fail`, which is false|
 |True|CKV_789|HIGH|0|CKV_789 explicitly matches a soft fail criteria, which overrides the hard fail. But CKV_123 is not in either list, so defaults to `--soft-fail`, which is true|
+
+# Platform enforcement rules
+
+Checkov can download [enforcement rules](https://docs.bridgecrew.io/docs/enforcement) that you configure in the Bridgecrew or Prisma Cloud platform. This allows you to centralize the failure and check threshold configurations, instead of defining them in each pipeline.
+
+To use enforcement rules, use the `--use-enforcement-rules` flag along with a platform API key.
+
+Enforcement rules allow you to specify a hard-fail severity threshold equivalent to using the `--hard-fail-on <SEVERITY>` argument in Checkov. However, whereas this argument is global, the enforcement rules settings are more granular, for each major category of scanner that Checkov has (IaC, secrets, etc). So, for example, you can hard-fail any IaC scan on `MEDIUM` severity or higher, and hard-fail the SCA scan on `HIGH` severity or higher.
+
+You can combine the platform enforcement rules with the `--soft-fail`, `--soft-fail-on`, and `--hard-fail-on` arguments to customize the options for a specific run. It will have the following effects. Note that these flags are still global and will get merged with the relevant enforcement rule for the particular framework being scanned.
+
+* If you use `--soft-fail`, it overrides the enforcement rule hard fail threshold for all runners.
+* If you use `--soft-fail-on` and / or `--hard-fail-on` with only check IDs (not severities), then it combines those lists with the hard fail threshold from the respective enforcement rule.
+* If you use `--soft-fail-on` and / or `--hard-fail-on` with a severity, then those severities override the enforcement rule hard fail threshold for all runners.
