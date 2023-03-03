@@ -351,6 +351,24 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_GCPdisableAlphaClusterFeatureInKubernetesEngineClusters(self):
         self.go("GCPdisableAlphaClusterFeatureInKubernetesEngineClusters")
+        
+    def test_AzureContainerInstanceconfigManagedIdentity(self):
+            self.go("test_AzureContainerInstanceconfigManagedIdentity")
+
+    def test_AzureAKSclusterAzureCNIEnabled(self):
+                self.go("test_AzureAKSclusterAzureCNIEnabled")
+
+    def test_AzureACR_HTTPSwebhook(self):
+                    self.go("test_AzureACR_HTTPSwebhook")
+
+    def test_AzureSubnetConfigWithNSG(self):
+                    self.go("test_AzureSubnetConfigWithNSG")
+
+    def test_AzureKeyVaultConfigPrivateEndpoint(self):
+                    self.go("test_AzureKeyVaultConfigPrivateEndpoint")
+
+    def test_AzureStorageAccConfigWithPrivateEndpoint(self):
+                    self.go("test_AzureStorageAccConfigWithPrivateEndpoint")
 
     def test_registry_load(self):
         registry = Registry(parser=GraphCheckParser(), checks_dir=str(
