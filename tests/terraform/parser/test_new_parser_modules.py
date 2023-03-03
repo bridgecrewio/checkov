@@ -26,8 +26,7 @@ class TestParserInternals(unittest.TestCase):
         # needs to be reset, because the cache belongs to the class not instance
         ModuleLoaderRegistry.module_content_cache = {}
 
-        self.resources_dir = os.path.realpath(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                                           "./resources"))
+        self.resources_dir = os.path.realpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "./resources"))
         self.external_module_path = ''
 
     def tearDown(self) -> None:
@@ -98,8 +97,8 @@ class TestParserInternals(unittest.TestCase):
         self.assertEqual(len(out_definitions), 3)
         self.assertEqual(len(parser.loaded_files_map), 2)
 
-        local_module_path = os.path.join(self.tmp_path, '/Users/cshayner/development/checkov/tests/terraform/parser/resources/local_module/main.tf')
-        module_path = os.path.join(self.tmp_path, "/Users/cshayner/development/checkov/tests/terraform/parser/resources/local_module/module/main.tf")
+        local_module_path = os.path.join(directory, '/Users/cshayner/development/checkov/tests/terraform/parser/resources/local_module/main.tf')
+        module_path = os.path.join(directory, "/Users/cshayner/development/checkov/tests/terraform/parser/resources/local_module/module/main.tf")
         main_key = TFDefinitionKey(file_path=local_module_path)
         key_idx_0 = TFDefinitionKey(file_path=module_path, tf_source_modules=TFModule(path=local_module_path, index=0))
         key_idx_1 = TFDefinitionKey(file_path=module_path, tf_source_modules=TFModule(path=local_module_path, index=1))
@@ -110,7 +109,7 @@ class TestParserInternals(unittest.TestCase):
         assert out_definitions[main_key]['module'][0]['mod']['__resolved__'] == [key_idx_0]
         assert out_definitions[main_key]['module'][1]['mod2']['__resolved__'] == [key_idx_1]
 
-        assert parser.external_modules_source_map == {(os.path.join(self.tmp_path, '/Users/cshayner/development/checkov/tests/terraform/parser/resources/local_module/module'), 'latest'): os.path.join(self.tmp_path, '/Users/cshayner/development/checkov/tests/terraform/parser/resources/local_module/module')}
+        assert parser.external_modules_source_map == {(os.path.join(directory, '/Users/cshayner/development/checkov/tests/terraform/parser/resources/local_module/module'), 'latest'): os.path.join(directory, '/Users/cshayner/development/checkov/tests/terraform/parser/resources/local_module/module')}
         assert parser.external_variables_data == [
             ('versioning', True, 'manual specification'),
             ('__start_line__', 1, 'manual specification'),
@@ -121,8 +120,8 @@ class TestParserInternals(unittest.TestCase):
         ]
         assert parser.keys_to_remove == {TFDefinitionKey(file_path=module_path)}
         assert parser._parsed_directories == {
-            os.path.join(self.tmp_path, '/Users/cshayner/development/checkov/tests/terraform/parser/resources/local_module'),
-            os.path.join(self.tmp_path, '/Users/cshayner/development/checkov/tests/terraform/parser/resources/local_module/module')
+            os.path.join(directory, '/Users/cshayner/development/checkov/tests/terraform/parser/resources/local_module'),
+            os.path.join(directory, '/Users/cshayner/development/checkov/tests/terraform/parser/resources/local_module/module')
         }
 
     def test_load_nested_module_new_parser(self):
@@ -133,11 +132,11 @@ class TestParserInternals(unittest.TestCase):
         self.assertEqual(len(o_definitions), 5)
         self.assertEqual(len(parser.loaded_files_map), 5)
 
-        main_module_path = os.path.join(self.tmp_path, '/Users/cshayner/development/checkov/tests/terraform/parser/resources/parser_nested_modules/main.tf')
-        module2_main_path = os.path.join(self.tmp_path, '/Users/cshayner/development/checkov/tests/terraform/parser/resources/parser_nested_modules/module/module2/main.tf')
-        module2_var_path = os.path.join(self.tmp_path, '/Users/cshayner/development/checkov/tests/terraform/parser/resources/parser_nested_modules/module/module2/variable.tf')
-        module1_main_path = os.path.join(self.tmp_path, '/Users/cshayner/development/checkov/tests/terraform/parser/resources/parser_nested_modules/module/main.tf')
-        module1_var_path = os.path.join(self.tmp_path, '/Users/cshayner/development/checkov/tests/terraform/parser/resources/parser_nested_modules/module/variable.tf')
+        main_module_path = os.path.join(directory, '/Users/cshayner/development/checkov/tests/terraform/parser/resources/parser_nested_modules/main.tf')
+        module2_main_path = os.path.join(directory, '/Users/cshayner/development/checkov/tests/terraform/parser/resources/parser_nested_modules/module/module2/main.tf')
+        module2_var_path = os.path.join(directory, '/Users/cshayner/development/checkov/tests/terraform/parser/resources/parser_nested_modules/module/module2/variable.tf')
+        module1_main_path = os.path.join(directory, '/Users/cshayner/development/checkov/tests/terraform/parser/resources/parser_nested_modules/module/main.tf')
+        module1_var_path = os.path.join(directory, '/Users/cshayner/development/checkov/tests/terraform/parser/resources/parser_nested_modules/module/variable.tf')
 
         main_module = TFDefinitionKey(file_path=main_module_path)
         module_main_key = TFDefinitionKey(file_path=module1_main_path, tf_source_modules=TFModule(path=main_module_path, index=0))
@@ -162,9 +161,9 @@ class TestParserInternals(unittest.TestCase):
         self.assertEqual(len(o_definitions), 7)
         self.assertEqual(len(parser.loaded_files_map), 3)
 
-        main_module_path = os.path.join(self.tmp_path, '/Users/cshayner/development/checkov/tests/terraform/parser/resources/parser_dup_nested/main.tf')
-        module1_path = os.path.join(self.tmp_path, '/Users/cshayner/development/checkov/tests/terraform/parser/resources/parser_dup_nested/module/main.tf')
-        module2_path = os.path.join(self.tmp_path, '/Users/cshayner/development/checkov/tests/terraform/parser/resources/parser_dup_nested/module/module2/main.tf')
+        main_module_path = os.path.join(directory, '/Users/cshayner/development/checkov/tests/terraform/parser/resources/parser_dup_nested/main.tf')
+        module1_path = os.path.join(directory, '/Users/cshayner/development/checkov/tests/terraform/parser/resources/parser_dup_nested/module/main.tf')
+        module2_path = os.path.join(directory, '/Users/cshayner/development/checkov/tests/terraform/parser/resources/parser_dup_nested/module/module2/main.tf')
 
         main_module = TFDefinitionKey(file_path=main_module_path)
         module1_key0 = TFDefinitionKey(file_path=module1_path, tf_source_modules=TFModule(path=main_module_path, index=0))
