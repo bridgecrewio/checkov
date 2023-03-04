@@ -34,7 +34,7 @@ class TestGraphBuilder(TestCase):
         runner = Runner(db_connector=self.db_connector())
         report = runner.run(root_folder=resources_path)
         self.assertEqual(4, len(report.failed_checks))
-        self.assertEqual(6, len(report.passed_checks))
+        self.assertEqual(5, len(report.passed_checks))
         self.assertEqual(0, len(report.skipped_checks))
 
     def test_run_persistent_data(self):
@@ -50,7 +50,7 @@ class TestGraphBuilder(TestCase):
         report = runner.run(root_folder=resources_path)
         # note that we dont count graph violations in this case
         self.assertEqual(len(report.failed_checks), 0)
-        self.assertEqual(len(report.passed_checks), 2)
+        self.assertEqual(len(report.passed_checks), 1)
         self.assertEqual(len(report.skipped_checks), 0)
 
     def test_module_and_variables(self):

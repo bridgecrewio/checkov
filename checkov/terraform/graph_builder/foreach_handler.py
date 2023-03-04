@@ -166,13 +166,29 @@ class ForeachHandler(object):
         attrs.pop(COUNT_STRING, None)
         attrs.pop(FOREACH_STRING, None)
 
+    @staticmethod
+    def __update_str_attrs(attrs: dict[str, Any], key_to_change: str, val_to_change: str, k: str | int) -> bool:
+        if attrs[k] == "${" + key_to_change + "}":
+            attrs[k] = val_to_change
+            return True
+        else:
+            attrs[k] = attrs[k].replace("${" + key_to_change + "}", str(val_to_change))
+            attrs[k] = attrs[k].replace(key_to_change, str(val_to_change))
+            return True
+
     def _update_attributes(self, attrs: dict[str, Any], key_to_val_changes: dict[str, Any]) -> list[str]:
         foreach_attributes: list[str] = []
         for key_to_change, val_to_change in key_to_val_changes.items():
             for k, v in attrs.items():
                 v_changed = False
+                if isinstance(v, str):
+                    v_changed = self.__update_str_attrs(attrs, key_to_change, val_to_change, k)
                 if isinstance(v, dict):
-                    foreach_attributes.extend(self._update_attributes(v, {key_to_change: val_to_change}))
+                    nested_attrs = self._update_attributes(v, {key_to_change: val_to_change})
+                    foreach_attributes.extend([k + '.' + na for na in nested_attrs])
+                if isinstance(v, list) and len(v) == 1 and isinstance(v[0], dict):
+                    nested_attrs = self._update_attributes(v[0], {key_to_change: val_to_change})
+                    foreach_attributes.extend([k + '.' + na for na in nested_attrs])
                 elif isinstance(v, list) and len(v) == 1 and isinstance(v[0], str) and key_to_change in v[0]:
                     if attrs[k][0] == "${" + key_to_change + "}":
                         attrs[k][0] = val_to_change

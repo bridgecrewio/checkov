@@ -33,6 +33,15 @@ resource "aws_security_group_rule" "pass" {
   type              = "ingress"
 }
 
+resource "aws_vpc_security_group_ingress_rule" "pass" {
+  security_group_id = aws_security_group.example.id
+
+  cidr_ipv4   = "0.0.0.0/0"
+  from_port   = 80
+  ip_protocol = "tcp"
+  to_port     = 80
+}
+
 # fail
 resource "aws_security_group" "fail" {
   name        = "allow-all-ingress"
@@ -57,4 +66,13 @@ resource "aws_security_group_rule" "fail" {
   security_group_id = "sg-12345"
   description = "Test unfettered access"
   type              = "ingress"
+}
+
+resource "aws_vpc_security_group_ingress_rule" "fail" {
+  security_group_id = aws_security_group.example.id
+
+  cidr_ipv4   = "0.0.0.0/0"
+  from_port   = -1
+  ip_protocol = "tcp"
+  to_port     = -1
 }
