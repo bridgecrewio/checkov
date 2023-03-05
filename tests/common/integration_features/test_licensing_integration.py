@@ -86,7 +86,7 @@ class TestLicensingIntegration(unittest.TestCase):
         self.assertEqual(CodeCategoryMapping.get(CheckType.SERVERLESS), CodeCategoryType.IAC)
         self.assertEqual(CodeCategoryMapping.get(CheckType.TERRAFORM), CodeCategoryType.IAC)
         self.assertEqual(CodeCategoryMapping.get(CheckType.TERRAFORM_PLAN), CodeCategoryType.IAC)
-        self.assertEqual(CodeCategoryMapping.get(CheckType.ARGO_WORKFLOWS), CodeCategoryType.SUPPLY_CHAIN)
+        self.assertEqual(CodeCategoryMapping.get(CheckType.ARGO_WORKFLOWS), CodeCategoryType.BUILD_INTEGRITY)
         self.assertEqual(CodeCategoryMapping.get(CheckType.SAST), CodeCategoryType.SAST)
 
         self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.BITBUCKET_PIPELINES), CustomerSubscription.IAC)

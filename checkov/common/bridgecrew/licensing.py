@@ -28,4 +28,4 @@ for sub, cats in SubscriptionCategoryMapping.items():
         CategoryToSubscriptionMapping[cat] = sub
 
 
-open_source_categories = [CodeCategoryType.IAC, CodeCategoryType.SECRETS, CodeCategoryType.SUPPLY_CHAIN, CodeCategoryType.SAST]
+open_source_categories = [CodeCategoryType.IAC, CodeCategoryType.SECRETS, CodeCategoryType.BUILD_INTEGRITY, CodeCategoryType.SAST]

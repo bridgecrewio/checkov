@@ -656,7 +656,8 @@ class TestRunnerFilter(unittest.TestCase):
             CodeCategoryType.BUILD_INTEGRITY: CodeCategoryConfiguration(CodeCategoryType.BUILD_INTEGRITY, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.MEDIUM]),
             CodeCategoryType.LICENSES: CodeCategoryConfiguration(CodeCategoryType.LICENSES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.VULNERABILITIES: CodeCategoryConfiguration(CodeCategoryType.VULNERABILITIES, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.MEDIUM]),
-            CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH])
+            CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
+            CodeCategoryType.SAST: CodeCategoryConfiguration(CodeCategoryType.SAST, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH])
         }
 
         instance.apply_enforcement_rules(enforcement_rule_configs)
@@ -677,7 +678,8 @@ class TestRunnerFilter(unittest.TestCase):
             CodeCategoryType.BUILD_INTEGRITY: CodeCategoryConfiguration(CodeCategoryType.BUILD_INTEGRITY, Severities[BcSeverities.INFO], Severities[BcSeverities.INFO]),
             CodeCategoryType.LICENSES: CodeCategoryConfiguration(CodeCategoryType.LICENSES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.VULNERABILITIES: CodeCategoryConfiguration(CodeCategoryType.VULNERABILITIES, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.MEDIUM]),
-            CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.OFF], Severities[BcSeverities.OFF])
+            CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.OFF], Severities[BcSeverities.OFF]),
+            CodeCategoryType.SAST: CodeCategoryConfiguration(CodeCategoryType.SAST, Severities[BcSeverities.OFF], Severities[BcSeverities.OFF])
         }
 
         instance.apply_enforcement_rules(enforcement_rule_configs)
@@ -715,6 +717,10 @@ class TestRunnerFilter(unittest.TestCase):
             'terraform': Severities[BcSeverities.LOW],
             'terraform_plan': Severities[BcSeverities.LOW],
             '3d_policy': Severities[BcSeverities.LOW],
+            'sast': Severities[BcSeverities.OFF],
+            'sast_python': Severities[BcSeverities.OFF],
+            'sast_java': Severities[BcSeverities.OFF],
+            'sast_javascript': Severities[BcSeverities.OFF],
         }
         self.assertEqual(instance.enforcement_rule_configs, expected)
 
