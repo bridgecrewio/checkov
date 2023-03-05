@@ -305,7 +305,7 @@ resource "aws_security_group_rule" "pass4" {
   from_port         = 22
   to_port           = 22
   protocol          = "tcp"
-  self = True
+  self = true
   security_group_id = aws_security_group.bar-sg.id
 }
 
