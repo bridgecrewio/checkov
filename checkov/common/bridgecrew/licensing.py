@@ -18,8 +18,8 @@ class BillingPlan(str, Enum):
 SubscriptionCategoryMapping = {
     CustomerSubscription.IAC: (CodeCategoryType.IAC, CodeCategoryType.BUILD_INTEGRITY),
     CustomerSubscription.SCA: (CodeCategoryType.LICENSES, CodeCategoryType.VULNERABILITIES),
-    CustomerSubscription.SECRETS: (CodeCategoryType.SECRETS),
-    CustomerSubscription.SAST: (CodeCategoryType.SAST)
+    CustomerSubscription.SECRETS: (CodeCategoryType.SECRETS,),
+    CustomerSubscription.SAST: (CodeCategoryType.SAST,)
 }
 
 CategoryToSubscriptionMapping = {}
