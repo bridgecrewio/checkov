@@ -15,7 +15,7 @@ definition:
     value: $FUNC(..., HttpServletRequest $REQ, ...) {
              ...
            }
-  or:
+  - or:
     - and:
       - cond_type: "filter"
         attribute: "pattern"
