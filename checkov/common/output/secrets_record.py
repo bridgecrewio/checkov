@@ -95,16 +95,6 @@ class SecretsRecord(Record):
             processed_record = "\n".join(splitted_record)
         return processed_record
 
-    def to_string(self, compact: bool = False, use_bc_ids: bool = False) -> str:
-        processed_record = super().to_string(compact=compact, use_bc_ids=use_bc_ids)
-        validation_status_message = self._get_secret_validation_status_message()
-        if validation_status_message and self.check_result["result"] == CheckResult.FAILED and os.getenv("CKV_VALIDATE_SECRETS"):
-            # if needed insert validation status message
-            splitted_record = processed_record.split("\n")
-            splitted_record.insert(2, validation_status_message)
-            processed_record = "\n".join(splitted_record)
-        return processed_record
-
     def _get_secret_validation_status_message(self) -> str:
         message = None
         if self.validation_status:
