@@ -11,6 +11,7 @@ class CodeCategoryType(str, Enum):
     SECRETS = "SECRETS"
     LICENSES = "LICENSES"
     BUILD_INTEGRITY = "BUILD_INTEGRITY"
+    SAST = "SAST"
 
 
 CodeCategoryMapping: Dict[str, Union[CodeCategoryType, List[CodeCategoryType]]] = {
