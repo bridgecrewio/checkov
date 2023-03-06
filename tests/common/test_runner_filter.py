@@ -828,6 +828,14 @@ class TestRunnerFilter(unittest.TestCase):
         assert SastLanguages.PYTHON in sast_langs
         assert SastLanguages.JAVASCRIPT in sast_langs
 
+    def test_scan_secrets_history_limits_to_secrets_framework(self):
+        # when
+        filter = RunnerFilter(enable_git_history_secret_scan=True)
+
+        # then
+        assert filter.enable_git_history_secret_scan is True
+        assert filter.framework == [CheckType.SECRETS]
+
 
 if __name__ == '__main__':
     unittest.main()

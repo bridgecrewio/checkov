@@ -7,7 +7,7 @@ import logging
 import os
 import re
 from pathlib import Path
-from typing import TYPE_CHECKING, cast, Optional, Iterable, Any, List, Tuple
+from typing import TYPE_CHECKING, cast, Optional, Iterable, Any, List
 
 import requests
 from detect_secrets.filters.heuristic import is_potential_uuid
@@ -38,7 +38,7 @@ from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.dockerfile import is_docker_file
 from checkov.common.util.secrets import omit_secret_value_from_line
 from checkov.runner_filter import RunnerFilter
-from checkov.secrets.consts import ValidationStatus, VerifySecretsResult, GIT_HISTORY_NOT_BEEN_REMOVED
+from checkov.secrets.consts import ValidationStatus, VerifySecretsResult
 from checkov.secrets.coordinator import EnrichedSecret, SecretsCoordinator
 from checkov.secrets.plugins.load_detectors import get_runnable_plugins
 from checkov.secrets.scan_git_history import GitHistoryScanner
@@ -187,19 +187,23 @@ class Runner(BaseRunner[None]):
             secrets_duplication: dict[str, bool] = {}
 
             for key, secret in secrets:
-                added_commit_hash, removed_commit_hash = self._get_added_and_removed_commit_hash(
-                    key,
-                    runner_filter.enable_git_history_secret_scan)
+                if runner_filter.enable_git_history_secret_scan:
+                    added_commit_hash, removed_commit_hash, code_line = \
+                        git_history_scanner.secret_store.get_added_and_removed_commit_hash(key, secret)
+                else:
+                    added_commit_hash, removed_commit_hash, code_line = None, None, None
                 check_id = getattr(secret, "check_id", SECRET_TYPE_TO_ID.get(secret.type))
                 if not check_id:
                     logging.debug(f'Secret was filtered - no check_id for line_number {secret.line_number}')
                     continue
                 secret_key = f'{key}_{secret.line_number}_{secret.secret_hash}'
                 if secret.secret_value and is_potential_uuid(secret.secret_value):
-                    logging.info(f"Removing secret due to UUID filtering: {hashlib.sha256(secret.secret_value.encode('utf-8')).hexdigest()}")
+                    logging.info(
+                        f"Removing secret due to UUID filtering: {hashlib.sha256(secret.secret_value.encode('utf-8')).hexdigest()}")
                     continue
                 if secret_key in secrets_duplication:
-                    logging.debug(f'Secret was filtered - secrets_duplication. line_number {secret.line_number}, check_id {check_id}')
+                    logging.debug(
+                        f'Secret was filtered - secrets_duplication. line_number {secret.line_number}, check_id {check_id}')
                     continue
                 else:
                     secrets_duplication[secret_key] = True
@@ -212,7 +216,10 @@ class Runner(BaseRunner[None]):
                     continue
                 result: _CheckResult = {'result': CheckResult.FAILED}
                 try:
-                    line_text = linecache.getline(secret.filename, secret.line_number)
+                    if runner_filter.enable_git_history_secret_scan and code_line is not None:
+                        line_text = code_line
+                    else:
+                        line_text = linecache.getline(secret.filename, secret.line_number)
                 except SyntaxError as e:
                     # If encoding is a problem, this is probably not human-readable source code
                     # hence there's no need in flagging this secret
@@ -395,14 +402,16 @@ class Runner(BaseRunner[None]):
 
         validation_status_by_check_id_and_resource = {}
         for validation_status_entity in verification_report:
-            if not all(required_key in validation_status_entity.keys() for required_key in ["violationId", "resourceId", "status"]):
+            if not all(required_key in validation_status_entity.keys() for required_key in
+                       ["violationId", "resourceId", "status"]):
                 logging.debug(f"{validation_status_entity} does not have all required keys, skipping")
                 continue
 
             key = f'{validation_status_entity["violationId"]}_{validation_status_entity["resourceId"]}'
             validation_status_by_check_id_and_resource[key] = validation_status_entity['status']
 
-        logging.debug(f'secrets verification api returned with {len(validation_status_by_check_id_and_resource.keys())} unique entries')
+        logging.debug(
+            f'secrets verification api returned with {len(validation_status_by_check_id_and_resource.keys())} unique entries')
 
         for secrets_record in report.failed_checks:
             if hasattr(secrets_record, "validation_status"):
@@ -458,24 +467,3 @@ class Runner(BaseRunner[None]):
                 logging.error(f"Failed to remove suppressed secrets violations from failed_checks, report is corrupted."
                               f"Tried to delete entry {idx} from failed_checks of length {len(report.failed_checks)}",
                               exc_info=True)
-
-    @staticmethod
-    def _get_added_and_removed_commit_hash(
-            key: str, enable_git_history_secret_scan: bool) -> Tuple[str | None, str | None]:
-        """
-        now we have only the current commit_hash - in the added_commit_hash or in the removed_commit_hash.
-        in the next step we will add the connection and the missing data
-        The key is built like this:
-        '{added_commit_hash}_{removed_commit_hash or the string SECRET_NOT_BEEN_REMOVED
-        if the secret not been removed}_{file_name}'
-        """
-        if not enable_git_history_secret_scan:
-            return None, None
-        try:
-            split_key = key.split('_')
-            added_commit_hash = split_key[0]
-            removed_commit_hash = split_key[1] if split_key[1] != GIT_HISTORY_NOT_BEEN_REMOVED else None
-            return added_commit_hash, removed_commit_hash
-        except Exception as e:
-            logging.warning(f"Failed set added_commit_hash and removed_commit_hash due to: {e}")
-            return None, None

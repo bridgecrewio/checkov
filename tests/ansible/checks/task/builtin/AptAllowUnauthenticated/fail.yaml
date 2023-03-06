@@ -7,7 +7,7 @@
       ansible.builtin.apt:
         name: openssl
         state: latest
-        allow_unauthenticated: true
+        allow_unauthenticated: yes
 
     - name: short_unsafe
       apt:
