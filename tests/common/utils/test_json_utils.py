@@ -15,9 +15,11 @@ from checkov.common.util.json_utils import CustomJSONEncoder
         ({"key": datetime.now()}),
         ({"key": Tree("data", ["child_1", "child_2"])}),
         ({"key": lambda x: x}),
+        ({"key": Ellipsis})
     ],
-    ids=["set", "date", "lark_tree", "function"],
+    ids=["set", "date", "lark_tree", "function", "str"],
 )
+
 def test_custom_json_encoder(input_dict: Dict[str, Any]):
     # when
     result = json.dumps(input_dict, cls=CustomJSONEncoder)

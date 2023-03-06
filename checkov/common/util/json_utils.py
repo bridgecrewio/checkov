@@ -30,6 +30,8 @@ class CustomJSONEncoder(json.JSONEncoder):
             return o.__dict__
         elif isinstance(o, type_of_function):
             return str(o)
+        elif o == Ellipsis:
+            return "..."
         else:
             return json.JSONEncoder.default(self, o)
 
