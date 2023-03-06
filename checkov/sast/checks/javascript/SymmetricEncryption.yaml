@@ -21,5 +21,11 @@ definition:
           variable: "$ENCRYPTION"
           operator: "regex_match"
           value: "('DES|'3DES)"
+      - cond_type: pattern
+        operator: equals
+        value: CryptoJS.DES.encrypt(...)
+      - cond_type: pattern
+        operator: equals
+        value: CryptoJS.TripleDES.encrypt(...)
 
 
