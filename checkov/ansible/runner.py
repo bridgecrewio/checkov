@@ -51,8 +51,8 @@ class Runner(YamlRunner):
         return None
 
     def get_resource(
-        self, file_path: str, key: str, supported_entities: Iterable[str], start_line: int = -1, end_line: int = -1
-    ) -> str:
+        self, file_path: str, key: str, supported_entities: Iterable[str],
+            start_line: int = -1, end_line: int = -1, graph_resource: bool = False) -> str:
         if not self.definitions or not isinstance(self.definitions, dict):
             return key
 
@@ -96,14 +96,26 @@ class Runner(YamlRunner):
 
         return resource_key
 
-    def _handle_block_tasks(self, start_line: int, end_line: int, code_block: dict[str, Any]) -> str | None:
+    def _handle_block_tasks(
+        self, start_line: int, end_line: int, code_block: dict[str, Any], prefix: str = ""
+    ) -> str | None:
         for block_task in code_block[ResourceType.BLOCK]:
             if block_task[START_LINE] <= start_line <= end_line <= block_task[END_LINE]:
-                return self._generate_resource_name(task=block_task, in_block=True)
+                prefix += f"{ResourceType.BLOCK}."  # with each nested level an extra block prefix is added
+                if ResourceType.BLOCK in block_task:
+                    resource_name = self._handle_block_tasks(
+                        start_line=start_line,
+                        end_line=end_line,
+                        code_block=block_task,
+                        prefix=prefix,
+                    )
+                    if resource_name is not None:
+                        return resource_name
+                return self._generate_resource_name(task=block_task, prefix=prefix)
 
         return None
 
-    def _generate_resource_name(self, task: dict[str, Any], in_block: bool = False) -> str | None:
+    def _generate_resource_name(self, task: dict[str, Any], prefix: str = "") -> str | None:
         # grab the task name at the beginning before trying to find the actual module name
         task_name = task.get("name") or "unknown"
 
@@ -111,9 +123,9 @@ class Runner(YamlRunner):
             if name in TASK_RESERVED_KEYWORDS:
                 continue
 
-            if in_block:
+            if prefix:
                 # if the task is found in a block, then prefix the module name with 'block'
-                name = f"block.{name}"
+                name = f"{prefix}{name}"
 
             return f"{ResourceType.TASKS}.{name}.{task_name}"
 

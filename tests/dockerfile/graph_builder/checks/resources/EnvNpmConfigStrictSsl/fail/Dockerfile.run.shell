@@ -1,0 +1,20 @@
+FROM node:18
+
+RUN ABC=123 echo test; NPM_CONFIG_STRICT_SSL=false npm ci ;DEF=456 echo lol;
+RUN ABC=123 echo test;NPM_CONFIG_STRICT_SSL=false npm ci;DEF=456 echo lol;
+RUN ABC=123 echo test ;NPM_CONFIG_STRICT_SSL=false npm ci; DEF=456 echo lol;
+
+RUN ABC=123 echo test&& npm_config_strict_ssl=false npm ci &&DEF=456 echo lol;
+RUN ABC=123 echo test&&npm_config_strict_ssl=false npm ci&&DEF=456 echo lol;
+RUN ABC=123 echo test &&npm_config_strict_ssl=false npm ci&& DEF=456 echo lol;
+
+RUN ABC=123 echo test|| NPM_CONFIG_STRICT_SSL=false npm ci ||DEF=456 echo lol;
+RUN ABC=123 echo test||NPM_CONFIG_STRICT_SSL=false npm ci||DEF=456 echo lol;
+RUN ABC=123 echo test ||NPM_CONFIG_STRICT_SSL=false npm ci|| DEF=456 echo lol;
+
+RUN ABC=123 echo test| npm_config_strict_ssl=false npm ci |DEF=456 echo lol;
+RUN ABC=123 echo test|npm_config_strict_ssl=false npm ci|DEF=456 echo lol;
+RUN ABC=123 echo test |npm_config_strict_ssl=false npm ci| DEF=456 echo lol;
+
+RUN ABC=123      echo test;       NPM_CONFIG_STRICT_SSL=false         npm ci ;     DEF=456          echo lol;
+RUN ABC=123      echo test ;       NPM_CONFIG_STRICT_SSL=false         npm ci;     DEF=456          echo lol;

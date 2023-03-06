@@ -419,3 +419,11 @@ class TestRenderer(TestCase):
         resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
         assert resources_vertex[0].attributes.get('identity').get('identity_ids') == 'null'
         assert resources_vertex[0].attributes.get('identity').get('type') == 'SystemAssigned'
+
+    def test_lookup_from_var(self):
+        graph_manager = TerraformGraphManager('m', ['m'])
+        local_graph, _ = graph_manager.build_graph_from_source_directory(
+            os.path.join(TEST_DIRNAME, "test_resources", "lookup_from_var"), render_variables=True)
+        resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
+        assert resources_vertex[0].attributes.get('protocol')[0] == 'http'
+        assert resources_vertex[0].attributes.get('endpoint')[0] == 'http://www.example.com'

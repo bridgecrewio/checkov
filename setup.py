@@ -34,14 +34,14 @@ setup(
     },
     install_requires=[
         "bc-python-hcl2==0.3.51",
-        "bc-detect-secrets==1.4.11",
+        "bc-detect-secrets==1.4.13",
         "bc-jsonpath-ng==1.5.9",
         "deep-merge",
         "tabulate",
         "colorama",
         "termcolor",
         "junit-xml>=1.9",
-        "dpath>=1.5.0,<2",
+        "dpath<2,>=1.5.0",
         "pyyaml>=5.4.1",
         "boto3>=1.17",
         "gitpython",
@@ -61,7 +61,7 @@ setup(
         "typing-extensions>=4.1.0",
         "importlib-metadata>=0.12",
         "cachetools",
-        "cyclonedx-python-lib<4.0.0,>=2.4.0",
+        "cyclonedx-python-lib>=2.4.0,<4.0.0",
         "packageurl-python",
         "click>=8.0.0",
         "aiohttp",
@@ -76,7 +76,6 @@ setup(
         "schema",
         "requests>=2.27.0",
         "yarl",
-        "igraph",
         "semgrep==1.10.0"
     ],
     dependency_links=[],  # keep it empty, needed for pipenv-setup
@@ -92,6 +91,7 @@ setup(
     include_package_data=True,
     package_dir={
         "checkov.ansible.checks.graph_checks": "checkov/ansible/checks/graph_checks",
+        "checkov.arm.checks.graph_checks": "checkov/arm/checks/graph_checks",
         "checkov.bicep.checks.graph_checks": "checkov/bicep/checks/graph_checks",
         "checkov.cloudformation.checks.graph_checks": "checkov/cloudformation/checks/graph_checks",
         "checkov.dockerfile.checks.graph_checks": "checkov/dockerfile/checks/graph_checks",
@@ -103,6 +103,7 @@ setup(
     package_data={
         "checkov": ["py.typed"],
         "checkov.ansible.checks.graph_checks": ["*.yaml"],
+        "checkov.arm.checks.graph_checks": ["*.yaml"],
         "checkov.bicep.checks.graph_checks": ["*.yaml"],
         "checkov.common.util.templates": ["*.jinja2"],
         "checkov.dockerfile.checks.graph_checks": ["*.yaml"],

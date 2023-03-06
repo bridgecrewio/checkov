@@ -1,0 +1,26 @@
+metadata: 
+  id: "CKV2_GCP_20"
+  name: "Ensure MySQL DB instance has point-in-time recovery backup configured"
+  category: "BACKUP_AND_RECOVERY"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types: "google_sql_database_instance"
+      attribute: "settings.backup_configuration.binary_log_enabled"
+      operator: "equals_ignore_case"
+      value: "true"
+
+    - or:
+
+      - cond_type: "attribute"
+        resource_types: "google_sql_database_instance"
+        attribute: "database_version"
+        operator: "starting_with"
+        value: "MYSQL_"
+
+      - cond_type: "attribute"
+        resource_types: "google_sql_database_instance"
+        attribute: "database_version"
+        operator: "starting_with"
+        value: "mysql_"

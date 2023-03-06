@@ -101,6 +101,38 @@ def test_runner_failing_check(graph_connector):
         IgraphConnector,
     ],
 )
+def test_runner_skipping_check(graph_connector):
+    # given
+    test_file = EXAMPLES_DIR / "skip.yml"
+
+    # when
+    report = Runner(db_connector=graph_connector()).run(
+        root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=["CKV_AWS_88", "CKV_AWS_135"])
+    )
+
+    # then
+    summary = report.get_summary()
+
+    assert summary["passed"] == 0
+    assert summary["failed"] == 2
+    assert summary["skipped"] == 2
+    assert summary["parsing_errors"] == 0
+
+    assert {check.check_id for check in report.skipped_checks} == {"CKV_AWS_88", "CKV_AWS_135"}
+
+    check_88 = next(check for check in report.skipped_checks if check.check_id == "CKV_AWS_88")
+    check_135 = next(check for check in report.skipped_checks if check.check_id == "CKV_AWS_135")
+    assert check_88.resource == "tasks.amazon.aws.ec2_instance.Launch ec2 instances 2"
+    assert check_135.resource == "tasks.amazon.aws.ec2_instance.Launch ec2 instances 1"
+
+
+@pytest.mark.parametrize(
+    "graph_connector",
+    [
+        NetworkxConnector,
+        IgraphConnector,
+    ],
+)
 def test_runner_with_flat_tasks(graph_connector):
     # given
     test_file = EXAMPLES_DIR / "tasks.yml"
@@ -172,6 +204,77 @@ def test_runner_with_block(graph_connector):
 
     assert passing_resources == passed_check_resources
     assert failing_resources == failed_check_resources
+
+
+@pytest.mark.parametrize(
+    "graph_connector",
+    [
+        NetworkxConnector,
+        IgraphConnector,
+    ],
+)
+def test_runner_with_nested_blocks(graph_connector):
+    # given
+    test_file = EXAMPLES_DIR / "nested_blocks.yml"
+    checks = ["CKV_ANSIBLE_1", "CKV2_ANSIBLE_3"]
+
+    # when
+    report = Runner(db_connector=graph_connector()).run(
+        root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=checks)
+    )
+
+    # then
+    summary = report.get_summary()
+
+    # if we increase the level of nested block levels for Python checks, then this goes up to 6
+    assert summary["passed"] == 4
+    assert summary["failed"] == 5
+    assert summary["skipped"] == 0
+    assert summary["parsing_errors"] == 0
+
+    passing_resources = {
+        "tasks.ansible.builtin.uri.1st level uri",
+        "tasks.block.ansible.builtin.uri.2nd level uri",
+        "tasks.block.block.ansible.builtin.uri.3rd level uri",
+        "tasks.block.block.block.ansible.builtin.uri.4th level uri",
+    }
+
+    failing_resources = {
+        "block.1st level block",
+        "block.block.2nd level block",
+        "block.block.block.3rd level block",
+        "block.block.block.block.4th level block",
+        "block.block.block.block.block.5th level block",
+    }
+
+    passed_check_resources = {check.resource for check in report.passed_checks}
+    failed_check_resources = {check.resource for check in report.failed_checks}
+
+    assert passing_resources == passed_check_resources
+    assert failing_resources == failed_check_resources
+
+
+@pytest.mark.parametrize(
+    "graph_connector",
+    [
+        NetworkxConnector,
+        IgraphConnector,
+    ],
+)
+def test_runner_with_no_tasks(graph_connector):
+    # given
+    test_file = EXAMPLES_DIR / "no_tasks.yml"
+
+    # when
+    report = Runner(db_connector=graph_connector()).run(root_folder="", files=[str(test_file)])
+
+    # then
+    summary = report.get_summary()
+
+    assert summary["passed"] == 0
+    assert summary["failed"] == 0
+    assert summary["skipped"] == 0
+    assert summary["parsing_errors"] == 0
 
 
 @pytest.mark.parametrize(
