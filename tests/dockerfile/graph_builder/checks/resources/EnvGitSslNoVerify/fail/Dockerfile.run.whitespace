@@ -1,0 +1,12 @@
+FROM alpine:3.15
+RUN TEST_123="456"        GIT_SSL_NO_VERIFY=0  git clone https://github.com/bridgecrewio/checkov.git
+RUN TEST_123='456'        GIT_SSL_NO_VERIFY="0"  git clone https://github.com/bridgecrewio/checkov.git
+RUN TEST_123=456        GIT_SSL_NO_VERIFY='0'  git clone https://github.com/bridgecrewio/checkov.git
+
+RUN TEST_123="456"        GIT_SSL_NO_VERIFY=0      TEST="lol"    git clone https://github.com/bridgecrewio/checkov.git
+RUN TEST_123='456'        GIT_SSL_NO_VERIFY="0"    TEST="lol"    git clone https://github.com/bridgecrewio/checkov.git
+RUN TEST_123=456          GIT_SSL_NO_VERIFY='0'    TEST="lol"    git clone https://github.com/bridgecrewio/checkov.git
+
+RUN GIT_SSL_NO_VERIFY=0      TEST="lol"    git clone https://github.com/bridgecrewio/checkov.git
+RUN GIT_SSL_NO_VERIFY="0"    TEST="lol"    git clone https://github.com/bridgecrewio/checkov.git
+RUN GIT_SSL_NO_VERIFY='0'    TEST="lol"    git clone https://github.com/bridgecrewio/checkov.git

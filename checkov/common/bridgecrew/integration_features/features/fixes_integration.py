@@ -24,7 +24,10 @@ SUPPORTED_FIX_FRAMEWORKS = ['terraform', 'cloudformation']
 class FixesIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration: BcPlatformIntegration) -> None:
         super().__init__(bc_integration=bc_integration, order=10)
-        self.fixes_url = f"{self.bc_integration.api_url}/api/v1/fixes/checkov"
+
+    @property
+    def fixes_url(self) -> str:
+        return f"{self.bc_integration.api_url}/api/v1/fixes/checkov"
 
     def is_valid(self) -> bool:
         return (
@@ -112,7 +115,8 @@ class FixesIntegration(BaseIntegrationFeature):
 
         if request.status != 200:
             error_message = extract_error_message(request)
-            raise Exception(f'Get fixes request failed with response code {request.status}: {error_message}')
+            logging.error(f'Get fixes request for file {filename} failed with response code {request.status}: {error_message} - skipping fixes for this file')
+            return None
 
         logging.debug(f'Response from fixes API: {request.data}')
 

@@ -12,7 +12,11 @@ from checkov.secrets.consts import ValidationStatus
 from checkov.common.bridgecrew.severities import Severity
 
 from checkov.common.output.record import Record
+from checkov.secrets.consts import GIT_HISTORY_NOT_BEEN_REMOVED
 from checkov.common.typing import _CheckResult
+
+COMMIT_ADDED_STR = 'Commit Added'
+COMMIT_REMOVED_STR = 'Commit Removed'
 
 WARNING_SIGN_UNICODE = '\u26a0'
 TEXT_BY_SECRET_VALIDATION_STATUS = {
@@ -51,7 +55,9 @@ class SecretsRecord(Record):
                  details: Optional[List[str]] = None,
                  check_len: int | None = None,
                  definition_context_file_path: Optional[str] = None,
-                 validation_status: Optional[str] = None
+                 validation_status: Optional[str] = None,
+                 added_commit_hash: Optional[str] = None,
+                 removed_commit_hash: Optional[str] = None
                  ):
         super().__init__(check_id=check_id,
                          check_name=check_name,
@@ -80,6 +86,8 @@ class SecretsRecord(Record):
                          definition_context_file_path=definition_context_file_path
                          )
         self.validation_status = validation_status
+        self.added_commit_hash = added_commit_hash
+        self.removed_commit_hash = removed_commit_hash
 
     def to_string(self, compact: bool = False, use_bc_ids: bool = False) -> str:
         processed_record = super().to_string(compact=compact, use_bc_ids=use_bc_ids)
@@ -89,7 +97,35 @@ class SecretsRecord(Record):
             splitted_record = processed_record.split("\n")
             splitted_record.insert(2, validation_status_message)
             processed_record = "\n".join(splitted_record)
+
+        processed_record = self._add_commit_details(processed_record)
         return processed_record
+
+    def _add_commit_details(self, processed_record: str) -> str:
+        if not self.added_commit_hash and not self.is_empty_removed_commit():
+            return processed_record
+        splitted_record = processed_record.split("\n")
+        file_idx = 0
+        file_line = ''
+        for idx, line in enumerate(splitted_record):
+            if line.__contains__('File:'):
+                file_idx = idx
+                file_line = line
+                break
+        added = False
+        if self.added_commit_hash:
+            file_line = file_line + f'; {COMMIT_ADDED_STR}: {self.added_commit_hash}'
+            added = True
+        if self.removed_commit_hash:
+            file_line = file_line + f'; {COMMIT_REMOVED_STR}: {self.removed_commit_hash}'
+            added = True
+        if added:
+            splitted_record[file_idx] = file_line
+            processed_record = "\n".join(splitted_record) + '\n'
+        return processed_record
+
+    def is_empty_removed_commit(self) -> bool:
+        return (not self.removed_commit_hash) or (self.removed_commit_hash == GIT_HISTORY_NOT_BEEN_REMOVED)
 
     def _get_secret_validation_status_message(self) -> str:
         message = None

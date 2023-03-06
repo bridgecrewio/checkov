@@ -98,6 +98,46 @@ def replace_string_value(original_str: Any, str_to_replace: str, replaced_value:
     return string_without_interpolation.replace(str_to_replace, str(replaced_value))
 
 
+def _string_changed_except_interpolation(str_before: str, str_after: str) -> bool:
+    return abs(len(str_before) - len(str_after)) != 3
+
+
+def _find_new_value_for_interpolation(origin_str: str, str_to_replace: str, new_value: str) -> str:
+    """
+    This function checks whether we should escape the interpolated value, to avoid syntax error.
+    Example:
+        origin_str = "${lookup({'a': ${local.protocol1}},\"a\",\"https\")}"
+        If we don't escape local.protocol1, the lookup function will fail, i.e -
+          invalid - ${lookup({'a': local.protocol1},\"a\",\"https\")}
+          valid - ${lookup({'a': 'local.protocol1'},\"a\",\"https\")}
+    Default to return is new_value
+    """
+    try:
+        # First part - checking if not-escaped is valid.
+        not_escaped = origin_str.replace(str_to_replace, new_value)
+        first_evaluated = evaluate_terraform(not_escaped)
+        if _string_changed_except_interpolation(not_escaped, first_evaluated):
+            # checking if the len difference != 3 checks if we didn't only remove the '${}'
+            return new_value
+        second_evaluated = _try_evaluate(first_evaluated)
+        if first_evaluated != second_evaluated and _string_changed_except_interpolation(not_escaped, second_evaluated):
+            return new_value
+
+        # Second part - checking if escaped is valid
+        escaped_new_value = f"'{new_value}'"
+        escaped = origin_str.replace(str_to_replace, escaped_new_value)
+        first_evaluated = evaluate_terraform(escaped)
+        if escaped != first_evaluated and _string_changed_except_interpolation(escaped, first_evaluated):
+            return escaped_new_value
+        second_evaluated = _try_evaluate(first_evaluated)
+        if first_evaluated != second_evaluated:
+            return escaped_new_value
+        else:
+            return new_value
+    except Exception:
+        return new_value
+
+
 def remove_interpolation(original_str: str, var_to_clean: Optional[str] = None, escape_unrendered=True) -> str:
     # get all variable references in string
     # remove from the string all ${} or '${}' occurrences
@@ -122,6 +162,8 @@ def remove_interpolation(original_str: str, var_to_clean: Optional[str] = None, 
                 original_str = original_str[:full_str_start - 1] + block.full_str + original_str[full_str_end + 1:]
                 if escape_unrendered:
                     block.var_only = f"'{block.var_only}'"
+                else:
+                    block.var_only = _find_new_value_for_interpolation(original_str, block.full_str, block.var_only)
             original_str = original_str.replace(block.full_str, block.var_only)
     return original_str
 
@@ -236,9 +278,10 @@ def _handle_for_loop_in_dict(object_to_run_on: str, statement: str, start_expres
     except JSONDecodeError:
         return
     expression = _extract_expression_from_statement(statement, start_expression_idx)
-    if renderer.FOR_EXPRESSION_DICT not in expression:
+    split_expression = expression.replace(' ', '').split(renderer.FOR_EXPRESSION_DICT)
+    if len(split_expression) != 2:
         return
-    k_expression, v_expression = expression.replace(' ', '').split(renderer.FOR_EXPRESSION_DICT)
+    k_expression, v_expression = split_expression
     obj_key = statement.split(' ')[1]
     if k_expression.startswith(f'{obj_key}.'):
         k_expression = k_expression.replace(f'{obj_key}.', '')
@@ -247,7 +290,7 @@ def _handle_for_loop_in_dict(object_to_run_on: str, statement: str, start_expres
         val_to_assign = obj if statement.startswith(f'{renderer.LEFT_CURLY}{renderer.FOR_LOOP} {v_expression}') else evaluate_terraform(v_expression)
         try:
             rendered_result[obj[k_expression]] = val_to_assign
-        except TypeError:
+        except (TypeError, KeyError):
             return
     return json.dumps(rendered_result)
 

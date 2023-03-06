@@ -1,0 +1,21 @@
+metadata:
+  id: CKV2_AZURE_27
+  name: "Ensure Azure AD authentication is enabled for Azure SQL (MSSQL)"
+  category: "GENERAL_SECURITY"
+
+definition:
+  and: 
+
+    - cond_type: attribute
+      resource_types: azurerm_mssql_server
+      attribute: azuread_administrator
+      operator: "exists"
+
+    - cond_type: attribute
+      resource_types: azurerm_mssql_server
+      attribute: azuread_administrator.login_username
+      operator: "number_of_words_not_equals"
+      value: 0
+
+# Checking for condition "number_of_words_not_equals=0" instead of "is_not_empty" because 
+# even whitespaces were getting considered in terraform YAML file
