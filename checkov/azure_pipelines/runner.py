@@ -38,7 +38,7 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
         return file_path.endswith(('azure-pipelines.yml', 'azure-pipelines.yaml'))
 
     def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str],
-                     start_line: int = -1, end_line: int = -1, graph_resource: bool = False) -> str:
+                     start_line: int = -1, end_line: int = -1) -> str:
         if not self.definitions or not isinstance(self.definitions, dict):
             return key
         resource_name: Optional[str] = generate_resource_key_recursive(start_line, end_line, self.definitions[file_path])

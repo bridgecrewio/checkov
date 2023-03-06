@@ -212,8 +212,6 @@ def analyze_multiline_keyword_combinator(
         raw_context: CodeSnippet | None = None,
         value_pattern: dict[Pattern[str], int] | None = None,
         secret_pattern: dict[Pattern[str], int] | None = None,
-        is_added: bool = False,
-        is_removed: bool = False,
         **kwargs: Any,
 ) -> set[PotentialSecret]:
     secrets: set[PotentialSecret] = set()
@@ -228,8 +226,6 @@ def analyze_multiline_keyword_combinator(
             filename=filename,
             line=secret_adjust,
             line_number=line_number,
-            is_added=is_added,
-            is_removed=is_removed,
             kwargs=kwargs
         )
 

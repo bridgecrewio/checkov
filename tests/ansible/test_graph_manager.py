@@ -23,7 +23,7 @@ def test_build_graph_from_definitions():
     )
 
     # then
-    assert len(local_graph.vertices) == 2
+    assert len(local_graph.vertices) == 1
 
     task_idx = local_graph.vertices_by_path_and_name[(test_file, "tasks.amazon.aws.ec2_instance.enabled")]
     task = local_graph.vertices[task_idx]
@@ -32,17 +32,17 @@ def test_build_graph_from_definitions():
     assert task.id == "tasks.amazon.aws.ec2_instance.enabled"
     assert task.source == "Ansible"
     assert task.attributes[CustomAttributes.RESOURCE_TYPE] == "tasks.amazon.aws.ec2_instance"
-    assert task.attributes[START_LINE] == 11
-    assert task.attributes[END_LINE] == 22
+    assert task.attributes[START_LINE] == 7
+    assert task.attributes[END_LINE] == 18
     assert task.config == {
         "name": "public-compute-instance",
         "key_name": "prod-ssh-key",
         "vpc_subnet_id": "subnet-5ca1ab1e",
         "instance_type": "c5.large",
         "security_group": "default",
-        "network": {"assign_public_ip": True, "__startline__": 19, "__endline__": 20},
+        "network": {"assign_public_ip": True, "__startline__": 15, "__endline__": 16},
         "image_id": "ami-123456",
         "ebs_optimized": True,
-        "__startline__": 13,
-        "__endline__": 22,
+        "__startline__": 9,
+        "__endline__": 18,
     }
