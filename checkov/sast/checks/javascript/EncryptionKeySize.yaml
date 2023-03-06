@@ -1,0 +1,27 @@
+metadata:
+  id: CKV3_SAST_23
+  name: Ensure that encryption keys are of size 2048 or higher
+  guidelines: Detected an insufficient key size for DSA. NIST recommends a key size of 2048 or higher.
+  category: sast
+  cwe: "CWE-326: Inadequate Encryption Strength"
+scope:
+  languages:
+    - javascript
+definition:
+  - or:
+      - cond_type: pattern
+        operator: equals
+        value: |
+          require('randombytes');
+          ...
+          randomBytes($KEY_SIZE,...)
+      - cond_type: pattern
+        operator: equals
+        value: |
+          $PACKAGE = require('node-forge');
+          ...
+          $PACKAGE.random.getBytesSync($KEY_SIZE);
+  - cond_type: variable
+    variable: $KEY_SIZE
+    operator: less_than
+    value: 2048

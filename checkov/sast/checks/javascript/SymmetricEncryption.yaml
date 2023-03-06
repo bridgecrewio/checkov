@@ -1,0 +1,23 @@
+metadata:
+  id: CKV3_SAST_24
+  name: Ensure that encryption is not symmetric
+  guidelines: Detect usage of symmetric encryptions in code, The use of
+    asymmetric encryption is preferred.
+  category: sast
+  cwe: "CWE-326: Inadequate Encryption Strength"
+scope:
+  languages:
+    - javascript
+definition:
+  - or:
+      - and:
+        - cond_type: pattern
+          operator: equals
+          value: |
+            $PACKAGE = require('node-forge');
+            ...
+            $PACKAGE.cipher.createCipher($ENCRYPTION,...);
+        - cond_type: variable
+          variable: $ENCRYPTION
+          operator: ('DES|'3DES)
+          value:
