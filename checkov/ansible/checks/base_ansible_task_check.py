@@ -33,12 +33,6 @@ class BaseAnsibleTaskCheck(BaseCheck):
                 f'[?"{module}" != null][]',
                 f'[].tasks[].block[?"{module}" != null][]',
                 f'[].block[?"{module}" != null][]',
-                f'[].tasks[].block[].block[?"{module}" != null][]',
-                f'[].block[].block[?"{module}" != null][]',
-                # in theory, it can be more nested, but let's stop at 3 levels
-                # jmespath lib doesn't support recursive search https://github.com/jmespath/jmespath.py/issues/110
-                f'[].tasks[].block[].block[].block[?"{module}" != null][]',
-                f'[].block[].block[].block[?"{module}" != null][]',
             )
         ]
 

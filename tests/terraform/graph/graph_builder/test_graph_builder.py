@@ -8,7 +8,7 @@ from checkov.terraform.graph_builder.graph_components.block_types import BlockTy
 from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
 from checkov.terraform.graph_manager import TerraformGraphManager
 from checkov.common.graph.graph_builder import CustomAttributes
-from checkov.terraform.modules.module_utils import external_modules_download_path
+from checkov.terraform.parser import external_modules_download_path
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 

@@ -22,7 +22,6 @@ class Block:
         "source",
         "has_dynamic_block",
         "dynamic_attributes",
-        "foreach_attrs"
     )
 
     def __init__(
@@ -35,7 +34,7 @@ class Block:
             id: str = "",
             source: str = "",
             has_dynamic_block: bool = False,
-            dynamic_attributes: dict[str, Any] | None = None
+            dynamic_attributes: dict[str, Any] | None = None,
     ) -> None:
         """
             :param name: unique name given to the block, for example
@@ -91,9 +90,6 @@ class Block:
         if self.breadcrumbs:
             sorted_breadcrumbs = dict(sorted(self.breadcrumbs.items()))
             base_attributes[CustomAttributes.RENDERING_BREADCRUMBS] = sorted_breadcrumbs
-
-        if hasattr(self, 'foreach_attrs'):
-            base_attributes[CustomAttributes.FOREACH_ATTRS] = self.foreach_attrs
 
         if add_hash:
             base_attributes[CustomAttributes.HASH] = calculate_hash(base_attributes)

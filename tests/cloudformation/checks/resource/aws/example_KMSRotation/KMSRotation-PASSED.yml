@@ -1,10 +1,9 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: KMS key example template
 Resources:
-  AsymmetricKey:
+  myKey:
     Type: AWS::KMS::Key
     Properties:
-      KeySpec: RSA_4096
       KeyPolicy:
         Version: '2012-10-17'
         Id: key-default-1
@@ -21,4 +20,3 @@ Resources:
           Action: kms:*
           Resource: '*'
       EnableKeyRotation: true
-  

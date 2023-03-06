@@ -26,8 +26,8 @@ def test_build_graph():
     local_graph.build_graph(render_variables=False)
 
     # then
-    assert len(local_graph.vertices) == 4
-    assert len(local_graph.vertices_by_block_type[BlockType.RESOURCE]) == 4
+    assert len(local_graph.vertices) == 3
+    assert len(local_graph.vertices_by_block_type[BlockType.RESOURCE]) == 3
 
     tasks_ids = [
         vertex.id
@@ -35,7 +35,6 @@ def test_build_graph():
         if vertex.attributes.get(CustomAttributes.RESOURCE_TYPE).startswith(ResourceType.TASKS)
     ]
     assert tasks_ids == [
-        "tasks.amazon.aws.ec2_instance_info.Get Running instance Info",
         "tasks.amazon.aws.ec2_instance.enabled",
         "tasks.uri.Check that you can connect (GET) to a page",
         "tasks.ansible.builtin.get_url.Download foo.conf",

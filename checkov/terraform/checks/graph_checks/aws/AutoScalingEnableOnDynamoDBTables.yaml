@@ -22,18 +22,12 @@ definition:
         connected_resource_types:
           - aws_appautoscaling_policy
         operator: exists
-      - or:
-        - cond_type: attribute
-          resource_types:
-            - aws_dynamodb_table
-          attribute: billing_mode
-          operator: equals
-          value: PROVISIONED
-        - cond_type: attribute
-          resource_types:
-            - aws_dynamodb_table
-          attribute: billing_mode
-          operator: not_exists
+      - cond_type: attribute
+        resource_types:
+          - aws_dynamodb_table
+        attribute: billing_mode
+        operator: equals
+        value: PROVISIONED
       - cond_type: attribute
         resource_types:
           - aws_appautoscaling_target

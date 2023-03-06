@@ -27,12 +27,9 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration: BcPlatformIntegration) -> None:
         super().__init__(bc_integration=bc_integration, order=1)  # must be after policy metadata and before suppression integration
         self.platform_policy_parser = GraphCheckParser()
+        self.policies_url = f"{self.bc_integration.api_url}/api/v1/policies/table/data"
         self.bc_cloned_checks: dict[str, list[dict[str, Any]]] = defaultdict(list)
         self.policy_level_suppression: List[str] = []
-
-    @property
-    def policies_url(self) -> str:
-        return f"{self.bc_integration.api_url}/api/v1/policies/table/data"
 
     def is_valid(self) -> bool:
         return (

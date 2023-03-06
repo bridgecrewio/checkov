@@ -7,9 +7,6 @@ module "s3_module" {
   acl    = "public-read"
 }
 
-module "recursive_module" {
-  source = "./"
-}
 
 resource "aws_s3_bucket" "example" {
   bucket = "example"

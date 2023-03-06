@@ -161,9 +161,6 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
     if any(x in framework_list for x in ("all", "azure_pipelines")):
         add_from_repository(azure_pipelines_registry, "azure_pipelines", "Azure Pipelines")
     if any(x in framework_list for x in ("all", "arm")):
-        graph_registry = get_graph_checks_registry("arm")
-        graph_registry.load_checks()
-        add_from_repository(graph_registry, "resource", "arm")
         add_from_repository(arm_resource_registry, "resource", "arm")
         add_from_repository(arm_parameter_registry, "parameter", "arm")
     if any(x in framework_list for x in ("all", "bicep")):

@@ -26,12 +26,12 @@ def test_simple_attribute_check():
     summary = report.get_summary()
 
     passing_resources = {
-        "jobs(build)",
-        "jobs(scan)",
+        "jobs.build",
+        "jobs.scan",
     }
     failing_resources = {
-        "jobs(attest)",
-        "jobs(provenance)",
+        "jobs.attest",
+        "jobs.provenance",
     }
 
     passed_check_resources = {c.resource for c in report.passed_checks}
@@ -64,8 +64,9 @@ def test_jobs_steps_connection_check():
     # then
     summary = report.get_summary()
 
+
     failing_resources = {
-        "jobs(attest).steps[6](Log in to GHCR)",
+        "jobs.attest.steps.6",
     }
 
     failed_check_resources = {c.resource for c in report.failed_checks}
@@ -98,7 +99,7 @@ def test_on_check():
 
 
     passing_resources = {
-        "on(CI)",
+        "on",
     }
 
     passed_check_resources = {c.resource for c in report.passed_checks}

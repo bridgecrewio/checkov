@@ -51,8 +51,6 @@ class Runner(ObjectRunner):
             start = result_config[0]["__startline__"] - 1
             end = result_config[len(result_config) - 1]["__endline__"]
         elif result_config and isinstance(result_config, dict):
-            if "__startline__" not in result_config or "__endline__" not in result_config:
-                return -1, -1
             start = result_config["__startline__"]
             end = result_config["__endline__"]
         return end, start

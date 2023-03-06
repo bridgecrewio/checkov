@@ -349,10 +349,6 @@ operator: "not_contains"
 value: "vim"
 ```
 
-### ARM
-All resources can be referenced under `resource_types`.
-Currently, no support for connections.
-
 ### Bicep
 All resources can be referenced under `resource_types`.
 Any kind of connection between resources is supported
