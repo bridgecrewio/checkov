@@ -107,7 +107,7 @@ class TestRunnerValid(unittest.TestCase):
             self.assertNotEqual(record.file_path, record.file_abs_path)
             self.assertIn(record.file_path, record.file_abs_path)
             self.assertEqual(record.repo_file_path, f'/{dir_rel_path}{record.file_path}')
-
+    
     @unittest.skipIf(os.name == "nt" or not kustomize_exists(), "kustomize not installed or Windows OS")
     def test_no_file_type_exists(self):
         # test whether the record's repo_file_path is correct, relative to the CWD (with a / at the start).

@@ -61,6 +61,24 @@ class TestYamlPolicies(TestYamlPoliciesBase):
     def test_EnvNodeTlsRejectUnauthorized(self):
         self.go("EnvNodeTlsRejectUnauthorized")
 
+    def test_RunApkAllowUntrusted(self):
+        self.go("RunApkAllowUntrusted")
+
+    def test_RunAptGetAllowUnauthenticated(self):
+        self.go("RunAptGetAllowUnauthenticated")
+    
+    def test_RunYumNoGpgCheck(self):
+        self.go("RunYumNoGpgCheck")
+
+    def test_RunRpmNoSignature(self):
+        self.go("RunRpmNoSignature")
+
+    def test_RunAptGetForceYes(self):
+        self.go("RunAptGetForceYes")
+
+    def test_EnvNpmConfigStrictSsl(self):
+        self.go("EnvNpmConfigStrictSsl")
+
     def test_registry_load(self):
         registry = self.get_checks_registry()
         self.assertGreater(len(registry.checks), 0)

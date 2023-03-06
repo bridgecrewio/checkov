@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 _BaseRunner = TypeVar("_BaseRunner", bound="BaseRunner[Any]")
 
 _ScannerCallableAlias: TypeAlias = Callable[
-    [str, "BaseCheck", "_SkippedCheck", "dict[str, Any]", str, str, "dict[str, Any]"], None
+    [str, "BaseCheck", "list[_SkippedCheck]", "dict[str, Any]", str, str, "dict[str, Any]"], None
 ]
 
 _Resource: TypeAlias = str
@@ -76,6 +76,11 @@ class _ExitCodeThresholds(TypedDict):
     soft_fail_threshold: Severity | None
     hard_fail_checks: list[str]
     hard_fail_threshold: Severity | None
+
+
+class _ScaExitCodeThresholds(TypedDict):
+    LICENSES: _ExitCodeThresholds
+    VULNERABILITIES: _ExitCodeThresholds
 
 
 class _LicenseStatus(TypedDict):

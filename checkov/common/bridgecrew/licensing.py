@@ -16,8 +16,8 @@ class BillingPlan(str, Enum):
 
 
 SubscriptionCategoryMapping = {
-    CustomerSubscription.IAC: (CodeCategoryType.IAC, CodeCategoryType.SUPPLY_CHAIN),
-    CustomerSubscription.SCA: (CodeCategoryType.OPEN_SOURCE, CodeCategoryType.IMAGES),
+    CustomerSubscription.IAC: (CodeCategoryType.IAC, CodeCategoryType.BUILD_INTEGRITY),
+    CustomerSubscription.SCA: (CodeCategoryType.LICENSES, CodeCategoryType.VULNERABILITIES),
     CustomerSubscription.SECRETS: (CodeCategoryType.SECRETS,),
     CustomerSubscription.SAST: (CodeCategoryType.SAST,)
 }
@@ -28,4 +28,4 @@ for sub, cats in SubscriptionCategoryMapping.items():
         CategoryToSubscriptionMapping[cat] = sub
 
 
-open_source_categories = [CodeCategoryType.IAC, CodeCategoryType.SECRETS, CodeCategoryType.SUPPLY_CHAIN, CodeCategoryType.SAST]
+open_source_categories = [CodeCategoryType.IAC, CodeCategoryType.SECRETS, CodeCategoryType.BUILD_INTEGRITY, CodeCategoryType.SAST]

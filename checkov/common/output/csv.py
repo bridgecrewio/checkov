@@ -11,6 +11,7 @@ from checkov.common.models.enums import CheckResult
 from checkov.common.output.common import format_string_to_licenses, is_raw_formatted
 from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME
 from checkov.common.output.report import Report, CheckType
+from checkov.common.util.consts import CHECKOV_DISPLAY_REGISTRY_URL
 
 if TYPE_CHECKING:
     from checkov.common.output.extra_resource import ExtraResource
@@ -25,8 +26,12 @@ HEADER_OSS_PACKAGES = [
     "Git Repository",
     "Vulnerability",
     "Severity",
+    "Description",
     "Licenses",
 ]
+if CHECKOV_DISPLAY_REGISTRY_URL:
+    HEADER_OSS_PACKAGES.append("Registry URL")
+
 HEADER_CONTAINER_IMAGE = HEADER_OSS_PACKAGES
 FILE_NAME_CONTAINER_IMAGES = f"{date_now}_container_images.csv"
 
@@ -86,9 +91,14 @@ class CSVSBOM:
                 "Git Repository": git_repository,
                 "Vulnerability": resource.vulnerability_details.get("id"),
                 "Severity": severity,
+                "Description": resource.vulnerability_details.get("description"),
                 "Licenses": resource.vulnerability_details.get("licenses"),
             }
         )
+
+        registry_url = resource.vulnerability_details.get("package_registry")
+        if CHECKOV_DISPLAY_REGISTRY_URL:
+            csv_table[check_type][-1]["Registry URL"] = registry_url
 
     def add_iac_resources(self, resource: Record | ExtraResource, git_org: str, git_repository: str) -> None:
         resource_id = f"{git_org}/{git_repository}/{resource.file_path}/{resource.resource}"
@@ -199,6 +209,8 @@ class CSVSBOM:
                 field = row[header] if row[header] else ''
                 if header == 'Package':
                     csv_output += f'\"{field}\"'
+                elif header == 'Description':
+                    csv_output += f',\"{field}\"'
                 elif header == 'Licenses':
                     field = str(field).replace('","', ", ")
                     field = field[1:-1] if field.startswith('"') and field.endswith('"') else field

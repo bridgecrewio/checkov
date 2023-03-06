@@ -1,7 +1,7 @@
 {
   "breadcrumbs": {
     "depend_resources/main.tf": {
-      "aws_s3_bucket.foreach_map[bucket_a]": {
+      "aws_s3_bucket.foreach_map[\"bucket_a\"]": {
         "location": [
           {
             "type": "variable",
@@ -11,7 +11,7 @@
           }
         ]
       },
-      "aws_s3_bucket.foreach_map[bucket_b]": {
+      "aws_s3_bucket.foreach_map[\"bucket_b\"]": {
         "location": [
           {
             "type": "variable",
@@ -55,39 +55,37 @@
       "resource": [
         {
           "aws_s3_bucket": {
-            "foreach_map[bucket_a]": {
+            "foreach_map[\"bucket_a\"]": {
               "__end_line__": 6,
               "__start_line__": 1,
               "location": [
                 "test"
               ],
               "name": [
-                "us-west-2"
-              ],
-              "region": [
                 "bucket_a"
               ],
-              "foreach_attrs": ["name", "region"],
-              "__address__": "aws_s3_bucket.foreach_map[bucket_a]"
+              "region": [
+                "us-west-2"
+              ],
+              "__address__": "aws_s3_bucket.foreach_map[\"bucket_a\"]"
             }
           }
         },
         {
           "aws_s3_bucket": {
-            "foreach_map[bucket_b]": {
+            "foreach_map[\"bucket_b\"]": {
               "__end_line__": 6,
               "__start_line__": 1,
               "location": [
                 "test"
               ],
               "name": [
-                "us-east-2"
-              ],
-              "region": [
                 "bucket_b"
               ],
-              "foreach_attrs": ["name", "region"],
-              "__address__": "aws_s3_bucket.foreach_map[bucket_b]"
+              "region": [
+                "us-east-2"
+              ],
+              "__address__": "aws_s3_bucket.foreach_map[\"bucket_b\"]"
             }
           }
         }

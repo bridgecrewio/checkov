@@ -29,7 +29,9 @@ checkov_runners = [value for attr, value in CheckType.__dict__.items() if not at
 # pycharm gives false positive "unresolved reference" - ignore https://youtrack.jetbrains.com/issue/PY-36205
 module_keys = [e.value for e in CustomerSubscription]
 
-runner_to_subscription_map = {runner: CategoryToSubscriptionMapping.get(CodeCategoryMapping[runner]) for runner in checkov_runners}
+runner_to_subscription_map = {runner: CategoryToSubscriptionMapping.get(CodeCategoryMapping[runner]) for runner in checkov_runners if 'sca_' not in runner}
+runner_to_subscription_map['sca_package'] = CustomerSubscription.SCA
+runner_to_subscription_map['sca_image'] = CustomerSubscription.SCA
 subscription_to_runner_map = {CustomerSubscription(sub): [runner for runner in checkov_runners if runner_to_subscription_map.get(runner) == CustomerSubscription(sub)] for sub in module_keys}
 
 
@@ -47,44 +49,44 @@ class TestLicensingIntegration(unittest.TestCase):
             'sast_java', 'sast_javascript', '3d_policy'
         })
 
-        self.assertEqual(SubscriptionCategoryMapping.get(CustomerSubscription.IAC), (CodeCategoryType.IAC, CodeCategoryType.SUPPLY_CHAIN))
-        self.assertEqual(SubscriptionCategoryMapping.get(CustomerSubscription.SCA), (CodeCategoryType.OPEN_SOURCE, CodeCategoryType.IMAGES))
+        self.assertEqual(SubscriptionCategoryMapping.get(CustomerSubscription.IAC), (CodeCategoryType.IAC, CodeCategoryType.BUILD_INTEGRITY))
+        self.assertEqual(SubscriptionCategoryMapping.get(CustomerSubscription.SCA), (CodeCategoryType.LICENSES, CodeCategoryType.VULNERABILITIES))
         self.assertEqual(SubscriptionCategoryMapping.get(CustomerSubscription.SECRETS), (CodeCategoryType.SECRETS,))
         self.assertEqual(SubscriptionCategoryMapping.get(CustomerSubscription.SAST), (CodeCategoryType.SAST,))
 
         self.assertEqual(CategoryToSubscriptionMapping[CodeCategoryType.IAC], CustomerSubscription.IAC)
-        self.assertEqual(CategoryToSubscriptionMapping[CodeCategoryType.SUPPLY_CHAIN], CustomerSubscription.IAC)
-        self.assertEqual(CategoryToSubscriptionMapping[CodeCategoryType.OPEN_SOURCE], CustomerSubscription.SCA)
-        self.assertEqual(CategoryToSubscriptionMapping[CodeCategoryType.IMAGES], CustomerSubscription.SCA)
+        self.assertEqual(CategoryToSubscriptionMapping[CodeCategoryType.BUILD_INTEGRITY], CustomerSubscription.IAC)
+        self.assertEqual(CategoryToSubscriptionMapping[CodeCategoryType.LICENSES], CustomerSubscription.SCA)
+        self.assertEqual(CategoryToSubscriptionMapping[CodeCategoryType.VULNERABILITIES], CustomerSubscription.SCA)
         self.assertEqual(CategoryToSubscriptionMapping[CodeCategoryType.SECRETS], CustomerSubscription.SECRETS)
         self.assertEqual(CategoryToSubscriptionMapping[CodeCategoryType.SAST], CustomerSubscription.SAST)
 
-        self.assertEqual(CodeCategoryMapping.get(CheckType.BITBUCKET_PIPELINES), CodeCategoryType.SUPPLY_CHAIN)
-        self.assertEqual(CodeCategoryMapping.get(CheckType.CIRCLECI_PIPELINES), CodeCategoryType.SUPPLY_CHAIN)
+        self.assertEqual(CodeCategoryMapping.get(CheckType.BITBUCKET_PIPELINES), CodeCategoryType.BUILD_INTEGRITY)
+        self.assertEqual(CodeCategoryMapping.get(CheckType.CIRCLECI_PIPELINES), CodeCategoryType.BUILD_INTEGRITY)
         self.assertEqual(CodeCategoryMapping.get(CheckType.ANSIBLE), CodeCategoryType.IAC)
         self.assertEqual(CodeCategoryMapping.get(CheckType.ARM), CodeCategoryType.IAC)
-        self.assertEqual(CodeCategoryMapping.get(CheckType.AZURE_PIPELINES), CodeCategoryType.SUPPLY_CHAIN)
+        self.assertEqual(CodeCategoryMapping.get(CheckType.AZURE_PIPELINES), CodeCategoryType.BUILD_INTEGRITY)
         self.assertEqual(CodeCategoryMapping.get(CheckType.BICEP), CodeCategoryType.IAC)
         self.assertEqual(CodeCategoryMapping.get(CheckType.CLOUDFORMATION), CodeCategoryType.IAC)
         self.assertEqual(CodeCategoryMapping.get(CheckType.DOCKERFILE), CodeCategoryType.IAC)
-        self.assertEqual(CodeCategoryMapping.get(CheckType.GITHUB_CONFIGURATION), CodeCategoryType.SUPPLY_CHAIN)
-        self.assertEqual(CodeCategoryMapping.get(CheckType.GITHUB_ACTIONS), CodeCategoryType.SUPPLY_CHAIN)
-        self.assertEqual(CodeCategoryMapping.get(CheckType.GITLAB_CONFIGURATION), CodeCategoryType.SUPPLY_CHAIN)
-        self.assertEqual(CodeCategoryMapping.get(CheckType.GITLAB_CI), CodeCategoryType.SUPPLY_CHAIN)
-        self.assertEqual(CodeCategoryMapping.get(CheckType.BITBUCKET_CONFIGURATION), CodeCategoryType.SUPPLY_CHAIN)
+        self.assertEqual(CodeCategoryMapping.get(CheckType.GITHUB_CONFIGURATION), CodeCategoryType.BUILD_INTEGRITY)
+        self.assertEqual(CodeCategoryMapping.get(CheckType.GITHUB_ACTIONS), CodeCategoryType.BUILD_INTEGRITY)
+        self.assertEqual(CodeCategoryMapping.get(CheckType.GITLAB_CONFIGURATION), CodeCategoryType.BUILD_INTEGRITY)
+        self.assertEqual(CodeCategoryMapping.get(CheckType.GITLAB_CI), CodeCategoryType.BUILD_INTEGRITY)
+        self.assertEqual(CodeCategoryMapping.get(CheckType.BITBUCKET_CONFIGURATION), CodeCategoryType.BUILD_INTEGRITY)
         self.assertEqual(CodeCategoryMapping.get(CheckType.HELM), CodeCategoryType.IAC)
         self.assertEqual(CodeCategoryMapping.get(CheckType.JSON), CodeCategoryType.IAC)
         self.assertEqual(CodeCategoryMapping.get(CheckType.YAML), CodeCategoryType.IAC)
         self.assertEqual(CodeCategoryMapping.get(CheckType.KUBERNETES), CodeCategoryType.IAC)
         self.assertEqual(CodeCategoryMapping.get(CheckType.KUSTOMIZE), CodeCategoryType.IAC)
         self.assertEqual(CodeCategoryMapping.get(CheckType.OPENAPI), CodeCategoryType.IAC)
-        self.assertEqual(CodeCategoryMapping.get(CheckType.SCA_PACKAGE), CodeCategoryType.OPEN_SOURCE)
-        self.assertEqual(CodeCategoryMapping.get(CheckType.SCA_IMAGE), CodeCategoryType.IMAGES)
+        self.assertEqual(CodeCategoryMapping.get(CheckType.SCA_PACKAGE), [CodeCategoryType.LICENSES, CodeCategoryType.VULNERABILITIES])
+        self.assertEqual(CodeCategoryMapping.get(CheckType.SCA_IMAGE), [CodeCategoryType.LICENSES, CodeCategoryType.VULNERABILITIES])
         self.assertEqual(CodeCategoryMapping.get(CheckType.SECRETS), CodeCategoryType.SECRETS)
         self.assertEqual(CodeCategoryMapping.get(CheckType.SERVERLESS), CodeCategoryType.IAC)
         self.assertEqual(CodeCategoryMapping.get(CheckType.TERRAFORM), CodeCategoryType.IAC)
         self.assertEqual(CodeCategoryMapping.get(CheckType.TERRAFORM_PLAN), CodeCategoryType.IAC)
-        self.assertEqual(CodeCategoryMapping.get(CheckType.ARGO_WORKFLOWS), CodeCategoryType.SUPPLY_CHAIN)
+        self.assertEqual(CodeCategoryMapping.get(CheckType.ARGO_WORKFLOWS), CodeCategoryType.BUILD_INTEGRITY)
         self.assertEqual(CodeCategoryMapping.get(CheckType.SAST), CodeCategoryType.SAST)
 
         self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.BITBUCKET_PIPELINES), CustomerSubscription.IAC)
@@ -115,7 +117,7 @@ class TestLicensingIntegration(unittest.TestCase):
         self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.ARGO_WORKFLOWS), CustomerSubscription.IAC)
         self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.SAST), CustomerSubscription.SAST)
 
-        self.assertEqual(open_source_categories, [CodeCategoryType.IAC, CodeCategoryType.SECRETS, CodeCategoryType.SUPPLY_CHAIN, CodeCategoryType.SAST])
+        self.assertEqual(open_source_categories, [CodeCategoryType.IAC, CodeCategoryType.SECRETS, CodeCategoryType.BUILD_INTEGRITY, CodeCategoryType.SAST])
 
     def test_integration_valid(self):
         instance = BcPlatformIntegration()
