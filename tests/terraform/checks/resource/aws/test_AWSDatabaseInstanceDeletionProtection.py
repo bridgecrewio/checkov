@@ -2,7 +2,7 @@ import unittest
 
 import hcl2
 
-from checkov.terraform.checks.resource.aws.RDSDeletionProtection import check
+from checkov.terraform.checks.resource.aws.RDSInstanceDeletionProtection import check
 from checkov.common.models.enums import CheckResult
 
 
