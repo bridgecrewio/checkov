@@ -1,0 +1,32 @@
+metadata:
+  id: CKV3_SAST_22
+  name: 'Ensure trust boundary is not violated'
+  guidelines: 'A trust boundary can be thought of as line drawn through a program. On one side
+    of the line, data is untrusted. On the other side of the line, data is assumed
+    to be trustworthy. The purpose of validation logic is to allow data to safely
+    cross the trust boundary - to move from untrusted to trusted. A trust boundary
+    violation occurs when a program blurs the line between what is trusted and what
+    is untrusted. By combining trusted and untrusted data in the same data
+    structure, it becomes easier for programmers to mistakenly trust unvalidated
+    data.'
+  category: 'sast'
+  cwe: "CWE-501: Trust Boundary Violation"
+scope:
+  languages:
+    - java
+definition:
+  - or:
+    - and:
+      - cond_type: "pattern"
+        operator: "equals"
+        value: (HttpServletRequest $H). ... .setAttribute($ARG1, $ARG2);
+      - cond_type: "pattern"
+        operator: "not_equals"
+        value: "(HttpServletRequest $H). ... .setAttribute(\"...\", \"...\");"
+    - and:
+      - cond_type: "pattern"
+        operator: "equals"
+        value: (HttpServletRequest $H). ... .putValue($ARG1, $ARG2);
+      - cond_type: "pattern"
+        operator: "not_equals"
+        value: "(HttpServletRequest $H). ... .putValue(\"...\", \"...\");"

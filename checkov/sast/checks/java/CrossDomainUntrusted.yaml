@@ -1,0 +1,35 @@
+metadata:
+  id: CKV3_SAST_14
+  name: 'Ensure CORS is not enabled'
+  guidelines: 'Prior to HTML5, Web browsers enforced the Same Origin Policy which ensures that in order for
+    JavaScript to access the contents of a Web page, both the JavaScript and the Web page must
+    originate from the same domain. Without the Same Origin Policy, a malicious website could serve
+    up JavaScript that loads sensitive information from other websites using client
+    credentials, cull through it, and communicate it back to the attacker. HTML5 makes it possible
+    for JavaScript to access data across domains if a new HTTP header called
+    Access-Control-Allow-Origin is defined. With this header, a Web server defines which other
+    domains are allowed to access its domain using cross-origin requests. However, caution should
+    be taken when defining the header because an overly permissive CORS policy will allow a
+    malicious application to communicate with the victim application in an inappropriate way,
+    leading to spoofing, data theft, relay and other attacks.'
+  category: 'sast'
+  cwe: "CWE-942: Permissive Cross-domain Policy with Untrusted Domains"
+scope:
+  languages:
+    - java
+definition:
+  - or:
+    - cond_type: "pattern"
+      operator: "equals"
+      value: (HttpServletResponse $RES).setHeader("$HEADER", "$VAL")
+    - cond_type: "pattern"
+      operator: "equals"
+      value: (HttpServletResponse $RES).addHeader("$HEADER", "$VAL")
+  - cond_type: "variable"
+    variable: "$HEADER"
+    operator: "regex_match"
+    value: "(?i)(Access-Control-Allow-Origin)"
+  - cond_type: "variable"
+    variable: "$VAL"
+    operator: "regex_match"
+    value: "(\\*|null)"
