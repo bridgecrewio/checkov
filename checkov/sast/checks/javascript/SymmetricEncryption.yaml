@@ -17,7 +17,9 @@ definition:
             $PACKAGE = require('node-forge');
             ...
             $PACKAGE.cipher.createCipher($ENCRYPTION,...);
-        - cond_type: variable
-          variable: $ENCRYPTION
-          operator: ('DES|'3DES)
-          value:
+        - cond_type: "variable"
+          variable: "$ENCRYPTION"
+          operator: "regex_match"
+          value: "('DES|'3DES)"
+
+
