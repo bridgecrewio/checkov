@@ -17,8 +17,7 @@ from checkov.terraform.module_loading.content import ModuleContent
 from checkov.terraform.module_loading.module_finder import load_tf_modules
 from checkov.terraform.module_loading.registry import module_loader_registry as default_ml_registry, \
     ModuleLoaderRegistry
-from checkov.common.util.parser_utils import get_tf_definition_key_from_module_dependency, \
-    TERRAFORM_NESTED_MODULE_PATH_ENDING, is_acceptable_module_param
+from checkov.common.util.parser_utils import is_acceptable_module_param
 from checkov.terraform.modules.module_utils import load_or_die_quietly, safe_index, \
     remove_module_dependency_from_path, get_module_dependency_map_support_nested_modules, \
     clean_parser_types, serialize_definitions
@@ -39,7 +38,6 @@ class TFParser:
         self.external_modules_source_map: Dict[Tuple[str, str], str] = {}
         self.module_address_map: Dict[Tuple[str, str], str] = {}
         self.loaded_files_map = {}
-        self._loaded_modules: Set[Tuple[str, int, str]] = set()
         self.external_variables_data = []
 
     def _init(self, directory: str,
@@ -151,9 +149,7 @@ class TFParser:
         for file, data in sorted(files_to_data, key=lambda x: x[0]):
             if not data:
                 continue
-            # out_definition_key = self.get_out_definitions_key(data, file, directory)
-            # TODO - use it as a key for the new model
-            self.out_definitions[file] = data
+            self.out_definitions[TFDefinitionKey(file)] = data
             self.add_external_vars_from_data(data, file)
 
         force_final_module_load = False
@@ -202,7 +198,6 @@ class TFParser:
                       keys_referenced_as_modules: Set[str], ignore_unresolved_params: bool = False,
                       nested_modules_data=None) -> bool:
         all_module_definitions = {}
-        all_module_evaluations_context = {}
         skipped_a_module = False
         for file in list(self.out_definitions.keys()):
             if not self.should_loaded_file(file, root_dir):
@@ -215,7 +210,7 @@ class TFParser:
             if not module_calls or not isinstance(module_calls, list):
                 continue
 
-            for module_index, module_call in enumerate(module_calls):
+            for module_call in module_calls:
                 if not isinstance(module_call, dict):
                     continue
 
@@ -224,7 +219,7 @@ class TFParser:
                         continue
 
                     file_key = self.get_file_key_with_nested_data(file, nested_modules_data)
-                    current_nested_data = (file_key, module_index, module_call_name)
+                    current_nested_data = (file_key, module_call_name)
                     resolved_loc_list = []
                     if current_nested_data in self.module_to_resolved:
                         resolved_loc_list = self.module_to_resolved[current_nested_data]
@@ -236,9 +231,6 @@ class TFParser:
                     if skipped_a_module:
                         continue
 
-                    module_address = (file, module_index, module_call_name)
-                    self._loaded_modules.add(module_address)
-
                     version = self.get_module_version(module_call_data)
                     source = self.get_module_source(module_call_data, module_call_name, file)
                     if not source:
@@ -248,7 +240,7 @@ class TFParser:
                         content_path = self.get_content_path(module_loader_registry, root_dir, source, version)
                         if not content_path:
                             continue
-                        new_nested_modules_data = {'module_index': module_index, 'file': file, 'nested_modules_data': nested_modules_data}
+                        new_nested_modules_data = {'module_name': module_call_name, 'file': file, 'nested_modules_data': nested_modules_data}
                         self._internal_dir_load(
                             directory=content_path,
                             module_loader_registry=module_loader_registry,
@@ -260,7 +252,7 @@ class TFParser:
                         module_definitions = {
                             path: definition
                             for path, definition in self.out_definitions.items()
-                            if self.get_dirname(path) == content_path
+                            if self.get_dirname(path) == content_path and not path.tf_source_modules
                         }
                         if not module_definitions:
                             continue
@@ -270,7 +262,7 @@ class TFParser:
                             if not self.should_process_key(key, file):
                                 continue
                             keys_referenced_as_modules.add(key)
-                            new_key = self.get_new_nested_module_key(key, file, module_index, nested_modules_data)
+                            new_key = self.get_new_nested_module_key(key, file, module_call_name, nested_modules_data)
                             if new_key in self.visited_definition_keys:
                                 del module_definitions[key]
                                 del self.out_definitions[key]
@@ -284,9 +276,6 @@ class TFParser:
                             self.visited_definition_keys.add(new_key)
                             if new_key not in resolved_loc_list:
                                 resolved_loc_list.append(new_key)
-                            if (file, module_call_name) not in self.module_address_map:
-                                self.module_address_map[(file, module_call_name)] = str(module_index)
-                        resolved_loc_list.sort()
 
                         if all_module_definitions:
                             deep_merge.merge(all_module_definitions, module_definitions)
@@ -299,8 +288,6 @@ class TFParser:
 
         if all_module_definitions:
             deep_merge.merge(self.out_definitions, all_module_definitions)
-        if all_module_evaluations_context:
-            deep_merge.merge(self.out_evaluations_context, all_module_evaluations_context)
         return skipped_a_module
 
     def parse_hcl_module(
@@ -342,17 +329,25 @@ class TFParser:
 
     def _update_resolved_modules(self) -> None:
         for key in list(self.module_to_resolved.keys()):
-            file_key, module_index, module_name = key
+            file_key, module_name = key
             if file_key in self.keys_to_remove:
                 for path in self.module_to_resolved[key]:
                     self._remove_unused_path_recursive(path)
                 self.module_to_resolved.pop(key, None)
 
         for key, resolved_list in self.module_to_resolved.items():
-            file_key, module_index, module_name = key
+            file_key, module_name = key
             if file_key not in self.out_definitions:
                 continue
-            self.out_definitions[file_key]['module'][module_index][module_name][RESOLVED_MODULE_ENTRY_NAME] = resolved_list
+
+            idx = self.get_idx_by_module_name(self.out_definitions[file_key]['module'], module_name)
+            self.out_definitions[file_key]['module'][idx][module_name][RESOLVED_MODULE_ENTRY_NAME] = resolved_list
+
+    @staticmethod
+    def get_idx_by_module_name(module_data_list: list[dict[str, Any]], module_name):
+        for idx, module_data in enumerate(module_data_list):
+            if module_name in module_data:
+                return idx
 
     def parse_hcl_module_from_tf_definitions(
         self,
@@ -379,22 +374,22 @@ class TFParser:
                     logging.warning(e, exc_info=False)
         return module, tf_definitions
 
-    def get_file_key_with_nested_data(self, file: str, nested_data: Optional[dict[str, Any]]) -> str:
+    def get_file_key_with_nested_data(self, file: TFDefinitionKey, nested_data: Optional[dict[str, Any]]) -> TFDefinitionKey:
         if not nested_data:
             return file
         nested_str = self.get_file_key_with_nested_data(nested_data.get("file"), nested_data.get('nested_modules_data'))
-        nested_module_index = nested_data.get('module_index')
-        return get_tf_definition_key_from_module_dependency(file, nested_str, nested_module_index)
+        nested_module_name = nested_data.get('module_name')
+        return get_tf_definition_object_from_module_dependency(file, nested_str, nested_module_name)
 
-    def get_new_nested_module_key(self, key: str, file: str, module_index: str, nested_data: Optional[dict[str, Any]]) -> str:
+    def get_new_nested_module_key(self, key: TFDefinitionKey, file: TFDefinitionKey, module_name: str, nested_data: Optional[dict[str, Any]]) -> TFDefinitionKey:
         if not nested_data:
-            return get_tf_definition_key_from_module_dependency(key, file, module_index)
-        visited_key_to_add = get_tf_definition_key_from_module_dependency(key, file, module_index)
+            return get_tf_definition_object_from_module_dependency(key, file, module_name)
+        visited_key_to_add = get_tf_definition_object_from_module_dependency(key, file, module_name)
         self.visited_definition_keys.add(visited_key_to_add)
-        nested_key = self.get_new_nested_module_key('', nested_data.get('file'),
-                                                    nested_data.get('module_index'),
+        nested_key = self.get_new_nested_module_key(file, nested_data.get('file'),
+                                                    nested_data.get('module_name'),
                                                     nested_data.get('nested_modules_data'))
-        return get_tf_definition_key_from_module_dependency(key, f"{file}{nested_key}", module_index)
+        return get_tf_definition_object_from_module_dependency(key, nested_key, module_name)
 
     def add_tfvars(self, module: Module, source: str) -> None:
         if not self.external_variables_data:
@@ -413,13 +408,8 @@ class TFParser:
             self.dirname_cache[path] = dirname_path
         return dirname_path
 
-    def should_loaded_file(self, file: str | TFDefinitionKey, root_dir: str) -> bool:
-        if self.get_dirname(file) != root_dir:
-            return False
-        tf_key_file = file.file_path if isinstance(file, TFDefinitionKey) else None
-        if tf_key_file and tf_key_file.endswith(TERRAFORM_NESTED_MODULE_PATH_ENDING):
-            return False
-        return True
+    def should_loaded_file(self, file: TFDefinitionKey, root_dir: str) -> bool:
+        return not self.get_dirname(file) != root_dir
 
     def get_module_source(self, module_call_data: dict[str, Any], module_call_name: str, file: str) -> Optional[str]:
         source = module_call_data.get("source")
@@ -509,12 +499,8 @@ class TFParser:
         return version
 
     @staticmethod
-    def should_process_key(key: str | TFDefinitionKey, file: str | TFDefinitionKey) -> bool:
-        key_to_str = key.file_path if isinstance(key, TFDefinitionKey) else key
-        file_to_str = file.file_path if isinstance(file, TFDefinitionKey) else file
-        if key_to_str.endswith(TERRAFORM_NESTED_MODULE_PATH_ENDING) or file_to_str.endswith(TERRAFORM_NESTED_MODULE_PATH_ENDING):
-            return False
-        return True
+    def should_process_key(key: TFDefinitionKey, file: TFDefinitionKey) -> bool:
+        return not key.tf_source_modules or file.tf_source_modules
 
     @staticmethod
     def is_valid_source(source: Any, module_call_name: str) -> bool:
@@ -536,14 +522,7 @@ class TFParser:
                     break
             if has_unresolved_params:
                 return True
-
-    @staticmethod
-    def get_out_definitions_key(data: dict[str, Any], file: str, directory: str) -> TFDefinitionKey:
-        m_data = data.get('module')
-        if m_data and isinstance(m_data, list) and len(m_data) == 1:
-            return TFDefinitionKey(file, TFModule(directory, list(m_data[0].keys())[0]))
-        else:
-            return TFDefinitionKey(file)
+        return False
 
     @staticmethod
     def get_content_path(module_loader_registry: ModuleLoaderRegistry, root_dir: str, source: str, version: str) -> Optional[str]:
@@ -568,3 +547,15 @@ class TFParser:
             external_modules_source_map=external_modules_source_map,
             dep_index_mapping=dep_index_mapping
         )
+
+
+def is_nested_object(full_path: TFDefinitionKey) -> bool:
+    return True if full_path.tf_source_modules else False
+
+
+def get_tf_definition_object_from_module_dependency(path: TFDefinitionKey, module_dependency: TFDefinitionKey, module_dependency_name: str) -> TFDefinitionKey:
+    if not module_dependency:
+        return path
+    if not is_nested_object(module_dependency):
+        return TFDefinitionKey(path.file_path, TFModule(path=module_dependency.file_path, name=module_dependency_name))
+    return TFDefinitionKey(path.file_path, TFModule(path=module_dependency.file_path, name=module_dependency_name, nested_tf_module=module_dependency.tf_source_modules))
