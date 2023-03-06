@@ -38,7 +38,6 @@ class TFParser:
         self.external_modules_source_map: Dict[Tuple[str, str], str] = {}
         self.module_address_map: Dict[Tuple[str, str], str] = {}
         self.loaded_files_map = {}
-        self._loaded_modules: Set[Tuple[str, int, str]] = set()
         self.external_variables_data = []
 
     def _init(self, directory: str,
@@ -232,9 +231,6 @@ class TFParser:
                     if skipped_a_module:
                         continue
 
-                    module_address = (file, module_index, module_call_name)
-                    self._loaded_modules.add(module_address)
-
                     version = self.get_module_version(module_call_data)
                     source = self.get_module_source(module_call_data, module_call_name, file)
                     if not source:
@@ -244,7 +240,7 @@ class TFParser:
                         content_path = self.get_content_path(module_loader_registry, root_dir, source, version)
                         if not content_path:
                             continue
-                        new_nested_modules_data = {'module_index': module_index, 'file': file, 'nested_modules_data': nested_modules_data}
+                        new_nested_modules_data = {'module_name': module_call_name, 'file': file, 'nested_modules_data': nested_modules_data}
                         self._internal_dir_load(
                             directory=content_path,
                             module_loader_registry=module_loader_registry,
@@ -266,7 +262,7 @@ class TFParser:
                             if not self.should_process_key(key, file):
                                 continue
                             keys_referenced_as_modules.add(key)
-                            new_key = self.get_new_nested_module_key(key, file, module_index, nested_modules_data)
+                            new_key = self.get_new_nested_module_key(key, file, module_call_name, nested_modules_data)
                             if new_key in self.visited_definition_keys:
                                 del module_definitions[key]
                                 del self.out_definitions[key]
@@ -280,12 +276,6 @@ class TFParser:
                             self.visited_definition_keys.add(new_key)
                             if new_key not in resolved_loc_list:
                                 resolved_loc_list.append(new_key)
-                            if (file, module_call_name) not in self.module_address_map:
-                                self.module_address_map[(file, module_call_name)] = str(module_index)
-                        try:
-                            resolved_loc_list.sort()
-                        except TypeError:
-                            pass
 
                         if all_module_definitions:
                             deep_merge.merge(all_module_definitions, module_definitions)
@@ -376,22 +366,22 @@ class TFParser:
                     logging.warning(e, exc_info=False)
         return module, tf_definitions
 
-    def get_file_key_with_nested_data(self, file: str, nested_data: Optional[dict[str, Any]]) -> str:
+    def get_file_key_with_nested_data(self, file: TFDefinitionKey, nested_data: Optional[dict[str, Any]]) -> TFDefinitionKey:
         if not nested_data:
             return file
         nested_str = self.get_file_key_with_nested_data(nested_data.get("file"), nested_data.get('nested_modules_data'))
-        nested_module_index = nested_data.get('module_index')
-        return get_tf_definition_object_from_module_dependency(file, nested_str, nested_module_index)
+        nested_module_name = nested_data.get('module_name')
+        return get_tf_definition_object_from_module_dependency(file, nested_str, nested_module_name)
 
-    def get_new_nested_module_key(self, key: str, file: str, module_index: int, nested_data: Optional[dict[str, Any]]) -> str:
+    def get_new_nested_module_key(self, key: TFDefinitionKey, file: TFDefinitionKey, module_name: str, nested_data: Optional[dict[str, Any]]) -> TFDefinitionKey:
         if not nested_data:
-            return get_tf_definition_object_from_module_dependency(key, file, module_index)
-        visited_key_to_add = get_tf_definition_object_from_module_dependency(key, file, module_index)
+            return get_tf_definition_object_from_module_dependency(key, file, module_name)
+        visited_key_to_add = get_tf_definition_object_from_module_dependency(key, file, module_name)
         self.visited_definition_keys.add(visited_key_to_add)
         nested_key = self.get_new_nested_module_key(file, nested_data.get('file'),
-                                                    nested_data.get('module_index'),
+                                                    nested_data.get('module_name'),
                                                     nested_data.get('nested_modules_data'))
-        return get_tf_definition_object_from_module_dependency(key, nested_key, module_index)
+        return get_tf_definition_object_from_module_dependency(key, nested_key, module_name)
 
     def add_tfvars(self, module: Module, source: str) -> None:
         if not self.external_variables_data:
@@ -555,9 +545,9 @@ def is_nested_object(full_path: TFDefinitionKey) -> bool:
     return True if full_path.tf_source_modules else False
 
 
-def get_tf_definition_object_from_module_dependency(path: TFDefinitionKey, module_dependency: TFDefinitionKey, module_dependency_num: int) -> TFDefinitionKey:
+def get_tf_definition_object_from_module_dependency(path: TFDefinitionKey, module_dependency: TFDefinitionKey, module_dependency_name: str) -> TFDefinitionKey:
     if not module_dependency:
         return path
     if not is_nested_object(module_dependency):
-        return TFDefinitionKey(path.file_path, TFModule(path=module_dependency.file_path, index=module_dependency_num))
-    return TFDefinitionKey(path.file_path, TFModule(path=module_dependency.file_path, index=module_dependency_num, nested_tf_module=module_dependency.tf_source_modules))
+        return TFDefinitionKey(path.file_path, TFModule(path=module_dependency.file_path, name=module_dependency_name))
+    return TFDefinitionKey(path.file_path, TFModule(path=module_dependency.file_path, name=module_dependency_name, nested_tf_module=module_dependency.tf_source_modules))

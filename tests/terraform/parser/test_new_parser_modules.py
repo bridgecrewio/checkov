@@ -49,17 +49,17 @@ class TestParserInternals(unittest.TestCase):
 
         assert TFDefinitionKey(file_path=expected_main_file) in out_definitions
 
-        assert TFDefinitionKey(file_path=f"{expected_inner_remote_module_path}/auto_values.tf", tf_source_modules=TFModule(index=0, path=expected_main_file)) in out_definitions
-        assert TFDefinitionKey(file_path=f"{expected_inner_remote_module_path}/main.tf", tf_source_modules=TFModule(index=0, path=expected_main_file)) in out_definitions
-        assert TFDefinitionKey(file_path=f"{expected_inner_remote_module_path}/outputs.tf", tf_source_modules=TFModule(index=0, path=expected_main_file)) in out_definitions
-        assert TFDefinitionKey(file_path=f"{expected_inner_remote_module_path}/variables.tf", tf_source_modules=TFModule(index=0, path=expected_main_file)) in out_definitions
-        assert TFDefinitionKey(file_path=f"{expected_inner_remote_module_path}/versions.tf", tf_source_modules=TFModule(index=0, path=expected_main_file)) in out_definitions
+        assert TFDefinitionKey(file_path=f"{expected_inner_remote_module_path}/auto_values.tf", tf_source_modules=TFModule(name='web_server_sg', path=expected_main_file)) in out_definitions
+        assert TFDefinitionKey(file_path=f"{expected_inner_remote_module_path}/main.tf", tf_source_modules=TFModule(name='web_server_sg', path=expected_main_file)) in out_definitions
+        assert TFDefinitionKey(file_path=f"{expected_inner_remote_module_path}/outputs.tf", tf_source_modules=TFModule(name='web_server_sg', path=expected_main_file)) in out_definitions
+        assert TFDefinitionKey(file_path=f"{expected_inner_remote_module_path}/variables.tf", tf_source_modules=TFModule(name='web_server_sg', path=expected_main_file)) in out_definitions
+        assert TFDefinitionKey(file_path=f"{expected_inner_remote_module_path}/versions.tf", tf_source_modules=TFModule(name='web_server_sg', path=expected_main_file)) in out_definitions
 
-        assert TFDefinitionKey(file_path=f"{expected_remote_module_path}/main.tf", tf_source_modules=TFModule(index=0, path=f"{expected_inner_remote_module_path}/main.tf", nested_tf_module=TFModule(path=expected_main_file, index=0))) in out_definitions
-        assert TFDefinitionKey(file_path=f"{expected_remote_module_path}/outputs.tf", tf_source_modules=TFModule(index=0, path=f"{expected_inner_remote_module_path}/main.tf", nested_tf_module=TFModule(path=expected_main_file, index=0))) in out_definitions
-        assert TFDefinitionKey(file_path=f"{expected_remote_module_path}/rules.tf", tf_source_modules=TFModule(index=0, path=f"{expected_inner_remote_module_path}/main.tf", nested_tf_module=TFModule(path=expected_main_file, index=0))) in out_definitions
-        assert TFDefinitionKey(file_path=f"{expected_remote_module_path}/variables.tf", tf_source_modules=TFModule(index=0, path=f"{expected_inner_remote_module_path}/main.tf", nested_tf_module=TFModule(path=expected_main_file, index=0))) in out_definitions
-        assert TFDefinitionKey(file_path=f"{expected_remote_module_path}/versions.tf", tf_source_modules=TFModule(index=0, path=f"{expected_inner_remote_module_path}/main.tf", nested_tf_module=TFModule(path=expected_main_file, index=0))) in out_definitions
+        assert TFDefinitionKey(file_path=f"{expected_remote_module_path}/main.tf", tf_source_modules=TFModule(name='sg', path=f"{expected_inner_remote_module_path}/main.tf", nested_tf_module=TFModule(path=expected_main_file, name='web_server_sg'))) in out_definitions
+        assert TFDefinitionKey(file_path=f"{expected_remote_module_path}/outputs.tf", tf_source_modules=TFModule(name='sg', path=f"{expected_inner_remote_module_path}/main.tf", nested_tf_module=TFModule(path=expected_main_file, name='web_server_sg'))) in out_definitions
+        assert TFDefinitionKey(file_path=f"{expected_remote_module_path}/rules.tf", tf_source_modules=TFModule(name='sg', path=f"{expected_inner_remote_module_path}/main.tf", nested_tf_module=TFModule(path=expected_main_file, name='web_server_sg'))) in out_definitions
+        assert TFDefinitionKey(file_path=f"{expected_remote_module_path}/variables.tf", tf_source_modules=TFModule(name='sg', path=f"{expected_inner_remote_module_path}/main.tf", nested_tf_module=TFModule(path=expected_main_file, name='web_server_sg'))) in out_definitions
+        assert TFDefinitionKey(file_path=f"{expected_remote_module_path}/versions.tf", tf_source_modules=TFModule(name='sg', path=f"{expected_inner_remote_module_path}/main.tf", nested_tf_module=TFModule(path=expected_main_file, name='web_server_sg'))) in out_definitions
 
     def test_invalid_module_sources_new_parser(self):
         parser = TFParser()
@@ -96,8 +96,8 @@ class TestParserInternals(unittest.TestCase):
         local_module_path = os.path.join(directory, 'main.tf')
         module_path = os.path.join(directory, "module/main.tf")
         main_key = TFDefinitionKey(file_path=local_module_path)
-        key_idx_0 = TFDefinitionKey(file_path=module_path, tf_source_modules=TFModule(path=local_module_path, index=0))
-        key_idx_1 = TFDefinitionKey(file_path=module_path, tf_source_modules=TFModule(path=local_module_path, index=1))
+        key_idx_0 = TFDefinitionKey(file_path=module_path, tf_source_modules=TFModule(path=local_module_path, name='mod'))
+        key_idx_1 = TFDefinitionKey(file_path=module_path, tf_source_modules=TFModule(path=local_module_path, name='mod2'))
 
         assert main_key in out_definitions
         assert key_idx_0 in out_definitions
@@ -135,10 +135,10 @@ class TestParserInternals(unittest.TestCase):
         module1_var_path = os.path.join(directory, 'module/variable.tf')
 
         main_module = TFDefinitionKey(file_path=main_module_path)
-        module_main_key = TFDefinitionKey(file_path=module1_main_path, tf_source_modules=TFModule(path=main_module_path, index=0))
-        module_var_key = TFDefinitionKey(file_path=module1_var_path, tf_source_modules=TFModule(path=main_module_path, index=0))
-        module2_main_key = TFDefinitionKey(file_path=module2_main_path, tf_source_modules=TFModule(path=module1_main_path, index=0, nested_tf_module=TFModule(path=main_module_path, index=0)))
-        module2_var_key = TFDefinitionKey(file_path=module2_var_path, tf_source_modules=TFModule(path=module1_main_path, index=0, nested_tf_module=TFModule(path=main_module_path, index=0)))
+        module_main_key = TFDefinitionKey(file_path=module1_main_path, tf_source_modules=TFModule(path=main_module_path, name='s3_module'))
+        module_var_key = TFDefinitionKey(file_path=module1_var_path, tf_source_modules=TFModule(path=main_module_path, name='s3_module'))
+        module2_main_key = TFDefinitionKey(file_path=module2_main_path, tf_source_modules=TFModule(path=module1_main_path, name='inner_s3_module', nested_tf_module=TFModule(path=main_module_path, name='s3_module')))
+        module2_var_key = TFDefinitionKey(file_path=module2_var_path, tf_source_modules=TFModule(path=module1_main_path, name='inner_s3_module', nested_tf_module=TFModule(path=main_module_path, name='s3_module')))
 
         assert main_module in o_definitions
         assert module_main_key in o_definitions
@@ -162,12 +162,12 @@ class TestParserInternals(unittest.TestCase):
         module2_path = os.path.join(directory, 'module/module2/main.tf')
 
         main_module = TFDefinitionKey(file_path=main_module_path)
-        module1_key0 = TFDefinitionKey(file_path=module1_path, tf_source_modules=TFModule(path=main_module_path, index=0))
-        module1_key1 = TFDefinitionKey(file_path=module1_path, tf_source_modules=TFModule(path=main_module_path, index=1))
-        module2_key0_nest0 = TFDefinitionKey(file_path=module2_path, tf_source_modules=TFModule(path=module1_path, index=0, nested_tf_module=TFModule(path=main_module_path, index=0)))
-        module2_key1_nest0 = TFDefinitionKey(file_path=module2_path, tf_source_modules=TFModule(path=module1_path, index=1, nested_tf_module=TFModule(path=main_module_path, index=0)))
-        module2_key0_nest1 = TFDefinitionKey(file_path=module2_path, tf_source_modules=TFModule(path=module1_path, index=0, nested_tf_module=TFModule(path=main_module_path, index=1)))
-        module2_key1_nest1 = TFDefinitionKey(file_path=module2_path, tf_source_modules=TFModule(path=module1_path, index=1, nested_tf_module=TFModule(path=main_module_path, index=1)))
+        module1_key0 = TFDefinitionKey(file_path=module1_path, tf_source_modules=TFModule(path=main_module_path, name='s3_module'))
+        module1_key1 = TFDefinitionKey(file_path=module1_path, tf_source_modules=TFModule(path=main_module_path, name='s3_module2'))
+        module2_key0_nest0 = TFDefinitionKey(file_path=module2_path, tf_source_modules=TFModule(path=module1_path, name='inner_s3_module', nested_tf_module=TFModule(path=main_module_path, name='s3_module')))
+        module2_key1_nest0 = TFDefinitionKey(file_path=module2_path, tf_source_modules=TFModule(path=module1_path, name='inner_s3_module2', nested_tf_module=TFModule(path=main_module_path, name='s3_module')))
+        module2_key0_nest1 = TFDefinitionKey(file_path=module2_path, tf_source_modules=TFModule(path=module1_path, name='inner_s3_module', nested_tf_module=TFModule(path=main_module_path, name='s3_module2')))
+        module2_key1_nest1 = TFDefinitionKey(file_path=module2_path, tf_source_modules=TFModule(path=module1_path, name='inner_s3_module2', nested_tf_module=TFModule(path=main_module_path, name='s3_module2')))
 
         assert main_module in o_definitions
         assert module1_key0 in o_definitions
