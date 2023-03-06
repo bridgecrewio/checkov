@@ -24,4 +24,4 @@ definition:
   - cond_type: variable
     variable: $KEY_SIZE
     operator: less_than
-    value: 2048
+    value: 16

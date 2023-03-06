@@ -1,0 +1,31 @@
+# https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/09-Testing_for_Weak_Cryptography/04-Testing_for_Weak_Encryption
+metadata:
+  id: CKV3_SAST_25
+  name: Ensure not using weak algorithms in encryption
+  guidelines: Detect usage of weak algorithms in code
+  category: sast
+  cwe: "CWE-326: Inadequate Encryption Strength"
+scope:
+  languages:
+    - javascript
+definition:
+  - or:
+      - and:
+        - cond_type: pattern
+          operator: equals
+          value: |
+            $PACKAGE = require('node-forge');
+            ...
+            $PACKAGE.cipher.createCipher($ENCRYPTION,...);
+        - cond_type: "variable"
+          variable: "$ENCRYPTION"
+          operator: "regex_match"
+          value: "('DES|'3DES)"
+      - cond_type: pattern
+        operator: equals
+        value: CryptoJS.DES.encrypt(...)
+      - cond_type: pattern
+        operator: equals
+        value: CryptoJS.TripleDES.encrypt(...)
+
+
