@@ -126,18 +126,17 @@ class Module:
 
     def _add_output(self, blocks: List[Dict[str, Dict[str, Any]]], path: str) -> None:
         for output_dict in blocks:
-            for name in output_dict:
-                if type(output_dict[name]) is not dict:
-                    continue
-                output_block = TerraformBlock(
-                    block_type=BlockType.OUTPUT,
-                    name=name,
-                    config=output_dict,
-                    path=path,
-                    attributes={"value": output_dict[name].get("value")},
-                    source=self.source,
-                )
-                self._add_to_blocks(output_block)
+            for name, attributes in output_dict.items():
+                if isinstance(attributes, dict):
+                    output_block = TerraformBlock(
+                        block_type=BlockType.OUTPUT,
+                        name=name,
+                        config=output_dict,
+                        path=path,
+                        attributes={"value": attributes.get("value")},
+                        source=self.source,
+                    )
+                    self._add_to_blocks(output_block)
 
     def _add_module(self, blocks: List[Dict[str, Dict[str, Any]]], path: str) -> None:
         for module_dict in blocks:
