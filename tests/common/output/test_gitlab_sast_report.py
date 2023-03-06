@@ -106,7 +106,6 @@ def test_sca_package_output():
         check_class=check_class,
         vulnerability_details=vulnerability_details,
         licenses="OSI_BDS",
-        package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
     )
     # also add a BC_VUL_2 record
     bc_record = create_report_cve_record(
@@ -115,7 +114,6 @@ def test_sca_package_output():
         check_class=check_class,
         vulnerability_details=vulnerability_details,
         licenses="OSI_BDS",
-        package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
     )
     bc_record.check_id = "BC_VUL_2"
 
@@ -208,7 +206,6 @@ def test_sca_license_output():
         scanned_file_path=file_abs_path,
         rootless_file_path=rootless_file_path,
         runner_filter=RunnerFilter(),
-        packages_map=dict(),
         license_statuses=license_statuses,
         sca_details=sca_details,
         report_type=report.check_type,

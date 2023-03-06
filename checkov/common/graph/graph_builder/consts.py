@@ -6,7 +6,6 @@ SELF_REFERENCE = "__self__"
 
 class GraphSource(str, Enum):
     ANSIBLE = "Ansible"
-    ARM = "ARM"
     BICEP = "Bicep"
     CLOUDFORMATION = "CloudFormation"
     DOCKERFILE = "Dockerfile"
