@@ -117,7 +117,7 @@ class TestLicensingIntegration(unittest.TestCase):
         self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.ARGO_WORKFLOWS), CustomerSubscription.IAC)
         self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.SAST), CustomerSubscription.SAST)
 
-        self.assertEqual(open_source_categories, [CodeCategoryType.IAC, CodeCategoryType.SECRETS, CodeCategoryType.SUPPLY_CHAIN, CodeCategoryType.SAST])
+        self.assertEqual(open_source_categories, [CodeCategoryType.IAC, CodeCategoryType.SECRETS, CodeCategoryType.BUILD_INTEGRITY, CodeCategoryType.SAST])
 
     def test_integration_valid(self):
         instance = BcPlatformIntegration()
