@@ -210,7 +210,7 @@ class TFParser:
             if not module_calls or not isinstance(module_calls, list):
                 continue
 
-            for module_index, module_call in enumerate(module_calls):
+            for module_call in module_calls:
                 if not isinstance(module_call, dict):
                     continue
 
@@ -219,7 +219,7 @@ class TFParser:
                         continue
 
                     file_key = self.get_file_key_with_nested_data(file, nested_modules_data)
-                    current_nested_data = (file_key, module_index, module_call_name)
+                    current_nested_data = (file_key, module_call_name)
                     resolved_loc_list = []
                     if current_nested_data in self.module_to_resolved:
                         resolved_loc_list = self.module_to_resolved[current_nested_data]
@@ -329,17 +329,25 @@ class TFParser:
 
     def _update_resolved_modules(self) -> None:
         for key in list(self.module_to_resolved.keys()):
-            file_key, module_index, module_name = key
+            file_key, module_name = key
             if file_key in self.keys_to_remove:
                 for path in self.module_to_resolved[key]:
                     self._remove_unused_path_recursive(path)
                 self.module_to_resolved.pop(key, None)
 
         for key, resolved_list in self.module_to_resolved.items():
-            file_key, module_index, module_name = key
+            file_key, module_name = key
             if file_key not in self.out_definitions:
                 continue
-            self.out_definitions[file_key]['module'][module_index][module_name][RESOLVED_MODULE_ENTRY_NAME] = resolved_list
+
+            idx = self.get_idx_by_module_name(self.out_definitions[file_key]['module'], module_name)
+            self.out_definitions[file_key]['module'][idx][module_name][RESOLVED_MODULE_ENTRY_NAME] = resolved_list
+
+    @staticmethod
+    def get_idx_by_module_name(module_data_list: list[dict[str, Any]], module_name):
+        for idx, module_data in enumerate(module_data_list):
+            if module_name in module_data:
+                return idx
 
     def parse_hcl_module_from_tf_definitions(
         self,
