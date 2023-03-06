@@ -2,7 +2,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 from checkov.common.models.enums import CheckCategories
 
 
-class AWSDatabaseInstanceDeletionProtection(BaseResourceValueCheck):
+class RDSInstanceDeletionProtection(BaseResourceValueCheck):
 
     def __init__(self):
         name = "Ensure that AWS database instance have deletion protection enabled"
@@ -15,4 +15,4 @@ class AWSDatabaseInstanceDeletionProtection(BaseResourceValueCheck):
         return 'deletion_protection'
 
 
-check = AWSDatabaseInstanceDeletionProtection()
+check = RDSInstanceDeletionProtection()
