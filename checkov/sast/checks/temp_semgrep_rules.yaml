@@ -1,0 +1,434 @@
+rules:
+- id: CKV3_SAST_6
+  languages:
+  - python
+  message: Hardcoded password is used as a default argument to '$FUNC'. This could
+    be dangerous if a real password is not supplied.
+  metadata:
+    check_file: HardcodedPassword.yaml
+    cwe: 'CWE-259: Use of Hard-coded Password'
+    name: Ensure hardcoded passwords are not being used
+    owasp: 'A3: Broken Authentication and Session Management'
+  pattern: "def $FUNC(..., password=\"...\", ...):\n  ...\n"
+  severity: WARNING
+- id: CKV3_SAST_11
+  languages:
+  - python
+  message: module setting superuser port
+  metadata:
+    check_file: SuperuserPort.yaml
+    cwe: 'CWE-289: Authentication Bypass by Alternate Name'
+    name: Ensure superuser port is not set
+  patterns:
+  - pattern: set_port($ARG)
+  - metavariable-comparison:
+      comparison: $ARG < 1024
+      metavariable: $ARG
+  severity: WARNING
+- id: CKV3_SAST_8
+  languages:
+  - python
+  message: Detected use of the wildcard character in a system call that spawns a shell.
+    This subjects the wildcard to normal shell expansion, which can have unintended
+    consequences if there exist any non-standard file names. Consider a file named
+    '-e sh script.sh' -- this will execute a script when 'rsync' is called. See https://www.defensecode.com/public/DefenseCode_Unix_WildCards_Gone_Wild.tx
+    for more information.
+  metadata:
+    check_file: WildcardNeutralizationHandling.yaml
+    cwe: 'CWE-155: Improper Neutralization of Wildcards or Matching Symbols'
+    name: Ensure the neutralization of wildcards or matching symbols is handled properly
+    owasp: 'A1: Injection'
+  patterns:
+  - pattern-either:
+    - pattern-inside: os.system("...")
+    - pattern-inside: os.popen("...")
+    - pattern-inside: os.popen2("...")
+    - pattern-inside: os.popen3("...")
+    - pattern-inside: os.popen4("...")
+    - pattern-inside: subprocess.$W(..., shell=True, ...)
+  - pattern-regex: (tar|chmod|chown|rsync)(.*?)\*
+  severity: WARNING
+- id: CKV3_SAST_4
+  languages:
+  - python
+  message: Use of assert detected. The enclosed code will be removed when compiling
+    to optimized byte code.
+  metadata:
+    check_file: ExceptionalConditionsHandling.yaml
+    cwe: 'CWE-754: Improper Check for Unusual or Exceptional Conditions'
+    name: Ensure checking for unusual or exceptional conditions is handled properly
+  patterns:
+  - pattern: assert(...)
+  - pattern-not-inside: 'import pytest
+
+      ...
+
+      '
+  - pattern-not-inside: 'import unittest
+
+      ...'
+  severity: WARNING
+- id: CKV3_SAST_7
+  languages:
+  - python
+  message: The function "mark_safe()" is used to mark a string as "safe" for HTML
+    output. This disables escaping and could therefore subject the content to XSS
+    attacks. Use "django.utils.html.format_html()" to build HTML for rendering instead.
+  metadata:
+    check_file: InputNeutralizationHandling.yaml
+    cwe: 'CWE-79: Improper Neutralization of Input During Web Page Generation (''Cross-site
+      Scripting'')'
+    name: Ensure neutralization of input during web page generation is handled properly
+    owasp: 'A7: Cross-Site Scripting (XSS)'
+  patterns:
+  - pattern-not-inside: django.utils.html.format_html(...)
+  - pattern-either:
+    - patterns:
+      - pattern: django.utils.safestring.mark_safe(...)
+      - pattern-not: django.utils.safestring.mark_safe("...")
+  severity: WARNING
+- id: CKV3_SAST_9
+  languages:
+  - python
+  message: This is a last resort. You should be careful when using `QuerySet.extra`
+    due to SQL injection.
+  metadata:
+    check_file: SpecialElementsSQLNeutralization.yaml
+    cwe: 'CWE-89: Improper Neutralization of Special Elements used in an SQL Command
+      (''SQL Injection'')'
+    name: Ensure the neutralization of special elements used in a SQL command is handled
+      properly
+    owasp: 'A1: Injection'
+  patterns:
+  - pattern: $X.objects. ... .extra(..., $K = $V, ...)
+  - pattern-not-inside: '$V = ["..."]
+
+      ...
+
+      '
+  - metavariable-pattern:
+      metavariable: $V
+      patterns:
+      - pattern: $V
+      - pattern-not: '[..., "...", ...]'
+      - pattern-not: '{..., "...": "...", ...}'
+      - pattern-not: '"..."'
+      - pattern-not: '[..., "..." % "...", ...]'
+      - pattern-not: '{..., $L: "..." % "...", ...}'
+      - pattern-not: '{..., $L: "...".format("..."), ...}'
+      - pattern-not: '[..., "...".format("..."), ...]'
+  severity: WARNING
+- id: CKV3_SAST_1
+  languages:
+  - python
+  message: Detected hardcoded temp directory. Consider using "tempfile.TemporaryFile"
+    instead.
+  metadata:
+    check_file: HardcodedTempDir.yaml
+    cwe: 'CWE-377: Insecure Temporary File'
+    name: Ensure no hardcoded temp directory is used
+  pattern: open("=~/^\/tmp.*/", ...)
+  severity: WARNING
+- id: CKV3_SAST_3
+  languages:
+  - python
+  message: Chmod setting a permissive mask on file.
+  metadata:
+    check_file: ChmodPermissiveMask.yaml
+    cwe: 'CWE-732: Incorrect Permission Assignment for Critical Resource'
+    name: Ensure chmod does not set a permissive mask on file
+    owasp: 'A6: Security Misconfiguration'
+  patterns:
+  - pattern: os.chmod(...,$MASK)
+  - metavariable-regex:
+      metavariable: $MASK
+      regex: (0x..f|0o..[2,3,7]|stat.S_IXGRP|stat.S_IWOTH)
+  severity: WARNING
+- id: CKV3_SAST_2
+  languages:
+  - python
+  message: The use of "exec" is risky.
+  metadata:
+    check_file: ExecUsage.yaml
+    cwe: 'CWE-78: Improper Neutralization of Special Elements used in an OS Command
+      ("OS Command Injection")'
+    name: Ensure 'exec' is not used
+    owasp: 'A1: Injection'
+  pattern-either:
+  - pattern: exec(...)
+  - pattern: exec("...")
+  severity: WARNING
+- id: CKV3_SAST_5
+  languages:
+  - python
+  message: Running `socket.bind` to 0.0.0.0, ::, or empty string could unexpectedly
+    expose the server publicly as it binds to all available interfaces. Consider instead
+    getting correct address from an environment variable or configuration file.
+  metadata:
+    check_file: PubliclyExposedServer.yaml
+    cwe: 'CWE-200: Exposure of Sensitive Information to an Unauthorized Actor'
+    name: Ensure servers are not publicly exposed
+    owasp: 'A6: Security Misconfiguration'
+  pattern-either:
+  - pattern: '$S = socket.socket(...)
+
+      ...
+
+      $S.bind(("0.0.0.0", ...))
+
+      '
+  - pattern: '$S = socket.socket(...)
+
+      ...
+
+      $S.bind(("::", ...))
+
+      '
+  - pattern: '$S = socket.socket(...)
+
+      ...
+
+      $S.bind(("", ...))'
+  severity: WARNING
+- id: CKV3_SAST_10
+  languages:
+  - python
+  message: Detected an insufficient key size for DSA. NIST recommends a key size of
+    2048 or higher.
+  metadata:
+    check_file: EncryptionKeySize.yaml
+    cwe: 'CWE-326: Inadequate Encryption Strength'
+    name: Ensure that encryption keys are of size 2048 or higher
+    owasp: 'A3: Sensitive Data Exposure'
+  patterns:
+  - pattern-either:
+    - pattern: cryptography.hazmat.primitives.asymmetric.rsa.generate_private_key(...,
+        key_size=$SIZE, ...)
+    - pattern: cryptography.hazmat.primitives.asymmetric.rsa.generate_private_key($EXP,
+        $SIZE, ...)
+    - pattern: cryptography.hazmat.primitives.asymmetric.rsa.generate_private_key($SIZE,
+        ...)
+    - pattern: cryptography.hazmat.primitives.asymmetric.dsa.generate_private_key(...,
+        key_size=$SIZE, ...)
+    - pattern: cryptography.hazmat.primitives.asymmetric.dsa.generate_private_key($EXP,
+        $SIZE, ...)
+    - pattern: cryptography.hazmat.primitives.asymmetric.dsa.generate_private_key($SIZE,
+        ...)
+    - pattern: Crypto.PublicKey.RSA.generate($SIZE, ...)
+    - pattern: Crypto.PublicKey.DSA.generate($SIZE, ...)
+    - pattern: Cryptodome.PublicKey.DSA.generate($SIZE, ...)
+    - pattern: Cryptodome.PublicKey.RSA.generate($SIZE, ...)
+    - pattern: Crypto.PublicKey.DSA.generate(bits=$SIZE, ...)
+    - pattern: Cryptodome.PublicKey.DSA.generate(bits=$SIZE, ...)
+    - pattern: pycrypto_rsa.generate(bits=$SIZE, ...)
+    - pattern: pycrypto_dsa.generate(bits=$SIZE, ...)
+    - pattern: pycryptodomex_rsa.generate(bits=$SIZE, ...)
+    - pattern: pycryptodomex_rsa.generate($SIZE, ...)
+    - pattern: pycryptodomex_dsa.generate(bits=$SIZE, ...)
+    - pattern: pycryptodomex_dsa.generate($SIZE, ...)
+  - metavariable-comparison:
+      comparison: $SIZE < 2048
+      metavariable: $SIZE
+  severity: WARNING
+- id: CKV3_SAST_12
+  languages:
+  - java
+  message: The ciphertext produced is susceptible to alteration by an adversary. This
+    mean that the cipher provides no way to detect that the data has been tampered
+    with. If the ciphertext can be controlled by an attacker, it could be altered
+    without detection.
+  metadata:
+    check_file: DataIntegrityInTransmition.yaml
+    cwe: 'CWE-353: Missing Support for Integrity Check'
+    name: Ensure that the integrity of the data during transmission is being verified
+  patterns:
+  - pattern-inside: javax.crypto.Cipher.getInstance("...")
+  - pattern-either:
+    - pattern-regex: (/CBC/PKCS5Padding)
+    - pattern-regex: (AES|DES(ede)?)(/ECB/*)
+  - pattern-not-regex: .*/(CCM|CWC|OCB|EAX|GCM)/.*
+  - pattern-not-regex: ^(RSA)/.*
+  - pattern-not-regex: ^(ECIES)$
+  severity: WARNING
+- id: CKV3_SAST_25
+  languages:
+  - javascript
+  message: Detect usage of weak algorithms in code
+  metadata:
+    check_file: WeakEncryption.yaml
+    cwe: 'CWE-326: Inadequate Encryption Strength'
+    name: Ensure not using weak algorithms in encryption
+  pattern-either:
+  - patterns:
+    - pattern: '$PACKAGE = require(''node-forge'');
+
+        ...
+
+        $PACKAGE.cipher.createCipher($ENCRYPTION,...);
+
+        '
+    - metavariable-regex:
+        metavariable: $ENCRYPTION
+        regex: ('DES|'3DES)
+  - pattern: CryptoJS.DES.encrypt(...)
+  - pattern: CryptoJS.TripleDES.encrypt(...)
+  severity: WARNING
+- id: CKV3_SAST_24
+  languages:
+  - javascript
+  message: Detect usage of symmetric encryptions in code, The use of asymmetric encryption
+    is preferred.
+  metadata:
+    check_file: SymmetricEncryption.yaml
+    cwe: 'CWE-326: Inadequate Encryption Strength'
+    name: Ensure that encryption is not symmetric
+  pattern-either:
+  - patterns:
+    - pattern: '$PACKAGE = require(''node-forge'');
+
+        ...
+
+        $PACKAGE.cipher.createCipher($ENCRYPTION,...);
+
+        '
+    - metavariable-regex:
+        metavariable: $ENCRYPTION
+        regex: ('DES|'3DES)
+  - pattern: CryptoJS.DES.encrypt(...)
+  - pattern: CryptoJS.TripleDES.encrypt(...)
+  severity: WARNING
+- id: CKV3_SAST_23
+  languages:
+  - javascript
+  message: ''
+  metadata:
+    check_file: EncryptionKeySize.yaml
+    cwe: 'CWE-326: Inadequate Encryption Strength'
+    name: Ensure that encryption keys are of size 16 bytes or higher
+  patterns:
+  - pattern-either:
+    - pattern: 'import nacl from ''tweetnacl'';
+
+        ...
+
+        nacl.randomBytes($KEY_SIZE);
+
+        '
+    - pattern: 'require(''randombytes'');
+
+        ...
+
+        randomBytes($KEY_SIZE,...)
+
+        '
+    - pattern: '$PACKAGE = require(''node-forge'');
+
+        ...
+
+        $PACKAGE.random.getBytesSync($KEY_SIZE);
+
+        '
+    - pattern: 'cryptoRandomString({..., length: $KEY_SIZE, ...}, ...);'
+    - pattern: 'cryptoRandomStringAsync({..., length: $KEY_SIZE, ...}, ...);'
+    - pattern: '$RAND = new brorand.Rand(...);
+
+        ...
+
+        $RAND.generate($KEY_SIZE)
+
+        '
+  - metavariable-comparison:
+      comparison: $KEY_SIZE < 16
+      metavariable: $KEY_SIZE
+  severity: WARNING
+- id: CKV3_SAST_25
+  languages:
+  - javascript
+  message: Detect usage of weak algorithms in code
+  metadata:
+    check_file: WeakEncryption.yaml
+    cwe: 'CWE-326: Inadequate Encryption Strength'
+    name: Ensure not using weak algorithms in encryption
+  pattern-either:
+  - patterns:
+    - pattern: '$PACKAGE = require(''node-forge'');
+
+        ...
+
+        $PACKAGE.cipher.createCipher($ENCRYPTION,...);
+
+        '
+    - metavariable-regex:
+        metavariable: $ENCRYPTION
+        regex: ('DES|'3DES)
+  - pattern: CryptoJS.DES.encrypt(...)
+  - pattern: CryptoJS.TripleDES.encrypt(...)
+  severity: WARNING
+- id: CKV3_SAST_24
+  languages:
+  - javascript
+  message: Detect usage of symmetric encryptions in code, The use of asymmetric encryption
+    is preferred.
+  metadata:
+    check_file: SymmetricEncryption.yaml
+    cwe: 'CWE-326: Inadequate Encryption Strength'
+    name: Ensure that encryption is not symmetric
+  pattern-either:
+  - patterns:
+    - pattern: '$PACKAGE = require(''node-forge'');
+
+        ...
+
+        $PACKAGE.cipher.createCipher($ENCRYPTION,...);
+
+        '
+    - metavariable-regex:
+        metavariable: $ENCRYPTION
+        regex: ('DES|'3DES)
+  - pattern: CryptoJS.DES.encrypt(...)
+  - pattern: CryptoJS.TripleDES.encrypt(...)
+  severity: WARNING
+- id: CKV3_SAST_23
+  languages:
+  - javascript
+  message: ''
+  metadata:
+    check_file: EncryptionKeySize.yaml
+    cwe: 'CWE-326: Inadequate Encryption Strength'
+    name: Ensure that encryption keys are of size 16 bytes or higher
+  patterns:
+  - pattern-either:
+    - pattern: 'import nacl from ''tweetnacl'';
+
+        ...
+
+        nacl.randomBytes($KEY_SIZE);
+
+        '
+    - pattern: 'require(''randombytes'');
+
+        ...
+
+        randomBytes($KEY_SIZE,...)
+
+        '
+    - pattern: '$PACKAGE = require(''node-forge'');
+
+        ...
+
+        $PACKAGE.random.getBytesSync($KEY_SIZE);
+
+        '
+    - pattern: 'cryptoRandomString({..., length: $KEY_SIZE, ...}, ...);'
+    - pattern: 'cryptoRandomStringAsync({..., length: $KEY_SIZE, ...}, ...);'
+    - pattern: '$RAND = new brorand.Rand(...);
+
+        ...
+
+        $RAND.generate($KEY_SIZE)
+
+        '
+  - metavariable-comparison:
+      comparison: $KEY_SIZE < 16
+      metavariable: $KEY_SIZE
+  severity: WARNING

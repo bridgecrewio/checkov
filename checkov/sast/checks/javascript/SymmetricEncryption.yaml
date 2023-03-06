@@ -1,8 +1,7 @@
 metadata:
   id: CKV3_SAST_24
   name: Ensure that encryption is not symmetric
-  guidelines: Detect usage of symmetric encryptions in code, The use of
-    asymmetric encryption is preferred.
+  guidelines: Detect usage of symmetric encryptions in code, The use of asymmetric encryption is preferred.
   category: sast
   cwe: "CWE-326: Inadequate Encryption Strength"
 scope:

@@ -11,6 +11,12 @@ definition:
       - cond_type: pattern
         operator: equals
         value: |
+          import nacl from 'tweetnacl';
+          ...
+          nacl.randomBytes($KEY_SIZE);
+      - cond_type: pattern
+        operator: equals
+        value: |
           require('randombytes');
           ...
           randomBytes($KEY_SIZE,...)
