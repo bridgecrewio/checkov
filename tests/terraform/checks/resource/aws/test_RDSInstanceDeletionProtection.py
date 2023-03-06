@@ -6,7 +6,7 @@ from checkov.terraform.checks.resource.aws.RDSInstanceDeletionProtection import 
 from checkov.common.models.enums import CheckResult
 
 
-class TestAWSDatabaseInstanceDeletionProtection(unittest.TestCase):
+class TestRDSnstanceDeletionProtection(unittest.TestCase):
 
     def test_failure(self):
         hcl_res = hcl2.loads("""
