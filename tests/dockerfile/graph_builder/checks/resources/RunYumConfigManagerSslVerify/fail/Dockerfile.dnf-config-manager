@@ -1,0 +1,17 @@
+FROM fedora:rawhide
+
+RUN dnf-config-manager --save --setopt=sslverify=0
+RUN dnf-config-manager --save --setopt=sslverify=false
+RUN dnf-config-manager --save --setopt=sslverify=no
+
+RUN dnf-config-manager --setopt=sslverify=0 --save
+RUN dnf-config-manager --setopt=sslverify=False --save
+RUN dnf-config-manager --setopt=sslverify=No --save
+
+RUN dnf-config-manager --save --setopt=something.sslverify=0
+RUN dnf-config-manager --save --setopt=something.sslverify=false
+RUN dnf-config-manager --save --setopt=something.sslverify=no
+
+RUN dnf-config-manager --setopt=something.sslverify=0 --save
+RUN dnf-config-manager --setopt=something.sslverify=False --save
+RUN dnf-config-manager --setopt=something.sslverify=no --save

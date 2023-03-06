@@ -1,0 +1,7 @@
+FROM fedora:rawhide
+
+RUN yum config-manager --save --setopt=sslverify=0
+RUN yum           config-manager           --save           --setopt=sslverify=0
+
+RUN dnf config-manager --save --setopt=sslverify=0
+RUN dnf           config-manager           --save           --setopt=sslverify=0

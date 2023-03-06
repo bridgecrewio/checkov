@@ -85,6 +85,9 @@ class TestYamlPolicies(TestYamlPoliciesBase):
     def test_EnvGitSslNoVerify(self):
         self.go("EnvGitSslNoVerify")
 
+    def test_RunYumConfigManagerSslVerify(self):
+        self.go("RunYumConfigManagerSslVerify")
+
     def test_registry_load(self):
         registry = self.get_checks_registry()
         self.assertGreater(len(registry.checks), 0)
