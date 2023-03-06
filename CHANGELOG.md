@@ -1,6 +1,14 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.57...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.59...HEAD)
+
+## [2.3.59](https://github.com/bridgecrewio/checkov/compare/2.3.57...2.3.59) - 2023-03-05
+
+### Bug Fix
+
+- **general:** do not stop getting fixes if one attempt results in a 403 - [#4607](https://github.com/bridgecrewio/checkov/pull/4607)
+- **gha:** skip schema validity check if parsing returned None - [#4609](https://github.com/bridgecrewio/checkov/pull/4609)
+- **secrets:** Adjust output to include the additional Git History info - [#4566](https://github.com/bridgecrewio/checkov/pull/4566)
 
 ## [2.3.57](https://github.com/bridgecrewio/checkov/compare/2.3.53...2.3.57) - 2023-03-02
 
