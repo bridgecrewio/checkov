@@ -5,7 +5,7 @@ from checkov.common.models.enums import CheckCategories
 class AWSDatabaseInstanceDeletionProtection(BaseResourceValueCheck):
 
     def __init__(self):
-        name = "Ensure that AWS database instance have deletion protection enabled"
+        name = "Ensure that AWS database instances have deletion protection enabled"
         id = "CKV_AWS_293"
         supported_resources = ['aws_db_instance']
         categories = [CheckCategories.GENERAL_SECURITY]
