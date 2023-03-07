@@ -17,7 +17,12 @@ class SastCheckParser:
             logging.error(f'cant parse the following policy: {raw_check}')
         try:
             semgrep_rule = self._parse_rule_metadata(raw_check, check_file, semgrep_rule)
-            semgrep_rule.update(self._parse_definition(raw_check['definition']))
+            check_definition = raw_check['definition']
+            if raw_check.get('mode', '') == 'taint':
+                semgrep_rule['mode'] = 'taint'
+                semgrep_rule.update(self._parse_taint_mode_definition(check_definition))
+            else:
+                semgrep_rule.update(self._parse_definition(check_definition))
         except Exception as e:
             logging.error(f'the policy in file {check_file} is misconfigured so it could not be parsed properly.\n{e}')
 
@@ -97,6 +102,9 @@ class SastCheckParser:
         elif cond_type == BqlConditionType.FILTER:
             return self._parse_filter_cond_type(operator, definition_value)
 
+        elif cond_type in [BqlConditionType.PATTERN_SINK, BqlConditionType.PATTERN_SANITIZER, BqlConditionType.PATTERN_SOURCE]:
+            return self._parse_taint_cond_type(operator, definition_value)
+
         return {}
 
     def _parse_pattern_cond_type(self, operator: str, definition_value: str) -> Dict[str, Any]:
@@ -136,6 +144,14 @@ class SastCheckParser:
             raise AttributeError(f'BQL filter condition contains an unknown operator: {operator}')
         return {semgrep_attr: definition_value}
 
+    def _parse_taint_cond_type(self, operator: str, definition_value: str | Dict[str, Any]) -> Dict[str, Any]:
+        if isinstance(definition_value, dict) and (definition_value.get(BqlConditionType.AND) or definition_value.get(BqlConditionType.OR)):
+            return self._parse_definition(definition_value)
+        else:
+            if not isinstance(definition_value, str):
+                raise ValueError(f'unexpected definition value: {definition_value}')
+            return self._parse_pattern_cond_type(operator, definition_value)
+
     def _get_definitions_list_items(self, definitions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         conf = []
         for definition in definitions:
@@ -147,5 +163,36 @@ class SastCheckParser:
                     definition[str(BqlConditionType.AND)])})
             else:
                 conf.append(self._parse_definition(definition))
+
+        return conf
+
+    def _parse_taint_mode_definition(self, definitions: Dict[str, Any]) -> Dict[str, Any]:
+        conf: Dict[str, Any] = {
+            str(SemgrepAttribute.PATTERN_SOURCES): [],
+            str(SemgrepAttribute.PATTERN_SINKS): []
+        }
+        if not isinstance(definitions, list):
+            raise TypeError(f'bad taint mode definition type, got {type(definitions)} instead of list')
+        for definition in definitions:
+            cond_type = definition.get('cond_type', '')
+            if not cond_type:
+                raise AttributeError('BQL policy is missing a condition type')
+            operator = definition.get('operator', '')
+            if not operator:
+                raise AttributeError(f'BQL policy condition type: {cond_type} is missing an operator')
+            definition_value = definition.get('value')
+            if not definition_value:
+                raise AttributeError(f'BQL policy condition type: {cond_type} is missing a definition value')
+
+            if cond_type == BqlConditionType.PATTERN_SOURCE:
+                conf[str(SemgrepAttribute.PATTERN_SOURCES)].append(self._parse_definition(definition))
+            elif cond_type == BqlConditionType.PATTERN_SINK:
+                conf[str(SemgrepAttribute.PATTERN_SINKS)].append(self._parse_definition(definition))
+            elif cond_type == BqlConditionType.PATTERN_SANITIZER:
+                conf.setdefault(str(SemgrepAttribute.PATTERN_SANITIZERS), []).append(self._parse_definition(definition))
+            elif cond_type == BqlConditionType.PATTERN_PROPAGATOR:
+                conf.setdefault(str(SemgrepAttribute.PATTERN_PROPAGATORS), []).append(self._parse_definition(definition))
+            else:
+                raise AttributeError(f'BQL policy taint mode definition contains an unexpected condition type: {cond_type}')
 
         return conf

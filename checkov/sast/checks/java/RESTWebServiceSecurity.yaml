@@ -1,0 +1,57 @@
+mode: taint
+metadata:
+  id: CKV3_SAST_23
+  name: Ensure that the security of REST Web Service is analyzed
+  guidelines: |
+      This method is part of a REST Web Service (JSR311). The security of this web service should be
+      analyzed; Authentication, if enforced, should be tested. Access control, if enforced, should be
+      tested. The inputs should be tracked for potential vulnerabilities. The communication should
+      ideally be over SSL.
+  category: sast
+  cwe: "CWE-20: Improper Input Validation"
+scope:
+  languages:
+    - java
+definition:
+  - cond_type: pattern_source
+    operator: equals
+    value:
+      and:
+        - cond_type: pattern
+          operator: equals
+          value: $VAR
+        - cond_type: filter
+          attribute: pattern
+          operator: within
+          value: |
+            @javax.ws.rs.Path("...")
+            $TYPE $FUNC(..., $VAR, ...) {
+              ...
+            }
+  - cond_type: pattern_sanitizer
+    operator: equals
+    value: org.apache.commons.text.StringEscapeUtils.unescapeJava(...);
+  - cond_type: pattern_sanitizer
+    operator: equals
+    value:
+      and:
+        - cond_type: pattern
+          operator: equals
+          value: $STR
+        - cond_type: filter
+          attribute: pattern
+          operator: within
+          value: |
+            $STR.replaceAll("$REPLACE_CHAR", "$REPLACER");
+            ...
+        - cond_type: variable
+          variable: $REPLACER
+          operator: regex_match
+          value: .*^(CRLF).*
+        - cond_type: variable
+          variable: $REPLACE_CHAR
+          operator: regex_match
+          value: (*CRLF)
+  - cond_type: pattern_sink
+    operator: equals
+    value: return ...;
