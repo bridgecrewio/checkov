@@ -1,5 +1,6 @@
 pass:
-  - "azurerm_network_security_group.pass"
+  - "azurerm_subnet.pass"
 fail:
-  - "azurerm_network_security_group.fail_1"
-  - "azurerm_network_security_group.fail_2"
+  - "azurerm_subnet.fail_1"
+  - "azurerm_subnet.fail_2"
+  - "azurerm_subnet.fail_3"

@@ -1,4 +1,4 @@
 pass:
-  "azurerm_private_endpoint.pass"
+  - "azurerm_key_vault.pass"
 fail:
-  "azurerm_private_endpoint.fail"
+  - "azurerm_key_vault.fail"
