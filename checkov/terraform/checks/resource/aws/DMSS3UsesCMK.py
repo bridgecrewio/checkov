@@ -8,7 +8,7 @@ from checkov.common.models.consts import ANY_VALUE
 class DMSS3UsesCMK(BaseResourceValueCheck):
     def __init__(self) -> None:
         name = "Ensure DMS S3 Uses Customer managed key"
-        id = "CKV_AWS_293"
+        id = "CKV_AWS_298"
         supported_resources = ("aws_dms_s3_endpoint",)
         categories = (CheckCategories.ENCRYPTION,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
