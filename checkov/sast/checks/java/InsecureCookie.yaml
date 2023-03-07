@@ -1,0 +1,31 @@
+metadata:
+  id: CKV3_SAST_19
+  name: 'Ensure cookie is created with Secure flag set'
+  guidelines: 'A new cookie is created without the Secure flag set. The Secure flag is a directive to the
+    browser to make sure that the cookie is not sent for insecure communication (http://)'
+  category: 'sast'
+  cwe: "CWE-614: Sensitive Cookie in HTTPS Session Without 'Secure' Attribute"
+scope:
+  languages:
+    - java
+definition:
+  or:
+    - and:
+      - cond_type: "pattern"
+        operator: "equals"
+        value: |
+          javax.servlet.http.Cookie $C = new Cookie(..., ...);
+          ...
+          (HttpServletResponse $RESP).addCookie($C);
+      - cond_type: "filter"
+        attribute: "pattern"
+        operator: "not_within"
+        value: |
+          javax.servlet.http.Cookie $C = new Cookie(..., ...);
+          ...
+          $C.setSecure(true);
+          ...
+          (HttpServletResponse $RESP).addCookie($C);
+    - cond_type: "pattern"
+      operator: "equals"
+      value: "(javax.servlet.http.Cookie $C).setSecure(false);"

@@ -1,0 +1,33 @@
+metadata:
+  id: CKV3_SAST_16
+  name: 'Ensure cookie is created without HttpOnly flag'
+  guidelines: 'A new cookie is created without the HttpOnly flag set. The HttpOnly flag is a directive to the
+    browser to make sure that the cookie can not be red by malicious script. When a user is the
+    target of a "Cross-Site Scripting", the attacker would benefit greatly from getting the session
+    id for example.'
+  category: 'sast'
+  cwe: "CWE-1004: Sensitive Cookie Without 'HttpOnly' Flag"
+scope:
+  languages:
+    - java
+definition:
+  or:
+    - and:
+      - cond_type: "pattern"
+        operator: "equals"
+        value: |
+          javax.servlet.http.Cookie $C = new Cookie(..., ...);
+          ...
+          (HttpServletResponse $RESP).addCookie($C);
+      - cond_type: "filter"
+        attribute: "pattern"
+        operator: "not_within"
+        value: |
+          javax.servlet.http.Cookie $C = new Cookie(..., ...);
+          ...
+          $C.setHttpOnly(true);
+          ...
+          (HttpServletResponse $RESP).addCookie($C);
+    - cond_type: "pattern"
+      operator: "equals"
+      value: "(javax.servlet.http.Cookie $C).setHttpOnly(false);"

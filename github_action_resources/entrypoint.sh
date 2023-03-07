@@ -19,7 +19,6 @@ export BC_SOURCE=githubActions
 #
 [[ -n "$INPUT_SKIP_CHECK" ]] && SKIP_CHECK_FLAG="--skip-check $INPUT_SKIP_CHECK"
 [[ -n "$INPUT_FRAMEWORK" ]] && FRAMEWORK_FLAG="--framework $INPUT_FRAMEWORK"
-[[ -n "$INPUT_OUTPUT_FORMAT" ]] && OUTPUT_FLAG="--output $INPUT_OUTPUT_FORMAT"
 [[ -n "$INPUT_OUTPUT_FILE_PATH" ]] && OUTPUT_FILE_PATH_FLAG="--output-file-path $INPUT_OUTPUT_FILE_PATH"
 [[ -n "$INPUT_BASELINE" ]] && BASELINE_FLAG="--baseline $INPUT_BASELINE"
 [[ -n "$INPUT_CONFIG_FILE" ]] && CONFIG_FILE_FLAG="--config-file $INPUT_CONFIG_FILE"
@@ -53,6 +52,9 @@ if [ -n "$INPUT_LOG_LEVEL" ]; then
   export LOG_LEVEL=$INPUT_LOG_LEVEL
 fi
 
+#
+# Following inputs need to be separated by comma and added via multiple flags
+#
 EXTCHECK_DIRS_FLAG=""
 if [ -n "$INPUT_EXTERNAL_CHECKS_DIRS" ]; then
   IFS=', ' read -r -a extchecks_dir <<< "$INPUT_EXTERNAL_CHECKS_DIRS"
@@ -77,6 +79,15 @@ if [ -n "$INPUT_EXTERNAL_CHECKS_REPOS" ]; then
   for repo in "${extchecks_git[@]}"
   do
     EXTCHECK_REPOS_FLAG="$EXTCHECK_REPOS_FLAG --external-checks-git $repo"
+  done
+fi
+
+OUTPUT_FLAG=""
+if [ -n "$INPUT_OUTPUT_FORMAT" ]; then
+  IFS=', ' read -r -a output_format <<< "$INPUT_OUTPUT_FORMAT"
+  for format in "${output_format[@]}"
+  do
+    OUTPUT_FLAG="$OUTPUT_FLAG --output $format"
   done
 fi
 

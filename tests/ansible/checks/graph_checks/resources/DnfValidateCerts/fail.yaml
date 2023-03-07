@@ -1,0 +1,40 @@
+---
+- name: Verify tests
+  hosts: all
+  gather_facts: False
+  tasks:
+    - name: long_false
+      ansible.builtin.dnf:
+        name: nikto
+        state: latest
+        validate_certs: false
+
+    - name: short_false
+      dnf:
+        name: nikto
+        state: latest
+        validate_certs: false
+
+    - name: long_no
+      ansible.builtin.dnf:
+        name: nikto
+        state: latest
+        validate_certs: no
+
+    - name: short_no
+      dnf:
+        name: nikto
+        state: latest
+        validate_certs: No
+    
+    - name: long_NO
+      ansible.builtin.dnf:
+        name: nikto
+        state: latest
+        validate_certs: NO
+
+    - name: short_FALSE
+      dnf:
+        name: nikto
+        state: latest
+        validate_certs: FALSE

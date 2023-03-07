@@ -26,8 +26,7 @@ from checkov.terraform.graph_builder.utils import (
     attribute_has_nested_attributes, attribute_has_dup_with_dynamic_attributes,
 )
 from checkov.terraform.graph_builder.variable_rendering.vertex_reference import VertexReference
-from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform import replace_string_value, \
-    evaluate_terraform
+import checkov.terraform.graph_builder.variable_rendering.evaluate_terraform as evaluator
 
 if TYPE_CHECKING:
     from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
@@ -47,6 +46,11 @@ LEFT_BRACKET_WITH_QUOTATION = '["'
 RIGHT_BRACKET_WITH_QUOTATION = '"]'
 LEFT_BRACKET = '['
 RIGHT_BRACKET = ']'
+LEFT_CURLY = '{'
+RIGHT_CURLY = '}'
+DOLLAR_PREFIX = '$'
+FOR_EXPRESSION_DICT = ':>'
+KEY_VALUE_SEPERATOR = ' : '
 
 # matches the internal value of the 'type' attribute: usually like '${map}' or '${map(string)}', but could possibly just
 # be like 'map' or 'map(string)' (but once we hit a ( or } we can stop)
@@ -80,10 +84,9 @@ class TerraformVariableRenderer(VariableRenderer):
     def evaluate_vertex_attribute_from_edge(self, edge_list: List[Edge]) -> None:
         multiple_edges = len(edge_list) > 1
         edge = edge_list[0]
-        try:
-            origin_vertex_attributes = self.local_graph.vertices[edge.origin].attributes
-        except AttributeError:
+        if not self.local_graph.vertices[edge.origin] or not self.local_graph.vertices[edge.dest]:
             return
+        origin_vertex_attributes = self.local_graph.vertices[edge.origin].attributes
         val_to_eval = deepcopy(origin_vertex_attributes.get(edge.label, ""))
 
         referenced_vertices = get_referenced_vertices_in_value(
@@ -257,7 +260,7 @@ class TerraformVariableRenderer(VariableRenderer):
         )
         str_to_evaluate = str_to_evaluate.replace("\\\\", "\\")
         evaluated_attribute_value = (
-            str_to_evaluate if self.attributes_no_eval(changed_attribute_key, vertex) else evaluate_terraform(str_to_evaluate)
+            str_to_evaluate if self.attributes_no_eval(changed_attribute_key, vertex) else evaluator.evaluate_terraform(str_to_evaluate)
         )
         self.local_graph.update_vertex_attribute(
             vertex, changed_attribute_key, evaluated_attribute_value, change_origin_id, attribute_at_dest
@@ -272,7 +275,7 @@ class TerraformVariableRenderer(VariableRenderer):
                 origin_value = decoded_attributes[attr]
                 if not isinstance(origin_value, str):
                     continue
-                evaluated_attribute_value = evaluate_terraform(origin_value)
+                evaluated_attribute_value = evaluator.evaluate_terraform(origin_value)
                 if origin_value != evaluated_attribute_value:
                     vertex.update_inner_attribute(attr, vertex.attributes, evaluated_attribute_value)
 
@@ -287,7 +290,7 @@ class TerraformVariableRenderer(VariableRenderer):
     ) -> Union[Any, List[Any]]:
         if count > 1:
             return original_val
-        new_val = replace_string_value(
+        new_val = evaluator.replace_string_value(
             original_str=original_val,
             str_to_replace=replaced_key,
             replaced_value=replaced_value,
@@ -311,7 +314,7 @@ class TerraformVariableRenderer(VariableRenderer):
                         rendered_blocks = self._process_dynamic_blocks(dynamic_blocks)
                     except Exception:
                         logging.info(f'Failed to process dynamic blocks in file {vertex.path} of resource {vertex.name}'
-                                     f' for blocks: {dynamic_blocks}', exc_info=True)
+                                     f' for blocks: {dynamic_blocks}')
                         continue
                     changed_attributes = []
 
@@ -524,7 +527,7 @@ class TerraformVariableRenderer(VariableRenderer):
         if type(val) not in [str, list, set, dict]:
             evaluated_val = val
         elif isinstance(val, str):
-            evaluated_val = evaluate_terraform(val, keep_interpolations=False)
+            evaluated_val = evaluator.evaluate_terraform(val, keep_interpolations=False)
         elif isinstance(val, list):
             evaluated_val = []
             for v in val:

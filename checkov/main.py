@@ -38,6 +38,7 @@ from checkov.common.bridgecrew.integration_features.features.custom_policies_int
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.integration_features.features.licensing_integration import integration as licensing_integration
+from checkov.common.bridgecrew.severities import BcSeverities
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.output.baseline import Baseline
 from checkov.common.bridgecrew.check_type import checkov_runners
@@ -212,7 +213,9 @@ def run(banner: str = checkov_banner, argv: list[str] = sys.argv[1:]) -> int | N
                                  enable_secret_scan_all_files=bool(convert_str_to_bool(config.enable_secret_scan_all_files)),
                                  block_list_secret_scan=config.block_list_secret_scan,
                                  deep_analysis=config.deep_analysis,
-                                 repo_root_for_plan_enrichment=config.repo_root_for_plan_enrichment)
+                                 repo_root_for_plan_enrichment=config.repo_root_for_plan_enrichment,
+                                 enable_git_history_secret_scan=config.scan_secrets_history,
+                                 git_history_timeout=config.secrets_history_timeout)
 
     source_env_val = os.getenv('BC_SOURCE', 'cli')
     source = get_source_type(source_env_val)
@@ -227,7 +230,7 @@ def run(banner: str = checkov_banner, argv: list[str] = sys.argv[1:]) -> int | N
         logger.debug('Using --list; setting source to DISABLED')
         source = SourceTypes[BCSourceType.DISABLED]
 
-    if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 and source.upload_results:
+    if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2:
         DEFAULT_RUNNERS.append(sca_package_runner_2())
     else:
         DEFAULT_RUNNERS.append(sca_package_runner())
@@ -628,6 +631,15 @@ class Checkov:
             # if a bc_api_key is passed it'll save it.  Otherwise it will check ~/.bridgecrew/credentials
             self.config.bc_api_key = bc_integration.persist_bc_api_key(self.config)
 
+            if not self.config.bc_api_key:
+                # check, if someone tries to use a severity filter without an API key
+                severities = {severity for severity in BcSeverities.__dict__.values() if isinstance(severity, str)}
+                if (
+                    (self.config.check and any(check in severities for check in self.config.check))
+                    or (self.config.skip_check and any(check in severities for check in self.config.skip_check))
+                ):
+                    logging.warning("Filtering checks by severity is only possible with an API key")
+
             excluded_paths = self.config.skip_path or []
 
             if self.config.var_file:
@@ -653,7 +665,11 @@ class Checkov:
                 block_list_secret_scan=self.config.block_list_secret_scan,
                 deep_analysis=self.config.deep_analysis,
                 repo_root_for_plan_enrichment=self.config.repo_root_for_plan_enrichment,
-                resource_attr_to_omit=self.config.mask
+                resource_attr_to_omit=self.config.mask,
+                # TODO modify the output for git_history secret and remove the rewrite of enable_git_history_secret_scan
+                # enable_git_history_secret_scan=self.config.scan_secrets_history,
+                enable_git_history_secret_scan=False,  # expose after unite git history with secret scan
+                git_history_timeout=self.config.secrets_history_timeout
             )
 
             source_env_val = os.getenv('BC_SOURCE', 'cli')
@@ -669,7 +685,7 @@ class Checkov:
                 logger.debug('Using --list; setting source to DISABLED')
                 source = SourceTypes[BCSourceType.DISABLED]
 
-            if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 and source.upload_results:
+            if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2:
                 self.runners.append(sca_package_runner_2())
             else:
                 self.runners.append(sca_package_runner())
@@ -832,7 +848,7 @@ class Checkov:
                         self.exit_run()
                     if baseline:
                         baseline.compare_and_reduce_reports(self.scan_reports)
-                    if bc_integration.is_integration_configured():
+                    if bc_integration.is_integration_configured() and bc_integration.bc_source and bc_integration.bc_source.upload_results:
                         self.upload_results(
                             root_folder=root_folder,
                             excluded_paths=runner_filter.excluded_paths,

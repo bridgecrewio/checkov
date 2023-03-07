@@ -1,0 +1,16 @@
+metadata:
+  id: CKV3_SAST_15
+  name: 'Ensure hazelcast symmetric encryption is not used'
+  guidelines: 'The network communications for Hazelcast is configured to use a symmetric cipher (probably DES
+    or Blowfish). Those ciphers alone do not provide integrity or secure authentication. The use of
+    asymmetric encryption is preferred.'
+  category: 'sast'
+  cwe: "CWE-326: Inadequate Encryption Strength"
+scope:
+  languages:
+    - java
+definition:
+  - cond_type: "pattern"
+    operator: "equals"
+    value: "new com.hazelcast.config.SymmetricEncryptionConfig()"
+

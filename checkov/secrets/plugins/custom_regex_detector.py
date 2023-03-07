@@ -106,6 +106,8 @@ class CustomRegexDetector(RegexBasedDetector):
             line_number: int = 0,
             context: Optional[CodeSnippet] = None,
             is_multiline: bool = False,
+            is_added: bool = False,
+            is_removed: bool = False,
             **kwargs: Any
     ) -> None:
         current_denylist: Set[Pattern[str]] = set()
@@ -134,7 +136,9 @@ class CustomRegexDetector(RegexBasedDetector):
                 filename=filename,
                 secret=match,
                 line_number=line_number,
-                is_verified=is_verified
+                is_verified=is_verified,
+                is_added=is_added,
+                is_removed=is_removed,
             )
             ps.check_id = current_regex_to_metadata[regex.pattern]["Check_ID"]  # type:ignore[attr-defined]
             if is_multiline:

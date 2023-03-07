@@ -14,7 +14,7 @@ from typing import List, Dict, Any, Optional, cast, TYPE_CHECKING, Type
 
 from typing_extensions import Literal
 
-from checkov.common.bridgecrew.code_categories import CodeCategoryMapping
+from checkov.common.bridgecrew.code_categories import CodeCategoryMapping, CodeCategoryType
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
     integration as metadata_integration
@@ -31,8 +31,9 @@ from checkov.common.output.csv import CSVSBOM
 from checkov.common.output.cyclonedx import CycloneDX
 from checkov.common.output.gitlab_sast import GitLabSast
 from checkov.common.output.report import Report, merge_reports
+from checkov.common.output.sarif import Sarif
 from checkov.common.parallelizer.parallel_runner import parallel_runner
-from checkov.common.typing import _ExitCodeThresholds, _BaseRunner
+from checkov.common.typing import _ExitCodeThresholds, _BaseRunner, _ScaExitCodeThresholds
 from checkov.common.util import data_structures_utils
 from checkov.common.util.banner import tool as tool_name
 from checkov.common.util.json_utils import CustomJSONEncoder
@@ -201,12 +202,16 @@ class RunnerRegistry:
         return any(scan_report.error_status != ErrorStatus.SUCCESS for scan_report in reports)
 
     @staticmethod
-    def get_fail_thresholds(config: argparse.Namespace, report_type: str) -> _ExitCodeThresholds:
+    def get_fail_thresholds(config: argparse.Namespace, report_type: str) -> _ExitCodeThresholds | _ScaExitCodeThresholds:
 
         soft_fail = config.soft_fail
 
         soft_fail_on_checks = []
         soft_fail_threshold = None
+
+        # these specifically check the --hard-fail-on and --soft-fail-on args, NOT enforcement rules, so
+        # we don't care about SCA as a special case
+
         # soft fail on the highest severity threshold in the list
         for val in convert_csv_string_arg_to_list(config.soft_fail_on):
             if val.upper() in Severities:
@@ -239,25 +244,38 @@ class RunnerRegistry:
 
         if not config.use_enforcement_rules:
             logging.debug('Use enforcement rules is FALSE')
-        elif not soft_fail:
-            code_category_type = CodeCategoryMapping[report_type]
-            enf_rule = repo_config_integration.code_category_configs.get(code_category_type)
 
-            if enf_rule:
-                logging.debug('Use enforcement rules is TRUE')
+        # if there is a severity in either the soft-fail-on list or hard-fail-on list, then we will ignore enforcement rules and skip this
+        # it means that SCA will not be treated as having two different thresholds in that case
+        # if the lists only contain check IDs, then we will merge them with the enforcement rule value
+        elif not soft_fail and not soft_fail_threshold and not hard_fail_threshold:
+            if 'sca_' in report_type:
+                code_category_types = cast(List[CodeCategoryType], CodeCategoryMapping[report_type])
+                category_rules = {
+                    category: repo_config_integration.code_category_configs[category] for category in code_category_types
+                }
+                return cast(_ScaExitCodeThresholds, {
+                    category: {
+                        'soft_fail': category_rules[category].is_global_soft_fail(),
+                        'soft_fail_checks': soft_fail_on_checks,
+                        'soft_fail_threshold': soft_fail_threshold,
+                        'hard_fail_checks': hard_fail_on_checks,
+                        'hard_fail_threshold': category_rules[category].hard_fail_threshold
+                    } for category in code_category_types
+                })
+            else:
+                code_category_type = cast(CodeCategoryType, CodeCategoryMapping[report_type])  # not a list
+                enf_rule = repo_config_integration.code_category_configs[code_category_type]
 
-                # if there is a severity in either the soft-fail-on list or hard-fail-on list, then we will ignore enforcement rules
-                # if the lists only contain check IDs, then we will merge them with the enforcement rule value
-                if soft_fail_threshold or hard_fail_threshold:
-                    logging.debug('Soft or hard fail threshold is set; ignoring enforcement rules')
-                else:
+                if enf_rule:
+                    logging.debug('Use enforcement rules is TRUE')
                     hard_fail_threshold = enf_rule.hard_fail_threshold
                     soft_fail = enf_rule.is_global_soft_fail()
                     logging.debug(f'Using enforcement rule hard fail threshold for this report: {hard_fail_threshold.name}')
-            else:
-                logging.debug(f'Use enforcement rules is TRUE, but did not find an enforcement rule for report type {report_type}, so falling back to CLI args')
+                else:
+                    logging.debug(f'Use enforcement rules is TRUE, but did not find an enforcement rule for report type {report_type}, so falling back to CLI args')
         else:
-            logging.debug('Soft fail was true; ignoring enforcement rules')
+            logging.debug('Soft fail was true or a severity was used in soft fail on / hard fail on; ignoring enforcement rules')
 
         return {
             'soft_fail': soft_fail,
@@ -366,7 +384,7 @@ class RunnerRegistry:
             ansi_escape = re.compile(r'(?:\x1B[@-_]|[\x80-\x9F])[0–9:;<=>?]*[ -/]*[@-~]')
             data_outputs['cli'] = ansi_escape.sub('', cli_output)
         if "sarif" in config.output:
-            master_report = Report("merged")
+            sarif = Sarif(reports=sarif_reports, tool=self.tool)
 
             output_format = output_formats["sarif"]
             if "cli" not in config.output and output_format == CONSOLE_OUTPUT:
@@ -382,22 +400,19 @@ class RunnerRegistry:
                         use_bc_ids=config.output_bc_ids,
                         summary_position=config.summary_position
                     ))
-                master_report.failed_checks += report.failed_checks
-                master_report.skipped_checks += report.skipped_checks
 
             if output_format == CONSOLE_OUTPUT:
                 # don't write to file, if an explicit file path was set
-                master_report.write_sarif_output(self.tool)
+                sarif.write_sarif_output()
 
-            if output_format == CONSOLE_OUTPUT:
                 del output_formats["sarif"]
 
                 if "cli" not in config.output and url:
-                    print("More details: {}".format(url))
+                    print(f"More details: {url}")
                 if CONSOLE_OUTPUT in output_formats.values():
                     print(OUTPUT_DELIMITER)
 
-            data_outputs["sarif"] = json.dumps(master_report.get_sarif_json(self.tool), cls=CustomJSONEncoder)
+            data_outputs["sarif"] = json.dumps(sarif.json, cls=CustomJSONEncoder)
         if "json" in config.output:
             if config.compact and report_jsons:
                 self.strip_code_blocks_from_json(report_jsons)

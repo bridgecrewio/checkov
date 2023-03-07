@@ -1,0 +1,20 @@
+metadata:
+  id: CKV3_SAST_20
+  name: 'Ensure cookie is not stored for an extended period of time'
+  guidelines: 'Storing sensitive data in a persistent cookie for an extended period can lead to a breach of
+    confidentiality or account compromise.'
+  category: 'sast'
+  cwe: "CWE-539: Information Exposure Through Persistent Cookies"
+scope:
+  languages:
+    - java
+definition:
+  - cond_type: "filter"
+    attribute: "pattern"
+    operator: "within"
+    value: |
+      (javax.servlet.http.Cookie $C).setMaxAge($AGE);
+  - cond_type: "variable"
+    variable: "$AGE"
+    operator: "greater_than_or_equal"
+    value: "31536000"

@@ -20,19 +20,23 @@ class TestEC2PublicIP(unittest.TestCase):
             "aws_instance.private",
             "aws_launch_template.default",
             "aws_launch_template.private",
-            "aws_instance.public_foreach[key2]",
+            "aws_instance.public_foreach[\"key2\"]",
+            "aws_instance.public_foreach_loop_list[\"k\"]",
+            "aws_instance.public_foreach_loop_list[\"v\"]",
         }
         failing_resources = {
             "aws_instance.public",
             "aws_launch_template.public",
-            "aws_instance.public_foreach[key1]",
+            "aws_instance.public_foreach[\"key1\"]",
+            "aws_instance.public_foreach_loop[\"key3\"]",
+            "aws_instance.public_foreach_loop[\"key4\"]",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 5)
-        self.assertEqual(summary["failed"], 3)
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 

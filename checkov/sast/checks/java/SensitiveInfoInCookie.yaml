@@ -1,0 +1,45 @@
+metadata:
+  id: CKV3_SAST_21
+  name: 'Ensure cookie does not contain sensitive session info'
+  guidelines: 'The information stored in a custom cookie should not be sensitive or related to the session.
+    In most cases, sensitive data should only be stored in session and referenced by the users session cookie.'
+  category: 'sast'
+  cwe: "CWE-614: Sensitive Cookie in HTTPS Session Without 'Secure' Attribute"
+scope:
+  languages:
+    - java
+definition:
+  - cond_type: "filter"
+    attribute: "pattern"
+    operator: "within"
+    value: $FUNC(..., HttpServletRequest $REQ, ...) {
+             ...
+           }
+  - or:
+    - and:
+      - cond_type: "filter"
+        attribute: "pattern"
+        operator: "within"
+        value: |
+               for (Cookie $C : $REQ.getCookies()) {
+                 ...
+               }
+      - or:
+        - cond_type: "pattern"
+          operator: "equals"
+          value: "$C.getName();"
+        - cond_type: "pattern"
+          operator: "equals"
+          value: "$C.getValue();"
+        - cond_type: "pattern"
+          operator: "equals"
+          value: "$C.getPath();"
+    - cond_type: "pattern"
+      operator: "equals"
+      value: "(Cookie $COOKIE).getName();"
+    - cond_type: "pattern"
+      operator: "equals"
+      value: "(Cookie $COOKIE).getValue();"
+    - cond_type: "pattern"
+      operator: "equals"
+      value: "(Cookie $COOKIE).getPath();"

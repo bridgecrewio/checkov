@@ -1,0 +1,23 @@
+metadata:
+  id: CKV3_SAST_18
+  name: 'Ensure at least 128 bits are used for encryption keys'
+  guidelines: 'A small key size makes the ciphertext vulnerable to brute force attacks. At least 128 bits of
+    entropy should be used when generating the key if use of Blowfish is required.'
+  category: 'sast'
+  cwe: "CWE-326: Inadequate Encryption Strength"
+scope:
+  languages:
+    - java
+definition:
+  - cond_type: "filter"
+    attribute: "pattern"
+    operator: "within"
+    value: |
+      $KEYGEN = javax.crypto.KeyGenerator.getInstance("Blowfish", ...);
+      ...
+      $KEYGEN.init($KEY_SIZE);
+  - cond_type: "variable"
+    variable: "$KEY_SIZE"
+    operator: "less_than"
+    value: "128"
+

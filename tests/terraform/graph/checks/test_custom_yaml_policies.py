@@ -20,6 +20,9 @@ class TestCustomYamlPolicies(unittest.TestCase):
     def test_CustomPolicy1(self):
         self.go("CustomPolicy1")
 
+    def test_CustomAwsEMRSecurityConfiguration(self):
+        self.go('CustomAwsEMRSecurityConfiguration')
+
     def go(self, dir_name: str, check_name: str | None = None) -> None:
         dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), f"resources/{dir_name}")
         check_name = dir_name if check_name is None else check_name
