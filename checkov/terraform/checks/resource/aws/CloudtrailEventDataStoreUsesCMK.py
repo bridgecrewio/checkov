@@ -6,7 +6,7 @@ from checkov.common.models.consts import ANY_VALUE
 class CloudtrailEventDataStoreUsesCMK(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure Cloud Trail Event Data Store uses CMK"
-        id = "CKV_AWS_293"
+        id = "CKV_AWS_294"
         supported_resources = ['aws_cloudtrail_event_data_store']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
