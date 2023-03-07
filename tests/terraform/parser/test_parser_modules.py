@@ -132,3 +132,27 @@ class TestParserInternals(unittest.TestCase):
         # then
         self.assertEqual(len(out_definitions), 3)  # root file + 2x module file
         self.assertEqual(len(parser.loaded_files_map), 2)  # root file + 1x module file
+
+    def test_load_nested_dup_module(self):
+        parser = Parser()
+        directory = os.path.join(self.resources_dir, "parser_dup_nested")
+        out_definitions = {}
+        parser.parse_directory(directory=directory, out_evaluations_context={}, out_definitions=out_definitions)
+
+        self.assertEqual(len(out_definitions), 7)
+        self.assertEqual(len(parser.loaded_files_map), 3)
+
+    def test_load_local_nested_module(self):
+        # given
+        parser = Parser()
+        directory = os.path.join(self.resources_dir, "parser_nested_modules")
+        out_definitions = {}
+
+        # when
+        parser.parse_directory(
+            directory=directory, out_definitions=out_definitions, out_evaluations_context={}
+        )
+
+        # then
+        self.assertEqual(len(out_definitions), 5)  # root file + 2x module file
+        self.assertEqual(len(parser.loaded_files_map), 5)  # root file + 1x module file

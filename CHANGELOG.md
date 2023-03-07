@@ -1,6 +1,22 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.59...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.66...HEAD)
+
+## [2.3.66](https://github.com/bridgecrewio/checkov/compare/2.3.59...2.3.66) - 2023-03-06
+
+### Feature
+
+- **gitlab:** fix wrong resource in gitlab-ci - [#4610](https://github.com/bridgecrewio/checkov/pull/4610)
+- **terraform:** Support the -1 protocol on SG checks - [#4611](https://github.com/bridgecrewio/checkov/pull/4611)
+- **terraform:** TF Parser support of new modules keys - [#4601](https://github.com/bridgecrewio/checkov/pull/4601)
+
+### Bug Fix
+
+- **bicep:** extend CKV_AZURE_4 to consider omsAgent to be written in camelCase - [#4614](https://github.com/bridgecrewio/checkov/pull/4614)
+- **general:** refactor SARIF output - [#4606](https://github.com/bridgecrewio/checkov/pull/4606)
+- **general:** skip scanning invalid resources - [#4617](https://github.com/bridgecrewio/checkov/pull/4617)
+- **sca:** Added an error log for Twistcli failures - [#4613](https://github.com/bridgecrewio/checkov/pull/4613)
+- **terraform:** stop evaluating a string ... to the Ellipsis object - [#4623](https://github.com/bridgecrewio/checkov/pull/4623)
 
 ## [2.3.59](https://github.com/bridgecrewio/checkov/compare/2.3.57...2.3.59) - 2023-03-05
 

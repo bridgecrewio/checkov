@@ -14,6 +14,7 @@ from pytest_mock import MockerFixture
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.output.csv import CSVSBOM, FILE_NAME_OSS_PACKAGES
 from checkov.common.output.cyclonedx import CycloneDX
+from checkov.common.output.sarif import Sarif
 
 EXAMPLES_DIR = Path(__file__).parent / "examples"
 OUTPUTS_DIR = Path(__file__).parent / "outputs"
@@ -312,355 +313,290 @@ def test_get_csv_report(sca_package_2_report, tmp_path: Path):
     assert csv_output_str_as_list == expected_csv_output_str
 
 
-def test_get_sarif_json(sca_package_report_2_with_skip_scope_function):
+def test_sarif_output(sca_package_report_2_with_skip_scope_function):
     # The creation of sarif_json may change the input report. in order not to affect the other tests, we use
     # a report that is unique for the scope of the function
 
-    # given
-    report = sca_package_report_2_with_skip_scope_function
-
     # when
-    sarif_output = report.get_sarif_json("Checkov")
+    sarif_output = Sarif(reports=[sca_package_report_2_with_skip_scope_function], tool="Checkov").json
 
     # then
     sarif_output["runs"][0]["tool"]["driver"]["version"] = "2.0.x"
     expected_sarif_json = {
         "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+        "version": "2.1.0",
         "runs": [
             {
-                "results": [
-                    {
-                        "attachments": [],
-                        "level": "error",
-                        "locations": [
-                            {
-                                "physicalLocation": {
-                                    "artifactLocation": {
-                                        "uri": "path/to/requirements.txt"
-                                    },
-                                    "region": {
-                                        "endLine": 1,
-                                        "startLine": 1
-                                    }
-                                }
-                            }
-                        ],
-                        "message": {
-                            "text": "Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover. A suitably crafted email address (that is equal to an existing user\\'s email address after case transformation of Unicode characters) would allow an attacker to be sent a password reset token for the matched user account. (One mitigation in the new releases is to send password reset tokens only to the registered user email address.)"
-                        },
-                        "ruleId": "CKV_CVE_2019_19844",
-                        "ruleIndex": 0
-                    },
-                    {
-                        "attachments": [],
-                        "level": "warning",
-                        "locations": [
-                            {
-                                "physicalLocation": {
-                                    "artifactLocation": {
-                                        "uri": "path/to/requirements.txt"
-                                    },
-                                    "region": {
-                                        "endLine": 1,
-                                        "startLine": 1
-                                    }
-                                }
-                            }
-                        ],
-                        "message": {
-                            "text": "Cross-site scripting (XSS) vulnerability in the dismissChangeRelatedObjectPopup function in contrib/admin/static/admin/js/admin/RelatedObjectLookups.js in Django before 1.8.14, 1.9.x before 1.9.8, and 1.10.x before 1.10rc1 allows remote attackers to inject arbitrary web script or HTML via vectors involving unsafe usage of Element.innerHTML."
-                        },
-                        "ruleId": "CKV_CVE_2016_6186",
-                        "ruleIndex": 1
-                    },
-                    {
-                        "attachments": [],
-                        "level": "error",
-                        "locations": [
-                            {
-                                "physicalLocation": {
-                                    "artifactLocation": {
-                                        "uri": "path/to/requirements.txt"
-                                    },
-                                    "region": {
-                                        "endLine": 1,
-                                        "startLine": 1
-                                    }
-                                }
-                            }
-                        ],
-                        "message": {
-                            "text": "The cookie parsing code in Django before 1.8.15 and 1.9.x before 1.9.10, when used on a site with Google Analytics, allows remote attackers to bypass an intended CSRF protection mechanism by setting arbitrary cookies."
-                        },
-                        "ruleId": "CKV_CVE_2016_7401",
-                        "ruleIndex": 2
-                    },
-                    {
-                        "attachments": [],
-                        "level": "warning",
-                        "locations": [
-                            {
-                                "physicalLocation": {
-                                    "artifactLocation": {
-                                        "uri": "path/to/requirements.txt"
-                                    },
-                                    "region": {
-                                        "endLine": 1,
-                                        "startLine": 1
-                                    }
-                                }
-                            }
-                        ],
-                        "message": {
-                            "text": "Django before 2.2.24, 3.x before 3.1.12, and 3.2.x before 3.2.4 has a potential directory traversal via django.contrib.admindocs. Staff members could use the TemplateDetailView view to check the existence of arbitrary files. Additionally, if (and only if) the default admindocs templates have been customized by application developers to also show file contents, then not only the existence but also the file contents would have been exposed. In other words, there is directory traversal outside of the template root directories."
-                        },
-                        "ruleId": "CKV_CVE_2021_33203",
-                        "ruleIndex": 3
-                    },
-                    {
-                        "attachments": [],
-                        "level": "error",
-                        "locations": [
-                            {
-                                "physicalLocation": {
-                                    "artifactLocation": {
-                                        "uri": "path/to/requirements.txt"
-                                    },
-                                    "region": {
-                                        "endLine": 1,
-                                        "startLine": 1
-                                    }
-                                }
-                            }
-                        ],
-                        "message": {
-                            "text": "The Pallets Project Flask before 1.0 is affected by: unexpected memory usage. The impact is: denial of service. The attack vector is: crafted encoded JSON data. The fixed version is: 1. NOTE: this may overlap CVE-2018-1000656."
-                        },
-                        "ruleId": "CKV_CVE_2019_1010083",
-                        "ruleIndex": 4
-                    },
-                    {
-                        "attachments": [],
-                        "level": "error",
-                        "locations": [
-                            {
-                                "physicalLocation": {
-                                    "artifactLocation": {
-                                        "uri": "path/to/requirements.txt"
-                                    },
-                                    "region": {
-                                        "endLine": 1,
-                                        "startLine": 1
-                                    }
-                                }
-                            }
-                        ],
-                        "message": {
-                            "text": "The Pallets Project flask version Before 0.12.3 contains a CWE-20: Improper Input Validation vulnerability in flask that can result in Large amount of memory usage possibly leading to denial of service. This attack appear to be exploitable via Attacker provides JSON data in incorrect encoding. This vulnerability appears to have been fixed in 0.12.3. NOTE: this may overlap CVE-2019-1010083."
-                        },
-                        "ruleId": "CKV_CVE_2018_1000656",
-                        "ruleIndex": 5
-                    },
-                    {
-                        "attachments": [],
-                        "level": "error",
-                        "locations": [
-                            {
-                                "physicalLocation": {
-                                    "artifactLocation": {
-                                        "uri": "path/to/go.sum"
-                                    },
-                                    "region": {
-                                        "endLine": 1,
-                                        "startLine": 1
-                                    }
-                                }
-                            }
-                        ],
-                        "message": {
-                            "text": "jwt-go before 4.0.0-preview1 allows attackers to bypass intended access restrictions in situations with []string{} for m[\\\"aud\\\"] (which is allowed by the specification). Because the type assertion fails, \\\"\\\" is the value of aud. This is a security problem if the JWT token is presented to a service that lacks its own audience check."
-                        },
-                        "ruleId": "CKV_CVE_2020_26160",
-                        "ruleIndex": 6
-                    },
-                    {
-                        "attachments": [],
-                        "level": "error",
-                        "locations": [
-                            {
-                                "physicalLocation": {
-                                    "artifactLocation": {
-                                        "uri": "path/to/go.sum"
-                                    },
-                                    "region": {
-                                        "endLine": 1,
-                                        "startLine": 1
-                                    }
-                                }
-                            }
-                        ],
-                        "message": {
-                            "text": "A nil pointer dereference in the golang.org/x/crypto/ssh component through v0.0.3 for Go allows remote attackers to cause a denial of service against SSH servers."
-                        },
-                        "ruleId": "CKV_CVE_2020_29652",
-                        "ruleIndex": 7,
-                        "suppressions": [
-                            {
-                                "justification": "CVE-2020-29652 is skipped",
-                                "kind": "external"
-                            }
-                        ]
-                    }
-                ],
                 "tool": {
                     "driver": {
-                        "informationUri": "https://checkov.io",
                         "name": "Checkov",
-                        "organization": "bridgecrew",
+                        "version": "2.0.x",
+                        "informationUri": "https://checkov.io",
                         "rules": [
                             {
-                                "defaultConfiguration": {
-                                    "level": "error"
-                                },
+                                "id": "DUMMY_OTHER_LICENSE_flask@0.6",
+                                "name": "License DUMMY_OTHER_LICENSE - flask: 0.6",
+                                "shortDescription": {"text": "License DUMMY_OTHER_LICENSE - flask: 0.6"},
+                                "fullDescription": {"text": "Package flask@0.6 has license DUMMY_OTHER_LICENSE"},
+                                "help": {"text": "SCA license\nResource: path/to/requirements.txt.flask"},
+                                "defaultConfiguration": {"level": "error"},
+                            },
+                            {
+                                "id": "CVE-2019-19844_django@1.2",
+                                "name": "CVE-2019-19844 - django: 1.2",
+                                "shortDescription": {"text": "CVE-2019-19844 - django: 1.2"},
                                 "fullDescription": {
                                     "text": "Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover. A suitably crafted email address (that is equal to an existing user\\'s email address after case transformation of Unicode characters) would allow an attacker to be sent a password reset token for the matched user account. (One mitigation in the new releases is to send password reset tokens only to the registered user email address.)"
                                 },
                                 "help": {
-                                    "text": "\"SCA package scan\nResource: path/to/requirements.txt.django\""
+                                    "text": "SCA package scan\nResource: path/to/requirements.txt.django\nStatus: fixed in 3.0.1, 2.2.9, 1.11.27"
                                 },
+                                "defaultConfiguration": {"level": "error"},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2019-19844",
-                                "id": "CKV_CVE_2019_19844",
-                                "name": "SCA package scan",
-                                "shortDescription": {
-                                    "text": "CVE-2019-19844 - django: 1.2"
-                                }
                             },
                             {
-                                "defaultConfiguration": {
-                                    "level": "error"
-                                },
+                                "id": "CVE-2016-6186_django@1.2",
+                                "name": "CVE-2016-6186 - django: 1.2",
+                                "shortDescription": {"text": "CVE-2016-6186 - django: 1.2"},
                                 "fullDescription": {
                                     "text": "Cross-site scripting (XSS) vulnerability in the dismissChangeRelatedObjectPopup function in contrib/admin/static/admin/js/admin/RelatedObjectLookups.js in Django before 1.8.14, 1.9.x before 1.9.8, and 1.10.x before 1.10rc1 allows remote attackers to inject arbitrary web script or HTML via vectors involving unsafe usage of Element.innerHTML."
                                 },
                                 "help": {
-                                    "text": "\"SCA package scan\nResource: path/to/requirements.txt.django\""
+                                    "text": "SCA package scan\nResource: path/to/requirements.txt.django\nStatus: fixed in 1.9.8, 1.8.14"
                                 },
+                                "defaultConfiguration": {"level": "error"},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2016-6186",
-                                "id": "CKV_CVE_2016_6186",
-                                "name": "SCA package scan",
-                                "shortDescription": {
-                                    "text": "CVE-2016-6186 - django: 1.2"
-                                }
                             },
                             {
-                                "defaultConfiguration": {
-                                    "level": "error"
-                                },
+                                "id": "CVE-2016-7401_django@1.2",
+                                "name": "CVE-2016-7401 - django: 1.2",
+                                "shortDescription": {"text": "CVE-2016-7401 - django: 1.2"},
                                 "fullDescription": {
                                     "text": "The cookie parsing code in Django before 1.8.15 and 1.9.x before 1.9.10, when used on a site with Google Analytics, allows remote attackers to bypass an intended CSRF protection mechanism by setting arbitrary cookies."
                                 },
                                 "help": {
-                                    "text": "\"SCA package scan\nResource: path/to/requirements.txt.django\""
+                                    "text": "SCA package scan\nResource: path/to/requirements.txt.django\nStatus: fixed in 1.9.10, 1.8.15"
                                 },
+                                "defaultConfiguration": {"level": "error"},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2016-7401",
-                                "id": "CKV_CVE_2016_7401",
-                                "name": "SCA package scan",
-                                "shortDescription": {
-                                    "text": "CVE-2016-7401 - django: 1.2"
-                                }
                             },
                             {
-                                "defaultConfiguration": {
-                                    "level": "error"
-                                },
+                                "id": "CVE-2021-33203_django@1.2",
+                                "name": "CVE-2021-33203 - django: 1.2",
+                                "shortDescription": {"text": "CVE-2021-33203 - django: 1.2"},
                                 "fullDescription": {
                                     "text": "Django before 2.2.24, 3.x before 3.1.12, and 3.2.x before 3.2.4 has a potential directory traversal via django.contrib.admindocs. Staff members could use the TemplateDetailView view to check the existence of arbitrary files. Additionally, if (and only if) the default admindocs templates have been customized by application developers to also show file contents, then not only the existence but also the file contents would have been exposed. In other words, there is directory traversal outside of the template root directories."
                                 },
                                 "help": {
-                                    "text": "\"SCA package scan\nResource: path/to/requirements.txt.django\""
+                                    "text": "SCA package scan\nResource: path/to/requirements.txt.django\nStatus: fixed in 3.2.4, 3.1.12, 2.2.24"
                                 },
+                                "defaultConfiguration": {"level": "error"},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2021-33203",
-                                "id": "CKV_CVE_2021_33203",
-                                "name": "SCA package scan",
-                                "shortDescription": {
-                                    "text": "CVE-2021-33203 - django: 1.2"
-                                }
                             },
                             {
-                                "defaultConfiguration": {
-                                    "level": "error"
-                                },
+                                "id": "CVE-2019-1010083_flask@0.6",
+                                "name": "CVE-2019-1010083 - flask: 0.6",
+                                "shortDescription": {"text": "CVE-2019-1010083 - flask: 0.6"},
                                 "fullDescription": {
                                     "text": "The Pallets Project Flask before 1.0 is affected by: unexpected memory usage. The impact is: denial of service. The attack vector is: crafted encoded JSON data. The fixed version is: 1. NOTE: this may overlap CVE-2018-1000656."
                                 },
                                 "help": {
-                                    "text": "\"SCA package scan\nResource: path/to/requirements.txt.flask\""
+                                    "text": "SCA package scan\nResource: path/to/requirements.txt.flask\nStatus: fixed in 1.0"
                                 },
+                                "defaultConfiguration": {"level": "error"},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2019-1010083",
-                                "id": "CKV_CVE_2019_1010083",
-                                "name": "SCA package scan",
-                                "shortDescription": {
-                                    "text": "CVE-2019-1010083 - flask: 0.6"
-                                }
                             },
                             {
-                                "defaultConfiguration": {
-                                    "level": "error"
-                                },
+                                "id": "CVE-2018-1000656_flask@0.6",
+                                "name": "CVE-2018-1000656 - flask: 0.6",
+                                "shortDescription": {"text": "CVE-2018-1000656 - flask: 0.6"},
                                 "fullDescription": {
                                     "text": "The Pallets Project flask version Before 0.12.3 contains a CWE-20: Improper Input Validation vulnerability in flask that can result in Large amount of memory usage possibly leading to denial of service. This attack appear to be exploitable via Attacker provides JSON data in incorrect encoding. This vulnerability appears to have been fixed in 0.12.3. NOTE: this may overlap CVE-2019-1010083."
                                 },
                                 "help": {
-                                    "text": "\"SCA package scan\nResource: path/to/requirements.txt.flask\""
+                                    "text": "SCA package scan\nResource: path/to/requirements.txt.flask\nStatus: fixed in 0.12.3"
                                 },
+                                "defaultConfiguration": {"level": "error"},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2018-1000656",
-                                "id": "CKV_CVE_2018_1000656",
-                                "name": "SCA package scan",
-                                "shortDescription": {
-                                    "text": "CVE-2018-1000656 - flask: 0.6"
-                                }
                             },
                             {
-                                "defaultConfiguration": {
-                                    "level": "error"
-                                },
+                                "id": "CVE-2020-26160_github.com/dgrijalva/jwt-go@v3.2.0",
+                                "name": "CVE-2020-26160 - github.com/dgrijalva/jwt-go: v3.2.0",
+                                "shortDescription": {"text": "CVE-2020-26160 - github.com/dgrijalva/jwt-go: v3.2.0"},
                                 "fullDescription": {
-                                    "text": "jwt-go before 4.0.0-preview1 allows attackers to bypass intended access restrictions in situations with []string{} for m[\\\"aud\\\"] (which is allowed by the specification). Because the type assertion fails, \\\"\\\" is the value of aud. This is a security problem if the JWT token is presented to a service that lacks its own audience check."
+                                    "text": 'jwt-go before 4.0.0-preview1 allows attackers to bypass intended access restrictions in situations with []string{} for m[\\"aud\\"] (which is allowed by the specification). Because the type assertion fails, \\"\\" is the value of aud. This is a security problem if the JWT token is presented to a service that lacks its own audience check.'
                                 },
                                 "help": {
-                                    "text": "\"SCA package scan\nResource: path/to/go.sum.github.com/dgrijalva/jwt-go\""
+                                    "text": "SCA package scan\nResource: path/to/go.sum.github.com/dgrijalva/jwt-go\nStatus: fixed in v4.0.0-preview1"
                                 },
+                                "defaultConfiguration": {"level": "error"},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2020-26160",
-                                "id": "CKV_CVE_2020_26160",
-                                "name": "SCA package scan",
-                                "shortDescription": {
-                                    "text": "CVE-2020-26160 - github.com/dgrijalva/jwt-go: v3.2.0"
-                                }
                             },
                             {
-                                "defaultConfiguration": {
-                                    "level": "error"
-                                },
+                                "id": "CVE-2020-29652_golang.org/x/crypto@v0.0.1",
+                                "name": "CVE-2020-29652 - golang.org/x/crypto: v0.0.1",
+                                "shortDescription": {"text": "CVE-2020-29652 - golang.org/x/crypto: v0.0.1"},
                                 "fullDescription": {
                                     "text": "A nil pointer dereference in the golang.org/x/crypto/ssh component through v0.0.3 for Go allows remote attackers to cause a denial of service against SSH servers."
                                 },
                                 "help": {
-                                    "text": "\"SCA package scan\nResource: path/to/go.sum.golang.org/x/crypto\""
+                                    "text": "SCA package scan\nResource: path/to/go.sum.golang.org/x/crypto\nStatus: fixed in v0.0.2"
                                 },
+                                "defaultConfiguration": {"level": "error"},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2020-29652",
-                                "id": "CKV_CVE_2020_29652",
-                                "name": "SCA package scan",
-                                "shortDescription": {
-                                    "text": "CVE-2020-29652 - golang.org/x/crypto: v0.0.1"
+                            },
+                        ],
+                        "organization": "bridgecrew",
+                    }
+                },
+                "results": [
+                    {
+                        "ruleId": "DUMMY_OTHER_LICENSE_flask@0.6",
+                        "ruleIndex": 0,
+                        "level": "error",
+                        "attachments": [],
+                        "message": {"text": "License DUMMY_OTHER_LICENSE - flask: 0.6"},
+                        "locations": [
+                            {
+                                "physicalLocation": {
+                                    "artifactLocation": {"uri": "path/to/requirements.txt"},
+                                    "region": {"startLine": 1, "endLine": 1, "snippet": {"text": "flask: 0.6"}},
                                 }
                             }
                         ],
-                        "version": "2.0.x"
-                    }
-                }
+                    },
+                    {
+                        "ruleId": "CVE-2019-19844_django@1.2",
+                        "ruleIndex": 1,
+                        "level": "error",
+                        "attachments": [],
+                        "message": {"text": "CVE-2019-19844 - django: 1.2"},
+                        "locations": [
+                            {
+                                "physicalLocation": {
+                                    "artifactLocation": {"uri": "path/to/requirements.txt"},
+                                    "region": {"startLine": 1, "endLine": 1, "snippet": {"text": "django: 1.2"}},
+                                }
+                            }
+                        ],
+                    },
+                    {
+                        "ruleId": "CVE-2016-6186_django@1.2",
+                        "ruleIndex": 2,
+                        "level": "warning",
+                        "attachments": [],
+                        "message": {"text": "CVE-2016-6186 - django: 1.2"},
+                        "locations": [
+                            {
+                                "physicalLocation": {
+                                    "artifactLocation": {"uri": "path/to/requirements.txt"},
+                                    "region": {"startLine": 1, "endLine": 1, "snippet": {"text": "django: 1.2"}},
+                                }
+                            }
+                        ],
+                    },
+                    {
+                        "ruleId": "CVE-2016-7401_django@1.2",
+                        "ruleIndex": 3,
+                        "level": "error",
+                        "attachments": [],
+                        "message": {"text": "CVE-2016-7401 - django: 1.2"},
+                        "locations": [
+                            {
+                                "physicalLocation": {
+                                    "artifactLocation": {"uri": "path/to/requirements.txt"},
+                                    "region": {"startLine": 1, "endLine": 1, "snippet": {"text": "django: 1.2"}},
+                                }
+                            }
+                        ],
+                    },
+                    {
+                        "ruleId": "CVE-2021-33203_django@1.2",
+                        "ruleIndex": 4,
+                        "level": "warning",
+                        "attachments": [],
+                        "message": {"text": "CVE-2021-33203 - django: 1.2"},
+                        "locations": [
+                            {
+                                "physicalLocation": {
+                                    "artifactLocation": {"uri": "path/to/requirements.txt"},
+                                    "region": {"startLine": 1, "endLine": 1, "snippet": {"text": "django: 1.2"}},
+                                }
+                            }
+                        ],
+                    },
+                    {
+                        "ruleId": "CVE-2019-1010083_flask@0.6",
+                        "ruleIndex": 5,
+                        "level": "error",
+                        "attachments": [],
+                        "message": {"text": "CVE-2019-1010083 - flask: 0.6"},
+                        "locations": [
+                            {
+                                "physicalLocation": {
+                                    "artifactLocation": {"uri": "path/to/requirements.txt"},
+                                    "region": {"startLine": 1, "endLine": 1, "snippet": {"text": "flask: 0.6"}},
+                                }
+                            }
+                        ],
+                    },
+                    {
+                        "ruleId": "CVE-2018-1000656_flask@0.6",
+                        "ruleIndex": 6,
+                        "level": "error",
+                        "attachments": [],
+                        "message": {"text": "CVE-2018-1000656 - flask: 0.6"},
+                        "locations": [
+                            {
+                                "physicalLocation": {
+                                    "artifactLocation": {"uri": "path/to/requirements.txt"},
+                                    "region": {"startLine": 1, "endLine": 1, "snippet": {"text": "flask: 0.6"}},
+                                }
+                            }
+                        ],
+                    },
+                    {
+                        "ruleId": "CVE-2020-26160_github.com/dgrijalva/jwt-go@v3.2.0",
+                        "ruleIndex": 7,
+                        "level": "error",
+                        "attachments": [],
+                        "message": {"text": "CVE-2020-26160 - github.com/dgrijalva/jwt-go: v3.2.0"},
+                        "locations": [
+                            {
+                                "physicalLocation": {
+                                    "artifactLocation": {"uri": "path/to/go.sum"},
+                                    "region": {
+                                        "startLine": 1,
+                                        "endLine": 1,
+                                        "snippet": {"text": "github.com/dgrijalva/jwt-go: v3.2.0"},
+                                    },
+                                }
+                            }
+                        ],
+                    },
+                    {
+                        "ruleId": "CVE-2020-29652_golang.org/x/crypto@v0.0.1",
+                        "ruleIndex": 8,
+                        "level": "error",
+                        "attachments": [],
+                        "message": {"text": "CVE-2020-29652 - golang.org/x/crypto: v0.0.1"},
+                        "locations": [
+                            {
+                                "physicalLocation": {
+                                    "artifactLocation": {"uri": "path/to/go.sum"},
+                                    "region": {
+                                        "startLine": 1,
+                                        "endLine": 1,
+                                        "snippet": {"text": "golang.org/x/crypto: v0.0.1"},
+                                    },
+                                }
+                            }
+                        ],
+                        "suppressions": [{"kind": "external", "justification": "CVE-2020-29652 is skipped"}],
+                    },
+                ],
             }
         ],
-        "version": "2.1.0"
     }
     assert sarif_output == expected_sarif_json
 
