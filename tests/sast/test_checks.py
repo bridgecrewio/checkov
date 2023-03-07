@@ -108,7 +108,7 @@ def setup():
     global CHECK_ID_MAP
     runner_filter = RunnerFilter(framework=['sast'])
     registry.set_runner_filter(runner_filter=runner_filter)
-    registry.load_rules(runner_filter.sast_languages)
+    registry.load_rules(runner_filter.framework, runner_filter.sast_languages)
     CHECK_ID_MAP = {check['metadata']['check_file'].split('.')[0]: check['id'] for check in registry.rules}
 
 

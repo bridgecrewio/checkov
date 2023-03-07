@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Any
+from typing import List, Any, Set
 
 from semgrep.constants import RuleSeverity
 from checkov.common.graph.checks_infra.enums import Operators
@@ -8,7 +8,11 @@ from checkov.common.graph.checks_infra.enums import Operators
 class SastLanguages(Enum):
     @classmethod
     def list(cls) -> List[Any]:
-        return list(map(lambda c: c.value, cls))  # type: ignore
+        return list(map(lambda c: c.value, cls))
+
+    @classmethod
+    def set(cls) -> Set["SastLanguages"]:
+        return set(cls)
 
     PYTHON = 'python'
     JAVA = 'java'
