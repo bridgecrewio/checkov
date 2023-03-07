@@ -14,7 +14,10 @@ def generate_resource_key_recursive(conf: dict[str, Any] | list[str] | str, key:
             next_key = f'{key}.{k}' if key else k
             return generate_resource_key_recursive(value, next_key, start_line, end_line)
         if isinstance(value, list):
-            return f'{key}.{k}' if key else k
+            if key:
+                return f'{key}.{k}'
+            else:
+                continue
         if isinstance(value, str):
             return key
 

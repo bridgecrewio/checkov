@@ -68,6 +68,16 @@ resource "aws_security_group_rule" "fail" {
   type              = "ingress"
 }
 
+resource "aws_security_group_rule" "fail2" {
+  cidr_blocks       = ["0.0.0.0/0"]
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  security_group_id = "sg-123456"
+  description = "Test unfettered access"
+  type              = "ingress"
+}
+
 resource "aws_vpc_security_group_ingress_rule" "fail" {
   security_group_id = aws_security_group.example.id
 
