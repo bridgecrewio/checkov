@@ -29,6 +29,7 @@ from checkov.runner_filter import RunnerFilter
                 "yaml",
                 "kubernetes",
                 "serverless",
+                "terraform_json",
                 "terraform_plan",
                 "github_configuration",
                 "github_actions",
