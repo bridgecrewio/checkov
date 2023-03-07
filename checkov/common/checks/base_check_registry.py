@@ -109,10 +109,13 @@ class BaseCheckRegistry:
         runner_filter: RunnerFilter,
         report_type: Optional[str] = None  # allow runners like TF plan to override the type while using the same registry
     ) -> Dict[BaseCheck, _CheckResult]:
-
-        (entity_type, entity_name, entity_configuration) = self.extract_entity_details(entity)
-
         results: Dict[BaseCheck, _CheckResult] = {}
+
+        try:
+            (entity_type, entity_name, entity_configuration) = self.extract_entity_details(entity)
+        except Exception:
+            logging.debug(f"Error in entity details extraction for file {scanned_file}", exc_info=True)
+            return results
 
         if not isinstance(entity_configuration, dict):
             return results

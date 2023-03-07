@@ -100,6 +100,7 @@ class Runner(PackageRunner):
         exit_code = await process.wait()
 
         if exit_code:
+            logging.error(f"error when running twistcli on image_id {image_id}")
             logging.error(stderr.decode())
             return {}
 

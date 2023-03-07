@@ -115,7 +115,8 @@ class FixesIntegration(BaseIntegrationFeature):
 
         if request.status != 200:
             error_message = extract_error_message(request)
-            raise Exception(f'Get fixes request failed with response code {request.status}: {error_message}')
+            logging.error(f'Get fixes request for file {filename} failed with response code {request.status}: {error_message} - skipping fixes for this file')
+            return None
 
         logging.debug(f'Response from fixes API: {request.data}')
 
