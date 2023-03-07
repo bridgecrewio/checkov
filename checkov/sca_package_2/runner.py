@@ -101,6 +101,12 @@ class Runner(BaseRunner[None, None, None]):
             report.set_error_status(ErrorStatus.ERROR)
             return report
 
+        report = self.create_report(runner_filter, scan_results)
+
+        return report
+
+    def create_report(self, runner_filter: RunnerFilter, scan_results: dict[str, Any]) -> Report:
+        report = Report(self.check_type)
         for path, result in scan_results.items():
             if not result:
                 continue
@@ -137,7 +143,6 @@ class Runner(BaseRunner[None, None, None]):
                 inline_suppressions=inline_suppressions,
                 used_private_registry=result.get("used_private_reg", False)
             )
-
         return report
 
     def upload_package_files(

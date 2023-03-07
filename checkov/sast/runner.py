@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import os
 import pathlib
+import sys
 from dataclasses import dataclass
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import get_severity
@@ -13,10 +14,13 @@ from checkov.runner_filter import RunnerFilter
 from checkov.sast.checks_infra.base_registry import Registry
 from checkov.sast.consts import SastLanguages, SUPPORT_FILE_EXT, SEMGREP_SEVERITY_TO_CHECKOV_SEVERITY, \
     FILE_EXT_TO_SAST_LANG
-from semgrep.semgrep_main import main as run_semgrep
-from semgrep.output import OutputSettings, OutputHandler
-from semgrep.constants import OutputFormat, RuleSeverity, EngineType, DEFAULT_TIMEOUT
-from semgrep.core_runner import StreamingSemgrepCore, SemgrepCore, CoreRunner
+
+if not sys.platform.startswith('win'):
+    # TODO: Enable SAST for windows runners
+    from semgrep.semgrep_main import main as run_semgrep
+    from semgrep.output import OutputSettings, OutputHandler
+    from semgrep.constants import OutputFormat, RuleSeverity, EngineType, DEFAULT_TIMEOUT
+    from semgrep.core_runner import StreamingSemgrepCore, SemgrepCore, CoreRunner
 from typing import Collection, List, Set, Dict, Tuple, Optional, Any, TYPE_CHECKING
 from io import StringIO
 from pathlib import Path
@@ -66,6 +70,11 @@ class Runner():
     def run(self, root_folder: Optional[str], external_checks_dir: Optional[List[str]] = None,
             files: Optional[List[str]] = None,
             runner_filter: Optional[RunnerFilter] = None, collect_skip_comments: bool = True) -> list[Report]:
+
+        if sys.platform.startswith('win'):
+            # TODO: Enable SAST for windows runners
+            return [Report(self.check_type)]
+
         if not runner_filter:
             logger.warning('no runner filter')
             return [Report(self.check_type)]
@@ -75,7 +84,10 @@ class Runner():
         output_handler = OutputHandler(output_settings)
 
         self.registry.set_runner_filter(runner_filter)
-        self.registry.load_rules(runner_filter.sast_languages)
+        rules_loaded = self.registry.load_rules(runner_filter.framework, runner_filter.sast_languages)
+        if not rules_loaded:
+            logger.warning('No valid rules were found for SAST')
+            return [Report(self.check_type)]
         if external_checks_dir:
             for external_checks in external_checks_dir:
                 self.registry.load_external_rules(external_checks, runner_filter.sast_languages)
@@ -86,9 +98,10 @@ class Runner():
             logger.warning('no valid checks')
             return [Report(self.check_type)]
 
+        targets = []
         if root_folder:
             targets = [root_folder]
-        if files:
+        elif files:
             targets = files
 
         semgrep_output = Runner._get_semgrep_output(targets=targets, config=config, output_handler=output_handler)

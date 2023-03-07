@@ -28,7 +28,7 @@ class TestRegistry(unittest.TestCase):
     def test_sast_registry_only_python(self):
         checks_dir = os.path.join(pathlib.Path(__file__).parent.resolve(), '..', 'checks')
         registry = Registry(checks_dir=checks_dir)
-        registry.load_rules([SastLanguages.PYTHON])
+        registry.load_rules([], {SastLanguages.PYTHON})
         assert registry.rules == [python_rule]
 
 
@@ -37,7 +37,7 @@ class TestRegistry(unittest.TestCase):
         external_checks_dir = os.path.join(pathlib.Path(__file__).parent.resolve(), '..', 'external_checks')
         registry = Registry(checks_dir)
 
-        registry.load_rules({SastLanguages.PYTHON})
+        registry.load_rules([], {SastLanguages.PYTHON})
         registry.load_external_rules(external_checks_dir, {SastLanguages.JAVA})
         assert registry.rules == [python_rule, java_rule]
 
@@ -48,7 +48,7 @@ class TestRegistry(unittest.TestCase):
         runner_filter = RunnerFilter(framework=['sast'], skip_checks=['CKV_SAST_1'])
         registry.set_runner_filter(runner_filter)
 
-        registry.load_rules(runner_filter.sast_languages)
+        registry.load_rules(runner_filter.framework, runner_filter.sast_languages)
         registry.load_external_rules(external_checks_dir, runner_filter.sast_languages)
 
         assert registry.rules == [java_rule]
