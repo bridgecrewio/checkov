@@ -43,6 +43,10 @@ class SemgrepAttribute(str, Enum):
     METAVARIABLE_COMPARISON = 'metavariable-comparison'
     COMPARISON = 'comparison'
     REGEX = 'regex'
+    PATTERN_SOURCES = 'pattern-sources'
+    PATTERN_SINKS = 'pattern-sinks'
+    PATTERN_SANITIZERS = 'pattern-sanitizers'
+    PATTERN_PROPAGATORS = 'pattern-propagators'
 
 
 class BqlConditionType(str, Enum):
@@ -50,6 +54,10 @@ class BqlConditionType(str, Enum):
         return self.value
 
     PATTERN = "pattern"
+    PATTERN_SOURCE = 'pattern_source'
+    PATTERN_SINK = 'pattern_sink'
+    PATTERN_SANITIZER = 'pattern_sanitizer'
+    PATTERN_PROPAGATOR = 'pattern_propagator'
     VARIABLE = "variable"
     FILTER = 'filter'
     OR = 'or'

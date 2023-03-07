@@ -103,6 +103,10 @@ def test_DataIntegrityInTransmition():
     run_check(lang="java", check="DataIntegrityInTransmition")
 
 
+def test_RESTWebServiceSecurity():
+    run_check(lang="java", check="RESTWebServiceSecurity")
+
+
 @pytest.fixture(autouse=True)
 def setup():
     global CHECK_ID_MAP

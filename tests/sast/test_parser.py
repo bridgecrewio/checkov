@@ -342,6 +342,81 @@ def test_metavariable_greater_than_comparison_parsing():
         ]
     }
 
+def test_basic_taint_mode_parsing():
+    raw_check = {
+        'mode': 'taint',
+        'metadata': {'id': 'CKV_SAST_1', 'name': 'check name', 'guidelines': 'some guidelines', 'category': 'sast',
+            'severity': 'LOW'}, 'scope': {'languages': ['python']},
+        'definition': [
+            {'cond_type': 'pattern_source', 'operator': 'equals', 'value': 'get_user_input(...)'},
+            {'cond_type': 'pattern_sink', 'operator': 'equals', 'value': 'html_output(...)'},
+        ]
+    }
+    parser = SastCheckParser()
+    parsed_check = parser.parse_raw_check_to_semgrep(raw_check)
+    print (parsed_check)
+    assert parsed_check == {
+        'id': 'CKV_SAST_1', 'mode': 'taint', 'message': 'some guidelines', 'severity': 'INFO', 'languages': ['python'],
+        'metadata': {'name': 'check name'},
+        'pattern-sources': [{'pattern': 'get_user_input(...)'}],
+        'pattern-sinks': [{'pattern': 'html_output(...)'}]
+    }
+
+def test_taint_mode_sanitizer_parsing():
+    raw_check = {
+        'mode': 'taint',
+        'metadata': {'id': 'CKV_SAST_1', 'name': 'check name', 'guidelines': 'some guidelines', 'category': 'sast',
+            'severity': 'LOW'}, 'scope': {'languages': ['python']},
+        'definition': [
+            {'cond_type': 'pattern_source', 'operator': 'equals', 'value': 'get_user_input(...)'},
+            {'cond_type': 'pattern_sink', 'operator': 'equals', 'value': 'html_output(...)'},
+            {'cond_type': 'pattern_sanitizer', 'operator': 'equals', 'value': 'sanitize(...)'}
+        ]
+    }
+    parser = SastCheckParser()
+    parsed_check = parser.parse_raw_check_to_semgrep(raw_check)
+    print (parsed_check)
+    assert parsed_check == {
+        'id': 'CKV_SAST_1', 'mode': 'taint', 'message': 'some guidelines', 'severity': 'INFO', 'languages': ['python'],
+        'metadata': {'name': 'check name'},
+        'pattern-sources': [{'pattern': 'get_user_input(...)'}],
+        'pattern-sinks': [{'pattern': 'html_output(...)'}],
+        'pattern-sanitizers': [{'pattern': 'sanitize(...)'}],
+    }
+
+def test_complex_taint_mode_parsing():
+    raw_check = {
+        'mode': 'taint',
+        'metadata': {'id': 'CKV_SAST_1', 'name': 'check name', 'guidelines': 'some guidelines', 'category': 'sast',
+            'severity': 'LOW'}, 'scope': {'languages': ['python']},
+        'definition': [
+            {'cond_type': 'pattern_source', 'operator': 'equals', 'value': {
+                'and': [
+                    {'cond_type': 'pattern', 'operator': 'equals', 'value': 'get_user_input(...)'},
+                    {'cond_type': 'filter', 'attribute': 'pattern', 'operator': 'within', 'value': 'import pytest\n...\n'},
+                ]
+            }},
+            {'cond_type': 'pattern_sink', 'operator': 'equals', 'value': 'html_output(...)'},
+            {'cond_type': 'pattern_sanitizer', 'operator': 'equals', 'value': 'sanitize(...)'}
+        ]
+    }
+    parser = SastCheckParser()
+    parsed_check = parser.parse_raw_check_to_semgrep(raw_check)
+    print (parsed_check)
+    assert parsed_check == {
+        'id': 'CKV_SAST_1', 'mode': 'taint', 'message': 'some guidelines', 'severity': 'INFO', 'languages': ['python'],
+        'metadata': {'name': 'check name'},
+        'pattern-sources': [
+            {'patterns': [
+                {'pattern': 'get_user_input(...)'},
+                {'pattern-inside': 'import pytest\n...\n'}
+            ]
+             }
+        ],
+        'pattern-sinks': [{'pattern': 'html_output(...)'}],
+        'pattern-sanitizers': [{'pattern': 'sanitize(...)'}],
+    }
+
 
 def test_complex_policy_parsing():
     raw_check = {
