@@ -31,7 +31,7 @@ if TYPE_CHECKING:
     from aiohttp import ClientSession
     from checkov.common.output.common import SCADetails
     from checkov.common.output.report import Report
-    from checkov.common.typing import _LicenseStatus, _CheckResult, _SkippedCheck
+    from checkov.common.typing import _LicenseStatus, _CheckResult, _SkippedCheck, _ScaSuppressions
 
 
 def create_report_license_record(
@@ -274,7 +274,7 @@ def add_to_reports_cves_and_packages(
         dependencies: dict[str, List[int]] | None = None,
         sca_details: SCADetails | None = None,
         report_type: str | None = None,
-        inline_suppressions: list[_SkippedCheck] | None = None,
+        inline_suppressions: _ScaSuppressions | None = None,
         scan_data_format: ScanDataFormat = ScanDataFormat.TWISTCLI,
 ) -> None:
     is_dependency_tree_flow = bool(dependencies)
@@ -322,7 +322,7 @@ def add_to_reports_dependency_tree_cves(check_class: str | None, packages_map: d
                                         rootless_file_path: str, runner_filter: RunnerFilter, scanned_file_path: str,
                                         scan_data_format: ScanDataFormat = ScanDataFormat.TWISTCLI,
                                         sca_details: SCADetails | None = None, report_type: str | None = None,
-                                        inline_suppressions: list[_SkippedCheck] | None = None) -> None:
+                                        inline_suppressions: _ScaSuppressions | None = None) -> None:
     for root_package_index in root_packages_list:
         vulnerable_dependencies = find_vulnerable_dependencies(root_package_index, packages)
 
@@ -374,7 +374,7 @@ def add_cve_record_to_report(vulnerability_details: dict[str, Any], package_name
                              report_type: Optional[str], report: Report,
                              root_package_version: str | None = None, root_package_name: str | None = None,
                              root_package_fixed_version: str | None = None,
-                             inline_suppressions: list[_SkippedCheck] | None = None) -> None:
+                             inline_suppressions: _ScaSuppressions | None = None) -> None:
     package_alias = get_package_alias(package_name, package_version)
     cve_record = create_report_cve_record(
         rootless_file_path=rootless_file_path,
@@ -390,23 +390,11 @@ def add_cve_record_to_report(vulnerability_details: dict[str, Any], package_name
         root_package_name=root_package_name,
         root_package_fixed_version=root_package_fixed_version
     )
-    suppression = None
-    if inline_suppressions:
-        suppression = next(
-            (
-                suppression
-                for suppression in inline_suppressions
-                if suppression["id"] == vulnerability_details.get("cveId")
-            ),
-            None,
-        )
-        if suppression:
-            cve_record.check_result = {
-                "result": CheckResult.SKIPPED,
-                "suppress_comment": suppression["suppress_comment"],
-            }
+    suppressed = apply_inline_suppressions(
+        record=cve_record, vulnerability_details=vulnerability_details, inline_suppressions=inline_suppressions
+    )
 
-    if not suppression and not runner_filter.should_run_check(
+    if not suppressed and not runner_filter.should_run_check(
             check_id=cve_record.check_id,
             bc_check_id=cve_record.bc_check_id,
             severity=cve_record.severity,
@@ -422,6 +410,42 @@ def add_cve_record_to_report(vulnerability_details: dict[str, Any], package_name
 
     report.add_resource(cve_record.resource)
     report.add_record(cve_record)
+
+
+def apply_inline_suppressions(
+    record: Record, vulnerability_details: dict[str, Any], inline_suppressions: _ScaSuppressions | None = None
+) -> bool:
+    """Applies the inline suppression and returns an accomplish status"""
+
+    if inline_suppressions:
+        if "package" in inline_suppressions:
+            package_suppression = inline_suppressions["package"].get(vulnerability_details.get("packageName", ""))
+            if package_suppression:
+                if "suppress_comment" in package_suppression:
+                    record.check_result = {
+                        "result": CheckResult.SKIPPED,
+                        "suppress_comment": package_suppression["suppress_comment"],  # type:ignore[typeddict-item]
+                    }
+                    return True
+                else:
+                    # CVE suppression for specific package
+                    cve_suppression = package_suppression.get(vulnerability_details.get("cveId", ""))
+                    if cve_suppression:
+                        record.check_result = {
+                            "result": CheckResult.SKIPPED,
+                            "suppress_comment": cve_suppression["suppress_comment"],  # type:ignore[index]
+                        }
+                        return True
+        if "cve" in inline_suppressions:
+            cve_suppression = inline_suppressions["cve"].get(vulnerability_details.get("cveId", ""))
+            if cve_suppression:
+                record.check_result = {
+                    "result": CheckResult.SKIPPED,
+                    "suppress_comment": cve_suppression["suppress_comment"],
+                }
+                return True
+
+    return False
 
 
 def find_vulnerable_dependencies(root_package_index: int, packages: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -496,7 +520,7 @@ def add_to_report_sca_data(
         dependencies: dict[str, list[int]] | None = None,
         sca_details: SCADetails | None = None,
         report_type: str | None = None,
-        inline_suppressions: list[_SkippedCheck] | None = None,
+        inline_suppressions: _ScaSuppressions | None = None,
 ) -> None:
     packages_map: dict[str, dict[str, Any]] = {get_package_alias(p["name"], p["version"]): p for p in packages}
     licenses_per_package_map: dict[str, list[str]] = \
