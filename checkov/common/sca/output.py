@@ -437,7 +437,7 @@ def apply_inline_suppressions(
                         }
                         return True
         if "cve" in inline_suppressions:
-            cve_suppression = inline_suppressions["cve"].get(vulnerability_details.get("cveId", ""))
+            cve_suppression = inline_suppressions["cve"].get(vulnerability_details.get("cveId", vulnerability_details.get("id", "")))
             if cve_suppression:
                 record.check_result = {
                     "result": CheckResult.SKIPPED,
