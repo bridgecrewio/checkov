@@ -28,7 +28,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class Runner(TerraformRunner):
+class TerraformJsonRunner(TerraformRunner):
     check_type = CheckType.TERRAFORM_JSON  # noqa: CCE003  # a static attribute
 
     def __init__(

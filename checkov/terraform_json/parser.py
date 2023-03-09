@@ -27,7 +27,7 @@ def parse(file_path: Path) -> tuple[dict[str, Any], list[tuple[int, str]]] | tup
     template = None
     template_lines = None
     try:
-        template, template_lines = load(file_path=file_path)
+        template, template_lines = loads(file_path=file_path)
     except IOError as e:
         if e.errno == 2:
             logger.error(f"Template file not found: {file_path}")
@@ -58,8 +58,8 @@ def parse(file_path: Path) -> tuple[dict[str, Any], list[tuple[int, str]]] | tup
     return template, template_lines
 
 
-def load(file_path: Path) -> tuple[dict[str, Any], list[tuple[int, str]]]:
-    """Load the given JSON file"""
+def loads(file_path: Path) -> tuple[dict[str, Any], list[tuple[int, str]]]:
+    """Loads the given JSON file with line numbers"""
 
     try:
         content = file_path.read_text()
