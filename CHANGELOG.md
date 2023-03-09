@@ -1,6 +1,18 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.71...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.75...HEAD)
+
+## [2.3.75](https://github.com/bridgecrewio/checkov/compare/2.3.71...2.3.75) - 2023-03-09
+
+### Feature
+
+- **general:** add Terraform JSON support - [#4626](https://github.com/bridgecrewio/checkov/pull/4626)
+- **terraform:** Adding yaml based build time policies for corresponding PC runtime policies - [#4605](https://github.com/bridgecrewio/checkov/pull/4605)
+
+### Bug Fix
+
+- **arm:** ignore incomplete resource in ARM templates - [#4636](https://github.com/bridgecrewio/checkov/pull/4636)
+- **terraform:** stop handle resource `for_each` as dynamic attribute - [#4632](https://github.com/bridgecrewio/checkov/pull/4632)
 
 ## [2.3.71](https://github.com/bridgecrewio/checkov/compare/2.3.70...2.3.71) - 2023-03-08
 
