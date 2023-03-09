@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import os
 
-import yaml
+from ruamel.yaml import YAML
 from typing import List, Any, Optional, Set, Dict, Iterable
 
 from checkov.common.bridgecrew.check_type import CheckType
@@ -13,6 +13,10 @@ from checkov.runner_filter import RunnerFilter
 from checkov.sast.checks_infra.checks_parser import SastCheckParser
 from checkov.sast.consts import SastLanguages
 from checkov.common.checks_infra.registry import CHECKS_POSSIBLE_ENDING
+
+yaml = YAML(typ='safe', pure=True)
+yaml.default_flow_style = False
+yaml.preserve_quotes = True
 
 
 class Registry(BaseCheckRegistry):
@@ -55,7 +59,7 @@ class Registry(BaseCheckRegistry):
                     continue
                 with open(os.path.join(root, file), "r") as f:
                     try:
-                        raw_check = yaml.safe_load(f)
+                        raw_check = yaml.load(f)
                         parsed_rule = self.parser.parse_raw_check_to_semgrep(raw_check, str(file))
                     except Exception as e:
                         logging.warning(f'Cannot parse rule file {file} due to: {e}')
@@ -92,7 +96,7 @@ class Registry(BaseCheckRegistry):
     def create_temp_rules_file(self) -> None:
         rules_obj = {'rules': self.rules}
         with open(self.temp_semgrep_rules_path, 'w') as tempfile:
-            yaml.safe_dump(rules_obj, tempfile)
+            yaml.dump(rules_obj, tempfile)
         logging.debug(f'created semgrep temporary rules file at: {self.temp_semgrep_rules_path}')
 
     def delete_temp_rules_file(self) -> None:
