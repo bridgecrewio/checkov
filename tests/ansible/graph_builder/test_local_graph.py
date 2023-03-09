@@ -1,4 +1,3 @@
-from collections import Counter
 from pathlib import Path
 
 from checkov.common.graph.graph_builder import CustomAttributes
