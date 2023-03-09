@@ -1,5 +1,7 @@
 import datetime
 import json
+from copy import deepcopy
+from json import JSONDecodeError
 from typing import Any
 
 from lark import Tree
@@ -63,24 +65,29 @@ def object_hook(dct):
         if dct is None:
             return None
         if isinstance(dct, dict):
+            dct_obj = deepcopy(dct)
+            if 'tf_source_modules' in dct and 'file_path' in dct:
+                return TFDefinitionKey(file_path=dct["file_path"],
+                                       tf_source_modules=object_hook(dct["tf_source_modules"]))
+            if 'path' in dct and 'name' in dct and 'foreach_idx' in dct and 'nested_tf_module' in dct:
+                return TFModule(path=dct['path'], name=dct['name'], foreach_idx=dct['foreach_idx'],
+                                nested_tf_module=object_hook(dct['nested_tf_module']))
             for key, value in dct.items():
                 if key == RESOLVED_MODULE_ENTRY_NAME:
                     resolved_classes = []
                     for resolved_module in dct[RESOLVED_MODULE_ENTRY_NAME]:
-                        resolved_classes.append(object_hook(json.loads(resolved_module)))
-                    dct[RESOLVED_MODULE_ENTRY_NAME] = resolved_classes
-                if 'tf_source_modules' in key and 'file_path' in key:
+                        if isinstance(resolved_module, str):
+                            resolved_classes.append(object_hook(json.loads(resolved_module)))
+                    dct_obj[RESOLVED_MODULE_ENTRY_NAME] = resolved_classes
+                if isinstance(key, str) and 'tf_source_modules' in key and 'file_path' in key:
                     tf_definition_key = json.loads(key)
-                    del dct[key]
-                    dct[TFDefinitionKey(file_path=tf_definition_key["file_path"], tf_source_modules=object_hook(
-                        tf_definition_key["tf_source_modules"]))] = object_hook(value)
-        if 'tf_source_modules' in dct and 'file_path' in dct:
-            return TFDefinitionKey(file_path=dct["file_path"], tf_source_modules=object_hook(dct["tf_source_modules"]))
-        if 'path' in dct and 'name' in dct and 'foreach_idx' in dct and 'nested_tf_module' in dct:
-            return TFModule(path=dct['path'], name=dct['name'], foreach_idx=dct['foreach_idx'],
-                            nested_tf_module=object_hook(dct['nested_tf_module']))
+                    tf_definition_key_obj = TFDefinitionKey(file_path=tf_definition_key["file_path"], tf_source_modules=object_hook(
+                        tf_definition_key["tf_source_modules"]))
+                    dct_obj[tf_definition_key_obj] = value
+                    del dct_obj[key]
+            return dct_obj
         return dct
-    except (KeyError, TypeError) as e:
+    except (KeyError, TypeError, JSONDecodeError):
         return dct
 
 

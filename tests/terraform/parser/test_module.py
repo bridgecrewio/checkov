@@ -61,7 +61,7 @@ resource "helm_release" "test" {
 
     def test_parse_hcl_module_new_parser(self):
         parser = TFParser()
-        directory = os.path.join(self.resources_dir, "registry_security_group_inner_module")
+        directory = os.path.join(self.resources_dir, "parser_nested_modules")
         self.external_module_path = os.path.join(directory, DEFAULT_EXTERNAL_MODULES_DIR)
         out_definitions = parser.parse_hcl_module(
             directory,
