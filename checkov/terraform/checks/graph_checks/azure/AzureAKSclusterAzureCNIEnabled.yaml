@@ -1,0 +1,13 @@
+metadata:
+  id: "CKV2_AZURE_29"
+  name: "Ensure AKS cluster has Azure CNI networking enabled"
+  category: "GENERAL_SECURITY"
+
+definition:
+  cond_type: "attribute"
+  resource_types: "azurerm_kubernetes_cluster"
+  attribute: "network_profile.network_plugin"
+  operator: "within"
+  value: 
+    - "azure"
+    - "Azure"
