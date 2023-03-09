@@ -1,13 +1,30 @@
 import os
 import unittest
+import shutil
 
 import hcl2
 
 from checkov.terraform.modules.module_utils import validate_malformed_definitions, clean_bad_definitions
 from checkov.terraform.parser import Parser
+from checkov.terraform.tf_parser import TFParser
+from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 
 
 class ModuleTest(unittest.TestCase):
+
+    def setUp(self) -> None:
+        from checkov.terraform.module_loading.registry import ModuleLoaderRegistry
+
+        # needs to be reset, because the cache belongs to the class not instance
+        ModuleLoaderRegistry.module_content_cache = {}
+
+        self.resources_dir = os.path.realpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "./resources"))
+        self.external_module_path = ''
+
+    def tearDown(self) -> None:
+        if os.path.exists(self.external_module_path):
+            shutil.rmtree(self.external_module_path)
+
     def test_module_double_slash_cleanup(self):
         with open(os.path.join(os.path.dirname(__file__), 'resources', 'double_slash.tf')) as f:
             tf = hcl2.load(f)
@@ -41,3 +58,16 @@ resource "helm_release" "test" {
         print(module)
         self.assertEqual(1, len(module.blocks))
         self.assertEqual('ingress.annotations.kubernetes\\.io/ingress\\.class', module.blocks[0].attributes['set.name'])
+
+    def test_parse_hcl_module_new_parser(self):
+        parser = TFParser()
+        directory = os.path.join(self.resources_dir, "registry_security_group_inner_module")
+        self.external_module_path = os.path.join(directory, DEFAULT_EXTERNAL_MODULES_DIR)
+        out_definitions = parser.parse_hcl_module(
+            directory,
+            "terraform",
+            download_external_modules=True
+        )
+        # check that only the original file was parsed successfully without getting bad external modules
+        self.assertEqual(1, len(list(out_definitions.keys())))
+

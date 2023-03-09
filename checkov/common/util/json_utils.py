@@ -8,6 +8,8 @@ from bc_jsonpath_ng import parse, JSONPath
 from checkov.common.bridgecrew.severities import Severity
 from checkov.common.output.common import ImageDetails
 from checkov.common.packaging.version import LegacyVersion, Version
+from checkov.terraform.modules.module_objects import TFModule, TFDefinitionKey
+from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
 
 type_of_function = type(lambda x: x)
 
@@ -30,8 +32,56 @@ class CustomJSONEncoder(json.JSONEncoder):
             return o.__dict__
         elif isinstance(o, type_of_function):
             return str(o)
+        elif isinstance(o, TFDefinitionKey):
+            return str(o)
+        elif isinstance(o, TFModule):
+            return str(o)
         else:
             return json.JSONEncoder.default(self, o)
+
+    def encode(self, obj):
+        return super().encode(self._encode(obj))
+
+    def _encode(self, obj):
+        if isinstance(obj, dict):
+            return {self.encode_key(k): v for k, v in obj.items()}
+        else:
+            return obj
+
+    @staticmethod
+    def encode_key(key):
+        if isinstance(key, TFDefinitionKey):
+            return str(key)
+        if isinstance(key, TFModule):
+            return str(key)
+        else:
+            return key
+
+
+def object_hook(dct):
+    try:
+        if dct is None:
+            return None
+        if isinstance(dct, dict):
+            for key, value in dct.items():
+                if key == RESOLVED_MODULE_ENTRY_NAME:
+                    resolved_classes = []
+                    for resolved_module in dct[RESOLVED_MODULE_ENTRY_NAME]:
+                        resolved_classes.append(object_hook(json.loads(resolved_module)))
+                    dct[RESOLVED_MODULE_ENTRY_NAME] = resolved_classes
+                if 'tf_source_modules' in key and 'file_path' in key:
+                    tf_definition_key = json.loads(key)
+                    del dct[key]
+                    dct[TFDefinitionKey(file_path=tf_definition_key["file_path"], tf_source_modules=object_hook(
+                        tf_definition_key["tf_source_modules"]))] = object_hook(value)
+        if 'tf_source_modules' in dct and 'file_path' in dct:
+            return TFDefinitionKey(file_path=dct["file_path"], tf_source_modules=object_hook(dct["tf_source_modules"]))
+        if 'path' in dct and 'name' in dct and 'foreach_idx' in dct and 'nested_tf_module' in dct:
+            return TFModule(path=dct['path'], name=dct['name'], foreach_idx=dct['foreach_idx'],
+                            nested_tf_module=object_hook(dct['nested_tf_module']))
+        return dct
+    except (KeyError, TypeError) as e:
+        return dct
 
 
 def get_jsonpath_from_evaluated_key(evaluated_key: str) -> JSONPath:
