@@ -1,0 +1,12 @@
+metadata:
+  id: "CKV2_AZURE_30"
+  name: "Ensure Azure Container Registry (ACR) has HTTPS enabled for webhook"
+  category: "GENERAL_SECURITY"
+
+definition:
+  
+  cond_type: "attribute"
+  resource_types: "azurerm_container_registry_webhook"
+  attribute: "service_uri"
+  operator: "starting_with"
+  value: "https://"
