@@ -12,6 +12,8 @@ class SecurityGroupRuleDescription(BaseResourceCheck):
             'aws_db_security_group',
             'aws_elasticache_security_group',
             'aws_redshift_security_group',
+            'aws_vpc_security_group_egress_rule',
+            'aws_vpc_security_group_ingress_rule'
         ]
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resource)

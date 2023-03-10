@@ -12,6 +12,7 @@ from detect_secrets import SecretsCollection
 from checkov.secrets.runner import Runner
 from checkov.runner_filter import RunnerFilter
 from detect_secrets.settings import transient_settings
+from checkov.common.output.secrets_record import COMMIT_REMOVED_STR, COMMIT_ADDED_STR
 
 from checkov.secrets.scan_git_history import GitHistoryScanner
 
@@ -75,7 +76,7 @@ def mock_git_repo_commits2(root_folder: str) -> Dict[str, Dict[str, str | Dict[s
     }
 
 
-def mock_git_repo_commits3(root_folder: str) -> Dict[str, Dict[str, str | Dict[str, str]]]:
+def mock_git_repo_commits3(root_folder: str) -> Dict[str, Dict[str, str]]:
     """
             add secret (secret1 added) - +1
             move the secret to different line - 0
@@ -193,9 +194,6 @@ def mock_case() -> Dict[str, str]:
         },
         {
             "Dockerfile": "diff --git a/Dockerfile b/Dockerfile\nindex 0000..0000 0000\n--- a/Dockerfile\n+++ b/Dockerfile\n@@ -1,7 +1,7 @@\n #checkov:skip=CKV_DOCKER_2:Healthcheck is not relevant for ephemral containers\n #checkov:skip=CKV_DOCKER_3:User is created automatically by lambda runtime\n FROM public.ecr.aws/lambda/python:3.9\n-ENV AWS_ACCESS_KEY_ID=\"AKIAZZZZZZZZZZZZZZZZ\"\n+\n ENV PIP_ENV_VERSION=\"2022.1.8\"\n \n \n"
-        },
-        {
-            "null": "diff --git a/None b/main.py\nindex 0000..0000 0000\n--- a/None\n+++ b/main.py\n@@ -0,0 +1,4 @@\n+AWS_ACCESS_TOKEN=\"AKIAZZZZZZZZZZZZZZZZ\"\n+\n+if __name__ == \"__main__\":\n+    print(AWS_ACCESS_TOKEN)\n\\ No newline at end of file\n"
         }
     ]
     return random.choice(cases)
@@ -293,6 +291,16 @@ def test_scan_git_history_merge_added_removed2() -> None:
              and report.failed_checks[1].added_commit_hash == '3c8cb7eedb3986308c96713fc65b006adcf3bc44')
             or (report.failed_checks[1].added_commit_hash == '900b1e8f6f336a92e8f5fca3babca764e32c3b3d'
                 and report.failed_checks[0].added_commit_hash == '3c8cb7eedb3986308c96713fc65b006adcf3bc44'))
+    # print testing
+    assert_for_commit_str(report.failed_checks[0].to_string() + report.failed_checks[1].to_string(),
+                          commit_type=COMMIT_REMOVED_STR,
+                          commit_hash='697308e61171e33224757e620aaf67b1a877c99d')
+    assert_for_commit_str(report.failed_checks[0].to_string() + report.failed_checks[1].to_string(),
+                          commit_type=COMMIT_ADDED_STR,
+                          commit_hash='3c8cb7eedb3986308c96713fc65b006adcf3bc44')
+    assert_for_commit_str(report.failed_checks[0].to_string() + report.failed_checks[1].to_string(),
+                          commit_type=COMMIT_ADDED_STR,
+                          commit_hash='900b1e8f6f336a92e8f5fca3babca764e32c3b3d')
 
 
 @mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff', mock_git_repo_commits_too_much)
@@ -373,3 +381,8 @@ def test_scan_git_history_rename_file_with_two_secrets() -> None:
     assert len(report.failed_checks) == 2
     assert (report.failed_checks[0].removed_commit_hash == report.failed_checks[1].removed_commit_hash and
             report.failed_checks[1].removed_commit_hash is not None)
+
+
+def assert_for_commit_str(report_str: [str], commit_type: str, commit_hash: str, found: bool = True) -> None:
+    to_find = f'; {commit_type}: {commit_hash}'
+    assert (to_find in report_str) == found

@@ -704,6 +704,7 @@ class TestRunnerFilter(unittest.TestCase):
             'secrets': Severities[BcSeverities.OFF],
             'serverless': Severities[BcSeverities.LOW],
             'terraform': Severities[BcSeverities.LOW],
+            'terraform_json': Severities[BcSeverities.LOW],
             'terraform_plan': Severities[BcSeverities.LOW],
             '3d_policy': Severities[BcSeverities.LOW],
         }
@@ -801,6 +802,14 @@ class TestRunnerFilter(unittest.TestCase):
 
         for k, v in combined_file_real_parsed_content.items():
             assert v == runner_filter.resource_attr_to_omit.get(k)
+
+    def test_scan_secrets_history_limits_to_secrets_framework(self):
+        # when
+        filter = RunnerFilter(enable_git_history_secret_scan=True)
+
+        # then
+        assert filter.enable_git_history_secret_scan is True
+        assert filter.framework == [CheckType.SECRETS]
 
 
 if __name__ == '__main__':

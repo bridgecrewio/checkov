@@ -1,0 +1,21 @@
+dummy_list:
+  - first
+  - second
+  - third
+
+prebuild:
+  image: "nginx: 14.6"
+  script: "ant build ."
+
+build:
+  image:
+    name: "docker:latest"
+  script: SKIP
+
+
+deploy:
+  before_script:
+    bundle exec rake spec
+  services:
+    - postgresql:14.3
+    - redis:latest

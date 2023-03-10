@@ -33,7 +33,6 @@ if [[ "$2" == "3.7" && "$1" == "ubuntu-latest" ]]
 then
   pipenv run checkov -s -f terragoat/terraform/aws/s3.tf --bc-api-key $BC_KEY > checkov_report_s3_singlefile_api_key_terragoat.txt
   pipenv run checkov -s -d terragoat/terraform/azure/ --bc-api-key $BC_KEY > checkov_report_azuredir_api_key_terragoat.txt
-  export CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING=True
   echo "running image referencing"
   pipenv run checkov -s -d integration_tests/example_workflow_file/.github/workflows/ -o json --bc-api-key $BC_KEY --include-all-checkov-policies > checkov_report_workflow_cve.json
   pipenv run checkov -s -d integration_tests/example_workflow_file/bitbucket/ -o json --bc-api-key $BC_KEY --include-all-checkov-policies > checkov_report_bitbucket_pipelines_cve.json

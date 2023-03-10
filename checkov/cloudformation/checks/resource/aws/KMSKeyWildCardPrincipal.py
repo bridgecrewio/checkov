@@ -49,7 +49,7 @@ class KMSKeyWildCardPrincipal(BaseResourceValueCheck):
                 for principal in principals_list:
                     if isinstance(principal, dict):
                         for principal_value in principal.values():
-                            if principal_value == '*':
+                            if principal_value == '*' or (isinstance(principal_value, list) and '*' in principal_value):
                                 return CheckResult.FAILED
                     else:
                         if principal == '*':

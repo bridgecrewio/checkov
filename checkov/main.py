@@ -69,6 +69,7 @@ from checkov.secrets.runner import Runner as secrets_runner
 from checkov.serverless.runner import Runner as sls_runner
 from checkov.terraform.plan_runner import Runner as tf_plan_runner
 from checkov.terraform.runner import Runner as tf_graph_runner
+from checkov.terraform_json.runner import TerraformJsonRunner
 from checkov.version import version
 from checkov.yaml_doc.runner import Runner as yaml_runner
 from checkov.bicep.runner import Runner as bicep_runner
@@ -114,6 +115,7 @@ DEFAULT_RUNNERS = [
     circleci_pipelines_runner(),
     azure_pipelines_runner(),
     ansible_runner(),
+    TerraformJsonRunner(),
 ]
 
 
@@ -666,7 +668,7 @@ class Checkov:
                 resource_attr_to_omit=self.config.mask,
                 # TODO modify the output for git_history secret and remove the rewrite of enable_git_history_secret_scan
                 # enable_git_history_secret_scan=self.config.scan_secrets_history,
-                enable_git_history_secret_scan=False,
+                enable_git_history_secret_scan=False,  # expose after unite git history with secret scan
                 git_history_timeout=self.config.secrets_history_timeout
             )
 

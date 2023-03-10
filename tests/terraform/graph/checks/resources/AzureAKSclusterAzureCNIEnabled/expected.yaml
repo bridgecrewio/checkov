@@ -1,0 +1,5 @@
+pass:
+  - "azurerm_kubernetes_cluster.pass"
+fail:
+  - "azurerm_kubernetes_cluster.fail_1"
+  - "azurerm_kubernetes_cluster.fail_2"
