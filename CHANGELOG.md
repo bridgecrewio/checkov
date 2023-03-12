@@ -1,6 +1,17 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.75...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.79...HEAD)
+
+## [2.3.79](https://github.com/bridgecrewio/checkov/compare/2.3.75...2.3.79) - 2023-03-12
+
+### Feature
+
+- **terraform:** Fix for foreach subgraph rendering - [#4649](https://github.com/bridgecrewio/checkov/pull/4649)
+- **terraform:** new checks on new resources - [#4491](https://github.com/bridgecrewio/checkov/pull/4491)
+
+### Platform
+
+- **general:** skip uploading repo for VSCode source - [#4643](https://github.com/bridgecrewio/checkov/pull/4643)
 
 ## [2.3.75](https://github.com/bridgecrewio/checkov/compare/2.3.71...2.3.75) - 2023-03-09
 
