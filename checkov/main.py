@@ -346,8 +346,8 @@ def run(banner: str = checkov_banner, argv: list[str] = sys.argv[1:]) -> int | N
     policy_level_suppression = suppressions_integration.get_policy_level_suppressions()
     bc_cloned_checks = custom_policies_integration.bc_cloned_checks
     runner_filter.bc_cloned_checks = bc_cloned_checks
-    custom_policies_integration.policy_level_suppression = policy_level_suppression
-    runner_filter.set_suppressed_policies(policy_level_suppression)
+    custom_policies_integration.policy_level_suppression = policy_level_suppression.keys()
+    runner_filter.set_suppressed_policies(policy_level_suppression.values())
 
     if config.use_enforcement_rules:
         runner_filter.apply_enforcement_rules(repo_config_integration.code_category_configs)
@@ -799,7 +799,7 @@ class Checkov:
             policy_level_suppression = suppressions_integration.get_policy_level_suppressions()
             bc_cloned_checks = custom_policies_integration.bc_cloned_checks
             runner_filter.bc_cloned_checks = bc_cloned_checks
-            custom_policies_integration.policy_level_suppression = policy_level_suppression
+            custom_policies_integration.policy_level_suppression = policy_level_suppression.keys()
             runner_filter.run_image_referencer = licensing_integration.should_run_image_referencer()
             runner_filter.filtered_policy_ids = policy_metadata_integration.filtered_policy_ids
             logger.debug(f"Filtered list of policies: {runner_filter.filtered_policy_ids}")
@@ -808,8 +808,8 @@ class Checkov:
             policy_level_suppression = suppressions_integration.get_policy_level_suppressions()
             bc_cloned_checks = custom_policies_integration.bc_cloned_checks
             runner_filter.bc_cloned_checks = bc_cloned_checks
-            custom_policies_integration.policy_level_suppression = policy_level_suppression
-            runner_filter.set_suppressed_policies(policy_level_suppression)
+            custom_policies_integration.policy_level_suppression = policy_level_suppression.keys()
+            runner_filter.set_suppressed_policies(policy_level_suppression.values())
 
             if self.config.use_enforcement_rules:
                 runner_filter.apply_enforcement_rules(repo_config_integration.code_category_configs)

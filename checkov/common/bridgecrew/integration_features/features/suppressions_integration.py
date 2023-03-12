@@ -216,12 +216,12 @@ class SuppressionsIntegration(BaseIntegrationFeature):
         # not used
         pass
 
-    def get_policy_level_suppressions(self) -> List[str]:
-        policy_level_suppressions = []
+    def get_policy_level_suppressions(self) -> dict[str, str]:
+        policy_level_suppressions = {}
         for check_suppressions in self.suppressions.values():
             for suppression in check_suppressions:
                 if suppression.get("suppressionType") == "Policy":
-                    policy_level_suppressions.append(suppression['id'])
+                    policy_level_suppressions[suppression['id']] = suppression['policyId']
                     break
         return policy_level_suppressions
 
