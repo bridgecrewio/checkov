@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import re
 from itertools import groupby
-from typing import TYPE_CHECKING, Pattern, Any, List
+from typing import TYPE_CHECKING, Pattern, Any
 
 from checkov.common.bridgecrew.check_type import CheckType
 
