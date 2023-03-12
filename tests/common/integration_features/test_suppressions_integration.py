@@ -1054,7 +1054,7 @@ class TestSuppressionsIntegration(unittest.TestCase):
 
         expected_suppressions = ['404088ed-4251-41ac-8dc1-45264af0c461', 'b68013bc-2908-4c9a-969d-f1640d4aca11', '271c1a79-2333-4a12-bf7d-55ec78468b94']
         policy_level_suppressions = suppressions_integration.get_policy_level_suppressions()
-        self.assertEqual(expected_suppressions, policy_level_suppressions)
+        self.assertEqual(expected_suppressions, list(policy_level_suppressions.keys()))
 
 
 if __name__ == '__main__':
