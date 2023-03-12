@@ -44,7 +44,7 @@ from checkov.common.output.baseline import Baseline
 from checkov.common.bridgecrew.check_type import checkov_runners
 from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.common.util import prompt
-from checkov.common.util.banner import banner as checkov_banner
+from checkov.common.util.banner import banner as checkov_banner, tool as checkov_tool
 from checkov.common.util.config_utils import get_default_config_paths
 from checkov.common.util.consts import CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
 from checkov.common.util.docs_generator import print_checks
@@ -579,7 +579,7 @@ class Checkov:
         # Parse mask into json with default dict. If self.config.mask is empty list, default dict will be assigned
         self._parse_mask_to_resource_attributes_to_omit()
 
-    def run(self, banner: str = checkov_banner) -> int | None:
+    def run(self, banner: str = checkov_banner, tool: str = checkov_tool) -> int | None:
         self.run_metadata = {
             "checkov_version": version,
             "python_executable": sys.executable,
@@ -695,7 +695,7 @@ class Checkov:
                 runner_registry.runner_filter = runner_filter
                 runner_registry.filter_runner_framework()
             else:
-                runner_registry = RunnerRegistry(banner, runner_filter, *self.runners)
+                runner_registry = RunnerRegistry(banner, runner_filter, *self.runners, tool=tool)
 
             runnerDependencyHandler = RunnerDependencyHandler(runner_registry)
             runnerDependencyHandler.validate_runner_deps()
