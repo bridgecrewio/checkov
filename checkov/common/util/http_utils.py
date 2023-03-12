@@ -160,7 +160,7 @@ def request_wrapper(
                 time.sleep(sleep_secs)
                 continue
 
-            logging.exception("request_wrapper http error")
+            logging.error("request_wrapper http error", exc_info=True)
             raise http_error
     else:
         raise Exception("Unexpected behavior: the method \'request_wrapper\' should be terminated inside the above for-"
