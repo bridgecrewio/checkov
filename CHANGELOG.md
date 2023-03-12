@@ -1,6 +1,39 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.66...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.75...HEAD)
+
+## [2.3.75](https://github.com/bridgecrewio/checkov/compare/2.3.71...2.3.75) - 2023-03-09
+
+### Feature
+
+- **general:** add Terraform JSON support - [#4626](https://github.com/bridgecrewio/checkov/pull/4626)
+- **terraform:** Adding yaml based build time policies for corresponding PC runtime policies - [#4605](https://github.com/bridgecrewio/checkov/pull/4605)
+
+### Bug Fix
+
+- **arm:** ignore incomplete resource in ARM templates - [#4636](https://github.com/bridgecrewio/checkov/pull/4636)
+- **terraform:** stop handle resource `for_each` as dynamic attribute - [#4632](https://github.com/bridgecrewio/checkov/pull/4632)
+
+## [2.3.71](https://github.com/bridgecrewio/checkov/compare/2.3.70...2.3.71) - 2023-03-08
+
+### Bug Fix
+
+- **terraform:** v2 settings valid  for windows and linux web apps - [#4628](https://github.com/bridgecrewio/checkov/pull/4628)
+
+## [2.3.70](https://github.com/bridgecrewio/checkov/compare/2.3.66...2.3.70) - 2023-03-07
+
+### Feature
+
+- **ansible:** add Ansible check for CKV_PAN_4 for PAN-OS DSRI - [#4608](https://github.com/bridgecrewio/checkov/pull/4608)
+- **dockerfile:** Add tdnf support for CKV2_DOCKER_9 - [#4620](https://github.com/bridgecrewio/checkov/pull/4620)
+- **terraform:** Check added for AWS Database instance deletion protection - [#4616](https://github.com/bridgecrewio/checkov/pull/4616)
+- **terraform:** CloudtrailEventDataStoreUsesCMK  - [#4621](https://github.com/bridgecrewio/checkov/pull/4621)
+
+### Bug Fix
+
+- **bicep:** handle malformed files in bicep parser - [#4629](https://github.com/bridgecrewio/checkov/pull/4629)
+- **cloudformation:** KMSKeyWildCardPrincipal modification - Check for wildcards inside of lists - [#4590](https://github.com/bridgecrewio/checkov/pull/4590)
+- **terraform:** in sg rules ignore self referencing - [#4603](https://github.com/bridgecrewio/checkov/pull/4603)
 
 ## [2.3.66](https://github.com/bridgecrewio/checkov/compare/2.3.59...2.3.66) - 2023-03-06
 

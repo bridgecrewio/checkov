@@ -555,7 +555,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
 
     def push_skipped_checks_down(self, definition_context, skipped_checks, resolved_paths):
         # this method pushes the skipped_checks down the 1 level to all resource types.
-        if not skipped_checks:
+        if not skipped_checks or not resolved_paths:
             return
 
         for definition in resolved_paths:

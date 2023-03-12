@@ -68,6 +68,10 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
             return
 
         for config in resources:
+            if "type" not in config:
+                # this can't be a real ARM resource without a "type" field
+                return
+
             resource_name = config.get("name") or "unknown"
             resource_type = config["type"]
 
