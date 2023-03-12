@@ -185,8 +185,7 @@ def extract_from_string(pattern: dict[Pattern[str], int] | None, string: str) ->
     for value_regex, group_number in pattern.items():
         match = value_regex.search(string)
         if match:
-            remove_n = -1 if match.group(group_number).endswith('\n') else None
-            matches |= {match.group(group_number)[:remove_n]}
+            matches |= {match.group(group_number).rstrip('\n')}
     return matches
 
 
