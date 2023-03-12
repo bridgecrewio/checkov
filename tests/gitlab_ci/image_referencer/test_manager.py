@@ -54,21 +54,21 @@ def test_extract_images_from_workflow():
             start_line=9,
             file_path=file_path,
             name='redis:latest',
-            related_resource_id='default.services'
+            related_resource_id='default.services.2'
         ),
         Image(
             end_line=10,
             start_line=9,
             file_path=file_path,
             name='nginx:1.17',
-            related_resource_id='default.services'
+            related_resource_id='default.services.2'
         ),
         Image(
             end_line=9,
             start_line=7,
             file_path=file_path,
             name='privateregistry/stuff/my-postgres:11.7',
-            related_resource_id='default.services'
+            related_resource_id='default.services.1'
         )
     }
 
