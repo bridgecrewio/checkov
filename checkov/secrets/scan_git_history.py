@@ -220,8 +220,8 @@ class GitHistorySecretStore:
                                                                             'code_line': code})
         self.secrets_by_file_value_type.update(temp_secrets_by_file_value_type)
 
-    def get_added_and_removed_commit_hash(self, key: str, secret: PotentialSecret) -> Tuple[
-        str | None, str | None, str | None]:
+    def get_added_and_removed_commit_hash(self, key: str, secret: PotentialSecret) -> \
+            Tuple[str | None, str | None, str | None]:
         """
         now we have only the current commit_hash - in the added_commit_hash or in the removed_commit_hash.
         in the next step we will add the connection and the missing data
