@@ -111,7 +111,7 @@ class Block:
             base_attributes[CustomAttributes.RESOURCE_TYPE] = "module"
 
         if self.block_type == BlockType.PROVIDER:
-            base_attributes[CustomAttributes.RESOURCE_TYPE] = "provider.aws"
+            base_attributes[CustomAttributes.RESOURCE_TYPE] = f"provider.{CustomAttributes.BLOCK_NAME}"
 
         if "changed_attributes" in base_attributes:
             # removed changed attributes if it was added previously for calculating hash.

@@ -52,7 +52,7 @@ metadata:
 definition:
   cond_type: "attribute"
   resource_types:
-    - "provider.aws"
+    - "provider"
   attribute: "region"
   operator: "not_contains"
   value: "us-west-1"
