@@ -1,6 +1,20 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.79...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.85...HEAD)
+
+## [2.3.85](https://github.com/bridgecrewio/checkov/compare/2.3.79...2.3.85) - 2023-03-13
+
+### Feature
+
+- **secrets:** support git history scan in multiline parsers - [#4637](https://github.com/bridgecrewio/checkov/pull/4637)
+- **terraform:** Definitions serialization with new definitions key/module objects - [#4655](https://github.com/bridgecrewio/checkov/pull/4655)
+- **terraform:** support variable rendering for default objects in vars - [#4650](https://github.com/bridgecrewio/checkov/pull/4650)
+
+### Bug Fix
+
+- **arm:** Fix resource type check in SQLServerAuditingRetention90Days - [#4657](https://github.com/bridgecrewio/checkov/pull/4657)
+- **general:** check suppression id instead of policy id - [#4646](https://github.com/bridgecrewio/checkov/pull/4646)
+- **gitlab:** Modify GitLab CI resource ids - [#4647](https://github.com/bridgecrewio/checkov/pull/4647)
 
 ## [2.3.79](https://github.com/bridgecrewio/checkov/compare/2.3.75...2.3.79) - 2023-03-12
 
