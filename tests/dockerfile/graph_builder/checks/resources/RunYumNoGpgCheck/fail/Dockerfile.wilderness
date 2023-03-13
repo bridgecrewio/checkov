@@ -1,0 +1,6 @@
+FROM openjdk:ship
+
+RUN tdnf -y update && \
+    tdnf -y upgrade && \
+    tdnf install -y ${package} shadow-utils --nogpgcheck && \
+    tdnf clean all
