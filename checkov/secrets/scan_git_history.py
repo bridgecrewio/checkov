@@ -105,7 +105,8 @@ class GitHistoryScanner:
                 base_diff_format = f'diff --git a/{file_diff.a_path} b/{file_diff.b_path}' \
                                    f'\nindex 0000..0000 0000\n--- a/{file_diff.a_path}\n+++ b/{file_diff.b_path}\n'
                 commits_diff.setdefault(current_commit_hash, {})
-                commits_diff[current_commit_hash][file_diff.a_path] = base_diff_format + file_diff.diff.decode()
+                file_name = file_diff.a_path if file_diff.a_path else file_diff.b_path
+                commits_diff[current_commit_hash][file_name] = base_diff_format + file_diff.diff.decode()
         return commits_diff
 
 
