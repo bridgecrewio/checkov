@@ -22,7 +22,7 @@ class TFModule:
         if not isinstance(other, TFModule):
             return False
         return (self.path, self.name, self.nested_tf_module, self.foreach_idx) < (
-        other.path, other.name, other.nested_tf_module, other.foreach_idx)
+            other.path, other.name, other.nested_tf_module, other.foreach_idx)
 
     def __repr__(self) -> str:
         return f'path:{self.path}, name:{self.name}, nested_tf_module:{self.nested_tf_module}, foreach_idx:{self.foreach_idx}'
