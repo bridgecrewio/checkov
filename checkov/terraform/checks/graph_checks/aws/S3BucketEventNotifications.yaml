@@ -1,6 +1,6 @@
 metadata:
   name: "Ensure S3 buckets should have event notifications enabled"
-  category: "GENERAL"
+  category: "LOGGING"
   id: "CKV2_AWS_62"
 definition:
     and:
