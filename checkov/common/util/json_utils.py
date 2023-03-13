@@ -10,14 +10,13 @@ from bc_jsonpath_ng import parse, JSONPath
 from checkov.common.bridgecrew.severities import Severity
 from checkov.common.output.common import ImageDetails
 from checkov.common.packaging.version import LegacyVersion, Version
-from checkov.terraform.modules.module_objects import TFModule, TFDefinitionKey
-from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
 
 type_of_function = type(lambda x: x)
 
 
 class CustomJSONEncoder(json.JSONEncoder):
     def default(self, o: Any) -> Any:
+        from checkov.terraform.modules.module_objects import TFModule, TFDefinitionKey
         if isinstance(o, set):
             return list(o)
         elif isinstance(o, Tree):
@@ -52,6 +51,7 @@ class CustomJSONEncoder(json.JSONEncoder):
 
     @staticmethod
     def encode_key(key):
+        from checkov.terraform.modules.module_objects import TFModule, TFDefinitionKey
         if isinstance(key, TFDefinitionKey):
             return str(key)
         if isinstance(key, TFModule):
@@ -61,6 +61,8 @@ class CustomJSONEncoder(json.JSONEncoder):
 
 
 def object_hook(dct):
+    from checkov.terraform.modules.module_objects import TFModule, TFDefinitionKey
+    from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
     try:
         if dct is None:
             return None
