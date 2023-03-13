@@ -4,8 +4,11 @@ import shutil
 
 import hcl2
 
-from checkov.terraform.modules.module_utils import validate_malformed_definitions, clean_bad_definitions
+from checkov.terraform.modules.module_utils import validate_malformed_definitions, clean_bad_definitions, \
+    clean_parser_types, serialize_definitions
 from checkov.terraform.parser import Parser
+from checkov.terraform.tf_parser import TFParser
+from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 
 
 class ModuleTest(unittest.TestCase):
@@ -56,3 +59,12 @@ resource "helm_release" "test" {
         print(module)
         self.assertEqual(1, len(module.blocks))
         self.assertEqual('ingress.annotations.kubernetes\\.io/ingress\\.class', module.blocks[0].attributes['set.name'])
+
+    def test_parse_hcl_module_serialize_definitions(self):
+        parser = TFParser()
+        directory = os.path.join(self.resources_dir, "parser_nested_modules")
+        self.external_module_path = os.path.join(directory, DEFAULT_EXTERNAL_MODULES_DIR)
+        tf_definitions = parser.parse_directory(directory=directory, out_evaluations_context={})
+        tf_definitions = clean_parser_types(tf_definitions)
+        tf_definitions_encoded = serialize_definitions(tf_definitions)
+        self.assertEqual(tf_definitions_encoded, tf_definitions)
