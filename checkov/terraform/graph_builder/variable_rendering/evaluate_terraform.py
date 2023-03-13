@@ -16,7 +16,8 @@ T = TypeVar("T", str, int, bool)
 # %{ some_text }
 DIRECTIVE_EXPR = re.compile(r"\%\{([^\}]*)\}")
 
-COMPARE_REGEX = re.compile(r"^(?P<a>.+?)\s*(?P<operator>==|!=|>=|>|<=|<|&&|\|\|)\s*(?P<b>.+)$")
+# exclude "']" one the right side of the compare via (?!']), this can happen with a base64 encoded string
+COMPARE_REGEX = re.compile(r"^(?P<a>.+?)\s*(?P<operator>==|!=|>=|>|<=|<|&&|\|\|)\s*(?P<b>(?!']).+)$")
 CHECKOV_RENDER_MAX_LEN = force_int(os.getenv("CHECKOV_RENDER_MAX_LEN", "10000"))
 
 
