@@ -217,7 +217,7 @@ def test_scan_git_history_multiline_keyword_json() -> None:
 
 @mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff', mock_git_repo_multiline_terraform)
 def test_scan_git_history_multiline_keyword_terraform() -> None:
-    valid_dir_path = "/Users/lshindelman/development/test4"
+    valid_dir_path = "mock_git_repo_multiline_terraform"
 
     runner = Runner()
     report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
@@ -244,6 +244,7 @@ def test_scan_git_history_multiline_keyword_terraform() -> None:
 def test_scan_git_history_multiline_keyword_yml() -> None:
     valid_dir_path = "mock_git_repo_multiline_yml"
     runner = Runner()
+
     report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                         runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
     assert len(report.failed_checks) == 5
