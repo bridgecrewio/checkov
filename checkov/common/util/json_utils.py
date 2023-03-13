@@ -40,10 +40,10 @@ class CustomJSONEncoder(json.JSONEncoder):
         else:
             return json.JSONEncoder.default(self, o)
 
-    def encode(self, obj):
+    def encode(self, obj: Any) -> str:
         return super().encode(self._encode(obj))
 
-    def _encode(self, obj):
+    def _encode(self, obj: Any) -> Dict[Any, Any]:
         if isinstance(obj, dict):
             return {self.encode_key(k): v for k, v in obj.items()}
         else:
