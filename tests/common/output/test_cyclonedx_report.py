@@ -39,7 +39,7 @@ def test_valid_cyclonedx_bom():
     assert component.type == ComponentType.APPLICATION
 
     vulnerabilities = next(iter(cyclonedx.bom.components)).get_vulnerabilities()
-    assert len(vulnerabilities) == 4
+    assert len(vulnerabilities) == 5
     # doesn't matter which vulnerability, they are all unknown for runs without platform connection
     assert next(iter(next(iter(vulnerabilities)).ratings)).severity == VulnerabilitySeverity.UNKNOWN
 
