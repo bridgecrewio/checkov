@@ -1,5 +1,4 @@
 from __future__ import annotations
-import time
 from unittest import mock
 
 from detect_secrets import SecretsCollection
