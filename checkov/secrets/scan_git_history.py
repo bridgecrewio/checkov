@@ -90,7 +90,7 @@ class GitHistoryScanner:
             return commits_diff
         if last_commit_sha:
             start = repo.head.commit.hexsha
-            commits = list(repo.iter_commits(start+'..'+last_commit_sha))
+            commits = list(repo.iter_commits(start + '..' + last_commit_sha))
         else:
             commits = list(repo.iter_commits(repo.active_branch))
         for previous_commit_idx in range(len(commits) - 1, 0, -1):
@@ -220,7 +220,8 @@ class GitHistorySecretStore:
                                                                             'code_line': code})
         self.secrets_by_file_value_type.update(temp_secrets_by_file_value_type)
 
-    def get_added_and_removed_commit_hash(self, key: str, secret: PotentialSecret) -> Tuple[str | None, str | None, str | None]:
+    def get_added_and_removed_commit_hash(self, key: str, secret: PotentialSecret) -> Tuple[
+        str | None, str | None, str | None]:
         """
         now we have only the current commit_hash - in the added_commit_hash or in the removed_commit_hash.
         in the next step we will add the connection and the missing data
@@ -238,7 +239,7 @@ class GitHistorySecretStore:
                 if removed == GIT_HISTORY_NOT_BEEN_REMOVED:
                     removed = ''
                 for enriched_secret in enriched_secrets:
-                    if added == enriched_secret.get('added_commit_hash') and\
+                    if added == enriched_secret.get('added_commit_hash') and \
                             removed == enriched_secret.get('removed_commit_hash'):
                         chosen_secret = enriched_secret
                         break
