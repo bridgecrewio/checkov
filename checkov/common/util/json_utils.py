@@ -43,14 +43,14 @@ class CustomJSONEncoder(json.JSONEncoder):
     def encode(self, obj: Any) -> str:
         return super().encode(self._encode(obj))
 
-    def _encode(self, obj: Any) -> Dict[Any, Any]:
+    def _encode(self, obj: Any) -> Any:
         if isinstance(obj, dict):
             return {self.encode_key(k): v for k, v in obj.items()}
         else:
             return obj
 
     @staticmethod
-    def encode_key(key):
+    def encode_key(key: Any) -> str:
         from checkov.terraform.modules.module_objects import TFModule, TFDefinitionKey
         if isinstance(key, TFDefinitionKey):
             return str(key)
