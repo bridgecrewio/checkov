@@ -50,7 +50,7 @@ class CustomJSONEncoder(json.JSONEncoder):
             return obj
 
     @staticmethod
-    def encode_key(key: Any) -> str:
+    def encode_key(key: Any) -> Any:
         from checkov.terraform.modules.module_objects import TFModule, TFDefinitionKey
         if isinstance(key, TFDefinitionKey):
             return str(key)
