@@ -1,6 +1,6 @@
 metadata:
   name: "Ensure that an S3 bucket has a lifecycle configuration"
-  category: "GENERAL"
+  category: "LOGGING"
   id: "CKV2_AWS_61"
 definition:
     and:
