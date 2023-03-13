@@ -41,6 +41,23 @@ definition:
   value: terraform-aws-modules
 ```
 
+## Basic Query - Provider custom policy check
+
+```yaml
+---
+metadata:
+  name: "Ensure a certain region is not added"
+  id: "CKV2_AWS_3"
+  category: "GENERAL_SECURITY"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "provider.aws"
+  attribute: "region"
+  operator: "not_contains"
+  value: "us-west-1"
+```
+
 ## Basic Query - Terraform plan resource not deleted
 
 ```yaml

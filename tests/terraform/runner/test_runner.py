@@ -199,6 +199,26 @@ class TestRunnerValid(unittest.TestCase):
         # Remove external checks from registry.
         runner.graph_registry.checks[:] = [check for check in runner.graph_registry.checks if "CUSTOM" not in check.id]
 
+    def test_runner_provider_yaml_check(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+
+        tf_dir_path = current_dir + "/resources/provider_blocks"
+        extra_checks_dir_path = [current_dir + "/extra_yaml_checks"]
+
+        runner = Runner(db_connector=self.db_connector())
+        report = runner.run(root_folder=tf_dir_path, external_checks_dir=extra_checks_dir_path, runner_filter=RunnerFilter(checks='CUSTOM_GRAPH_AWS_3'))
+        report_json = report.get_json()
+
+        self.assertIsInstance(report_json, str)
+        self.assertIsNotNone(report_json)
+        self.assertIsNotNone(report.get_test_suite())
+
+        self.assertEqual(2, len(report.passed_checks))
+        self.assertEqual(3, len(report.failed_checks))
+
+        # Remove external checks from registry.
+        runner.graph_registry.checks[:] = [check for check in runner.graph_registry.checks if
+                                           "CUSTOM" not in check.id]
     def test_runner_yaml_module_check(self):
         # given
         current_dir = Path(__file__).parent
