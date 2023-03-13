@@ -2,7 +2,7 @@ import datetime
 import json
 from copy import deepcopy
 from json import JSONDecodeError
-from typing import Any
+from typing import Any, Dict
 
 from lark import Tree
 from bc_jsonpath_ng import parse, JSONPath
@@ -60,7 +60,7 @@ class CustomJSONEncoder(json.JSONEncoder):
             return key
 
 
-def object_hook(dct):
+def object_hook(dct: Dict[Any, Any]) -> Any:
     from checkov.terraform.modules.module_objects import TFModule, TFDefinitionKey
     from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
     try:
