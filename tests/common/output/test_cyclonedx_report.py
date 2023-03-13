@@ -206,7 +206,7 @@ def test_create_schema_version_1_3(mocker: MockerFixture):
 
     # then
     assert len(cyclonedx.bom.components) == 1
-    assert len(next(iter(cyclonedx.bom.components)).get_vulnerabilities()) == 4
+    assert len(next(iter(cyclonedx.bom.components)).get_vulnerabilities()) == 5
 
     assert "http://cyclonedx.org/schema/bom/1.3" in output
 
@@ -277,4 +277,4 @@ def test_create_json_output():
     assert output["$schema"] == "http://cyclonedx.org/schema/bom-1.4.schema.json"
     assert len(output["components"]) == 1
     assert len(output["dependencies"]) == 1
-    assert len(output["vulnerabilities"]) == 4
+    assert len(output["vulnerabilities"]) == 5
