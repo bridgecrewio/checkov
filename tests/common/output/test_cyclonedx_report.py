@@ -277,4 +277,4 @@ def test_create_json_output():
     assert output["$schema"] == "http://cyclonedx.org/schema/bom-1.4.schema.json"
     assert len(output["components"]) == 1
     assert len(output["dependencies"]) == 1
-    assert len(output["vulnerabilities"]) == 4
+    assert len(output["vulnerabilities"]) == 5
