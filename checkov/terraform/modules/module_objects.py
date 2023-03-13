@@ -74,7 +74,7 @@ class TFDefinitionKey:
     def __iter__(self):
         yield from {
             "file_path": self.file_path,
-            "tf_source_modules": dict(self.tf_source_modules)
+            "tf_source_modules": dict(self.tf_source_modules) if self.tf_source_modules else None
         }.items()
 
     def __str__(self):
