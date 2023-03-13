@@ -1,5 +1,5 @@
 metadata:
-  name: "Ensure the S3 bucket has lifecycle configuration"
+  name: "Ensure that an S3 bucket has a lifecycle configuration"
   category: "GENERAL"
   id: "CKV2_AWS_61"
 definition:
