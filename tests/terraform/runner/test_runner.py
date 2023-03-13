@@ -1191,7 +1191,7 @@ class TestRunnerValid(unittest.TestCase):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         extra_checks_dir_path = current_dir + "/extra_yaml_checks"
         runner.load_external_checks([extra_checks_dir_path])
-        self.assertEqual(len(runner.graph_registry.checks), base_len + 3)
+        self.assertEqual(len(runner.graph_registry.checks), base_len + 4)
         runner.graph_registry.checks = runner.graph_registry.checks[:base_len]
 
     def test_loading_external_checks_yaml_multiple_times(self):
@@ -1200,9 +1200,9 @@ class TestRunnerValid(unittest.TestCase):
         runner.graph_registry.checks = []
         extra_checks_dir_path = [current_dir + "/extra_yaml_checks"]
         runner.load_external_checks(extra_checks_dir_path)
-        self.assertEqual(len(runner.graph_registry.checks), 3)
+        self.assertEqual(len(runner.graph_registry.checks), 4)
         runner.load_external_checks(extra_checks_dir_path)
-        self.assertEqual(len(runner.graph_registry.checks), 3)
+        self.assertEqual(len(runner.graph_registry.checks), 4)
 
         graph_checks = [x.id for x in runner.graph_registry.checks]
         self.assertIn('CUSTOM_GRAPH_AWS_1', graph_checks)
