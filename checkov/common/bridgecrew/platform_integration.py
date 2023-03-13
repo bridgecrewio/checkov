@@ -491,6 +491,9 @@ class BcPlatformIntegration:
                 if not self.bc_source:
                     logging.error("Source was not set")
                     return None
+                if not self.bc_source.upload_results:
+                    # no need to upload something
+                    return None
 
                 request = self.http.request("PUT", f"{self.integrations_api_url}?source={self.bc_source.name}",  # type:ignore[no-untyped-call]
                                             body=json.dumps(

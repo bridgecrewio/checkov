@@ -62,3 +62,4 @@ def test_gitlab_workflow(mocker: MockerFixture):
     assert len(sca_image_report.image_cached_results) == 1
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
+    assert gitlab_ci_report.passed_checks[0].resource == sca_image_report.image_cached_results[0]["relatedResourceId"]
