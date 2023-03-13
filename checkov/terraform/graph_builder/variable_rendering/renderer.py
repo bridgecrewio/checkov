@@ -190,7 +190,7 @@ class TerraformVariableRenderer(VariableRenderer):
                 default_val = self.get_default_placeholder_value(var_type)
             value = None
             if isinstance(default_val, dict):
-                value = find_in_dict(input_dict=default_val, key_path="/".join(key_path[1:]))
+                value = find_in_dict(input_dict=default_val, key_path=create_variable_key_path(key_path))
             elif (
                 isinstance(var_type, str)
                 and var_type.startswith("${object")
@@ -577,3 +577,12 @@ def get_lookup_value(block_content, dynamic_argument) -> str:
     elif 'True' in block_content[dynamic_argument]:
         lookup_value = 'true'
     return lookup_value
+
+
+def create_variable_key_path(key_path: list[str]) -> str:
+    """Returns the key_path without the var prefix
+
+    ex.
+    ["var", "properties", "region"] -> "properties/region"
+    """
+    return "/".join(key_path[1:])
