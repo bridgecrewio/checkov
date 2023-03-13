@@ -191,12 +191,14 @@ class BcPlatformIntegration:
         token: str = json.loads(request.data.decode("utf8"))['token']
         return token
 
-    def setup_http_manager(self, ca_certificate: str | None = None, no_cert_verify = False) -> None:
+    def setup_http_manager(self, ca_certificate: str | None = None, no_cert_verify: bool = False) -> None:
         """
         bridgecrew uses both the urllib3 and requests libraries, while checkov uses the requests library.
         :param ca_certificate: an optional CA bundle to be used by both libraries.
+        :param no_cert_verify: whether to skip SSL cert verification
         """
         ca_certificate = ca_certificate or os.getenv('BC_CA_BUNDLE')
+        cert_reqs: str | None
 
         if self.http:
             return
