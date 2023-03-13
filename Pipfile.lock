@@ -1021,7 +1021,6 @@
                 "sha256:eb1f88d0594edc40b7d7fc4880e0aef33a69c97b4af0b14c91e8b5f4847ac618",
                 "sha256:f983b89f0f79ee527f2cadf167bc8c72b3e1c40574f71f12717a4cb13c75ed47"
             ],
-            "index": "pypi",
             "markers": "python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64' and implementation_name == 'cpython'",
             "version": "==2.3.5"
         },
@@ -1043,7 +1042,6 @@
                 "sha256:f2c191a1cbcee2ed70d65510dd540edb5d5d2b3288b74be89be401456ae747d1",
                 "sha256:fbedb3013c93d52959c543bc9493572401d8f8e928bc265af6fdf6a2fb0258e8"
             ],
-            "index": "pypi",
             "markers": "python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64' and implementation_name == 'cpython'",
             "version": "==2.3.5"
         },
