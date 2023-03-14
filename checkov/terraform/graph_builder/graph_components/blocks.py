@@ -21,7 +21,8 @@ class TerraformBlock(Block):
         "source_module",
         "has_dynamic_block",
         "dynamic_attributes",
-        "foreach_attrs"
+        "foreach_attrs",
+        "source_module_object"
     )
 
     def __init__(self, name: str, config: Dict[str, Any], path: str, block_type: BlockType, attributes: Dict[str, Any],
@@ -56,7 +57,10 @@ class TerraformBlock(Block):
         self.module_connections.setdefault(attribute_key, []).append(vertex_id)
 
     def extract_additional_changed_attributes(self, attribute_key: str) -> List[str]:
-        if self.has_dynamic_block:
+        # if the `attribute_key` starts with a `for_each.` we know the attribute can't be a dynamic attribute as it
+        # represents the for_each of the block, so we don't need extract dynamic changed attributes
+        # Fix: https://github.com/bridgecrewio/checkov/issues/4324
+        if self.has_dynamic_block and not attribute_key.startswith('for_each'):
             return self._extract_dynamic_changed_attributes(attribute_key)
         return super().extract_additional_changed_attributes(attribute_key)
 

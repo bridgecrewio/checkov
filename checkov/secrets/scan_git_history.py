@@ -38,11 +38,11 @@ class GitHistoryScanner:
         self.timeout = timeout
         self.secret_store = GitHistorySecretStore()
 
-    def scan_history(self) -> bool:
+    def scan_history(self, last_commit_scanned: Optional[str] = '') -> bool:
         """return true if the scan finished without timeout"""
         # mark the scan to finish within the timeout
         with stopit.ThreadingTimeout(self.timeout) as to_ctx_mgr:
-            commits_diff = self._get_commits_diff()
+            commits_diff = self._get_commits_diff(last_commit_sha=last_commit_scanned)
             if commits_diff:
                 scanned_file_count = 0
                 # the secret key will be {file name}_{hash_value}_{type}
@@ -74,7 +74,11 @@ class GitHistoryScanner:
         # else: everything was OK
         return True
 
-    def _get_commits_diff(self) -> Dict[str, Dict[str, str | Dict[str, str]]]:
+    def _get_commits_diff(self, last_commit_sha: Optional[str] = None) -> Dict[str, Dict[str, str | Dict[str, str]]]:
+        """
+        :param: last_commit_sha = is the last commit we have already scanned. in case it exist the function will
+        return the commits from the revision of param to the current head
+        """
         commits_diff: Dict[str, Dict[str, str | Dict[str, str]]] = {}
         if git_import_error is not None:
             logging.warning(f"Unable to load git module (is the git executable available?) {git_import_error}")
@@ -84,7 +88,11 @@ class GitHistoryScanner:
         except Exception as e:
             logging.error(f"Folder {self.root_folder} is not a GIT project {e}")
             return commits_diff
-        commits = list(repo.iter_commits(repo.active_branch))
+        if last_commit_sha:
+            start = repo.head.commit.hexsha
+            commits = list(repo.iter_commits(start + '..' + last_commit_sha))
+        else:
+            commits = list(repo.iter_commits(repo.active_branch))
         for previous_commit_idx in range(len(commits) - 1, 0, -1):
             current_commit_idx = previous_commit_idx - 1
             current_commit_hash = commits[current_commit_idx].hexsha
@@ -105,7 +113,8 @@ class GitHistoryScanner:
                 base_diff_format = f'diff --git a/{file_diff.a_path} b/{file_diff.b_path}' \
                                    f'\nindex 0000..0000 0000\n--- a/{file_diff.a_path}\n+++ b/{file_diff.b_path}\n'
                 commits_diff.setdefault(current_commit_hash, {})
-                commits_diff[current_commit_hash][file_diff.a_path] = base_diff_format + file_diff.diff.decode()
+                file_name = file_diff.a_path if file_diff.a_path else file_diff.b_path
+                commits_diff[current_commit_hash][file_name] = base_diff_format + file_diff.diff.decode()
         return commits_diff
 
 
@@ -211,7 +220,8 @@ class GitHistorySecretStore:
                                                                             'code_line': code})
         self.secrets_by_file_value_type.update(temp_secrets_by_file_value_type)
 
-    def get_added_and_removed_commit_hash(self, key: str, secret: PotentialSecret) -> Tuple[str | None, str | None, str | None]:
+    def get_added_and_removed_commit_hash(self, key: str, secret: PotentialSecret) -> \
+            Tuple[str | None, str | None, str | None]:
         """
         now we have only the current commit_hash - in the added_commit_hash or in the removed_commit_hash.
         in the next step we will add the connection and the missing data
@@ -229,7 +239,7 @@ class GitHistorySecretStore:
                 if removed == GIT_HISTORY_NOT_BEEN_REMOVED:
                     removed = ''
                 for enriched_secret in enriched_secrets:
-                    if added == enriched_secret.get('added_commit_hash') and\
+                    if added == enriched_secret.get('added_commit_hash') and \
                             removed == enriched_secret.get('removed_commit_hash'):
                         chosen_secret = enriched_secret
                         break

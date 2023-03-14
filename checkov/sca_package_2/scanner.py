@@ -43,7 +43,8 @@ class Scanner:
                 "path": bc_integration.repo_path,
                 "repoId": bc_integration.repo_id,
                 "id": bc_integration.timestamp,
-                "repositoryId": ""
+                "repositoryId": "",
+                "skipIsPrivateFixVersion": True
             }
 
             response = request_wrapper(

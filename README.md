@@ -41,7 +41,7 @@ Checkov also powers [**Bridgecrew**](https://bridgecrew.io/?utm_source=github&ut
  ## Features
 
  * [Over 1000 built-in policies](docs/5.Policy%20Index/all.md) cover security and compliance best practices for AWS, Azure and Google Cloud.
- * Scans Terraform, Terraform Plan, CloudFormation, AWS SAM, Kubernetes, Dockerfile, Serverless framework, Ansible, Bicep and ARM template files.
+ * Scans Terraform, Terraform Plan, Terraform JSON, CloudFormation, AWS SAM, Kubernetes, Helm, Kustomize, Dockerfile, Serverless framework, Ansible, Bicep and ARM template files.
  * Scans Argo Workflows, Azure Pipelines, BitBucket Pipelines, Circle CI Pipelines, GitHub Actions and GitLab CI workflow files
  * Supports Context-awareness policies based on in-memory graph-based scanning.
  * Supports Python format for attribute policies and YAML format for both attribute and composite policies.
@@ -279,13 +279,13 @@ Run an SCA scan of packages in a repo:
 checkov -d . --framework sca_package --bc-api-key ... --repo-id <repo_id(arbitrary)>
 ```
 
-Run a scan of a directory with environment variables removing buffering, adding debug level logs, turning on image referencer:
+Run a scan of a directory with environment variables removing buffering, adding debug level logs:
 ```sh
-PYTHONUNBUFFERED=1 LOG_LEVEL=DEBUG CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING=TRUE checkov -d .
+PYTHONUNBUFFERED=1 LOG_LEVEL=DEBUG checkov -d .
 ```
 OR enable the environment variables for multiple runs
 ```sh
-export PYTHONUNBUFFERED=1 LOG_LEVEL=DEBUG CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING=TRUE
+export PYTHONUNBUFFERED=1 LOG_LEVEL=DEBUG
 checkov -d .
 ```
 
