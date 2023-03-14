@@ -1,0 +1,26 @@
+metadata:
+  id: CKV3_SAST_25
+  name: 'Ensure CSRF is not disabled'
+  guidelines: 'A cross-site request forgery (CSRF) attack occurs when a trusted user of a web application can be forced, by an attacker, to perform sensitive actions that he didn’t intend, such as updating his profile or sending a message, more generally anything that can change the state of the application. 
+  The attacker can trick the user/victim to click on a link, corresponding to the privileged action, or to visit a malicious web site that embeds a hidden web request and as web browsers automatically include cookies, the actions can be authenticated and sensitive.'
+  category: 'sast'
+  cwe: "CWE-352: Cross-site forgery"
+scope:
+  languages:
+    - java
+definition:
+  - or:
+    - cond_type: pattern
+      operator: equals
+      value: (HttpSecurity $VAR).csrf().disable();
+    - cond_type: pattern
+      operator: equals
+      value: (HttpSecurity $VAR).csrf().ignoringAntMatchers("$ROUTE");
+    - cond_type: pattern
+      operator: equals
+      value: (org.springframework.security.config.annotation.web.builders.HttpSecurity $H). ... .csrf().disable();
+    - cond_type: pattern
+      operator: equals
+      value: (org.springframework.security.config.annotation.web.configurers.CsrfConfigurer<HttpSecurity> $C).disable();
+
+

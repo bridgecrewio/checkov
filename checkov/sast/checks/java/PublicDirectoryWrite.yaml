@@ -1,0 +1,26 @@
+metadata:
+  id: CKV3_SAST_24
+  name: 'Ensure no file creation in publicly shared directories'
+  guidelines: 'Operating systems have global directories where any user has write access. Those folders are mostly used as temporary storage areas like /tmp in Linux based systems. An application manipulating files from these folders is exposed to race conditions on filenames: a malicious user can try to create a file with a predictable name before the application does. 
+  A successful attack can result in other files being accessed, modified, corrupted or deleted. This risk is even higher if the application runs with elevated permissions.'
+  category: 'sast'
+  cwe: "CWE-377: Insecure Temporary File"
+scope:
+  languages:
+    - java
+definition:
+  - or:
+    - cond_type: pattern
+      operator: regex_match
+      value: Paths.get\(("\/tmp\/.*"|"\/var\/tmp\/.*")\);
+    - cond_type: pattern
+      operator: regex_match
+      value: new File\(("\/tmp\/.*"|"\/var\/tmp\/.*")\);
+    - cond_type: filter
+      attribute: pattern
+      operator: within
+      value: "java.io.File.createTempFile(\"$FIRST\", \"$SECOND\");"
+    - cond_type: filter
+      attribute: pattern
+      operator: within
+      value: "java.nio.file.Files.createTempDirectory(\"$THIRD\");"

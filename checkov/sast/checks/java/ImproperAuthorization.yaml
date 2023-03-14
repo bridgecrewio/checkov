@@ -1,0 +1,42 @@
+metadata:
+  id: CKV3_SAST_26
+  name: Ensure that authorization is based on strong decisions
+  guidelines: |
+    Authorizations granted or not to users to access resources of an application should be based on strong decisions. 
+    For instance, checking whether the user is authenticated or not, has the right roles/privileges. 
+    It may also depend on the user’s location, or the date, time when the user requests access.
+  category: sast
+  cwe: "CWE-285: Improper Authorization"
+scope:
+  languages:
+    - java
+definition:
+  - and:
+    - cond_type: pattern
+      operator: equals
+      value: |
+        class $CLAZZ implements AccessDecisionVoter {
+          $TYPE vote(..., ..., ...) {
+            ...
+          }
+          ...
+        }
+    - cond_type: filter
+      attribute: pattern
+      operator: not_within
+      value: |
+        class $CLAZZ implements AccessDecisionVoter {
+          $TYPE vote(..., ..., ...) {
+            ...
+            return ACCESS_DENIED; 
+            ...
+          }
+          ...
+        }
+    - or:
+        - cond_type: pattern
+          operator: equals
+          value: return ACCESS_ABSTAIN;
+        - cond_type: pattern
+          operator: equals
+          value: return ACCESS_GRANTED;
