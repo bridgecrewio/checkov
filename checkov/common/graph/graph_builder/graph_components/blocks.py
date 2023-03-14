@@ -111,9 +111,12 @@ class Block:
             base_attributes[CustomAttributes.RESOURCE_TYPE] = "module"
 
         if self.block_type == BlockType.PROVIDER:
-            provider_name: str = base_attributes[CustomAttributes.BLOCK_NAME]
-            provider_type = provider_name.split(".")[0]
-            base_attributes[CustomAttributes.RESOURCE_TYPE] = f"provider.{provider_type}"
+            provider_name = base_attributes[CustomAttributes.BLOCK_NAME]
+            if isinstance(provider_name, str):
+                provider_type = provider_name.split(".")[0]
+                base_attributes[CustomAttributes.RESOURCE_TYPE] = f"provider.{provider_type}"
+            else:
+                base_attributes[CustomAttributes.RESOURCE_TYPE] = f"provider.{base_attributes[CustomAttributes.BLOCK_NAME]}"
 
         if "changed_attributes" in base_attributes:
             # removed changed attributes if it was added previously for calculating hash.
