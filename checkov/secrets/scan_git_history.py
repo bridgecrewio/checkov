@@ -38,7 +38,7 @@ class GitHistoryScanner:
         self.timeout = timeout
         self.secret_store = GitHistorySecretStore()
 
-    def scan_history(self, last_commit_scanned: Optional[str] = '') -> bool:
+    def scan_history(self, last_commit_scanned: Optional[str] = '') -> bool:  # return secret store to save in s3 json
         """return true if the scan finished without timeout"""
         # mark the scan to finish within the timeout
         with stopit.ThreadingTimeout(self.timeout) as to_ctx_mgr:
@@ -89,8 +89,8 @@ class GitHistoryScanner:
             logging.error(f"Folder {self.root_folder} is not a GIT project {e}")
             return commits_diff
         if last_commit_sha:
-            start = repo.head.commit.hexsha
-            commits = list(repo.iter_commits(start + '..' + last_commit_sha))
+            curr_rev = repo.head.commit.hexsha
+            commits = list(repo.iter_commits(last_commit_sha + '..' + curr_rev))
         else:
             commits = list(repo.iter_commits(repo.active_branch))
         for previous_commit_idx in range(len(commits) - 1, 0, -1):
