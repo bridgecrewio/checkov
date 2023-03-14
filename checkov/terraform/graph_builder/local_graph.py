@@ -590,17 +590,17 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         if self.use_new_tf_parser:
             return (self.get_dirname(vertex.path) == dest_module_path) and \
                 (
-                        vertex.source_module_object == module_node.source_module_object  # The vertex is in the same file
-                        or self.get_abspath(vertex.source_module_object.path)
-                        == self.get_abspath(module_node.path)  # The vertex is in the correct dependency path)
-                )
+                    vertex.source_module_object == module_node.source_module_object  # The vertex is in the same file
+                    or self.get_abspath(vertex.source_module_object.path)
+                    == self.get_abspath(module_node.path)  # The vertex is in the correct dependency path)
+            )
         else:
             return (self.get_dirname(vertex.path) == dest_module_path) and \
                 (
-                        vertex.module_dependency == module_node.module_dependency  # The vertex is in the same file
-                        or self.get_abspath(vertex.module_dependency)
-                        == self.get_abspath(module_node.path)  # The vertex is in the correct dependency path
-                )
+                    vertex.module_dependency == module_node.module_dependency  # The vertex is in the same file
+                    or self.get_abspath(vertex.module_dependency)
+                    == self.get_abspath(module_node.path)  # The vertex is in the correct dependency path
+            )
 
 
 def to_list(data):
