@@ -222,6 +222,10 @@ class CycloneDX:
             package_group, package_name = package_name.split("_", maxsplit=1)
             namespace += f"/{package_group}"
 
+            if not package_name:
+                logging.info('maven package name format not as expected')
+                package_name = resource.vulnerability_details["package_name"]
+
         # add licenses, if exists
         license_choices = None
         licenses = resource.vulnerability_details.get("licenses")
