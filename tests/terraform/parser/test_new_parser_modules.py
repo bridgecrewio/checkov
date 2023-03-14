@@ -195,6 +195,8 @@ class TestParserInternals(unittest.TestCase):
         for i, vertex in enumerate(local_graph.vertices):
             assert vertex.source_module == self.expected_source_modules[i]
 
+        assert len(local_graph.edges) == 20
+
         assert module
         assert tf_definitions
 
@@ -208,6 +210,8 @@ class TestParserInternals(unittest.TestCase):
 
         for i, vertex in enumerate(local_graph.vertices):
             assert vertex.source_module == self.expected_source_modules[i]
+
+        assert len(local_graph.edges) == 20
 
         assert module
         assert tf_definitions
