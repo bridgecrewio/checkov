@@ -42,6 +42,11 @@ class _SkippedCheck(TypedDict, total=False):
     line_number: int | None
 
 
+class _ScaSuppressions(TypedDict, total=False):
+    cve: dict[str, _SkippedCheck]
+    package: dict[str, _SkippedCheck | dict[str, _SkippedCheck]]
+
+
 class _BaselineFinding(TypedDict):
     resource: str
     check_ids: list[str]
