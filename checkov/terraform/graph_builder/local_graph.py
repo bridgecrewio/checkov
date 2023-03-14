@@ -54,6 +54,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self.vertices_by_module_dependency_by_name: Dict[Tuple[str, str], Dict[BlockType, Dict[str, List[int]]]] = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
         self.vertices_by_module_dependency: Dict[Tuple[str, str], Dict[BlockType, List[int]]] = defaultdict(lambda: defaultdict(list))
         self.enable_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_FOREACH_HANDLING', 'False'))
+        self.use_new_tf_parser = strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'False'))
         self.foreach_blocks: Dict[str, List[int]] = {BlockType.RESOURCE: [], BlockType.MODULE: []}
 
     def build_graph(self, render_variables: bool) -> None:
@@ -124,43 +125,6 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         for i, block in enumerate(self.vertices):
             self._add_block_data_to_graph(i, block)
 
-    def _set_variables_values_from_modules(self) -> List[Undetermined]:
-        undetermined_values: List[Undetermined] = []
-        resources_types = self.get_resources_types_in_graph()
-        for module_vertex_id in self.vertices_by_block_type.get(BlockType.MODULE, []):
-            module_vertex = self.vertices[module_vertex_id]
-            for attribute_name, attribute_value in module_vertex.attributes.items():
-                matching_variables = self.vertices_block_name_map.get(BlockType.VARIABLE, {}).get(attribute_name, [])
-                for variable_vertex_id in matching_variables:
-                    variable_dir = os.path.dirname(self.vertices[variable_vertex_id].path)
-                    # TODO: module_vertex.path is always a string and the retrieved dict value is a nested list
-                    #   therefore this condition is always false. Fixing it results in some variables not being rendered.
-                    #   see test: tests.graph.terraform.variable_rendering.test_render_scenario.TestRendererScenarios.test_account_dirs_and_modules
-                    if module_vertex.path in self.module.module_dependency_map.get(variable_dir, []):
-                        has_var_reference = get_referenced_vertices_in_value(
-                            value=attribute_value, aliases={}, resources_types=resources_types
-                        )
-                        if has_var_reference:
-                            undetermined_values.append(
-                                {
-                                    "module_vertex_id": module_vertex_id,
-                                    "attribute_name": attribute_name,
-                                    "variable_vertex_id": variable_vertex_id,
-                                }
-                            )
-                        var_default_value = self.vertices[variable_vertex_id].attributes.get("default")
-                        if (
-                            not has_var_reference
-                            or not var_default_value
-                            or get_referenced_vertices_in_value(
-                                value=var_default_value, aliases={}, resources_types=resources_types
-                            )
-                        ):
-                            self.update_vertex_attribute(
-                                variable_vertex_id, "default", attribute_value, module_vertex_id, attribute_name
-                            )
-        return undetermined_values
-
     def _get_aliases(self) -> Dict[str, Dict[str, BlockType]]:
         """
         :return aliases: map between alias names that are found inside the blocks and the block type their aliased to.
@@ -176,6 +140,21 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         For each vertex, if it's originated in a module import, add to the vertex the index of the
         matching module vertex as 'source_module'
         """
+        if self.use_new_tf_parser:
+            for vertex in self.vertices:
+                if not vertex.source_module_object:
+                    continue
+                for idx in self.vertices_by_block_type[BlockType.MODULE]:
+                    if vertex.source_module_object.name != self.vertices[idx].name:
+                        continue
+                    if vertex.source_module_object.path != self.vertices[idx].path:
+                        continue
+                    if vertex.source_module_object.nested_tf_module != self.vertices[idx].source_module_object:
+                        continue
+                    vertex.source_module.add(idx)
+                    break
+            return
+
         block_dirs_to_modules: Dict[Tuple[str, str], Dict[str, Set[int]]] = defaultdict(dict)
         for dir_name, paths_to_modules in self.module.module_dependency_map.items():
             # for each directory, find the module vertex that imported it

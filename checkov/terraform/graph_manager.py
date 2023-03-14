@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 import logging
+import os
 from typing import Type, Any, TYPE_CHECKING
 
+from checkov.common.runners.base_runner import strtobool
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.parser import Parser
 
 from checkov.common.graph.graph_manager import GraphManager
+from checkov.terraform.tf_parser import TFParser
 
 if TYPE_CHECKING:
     from checkov.common.typing import LibraryGraphConnector
@@ -15,7 +18,8 @@ if TYPE_CHECKING:
 
 class TerraformGraphManager(GraphManager[TerraformLocalGraph, "dict[str, dict[str, Any]]"]):
     def __init__(self, db_connector: LibraryGraphConnector, source: str = "") -> None:
-        super().__init__(db_connector=db_connector, parser=Parser(), source=source)
+        parser = TFParser() if strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'False')) else Parser()
+        super().__init__(db_connector=db_connector, parser=parser, source=source)
 
     def build_graph_from_source_directory(
         self,
