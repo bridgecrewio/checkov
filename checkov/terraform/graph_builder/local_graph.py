@@ -54,6 +54,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self.vertices_by_module_dependency_by_name: Dict[Tuple[str, str], Dict[BlockType, Dict[str, List[int]]]] = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
         self.vertices_by_module_dependency: Dict[Tuple[str, str], Dict[BlockType, List[int]]] = defaultdict(lambda: defaultdict(list))
         self.enable_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_FOREACH_HANDLING', 'False'))
+        self.use_new_tf_parser = strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'False'))
         self.foreach_blocks: Dict[str, List[int]] = {BlockType.RESOURCE: [], BlockType.MODULE: []}
 
     def build_graph(self, render_variables: bool) -> None:
@@ -139,18 +140,18 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         For each vertex, if it's originated in a module import, add to the vertex the index of the
         matching module vertex as 'source_module'
         """
-        if strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'False')):
+        if self.use_new_tf_parser:
             for vertex in self.vertices:
                 if not vertex.source_module_object:
                     continue
-                for i, source_v in enumerate(self.vertices):
-                    if vertex.source_module_object.name != source_v.name:
+                for idx in self.vertices_by_block_type[BlockType.MODULE]:
+                    if vertex.source_module_object.name != self.vertices[idx].name:
                         continue
-                    if vertex.source_module_object.path != source_v.path:
+                    if vertex.source_module_object.path != self.vertices[idx].path:
                         continue
-                    if vertex.source_module_object.nested_tf_module != source_v.source_module_object:
+                    if vertex.source_module_object.nested_tf_module != self.vertices[idx].source_module_object:
                         continue
-                    vertex.source_module.add(i)
+                    vertex.source_module.add(idx)
                     break
             return
 
