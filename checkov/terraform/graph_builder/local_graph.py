@@ -176,6 +176,21 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         For each vertex, if it's originated in a module import, add to the vertex the index of the
         matching module vertex as 'source_module'
         """
+        if strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'False')):
+            for vertex in self.vertices:
+                if not vertex.source_module_object:
+                    continue
+                for i, source_v in enumerate(self.vertices):
+                    if vertex.source_module_object.name != source_v.name:
+                        continue
+                    if vertex.source_module_object.path != source_v.path:
+                        continue
+                    if vertex.source_module_object.nested_tf_module != source_v.source_module_object:
+                        continue
+                    vertex.source_module.add(i)
+                    break
+            return
+
         block_dirs_to_modules: Dict[Tuple[str, str], Dict[str, Set[int]]] = defaultdict(dict)
         for dir_name, paths_to_modules in self.module.module_dependency_map.items():
             # for each directory, find the module vertex that imported it
