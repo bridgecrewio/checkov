@@ -107,6 +107,18 @@ def test_RESTWebServiceSecurity():
     run_check(lang="java", check="RESTWebServiceSecurity")
 
 
+def test_PublicDirectoryWrite():
+    run_check(lang="java", check="PublicDirectoryWrite")
+
+
+def test_DisabledCSRF():
+    run_check(lang="java", check="DisabledCSRF")
+
+
+def test_ImproperAuthorization():
+    run_check(lang="java", check="ImproperAuthorization")
+
+
 @pytest.fixture(autouse=True)
 def setup():
     global CHECK_ID_MAP
