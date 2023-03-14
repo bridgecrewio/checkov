@@ -38,7 +38,7 @@ class GitHistoryScanner:
         self.timeout = timeout
         self.secret_store = GitHistorySecretStore()
 
-    def scan_history(self, last_commit_scanned: Optional[str] = '') -> bool:  # return secret store to save in s3 json
+    def scan_history(self, last_commit_scanned: Optional[str] = '') -> bool:
         """return true if the scan finished without timeout"""
         # mark the scan to finish within the timeout
         with stopit.ThreadingTimeout(self.timeout) as to_ctx_mgr:
