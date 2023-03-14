@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c  # v3
       - name: security test
-        uses: jpetrucciani/bandit-check@4e0dbcc188c035d2c4fb338a108ac93ed9d9d9be  # v1
+        uses: jpetrucciani/bandit-check@a3625769b94d074865d7c410b9ba4019b4c80681  # v1
         with:
           path: 'checkov'
   detect-secrets:

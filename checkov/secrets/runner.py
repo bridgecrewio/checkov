@@ -17,7 +17,7 @@ from checkov.common.util.type_forcers import convert_str_to_bool
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.output.secrets_record import SecretsRecord
-from checkov.common.util.http_utils import request_wrapper
+from checkov.common.util.http_utils import request_wrapper, DEFAULT_TIMEOUT
 from detect_secrets import SecretsCollection
 from detect_secrets.core import scan
 from detect_secrets.settings import transient_settings
@@ -428,7 +428,7 @@ class Runner(BaseRunner[None]):
     def get_json_verification_report(presigned_url: str) -> list[dict[str, str]] | None:
         response = None
         try:
-            response = requests.get(presigned_url)
+            response = requests.get(url=presigned_url, timeout=DEFAULT_TIMEOUT)
         except Exception:
             logging.error('Unable to download verification report')
 
