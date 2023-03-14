@@ -111,7 +111,8 @@ class Block:
             base_attributes[CustomAttributes.RESOURCE_TYPE] = "module"
 
         if self.block_type == BlockType.PROVIDER:
-            base_attributes[CustomAttributes.RESOURCE_TYPE] = f"provider.{CustomAttributes.BLOCK_NAME}"
+            provider_name = base_attributes[CustomAttributes.BLOCK_NAME].split(".")[0]
+            base_attributes[CustomAttributes.RESOURCE_TYPE] = f"provider.{provider_name}"
 
         if "changed_attributes" in base_attributes:
             # removed changed attributes if it was added previously for calculating hash.
