@@ -304,8 +304,6 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 if self.get_dirname(self.vertices[index].path) == dest_module_path
             ]
 
-
-
     def _build_cross_variable_edges(self):
         target_nodes_indexes = [v for v, referenced_vertices in self.out_edges.items() if
                                 self.vertices[v].block_type == BlockType.RESOURCE and any(
@@ -590,17 +588,19 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
 
     def _should_add_edge(self, vertex: TerraformBlock, dest_module_path: str, module_node: TerraformBlock) -> bool:
         if self.use_new_tf_parser:
-            return (self.get_dirname(vertex.path) == dest_module_path) and (
-                    vertex.source_module_object == module_node.source_module_object  # The vertex is in the same file
-                    or self.get_abspath(vertex.source_module_object.path)
-                    == self.get_abspath(module_node.path)  # The vertex is in the correct dependency path
-            )
+            return (self.get_dirname(vertex.path) == dest_module_path) and \
+                (
+                        vertex.source_module_object == module_node.source_module_object  # The vertex is in the same file
+                        or self.get_abspath(vertex.source_module_object.path)
+                        == self.get_abspath(module_node.path)  # The vertex is in the correct dependency path)
+                )
         else:
-            return (self.get_dirname(vertex.path) == dest_module_path) and (
-                    vertex.module_dependency == module_node.module_dependency  # The vertex is in the same file
-                    or self.get_abspath(vertex.module_dependency)
-                    == self.get_abspath(module_node.path)  # The vertex is in the correct dependency path
-            )
+            return (self.get_dirname(vertex.path) == dest_module_path) and \
+                (
+                        vertex.module_dependency == module_node.module_dependency  # The vertex is in the same file
+                        or self.get_abspath(vertex.module_dependency)
+                        == self.get_abspath(module_node.path)  # The vertex is in the correct dependency path
+                )
 
 
 def to_list(data):
