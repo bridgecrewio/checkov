@@ -124,43 +124,6 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         for i, block in enumerate(self.vertices):
             self._add_block_data_to_graph(i, block)
 
-    def _set_variables_values_from_modules(self) -> List[Undetermined]:
-        undetermined_values: List[Undetermined] = []
-        resources_types = self.get_resources_types_in_graph()
-        for module_vertex_id in self.vertices_by_block_type.get(BlockType.MODULE, []):
-            module_vertex = self.vertices[module_vertex_id]
-            for attribute_name, attribute_value in module_vertex.attributes.items():
-                matching_variables = self.vertices_block_name_map.get(BlockType.VARIABLE, {}).get(attribute_name, [])
-                for variable_vertex_id in matching_variables:
-                    variable_dir = os.path.dirname(self.vertices[variable_vertex_id].path)
-                    # TODO: module_vertex.path is always a string and the retrieved dict value is a nested list
-                    #   therefore this condition is always false. Fixing it results in some variables not being rendered.
-                    #   see test: tests.graph.terraform.variable_rendering.test_render_scenario.TestRendererScenarios.test_account_dirs_and_modules
-                    if module_vertex.path in self.module.module_dependency_map.get(variable_dir, []):
-                        has_var_reference = get_referenced_vertices_in_value(
-                            value=attribute_value, aliases={}, resources_types=resources_types
-                        )
-                        if has_var_reference:
-                            undetermined_values.append(
-                                {
-                                    "module_vertex_id": module_vertex_id,
-                                    "attribute_name": attribute_name,
-                                    "variable_vertex_id": variable_vertex_id,
-                                }
-                            )
-                        var_default_value = self.vertices[variable_vertex_id].attributes.get("default")
-                        if (
-                            not has_var_reference
-                            or not var_default_value
-                            or get_referenced_vertices_in_value(
-                                value=var_default_value, aliases={}, resources_types=resources_types
-                            )
-                        ):
-                            self.update_vertex_attribute(
-                                variable_vertex_id, "default", attribute_value, module_vertex_id, attribute_name
-                            )
-        return undetermined_values
-
     def _get_aliases(self) -> Dict[str, Dict[str, BlockType]]:
         """
         :return aliases: map between alias names that are found inside the blocks and the block type their aliased to.
