@@ -1,0 +1,10 @@
+FROM fedora:rawhide
+RUN yum install -y --nogpgcheck python3
+RUN yum --nogpgcheck install -y python3
+RUN yum \
+    --nogpgcheck \
+    install python3
+RUN yum \
+    install -y python3 \
+    --nogpgcheck
+RUN echo "prodsec" && yum --nogpgcheck -y install python3

@@ -46,3 +46,14 @@ jobs:
 
   steps:
     - script: printenv
+
+- job: FailAnotherLatestTag
+  pool:
+    vmImage: 'ubuntu-18.04'
+
+  container:
+    image: node:latest
+
+  steps:
+    - script: printenv
+

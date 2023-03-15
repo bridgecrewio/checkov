@@ -6,12 +6,13 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import List, Union, Dict, Any
 
-from packaging import version as packaging_version
 from prettytable import PrettyTable, SINGLE_BORDER
 
-from checkov.common.bridgecrew.severities import Severities, BcSeverities
+from checkov.common.bridgecrew.severities import BcSeverities
 from checkov.common.models.enums import CheckResult
-from checkov.common.output.record import Record, DEFAULT_SEVERITY, SCA_PACKAGE_SCAN_CHECK_NAME, SCA_LICENSE_CHECK_NAME
+from checkov.common.output.common import compare_table_items_severity
+from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME, SCA_LICENSE_CHECK_NAME
+from checkov.common.packaging import version as packaging_version
 from checkov.common.sca.commons import UNFIXABLE_VERSION
 from checkov.common.typing import _LicenseStatus
 
@@ -70,11 +71,6 @@ def calculate_lowest_compliant_version(
             return str(lowest_version)
 
     return UNFIXABLE_VERSION
-
-
-def compare_cve_severity(cve: Dict[str, str]) -> int:
-    severity = (cve.get("severity") or DEFAULT_SEVERITY).upper()
-    return Severities[severity].level
 
 
 def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
@@ -147,7 +143,7 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                     )
 
             if package_name in package_cves_details_map:
-                package_cves_details_map[package_name]["cves"].sort(key=compare_cve_severity, reverse=True)
+                package_cves_details_map[package_name]["cves"].sort(key=compare_table_items_severity, reverse=True)
                 package_cves_details_map[package_name]["current_version"] = package_version
                 package_cves_details_map[package_name]["compliant_version"] = calculate_lowest_compliant_version(
                     fix_versions_lists
@@ -175,7 +171,7 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
 def create_cli_license_violations_table(file_path: str, package_licenses_details_map: Dict[str, List[_LicenseStatus]]) -> str:
     package_table_lines: List[str] = []
     columns = 5
-    table_width = 120.0
+    table_width = 126
     column_width = int(table_width / columns)
     package_table = PrettyTable(min_table_width=table_width, max_table_width=table_width)
     package_table.set_style(SINGLE_BORDER)
@@ -234,8 +230,8 @@ def create_cli_license_violations_table(file_path: str, package_licenses_details
 
 def create_cli_cves_table(file_path: str, cve_count: CveCount, package_details_map: Dict[str, Dict[str, Any]]) -> str:
     columns = 6
-    table_width = 120
-    column_width = int(120 / columns)
+    table_width = 126
+    column_width = int(126 / columns)
 
     cve_table_lines = create_cve_summary_table_part(
         table_width=table_width, column_width=column_width, cve_count=cve_count
@@ -243,7 +239,7 @@ def create_cli_cves_table(file_path: str, cve_count: CveCount, package_details_m
 
     vulnerable_packages = True if package_details_map else False
     fixable_table_lines = create_fixable_cve_summary_table_part(
-        table_width=table_width, column_count=columns, cve_count=cve_count, vulnerable_packages=vulnerable_packages
+        table_width=table_width, cve_count=cve_count, vulnerable_packages=vulnerable_packages
     )
 
     package_table_lines = create_package_overview_table_part(
@@ -284,10 +280,10 @@ def create_cve_summary_table_part(table_width: int, column_width: int, cve_count
 
 
 def create_fixable_cve_summary_table_part(
-        table_width: int, column_count: int, cve_count: CveCount, vulnerable_packages: bool
+        table_width: int, cve_count: CveCount, vulnerable_packages: bool
 ) -> List[str]:
     fixable_table = PrettyTable(
-        header=False, min_table_width=table_width + column_count * 2, max_table_width=table_width + column_count * 2
+        header=False, min_table_width=table_width + 1, max_table_width=table_width + 1
     )
     fixable_table.set_style(SINGLE_BORDER)
     if cve_count.fixable:

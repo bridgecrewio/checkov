@@ -46,6 +46,7 @@ from checkov.common.output.cyclonedx_consts import (
     BC_SEVERITY_TO_CYCLONEDX_LEVEL,
 )
 from checkov.common.output.record import SCA_PACKAGE_SCAN_CHECK_NAME
+from checkov.common.util.consts import CHECKOV_DISPLAY_REGISTRY_URL
 
 if sys.version_info >= (3, 8):
     from importlib.metadata import version as meta_version
@@ -106,7 +107,7 @@ class CycloneDX:
                 if bom.has_component(component=component):
                     component = (
                         bom.get_component_by_purl(  # type:ignore[assignment]  # the previous line checks, if exists
-                            purl=component.purl  # type:ignore[arg-type]  # fix https://github.com/CycloneDX/cyclonedx-python-lib/pull/310
+                            purl=component.purl
                         )
                     )
 
@@ -209,6 +210,10 @@ class CycloneDX:
         else:
             purl_type = FILE_NAME_TO_PURL_TYPE.get(file_name, "generic")
             namespace = f"{self.repo_id}/{resource.file_path}"
+            registry_url = resource.vulnerability_details.get("package_registry")
+            is_private_registry = resource.vulnerability_details.get("is_private_registry", False)
+            if CHECKOV_DISPLAY_REGISTRY_URL and registry_url and is_private_registry:
+                qualifiers = f'registry_url={registry_url}'
         package_group = None
         package_name = resource.vulnerability_details["package_name"]
         package_version = resource.vulnerability_details["package_version"]
@@ -216,6 +221,10 @@ class CycloneDX:
         if purl_type == PURL_TYPE_MAVEN and "_" in package_name:
             package_group, package_name = package_name.split("_", maxsplit=1)
             namespace += f"/{package_group}"
+
+            if not package_name:
+                logging.info('maven package name format not as expected')
+                package_name = resource.vulnerability_details["package_name"]
 
         # add licenses, if exists
         license_choices = None

@@ -4,12 +4,12 @@ from typing import Any, TYPE_CHECKING
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.parsers.json import parse
-from checkov.common.parsers.node import DictNode
+from checkov.common.parsers.node import DictNode, ListNode
 from checkov.common.runners.object_runner import Runner as ObjectRunner
 
 if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
-    from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+    from checkov.common.typing import LibraryGraphConnector
     from checkov.common.runners.graph_builder.local_graph import ObjectLocalGraph
     from checkov.common.runners.graph_manager import ObjectGraphManager
 
@@ -19,7 +19,7 @@ class Runner(ObjectRunner):
 
     def __init__(
         self,
-        db_connector: NetworkxConnector | None = None,
+        db_connector: LibraryGraphConnector | None = None,
         source: str = "json",
         graph_class: type[ObjectLocalGraph] | None = None,
         graph_manager: ObjectGraphManager | None = None,
@@ -45,7 +45,7 @@ class Runner(ObjectRunner):
         return parse(filename=f, file_content=file_content)
 
     def get_start_end_lines(self, end: int, result_config: dict[str, Any], start: int) -> tuple[int, int]:
-        if not isinstance(result_config, DictNode):
+        if not isinstance(result_config, (DictNode, ListNode)):
             # shouldn't happen
             return 0, 0
 

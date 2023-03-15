@@ -9,7 +9,9 @@ from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.kubernetes.graph_builder.graph_components.blocks import KubernetesBlock, KubernetesBlockMetadata, KubernetesSelector
-from checkov.kubernetes.kubernetes_utils import DEFAULT_NESTED_RESOURCE_TYPE, is_invalid_k8_definition, get_resource_id, is_invalid_k8_pod_definition, K8sGraphFlags, remove_metadata_from_attribute
+from checkov.kubernetes.kubernetes_utils import DEFAULT_NESTED_RESOURCE_TYPE, is_invalid_k8_definition, get_resource_id, is_invalid_k8_pod_definition, \
+    remove_metadata_from_attribute, PARENT_RESOURCE_KEY_NAME, PARENT_RESOURCE_ID_KEY_NAME, SUPPORTED_POD_CONTAINERS_TYPES
+from checkov.kubernetes.kubernetes_graph_flags import K8sGraphFlags
 from checkov.kubernetes.graph_builder.graph_components.edge_builders.LabelSelectorEdgeBuilder import LabelSelectorEdgeBuilder
 from checkov.kubernetes.graph_builder.graph_components.edge_builders.KeywordEdgeBuilder import KeywordEdgeBuilder
 from checkov.kubernetes.graph_builder.graph_components.edge_builders.NetworkPolicyEdgeBuilder import NetworkPolicyEdgeBuilder
@@ -31,10 +33,6 @@ class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
 
     def _create_vertices(self, create_complex_vertices: bool) -> None:
         for file_path, file_conf in self.definitions.items():
-            for resource in file_conf:
-                if resource.get('kind') == "List":
-                    file_conf.extend(item for item in resource.get("items", []) if item)
-                    file_conf.remove(resource)
 
             if create_complex_vertices:
                 file_conf = self._extract_nested_resources(file_conf)
@@ -43,13 +41,13 @@ class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
                 resource_type = resource.get('kind', DEFAULT_NESTED_RESOURCE_TYPE)
                 metadata = resource.get('metadata') or {}
                 # TODO: add support for generateName
-                
+
                 if resource_type == DEFAULT_NESTED_RESOURCE_TYPE:
                     if is_invalid_k8_pod_definition(resource):
                         logging.info(f"failed to create a vertex in file {file_path}")
                         file_conf.remove(resource)
                         continue
-                    
+
                 else:
                     if is_invalid_k8_definition(resource) or not metadata.get('name'):
                         logging.info(f"failed to create a vertex in file {file_path}")
@@ -118,10 +116,11 @@ class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
                 match_labels = None
         elif isinstance(spec, dict):
             if spec.get('selector'):
-                if resource.get('kind') == "Service":
-                    match_labels = spec.get('selector')
-                else:
-                    match_labels = spec.get('selector', {}).get('matchLabels')
+                if isinstance(spec.get('selector'), dict):
+                    if resource.get('kind') == "Service":
+                        match_labels = spec.get('selector')
+                    else:
+                        match_labels = spec.get('selector', {}).get('matchLabels')
         remove_metadata_from_attribute(match_labels)
         selector = KubernetesSelector(match_labels)
         labels = resource.get('metadata', {}).get('labels')
@@ -134,7 +133,7 @@ class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
         for conf in file_conf:
             KubernetesLocalGraph._extract_nested_resources_recursive(conf, all_resources)
         return all_resources
-            
+
     @staticmethod
     def _extract_nested_resources_recursive(conf: Dict[str, Any], all_resources: List[Dict[str, Any]]) -> None:
         spec = conf.get('spec')
@@ -145,7 +144,21 @@ class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
         if not template or not isinstance(template, dict):
             all_resources.append(conf)
             return
-        spec.pop('template', None)
+        if is_invalid_k8_pod_definition(template):
+            all_resources.append(conf)
+            return
+        if conf.get('kind') in SUPPORTED_POD_CONTAINERS_TYPES:
+            # means this is a Pod resource nested in a supported template container resource
+            template[PARENT_RESOURCE_ID_KEY_NAME] = get_resource_id(conf)
+            metadata = conf.get('metadata', {})
+            if not metadata:
+                # resource does not contain all required fields and can not be associated with the pod
+                all_resources.append(conf)
+                return
+            template[PARENT_RESOURCE_KEY_NAME] = metadata.get('name', "")
+            spec.pop('template', None)
+        else:
+            template = {}
         all_resources.append(conf)
         KubernetesLocalGraph._extract_nested_resources_recursive(template, all_resources)
 

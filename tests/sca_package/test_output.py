@@ -13,7 +13,6 @@ from checkov.sca_package.output import (
     create_cli_cves_table,
     create_cli_license_violations_table,
     create_cli_output,
-    compare_cve_severity,
     CveCount,
 )
 
@@ -95,6 +94,7 @@ def test_create_report_cve_record():
         check_class=check_class,
         vulnerability_details=vulnerability_details,
         licenses='OSI_BDS',
+        package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
     )
 
     # then
@@ -176,7 +176,8 @@ def test_create_report_cve_record_results_from_platform():
         check_class=check_class,
         vulnerability_details=vulnerability_details,
         licenses='OSI_BDS',
-        scan_data_format=ScanDataFormat.PLATFORM
+        scan_data_format=ScanDataFormat.PLATFORM,
+        package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
     )
 
     # then
@@ -218,6 +219,7 @@ def test_create_report_cve_record_moderate_severity():
         check_class=check_class,
         vulnerability_details=vulnerability_details,
         licenses='OSI_BDS',
+        package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
     )
 
     # then
@@ -254,6 +256,7 @@ def test_create_report_cve_record_severity_filter():
         vulnerability_details=vulnerability_details,
         runner_filter=RunnerFilter(checks=['HIGH']),
         licenses='OSI_BDS',
+        package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
     )
 
     # then
@@ -313,6 +316,7 @@ def test_create_report_cve_record_package_filter():
         vulnerability_details=vulnerability_details,
         runner_filter=RunnerFilter(skip_cve_package=['django', 'requests']),
         licenses='OSI_BDS',
+        package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
     )
 
     # then
@@ -362,7 +366,8 @@ def test_calculate_lowest_compliant_version():
     assert compliant_version == "2.2.24"
 
 
-def test_create_cli_cves_table():
+def test_create_cli_cves_table(mocker):
+    mocker.patch("checkov.common.output.report.CHECKOV_RUN_SCA_PACKAGE_SCAN_V2", return_value=True)
     # given
     file_path = "/path/to/requirements.txt"
     cve_count = CveCount(total=6, critical=0, high=3, medium=2, low=0, skipped=1, has_fix=5, to_fix=5)
@@ -415,7 +420,9 @@ def test_create_cli_cves_table():
     )
 
 
-def test_create_cli_license_violations_table():
+def test_create_cli_license_violations_table(mocker):
+    mocker.patch("checkov.common.output.report.CHECKOV_RUN_SCA_PACKAGE_SCAN_V2", return_value=True)
+
     # given
     file_path = "/requirements.txt"
 
@@ -469,7 +476,9 @@ def test_create_cli_license_violations_table():
     )
 
 
-def test_create_cli_cves_table_with_no_found_vulnerabilities():
+def test_create_cli_cves_table_with_no_found_vulnerabilities(mocker):
+    mocker.patch("checkov.common.output.report.CHECKOV_RUN_SCA_PACKAGE_SCAN_V2", return_value=True)
+
     # given
     file_path = "/path/to/requirements.txt"
     cve_count = CveCount(total=2, critical=0, high=0, medium=0, low=0, skipped=2, has_fix=0, to_fix=0)
@@ -495,7 +504,8 @@ def test_create_cli_cves_table_with_no_found_vulnerabilities():
     )
 
 
-def test_create_cli_output():
+def test_create_cli_output(mocker):
+    mocker.patch("checkov.common.output.report.CHECKOV_RUN_SCA_PACKAGE_SCAN_V2", return_value=True)
     # given
     rootless_file_path = "requirements.txt"
     file_abs_path = "/path/to/requirements.txt"
@@ -524,6 +534,7 @@ def test_create_cli_output():
             check_class=check_class,
             vulnerability_details=details,
             licenses='Unknown',
+            package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
         )
         for details in get_vulnerabilities_details()
     ]
@@ -532,7 +543,8 @@ def test_create_cli_output():
                 rootless_file_path=rootless_file_path,
                 file_abs_path=file_abs_path,
                 check_class=check_class,
-                licenses_status=license_status
+                licenses_status=license_status,
+                package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
             )
             for license_status in license_statuses
         ]
@@ -565,7 +577,8 @@ def test_create_cli_output():
     )
 
 
-def test_create_cli_output_without_license_records():
+def test_create_cli_output_without_license_records(mocker):
+    mocker.patch("checkov.common.output.report.CHECKOV_RUN_SCA_PACKAGE_SCAN_V2", return_value=True)
     # given
     rootless_file_path = "requirements.txt"
     file_abs_path = "/path/to/requirements.txt"
@@ -578,6 +591,7 @@ def test_create_cli_output_without_license_records():
             check_class=check_class,
             vulnerability_details=details,
             licenses='Unknown',
+            package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
         )
         for details in get_vulnerabilities_details()
     ]
@@ -601,7 +615,8 @@ def test_create_cli_output_without_license_records():
     )
 
 
-def test_create_cli_output_without_cve_records():
+def test_create_cli_output_without_cve_records(mocker):
+    mocker.patch("checkov.common.output.report.CHECKOV_RUN_SCA_PACKAGE_SCAN_V2", return_value=True)
     # given
     rootless_file_path = "requirements.txt"
     file_abs_path = "/path/to/requirements.txt"
@@ -628,7 +643,8 @@ def test_create_cli_output_without_cve_records():
                 rootless_file_path=rootless_file_path,
                 file_abs_path=file_abs_path,
                 check_class=check_class,
-                licenses_status=license_status
+                licenses_status=license_status,
+                package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
             )
             for license_status in license_statuses
         ]
@@ -647,24 +663,3 @@ def test_create_cli_output_without_cve_records():
             "\t└────────────────────────┴────────────────────────┴────────────────────────┴────────────────────────┴─────────────────────────┘\n",
         ]
     )
-
-
-def test_compare_cve_severity():
-    # given
-    cve = [
-        {"id": "CVE-2016-6186", "severity": "medium", "fixed_version": "1.8.14"},
-        {"id": "CVE-2016-7401", "severity": "high", "fixed_version": "1.8.15"},
-        {"id": "CVE-2021-33203", "severity": "medium", "fixed_version": "2.2.24"},
-        {"id": "CVE-2019-19844", "severity": "critical", "fixed_version": "1.11.27"},
-    ]
-
-    # when
-    cve.sort(key=compare_cve_severity, reverse=True)
-
-    # then
-    assert cve == [
-        {"id": "CVE-2019-19844", "severity": "critical", "fixed_version": "1.11.27"},
-        {"id": "CVE-2016-7401", "severity": "high", "fixed_version": "1.8.15"},
-        {"id": "CVE-2016-6186", "severity": "medium", "fixed_version": "1.8.14"},
-        {"id": "CVE-2021-33203", "severity": "medium", "fixed_version": "2.2.24"},
-    ]

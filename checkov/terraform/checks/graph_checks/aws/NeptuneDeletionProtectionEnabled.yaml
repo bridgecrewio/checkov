@@ -1,0 +1,11 @@
+metadata:
+  name: "Ensure AWS Neptune cluster deletion protection is enabled"
+  id: "CKV2_AWS_58"
+  category: "GENERAL_SECURITY"
+definition:
+  cond_type: "attribute"
+  resource_types: 
+    - "aws_neptune_cluster"
+  attribute: "deletion_protection"
+  operator: "equals_ignore_case"
+  value: "true"

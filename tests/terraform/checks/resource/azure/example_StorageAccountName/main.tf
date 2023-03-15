@@ -99,3 +99,5 @@ resource "azurerm_storage_account" "random_integer" {
   account_tier             = "Standard"
   account_replication_type = "GRS"
 }
+
+

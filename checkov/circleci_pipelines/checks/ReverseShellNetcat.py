@@ -19,6 +19,8 @@ class ReverseShellNetcat(BaseCircleCIPipelinesCheck):
         )
 
     def scan_conf(self, conf: dict[str, Any]) -> tuple[CheckResult, dict[str, Any]]:
+        if not isinstance(conf, dict):
+            return CheckResult.UNKNOWN, conf
         if "run" not in conf:
             return CheckResult.PASSED, conf
         run = conf.get("run", "")
@@ -29,7 +31,7 @@ class ReverseShellNetcat(BaseCircleCIPipelinesCheck):
         else:
             if re.search(r'(nc|netcat) (\d{1,3}).(\d{1,3}).(\d{1,3}).(\d{1,3})', run):
                 return CheckResult.FAILED, conf
-                
+
         return CheckResult.PASSED, conf
 
 

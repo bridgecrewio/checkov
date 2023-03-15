@@ -18,18 +18,22 @@ if TYPE_CHECKING:
     from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
     from checkov.common.output.report import Report
     from checkov.common.output.record import Record
+    from checkov.common.typing import _BaseRunner
 
 
 class SuppressionsIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration: BcPlatformIntegration) -> None:
         super().__init__(bc_integration=bc_integration, order=2)  # must be after the custom policies integration
         self.suppressions: dict[str, list[dict[str, Any]]] = {}
-        self.suppressions_url = f"{self.bc_integration.api_url}/api/v1/suppressions"
 
         # bcorgname_provider_timestamp (ex: companyxyz_aws_1234567891011)
         # the provider may be lower or upper depending on where the policy was created
         self.custom_policy_id_regex = re.compile(r'^[a-zA-Z0-9]+_[a-zA-Z]+_\d{13}$')
         self.repo_name_regex: Pattern[str] | None = None
+
+    @property
+    def suppressions_url(self) -> str:
+        return f"{self.bc_integration.api_url}/api/v1/suppressions"
 
     def is_valid(self) -> bool:
         return (
@@ -208,7 +212,20 @@ class SuppressionsIntegration(BaseIntegrationFeature):
     def _init_repo_regex(self) -> None:
         self.repo_name_regex = re.compile(f'^([a-zA-Z0-9]+_)?{self.bc_integration.repo_id}$')
 
-    def pre_runner(self) -> None:
+    def pre_runner(self, runner: _BaseRunner) -> None:
+        # not used
+        pass
+
+    def get_policy_level_suppressions(self) -> dict[str, str]:
+        policy_level_suppressions = {}
+        for check_suppressions in self.suppressions.values():
+            for suppression in check_suppressions:
+                if suppression.get("suppressionType") == "Policy":
+                    policy_level_suppressions[suppression['id']] = suppression['policyId']
+                    break
+        return policy_level_suppressions
+
+    def post_scan(self, merged_reports: list[Report]) -> None:
         # not used
         pass
 

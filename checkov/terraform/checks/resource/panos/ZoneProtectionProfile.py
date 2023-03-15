@@ -18,7 +18,7 @@ class ZoneProtectionProfile(BaseResourceCheck):
 
         # Report the area of evaluation
         self.evaluated_keys = ['zone_profile']
-    
+
         # Check there is a Zone Protection Profile defined in the resource
         if 'zone_profile' in conf:
 
@@ -27,12 +27,12 @@ class ZoneProtectionProfile(BaseResourceCheck):
 
             # There can only be one "zone_profile" or Terraform fails at the "plan" stage
             if profile_definition[0].strip() == "":
-                
+
                 # An empty string is no Zone Protection Profile, which is a fail
                 return CheckResult.FAILED
-            
+
             else:
-                
+
                 # A non-empty string is a Zone Protection Profile being used, which is a pass
                 return CheckResult.PASSED
 

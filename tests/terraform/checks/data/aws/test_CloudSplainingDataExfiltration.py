@@ -8,10 +8,9 @@ from checkov.terraform.runner import Runner
 
 class TestcloudsplainingDataExfiltration(unittest.TestCase):
     def setUp(self):
-        from checkov.terraform.checks.data.BaseCloudsplainingIAMCheck import BaseCloudsplainingIAMCheck
-
+        from checkov.terraform.checks.utils.base_cloudsplaining_iam_scanner import BaseTerraformCloudsplainingIAMScanner
         # needs to be reset, because the cache belongs to the class not instance
-        BaseCloudsplainingIAMCheck.policy_document_cache = {}
+        BaseTerraformCloudsplainingIAMScanner.policy_document_cache = {}
 
     def test(self):
         test_files_dir = Path(__file__).parent / "example_CloudSplainingDataExfiltration"

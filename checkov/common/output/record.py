@@ -50,7 +50,9 @@ class Record:
         short_description: Optional[str] = None,
         vulnerability_details: Optional[Dict[str, Any]] = None,
         connected_node: Optional[Dict[str, Any]] = None,
-        details: Optional[List[str]] = None
+        details: Optional[List[str]] = None,
+        check_len: int | None = None,
+        definition_context_file_path: Optional[str] = None
     ) -> None:
         """
         :param evaluations: A dict with the key being the variable name, value being a dict containing:
@@ -79,11 +81,13 @@ class Record:
         self.bc_category = bc_category
         self.benchmarks = benchmarks
         self.description = description  # used by SARIF output
-        self.short_description = short_description  # used by SARIF output
+        self.short_description = short_description  # used by SARIF and GitLab SAST output
         self.vulnerability_details = vulnerability_details  # Stores package vulnerability details
         self.connected_node = connected_node
         self.guideline: str | None = None
         self.details: List[str] = details or []
+        self.check_len = check_len
+        self.definition_context_file_path = definition_context_file_path
 
     @staticmethod
     def _determine_repo_file_path(file_path: Union[str, "os.PathLike[str]"]) -> str:
@@ -101,9 +105,10 @@ class Record:
     def _trim_special_chars(expression: str) -> str:
         return "".join(re.findall(re.compile(r"[^ ${\}]+"), expression))
 
-    def _is_expression_in_code_lines(self, expression: str) -> bool:
-        stripped_expression = self._trim_special_chars(expression)
-        return any(stripped_expression in self._trim_special_chars(line) for (_, line) in self.code_block)
+    @staticmethod
+    def _is_expression_in_code_lines(expression: str, code_block: List[Tuple[int, str]]) -> bool:
+        stripped_expression = Record._trim_special_chars(expression)
+        return any(stripped_expression in Record._trim_special_chars(line) for (_, line) in code_block)
 
     @staticmethod
     def _code_line_string(code_block: List[Tuple[int, str]], colorized: bool = True) -> str:
@@ -123,9 +128,61 @@ class Record:
                 code_output.append(f"\t\t{color_codes[0]}{line_num}{spaces} | {color_codes[1]}{line}")
         return "".join(code_output)
 
+    @staticmethod
+    def get_guideline_string(guideline: Optional[str]) -> str:
+        if guideline:
+            return (
+                "\tGuide: "
+                + Style.BRIGHT
+                + colored(f"{guideline}\n", "blue", attrs=["underline"])
+                + Style.RESET_ALL
+            )
+        return ''
+
+    @staticmethod
+    def get_code_lines_string(code_block: List[Tuple[int, str]]) -> str:
+        if code_block:
+            return "\n{}\n".format("".join([Record._code_line_string(code_block, not (ANSI_COLORS_DISABLED))]))
+        return ''
+
+    @staticmethod
+    def get_details_string(details: List[str]) -> str:
+        if details:
+            detail_buffer = [colored(f"\tDetails: {details[0]}\n", "blue")]
+            for t in details[1:]:
+                detail_buffer.append(colored(f"\t         {t}\n", "blue"))
+            return "".join(detail_buffer)
+        return ''
+
+    @staticmethod
+    def get_caller_file_details_string(caller_file_path: Optional[str], caller_file_line_range: Optional[Tuple[int, int]]) -> str:
+        if caller_file_path and caller_file_line_range:
+            return colored(
+                "\tCalling File: {}:{}\n".format(
+                    caller_file_path, "-".join([str(x) for x in caller_file_line_range])
+                ),
+                "magenta",
+            )
+        return ''
+
+    @staticmethod
+    def get_evaluation_string(evaluations: Optional[Dict[str, Any]], code_block: List[Tuple[int, str]]) -> str:
+        if evaluations:
+            for (var_name, var_evaluations) in evaluations.items():
+                var_file = var_evaluations["var_file"]
+                var_definitions = var_evaluations["definitions"]
+                for definition_obj in var_definitions:
+                    definition_expression = definition_obj["definition_expression"]
+                    if Record._is_expression_in_code_lines(definition_expression, code_block):
+                        return colored(
+                            f'\tVariable {colored(var_name, "yellow")} (of {var_file}) evaluated to value "{colored(var_evaluations["value"], "yellow")}" '
+                            f'in expression: {colored(definition_obj["definition_name"] + " = ", "yellow")}{colored(definition_obj["definition_expression"], "yellow")}\n',
+                            "white",
+                        )
+        return ''
+
     def to_string(self, compact: bool = False, use_bc_ids: bool = False) -> str:
         status = ""
-        evaluation_message = ""
         status_color = "white"
         suppress_comment = ""
         if self.check_result["result"] == CheckResult.PASSED:
@@ -137,58 +194,23 @@ class Record:
         elif self.check_result["result"] == CheckResult.SKIPPED:
             status = CheckResult.SKIPPED.name
             status_color = "blue"
-            suppress_comment = "\tSuppress comment: {}\n".format(self.check_result["suppress_comment"])
+            suppress_comment = "\tSuppress comment: {}\n".format(self.check_result.get("suppress_comment", ""))
 
         check_message = colored('Check: {}: "{}"\n'.format(self.get_output_id(use_bc_ids), self.check_name), "white")
-        guideline_message = ""
-        if self.guideline:
-            guideline_message = (
-                "\tGuide: "
-                + Style.BRIGHT
-                + colored(f"{self.guideline}\n", "blue", attrs=["underline"])
-                + Style.RESET_ALL
-            )
+        guideline_message = self.get_guideline_string(self.guideline)
 
         severity_message = f'\tSeverity: {self.severity.name}\n' if self.severity else ''
 
         file_details = colored(
             "\tFile: {}:{}\n".format(self.file_path, "-".join([str(x) for x in self.file_line_range])), "magenta"
         )
-        code_lines = ""
-        if self.code_block:
-            code_lines = "\n{}\n".format("".join([self._code_line_string(self.code_block, not (ANSI_COLORS_DISABLED))]))
-
-        detail = ""
-        if self.details:
-            detail_buffer = [colored(f"\tDetails: {self.details[0]}\n", "blue")]
-
-            for t in self.details[1:]:
-                detail_buffer.append(colored(f"\t         {t}\n", "blue"))
-
-            detail = "".join(detail_buffer)
-
-        caller_file_details = ""
-        if self.caller_file_path and self.caller_file_line_range:
-            caller_file_details = colored(
-                "\tCalling File: {}:{}\n".format(
-                    self.caller_file_path, "-".join([str(x) for x in self.caller_file_line_range])
-                ),
-                "magenta",
-            )
-        if self.evaluations:
-            for (var_name, var_evaluations) in self.evaluations.items():
-                var_file = var_evaluations["var_file"]
-                var_definitions = var_evaluations["definitions"]
-                for definition_obj in var_definitions:
-                    definition_expression = definition_obj["definition_expression"]
-                    if self._is_expression_in_code_lines(definition_expression):
-                        evaluation_message = evaluation_message + colored(
-                            f'\tVariable {colored(var_name, "yellow")} (of {var_file}) evaluated to value "{colored(var_evaluations["value"], "yellow")}" '
-                            f'in expression: {colored(definition_obj["definition_name"] + " = ", "yellow")}{colored(definition_obj["definition_expression"], "yellow")}\n',
-                            "white",
-                        )
+        code_lines = self.get_code_lines_string(self.code_block)
+        detail = self.get_details_string(self.details)
+        caller_file_details = self.get_caller_file_details_string(self.caller_file_path, self.caller_file_line_range)
+        evaluation_message = self.get_evaluation_string(self.evaluations, self.code_block)
 
         status_message = colored("\t{} for resource: {}\n".format(status, self.resource), status_color)
+
         if self.check_result["result"] == CheckResult.FAILED and code_lines and not compact:
             return f"{check_message}{status_message}{severity_message}{detail}{file_details}{caller_file_details}{guideline_message}{code_lines}{evaluation_message}"
 

@@ -9,6 +9,7 @@ from checkov.common.sca.output import add_to_report_sca_data
 from checkov.common.typing import _LicenseStatus
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.models.consts import SUPPORTED_PACKAGE_FILES
+from checkov.common.models.enums import ErrorStatus
 from checkov.common.output.report import Report
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, ignored_directories
@@ -38,11 +39,11 @@ class Runner(BaseRunner[None]):
 
         # skip complete run, if flag '--check' was used without a CVE check ID or the license policies
         if not should_run_scan(runner_filter.checks):
-            return None
+            return []
 
         if not bc_integration.bc_api_key:
             logging.info("The --bc-api-key flag needs to be set to run SCA package scanning")
-            return None
+            return []
 
         logging.info("SCA package scanning searching for scannable files")
 
@@ -61,15 +62,17 @@ class Runner(BaseRunner[None]):
         )
         if not input_paths:
             # no packages found
-            return None
+            return []
 
         logging.info(f"SCA package scanning will scan {len(input_paths)} files")
 
         scanner = Scanner(self.pbar, root_folder)
         self._check_class = f"{scanner.__module__}.{scanner.__class__.__qualname__}"
-        scan_results = scanner.scan(input_paths)
 
-        logging.info(f"SCA package scanning successfully scanned {len(scan_results)} files")
+        # it will be None in case of unexpected failure during the scanning
+        scan_results: Sequence[dict[str, Any]] | None = scanner.scan(input_paths)
+        if scan_results is not None:
+            logging.info(f"SCA package scanning successfully scanned {len(scan_results)} files")
         return scan_results
 
     def run(
@@ -88,6 +91,7 @@ class Runner(BaseRunner[None]):
 
         scan_results = self.prepare_and_scan(root_folder, files, runner_filter)
         if scan_results is None:
+            report.set_error_status(ErrorStatus.ERROR)
             return report
 
         for result in scan_results:
@@ -119,6 +123,7 @@ class Runner(BaseRunner[None]):
                 packages=packages,
                 license_statuses=license_statuses,
                 report_type=self.report_type,
+                dependencies=result.get("dependencies", None)
             )
 
         return report
@@ -129,28 +134,31 @@ class Runner(BaseRunner[None]):
         files: list[str] | None,
         excluded_paths: set[str],
         exclude_package_json: bool = True,
-        excluded_file_names: set[str] | None = None
+        excluded_file_names: set[str] | None = None,
+        extra_supported_package_files: set[str] | None = None
     ) -> set[Path]:
         excluded_file_names = excluded_file_names or set()
+        extra_supported_package_files = extra_supported_package_files or set()
         input_paths: set[Path] = set()
         if root_path:
             input_paths = {
                 file_path
                 for file_path in root_path.glob("**/*")
-                if file_path.name in SUPPORTED_PACKAGE_FILES and not any(p in file_path.parts for p in excluded_paths)
+                if file_path.name in SUPPORTED_PACKAGE_FILES.union(extra_supported_package_files) and not any(p in file_path.parts for p in excluded_paths)
             }
 
-            package_lock_parent_paths = set()
+            package_json_lock_parent_paths = set()
             if exclude_package_json:
-                # filter out package.json, if package-lock.json exists
-                package_lock_parent_paths = {
-                    file_path.parent for file_path in input_paths if file_path.name == "package-lock.json"
+                # filter out package.json, if package-lock.json or yarn.lock exists
+                package_json_lock_parent_paths = {
+                    file_path.parent for file_path in input_paths if
+                    file_path.name in {"package-lock.json", "yarn.lock"}
                 }
 
             input_paths = {
                 file_path
                 for file_path in input_paths
-                if (file_path.name != "package.json" or file_path.parent not in package_lock_parent_paths) and file_path.name not in excluded_file_names
+                if (file_path.name != "package.json" or file_path.parent not in package_json_lock_parent_paths) and file_path.name not in excluded_file_names
             }
 
         for file in files or []:

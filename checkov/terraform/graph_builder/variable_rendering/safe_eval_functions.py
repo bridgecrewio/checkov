@@ -161,7 +161,7 @@ def timeadd(input_str: str, time_delta: str) -> str:
             delta = timedelta(microseconds=(amount / 1000))
 
         dt = update_datetime(dt, delta, adding)
-        
+
     return dt.strftime('%Y-%m-%dT%H:%M:%SZ')
 
 
@@ -332,6 +332,9 @@ SAFE_EVAL_DICT["formatdate"] = formatdate
 def evaluate(input_str: str) -> Any:
     if "__" in input_str:
         logging.debug(f"got a substring with double underscore, which is not allowed. origin string: {input_str}")
+        return input_str
+    if input_str == "...":
+        # don't create an Ellipsis object
         return input_str
     evaluated = eval(input_str, {"__builtins__": None}, SAFE_EVAL_DICT)  # nosec
     return evaluated if not isinstance(evaluated, str) else remove_unicode_null(evaluated)

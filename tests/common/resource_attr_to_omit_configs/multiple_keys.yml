@@ -1,0 +1,3 @@
+mask:
+  - value
+  - azurerm_key_vault_secret:version

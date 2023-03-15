@@ -6,8 +6,11 @@ import os
 import re
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
-from typing import List, Any, TYPE_CHECKING, TypeVar, Generic
+from typing import List, Any, TYPE_CHECKING, TypeVar, Generic, Dict
 
+from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
+from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.util.tqdm_utils import ProgressBar
 
 from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
@@ -18,7 +21,7 @@ if TYPE_CHECKING:
     from checkov.common.checks_infra.registry import Registry
     from checkov.common.graph.checks_infra.registry import BaseRegistry
     from checkov.common.graph.graph_manager import GraphManager  # noqa
-    from checkov.common.typing import _CheckResult
+    from checkov.common.typing import _CheckResult, LibraryGraphConnector
 
 _GraphManager = TypeVar("_GraphManager", bound="GraphManager[Any, Any]|None")
 
@@ -55,11 +58,20 @@ class BaseRunner(ABC, Generic[_GraphManager]):
     external_registries: list[BaseRegistry] | None = None
     graph_manager: _GraphManager | None = None
     graph_registry: Registry | None = None
+    db_connector: LibraryGraphConnector
 
     def __init__(self, file_extensions: Iterable[str] | None = None, file_names: Iterable[str] | None = None):
         self.file_extensions = file_extensions or []
         self.file_names = file_names or []
         self.pbar = ProgressBar(self.check_type)
+        db_connector_class: "type[NetworkxConnector | IgraphConnector]" = NetworkxConnector
+        graph_framework = os.getenv("CHECKOV_GRAPH_FRAMEWORK", "NETWORKX")
+        if graph_framework == "IGRAPH":
+            db_connector_class = IgraphConnector
+        elif graph_framework == "NETWORKX":
+            db_connector_class = NetworkxConnector
+
+        self.db_connector = db_connector_class()
 
     @abstractmethod
     def run(
@@ -98,6 +110,12 @@ class BaseRunner(ABC, Generic[_GraphManager]):
         self.context = context
         self.breadcrumbs = breadcrumbs
 
+    def set_raw_definitions(self, definitions_raw: dict[str, list[tuple[int, str]]] | None) -> None:
+        self.definitions_raw = definitions_raw
+
+    def populate_metadata_dict(self) -> None:
+        return None
+
     def load_external_checks(self, external_checks_dir: List[str]) -> None:
         return None
 
@@ -106,7 +124,6 @@ class BaseRunner(ABC, Generic[_GraphManager]):
 
     def run_graph_checks_results(self, runner_filter: RunnerFilter, report_type: str) -> dict[BaseGraphCheck, list[_CheckResult]]:
         checks_results: "dict[BaseGraphCheck, list[_CheckResult]]" = {}
-
         if not self.graph_manager or not self.graph_registry:
             # should not happen
             logging.warning("Graph components were not initialized")
@@ -116,7 +133,17 @@ class BaseRunner(ABC, Generic[_GraphManager]):
             r.load_checks()
             registry_results = r.run_checks(self.graph_manager.get_reader_endpoint(), runner_filter, report_type)  # type:ignore[union-attr]
             checks_results = {**checks_results, **registry_results}
-        return checks_results
+        # Filtering the checks now
+        filtered_result: Dict[BaseGraphCheck, List[_CheckResult]] = {}
+        for check, results in checks_results.items():
+            filtered_result[check] = [result for result in results if runner_filter.should_run_check(
+                check,
+                check_id=check.id,
+                file_origin_paths=[result.get("entity", {}).get(CustomAttributes.FILE_PATH, "")],
+                report_type=self.check_type
+            )]
+
+        return filtered_result
 
 
 def filter_ignored_paths(
@@ -156,10 +183,17 @@ def filter_ignored_paths(
     # TODO this is not going to work well on Windows, because paths specified in the platform will use /, and
     #  paths specified via the CLI argument will presumably use \\
     if excluded_paths:
-        compiled = [re.compile(p.replace(".terraform", r"\.terraform")) for p in excluded_paths]
+        compiled = []
+        for p in excluded_paths:
+            try:
+                compiled.append(re.compile(p.replace(".terraform", r"\.terraform")))
+            except re.error:
+                # do not add compiled paths that aren't regexes
+                continue
         for entry in list(names):
             path = entry.name if isinstance(entry, os.DirEntry) else entry
-            if any(pattern.search(os.path.join(root_dir, path)) for pattern in compiled):
+            full_path = os.path.join(root_dir, path)
+            if any(pattern.search(full_path) for pattern in compiled) or any(p in full_path for p in excluded_paths):
                 safe_remove(names, entry)
 
 

@@ -15,6 +15,8 @@ class KubeControllerManagerTerminatedPods(BaseK8sContainerCheck):
         if conf.get("command"):
             if "kube-controller-manager" in conf["command"]:
                 for command in conf["command"]:
+                    if command == "--terminated-pod-gc-threshold":
+                        return CheckResult.PASSED
                     if command.startswith("--terminated-pod-gc-threshold"):
                         threshold = command.split("=")[1]
                         if int(threshold) > 0:

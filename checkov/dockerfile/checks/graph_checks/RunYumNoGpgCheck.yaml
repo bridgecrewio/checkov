@@ -1,0 +1,11 @@
+metadata:
+  id: "CKV2_DOCKER_9"
+  name: "Ensure that packages with untrusted or missing GPG signatures are not used by dnf, tdnf, or yum via the '--nogpgcheck' option"
+  category: "APPLICATION_SECURITY"
+definition:
+    cond_type: attribute
+    resource_types:
+      - RUN
+    attribute: value
+    operator: not_regex_match
+    value: ".*(((t?dnf)|(yum))[^\\|&;]*\\s+--nogpgcheck).*"

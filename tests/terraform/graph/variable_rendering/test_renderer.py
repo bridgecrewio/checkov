@@ -19,12 +19,8 @@ from tests.terraform.graph.variable_rendering.expected_data import (
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
 
+@mock.patch.dict(os.environ, {"RENDER_ASYNC_MAX_WORKERS": "50", "RENDER_VARIABLES_ASYNC": "False"})
 class TestRenderer(TestCase):
-    def setUp(self) -> None:
-        os.environ['UNIQUE_TAG'] = ''
-        os.environ['RENDER_ASYNC_MAX_WORKERS'] = '50'
-        os.environ['RENDER_VARIABLES_ASYNC'] = 'False'
-
     def test_render_local(self):
         resources_dir = os.path.join(TEST_DIRNAME, '../resources/variable_rendering/render_local')
         graph_manager = TerraformGraphManager('acme', ['acme'])
@@ -181,8 +177,31 @@ class TestRenderer(TestCase):
                     self.assertEqual(expected_value, actual_value,
                                      f'error during comparing {v.block_type} in attribute key: {attribute_key}')
 
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "False"})
     def test_graph_rendering_order(self):
         resource_path = os.path.join(TEST_DIRNAME, "..", "resources", "module_rendering", "example")
+        graph_manager = TerraformGraphManager('m', ['m'])
+        local_graph, tf_def = graph_manager.build_graph_from_source_directory(resource_path, render_variables=True)
+        module_vertices = list(filter(lambda v: v.block_type == BlockType.MODULE, local_graph.vertices))
+        existing = set()
+        self.assertEqual(6, len(local_graph.edges))
+        for e in local_graph.edges:
+            if e in existing:
+                self.fail("No 2 edges should be aimed at the same vertex in this example")
+            else:
+                existing.add(e)
+        count = 0
+        found = 0
+        for v in module_vertices:
+            if v.name == 'second-mock':
+                found += 1
+                if v.attributes['input'] == ['aws_s3_bucket.some-bucket.arn']:
+                    count += 1
+        self.assertEqual(found, count, f"Expected all instances to have the same value, found {found} instances but only {count} correct values")
+
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "True"})
+    def test_graph_rendering_order_nested_module_enable(self):
+        resource_path = os.path.realpath(os.path.join(TEST_DIRNAME, "..", "resources", "module_rendering", "example"))
         graph_manager = TerraformGraphManager('m', ['m'])
         local_graph, tf_def = graph_manager.build_graph_from_source_directory(resource_path, render_variables=True)
         module_vertices = list(filter(lambda v: v.block_type == BlockType.MODULE, local_graph.vertices))
@@ -373,12 +392,15 @@ class TestRenderer(TestCase):
             local_graph, _ = graph_manager.build_graph_from_source_directory(path, render_variables=True)
             end_time = time.time()
             assert end_time - start_time < 1
-            resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
-
-            # Should fail after implementing dynamic for_each with lookup
-            for resource_vertex in resources_vertex:
-                if resource_vertex.has_dynamic_block:
-                    assert resource_vertex.attributes.get('stage', [{}])[0].get('name') == ['stage.value.name']
+            resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE and v.has_dynamic_block, local_graph.vertices))
+            assert resources_vertex[0].attributes['stage'] == [
+                {'name': 'Source',
+                 'action': {'category': 'Source', 'configuration': {'BranchName': 'master', 'PollForSourceChanges': 'false', 'RepositoryName': 'cron-poll'}, 'input_artifacts': [], 'name': 'Source', 'output_artifacts': ['SourceArtifact'], 'owner': 'AWS', 'provider': 'CodeCommit', 'region': '', 'role_arn': 'null', 'run_order': 1, 'version': '1'}},
+                {'name': 'Build',
+                 'action': {'category': 'Build', 'configuration': {'ProjectName': 'cron-poll'}, 'input_artifacts': ['SourceArtifact'], 'name': 'Build', 'output_artifacts': ['BuildArtifact'], 'owner': 'AWS', 'provider': 'CodeBuild', 'region': '', 'role_arn': 'null', 'run_order': 2, 'version': '1'}},
+                {'name': 'Deploy',
+                 'action': {'category': 'Deploy', 'configuration': {'ClusterName': 'test', 'ServiceName': 'cron-poll'}, 'input_artifacts': ['BuildArtifact'], 'name': 'Deploy', 'output_artifacts': [], 'owner': 'AWS', 'provider': 'ECS', 'region': '', 'role_arn': 'null', 'run_order': 4, 'version': '1'}}
+            ]
 
     def test_dynamic_blocks_null_lookup(self):
         graph_manager = TerraformGraphManager('m', ['m'])
@@ -389,3 +411,48 @@ class TestRenderer(TestCase):
         assert resources_vertex[0].attributes.get('ingress')[0].get('ipv6_cidr_blocks') == 'null'
         assert resources_vertex[0].attributes.get('ingress')[0].get('self') == 'false'
         assert resources_vertex[0].attributes.get('ingress')[0].get('cidr_blocks') == ['10.248.180.0/23', '10.248.186.0/23']
+
+    def test_dynamic_with_conditional_expression(self):
+        graph_manager = TerraformGraphManager('m', ['m'])
+        local_graph, _ = graph_manager.build_graph_from_source_directory(
+            os.path.join(TEST_DIRNAME, "test_resources", "dynamic_with_conditional_expression"), render_variables=True)
+        resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
+        assert resources_vertex[0].attributes.get('identity').get('identity_ids') == 'null'
+        assert resources_vertex[0].attributes.get('identity').get('type') == 'SystemAssigned'
+
+    def test_lookup_from_var(self):
+        graph_manager = TerraformGraphManager('m', ['m'])
+        local_graph, _ = graph_manager.build_graph_from_source_directory(
+            os.path.join(TEST_DIRNAME, "test_resources", "lookup_from_var"), render_variables=True)
+        resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
+        assert resources_vertex[0].attributes.get('protocol')[0] == 'http'
+        assert resources_vertex[0].attributes.get('endpoint')[0] == 'http://www.example.com'
+
+    def test_skip_rendering_unsupported_values(self):
+        # given
+        resource_path = Path(TEST_DIRNAME) / "test_resources/skip_renderer"
+
+        # when
+        graph_manager = TerraformGraphManager('m', ['m'])
+        local_graph, _ = graph_manager.build_graph_from_source_directory(str(resource_path), render_variables=True)
+
+        # then
+        local_b = next(vertex for vertex in local_graph.vertices if vertex.block_type == BlockType.LOCALS and vertex.name == "b")
+        assert local_b.attributes["b"] == ["..."]  # not Ellipsis object
+
+    def test_default_map_value(self):
+        # given
+        resource_path = Path(TEST_DIRNAME) / "test_resources/default_map_value"
+
+        # when
+        graph_manager = TerraformGraphManager('m', ['m'])
+        local_graph, _ = graph_manager.build_graph_from_source_directory(str(resource_path), render_variables=True)
+
+        # then
+        key_vault = next(vertex for vertex in local_graph.vertices if vertex.block_type == BlockType.RESOURCE and vertex.name == "azurerm_key_vault.this")
+        assert key_vault.attributes["network_acls"] == {
+            "bypass": "AzureServices",
+            "default_action": "Deny",
+            "ip_rules": [],
+            "virtual_network_subnet_ids": []
+        }

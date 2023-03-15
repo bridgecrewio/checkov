@@ -1,21 +1,23 @@
+import ast
+import json
 import logging
 import os
 import re
-from typing import Any, Union, Optional, List, Dict, Callable, TypeVar
+from json import JSONDecodeError
+from typing import Any, Union, Optional, List, Dict, Callable, TypeVar, Tuple
 
-# condition ? true_val : false_val -> (condition, true_val, false_val)
 from checkov.common.util.type_forcers import force_int
 from checkov.common.util.parser_utils import find_var_blocks
+import checkov.terraform.graph_builder.variable_rendering.renderer as renderer
 from checkov.terraform.graph_builder.variable_rendering.safe_eval_functions import evaluate
 
 T = TypeVar("T", str, int, bool)
 
-CONDITIONAL_EXPR = re.compile(r"([^\?]+)\?([^:]+)\:([^:]+)")
-
 # %{ some_text }
 DIRECTIVE_EXPR = re.compile(r"\%\{([^\}]*)\}")
 
-COMPARE_REGEX = re.compile(r"^(?P<a>.+?)\s*(?P<operator>==|!=|>=|>|<=|<|&&|\|\|)\s*(?P<b>.+)$")
+# exclude "']" one the right side of the compare via (?!']), this can happen with a base64 encoded string
+COMPARE_REGEX = re.compile(r"^(?P<a>.+?)\s*(?P<operator>==|!=|>=|>|<=|<|&&|\|\|)\s*(?P<b>(?!']).+)$")
 CHECKOV_RENDER_MAX_LEN = force_int(os.getenv("CHECKOV_RENDER_MAX_LEN", "10000"))
 
 
@@ -50,6 +52,7 @@ def evaluate_terraform(input_str: Any, keep_interpolations: bool = True) -> Any:
     evaluated_value = evaluate_conditional_expression(evaluated_value)
     evaluated_value = evaluate_compare(evaluated_value)
     evaluated_value = evaluate_json_types(evaluated_value)
+    evaluated_value = handle_for_loop(evaluated_value)
     second_evaluated_value = _try_evaluate(evaluated_value)
 
     if callable(second_evaluated_value):
@@ -67,7 +70,15 @@ def _try_evaluate(input_str: Union[str, bool]) -> Any:
         try:
             return evaluate(f'"{input_str}"')
         except Exception:
-            return input_str
+            try:
+                # Sometimes eval can fail on correct terraform input like 'true'/'false',
+                # as python's values are with capital T/F.
+                # However, json does know how to handle it, so we use it instead.
+                if isinstance(input_str, str):
+                    return json.loads(input_str)
+                return input_str
+            except Exception:
+                return input_str
 
 
 def replace_string_value(original_str: Any, str_to_replace: str, replaced_value: str, keep_origin: bool = True) -> Any:
@@ -86,6 +97,46 @@ def replace_string_value(original_str: Any, str_to_replace: str, replaced_value:
 
     string_without_interpolation = remove_interpolation(original_str, str_to_replace, escape_unrendered=False)
     return string_without_interpolation.replace(str_to_replace, str(replaced_value))
+
+
+def _string_changed_except_interpolation(str_before: str, str_after: str) -> bool:
+    return abs(len(str_before) - len(str_after)) != 3
+
+
+def _find_new_value_for_interpolation(origin_str: str, str_to_replace: str, new_value: str) -> str:
+    """
+    This function checks whether we should escape the interpolated value, to avoid syntax error.
+    Example:
+        origin_str = "${lookup({'a': ${local.protocol1}},\"a\",\"https\")}"
+        If we don't escape local.protocol1, the lookup function will fail, i.e -
+          invalid - ${lookup({'a': local.protocol1},\"a\",\"https\")}
+          valid - ${lookup({'a': 'local.protocol1'},\"a\",\"https\")}
+    Default to return is new_value
+    """
+    try:
+        # First part - checking if not-escaped is valid.
+        not_escaped = origin_str.replace(str_to_replace, new_value)
+        first_evaluated = evaluate_terraform(not_escaped)
+        if _string_changed_except_interpolation(not_escaped, first_evaluated):
+            # checking if the len difference != 3 checks if we didn't only remove the '${}'
+            return new_value
+        second_evaluated = _try_evaluate(first_evaluated)
+        if first_evaluated != second_evaluated and _string_changed_except_interpolation(not_escaped, second_evaluated):
+            return new_value
+
+        # Second part - checking if escaped is valid
+        escaped_new_value = f"'{new_value}'"
+        escaped = origin_str.replace(str_to_replace, escaped_new_value)
+        first_evaluated = evaluate_terraform(escaped)
+        if escaped != first_evaluated and _string_changed_except_interpolation(escaped, first_evaluated):
+            return escaped_new_value
+        second_evaluated = _try_evaluate(first_evaluated)
+        if first_evaluated != second_evaluated:
+            return escaped_new_value
+        else:
+            return new_value
+    except Exception:
+        return new_value
 
 
 def remove_interpolation(original_str: str, var_to_clean: Optional[str] = None, escape_unrendered=True) -> str:
@@ -112,6 +163,8 @@ def remove_interpolation(original_str: str, var_to_clean: Optional[str] = None, 
                 original_str = original_str[:full_str_start - 1] + block.full_str + original_str[full_str_end + 1:]
                 if escape_unrendered:
                     block.var_only = f"'{block.var_only}'"
+                else:
+                    block.var_only = _find_new_value_for_interpolation(original_str, block.full_str, block.var_only)
             original_str = original_str.replace(block.full_str, block.var_only)
     return original_str
 
@@ -127,20 +180,24 @@ def evaluate_conditional_expression(input_str: str) -> str:
     if variable_ref:
         input_str = variable_ref.groups()[0]
 
-    condition = re.match(CONDITIONAL_EXPR, input_str)
+    condition = find_conditional_expression_groups(input_str)
     while condition:
-        groups = condition.groups()
+        groups, start, end = condition
         if len(groups) != 3:
             return input_str
         evaluated_condition = evaluate_terraform(groups[0])
-        condition_substr = input_str[condition.start() : condition.end()]
-        if convert_to_bool(evaluated_condition):
+        condition_substr = input_str[start:end]
+        bool_evaluated_condition = convert_to_bool(evaluated_condition)
+        if bool_evaluated_condition is True:
             true_val = str(evaluate_terraform(groups[1])).strip()
             input_str = input_str.replace(condition_substr, true_val)
-        else:
+        elif bool_evaluated_condition is False:
             false_val = str(evaluate_terraform(groups[2])).strip()
             input_str = input_str.replace(condition_substr, false_val)
-        condition = re.match(CONDITIONAL_EXPR, input_str)
+        else:
+            # in case we didn't succeed to evaluate condition we shouldn't put any value.
+            break
+        condition = find_conditional_expression_groups(input_str)
 
     return input_str
 
@@ -160,10 +217,98 @@ def evaluate_compare(input_str: str) -> Union[str, bool]:
             if a and b and op:
                 try:
                     return apply_binary_op(evaluate_terraform(a), evaluate_terraform(b), op)
-                except TypeError or SyntaxError:
+                except (TypeError, SyntaxError):
                     return input_str
 
     return input_str
+
+
+def _handle_literal(input_str: str) -> str:
+    try:
+        e = ast.literal_eval(input_str)
+        if isinstance(e, list) and len(e) == 1:
+            return e[0]
+    except (ValueError, SyntaxError):
+        return input_str
+
+
+def _remove_variable_formatting(input_str: str) -> str:
+    return input_str[2:-1] if input_str.startswith(f'{renderer.DOLLAR_PREFIX}{renderer.LEFT_CURLY}') and input_str.endswith(renderer.RIGHT_CURLY) else input_str
+
+
+def handle_for_loop(input_str: Union[str, int, bool]) -> str:
+    if isinstance(input_str, str) and renderer.FOR_LOOP in input_str and '?' not in input_str:
+        old_input_str = input_str
+        input_str = _handle_literal(input_str)
+        if isinstance(input_str, str) and renderer.FOR_LOOP in input_str:
+            input_str = _remove_variable_formatting(input_str)
+            start_bracket_idx = input_str[1:].find(renderer.LEFT_BRACKET)
+            end_bracket_idx = renderer.find_match_bracket_index(input_str, start_bracket_idx + 1)
+            if start_bracket_idx == -1 or end_bracket_idx == -1:
+                return old_input_str
+
+            rendered_statement = input_str[start_bracket_idx:end_bracket_idx + 1].replace('"', '\\"').replace("'", '"')
+            new_val = ''
+            if input_str.startswith(renderer.LEFT_CURLY):
+                new_val = _handle_for_loop_in_dict(rendered_statement, input_str, end_bracket_idx + 1)
+            elif input_str.startswith(renderer.LEFT_BRACKET):
+                new_val = _handle_for_loop_in_list(rendered_statement, input_str, end_bracket_idx + 1)
+            return new_val if new_val else old_input_str
+        else:
+            return input_str
+    else:
+        return input_str
+
+
+def _extract_expression_from_statement(statement: str, start_expression_idx: int) -> str:
+    """
+    statement: [ for val in ["v", "k"] : val ]
+    start_expression_idx: len(" for val in ["v", "k"]")
+    output: "val"
+
+    statement: { for val in {"name": "a", "val": "val"} : val.name => true }
+    start_expression_idx: len(" for val in {"name": "a", "val": "val"}")
+    output: val.name => true
+    """
+    return statement[start_expression_idx + len(renderer.KEY_VALUE_SEPERATOR):-1]
+
+
+def _handle_for_loop_in_dict(object_to_run_on: str, statement: str, start_expression_idx: int) -> Optional[str]:
+    try:
+        object_to_run_on = json.loads(object_to_run_on)
+    except JSONDecodeError:
+        return
+    expression = _extract_expression_from_statement(statement, start_expression_idx)
+    split_expression = expression.replace(' ', '').split(renderer.FOR_EXPRESSION_DICT)
+    if len(split_expression) != 2:
+        return
+    k_expression, v_expression = split_expression
+    obj_key = statement.split(' ')[1]
+    if k_expression.startswith(f'{obj_key}.'):
+        k_expression = k_expression.replace(f'{obj_key}.', '')
+    rendered_result = {}
+    for obj in object_to_run_on:
+        val_to_assign = obj if statement.startswith(f'{renderer.LEFT_CURLY}{renderer.FOR_LOOP} {v_expression}') else evaluate_terraform(v_expression)
+        try:
+            rendered_result[obj[k_expression]] = val_to_assign
+        except (TypeError, KeyError):
+            return
+    return json.dumps(rendered_result)
+
+
+def _handle_for_loop_in_list(object_to_run_on: str, statement: str, start_expression_idx: int) -> Optional[str]:
+    try:
+        object_to_run_on = ast.literal_eval(object_to_run_on.replace(' ', ''))
+    except (ValueError, SyntaxError):
+        return
+    expression = _extract_expression_from_statement(statement, start_expression_idx)
+    if renderer.DOLLAR_PREFIX in expression or renderer.LOOKUP in expression:
+        return
+    rendered_result = []
+    for obj in object_to_run_on:
+        val_to_assign = obj if statement.startswith(f'{renderer.LEFT_BRACKET}{renderer.FOR_LOOP} {expression}') else evaluate_terraform(expression)
+        rendered_result.append(val_to_assign)
+    return json.dumps(rendered_result)
 
 
 def evaluate_json_types(input_str: Any) -> Any:
@@ -248,8 +393,11 @@ def evaluate_map(input_str: str) -> str:
         for curly_match in all_curly_brackets:
             curly_start = curly_match["start"]
             curly_end = curly_match["end"]
-            replaced_matching_map = input_str[curly_start : curly_end + 1].replace("=", ":")
-            input_str = input_str.replace(input_str[curly_start : curly_end + 1], replaced_matching_map)
+            replaced_matching_map = ' ' + input_str[curly_start: curly_end + 1] + ' '
+            for i in range(1, len(replaced_matching_map) - 1):
+                if replaced_matching_map[i] == "=" and replaced_matching_map[i - 1] not in ["=", "!"] and replaced_matching_map[i + 1] != "=":
+                    replaced_matching_map = f'{replaced_matching_map[:i]}:{replaced_matching_map[i + 1:]}'
+            input_str = input_str.replace(input_str[curly_start : curly_end + 1], replaced_matching_map[1:-1])
 
     # find map access like {a: b}[a] and extract the right value - b
     all_square_brackets = find_brackets_pairs(input_str, "[", "]")
@@ -324,3 +472,76 @@ def find_brackets_pairs(input_str: str, starting: str, closing: str) -> List[Dic
         if end != -1 and end - start > 1:
             all_brackets.append({"start": start, "end": end})
     return all_brackets
+
+
+def find_conditional_expression_groups(input_str: str) -> Optional[Tuple[List[str], int, int]]:
+    """
+    from condition ? true_val : false_val return [condition, true_val, false_val]
+    """
+    if '?' not in input_str or ':' not in input_str:
+        return
+    if input_str.index('?') > input_str.rindex(':'):
+        return
+    brackets_pairs = {
+        '[': ']',
+        '{': '}',
+        '(': ')'
+    }
+    str_keys = {'\'', '"'}
+
+    stack = []
+    groups = []
+    end_stack = []
+
+    def _update_stack_if_needed(char, i):
+        # can be true only if the char in str_keys or in brackets_pairs.values()
+        if stack and stack[-1][0] == char:
+            stack.pop(len(stack) - 1)
+        elif char in brackets_pairs:
+            stack.append((brackets_pairs[char], i))
+        elif char in str_keys:
+            stack.append((char, i))
+
+    def _find_separator_index(separator: str, input_str: str, start: int, update_end_stack: bool = False) -> Optional[int]:
+        for i in range(start, len(input_str)):
+            char = input_str[i]
+            if char == separator:
+                if not stack or stack in end_stack:
+                    return i
+                if update_end_stack:
+                    end_stack.extend(stack)
+                    return i
+            _update_stack_if_needed(char, i)
+
+    # find first separator
+    first_separator = _find_separator_index('?', input_str, 0, update_end_stack=True)
+    if first_separator is None:
+        return
+    start = 0 if not stack else stack[-1][1]
+    groups.append(input_str[start:first_separator])
+
+    # find second separator
+    second_separator = _find_separator_index(':', input_str, first_separator)
+    if second_separator is None:
+        return
+    groups.append(input_str[first_separator + 1:second_separator])
+
+    if not stack:
+        groups.append(input_str[second_separator + 1:])
+        return groups, 0, len(input_str)
+
+    start = stack[-1][1]
+    end = len(input_str)
+    for i in range(second_separator + 1, len(input_str)):
+        char = input_str[i]
+        _update_stack_if_needed(char, i)
+        if not stack:
+            end = i + 1
+            break
+        if len(stack) + 1 == end_stack:
+            end = i
+            break
+
+    groups.append(input_str[second_separator + 1:end])
+
+    return groups, start, end

@@ -17,6 +17,7 @@ from checkov.runner_filter import RunnerFilter
             ["all"],
             ["terraform", "secrets"],
             {
+                "ansible",
                 "argo_workflows",
                 "arm",
                 "azure_pipelines",
@@ -28,6 +29,7 @@ from checkov.runner_filter import RunnerFilter
                 "yaml",
                 "kubernetes",
                 "serverless",
+                "terraform_json",
                 "terraform_plan",
                 "github_configuration",
                 "github_actions",
@@ -39,7 +41,8 @@ from checkov.runner_filter import RunnerFilter
                 "kustomize",
                 "sca_package",
                 "openapi",
-                "sca_image"
+                "sca_image",
+                "3d_policy"
             },
         ),
         (["cloudformation", "serverless"], ["serverless", "secrets"], {"cloudformation"}),

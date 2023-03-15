@@ -1,0 +1,139 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: internal-proxy-deployment
+  labels:
+    app: internal-proxy
+spec:
+  selector:
+    matchLabels:
+      app: internal-proxy
+  template:
+    metadata:
+      labels:
+        app: internal-proxy
+    spec:
+      containers:
+      - name: internal-api
+        image: madhuakula/k8s-goat-internal-api
+        resources:
+          limits:
+            cpu: 30m
+            memory: 40Mi
+          requests:
+            cpu: 30m
+            memory: 40Mi
+        ports:
+        - containerPort: 3000
+      - name: info-app
+        image: madhuakula/k8s-goat-info-app
+        resources:
+          limits:
+            cpu: 30m
+            memory: 40Mi
+          requests:
+            cpu: 30m
+            memory: 40Mi
+        ports:
+        - containerPort: 5000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: external-proxy-deployment
+  labels:
+    app: external-proxy
+spec:
+  selector:
+    matchLabels:
+      app: external-proxy
+  template:
+    metadata:
+      labels:
+        app: external-proxy
+    spec:
+      containers:
+      - name: internal-api
+        image: madhuakula/k8s-goat-internal-api
+        resources:
+          limits:
+            cpu: 30m
+            memory: 40Mi
+          requests:
+            cpu: 30m
+            memory: 40Mi
+        ports:
+        - containerPort: 3000
+      - name: info-app
+        image: madhuakula/k8s-goat-info-app
+        resources:
+          limits:
+            cpu: 30m
+            memory: 40Mi
+          requests:
+            cpu: 30m
+            memory: 40Mi
+        ports:
+        - containerPort: 5000
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: test-network-policy
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: internal-proxy
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - ipBlock:
+            cidr: 172.17.0.0/16
+            except:
+              - 172.17.1.0/24
+        - podSelector:
+            matchLabels:
+              app: internal-proxy
+      ports:
+        - protocol: TCP
+          port: 6379
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/24
+      ports:
+        - protocol: TCP
+          port: 5978
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: skipdeployment
+  annotations:
+    "checkov.io/skip": "CKV2_K8S_6=skip it"
+  labels:
+    app: skip
+spec:
+  selector:
+    matchLabels:
+      app: skip
+  template:
+    metadata:
+      labels:
+        app: skip
+    spec:
+      containers:
+      - name: info-app
+        image: madhuakula/k8s-goat-info-app
+        resources:
+          limits:
+            cpu: 30m
+            memory: 40Mi
+          requests:
+            cpu: 30m
+            memory: 40Mi
+        ports:
+        - containerPort: 5000

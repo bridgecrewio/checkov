@@ -26,12 +26,12 @@ def test_simple_attribute_check():
     summary = report.get_summary()
 
     passing_resources = {
-        "jobs.build",
-        "jobs.scan",
+        "jobs(build)",
+        "jobs(scan)",
     }
     failing_resources = {
-        "jobs.attest",
-        "jobs.provenance",
+        "jobs(attest)",
+        "jobs(provenance)",
     }
 
     passed_check_resources = {c.resource for c in report.passed_checks}
@@ -64,9 +64,8 @@ def test_jobs_steps_connection_check():
     # then
     summary = report.get_summary()
 
-
     failing_resources = {
-        "jobs.attest.steps.6",
+        "jobs(attest).steps[6](Log in to GHCR)",
     }
 
     failed_check_resources = {c.resource for c in report.failed_checks}
@@ -77,3 +76,36 @@ def test_jobs_steps_connection_check():
     assert summary["parsing_errors"] == 0
 
     assert failed_check_resources == failing_resources
+
+
+def test_on_check():
+    # given
+    test_file = str(RESOURCES_DIR / ".github/workflows/workflow_with_image.yml")
+    runner = Runner()
+
+    # when
+    report = runner.run(
+        files=[test_file],
+        external_checks_dir=[str(EXTRA_YAML_CHECKS_DIR)],
+        runner_filter=RunnerFilter(checks="CKV2_GHA_CUSTOM_3"),
+    )
+
+    # remove all checks
+    runner.graph_registry.checks.clear()
+
+    # then
+    summary = report.get_summary()
+
+
+    passing_resources = {
+        "on(CI)",
+    }
+
+    passed_check_resources = {c.resource for c in report.passed_checks}
+
+    assert summary["passed"] == len(passing_resources)
+    assert summary["failed"] == 0
+    assert summary["skipped"] == 0
+    assert summary["parsing_errors"] == 0
+
+    assert passed_check_resources == passing_resources

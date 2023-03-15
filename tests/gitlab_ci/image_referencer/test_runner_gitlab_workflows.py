@@ -8,10 +8,12 @@ from checkov.gitlab_ci.runner import Runner
 from checkov.runner_filter import RunnerFilter
 from pytest_mock import MockerFixture
 
+from tests.common.image_referencer.test_utils import mock_get_license_statuses_async, mock_get_image_cached_result_async
+
 RESOURCES_PATH = Path(__file__).parent / "resources/single_image"
 
 
-def test_gitlab_workflow(mocker: MockerFixture, image_cached_result, license_statuses_result):
+def test_gitlab_workflow(mocker: MockerFixture):
     from checkov.common.bridgecrew.platform_integration import bc_integration
     file_name = ".gitlab-ci.yml"
     image_name = "redis:latest"
@@ -24,12 +26,12 @@ def test_gitlab_workflow(mocker: MockerFixture, image_cached_result, license_sta
     bc_integration.bc_source = get_source_type("disabled")
 
     mocker.patch(
-        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache",
-        return_value=image_cached_result,
+        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
+        side_effect=mock_get_image_cached_result_async,
     )
     mocker.patch(
-        "checkov.common.images.image_referencer.get_license_statuses",
-        return_value=license_statuses_result,
+        "checkov.common.images.image_referencer.get_license_statuses_async",
+        side_effect=mock_get_license_statuses_async,
     )
 
     reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
@@ -60,3 +62,4 @@ def test_gitlab_workflow(mocker: MockerFixture, image_cached_result, license_sta
     assert len(sca_image_report.image_cached_results) == 1
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
+    assert gitlab_ci_report.passed_checks[0].resource == sca_image_report.image_cached_results[0]["relatedResourceId"]

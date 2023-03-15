@@ -13,14 +13,17 @@ from typing import Any, TYPE_CHECKING, cast, Optional, overload
 
 from urllib3.response import HTTPResponse
 
-from checkov.common.bridgecrew.bc_source import SourceType
 from checkov.common.util.consts import DEV_API_GET_HEADERS, DEV_API_POST_HEADERS, PRISMA_API_GET_HEADERS, \
     PRISMA_PLATFORM, BRIDGECREW_PLATFORM
 from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.version import version as checkov_version
 
 if TYPE_CHECKING:
+    from checkov.common.bridgecrew.bc_source import SourceType
     from requests import Response
+
+# https://requests.readthedocs.io/en/latest/user/advanced/#timeouts
+DEFAULT_TIMEOUT = (3.1, 30)
 
 logger = logging.getLogger(__name__)
 
@@ -119,7 +122,8 @@ def request_wrapper(
         data: Any | None = None,
         json: dict[str, Any] | None = None,
         should_call_raise_for_status: bool = False,
-        params: dict[str, Any] | None = None
+        params: dict[str, Any] | None = None,
+        log_json_body: bool = True
 ) -> Response:
     # using of "retry" mechanism for 'requests.request' due to unpredictable 'ConnectionError' and 'HttpError'
     # instances that appears from time to time.
@@ -136,12 +140,20 @@ def request_wrapper(
     for i in range(request_max_tries):
         try:
             headers["X-Request-Id"] = str(uuid.uuid4())
-            response = requests.request(method, url, headers=headers, data=data, json=json, params=params)
+            response = requests.request(
+                method=method,
+                url=url,
+                headers=headers,
+                data=data,
+                json=json,
+                params=params,
+                timeout=DEFAULT_TIMEOUT,
+            )
             if should_call_raise_for_status:
                 response.raise_for_status()
             return response
         except requests.exceptions.ConnectionError as connection_error:
-            logging.error(f"Connection error on request {method}:{url},\ndata:\n{data}\njson:{json}\nheaders:{headers}")
+            logging.error(f"Connection error on request {method}:{url},\ndata:\n{data}\njson:{json if log_json_body else 'Redacted'}\nheaders:{headers}")
             if i != request_max_tries - 1:
                 sleep_secs = sleep_between_request_tries * (i + 1)
                 logging.info(f"retrying attempt number {i + 2} in {sleep_secs} seconds")
@@ -152,14 +164,14 @@ def request_wrapper(
             raise connection_error
         except requests.exceptions.HTTPError as http_error:
             status_code = http_error.response.status_code
-            logging.error(f"HTTP error on request {method}:{url},\ndata:\n{data}\njson:{json}\nheaders:{headers}")
+            logging.error(f"HTTP error on request {method}:{url},\ndata:\n{data}\njson:{json if log_json_body else 'Redacted'}\nheaders:{headers}")
             if (status_code >= 500 or status_code == 403) and i != request_max_tries - 1:
                 sleep_secs = sleep_between_request_tries * (i + 1)
                 logging.info(f"retrying attempt number {i + 2} in {sleep_secs} seconds")
                 time.sleep(sleep_secs)
                 continue
 
-            logging.exception("request_wrapper http error")
+            logging.error("request_wrapper http error", exc_info=True)
             raise http_error
     else:
         raise Exception("Unexpected behavior: the method \'request_wrapper\' should be terminated inside the above for-"

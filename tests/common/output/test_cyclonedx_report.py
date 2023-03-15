@@ -39,7 +39,7 @@ def test_valid_cyclonedx_bom():
     assert component.type == ComponentType.APPLICATION
 
     vulnerabilities = next(iter(cyclonedx.bom.components)).get_vulnerabilities()
-    assert len(vulnerabilities) == 4
+    assert len(vulnerabilities) == 5
     # doesn't matter which vulnerability, they are all unknown for runs without platform connection
     assert next(iter(next(iter(vulnerabilities)).ratings)).severity == VulnerabilitySeverity.UNKNOWN
 
@@ -87,6 +87,7 @@ def test_valid_cyclonedx_image_bom():
         vulnerability_details=vulnerability,
         licenses="BSD-3-Clause",
         sca_details=image_details,
+        package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
     )
     report = Report(check_type='sca_image')
     report.add_record(record)
@@ -165,6 +166,7 @@ def test_sca_packages_cyclonedx_bom():
         check_class=check_class,
         vulnerability_details=vulnerability_details,
         licenses='OSI_BDS',
+        package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
     )
 
     report = Report(CheckType.SCA_PACKAGE)
@@ -204,7 +206,7 @@ def test_create_schema_version_1_3(mocker: MockerFixture):
 
     # then
     assert len(cyclonedx.bom.components) == 1
-    assert len(next(iter(cyclonedx.bom.components)).get_vulnerabilities()) == 4
+    assert len(next(iter(cyclonedx.bom.components)).get_vulnerabilities()) == 5
 
     assert "http://cyclonedx.org/schema/bom/1.3" in output
 
@@ -275,4 +277,4 @@ def test_create_json_output():
     assert output["$schema"] == "http://cyclonedx.org/schema/bom-1.4.schema.json"
     assert len(output["components"]) == 1
     assert len(output["dependencies"]) == 1
-    assert len(output["vulnerabilities"]) == 4
+    assert len(output["vulnerabilities"]) == 5

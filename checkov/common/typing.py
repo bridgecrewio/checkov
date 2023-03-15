@@ -1,21 +1,29 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict
+from typing import TYPE_CHECKING, Any, Callable, Dict, TypeVar, Set, Union
 from typing_extensions import TypeAlias, TypedDict
 
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.severities import Severity
     from checkov.common.checks.base_check import BaseCheck
+    from checkov.common.graph.db_connectors.db_connector import DBConnector
     from checkov.common.models.enums import CheckResult
+    from checkov.common.runners.base_runner import BaseRunner  # noqa
+    from networkx import DiGraph
+    from igraph import Graph
 
+
+_BaseRunner = TypeVar("_BaseRunner", bound="BaseRunner[Any]")
 
 _ScannerCallableAlias: TypeAlias = Callable[
-    [str, "BaseCheck", "_SkippedCheck", "dict[str, Any]", str, str, "dict[str, Any]"], None
+    [str, "BaseCheck", "list[_SkippedCheck]", "dict[str, Any]", str, str, "dict[str, Any]"], None
 ]
 
 _Resource: TypeAlias = str
-_Attribute: TypeAlias = str
-ResourceAttributesToOmit: TypeAlias = Dict[_Resource, _Attribute]
+_Attributes: TypeAlias = Set[str]
+ResourceAttributesToOmit: TypeAlias = Dict[_Resource, _Attributes]
+LibraryGraph: TypeAlias = "Union[DiGraph, Graph]"
+LibraryGraphConnector: TypeAlias = "Union[DBConnector[DiGraph], DBConnector[Graph]]"
 
 
 class _CheckResult(TypedDict, total=False):
@@ -32,6 +40,11 @@ class _SkippedCheck(TypedDict, total=False):
     id: str
     suppress_comment: str
     line_number: int | None
+
+
+class _ScaSuppressions(TypedDict, total=False):
+    cve: dict[str, _SkippedCheck]
+    package: dict[str, _SkippedCheck | dict[str, _SkippedCheck]]
 
 
 class _BaselineFinding(TypedDict):
@@ -70,9 +83,22 @@ class _ExitCodeThresholds(TypedDict):
     hard_fail_threshold: Severity | None
 
 
+class _ScaExitCodeThresholds(TypedDict):
+    LICENSES: _ExitCodeThresholds
+    VULNERABILITIES: _ExitCodeThresholds
+
+
 class _LicenseStatus(TypedDict):
     package_name: str
     package_version: str
     policy: str
     license: str
     status: str
+
+
+class _EntityContext(TypedDict, total=False):
+    start_line: int
+    end_line: int
+    policy: str
+    code_lines: list[tuple[int, str]]
+    skipped_checks: list[_SkippedCheck]
