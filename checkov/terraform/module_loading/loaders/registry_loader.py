@@ -8,6 +8,7 @@ from requests.exceptions import HTTPError
 
 from checkov.common.models.consts import TFC_HOST_NAME
 from checkov.common.goget.registry.get_registry import RegistryGetter
+from checkov.common.util.http_utils import DEFAULT_TIMEOUT
 from checkov.terraform.module_loading.content import ModuleContent
 from checkov.terraform.module_loading.loader import ModuleLoader
 from checkov.terraform.module_loading.loaders.versions_parser import (
@@ -87,7 +88,11 @@ class RegistryLoader(ModuleLoader):
             f"Best version for {module_params.module_source} is {best_version} based on the version constraint {module_params.version}")
         request_download_url = "/".join((module_params.REGISTRY_URL_PREFIX, module_params.module_source, best_version, "download"))
         try:
-            response = requests.get(url=request_download_url, headers={"Authorization": f"Bearer {module_params.token}"})
+            response = requests.get(
+                url=request_download_url,
+                headers={"Authorization": f"Bearer {module_params.token}"},
+                timeout=DEFAULT_TIMEOUT
+            )
             response.raise_for_status()
         except HTTPError as e:
             self.logger.warning(e)
@@ -140,7 +145,11 @@ class RegistryLoader(ModuleLoader):
         # Get all available versions for a module in the registry and cache them.
         # Returns False on failure.
         try:
-            response = requests.get(url=module_params.module_version_url, headers={"Authorization": f"Bearer {module_params.token}"})
+            response = requests.get(
+                url=module_params.module_version_url,
+                headers={"Authorization": f"Bearer {module_params.token}"},
+                timeout=DEFAULT_TIMEOUT,
+            )
             response.raise_for_status()
             available_versions = [
                 v.get("version") for v in response.json().get("modules", [{}])[0].get("versions", {})

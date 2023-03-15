@@ -89,8 +89,8 @@ class GitHistoryScanner:
             logging.error(f"Folder {self.root_folder} is not a GIT project {e}")
             return commits_diff
         if last_commit_sha:
-            start = repo.head.commit.hexsha
-            commits = list(repo.iter_commits(start + '..' + last_commit_sha))
+            curr_rev = repo.head.commit.hexsha
+            commits = list(repo.iter_commits(last_commit_sha + '..' + curr_rev))
         else:
             commits = list(repo.iter_commits(repo.active_branch))
         for previous_commit_idx in range(len(commits) - 1, 0, -1):
