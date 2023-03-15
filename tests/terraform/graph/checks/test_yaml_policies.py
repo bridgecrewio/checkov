@@ -25,6 +25,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_S3BucketLifecycle(self):
         self.go("S3BucketLifecycle")
 
+    def test_CloudFrontHasOAIEnabled(self):
+        self.go("CloudFrontHasOAIEnabled")
+
     def test_AccessControlGroupRuleDefine(self):
         self.go("AccessControlGroupRuleDefine")
 
@@ -91,8 +94,8 @@ class TestYamlPolicies(unittest.TestCase):
     def test_AWSConfigRecorderEnabled(self):
         self.go("AWSConfigRecorderEnabled")
 
-    def test_CLoudFrontS3OriginConfigWithOAI(self):
-        self.go("CLoudFrontS3OriginConfigWithOAI")
+    def test_CloudFrontS3OriginConfigWithOAI(self):
+        self.go("CloudFrontS3OriginConfigWithOAI")
 
     def test_CloudFrontWebACLConfiguredWIthLog4jVulnerability(self):
         self.go("CloudFrontWebACLConfiguredWIthLog4jVulnerability")
