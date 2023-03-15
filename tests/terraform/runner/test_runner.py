@@ -199,26 +199,6 @@ class TestRunnerValid(unittest.TestCase):
         # Remove external checks from registry.
         runner.graph_registry.checks[:] = [check for check in runner.graph_registry.checks if "CUSTOM" not in check.id]
 
-    def test_runner_provider_yaml_check(self):
-        current_dir = os.path.dirname(os.path.realpath(__file__))
-
-        tf_dir_path = current_dir + "/resources/provider_blocks"
-        extra_checks_dir_path = [current_dir + "/extra_yaml_checks"]
-
-        runner = Runner(db_connector=self.db_connector())
-        report = runner.run(root_folder=tf_dir_path, external_checks_dir=extra_checks_dir_path, runner_filter=RunnerFilter(checks=['CUSTOM_GRAPH_AWS_3', 'CUSTOM_GRAPH_AWS_4']))
-        report_json = report.get_json()
-
-        self.assertIsInstance(report_json, str)
-        self.assertIsNotNone(report_json)
-        self.assertIsNotNone(report.get_test_suite())
-
-        self.assertEqual(7, len(report.passed_checks))
-        self.assertEqual(3, len(report.failed_checks))
-
-        # Remove external checks from registry.
-        runner.graph_registry.checks[:] = [check for check in runner.graph_registry.checks if
-                                           "CUSTOM" not in check.id]
     def test_runner_yaml_module_check(self):
         # given
         current_dir = Path(__file__).parent
@@ -1191,7 +1171,7 @@ class TestRunnerValid(unittest.TestCase):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         extra_checks_dir_path = current_dir + "/extra_yaml_checks"
         runner.load_external_checks([extra_checks_dir_path])
-        self.assertEqual(len(runner.graph_registry.checks), base_len + 5)
+        self.assertEqual(len(runner.graph_registry.checks), base_len + 3)
         runner.graph_registry.checks = runner.graph_registry.checks[:base_len]
 
     def test_loading_external_checks_yaml_multiple_times(self):
@@ -1200,9 +1180,9 @@ class TestRunnerValid(unittest.TestCase):
         runner.graph_registry.checks = []
         extra_checks_dir_path = [current_dir + "/extra_yaml_checks"]
         runner.load_external_checks(extra_checks_dir_path)
-        self.assertEqual(len(runner.graph_registry.checks), 5)
+        self.assertEqual(len(runner.graph_registry.checks), 3)
         runner.load_external_checks(extra_checks_dir_path)
-        self.assertEqual(len(runner.graph_registry.checks), 5)
+        self.assertEqual(len(runner.graph_registry.checks), 3)
 
         graph_checks = [x.id for x in runner.graph_registry.checks]
         self.assertIn('CUSTOM_GRAPH_AWS_1', graph_checks)
