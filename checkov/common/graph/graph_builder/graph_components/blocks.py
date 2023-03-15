@@ -112,7 +112,7 @@ class Block:
 
         if self.block_type == BlockType.PROVIDER:
             # provider_name is always a string, base_attributes needs better typingpipenv run mypy
-            provider_name = cast(str,base_attributes[CustomAttributes.BLOCK_NAME])
+            provider_name = cast(str, base_attributes[CustomAttributes.BLOCK_NAME])
             provider_type = provider_name.split(".")[0]
             # ex: provider.aws
             base_attributes[CustomAttributes.RESOURCE_TYPE] = f"provider.{provider_type}"
