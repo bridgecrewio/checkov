@@ -261,8 +261,6 @@ class NXGraphCheckParser(BaseGraphCheckParser):
         return solver
 
 
-
-
 def get_complex_operator(raw_check: Dict[str, Any]) -> Optional[str]:
     for operator in operators_to_complex_solver_classes.keys():
         if raw_check.get(operator):
