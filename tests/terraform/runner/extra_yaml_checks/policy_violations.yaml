@@ -8,12 +8,12 @@ definition:
   and:
   - cond_type: "attribute"
     resource_types:
-      - "provider.aws"
+      - "provider"
     attribute: "default_tags"
     operator: exists
   - cond_type: "attribute"
     resource_types:
-      - "provider.aws"
+      - "provider"
     attribute: "region"
     operator: "not_contains"
     value: "us-west-1"
