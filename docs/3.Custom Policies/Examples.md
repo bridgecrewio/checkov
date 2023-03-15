@@ -52,10 +52,35 @@ metadata:
 definition:
   cond_type: "attribute"
   resource_types:
-    - "provider"
+    - "provider.aws"
   attribute: "region"
   operator: "not_contains"
   value: "us-west-1"
+```
+
+## OR -  Multiple Attribute Blocks
+
+```yaml
+---
+metadata:
+  id: "CUSTOM_GRAPH_AWS_3"
+  name: "Ensure a certain region is not added"
+  category: "GENERAL_SECURITY"
+scope:
+  provider: "AWS"
+definition:
+  and:
+  - cond_type: "attribute"
+    resource_types:
+      - "provider"
+    attribute: "default_tags"
+    operator: exists
+  - cond_type: "attribute"
+    resource_types:
+      - "provider"
+    attribute: "region"
+    operator: "not_contains"
+    value: "us-west-1"
 ```
 
 ## Basic Query - Terraform plan resource not deleted

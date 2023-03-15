@@ -229,7 +229,7 @@ class GraphCheckParser(BaseGraphCheckParser):
                     or (isinstance(resource_type, list) and resource_type[0].lower() == "all")
             ):
                 check.resource_types = resources_types or []
-            elif "provider" in resource_type and provider != "":
+            elif "provider" in resource_type and provider:
                 check.resource_types.append(f"provider.{provider}")
             else:
                 check.resource_types = resource_type
