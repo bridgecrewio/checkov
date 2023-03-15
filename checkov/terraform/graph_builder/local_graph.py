@@ -402,11 +402,8 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self, block_type: BlockType, name: str, block_path: str, module_path: str, module_num: str, relative_module_idx: Optional[int] = None, source_module_object: Optional[TFModule] = None
     ) -> int:
         relative_vertices = []
-        if self.use_new_tf_parser:
-            if relative_module_idx is None:
-                module_dependency_by_name_key = source_module_object
-            else:
-                module_dependency_by_name_key = next(k for k, v in self.vertices_by_module_dependency.items() if v.get(BlockType.MODULE, []).__contains__(relative_module_idx))
+        if self.use_new_tf_parser and relative_module_idx is None:
+            module_dependency_by_name_key = source_module_object
         elif relative_module_idx is not None:
             module_dependency_by_name_key = next(k for k, v in self.vertices_by_module_dependency.items() if v.get(BlockType.MODULE, []).__contains__(relative_module_idx))
         else:
