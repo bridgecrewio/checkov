@@ -10,13 +10,14 @@ class S3AbortIncompleteUploads(BaseResourceCheck):
         """
         name = "Ensure S3 lifecycle configuration sets period for aborting failed uploads"
         id = "CKV_AWS_300"
-        supported_resources = ['aws_s3_bucket_lifecycle_configuration']
-        categories = [CheckCategories.GENERAL_SECURITY]
+        supported_resources = ('aws_s3_bucket_lifecycle_configuration',)
+        categories = (CheckCategories.GENERAL_SECURITY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        if conf.get("rule") and isinstance(conf.get("rule"), list):
-            rules = conf.get("rule")
+        self.evaluated_keys = ["rule"]
+        rules = conf.get("rule")
+        if rules and isinstance(rules, list):
             for idx_rule, rule in enumerate(rules):
                 if not rule.get("abort_incomplete_multipart_upload"):
                     self.evaluated_keys = [f"rule/[{idx_rule}]/"]
