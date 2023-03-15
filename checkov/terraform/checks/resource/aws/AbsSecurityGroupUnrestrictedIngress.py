@@ -42,20 +42,25 @@ class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
             ingress_conf = conf['ingress']
             for ingress_rule in ingress_conf:
                 for rule in force_list(ingress_rule):
-                    if isinstance(rule, dict) and self.contains_violation(rule):
-                        self.evaluated_keys = [
-                            f'ingress/[{ingress_conf.index(ingress_rule)}]/from_port',
-                            f'ingress/[{ingress_conf.index(ingress_rule)}]/to_port',
-                            f'ingress/[{ingress_conf.index(ingress_rule)}]/cidr_blocks',
-                            f'ingress/[{ingress_conf.index(ingress_rule)}]/ipv6_cidr_blocks',
-                        ]
-                        return CheckResult.FAILED
+                    if isinstance(rule, dict):
+                        if self.check_self(rule):
+                            return CheckResult.PASSED
+                        if self.contains_violation(rule):
+                            self.evaluated_keys = [
+                                f'ingress/[{ingress_conf.index(ingress_rule)}]/from_port',
+                                f'ingress/[{ingress_conf.index(ingress_rule)}]/to_port',
+                                f'ingress/[{ingress_conf.index(ingress_rule)}]/cidr_blocks',
+                                f'ingress/[{ingress_conf.index(ingress_rule)}]/ipv6_cidr_blocks',
+                            ]
+                            return CheckResult.FAILED
 
             return CheckResult.PASSED
 
         if 'type' in conf:  # This means it's an SG_rule resource.
             type = force_list(conf['type'])[0]
             if type == 'ingress':
+                if self.check_self(conf):
+                    return CheckResult.PASSED
                 self.evaluated_keys = ['from_port', 'to_port', 'cidr_blocks', 'ipv6_cidr_blocks']
                 if self.contains_violation(conf):
                     return CheckResult.FAILED
@@ -73,11 +78,12 @@ class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
     def contains_violation(self, conf: dict[str, list[Any]]) -> bool:
         from_port = force_int(force_list(conf.get('from_port', [{-1}]))[0])
         to_port = force_int(force_list(conf.get('to_port', [{-1}]))[0])
-
+        protocol = force_list(conf.get('protocol', [None]))[0]
         if from_port == 0 and to_port == 0:
             to_port = 65535
 
-        if from_port is not None and to_port is not None and (from_port <= self.port <= to_port):
+        if from_port is not None and to_port is not None and (from_port <= self.port <= to_port) or (
+                protocol == '-1' and from_port == 0 and to_port == 65535):
             if conf.get('cidr_blocks'):
                 conf_cidr_blocks = conf.get('cidr_blocks', [[]])
             else:
@@ -97,5 +103,12 @@ class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
             if not ipv6_cidr_blocks and not cidr_blocks \
                     and conf.get('security_groups') is None \
                     and conf.get('source_security_group_id') is None:
+                return True
+        return False
+
+    def check_self(self, conf: dict[str, list[Any]]) -> bool:
+        if conf.get('self'):
+            limit = force_list(conf['self'])[0]
+            if limit:
                 return True
         return False

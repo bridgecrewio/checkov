@@ -427,3 +427,32 @@ class TestRenderer(TestCase):
         resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
         assert resources_vertex[0].attributes.get('protocol')[0] == 'http'
         assert resources_vertex[0].attributes.get('endpoint')[0] == 'http://www.example.com'
+
+    def test_skip_rendering_unsupported_values(self):
+        # given
+        resource_path = Path(TEST_DIRNAME) / "test_resources/skip_renderer"
+
+        # when
+        graph_manager = TerraformGraphManager('m', ['m'])
+        local_graph, _ = graph_manager.build_graph_from_source_directory(str(resource_path), render_variables=True)
+
+        # then
+        local_b = next(vertex for vertex in local_graph.vertices if vertex.block_type == BlockType.LOCALS and vertex.name == "b")
+        assert local_b.attributes["b"] == ["..."]  # not Ellipsis object
+
+    def test_default_map_value(self):
+        # given
+        resource_path = Path(TEST_DIRNAME) / "test_resources/default_map_value"
+
+        # when
+        graph_manager = TerraformGraphManager('m', ['m'])
+        local_graph, _ = graph_manager.build_graph_from_source_directory(str(resource_path), render_variables=True)
+
+        # then
+        key_vault = next(vertex for vertex in local_graph.vertices if vertex.block_type == BlockType.RESOURCE and vertex.name == "azurerm_key_vault.this")
+        assert key_vault.attributes["network_acls"] == {
+            "bypass": "AzureServices",
+            "default_action": "Deny",
+            "ip_rules": [],
+            "virtual_network_subnet_ids": []
+        }

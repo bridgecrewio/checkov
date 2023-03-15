@@ -13,14 +13,17 @@ from typing import Any, TYPE_CHECKING, cast, Optional, overload
 
 from urllib3.response import HTTPResponse
 
-from checkov.common.bridgecrew.bc_source import SourceType
 from checkov.common.util.consts import DEV_API_GET_HEADERS, DEV_API_POST_HEADERS, PRISMA_API_GET_HEADERS, \
     PRISMA_PLATFORM, BRIDGECREW_PLATFORM
 from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.version import version as checkov_version
 
 if TYPE_CHECKING:
+    from checkov.common.bridgecrew.bc_source import SourceType
     from requests import Response
+
+# https://requests.readthedocs.io/en/latest/user/advanced/#timeouts
+DEFAULT_TIMEOUT = (3.1, 30)
 
 logger = logging.getLogger(__name__)
 
@@ -137,7 +140,15 @@ def request_wrapper(
     for i in range(request_max_tries):
         try:
             headers["X-Request-Id"] = str(uuid.uuid4())
-            response = requests.request(method, url, headers=headers, data=data, json=json, params=params)
+            response = requests.request(
+                method=method,
+                url=url,
+                headers=headers,
+                data=data,
+                json=json,
+                params=params,
+                timeout=DEFAULT_TIMEOUT,
+            )
             if should_call_raise_for_status:
                 response.raise_for_status()
             return response
@@ -160,7 +171,7 @@ def request_wrapper(
                 time.sleep(sleep_secs)
                 continue
 
-            logging.exception("request_wrapper http error")
+            logging.error("request_wrapper http error", exc_info=True)
             raise http_error
     else:
         raise Exception("Unexpected behavior: the method \'request_wrapper\' should be terminated inside the above for-"

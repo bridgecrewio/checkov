@@ -26,7 +26,8 @@ class TestSecurityGroupUnrestrictedIngressAny(unittest.TestCase):
         failing_resources = {
             "aws_security_group.fail",
             "aws_security_group_rule.fail",
-            "aws_vpc_security_group_ingress_rule.fail"
+            "aws_vpc_security_group_ingress_rule.fail",
+            "aws_security_group_rule.fail2"
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}

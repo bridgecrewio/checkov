@@ -19,7 +19,6 @@ and the derived class: `checkov/github_actions/runner.py`
 
 ## Example CLI command 
 ```bash
-export CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING=True # notice this feature flag will be removed in the future
 checkov -d /checkov/integration_tests/example_workflow_file/.github/workflows/ --framework sca_image --bc-api-key SOME_TOKEN
 ```
 

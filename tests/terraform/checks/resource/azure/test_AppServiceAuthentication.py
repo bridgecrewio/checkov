@@ -21,6 +21,8 @@ class TestAppServiceAuthentication(unittest.TestCase):
             'azurerm_app_service.pass',
             'azurerm_windows_web_app.pass',
             'azurerm_linux_web_app.pass',
+            'azurerm_windows_web_app.pass2',
+            'azurerm_linux_web_app.pass2',
         }
         failing_resources = {
             'azurerm_app_service.fail',

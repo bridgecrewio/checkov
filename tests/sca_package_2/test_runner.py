@@ -118,14 +118,14 @@ def test_run(sca_package_2_report):
     assert report.resources == {
         "path/to/go.sum.github.com/dgrijalva/jwt-go",
         "path/to/go.sum.golang.org/x/crypto",
-        "path/to/requirements.txt.django",
-        "path/to/requirements.txt.flask",
-        "path/to/requirements.txt.requests",
+        "requirements.txt.django",
+        "requirements.txt.flask",
+        "requirements.txt.requests",
         "path/to/sub/requirements.txt.requests",
     }
     assert len(report.passed_checks) == 4
-    assert len(report.failed_checks) == 9
-    assert len(report.skipped_checks) == 0
+    assert len(report.failed_checks) == 8
+    assert len(report.skipped_checks) == 1
     assert len(report.parsing_errors) == 0
 
     cve_record = next((c for c in report.failed_checks if
@@ -156,14 +156,14 @@ def test_run(sca_package_2_report):
     # making sure cve-records have licenses (the one belongs to the associated package) - this data will be printed
     # as part of the BON report.
     cve_record_with_license = next((c for c in report.failed_checks if
-                                    c.resource == "path/to/requirements.txt.django" and c.check_name == "SCA package scan"),
+                                    c.resource == "requirements.txt.django" and c.check_name == "SCA package scan"),
                                    None)
     assert cve_record_with_license is not None
     assert "licenses" in cve_record_with_license.vulnerability_details
     assert cve_record_with_license.vulnerability_details["licenses"] == "OSI_BDS"
 
     cve_record_with_2_license = next((c for c in report.failed_checks if
-                                      c.resource == "path/to/requirements.txt.flask" and c.check_name == "SCA package scan"),
+                                      c.resource == "requirements.txt.flask" and c.check_name == "SCA package scan"),
                                      None)
     assert cve_record_with_2_license is not None
     assert "licenses" in cve_record_with_2_license.vulnerability_details
@@ -171,14 +171,14 @@ def test_run(sca_package_2_report):
 
     # making sure extra-resources (a scanned packages without cves) also have licenses - this data will be printed
     # as part of the BON report.
-    extra_resource = next((c for c in report.extra_resources if c.resource == "path/to/requirements.txt.requests"),
+    extra_resource = next((c for c in report.extra_resources if c.resource == "requirements.txt.requests"),
                           None)
     assert extra_resource is not None
     assert "licenses" in extra_resource.vulnerability_details
     assert extra_resource.vulnerability_details["licenses"] == "OSI_APACHE"
 
     license_resource = next((c for c in report.failed_checks if c.check_name == "SCA license" if
-                             c.resource == "path/to/requirements.txt.flask"), None)
+                             c.resource == "requirements.txt.flask"), None)
     assert license_resource is not None
     assert license_resource.check_id == "BC_LIC_1"
     assert license_resource.bc_check_id == "BC_LIC_1"
