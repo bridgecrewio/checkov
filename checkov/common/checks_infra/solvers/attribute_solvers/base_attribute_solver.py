@@ -22,7 +22,7 @@ from checkov.terraform.graph_builder.graph_components.block_types import BlockTy
 if TYPE_CHECKING:
     from checkov.common.typing import LibraryGraph
 
-SUPPORTED_BLOCK_TYPES = {BlockType.RESOURCE, TerraformBlockType.DATA, TerraformBlockType.MODULE, TerraformBlockType.PROVIDER}
+SUPPORTED_BLOCK_TYPES = {BlockType.RESOURCE, TerraformBlockType.DATA, TerraformBlockType.MODULE}
 WILDCARD_PATTERN = re.compile(r"(\S+[.][*][.]*)+")
 
 
