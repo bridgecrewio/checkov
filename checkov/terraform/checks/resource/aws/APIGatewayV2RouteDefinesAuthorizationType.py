@@ -10,7 +10,7 @@ class APIGatewayV2RouteDefinesAuthorizationType(BaseResourceValueCheck):
         NIST.800-53.r5 AC-3, NIST.800-53.r5 CM-2, NIST.800-53.r5 CM-2(2)
         """
         name = "Ensure API GatewayV2 routes specify an authorization type"
-        id = "CKV_AWS_308"
+        id = "CKV_AWS_309"
         supported_resources = ['aws_apigatewayv2_route']
         categories = [CheckCategories.IAM]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
