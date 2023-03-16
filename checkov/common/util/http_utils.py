@@ -45,8 +45,13 @@ def normalize_prisma_url(url: str | None) -> str | None:
     """ Correct common Prisma Cloud API URL misconfigurations """
     if not url:
         return None
-    return url.lower().replace('//app', '//api').replace('http:', 'https:').strip().rstrip('/')
-
+    api = url.lower()
+    api = api.rstrip('/').strip()
+    if not api.startswith('http'):
+        api = 'https://' + api
+    api = api.replace('app', 'api')
+    api = api.replace('http:', 'https:')
+    return api
 
 def get_auth_error_message(status: int, is_prisma: bool, is_s3_upload: bool) -> str:
     platform_type = PRISMA_PLATFORM if is_prisma else BRIDGECREW_PLATFORM
