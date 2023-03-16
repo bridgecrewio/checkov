@@ -1,0 +1,72 @@
+metadata:
+  id: "CKV2_OCI_2"
+  name: "Ensure security list of every VCN does not allow all traffic on SSH port (22)"
+  category: "GENERAL_SECURITY"
+
+definition:
+    or: 
+        - and: #0
+
+          - cond_type: "attribute"
+            resource_types: "oci_core_network_security_group_security_rule"
+            attribute: "direction"
+            operator: "equals_ignore_case"
+            value: "INGRESS" #1
+
+          - cond_type: "attribute"
+            resource_types: "oci_core_network_security_group_security_rule"
+            attribute: "protocol"
+            operator: "not_equals"
+            value: 1 #0
+
+          - cond_type: "attribute"
+            resource_types: "oci_core_network_security_group_security_rule"
+            attribute: "protocol"
+            operator: "not_equals_ignore_case"
+            value: "all" #1
+
+          - cond_type: "attribute"
+            resource_types: "oci_core_network_security_group_security_rule"
+            attribute: "source"
+            operator: "not_equals"
+            value: "0.0.0.0/0" #0
+          
+          - or: #0
+
+              - cond_type: "attribute"
+                resource_types: "oci_core_network_security_group_security_rule"
+                attribute: "tcp_options"
+                operator: "exists"
+
+              - cond_type: "attribute"
+                resource_types: "oci_core_network_security_group_security_rule"
+                attribute: "udp_options"
+                operator: "exists"
+
+        - and: #1
+
+            - cond_type: "attribute"
+              resource_types: "oci_core_network_security_group_security_rule"
+              attribute: "tcp_options.destination_port_range.min"
+              operator: "not_equals"
+              value: 22 
+
+            - cond_type: "attribute"
+              resource_types: "oci_core_network_security_group_security_rule"
+              attribute: "tcp_options.destination_port_range.min"
+              operator: "greater_than"
+              value: 22 
+        
+        - and:
+
+            - cond_type: "attribute"
+              resource_types: "oci_core_network_security_group_security_rule"
+              attribute: "udp_options.destination_port_range.min"
+              operator: "not_equals"
+              value: 22 
+            
+            - cond_type: "attribute"
+              resource_types: "oci_core_network_security_group_security_rule"
+              attribute: "udp_options.destination_port_range.min"
+              operator: "greater_than"
+              value: 22 
