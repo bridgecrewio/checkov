@@ -1,6 +1,6 @@
 # NIST.800-53.r5 SC-7(11)
 metadata:
-  id: "CKV2_AWS_62"
+  id: "CKV2_AWS_63"
   name: "Ensure CloudFront distributions have origin access identity enabled"
   category: "NETWORKING"
 definition:
