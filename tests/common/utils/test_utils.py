@@ -44,6 +44,8 @@ class TestUtils(unittest.TestCase):
         self.assertEqual('https://api0.prismacloud.io', normalize_prisma_url('http://api0.prismacloud.io'))
         self.assertEqual('https://api0.prismacloud.io', normalize_prisma_url('https://api0.prismacloud.io/'))
         self.assertEqual('https://api0.prismacloud.io', normalize_prisma_url(' https://api0.prismacloud.io'))
+        self.assertEqual('https://api0.prismacloud.io', normalize_prisma_url('api0.prismacloud.io'))
+        self.assertEqual('https://api0.prismacloud.io', normalize_prisma_url(' app.prismacloud.io/ '))
         self.assertIsNone(normalize_prisma_url(''))
         self.assertIsNone(normalize_prisma_url(None))
 
