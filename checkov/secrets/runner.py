@@ -363,14 +363,25 @@ class Runner(BaseRunner[None]):
 
     @time_it
     def verify_secrets(self, report: Report, enriched_secrets_s3_path: str) -> VerifySecretsResult:
-        if not bc_integration.bc_api_key or not convert_str_to_bool(os.getenv("CKV_VALIDATE_SECRETS", False)):
-            logging.debug(
-                'Secrets verification is off, enabled it via env var CKV_VALIDATE_SECRETS and provide an api key')
+        if not bc_integration.bc_api_key:
+            logging.debug('Unable to run secrets verification without a bc api key')
             return VerifySecretsResult.INSUFFICIENT_PARAMS
 
         if bc_integration.skip_download:
             logging.debug('Skipping secrets verification as flag skip-download was specified')
             return VerifySecretsResult.INSUFFICIENT_PARAMS
+
+        validate_secrets_tenant_config = bc_integration.customer_run_config_response is not None and \
+             bc_integration.customer_run_config_response.get('tenantConfig', {}).get('secretsValidate', False)
+
+        validate_secrets_flag = convert_str_to_bool(os.getenv("CKV_VALIDATE_SECRETS", False))
+
+        if not validate_secrets_tenant_config and not validate_secrets_flag:
+            logging.debug(
+                'Secrets verification is off, enabled it via env var CKV_VALIDATE_SECRETS or code configuration')
+            return VerifySecretsResult.INSUFFICIENT_PARAMS
+
+
 
         request_body = {
             "reportS3Path": enriched_secrets_s3_path
