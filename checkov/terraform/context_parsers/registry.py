@@ -1,7 +1,7 @@
 import logging
 from typing import Dict, TYPE_CHECKING, Tuple, List, Any
 
-import dpath.util
+import dpath
 
 if TYPE_CHECKING:
     from checkov.terraform.context_parsers.base_parser import BaseContextParser
