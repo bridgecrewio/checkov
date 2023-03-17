@@ -31,6 +31,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_AccessControlGroupRuleDefine(self):
         self.go("AccessControlGroupRuleDefine")
 
+    def test_S3BucketEventNotifications(self):
+        self.go("S3BucketEventNotifications")
+
     def test_ADORepositoryHasMinTwoReviewers(self):
         self.go("ADORepositoryHasMinTwoReviewers")
 

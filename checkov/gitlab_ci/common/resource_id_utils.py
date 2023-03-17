@@ -25,16 +25,17 @@ def _generate_resource_key_recursive(conf: dict[str, Any] | list[str] | str, key
             return _generate_resource_key_recursive(value, next_key, start_line, end_line, scanned_image_blocks,
                                                     depth + 1)
 
-        if isinstance(value, list) and isinstance(value[0], dict):
-            next_key = f'{key}.{k}' if key else k
+        if isinstance(value, list):
+            if value and isinstance(value[0], dict):
+                next_key = f'{key}.{k}' if key else k
 
-            for idx, value_dict in enumerate(value):
-                if value_dict[START_LINE] <= start_line <= end_line <= value_dict[END_LINE]:
-                    next_key += f'.{idx + 1}'
-                    break  # There can be only one match in terms of line range
+                for idx, value_dict in enumerate(value):
+                    if value_dict[START_LINE] <= start_line <= end_line <= value_dict[END_LINE]:
+                        next_key += f'.{idx + 1}'
+                        break  # There can be only one match in terms of line range
 
-            return _generate_resource_key_recursive(value, next_key, start_line, end_line, scanned_image_blocks,
-                                                    depth + 1)
+                return _generate_resource_key_recursive(value, next_key, start_line, end_line, scanned_image_blocks,
+                                                        depth + 1)
 
         if any(block_name in conf.keys()
                and block_name not in scanned_image_blocks
