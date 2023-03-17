@@ -21,8 +21,9 @@ class CodebuildHasLogs(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         if conf.get('logs_config') and isinstance(conf.get('logs_config'), list):
             logs = conf.get('logs_config')[0]
-            if logs.get("cloudwatch_logs") or logs.get("s3_logs"):
-                return CheckResult.PASSED
+            if isinstance(logs, dict):
+                if logs.get("cloudwatch_logs") or logs.get("s3_logs"):
+                    return CheckResult.PASSED
         return CheckResult.FAILED
 
     def get_evaluated_keys(self) -> List[str]:
