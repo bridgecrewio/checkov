@@ -12,7 +12,7 @@
       api_key: "{{ api_key | default(omit) }}"
 
   tasks:
-    - name: Security_rule_pass_1
+    - name: Security_rule_fail_1
       paloaltonetworks.panos.panos_security_rule:
         provider: '{{ provider }}'
         rule_name: 'Test rule'
@@ -21,11 +21,10 @@
         category: ['any']
         application: ['ssl']
         service: ['service-http', 'service-https']
-        disable_server_response_inspection: false
         action: 'allow'
-        description: 'The description'
+        # No description provided
 
-    - name: Security_rule_pass_2
+    - name: Security_rule_fail_2
       paloaltonetworks.panos.panos_security_rule:
         provider: '{{ provider }}'
         rule_name: 'Test rule'
@@ -35,5 +34,4 @@
         application: ['ssl']
         service: ['service-http', 'service-https']
         action: 'allow'
-        description: 'The description'
-        # No explicit disable_server_response_inspection parameter, therefore uses default: false, which passes the check
+        description: '' # Description is empty
