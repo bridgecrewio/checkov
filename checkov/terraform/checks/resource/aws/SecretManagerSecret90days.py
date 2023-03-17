@@ -17,7 +17,7 @@ class SecretManagerSecret90days(BaseResourceCheck):
             rule = conf.get("rotation_rules")[0]
             if rule.get('automatically_after_days') and isinstance(rule.get('automatically_after_days'), list):
                 days = rule.get('automatically_after_days')[0]
-                if not days >= 90:
+                if days < 90:
                     return CheckResult.PASSED
         return CheckResult.FAILED
 
