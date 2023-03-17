@@ -7,7 +7,7 @@ from checkov.common.models.enums import CheckCategories, CheckResult
 
 class CodeBuildEncrypted(BaseResourceCheck):
     def __init__(self) -> None:
-        name = "Ensure that CodeBuild projects are encrypted"
+        name = "Ensure that CodeBuild projects are encrypted using CMK"
         id = "CKV_AWS_147"
         supported_resources = ["aws_codebuild_project"]
         categories = [CheckCategories.ENCRYPTION]
