@@ -1,6 +1,19 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.95...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.96...HEAD)
+
+## [2.3.96](https://github.com/bridgecrewio/checkov/compare/2.3.95...2.3.96) - 2023-03-16
+
+### Feature
+
+- **ansible:** Ansible panos security policy checks - [#4639](https://github.com/bridgecrewio/checkov/pull/4639)
+- **terraform:** s3 bucket has event notifications - [#4660](https://github.com/bridgecrewio/checkov/pull/4660)
+- **terraform:** s3 ensure failed uploads are deleted id=300!!!! - [#4662](https://github.com/bridgecrewio/checkov/pull/4662)
+
+### Bug Fix
+
+- **gitlab:** index_out_of_range - [#4677](https://github.com/bridgecrewio/checkov/pull/4677)
+- **terraform:** Revert "feat(terraform): support provider blocks yaml policy checks (… - [#4680](https://github.com/bridgecrewio/checkov/pull/4680)
 
 ## [2.3.95](https://github.com/bridgecrewio/checkov/compare/2.3.92...2.3.95) - 2023-03-15
 
