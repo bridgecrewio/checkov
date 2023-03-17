@@ -6,7 +6,7 @@ from checkov.common.models.enums import CheckCategories, CheckResult
 class SecretManagerSecret90days(BaseResourceCheck):
 
     def __init__(self):
-        name = "Ensure Secrets Manager secrets should be rotated within a specified number of days"
+        name = "Ensure Secrets Manager secrets should be rotated within 90 days"
         id = "CKV_AWS_304"
         supported_resources = ["aws_secretsmanager_secret_rotation"]
         categories = [CheckCategories.GENERAL_SECURITY]
