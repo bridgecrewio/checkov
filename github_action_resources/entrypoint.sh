@@ -125,6 +125,12 @@ echo "BC_RUN_ID=${GITHUB_RUN_NUMBER}"
 echo "BC_RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}""
 echo "BC_REPOSITORY_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}""
 
+# Overrides all GitHub URLs with the provided PAT (needed for downloading private modules from GitHub)
+# This is meant to be a last resort, if our internal mechanism doesn't work
+if [ -n "$GITHUB_OVERRIDE_URL" ] && [ "$GITHUB_OVERRIDE_URL" = "true" ]; then
+  git config --global url."https://x-access-token:${GITHUB_PAT}@github.com/".insteadOf "https://github.com/"
+fi
+
 # If Docker image is used, default to that
 if [ -n "$INPUT_DOCKER_IMAGE" ]; then
   DOCKER_IMAGE_FLAG="--docker-image $INPUT_DOCKER_IMAGE"
