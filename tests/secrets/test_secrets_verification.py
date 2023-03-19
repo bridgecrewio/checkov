@@ -46,7 +46,7 @@ def test_verify_secrets_insufficient_params_no_flag() -> None:
     assert result == VerifySecretsResult.INSUFFICIENT_PARAMS
 
 @mock.patch.dict(os.environ, {"CKV_VALIDATE_SECRETS": "true"})
-def test_verify_secrets_insufficient_params_tenant_config_overrides_false_flag() -> None:
+def test_verify_secrets_insufficient_params_tenant_config_overrides_true_flag() -> None:
     from checkov.common.bridgecrew.platform_integration import bc_integration
     bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
     bc_integration.customer_run_config_response = {'tenantConfig': {'secretsValidate': False}}
@@ -59,10 +59,36 @@ def test_verify_secrets_insufficient_params_tenant_config_overrides_false_flag()
 
 
 @mock.patch.dict(os.environ, {"CKV_VALIDATE_SECRETS": "false"})
-def test_verify_secrets_insufficient_params_tenant_config_overrides_true_flag() -> None:
+def test_verify_secrets_insufficient_params_tenant_config_overrides_flag_flag() -> None:
     from checkov.common.bridgecrew.platform_integration import bc_integration
     bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
     bc_integration.customer_run_config_response = {'tenantConfig': {'secretsValidate': True}}
+    bc_integration.skip_download = False
+
+    from checkov.secrets.runner import Runner
+    from checkov.common.output.report import Report
+    result = Runner().verify_secrets(Report(check_type=CheckType.SECRETS), "")
+
+    assert result != VerifySecretsResult.INSUFFICIENT_PARAMS
+
+@mock.patch.dict(os.environ, {"CKV_VALIDATE_SECRETS": "false"})
+def test_verify_secrets_insufficient_params_tenant_config_missing_false_flag() -> None:
+    from checkov.common.bridgecrew.platform_integration import bc_integration
+    bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
+    bc_integration.customer_run_config_response = {'tenantConfig': {'mock': True}}
+    bc_integration.skip_download = False
+
+    from checkov.secrets.runner import Runner
+    from checkov.common.output.report import Report
+    result = Runner().verify_secrets(Report(check_type=CheckType.SECRETS), "")
+
+    assert result == VerifySecretsResult.INSUFFICIENT_PARAMS
+
+@mock.patch.dict(os.environ, {"CKV_VALIDATE_SECRETS": "true"})
+def test_verify_secrets_insufficient_params_tenant_config_missing_true_flag() -> None:
+    from checkov.common.bridgecrew.platform_integration import bc_integration
+    bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
+    bc_integration.customer_run_config_response = {'tenantConfig': {'mock': True}}
     bc_integration.skip_download = False
 
     from checkov.secrets.runner import Runner
