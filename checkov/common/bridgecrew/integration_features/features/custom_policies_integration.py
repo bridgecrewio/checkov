@@ -121,7 +121,7 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
         records = [record for record in records if record.bc_check_id not in policy_level_suppression_check_ids]  # Filter out policy level suppressions after cloned policy is added
         return records
 
-    def convert_suppression_ids_to_bc_check_ids(self):
+    def convert_suppression_ids_to_bc_check_ids(self) -> List[str]:
         return ["_".join(policy.split('_')[:-1]) for policy in self.policy_level_suppression]
 
     def pre_runner(self, runner: _BaseRunner) -> None:
