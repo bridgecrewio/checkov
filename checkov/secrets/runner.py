@@ -375,7 +375,7 @@ class Runner(BaseRunner[None]):
                                          bc_integration.customer_run_config_response.get('tenantConfig', {}).get('secretsValidate')
 
         if validate_secrets_tenant_config is None and not convert_str_to_bool(os.getenv("CKV_VALIDATE_SECRETS", False)):
-            logging.debug('Secrets verification is off, enabled it via code configuration')
+            logging.debug('Secrets verification is off, enable it via code configuration screen')
             return VerifySecretsResult.INSUFFICIENT_PARAMS
 
         if validate_secrets_tenant_config is False:
