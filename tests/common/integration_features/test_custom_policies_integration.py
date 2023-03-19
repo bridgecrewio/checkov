@@ -282,7 +282,7 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         )
 
         scan_reports.failed_checks.append(record)
-        custom_policies_integration.policy_level_suppression = ['BC_AWS_ELASTICSEARCH_3']
+        custom_policies_integration.policy_level_suppression = ['BC_AWS_ELASTICSEARCH_3_80341358308']
         custom_policies_integration.post_runner(scan_reports)
         self.assertEqual(1, len(scan_reports.failed_checks))
         self.assertEqual('mikepolicies_cloned_AWS_1625063607541', scan_reports.failed_checks[0].check_id)
@@ -324,7 +324,7 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         failed_cloned_policy_record.check_name = failed_cloned_policy['title']
 
         scan_reports.failed_checks.append(failed_cloned_policy_record)
-        custom_policies_integration.policy_level_suppression = ['mikepolicies_cloned_AWS_1625063607541']
+        custom_policies_integration.policy_level_suppression = ['mikepolicies_cloned_AWS_1625063607541_80341358308']
         custom_policies_integration.post_runner(scan_reports)
         self.assertEqual(1, len(scan_reports.failed_checks))
         self.assertEqual('CKV_AWS_5', scan_reports.failed_checks[0].check_id)
