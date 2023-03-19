@@ -379,7 +379,7 @@ class Runner(BaseRunner[None]):
             return VerifySecretsResult.INSUFFICIENT_PARAMS
 
         if validate_secrets_tenant_config is False:
-            logging.debug('Secrets verification is off, enabled it via code configuration')
+            logging.debug('Secrets verification is off, enable it via code configuration screen')
             return VerifySecretsResult.INSUFFICIENT_PARAMS
 
         request_body = {
