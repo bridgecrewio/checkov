@@ -35,6 +35,7 @@ def test_runner_verify_secrets_skip_invalid_suppressed(mock_bc_integration, mock
     runner = Runner()
     mock_bc_integration.persist_enriched_secrets = lambda x: 'mock'
     mock_bc_integration.bc_api_key = 'mock'
+    mock_bc_integration.customer_run_config_response = {'tenantConfig': {'mock': True}}
     runner.get_json_verification_report = lambda x: verified_report
 
     report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
@@ -80,6 +81,8 @@ def test_runner_verify_secrets_skip_all_no_effect(mock_bc_integration, mock_meta
     runner = Runner()
     mock_bc_integration.persist_enriched_secrets = lambda x: 'mock'
     mock_bc_integration.bc_api_key = 'mock'
+    mock_bc_integration.customer_run_config_response = {'tenantConfig': {'mock': True}}
+
     runner.get_json_verification_report = lambda x: verified_report
 
     report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
