@@ -364,7 +364,7 @@ class Runner(BaseRunner[None]):
     @time_it
     def verify_secrets(self, report: Report, enriched_secrets_s3_path: str) -> VerifySecretsResult:
         if not bc_integration.bc_api_key:
-            logging.debug('Unable to run secrets verification without a bc api key')
+            logging.debug('Secrets verification is available only with a valid API key')
             return VerifySecretsResult.INSUFFICIENT_PARAMS
 
         if bc_integration.skip_download:
