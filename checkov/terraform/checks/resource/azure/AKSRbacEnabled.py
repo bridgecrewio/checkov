@@ -1,4 +1,4 @@
-import dpath
+import dpath.util
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 

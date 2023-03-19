@@ -7,23 +7,29 @@ stopit.utils
 Misc utilities and common resources
 """
 
-from __future__ import annotations
-
 import functools
 import logging
-from logging import NullHandler
-from typing import TYPE_CHECKING, Any, TypeVar, Callable, cast
-
-from typing_extensions import ParamSpec, Self
-
-if TYPE_CHECKING:
-    from types import TracebackType
-
-T = TypeVar("T")
-P = ParamSpec("P")
+import sys
 
 # Custom logger
 LOG = logging.getLogger(name='stopit')
+
+if sys.version_info < (2, 7):
+    class NullHandler(logging.Handler):
+        """Copied from Python 2.7 to avoid getting `No handlers could be found
+        for logger "xxx"` http://bugs.python.org/issue16539
+        """
+        def handle(self, record):
+            pass
+
+        def emit(self, record):
+            pass
+
+        def createLock(self):
+            self.lock = None
+else:
+    from logging import NullHandler
+
 LOG.addHandler(NullHandler())
 
 
@@ -34,7 +40,7 @@ class TimeoutException(Exception):
     pass
 
 
-class BaseTimeout:
+class BaseTimeout(object):
     """Context manager for limiting in the time the execution of a block
 
     :param seconds: ``float`` or ``int`` duration enabled to run the context
@@ -45,7 +51,7 @@ class BaseTimeout:
       the block with the ``state`` attribute of the context manager.
     """
 
-    def __init__(self, seconds: int, swallow_exc: bool = True) -> None:
+    def __init__(self, seconds, swallow_exc=True):
 
         # Possible values for the ``state`` attribute, self explanative
         self.EXECUTED, self.EXECUTING, self.TIMED_OUT, self.INTERRUPTED, self.CANCELED = range(5)
@@ -54,28 +60,26 @@ class BaseTimeout:
         self.swallow_exc = swallow_exc
         self.state = self.EXECUTED
 
-    def __bool__(self) -> bool:
+    def __bool__(self):
         return self.state in (self.EXECUTED, self.EXECUTING, self.CANCELED)
 
-    def __repr__(self) -> str:
+    def __repr__(self):
         """Debug helper
         """
-        return f"<{self.__class__.__name__} in state: {self.state}>"
+        return "<{0} in state: {1}>".format(self.__class__.__name__, self.state)
 
-    def __enter__(self) -> Self:
+    def __enter__(self):
         self.state = self.EXECUTING
         self.setup_interrupt()
         return self
 
-    def __exit__(self, exc_type: type[BaseException], exc_val: BaseException, exc_tb: TracebackType | None) -> bool:
+    def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_type is TimeoutException:
             if self.state != self.TIMED_OUT:
                 self.state = self.INTERRUPTED
                 self.suppress_interrupt()
-            LOG.warning(
-                f"Code block execution exceeded {self.seconds} seconds timeout",
-                exc_info=(exc_type, exc_val, exc_tb),
-            )
+            LOG.warning("Code block execution exceeded {0} seconds timeout".format(self.seconds),
+                        exc_info=(exc_type, exc_val, exc_tb))
             return self.swallow_exc
         else:
             if exc_type is None:
@@ -83,25 +87,25 @@ class BaseTimeout:
             self.suppress_interrupt()
         return False
 
-    def cancel(self) -> None:
+    def cancel(self):
         """In case in the block you realize you don't need anymore
        limitation"""
         self.state = self.CANCELED
         self.suppress_interrupt()
 
     # Methods must be provided by subclasses
-    def suppress_interrupt(self) -> None:
+    def suppress_interrupt(self):
         """Removes/neutralizes the feature that interrupts the executed block
         """
         raise NotImplementedError
 
-    def setup_interrupt(self) -> None:
+    def setup_interrupt(self):
         """Installs/initializes the feature that interrupts the executed block
         """
         raise NotImplementedError
 
 
-class base_timeoutable:
+class base_timeoutable(object):
     """A base for function or method decorator that raises a ``TimeoutException`` to
     decorated functions that should not last a certain amount of time.
 
@@ -126,18 +130,15 @@ class base_timeoutable:
        must subclasses of above ``BaseTimeout`` class.
     """
 
-    def __init__(self, default: Any = None, timeout_param: str = 'timeout') -> None:
-        self.to_ctx_mgr: "type[BaseTimeout] | None" = None
+    def __init__(self, default=None, timeout_param='timeout'):
+        self.to_ctx_mgr = None
         self.default, self.timeout_param = default, timeout_param
 
-    def __call__(self, func: Callable[P, T]) -> Callable[P, T | Any]:
+    def __call__(self, func):
         @functools.wraps(func)
-        def wrapper(*args: P.args, **kwargs: P.kwargs) -> T | Any:
-            timeout = cast(int, kwargs.pop(self.timeout_param, 0))
+        def wrapper(*args, **kwargs):
+            timeout = kwargs.pop(self.timeout_param, None)
             if timeout:
-                if not self.to_ctx_mgr:
-                    return self.default
-
                 with self.to_ctx_mgr(timeout, swallow_exc=True):
                     result = self.default
                     # ``result`` may not be assigned below in case of timeout

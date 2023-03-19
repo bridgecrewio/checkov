@@ -16,7 +16,7 @@ from time import sleep
 from typing import List, Dict, TYPE_CHECKING, Any, cast
 
 import boto3  # type:ignore[import]
-import dpath
+import dpath.util
 import requests
 import urllib3
 from botocore.exceptions import ClientError  # type:ignore[import]
@@ -416,7 +416,7 @@ class BcPlatformIntegration:
         reduced_scan_reports = reduce_scan_reports(self.scan_reports)
         checks_metadata_paths = enrich_and_persist_checks_metadata(self.scan_reports, self.s3_client, self.bucket,
                                                                    self.repo_path)
-        dpath.merge(reduced_scan_reports, checks_metadata_paths)
+        dpath.util.merge(reduced_scan_reports, checks_metadata_paths)
         persist_checks_results(reduced_scan_reports, self.s3_client, self.bucket, self.repo_path)
 
     def persist_image_scan_results(self, report: dict[str, Any] | None, file_path: str, image_name: str, branch: str) -> None:

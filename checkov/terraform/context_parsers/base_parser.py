@@ -8,7 +8,7 @@ from itertools import islice
 from pathlib import Path
 from typing import List, Dict, Any, Tuple
 
-import dpath
+import dpath.util
 
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.comment.enum import COMMENT_REGEX

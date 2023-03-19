@@ -4,7 +4,8 @@ import os
 from importlib import util
 from os import path
 
-from setuptools import setup, find_packages
+import setuptools
+from setuptools import setup
 
 # read the contents of your README file
 this_directory = path.abspath(path.dirname(__file__))
@@ -40,7 +41,7 @@ setup(
         "colorama",
         "termcolor",
         "junit-xml>=1.9",
-        "dpath>=2.1.0",
+        "dpath<2,>=1.5.0",
         "pyyaml>=5.4.1",
         "boto3>=1.17",
         "gitpython",
@@ -85,7 +86,7 @@ setup(
     author="bridgecrew",
     author_email="meet@bridgecrew.io",
     url="https://github.com/bridgecrewio/checkov",
-    packages=find_packages(exclude=["tests*", "integration_tests*"]),
+    packages=setuptools.find_packages(exclude=["tests*", "integration_tests*"]),
     include_package_data=True,
     package_dir={
         "checkov.ansible.checks.graph_checks": "checkov/ansible/checks/graph_checks",

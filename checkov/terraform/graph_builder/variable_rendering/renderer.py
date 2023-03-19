@@ -9,7 +9,7 @@ from collections.abc import Hashable
 from copy import deepcopy
 from json import JSONDecodeError
 
-import dpath
+import dpath.util
 from typing import TYPE_CHECKING, List, Dict, Any, Tuple, Union, Optional
 
 from lark.tree import Tree
