@@ -279,6 +279,7 @@ class ForeachHandler(object):
 
         if foreach_idx != 0:
             self.local_graph.vertices.append(new_resource)
+            new_resource_vertex_idx = len(self.local_graph.vertices) - 1
             new_resource.for_each_index = idx_to_change
             source_module_key = TFModule(
                 path=new_resource.path,
@@ -297,6 +298,17 @@ class ForeachHandler(object):
             new_module_key = TFModule(new_resource.path, new_resource.name, new_resource.source_module_object,
                                       idx_to_change)
             self.local_graph.vertices_by_module_dependency.update({new_module_key: new_module_value})
+
+
+            for type, vertices_idx in new_module_value.items():
+                for vertex_idx in vertices_idx:
+                    new_vertex = deepcopy(self.local_graph.vertices[vertex_idx])
+                    new_vertex.source_module_object = new_module_key
+                    self.local_graph.vertices.append(new_vertex)
+
+                    # Update source module based on the new added vertex
+                    new_vertex.source_module.pop()
+                    new_vertex.source_module.add(new_resource_vertex_idx)
         else:
             self.local_graph.vertices[resource_idx] = new_resource
 
