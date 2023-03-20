@@ -32,8 +32,8 @@ class EnrichedPotentialSecret(TypedDict):
 
 
 class GitHistoryScanner:
-    def __init__(self, root_folder: str, secrets: SecretsCollection, timeout: int = 43200,
-                 secret_store: GitHistorySecretStore = None):
+    def __init__(self, root_folder: str, secrets: SecretsCollection,
+                 secret_store: Optional[GitHistorySecretStore], timeout: int = 43200):
         self.root_folder = root_folder
         self.secrets = secrets
         self.timeout = timeout

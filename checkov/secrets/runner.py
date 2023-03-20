@@ -85,7 +85,7 @@ class Runner(BaseRunner[None]):
         self.secrets_coordinator = SecretsCoordinator()
         self.history_secret_store = GitHistorySecretStore()
 
-    def set_history_secret_store(self, value: Dict[str, List[EnrichedPotentialSecret]]):
+    def set_history_secret_store(self, value: Dict[str, List[EnrichedPotentialSecret]]) -> None:
         self.history_secret_store.secrets_by_file_value_type = value
 
     def get_history_secret_store(self) -> Dict[str, List[EnrichedPotentialSecret]]:
@@ -162,7 +162,7 @@ class Runner(BaseRunner[None]):
             if root_folder:
                 if runner_filter.enable_git_history_secret_scan:
                     git_history_scanner = GitHistoryScanner(
-                        root_folder, secrets, runner_filter.git_history_timeout, self.history_secret_store)
+                        root_folder, secrets, self.history_secret_store, runner_filter.git_history_timeout)
                     settings.disable_filters(*['detect_secrets.filters.common.is_invalid_file'])
                     git_history_scanner.scan_history(last_commit_scanned=runner_filter.git_history_last_commit_scanned)
                     logging.info(f'Secrets scanning git history for root folder {root_folder}')
