@@ -32,11 +32,16 @@ class EnrichedPotentialSecret(TypedDict):
 
 
 class GitHistoryScanner:
-    def __init__(self, root_folder: str, secrets: SecretsCollection, timeout: int = 43200):
+    def __init__(self, root_folder: str, secrets: SecretsCollection, timeout: int = 43200,
+                 secret_store: GitHistorySecretStore = None):
         self.root_folder = root_folder
         self.secrets = secrets
         self.timeout = timeout
-        self.secret_store = GitHistorySecretStore()
+        # in case we start from mid-history (git) we want to continue from where we've been
+        if secret_store:
+            self.secret_store = secret_store
+        else:
+            self.secret_store = GitHistorySecretStore()
 
     def scan_history(self, last_commit_scanned: Optional[str] = '') -> bool:
         """return true if the scan finished without timeout"""
