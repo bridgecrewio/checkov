@@ -28,7 +28,7 @@ class ForeachHandler(object):
         self.local_graph = local_graph
 
     def handle_foreach_rendering(self, foreach_blocks: dict[str, list[int]]) -> None:
-        # self.handle_foreach_rendering_for_module(foreach_blocks.get(BlockType.MODULE))
+        self._handle_foreach_rendering_for_module(foreach_blocks.get(BlockType.MODULE))
         self._handle_foreach_rendering_for_resource(foreach_blocks.get(BlockType.RESOURCE))
 
     def _handle_foreach_rendering_for_resource(self, resources_blocks: list[int]) -> None:
@@ -214,7 +214,10 @@ class ForeachHandler(object):
         return foreach_attributes
 
     @staticmethod
-    def _build_key_to_val_changes(new_val: str, new_key: str):
+    def _build_key_to_val_changes(main_resource: TerraformBlock, new_val: str, new_key: str):
+        if main_resource.attributes.get(COUNT_STRING):
+            return {COUNT_KEY: new_val}
+
         return {
             EACH_VALUE: new_val,
             EACH_KEY: new_key
@@ -227,74 +230,101 @@ class ForeachHandler(object):
             resource_idx: int,
             foreach_idx: int,
             new_key: Optional[str] = None,
-    ):
+    ) -> None:
         new_resource = deepcopy(main_resource)
-        if new_resource.block_type != BlockType.RESOURCE:
-            block_type = None
-            block_name = new_resource.name
-        else:
-            block_type, block_name = new_resource.name.split('.')
-        if main_resource.attributes.get(COUNT_STRING):
-            key_to_val_changes = {COUNT_KEY: new_value}
-        else:
-            key_to_val_changes = self._build_key_to_val_changes(new_value, new_key)
+        block_type, block_name = new_resource.name.split('.')
+        key_to_val_changes = self._build_key_to_val_changes(main_resource, new_value, new_key)
+        config_attrs = new_resource.config.get(block_type, {}).get(block_name, {})
 
-        if new_resource.block_type != BlockType.RESOURCE:
-            config_attrs = new_resource.config.get(block_name, {})
+        self._update_foreach_attrs(config_attrs, key_to_val_changes, new_resource)
+        idx_to_change = new_key or new_value
+        self._add_index_to_resource_block_properties(new_resource, idx_to_change)
+        if foreach_idx == 0:
+            self.local_graph.vertices[resource_idx] = new_resource
         else:
-            config_attrs = new_resource.config.get(block_type, {}).get(block_name, {})
+            self.local_graph.vertices.append(new_resource)
+
+    def _update_foreach_attrs(self, config_attrs: dict[str, Any], key_to_val_changes: [dict[str, Any]],
+                              new_resource: TerraformBlock) -> None:
         self._pop_foreach_attrs(new_resource.attributes)
         self._pop_foreach_attrs(config_attrs)
         self._update_attributes(new_resource.attributes, key_to_val_changes)
         foreach_attrs = self._update_attributes(config_attrs, key_to_val_changes)
         new_resource.foreach_attrs = foreach_attrs
 
+    def _create_new_module(
+            self,
+            main_resource: TerraformBlock,
+            new_value: int | str,
+            resource_idx: int,
+            foreach_idx: int,
+            new_key: Optional[str] = None
+    ) -> None:
+        new_resource = deepcopy(main_resource)
+        block_name = new_resource.name
+        config_attrs = new_resource.config.get(block_name, {})
+        key_to_val_changes = self._build_key_to_val_changes(main_resource, new_value, new_key)
+        self._update_foreach_attrs(config_attrs, key_to_val_changes, new_resource)
         idx_to_change = new_key or new_value
-        self._add_index_to_block_properties(new_resource, idx_to_change)
-        if foreach_idx == 0:
-            self.local_graph.vertices[resource_idx] = new_resource
-        else:
+        self._add_index_to_module_block_properties(new_resource, idx_to_change)
+
+        new_resource.for_each_index = idx_to_change
+        module_key = TFModule(
+            path=new_resource.path,
+            name=main_resource.name,
+            nested_tf_module=new_resource.source_module_object,
+        ) if self.local_graph.vertices[resource_idx].source_module else None
+        if foreach_idx != 0:
             self.local_graph.vertices.append(new_resource)
-        if new_resource.block_type == BlockType.MODULE:
-            new_resource.for_each_index = idx_to_change
-            module_key = TFModule(
-                path=new_resource.path,
-                name=main_resource.name,
-                nested_tf_module=new_resource.source_module_object,
-            ) if self.local_graph.vertices[resource_idx].source_module else None
-            if foreach_idx != 0:
-                new_module_value = deepcopy(self.local_graph.vertices_by_module_dependency[module_key])
-                new_module_key = TFModule(new_resource.path, new_resource.name, new_resource.source_module_object, idx_to_change)
-                self.local_graph.vertices_by_module_dependency.update({new_module_key: new_module_value})
-                self.local_graph.vertices_by_module_dependency[module_key][BlockType.MODULE].append(len(self.local_graph.vertices) -1)
+            new_module_value = deepcopy(self.local_graph.vertices_by_module_dependency[module_key])
+            new_module_key = TFModule(new_resource.path, new_resource.name, new_resource.source_module_object,
+                                      idx_to_change)
+            self.local_graph.vertices_by_module_dependency.update({new_module_key: new_module_value})
+            self.local_graph.vertices_by_module_dependency[module_key][BlockType.MODULE].append(
+                len(self.local_graph.vertices) - 1)
+        else:
+            self.local_graph.vertices[resource_idx] = new_resource
 
     def _create_new_resources_foreach(self, statement: list[str] | dict[str, Any], block_idx: int) -> None:
         main_resource = self.local_graph.vertices[block_idx]
         if isinstance(statement, list):
             for i, new_value in enumerate(statement):
-                self._create_new_resource(main_resource, new_value, new_key=new_value, resource_idx=block_idx, foreach_idx=i)
+                if main_resource.block_type == BlockType.MODULE:
+                    self._create_new_module(main_resource, new_value, new_key=new_value, resource_idx=block_idx, foreach_idx=i)
+                elif main_resource.block_type == BlockType.RESOURCE:
+                    self._create_new_resource(main_resource, new_value, new_key=new_value, resource_idx=block_idx, foreach_idx=i)
         if isinstance(statement, dict):
             for i, (new_key, new_value) in enumerate(statement.items()):
-                self._create_new_resource(main_resource, new_value, new_key=new_key, resource_idx=block_idx, foreach_idx=i)
+                if main_resource.block_type == BlockType.MODULE:
+                    self._create_new_module(main_resource, new_value, new_key=new_key, resource_idx=block_idx,
+                                            foreach_idx=i)
+                elif main_resource.block_type == BlockType.RESOURCE:
+                    self._create_new_resource(main_resource, new_value, new_key=new_key, resource_idx=block_idx,
+                                              foreach_idx=i)
 
     @staticmethod
-    def _add_index_to_block_properties(block: TerraformBlock, idx: str | int) -> None:
-        if block.block_type != BlockType.RESOURCE:
-            block_type = None
-            block_name = block.name
-        else:
-            block_type, block_name = block.name.split('.')
+    def _add_index_to_resource_block_properties(block: TerraformBlock, idx: str | int) -> None:
+        block_type, block_name = block.name.split('.')
+        idx_with_separator = ForeachHandler._update_block_name_and_id(block, idx)
+        if block.config.get(block_type) and block.config.get(block_type, {}).get(block_name):
+            block.config[block_type][f"{block_name}[{idx_with_separator}]"] = block.config[block_type].pop(block_name)
+
+    @staticmethod
+    def _add_index_to_module_block_properties(block: TerraformBlock, idx: str | int) -> None:
+        block_name = block.name
+        idx_with_separator = ForeachHandler._update_block_name_and_id(block, idx)
+        if block.config.get(block_name):
+            block.config[f"{block_name}[{idx_with_separator}]"] = block.config.pop(block_name)
+
+    @staticmethod
+    def _update_block_name_and_id(block, idx):
         # Note it is important to use `\"` inside the string,
         # as the string `["` is the separator for `foreach` in terraform.
         # In `count` it is just `[`
         idx_with_separator = f'\"{idx}\"' if isinstance(idx, str) else f'{idx}'
-
         block.id = f"{block.id}[{idx_with_separator}]"
         block.name = f"{block.name}[{idx_with_separator}]"
-        if block.block_type == BlockType.RESOURCE and block.config.get(block_type) and block.config.get(block_type, {}).get(block_name):
-            block.config[block_type][f"{block_name}[{idx_with_separator}]"] = block.config[block_type].pop(block_name)
-        elif block.config.get(block_name):
-            block.config[f"{block_name}[{idx_with_separator}]"] = block.config.pop(block_name)
+        return idx_with_separator
 
     def _create_new_resources(self, block_index_to_statement: FOR_EACH_BLOCK_TYPE) -> None:
         for block_idx, statement in block_index_to_statement.items():
