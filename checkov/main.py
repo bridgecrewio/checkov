@@ -118,6 +118,7 @@ DEFAULT_RUNNERS = [
     TerraformJsonRunner(),
 ]
 
+
 class Checkov:
     def __init__(self, argv: list[str] = sys.argv[1:]) -> None:
         self.config: "Namespace"  # set in 'parse_config()'
