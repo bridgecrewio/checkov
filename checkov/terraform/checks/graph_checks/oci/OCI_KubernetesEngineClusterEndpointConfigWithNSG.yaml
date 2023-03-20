@@ -5,7 +5,6 @@ metadata:
 
 definition:
   and:
-
     - cond_type: "attribute"
       resource_types: "oci_containerengine_cluster"
       attribute: "endpoint_config.nsg_ids"
@@ -16,6 +15,11 @@ definition:
       attribute: "endpoint_config.nsg_ids"
       operator: "not_equals_ignore_case"
       value: "null"
+
+    - cond_type: "attribute"
+      resource_types: "oci_containerengine_cluster"
+      attribute: "endpoint_config.nsg_ids"
+      operator: "is_not_empty"
 
     - cond_type: "attribute"
       resource_types: "oci_containerengine_cluster"
