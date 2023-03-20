@@ -276,7 +276,7 @@ class ForeachHandler(object):
             path=new_resource.path,
             name=main_resource.name,
             nested_tf_module=new_resource.source_module_object,
-        ) if self.local_graph.vertices[resource_idx].source_module else None
+        )
         if foreach_idx != 0:
             self.local_graph.vertices.append(new_resource)
             new_module_value = deepcopy(self.local_graph.vertices_by_module_dependency[module_key])
