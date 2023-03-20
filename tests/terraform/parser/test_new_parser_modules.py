@@ -184,6 +184,7 @@ class TestParserInternals(unittest.TestCase):
         assert module2_key1_nest0 in o_definitions
 
     @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "True"})
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
     def test_new_tf_parser(self):
         parser = TFParser()
         directory = os.path.join(self.resources_dir, "parser_dup_nested")

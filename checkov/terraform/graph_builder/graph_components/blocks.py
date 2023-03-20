@@ -22,7 +22,8 @@ class TerraformBlock(Block):
         "has_dynamic_block",
         "dynamic_attributes",
         "foreach_attrs",
-        "source_module_object"
+        "source_module_object",
+        "for_each_index"
     )
 
     def __init__(self, name: str, config: Dict[str, Any], path: str, block_type: BlockType, attributes: Dict[str, Any],

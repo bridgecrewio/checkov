@@ -232,3 +232,11 @@ def test_update_attrs(attrs, k_v_to_change, expected_attrs, expected_res):
     res = foreach_handler._update_attributes(attrs, k_v_to_change)
     assert attrs == expected_attrs
     assert res == expected_res
+
+
+@mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "True"})
+@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
+def test_new_tf_parser():
+    dir_name = 'parser_dup_nested'
+    local_graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
+    assert local_graph

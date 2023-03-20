@@ -6,7 +6,8 @@ import re
 from copy import deepcopy
 from typing import Any, Optional, TypeVar
 
-from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
+from checkov.terraform.modules.module_objects import TFModule
+from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
 import checkov.terraform.graph_builder.local_graph as l_graph
@@ -26,7 +27,7 @@ class ForeachHandler(object):
         self.local_graph = local_graph
 
     def handle_foreach_rendering(self, foreach_blocks: dict[str, list[int]]) -> None:
-        # handle_foreach_rendering_for_module(foreach_blocks.get(BlockType.MODULE))
+        self.handle_foreach_rendering_for_module(foreach_blocks.get(BlockType.MODULE))
         self._handle_foreach_rendering_for_resource(foreach_blocks.get(BlockType.RESOURCE))
 
     def _handle_foreach_rendering_for_resource(self, resources_blocks: list[int]) -> None:
@@ -227,12 +228,20 @@ class ForeachHandler(object):
             new_key: Optional[str] = None,
     ):
         new_resource = deepcopy(main_resource)
-        block_type, block_name = new_resource.name.split('.')
+        if new_resource.block_type != BlockType.RESOURCE:
+            block_type = None
+            block_name = new_resource.name
+        else:
+            block_type, block_name = new_resource.name.split('.')
         if main_resource.attributes.get(COUNT_STRING):
             key_to_val_changes = {COUNT_KEY: new_value}
         else:
             key_to_val_changes = self._build_key_to_val_changes(new_value, new_key)
-        config_attrs = new_resource.config.get(block_type, {}).get(block_name, {})
+
+        if new_resource.block_type != BlockType.RESOURCE:
+            config_attrs = new_resource.config.get(block_name, {})
+        else:
+            config_attrs = new_resource.config.get(block_type, {}).get(block_name, {})
         self._pop_foreach_attrs(new_resource.attributes)
         self._pop_foreach_attrs(config_attrs)
         self._update_attributes(new_resource.attributes, key_to_val_changes)
@@ -245,6 +254,18 @@ class ForeachHandler(object):
             self.local_graph.vertices[resource_idx] = new_resource
         else:
             self.local_graph.vertices.append(new_resource)
+        if new_resource.block_type == BlockType.MODULE:
+            new_resource.for_each_index = idx_to_change
+            module_key = TFModule(
+                path=new_resource.path,
+                name=main_resource.name,
+                nested_tf_module=new_resource.source_module_object,
+            ) if self.local_graph.vertices[resource_idx].source_module else None
+            if foreach_idx != 0:
+                new_module_value = deepcopy(self.local_graph.vertices_by_module_dependency[module_key])
+                new_module_key = TFModule(new_resource.path, new_resource.name, new_resource.source_module_object, idx_to_change)
+                self.local_graph.vertices_by_module_dependency.update({new_module_key: new_module_value})
+                self.local_graph.vertices_by_module_dependency[module_key][BlockType.MODULE].append(len(self.local_graph.vertices) -1)
 
     def _create_new_resources_foreach(self, statement: list[str] | dict[str, Any], block_idx: int) -> None:
         main_resource = self.local_graph.vertices[block_idx]
@@ -257,7 +278,11 @@ class ForeachHandler(object):
 
     @staticmethod
     def _add_index_to_block_properties(block: TerraformBlock, idx: str | int) -> None:
-        block_type, block_name = block.name.split('.')
+        if block.block_type != BlockType.RESOURCE:
+            block_type = None
+            block_name = block.name
+        else:
+            block_type, block_name = block.name.split('.')
         # Note it is important to use `\"` inside the string,
         # as the string `["` is the separator for `foreach` in terraform.
         # In `count` it is just `[`
@@ -265,8 +290,10 @@ class ForeachHandler(object):
 
         block.id = f"{block.id}[{idx_with_separator}]"
         block.name = f"{block.name}[{idx_with_separator}]"
-        if block.config.get(block_type) and block.config.get(block_type, {}).get(block_name):
+        if block.block_type == BlockType.RESOURCE and block.config.get(block_type) and block.config.get(block_type, {}).get(block_name):
             block.config[block_type][f"{block_name}[{idx_with_separator}]"] = block.config[block_type].pop(block_name)
+        elif block.config.get(block_name):
+            block.config[f"{block_name}[{idx_with_separator}]"] = block.config.pop(block_name)
 
     def _create_new_resources(self, block_index_to_statement: FOR_EACH_BLOCK_TYPE) -> None:
         for block_idx, statement in block_index_to_statement.items():
@@ -276,3 +303,48 @@ class ForeachHandler(object):
                 self._create_new_resources_count(statement, block_idx)
             else:
                 self._create_new_resources_foreach(statement, block_idx)
+
+    def handle_foreach_rendering_for_module(self, modules_blocks: list[int]) -> None:
+        """
+        modules_blocks (list[int]): list of module blocks indexes in the graph that contains for_each / counts.
+        """
+        module_to_render: list[list[int]] = []
+        main_module_object = self.local_graph.vertices_by_module_dependency.get(None)
+        module_to_render.append(main_module_object[BlockType.MODULE])
+        for module_idx_level in module_to_render:
+            for module_idx in module_idx_level:
+                if module_idx not in modules_blocks:
+                    continue
+                else:
+                    module_block = self.local_graph.vertices[module_idx]
+                    for_each = module_block.attributes.get(FOREACH_STRING)
+                    count = module_block.attributes.get(COUNT_STRING)
+                    if for_each:
+                        if not self._is_static_statement(module_idx):
+                            sub_graph = self._build_sub_graph(modules_blocks)
+                            self._render_sub_graph(sub_graph, blocks_to_render=modules_blocks)
+                            for_each = self._handle_static_statement(module_idx, sub_graph)
+                            if not self._is_static_statement(module_idx, sub_graph):
+                                continue
+                        self.duplicate_module_with_for_each(module_idx, for_each)
+                    elif count:
+                        if not self._is_static_statement(module_idx):
+                            sub_graph = self._build_sub_graph(modules_blocks)
+                            self._render_sub_graph(sub_graph, blocks_to_render=modules_blocks)
+                            count = self._handle_static_statement(module_idx, sub_graph)
+                            if not self._is_static_statement(module_idx, sub_graph):
+                                continue
+                        self.duplicate_module_with_count(module_idx, count)
+
+    def _duplicate_module(self, module_idx: int, for_each: dict[str, Any] | list[str]) -> list[int]:
+        start_len = len(self.local_graph.vertices)
+        self._create_new_resources_foreach(for_each, module_idx)
+        return [idx for idx in range(start_len + 1, len(self.local_graph.vertices) + 1)]
+
+    def duplicate_module_with_for_each(self, module_idx: int, for_each: dict[str, Any] | list[str]) -> None:
+        self._duplicate_module(module_idx, for_each)
+
+    def duplicate_module_with_count(self, module_idx: int, count: int) -> None:
+        self._create_new_resources_count(count, module_idx)
+
+
