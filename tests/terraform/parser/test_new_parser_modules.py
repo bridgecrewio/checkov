@@ -229,9 +229,11 @@ class TestParserInternals(unittest.TestCase):
         local_graph = TerraformLocalGraph(module)
         local_graph.build_graph(render_variables=True)
 
-        assert len(local_graph.vertices) == 34
+        assert len(local_graph.vertices) == 35
 
         first_module_vertex = local_graph.vertices[0]
+        second_module_vertex = local_graph.vertices[1]
         assert first_module_vertex.name == 's3_module["a"]'
+        assert second_module_vertex.name == 's3_module2[0]'
 
-        assert local_graph.vertices_by_module_dependency[None]['module'] == [0, 1, 33]
+        assert local_graph.vertices_by_module_dependency[None]['module'] == [0, 1, 33, 34]
