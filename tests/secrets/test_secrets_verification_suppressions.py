@@ -4,10 +4,6 @@ import mock
 import responses
 from checkov.common.models.enums import CheckResult
 
-from checkov.runner_filter import RunnerFilter
-
-from checkov.secrets.runner import Runner
-
 
 @responses.activate
 @mock.patch.dict(os.environ, {"CKV_VALIDATE_SECRETS": "true"})
@@ -32,6 +28,8 @@ def test_runner_verify_secrets_skip_invalid_suppressed(mock_bc_integration, mock
         status=200
     )
 
+    from checkov.runner_filter import RunnerFilter
+    from checkov.secrets.runner import Runner
     runner = Runner()
     mock_bc_integration.persist_enriched_secrets = lambda x: 'mock'
     mock_bc_integration.bc_api_key = 'mock'
@@ -77,9 +75,12 @@ def test_runner_verify_secrets_skip_all_no_effect(mock_bc_integration, mock_meta
         status=200
     )
 
+    from checkov.runner_filter import RunnerFilter
+    from checkov.secrets.runner import Runner
     runner = Runner()
     mock_bc_integration.persist_enriched_secrets = lambda x: 'mock'
     mock_bc_integration.bc_api_key = 'mock'
+
     runner.get_json_verification_report = lambda x: verified_report
 
     report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
@@ -97,6 +98,7 @@ def test_runner_verify_secrets_skip_all_no_effect(mock_bc_integration, mock_meta
 
 
 def test_modify_invalid_secrets_check_result_to_skipped(secrets_report_invalid_status) -> None:
+    from checkov.secrets.runner import Runner
     Runner()._modify_invalid_secrets_check_result_to_skipped(secrets_report_invalid_status)
 
     assert len(secrets_report_invalid_status.failed_checks) == 0
