@@ -1,5 +1,6 @@
 from __future__ import annotations
 from unittest import mock
+from pytest_mock import MockerFixture
 
 from detect_secrets import SecretsCollection
 
@@ -252,10 +253,15 @@ def test_scan_git_history_multiline_keyword_yml() -> None:
     assert report.skipped_checks == []
 
 
-@mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff', mock_git_repo_commits1)
-def test_scan_git_history_middle() -> None:
+def test_scan_git_history_middle(mocker: MockerFixture) -> None:
     valid_dir_path = "test"
 
+    all_commits = mock_git_repo_commits1('', '')
+    commits_keys = [x for x in all_commits.keys()]
+    mocker.patch(
+        "checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff",
+        return_value=all_commits,
+    )
     runner = Runner()
     report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                         runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
@@ -267,6 +273,32 @@ def test_scan_git_history_middle() -> None:
     for failed_check in report.failed_checks:
         assert failed_check.added_commit_hash or failed_check.removed_commit_hash
 
+    mocker.patch(
+        "checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff",
+        return_value={commits_keys[0]: all_commits[commits_keys[0]],
+                      commits_keys[1]: all_commits[commits_keys[1]]},
+    )
     runner2 = Runner()
-    runner2.set_history_secret_store()
+    report2 = runner2.run(root_folder=valid_dir_path, external_checks_dir=None,
+                        runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
+    assert len(report2.failed_checks) == 1
+    sec_store = runner2.get_history_secret_store()
+
+    mocker.patch(
+        "checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff",
+        return_value={commits_keys[2]: all_commits[commits_keys[2]],
+                      commits_keys[3]: all_commits[commits_keys[3]],
+                      commits_keys[4]: all_commits[commits_keys[4]]},
+    )
+    runner3 = Runner()
+    runner3.set_history_secret_store(sec_store)
+    report3 = runner2.run(root_folder=valid_dir_path, external_checks_dir=None,
+                          runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
+    assert len(report3.failed_checks) == 3
+    assert len(report3.parsing_errors) == 0
+    assert len(report3.passed_checks) == 0
+    assert len(report3.parsing_errors) == 0
+    assert len(report3.skipped_checks) == 0
+    for failed_check in report3.failed_checks:
+        assert failed_check.added_commit_hash or failed_check.removed_commit_hash
 

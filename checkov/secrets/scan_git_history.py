@@ -3,11 +3,11 @@ from __future__ import annotations
 import logging
 import os
 
-from git_history_store import GitHistorySecretStore
 from typing import TYPE_CHECKING, Dict, Optional
 from checkov.common.util import stopit
 from detect_secrets.core import scan
 
+from checkov.secrets.git_history_store import GitHistorySecretStore
 from checkov.secrets.consts import GIT_HISTORY_NOT_BEEN_REMOVED
 
 if TYPE_CHECKING:
