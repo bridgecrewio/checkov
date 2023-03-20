@@ -164,6 +164,13 @@ class ForeachHandler(object):
                 self._create_new_module(main_resource, i, resource_idx=block_idx, foreach_idx=i)
             elif main_resource.block_type == BlockType.RESOURCE:
                 self._create_new_resource(main_resource, i, resource_idx=block_idx, foreach_idx=i)
+        if main_resource.block_type == BlockType.MODULE:
+            self._remove_original_tf_module_without_foreach_or_count(main_resource)
+
+    def _remove_original_tf_module_without_foreach_or_count(self, main_resource):
+        original_module_key = TFModule(path=main_resource.path, name=main_resource.name,
+                                       nested_tf_module=main_resource.source_module_object)
+        self.local_graph.vertices_by_module_dependency.pop(original_module_key)
 
     @staticmethod
     def _pop_foreach_attrs(attrs: dict[str, Any]) -> None:
@@ -270,22 +277,36 @@ class ForeachHandler(object):
         idx_to_change = new_key or new_value
         self._add_index_to_module_block_properties(new_resource, idx_to_change)
 
-        new_resource.for_each_index = idx_to_change
-        module_key = TFModule(
-            path=new_resource.path,
-            name=main_resource.name,
-            nested_tf_module=new_resource.source_module_object,
-        )
         if foreach_idx != 0:
             self.local_graph.vertices.append(new_resource)
-            new_module_value = deepcopy(self.local_graph.vertices_by_module_dependency[module_key])
+            new_resource.for_each_index = idx_to_change
+            source_module_key = TFModule(
+                path=new_resource.path,
+                name=main_resource.name,
+                nested_tf_module=new_resource.source_module_object,
+            ) if self.local_graph.vertices[resource_idx].source_module else None
+            self.local_graph.vertices_by_module_dependency[source_module_key][BlockType.MODULE].append(
+                len(self.local_graph.vertices) - 1)
+
+            main_resource_module_key = TFModule(
+                path=new_resource.path,
+                name=main_resource.name,
+                nested_tf_module=new_resource.source_module_object,
+            )
+            new_module_value = deepcopy(self.local_graph.vertices_by_module_dependency[main_resource_module_key])
             new_module_key = TFModule(new_resource.path, new_resource.name, new_resource.source_module_object,
                                       idx_to_change)
             self.local_graph.vertices_by_module_dependency.update({new_module_key: new_module_value})
-            self.local_graph.vertices_by_module_dependency[module_key][BlockType.MODULE].append(
-                len(self.local_graph.vertices) - 1)
         else:
             self.local_graph.vertices[resource_idx] = new_resource
+
+            # Add the new key to the dict, the original will need to be removed at the end
+            existing_module_key = TFModule(path=main_resource.path, name=main_resource.name,
+                                           nested_tf_module=main_resource.source_module_object)
+            existing_module_value = deepcopy(self.local_graph.vertices_by_module_dependency[existing_module_key])
+            key_with_foreach_index = deepcopy(existing_module_key)
+            key_with_foreach_index.foreach_idx = idx_to_change
+            self.local_graph.vertices_by_module_dependency[key_with_foreach_index] = existing_module_value
 
     def _create_new_resources_foreach(self, statement: list[str] | dict[str, Any], block_idx: int) -> None:
         main_resource = self.local_graph.vertices[block_idx]
@@ -303,6 +324,8 @@ class ForeachHandler(object):
                 elif main_resource.block_type == BlockType.RESOURCE:
                     self._create_new_resource(main_resource, new_value, new_key=new_key, resource_idx=block_idx,
                                               foreach_idx=i)
+        if main_resource.block_type == BlockType.MODULE:
+            self._remove_original_tf_module_without_foreach_or_count(main_resource)
 
     @staticmethod
     def _add_index_to_resource_block_properties(block: TerraformBlock, idx: str | int) -> None:
