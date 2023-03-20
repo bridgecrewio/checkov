@@ -160,7 +160,10 @@ class ForeachHandler(object):
     def _create_new_resources_count(self, statement: int, block_idx: int) -> None:
         main_resource = self.local_graph.vertices[block_idx]
         for i in range(statement):
-            self._create_new_resource(main_resource, i, resource_idx=block_idx, foreach_idx=i)
+            if main_resource.block_type == BlockType.MODULE:
+                self._create_new_module(main_resource, i, resource_idx=block_idx, foreach_idx=i)
+            elif main_resource.block_type == BlockType.RESOURCE:
+                self._create_new_resource(main_resource, i, resource_idx=block_idx, foreach_idx=i)
 
     @staticmethod
     def _pop_foreach_attrs(attrs: dict[str, Any]) -> None:
