@@ -16,15 +16,16 @@ if TYPE_CHECKING:
 os.environ["GIT_PYTHON_REFRESH"] = "quiet"
 try:
     import git
-
     git_import_error = None
 except ImportError as e:
     git_import_error = e
 
+GIT_HISTORY_SEC_STORE = GitHistorySecretStore()
+
 
 class GitHistoryScanner:
     def __init__(self, root_folder: str, secrets: SecretsCollection,
-                 secret_store: GitHistorySecretStore = GitHistorySecretStore(), timeout: int = 43200):
+                 secret_store: GitHistorySecretStore = GIT_HISTORY_SEC_STORE, timeout: int = 43200):
         self.root_folder = root_folder
         self.secrets = secrets
         self.timeout = timeout
@@ -112,4 +113,3 @@ class GitHistoryScanner:
                 file_name = file_diff.a_path if file_diff.a_path else file_diff.b_path
                 commits_diff[current_commit_hash][file_name] = base_diff_format + file_diff.diff.decode()
         return commits_diff
-
