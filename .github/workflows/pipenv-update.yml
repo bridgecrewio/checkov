@@ -13,7 +13,7 @@ jobs:
       contents: write
       pull-requests: write
     steps:
-      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c  # v3
+      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f  # v3
         with:
           ref: ${{ github.head_ref }}
           token: ${{ secrets.GH_PAT_SECRET }}
@@ -39,7 +39,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
       - name: Create Pull Request
         id: cpr
-        uses: peter-evans/create-pull-request@2b011faafdcbc9ceb11414d64d0573f37c774b04  # v4
+        uses: peter-evans/create-pull-request@38e0b6e68b4c852a5500a94740f0e535e0d7ba54  # v4
         with:
           token: ${{ secrets.PAT_TOKEN }}
           title: '[AUTO-PR] Update pipenv packages'

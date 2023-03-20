@@ -9,7 +9,7 @@ from collections.abc import Hashable
 from copy import deepcopy
 from json import JSONDecodeError
 
-import dpath.util
+import dpath
 from typing import TYPE_CHECKING, List, Dict, Any, Tuple, Union, Optional
 
 from lark.tree import Tree
@@ -17,6 +17,7 @@ from lark.tree import Tree
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.utils import join_trimmed_strings
 from checkov.common.graph.graph_builder.variable_rendering.renderer import VariableRenderer
+from checkov.common.util.data_structures_utils import find_in_dict
 from checkov.common.util.type_forcers import force_int
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes, reserved_attribute_names
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
@@ -84,8 +85,9 @@ class TerraformVariableRenderer(VariableRenderer):
     def evaluate_vertex_attribute_from_edge(self, edge_list: List[Edge]) -> None:
         multiple_edges = len(edge_list) > 1
         edge = edge_list[0]
-        if not self.local_graph.vertices[edge.origin] or not self.local_graph.vertices[edge.dest]:
-            return
+        for e in edge_list:
+            if not self.local_graph.vertices[e.origin] or not self.local_graph.vertices[e.dest]:
+                return
         origin_vertex_attributes = self.local_graph.vertices[edge.origin].attributes
         val_to_eval = deepcopy(origin_vertex_attributes.get(edge.label, ""))
 
@@ -188,7 +190,7 @@ class TerraformVariableRenderer(VariableRenderer):
                 default_val = self.get_default_placeholder_value(var_type)
             value = None
             if isinstance(default_val, dict):
-                value = self.extract_value_from_vertex(key_path, default_val)
+                value = find_in_dict(input_dict=default_val, key_path=create_variable_key_path(key_path))
             elif (
                 isinstance(var_type, str)
                 and var_type.startswith("${object")
@@ -200,7 +202,7 @@ class TerraformVariableRenderer(VariableRenderer):
                         value = self.extract_value_from_vertex(key_path, default_val_eval)
                 except Exception:
                     logging.debug(f"cant evaluate this rendered value: {default_val}")
-            return default_val if not value else value
+            return default_val if value is None else value
         if attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.OUTPUT:
             return attributes.get("value")
         return None
@@ -575,3 +577,12 @@ def get_lookup_value(block_content, dynamic_argument) -> str:
     elif 'True' in block_content[dynamic_argument]:
         lookup_value = 'true'
     return lookup_value
+
+
+def create_variable_key_path(key_path: list[str]) -> str:
+    """Returns the key_path without the var prefix
+
+    ex.
+    ["var", "properties", "region"] -> "properties/region"
+    """
+    return "/".join(key_path[1:])

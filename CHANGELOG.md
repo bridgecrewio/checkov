@@ -1,6 +1,84 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.75...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.102...HEAD)
+
+## [2.3.102](https://github.com/bridgecrewio/checkov/compare/2.3.96...2.3.102) - 2023-03-19
+
+### Feature
+
+- **terraform:** AWS Ensure cloudfront has a default root - [#4673](https://github.com/bridgecrewio/checkov/pull/4673)
+- **terraform:** AWS ensure secret rotation is less than 90 days - [#4672](https://github.com/bridgecrewio/checkov/pull/4672)
+- **terraform:** AWS Secrets are rotated - [#4671](https://github.com/bridgecrewio/checkov/pull/4671)
+- **terraform:** ensure DB snapshots arent public - [#4667](https://github.com/bridgecrewio/checkov/pull/4667)
+- **terraform:** ensure SSM docs are private - [#4668](https://github.com/bridgecrewio/checkov/pull/4668)
+- **terraform:** lambda permission is not public - [#4666](https://github.com/bridgecrewio/checkov/pull/4666)
+
+### Bug Fix
+
+- **general:** Custom policies integration correct check IDs filtering - [#4700](https://github.com/bridgecrewio/checkov/pull/4700)
+- **sca:** return empty result when using BC API key in IDE - [#4694](https://github.com/bridgecrewio/checkov/pull/4694)
+- **terraform:** add extra handling around private GitHub Terraform modules - [#4699](https://github.com/bridgecrewio/checkov/pull/4699)
+
+## [2.3.96](https://github.com/bridgecrewio/checkov/compare/2.3.95...2.3.96) - 2023-03-16
+
+### Feature
+
+- **ansible:** Ansible panos security policy checks - [#4639](https://github.com/bridgecrewio/checkov/pull/4639)
+- **terraform:** s3 bucket has event notifications - [#4660](https://github.com/bridgecrewio/checkov/pull/4660)
+- **terraform:** s3 ensure failed uploads are deleted id=300!!!! - [#4662](https://github.com/bridgecrewio/checkov/pull/4662)
+
+### Bug Fix
+
+- **gitlab:** index_out_of_range - [#4677](https://github.com/bridgecrewio/checkov/pull/4677)
+- **terraform:** Revert "feat(terraform): support provider blocks yaml policy checks (… - [#4680](https://github.com/bridgecrewio/checkov/pull/4680)
+
+## [2.3.95](https://github.com/bridgecrewio/checkov/compare/2.3.92...2.3.95) - 2023-03-15
+
+### Feature
+
+- **sca:** filter twistcli results with empty package name and version - [#4670](https://github.com/bridgecrewio/checkov/pull/4670)
+- **terraform:** Support new TFParser in the local graph (under env var) - [#4664](https://github.com/bridgecrewio/checkov/pull/4664)
+- **terraform:** support provider blocks yaml policy checks - [#4656](https://github.com/bridgecrewio/checkov/pull/4656)
+
+## [2.3.92](https://github.com/bridgecrewio/checkov/compare/2.3.85...2.3.92) - 2023-03-14
+
+### Feature
+
+- **sca:** fix unexpected maven packageName - cycloneDX - [#4663](https://github.com/bridgecrewio/checkov/pull/4663)
+- **sca:** skipping finding IsPrivateFixVersion by default - [#4648](https://github.com/bridgecrewio/checkov/pull/4648)
+- **sca:** support inline CVE suppression in requirements.txt - [#4630](https://github.com/bridgecrewio/checkov/pull/4630)
+- **secrets:** allow scanning just partial history of commits - [#4659](https://github.com/bridgecrewio/checkov/pull/4659)
+- **terraform:** Refactor Module mapping objects - [#4661](https://github.com/bridgecrewio/checkov/pull/4661)
+- **terraform:** s3 to have lifecycle policy - [#4658](https://github.com/bridgecrewio/checkov/pull/4658)
+
+### Bug Fix
+
+- **secrets:** fix git history partial scan - [#4665](https://github.com/bridgecrewio/checkov/pull/4665)
+
+## [2.3.85](https://github.com/bridgecrewio/checkov/compare/2.3.79...2.3.85) - 2023-03-13
+
+### Feature
+
+- **secrets:** support git history scan in multiline parsers - [#4637](https://github.com/bridgecrewio/checkov/pull/4637)
+- **terraform:** Definitions serialization with new definitions key/module objects - [#4655](https://github.com/bridgecrewio/checkov/pull/4655)
+- **terraform:** support variable rendering for default objects in vars - [#4650](https://github.com/bridgecrewio/checkov/pull/4650)
+
+### Bug Fix
+
+- **arm:** Fix resource type check in SQLServerAuditingRetention90Days - [#4657](https://github.com/bridgecrewio/checkov/pull/4657)
+- **general:** check suppression id instead of policy id - [#4646](https://github.com/bridgecrewio/checkov/pull/4646)
+- **gitlab:** Modify GitLab CI resource ids - [#4647](https://github.com/bridgecrewio/checkov/pull/4647)
+
+## [2.3.79](https://github.com/bridgecrewio/checkov/compare/2.3.75...2.3.79) - 2023-03-12
+
+### Feature
+
+- **terraform:** Fix for foreach subgraph rendering - [#4649](https://github.com/bridgecrewio/checkov/pull/4649)
+- **terraform:** new checks on new resources - [#4491](https://github.com/bridgecrewio/checkov/pull/4491)
+
+### Platform
+
+- **general:** skip uploading repo for VSCode source - [#4643](https://github.com/bridgecrewio/checkov/pull/4643)
 
 ## [2.3.75](https://github.com/bridgecrewio/checkov/compare/2.3.71...2.3.75) - 2023-03-09
 

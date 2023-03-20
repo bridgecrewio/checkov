@@ -120,7 +120,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
-        self.assertEqual(4, summary['failed'])
+        self.assertEqual(8, summary['failed'])
         self.assertEqual(1, summary['skipped'])
         self.assertEqual(0, summary["parsing_errors"])
 
@@ -243,7 +243,7 @@ class TestRunnerValid(unittest.TestCase):
         # self.assertEqual(report.get_exit_code(), 0)
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
-        self.assertEqual(2, summary['failed'])
+        self.assertEqual(4, summary['failed'])
         self.assertEqual(0, summary["parsing_errors"])
 
     def test_check_ids_dont_collide(self):
@@ -362,7 +362,7 @@ class TestRunnerValid(unittest.TestCase):
         for check_list in [aws_checks, gcp_checks, azure_checks]:
             check_list.sort(reverse=True, key=lambda s: int(s.split('_')[-1]))
 
-        for i in range(1, len(aws_checks) + 1):
+        for i in range(1, len(aws_checks) + 5):
             if f'CKV2_AWS_{i}' == 'CKV2_AWS_17':
                 # CKV2_AWS_17 was overly keen and those resources it checks are created by default
                 continue

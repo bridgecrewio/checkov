@@ -4,12 +4,9 @@ import os
 import mock
 import pytest
 import responses
-from checkov.runner_filter import RunnerFilter
 
 from checkov.common.bridgecrew.check_type import CheckType
-from checkov.common.output.report import Report
 from checkov.secrets.consts import VerifySecretsResult
-from checkov.secrets.runner import Runner
 
 
 @mock.patch.dict(os.environ, {"CKV_VALIDATE_SECRETS": "true"})
@@ -18,6 +15,8 @@ def test_verify_secrets_insufficient_params_skip_download() -> None:
     bc_integration.skip_download = True
     bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
 
+    from checkov.secrets.runner import Runner
+    from checkov.common.output.report import Report
     result = Runner().verify_secrets(Report(check_type=CheckType.SECRETS), "")
 
     assert result == VerifySecretsResult.INSUFFICIENT_PARAMS
@@ -28,6 +27,8 @@ def test_verify_secrets_insufficient_params_no_api_key() -> None:
     from checkov.common.bridgecrew.platform_integration import bc_integration
     bc_integration.bc_api_key = None
 
+    from checkov.secrets.runner import Runner
+    from checkov.common.output.report import Report
     result = Runner().verify_secrets(Report(check_type=CheckType.SECRETS), "")
 
     assert result == VerifySecretsResult.INSUFFICIENT_PARAMS
@@ -38,10 +39,63 @@ def test_verify_secrets_insufficient_params_no_flag() -> None:
     from checkov.common.bridgecrew.platform_integration import bc_integration
     bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
 
+    from checkov.secrets.runner import Runner
+    from checkov.common.output.report import Report
     result = Runner().verify_secrets(Report(check_type=CheckType.SECRETS), "")
 
     assert result == VerifySecretsResult.INSUFFICIENT_PARAMS
 
+@mock.patch.dict(os.environ, {"CKV_VALIDATE_SECRETS": "true"})
+def test_verify_secrets_insufficient_params_tenant_config_overrides_true_flag() -> None:
+    from checkov.common.bridgecrew.platform_integration import bc_integration
+    bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
+    bc_integration.customer_run_config_response = {'tenantConfig': {'secretsValidate': False}}
+
+    from checkov.secrets.runner import Runner
+    from checkov.common.output.report import Report
+    result = Runner().verify_secrets(Report(check_type=CheckType.SECRETS), "")
+
+    assert result == VerifySecretsResult.INSUFFICIENT_PARAMS
+
+
+@mock.patch.dict(os.environ, {"CKV_VALIDATE_SECRETS": "false"})
+def test_verify_secrets_insufficient_params_tenant_config_overrides_false_flag() -> None:
+    from checkov.common.bridgecrew.platform_integration import bc_integration
+    bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
+    bc_integration.customer_run_config_response = {'tenantConfig': {'secretsValidate': True}}
+    bc_integration.skip_download = False
+
+    from checkov.secrets.runner import Runner
+    from checkov.common.output.report import Report
+    result = Runner().verify_secrets(Report(check_type=CheckType.SECRETS), "")
+
+    assert result != VerifySecretsResult.INSUFFICIENT_PARAMS
+
+@mock.patch.dict(os.environ, {"CKV_VALIDATE_SECRETS": "false"})
+def test_verify_secrets_insufficient_params_tenant_config_missing_false_flag() -> None:
+    from checkov.common.bridgecrew.platform_integration import bc_integration
+    bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
+    bc_integration.customer_run_config_response = {'tenantConfig': {'mock': True}}
+    bc_integration.skip_download = False
+
+    from checkov.secrets.runner import Runner
+    from checkov.common.output.report import Report
+    result = Runner().verify_secrets(Report(check_type=CheckType.SECRETS), "")
+
+    assert result == VerifySecretsResult.INSUFFICIENT_PARAMS
+
+@mock.patch.dict(os.environ, {"CKV_VALIDATE_SECRETS": "true"})
+def test_verify_secrets_insufficient_params_tenant_config_missing_true_flag() -> None:
+    from checkov.common.bridgecrew.platform_integration import bc_integration
+    bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
+    bc_integration.customer_run_config_response = {'tenantConfig': {'mock': True}}
+    bc_integration.skip_download = False
+
+    from checkov.secrets.runner import Runner
+    from checkov.common.output.report import Report
+    result = Runner().verify_secrets(Report(check_type=CheckType.SECRETS), "")
+
+    assert result != VerifySecretsResult.INSUFFICIENT_PARAMS
 
 @responses.activate
 @mock.patch.dict(os.environ, {"CKV_VALIDATE_SECRETS": "true"})
@@ -60,6 +114,8 @@ def test_verify_secrets_failure(mock_bc_integration, status_code: int) -> None:
         status=status_code
     )
 
+    from checkov.secrets.runner import Runner
+    from checkov.common.output.report import Report
     result = Runner().verify_secrets(Report(check_type=CheckType.SECRETS), "")
 
     assert result == VerifySecretsResult.FAILURE
@@ -67,7 +123,7 @@ def test_verify_secrets_failure(mock_bc_integration, status_code: int) -> None:
 
 @responses.activate
 @mock.patch.dict(os.environ, {"CKV_VALIDATE_SECRETS": "true"})
-def test_verify_secrets(mock_bc_integration, secrets_report: Report) -> None:
+def test_verify_secrets(mock_bc_integration, secrets_report) -> None:
     violation_id_to_verify_status = {"VIOLATION_1": "Privileged",
                                      "VIOLATION_2": "Valid",
                                      "VIOLATION_3": "Invalid",
@@ -101,6 +157,8 @@ def test_verify_secrets(mock_bc_integration, secrets_report: Report) -> None:
         json={'verificationReportSignedUrl': 'mock'},
         status=200
     )
+
+    from checkov.secrets.runner import Runner
     runner = Runner()
     runner.get_json_verification_report = lambda x: verified_report
     result = runner.verify_secrets(secrets_report, "path/to/enriched/secrets")
@@ -140,11 +198,13 @@ def test_runner_verify_secrets(mock_bc_integration, mock_metadata_integration):
         status=200
     )
 
+    from checkov.secrets.runner import Runner
     runner = Runner()
     mock_bc_integration.persist_enriched_secrets = lambda x: 'mock'
     mock_bc_integration.bc_api_key = 'mock'
     runner.get_json_verification_report = lambda x: verified_report
 
+    from checkov.runner_filter import RunnerFilter
     report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                         runner_filter=RunnerFilter(framework=['secrets']))
 

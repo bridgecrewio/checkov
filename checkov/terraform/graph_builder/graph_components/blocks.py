@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 from typing import Union, Dict, Any, List, Optional, Set
-import dpath.util
+import dpath
 import re
 
 from checkov.common.runners.base_runner import strtobool
@@ -21,7 +21,8 @@ class TerraformBlock(Block):
         "source_module",
         "has_dynamic_block",
         "dynamic_attributes",
-        "foreach_attrs"
+        "foreach_attrs",
+        "source_module_object"
     )
 
     def __init__(self, name: str, config: Dict[str, Any], path: str, block_type: BlockType, attributes: Dict[str, Any],

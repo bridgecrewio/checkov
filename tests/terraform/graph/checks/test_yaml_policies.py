@@ -22,8 +22,17 @@ class TestYamlPolicies(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
+    def test_SecretsAreRotated(self):
+        self.go("SecretsAreRotated")
+
+    def test_S3BucketLifecycle(self):
+        self.go("S3BucketLifecycle")
+
     def test_AccessControlGroupRuleDefine(self):
         self.go("AccessControlGroupRuleDefine")
+
+    def test_S3BucketEventNotifications(self):
+        self.go("S3BucketEventNotifications")
 
     def test_ADORepositoryHasMinTwoReviewers(self):
         self.go("ADORepositoryHasMinTwoReviewers")
