@@ -32,7 +32,7 @@ from checkov.common.util.parser_utils import get_module_from_full_path, get_abs_
 from checkov.common.util.secrets import omit_secret_value_from_checks, omit_secret_value_from_graph_checks
 from checkov.common.variables.context import EvaluationContext
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform import TFDefinitionKey
+from checkov.terraform.modules.module_objects import TFDefinitionKey
 from checkov.terraform.checks.data.registry import data_registry
 from checkov.terraform.checks.module.registry import module_registry
 from checkov.terraform.checks.provider.registry import provider_registry
@@ -325,12 +325,11 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         if self.enable_nested_modules:
             self.push_skipped_checks_down_from_modules(self.context)
         for full_file_path, definition in self.definitions.items():
-            self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(full_file_path, root_folder)})
+            self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(
+                full_file_path.file_path if isinstance(full_file_path, TFDefinitionKey) else full_file_path,
+                root_folder)})
             if self.enable_nested_modules:
-                if isinstance(full_file_path, TFDefinitionKey):
-                    abs_scanned_file = full_file_path.file_path
-                else:
-                    abs_scanned_file = get_abs_path(full_file_path)
+                abs_scanned_file = get_abs_path(full_file_path)
                 abs_referrer = None
             else:
                 abs_scanned_file, abs_referrer = self._strip_module_referrer(full_file_path)
@@ -409,9 +408,13 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
             else:
                 entity_context_path = entity_context_path_header + block_type + definition_path
             # Entity can exist only once per dir, for file as well
+            if isinstance(full_file_path, TFDefinitionKey):
+                context_path = full_file_path.file_path
+            else:
+                context_path = full_file_path
             try:
                 entity_context = data_structures_utils.get_inner_dict(
-                    definition_context[full_file_path],
+                    definition_context[context_path],
                     entity_context_path,
                 )
                 entity_lines_range = [entity_context.get('start_line'), entity_context.get('end_line')]
@@ -424,7 +427,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                 skipped_checks = None
 
             if not self.enable_nested_modules and block_type == "module":
-                self.push_skipped_checks_down_old(definition_context, full_file_path, skipped_checks)
+                self.push_skipped_checks_down_old(definition_context, context_path, skipped_checks)
 
             if full_file_path in self.evaluations_context:
                 variables_evaluations = {}
@@ -433,7 +436,10 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                 entity_evaluations = BaseVariableEvaluation.reduce_entity_evaluations(variables_evaluations,
                                                                                       entity_context_path)
             results = registry.scan(scanned_file, entity, skipped_checks, runner_filter)
-            absolut_scanned_file_path, _ = self._strip_module_referrer(file_path=full_file_path)
+            if isinstance(full_file_path, str):
+                absolute_scanned_file_path, _ = self._strip_module_referrer(file_path=full_file_path)
+            if isinstance(full_file_path, TFDefinitionKey):
+                absolute_scanned_file_path = get_abs_path(full_file_path)
             # This duplicates a call at the start of scan, but adding this here seems better than kludging with some tuple return type
             tags = get_resource_tags(entity_type, entity_config)
             if results:
@@ -456,7 +462,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                         resource=entity_id,
                         evaluations=entity_evaluations,
                         check_class=check.__class__.__module__,
-                        file_abs_path=absolut_scanned_file_path,
+                        file_abs_path=absolute_scanned_file_path,
                         entity_tags=tags,
                         caller_file_path=caller_file_path,
                         caller_file_line_range=caller_file_line_range,
@@ -482,7 +488,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                     # resources without checks, but not existing ones
                     report.extra_resources.add(
                         ExtraResource(
-                            file_abs_path=absolut_scanned_file_path,
+                            file_abs_path=absolute_scanned_file_path,
                             file_path=scanned_file,
                             resource=entity_id,
                         )
@@ -566,8 +572,8 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         # this method pushes the skipped_checks down the 1 level to all resource types.
         if not skipped_checks or not resolved_paths:
             return
-        resolved_paths = [path.file_path if isinstance(path, TFDefinitionKey) else path for path in resolved_paths]
-        for definition in resolved_paths:
+        resolved_file_paths = [path.file_path if isinstance(path, TFDefinitionKey) else path for path in resolved_paths]
+        for ind, definition in enumerate(resolved_file_paths):
             for block_type, block_configs in definition_context.get(definition, {}).items():
                 # skip if type is not a Terraform resource
                 if block_type not in CHECK_BLOCK_TYPES:
@@ -578,7 +584,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                     for module_name, module_config in block_configs.items():
                         # append the skipped checks also from a module to another module
                         module_config["skipped_checks"] += skipped_checks
-                        module_context = next(m for m in self.definitions.get(definition).get(block_type) if module_name in m)
+                        module_context = next(m for m in self.definitions.get(resolved_paths[ind]).get(block_type) if module_name in m)
                         recursive_resolved_paths = module_context.get(module_name).get(RESOLVED_MODULE_ENTRY_NAME)
                         self.push_skipped_checks_down(definition_context, skipped_checks, recursive_resolved_paths)
                 else:

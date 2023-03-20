@@ -3,7 +3,7 @@ from typing import Dict, TYPE_CHECKING, Tuple, List, Any
 
 import dpath
 
-from checkov.terraform import TFDefinitionKey
+from checkov.terraform.modules.module_objects import TFDefinitionKey
 
 if TYPE_CHECKING:
     from checkov.terraform.context_parsers.base_parser import BaseContextParser
