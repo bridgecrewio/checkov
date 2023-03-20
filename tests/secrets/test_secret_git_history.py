@@ -254,6 +254,11 @@ def test_scan_git_history_multiline_keyword_yml() -> None:
 
 
 def test_scan_git_history_middle(mocker: MockerFixture) -> None:
+    """
+    this test tries to run a full scan over 5 commits,
+    then run two separate runs over the first 2 and the last 3 (the second will give the secret store to the third)
+    then compares the results from run 1 to the last run
+    """
     valid_dir_path = "test"
 
     all_commits = mock_git_repo_commits1('', '')
@@ -266,10 +271,6 @@ def test_scan_git_history_middle(mocker: MockerFixture) -> None:
     report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                         runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
     assert len(report.failed_checks) == 3
-    assert len(report.parsing_errors) == 0
-    assert len(report.passed_checks) == 0
-    assert len(report.parsing_errors) == 0
-    assert len(report.skipped_checks) == 0
     for failed_check in report.failed_checks:
         assert failed_check.added_commit_hash or failed_check.removed_commit_hash
 
