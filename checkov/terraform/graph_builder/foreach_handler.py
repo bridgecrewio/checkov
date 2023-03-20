@@ -309,43 +309,36 @@ class ForeachHandler(object):
         """
         modules_blocks (list[int]): list of module blocks indexes in the graph that contains for_each / counts.
         """
+        if not modules_blocks:
+            return
         current_level = [None]
         main_module_modules = deepcopy(self.local_graph.vertices_by_module_dependency.get(None)[BlockType.MODULE])
         modules_to_render = main_module_modules
         while modules_to_render:
             for module_idx in modules_to_render:
-                if module_idx not in modules_blocks:
-                    continue
-                else:
-                    module_block = self.local_graph.vertices[module_idx]
-                    for_each = module_block.attributes.get(FOREACH_STRING)
-                    count = module_block.attributes.get(COUNT_STRING)
-                    sub_graph = self._build_sub_graph(modules_blocks)
-                    self._render_sub_graph(sub_graph, blocks_to_render=modules_blocks)
-                    if for_each:
-                        if not self._is_static_statement(module_idx):
-                            for_each = self._handle_static_statement(module_idx, sub_graph)
-                            if not self._is_static_statement(module_idx, sub_graph):
-                                continue
-                        self.duplicate_module_with_for_each(module_idx, for_each)
-                    elif count:
-                        if not self._is_static_statement(module_idx):
-                            count = self._handle_static_statement(module_idx, sub_graph)
-                            if not self._is_static_statement(module_idx, sub_graph):
-                                continue
-                        self.duplicate_module_with_count(module_idx, count)
-
+                module_block = self.local_graph.vertices[module_idx]
+                for_each = module_block.attributes.get(FOREACH_STRING)
+                count = module_block.attributes.get(COUNT_STRING)
+                sub_graph = self._build_sub_graph(modules_blocks)
+                self._render_sub_graph(sub_graph, blocks_to_render=modules_blocks)
+                if for_each:
+                    if not self._is_static_statement(module_idx):
+                        for_each = self._handle_static_statement(module_idx, sub_graph)
+                        if not self._is_static_statement(module_idx, sub_graph):
+                            continue
+                    self.duplicate_module_with_for_each(module_idx, for_each)
+                elif count:
+                    if not self._is_static_statement(module_idx):
+                        count = self._handle_static_statement(module_idx, sub_graph)
+                        if not self._is_static_statement(module_idx, sub_graph):
+                            continue
+                    self.duplicate_module_with_count(module_idx, count)
             modules_to_render = self._get_modules_to_render(current_level)
             # self.local_graph._arrange_graph_data()
             # self.local_graph._build_edges()
 
-    def _duplicate_module(self, module_idx: int, for_each: dict[str, Any] | list[str]) -> list[int]:
-        start_len = len(self.local_graph.vertices)
-        self._create_new_resources_foreach(for_each, module_idx)
-        return [idx for idx in range(start_len + 1, len(self.local_graph.vertices) + 1)]
-
     def duplicate_module_with_for_each(self, module_idx: int, for_each: dict[str, Any] | list[str]) -> None:
-        self._duplicate_module(module_idx, for_each)
+        self._create_new_resources_foreach(for_each, module_idx)
 
     def duplicate_module_with_count(self, module_idx: int, count: int) -> None:
         self._create_new_resources_count(count, module_idx)

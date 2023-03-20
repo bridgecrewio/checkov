@@ -238,5 +238,14 @@ def test_update_attrs(attrs, k_v_to_change, expected_attrs, expected_res):
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
 def test_new_tf_parser():
     dir_name = 'parser_dup_nested'
-    local_graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
+    local_graph, tf_definitions = build_and_get_graph_by_path(dir_name, render_var=True)
+    assert len(tf_definitions.keys()) == 14
+    # 1 - var
+    # 2 - 4 modules -> resolves to 3 - 6
+    # 3 - 4 - 5 - 6 -> 2 resolves to resources
+    # 7 - 14 -> resources
+    assert local_graph.vertices
+
     assert local_graph
+    assert len([block for block in local_graph.vertices if block.block_type == 'resource']) == 8
+    assert len([block for block in local_graph.vertices if block.block_type == 'module']) == 12
