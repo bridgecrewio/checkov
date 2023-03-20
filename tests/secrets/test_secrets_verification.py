@@ -59,7 +59,7 @@ def test_verify_secrets_insufficient_params_tenant_config_overrides_true_flag() 
 
 
 @mock.patch.dict(os.environ, {"CKV_VALIDATE_SECRETS": "false"})
-def test_verify_secrets_insufficient_params_tenant_config_overrides_flag_flag() -> None:
+def test_verify_secrets_insufficient_params_tenant_config_overrides_false_flag() -> None:
     from checkov.common.bridgecrew.platform_integration import bc_integration
     bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
     bc_integration.customer_run_config_response = {'tenantConfig': {'secretsValidate': True}}
