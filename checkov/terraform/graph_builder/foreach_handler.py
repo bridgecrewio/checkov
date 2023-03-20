@@ -277,5 +277,16 @@ class ForeachHandler(object):
             else:
                 self._create_new_resources_foreach(statement, block_idx)
 
+    def _duplicate_sub_graph(self, vertex_index: int, foreach_or_count_key: int | dict[str, Any]) -> None:
+        if isinstance(foreach_or_count_key, int):
+            for i in range(foreach_or_count_key):
+                self._duplicate_count_subgraph(vertex_index, i)
+        elif isinstance(foreach_or_count_key, dict):
+            for foreach_key, foreach_value in foreach_or_count_key.items():
+                self._duplicate_foreach_subgraph(vertex_index, foreach_key, foreach_value)
 
-    # def _duplicate_sub_graph(self):
+    def _duplicate_count_subgraph(self, vertex_index: int, count_key: int) -> None:
+        pass
+
+    def _duplicate_foreach_subgraph(self, vertex_index: int, foreach_key: str, foreach_value: Any) -> None:
+        pass
