@@ -250,3 +250,23 @@ def test_scan_git_history_multiline_keyword_yml() -> None:
     assert report.parsing_errors == []
     assert report.passed_checks == []
     assert report.skipped_checks == []
+
+
+@mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff', mock_git_repo_commits1)
+def test_scan_git_history_middle() -> None:
+    valid_dir_path = "test"
+
+    runner = Runner()
+    report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
+                        runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
+    assert len(report.failed_checks) == 3
+    assert len(report.parsing_errors) == 0
+    assert len(report.passed_checks) == 0
+    assert len(report.parsing_errors) == 0
+    assert len(report.skipped_checks) == 0
+    for failed_check in report.failed_checks:
+        assert failed_check.added_commit_hash or failed_check.removed_commit_hash
+
+    runner2 = Runner()
+    runner2.set_history_secret_store()
+

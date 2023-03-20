@@ -3,7 +3,8 @@ from __future__ import annotations
 import logging
 import copy
 from collections import defaultdict
-from typing import TYPE_CHECKING, Dict, List, Tuple, Optional, TypedDict
+from typing import TYPE_CHECKING, Dict, List, Tuple, Optional
+from typing_extensions import TypedDict
 from checkov.secrets.consts import GIT_HISTORY_NOT_BEEN_REMOVED
 
 if TYPE_CHECKING:
