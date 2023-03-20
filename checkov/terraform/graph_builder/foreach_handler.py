@@ -277,12 +277,11 @@ class ForeachHandler(object):
         key_to_val_changes = self._build_key_to_val_changes(main_resource, new_value, new_key)
         self._update_foreach_attrs(config_attrs, key_to_val_changes, new_resource)
         idx_to_change = new_key or new_value
-        self._add_index_to_module_block_properties(new_resource, idx_to_change)
+        new_resource.for_each_index = idx_to_change
 
         if foreach_idx != 0:
             self.local_graph.vertices.append(new_resource)
             new_resource_vertex_idx = len(self.local_graph.vertices) - 1
-            new_resource.for_each_index = idx_to_change
             source_module_key = TFModule(
                 path=new_resource.path,
                 name=main_resource.name,
@@ -358,13 +357,6 @@ class ForeachHandler(object):
         idx_with_separator = ForeachHandler._update_block_name_and_id(block, idx)
         if block.config.get(block_type) and block.config.get(block_type, {}).get(block_name):
             block.config[block_type][f"{block_name}[{idx_with_separator}]"] = block.config[block_type].pop(block_name)
-
-    @staticmethod
-    def _add_index_to_module_block_properties(block: TerraformBlock, idx: str | int) -> None:
-        block_name = block.name
-        idx_with_separator = ForeachHandler._update_block_name_and_id(block, idx)
-        if block.config.get(block_name):
-            block.config[f"{block_name}[{idx_with_separator}]"] = block.config.pop(block_name)
 
     @staticmethod
     def _update_block_name_and_id(block, idx):

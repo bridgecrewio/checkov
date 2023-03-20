@@ -234,10 +234,10 @@ class TestParserInternals(unittest.TestCase):
 
         first_module_vertex = local_graph.vertices[0]
         second_module_vertex = local_graph.vertices[1]
-        assert first_module_vertex.name == 's3_module["a"]'
-        assert second_module_vertex.name == 's3_module2[0]'
+        assert first_module_vertex.name == 's3_module' and first_module_vertex.for_each_index == 'a'
+        assert second_module_vertex.name == 's3_module2' and second_module_vertex.for_each_index == 0
 
-        assert local_graph.vertices[33].name == 's3_module["b"]'
+        assert local_graph.vertices[33].name == 's3_module' and local_graph.vertices[33].for_each_index == 'b'
         assert local_graph.vertices[34].source_module == {33}
 
         assert local_graph.vertices_by_module_dependency[None]['module'] == [0, 1, 33, 38]
