@@ -300,16 +300,7 @@ class ForeachHandler(object):
                                       idx_to_change)
             self.local_graph.vertices_by_module_dependency.update({new_module_key: new_module_value})
 
-
-            for type, vertices_idx in new_module_value.items():
-                for vertex_idx in vertices_idx:
-                    new_vertex = deepcopy(self.local_graph.vertices[vertex_idx])
-                    new_vertex.source_module_object = new_module_key
-                    self.local_graph.vertices.append(new_vertex)
-
-                    # Update source module based on the new added vertex
-                    new_vertex.source_module.pop()
-                    new_vertex.source_module.add(new_resource_vertex_idx)
+            self._add_new_vertices_for_module(new_module_key, new_module_value, new_resource_vertex_idx)
         else:
             self.local_graph.vertices[resource_idx] = new_resource
 
@@ -320,6 +311,18 @@ class ForeachHandler(object):
             key_with_foreach_index = deepcopy(existing_module_key)
             key_with_foreach_index.foreach_idx = idx_to_change
             self.local_graph.vertices_by_module_dependency[key_with_foreach_index] = existing_module_value
+
+    def _add_new_vertices_for_module(self, new_module_key: TFModule, new_module_value: dict[str, list[int]],
+                                     new_resource_vertex_idx: int) -> None:
+        for _, vertices_idx in new_module_value.items():
+            for vertex_idx in vertices_idx:
+                new_vertex = deepcopy(self.local_graph.vertices[vertex_idx])
+                new_vertex.source_module_object = new_module_key
+                self.local_graph.vertices.append(new_vertex)
+
+                # Update source module based on the new added vertex
+                new_vertex.source_module.pop()
+                new_vertex.source_module.add(new_resource_vertex_idx)
 
     def _create_new_resources_foreach(self, statement: list[str] | dict[str, Any], block_idx: int) -> None:
         main_resource = self.local_graph.vertices[block_idx]
