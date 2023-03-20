@@ -4,6 +4,7 @@ import itertools
 import logging
 import json
 import re
+from collections import defaultdict
 from copy import deepcopy
 from typing import Any, Optional, TypeVar
 
@@ -28,7 +29,7 @@ class ForeachHandler(object):
         self.local_graph = local_graph
 
     def handle_foreach_rendering(self, foreach_blocks: dict[str, list[int]]) -> None:
-        self._handle_foreach_rendering_for_module(foreach_blocks.get(BlockType.MODULE))
+        self.handle_foreach_rendering_for_module(foreach_blocks.get(BlockType.MODULE))
         self._handle_foreach_rendering_for_resource(foreach_blocks.get(BlockType.RESOURCE))
 
     def _handle_foreach_rendering_for_resource(self, resources_blocks: list[int]) -> None:
@@ -298,9 +299,11 @@ class ForeachHandler(object):
             new_module_value = deepcopy(self.local_graph.vertices_by_module_dependency[main_resource_module_key])
             new_module_key = TFModule(new_resource.path, new_resource.name, new_resource.source_module_object,
                                       idx_to_change)
-            self.local_graph.vertices_by_module_dependency.update({new_module_key: new_module_value})
 
-            self._add_new_vertices_for_module(new_module_key, new_module_value, new_resource_vertex_idx)
+            new_vertices_module_value = self._add_new_vertices_for_module(new_module_key, new_module_value,
+                                                                          new_resource_vertex_idx)
+            self.local_graph.vertices_by_module_dependency.update({new_module_key: new_vertices_module_value})
+
         else:
             self.local_graph.vertices[resource_idx] = new_resource
 
@@ -313,8 +316,9 @@ class ForeachHandler(object):
             self.local_graph.vertices_by_module_dependency[key_with_foreach_index] = existing_module_value
 
     def _add_new_vertices_for_module(self, new_module_key: TFModule, new_module_value: dict[str, list[int]],
-                                     new_resource_vertex_idx: int) -> None:
-        for _, vertices_idx in new_module_value.items():
+                                     new_resource_vertex_idx: int) -> dict[str: list[int]]:
+        new_vertices_module_value: dict[str: list[int]] = defaultdict(list)
+        for vertex_type, vertices_idx in new_module_value.items():
             for vertex_idx in vertices_idx:
                 new_vertex = deepcopy(self.local_graph.vertices[vertex_idx])
                 new_vertex.source_module_object = new_module_key
@@ -323,6 +327,11 @@ class ForeachHandler(object):
                 # Update source module based on the new added vertex
                 new_vertex.source_module.pop()
                 new_vertex.source_module.add(new_resource_vertex_idx)
+
+                new_vertex_idx = len(self.local_graph.vertices) - 1
+                new_vertices_module_value[vertex_type].append(new_vertex_idx)
+        return new_vertices_module_value
+
 
     def _create_new_resources_foreach(self, statement: list[str] | dict[str, Any], block_idx: int) -> None:
         main_resource = self.local_graph.vertices[block_idx]
