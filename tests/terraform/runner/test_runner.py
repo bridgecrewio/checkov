@@ -120,7 +120,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
-        self.assertEqual(6, summary['failed'])
+        self.assertEqual(8, summary['failed'])
         self.assertEqual(1, summary['skipped'])
         self.assertEqual(0, summary["parsing_errors"])
 
@@ -199,26 +199,6 @@ class TestRunnerValid(unittest.TestCase):
         # Remove external checks from registry.
         runner.graph_registry.checks[:] = [check for check in runner.graph_registry.checks if "CUSTOM" not in check.id]
 
-    def test_runner_provider_yaml_check(self):
-        current_dir = os.path.dirname(os.path.realpath(__file__))
-
-        tf_dir_path = current_dir + "/resources/provider_blocks"
-        extra_checks_dir_path = [current_dir + "/extra_yaml_checks"]
-
-        runner = Runner(db_connector=self.db_connector())
-        report = runner.run(root_folder=tf_dir_path, external_checks_dir=extra_checks_dir_path, runner_filter=RunnerFilter(checks=['CUSTOM_GRAPH_AWS_3', 'CUSTOM_GRAPH_AWS_4']))
-        report_json = report.get_json()
-
-        self.assertIsInstance(report_json, str)
-        self.assertIsNotNone(report_json)
-        self.assertIsNotNone(report.get_test_suite())
-
-        self.assertEqual(7, len(report.passed_checks))
-        self.assertEqual(3, len(report.failed_checks))
-
-        # Remove external checks from registry.
-        runner.graph_registry.checks[:] = [check for check in runner.graph_registry.checks if
-                                           "CUSTOM" not in check.id]
     def test_runner_yaml_module_check(self):
         # given
         current_dir = Path(__file__).parent
@@ -263,7 +243,7 @@ class TestRunnerValid(unittest.TestCase):
         # self.assertEqual(report.get_exit_code(), 0)
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
-        self.assertEqual(3, summary['failed'])
+        self.assertEqual(4, summary['failed'])
         self.assertEqual(0, summary["parsing_errors"])
 
     def test_check_ids_dont_collide(self):
@@ -382,7 +362,7 @@ class TestRunnerValid(unittest.TestCase):
         for check_list in [aws_checks, gcp_checks, azure_checks]:
             check_list.sort(reverse=True, key=lambda s: int(s.split('_')[-1]))
 
-        for i in range(1, len(aws_checks) + 1):
+        for i in range(1, len(aws_checks) + 5):
             if f'CKV2_AWS_{i}' == 'CKV2_AWS_17':
                 # CKV2_AWS_17 was overly keen and those resources it checks are created by default
                 continue
@@ -1191,7 +1171,7 @@ class TestRunnerValid(unittest.TestCase):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         extra_checks_dir_path = current_dir + "/extra_yaml_checks"
         runner.load_external_checks([extra_checks_dir_path])
-        self.assertEqual(len(runner.graph_registry.checks), base_len + 5)
+        self.assertEqual(len(runner.graph_registry.checks), base_len + 3)
         runner.graph_registry.checks = runner.graph_registry.checks[:base_len]
 
     def test_loading_external_checks_yaml_multiple_times(self):
@@ -1200,9 +1180,9 @@ class TestRunnerValid(unittest.TestCase):
         runner.graph_registry.checks = []
         extra_checks_dir_path = [current_dir + "/extra_yaml_checks"]
         runner.load_external_checks(extra_checks_dir_path)
-        self.assertEqual(len(runner.graph_registry.checks), 5)
+        self.assertEqual(len(runner.graph_registry.checks), 3)
         runner.load_external_checks(extra_checks_dir_path)
-        self.assertEqual(len(runner.graph_registry.checks), 5)
+        self.assertEqual(len(runner.graph_registry.checks), 3)
 
         graph_checks = [x.id for x in runner.graph_registry.checks]
         self.assertIn('CUSTOM_GRAPH_AWS_1', graph_checks)

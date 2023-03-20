@@ -19,10 +19,11 @@
         source_zone: ['any']
         destination_zone: ['any']
         category: ['any']
-        application: ['any']
+        application: ['ssl']
         service: ['service-http', 'service-https']
         disable_server_response_inspection: false
         action: 'allow'
+        description: 'The description'
 
     - name: Security_rule_pass_2
       paloaltonetworks.panos.panos_security_rule:
@@ -31,7 +32,8 @@
         source_zone: ['any']
         destination_zone: ['any']
         category: ['any']
-        application: ['any']
+        application: ['ssl']
         service: ['service-http', 'service-https']
         action: 'allow'
+        description: 'The description'
         # No explicit disable_server_response_inspection parameter, therefore uses default: false, which passes the check

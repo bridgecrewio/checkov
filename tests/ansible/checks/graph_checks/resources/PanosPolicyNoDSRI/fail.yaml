@@ -19,7 +19,8 @@
         source_zone: ['any']
         destination_zone: ['any']
         category: ['any']
-        application: ['any']
+        application: ['ssl']
         service: ['service-http', 'service-https']
         disable_server_response_inspection: true
         action: 'allow'
+        description: 'The description'

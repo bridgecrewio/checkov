@@ -117,8 +117,12 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
                 new_record.severity = cloned_policy['severity']
                 new_record.check_name = cloned_policy['title']
                 records.append(new_record)
-        records = [record for record in records if record.bc_check_id not in self.policy_level_suppression]  # Filter out policy level suppressions after cloned policy is added
+        policy_level_suppression_check_ids = self.convert_suppression_ids_to_bc_check_ids()
+        records = [record for record in records if record.bc_check_id not in policy_level_suppression_check_ids]  # Filter out policy level suppressions after cloned policy is added
         return records
+
+    def convert_suppression_ids_to_bc_check_ids(self) -> List[str]:
+        return ["_".join(policy.split('_')[:-1]) for policy in self.policy_level_suppression]
 
     def pre_runner(self, runner: _BaseRunner) -> None:
         # not used
