@@ -276,3 +276,6 @@ class ForeachHandler(object):
                 self._create_new_resources_count(statement, block_idx)
             else:
                 self._create_new_resources_foreach(statement, block_idx)
+
+
+    # def _duplicate_sub_graph(self):

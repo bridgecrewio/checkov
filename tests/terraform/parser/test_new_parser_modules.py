@@ -39,6 +39,8 @@ class TestParserInternals(unittest.TestCase):
         if os.path.exists(self.external_module_path):
             shutil.rmtree(self.external_module_path)
 
+
+
     def test_load_inner_registry_module_new_parser(self):
         parser = TFParser()
         directory = os.path.join(self.resources_dir, "registry_security_group_inner_module")
@@ -215,3 +217,15 @@ class TestParserInternals(unittest.TestCase):
 
         assert module
         assert tf_definitions
+
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "True"})
+    def test_dup_sub_graph(self):
+        parser = TFParser()
+        directory = os.path.join(self.resources_dir, "parser_dup_nested")
+        module, tf_definitions = parser.parse_hcl_module(source_dir=directory, source='terraform')
+
+        local_graph = TerraformLocalGraph(module)
+        local_graph.build_graph(render_variables=True)
+
+        assert True
