@@ -33,3 +33,9 @@ CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 = os.getenv('CHECKOV_RUN_SCA_PACKAGE_SCAN_V2', '
 CHECKOV_DISPLAY_REGISTRY_URL = os.getenv('CHECKOV_DISPLAY_REGISTRY_URL', 'false').lower() == 'true'
 
 RESOURCE_ATTRIBUTES_TO_OMIT_UNIVERSAL_MASK = '*'
+
+COUNTRIES_WITH_REGION = {
+    'United States': 'State',
+    'Canada': 'Province',
+    'Australia': 'Territory'
+}

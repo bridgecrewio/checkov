@@ -37,7 +37,8 @@ from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FI
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.typing import _CicdDetails
-from checkov.common.util.consts import PRISMA_PLATFORM, BRIDGECREW_PLATFORM, CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
+from checkov.common.util.consts import PRISMA_PLATFORM, BRIDGECREW_PLATFORM, CHECKOV_RUN_SCA_PACKAGE_SCAN_V2, \
+    COUNTRIES_WITH_REGION
 from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.http_utils import normalize_prisma_url, get_auth_header, get_default_get_headers, \
     get_user_agent_header, get_default_post_headers, get_prisma_get_headers, get_prisma_auth_header, \
@@ -796,7 +797,14 @@ class BcPlatformIntegration:
                     " // This will be used as your login at https://bridgecrew.cloud.\n", 'green'))
                 if not self.bc_api_key:
                     email = self._input_email()
+
                     print(Style.BRIGHT + colored("\nLooks good!"
+                                                 "\nNow, tell us a little bit more about yourself: ", 'green',
+                                                 attrs=['bold']))
+                    first_name, last_name = self._input_name()
+                    country = self._input_country()
+                    region = self._input_region(country)
+                    print(Style.BRIGHT + colored("\nThanks!"
                                                  "\nNow choose an Organisation Name: ", 'green',
                                                  attrs=['bold']) + colored(
                         " // This will enable collaboration with others who you can add to your team.\n", 'green'))
@@ -805,7 +813,7 @@ class BcPlatformIntegration:
                                                  "\nWe are now generating a personal API key to immediately enable some new features… ",
                                                  'green', attrs=['bold']))
 
-                    bc_api_token, response = self.get_api_token(email, org)
+                    bc_api_token, response = self.get_api_token(email, org, first_name, last_name, country, region)
                     self.bc_api_key = bc_api_token
                     if response.status_code == 200:
                         print(Style.BRIGHT + colored("\nComplete!", 'green', attrs=['bold']))
@@ -896,8 +904,8 @@ class BcPlatformIntegration:
         repo_id = f"cli_repo/{basename}"
         return repo_id
 
-    def get_api_token(self, email: str, org: str) -> tuple[str, Response]:
-        response = self._create_bridgecrew_account(email, org)
+    def get_api_token(self, email: str, org: str, first_name: str, last_name: str, country: str, region: str = '') -> tuple[str, Response]:
+        response = self._create_bridgecrew_account(email, org, first_name, last_name, country, region)
         bc_api_token = response.json()["checkovSignup"]
         return bc_api_token, response
 
@@ -915,7 +923,7 @@ class BcPlatformIntegration:
             "COMPLETE! \nYour results are in your Bridgecrew dashboard, available here: https://bridgecrew.cloud \n",
             'green', attrs=['bold']) + Style.RESET_ALL)
 
-    def _create_bridgecrew_account(self, email: str, org: str) -> Response:
+    def _create_bridgecrew_account(self, email: str, org: str, first_name: str, last_name: str, country: str, region: str = '') -> Response:
         """
         Create new bridgecrew account
         :param email: email of account owner
@@ -925,7 +933,11 @@ class BcPlatformIntegration:
             "owner_email": email,
             "org": org,
             "source": ONBOARDING_SOURCE,
-            "customer_name": org
+            "customer_name": org,
+            "owner_first_name": first_name,
+            "owner_last_name": last_name,
+            "country": country,
+            "region": region
         }
         response = requests.request("POST", self.onboarding_url, headers=SIGNUP_HEADER, json=payload)
         if response.status_code == 200:
@@ -965,6 +977,22 @@ class BcPlatformIntegration:
             else:
                 print("email should match the following pattern: {}".format(EMAIL_PATTERN))
         return email
+
+    def _input_name(self) -> tuple[str, str]:
+        first_name = str(input('First name: ')).strip()
+        last_name = str(input('Last name: ')).strip()
+        return first_name, last_name
+
+    def _input_country(self) -> str:
+        country = str(input('Country: ')).strip()
+        return country
+
+    def _input_region(self, country) -> str:
+        region_name = COUNTRIES_WITH_REGION.get(country)
+        if not region_name:
+            return ''
+        region = str(input(f'{region_name}: ')).strip()
+        return region
 
     @staticmethod
     def loading_output(msg: str) -> None:
