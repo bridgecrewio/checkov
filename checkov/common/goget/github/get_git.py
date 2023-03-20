@@ -5,7 +5,7 @@ import re
 import shutil
 
 from checkov.common.goget.base_getter import BaseGetter
-
+from checkov.common.util.contextmanagers import temp_environ
 
 TAG_PATTERN = re.compile(r'\?(ref=)(?P<tag>(.*))')
 try:
@@ -52,10 +52,11 @@ class GitGetter(BaseGetter):
 
     def _clone(self, git_url: str, clone_dir: str) -> None:
         self.logger.debug(f"cloning {self.url if '@' not in self.url else self.url.split('@')[1]} to {clone_dir}")
-        if self.tag:
-            Repo.clone_from(git_url, clone_dir, depth=1, b=self.tag)
-        else:
-            Repo.clone_from(git_url, clone_dir, depth=1)
+        with temp_environ(GIT_TERMINAL_PROMPT="0"):  # disables user prompts originating from GIT
+            if self.tag:
+                Repo.clone_from(git_url, clone_dir, depth=1, b=self.tag)
+            else:
+                Repo.clone_from(git_url, clone_dir, depth=1)
 
     # Split source url into Git url and subdirectory path e.g. test.com/repo//repo/subpath becomes 'test.com/repo', '/repo/subpath')
     # Also see reference implementation @ go-getter https://github.com/hashicorp/go-getter/blob/main/source.go
