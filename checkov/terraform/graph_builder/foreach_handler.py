@@ -308,12 +308,12 @@ class ForeachHandler(object):
         new_resource_module_key = TFModule(new_resource.path, new_resource.name, new_resource.source_module_object,
                                   idx_to_change)
 
+        self._update_resolved_entry_for_tf_definition(new_resource, idx_to_change)
         if foreach_idx != 0:
             self.local_graph.vertices.append(new_resource)
             self._create_new_module_with_vertices(main_resource, main_resource_module_value, resource_idx, new_resource,
                                                   new_resource_module_key)
         else:
-            self._update_resolved_entry_for_tf_definition(new_resource, idx_to_change)
             self.local_graph.vertices[resource_idx] = new_resource
 
             # Add the new key to the dict, the original will need to be removed at the end
