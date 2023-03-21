@@ -54,8 +54,9 @@ class TerraformBlock(Block):
         self.module_connections: Dict[str, List[int]] = {}
         self.source_module: Set[int] = set()
         self.has_dynamic_block = has_dynamic_block
-        self.source_module_object: Optional[TFModule] = None
-        self.for_each_index: Optional[Any] = None
+        if strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'False')):
+            self.source_module_object: Optional[TFModule] = None
+            self.for_each_index: Optional[Any] = None
 
     def add_module_connection(self, attribute_key: str, vertex_id: int) -> None:
         self.module_connections.setdefault(attribute_key, []).append(vertex_id)

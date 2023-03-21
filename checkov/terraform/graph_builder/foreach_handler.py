@@ -410,7 +410,8 @@ class ForeachHandler(object):
         new_block_id = f"{block.id}[{idx_with_separator}]"
         new_block_name = f"{block.name}[{idx_with_separator}]"
 
-        block.config[new_block_name] = block.config.pop(block.name)
+        if block.block_type == BlockType.MODULE:
+            block.config[new_block_name] = block.config.pop(block.name)
         block.id = new_block_id
         block.name = new_block_name
         return idx_with_separator
