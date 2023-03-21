@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 from typing import TYPE_CHECKING, Callable
 
@@ -61,7 +62,7 @@ class Runner(JsonRunner):
             filename_fn: Callable[[str], str] | None = None,
     ) -> None:
         super(Runner, self)._load_files(files_to_load=files_to_load, filename_fn=filename_fn)
-
+        logging.info("Successfully overridden checkov!")
         for file_path, definition in self.definitions.items():
             file_name = Path(file_path).stem
             ckv_metadata = {
