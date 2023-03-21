@@ -7,5 +7,5 @@ Resources:
         EnforceHTTPS: True
       LogPublishingOptions:
         AUDIT_LOGS:
-          Enabled: False
-
+          Enabled: True
+          CloudWatchLogsLogGroupArn: CloudWatchLogsLogGroupArn
