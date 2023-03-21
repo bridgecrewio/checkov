@@ -4,7 +4,7 @@ from unittest import mock
 
 import pytest
 
-from checkov.common.util.json_utils import object_hook
+from checkov.common.util.json_utils import object_hook, CustomJSONEncoder
 from checkov.terraform import serialize_definitions
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
@@ -30,6 +30,11 @@ def build_and_get_graph_by_path(path, render_var=False):
     graph_manager = TerraformGraphManager('m', ['m'])
     local_graph, tf_definitions = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=render_var)
     return local_graph, tf_definitions
+
+
+@pytest.fixture()
+def checkov_source_path() -> str:
+    return os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
 
 
 @pytest.mark.parametrize(
@@ -239,7 +244,7 @@ def test_update_attrs(attrs, k_v_to_change, expected_attrs, expected_res):
 
 @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "True"})
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
-def test_new_tf_parser_with_foreach_modules():
+def test_new_tf_parser_with_foreach_modules(checkov_source_path):
     dir_name = 'parser_dup_nested'
     local_graph, tf_definitions = build_and_get_graph_by_path(dir_name, render_var=True)
     assert len(tf_definitions.keys()) == 14
@@ -278,6 +283,7 @@ def test_new_tf_parser_with_foreach_modules():
     first_value = tf_definitions[first_key]
     first_tf_module = first_value['module'][0]['s3_module["a"]']['__resolved__'][0]
     assert first_tf_module in tf_definitions
+    assert first_tf_module.file_path == os.path.join(checkov_source_path, 'tests/terraform/graph/variable_rendering/resources/parser_dup_nested/module/main.tf')
     assert first_tf_module.file_path.endswith('checkov/tests/terraform/graph/variable_rendering/resources/parser_dup_nested/module/main.tf')
 
     first_source_module = first_tf_module.tf_source_modules
@@ -288,11 +294,17 @@ def test_new_tf_parser_with_foreach_modules():
 
 @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "True"})
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
-def test_tf_definitions_for_foreach_on_modules():
+def test_tf_definitions_for_foreach_on_modules(checkov_source_path):
     dir_name = 'parser_dup_nested'
     _, tf_definitions = build_and_get_graph_by_path(dir_name, render_var=True)
 
-    with open('expected_foreach_modules_tf_definitions.json', 'r') as f:
-        expected_data = json.load(f, object_hook=object_hook)
+    file_path = os.path.join(os.path.dirname(__file__), 'expected_foreach_modules_tf_definitions.json')
+    with open(file_path, 'r') as f:
+        data = f.read()
+        data = data.replace(checkov_source_path, '...')  # Will replace local path leading to checkov's root dir
+        expected_data = json.loads(data, object_hook=object_hook)
 
-    assert tf_definitions == expected_data
+    tf_definitions_json = json.dumps(tf_definitions, cls=CustomJSONEncoder)
+    tf_definitions_json = tf_definitions_json.replace(checkov_source_path, '...')
+    tf_definitions_after_handling_checkov_source = json.loads(tf_definitions_json, object_hook=object_hook)
+    assert tf_definitions_after_handling_checkov_source == expected_data
