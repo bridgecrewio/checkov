@@ -256,15 +256,22 @@ def test_new_tf_parser_with_foreach_modules():
     assert len(local_graph.vertices) == 63
     assert len(local_graph.vertices_by_module_dependency) == 13
 
+    assert local_graph.vertices_by_module_dependency[None]['module'] == [0, 1, 33, 48]
+
     first_module_vertex = local_graph.vertices[0]
-    second_module_vertex = local_graph.vertices[1]
     assert first_module_vertex.name == 's3_module["a"]' and first_module_vertex.for_each_index == 'a'
+
+    second_module_vertex = local_graph.vertices[1]
     assert second_module_vertex.name == 's3_module2[0]' and second_module_vertex.for_each_index == 0
 
-    assert local_graph.vertices[33].name == 's3_module["b"]' and local_graph.vertices[33].for_each_index == 'b'
-    assert local_graph.vertices[34].source_module == {33}
+    thirty_third_module_vertex = local_graph.vertices[33]
+    assert thirty_third_module_vertex.name == 's3_module["b"]' and thirty_third_module_vertex.for_each_index == 'b'
 
-    assert local_graph.vertices_by_module_dependency[None]['module'] == [0, 1, 33, 48]
+    forty_eight_module_vertex = local_graph.vertices[48]
+    assert forty_eight_module_vertex.name == 's3_module2[1]' and forty_eight_module_vertex.for_each_index == 1
+
+    assert local_graph.vertices[34].source_module == {33}
+    assert local_graph.vertices[49].source_module == {48}
 
     # check foreach_idx is updated correctly
     first_key = list(tf_definitions.keys())[0]
@@ -272,6 +279,7 @@ def test_new_tf_parser_with_foreach_modules():
     first_tf_module = first_value['module'][0]['s3_module["a"]']['__resolved__'][0]
     assert first_tf_module in tf_definitions
     assert first_tf_module.file_path == '/Users/bfatal/Documents/code/checkov/tests/terraform/graph/variable_rendering/resources/parser_dup_nested/module/main.tf'
+
     first_source_module = first_tf_module.tf_source_modules
     assert first_source_module.name == 's3_module'
     assert first_source_module.nested_tf_module is None
@@ -288,5 +296,3 @@ def test_tf_definitions_for_foreach_on_modules():
         expected_data = json.load(f, object_hook=object_hook)
 
     assert tf_definitions == expected_data
-
-
