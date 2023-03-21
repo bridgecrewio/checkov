@@ -69,9 +69,9 @@ class GitHistorySecretStore:
                                file_name: str,
                                commit_hash: str) -> None:
         # Try to find the corresponding added secret in the git history secret map
-        secret_in_file = self.secrets_by_file_value_type.get(secret_key, None)
-        if secret_in_file:
-            for secret_in_file in self.secrets_by_file_value_type[secret_key]:
+        secrets_in_file = self.secrets_by_file_value_type.get(secret_key, None)
+        if secrets_in_file:
+            for secret_in_file in secrets_in_file:
                 if secret_in_file['potential_secret'].is_added:
                     secret_in_file['removed_commit_hash'] = commit_hash
                     secret_in_file['potential_secret'] = secret
