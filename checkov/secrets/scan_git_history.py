@@ -28,10 +28,7 @@ class GitHistoryScanner:
         self.secrets = secrets
         self.timeout = timeout
         # in case we start from mid-history (git) we want to continue from where we've been
-        if history_store:
-            self.history_store = history_store
-        else:
-            self.history_store = GitHistorySecretStore()
+        self.history_store = history_store or GitHistorySecretStore()
 
     def scan_history(self, last_commit_scanned: Optional[str] = '') -> bool:
         """return true if the scan finished without timeout"""
