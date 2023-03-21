@@ -22,6 +22,7 @@ resource "aws_opensearch_domain" "pass" {
   log_publishing_options {
     cloudwatch_log_group_arn = aws_cloudwatch_log_group.example.arn
     log_type                 = "AUDIT_LOGS"
+    enabled = true
   }
 
   tags = {

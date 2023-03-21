@@ -1,8 +1,8 @@
-from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
-from checkov.common.models.enums import CheckCategories
+from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.common.models.enums import CheckCategories, CheckResult
 
 
-class ElasticsearchDomainAuditLogging(BaseResourceValueCheck):
+class ElasticsearchDomainAuditLogging(BaseResourceCheck):
 
     def __init__(self):
         name = "Ensure Elasticsearch Domain Audit Logging is enabled"
@@ -11,11 +11,14 @@ class ElasticsearchDomainAuditLogging(BaseResourceValueCheck):
         categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def get_inspected_key(self):
-        return "log_publishing_options/[0]/log_type/[0]"
+    def scan_resource_conf(self, conf) -> CheckResult:
+        if conf.get('log_publishing_options') and isinstance(conf.get('log_publishing_options'), list):
+            options = conf.get('log_publishing_options')
+            for option in options:
+                if option.get('log_type')[0] == "AUDIT_LOGS" and option.get('enabled')[0]:
+                    return CheckResult.PASSED
 
-    def get_expected_values(self):
-        return "AUDIT_LOGS"
+        return CheckResult.FAILED
 
 
 check = ElasticsearchDomainAuditLogging()
