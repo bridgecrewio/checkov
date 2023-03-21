@@ -4,6 +4,9 @@ from unittest import mock
 
 import pytest
 
+from checkov.common.util.json_utils import object_hook
+from checkov.terraform import serialize_definitions
+
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
 
@@ -259,3 +262,17 @@ def test_new_tf_parser():
     assert first_source_module.name == 's3_module'
     assert first_source_module.nested_tf_module is None
     assert first_source_module.foreach_idx == 'a'
+
+
+@mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "True"})
+@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
+def test_tf_definitions_for_foreach_on_modules():
+    dir_name = 'parser_dup_nested'
+    _, tf_definitions = build_and_get_graph_by_path(dir_name, render_var=True)
+
+    with open('expected_foreach_modules_tf_definitions.json', 'r') as f:
+        expected_data = json.load(f, object_hook=object_hook)
+
+    assert tf_definitions == expected_data
+
+
