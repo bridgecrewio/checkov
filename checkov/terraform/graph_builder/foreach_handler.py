@@ -308,6 +308,7 @@ class ForeachHandler(object):
         new_resource_module_key = TFModule(new_resource.path, new_resource.name, new_resource.source_module_object,
                                   idx_to_change)
 
+        self._update_block_name_and_id(new_resource, idx_to_change)
         self._update_resolved_entry_for_tf_definition(new_resource, idx_to_change)
         if foreach_idx != 0:
             self.local_graph.vertices.append(new_resource)
@@ -400,13 +401,17 @@ class ForeachHandler(object):
             block.config[block_type][f"{block_name}[{idx_with_separator}]"] = block.config[block_type].pop(block_name)
 
     @staticmethod
-    def _update_block_name_and_id(block, idx):
+    def _update_block_name_and_id(block: TerraformBlock, idx: int | str) -> str:
         # Note it is important to use `\"` inside the string,
         # as the string `["` is the separator for `foreach` in terraform.
         # In `count` it is just `[`
         idx_with_separator = f'\"{idx}\"' if isinstance(idx, str) else f'{idx}'
-        block.id = f"{block.id}[{idx_with_separator}]"
-        block.name = f"{block.name}[{idx_with_separator}]"
+        new_block_id = f"{block.id}[{idx_with_separator}]"
+        new_block_name = f"{block.name}[{idx_with_separator}]"
+
+        block.config[new_block_name] = block.config.pop(block.name)
+        block.id = new_block_id
+        block.name = new_block_name
         return idx_with_separator
 
     def _create_new_resources(self, block_index_to_statement: FOR_EACH_BLOCK_TYPE) -> None:
