@@ -239,7 +239,7 @@ def test_update_attrs(attrs, k_v_to_change, expected_attrs, expected_res):
 
 @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "True"})
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
-def test_new_tf_parser():
+def test_new_tf_parser_with_foreach_modules():
     dir_name = 'parser_dup_nested'
     local_graph, tf_definitions = build_and_get_graph_by_path(dir_name, render_var=True)
     assert len(tf_definitions.keys()) == 14
@@ -252,6 +252,19 @@ def test_new_tf_parser():
     assert local_graph
     assert len([block for block in local_graph.vertices if block.block_type == 'resource']) == 8
     assert len([block for block in local_graph.vertices if block.block_type == 'module']) == 12
+
+    assert len(local_graph.vertices) == 63
+    assert len(local_graph.vertices_by_module_dependency) == 13
+
+    first_module_vertex = local_graph.vertices[0]
+    second_module_vertex = local_graph.vertices[1]
+    assert first_module_vertex.name == 's3_module["a"]' and first_module_vertex.for_each_index == 'a'
+    assert second_module_vertex.name == 's3_module2[0]' and second_module_vertex.for_each_index == 0
+
+    assert local_graph.vertices[33].name == 's3_module["b"]' and local_graph.vertices[33].for_each_index == 'b'
+    assert local_graph.vertices[34].source_module == {33}
+
+    assert local_graph.vertices_by_module_dependency[None]['module'] == [0, 1, 33, 48]
 
     # check foreach_idx is updated correctly
     first_key = list(tf_definitions.keys())[0]

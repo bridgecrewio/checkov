@@ -218,26 +218,3 @@ class TestParserInternals(unittest.TestCase):
 
         assert module
         assert tf_definitions
-
-    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "True"})
-    def test_dup_sub_graph(self):
-        parser = TFParser()
-        directory = os.path.join(self.resources_dir, "parser_dup_nested")
-        module, tf_definitions = parser.parse_hcl_module(source_dir=directory, source='terraform')
-
-        local_graph = TerraformLocalGraph(module)
-        local_graph.build_graph(render_variables=True)
-
-        assert len(local_graph.vertices) == 43
-        assert len(local_graph.vertices_by_module_dependency) == 9
-
-        first_module_vertex = local_graph.vertices[0]
-        second_module_vertex = local_graph.vertices[1]
-        assert first_module_vertex.name == 's3_module' and first_module_vertex.for_each_index == 'a'
-        assert second_module_vertex.name == 's3_module2' and second_module_vertex.for_each_index == 0
-
-        assert local_graph.vertices[33].name == 's3_module' and local_graph.vertices[33].for_each_index == 'b'
-        assert local_graph.vertices[34].source_module == {33}
-
-        assert local_graph.vertices_by_module_dependency[None]['module'] == [0, 1, 33, 38]
