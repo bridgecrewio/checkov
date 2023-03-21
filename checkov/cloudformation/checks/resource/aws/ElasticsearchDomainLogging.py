@@ -11,13 +11,15 @@ class ElasticsearchDomainLogging(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        if conf["Properties"]["LogPublishingOptions"]:
-            options = conf.get("Properties", {}).get("LogPublishingOptions", {})
-            for option in options.keys():
-                test = conf["Properties"]["LogPublishingOptions"][option]
-                if not isinstance(test, int) and 'Enabled' in test.keys():
-                    if test["Enabled"]:
-                        return CheckResult.PASSED
+        if conf.get('Properties'):
+            properties = conf.get('Properties')
+            if properties.get("LogPublishingOptions"):
+                options = conf.get("Properties", {}).get("LogPublishingOptions", {})
+                for option in options.keys():
+                    test = conf["Properties"]["LogPublishingOptions"][option]
+                    if not isinstance(test, int) and 'Enabled' in test.keys():
+                        if test["Enabled"]:
+                            return CheckResult.PASSED
         return CheckResult.FAILED
 
 
