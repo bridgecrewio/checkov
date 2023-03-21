@@ -1,6 +1,5 @@
 from checkov.terraform.checks.resource.base_resource_negative_value_check import BaseResourceNegativeValueCheck
 from checkov.common.models.enums import CheckCategories
-from typing import Any
 
 
 class CodeBuildPrivilegedMode(BaseResourceNegativeValueCheck):
@@ -19,7 +18,7 @@ class CodeBuildPrivilegedMode(BaseResourceNegativeValueCheck):
     def get_inspected_key(self):
         return "environment/[0]/privileged_mode"
 
-    def get_forbidden_values(self) -> list[Any]:
+    def get_forbidden_values(self):
         return [True]
 
 
