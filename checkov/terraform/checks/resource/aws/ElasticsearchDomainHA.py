@@ -17,7 +17,8 @@ class ElasticsearchDomainHA(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         if conf.get("cluster_config") and isinstance(conf.get("cluster_config"), list):
             config = conf.get("cluster_config")[0]
-            if config.get("dedicated_master_count") and isinstance(config.get("dedicated_master_count"), list):
+            if config.get("dedicated_master_count") and isinstance(config.get("dedicated_master_count"), list) and \
+                    len(config.get("dedicated_master_count")) > 0:
                 if config.get("dedicated_master_count")[0] >= 3:
                     if config.get("zone_awareness_enabled") and isinstance(config.get("zone_awareness_enabled"), list):
                         zone = config.get("zone_awareness_enabled")[0]
