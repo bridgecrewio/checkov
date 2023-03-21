@@ -26,6 +26,17 @@ resource "aws_s3_bucket" "unknown_var_legacy" {
   acl = "${var.whatever}"
 }
 
+# resource with same name as a failed resource
+resource "aws_s3_bucket" "public_read" {
+  bucket = "example"
+}
+
+# connected_to_resource_with
+resource "aws_s3_bucket_acl" "this_is_me" {
+  bucket = "example"
+  acl = "private"
+}
+
 # fail
 
 resource "aws_s3_bucket" "public_read" {
