@@ -35,10 +35,10 @@ class AndConnectionSolver(ComplexConnectionSolver):
             unknown.extend(unknown_solver)
             failed_or_unknown_ids.extend(f[CustomAttributes.ID] for f in itertools.chain(failed_solver, unknown_solver))
 
-        failed_ids = [f[CustomAttributes.ID] for f in failed]
-        unknown_ids = [u[CustomAttributes.ID] for u in unknown]
-        passed = [p for p in passed if p[CustomAttributes.ID] not in itertools.chain(failed_ids, unknown_ids)]
-        unknown = [u for u in unknown if u[CustomAttributes.ID] not in failed_ids]
+        failed_ids = [(ComplexConnectionSolver.get_check_identifier(f)) for f in failed]
+        unknown_ids = [(ComplexConnectionSolver.get_check_identifier(u)) for u in unknown]
+        passed = [p for p in passed if (ComplexConnectionSolver.get_check_identifier(p)) not in itertools.chain(failed_ids, unknown_ids)]
+        unknown = [u for u in unknown if (ComplexConnectionSolver.get_check_identifier(u)) not in failed_ids]
         return self.filter_results(passed, failed, unknown)
 
     def _get_operation(self, *args: Any, **kwargs: Any) -> None:
