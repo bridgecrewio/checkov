@@ -30,7 +30,7 @@ class ForeachHandler(object):
         self.local_graph = local_graph
 
     def handle_foreach_rendering(self, foreach_blocks: dict[str, list[int]]) -> None:
-        self.handle_foreach_rendering_for_module(foreach_blocks.get(BlockType.MODULE))
+        self._handle_foreach_rendering_for_module(foreach_blocks.get(BlockType.MODULE))
         self._handle_foreach_rendering_for_resource(foreach_blocks.get(BlockType.RESOURCE))
 
     def _handle_foreach_rendering_for_resource(self, resources_blocks: list[int]) -> None:
@@ -368,30 +368,31 @@ class ForeachHandler(object):
 
         return new_vertices_module_value
 
-
     def _create_new_resources_foreach(self, statement: list[str] | dict[str, Any], block_idx: int) -> None:
         main_resource = self.local_graph.vertices[block_idx]
         original_key = None
         if isinstance(statement, list):
             for i, new_value in enumerate(statement):
-                if main_resource.block_type == BlockType.MODULE:
-                    if i == 0:
-                        original_key = new_value
-                    self._create_new_module(main_resource, new_value, new_key=new_value, resource_idx=block_idx, foreach_idx=i)
-                elif main_resource.block_type == BlockType.RESOURCE:
-                    self._create_new_resource(main_resource, new_value, new_key=new_value, resource_idx=block_idx, foreach_idx=i)
+                if i == 0:
+                    original_key = new_value
+                self._create_new_foreach_resource(block_idx, i, main_resource, new_key=new_value,
+                                                                 new_value=new_value)
         if isinstance(statement, dict):
             for i, (new_key, new_value) in enumerate(statement.items()):
-                if main_resource.block_type == BlockType.MODULE:
-                    if i == 0:
-                        original_key = new_key
-                    self._create_new_module(main_resource, new_value, new_key=new_key, resource_idx=block_idx,
-                                            foreach_idx=i)
-                elif main_resource.block_type == BlockType.RESOURCE:
-                    self._create_new_resource(main_resource, new_value, new_key=new_key, resource_idx=block_idx,
-                                              foreach_idx=i)
+                if i == 0:
+                    original_key = new_key
+                self._create_new_foreach_resource(block_idx, i, main_resource, new_key, new_value)
         if main_resource.block_type == BlockType.MODULE:
             self._remove_original_tf_module_without_foreach_or_count(main_resource, original_key)
+
+    def _create_new_foreach_resource(self, block_idx: int, foreach_idx: int, main_resource: TerraformBlock,
+                                     new_key: int | str, new_value: int | str) -> None:
+        if main_resource.block_type == BlockType.MODULE:
+            self._create_new_module(main_resource, new_value, new_key=new_key, resource_idx=block_idx,
+                                    foreach_idx=foreach_idx)
+        elif main_resource.block_type == BlockType.RESOURCE:
+            self._create_new_resource(main_resource, new_value, new_key=new_key, resource_idx=block_idx,
+                                      foreach_idx=foreach_idx)
 
     @staticmethod
     def _add_index_to_resource_block_properties(block: TerraformBlock, idx: str | int) -> None:
@@ -423,7 +424,7 @@ class ForeachHandler(object):
             else:
                 self._create_new_resources_foreach(statement, block_idx)
 
-    def handle_foreach_rendering_for_module(self, modules_blocks: list[int]) -> None:
+    def _handle_foreach_rendering_for_module(self, modules_blocks: list[int]) -> None:
         """
         modules_blocks (list[int]): list of module blocks indexes in the graph that contains for_each / counts.
         """
@@ -432,6 +433,8 @@ class ForeachHandler(object):
         current_level = [None]
         main_module_modules = deepcopy(self.local_graph.vertices_by_module_dependency.get(None)[BlockType.MODULE])
         modules_to_render = main_module_modules
+
+        # TODO add documentation on logic here
         while modules_to_render:
             for module_idx in modules_to_render:
                 module_block = self.local_graph.vertices[module_idx]
@@ -452,8 +455,6 @@ class ForeachHandler(object):
                             continue
                     self.duplicate_module_with_count(module_idx, count)
             modules_to_render = self._get_modules_to_render(current_level)
-            # self.local_graph._arrange_graph_data()
-            # self.local_graph._build_edges()
 
     def duplicate_module_with_for_each(self, module_idx: int, for_each: dict[str, Any] | list[str]) -> None:
         self._create_new_resources_foreach(for_each, module_idx)
