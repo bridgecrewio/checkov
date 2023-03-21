@@ -171,24 +171,27 @@ class ForeachHandler(object):
             elif main_resource.block_type == BlockType.RESOURCE:
                 self._create_new_resource(main_resource, i, resource_idx=block_idx, foreach_idx=i)
         if main_resource.block_type == BlockType.MODULE:
-            self._remove_original_tf_module_without_foreach_or_count(main_resource, original_key)
+            self._update_module_children(main_resource, original_key)
 
-    def _remove_original_tf_module_without_foreach_or_count(self, main_resource: TerraformBlock,
-                                                            original_foreach_or_count_key: int | str) -> None:
+    def _update_module_children(self, main_resource: TerraformBlock,
+                                original_foreach_or_count_key: int | str) -> None:
         original_module_key = TFModule(path=main_resource.path, name=main_resource.name,
                                        nested_tf_module=main_resource.source_module_object)
 
         self._update_children_foreach_index(original_foreach_or_count_key, original_module_key)
 
     def _update_children_foreach_index(self, original_foreach_or_count_key: int | str, original_module_key: TFModule):
-        # Go through all child vertices and update source_module_object with foreach_idx
+        """
+        Go through all child vertices and update source_module_object with foreach_idx
+        """
         for child_type, child_indexes in self.local_graph.vertices_by_module_dependency[original_module_key].items():
             for child_index in child_indexes:
                 child = self.local_graph.vertices[child_index]
                 child.source_module_object.foreach_idx = original_foreach_or_count_key
                 self._update_resolved_entry_for_tf_definition(child, original_foreach_or_count_key)
 
-    def _update_resolved_entry_for_tf_definition(self, child: TerraformBlock, original_foreach_or_count_key: int | str)\
+    @staticmethod
+    def _update_resolved_entry_for_tf_definition(child: TerraformBlock, original_foreach_or_count_key: int | str)\
             -> None:
         config = child.config[child.name]
         if config.get(RESOLVED_MODULE_ENTRY_NAME) is not None:
@@ -317,7 +320,6 @@ class ForeachHandler(object):
         else:
             self.local_graph.vertices[resource_idx] = new_resource
 
-            # Add the new key to the dict, the original will need to be removed at the end
             key_with_foreach_index = deepcopy(main_resource_module_key)
             key_with_foreach_index.foreach_idx = idx_to_change
             self.local_graph.vertices_by_module_dependency[key_with_foreach_index] = main_resource_module_value
@@ -383,7 +385,7 @@ class ForeachHandler(object):
                     original_key = new_key
                 self._create_new_foreach_resource(block_idx, i, main_resource, new_key, new_value)
         if main_resource.block_type == BlockType.MODULE:
-            self._remove_original_tf_module_without_foreach_or_count(main_resource, original_key)
+            self._update_module_children(main_resource, original_key)
 
     def _create_new_foreach_resource(self, block_idx: int, foreach_idx: int, main_resource: TerraformBlock,
                                      new_key: int | str, new_value: int | str) -> None:
