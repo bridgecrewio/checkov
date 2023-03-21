@@ -12,7 +12,8 @@ class ElasticsearchDomainAuditLogging(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf) -> CheckResult:
-        if conf.get('log_publishing_options') and isinstance(conf.get('log_publishing_options'), list):
+        if conf.get('log_publishing_options') and isinstance(conf.get('log_publishing_options'), list) and \
+                len(conf.get('log_publishing_options')) > 0:
             options = conf.get('log_publishing_options')
             for option in options:
                 if option.get('log_type')[0] == "AUDIT_LOGS" and option.get('enabled')[0]:

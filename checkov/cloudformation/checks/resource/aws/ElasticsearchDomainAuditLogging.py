@@ -2,7 +2,7 @@ from checkov.common.models.enums import CheckCategories
 from checkov.cloudformation.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
 
-class ElasticsearchDomainLogging(BaseResourceValueCheck):
+class ElasticsearchDomainAuditLogging(BaseResourceValueCheck):
     def __init__(self) -> None:
         name = "Ensure Elasticsearch Domain Audit Logging is enabled"
         id = "CKV_AWS_317"
@@ -14,4 +14,4 @@ class ElasticsearchDomainLogging(BaseResourceValueCheck):
         return "Properties/LogPublishingOptions/AUDIT_LOGS/Enabled"
 
 
-check = ElasticsearchDomainLogging()
+check = ElasticsearchDomainAuditLogging()
