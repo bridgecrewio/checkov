@@ -8,6 +8,7 @@ from collections import defaultdict
 from copy import deepcopy
 from typing import Any, Optional, TypeVar
 
+from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
 from checkov.terraform.modules.module_objects import TFModule
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
@@ -177,12 +178,21 @@ class ForeachHandler(object):
         original_module_key = TFModule(path=main_resource.path, name=main_resource.name,
                                        nested_tf_module=main_resource.source_module_object)
 
+        self._update_children_foreach_index(original_foreach_or_count_key, original_module_key)
+
+    def _update_children_foreach_index(self, original_foreach_or_count_key: int | str, original_module_key: TFModule):
         # Go through all child vertices and update source_module_object with foreach_idx
-        for child_type, child_indexes in self.local_graph.vertices_by_module_dependency[
-            original_module_key].items():
+        for child_type, child_indexes in self.local_graph.vertices_by_module_dependency[original_module_key].items():
             for child_index in child_indexes:
                 child = self.local_graph.vertices[child_index]
                 child.source_module_object.foreach_idx = original_foreach_or_count_key
+                self._update_resolved_entry_for_tf_definition(child, original_foreach_or_count_key)
+
+    def _update_resolved_entry_for_tf_definition(self, child: TerraformBlock, original_foreach_or_count_key: int | str)\
+            -> None:
+        config = child.config[child.name]
+        if config.get(RESOLVED_MODULE_ENTRY_NAME) is not None:
+            config[RESOLVED_MODULE_ENTRY_NAME][0].tf_source_modules.foreach_idx = original_foreach_or_count_key
 
     @staticmethod
     def _pop_foreach_attrs(attrs: dict[str, Any]) -> None:
@@ -303,18 +313,13 @@ class ForeachHandler(object):
             self._create_new_module_with_vertices(main_resource, main_resource_module_value, resource_idx, new_resource,
                                                   new_resource_module_key)
         else:
+            self._update_resolved_entry_for_tf_definition(new_resource, idx_to_change)
             self.local_graph.vertices[resource_idx] = new_resource
 
             # Add the new key to the dict, the original will need to be removed at the end
             key_with_foreach_index = deepcopy(main_resource_module_key)
             key_with_foreach_index.foreach_idx = idx_to_change
             self.local_graph.vertices_by_module_dependency[key_with_foreach_index] = main_resource_module_value
-
-            # # Go through all child vertices and update source_module_object with foreach_idx
-            # for child_type, child_indexes in self.local_graph.vertices_by_module_dependency[main_resource_module_key].items():
-            #     for child_index in child_indexes:
-            #         child = self.local_graph.vertices[child_index]
-            #         child.source_module_object.foreach_idx = idx_to_change
 
     def _create_new_module_with_vertices(self, main_resource: TerraformBlock, main_resource_module_value: dict[str, list[int]],
                                          resource_idx: Any, new_resource: TerraformBlock | None = None,
