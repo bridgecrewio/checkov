@@ -8,7 +8,7 @@ from io import StringIO
 from typing import Any, TYPE_CHECKING
 from collections import defaultdict
 
-import dpath.util
+import dpath
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 from typing import Union, Dict, Any, List, Optional, Set
-import dpath.util
+import dpath
 import re
 
 from checkov.common.runners.base_runner import strtobool

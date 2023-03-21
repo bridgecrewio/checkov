@@ -22,6 +22,9 @@ class TestYamlPolicies(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
+    def test_SecretsAreRotated(self):
+        self.go("SecretsAreRotated")
+
     def test_S3BucketLifecycle(self):
         self.go("S3BucketLifecycle")
 
