@@ -7,7 +7,7 @@ import logging
 import os
 import re
 from pathlib import Path
-from typing import TYPE_CHECKING, cast, Optional, Iterable, Any, List
+from typing import TYPE_CHECKING, cast, Optional, Iterable, Any, List, Dict
 
 import requests
 from detect_secrets.filters.heuristic import is_potential_uuid
@@ -41,6 +41,7 @@ from checkov.runner_filter import RunnerFilter
 from checkov.secrets.consts import ValidationStatus, VerifySecretsResult
 from checkov.secrets.coordinator import EnrichedSecret, SecretsCoordinator
 from checkov.secrets.plugins.load_detectors import get_runnable_plugins
+from checkov.secrets.git_history_store import EnrichedPotentialSecret, GitHistorySecretStore
 from checkov.secrets.scan_git_history import GitHistoryScanner
 
 if TYPE_CHECKING:
@@ -83,6 +84,13 @@ class Runner(BaseRunner[None]):
     def __init__(self, file_extensions: Iterable[str] | None = None, file_names: Iterable[str] | None = None):
         super().__init__(file_extensions, file_names)
         self.secrets_coordinator = SecretsCoordinator()
+        self.history_secret_store = GitHistorySecretStore()
+
+    def set_history_secret_store(self, value: Dict[str, List[EnrichedPotentialSecret]]) -> None:
+        self.history_secret_store.secrets_by_file_value_type = value
+
+    def get_history_secret_store(self) -> Dict[str, List[EnrichedPotentialSecret]]:
+        return self.history_secret_store.secrets_by_file_value_type
 
     def run(
             self,
@@ -154,7 +162,8 @@ class Runner(BaseRunner[None]):
             self._add_custom_detectors_to_metadata_integration()
             if root_folder:
                 if runner_filter.enable_git_history_secret_scan:
-                    git_history_scanner = GitHistoryScanner(root_folder, secrets, runner_filter.git_history_timeout)
+                    git_history_scanner = GitHistoryScanner(
+                        root_folder, secrets, self.history_secret_store, runner_filter.git_history_timeout)
                     settings.disable_filters(*['detect_secrets.filters.common.is_invalid_file'])
                     git_history_scanner.scan_history(last_commit_scanned=runner_filter.git_history_last_commit_scanned)
                     logging.info(f'Secrets scanning git history for root folder {root_folder}')
@@ -189,7 +198,7 @@ class Runner(BaseRunner[None]):
             for key, secret in secrets:
                 if runner_filter.enable_git_history_secret_scan:
                     added_commit_hash, removed_commit_hash, code_line = \
-                        git_history_scanner.secret_store.get_added_and_removed_commit_hash(key, secret)
+                        git_history_scanner.history_store.get_added_and_removed_commit_hash(key, secret)
                 else:
                     added_commit_hash, removed_commit_hash, code_line = None, None, None
                 check_id = getattr(secret, "check_id", SECRET_TYPE_TO_ID.get(secret.type))
@@ -346,9 +355,10 @@ class Runner(BaseRunner[None]):
             lt = linecache.getline(secret.filename, line_number)
             skip_search = re.search(COMMENT_REGEX, lt)
             if skip_search and (skip_search.group(2) == check_id or skip_search.group(2) == bc_check_id):
+                comment: str = skip_search.group(3)[1:] if skip_search.group(3) else "No comment provided"
                 return {
                     "result": CheckResult.SKIPPED,
-                    "suppress_comment": skip_search.group(3)[1:] if skip_search.group(3) else "No comment provided"
+                    "suppress_comment": comment
                 }
         return None
 
