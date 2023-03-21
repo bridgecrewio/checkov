@@ -292,8 +292,7 @@ class ForeachHandler(object):
             new_value: int | str,
             resource_idx: int,
             foreach_idx: int,
-            new_key: Optional[str] = None
-    ) -> None:
+            new_key: Optional[str] = None) -> None:
         new_resource = deepcopy(main_resource)
         block_name = new_resource.name
         config_attrs = new_resource.config.get(block_name, {})
@@ -309,7 +308,7 @@ class ForeachHandler(object):
         )
         main_resource_module_value = deepcopy(self.local_graph.vertices_by_module_dependency[main_resource_module_key])
         new_resource_module_key = TFModule(new_resource.path, new_resource.name, new_resource.source_module_object,
-                                  idx_to_change)
+                                           idx_to_change)
 
         self._update_block_name_and_id(new_resource, idx_to_change)
         self._update_resolved_entry_for_tf_definition(new_resource, idx_to_change)
@@ -377,8 +376,7 @@ class ForeachHandler(object):
             for i, new_value in enumerate(statement):
                 if i == 0:
                     original_key = new_value
-                self._create_new_foreach_resource(block_idx, i, main_resource, new_key=new_value,
-                                                                 new_value=new_value)
+                self._create_new_foreach_resource(block_idx, i, main_resource, new_key=new_value, new_value=new_value)
         if isinstance(statement, dict):
             for i, (new_key, new_value) in enumerate(statement.items()):
                 if i == 0:
