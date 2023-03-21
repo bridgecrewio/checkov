@@ -5,7 +5,7 @@ import copy
 from collections import defaultdict
 from typing import TYPE_CHECKING, Dict, List, Tuple, Optional
 from typing_extensions import TypedDict
-from checkov.secrets.consts import GIT_HISTORY_NOT_BEEN_REMOVED
+from checkov.secrets.consts import ADDED, REMOVED, GIT_HISTORY_OPTIONS, GIT_HISTORY_NOT_BEEN_REMOVED
 
 if TYPE_CHECKING:
     from detect_secrets.core.potential_secret import PotentialSecret
@@ -28,13 +28,13 @@ class GitHistorySecretStore:
         equal_secret_in_commit: Dict[str, List[str]] = defaultdict(list)
         for secret in file_results:
             secret_key = get_secret_key(file_name, secret.secret_hash, secret.type)
-            equal_secret_in_commit[secret_key].append('added' if secret.is_added else 'removed')
+            equal_secret_in_commit[secret_key].append(ADDED if secret.is_added else REMOVED)
 
         for secret in file_results:
             if secret.filename in ['None', '']:
                 secret.filename = file_name
             secret_key = get_secret_key(file_name, secret.secret_hash, secret.type)
-            if all(value in equal_secret_in_commit[secret_key] for value in ['added', 'removed']):
+            if all(value in equal_secret_in_commit[secret_key] for value in GIT_HISTORY_OPTIONS):
                 continue
             if secret.is_added:
                 self._add_new_secret(secret_key, commit_hash, secret, commit)
@@ -68,14 +68,15 @@ class GitHistorySecretStore:
                                secret: PotentialSecret,
                                file_name: str,
                                commit_hash: str) -> None:
-        # Try to find the corresponding added secret in the gitz t history secret map
-        try:
+        # Try to find the corresponding added secret in the git history secret map
+        secret_in_file = self.secrets_by_file_value_type.get(secret_key, None)
+        if secret_in_file:
             for secret_in_file in self.secrets_by_file_value_type[secret_key]:
                 if secret_in_file['potential_secret'].is_added:
                     secret_in_file['removed_commit_hash'] = commit_hash
                     secret_in_file['potential_secret'] = secret
                     break
-        except KeyError:
+        else:
             logging.error(f"No added secret commit found for secret in file {file_name}.")
 
     def handle_renamed_file(self, rename_from: str,
@@ -135,7 +136,7 @@ class GitHistorySecretStore:
 def search_for_code_line(commit: str | Dict[str, str], secret_value: Optional[str], is_added: Optional[bool]) -> str:
     if secret_value is None:
         return ''
-    if isinstance(commit, Dict):
+    if isinstance(commit, dict):
         return ''  # no need to support rename
     splitted = commit.split('\n')
     start_char = '+' if is_added else '-'
