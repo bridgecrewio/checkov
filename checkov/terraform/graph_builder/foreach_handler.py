@@ -279,6 +279,13 @@ class ForeachHandler(object):
         idx_to_change = new_key or new_value
         new_resource.for_each_index = idx_to_change
 
+        main_resource_module_key = TFModule(
+            path=new_resource.path,
+            name=main_resource.name,
+            nested_tf_module=new_resource.source_module_object,
+        )
+        main_resource_module_value = deepcopy(self.local_graph.vertices_by_module_dependency[main_resource_module_key])
+
         if foreach_idx != 0:
             self.local_graph.vertices.append(new_resource)
             new_resource_vertex_idx = len(self.local_graph.vertices) - 1
@@ -290,16 +297,9 @@ class ForeachHandler(object):
             self.local_graph.vertices_by_module_dependency[source_module_key][BlockType.MODULE].append(
                 len(self.local_graph.vertices) - 1)
 
-            main_resource_module_key = TFModule(
-                path=new_resource.path,
-                name=main_resource.name,
-                nested_tf_module=new_resource.source_module_object,
-            )
-            new_module_value = deepcopy(self.local_graph.vertices_by_module_dependency[main_resource_module_key])
             new_module_key = TFModule(new_resource.path, new_resource.name, new_resource.source_module_object,
                                       idx_to_change)
-
-            new_vertices_module_value = self._add_new_vertices_for_module(new_module_key, new_module_value,
+            new_vertices_module_value = self._add_new_vertices_for_module(new_module_key, main_resource_module_value,
                                                                           new_resource_vertex_idx)
             self.local_graph.vertices_by_module_dependency.update({new_module_key: new_vertices_module_value})
 
@@ -307,12 +307,9 @@ class ForeachHandler(object):
             self.local_graph.vertices[resource_idx] = new_resource
 
             # Add the new key to the dict, the original will need to be removed at the end
-            existing_module_key = TFModule(path=main_resource.path, name=main_resource.name,
-                                           nested_tf_module=main_resource.source_module_object)
-            existing_module_value = deepcopy(self.local_graph.vertices_by_module_dependency[existing_module_key])
-            key_with_foreach_index = deepcopy(existing_module_key)
+            key_with_foreach_index = deepcopy(main_resource_module_key)
             key_with_foreach_index.foreach_idx = idx_to_change
-            self.local_graph.vertices_by_module_dependency[key_with_foreach_index] = existing_module_value
+            self.local_graph.vertices_by_module_dependency[key_with_foreach_index] = main_resource_module_value
 
     def _add_new_vertices_for_module(self, new_module_key: TFModule, new_module_value: dict[str, list[int]],
                                      new_resource_vertex_idx: int) -> dict[str: list[int]]:
@@ -329,6 +326,11 @@ class ForeachHandler(object):
 
                 new_vertex_idx = len(self.local_graph.vertices) - 1
                 new_vertices_module_value[vertex_type].append(new_vertex_idx)
+
+                # if vertex_type == BlockType.MODULE:
+                #     module_vertex = self.local_graph.vertices[vertex_idx]
+                #     self._create_new_module(module_vertex)
+
         return new_vertices_module_value
 
 
