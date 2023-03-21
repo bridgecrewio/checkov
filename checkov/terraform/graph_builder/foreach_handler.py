@@ -184,7 +184,7 @@ class ForeachHandler(object):
         """
         Go through all child vertices and update source_module_object with foreach_idx
         """
-        for child_type, child_indexes in self.local_graph.vertices_by_module_dependency[original_module_key].items():
+        for child_indexes in self.local_graph.vertices_by_module_dependency[original_module_key].values():
             for child_index in child_indexes:
                 child = self.local_graph.vertices[child_index]
                 child.source_module_object.foreach_idx = original_foreach_or_count_key
