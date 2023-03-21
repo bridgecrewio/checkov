@@ -161,18 +161,28 @@ class ForeachHandler(object):
 
     def _create_new_resources_count(self, statement: int, block_idx: int) -> None:
         main_resource = self.local_graph.vertices[block_idx]
+        original_key = None
         for i in range(statement):
             if main_resource.block_type == BlockType.MODULE:
+                if i == 0:
+                    original_key = i
                 self._create_new_module(main_resource, i, resource_idx=block_idx, foreach_idx=i)
             elif main_resource.block_type == BlockType.RESOURCE:
                 self._create_new_resource(main_resource, i, resource_idx=block_idx, foreach_idx=i)
         if main_resource.block_type == BlockType.MODULE:
-            self._remove_original_tf_module_without_foreach_or_count(main_resource)
+            self._remove_original_tf_module_without_foreach_or_count(main_resource, original_key)
 
-    def _remove_original_tf_module_without_foreach_or_count(self, main_resource):
+    def _remove_original_tf_module_without_foreach_or_count(self, main_resource: TerraformBlock,
+                                                            original_foreach_or_count_key: int | str) -> None:
         original_module_key = TFModule(path=main_resource.path, name=main_resource.name,
                                        nested_tf_module=main_resource.source_module_object)
-        self.local_graph.vertices_by_module_dependency.pop(original_module_key)
+
+        # Go through all child vertices and update source_module_object with foreach_idx
+        for child_type, child_indexes in self.local_graph.vertices_by_module_dependency[
+            original_module_key].items():
+            for child_index in child_indexes:
+                child = self.local_graph.vertices[child_index]
+                child.source_module_object.foreach_idx = original_foreach_or_count_key
 
     @staticmethod
     def _pop_foreach_attrs(attrs: dict[str, Any]) -> None:
@@ -300,6 +310,12 @@ class ForeachHandler(object):
             key_with_foreach_index.foreach_idx = idx_to_change
             self.local_graph.vertices_by_module_dependency[key_with_foreach_index] = main_resource_module_value
 
+            # # Go through all child vertices and update source_module_object with foreach_idx
+            # for child_type, child_indexes in self.local_graph.vertices_by_module_dependency[main_resource_module_key].items():
+            #     for child_index in child_indexes:
+            #         child = self.local_graph.vertices[child_index]
+            #         child.source_module_object.foreach_idx = idx_to_change
+
     def _create_new_module_with_vertices(self, main_resource: TerraformBlock, main_resource_module_value: dict[str, list[int]],
                                          resource_idx: Any, new_resource: TerraformBlock | None = None,
                                          new_resource_module_key: TFModule | None = None) -> None:
@@ -349,22 +365,27 @@ class ForeachHandler(object):
 
     def _create_new_resources_foreach(self, statement: list[str] | dict[str, Any], block_idx: int) -> None:
         main_resource = self.local_graph.vertices[block_idx]
+        original_key = None
         if isinstance(statement, list):
             for i, new_value in enumerate(statement):
                 if main_resource.block_type == BlockType.MODULE:
+                    if i == 0:
+                        original_key = new_value
                     self._create_new_module(main_resource, new_value, new_key=new_value, resource_idx=block_idx, foreach_idx=i)
                 elif main_resource.block_type == BlockType.RESOURCE:
                     self._create_new_resource(main_resource, new_value, new_key=new_value, resource_idx=block_idx, foreach_idx=i)
         if isinstance(statement, dict):
             for i, (new_key, new_value) in enumerate(statement.items()):
                 if main_resource.block_type == BlockType.MODULE:
+                    if i == 0:
+                        original_key = new_key
                     self._create_new_module(main_resource, new_value, new_key=new_key, resource_idx=block_idx,
                                             foreach_idx=i)
                 elif main_resource.block_type == BlockType.RESOURCE:
                     self._create_new_resource(main_resource, new_value, new_key=new_key, resource_idx=block_idx,
                                               foreach_idx=i)
         if main_resource.block_type == BlockType.MODULE:
-            self._remove_original_tf_module_without_foreach_or_count(main_resource)
+            self._remove_original_tf_module_without_foreach_or_count(main_resource, original_key)
 
     @staticmethod
     def _add_index_to_resource_block_properties(block: TerraformBlock, idx: str | int) -> None:

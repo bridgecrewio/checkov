@@ -249,3 +249,13 @@ def test_new_tf_parser():
     assert local_graph
     assert len([block for block in local_graph.vertices if block.block_type == 'resource']) == 8
     assert len([block for block in local_graph.vertices if block.block_type == 'module']) == 12
+
+    # check foreach_idx is updated correctly
+    first_key = list(tf_definitions.keys())[0]
+    first_value = tf_definitions[first_key]
+    first_tf_module = first_value['module'][0]['s3_module']['__resolved__'][0]
+    assert first_tf_module.file_path == '/Users/bfatal/Documents/code/checkov/tests/terraform/graph/variable_rendering/resources/parser_dup_nested/module/main.tf'
+    first_source_module = first_tf_module.tf_source_modules
+    assert first_source_module.name == 's3_module'
+    assert first_source_module.nested_tf_module is None
+    assert first_source_module.foreach_idx == 'a'
