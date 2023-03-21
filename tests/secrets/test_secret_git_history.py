@@ -126,14 +126,14 @@ def test_scan_history_secrets_timeout() -> None:
     plugins_used = [
         {'name': 'AWSKeyDetector'},
     ]
-    from checkov.secrets.scan_git_history import GitHistoryScanner, GitHistorySecretStore
+    from checkov.secrets.scan_git_history import GitHistoryScanner
 
     with transient_settings({
         # Only run scans with only these plugins.
         'plugins_used': plugins_used
     }) as settings:
         settings.disable_filters(*['detect_secrets.filters.common.is_invalid_file'])
-        finished = GitHistoryScanner(valid_dir_path, secrets, GitHistorySecretStore(), 1).scan_history()
+        finished = GitHistoryScanner(valid_dir_path, secrets, None, 1).scan_history()
 
     assert finished is False
 
