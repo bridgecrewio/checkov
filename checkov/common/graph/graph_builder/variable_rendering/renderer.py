@@ -22,7 +22,7 @@ class VariableRenderer(ABC, Generic[_LocalGraph]):
     MAX_NUMBER_OF_LOOPS = 50
 
     def __init__(self, local_graph: _LocalGraph) -> None:
-        warnings.filterwarnings("once", category=SyntaxWarning)
+        warnings.filterwarnings("ignore", category=SyntaxWarning)
         self.local_graph = local_graph
         self.run_async = True if os.getenv("RENDER_VARIABLES_ASYNC") == "True" else False
         self.max_workers = int(os.getenv("RENDER_ASYNC_MAX_WORKERS", 50))
