@@ -9,7 +9,6 @@ from checkov.runner_filter import RunnerFilter
 from detect_secrets.settings import transient_settings
 from checkov.common.output.secrets_record import COMMIT_REMOVED_STR, COMMIT_ADDED_STR
 
-from checkov.secrets.scan_git_history import GitHistoryScanner, GitHistorySecretStore
 from tests.secrets.git_history.test_utils import mock_git_repo_commits1, mock_git_repo_commits2, mock_git_repo_commits3, \
     mock_git_repo_commits_too_much, mock_git_repo_commits_remove_file, mock_git_repo_commits_rename_file, \
     mock_git_repo_commits_modify_and_rename_file, mock_remove_file_with_two_equal_secret, \
@@ -40,6 +39,8 @@ def test_scan_history_secrets() -> None:
     plugins_used = [
         {'name': 'AWSKeyDetector'},
     ]
+    from checkov.secrets.scan_git_history import GitHistoryScanner
+
     with transient_settings({
         # Only run scans with only these plugins.
         'plugins_used': plugins_used
@@ -72,6 +73,8 @@ def test_scan_history_secrets_merge_added_removed() -> None:
     plugins_used = [
         {'name': 'AWSKeyDetector'},
     ]
+    from checkov.secrets.scan_git_history import GitHistoryScanner
+
     with transient_settings({
         # Only run scans with only these plugins.
         'plugins_used': plugins_used
@@ -123,6 +126,8 @@ def test_scan_history_secrets_timeout() -> None:
     plugins_used = [
         {'name': 'AWSKeyDetector'},
     ]
+    from checkov.secrets.scan_git_history import GitHistoryScanner, GitHistorySecretStore
+
     with transient_settings({
         # Only run scans with only these plugins.
         'plugins_used': plugins_used

@@ -20,20 +20,18 @@ try:
 except ImportError as e:
     git_import_error = e
 
-GIT_HISTORY_SEC_STORE = GitHistorySecretStore()
-
 
 class GitHistoryScanner:
     def __init__(self, root_folder: str, secrets: SecretsCollection,
-                 secret_store: GitHistorySecretStore = GIT_HISTORY_SEC_STORE, timeout: int = 43200):
+                 history_store: Optional[GitHistorySecretStore] = None, timeout: int = 43200):
         self.root_folder = root_folder
         self.secrets = secrets
         self.timeout = timeout
         # in case we start from mid-history (git) we want to continue from where we've been
-        if secret_store:
-            self.secret_store = secret_store
+        if history_store:
+            self.history_store = history_store
         else:
-            self.secret_store = GitHistorySecretStore()
+            self.history_store = GitHistorySecretStore()
 
     def scan_history(self, last_commit_scanned: Optional[str] = '') -> bool:
         """return true if the scan finished without timeout"""
@@ -52,13 +50,13 @@ class GitHistoryScanner:
                             if file_results:
                                 logging.info(
                                     f"Found {len(file_results)} secrets in file path {file_name} in commit {commit_hash}, file_results = {file_results}")
-                                self.secret_store.set_secret_map(file_results, file_name, commit_hash, commit)
+                                self.history_store.set_secret_map(file_results, file_name, commit_hash, commit)
                         elif isinstance(file_diff, dict):
                             rename_from = file_diff['rename_from']
                             rename_to = file_diff['rename_to']
-                            self.secret_store.handle_renamed_file(rename_from, rename_to, commit_hash)
+                            self.history_store.handle_renamed_file(rename_from, rename_to, commit_hash)
                         scanned_file_count += 1
-                for secrets_data in self.secret_store.secrets_by_file_value_type.values():
+                for secrets_data in self.history_store.secrets_by_file_value_type.values():
                     for secret_data in secrets_data:
                         removed = secret_data["removed_commit_hash"] if secret_data[
                             "removed_commit_hash"] else GIT_HISTORY_NOT_BEEN_REMOVED
