@@ -281,10 +281,31 @@ def test_new_tf_parser_with_foreach_modules(checkov_source_path):
     # check foreach_idx is updated correctly
     first_key = list(tf_definitions.keys())[0]
     first_value = tf_definitions[first_key]
+
     first_tf_module = first_value['module'][0]['s3_module["a"]']['__resolved__'][0]
+    second_tf_module = first_value['module'][1]['s3_module2[0]']['__resolved__'][0]
+    third_tf_module = first_value['module'][2]['s3_module["b"]']['__resolved__'][0]
+    fourth_tf_module = first_value['module'][3]['s3_module2[1]']['__resolved__'][0]
     assert first_tf_module in tf_definitions
+    assert second_tf_module in tf_definitions
+    assert third_tf_module in tf_definitions
+    assert fourth_tf_module in tf_definitions
+
+    first_nested_module = tf_definitions[first_tf_module]
+    second_nested_module = tf_definitions[second_tf_module]
+    third_nested_module = tf_definitions[third_tf_module]
+    fourth_nested_module = tf_definitions[fourth_tf_module]
+
+    assert len(tf_definitions[first_nested_module['module'][0]['inner_s3_module']['__resolved__'][0]]['resource']) == 1
+    assert len(tf_definitions[first_nested_module['module'][1]['inner_s3_module2']['__resolved__'][0]]['resource']) == 1
+    assert len(tf_definitions[second_nested_module['module'][0]['inner_s3_module']['__resolved__'][0]]['resource']) == 1
+    assert len(tf_definitions[second_nested_module['module'][1]['inner_s3_module2']['__resolved__'][0]]['resource']) == 1
+    assert len(tf_definitions[third_nested_module['module'][0]['inner_s3_module']['__resolved__'][0]]['resource']) == 1
+    assert len(tf_definitions[third_nested_module['module'][1]['inner_s3_module2']['__resolved__'][0]]['resource']) == 1
+    assert len(tf_definitions[fourth_nested_module['module'][0]['inner_s3_module']['__resolved__'][0]]['resource']) == 1
+    assert len(tf_definitions[fourth_nested_module['module'][1]['inner_s3_module2']['__resolved__'][0]]['resource']) == 1
+
     assert first_tf_module.file_path == os.path.join(checkov_source_path, 'tests/terraform/graph/variable_rendering/resources/parser_dup_nested/module/main.tf')
-    assert first_tf_module.file_path.endswith('checkov/tests/terraform/graph/variable_rendering/resources/parser_dup_nested/module/main.tf')
 
     first_source_module = first_tf_module.tf_source_modules
     assert first_source_module.name == 's3_module'
