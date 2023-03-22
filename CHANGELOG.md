@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.108...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.110...HEAD)
+
+## [2.3.110](https://github.com/bridgecrewio/checkov/compare/2.3.108...2.3.110) - 2023-03-22
+
+### Bug Fix
+
+- **graph:** Fix an issue in and connection solver - [#4719](https://github.com/bridgecrewio/checkov/pull/4719)
 
 ## [2.3.108](https://github.com/bridgecrewio/checkov/compare/2.3.105...2.3.108) - 2023-03-21
 
