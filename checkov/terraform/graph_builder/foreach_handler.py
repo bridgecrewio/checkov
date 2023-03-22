@@ -180,27 +180,46 @@ class ForeachHandler(object):
 
         self._update_children_foreach_index(original_foreach_or_count_key, original_module_key)
 
-    def _update_children_foreach_index(self, original_foreach_or_count_key: int | str, original_module_key: TFModule):
+    def _update_children_foreach_index(self, original_foreach_or_count_key: int | str, original_module_key: TFModule,
+                                       current_module_key: TFModule | None = None) \
+            -> None:
         """
         Go through all child vertices and update source_module_object with foreach_idx
         """
-        for child_indexes in self.local_graph.vertices_by_module_dependency[original_module_key].values():
+        if current_module_key is None:
+            current_module_key = original_module_key
+        if current_module_key not in self.local_graph.vertices_by_module_dependency:
+            return
+        for child_indexes in self.local_graph.vertices_by_module_dependency[current_module_key].values():
             for child_index in child_indexes:
                 child = self.local_graph.vertices[child_index]
-                child.source_module_object.foreach_idx = original_foreach_or_count_key
+                child_module_key = TFModule(path=child.path, name=child.name,
+                                            nested_tf_module=child.source_module_object,
+                                            foreach_idx=child.for_each_index)
+                self._update_children_foreach_index(original_foreach_or_count_key, original_module_key,
+                                                    child_module_key)
+                ForeachHandler._update_nested_tf_module_foreach_idx(original_foreach_or_count_key, original_module_key,
+                                                                    child.source_module_object)
                 self._update_resolved_entry_for_tf_definition(child, original_foreach_or_count_key, original_module_key)
+
 
     @staticmethod
     def _update_resolved_entry_for_tf_definition(child: TerraformBlock, original_foreach_or_count_key: int | str,
                                                  original_module_key: TerraformBlock) -> None:
-        config = child.config[child.name]
-        if config.get(RESOLVED_MODULE_ENTRY_NAME) is not None:
+        config = child.config.get(child.name)
+        if isinstance(config, dict) and config.get(RESOLVED_MODULE_ENTRY_NAME) is not None:
             tf_moudle: TFModule = config[RESOLVED_MODULE_ENTRY_NAME][0].tf_source_modules
-            while tf_moudle is not None:
-                if tf_moudle == original_module_key:
-                    tf_moudle.foreach_idx = original_foreach_or_count_key
-                    break
-                tf_moudle = tf_moudle.nested_tf_module
+            ForeachHandler._update_nested_tf_module_foreach_idx(original_foreach_or_count_key, original_module_key,
+                                                                tf_moudle)
+
+    @staticmethod
+    def _update_nested_tf_module_foreach_idx(original_foreach_or_count_key: int | str, original_module_key: TFModule,
+                                             tf_moudle: TFModule) -> None:
+        while tf_moudle is not None:
+            if tf_moudle == original_module_key:
+                tf_moudle.foreach_idx = original_foreach_or_count_key
+                break
+            tf_moudle = tf_moudle.nested_tf_module
 
     @staticmethod
     def _pop_foreach_attrs(attrs: dict[str, Any]) -> None:
