@@ -362,6 +362,7 @@ def is_nested(full_path: TFDefinitionKeyType) -> bool:
         return TERRAFORM_NESTED_MODULE_PATH_PREFIX in full_path
     if isinstance(full_path, TFDefinitionKey):
         return full_path.tf_source_modules is not None
+    return False
 
 
 def get_tf_definition_key(nested_module: str, module_name: str, module_index: Any, nested_key: str = '') -> str:
@@ -394,4 +395,8 @@ def get_module_from_full_path(file_path: TFDefinitionKeyType) -> Tuple[Optional[
 
 
 def get_abs_path(file_path: TFDefinitionKeyType) -> str:
-    return file_path[:get_current_module_index(file_path)] if isinstance(file_path, str) else file_path.file_path
+    from checkov.terraform.modules.module_objects import TFDefinitionKey
+    if isinstance(file_path, str):
+        return file_path[:get_current_module_index(file_path)]
+    if isinstance(file_path, TFDefinitionKey):
+        return file_path.file_path
