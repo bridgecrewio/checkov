@@ -1,5 +1,6 @@
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckCategories, CheckResult
+from checkov.common.util.type_forcers import force_int
 
 
 class ElasticsearchDomainHA(BaseResourceCheck):
@@ -19,7 +20,7 @@ class ElasticsearchDomainHA(BaseResourceCheck):
             config = conf.get("cluster_config")[0]
             if config.get("dedicated_master_count") and isinstance(config.get("dedicated_master_count"), list) and \
                     len(config.get("dedicated_master_count")) > 0:
-                if config.get("dedicated_master_count")[0] >= 3:
+                if force_int(config.get("dedicated_master_count")[0]) >= 3:
                     if config.get("zone_awareness_enabled") and isinstance(config.get("zone_awareness_enabled"), list):
                         zone = config.get("zone_awareness_enabled")[0]
                         if zone:
