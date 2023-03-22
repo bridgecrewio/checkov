@@ -904,8 +904,8 @@ class BcPlatformIntegration:
         repo_id = f"cli_repo/{basename}"
         return repo_id
 
-    def get_api_token(self, email: str, org: str, first_name: str, last_name: str, country: str, region: str = '') -> tuple[str, Response]:
-        response = self._create_bridgecrew_account(email, org, first_name, last_name, country, region)
+    def get_api_token(self, email: str, org: str, first_name: str, last_name: str, country: str, territory: str = '') -> tuple[str, Response]:
+        response = self._create_bridgecrew_account(email, org, first_name, last_name, country, territory)
         bc_api_token = response.json()["checkovSignup"]
         return bc_api_token, response
 
@@ -923,7 +923,7 @@ class BcPlatformIntegration:
             "COMPLETE! \nYour results are in your Bridgecrew dashboard, available here: https://bridgecrew.cloud \n",
             'green', attrs=['bold']) + Style.RESET_ALL)
 
-    def _create_bridgecrew_account(self, email: str, org: str, first_name: str, last_name: str, country: str, region: str = '') -> Response:
+    def _create_bridgecrew_account(self, email: str, org: str, first_name: str, last_name: str, country: str, territory: str = '') -> Response:
         """
         Create new bridgecrew account
         :param email: email of account owner
@@ -937,7 +937,7 @@ class BcPlatformIntegration:
             "owner_first_name": first_name,
             "owner_last_name": last_name,
             "country": country,
-            "region": region
+            "territory": territory
         }
         response = requests.request("POST", self.onboarding_url, headers=SIGNUP_HEADER, json=payload)
         if response.status_code == 200:
