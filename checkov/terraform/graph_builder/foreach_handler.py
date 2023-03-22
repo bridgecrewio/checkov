@@ -93,8 +93,8 @@ class ForeachHandler(object):
         return False
 
     @staticmethod
-    def extract_from_list(val: list[str] | list[int]) -> list[str] | list[int] | int | str:
-        return val[0] if len(val) == 1 and isinstance(val[0], (str, int)) else val
+    def extract_from_list(val: list[str] | list[int]| list[list[str]]) -> list[str] | list[int] | int | str:
+        return val[0] if len(val) == 1 and isinstance(val[0], (str, int, list)) else val
 
     def _handle_static_foreach_statement(self, statement: list[str] | dict[str, Any]) -> Optional[list[str] | dict[str, Any]]:
         if isinstance(statement, list):
@@ -476,7 +476,7 @@ class ForeachHandler(object):
         main_module_modules = deepcopy(self.local_graph.vertices_by_module_dependency.get(None)[BlockType.MODULE])
         modules_to_render = main_module_modules
 
-        # TODO add documentation on logic here
+        # TODO add documentation on logic here + Move the render graph to here
         while modules_to_render:
             for module_idx in modules_to_render:
                 module_block = self.local_graph.vertices[module_idx]
@@ -485,16 +485,14 @@ class ForeachHandler(object):
                 sub_graph = self._build_sub_graph(modules_blocks)
                 self._render_sub_graph(sub_graph, blocks_to_render=modules_blocks)
                 if for_each:
-                    if not self._is_static_statement(module_idx):
-                        for_each = self._handle_static_statement(module_idx, sub_graph)
-                        if not self._is_static_statement(module_idx, sub_graph):
-                            continue
+                    for_each = self._handle_static_statement(module_idx, sub_graph)
+                    if not self._is_static_statement(module_idx, sub_graph):
+                        continue
                     self.duplicate_module_with_for_each(module_idx, for_each)
                 elif count:
-                    if not self._is_static_statement(module_idx):
-                        count = self._handle_static_statement(module_idx, sub_graph)
-                        if not self._is_static_statement(module_idx, sub_graph):
-                            continue
+                    count = self._handle_static_statement(module_idx, sub_graph)
+                    if not self._is_static_statement(module_idx, sub_graph):
+                        continue
                     self.duplicate_module_with_count(module_idx, count)
             modules_to_render = self._get_modules_to_render(current_level)
 
@@ -509,6 +507,7 @@ class ForeachHandler(object):
         current_level.clear()
         for m_idx in rendered_modules:
             m = self.local_graph.vertices[m_idx]
-            current_level.append(TFModule(m.path, m.name, m.source_module_object, m.for_each_index))
+            m_name = m.name.split('[')[0]
+            current_level.append(TFModule(m.path, m_name, m.source_module_object, m.for_each_index))
         modules_to_render = [self.local_graph.vertices_by_module_dependency[curr]['module'] for curr in current_level]
         return list(itertools.chain.from_iterable(modules_to_render))

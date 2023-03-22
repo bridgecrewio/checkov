@@ -327,3 +327,36 @@ def test_tf_definitions_for_foreach_on_modules(checkov_source_path):
     tf_definitions_json = tf_definitions_json.replace(checkov_source_path, '...')
     tf_definitions_after_handling_checkov_source = json.loads(tf_definitions_json, object_hook=object_hook)
     assert tf_definitions_after_handling_checkov_source == expected_data
+
+
+@mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "True"})
+@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
+def test_foreach_module_in_second_level_module(checkov_source_path):
+    dir_name = 'foreach_module'
+    graph, tf_definitions = build_and_get_graph_by_path(dir_name, render_var=True)
+
+    assert len([block for block in graph.vertices if block.block_type == 'module']) == 10
+    assert len([block for block in graph.vertices if block.block_type == 'resource']) == 8
+    assert len(tf_definitions.keys()) == 11
+
+
+@mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "True"})
+@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
+def test_foreach_module_in_both_levels_module(checkov_source_path):
+    dir_name = 'foreach_module_dup_foreach'
+    graph, tf_definitions = build_and_get_graph_by_path(dir_name, render_var=True)
+
+    assert len([block for block in graph.vertices if block.block_type == 'module']) == 20
+    assert len([block for block in graph.vertices if block.block_type == 'resource']) == 16
+    assert len(tf_definitions.keys()) == 33
+
+
+@mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "True"})
+@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
+def test_foreach_module_and_resource(checkov_source_path):
+    dir_name = 'foreach_module_and_resource'
+    graph, tf_definitions = build_and_get_graph_by_path(dir_name, render_var=True)
+
+    assert len([block for block in graph.vertices if block.block_type == 'module']) == 2
+    assert len([block for block in graph.vertices if block.block_type == 'resource']) == 2
+    assert len(tf_definitions.keys()) == 3
