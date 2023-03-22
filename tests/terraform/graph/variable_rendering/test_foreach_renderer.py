@@ -321,9 +321,7 @@ def test_tf_definitions_for_foreach_on_modules(checkov_source_path):
 
     file_path = os.path.join(os.path.dirname(__file__), 'expected_foreach_modules_tf_definitions.json')
     with open(file_path, 'r') as f:
-        data = f.read()
-        data = data.replace(checkov_source_path, '...')  # Will replace local path leading to checkov's root dir
-        expected_data = json.loads(data, object_hook=object_hook)
+        expected_data = json.load(f, object_hook=object_hook)
 
     tf_definitions_json = json.dumps(tf_definitions, cls=CustomJSONEncoder)
     tf_definitions_json = tf_definitions_json.replace(checkov_source_path, '...')
