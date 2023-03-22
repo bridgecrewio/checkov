@@ -15,14 +15,16 @@ class ElasticsearchDomainAuditLogging(BaseResourceCheck):
         if conf.get('log_publishing_options') and isinstance(conf.get('log_publishing_options'), list) and \
                 len(conf.get('log_publishing_options')) > 0:
             options = conf.get('log_publishing_options')
-            for option in options:
-                if option.get('log_type') and isinstance(option.get('log_type'), list):
-                    logtype = option.get('log_type')[0]
-                    if logtype == "AUDIT_LOGS":
-                        if option.get('enabled') and isinstance(option.get('enabled'), list):
-                            enabled = option.get('enabled')[0]
-                            if enabled:
-                                return CheckResult.PASSED
+            if len(options) > 0:
+                for option in options:
+                    if isinstance(option, dict):
+                        if option.get('log_type') and isinstance(option.get('log_type'), list):
+                            logtype = option.get('log_type')[0]
+                            if logtype == "AUDIT_LOGS":
+                                if option.get('enabled') and isinstance(option.get('enabled'), list):
+                                    enabled = option.get('enabled')[0]
+                                    if enabled:
+                                        return CheckResult.PASSED
 
         return CheckResult.FAILED
 
