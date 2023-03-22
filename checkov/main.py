@@ -13,7 +13,7 @@ from collections import defaultdict
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-import argcomplete  # type:ignore[import]
+import argcomplete
 import configargparse
 from urllib3.exceptions import MaxRetryError
 
