@@ -162,50 +162,63 @@ class ForeachHandler(object):
 
     def _create_new_resources_count(self, statement: int, block_idx: int) -> None:
         main_resource = self.local_graph.vertices[block_idx]
-        original_key = None
         for i in range(statement):
             if main_resource.block_type == BlockType.MODULE:
-                if i == 0:
-                    original_key = i
                 self._create_new_module(main_resource, i, resource_idx=block_idx, foreach_idx=i)
             elif main_resource.block_type == BlockType.RESOURCE:
                 self._create_new_resource(main_resource, i, resource_idx=block_idx, foreach_idx=i)
         if main_resource.block_type == BlockType.MODULE:
-            self._update_module_children(main_resource, original_key)
+            for i in range(statement):
+                should_override = True if i == 0 else False
+                self._update_module_children(main_resource, i, should_override_foreach_key=should_override)
 
     def _update_module_children(self, main_resource: TerraformBlock,
-                                original_foreach_or_count_key: int | str) -> None:
+                                original_foreach_or_count_key: int | str,
+                                should_override_foreach_key: bool = True) -> None:
         original_module_key = TFModule(path=main_resource.path, name=main_resource.name,
                                        nested_tf_module=main_resource.source_module_object)
 
-        self._update_children_foreach_index(original_foreach_or_count_key, original_module_key)
+        if not should_override_foreach_key:
+            original_module_key.foreach_idx = original_foreach_or_count_key
+
+        self._update_children_foreach_index(original_foreach_or_count_key, original_module_key,
+                                            should_override_foreach_key=should_override_foreach_key)
 
     def _update_children_foreach_index(self, original_foreach_or_count_key: int | str, original_module_key: TFModule,
-                                       current_module_key: TFModule | None = None) \
-            -> None:
+                                       current_module_key: TFModule | None = None, should_override_foreach_key: bool = True) -> None:
         """
         Go through all child vertices and update source_module_object with foreach_idx
         """
         if current_module_key is None:
-            current_module_key = original_module_key
+            current_module_key = deepcopy(original_module_key)
         if current_module_key not in self.local_graph.vertices_by_module_dependency:
             return
-        for child_indexes in self.local_graph.vertices_by_module_dependency[current_module_key].values():
+        values = self.local_graph.vertices_by_module_dependency[current_module_key].values()
+        for child_indexes in values:
             for child_index in child_indexes:
                 child = self.local_graph.vertices[child_index]
-                child_module_key = TFModule(path=child.path, name=child.name,
-                                            nested_tf_module=child.source_module_object,
-                                            foreach_idx=child.for_each_index)
-                self._update_children_foreach_index(original_foreach_or_count_key, original_module_key,
-                                                    child_module_key)
+
                 ForeachHandler._update_nested_tf_module_foreach_idx(original_foreach_or_count_key, original_module_key,
                                                                     child.source_module_object)
                 self._update_resolved_entry_for_tf_definition(child, original_foreach_or_count_key, original_module_key)
 
 
+                # Important to copy to avoid changing the object by reference
+                # We also make sure the foreach_idx is actually None (like before this function was called)
+                child_source_module_object_copy = deepcopy(child.source_module_object)
+                if should_override_foreach_key:
+                    child_source_module_object_copy.foreach_idx = None
+
+                child_module_key = TFModule(path=child.path, name=child.name,
+                                            nested_tf_module=child_source_module_object_copy,
+                                            foreach_idx=child.for_each_index)
+                self._update_children_foreach_index(original_foreach_or_count_key, original_module_key,
+                                                    child_module_key)
+
+
     @staticmethod
     def _update_resolved_entry_for_tf_definition(child: TerraformBlock, original_foreach_or_count_key: int | str,
-                                                 original_module_key: TerraformBlock) -> None:
+                                                 original_module_key: TFModule) -> None:
         if child.block_type == BlockType.RESOURCE:
             child_name, child_type = child.name.split('.')
             config = child.config[child_name][child_type]
@@ -219,6 +232,7 @@ class ForeachHandler(object):
     @staticmethod
     def _update_nested_tf_module_foreach_idx(original_foreach_or_count_key: int | str, original_module_key: TFModule,
                                              tf_moudle: TFModule) -> None:
+        original_module_key.foreach_idx = None  # Make sure it is always None even if we didn't override it previously
         while tf_moudle is not None:
             if tf_moudle == original_module_key:
                 tf_moudle.foreach_idx = original_foreach_or_count_key
@@ -399,19 +413,21 @@ class ForeachHandler(object):
 
     def _create_new_resources_foreach(self, statement: list[str] | dict[str, Any], block_idx: int) -> None:
         main_resource = self.local_graph.vertices[block_idx]
-        original_key = None
         if isinstance(statement, list):
             for i, new_value in enumerate(statement):
-                if i == 0:
-                    original_key = new_value
                 self._create_new_foreach_resource(block_idx, i, main_resource, new_key=new_value, new_value=new_value)
         if isinstance(statement, dict):
             for i, (new_key, new_value) in enumerate(statement.items()):
-                if i == 0:
-                    original_key = new_key
                 self._create_new_foreach_resource(block_idx, i, main_resource, new_key, new_value)
         if main_resource.block_type == BlockType.MODULE:
-            self._update_module_children(main_resource, original_key)
+            if isinstance(statement, list):
+                for i, new_value in enumerate(statement):
+                    should_override = True if i == 0 else False
+                    self._update_module_children(main_resource, new_value, should_override_foreach_key=should_override)
+            elif isinstance(statement, dict):
+                for i, (new_key, new_value) in enumerate(statement.items()):
+                    should_override = True if i == 0 else False
+                    self._update_module_children(main_resource, new_key, should_override_foreach_key=should_override)
 
     def _create_new_foreach_resource(self, block_idx: int, foreach_idx: int, main_resource: TerraformBlock,
                                      new_key: int | str, new_value: int | str) -> None:
