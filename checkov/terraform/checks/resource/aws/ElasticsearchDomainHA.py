@@ -9,7 +9,7 @@ class ElasticsearchDomainHA(BaseResourceCheck):
          NIST.800-53.r5 SI-13(5)
         ElasticSearch and OpenSearch domains should have at least three data nodes"""
         name = "Ensure ElasticSearch and OpenSearch domains should have at least three data nodes for HA"
-        id = "CKV_AWS_317"
+        id = "CKV_AWS_318"
         supported_resources = ['aws_elasticsearch_domain', 'aws_opensearch_domain']
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
