@@ -16,8 +16,13 @@ class ElasticsearchDomainAuditLogging(BaseResourceCheck):
                 len(conf.get('log_publishing_options')) > 0:
             options = conf.get('log_publishing_options')
             for option in options:
-                if option.get('log_type')[0] == "AUDIT_LOGS" and option.get('enabled')[0]:
-                    return CheckResult.PASSED
+                if option.get('log_type') and isinstance(option.get('log_type'), list):
+                    logtype = option.get('log_type')[0]
+                    if logtype == "AUDIT_LOGS":
+                        if option.get('enabled') and isinstance(option.get('enabled'), list):
+                            enabled = option.get('enabled')[0]
+                            if enabled:
+                                return CheckResult.PASSED
 
         return CheckResult.FAILED
 
