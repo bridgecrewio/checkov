@@ -395,8 +395,4 @@ def get_module_from_full_path(file_path: TFDefinitionKeyType) -> Tuple[Optional[
 
 
 def get_abs_path(file_path: TFDefinitionKeyType) -> str:
-    from checkov.terraform.modules.module_objects import TFDefinitionKey
-    if isinstance(file_path, str):
-        return file_path[:get_current_module_index(file_path)]
-    if isinstance(file_path, TFDefinitionKey):
-        return file_path.file_path
+    return file_path[:get_current_module_index(file_path)] if isinstance(file_path, str) else str(file_path.file_path)
