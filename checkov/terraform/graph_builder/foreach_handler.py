@@ -202,9 +202,7 @@ class ForeachHandler(object):
                                                                     child.source_module_object)
                 self._update_resolved_entry_for_tf_definition(child, original_foreach_or_count_key, original_module_key)
 
-
                 # Important to copy to avoid changing the object by reference
-                # We also make sure the foreach_idx is actually None (like before this function was called)
                 child_source_module_object_copy = deepcopy(child.source_module_object)
                 if should_override_foreach_key:
                     child_source_module_object_copy.foreach_idx = None
@@ -214,7 +212,6 @@ class ForeachHandler(object):
                                             foreach_idx=child.for_each_index)
                 self._update_children_foreach_index(original_foreach_or_count_key, original_module_key,
                                                     child_module_key)
-
 
     @staticmethod
     def _update_resolved_entry_for_tf_definition(child: TerraformBlock, original_foreach_or_count_key: int | str,
