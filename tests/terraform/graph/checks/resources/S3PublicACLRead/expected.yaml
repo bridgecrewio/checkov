@@ -4,6 +4,7 @@ pass:
   - "aws_s3_bucket.no_acl"
   - "aws_s3_bucket.no_grant"
   - "aws_s3_bucket.grant_onwer"
+  - "aws_s3_bucket.public_read"
 fail:
   - "aws_s3_bucket.public_read"
   - "aws_s3_bucket.public_read_write"
