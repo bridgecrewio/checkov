@@ -55,6 +55,7 @@ from checkov.common.runners.base_runner import strtobool
 if TYPE_CHECKING:
     from networkx import DiGraph
     from checkov.common.images.image_referencer import Image
+    from checkov.common.typing import TFDefinitionKeyType
 
 # Allow the evaluation of empty variables
 dpath.options.ALLOW_EMPTY_STRING_KEYS = True
@@ -78,7 +79,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         self.external_registries = [] if external_registries is None else external_registries
         self.graph_class = graph_class
         self.parser = parser or TFParser() if strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'False')) else Parser()
-        self.definitions: "dict[str, dict[str, Any]] | None" = None
+        self.definitions: dict[TFDefinitionKeyType, dict[str, Any]] | None = None
         self.context = None
         self.breadcrumbs = None
         self.evaluations_context: Dict[str, Dict[str, EvaluationContext]] = {}
@@ -510,7 +511,10 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
             if result:
                 file, parse_result, file_parsing_errors = result
                 if parse_result is not None:
-                    self.definitions[file] = parse_result
+                    if isinstance(self.parser, Parser):
+                        self.definitions[file] = parse_result
+                    if isinstance(self.parser, TFParser):
+                        self.definitions[TFDefinitionKey(file_path=file)] = parse_result
                 if file_parsing_errors:
                     parsing_errors.update(file_parsing_errors)
 
