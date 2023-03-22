@@ -188,14 +188,19 @@ class ForeachHandler(object):
             for child_index in child_indexes:
                 child = self.local_graph.vertices[child_index]
                 child.source_module_object.foreach_idx = original_foreach_or_count_key
-                self._update_resolved_entry_for_tf_definition(child, original_foreach_or_count_key)
+                self._update_resolved_entry_for_tf_definition(child, original_foreach_or_count_key, original_module_key)
 
     @staticmethod
-    def _update_resolved_entry_for_tf_definition(child: TerraformBlock, original_foreach_or_count_key: int | str)\
-            -> None:
+    def _update_resolved_entry_for_tf_definition(child: TerraformBlock, original_foreach_or_count_key: int | str,
+                                                 original_module_key: TerraformBlock) -> None:
         config = child.config[child.name]
         if config.get(RESOLVED_MODULE_ENTRY_NAME) is not None:
-            config[RESOLVED_MODULE_ENTRY_NAME][0].tf_source_modules.foreach_idx = original_foreach_or_count_key
+            tf_moudle: TFModule = config[RESOLVED_MODULE_ENTRY_NAME][0].tf_source_modules
+            while tf_moudle is not None:
+                if tf_moudle == original_module_key:
+                    tf_moudle.foreach_idx = original_foreach_or_count_key
+                    break
+                tf_moudle = tf_moudle.nested_tf_module
 
     @staticmethod
     def _pop_foreach_attrs(attrs: dict[str, Any]) -> None:
@@ -311,7 +316,7 @@ class ForeachHandler(object):
                                            idx_to_change)
 
         self._update_block_name_and_id(new_resource, idx_to_change)
-        self._update_resolved_entry_for_tf_definition(new_resource, idx_to_change)
+        self._update_resolved_entry_for_tf_definition(new_resource, idx_to_change, main_resource_module_key)
         if foreach_idx != 0:
             self.local_graph.vertices.append(new_resource)
             self._create_new_module_with_vertices(main_resource, main_resource_module_value, resource_idx, new_resource,
