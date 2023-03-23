@@ -380,11 +380,15 @@ class ForeachHandler(object):
                                                new_resource.for_each_index)
 
         new_resource_vertex_idx = len(self.local_graph.vertices) - 1
-        source_module_key = TFModule(
-            path=new_resource.path,
-            name=main_resource.name,
-            nested_tf_module=new_resource.source_module_object,
-        ) if self.local_graph.vertices[resource_idx].source_module else None
+        original_vertex_source_module = self.local_graph.vertices[resource_idx].source_module_object
+        if original_vertex_source_module:
+            source_module_key = TFModule(
+                path=original_vertex_source_module.path,
+                name=original_vertex_source_module.name,
+                nested_tf_module=original_vertex_source_module.nested_tf_module,
+            )
+        else:
+            source_module_key = None
         self.local_graph.vertices_by_module_dependency[source_module_key][BlockType.MODULE].append(new_resource_vertex_idx)
         new_vertices_module_value = self._add_new_vertices_for_module(new_resource_module_key,
                                                                       main_resource_module_value,
