@@ -243,13 +243,6 @@ def test_new_tf_parser_with_foreach_modules(checkov_source_path):
     dir_name = 'parser_dup_nested'
     local_graph, tf_definitions = build_and_get_graph_by_path(dir_name, render_var=True)
     assert len(tf_definitions.keys()) == 14
-    # 1 - var
-    # 2 - 4 modules -> resolves to 3 - 6
-    # 3 - 4 - 5 - 6 -> 2 resolves to resources
-    # 7 - 14 -> resources
-    assert local_graph.vertices
-
-    assert local_graph
     assert len([block for block in local_graph.vertices if block.block_type == 'resource']) == 8
     assert len([block for block in local_graph.vertices if block.block_type == 'module']) == 12
 
@@ -355,6 +348,11 @@ def test_foreach_module_and_resource(checkov_source_path):
     assert len([block for block in graph.vertices if block.block_type == 'module']) == 2
     assert len([block for block in graph.vertices if block.block_type == 'resource']) == 4
     assert len(tf_definitions.keys()) == 3
+
+    assert graph.vertices[4].config['aws_s3_bucket_public_access_block']['var_bucket["a"]']['__address__'] == 'module.s3_module["a"].aws_s3_bucket_public_access_block.var_bucket["a"]'
+    assert graph.vertices[10].config['aws_s3_bucket_public_access_block']['var_bucket["a"]']['__address__'] == 'module.s3_module["b"].aws_s3_bucket_public_access_block.var_bucket["a"]'
+    assert graph.vertices[12].config['aws_s3_bucket_public_access_block']['var_bucket["b"]']['__address__'] == 'module.s3_module["a"].aws_s3_bucket_public_access_block.var_bucket["b"]'
+    assert graph.vertices[13].config['aws_s3_bucket_public_access_block']['var_bucket["b"]']['__address__'] == 'module.s3_module["b"].aws_s3_bucket_public_access_block.var_bucket["b"]'
 
 
 @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "True"})
