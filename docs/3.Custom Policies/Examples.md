@@ -421,3 +421,17 @@ definition:
     operator: "contains"
     value: "0.0.0.0/0"
 ```
+
+## Prevent the use of an unauthorized source
+
+The following policy will pass if and only if the source begins with `terraform-aws-modules`.
+
+```yaml
+definition:
+  cond_type: attribute
+  resource_types:
+    - module
+  attribute: source
+  operator: starting_with
+  value: terraform-aws-modules
+```
