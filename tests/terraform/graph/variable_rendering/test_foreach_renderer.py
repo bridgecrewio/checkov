@@ -360,3 +360,14 @@ def test_foreach_module_and_resource(checkov_source_path):
     assert len([block for block in graph.vertices if block.block_type == 'module']) == 2
     assert len([block for block in graph.vertices if block.block_type == 'resource']) == 4
     assert len(tf_definitions.keys()) == 3
+
+
+@mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "True"})
+@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
+def test_foreach_module_with_more_than_two_resources(checkov_source_path):
+    dir_name = 'foreach_module_with_more_than_two_resources'
+    graph, tf_definitions = build_and_get_graph_by_path(dir_name, render_var=True)
+
+    assert len([block for block in graph.vertices if block.block_type == 'module']) == 16
+    assert len([block for block in graph.vertices if block.block_type == 'resource']) == 14
+    assert len(tf_definitions.keys()) == 23
