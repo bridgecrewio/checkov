@@ -6,6 +6,7 @@ import pytest
 
 from checkov.common.util.json_utils import object_hook, CustomJSONEncoder
 from checkov.terraform import serialize_definitions
+from checkov.terraform.graph_builder.foreach.handler import ForeachHandler
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
@@ -50,7 +51,6 @@ def checkov_source_path() -> str:
     ]
 )
 def test_static_foreach_resource(block_index, expected_res, obj):
-    from checkov.terraform.graph_builder.foreach_handler import ForeachHandler
     dir_name = 'foreach_resources/static_foreach_value'
     local_graph = build_and_get_graph_by_path(dir_name)[0]
     foreach_handler = ForeachHandler(local_graph)
@@ -63,7 +63,6 @@ def test_static_foreach_resource(block_index, expected_res, obj):
 
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "False"})
 def test_dynamic_foreach_resource():
-    from checkov.terraform.graph_builder.foreach_handler import ForeachHandler
     dir_name = 'foreach_resources/dynamic_foreach_value'
     local_graph = build_and_get_graph_by_path(dir_name)[0]
     foreach_handler = ForeachHandler(local_graph)
@@ -76,7 +75,6 @@ def test_dynamic_foreach_resource():
 
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "False"})
 def test_foreach_resource():
-    from checkov.terraform.graph_builder.foreach_handler import ForeachHandler
     dir_name = 'foreach_resources'
     local_graph = build_and_get_graph_by_path(dir_name)[0]
     foreach_handler = ForeachHandler(local_graph)
@@ -104,7 +102,6 @@ def test_foreach_resource():
 
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "False"})
 def test_build_sub_graph():
-    from checkov.terraform.graph_builder.foreach_handler import ForeachHandler
     dir_name = 'foreach_resources'
     local_graph = build_and_get_graph_by_path(dir_name)[0]
     foreach_handler = ForeachHandler(local_graph)
@@ -117,7 +114,6 @@ def test_build_sub_graph():
 
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "False"})
 def test_new_resources_count():
-    from checkov.terraform.graph_builder.foreach_handler import ForeachHandler
     dir_name = 'foreach_examples/count_dup_resources'
     local_graph = build_and_get_graph_by_path(dir_name)[0]
     vertices_names = [vertice.name for vertice in local_graph.vertices]
@@ -136,7 +132,6 @@ def test_new_resources_count():
 
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "False"})
 def test_new_resources_foreach():
-    from checkov.terraform.graph_builder.foreach_handler import ForeachHandler
     dir_name = 'foreach_examples/foreach_dup_resources'
     local_graph = build_and_get_graph_by_path(dir_name)[0]
     foreach_handler = ForeachHandler(local_graph)
@@ -234,7 +229,6 @@ def test_tf_definitions_and_breadcrumbs():
     ]
 )
 def test_update_attrs(attrs, k_v_to_change, expected_attrs, expected_res):
-    from checkov.terraform.graph_builder.foreach_handler import ForeachHandler
     local_graph = build_and_get_graph_by_path('')[0]
     foreach_handler = ForeachHandler(local_graph)
     res = foreach_handler._update_attributes(attrs, k_v_to_change)
