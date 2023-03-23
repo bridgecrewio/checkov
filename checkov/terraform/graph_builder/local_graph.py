@@ -9,6 +9,7 @@ from typing import List, Optional, Union, Any, Dict, Set, Tuple
 
 from typing_extensions import TypedDict
 
+import checkov.terraform.graph_builder.foreach.consts
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder import reserved_attribute_names
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
@@ -65,7 +66,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         logging.info(f"[TerraformLocalGraph] created {len(self.edges)} edges")
         if self.enable_foreach_handling:
             try:
-                foreach_handler = foreach_module.ForeachHandler(self)
+                foreach_handler = foreach_module.ForeachResourceHandler(self)
                 foreach_handler.handle_foreach_rendering(self.foreach_blocks)
                 self._arrange_graph_data()
                 self._build_edges()
@@ -93,7 +94,8 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         for i, block in enumerate(self.module.blocks):
             self.vertices[i] = block
             self._add_block_data_to_graph(i, block)
-            if self.enable_foreach_handling and (foreach_module.FOREACH_STRING in block.attributes or foreach_module.COUNT_STRING in block.attributes) \
+            if self.enable_foreach_handling and (
+                    checkov.terraform.graph_builder.foreach.consts.FOREACH_STRING in block.attributes or checkov.terraform.graph_builder.foreach.consts.COUNT_STRING in block.attributes) \
                     and block.block_type in (BlockType.MODULE, BlockType.RESOURCE):
                 self.foreach_blocks[block.block_type].append(i)
 

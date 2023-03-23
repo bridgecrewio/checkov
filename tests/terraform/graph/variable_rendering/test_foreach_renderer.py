@@ -5,8 +5,7 @@ from unittest import mock
 import pytest
 
 from checkov.common.util.json_utils import object_hook, CustomJSONEncoder
-from checkov.terraform import serialize_definitions
-from checkov.terraform.graph_builder.foreach.handler import ForeachHandler
+from checkov.terraform.graph_builder.foreach.handler import ForeachResourceHandler
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
@@ -53,7 +52,7 @@ def checkov_source_path() -> str:
 def test_static_foreach_resource(block_index, expected_res, obj):
     dir_name = 'foreach_resources/static_foreach_value'
     local_graph = build_and_get_graph_by_path(dir_name)[0]
-    foreach_handler = ForeachHandler(local_graph)
+    foreach_handler = ForeachResourceHandler(local_graph)
     res = foreach_handler._get_static_foreach_statement(block_index)
     if obj:
         assert_object_equal(res, expected_res)
@@ -65,7 +64,7 @@ def test_static_foreach_resource(block_index, expected_res, obj):
 def test_dynamic_foreach_resource():
     dir_name = 'foreach_resources/dynamic_foreach_value'
     local_graph = build_and_get_graph_by_path(dir_name)[0]
-    foreach_handler = ForeachHandler(local_graph)
+    foreach_handler = ForeachResourceHandler(local_graph)
     res = foreach_handler._handle_dynamic_statement([6, 7, 8, 9, 10])
     expected_res = {
         6: {'a_group': 'eastus', 'another_group': 'westus2'}, 7: ['s3-bucket-a', 's3-bucket-b'], 8: 5, 9: 2, 10: None
@@ -77,7 +76,7 @@ def test_dynamic_foreach_resource():
 def test_foreach_resource():
     dir_name = 'foreach_resources'
     local_graph = build_and_get_graph_by_path(dir_name)[0]
-    foreach_handler = ForeachHandler(local_graph)
+    foreach_handler = ForeachResourceHandler(local_graph)
     res = foreach_handler._get_statements([6, 7, 8, 9, 10, 19, 20, 21, 22, 23, 24, 25])
     expected_res = {
         6: {'a_group': 'eastus', 'another_group': 'westus2'},
@@ -104,7 +103,7 @@ def test_foreach_resource():
 def test_build_sub_graph():
     dir_name = 'foreach_resources'
     local_graph = build_and_get_graph_by_path(dir_name)[0]
-    foreach_handler = ForeachHandler(local_graph)
+    foreach_handler = ForeachResourceHandler(local_graph)
     blocks = [6, 7, 8, 9, 10, 21, 22, 24, 25]
     sub_graph = foreach_handler._build_sub_graph(blocks)
     assert all(sub_graph.vertices[i] for i in blocks)
@@ -120,7 +119,7 @@ def test_new_resources_count():
     main_count_resource = 'aws_s3_bucket.count_var_resource'
     assert main_count_resource in vertices_names
 
-    foreach_handler = ForeachHandler(local_graph)
+    foreach_handler = ForeachResourceHandler(local_graph)
     foreach_handler.handle_foreach_rendering({'resource': [3], 'module': []})
     for i, resource in enumerate([local_graph.vertices[3], local_graph.vertices[8], local_graph.vertices[9]]):
         assert resource.name.endswith(f"[{i}]")
@@ -134,7 +133,7 @@ def test_new_resources_count():
 def test_new_resources_foreach():
     dir_name = 'foreach_examples/foreach_dup_resources'
     local_graph = build_and_get_graph_by_path(dir_name)[0]
-    foreach_handler = ForeachHandler(local_graph)
+    foreach_handler = ForeachResourceHandler(local_graph)
     foreach_handler.handle_foreach_rendering({'resource': [0, 1], 'module': []})
     for resource in [local_graph.vertices[0], local_graph.vertices[1], local_graph.vertices[5], local_graph.vertices[6]]:
         assert resource.name.endswith("[\"bucket_a\"]") or resource.name.endswith("[\"bucket_b\"]")
@@ -230,7 +229,7 @@ def test_tf_definitions_and_breadcrumbs():
 )
 def test_update_attrs(attrs, k_v_to_change, expected_attrs, expected_res):
     local_graph = build_and_get_graph_by_path('')[0]
-    foreach_handler = ForeachHandler(local_graph)
+    foreach_handler = ForeachResourceHandler(local_graph)
     res = foreach_handler._update_attributes(attrs, k_v_to_change)
     assert attrs == expected_attrs
     assert res == expected_res
