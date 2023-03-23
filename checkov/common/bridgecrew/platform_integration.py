@@ -32,7 +32,7 @@ from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.bridgecrew.platform_key import read_key, persist_key, bridgecrew_file
 from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_checks_results, \
     enrich_and_persist_checks_metadata, checkov_results_prefix, persist_run_metadata, _put_json_object, \
-    persist_logs_stream, _put_json_object_quiet
+    persist_logs_stream
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILES, SCANNABLE_PACKAGE_FILES
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import filter_ignored_paths
@@ -453,12 +453,12 @@ class BcPlatformIntegration:
         base_path = re.sub(REPO_PATH_PATTERN, r'original_secrets/\1', self.repo_path)
         s3_path = f'{base_path}/{uuid.uuid4()}.json'
         try:
-            _put_json_object_quiet(self.s3_client, enriched_secrets, self.bucket, s3_path)
+            _put_json_object(self.s3_client, enriched_secrets, self.bucket, s3_path, log_stack_trace_on_error=False)
         except ClientError:
             logging.warning("Got access denied, retrying as s3 role changes should be propagated")
             sleep(4)
             try:
-                _put_json_object_quiet(self.s3_client, enriched_secrets, self.bucket, s3_path)
+                _put_json_object(self.s3_client, enriched_secrets, self.bucket, s3_path, log_stack_trace_on_error=False)
             except ClientError:
                 logging.error("Getting access denied consistently, skipping secrets verification, please try again")
                 return None
