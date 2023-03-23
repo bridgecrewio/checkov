@@ -4,7 +4,7 @@ from typing import Any
 from checkov.common.util.consts import START_LINE, END_LINE
 
 IMAGE_BLOCK_NAMES = ('image', 'services')
-SKIP_BLOCKS = ('include', 'stages')
+SKIP_BLOCKS = ('include', 'stages', 'cache', 'variables')
 
 
 def generate_resource_key_recursive(conf: dict[str, Any] | list[str] | str, key: str, start_line: int,
