@@ -31,3 +31,6 @@ class VerifySecretsResult(Enum):
 
 
 GIT_HISTORY_NOT_BEEN_REMOVED = 'not-removed'
+ADDED = 'added'
+REMOVED = 'removed'
+GIT_HISTORY_OPTIONS = {ADDED, REMOVED}
