@@ -345,7 +345,9 @@ class ForeachHandler(object):
             name=main_resource.name,
             nested_tf_module=new_resource.source_module_object,
         )
-        main_resource_module_value = deepcopy(self.local_graph.vertices_by_module_dependency[main_resource_module_key])
+
+        copy_of_vertices_by_module_dependency = deepcopy(self.local_graph.vertices_by_module_dependency)
+        main_resource_module_value = deepcopy(copy_of_vertices_by_module_dependency[main_resource_module_key])
         new_resource_module_key = TFModule(new_resource.path, new_resource.name, new_resource.source_module_object,
                                            idx_to_change)
 
@@ -361,6 +363,8 @@ class ForeachHandler(object):
             key_with_foreach_index = deepcopy(main_resource_module_key)
             key_with_foreach_index.foreach_idx = idx_to_change
             self.local_graph.vertices_by_module_dependency[key_with_foreach_index] = main_resource_module_value
+
+        del copy_of_vertices_by_module_dependency, new_resource, main_resource_module_key, main_resource_module_value
 
     def _create_new_module_with_vertices(self, main_resource: TerraformBlock, main_resource_module_value: dict[str, list[int]],
                                          resource_idx: Any, new_resource: TerraformBlock | None = None,
