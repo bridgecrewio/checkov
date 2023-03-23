@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from typing import Optional, Any
-from typing_extensions import TypeAlias
+from typing import Optional, Any, TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from typing_extensions import TypeAlias
 
 FOREACH_STRING = 'for_each'
 COUNT_STRING = 'count'
