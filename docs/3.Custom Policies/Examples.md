@@ -422,7 +422,7 @@ definition:
     value: "0.0.0.0/0"
 ```
 
-## Prevent the use of an unauthorized source
+## Prevent the use of an unauthorized module source
 
 The following policy will pass if and only if the source begins with `terraform-aws-modules`.
 
