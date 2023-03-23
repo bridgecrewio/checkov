@@ -146,7 +146,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         matching module vertex as 'source_module'
         """
         if self.use_new_tf_parser:
-            for vertex in self.vertices:
+            for _, vertex in enumerate(self.vertices):
                 if not vertex.source_module_object:
                     continue
                 for idx in self.vertices_by_block_type[BlockType.MODULE]:
@@ -155,6 +155,8 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                     if vertex.source_module_object.path != self.vertices[idx].path:
                         continue
                     if vertex.source_module_object.nested_tf_module != self.vertices[idx].source_module_object:
+                        continue
+                    if vertex.source_module_object.foreach_idx != self.vertices[idx].for_each_index:
                         continue
                     vertex.source_module.add(idx)
                     break

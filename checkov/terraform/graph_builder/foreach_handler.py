@@ -4,9 +4,11 @@ import itertools
 import logging
 import json
 import re
+from collections import defaultdict
 from copy import deepcopy
 from typing import Any, Optional, TypeVar
 
+from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
 from checkov.terraform.modules.module_objects import TFModule
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
@@ -28,7 +30,7 @@ class ForeachHandler(object):
         self.local_graph = local_graph
 
     def handle_foreach_rendering(self, foreach_blocks: dict[str, list[int]]) -> None:
-        # self.handle_foreach_rendering_for_module(foreach_blocks.get(BlockType.MODULE))
+        self._handle_foreach_rendering_for_module(foreach_blocks.get(BlockType.MODULE))
         self._handle_foreach_rendering_for_resource(foreach_blocks.get(BlockType.RESOURCE))
 
     def _handle_foreach_rendering_for_resource(self, resources_blocks: list[int]) -> None:
@@ -36,8 +38,12 @@ class ForeachHandler(object):
         self._create_new_resources(block_index_to_statement)
 
     def _get_statements(self, resources_blocks: list[int]) -> FOR_EACH_BLOCK_TYPE:
+        if not resources_blocks:
+            return {}
         block_index_to_statement: FOR_EACH_BLOCK_TYPE = {}
-        for block_index in resources_blocks:
+        for block_index, block in enumerate(self.local_graph.vertices):
+            if not (FOREACH_STRING in block.attributes or COUNT_STRING in block.attributes):
+                continue
             foreach_statement = self._get_static_foreach_statement(block_index)
             block_index_to_statement[block_index] = foreach_statement
         blocks_to_render = [block_idx for block_idx, statement in block_index_to_statement.items() if statement is None]
@@ -91,8 +97,8 @@ class ForeachHandler(object):
         return False
 
     @staticmethod
-    def extract_from_list(val: list[str] | list[int]) -> list[str] | list[int] | int | str:
-        return val[0] if len(val) == 1 and isinstance(val[0], (str, int)) else val
+    def extract_from_list(val: list[str] | list[int] | list[list[str]]) -> list[str] | list[int] | int | str:
+        return val[0] if len(val) == 1 and isinstance(val[0], (str, int, list)) else val
 
     def _handle_static_foreach_statement(self, statement: list[str] | dict[str, Any]) -> Optional[list[str] | dict[str, Any]]:
         if isinstance(statement, list):
@@ -161,7 +167,78 @@ class ForeachHandler(object):
     def _create_new_resources_count(self, statement: int, block_idx: int) -> None:
         main_resource = self.local_graph.vertices[block_idx]
         for i in range(statement):
-            self._create_new_resource(main_resource, i, resource_idx=block_idx, foreach_idx=i)
+            if main_resource.block_type == BlockType.MODULE:
+                self._create_new_module(main_resource, i, resource_idx=block_idx, foreach_idx=i)
+            elif main_resource.block_type == BlockType.RESOURCE:
+                self._create_new_resource(main_resource, i, resource_idx=block_idx, foreach_idx=i)
+        if main_resource.block_type == BlockType.MODULE:
+            for i in range(statement):
+                should_override = True if i == 0 else False
+                self._update_module_children(main_resource, i, should_override_foreach_key=should_override)
+
+    def _update_module_children(self, main_resource: TerraformBlock,
+                                original_foreach_or_count_key: int | str,
+                                should_override_foreach_key: bool = True) -> None:
+        original_module_key = TFModule(path=main_resource.path, name=main_resource.name,
+                                       nested_tf_module=main_resource.source_module_object)
+
+        if not should_override_foreach_key:
+            original_module_key.foreach_idx = original_foreach_or_count_key
+
+        self._update_children_foreach_index(original_foreach_or_count_key, original_module_key,
+                                            should_override_foreach_key=should_override_foreach_key)
+
+    def _update_children_foreach_index(self, original_foreach_or_count_key: int | str, original_module_key: TFModule,
+                                       current_module_key: TFModule | None = None, should_override_foreach_key: bool = True) -> None:
+        """
+        Go through all child vertices and update source_module_object with foreach_idx
+        """
+        if current_module_key is None:
+            current_module_key = deepcopy(original_module_key)
+        if current_module_key not in self.local_graph.vertices_by_module_dependency:
+            return
+        values = self.local_graph.vertices_by_module_dependency[current_module_key].values()
+        for child_indexes in values:
+            for child_index in child_indexes:
+                child = self.local_graph.vertices[child_index]
+
+                ForeachHandler._update_nested_tf_module_foreach_idx(original_foreach_or_count_key, original_module_key,
+                                                                    child.source_module_object)
+                self._update_resolved_entry_for_tf_definition(child, original_foreach_or_count_key, original_module_key)
+
+                # Important to copy to avoid changing the object by reference
+                child_source_module_object_copy = deepcopy(child.source_module_object)
+                if should_override_foreach_key:
+                    child_source_module_object_copy.foreach_idx = None
+
+                child_module_key = TFModule(path=child.path, name=child.name,
+                                            nested_tf_module=child_source_module_object_copy,
+                                            foreach_idx=child.for_each_index)
+                self._update_children_foreach_index(original_foreach_or_count_key, original_module_key,
+                                                    child_module_key)
+
+    @staticmethod
+    def _update_resolved_entry_for_tf_definition(child: TerraformBlock, original_foreach_or_count_key: int | str,
+                                                 original_module_key: TFModule) -> None:
+        if child.block_type == BlockType.RESOURCE:
+            child_name, child_type = child.name.split('.')
+            config = child.config[child_name][child_type]
+        else:
+            config = child.config.get(child.name)
+        if isinstance(config, dict) and config.get(RESOLVED_MODULE_ENTRY_NAME) is not None:
+            tf_moudle: TFModule = config[RESOLVED_MODULE_ENTRY_NAME][0].tf_source_modules
+            ForeachHandler._update_nested_tf_module_foreach_idx(original_foreach_or_count_key, original_module_key,
+                                                                tf_moudle)
+
+    @staticmethod
+    def _update_nested_tf_module_foreach_idx(original_foreach_or_count_key: int | str, original_module_key: TFModule,
+                                             tf_moudle: TFModule) -> None:
+        original_module_key.foreach_idx = None  # Make sure it is always None even if we didn't override it previously
+        while tf_moudle is not None:
+            if tf_moudle == original_module_key:
+                tf_moudle.foreach_idx = original_foreach_or_count_key
+                break
+            tf_moudle = tf_moudle.nested_tf_module
 
     @staticmethod
     def _pop_foreach_attrs(attrs: dict[str, Any]) -> None:
@@ -214,7 +291,10 @@ class ForeachHandler(object):
         return foreach_attributes
 
     @staticmethod
-    def _build_key_to_val_changes(new_val: str, new_key: str):
+    def _build_key_to_val_changes(main_resource: TerraformBlock, new_val: str, new_key: str):
+        if main_resource.attributes.get(COUNT_STRING):
+            return {COUNT_KEY: new_val}
+
         return {
             EACH_VALUE: new_val,
             EACH_KEY: new_key
@@ -227,74 +307,168 @@ class ForeachHandler(object):
             resource_idx: int,
             foreach_idx: int,
             new_key: Optional[str] = None,
-    ):
+    ) -> None:
         new_resource = deepcopy(main_resource)
-        if new_resource.block_type != BlockType.RESOURCE:
-            block_type = None
-            block_name = new_resource.name
-        else:
-            block_type, block_name = new_resource.name.split('.')
-        if main_resource.attributes.get(COUNT_STRING):
-            key_to_val_changes = {COUNT_KEY: new_value}
-        else:
-            key_to_val_changes = self._build_key_to_val_changes(new_value, new_key)
+        block_type, block_name = new_resource.name.split('.')
+        key_to_val_changes = self._build_key_to_val_changes(main_resource, new_value, new_key)
+        config_attrs = new_resource.config.get(block_type, {}).get(block_name, {})
 
-        if new_resource.block_type != BlockType.RESOURCE:
-            config_attrs = new_resource.config.get(block_name, {})
+        self._update_foreach_attrs(config_attrs, key_to_val_changes, new_resource)
+        idx_to_change = new_key or new_value
+        self._add_index_to_resource_block_properties(new_resource, idx_to_change)
+        if foreach_idx == 0:
+            self.local_graph.vertices[resource_idx] = new_resource
         else:
-            config_attrs = new_resource.config.get(block_type, {}).get(block_name, {})
+            self.local_graph.vertices.append(new_resource)
+
+    def _update_foreach_attrs(self, config_attrs: dict[str, Any], key_to_val_changes: [dict[str, Any]],
+                              new_resource: TerraformBlock) -> None:
         self._pop_foreach_attrs(new_resource.attributes)
         self._pop_foreach_attrs(config_attrs)
         self._update_attributes(new_resource.attributes, key_to_val_changes)
         foreach_attrs = self._update_attributes(config_attrs, key_to_val_changes)
         new_resource.foreach_attrs = foreach_attrs
 
+    def _create_new_module(
+            self,
+            main_resource: TerraformBlock,
+            new_value: int | str,
+            resource_idx: int,
+            foreach_idx: int,
+            new_key: Optional[str] = None) -> None:
+        new_resource = deepcopy(main_resource)
+        block_name = new_resource.name
+        config_attrs = new_resource.config.get(block_name, {})
+        key_to_val_changes = self._build_key_to_val_changes(main_resource, new_value, new_key)
+        self._update_foreach_attrs(config_attrs, key_to_val_changes, new_resource)
         idx_to_change = new_key or new_value
-        self._add_index_to_block_properties(new_resource, idx_to_change)
-        if foreach_idx == 0:
-            self.local_graph.vertices[resource_idx] = new_resource
-        else:
+        new_resource.for_each_index = idx_to_change
+
+        main_resource_module_key = TFModule(
+            path=new_resource.path,
+            name=main_resource.name,
+            nested_tf_module=new_resource.source_module_object,
+        )
+
+        # Without making this copy the test don't pass, as we might access the data structure in the middle of an update
+        copy_of_vertices_by_module_dependency = deepcopy(self.local_graph.vertices_by_module_dependency)
+        main_resource_module_value = deepcopy(copy_of_vertices_by_module_dependency[main_resource_module_key])
+        new_resource_module_key = TFModule(new_resource.path, new_resource.name, new_resource.source_module_object,
+                                           idx_to_change)
+
+        self._update_block_name_and_id(new_resource, idx_to_change)
+        self._update_resolved_entry_for_tf_definition(new_resource, idx_to_change, main_resource_module_key)
+        if foreach_idx != 0:
             self.local_graph.vertices.append(new_resource)
-        if new_resource.block_type == BlockType.MODULE:
-            new_resource.for_each_index = idx_to_change
-            module_key = TFModule(
-                path=new_resource.path,
-                name=main_resource.name,
-                nested_tf_module=new_resource.source_module_object,
-            ) if self.local_graph.vertices[resource_idx].source_module else None
-            if foreach_idx != 0:
-                new_module_value = deepcopy(self.local_graph.vertices_by_module_dependency[module_key])
-                new_module_key = TFModule(new_resource.path, new_resource.name, new_resource.source_module_object, idx_to_change)
-                self.local_graph.vertices_by_module_dependency.update({new_module_key: new_module_value})
-                self.local_graph.vertices_by_module_dependency[module_key][BlockType.MODULE].append(len(self.local_graph.vertices) -1)
+            self._create_new_module_with_vertices(main_resource, main_resource_module_value, resource_idx, new_resource,
+                                                  new_resource_module_key)
+        else:
+            self.local_graph.vertices[resource_idx] = new_resource
+
+            key_with_foreach_index = deepcopy(main_resource_module_key)
+            key_with_foreach_index.foreach_idx = idx_to_change
+            self.local_graph.vertices_by_module_dependency[key_with_foreach_index] = main_resource_module_value
+
+        del copy_of_vertices_by_module_dependency, new_resource, main_resource_module_key, main_resource_module_value
+
+    def _create_new_module_with_vertices(self, main_resource: TerraformBlock, main_resource_module_value: dict[str, list[int]],
+                                         resource_idx: Any, new_resource: TerraformBlock | None = None,
+                                         new_resource_module_key: TFModule | None = None) -> None:
+        if new_resource is None:
+            new_resource = deepcopy(main_resource)
+            new_resource_module_key = TFModule(new_resource.path, new_resource.name, new_resource.source_module_object,
+                                               new_resource.for_each_index)
+
+        new_resource_vertex_idx = len(self.local_graph.vertices) - 1
+        original_vertex_source_module = self.local_graph.vertices[resource_idx].source_module_object
+        if original_vertex_source_module:
+            source_module_key = TFModule(
+                path=original_vertex_source_module.path,
+                name=original_vertex_source_module.name,
+                nested_tf_module=original_vertex_source_module.nested_tf_module,
+            )
+        else:
+            source_module_key = None
+        self.local_graph.vertices_by_module_dependency[source_module_key][BlockType.MODULE].append(new_resource_vertex_idx)
+        new_vertices_module_value = self._add_new_vertices_for_module(new_resource_module_key,
+                                                                      main_resource_module_value,
+                                                                      new_resource_vertex_idx)
+        self.local_graph.vertices_by_module_dependency.update({new_resource_module_key: new_vertices_module_value})
+
+    def _add_new_vertices_for_module(self, new_module_key: TFModule, new_module_value: dict[str, list[int]],
+                                     new_resource_vertex_idx: int) -> dict[str: list[int]]:
+        new_vertices_module_value: dict[str: list[int]] = defaultdict(list)
+        for vertex_type, vertices_idx in new_module_value.items():
+            for vertex_idx in vertices_idx:
+                module_vertex = self.local_graph.vertices[vertex_idx]
+                new_vertex = deepcopy(module_vertex)
+                new_vertex.source_module_object = new_module_key
+                self.local_graph.vertices.append(new_vertex)
+
+                # Update source module based on the new added vertex
+                new_vertex.source_module.pop()
+                new_vertex.source_module.add(new_resource_vertex_idx)
+
+                new_vertex_idx = len(self.local_graph.vertices) - 1
+                new_vertices_module_value[vertex_type].append(new_vertex_idx)
+
+                if vertex_type == BlockType.MODULE:
+                    module_vertex_key = TFModule(path=module_vertex.path, name=module_vertex.name,
+                                                 nested_tf_module=module_vertex.source_module_object,
+                                                 foreach_idx=module_vertex.for_each_index)
+                    module_vertex_value = self.local_graph.vertices_by_module_dependency[module_vertex_key]
+                    self._create_new_module_with_vertices(new_vertex, module_vertex_value, new_vertex_idx)
+
+        return new_vertices_module_value
 
     def _create_new_resources_foreach(self, statement: list[str] | dict[str, Any], block_idx: int) -> None:
         main_resource = self.local_graph.vertices[block_idx]
         if isinstance(statement, list):
             for i, new_value in enumerate(statement):
-                self._create_new_resource(main_resource, new_value, new_key=new_value, resource_idx=block_idx, foreach_idx=i)
+                self._create_new_foreach_resource(block_idx, i, main_resource, new_key=new_value, new_value=new_value)
         if isinstance(statement, dict):
             for i, (new_key, new_value) in enumerate(statement.items()):
-                self._create_new_resource(main_resource, new_value, new_key=new_key, resource_idx=block_idx, foreach_idx=i)
+                self._create_new_foreach_resource(block_idx, i, main_resource, new_key, new_value)
+        if main_resource.block_type == BlockType.MODULE:
+            if isinstance(statement, list):
+                for i, new_value in enumerate(statement):
+                    should_override = True if i == 0 else False
+                    self._update_module_children(main_resource, new_value, should_override_foreach_key=should_override)
+            elif isinstance(statement, dict):
+                for i, (new_key, _) in enumerate(statement.items()):
+                    should_override = True if i == 0 else False
+                    self._update_module_children(main_resource, new_key, should_override_foreach_key=should_override)
+
+    def _create_new_foreach_resource(self, block_idx: int, foreach_idx: int, main_resource: TerraformBlock,
+                                     new_key: int | str, new_value: int | str) -> None:
+        if main_resource.block_type == BlockType.MODULE:
+            self._create_new_module(main_resource, new_value, new_key=new_key, resource_idx=block_idx,
+                                    foreach_idx=foreach_idx)
+        elif main_resource.block_type == BlockType.RESOURCE:
+            self._create_new_resource(main_resource, new_value, new_key=new_key, resource_idx=block_idx,
+                                      foreach_idx=foreach_idx)
 
     @staticmethod
-    def _add_index_to_block_properties(block: TerraformBlock, idx: str | int) -> None:
-        if block.block_type != BlockType.RESOURCE:
-            block_type = None
-            block_name = block.name
-        else:
-            block_type, block_name = block.name.split('.')
+    def _add_index_to_resource_block_properties(block: TerraformBlock, idx: str | int) -> None:
+        block_type, block_name = block.name.split('.')
+        idx_with_separator = ForeachHandler._update_block_name_and_id(block, idx)
+        if block.config.get(block_type) and block.config.get(block_type, {}).get(block_name):
+            block.config[block_type][f"{block_name}[{idx_with_separator}]"] = block.config[block_type].pop(block_name)
+
+    @staticmethod
+    def _update_block_name_and_id(block: TerraformBlock, idx: int | str) -> str:
         # Note it is important to use `\"` inside the string,
         # as the string `["` is the separator for `foreach` in terraform.
         # In `count` it is just `[`
         idx_with_separator = f'\"{idx}\"' if isinstance(idx, str) else f'{idx}'
+        new_block_id = f"{block.id}[{idx_with_separator}]"
+        new_block_name = f"{block.name}[{idx_with_separator}]"
 
-        block.id = f"{block.id}[{idx_with_separator}]"
-        block.name = f"{block.name}[{idx_with_separator}]"
-        if block.block_type == BlockType.RESOURCE and block.config.get(block_type) and block.config.get(block_type, {}).get(block_name):
-            block.config[block_type][f"{block_name}[{idx_with_separator}]"] = block.config[block_type].pop(block_name)
-        elif block.config.get(block_name):
-            block.config[f"{block_name}[{idx_with_separator}]"] = block.config.pop(block_name)
+        if block.block_type == BlockType.MODULE:
+            block.config[new_block_name] = block.config.pop(block.name)
+        block.id = new_block_id
+        block.name = new_block_name
+        return idx_with_separator
 
     def _create_new_resources(self, block_index_to_statement: FOR_EACH_BLOCK_TYPE) -> None:
         for block_idx, statement in block_index_to_statement.items():
@@ -305,7 +479,7 @@ class ForeachHandler(object):
             else:
                 self._create_new_resources_foreach(statement, block_idx)
 
-    def handle_foreach_rendering_for_module(self, modules_blocks: list[int]) -> None:
+    def _handle_foreach_rendering_for_module(self, modules_blocks: list[int]) -> None:
         """
         modules_blocks (list[int]): list of module blocks indexes in the graph that contains for_each / counts.
         """
@@ -314,6 +488,8 @@ class ForeachHandler(object):
         current_level = [None]
         main_module_modules = deepcopy(self.local_graph.vertices_by_module_dependency.get(None)[BlockType.MODULE])
         modules_to_render = main_module_modules
+
+        # TODO add documentation on logic here + Move the render graph to here
         while modules_to_render:
             for module_idx in modules_to_render:
                 module_block = self.local_graph.vertices[module_idx]
@@ -322,20 +498,16 @@ class ForeachHandler(object):
                 sub_graph = self._build_sub_graph(modules_blocks)
                 self._render_sub_graph(sub_graph, blocks_to_render=modules_blocks)
                 if for_each:
-                    if not self._is_static_statement(module_idx):
-                        for_each = self._handle_static_statement(module_idx, sub_graph)
-                        if not self._is_static_statement(module_idx, sub_graph):
-                            continue
+                    for_each = self._handle_static_statement(module_idx, sub_graph)
+                    if not self._is_static_statement(module_idx, sub_graph):
+                        continue
                     self.duplicate_module_with_for_each(module_idx, for_each)
                 elif count:
-                    if not self._is_static_statement(module_idx):
-                        count = self._handle_static_statement(module_idx, sub_graph)
-                        if not self._is_static_statement(module_idx, sub_graph):
-                            continue
+                    count = self._handle_static_statement(module_idx, sub_graph)
+                    if not self._is_static_statement(module_idx, sub_graph):
+                        continue
                     self.duplicate_module_with_count(module_idx, count)
             modules_to_render = self._get_modules_to_render(current_level)
-            # self.local_graph._arrange_graph_data()
-            # self.local_graph._build_edges()
 
     def duplicate_module_with_for_each(self, module_idx: int, for_each: dict[str, Any] | list[str]) -> None:
         self._create_new_resources_foreach(for_each, module_idx)
@@ -348,6 +520,7 @@ class ForeachHandler(object):
         current_level.clear()
         for m_idx in rendered_modules:
             m = self.local_graph.vertices[m_idx]
-            current_level.append(TFModule(m.path, m.name, m.source_module_object, m.for_each_index))
+            m_name = m.name.split('[')[0]
+            current_level.append(TFModule(m.path, m_name, m.source_module_object, m.for_each_index))
         modules_to_render = [self.local_graph.vertices_by_module_dependency[curr]['module'] for curr in current_level]
         return list(itertools.chain.from_iterable(modules_to_render))
