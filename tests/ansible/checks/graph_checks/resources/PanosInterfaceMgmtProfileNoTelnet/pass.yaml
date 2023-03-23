@@ -1,0 +1,29 @@
+---
+- name: Verify tests
+  hosts: all
+  connection: local
+  gather_facts: false
+
+  vars:
+    device:
+      ip_address: "{{ ip_address }}"
+      username: "{{ username | default(omit) }}"
+      password: "{{ password | default(omit) }}"
+      api_key: "{{ api_key | default(omit) }}"
+
+  tasks:
+    - name: Interface_mgmt_profile_pass_1
+      paloaltonetworks.panos.panos_management_profile:
+        provider: '{{ provider }}'
+        name: 'Test profile'
+        ping: true
+        ssh: true
+        # telnet not defined, defaults to false, which is a pass
+
+    - name: Interface_mgmt_profile_pass_2
+      paloaltonetworks.panos.panos_management_profile:
+        provider: '{{ provider }}'
+        name: 'Test profile'
+        ping: true
+        ssh: true
+        telnet: false # telnet defined as false, which is a pass

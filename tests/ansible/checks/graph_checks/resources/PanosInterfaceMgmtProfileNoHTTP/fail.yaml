@@ -1,0 +1,27 @@
+---
+- name: Verify tests
+  hosts: all
+  connection: local
+  gather_facts: false
+
+  vars:
+    device:
+      ip_address: "{{ ip_address }}"
+      username: "{{ username | default(omit) }}"
+      password: "{{ password | default(omit) }}"
+      api_key: "{{ api_key | default(omit) }}"
+
+  tasks:
+    - name: Interface_mgmt_profile_fail_1
+      paloaltonetworks.panos.panos_management_profile:
+        provider: '{{ provider }}'
+        name: 'Test profile'
+        http: true # http defined as true, which is a fail
+
+    - name: Interface_mgmt_profile_fail_2
+      paloaltonetworks.panos.panos_management_profile:
+        provider: '{{ provider }}'
+        name: 'Test profile'
+        ping: true
+        http: true # http defined as true, which is a fail
+        ssh: true
