@@ -220,6 +220,9 @@ class Checkov:
             if self.config.output is None:
                 self.config.output = ['cli']
 
+            if self.config.support:
+                bc_integration.support_flag_enabled = True
+
             if self.config.bc_api_key and not self.config.include_all_checkov_policies:
                 if self.config.skip_download and not self.config.external_checks_dir:
                     print('You are using an API key along with --skip-download but not --include-all-checkov-policies or --external-checks-dir. '
