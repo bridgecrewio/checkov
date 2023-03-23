@@ -24,7 +24,7 @@ def convert_graph_vertices_to_tf_definitions(
         if block_type == BlockType.TF_VARIABLE:
             continue
 
-        tf_path = block_path if not use_new_tf_parser else TFDefinitionKey(file_path=block_path)
+        tf_path = TFDefinitionKey(file_path=block_path) if use_new_tf_parser else block_path
         if vertex.module_dependency or hasattr(vertex, "source_module_object") and vertex.source_module_object:
             if use_new_tf_parser:
                 tf_path = TFDefinitionKey(file_path=block_path, tf_source_modules=vertex.source_module_object)
