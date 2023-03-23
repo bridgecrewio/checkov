@@ -370,4 +370,4 @@ def test_foreach_module_with_more_than_two_resources(checkov_source_path):
 
     assert len([block for block in graph.vertices if block.block_type == 'module']) == 16
     assert len([block for block in graph.vertices if block.block_type == 'resource']) == 14
-    assert len(tf_definitions.keys()) == 23
+    assert len(tf_definitions.keys()) == 17
