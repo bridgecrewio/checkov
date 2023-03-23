@@ -10,8 +10,8 @@ class RDSClusterCopyTags(BaseResourceValueCheck):
         """
         name = "Ensure RDS cluster configured to copy tags to snapshots"
         id = "CKV_AWS_313"
-        supported_resources = ["aws_rds_cluster"]
-        categories = [CheckCategories.IAM]
+        supported_resources = ("aws_rds_cluster",)
+        categories = (CheckCategories.GENERAL_SECURITY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self) -> str:
