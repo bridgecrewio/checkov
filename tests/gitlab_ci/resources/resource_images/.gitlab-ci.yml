@@ -1,3 +1,6 @@
+include:
+  - local: '/templates/.after-script-template.yml'
+
 dummy_list:
   - first
   - second

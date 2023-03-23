@@ -4,6 +4,7 @@ from typing import Any
 from checkov.common.util.consts import START_LINE, END_LINE
 
 IMAGE_BLOCK_NAMES = ('image', 'services')
+SKIP_BLOCKS = ('include', 'stages', 'cache', 'variables')
 
 
 def generate_resource_key_recursive(conf: dict[str, Any] | list[str] | str, key: str, start_line: int,
@@ -17,6 +18,9 @@ def _generate_resource_key_recursive(conf: dict[str, Any] | list[str] | str, key
         return key
 
     for k, value in conf.items():
+        if depth == 0 and k in SKIP_BLOCKS:
+            continue
+
         if k in IMAGE_BLOCK_NAMES:
             scanned_image_blocks.add(k)
 
