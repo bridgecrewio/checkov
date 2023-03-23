@@ -18,9 +18,10 @@
         rule_name: 'Test rule'
         source_zone: ['any']
         destination_zone: ['any']
+        source_ip: ['10.10.10.1']
         category: ['any']
         application: ['ssl']
         service: ['service-http', 'service-https']
-        description: "A nice rule" # Description provided
+        description: "A nice rule"
         action: 'allow'
-        log_setting: 'default'
+        log_setting: 'default' # Log forwarding profile is specified

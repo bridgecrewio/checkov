@@ -1,0 +1,20 @@
+---
+- name: Verify tests
+  hosts: all
+  connection: local
+  gather_facts: false
+
+  vars:
+    device:
+      ip_address: "{{ ip_address }}"
+      username: "{{ username | default(omit) }}"
+      password: "{{ password | default(omit) }}"
+      api_key: "{{ api_key | default(omit) }}"
+
+  tasks:
+    - name: Zone_pass_1
+      paloaltonetworks.panos.panos_zone:
+        provider: '{{ provider }}'
+        zone: 'dmz'
+        mode: 'layer3'
+        zone_profile: 'strict' # Zone Protection Profile specified, which is a pass

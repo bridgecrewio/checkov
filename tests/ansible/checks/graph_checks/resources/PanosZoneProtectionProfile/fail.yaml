@@ -1,0 +1,27 @@
+---
+- name: Verify tests
+  hosts: all
+  connection: local
+  gather_facts: false
+
+  vars:
+    device:
+      ip_address: "{{ ip_address }}"
+      username: "{{ username | default(omit) }}"
+      password: "{{ password | default(omit) }}"
+      api_key: "{{ api_key | default(omit) }}"
+
+  tasks:
+    - name: Zone_fail_1
+      paloaltonetworks.panos.panos_zone:
+        provider: '{{ provider }}'
+        zone: 'dmz'
+        mode: 'layer3'
+        # Zone Protection Profile not specified, which is a fail
+
+    - name: Zone_fail_2
+      paloaltonetworks.panos.panos_zone:
+        provider: '{{ provider }}'
+        zone: 'dmz'
+        mode: 'layer3'
+        zone_profile: '' # Empty Zone Protection Profile specified, which is a pass

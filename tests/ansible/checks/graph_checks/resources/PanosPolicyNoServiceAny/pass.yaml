@@ -23,6 +23,7 @@
         service: ['service-https'] # Single service provided
         description: "A nice rule"
         action: 'allow'
+        log_setting: 'default'
 
     - name: Security_rule_pass_2
       paloaltonetworks.panos.panos_security_rule:
@@ -35,3 +36,4 @@
         service: ['service-http', 'service-https'] # Multiple services provided
         description: "A nice rule"
         action: 'allow'
+        log_setting: 'default'

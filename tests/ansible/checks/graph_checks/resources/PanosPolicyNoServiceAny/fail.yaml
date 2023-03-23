@@ -23,6 +23,7 @@
         service: ['any'] # Service is any
         action: 'allow'
         description: 'Good description goes here'
+        log_setting: 'default'
 
     - name: Security_rule_fail_2
       paloaltonetworks.panos.panos_security_rule:
@@ -35,6 +36,7 @@
         service: ['Any'] # Service is any, with uppercase
         action: 'allow'
         description: 'Good description goes here'
+        log_setting: 'default'
 
     - name: Security_rule_fail_3
       paloaltonetworks.panos.panos_security_rule:
@@ -47,6 +49,7 @@
         service: [''] # Service is empty
         action: 'allow'
         description: 'Good description goes here'
+        log_setting: 'default'
 
     - name: Security_rule_fail_4
       paloaltonetworks.panos.panos_security_rule:
@@ -58,4 +61,5 @@
         application: ['ssl']
         action: 'allow'
         description: 'Good description goes here'
+        log_setting: 'default'
         # No service provided, defaults to 'any' which is a fail

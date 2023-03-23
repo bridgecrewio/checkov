@@ -1,0 +1,32 @@
+---
+- name: Verify tests
+  hosts: all
+  connection: local
+  gather_facts: false
+
+  vars:
+    device:
+      ip_address: "{{ ip_address }}"
+      username: "{{ username | default(omit) }}"
+      password: "{{ password | default(omit) }}"
+      api_key: "{{ api_key | default(omit) }}"
+
+  tasks:
+    - name: Zone_fail_1
+      paloaltonetworks.panos.panos_zone:
+        provider: '{{ provider }}'
+        zone: 'dmz'
+        mode: 'layer3'
+        zone_profile: 'strict'
+        enable_userid: true
+        # User-ID (enable_userid) is enabled and include ACL (include_acl) is not specified so defaults to none
+
+    - name: Zone_fail_2
+      paloaltonetworks.panos.panos_zone:
+        provider: '{{ provider }}'
+        zone: 'dmz'
+        mode: 'layer3'
+        zone_profile: 'strict'
+        enable_userid: true
+        include_acl: ['']
+        # User-ID (enable_userid) is enabled and include ACL (include_acl) is empty
