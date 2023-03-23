@@ -62,7 +62,8 @@ class ForeachAbstractHandler:
             if not (block.block_type == BlockType.RESOURCE and i not in blocks_to_render):
                 sub_graph.vertices[i] = deepcopy(block)
         sub_graph.edges = [
-            deepcopy(edge) for edge in self.local_graph.edges if (sub_graph.vertices[edge.dest] and sub_graph.vertices[edge.origin])
+            deepcopy(edge) for edge in self.local_graph.edges if
+            (sub_graph.vertices[edge.dest] and sub_graph.vertices[edge.origin])
         ]
         sub_graph.in_edges = deepcopy(self.local_graph.in_edges)
         sub_graph.out_edges = deepcopy(self.local_graph.out_edges)
@@ -171,7 +172,8 @@ class ForeachAbstractHandler:
             config = child.config.get(child.name)
         if isinstance(config, dict) and config.get(RESOLVED_MODULE_ENTRY_NAME) is not None:
             tf_moudle: TFModule = config[RESOLVED_MODULE_ENTRY_NAME][0].tf_source_modules
-            ForeachAbstractHandler._update_nested_tf_module_foreach_idx(original_foreach_or_count_key, original_module_key,
+            ForeachAbstractHandler._update_nested_tf_module_foreach_idx(original_foreach_or_count_key,
+                                                                        original_module_key,
                                                                         tf_moudle)
 
     def _handle_static_statement(self, block_index: int, sub_graph: Optional[TerraformLocalGraph] = None) -> \
@@ -186,8 +188,8 @@ class ForeachAbstractHandler:
             return self._handle_static_count_statement(count_statement)
         return
 
-
-    def _handle_static_foreach_statement(self, statement: list[str] | dict[str, Any]) -> Optional[list[str] | dict[str, Any]]:
+    def _handle_static_foreach_statement(self, statement: list[str] | dict[str, Any])\
+            -> list[str] | dict[str, Any] | None:
         if isinstance(statement, list):
             statement = self.extract_from_list(statement)
         evaluated_statement = evaluate_terraform(statement)

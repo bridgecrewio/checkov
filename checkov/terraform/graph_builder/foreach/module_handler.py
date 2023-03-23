@@ -30,7 +30,6 @@ class ForeachModuleHandler(ForeachAbstractHandler):
         main_module_modules = deepcopy(self.local_graph.vertices_by_module_dependency.get(None)[BlockType.MODULE])
         modules_to_render = main_module_modules
 
-
         # TODO add documentation on logic here + Move the render graph to here
         while modules_to_render:
             for module_idx in modules_to_render:
@@ -101,7 +100,7 @@ class ForeachModuleHandler(ForeachAbstractHandler):
     def _create_new_resources_count(self, statement: int, block_idx: int) -> None:
         main_resource = self.local_graph.vertices[block_idx]
         for i in range(statement):
-                self._create_new_module(main_resource, i, resource_idx=block_idx, foreach_idx=i)
+            self._create_new_module(main_resource, i, resource_idx=block_idx, foreach_idx=i)
 
         # We purposely do it at the end to avoid influencing data structures in the middle of an update
         for i in range(statement):
@@ -109,7 +108,8 @@ class ForeachModuleHandler(ForeachAbstractHandler):
             self._update_module_children(main_resource, i, should_override_foreach_key=should_override)
 
     def _update_children_foreach_index(self, original_foreach_or_count_key: int | str, original_module_key: TFModule,
-                                       current_module_key: TFModule | None = None, should_override_foreach_key: bool = True) -> None:
+                                       current_module_key: TFModule | None = None,
+                                       should_override_foreach_key: bool = True) -> None:
         """
         Go through all child vertices and update source_module_object with foreach_idx
         """
@@ -123,7 +123,7 @@ class ForeachModuleHandler(ForeachAbstractHandler):
                 child = self.local_graph.vertices[child_index]
 
                 self._update_nested_tf_module_foreach_idx(original_foreach_or_count_key, original_module_key,
-                                                                            child.source_module_object)
+                                                          child.source_module_object)
                 self._update_resolved_entry_for_tf_definition(child, original_foreach_or_count_key, original_module_key)
 
                 # Important to copy to avoid changing the object by reference
@@ -179,7 +179,8 @@ class ForeachModuleHandler(ForeachAbstractHandler):
 
         del copy_of_vertices_by_module_dependency, new_resource, main_resource_module_key, main_resource_module_value
 
-    def _create_new_module_with_vertices(self, main_resource: TerraformBlock, main_resource_module_value: dict[str, list[int]],
+    def _create_new_module_with_vertices(self, main_resource: TerraformBlock,
+                                         main_resource_module_value: dict[str, list[int]],
                                          resource_idx: Any, new_resource: TerraformBlock | None = None,
                                          new_resource_module_key: TFModule | None = None) -> None:
         if new_resource is None:
@@ -197,7 +198,8 @@ class ForeachModuleHandler(ForeachAbstractHandler):
             )
         else:
             source_module_key = None
-        self.local_graph.vertices_by_module_dependency[source_module_key][BlockType.MODULE].append(new_resource_vertex_idx)
+        self.local_graph.vertices_by_module_dependency[source_module_key][BlockType.MODULE].append(
+            new_resource_vertex_idx)
         new_vertices_module_value = self._add_new_vertices_for_module(new_resource_module_key,
                                                                       main_resource_module_value,
                                                                       new_resource_vertex_idx)

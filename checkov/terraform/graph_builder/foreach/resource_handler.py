@@ -1,17 +1,13 @@
 from __future__ import annotations
 
 import logging
-import json
-import re
 import typing
 from copy import deepcopy
 from typing import Any, Optional
 
 from checkov.terraform.graph_builder.foreach.abstract_handler import ForeachAbstractHandler
-from checkov.terraform.graph_builder.foreach.consts import FOREACH_STRING, COUNT_STRING, REFERENCES_VALUES, \
-    FOR_EACH_BLOCK_TYPE
+from checkov.terraform.graph_builder.foreach.consts import FOREACH_STRING, COUNT_STRING, FOR_EACH_BLOCK_TYPE
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
-from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform import evaluate_terraform
 
 if typing.TYPE_CHECKING:
     from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
@@ -50,7 +46,8 @@ class ForeachResourceHandler(ForeachAbstractHandler):
             else:
                 return None
         except Exception as e:
-            logging.info(f"Cant get foreach statement for block: {self.local_graph.vertices[block_index]}, error: {str(e)}")
+            logging.info(
+                f"Cant get foreach statement for block: {self.local_graph.vertices[block_index]}, error: {str(e)}")
             return None
 
     def _handle_dynamic_statement(self, blocks_to_render: list[int]) -> FOR_EACH_BLOCK_TYPE:
@@ -110,4 +107,3 @@ class ForeachResourceHandler(ForeachAbstractHandler):
                 self._create_new_resources_count(statement, block_idx)
             else:
                 self._create_new_resources_foreach(statement, block_idx)
-
