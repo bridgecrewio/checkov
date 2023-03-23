@@ -3,6 +3,7 @@ locals {
 }
 
 resource "aws_s3_bucket_public_access_block" "var_bucket" {
+  for_each = ["a", "b"]
   bucket                  = local.bucket
   block_public_acls       = true
   block_public_policy     = true

@@ -358,5 +358,5 @@ def test_foreach_module_and_resource(checkov_source_path):
     graph, tf_definitions = build_and_get_graph_by_path(dir_name, render_var=True)
 
     assert len([block for block in graph.vertices if block.block_type == 'module']) == 2
-    assert len([block for block in graph.vertices if block.block_type == 'resource']) == 2
+    assert len([block for block in graph.vertices if block.block_type == 'resource']) == 4
     assert len(tf_definitions.keys()) == 3

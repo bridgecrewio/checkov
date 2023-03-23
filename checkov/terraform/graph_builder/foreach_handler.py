@@ -38,8 +38,12 @@ class ForeachHandler(object):
         self._create_new_resources(block_index_to_statement)
 
     def _get_statements(self, resources_blocks: list[int]) -> FOR_EACH_BLOCK_TYPE:
+        if not resources_blocks:
+            return {}
         block_index_to_statement: FOR_EACH_BLOCK_TYPE = {}
-        for block_index in resources_blocks:
+        for block_index, block in enumerate(self.local_graph.vertices):
+            if not (FOREACH_STRING in block.attributes or COUNT_STRING in block.attributes):
+                continue
             foreach_statement = self._get_static_foreach_statement(block_index)
             block_index_to_statement[block_index] = foreach_statement
         blocks_to_render = [block_idx for block_idx, statement in block_index_to_statement.items() if statement is None]
