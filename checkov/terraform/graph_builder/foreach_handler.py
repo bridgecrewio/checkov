@@ -97,7 +97,7 @@ class ForeachHandler(object):
         return False
 
     @staticmethod
-    def extract_from_list(val: list[str] | list[int]| list[list[str]]) -> list[str] | list[int] | int | str:
+    def extract_from_list(val: list[str] | list[int] | list[list[str]]) -> list[str] | list[int] | int | str:
         return val[0] if len(val) == 1 and isinstance(val[0], (str, int, list)) else val
 
     def _handle_static_foreach_statement(self, statement: list[str] | dict[str, Any]) -> Optional[list[str] | dict[str, Any]]:
@@ -435,7 +435,7 @@ class ForeachHandler(object):
                     should_override = True if i == 0 else False
                     self._update_module_children(main_resource, new_value, should_override_foreach_key=should_override)
             elif isinstance(statement, dict):
-                for i, (new_key, new_value) in enumerate(statement.items()):
+                for i, (new_key, _) in enumerate(statement.items()):
                     should_override = True if i == 0 else False
                     self._update_module_children(main_resource, new_key, should_override_foreach_key=should_override)
 
