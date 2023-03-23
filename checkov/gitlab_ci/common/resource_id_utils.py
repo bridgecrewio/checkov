@@ -18,7 +18,7 @@ def _generate_resource_key_recursive(conf: dict[str, Any] | list[str] | str, key
         return key
 
     for k, value in conf.items():
-        if k in SKIP_BLOCKS:
+        if depth == 0 and k in SKIP_BLOCKS:
             continue
 
         if k in IMAGE_BLOCK_NAMES:
