@@ -1,10 +1,16 @@
+from __future__ import annotations
+
+import typing
+
 from checkov.terraform.graph_builder.foreach.module_handler import ForeachModuleHandler
 from checkov.terraform.graph_builder.foreach.resource_handler import ForeachResourceHandler
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
-from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
+
+if typing.TYPE_CHECKING:
+    from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 
 
-class ForeachHandler:
+class ForeachBuilder:
     def __init__(self, local_graph: TerraformLocalGraph):
         self._resource_handler = ForeachResourceHandler(local_graph)
         self._module_handler = ForeachModuleHandler(local_graph)

@@ -18,10 +18,10 @@ from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimme
 from checkov.common.runners.base_runner import strtobool
 from checkov.common.util.parser_utils import get_abs_path, get_tf_definition_key_from_module_dependency
 from checkov.common.util.type_forcers import force_int
+from checkov.terraform.graph_builder.foreach.builder import ForeachBuilder
 from checkov.terraform.modules.module_objects import TFModule
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
 from checkov.terraform.context_parsers.registry import parser_registry
-import checkov.terraform.graph_builder.foreach.handler as foreach_module
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
@@ -66,8 +66,8 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         logging.info(f"[TerraformLocalGraph] created {len(self.edges)} edges")
         if self.enable_foreach_handling:
             try:
-                foreach_handler = foreach_module.ForeachResourceHandler(self)
-                foreach_handler.handle_foreach_rendering(self.foreach_blocks)
+                foreach_builder = ForeachBuilder(self)
+                foreach_builder.handle(self.foreach_blocks)
                 self._arrange_graph_data()
                 self._build_edges()
                 logging.info(f"[TerraformLocalGraph] finished handling foreach values with {len(self.vertices)} vertices and {len(self.edges)} edges")

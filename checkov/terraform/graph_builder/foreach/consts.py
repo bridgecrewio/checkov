@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TypeVar
+from typing import TypeVar, Optional, Any  # noqa
 
 FOREACH_STRING = 'for_each'
 COUNT_STRING = 'count'

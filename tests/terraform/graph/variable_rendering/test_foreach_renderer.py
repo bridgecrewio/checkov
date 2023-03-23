@@ -5,7 +5,9 @@ from unittest import mock
 import pytest
 
 from checkov.common.util.json_utils import object_hook, CustomJSONEncoder
-from checkov.terraform.graph_builder.foreach.handler import ForeachResourceHandler
+from checkov.terraform.graph_builder.foreach.abstract_handler import ForeachAbstractHandler
+from checkov.terraform.graph_builder.foreach.builder import ForeachBuilder
+from checkov.terraform.graph_builder.foreach.resource_handler import ForeachResourceHandler
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
@@ -103,7 +105,7 @@ def test_foreach_resource():
 def test_build_sub_graph():
     dir_name = 'foreach_resources'
     local_graph = build_and_get_graph_by_path(dir_name)[0]
-    foreach_handler = ForeachResourceHandler(local_graph)
+    foreach_handler = ForeachAbstractHandler(local_graph)
     blocks = [6, 7, 8, 9, 10, 21, 22, 24, 25]
     sub_graph = foreach_handler._build_sub_graph(blocks)
     assert all(sub_graph.vertices[i] for i in blocks)
@@ -119,8 +121,8 @@ def test_new_resources_count():
     main_count_resource = 'aws_s3_bucket.count_var_resource'
     assert main_count_resource in vertices_names
 
-    foreach_handler = ForeachResourceHandler(local_graph)
-    foreach_handler.handle_foreach_rendering({'resource': [3], 'module': []})
+    foreach_builder = ForeachBuilder(local_graph)
+    foreach_builder.handle({'resource': [3], 'module': []})
     for i, resource in enumerate([local_graph.vertices[3], local_graph.vertices[8], local_graph.vertices[9]]):
         assert resource.name.endswith(f"[{i}]")
         assert resource.id.endswith(f"[{i}]")
@@ -133,8 +135,8 @@ def test_new_resources_count():
 def test_new_resources_foreach():
     dir_name = 'foreach_examples/foreach_dup_resources'
     local_graph = build_and_get_graph_by_path(dir_name)[0]
-    foreach_handler = ForeachResourceHandler(local_graph)
-    foreach_handler.handle_foreach_rendering({'resource': [0, 1], 'module': []})
+    foreach_builder = ForeachBuilder(local_graph)
+    foreach_builder.handle({'resource': [0, 1], 'module': []})
     for resource in [local_graph.vertices[0], local_graph.vertices[1], local_graph.vertices[5], local_graph.vertices[6]]:
         assert resource.name.endswith("[\"bucket_a\"]") or resource.name.endswith("[\"bucket_b\"]")
         assert resource.id.endswith("[\"bucket_a\"]") or resource.id.endswith("[\"bucket_b\"]")
@@ -229,7 +231,7 @@ def test_tf_definitions_and_breadcrumbs():
 )
 def test_update_attrs(attrs, k_v_to_change, expected_attrs, expected_res):
     local_graph = build_and_get_graph_by_path('')[0]
-    foreach_handler = ForeachResourceHandler(local_graph)
+    foreach_handler = ForeachAbstractHandler(local_graph)
     res = foreach_handler._update_attributes(attrs, k_v_to_change)
     assert attrs == expected_attrs
     assert res == expected_res
