@@ -454,12 +454,12 @@ class BcPlatformIntegration:
         s3_path = f'{base_path}/{uuid.uuid4()}.json'
         try:
             _put_json_object_quiet(self.s3_client, enriched_secrets, self.bucket, s3_path)
-        except Exception:
+        except ClientError:
             logging.warning("Got access denied, retrying as s3 role changes should be propagated")
             sleep(4)
             try:
                 _put_json_object_quiet(self.s3_client, enriched_secrets, self.bucket, s3_path)
-            except Exception:
+            except ClientError:
                 logging.error("Getting access denied consistently, skipping secrets verification, please try again")
                 return None
 
