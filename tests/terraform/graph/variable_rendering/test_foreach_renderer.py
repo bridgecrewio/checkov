@@ -348,7 +348,7 @@ def test_foreach_module_in_both_levels_module(checkov_source_path):
 
     assert len([block for block in graph.vertices if block.block_type == 'module']) == 20
     assert len([block for block in graph.vertices if block.block_type == 'resource']) == 16
-    assert len(tf_definitions.keys()) == 33
+    assert len(tf_definitions.keys()) == 22
 
 
 @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "True"})

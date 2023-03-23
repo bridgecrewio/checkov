@@ -346,6 +346,7 @@ class ForeachHandler(object):
             nested_tf_module=new_resource.source_module_object,
         )
 
+        # Without making this copy the test don't pass, as we might access the data structure in the middle of an update
         copy_of_vertices_by_module_dependency = deepcopy(self.local_graph.vertices_by_module_dependency)
         main_resource_module_value = deepcopy(copy_of_vertices_by_module_dependency[main_resource_module_key])
         new_resource_module_key = TFModule(new_resource.path, new_resource.name, new_resource.source_module_object,
