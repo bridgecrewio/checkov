@@ -470,7 +470,7 @@
         "inner_s3_module": {
           "__end_line__": 4,
           "__resolved__": [
-            "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/parser_dup_nested/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/parser_dup_nested/module/main.tf\", \"name\": \"inner_s3_module\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/parser_dup_nested/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": \"b\", \"nested_tf_module\": null}}}"
+            "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/parser_dup_nested/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/parser_dup_nested/module/main.tf\", \"name\": \"inner_s3_module\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/parser_dup_nested/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": \"a\", \"nested_tf_module\": null}}}"
           ],
           "__start_line__": 1,
           "bucket2": [
@@ -486,7 +486,7 @@
         "inner_s3_module2": {
           "__end_line__": 9,
           "__resolved__": [
-            "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/parser_dup_nested/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/parser_dup_nested/module/main.tf\", \"name\": \"inner_s3_module2\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/parser_dup_nested/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": \"b\", \"nested_tf_module\": null}}}"
+            "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/parser_dup_nested/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/parser_dup_nested/module/main.tf\", \"name\": \"inner_s3_module2\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/parser_dup_nested/main.tf\", \"name\": \"s3_module\", \"foreach_idx\": \"a\", \"nested_tf_module\": null}}}"
           ],
           "__start_line__": 6,
           "bucket2": [
@@ -640,7 +640,7 @@
         "inner_s3_module": {
           "__end_line__": 4,
           "__resolved__": [
-            "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/parser_dup_nested/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/parser_dup_nested/module/main.tf\", \"name\": \"inner_s3_module\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/parser_dup_nested/main.tf\", \"name\": \"s3_module2\", \"foreach_idx\": 1, \"nested_tf_module\": null}}}"
+            "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/parser_dup_nested/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/parser_dup_nested/module/main.tf\", \"name\": \"inner_s3_module\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/parser_dup_nested/main.tf\", \"name\": \"s3_module2\", \"foreach_idx\": 0, \"nested_tf_module\": null}}}"
           ],
           "__start_line__": 1,
           "bucket2": [
@@ -656,7 +656,7 @@
         "inner_s3_module2": {
           "__end_line__": 9,
           "__resolved__": [
-            "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/parser_dup_nested/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/parser_dup_nested/module/main.tf\", \"name\": \"inner_s3_module2\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/parser_dup_nested/main.tf\", \"name\": \"s3_module2\", \"foreach_idx\": 1, \"nested_tf_module\": null}}}"
+            "{\"file_path\": \".../tests/terraform/graph/variable_rendering/resources/parser_dup_nested/module/module2/main.tf\", \"tf_source_modules\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/parser_dup_nested/module/main.tf\", \"name\": \"inner_s3_module2\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \".../tests/terraform/graph/variable_rendering/resources/parser_dup_nested/main.tf\", \"name\": \"s3_module2\", \"foreach_idx\": 0, \"nested_tf_module\": null}}}"
           ],
           "__start_line__": 6,
           "bucket2": [
