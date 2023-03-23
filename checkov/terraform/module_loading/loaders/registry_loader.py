@@ -17,6 +17,7 @@ from checkov.terraform.module_loading.loaders.versions_parser import (
 )
 from checkov.terraform.module_loading.module_params import ModuleParams
 
+TFC_ARTIFACTORY_HOST_NAME = os.getenv("TFC_CUSTOM_HOST_NAME", "own.host.io")
 
 class RegistryLoader(ModuleLoader):
     modules_versions_cache: Dict[str, List[str]] = {}  # noqa: CCE003  # public data
@@ -40,6 +41,13 @@ class RegistryLoader(ModuleLoader):
         self._process_inner_registry_module(module_params)
         if os.path.exists(module_params.dest_dir):
             return True
+
+        if module_params.module_source.startswith(TFC_ARTIFACTORY_HOST_NAME):
+            # indicates a custom provider used for registry module like JFrog Artifactory
+            # Formatting RegistryURL for Artifactory
+            module_params.REGISTRY_URL_PREFIX = os.getenv("REGISTRY_URL_PREFIX", "https://{TFC_ARTIFACTORY_HOST_NAME}/")
+            module_params.module_source = module_params.module_source.replace(f"{TFC_ARTIFACTORY_HOST_NAME}/", "")
+            module_params.module_source = module_params.module_source.replace(f"__", "/")
 
         if module_params.module_source.startswith(TFC_HOST_NAME):
             # indicates a private registry module
