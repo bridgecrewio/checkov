@@ -37,6 +37,7 @@ mypy = "*"
 flake8-bugbear = "*"
 parameterized = "*"
 freezegun = "*"
+boto3-stubs-lite = {extras = ["s3"], version = "*"}
 
 [packages]
 #
