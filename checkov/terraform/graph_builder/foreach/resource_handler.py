@@ -23,7 +23,7 @@ class ForeachResourceHandler(ForeachAbstractHandler):
 
     def _get_statements(self, resources_blocks: list[int]) -> FOR_EACH_BLOCK_TYPE:
         if not resources_blocks:
-            return {}  # type: ignore
+            return {}
         block_index_to_statement: FOR_EACH_BLOCK_TYPE = {}
         for block_index, block in enumerate(self.local_graph.vertices):
             if not (FOREACH_STRING in block.attributes or COUNT_STRING in block.attributes):
@@ -72,7 +72,7 @@ class ForeachResourceHandler(ForeachAbstractHandler):
             new_value: int | str,
             resource_idx: int,
             foreach_idx: int,
-            new_key: Optional[str] = None,
+            new_key: int | str | None = None,
     ) -> None:
         new_resource = deepcopy(main_resource)
         block_type, block_name = new_resource.name.split('.')

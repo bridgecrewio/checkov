@@ -56,7 +56,7 @@ class ForeachModuleHandler(ForeachAbstractHandler):
     def duplicate_module_with_count(self, module_idx: int, count: int) -> None:
         self._create_new_resources_count(count, module_idx)
 
-    def _get_modules_to_render(self, current_level: list[TFModule | None]):
+    def _get_modules_to_render(self, current_level: list[TFModule | None]) -> list[int]:
         rendered_modules = [self.local_graph.vertices_by_module_dependency[curr]['module'] for curr in current_level][0]
         current_level.clear()
         for m_idx in rendered_modules:
@@ -143,7 +143,7 @@ class ForeachModuleHandler(ForeachAbstractHandler):
             new_value: int | str,
             resource_idx: int,
             foreach_idx: int,
-            new_key: str | None = None) -> None:
+            new_key: int | str | None = None) -> None:
         new_resource = deepcopy(main_resource)
         block_name = new_resource.name
         config_attrs = new_resource.config.get(block_name, {})
@@ -206,8 +206,8 @@ class ForeachModuleHandler(ForeachAbstractHandler):
         self.local_graph.vertices_by_module_dependency.update({new_resource_module_key: new_vertices_module_value})
 
     def _add_new_vertices_for_module(self, new_module_key: TFModule, new_module_value: dict[str, list[int]],
-                                     new_resource_vertex_idx: int) -> dict[str: list[int]]:
-        new_vertices_module_value: dict[str: list[int]] = defaultdict(list)
+                                     new_resource_vertex_idx: int) -> dict[str, list[int]]:
+        new_vertices_module_value: dict[str, list[int]] = defaultdict(list)
         for vertex_type, vertices_idx in new_module_value.items():
             for vertex_idx in vertices_idx:
                 module_vertex = self.local_graph.vertices[vertex_idx]

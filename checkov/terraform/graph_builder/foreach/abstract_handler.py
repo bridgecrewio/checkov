@@ -5,7 +5,7 @@ import json
 import re
 import typing
 from copy import deepcopy
-from typing import Any, Optional
+from typing import Any
 
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
 from checkov.terraform import TFModule
@@ -85,7 +85,7 @@ class ForeachAbstractHandler:
         attrs.pop(FOREACH_STRING, None)
 
     @staticmethod
-    def __update_str_attrs(attrs: dict[str | int, Any], key_to_change: str, val_to_change: str, k: str | int) -> bool:
+    def __update_str_attrs(attrs: dict[str, Any], key_to_change: str, val_to_change: str, k: str) -> bool:
         if attrs[k] == "${" + key_to_change + "}":
             attrs[k] = val_to_change
             return True
@@ -95,7 +95,8 @@ class ForeachAbstractHandler:
             return True
 
     @staticmethod
-    def _build_key_to_val_changes(main_resource: TerraformBlock, new_val: str, new_key: str) -> dict[str, str | int]:
+    def _build_key_to_val_changes(main_resource: TerraformBlock, new_val: str | int, new_key: str | int | None)\
+            -> dict[str, str | int | None]:
         if main_resource.attributes.get(COUNT_STRING):
             return {COUNT_KEY: new_val}
 
@@ -104,7 +105,7 @@ class ForeachAbstractHandler:
             EACH_KEY: new_key
         }
 
-    def _update_foreach_attrs(self, config_attrs: dict[str | int, Any], key_to_val_changes: dict[str, Any],
+    def _update_foreach_attrs(self, config_attrs: dict[str, Any], key_to_val_changes: dict[str, Any],
                               new_resource: TerraformBlock) -> None:
         self._pop_foreach_attrs(new_resource.attributes)
         self._pop_foreach_attrs(config_attrs)
@@ -176,8 +177,8 @@ class ForeachAbstractHandler:
                                                                         original_module_key,
                                                                         tf_moudle)
 
-    def _handle_static_statement(self, block_index: int, sub_graph: Optional[TerraformLocalGraph] = None) -> \
-            Optional[list[str] | dict[str, Any] | int]:
+    def _handle_static_statement(self, block_index: int, sub_graph: TerraformLocalGraph | None = None) -> \
+            list[str] | dict[str, Any] | int | None:
         attrs = self.local_graph.vertices[block_index].attributes if not sub_graph \
             else sub_graph.vertices[block_index].attributes
         foreach_statement = attrs.get(FOREACH_STRING)
@@ -186,7 +187,7 @@ class ForeachAbstractHandler:
             return self._handle_static_foreach_statement(foreach_statement)
         if count_statement:
             return self._handle_static_count_statement(count_statement)
-        return
+        return None
 
     def _handle_static_foreach_statement(self, statement: list[str] | dict[str, Any])\
             -> list[str] | dict[str, Any] | None:
@@ -202,15 +203,15 @@ class ForeachAbstractHandler:
             evaluated_statement = list(evaluated_statement)
         if isinstance(evaluated_statement, (dict, list)) and all(isinstance(val, str) for val in evaluated_statement):
             return evaluated_statement
-        return
+        return None
 
-    def _handle_static_count_statement(self, statement: list[str] | int) -> Optional[int]:
+    def _handle_static_count_statement(self, statement: list[str] | int) -> int | None:
         if isinstance(statement, list):
             statement = self.extract_from_list(statement)
         evaluated_statement = evaluate_terraform(statement)
         if isinstance(evaluated_statement, int):
             return evaluated_statement
-        return
+        return None
 
     def _is_static_foreach_statement(self, statement: list[str] | dict[str, Any]) -> bool:
         if isinstance(statement, list):
@@ -230,7 +231,7 @@ class ForeachAbstractHandler:
             return True
         return False
 
-    def _is_static_statement(self, block_index: int, sub_graph: Optional[TerraformLocalGraph] = None) -> bool:
+    def _is_static_statement(self, block_index: int, sub_graph: TerraformLocalGraph | None = None) -> bool:
         """
         foreach statement can be list/map of strings or map, if its string we need to render it for sure.
         """
@@ -244,5 +245,5 @@ class ForeachAbstractHandler:
         return False
 
     @staticmethod
-    def extract_from_list(val: list[str] | list[int] | list[list[str]]) -> list[str] | list[int] | int | str:
+    def extract_from_list(val: Any) -> Any:
         return val[0] if len(val) == 1 and isinstance(val[0], (str, int, list)) else val
