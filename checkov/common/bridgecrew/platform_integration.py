@@ -352,7 +352,7 @@ class BcPlatformIntegration:
                 response = json.loads(request.data.decode("utf8"))
 
         repo_full_path = response["path"]
-        support_path = response["supportPath"]
+        support_path = response.get("supportPath")
         return repo_full_path, support_path, response
 
     def is_integration_configured(self) -> bool:
