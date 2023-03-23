@@ -284,5 +284,5 @@ def clean_parser_types_lst(values: list[Any]) -> list[Any]:
     return result_values
 
 
-def serialize_definitions(tf_definitions: dict[str, _Hcl2Payload]) -> dict[str, _Hcl2Payload]:
+def serialize_definitions(tf_definitions: _Hcl2Payload) -> _Hcl2Payload:
     return json.loads(json.dumps(tf_definitions, cls=CustomJSONEncoder), object_hook=object_hook)

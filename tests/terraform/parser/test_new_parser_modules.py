@@ -7,7 +7,7 @@ from unittest import mock
 import pytest
 
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
-from checkov.terraform import TFDefinitionKey, TFModule
+from checkov.terraform.modules.module_objects import TFDefinitionKey, TFModule
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.tf_parser import TFParser
 from checkov.terraform.parser import Parser
