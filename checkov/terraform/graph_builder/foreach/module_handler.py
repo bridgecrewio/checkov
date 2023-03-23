@@ -68,9 +68,10 @@ class ForeachModuleHandler(ForeachAbstractHandler):
         return list(itertools.chain.from_iterable(modules_to_render))
 
     def _create_new_resources_foreach(self, statement: list[str] | dict[str, Any], block_idx: int) -> None:
+        # Important it will be before the super call to avoid changes occuring from super
+        main_resource = self.local_graph.vertices[block_idx]
         super()._create_new_resources_foreach(statement, block_idx)
 
-        main_resource = self.local_graph.vertices[block_idx]
         if isinstance(statement, list):
             for i, new_value in enumerate(statement):
                 should_override = True if i == 0 else False
@@ -106,7 +107,6 @@ class ForeachModuleHandler(ForeachAbstractHandler):
         for i in range(statement):
             should_override = True if i == 0 else False
             self._update_module_children(main_resource, i, should_override_foreach_key=should_override)
-
 
     def _update_children_foreach_index(self, original_foreach_or_count_key: int | str, original_module_key: TFModule,
                                        current_module_key: TFModule | None = None, should_override_foreach_key: bool = True) -> None:
