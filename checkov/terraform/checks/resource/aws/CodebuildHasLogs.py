@@ -19,7 +19,7 @@ class CodebuildHasLogs(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        logs_config= conf.get('logs_config')
+        logs_config = conf.get('logs_config')
         if logs_config and isinstance(logs_config, list):
             logs = logs_config[0]
             if isinstance(logs, dict):
