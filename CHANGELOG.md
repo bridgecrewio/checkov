@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.114...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.115...HEAD)
+
+## [2.3.115](https://github.com/bridgecrewio/checkov/compare/2.3.114...2.3.115) - 2023-03-24
+
+### Bug Fix
+
+- **general:** fix default log levels for support stream - [#4741](https://github.com/bridgecrewio/checkov/pull/4741)
 
 ## [2.3.114](https://github.com/bridgecrewio/checkov/compare/2.3.110...2.3.114) - 2023-03-23
 
