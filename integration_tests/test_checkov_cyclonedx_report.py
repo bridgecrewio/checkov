@@ -17,9 +17,9 @@ class TestCheckovCyclonedxReport(unittest.TestCase):
 
     def validate_report_not_empty(self, report):
         vulnrability_file = (
-            report.getElementsByTagName("vulnerabilities")[0]
-            .getElementsByTagName("vulnerability")[0]
-            .getElementsByTagName("id")[0]
+            report.getElementsByTagNameNS("*", "vulnerabilities")[0]
+            .getElementsByTagNameNS("*", "vulnerability")[0]
+            .getElementsByTagNameNS("*", "id")[0]
             .firstChild.nodeValue
         )
         self.assertTrue(vulnrability_file.startswith("CKV"))
