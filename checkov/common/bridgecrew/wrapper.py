@@ -17,7 +17,7 @@ from checkov.common.util.file_utils import compress_string_io_tar
 from checkov.common.util.json_utils import CustomJSONEncoder
 
 if TYPE_CHECKING:
-    from botocore.client import BaseClient  # type:ignore[import]
+    from mypy_boto3_s3.client import S3Client
 
     from checkov.common.output.report import Report
 
@@ -34,7 +34,7 @@ def _is_scanned_file(file: str) -> bool:
     return file_ending in SUPPORTED_FILE_EXTENSIONS
 
 
-def _put_json_object(s3_client: BaseClient, json_obj: Any, bucket: str, object_path: str, log_stack_trace_on_error: bool = True) -> None:
+def _put_json_object(s3_client: S3Client, json_obj: Any, bucket: str, object_path: str, log_stack_trace_on_error: bool = True) -> None:
     try:
         s3_client.put_object(Bucket=bucket, Key=object_path, Body=json.dumps(json_obj, cls=CustomJSONEncoder))
     except Exception:
@@ -82,7 +82,7 @@ def reduce_scan_reports(scan_reports: list[Report]) -> dict[str, _ReducedScanRep
 
 
 def persist_checks_results(
-        reduced_scan_reports: dict[str, _ReducedScanReport], s3_client: BaseClient, bucket: str,
+        reduced_scan_reports: dict[str, _ReducedScanReport], s3_client: S3Client, bucket: str,
         full_repo_object_key: str
 ) -> dict[str, str]:
     """
@@ -98,7 +98,7 @@ def persist_checks_results(
 
 
 def persist_run_metadata(
-        run_metadata: dict[str, str | list[str]], s3_client: BaseClient, bucket: str, full_repo_object_key: str
+        run_metadata: dict[str, str | list[str]], s3_client: S3Client, bucket: str, full_repo_object_key: str
 ) -> None:
     object_path = f'{full_repo_object_key}/{checkov_results_prefix}/run_metadata.json'
     try:
@@ -109,7 +109,7 @@ def persist_run_metadata(
         raise
 
 
-def persist_logs_stream(logs_stream: StringIO, s3_client: BaseClient, bucket: str, full_repo_object_key: str) -> None:
+def persist_logs_stream(logs_stream: StringIO, s3_client: S3Client, bucket: str, full_repo_object_key: str) -> None:
     file_io = compress_string_io_tar(logs_stream)
     object_path = f'{full_repo_object_key}/{checkov_results_prefix}/logs_file.tar.gz'
     try:
@@ -120,7 +120,7 @@ def persist_logs_stream(logs_stream: StringIO, s3_client: BaseClient, bucket: st
 
 
 def enrich_and_persist_checks_metadata(
-        scan_reports: list[Report], s3_client: BaseClient, bucket: str, full_repo_object_key: str
+        scan_reports: list[Report], s3_client: S3Client, bucket: str, full_repo_object_key: str
 ) -> dict[str, dict[str, str]]:
     """
     Save checks metadata into bridgecrew's platform
