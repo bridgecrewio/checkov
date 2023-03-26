@@ -7,7 +7,6 @@ import typing
 from copy import deepcopy
 from typing import Any
 
-from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
 from checkov.terraform import TFModule
 from checkov.terraform.graph_builder.foreach.consts import COUNT_STRING, FOREACH_STRING, COUNT_KEY, EACH_VALUE, \
     EACH_KEY, REFERENCES_VALUES
@@ -28,15 +27,6 @@ class ForeachAbstractHandler:
     def handle(self, resources_blocks: list[int]) -> None:
         pass
 
-    def _create_new_resources_foreach(self, statement: list[str] | dict[str, Any], block_idx: int) -> None:
-        main_resource = self.local_graph.vertices[block_idx]
-        if isinstance(statement, list):
-            for i, new_value in enumerate(statement):
-                self._create_new_foreach_resource(block_idx, i, main_resource, new_key=new_value, new_value=new_value)
-        if isinstance(statement, dict):
-            for i, (new_key, new_value) in enumerate(statement.items()):
-                self._create_new_foreach_resource(block_idx, i, main_resource, new_key, new_value)
-
     @abc.abstractmethod
     def _create_new_foreach_resource(self, block_idx: int, foreach_idx: int, main_resource: TerraformBlock,
                                      new_key: int | str, new_value: int | str) -> None:
@@ -45,6 +35,15 @@ class ForeachAbstractHandler:
     @abc.abstractmethod
     def _create_new_resources_count(self, statement: int, block_idx: int) -> None:
         pass
+
+    def _create_new_resources_foreach(self, statement: list[str] | dict[str, Any], block_idx: int) -> None:
+        main_resource = self.local_graph.vertices[block_idx]
+        if isinstance(statement, list):
+            for i, new_value in enumerate(statement):
+                self._create_new_foreach_resource(block_idx, i, main_resource, new_key=new_value, new_value=new_value)
+        if isinstance(statement, dict):
+            for i, (new_key, new_value) in enumerate(statement.items()):
+                self._create_new_foreach_resource(block_idx, i, main_resource, new_key, new_value)
 
     @staticmethod
     def _render_sub_graph(sub_graph: TerraformLocalGraph, blocks_to_render: list[int]) -> None:
@@ -162,20 +161,6 @@ class ForeachAbstractHandler:
         block.id = new_block_id
         block.name = new_block_name
         return idx_with_separator
-
-    @staticmethod
-    def _update_resolved_entry_for_tf_definition(child: TerraformBlock, original_foreach_or_count_key: int | str,
-                                                 original_module_key: TFModule) -> None:
-        if child.block_type == BlockType.RESOURCE:
-            child_name, child_type = child.name.split('.')
-            config = child.config[child_name][child_type]
-        else:
-            config = child.config.get(child.name)
-        if isinstance(config, dict) and config.get(RESOLVED_MODULE_ENTRY_NAME) is not None:
-            tf_moudle: TFModule = config[RESOLVED_MODULE_ENTRY_NAME][0].tf_source_modules
-            ForeachAbstractHandler._update_nested_tf_module_foreach_idx(original_foreach_or_count_key,
-                                                                        original_module_key,
-                                                                        tf_moudle)
 
     def _handle_static_statement(self, block_index: int, sub_graph: TerraformLocalGraph | None = None) -> \
             list[str] | dict[str, Any] | int | None:

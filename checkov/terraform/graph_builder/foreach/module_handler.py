@@ -6,6 +6,7 @@ from collections import defaultdict
 from copy import deepcopy
 from typing import Any
 
+from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
 from checkov.terraform import TFModule
 from checkov.terraform.graph_builder.foreach.abstract_handler import ForeachAbstractHandler
 from checkov.terraform.graph_builder.foreach.consts import FOREACH_STRING, COUNT_STRING
@@ -30,25 +31,41 @@ class ForeachModuleHandler(ForeachAbstractHandler):
         main_module_modules = deepcopy(self.local_graph.vertices_by_module_dependency.get(None)[BlockType.MODULE])
         modules_to_render = main_module_modules
 
-        # The for_each rendering will be by modules levels, and not deeper in the graph.
         while modules_to_render:
-            sub_graph = self._build_sub_graph(modules_blocks)
-            self._render_sub_graph(sub_graph, blocks_to_render=modules_blocks)
-            for module_idx in modules_to_render:
-                module_block = self.local_graph.vertices[module_idx]
-                for_each = module_block.attributes.get(FOREACH_STRING)
-                count = module_block.attributes.get(COUNT_STRING)
-                if for_each:
-                    for_each = self._handle_static_statement(module_idx, sub_graph)
-                    if not self._is_static_statement(module_idx, sub_graph):
-                        continue
-                    self._duplicate_module_with_for_each(module_idx, for_each)
-                elif count:
-                    count = self._handle_static_statement(module_idx, sub_graph)
-                    if not self._is_static_statement(module_idx, sub_graph):
-                        continue
-                    self._duplicate_module_with_count(module_idx, count)
-            modules_to_render = self._get_modules_to_render(current_level)
+            modules_to_render = self._render_foreach_modules_by_levels(modules_blocks, modules_to_render, current_level)
+
+    def _render_foreach_modules_by_levels(self, modules_blocks: list[int], modules_to_render: list[int],
+                                          current_level: list[int | None]) -> list[int]:
+        """
+        modules_blocks: The module blocks with for_each/count statement in the graph.
+        modules_to_render: The list of modules indexes to render at this iteration.
+        current_level: The parent current level that we are running on this iteration (first will be None).
+
+        return: the next (list) of the modules to render.
+
+        For example: at this folder - tests/terraform/graph/variable_rendering/resources/foreach_module_dup_foreach
+        We will run over the levels by:
+        First level -> s3_module and s3_module2 (Copying the module and all his dependencies)
+        Second level -> inner_s3_module and inner_s3_module2 (Copying the module and all his dependencies)
+        This will generate a graph with 20 modules and 16 resources.
+        """
+        sub_graph = self._build_sub_graph(modules_blocks)
+        self._render_sub_graph(sub_graph, blocks_to_render=modules_blocks)
+        for module_idx in modules_to_render:
+            module_block = self.local_graph.vertices[module_idx]
+            for_each = module_block.attributes.get(FOREACH_STRING)
+            count = module_block.attributes.get(COUNT_STRING)
+            if for_each:
+                for_each = self._handle_static_statement(module_idx, sub_graph)
+                if not self._is_static_statement(module_idx, sub_graph):
+                    continue
+                self._duplicate_module_with_for_each(module_idx, for_each)
+            elif count:
+                count = self._handle_static_statement(module_idx, sub_graph)
+                if not self._is_static_statement(module_idx, sub_graph):
+                    continue
+                self._duplicate_module_with_count(module_idx, count)
+        return self._get_modules_to_render(current_level)
 
     def _duplicate_module_with_for_each(self, module_idx: int, for_each: dict[str, Any] | list[str]) -> None:
         self._create_new_resources_foreach(for_each, module_idx)
@@ -57,13 +74,13 @@ class ForeachModuleHandler(ForeachAbstractHandler):
         self._create_new_resources_count(count, module_idx)
 
     def _get_modules_to_render(self, current_level: list[TFModule | None]) -> list[int]:
-        rendered_modules = [self.local_graph.vertices_by_module_dependency[curr]['module'] for curr in current_level][0]
+        rendered_modules = [self.local_graph.vertices_by_module_dependency[curr][BlockType.MODULE] for curr in current_level][0]
         current_level.clear()
         for m_idx in rendered_modules:
             m = self.local_graph.vertices[m_idx]
             m_name = m.name.split('[')[0]
             current_level.append(TFModule(m.path, m_name, m.source_module_object, m.for_each_index))
-        modules_to_render = [self.local_graph.vertices_by_module_dependency[curr]['module'] for curr in current_level]
+        modules_to_render = [self.local_graph.vertices_by_module_dependency[curr][BlockType.MODULE] for curr in current_level]
         return list(itertools.chain.from_iterable(modules_to_render))
 
     def _create_new_resources_foreach(self, statement: list[str] | dict[str, Any], block_idx: int) -> None:
@@ -134,6 +151,7 @@ class ForeachModuleHandler(ForeachAbstractHandler):
                 child_module_key = TFModule(path=child.path, name=child.name,
                                             nested_tf_module=child_source_module_object_copy,
                                             foreach_idx=child.for_each_index)
+                del child_source_module_object_copy
                 self._update_children_foreach_index(original_foreach_or_count_key, original_module_key,
                                                     child_module_key)
 
@@ -187,6 +205,7 @@ class ForeachModuleHandler(ForeachAbstractHandler):
             new_resource = deepcopy(main_resource)
             new_resource_module_key = TFModule(new_resource.path, new_resource.name, new_resource.source_module_object,
                                                new_resource.for_each_index)
+            del new_resource
 
         new_resource_vertex_idx = len(self.local_graph.vertices) - 1
         original_vertex_source_module = self.local_graph.vertices[resource_idx].source_module_object
@@ -230,3 +249,17 @@ class ForeachModuleHandler(ForeachAbstractHandler):
                     self._create_new_module_with_vertices(new_vertex, module_vertex_value, new_vertex_idx)
 
         return new_vertices_module_value
+
+    @staticmethod
+    def _update_resolved_entry_for_tf_definition(child: TerraformBlock, original_foreach_or_count_key: int | str,
+                                                 original_module_key: TFModule) -> None:
+        if child.block_type == BlockType.RESOURCE:
+            child_name, child_type = child.name.split('.')
+            config = child.config[child_name][child_type]
+        else:
+            config = child.config.get(child.name)
+        if isinstance(config, dict) and config.get(RESOLVED_MODULE_ENTRY_NAME) is not None:
+            tf_moudle: TFModule = config[RESOLVED_MODULE_ENTRY_NAME][0].tf_source_modules
+            ForeachAbstractHandler._update_nested_tf_module_foreach_idx(original_foreach_or_count_key,
+                                                                        original_module_key,
+                                                                        tf_moudle)
