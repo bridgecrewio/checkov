@@ -8,8 +8,9 @@ log_formatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelna
 root_logger = logging.getLogger()
 stream_handler = root_logger.handlers[0]
 stream_handler.setFormatter(log_formatter)
-root_logger.setLevel(LOG_LEVEL)
-logging.getLogger().setLevel(LOG_LEVEL)
+stream_handler.setLevel(LOG_LEVEL)
+root_logger.setLevel(logging.DEBUG)
+logging.getLogger().setLevel(logging.DEBUG)
 logging.getLogger("urllib3").setLevel(logging.ERROR)
 logging.getLogger("urllib3.connectionpool").setLevel(logging.ERROR)
 logging.getLogger("urllib3.connectionpool").propagate = False

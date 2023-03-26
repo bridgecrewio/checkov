@@ -1,6 +1,30 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.110...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.115...HEAD)
+
+## [2.3.115](https://github.com/bridgecrewio/checkov/compare/2.3.114...2.3.115) - 2023-03-24
+
+### Bug Fix
+
+- **general:** fix default log levels for support stream - [#4741](https://github.com/bridgecrewio/checkov/pull/4741)
+
+## [2.3.114](https://github.com/bridgecrewio/checkov/compare/2.3.110...2.3.114) - 2023-03-23
+
+### Feature
+
+- **ansible:** Ansible panos int mgmt checks - [#4683](https://github.com/bridgecrewio/checkov/pull/4683)
+- **terraform:** api gateway ensure api cache is encrypted - [#4681](https://github.com/bridgecrewio/checkov/pull/4681)
+- **terraform:** AWS ensure Sagemaker Notebook users are not Root - [#4676](https://github.com/bridgecrewio/checkov/pull/4676)
+- **terraform:** Sagemaker Notebook In Custom VPC - [#4675](https://github.com/bridgecrewio/checkov/pull/4675)
+- **terraform:** Terraform runner with the new TF parser - [#4728](https://github.com/bridgecrewio/checkov/pull/4728)
+
+### Bug Fix
+
+- **gitlab:**  fixing include scope that predominant all others - [#4735](https://github.com/bridgecrewio/checkov/pull/4735)
+
+### Documentation
+
+- **general:** fix small typo - [#4725](https://github.com/bridgecrewio/checkov/pull/4725)
 
 ## [2.3.110](https://github.com/bridgecrewio/checkov/compare/2.3.108...2.3.110) - 2023-03-22
 
