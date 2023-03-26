@@ -13,7 +13,7 @@ from tests.secrets.git_history.test_utils import mock_git_repo_commits1, mock_gi
     mock_git_repo_commits_too_much, mock_git_repo_commits_remove_file, mock_git_repo_commits_rename_file, \
     mock_git_repo_commits_modify_and_rename_file, mock_remove_file_with_two_equal_secret, \
     mock_remove_file_with_two_secret, mock_git_repo_multiline_json, mock_git_repo_multiline_terraform, \
-    mock_git_repo_multiline_yml
+    mock_git_repo_multiline_yml, COMMIT_HASH_KEY
 
 
 @mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff', mock_git_repo_commits1)
@@ -267,7 +267,6 @@ def test_scan_git_history_middle(mocker: MockerFixture) -> None:
     valid_dir_path = "test"
 
     all_commits = mock_git_repo_commits1('', '')
-    commits_keys = [x for x in all_commits.keys()]
     mocker.patch(
         "checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff",
         return_value=all_commits,
@@ -280,22 +279,15 @@ def test_scan_git_history_middle(mocker: MockerFixture) -> None:
         assert failed_check.added_commit_hash or failed_check.removed_commit_hash
 
     mocker.patch(
-        "checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff",
-        return_value={commits_keys[0]: all_commits[commits_keys[0]],
-                      commits_keys[1]: all_commits[commits_keys[1]]},
-    )
+        "checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff", return_value=all_commits[0:1])
     runner2 = Runner()
     report2 = runner2.run(root_folder=valid_dir_path, external_checks_dir=None,
-                        runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
+                          runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
     assert len(report2.failed_checks) == 1
     sec_store = runner2.get_history_secret_store()
 
     mocker.patch(
-        "checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff",
-        return_value={commits_keys[2]: all_commits[commits_keys[2]],
-                      commits_keys[3]: all_commits[commits_keys[3]],
-                      commits_keys[4]: all_commits[commits_keys[4]]},
-    )
+        "checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff", return_value=all_commits[2:5])
     runner3 = Runner()
     runner3.set_history_secret_store(sec_store)
     report3 = runner2.run(root_folder=valid_dir_path, external_checks_dir=None,
@@ -307,4 +299,3 @@ def test_scan_git_history_middle(mocker: MockerFixture) -> None:
     assert len(report3.skipped_checks) == 0
     for failed_check in report3.failed_checks:
         assert failed_check.added_commit_hash or failed_check.removed_commit_hash
-
