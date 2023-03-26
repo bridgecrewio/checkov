@@ -1,4 +1,8 @@
+import os
+
+from checkov.sast.checks_infra.base_registry import Registry
 from checkov.sast.checks_infra.checks_parser import SastCheckParser
+from checkov.sast.consts import SastLanguages
 
 
 def test_metadata_parsing():
@@ -457,3 +461,19 @@ def test_complex_policy_parsing():
             }
         ]
     }
+
+def test_manually_bql_to_semgrep_parsing():
+    """
+    This test is not really a full test by itself, just a util for manual testing
+    It can be used for manually reviewing the parsed results of our bql to semgrep parser
+    Usage instructions:
+    1. Fill the bql_policies_dir with a path to a directory with bql yaml policies
+    2. Uncomment the rest of the test and make it run
+    3. Check the parsed rules file './parsed_semgrep_rules.yaml' to review the parsed results
+    """
+    bql_policies_dir = ''  # absolute path to a directory that contains bql policy yaml files
+
+    # registry = Registry(checks_dir=bql_policies_dir)
+    # registry.load_rules(['all'], None)
+    # registry.temp_semgrep_rules_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'parsed_semgrep_rules.yaml')
+    # registry.create_temp_rules_file()
