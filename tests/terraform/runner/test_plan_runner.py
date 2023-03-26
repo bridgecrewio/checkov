@@ -679,7 +679,7 @@ class TestRunnerValid(unittest.TestCase):
             root_folder=None,
             files=[str(tf_file_path)],
             external_checks_dir=None,
-            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=["CKV2_AWS_40", "CKV_AWS_290"]),
+            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=["CKV2_AWS_40", "CKV_AWS_287"]),
         )
 
         # then

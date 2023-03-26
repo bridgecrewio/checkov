@@ -63,9 +63,6 @@ def _hclify(
     if not isinstance(obj, dict):
         raise Exception("this method receives only dicts")
 
-    if resource_type and resource_type in RESOURCE_TYPES_JSONIFY:
-        jsonify(obj=obj, resource_type=resource_type)
-
     if hasattr(obj, "start_mark") and hasattr(obj, "end_mark"):
         obj["start_line"] = obj.start_mark.line
         obj["end_line"] = obj.end_mark.line
@@ -75,7 +72,7 @@ def _hclify(
                 ret_dict[key] = value
             else:
                 # only wrap non-lists into a list
-                ret_dict[key] = _clean_simple_type_list(force_list(value))
+                ret_dict[key] = _clean_simple_type_list([value])
 
         if _is_list_of_dicts(value):
             child_list = []
@@ -100,20 +97,28 @@ def _hclify(
     if conf and isinstance(conf, dict):
         _add_references(obj=obj, conf=conf, return_resource=ret_dict)
 
+    if resource_type and resource_type in RESOURCE_TYPES_JSONIFY:
+        # values shouldn't be encapsulated in lists
+        dict_value = jsonify(obj=obj, resource_type=resource_type)
+        if dict_value is not None:
+            ret_dict[RESOURCE_TYPES_JSONIFY[resource_type]] = force_list(dict_value)
+
     return ret_dict
 
 
-def jsonify(obj: dict[str, Any], resource_type: str) -> None:
+def jsonify(obj: dict[str, Any], resource_type: str) -> dict[str, Any] | None:
     """Tries to create a dict from a string of a supported resource type attribute"""
 
     jsonify_key = RESOURCE_TYPES_JSONIFY[resource_type]
     if jsonify_key in obj:
         try:
-            obj[jsonify_key] = json.loads(obj[jsonify_key])
+            return json.loads(obj[jsonify_key])
         except json.JSONDecodeError:
             logging.debug(
                 f"Attribute {jsonify_key} of resource type {resource_type} is not json encoded {obj[jsonify_key]}"
             )
+
+    return None
 
 
 def _prepare_resource_block(
@@ -259,7 +264,7 @@ def _add_references(obj: dict[str, Any], conf: dict[str, Any], return_resource: 
             elif obj[conf_key] is None:
                 return_resource[conf_key] = [ref]
             elif isinstance(obj[conf_key], list) and any(obj_value is None for obj_value in obj[conf_key]):
-                return_resource[conf_key] = [obj_value for obj_value in obj[conf_key] if obj_value is not None] + [ref]
+                return_resource[conf_key] = [[obj_value for obj_value in obj[conf_key] if obj_value is not None] + [ref]]
 
             return_resource.setdefault(CustomAttributes.REFERENCES, []).append(conf_value["references"])
 
