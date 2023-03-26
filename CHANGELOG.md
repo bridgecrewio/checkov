@@ -1,6 +1,33 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.115...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.121...HEAD)
+
+## [2.3.121](https://github.com/bridgecrewio/checkov/compare/2.3.115...2.3.121) - 2023-03-26
+
+### Feature
+
+- **general:** Add scan all files to entrypoint - [#4746](https://github.com/bridgecrewio/checkov/pull/4746)
+- **terraform:** check routes are authorised - [#4682](https://github.com/bridgecrewio/checkov/pull/4682)
+- **terraform:** CloudDistribution set Failover origin - [#4686](https://github.com/bridgecrewio/checkov/pull/4686)
+- **terraform:** code build s3 logs are encrypted - [#4687](https://github.com/bridgecrewio/checkov/pull/4687)
+- **terraform:** Elasticbeanstalk should use enhanced health reporting - [#4692](https://github.com/bridgecrewio/checkov/pull/4692)
+- **terraform:** RDS cluster copy tags to snapshot - [#4693](https://github.com/bridgecrewio/checkov/pull/4693)
+- **terraform:** Support for_each/count statements in TF Modules - [#4708](https://github.com/bridgecrewio/checkov/pull/4708)
+
+### Bug Fix
+
+- **secrets:**  Don't show stack trace in failures  when uploading secrets to verify - [#4734](https://github.com/bridgecrewio/checkov/pull/4734)
+- **secrets:** Compare abs paths in SecretsOmitter - [#4756](https://github.com/bridgecrewio/checkov/pull/4756)
+- **terraform:** refine IAM assume role check CKV_AWS_61 - [#4749](https://github.com/bridgecrewio/checkov/pull/4749)
+- **terraform:** refine S3 lifecycle check CKV_AWS_300 - [#4750](https://github.com/bridgecrewio/checkov/pull/4750)
+
+### Platform
+
+- **terraform:** external module from git fail - log warning - [#4755](https://github.com/bridgecrewio/checkov/pull/4755)
+
+### Documentation
+
+- **terraform:** Document no private registry - [#4745](https://github.com/bridgecrewio/checkov/pull/4745)
 
 ## [2.3.115](https://github.com/bridgecrewio/checkov/compare/2.3.114...2.3.115) - 2023-03-24
 
