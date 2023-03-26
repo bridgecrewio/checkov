@@ -16,6 +16,6 @@ class ForeachBuilder:
         self._module_handler = ForeachModuleHandler(local_graph)
 
     def handle(self, foreach_blocks: dict[str, list[int]]) -> None:
-        self._module_handler.handle(foreach_blocks.get(BlockType.MODULE, []))
         if self._module_handler.local_graph.enable_modules_foreach_handling:
-            self._resource_handler.handle(foreach_blocks.get(BlockType.RESOURCE, []))
+            self._module_handler.handle(foreach_blocks.get(BlockType.MODULE, []))
+        self._resource_handler.handle(foreach_blocks.get(BlockType.RESOURCE, []))
