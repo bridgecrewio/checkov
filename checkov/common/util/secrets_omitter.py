@@ -80,9 +80,11 @@ class SecretsOmitter:
         files_with_secrets: set[str] = {secret_check.get("file_path", "") for secret_check in self._secret_check()}
         for check in self._non_secret_check():
             check_file_path = check.file_path
+            check_abs_file_path = check.file_abs_path
             check_line_range = check.file_line_range
 
-            if check_file_path not in files_with_secrets or not check_line_range or None in check_line_range:
+            if (check_file_path not in files_with_secrets and check_abs_file_path not in files_with_secrets)\
+                    or not check_line_range or None in check_line_range:
                 continue
 
             for secret_check in self._secret_check():
@@ -91,7 +93,7 @@ class SecretsOmitter:
                 if secret_check_line_range == [-1, -1]:
                     continue
 
-                if secret_check_file_path != check_file_path or \
+                if secret_check_file_path not in (check_file_path, check_abs_file_path) or \
                         not self._line_range_overlaps(secret_check_line_range, check_line_range):
                     continue
 
