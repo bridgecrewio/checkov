@@ -54,7 +54,7 @@ class GitHistorySecretStore:
             # Update secret map with the new potential secret
             if all_removed:
                 self.secrets_by_file_value_type[secret_key][0].update(
-                    {'potential_secret': secret, 'removed_commit_hash': ''})
+                        {'potential_secret': secret, 'removed_commit_hash': ''})
                 return
         code_line = search_for_code_line(commit[secret.filename], secret.secret_value, secret.is_added)
         self.secrets_by_file_value_type[secret_key].append(
