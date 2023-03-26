@@ -146,7 +146,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         matching module vertex as 'source_module'
         """
         if self.use_new_tf_parser:
-            for _, vertex in enumerate(self.vertices):
+            for vertex in self.vertices:
                 if not vertex.source_module_object:
                     continue
                 for idx in self.vertices_by_block_type[BlockType.MODULE]:

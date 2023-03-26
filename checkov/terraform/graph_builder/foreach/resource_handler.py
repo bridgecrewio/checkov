@@ -5,6 +5,7 @@ import typing
 from copy import deepcopy
 from typing import Any, Optional
 
+from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.foreach.abstract_handler import ForeachAbstractHandler
 from checkov.terraform.graph_builder.foreach.consts import FOREACH_STRING, COUNT_STRING, FOR_EACH_BLOCK_TYPE
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
@@ -26,7 +27,7 @@ class ForeachResourceHandler(ForeachAbstractHandler):
             return {}
         block_index_to_statement: FOR_EACH_BLOCK_TYPE = {}
         for block_index, block in enumerate(self.local_graph.vertices):
-            if not (FOREACH_STRING in block.attributes or COUNT_STRING in block.attributes):
+            if block.block_type != BlockType.RESOURCE or not (FOREACH_STRING in block.attributes or COUNT_STRING in block.attributes):
                 continue
             foreach_statement = self._get_static_foreach_statement(block_index)
             block_index_to_statement[block_index] = foreach_statement

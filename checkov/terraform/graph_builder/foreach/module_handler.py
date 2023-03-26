@@ -77,11 +77,14 @@ class ForeachModuleHandler(ForeachAbstractHandler):
         rendered_modules = [self.local_graph.vertices_by_module_dependency[curr][BlockType.MODULE] for curr in current_level][0]
         current_level.clear()
         for m_idx in rendered_modules:
-            m = self.local_graph.vertices[m_idx]
-            m_name = m.name.split('[')[0]
-            current_level.append(TFModule(m.path, m_name, m.source_module_object, m.for_each_index))
+            current_level.append(self._get_current_tf_module_object(m_idx))
         modules_to_render = [self.local_graph.vertices_by_module_dependency[curr][BlockType.MODULE] for curr in current_level]
         return list(itertools.chain.from_iterable(modules_to_render))
+
+    def _get_current_tf_module_object(self, m_idx: int) -> TFModule:
+        m = self.local_graph.vertices[m_idx]
+        m_name = m.name.split('[')[0]
+        return TFModule(m.path, m_name, m.source_module_object, m.for_each_index)
 
     def _create_new_resources_foreach(self, statement: list[str] | dict[str, Any], block_idx: int) -> None:
         # Important it will be before the super call to avoid changes occuring from super
