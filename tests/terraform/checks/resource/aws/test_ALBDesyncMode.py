@@ -18,10 +18,12 @@ class TestALBDesyncMode(unittest.TestCase):
         passing_resources = {
             "aws_lb.pass",
             "aws_alb.pass",
+            "aws_elb.pass",
         }
         failing_resources = {
             "aws_lb.fail",
             "aws_alb.fail",
+            "aws_elb.fail",
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
