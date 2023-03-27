@@ -6,7 +6,6 @@ from typing import Optional, List, Tuple, Dict, Any, TYPE_CHECKING
 from checkov.common.graph.checks_infra.enums import Operators
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
 from checkov.common.checks_infra.solvers.connections_solvers.complex_connection_solver import ComplexConnectionSolver
-from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 
 if TYPE_CHECKING:
     from checkov.common.typing import LibraryGraph
@@ -24,8 +23,8 @@ class AndConnectionSolver(ComplexConnectionSolver):
             return [], [], []
 
         passed, failed, unknown = self.run_attribute_solvers(graph_connector)
-        failed_or_unknown_ids = [f[CustomAttributes.ID] for f in itertools.chain(failed, unknown)]
-        passed = [p for p in passed if p[CustomAttributes.ID] not in failed_or_unknown_ids]
+        failed_or_unknown_ids = [(ComplexConnectionSolver.get_check_identifier(f)) for f in itertools.chain(failed, unknown)]
+        passed = [p for p in passed if (ComplexConnectionSolver.get_check_identifier(p)) not in failed_or_unknown_ids]
 
         for connection_solver in self.get_sorted_connection_solvers():
             connection_solver.set_vertices(graph_connector, failed, unknown)
@@ -33,12 +32,12 @@ class AndConnectionSolver(ComplexConnectionSolver):
             passed.extend(passed_solver)
             failed.extend(failed_solver)
             unknown.extend(unknown_solver)
-            failed_or_unknown_ids.extend(f[CustomAttributes.ID] for f in itertools.chain(failed_solver, unknown_solver))
+            failed_or_unknown_ids.extend((ComplexConnectionSolver.get_check_identifier(f)) for f in itertools.chain(failed_solver, unknown_solver))
 
-        failed_ids = [f[CustomAttributes.ID] for f in failed]
-        unknown_ids = [u[CustomAttributes.ID] for u in unknown]
-        passed = [p for p in passed if p[CustomAttributes.ID] not in itertools.chain(failed_ids, unknown_ids)]
-        unknown = [u for u in unknown if u[CustomAttributes.ID] not in failed_ids]
+        failed_ids = [(ComplexConnectionSolver.get_check_identifier(f)) for f in failed]
+        unknown_ids = [(ComplexConnectionSolver.get_check_identifier(u)) for u in unknown]
+        passed = [p for p in passed if (ComplexConnectionSolver.get_check_identifier(p)) not in itertools.chain(failed_ids, unknown_ids)]
+        unknown = [u for u in unknown if (ComplexConnectionSolver.get_check_identifier(u)) not in failed_ids]
         return self.filter_results(passed, failed, unknown)
 
     def _get_operation(self, *args: Any, **kwargs: Any) -> None:

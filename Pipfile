@@ -37,13 +37,14 @@ mypy = "*"
 flake8-bugbear = "*"
 parameterized = "*"
 freezegun = "*"
+boto3-stubs-lite = {extras = ["s3"], version = "*"}
 
 [packages]
 #
 # REMINDER: Update "install_requires" deps on setup.py when changing
 #
 bc-python-hcl2 = "==0.3.51"
-bc-detect-secrets = "==1.4.14"
+bc-detect-secrets = "==1.4.15"
 bc-jsonpath-ng = "==1.5.9"
 deep-merge = "*"
 tabulate = "*"

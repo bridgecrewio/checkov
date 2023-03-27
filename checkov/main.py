@@ -13,7 +13,7 @@ from collections import defaultdict
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-import argcomplete  # type:ignore[import]
+import argcomplete
 import configargparse
 from urllib3.exceptions import MaxRetryError
 
@@ -241,7 +241,7 @@ class Checkov:
 
             # bridgecrew uses both the urllib3 and requests libraries, while checkov uses the requests library.
             # Allow the user to specify a CA bundle to be used by both libraries.
-            bc_integration.setup_http_manager(self.config.ca_certificate)
+            bc_integration.setup_http_manager(self.config.ca_certificate, self.config.no_cert_verify)
 
             # if a repo is passed in it'll save it.  Otherwise a default will be created based on the file or dir
             self.config.repo_id = bc_integration.persist_repo_id(self.config)
