@@ -79,7 +79,7 @@ def _scan_history(root_folder: str, secret_store: SecretsCollection,
     scanned_file_count = 0
     # the secret key will be {file name}_{hash_value}_{type}
     for commit in commits_diff:
-        commit_hash = commit[COMMIT_HASH_KEY]
+        commit_hash = str(commit[COMMIT_HASH_KEY])
         for file_name in commit.keys():
             if file_name == COMMIT_HASH_KEY:
                 continue
