@@ -13,7 +13,7 @@ jobs:
   cfn-lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c  # v3
+      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f  # v3
       - uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435  # v4
         with:
           python-version: 3.7
@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c  # v3
+      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f  # v3
       - name: Set up Python ${{ matrix.python }}
         uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435  # v4
         with:
@@ -69,7 +69,7 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c  # v3
+      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f  # v3
       - uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435  # v4
         with:
           python-version: ${{ matrix.python }}
@@ -121,7 +121,7 @@ jobs:
       working-directory: ./performance_tests
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c  # v3
+      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f  # v3
       - uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435  # v4
         with:
           python-version: ${{ matrix.python }}
@@ -164,7 +164,7 @@ jobs:
       PYTHON_VERSION: "3.7"
       WORKING_DIRECTORY: ./dogfood_tests
     steps:
-      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c  # v3
+      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f  # v3
       - uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435  # v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}

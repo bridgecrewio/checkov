@@ -3,7 +3,7 @@ from abc import abstractmethod
 from collections.abc import Iterable
 from typing import List, Dict, Any
 
-import dpath.util
+import dpath
 import re
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckResult, CheckCategories

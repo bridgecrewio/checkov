@@ -78,6 +78,12 @@ class TestYamlPolicies(TestYamlPoliciesBase):
     def test_PanosPolicyNoSrcAnyDstAny(self):
         self.go("PanosPolicyNoSrcAnyDstAny", local_graph_class=AnsibleLocalGraph)
 
+    def test_PanosInterfaceMgmtProfileNoHTTP(self):
+        self.go("PanosInterfaceMgmtProfileNoHTTP", local_graph_class=AnsibleLocalGraph)
+
+    def test_PanosInterfaceMgmtProfileNoTelnet(self):
+        self.go("PanosInterfaceMgmtProfileNoTelnet", local_graph_class=AnsibleLocalGraph)
+
     def test_registry_load(self):
         registry = self.get_checks_registry()
         self.assertGreater(len(registry.checks), 0)

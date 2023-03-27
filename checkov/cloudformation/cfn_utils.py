@@ -4,7 +4,7 @@ import logging
 import os
 from typing import Optional, List, Tuple, Dict, Any, Callable
 
-import dpath.util
+import dpath
 
 from checkov.cloudformation.checks.resource.base_registry import Registry
 from checkov.cloudformation.checks.resource.registry import cfn_registry
