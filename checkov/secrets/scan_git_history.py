@@ -27,7 +27,7 @@ def _get_commits_diff(root_folder: str, last_commit_sha: Optional[str] = None) -
     :param: last_commit_sha = is the last commit we have already scanned. in case it exist the function will
     return the commits from the revision of param to the current head
     """
-    commits_diff: List[Dict[str, Dict[str, str]]] = []
+    commits_diff: List[Dict[str, str | Dict[str, str]]] = []
     if git_import_error is not None:
         logging.warning(f"Unable to load git module (is the git executable available?) {git_import_error}")
         return commits_diff
