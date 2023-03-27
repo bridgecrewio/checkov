@@ -31,14 +31,15 @@ def run_go_library(language: str,
 
     # convert our byte array to a string
     analyze_code_string = analyze_code_bytes.decode('utf-8')
-    return json.loads(analyze_code_string)
+    result: Dict[str, Any] = json.loads(analyze_code_string)
+    return result
 
 
 def validate_params(language: str,
                     source_code_file: Optional[str] = None,
                     source_code_dir: Optional[str] = None,
                     policy_file: Optional[str] = None,
-                    policy_dir: Optional[str] = None):
+                    policy_dir: Optional[str] = None) -> None:
     if (not source_code_file and not source_code_dir) or (source_code_file and source_code_dir):
         raise Exception('must provide source code file or dir for sast runner')
 

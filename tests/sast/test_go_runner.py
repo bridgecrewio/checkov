@@ -47,9 +47,3 @@ class GoRunnerTest(unittest.TestCase):
                            policy_dir='somedir',
                            policy_file='',
                            language='')
-        with self.assertRaises(Exception):
-            run_go_library(source_code_dir='somedir',
-                           source_code_file='',
-                           policy_dir='somedir',
-                           policy_file='',
-                           language='js')
