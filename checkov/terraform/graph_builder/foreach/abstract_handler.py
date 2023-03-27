@@ -200,6 +200,8 @@ class ForeachAbstractHandler:
 
     def _is_static_foreach_statement(self, statement: list[str] | dict[str, Any]) -> bool:
         if isinstance(statement, list):
+            if len(statement) == 1 and not statement[0]:
+                return True
             statement = self.extract_from_list(statement)
         if isinstance(statement, str) and re.search(REFERENCES_VALUES, statement):
             return False
