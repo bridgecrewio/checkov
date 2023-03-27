@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 from typing import TYPE_CHECKING, Callable
 
@@ -28,6 +29,8 @@ class Runner(JsonRunner):
         runner_filter: RunnerFilter | None = None,
         collect_skip_comments: bool = True
     ) -> Report | list[Report]:
+
+        logging.info("checkov overridden!!!")
         runner_filter = runner_filter or RunnerFilter()
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()

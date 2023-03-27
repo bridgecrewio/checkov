@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.gitlab.dal import Gitlab
@@ -26,6 +27,8 @@ class Runner(JsonRunner):
         runner_filter: RunnerFilter | None = None,
         collect_skip_comments: bool = True
     ) -> Report | list[Report]:
+
+        logging.info("checkov overridden!!!")
         runner_filter = runner_filter or RunnerFilter()
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()
