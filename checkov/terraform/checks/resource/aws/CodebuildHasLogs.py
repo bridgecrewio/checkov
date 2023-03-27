@@ -4,7 +4,7 @@ from typing import List
 
 
 class CodebuildHasLogs(BaseResourceCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         """
         NIST.800-53.r5 AC-2(12), NIST.800-53.r5 AC-2(4), NIST.800-53.r5 AC-4(26), NIST.800-53.r5 AC-6(9),
         NIST.800-53.r5 AU-10, NIST.800-53.r5 AU-12, NIST.800-53.r5 AU-2, NIST.800-53.r5 AU-3, NIST.800-53.r5 AU-6(3),
@@ -14,13 +14,14 @@ class CodebuildHasLogs(BaseResourceCheck):
         """
         name = "Ensure CodeBuild project environments have a logging configuration"
         id = "CKV_AWS_314"
-        supported_resources = ['aws_codebuild_project']
-        categories = [CheckCategories.LOGGING]
+        supported_resources = ('aws_codebuild_project',)
+        categories = (CheckCategories.LOGGING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        if conf.get('logs_config') and isinstance(conf.get('logs_config'), list):
-            logs = conf.get('logs_config')[0]
+        logs_config = conf.get('logs_config')
+        if logs_config and isinstance(logs_config, list):
+            logs = logs_config[0]
             if isinstance(logs, dict):
                 if logs.get("cloudwatch_logs") or logs.get("s3_logs"):
                     return CheckResult.PASSED
