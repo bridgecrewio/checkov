@@ -125,7 +125,7 @@ class Checkov:
     def __init__(self, argv: list[str] = sys.argv[1:]) -> None:
         self.config: "Namespace"  # set in 'parse_config()'
         self.parser: "ExtArgumentParser"  # set in 'parse_config()'
-        self.runners = DEFAULT_RUNNERS
+        self.runners = DEFAULT_RUNNERS.copy()
         self.scan_reports: "list[Report]" = []
         self.run_metadata: dict[str, str | list[str]] = {}
         self.url: str | None = None

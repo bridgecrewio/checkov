@@ -134,6 +134,7 @@ def test_run(sca_package_2_report):
     assert cve_record is not None
     assert cve_record.bc_check_id == "BC_CVE_2020_29652"
     assert cve_record.check_id == "CKV_CVE_2020_29652"
+    assert cve_record.check_class == "mock.mock.MagicMock"  # not the real one
     assert cve_record.check_name == "SCA package scan"
     assert cve_record.check_result == {"result": CheckResult.FAILED}
     assert cve_record.code_block == [(0, "golang.org/x/crypto: v0.0.1")]
@@ -195,7 +196,6 @@ def test_run(sca_package_2_report):
 def test_runner_honors_enforcement_rules(mocker: MockerFixture, scan_result_2):
     # given
     bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
-    bc_integration.timestamp = "something something"  # Avoids trying to upload to S3
     scanner_mock = MagicMock()
     scanner_mock.return_value.scan.return_value = scan_result_2
     mocker.patch("checkov.sca_package_2.runner.Scanner", side_effect=scanner_mock)
@@ -245,7 +245,6 @@ def test_run_license_policy(mocker: MockerFixture, scan_result_2):
 def test_run_with_empty_scan_result(mocker: MockerFixture):
     # given
     bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
-    bc_integration.timestamp = "something something"  # Avoids trying to upload to S3
     scanner_mock = MagicMock()
     scanner_mock.return_value.scan.return_value = dict()
     mocker.patch("checkov.sca_package_2.runner.Scanner", side_effect=scanner_mock)
