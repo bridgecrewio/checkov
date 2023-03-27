@@ -14,8 +14,6 @@ from checkov.common.models.enums import CheckResult
 if not sys.platform.startswith('win'):
     # TODO: Enable SAST for windows runners
     from semgrep.semgrep_main import main as run_semgrep
-    from semgrep.output import OutputHandler
-    from semgrep.constants import RuleSeverity
 
 if TYPE_CHECKING:
     from semgrep.rule_match import RuleMatchMap, RuleMatch
@@ -24,6 +22,9 @@ if TYPE_CHECKING:
     from semgrep.output_extra import OutputExtra
     from semgrep.error import SemgrepError
     from semgrep.rule import Rule
+    if not sys.platform.startswith('win'):
+        from semgrep.output import OutputHandler
+        from semgrep.constants import RuleSeverity
 
 from pathlib import Path
 from checkov.sast.record import SastRecord

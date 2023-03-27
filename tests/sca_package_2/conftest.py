@@ -2,7 +2,9 @@ import os
 from pathlib import Path
 from unittest import mock
 
+from mock.mock import MagicMock
 from typing import Dict, Any, List
+from pytest_mock import MockerFixture
 
 import pytest
 
@@ -1076,34 +1078,63 @@ def scan_result_success_response() -> Dict[str, Any]:
 
 
 @pytest.fixture(scope='package')
-def sca_package_2_report(scan_result_2: Dict[str, Any]) -> Report:
-    return Runner().create_report(RunnerFilter(), scan_result_2)
+@mock.patch.dict(os.environ, {'CHECKOV_RUN_SCA_PACKAGE_SCAN_V2': 'true'})
+def sca_package_2_report(package_mocker: MockerFixture, scan_result_2: Dict[str, Any]) -> Report:
+    bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
+    scanner_mock = MagicMock()
+    scanner_mock.return_value.scan.return_value = scan_result_2
+    package_mocker.patch("checkov.sca_package_2.runner.Scanner", side_effect=scanner_mock)
+    # package_mocker.patch()
+    def none() -> None:
+        pass
+
+    bc_integration.set_s3_integration = none
+
+
+    return Runner().run(root_folder=EXAMPLES_DIR)
 
 
 @pytest.fixture(scope='package')
-def sca_package_report_dt(scan_results_dt: Dict[str, Any]) -> Report:
-    report = Runner().create_report(RunnerFilter(), scan_results_dt)
-    return report
+@mock.patch.dict(os.environ, {'CHECKOV_RUN_SCA_PACKAGE_SCAN_V2': 'true'})
+def sca_package_report_dt(package_mocker: MockerFixture, scan_results_dt: Dict[str, Any]) -> Report:
+    bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
+    scanner_mock = MagicMock()
+    scanner_mock.return_value.scan.return_value = scan_results_dt
+    package_mocker.patch("checkov.sca_package_2.runner.Scanner", side_effect=scanner_mock)
+
+    return Runner().run(root_folder=EXAMPLES_DIR)
 
 
 @pytest.fixture(scope='package')
-def sca_package_report_2_with_comma_in_licenses(scan_result_2_with_comma_in_licenses: Dict[str, Any]) -> Report:
-    return Runner().create_report(RunnerFilter(), scan_result_2_with_comma_in_licenses)
+def sca_package_report_2_with_comma_in_licenses(package_mocker: MockerFixture,
+                                                scan_result_2_with_comma_in_licenses: List[Dict[str, Any]]) -> Report:
+    bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
+    scanner_mock = MagicMock()
+    scanner_mock.return_value.scan.return_value = scan_result_2_with_comma_in_licenses
+    package_mocker.patch("checkov.sca_package_2.runner.Scanner", side_effect=scanner_mock)
+    package_mocker.patch.dict(os.environ, {'CHECKOV_RUN_SCA_PACKAGE_SCAN_V2': 'true'})
+    return Runner().run(root_folder=EXAMPLES_DIR)
 
 
-def get_sca_package_2_report_with_skip(scan_result_2: Dict[str, Any]) -> Report:
+def get_sca_package_2_report_with_skip(package_mocker: MockerFixture, scan_result_2: List[Dict[str, Any]]) -> Report:
+    bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
+    scanner_mock = MagicMock()
+    scanner_mock.return_value.scan.return_value = scan_result_2
+    package_mocker.patch("checkov.sca_package_2.runner.Scanner", side_effect=scanner_mock)
     runner_filter = RunnerFilter(skip_checks=["CKV_CVE_2020_29652"])
-    return Runner().create_report(runner_filter, scan_result_2)
+
+    return Runner().run(root_folder=EXAMPLES_DIR, runner_filter=runner_filter)
 
 
 @pytest.fixture(scope='package')
-def sca_package_2_report_with_skip(scan_result_2: Dict[str, Any]) -> Report:
-    return get_sca_package_2_report_with_skip(scan_result_2)
+def sca_package_2_report_with_skip(package_mocker: MockerFixture, scan_result_2: List[Dict[str, Any]]) -> Report:
+    return get_sca_package_2_report_with_skip(package_mocker, scan_result_2)
 
 
 @pytest.fixture(scope='function')
-def sca_package_report_2_with_skip_scope_function(scan_result_2: Dict[str, Any]) -> Report:
-    return get_sca_package_2_report_with_skip(scan_result_2)
+def sca_package_report_2_with_skip_scope_function(package_mocker: MockerFixture,
+                                                  scan_result_2: List[Dict[str, Any]]) -> Report:
+    return get_sca_package_2_report_with_skip(package_mocker, scan_result_2)
 
 
 def get_vulnerabilities_details_package_json() -> List[Dict[str, Any]]:

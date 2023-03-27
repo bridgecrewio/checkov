@@ -177,7 +177,7 @@ jobs:
           # 'py' package is used in 'pytest-benchmark', but 'pytest' removed it in their latest version         
           pipenv run pip install pytest pytest-benchmark py
           pipenv run python setup.py sdist bdist_wheel
-          bash -c 'pipenv run pip install dist/checkov-*.whl'
+          bash -c 'pipenv run pip install dist/checkov3-*.whl'
       - name: Clone terraform-aws-components
         run: git clone --branch 0.182.0 https://github.com/cloudposse/terraform-aws-components.git
         working-directory: ${{ env.working-directory }}
@@ -230,7 +230,7 @@ jobs:
           pipenv --python ${{ env.PYTHON_VERSION }}     
           pipenv run pip install pytest pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
-          bash -c 'pipenv run pip install dist/checkov-*.whl'
+          bash -c 'pipenv run pip install dist/checkov3-*.whl'
       - name: Run dogfood tests
         run: |
           pipenv run pytest
