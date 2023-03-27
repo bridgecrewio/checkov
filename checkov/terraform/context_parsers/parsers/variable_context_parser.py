@@ -1,6 +1,6 @@
 from typing import Dict, Any, List
 
-import dpath.util
+import dpath
 from hcl2 import START_LINE, END_LINE
 
 from checkov.terraform.context_parsers.base_parser import BaseContextParser

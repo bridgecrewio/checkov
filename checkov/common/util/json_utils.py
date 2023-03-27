@@ -10,6 +10,7 @@ from bc_jsonpath_ng import parse, JSONPath
 from checkov.common.bridgecrew.severities import Severity
 from checkov.common.output.common import ImageDetails
 from checkov.common.packaging.version import LegacyVersion, Version
+from detect_secrets.core.potential_secret import PotentialSecret
 
 type_of_function = type(lambda x: x)
 
@@ -37,6 +38,8 @@ class CustomJSONEncoder(json.JSONEncoder):
             return str(o)
         elif isinstance(o, TFModule):
             return str(o)
+        elif isinstance(o, PotentialSecret):
+            return o.json()
         else:
             return json.JSONEncoder.default(self, o)
 

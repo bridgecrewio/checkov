@@ -401,6 +401,13 @@ class ExtArgumentParser(configargparse.ArgumentParser):
             "-ca", "--ca-certificate", help="Custom CA certificate (bundle) file", default=None, env_var="BC_CA_BUNDLE"
         )
         self.add(
+            "--no-cert-verify",
+            action="store_true",
+            help="Skip SSL certificate verification. Use this to bypass errors related to SSL certificates. Warning: "
+                 "this should only be used for testing purposes. Skipping certificate verification is dangerous as "
+                 "invalid and falsified certificates cannot be detected."
+        )
+        self.add(
             "--repo-root-for-plan-enrichment",
             help="Directory containing the hcl code used to generate a given plan file. Use with -f.",
             dest="repo_root_for_plan_enrichment",

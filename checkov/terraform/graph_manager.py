@@ -6,6 +6,7 @@ from typing import Type, Any, TYPE_CHECKING
 
 from checkov.common.runners.base_runner import strtobool
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
+from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.parser import Parser
 
@@ -51,6 +52,7 @@ class TerraformGraphManager(GraphManager[TerraformLocalGraph, "dict[str, dict[st
             local_graph = local_graph_class(module)
             local_graph.build_graph(render_variables=render_variables)
 
+        tf_definitions, _ = convert_graph_vertices_to_tf_definitions(local_graph.vertices, source_dir)
         return local_graph, tf_definitions
 
     def build_graph_from_definitions(
