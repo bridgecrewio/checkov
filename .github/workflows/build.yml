@@ -110,7 +110,7 @@ jobs:
         run: |
           pipenv run python -m pytest tests
   bump-version:
-    needs: [integration-tests, unit-tests, prisma-tests]
+    needs: [integration-tests, unit-tests]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
