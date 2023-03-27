@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import os
 
-from typing import TYPE_CHECKING, Dict, Optional, List
+from typing import TYPE_CHECKING, Dict, Optional, List, Any
 from checkov.common.util import stopit
 from detect_secrets.core import scan
 
@@ -47,7 +47,7 @@ def _get_commits_diff(root_folder: str, last_commit_sha: Optional[str] = None) -
         git_diff = commits[previous_commit_idx].diff(current_commit_hash, create_patch=True)
 
         for file_diff in git_diff:
-            curr_diff = {
+            curr_diff: Dict[str, str | Dict[str, str]] = {
                 COMMIT_HASH_KEY: current_commit_hash,
             }
             if file_diff.renamed:
