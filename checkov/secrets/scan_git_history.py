@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import logging
 import os
+import concurrent.futures
 
 from typing import TYPE_CHECKING, Dict, Optional, List
 from checkov.common.util import stopit
 from detect_secrets.core import scan
 
-from checkov.secrets.git_history_store import GitHistorySecretStore
+from checkov.secrets.git_history_store import GitHistorySecretStore, RawStore, RENAME_STR, FILE_RESULTS_STR
 from checkov.secrets.consts import GIT_HISTORY_NOT_BEEN_REMOVED
 
 if TYPE_CHECKING:
@@ -16,10 +17,14 @@ if TYPE_CHECKING:
 os.environ["GIT_PYTHON_REFRESH"] = "quiet"
 try:
     import git
+
     git_import_error = None
 except ImportError as e:
     git_import_error = e
+
 COMMIT_HASH_KEY = '==commit_hash=='
+SPLIT_RATIO = 1
+MIN_SPLIT = 3
 
 
 def _get_commits_diff(root_folder: str, last_commit_sha: Optional[str] = None) -> List[Dict[str, str | Dict[str, str]]]:
@@ -76,7 +81,42 @@ def _scan_history(root_folder: str, secret_store: SecretsCollection,
     if not commits_diff:
         return
 
+    if len(commits_diff) > MIN_SPLIT:
+        raw_store = _run_scan_parts(commits_diff)
+    else:
+        raw_store = _run_scan_one_part(commits_diff)
+    process_raw_store(history_store, raw_store)
+
+    _create_secret_collection(secret_store, history_store)
+
+
+def process_raw_store(base_history_store: GitHistorySecretStore, results: List[RawStore]) -> None:
+    for raw_res in results:
+        res_type = raw_res.get('type')
+        if res_type == FILE_RESULTS_STR:
+            base_history_store.set_secret_map(raw_res.get('file_results'), raw_res.get('file_name'),
+                                              raw_res.get('commit_hash'), raw_res.get('commit'))
+        elif res_type == RENAME_STR:
+            base_history_store.handle_renamed_file(raw_res.get('rename_from'),
+                                                   raw_res.get('rename_to'), raw_res.get('commit_hash'))
+
+
+def _run_scan_parts(  # base_history_store: GitHistorySecretStore,
+                    commits_diff: List[Dict[str, str | Dict[str, str]]]) -> List[RawStore]:
+    result: List[RawStore] = []
+    size = len(commits_diff)
+    for i in range(0, size, SPLIT_RATIO):
+        cur_end = i + SPLIT_RATIO
+        cur_diffs = commits_diff[i:cur_end]
+        cur_result = _run_scan_one_part(cur_diffs)
+        result.extend(cur_result)
+    return result
+
+
+def _run_scan_one_part(  # history_store: GitHistorySecretStore,
+                       commits_diff: List[Dict[str, str | Dict[str, str]]]) -> List[RawStore]:
     scanned_file_count = 0
+    results: List[RawStore] = []
     # the secret key will be {file name}_{hash_value}_{type}
     for commit in commits_diff:
         commit_hash = str(commit[COMMIT_HASH_KEY])
@@ -89,13 +129,22 @@ def _scan_history(root_folder: str, secret_store: SecretsCollection,
                 if file_results:
                     logging.info(
                         f"Found {len(file_results)} secrets in file path {file_name} in commit {commit_hash}, file_results = {file_results}")
-                    history_store.set_secret_map(file_results, file_name, commit_hash, commit)
+                    results.append(RawStore(file_results=file_results, file_name=file_name, commit=commit,
+                                            commit_hash=commit_hash, type=FILE_RESULTS_STR,
+                                            rename_from='', rename_to=''))
             elif isinstance(file_diff, dict):
                 rename_from = file_diff['rename_from']
                 rename_to = file_diff['rename_to']
-                history_store.handle_renamed_file(rename_from, rename_to, commit_hash)
+                results.append(RawStore(file_results=[], file_name='', commit=commit,
+                                        commit_hash=commit_hash, type=RENAME_STR,
+                                        rename_from=rename_from, rename_to=rename_to))
             scanned_file_count += 1
+    logging.info(f"Scanned {scanned_file_count} git history files")
+    return results
 
+
+def _create_secret_collection(
+        secret_store: SecretsCollection, history_store: GitHistorySecretStore):
     # run over the entire history store and create the secret collection
     for secrets_data in history_store.secrets_by_file_value_type.values():
         for secret_data in secrets_data:
@@ -103,7 +152,7 @@ def _scan_history(root_folder: str, secret_store: SecretsCollection,
                 "removed_commit_hash"] else GIT_HISTORY_NOT_BEEN_REMOVED
             key = f'{secret_data["added_commit_hash"]}_{removed}_{secret_data["potential_secret"].filename}'
             secret_store[key].add(secret_data["potential_secret"])
-    logging.info(f"Scanned {scanned_file_count} git history files")
+    logging.info(f"Created secret collection for {len(history_store.secrets_by_file_value_type)} secrets")
 
 
 class GitHistoryScanner:
