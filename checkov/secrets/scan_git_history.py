@@ -53,9 +53,9 @@ def _get_commits_diff(root_folder: str, last_commit_sha: Optional[str] = None) -
             if file_diff.renamed:
                 logging.info(f"File was renamed from {file_diff.rename_from} to {file_diff.rename_to}")
                 curr_diff[file_diff.a_path] = {
-                        'rename_from': file_diff.rename_from,
-                        'rename_to': file_diff.rename_to
-                    }
+                    'rename_from': file_diff.rename_from,
+                    'rename_to': file_diff.rename_to
+                }
                 commits_diff.append(curr_diff)
                 continue
 
