@@ -162,6 +162,8 @@ class ImageReferencerMixin(Generic[_Definitions]):
                 cached_results = results[results_index]
             except ValueError:
                 cached_results = {}
+
+            file_line_range = [image.start_line, image.end_line]
             self._add_image_records(
                 report=report,
                 root_path=root_path,
@@ -172,7 +174,8 @@ class ImageReferencerMixin(Generic[_Definitions]):
                 report_type=report_type,
                 bc_integration=bc_integration,
                 cached_results=cached_results,
-                license_statuses=license_statuses_by_image.get(image.name) or []
+                license_statuses=license_statuses_by_image.get(image.name) or [],
+                file_line_range=file_line_range if None not in file_line_range else None
             )
 
         return report
@@ -201,7 +204,8 @@ class ImageReferencerMixin(Generic[_Definitions]):
         report_type: str,
         bc_integration: BcPlatformIntegration,
         cached_results: dict[str, Any],
-        license_statuses: list[_LicenseStatus]
+        license_statuses: list[_LicenseStatus],
+        file_line_range: list[int] | None = None
     ) -> None:
         """Adds an image record to the given report, if possible"""
         if cached_results:
@@ -240,6 +244,7 @@ class ImageReferencerMixin(Generic[_Definitions]):
                 runner_filter=runner_filter,
                 report_type=report_type,
                 license_statuses=license_statuses,
+                file_line_range=file_line_range
             )
         else:
             logging.info(f"No cache hit for image {image.name}")
@@ -281,6 +286,7 @@ class ImageReferencerMixin(Generic[_Definitions]):
         license_statuses: list[_LicenseStatus],
         runner_filter: RunnerFilter,
         report_type: str,
+        file_line_range: list[int] | None = None
     ) -> None:
         vulnerabilities = result.get("vulnerabilities", [])
         packages = result.get("packages", [])
@@ -295,6 +301,7 @@ class ImageReferencerMixin(Generic[_Definitions]):
             license_statuses=license_statuses,
             sca_details=image_details,
             report_type=report_type,
+            file_line_range=file_line_range
         )
 
     @abstractmethod
