@@ -262,7 +262,7 @@ jobs:
       SHORT_IMAGE_TAG: ${{ needs.bump-version.outputs.major_version }}
     steps:
       - uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3  # v3
-      - uses: sigstore/cosign-installer@9becc617647dfa20ae7b1151972e9b3a2c338a2b  # v2
+      - uses: sigstore/cosign-installer@c3667d99424e7e6047999fb6246c0da843953c65  # v2
       - uses: docker/setup-qemu-action@e81a89b1732b9c48d79cd809d8d81d79c4647a18  # v2
         with:
           platforms: 'arm64,arm'
