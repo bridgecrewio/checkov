@@ -58,13 +58,14 @@ def test_run_with_outer_registry_and_framework_flag():
 def test_run():
     # given
     custom_banner = "custom banner"
+    custom_tool = "custom tool"
     resource_dir = Path(__file__).parent / "common/runner_registry/example_multi_iac"
     argv = ["-d", str(resource_dir), "--framework", "terraform", "kubernetes"]
 
     # when
     ckv = Checkov()
     ckv.parse_config(argv=argv)
-    ckv.run(banner=custom_banner)
+    ckv.run(banner=custom_banner, tool=custom_tool)
 
     # then
     # check run_metadata has all fields set

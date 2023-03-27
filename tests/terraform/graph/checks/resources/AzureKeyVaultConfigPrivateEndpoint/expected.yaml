@@ -1,0 +1,4 @@
+pass:
+  - "azurerm_key_vault.pass"
+fail:
+  - "azurerm_key_vault.fail"

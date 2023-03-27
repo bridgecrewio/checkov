@@ -16,7 +16,6 @@ from checkov.common.bridgecrew.vulnerability_scanning.integrations.docker_image_
     docker_image_scanning_integration
 from checkov.common.output.common import ImageDetails
 from checkov.common.output.report import Report, CheckType
-from checkov.common.runners.base_runner import strtobool
 from checkov.common.sca.commons import should_run_scan
 from checkov.common.sca.output import add_to_report_sca_data, get_license_statuses_async
 from checkov.common.typing import _LicenseStatus
@@ -238,37 +237,6 @@ class ImageReferencerMixin(Generic[_Definitions]):
                 dockerfile_path=dockerfile_path,
                 rootless_file_path=rootless_file_path_to_report,
                 image_details=image_details,
-                runner_filter=runner_filter,
-                report_type=report_type,
-                license_statuses=license_statuses,
-            )
-        elif strtobool(os.getenv("CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING", "False")):
-            # experimental flag on running image referencers via local twistcli
-            from checkov.sca_image.runner import Runner as sca_image_runner
-
-            runner = sca_image_runner()
-
-            image_id = ImageReferencer.inspect(image.name)
-            if not image_id:
-                logging.info(f"(IR debug) No image with image.name={image.name} found. hence image_id={image_id}.")
-                return None
-
-            scan_result = runner.scan(image_id, dockerfile_path, runner_filter)
-            if scan_result is None:
-                return None
-
-            self.raw_report = scan_result
-            result = scan_result.get('results', [{}])[0]
-            rootless_file_path_to_report = f"{dockerfile_path} ({image.name} lines:{image.start_line}-" \
-                                           f"{image.end_line} ({image_id}))"
-
-            self._add_vulnerability_records(
-                report=report,
-                result=result,
-                check_class=check_class,
-                dockerfile_path=dockerfile_path,
-                rootless_file_path=rootless_file_path_to_report,
-                image_details=None,
                 runner_filter=runner_filter,
                 report_type=report_type,
                 license_statuses=license_statuses,

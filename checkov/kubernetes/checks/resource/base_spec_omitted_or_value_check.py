@@ -20,8 +20,8 @@ class BaseSpecOmittedOrValueCheck(BaseK8Check):
 
     def scan_spec_conf(self, conf: dict[str, Any]) -> CheckResult:
         inspected_key = self.get_inspected_key()
-        if dpath.util.search(conf, inspected_key, yielded=False) != {}:
-            if dpath.util.get(conf, inspected_key) != self.get_expected_value():
+        if dpath.search(conf, inspected_key, yielded=False) != {}:
+            if dpath.get(conf, inspected_key) != self.get_expected_value():
                 return CheckResult.FAILED
         return CheckResult.PASSED
 

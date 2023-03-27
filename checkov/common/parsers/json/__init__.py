@@ -38,7 +38,7 @@ def load(
 
 
 def parse(
-    filename: str,
+    filename: str | Path,
     allow_nulls: bool = True,
     out_parsing_errors: dict[str, str] | None = None,
     file_content: str | None = None,
@@ -63,6 +63,6 @@ def parse(
     if error:
         if out_parsing_errors is None:
             out_parsing_errors = {}
-        out_parsing_errors[filename] = str(error)
+        out_parsing_errors[str(filename)] = str(error)
 
     return None

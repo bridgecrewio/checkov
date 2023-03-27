@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import re
 from itertools import groupby
-from typing import TYPE_CHECKING, Pattern, Any, List
+from typing import TYPE_CHECKING, Pattern, Any
 
 from checkov.common.bridgecrew.check_type import CheckType
 
@@ -216,12 +216,12 @@ class SuppressionsIntegration(BaseIntegrationFeature):
         # not used
         pass
 
-    def get_policy_level_suppressions(self) -> List[str]:
-        policy_level_suppressions = []
+    def get_policy_level_suppressions(self) -> dict[str, str]:
+        policy_level_suppressions = {}
         for check_suppressions in self.suppressions.values():
             for suppression in check_suppressions:
                 if suppression.get("suppressionType") == "Policy":
-                    policy_level_suppressions.append(suppression['policyId'])
+                    policy_level_suppressions[suppression['id']] = suppression['policyId']
                     break
         return policy_level_suppressions
 

@@ -198,7 +198,7 @@ class TestCombinatorPluginMultilineYml(unittest.TestCase):
         ]
 
         keyword_value_regex_to_group = REGEX_VALUE_KEYWORD_BY_FILETYPE.get(FileType.YAML)
-        value_regex, group_number = keyword_value_regex_to_group.popitem()
+        value_regex, group_number = list(keyword_value_regex_to_group.items())[0]
         for line, secret in examples:
             match = value_regex.search(line).group(group_number)
             assert match == secret
@@ -217,7 +217,7 @@ class TestCombinatorPluginMultilineYml(unittest.TestCase):
         ]
 
         secret_value_regex_to_group = REGEX_VALUE_SECRET_BY_FILETYPE.get(FileType.YAML)
-        value_regex, group_number = secret_value_regex_to_group.popitem()
+        value_regex, group_number = list(secret_value_regex_to_group.items())[0]
         for line, secret in examples:
             match = value_regex.search(line).group(group_number)
             assert match == secret

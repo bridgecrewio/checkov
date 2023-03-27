@@ -464,6 +464,11 @@ class TestTerraformEvaluation(TestCase):
         expected = "{for val in ['k', 'v'] : val.name :> true}"
         self.assertEqual(expected, evaluate_terraform(input_str))
 
+    def test_base64_value(self):
+        input_str = "\"['dGVzdA==']\""
+        expected = ["dGVzdA=="]
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
 
 @pytest.mark.parametrize(
     "origin_str,str_to_replace,new_value,expected",

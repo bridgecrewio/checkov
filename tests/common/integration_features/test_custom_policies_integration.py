@@ -1,6 +1,7 @@
 import json
 import os
 import unittest
+from copy import deepcopy
 
 from checkov.common.bridgecrew.integration_features.features.custom_policies_integration import \
     CustomPoliciesIntegration
@@ -281,11 +282,52 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         )
 
         scan_reports.failed_checks.append(record)
-        custom_policies_integration.policy_level_suppression = ['BC_AWS_ELASTICSEARCH_3']
+        custom_policies_integration.policy_level_suppression = ['BC_AWS_ELASTICSEARCH_3_80341358308']
         custom_policies_integration.post_runner(scan_reports)
         self.assertEqual(1, len(scan_reports.failed_checks))
         self.assertEqual('mikepolicies_cloned_AWS_1625063607541', scan_reports.failed_checks[0].check_id)
 
+    def test_post_runner_with_non_failed_cloned_checks_with_suppression(self):
+        instance = BcPlatformIntegration()
+        instance.skip_download = False
+        instance.platform_integration_configured = True
+        custom_policies_integration = CustomPoliciesIntegration(instance)
+
+        # mock _get_policies_from_platform method
+        instance.customer_run_config_response = mock_custom_policies_response()
+        failed_cloned_policy = instance.customer_run_config_response.get('customPolicies')[0]
+        custom_policies_integration.pre_scan()
+        custom_policies_integration.bc_cloned_checks = failed_cloned_policy
+
+        scan_reports = Report("terraform")
+        record = Record(
+            check_id="CKV_AWS_5",
+            check_name="Ensure all data stored in the Elasticsearch is securely encrypted at rest",
+            check_result={"result": CheckResult.FAILED},
+            code_block=[],
+            file_path="./main.tf",
+            file_line_range=[7, 10],
+            resource="aws_elasticsearch_domain.enabled",
+            evaluations=None,
+            check_class='',
+            file_abs_path=",.",
+            entity_tags={"tag1": "value1"},
+            bc_check_id="BC_AWS_ELASTICSEARCH_3"
+        )
+
+        scan_reports.failed_checks.append(record)
+        failed_cloned_policy_record = deepcopy(record)
+        failed_cloned_policy_record.check_id = failed_cloned_policy['id']
+        failed_cloned_policy_record.bc_check_id = failed_cloned_policy['id']
+        failed_cloned_policy_record.guideline = failed_cloned_policy['guideline']
+        failed_cloned_policy_record.severity = failed_cloned_policy['severity']
+        failed_cloned_policy_record.check_name = failed_cloned_policy['title']
+
+        scan_reports.failed_checks.append(failed_cloned_policy_record)
+        custom_policies_integration.policy_level_suppression = ['mikepolicies_cloned_AWS_1625063607541_80341358308']
+        custom_policies_integration.post_runner(scan_reports)
+        self.assertEqual(1, len(scan_reports.failed_checks))
+        self.assertEqual('CKV_AWS_5', scan_reports.failed_checks[0].check_id)
 
     def test_policy_load_with_resources_types_as_str(self):
         # response from API

@@ -54,7 +54,8 @@ class RunnerFilter(object):
             repo_root_for_plan_enrichment: Optional[List[str]] = None,
             resource_attr_to_omit: Optional[Dict[str, Set[str]]] = None,
             enable_git_history_secret_scan: bool = False,
-            git_history_timeout: str = '12h'
+            git_history_timeout: str = '12h',
+            git_history_last_commit_scanned: Optional[str] = None  # currently not exposed by a CLI flag
     ) -> None:
 
         checks = convert_csv_string_arg_to_list(checks)
@@ -143,6 +144,7 @@ class RunnerFilter(object):
             self.git_history_timeout = convert_to_seconds(git_history_timeout)
             self.framework = [CheckType.SECRETS]
             logging.debug("Scan secrets history was enabled ignoring other frameworks")
+            self.git_history_last_commit_scanned = git_history_last_commit_scanned
 
     @staticmethod
     def _load_resource_attr_to_omit(resource_attr_to_omit_input: Optional[Dict[str, Set[str]]]) -> DefaultDict[str, Set[str]]:

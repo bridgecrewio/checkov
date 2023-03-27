@@ -58,6 +58,7 @@ def test_all_frameworks_are_tested() -> None:
         CheckType.SECRETS,
         CheckType.SERVERLESS,
         CheckType.TERRAFORM,
+        CheckType.TERRAFORM_JSON,
         CheckType.TERRAFORM_PLAN,
         CheckType.POLICY_3D
     }, "Don't forget to add a test case for the new runner here"
@@ -153,6 +154,10 @@ def test_terraform_framework(caplog: LogCaptureFixture) -> None:
     ]
 
     run_framework_test(caplog=caplog, framework=CheckType.TERRAFORM, excluded_paths=excluded_paths)
+
+
+def test_terraform_json_framework(caplog: LogCaptureFixture) -> None:
+    run_framework_test(caplog=caplog, framework=CheckType.TERRAFORM_JSON)
 
 
 def test_terraform_plan_framework(caplog: LogCaptureFixture) -> None:

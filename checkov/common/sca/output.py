@@ -31,7 +31,7 @@ if TYPE_CHECKING:
     from aiohttp import ClientSession
     from checkov.common.output.common import SCADetails
     from checkov.common.output.report import Report
-    from checkov.common.typing import _LicenseStatus, _CheckResult
+    from checkov.common.typing import _LicenseStatus, _CheckResult, _ScaSuppressions
 
 
 def create_report_license_record(
@@ -274,6 +274,7 @@ def add_to_reports_cves_and_packages(
         dependencies: dict[str, List[int]] | None = None,
         sca_details: SCADetails | None = None,
         report_type: str | None = None,
+        inline_suppressions: _ScaSuppressions | None = None,
         scan_data_format: ScanDataFormat = ScanDataFormat.TWISTCLI,
 ) -> None:
     is_dependency_tree_flow = bool(dependencies)
@@ -311,7 +312,8 @@ def add_to_reports_cves_and_packages(
                                      sca_details=sca_details,
                                      scan_data_format=scan_data_format,
                                      report_type=report_type,
-                                     report=report)
+                                     report=report,
+                                     inline_suppressions=inline_suppressions)
 
 
 def add_to_reports_dependency_tree_cves(check_class: str | None, packages_map: dict[str, dict[str, Any]],
@@ -319,7 +321,8 @@ def add_to_reports_dependency_tree_cves(check_class: str | None, packages_map: d
                                         report: Report, root_packages_list: list[int],
                                         rootless_file_path: str, runner_filter: RunnerFilter, scanned_file_path: str,
                                         scan_data_format: ScanDataFormat = ScanDataFormat.TWISTCLI,
-                                        sca_details: SCADetails | None = None, report_type: str | None = None) -> None:
+                                        sca_details: SCADetails | None = None, report_type: str | None = None,
+                                        inline_suppressions: _ScaSuppressions | None = None) -> None:
     for root_package_index in root_packages_list:
         vulnerable_dependencies = find_vulnerable_dependencies(root_package_index, packages)
 
@@ -341,7 +344,8 @@ def add_to_reports_dependency_tree_cves(check_class: str | None, packages_map: d
                                      runner_filter=runner_filter, sca_details=sca_details,
                                      scan_data_format=scan_data_format, report_type=report_type, report=report,
                                      root_package_version=root_package["version"],
-                                     root_package_name=root_package["name"])
+                                     root_package_name=root_package["name"],
+                                     inline_suppressions=inline_suppressions)
 
         for dep in root_package.get("vulnerable_dependencies", []):
             for dep_cve in dep.get("cves", []):
@@ -358,7 +362,8 @@ def add_to_reports_dependency_tree_cves(check_class: str | None, packages_map: d
                                          scan_data_format=scan_data_format, report_type=report_type, report=report,
                                          root_package_version=root_package["version"],
                                          root_package_name=root_package["name"],
-                                         root_package_fixed_version=root_package_fixed_version)
+                                         root_package_fixed_version=root_package_fixed_version,
+                                         inline_suppressions=inline_suppressions)
 
 
 def add_cve_record_to_report(vulnerability_details: dict[str, Any], package_name: str, package_version: str,
@@ -368,7 +373,8 @@ def add_cve_record_to_report(vulnerability_details: dict[str, Any], package_name
                              sca_details: Optional[SCADetails], scan_data_format: ScanDataFormat,
                              report_type: Optional[str], report: Report,
                              root_package_version: str | None = None, root_package_name: str | None = None,
-                             root_package_fixed_version: str | None = None) -> None:
+                             root_package_fixed_version: str | None = None,
+                             inline_suppressions: _ScaSuppressions | None = None) -> None:
     package_alias = get_package_alias(package_name, package_version)
     cve_record = create_report_cve_record(
         rootless_file_path=rootless_file_path,
@@ -384,7 +390,11 @@ def add_cve_record_to_report(vulnerability_details: dict[str, Any], package_name
         root_package_name=root_package_name,
         root_package_fixed_version=root_package_fixed_version
     )
-    if not runner_filter.should_run_check(
+    suppressed = apply_inline_suppressions(
+        record=cve_record, vulnerability_details=vulnerability_details, inline_suppressions=inline_suppressions
+    )
+
+    if not suppressed and not runner_filter.should_run_check(
             check_id=cve_record.check_id,
             bc_check_id=cve_record.bc_check_id,
             severity=cve_record.severity,
@@ -400,6 +410,42 @@ def add_cve_record_to_report(vulnerability_details: dict[str, Any], package_name
 
     report.add_resource(cve_record.resource)
     report.add_record(cve_record)
+
+
+def apply_inline_suppressions(
+    record: Record, vulnerability_details: dict[str, Any], inline_suppressions: _ScaSuppressions | None = None
+) -> bool:
+    """Applies the inline suppression and returns an accomplish status"""
+
+    if inline_suppressions:
+        if "package" in inline_suppressions:
+            package_suppression = inline_suppressions["package"].get(vulnerability_details.get("packageName", ""))
+            if package_suppression:
+                if "suppress_comment" in package_suppression:
+                    record.check_result = {
+                        "result": CheckResult.SKIPPED,
+                        "suppress_comment": package_suppression["suppress_comment"],  # type:ignore[typeddict-item]
+                    }
+                    return True
+                else:
+                    # CVE suppression for specific package
+                    cve_suppression = package_suppression.get(vulnerability_details.get("cveId", ""))
+                    if cve_suppression:
+                        record.check_result = {
+                            "result": CheckResult.SKIPPED,
+                            "suppress_comment": cve_suppression["suppress_comment"],  # type:ignore[index]
+                        }
+                        return True
+        if "cve" in inline_suppressions:
+            cve_suppression = inline_suppressions["cve"].get(vulnerability_details.get("cveId", vulnerability_details.get("id", "")))
+            if cve_suppression:
+                record.check_result = {
+                    "result": CheckResult.SKIPPED,
+                    "suppress_comment": cve_suppression["suppress_comment"],
+                }
+                return True
+
+    return False
 
 
 def find_vulnerable_dependencies(root_package_index: int, packages: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -474,6 +520,7 @@ def add_to_report_sca_data(
         dependencies: dict[str, list[int]] | None = None,
         sca_details: SCADetails | None = None,
         report_type: str | None = None,
+        inline_suppressions: _ScaSuppressions | None = None,
 ) -> None:
     packages_map: dict[str, dict[str, Any]] = {get_package_alias(p["name"], p["version"]): p for p in packages}
     licenses_per_package_map: dict[str, list[str]] = \
@@ -491,7 +538,8 @@ def add_to_report_sca_data(
                                      sca_details=sca_details,
                                      report_type=report_type,
                                      scan_data_format=ScanDataFormat.DEPENDENCY_TREE,
-                                     dependencies=dependencies)
+                                     dependencies=dependencies,
+                                     inline_suppressions=inline_suppressions)
 
 
 def _get_request_input(packages: list[dict[str, Any]]) -> list[dict[str, Any]]:

@@ -6,7 +6,7 @@ import os
 import platform
 from pathlib import Path
 from typing import Any, Tuple
-import dpath.util
+import dpath
 
 import yaml
 from jsonschema import validate, ValidationError

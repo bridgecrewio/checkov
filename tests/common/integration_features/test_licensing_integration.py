@@ -42,11 +42,38 @@ class TestLicensingIntegration(unittest.TestCase):
         self.assertEqual(set(module_keys), {'IAC', 'SECRETS', 'SCA', 'SAST'})
 
         self.assertEqual(set(checkov_runners), {
-            'bitbucket_pipelines', 'circleci_pipelines', 'ansible', 'argo_workflows', 'arm', 'azure_pipelines', 'bicep',
-            'cloudformation', 'dockerfile', 'github_configuration', 'github_actions', 'gitlab_configuration',
-            'gitlab_ci', 'bitbucket_configuration', 'helm', 'json', 'yaml', 'kubernetes', 'kustomize', 'openapi',
-            'sca_package', 'sca_image', 'secrets', 'serverless', 'terraform', 'terraform_plan', 'sast', 'sast_python',
-            'sast_java', 'sast_javascript', '3d_policy'
+            'ansible',
+            'argo_workflows',
+            'arm',
+            'azure_pipelines',
+            'bicep',
+            'bitbucket_configuration',
+            'bitbucket_pipelines',
+            'circleci_pipelines',
+            'cloudformation',
+            'dockerfile',
+            'github_configuration',
+            'github_actions',
+            'gitlab_configuration',
+            'gitlab_ci',
+            'helm',
+            'json',
+            'kubernetes',
+            'kustomize',
+            'openapi',
+            'sca_package',
+            'sca_image',
+            'secrets',
+            'serverless',
+            'terraform',
+            'terraform_json',
+            'terraform_plan',
+            'yaml',
+            'sast',
+            'sast_python',
+            'sast_java',
+            'sast_javascript',
+            '3d_policy'
         })
 
         self.assertEqual(SubscriptionCategoryMapping.get(CustomerSubscription.IAC), (CodeCategoryType.IAC, CodeCategoryType.BUILD_INTEGRITY))

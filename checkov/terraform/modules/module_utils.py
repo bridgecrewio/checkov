@@ -15,7 +15,7 @@ from lark import Tree
 import re
 
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
-from checkov.common.util.json_utils import CustomJSONEncoder
+from checkov.common.util.json_utils import CustomJSONEncoder, object_hook
 
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
@@ -284,5 +284,5 @@ def clean_parser_types_lst(values: list[Any]) -> list[Any]:
     return result_values
 
 
-def serialize_definitions(tf_definitions: dict[str, _Hcl2Payload]) -> dict[str, _Hcl2Payload]:
-    return json.loads(json.dumps(tf_definitions, cls=CustomJSONEncoder))
+def serialize_definitions(tf_definitions: _Hcl2Payload) -> _Hcl2Payload:
+    return json.loads(json.dumps(tf_definitions, cls=CustomJSONEncoder), object_hook=object_hook)

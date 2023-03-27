@@ -65,6 +65,17 @@ resource "azurerm_linux_web_app" "pass" {
   site_config {}
 }
 
+resource "azurerm_linux_web_app" "pass2" {
+  name                = "example"
+  resource_group_name = azurerm_resource_group.example.name
+  location            = azurerm_service_plan.example.location
+  service_plan_id     = azurerm_service_plan.example.id
+  auth_settings_v2 {
+    auth_enabled = true
+  }
+  site_config {}
+}
+
 resource "azurerm_windows_web_app" "fail" {
   name                = "example"
   resource_group_name = azurerm_resource_group.example.name
@@ -95,3 +106,15 @@ resource "azurerm_windows_web_app" "pass" {
   }
   site_config {}
 }
+
+resource "azurerm_windows_web_app" "pass2" {
+  name                = "example"
+  resource_group_name = azurerm_resource_group.example.name
+  location            = azurerm_service_plan.example.location
+  service_plan_id     = azurerm_service_plan.example.id
+  auth_settings_v2 {
+    auth_enabled = true
+  }
+  site_config {}
+}
+

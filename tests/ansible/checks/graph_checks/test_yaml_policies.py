@@ -61,6 +61,28 @@ class TestYamlPolicies(TestYamlPoliciesBase):
 
     def test_DnfValidateCerts(self):
         self.go("DnfValidateCerts", local_graph_class=AnsibleLocalGraph)
+    
+    # PAN-OS checks
+    def test_PanosPolicyNoDSRI(self):
+        self.go("PanosPolicyNoDSRI", local_graph_class=AnsibleLocalGraph)
+
+    def test_PanosPolicyDescription(self):
+        self.go("PanosPolicyDescription", local_graph_class=AnsibleLocalGraph)
+
+    def test_PanosPolicyNoServiceAny(self):
+        self.go("PanosPolicyNoServiceAny", local_graph_class=AnsibleLocalGraph)
+
+    def test_PanosPolicyNoApplicationAny(self):
+        self.go("PanosPolicyNoApplicationAny", local_graph_class=AnsibleLocalGraph)
+
+    def test_PanosPolicyNoSrcAnyDstAny(self):
+        self.go("PanosPolicyNoSrcAnyDstAny", local_graph_class=AnsibleLocalGraph)
+
+    def test_PanosInterfaceMgmtProfileNoHTTP(self):
+        self.go("PanosInterfaceMgmtProfileNoHTTP", local_graph_class=AnsibleLocalGraph)
+
+    def test_PanosInterfaceMgmtProfileNoTelnet(self):
+        self.go("PanosInterfaceMgmtProfileNoTelnet", local_graph_class=AnsibleLocalGraph)
 
     def test_registry_load(self):
         registry = self.get_checks_registry()

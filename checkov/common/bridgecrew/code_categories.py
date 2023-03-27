@@ -40,6 +40,7 @@ CodeCategoryMapping: Dict[str, Union[CodeCategoryType, List[CodeCategoryType]]] 
     CheckType.SECRETS: CodeCategoryType.SECRETS,
     CheckType.SERVERLESS: CodeCategoryType.IAC,
     CheckType.TERRAFORM: CodeCategoryType.IAC,
+    CheckType.TERRAFORM_JSON: CodeCategoryType.IAC,
     CheckType.TERRAFORM_PLAN: CodeCategoryType.IAC,
     CheckType.SAST: CodeCategoryType.SAST,
     CheckType.SAST_PYTHON: CodeCategoryType.SAST,

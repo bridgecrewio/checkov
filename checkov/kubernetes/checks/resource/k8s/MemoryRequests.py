@@ -20,7 +20,7 @@ class MemoryRequests(BaseK8sContainerCheck):
             requests = res.get("requests")
             if not isinstance(requests, dict):
                 return CheckResult.UNKNOWN
-            if requests and requests.get("memory"):
+            if requests and requests.get("memory"):  # nosec  # false positive
                 return CheckResult.PASSED
         return CheckResult.FAILED
 
