@@ -115,7 +115,7 @@ setup(
     ],
     dependency_links=[],  # keep it empty, needed for pipenv-setup
     license="Apache License 2.0",
-    name="checkov",
+    name="checkov3",
     version=version,
     python_requires=">=3.7",  # TODO: change to 3.8 end of September
     description="Infrastructure as code static analysis",
