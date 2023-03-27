@@ -4,7 +4,7 @@ import os
 import re
 from typing import Tuple, Dict, Any, List
 
-import dpath.util
+import dpath
 
 TF_DEFINITIONS_STRIP_WORDS = re.compile(r"\b(?!\d)([^\/]+)")
 NON_PATH_WORDS_REGEX = re.compile(r"\b(?!output)[^ .]+")

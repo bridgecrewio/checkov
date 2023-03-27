@@ -62,8 +62,12 @@ class GenericGitLoader(ModuleLoader):
             git_getter.do_get()
         except Exception as e:
             str_e = str(e)
+            if os.getenv("GITHUB_PAT") and not module_params.token and "could not read Username for" in str_e:
+                # we probably try to access a private repository, but a GITHUB_PAT was set,
+                # but the current loader (ex. GithubLoader) is not using it
+                return ModuleContent(dir=None, failed_url=module_params.module_source)
             if 'File exists' not in str_e and 'already exists and is not an empty directory' not in str_e:
-                self.logger.error(f"failed to get {module_params.module_source} because of {e}")
+                self.logger.warning(f"failed to get {module_params.module_source} because of {e}")
                 return ModuleContent(dir=None, failed_url=module_params.module_source)
         return_dir = module_params.dest_dir
         if module_params.inner_module:

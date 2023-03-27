@@ -1,5 +1,6 @@
 from __future__ import annotations
 from unittest import mock
+from pytest_mock import MockerFixture
 
 from detect_secrets import SecretsCollection
 
@@ -8,7 +9,6 @@ from checkov.runner_filter import RunnerFilter
 from detect_secrets.settings import transient_settings
 from checkov.common.output.secrets_record import COMMIT_REMOVED_STR, COMMIT_ADDED_STR
 
-from checkov.secrets.scan_git_history import GitHistoryScanner
 from tests.secrets.git_history.test_utils import mock_git_repo_commits1, mock_git_repo_commits2, mock_git_repo_commits3, \
     mock_git_repo_commits_too_much, mock_git_repo_commits_remove_file, mock_git_repo_commits_rename_file, \
     mock_git_repo_commits_modify_and_rename_file, mock_remove_file_with_two_equal_secret, \
@@ -39,6 +39,8 @@ def test_scan_history_secrets() -> None:
     plugins_used = [
         {'name': 'AWSKeyDetector'},
     ]
+    from checkov.secrets.scan_git_history import GitHistoryScanner
+
     with transient_settings({
         # Only run scans with only these plugins.
         'plugins_used': plugins_used
@@ -71,6 +73,8 @@ def test_scan_history_secrets_merge_added_removed() -> None:
     plugins_used = [
         {'name': 'AWSKeyDetector'},
     ]
+    from checkov.secrets.scan_git_history import GitHistoryScanner
+
     with transient_settings({
         # Only run scans with only these plugins.
         'plugins_used': plugins_used
@@ -122,12 +126,14 @@ def test_scan_history_secrets_timeout() -> None:
     plugins_used = [
         {'name': 'AWSKeyDetector'},
     ]
+    from checkov.secrets.scan_git_history import GitHistoryScanner
+
     with transient_settings({
         # Only run scans with only these plugins.
         'plugins_used': plugins_used
     }) as settings:
         settings.disable_filters(*['detect_secrets.filters.common.is_invalid_file'])
-        finished = GitHistoryScanner(valid_dir_path, secrets, 1).scan_history()
+        finished = GitHistoryScanner(valid_dir_path, secrets, None, 0.1).scan_history()
 
     assert finished is False
 
@@ -250,3 +256,55 @@ def test_scan_git_history_multiline_keyword_yml() -> None:
     assert report.parsing_errors == []
     assert report.passed_checks == []
     assert report.skipped_checks == []
+
+
+def test_scan_git_history_middle(mocker: MockerFixture) -> None:
+    """
+    this test tries to run a full scan over 5 commits,
+    then run two separate runs over the first 2 and the last 3 (the second will give the secret store to the third)
+    then compares the results from run 1 to the last run
+    """
+    valid_dir_path = "test"
+
+    all_commits = mock_git_repo_commits1('', '')
+    commits_keys = [x for x in all_commits.keys()]
+    mocker.patch(
+        "checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff",
+        return_value=all_commits,
+    )
+    runner = Runner()
+    report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
+                        runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
+    assert len(report.failed_checks) == 3
+    for failed_check in report.failed_checks:
+        assert failed_check.added_commit_hash or failed_check.removed_commit_hash
+
+    mocker.patch(
+        "checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff",
+        return_value={commits_keys[0]: all_commits[commits_keys[0]],
+                      commits_keys[1]: all_commits[commits_keys[1]]},
+    )
+    runner2 = Runner()
+    report2 = runner2.run(root_folder=valid_dir_path, external_checks_dir=None,
+                        runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
+    assert len(report2.failed_checks) == 1
+    sec_store = runner2.get_history_secret_store()
+
+    mocker.patch(
+        "checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff",
+        return_value={commits_keys[2]: all_commits[commits_keys[2]],
+                      commits_keys[3]: all_commits[commits_keys[3]],
+                      commits_keys[4]: all_commits[commits_keys[4]]},
+    )
+    runner3 = Runner()
+    runner3.set_history_secret_store(sec_store)
+    report3 = runner2.run(root_folder=valid_dir_path, external_checks_dir=None,
+                          runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
+    assert len(report3.failed_checks) == 3
+    assert len(report3.parsing_errors) == 0
+    assert len(report3.passed_checks) == 0
+    assert len(report3.parsing_errors) == 0
+    assert len(report3.skipped_checks) == 0
+    for failed_check in report3.failed_checks:
+        assert failed_check.added_commit_hash or failed_check.removed_commit_hash
+

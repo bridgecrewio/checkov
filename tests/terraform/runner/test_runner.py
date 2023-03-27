@@ -39,15 +39,21 @@ from checkov.terraform.checks.data.registry import data_registry
 CUSTOM_GRAPH_CHECK_ID = 'CKV2_CUSTOM_1'
 EXTERNAL_MODULES_DOWNLOAD_PATH = os.environ.get('EXTERNAL_MODULES_DIR', DEFAULT_EXTERNAL_MODULES_DIR)
 
+
 @parameterized_class([
-   {"db_connector": NetworkxConnector},
-   {"db_connector": IgraphConnector}
+    {"db_connector": NetworkxConnector, "use_new_tf_parser": "True"},
+    {"db_connector": NetworkxConnector, "use_new_tf_parser": "False"},
+    {"db_connector": IgraphConnector, "use_new_tf_parser": "True"},
+    {"db_connector": IgraphConnector, "use_new_tf_parser": "False"}
 ])
 class TestRunnerValid(unittest.TestCase):
-
     def setUp(self) -> None:
         self.orig_checks = resource_registry.checks
         self.db_connector = self.db_connector
+        os.environ["CHECKOV_NEW_TF_PARSER"] = self.use_new_tf_parser
+
+    def tearDown(self):
+        del os.environ["CHECKOV_NEW_TF_PARSER"]
 
     def test_registry_has_type(self):
         self.assertEqual(resource_registry.report_type, CheckType.TERRAFORM)
@@ -362,7 +368,7 @@ class TestRunnerValid(unittest.TestCase):
         for check_list in [aws_checks, gcp_checks, azure_checks]:
             check_list.sort(reverse=True, key=lambda s: int(s.split('_')[-1]))
 
-        for i in range(1, len(aws_checks) + 1):
+        for i in range(1, len(aws_checks) + 5):
             if f'CKV2_AWS_{i}' == 'CKV2_AWS_17':
                 # CKV2_AWS_17 was overly keen and those resources it checks are created by default
                 continue
@@ -377,9 +383,6 @@ class TestRunnerValid(unittest.TestCase):
                 continue
             if f'CKV2_AWS_{i}' == 'CKV2_AWS_26':
                 # Was a test policy
-                continue
-            if f'CKV2_AWS_{i}' == 'CKV2_AWS_57':
-                # Can be used for a new policy, was accidentally skipped
                 continue
             self.assertIn(f'CKV2_AWS_{i}', aws_checks,
                           msg=f'The new AWS violation should have the ID "CKV2_AWS_{i}"')
@@ -1030,6 +1033,9 @@ class TestRunnerValid(unittest.TestCase):
 
     @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "False"})
     def test_record_definition_context_path(self):
+        if self.use_new_tf_parser == "True":
+            # We assume CHECKOV_ENABLE_NESTED_MODULES is True for the case of the new TF parser
+            return
         resources_path = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), "resources", "definition_context_path_nested_modules")
         checks_allow_list = ['CKV_AWS_20']

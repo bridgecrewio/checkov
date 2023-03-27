@@ -3,7 +3,7 @@ from typing import Dict, Any, List
 from hcl2 import START_LINE, END_LINE
 
 from checkov.terraform.context_parsers.base_parser import BaseContextParser
-import dpath.util
+import dpath
 
 
 class LocalsContextParser(BaseContextParser):

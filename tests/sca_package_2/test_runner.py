@@ -4,13 +4,14 @@ from mock.mock import MagicMock
 from pytest_mock import MockerFixture
 from packaging import version as packaging_version
 
+from checkov.common.bridgecrew.bc_source import SourceTypes, BCSourceType
 from checkov.common.bridgecrew.code_categories import CodeCategoryType
 from checkov.common.bridgecrew.platform_integration import bc_integration, FileToPersist
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package_2.runner import Runner
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
-from checkov.common.models.enums import CheckResult
+from checkov.common.models.enums import CheckResult, ErrorStatus
 
 EXAMPLES_DIR = Path(__file__).parent / "examples"
 
@@ -254,3 +255,26 @@ def test_run_with_empty_scan_result(mocker: MockerFixture):
     # then
     assert report.check_type == "sca_package"
     assert report.resources == set()
+
+
+def test_run_with_ide_source_and_bc_api_key(mocker: MockerFixture):
+    # given
+    bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
+    bc_integration.bc_source = SourceTypes[BCSourceType.JETBRAINS]
+
+    scanner_mock = MagicMock()
+    mocker.patch("checkov.sca_package_2.runner.Scanner", side_effect=scanner_mock)
+
+    # when
+    report = Runner().run(root_folder=EXAMPLES_DIR)
+
+    #
+    bc_integration.bc_source = None
+
+    # then
+    assert report.check_type == "sca_package"
+    assert report.resources == set()
+    assert report.error_status == ErrorStatus.SUCCESS  # shouldn't be ERROR
+
+    # scanner shouldn't be invoked
+    scanner_mock.assert_not_called()
