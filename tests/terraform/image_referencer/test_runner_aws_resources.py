@@ -149,7 +149,7 @@ def test_codebuild_resources(mocker: MockerFixture, graph_framework):
 
     assert len(tf_report.resources) == 3
     assert len(tf_report.passed_checks) == 6
-    assert len(tf_report.failed_checks) == 0
+    assert len(tf_report.failed_checks) == 2
     assert len(tf_report.skipped_checks) == 0
     assert len(tf_report.parsing_errors) == 0
 
