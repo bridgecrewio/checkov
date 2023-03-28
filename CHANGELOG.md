@@ -1,6 +1,17 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.121...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.124...HEAD)
+
+## [2.3.124](https://github.com/bridgecrewio/checkov/compare/2.3.121...2.3.124) - 2023-03-27
+
+### Feature
+
+- **terraform:** AWS Use Launch templates in ASG - [#4698](https://github.com/bridgecrewio/checkov/pull/4698)
+- **terraform:** Codebuild defines and uses logs - [#4696](https://github.com/bridgecrewio/checkov/pull/4696)
+
+### Bug Fix
+
+- **terraform:** Foreach - Fix regex on an empty list - [#4765](https://github.com/bridgecrewio/checkov/pull/4765)
 
 ## [2.3.121](https://github.com/bridgecrewio/checkov/compare/2.3.115...2.3.121) - 2023-03-26
 
