@@ -51,6 +51,7 @@ def checkov_source_path() -> str:
         (6, None, False)
     ]
 )
+@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "False"})
 def test_static_foreach_resource(block_index, expected_res, obj):
     dir_name = 'foreach_resources/static_foreach_value'
     local_graph = build_and_get_graph_by_path(dir_name)[0]
@@ -144,7 +145,6 @@ def test_new_resources_foreach():
         assert config_name.endswith("[\"bucket_a\"]") or config_name.endswith("[\"bucket_b\"]")
 
 
-@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
 def test_resources_flow():
     dir_name = 'foreach_examples/depend_resources'
     local_graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
@@ -177,7 +177,6 @@ def test_resources_flow():
     assert list(resources[0].config.get('aws_s3_bucket').keys())[0] == 'foreach_map[\"bucket_a\"]'
 
 
-@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
 def test_tf_definitions_and_breadcrumbs():
     from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
     dir_name = 'foreach_examples/depend_resources'
@@ -238,7 +237,6 @@ def test_update_attrs(attrs, k_v_to_change, expected_attrs, expected_res):
 
 
 @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "True"})
-@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
 def test_new_tf_parser_with_foreach_modules(checkov_source_path):
     dir_name = 'parser_dup_nested'
@@ -303,7 +301,6 @@ def test_new_tf_parser_with_foreach_modules(checkov_source_path):
 
 
 @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "True"})
-@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
 def test_tf_definitions_for_foreach_on_modules(checkov_source_path):
     dir_name = 'parser_dup_nested'
@@ -320,7 +317,6 @@ def test_tf_definitions_for_foreach_on_modules(checkov_source_path):
 
 
 @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "True"})
-@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
 def test_foreach_module_in_second_level_module(checkov_source_path):
     dir_name = 'foreach_module'
@@ -332,7 +328,6 @@ def test_foreach_module_in_second_level_module(checkov_source_path):
 
 
 @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "True"})
-@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
 def test_foreach_module_in_both_levels_module(checkov_source_path):
     dir_name = 'foreach_module_dup_foreach'
@@ -344,7 +339,6 @@ def test_foreach_module_in_both_levels_module(checkov_source_path):
 
 
 @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "True"})
-@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
 def test_foreach_module_and_resource(checkov_source_path):
     dir_name = 'foreach_module_and_resource'
@@ -361,7 +355,6 @@ def test_foreach_module_and_resource(checkov_source_path):
 
 
 @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "True"})
-@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
 def test_foreach_module_with_more_than_two_resources(checkov_source_path):
     dir_name = 'foreach_module_with_more_than_two_resources'
