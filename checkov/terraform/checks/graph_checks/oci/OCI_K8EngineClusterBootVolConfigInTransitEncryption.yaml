@@ -13,5 +13,5 @@ definition:
     - cond_type: "attribute"
       resource_types: "oci_containerengine_node_pool"
       attribute: "node_config_details.is_pv_encryption_in_transit_enabled"
-      operator: "not_equals_ignore_case"
-      value: "false"
+      operator: "equals_ignore_case"
+      value: "true"
