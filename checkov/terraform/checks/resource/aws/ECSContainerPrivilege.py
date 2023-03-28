@@ -23,7 +23,7 @@ class ECSContainerPrivilege(BaseResourceCheck):
                 containers = conf.get("container_definitions")[0]
                 if len(containers) > 0:
                     for container in containers:
-                        if container.get("privilege"):
+                        if isinstance(container, dict) and container.get("privilege"):
                             return CheckResult.FAILED
                     return CheckResult.PASSED
         return CheckResult.UNKNOWN
