@@ -24,7 +24,7 @@ except ImportError as e:
     git_import_error = e
 
 COMMIT_HASH_KEY = '==commit_hash=='
-SPLIT_RATIO = 10
+SPLIT_RATIO = 100
 MIN_SPLIT = 200
 
 
@@ -56,7 +56,7 @@ def _get_commits_diff(root_folder: str, last_commit_sha: Optional[str] = None) -
             curr_diff: Dict[str, str | Dict[str, str]] = {
                 COMMIT_HASH_KEY: current_commit_hash,
             }
-            if file_diff.renamed:
+            if file_diff.renamed_file:
                 logging.info(f"File was renamed from {file_diff.rename_from} to {file_diff.rename_to}")
                 curr_diff[file_diff.a_path] = {
                     'rename_from': file_diff.rename_from,
@@ -66,7 +66,7 @@ def _get_commits_diff(root_folder: str, last_commit_sha: Optional[str] = None) -
                 continue
 
             elif file_diff.deleted_file:
-                logging.info(f"File {file_diff.b_path} was delete")
+                logging.info(f"File {file_diff.a_path} was deleted")
 
             base_diff_format = f'diff --git a/{file_diff.a_path} b/{file_diff.b_path}' \
                                f'\nindex 0000..0000 0000\n--- a/{file_diff.a_path}\n+++ b/{file_diff.b_path}\n'
@@ -144,7 +144,7 @@ def _run_scan_one_part(commits_diff: List[Dict[str, str | Dict[str, str]]],
                 file_results = [*scan.scan_diff(file_diff)]
                 if file_results:
                     logging.info(
-                        f"Found {len(file_results)} secrets in file path {file_name} in commit {commit_hash}, file_results = {file_results}")
+                        f"Found {len(file_results)} secrets in file path {file_name} in commit {commit_hash}")
                     results.append(RawStore(file_results=file_results, file_name=file_name, commit=commit,
                                             commit_hash=commit_hash, type=FILE_RESULTS_STR,
                                             rename_from='', rename_to=''))
