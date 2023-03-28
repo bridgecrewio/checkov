@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import os
 
-from typing import TYPE_CHECKING, Dict, Optional, List
+from typing import TYPE_CHECKING, Dict, Optional, List, Tuple
 from checkov.common.util import stopit
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from detect_secrets.core import scan
@@ -94,11 +94,11 @@ def process_raw_store(base_history_store: GitHistorySecretStore, results: List[R
     for raw_res in results:
         res_type = raw_res.get('type')
         if res_type == FILE_RESULTS_STR:
-            base_history_store.set_secret_map(raw_res.get('file_results'), raw_res.get('file_name'),
-                                              raw_res.get('commit_hash'), raw_res.get('commit'))
+            base_history_store.set_secret_map(raw_res.get('file_results', []), raw_res.get('file_name', ''),
+                                              raw_res.get('commit_hash', ''), raw_res.get('commit', {}))
         elif res_type == RENAME_STR:
-            base_history_store.handle_renamed_file(raw_res.get('rename_from'),
-                                                   raw_res.get('rename_to'), raw_res.get('commit_hash'))
+            base_history_store.handle_renamed_file(raw_res.get('rename_from', ''),
+                                                   raw_res.get('rename_to', ''), raw_res.get('commit_hash', ''))
 
 
 def _run_scan_parallel(commits_diff: List[Dict[str, str | Dict[str, str]]]) -> List[RawStore]:
@@ -127,7 +127,7 @@ def _run_scan_one_bulk(commits_diff: List[Dict[str, str | Dict[str, str]]]) -> L
     return results
 
 
-def _run_scan_one_commit(commit: Dict[str, str | Dict[str, str]]) -> (List[RawStore], int):
+def _run_scan_one_commit(commit: Dict[str, str | Dict[str, str]]) -> Tuple[List[RawStore], int]:
     results: List[RawStore] = []
     scanned_file_count = 0
     commit_hash = str(commit[COMMIT_HASH_KEY])
@@ -154,7 +154,7 @@ def _run_scan_one_commit(commit: Dict[str, str | Dict[str, str]]) -> (List[RawSt
 
 
 def _create_secret_collection(
-        secret_store: SecretsCollection, history_store: GitHistorySecretStore):
+        secret_store: SecretsCollection, history_store: GitHistorySecretStore) -> None:
     # run over the entire history store and create the secret collection
     for secrets_data in history_store.secrets_by_file_value_type.values():
         for secret_data in secrets_data:
