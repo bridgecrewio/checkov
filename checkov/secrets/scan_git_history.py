@@ -5,8 +5,9 @@ import os
 import concurrent.futures
 from concurrent.futures import ThreadPoolExecutor
 
-from typing import TYPE_CHECKING, Dict, Optional, List
+from typing import TYPE_CHECKING, Dict, Optional, List, Tuple
 from checkov.common.util import stopit
+from checkov.common.parallelizer.parallel_runner import parallel_runner
 from detect_secrets.core import scan
 
 from checkov.secrets.git_history_store import GitHistorySecretStore, RawStore, RENAME_STR, FILE_RESULTS_STR
@@ -25,7 +26,7 @@ except ImportError as e:
 
 COMMIT_HASH_KEY = '==commit_hash=='
 SPLIT_RATIO = 100
-MIN_SPLIT = 200
+MIN_SPLIT = 1
 
 
 def _get_commits_diff(root_folder: str, last_commit_sha: Optional[str] = None) -> List[Dict[str, str | Dict[str, str]]]:
@@ -82,12 +83,12 @@ def _scan_history(root_folder: str, secret_store: SecretsCollection,
     if not commits_diff:
         return
 
+    # results_store: Dict[int, List[RawStore]] = {}
     if len(commits_diff) > MIN_SPLIT:
-        raw_store = _run_scan_parts(commits_diff)
+        raw_store = _run_scan_parallel(commits_diff)
     else:
-        results_store: Dict[int, List[RawStore]] = {}
-        _run_scan_one_part(commits_diff, results_store, 0)
-        raw_store = results_store[0]
+        raw_store = _run_scan_one_bulk(commits_diff)
+        # raw_store = results_store[0]
 
     process_raw_store(history_store, raw_store)
 
@@ -105,58 +106,61 @@ def process_raw_store(base_history_store: GitHistorySecretStore, results: List[R
                                                    raw_res.get('rename_to'), raw_res.get('commit_hash'))
 
 
-def _run_scan_parts(commits_diff: List[Dict[str, str | Dict[str, str]]]) -> List[RawStore]:
-    executer = ThreadPoolExecutor()
-    jobs = []
-    results_store: Dict[int, List[RawStore]] = {}
-    run_num: int = 0
-    run_numbers: List[int] = []
+def _run_scan_parallel(commits_diff: List[Dict[str, str | Dict[str, str]]]) -> List[RawStore]:
+    results = parallel_runner.run_function(_run_scan_one_bulk, commits_diff)
 
-    size = len(commits_diff)
-    for i in range(0, size, SPLIT_RATIO):
-        cur_end = i + SPLIT_RATIO
-        cur_diffs = commits_diff[i:cur_end]
-        run_numbers.append(run_num)
-        results_store.setdefault(run_num)
-        jobs.append(executer.submit(_run_scan_one_part, cur_diffs, results_store, run_num))
-        run_num += 1
-
-    concurrent.futures.wait(jobs)
-
-    result: List[RawStore] = []
-    for run_num in run_numbers:
-        result.extend(results_store[run_num])
-    return result
+    final_results: List[RawStore] = []
+    for result in results:
+        if not result:
+            continue
+        # raw_store = result
+        final_results.extend(result)
+        # for r in result:
+        #     a=r.get('commit_hash')
+        #     logging.info(a)
+        # logging.info(raw_store)
+    return final_results
 
 
-def _run_scan_one_part(commits_diff: List[Dict[str, str | Dict[str, str]]],
-                       results_store: Dict[int, List[RawStore]], run_num: int) -> None:
+def _run_scan_one_bulk(commits_diff: List[Dict[str, str | Dict[str, str]]]) -> List[RawStore]:
     scanned_file_count = 0
     results: List[RawStore] = []
-    # the secret key will be {file name}_{hash_value}_{type}
-    for commit in commits_diff:
-        commit_hash = str(commit[COMMIT_HASH_KEY])
-        for file_name in commit.keys():
-            if file_name == COMMIT_HASH_KEY:
-                continue
-            file_diff = commit[file_name]
-            if isinstance(file_diff, str):
-                file_results = [*scan.scan_diff(file_diff)]
-                if file_results:
-                    logging.info(
-                        f"Found {len(file_results)} secrets in file path {file_name} in commit {commit_hash}")
-                    results.append(RawStore(file_results=file_results, file_name=file_name, commit=commit,
-                                            commit_hash=commit_hash, type=FILE_RESULTS_STR,
-                                            rename_from='', rename_to=''))
-            elif isinstance(file_diff, dict):
-                rename_from = file_diff['rename_from']
-                rename_to = file_diff['rename_to']
-                results.append(RawStore(file_results=[], file_name='', commit=commit,
-                                        commit_hash=commit_hash, type=RENAME_STR,
-                                        rename_from=rename_from, rename_to=rename_to))
-            scanned_file_count += 1
+    # parallel runner can make the list flat, so I can get here dict instead of list
+    if isinstance(commits_diff, dict):
+        results, scanned_file_count = _run_scan_one_commit(commits_diff)
+    elif isinstance(commits_diff, list):
+        for commit in commits_diff:
+            cur_results, curr_count = _run_scan_one_commit(commit)
+            scanned_file_count += curr_count
+            results.extend(cur_results)
     logging.info(f"Scanned {scanned_file_count} git history files")
-    results_store[run_num] = results
+    return results
+
+
+def _run_scan_one_commit(commit: Dict[str, str | Dict[str, str]]) -> (List[RawStore], int):
+    results: List[RawStore] = []
+    scanned_file_count = 0
+    commit_hash = str(commit[COMMIT_HASH_KEY])
+    for file_name in commit.keys():
+        if file_name == COMMIT_HASH_KEY:
+            continue
+        file_diff = commit[file_name]
+        if isinstance(file_diff, str):
+            file_results = [*scan.scan_diff(file_diff)]
+            if file_results:
+                logging.info(
+                    f"Found {len(file_results)} secrets in file path {file_name} in commit {commit_hash}")
+                results.append(RawStore(file_results=file_results, file_name=file_name, commit=commit,
+                                        commit_hash=commit_hash, type=FILE_RESULTS_STR,
+                                        rename_from='', rename_to=''))
+        elif isinstance(file_diff, dict):
+            rename_from = file_diff['rename_from']
+            rename_to = file_diff['rename_to']
+            results.append(RawStore(file_results=[], file_name='', commit=commit,
+                                    commit_hash=commit_hash, type=RENAME_STR,
+                                    rename_from=rename_from, rename_to=rename_to))
+        scanned_file_count += 1
+    return results, scanned_file_count
 
 
 def _create_secret_collection(
