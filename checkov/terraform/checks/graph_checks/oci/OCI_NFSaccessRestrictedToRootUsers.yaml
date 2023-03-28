@@ -4,11 +4,17 @@ metadata:
   category: "GENERAL_SECURITY"
 
 definition:
-    
-    cond_type: "attribute"
-    resource_types: "oci_file_storage_export"
-    attribute: "export_options[?(@.identity_squash =~ '(?i)^ROOT$' & @.anonymous_gid == 65534 & @.anonymous_uid == 65534)]"
-    operator: "jsonpath_exists"
+  or:
+    - cond_type: "attribute"
+      resource_types: "oci_file_storage_export"
+      attribute: "export_options[?(@.identity_squash =~ '(?i)^ROOT$')]"
+      operator: "jsonpath_not_exists"
+
+    - cond_type: "attribute"
+      resource_types: "oci_file_storage_export"
+      attribute: "export_options[?(@.identity_squash =~ '(?i)^ROOT$' & @.anonymous_gid == 65534 & @.anonymous_uid == 65534)]"
+      operator: "jsonpath_exists"
+
 
 #                       REGEX explained:
 # ============================================================ #
