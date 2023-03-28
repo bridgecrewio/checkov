@@ -370,3 +370,17 @@ def test_foreach_module_with_more_than_two_resources(checkov_source_path):
     assert len([block for block in graph.vertices if block.block_type == 'module']) == 16
     assert len([block for block in graph.vertices if block.block_type == 'resource']) == 14
     assert len(tf_definitions.keys()) == 17
+
+
+@pytest.mark.parametrize(
+    "statement,expected",
+    [
+        ([{'main'}], True),
+        (["${toset(['bucket_a', 'bucket_b'])}"], True),
+        ({'key1': '${var.a}', 'key2': '${var.b}'}, True),
+        ({'key2': '${var.b}', 'var.a': '${var.a}'}, False),
+    ]
+)
+def test__is_static_foreach_statement(statement, expected):
+    abstract_handler = ForeachAbstractHandler(None)
+    assert abstract_handler._is_static_foreach_statement(statement) == expected
