@@ -205,8 +205,11 @@ class ForeachAbstractHandler:
             statement = self.extract_from_list(statement)
         if isinstance(statement, str) and re.search(REFERENCES_VALUES, statement):
             return False
-        if isinstance(statement, (list, dict)) and any([re.search(REFERENCES_VALUES, s) for s in statement]):
-            return False
+        if isinstance(statement, (list, dict)):
+            result = True
+            for s in statement:
+                result &= self._is_static_foreach_statement(s)
+            return result
         return True
 
     def _is_static_count_statement(self, statement: list[str] | int) -> bool:
