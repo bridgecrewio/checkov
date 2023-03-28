@@ -2,10 +2,8 @@ from __future__ import annotations
 
 import logging
 import os
-import concurrent.futures
-from concurrent.futures import ThreadPoolExecutor
 
-from typing import TYPE_CHECKING, Dict, Optional, List, Tuple
+from typing import TYPE_CHECKING, Dict, Optional, List
 from checkov.common.util import stopit
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from detect_secrets.core import scan
@@ -25,8 +23,7 @@ except ImportError as e:
     git_import_error = e
 
 COMMIT_HASH_KEY = '==commit_hash=='
-SPLIT_RATIO = 100
-MIN_SPLIT = 1
+MIN_SPLIT = 100
 
 
 def _get_commits_diff(root_folder: str, last_commit_sha: Optional[str] = None) -> List[Dict[str, str | Dict[str, str]]]:
@@ -83,12 +80,10 @@ def _scan_history(root_folder: str, secret_store: SecretsCollection,
     if not commits_diff:
         return
 
-    # results_store: Dict[int, List[RawStore]] = {}
     if len(commits_diff) > MIN_SPLIT:
         raw_store = _run_scan_parallel(commits_diff)
     else:
         raw_store = _run_scan_one_bulk(commits_diff)
-        # raw_store = results_store[0]
 
     process_raw_store(history_store, raw_store)
 
@@ -113,12 +108,7 @@ def _run_scan_parallel(commits_diff: List[Dict[str, str | Dict[str, str]]]) -> L
     for result in results:
         if not result:
             continue
-        # raw_store = result
         final_results.extend(result)
-        # for r in result:
-        #     a=r.get('commit_hash')
-        #     logging.info(a)
-        # logging.info(raw_store)
     return final_results
 
 
