@@ -379,6 +379,8 @@ def test_foreach_module_with_more_than_two_resources(checkov_source_path):
         (["${toset(['bucket_a', 'bucket_b'])}"], True),
         ({'key1': '${var.a}', 'key2': '${var.b}'}, True),
         ({'key2': '${var.b}', 'var.a': '${var.a}'}, False),
+        ('${var.a}', False),
+        ('bana', True)
     ]
 )
 def test__is_static_foreach_statement(statement, expected):
