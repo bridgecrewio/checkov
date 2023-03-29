@@ -40,7 +40,7 @@ setup(
         "colorama",
         "termcolor",
         "junit-xml>=1.9",
-        "dpath>=2.1.0",
+        "dpath==2.1.3",
         "pyyaml>=5.4.1",
         "boto3>=1.17",
         "gitpython",
