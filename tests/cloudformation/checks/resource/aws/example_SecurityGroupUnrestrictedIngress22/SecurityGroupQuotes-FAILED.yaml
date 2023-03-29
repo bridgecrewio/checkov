@@ -1,0 +1,12 @@
+Resources:
+  DemoSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      VpcId: vpc-000000 #dummy vpc id
+      GroupDescription: SG to allow SSH access via port 22
+      SecurityGroupIngress:
+        - Description: fail quotes
+          IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp: "0.0.0.0/0"
