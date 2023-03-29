@@ -39,9 +39,10 @@ class Registry(BaseCheckRegistry):
             return self._load_checks_from_dir(self.checks_dir, actual_sast_languages)
         return 0
 
-    def load_external_rules(self, dir: str, sast_languages: Optional[Set[SastLanguages]]) -> None:
+    def load_external_rules(self, dir: str, sast_languages: Optional[Set[SastLanguages]]) -> int:
         if sast_languages:
-            self._load_checks_from_dir(dir, sast_languages)
+            return self._load_checks_from_dir(dir, sast_languages)
+        return 0
 
     def _load_checks_from_dir(self, directory: str, sast_languages: Set[SastLanguages]) -> int:
         dir = os.path.expanduser(directory)
