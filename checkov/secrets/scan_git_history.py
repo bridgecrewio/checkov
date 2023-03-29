@@ -134,7 +134,6 @@ def _run_scan_one_bulk(commits_diff: List[Dict[str, str | Dict[str, str]]]) -> L
     return results
 
 
-@time_it
 def _run_scan_one_commit(commit: Dict[str, str | Dict[str, str]]) -> Tuple[List[RawStore], int]:
     results: List[RawStore] = []
     scanned_file_count = 0
