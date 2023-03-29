@@ -87,7 +87,6 @@ class BcPlatformIntegration:
     def __init__(self) -> None:
         self.bc_api_key = read_key()
         self.s3_client: S3Client | None = None
-        self.s3_support_client: S3Client | None = None
         self.bucket: str | None = None
         self.credentials: dict[str, str] | None = None
         self.repo_path: str | None = None
@@ -295,16 +294,10 @@ class BcPlatformIntegration:
 
             if support_path:
                 self.support_bucket, self.support_repo_path = support_path.split("/", 1)
-                # client without transfer acceleration
-                self.s3_support_client = boto3.client(
-                    "s3",
-                    aws_access_key_id=self.credentials["AccessKeyId"],
-                    aws_secret_access_key=self.credentials["SecretAccessKey"],
-                    aws_session_token=self.credentials["SessionToken"],
-                    region_name=region
-                )
             elif self.support_flag_enabled:
-                logging.warning('--support was used, but we did not get a support file upload path in the platform response')
+                logging.debug('--support was used, but we did not get a support file upload path in the platform response. Using the old location.')
+                self.support_bucket = self.bucket
+                self.support_repo_path = self.repo_path
 
             self.use_s3_integration = True
         except MaxRetryError:
@@ -499,17 +492,20 @@ class BcPlatformIntegration:
             logging.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
             return
         persist_run_metadata(run_metadata, self.s3_client, self.bucket, self.repo_path, True)
-        if self.support_bucket and self.support_repo_path and self.s3_support_client:
-            logging.debug('Also uploading run_metadata.json to support bucket')
-            persist_run_metadata(run_metadata, self.s3_support_client, self.support_bucket, self.support_repo_path, False)
+        # only upload it if we did not fall back to use the same location
+        if self.support_bucket and self.support_repo_path and self.support_repo_path != self.repo_path:
+            logging.debug('Also uploading run_metadata.json to support location')
+            persist_run_metadata(run_metadata, self.s3_client, self.support_bucket, self.support_repo_path, False)
 
     def persist_logs_stream(self, logs_stream: StringIO) -> None:
         if not self.use_s3_integration or not self.s3_client:
             return
-        if not self.support_bucket or not self.support_repo_path or not self.s3_support_client:
-            logging.error(f"Something went wrong: bucket {self.support_bucket}, repo path {self.support_repo_path}")
+        if not self.support_bucket or not self.support_repo_path:
+            logging.error(f"Something went wrong with the log upload location: bucket {self.support_bucket}, repo path {self.support_repo_path}")
             return
-        persist_logs_stream(logs_stream, self.s3_support_client, self.support_bucket, self.support_repo_path)
+        # use checkov_results if we fall back to using the same location
+        log_path = f'{self.support_repo_path}/checkov_results' if self.support_repo_path == self.repo_path else self.support_repo_path
+        persist_logs_stream(logs_stream, self.s3_client, self.support_bucket, log_path)
 
     def commit_repository(self, branch: str) -> str | None:
         """
