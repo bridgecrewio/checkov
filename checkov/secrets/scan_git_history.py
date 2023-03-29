@@ -33,7 +33,7 @@ def _get_commits_diff(root_folder: str, last_commit_sha: Optional[str] = None) -
     :param: last_commit_sha = is the last commit we have already scanned. in case it exist the function will
     return the commits from the revision of param to the current head
     """
-    logging.info(f"[_get_commits_diff] started")
+    logging.info("[_get_commits_diff] started")
     commits_diff: List[Dict[str, str | Dict[str, str]]] = []
     if git_import_error is not None:
         logging.warning(f"Unable to load git module (is the git executable available?) {git_import_error}")
@@ -74,7 +74,7 @@ def _get_commits_diff(root_folder: str, last_commit_sha: Optional[str] = None) -
             file_name = file_diff.a_path if file_diff.a_path else file_diff.b_path
             curr_diff[file_name] = base_diff_format + file_diff.diff.decode()
             commits_diff.append(curr_diff)
-    logging.info(f"[_get_commits_diff] ended")
+    logging.info("[_get_commits_diff] ended")
     return commits_diff
 
 
