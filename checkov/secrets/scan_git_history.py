@@ -58,7 +58,7 @@ def _get_commits_diff(root_folder: str, last_commit_sha: Optional[str] = None) -
                 COMMIT_HASH_KEY: current_commit_hash,
             }
             if file_diff.renamed_file:
-                logging.info(f"File was renamed from {file_diff.rename_from} to {file_diff.rename_to}")
+                logging.debug(f"File was renamed from {file_diff.rename_from} to {file_diff.rename_to}")
                 curr_diff[file_diff.a_path] = {
                     'rename_from': file_diff.rename_from,
                     'rename_to': file_diff.rename_to
@@ -67,7 +67,7 @@ def _get_commits_diff(root_folder: str, last_commit_sha: Optional[str] = None) -
                 continue
 
             elif file_diff.deleted_file:
-                logging.info(f"File {file_diff.a_path} was deleted")
+                logging.debug(f"File {file_diff.a_path} was deleted")
 
             base_diff_format = f'diff --git a/{file_diff.a_path} b/{file_diff.b_path}' \
                                f'\nindex 0000..0000 0000\n--- a/{file_diff.a_path}\n+++ b/{file_diff.b_path}\n'
