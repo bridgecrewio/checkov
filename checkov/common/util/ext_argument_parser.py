@@ -533,3 +533,9 @@ class ExtArgumentParser(configargparse.ArgumentParser):
             default='12h',
             help="maximum time to stop the scan "
         )
+        self.add(
+            "--openai-api-key",
+            env_var="CKV_OPENAI_API_KEY",
+            sanitize=True,
+            help="OpenAI API key to enhance finding guidelines",
+        )

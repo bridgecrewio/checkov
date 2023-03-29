@@ -7,12 +7,11 @@ nav_order: 20
 
 # OpenAI
 
-It is possible to use OpenAI ChatGPT functionality to enhance checkov's findings by setting the environment variable `CKV_OPENAI_API_KEY`.
+It is possible to use OpenAI ChatGPT functionality to enhance checkov's findings by setting the flag `--openai-api-key`.
 
 ex.
 ```shell
-export CKV_OPENAI_API_KEY=sk-...
-checkov -d . 
+checkov -d . --openai-api-key sk-...
 
        _               _              
    ___| |__   ___  ___| | _______   __
@@ -101,6 +100,7 @@ Following environment variables can be used to fine tune the amount of AI genera
 
 | Environment variable    | Default       | Info                                                         |
 |-------------------------|---------------|--------------------------------------------------------------|
+| CKV_OPENAI_API_KEY      |               | OpenAI API key instead of using the flag.                    |
 | CKV_OPENAI_MAX_FINDINGS | 5             | Amount of findings per framework to add enhanced guidelines. |
 | CKV_OPENAI_MAX_TOKENS   | 512           | Maximum number of tokens to generate in the chat completion. |
 | CKV_OPENAI_MODEL        | gpt-3.5-turbo | ID of the chat completion model to use.                      |

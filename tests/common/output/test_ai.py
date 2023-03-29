@@ -1,6 +1,6 @@
 from textwrap import dedent
 
-from checkov.common.output.ai import open_ai
+from checkov.common.output.ai import OpenAi
 
 
 def test_parse_completion_response():
@@ -46,7 +46,7 @@ def test_parse_completion_response():
     )
 
     # when
-    details = open_ai._parse_completion_response(completion_content=content)
+    details = OpenAi()._parse_completion_response(completion_content=content)
 
     # then
     assert details == [

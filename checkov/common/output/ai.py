@@ -12,9 +12,10 @@ from checkov.common.bridgecrew.check_type import CheckType
 
 if TYPE_CHECKING:
     from checkov.common.output.record import Record
+    from typing_extensions import Self
 
 OPENAI_API_KEY = os.getenv("CKV_OPENAI_API_KEY")
-OPENAI_MAX_FINDINGS = int(os.getenv("CKV_OPENAI_MAX_FINDINGS", 5))
+OPENAI_MAX_FINDINGS = int(os.getenv("CKV_OPENAI_MAX_FINDINGS", 2))
 OPENAI_MAX_TOKENS = int(os.getenv("CKV_OPENAI_MAX_TOKENS", 512))
 OPENAI_MODEL = os.getenv("CKV_OPENAI_MODEL", "gpt-3.5-turbo")
 
@@ -27,9 +28,15 @@ RUNNER_DENY_LIST = {
 
 
 class OpenAi:
-    def __init__(self) -> None:
-        self._should_run = True if OPENAI_API_KEY else False
-        openai.api_key = OPENAI_API_KEY
+    _instance = None  # noqa: CCE003  # singleton
+
+    def __new__(cls, api_key: str | None = None) -> Self:
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._should_run = True if api_key else False
+            openai.api_key = api_key
+
+        return cls._instance
 
     def enhance_records(self, runner_type: str, records: list[Record]) -> None:
         if not self._should_run:
@@ -90,10 +97,12 @@ class OpenAi:
     def _prioritize_findings(self, records: list[Record]) -> list[Record]:
         if 0 < OPENAI_MAX_FINDINGS < len(records):
             # the higher severities should be preferred
-            records = sorted(records, key=lambda record: record.severity.level if record.severity else 0, reverse=True)
+            sorted_records = sorted(
+                records, key=lambda record: record.severity.level if record.severity else 0, reverse=True
+            )
 
-            # to protect user, just take the first x findings
-            return records[:OPENAI_MAX_FINDINGS]
+            # to protect the user, just take the last x findings
+            return sorted_records[-OPENAI_MAX_FINDINGS:]
 
         return records
 
@@ -104,15 +113,15 @@ class OpenAi:
             result.append("The following text is AI generated therefore treat with caution.")
             result.append("")
 
-        code = False
+        in_code_block = False
         for line in completion_content.splitlines():
             if "```" in line:
-                if code:
-                    code = False
+                if in_code_block:
+                    in_code_block = False
                 else:
-                    code = True
+                    in_code_block = True
                 continue
-            if code:
+            if in_code_block:
                 result.append(line)
             elif not line:
                 result.append(line)
@@ -138,6 +147,3 @@ class OpenAi:
                 "yellow",
             )
         )
-
-
-open_ai = OpenAi()
