@@ -1,0 +1,7 @@
+pass:
+  - "tasks.paloaltonetworks.panos.panos_zone.Zone_pass_1"
+fail:
+  - "tasks.paloaltonetworks.panos.panos_zone.Zone_fail_1"
+  - "tasks.paloaltonetworks.panos.panos_zone.Zone_fail_2"
+evaluated_keys:
+  - "zone_profile"
