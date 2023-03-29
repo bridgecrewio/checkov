@@ -66,12 +66,14 @@ class Runner():
 
         self.registry.set_runner_filter(runner_filter)
         rules_loaded = self.registry.load_rules(runner_filter.framework, runner_filter.sast_languages)
+
+        if external_checks_dir:
+            for external_checks in external_checks_dir:
+                rules_loaded += self.registry.load_external_rules(external_checks, runner_filter.sast_languages)
+
         if not rules_loaded:
             logger.warning('No valid rules were found for SAST')
             return [Report(self.check_type)]
-        if external_checks_dir:
-            for external_checks in external_checks_dir:
-                self.registry.load_external_rules(external_checks, runner_filter.sast_languages)
 
         self.registry.create_temp_rules_file()
         config = [self.registry.temp_semgrep_rules_path]
