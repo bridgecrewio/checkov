@@ -4,7 +4,8 @@ import logging
 import os
 
 from typing import TYPE_CHECKING, Dict, Optional, List, Tuple
-from checkov.common.util import stopit
+from checkov.common.util.stopit import ThreadingTimeout
+from checkov.common.util.decorators import time_it
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from detect_secrets.core import scan
 
@@ -26,11 +27,13 @@ COMMIT_HASH_KEY = '==commit_hash=='
 MIN_SPLIT = 100
 
 
+@time_it
 def _get_commits_diff(root_folder: str, last_commit_sha: Optional[str] = None) -> List[Dict[str, str | Dict[str, str]]]:
     """
     :param: last_commit_sha = is the last commit we have already scanned. in case it exist the function will
     return the commits from the revision of param to the current head
     """
+    logging.info(f"[_get_commits_diff] started")
     commits_diff: List[Dict[str, str | Dict[str, str]]] = []
     if git_import_error is not None:
         logging.warning(f"Unable to load git module (is the git executable available?) {git_import_error}")
@@ -71,6 +74,7 @@ def _get_commits_diff(root_folder: str, last_commit_sha: Optional[str] = None) -
             file_name = file_diff.a_path if file_diff.a_path else file_diff.b_path
             curr_diff[file_name] = base_diff_format + file_diff.diff.decode()
             commits_diff.append(curr_diff)
+    logging.info(f"[_get_commits_diff] ended")
     return commits_diff
 
 
@@ -85,12 +89,13 @@ def _scan_history(root_folder: str, secret_store: SecretsCollection,
     else:
         raw_store = _run_scan_one_bulk(commits_diff)
 
-    process_raw_store(history_store, raw_store)
+    _process_raw_store(history_store, raw_store)
 
     _create_secret_collection(secret_store, history_store)
 
 
-def process_raw_store(base_history_store: GitHistorySecretStore, results: List[RawStore]) -> None:
+@time_it
+def _process_raw_store(base_history_store: GitHistorySecretStore, results: List[RawStore]) -> None:
     for raw_res in results:
         res_type = raw_res.get('type')
         if res_type == FILE_RESULTS_STR:
@@ -127,6 +132,7 @@ def _run_scan_one_bulk(commits_diff: List[Dict[str, str | Dict[str, str]]]) -> L
     return results
 
 
+@time_it
 def _run_scan_one_commit(commit: Dict[str, str | Dict[str, str]]) -> Tuple[List[RawStore], int]:
     results: List[RawStore] = []
     scanned_file_count = 0
@@ -153,6 +159,7 @@ def _run_scan_one_commit(commit: Dict[str, str | Dict[str, str]]) -> Tuple[List[
     return results, scanned_file_count
 
 
+@time_it
 def _create_secret_collection(
         secret_store: SecretsCollection, history_store: GitHistorySecretStore) -> None:
     # run over the entire history store and create the secret collection
@@ -177,7 +184,7 @@ class GitHistoryScanner:
     def scan_history(self, last_commit_scanned: Optional[str] = '') -> bool:
         """return true if the scan finished without timeout"""
         # mark the scan to finish within the timeout
-        with stopit.ThreadingTimeout(self.timeout) as to_ctx_mgr:
+        with ThreadingTimeout(self.timeout) as to_ctx_mgr:
             _scan_history(self.root_folder, self.secrets, self.history_store, last_commit_scanned)
         if to_ctx_mgr.state == to_ctx_mgr.TIMED_OUT:
             logging.info(f"timeout reached ({self.timeout}), stopping scan.")

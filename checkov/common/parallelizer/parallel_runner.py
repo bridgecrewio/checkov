@@ -32,6 +32,7 @@ class ParallelRunner:
         if not group_size:
             group_size = int(len(items) / self.workers_number) + 1
         groups_of_items = [items[i: i + group_size] for i in range(0, len(items), group_size)]
+        logging.info(f"[_run_function_multiprocess] starting with {group_size} workers")
 
         def func_wrapper(original_func: Callable[[Any], Any], items_group: List[Any], connection: Connection) -> None:
             for item in items_group:
@@ -63,6 +64,7 @@ class ParallelRunner:
                     pass
 
     def _run_function_multithreaded(self, func: Callable[[Any], _T], items: List[Any]) -> Iterator[_T]:
+        logging.info(f"[_run_function_multithreaded] starting with {self.workers_number} workers")
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.workers_number) as executor:
             return executor.map(func, items)
 
