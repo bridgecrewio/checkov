@@ -83,10 +83,12 @@ def _scan_history(root_folder: str, secret_store: SecretsCollection,
     commits_diff = _get_commits_diff(root_folder, last_commit_sha=last_commit_scanned)
     if not commits_diff:
         return
-
+    logging.info(f"[_scan_history] got {len(commits_diff)} commits to scan")
     if len(commits_diff) > MIN_SPLIT:
+        logging.info("[_scan_history] starting parallel scan")
         raw_store = _run_scan_parallel(commits_diff)
     else:
+        logging.info("[_scan_history] starting single scan")
         raw_store = _run_scan_one_bulk(commits_diff)
 
     _process_raw_store(history_store, raw_store)
