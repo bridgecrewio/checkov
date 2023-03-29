@@ -44,9 +44,7 @@ class TestEC2PublicIP(unittest.TestCase):
         self.assertEqual(failing_resources, failed_check_resources)
 
     @mock.patch.dict(os.environ, {
-        "CHECKOV_ENABLE_FOREACH_HANDLING": "True",
-        "CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True",
-        "CHECKOV_NEW_TF_PARSER": "True"
+        "CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"
     })
     def test_for_each_poc(self):
         test_files_dir = Path(__file__).parent / "example_EC2PublicIP_foreach"

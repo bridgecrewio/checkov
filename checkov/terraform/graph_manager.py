@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
 class TerraformGraphManager(GraphManager[TerraformLocalGraph, "dict[str, dict[str, Any]]"]):
     def __init__(self, db_connector: LibraryGraphConnector, source: str = "") -> None:
-        parser = TFParser() if strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'False')) else Parser()
+        parser = TFParser() if strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'True')) else Parser()
         super().__init__(db_connector=db_connector, parser=parser, source=source)
 
     def build_graph_from_source_directory(
