@@ -225,7 +225,8 @@ def test_tf_definitions_and_breadcrumbs():
         ({"test_key": ["${test_val}"]}, {"test_val": 123}, {"test_key": [123]}, ['test_key']),
         ({"test_key": ["${test_val}"]}, {"test_val": True}, {"test_key": [True]}, ['test_key']),
         ({"test_key": {"a": "${test_val}"}}, {"test_val": "new_val"}, {"test_key": {"a": "new_val"}}, ['test_key.a']),
-        ({"test_key": {"a": {"b": "${test_val}"}}}, {"test_val": "new_val"}, {"test_key": {"a": {"b": "new_val"}}}, ['test_key.a.b'])
+        ({"test_key": {"a": {"b": "${test_val}"}}}, {"test_val": "new_val"}, {"test_key": {"a": {"b": "new_val"}}}, ['test_key.a.b']),
+        ({'ports': '${each.value.port}', 'protocol': 'tcp'}, {'each.value': {'name': 'name-open-ssh', 'port': '22', 'range': '0.0.0.0/0', 'tag': 'allow-ssh'}}, {'ports': '22', 'protocol': 'tcp'}, ['ports'])
     ]
 )
 def test_update_attrs(attrs, k_v_to_change, expected_attrs, expected_res):
