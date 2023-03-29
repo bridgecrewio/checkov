@@ -21,6 +21,7 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import CHECKOV_CREATE_GRAPH
 from checkov.runner_filter import RunnerFilter
+from checkov.terraform.checks.data.registry import data_registry
 from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.plan_parser import TF_PLAN_RESOURCE_ADDRESS
@@ -89,6 +90,7 @@ class Runner(TerraformRunner):
 
     block_type_registries = {  # noqa: CCE003  # a static attribute
         'resource': resource_registry,
+        'data': data_registry,
     }
 
     def run(
