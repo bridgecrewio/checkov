@@ -41,7 +41,7 @@ class Module:
         self.source_dir = source_dir
         self.render_dynamic_blocks_env_var = os.getenv('CHECKOV_RENDER_DYNAMIC_MODULES', 'True')
         self.enable_nested_modules = strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'True'))
-        self.use_new_tf_parser = strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'True'))
+        self.use_new_tf_parser = strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'False'))
 
     def add_blocks(
         self, block_type: BlockType, blocks: List[Dict[str, Dict[str, Any]]], path: str, source: str
@@ -53,8 +53,12 @@ class Module:
     def _add_to_blocks(self, block: TerraformBlock) -> None:
         if self.enable_nested_modules:
             if self.use_new_tf_parser:
-                block.source_module_object = block.path.tf_source_modules
-                block.path = block.path.file_path
+                if isinstance(block.path, str) and block.path.endswith('tfvars'):
+                    block.source_module_object = None
+                    block.path = block.path
+                else:
+                    block.source_module_object = block.path.tf_source_modules
+                    block.path = block.path.file_path
             else:
                 block.module_dependency, block.module_dependency_num = get_module_from_full_path(block.path)
                 block.path = get_abs_path(block.path)
