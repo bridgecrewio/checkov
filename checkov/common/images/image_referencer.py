@@ -217,7 +217,8 @@ class ImageReferencerMixin(Generic[_Definitions]):
                 file_content=f'image: {image.name}',
                 docker_image_name=image.name,
                 related_resource_id=image.related_resource_id,
-                root_folder=root_path
+                root_folder=root_path,
+                error_lines=file_line_range
             )
             report.image_cached_results.append(image_scanning_report)
 
