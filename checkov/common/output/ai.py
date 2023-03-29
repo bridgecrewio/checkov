@@ -28,11 +28,8 @@ RUNNER_DENY_LIST = {
 
 class OpenAi:
     def __init__(self) -> None:
-        self._should_run = False
-
-        if OPENAI_API_KEY:
-            self._should_run = True
-            openai.api_key = OPENAI_API_KEY
+        self._should_run = True if OPENAI_API_KEY else False
+        openai.api_key = OPENAI_API_KEY
 
     def enhance_records(self, runner_type: str, records: list[Record]) -> None:
         if not self._should_run:
