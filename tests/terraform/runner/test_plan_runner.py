@@ -679,19 +679,43 @@ class TestRunnerValid(unittest.TestCase):
             root_folder=None,
             files=[str(tf_file_path)],
             external_checks_dir=None,
-            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=["CKV2_AWS_40"]),
+            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=["CKV2_AWS_40", "CKV_AWS_287"]),
         )
 
         # then
         summary = report.get_summary()
 
-        self.assertEqual(summary["passed"], 1)
+        self.assertEqual(summary["passed"], 2)  # "aws_iam_policy.policy_pass" passes both checks
         self.assertEqual(summary["failed"], 3)
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
         self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
+
+    def test_runner_with_iam_data_block(self):
+        # given
+        tf_file_path = Path(__file__).parent / "resources/plan_with_iam_data_block/tfplan.json"
+
+        failing_resources = {
+            "data.aws_iam_policy_document.allow_access_from_another_account",
+        }
+
+        # when
+        report = Runner().run(
+            root_folder=None,
+            files=[str(tf_file_path)],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=["CKV_AWS_49"]),
+        )
+
+        # then
+        summary = report.get_summary()
+        self.assertEqual(summary["passed"], 0)
+        self.assertEqual(summary["failed"], 1)
+
+        failed_check_resources = {c.resource for c in report.failed_checks}
         self.assertEqual(failing_resources, failed_check_resources)
 
     @mock.patch.dict(os.environ, {'CHECKOV_ENABLE_NESTED_MODULES': 'True', 'CHECKOV_EXPERIMENTAL_CROSS_VARIABLE_EDGES': 'True'})

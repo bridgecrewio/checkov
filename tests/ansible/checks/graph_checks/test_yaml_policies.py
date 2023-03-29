@@ -84,6 +84,18 @@ class TestYamlPolicies(TestYamlPoliciesBase):
     def test_PanosInterfaceMgmtProfileNoTelnet(self):
         self.go("PanosInterfaceMgmtProfileNoTelnet", local_graph_class=AnsibleLocalGraph)
 
+    def test_PanosPolicyLogForwarding(self):
+        self.go("PanosPolicyLogForwarding", local_graph_class=AnsibleLocalGraph)
+
+    def test_PanosPolicyLoggingEnabled(self):
+        self.go("PanosPolicyLoggingEnabled", local_graph_class=AnsibleLocalGraph)
+
+    def test_PanosZoneProtectionProfile(self):
+        self.go("PanosZoneProtectionProfile", local_graph_class=AnsibleLocalGraph)
+
+    def test_PanosZoneUserIDIncludeACL(self):
+        self.go("PanosZoneUserIDIncludeACL", local_graph_class=AnsibleLocalGraph)
+
     def test_registry_load(self):
         registry = self.get_checks_registry()
         self.assertGreater(len(registry.checks), 0)
