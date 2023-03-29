@@ -130,7 +130,7 @@ def _run_scan_one_bulk(commits_diff: List[Dict[str, str | Dict[str, str]]]) -> L
             cur_results, curr_count = _run_scan_one_commit(commit)
             scanned_file_count += curr_count
             results.extend(cur_results)
-    logging.info(f"Scanned {scanned_file_count} git history files")
+    logging.debug(f"Scanned {scanned_file_count} git history files")
     return results
 
 
