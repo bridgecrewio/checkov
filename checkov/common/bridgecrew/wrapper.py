@@ -34,11 +34,11 @@ def _is_scanned_file(file: str) -> bool:
     return file_ending in SUPPORTED_FILE_EXTENSIONS
 
 
-def _put_json_object(s3_client: S3Client, json_obj: Any, bucket: str, object_path: str) -> None:
+def _put_json_object(s3_client: S3Client, json_obj: Any, bucket: str, object_path: str, log_stack_trace_on_error: bool = True) -> None:
     try:
         s3_client.put_object(Bucket=bucket, Key=object_path, Body=json.dumps(json_obj, cls=CustomJSONEncoder))
     except Exception:
-        logging.error(f"failed to persist object into S3 bucket {bucket}", exc_info=True)
+        logging.error(f"failed to persist object into S3 bucket {bucket}", exc_info=log_stack_trace_on_error)
         raise
 
 

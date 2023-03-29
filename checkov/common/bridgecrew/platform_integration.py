@@ -460,14 +460,14 @@ class BcPlatformIntegration:
         base_path = re.sub(REPO_PATH_PATTERN, r'original_secrets/\1', self.repo_path)
         s3_path = f'{base_path}/{uuid.uuid4()}.json'
         try:
-            _put_json_object(self.s3_client, enriched_secrets, self.bucket, s3_path)
+            _put_json_object(self.s3_client, enriched_secrets, self.bucket, s3_path, log_stack_trace_on_error=False)
         except ClientError:
             logging.warning("Got access denied, retrying as s3 role changes should be propagated")
             sleep(4)
             try:
-                _put_json_object(self.s3_client, enriched_secrets, self.bucket, s3_path)
+                _put_json_object(self.s3_client, enriched_secrets, self.bucket, s3_path, log_stack_trace_on_error=False)
             except ClientError:
-                logging.error("Getting access denied consistently, aborting secrets verification")
+                logging.error("Getting access denied consistently, skipping secrets verification, please try again")
                 return None
 
         return s3_path
