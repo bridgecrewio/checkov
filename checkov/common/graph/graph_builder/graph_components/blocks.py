@@ -100,6 +100,9 @@ class Block:
         if hasattr(self, 'foreach_attrs'):
             base_attributes[CustomAttributes.FOREACH_ATTRS] = self.foreach_attrs
 
+        if hasattr(self, 'source_module_object'):
+            base_attributes[CustomAttributes.SOURCE_MODULE_OBJECT] = self.source_module_object
+
         if add_hash:
             base_attributes[CustomAttributes.HASH] = calculate_hash(base_attributes)
 
