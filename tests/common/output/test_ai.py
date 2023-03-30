@@ -50,7 +50,7 @@ def test_parse_completion_response():
 
     # then
     assert details == [
-        "The following text is AI generated therefore treat with caution.",
+        "The following text is AI generated and should be treated as a suggestion.",
         "",
         "The given code creates an AWS RDS instance with MySQL engine version 5.7, with a 10GB allocated storage, and a retention period of 7 days.",
         "However, it does not specify any encryption settings for the RDS instance, which violates the checkov policy 'Ensure all data stored in the RDS is securely encrypted at rest'.",

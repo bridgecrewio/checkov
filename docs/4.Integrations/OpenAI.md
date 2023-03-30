@@ -21,8 +21,8 @@ checkov -d . --openai-api-key sk-...
                                       
 By bridgecrew.io | version: 2.3.128
 
-WARNING: About to request 5 enhanced guidelines within the next 10s.
-Found in total 10 failed checks. To add enhanced guidelines to all of them,
+WARNING: About to request 5 enhanced guidelines and it may take up to 15s.
+Found 100 failed checks and will provide enhanced guidelines for 5. To add enhanced guidelines for more findings,
 please adjust the env var 'CKV_OPENAI_MAX_FINDINGS' accordingly or set 0 to enhance all.
 
 terraform scan results:
@@ -34,7 +34,7 @@ Check: CKV_AWS_211: "Ensure RDS uses a modern CaCert"
 Check: CKV_AWS_16: "Ensure all data stored in the RDS is securely encrypted at rest"
 	FAILED for resource: aws_db_instance.pass
 	Severity: MEDIUM
-	Details: The following text is AI generated therefore treat with caution.
+	Details: The following text is AI generated and should be treated as a suggestion.
 	         
 	         The given code creates an AWS RDS instance with MySQL engine version 5.7, with a 10GB allocated storage, and a retention period of 7 days.
 	         However, it does not specify any encryption settings for the RDS instance, which violates the checkov policy 'Ensure all data stored in the RDS is securely encrypted at rest'.

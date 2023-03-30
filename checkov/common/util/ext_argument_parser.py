@@ -537,5 +537,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
             "--openai-api-key",
             env_var="CKV_OPENAI_API_KEY",
             sanitize=True,
-            help="OpenAI API key to enhance finding guidelines",
+            help="Add an OpenAI API key to enhance finding guidelines by sending violated policies and "
+                 "resource code to OpenAI to request remediation guidance. This will use your OpenAI credits. "
+                 "Set your number of findings that will receive enhanced guidelines using CKV_OPENAI_MAX_FINDINGS",
         )

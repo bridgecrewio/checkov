@@ -110,7 +110,7 @@ class OpenAi:
         result = []
 
         if completion_content:
-            result.append("The following text is AI generated therefore treat with caution.")
+            result.append("The following text is AI generated and should be treated as a suggestion.")
             result.append("")
 
         in_code_block = False
@@ -137,13 +137,13 @@ class OpenAi:
         max_findings_note = ""
         if 0 < OPENAI_MAX_FINDINGS < records_count:
             max_findings_note = (
-                f"Found in total {records_count} failed checks. To add enhanced guidelines to all of them,\n"
+                f"Found {records_count} failed checks and will provide enhanced guidelines for {OPENAI_MAX_FINDINGS}. To add enhanced guidelines for more findings,\n"
                 "please adjust the env var 'CKV_OPENAI_MAX_FINDINGS' accordingly or set 0 to enhance all.\n"
             )
 
         print(
             colored(
-                f"WARNING: About to request {enhance_records_count} enhanced guidelines within the next {batches_count * 15}s.\n{max_findings_note}",
+                f"WARNING: About to request {enhance_records_count} enhanced guidelines and it may take up to {batches_count * 15}s.\n{max_findings_note}",
                 "yellow",
             )
         )
