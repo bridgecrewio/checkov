@@ -1,6 +1,19 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.128...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.134...HEAD)
+
+## [2.3.134](https://github.com/bridgecrewio/checkov/compare/2.3.128...2.3.134) - 2023-03-29
+
+### Feature
+
+- **ansible:** PAN-OS policy and zone checks - [#4737](https://github.com/bridgecrewio/checkov/pull/4737)
+- **terraform_plan:** support data blocks in Terraform plan files - [#4758](https://github.com/bridgecrewio/checkov/pull/4758)
+- **terraform:** Set CHECKOV_ENABLE_FOREACH_HANDLING as True - [#4774](https://github.com/bridgecrewio/checkov/pull/4774)
+
+### Bug Fix
+
+- **terraform:** Correctly serialize/deserialize TFModule object - [#4780](https://github.com/bridgecrewio/checkov/pull/4780)
+- **terraform:** Fix nested `each.value` replacement in for_each handler - [#4787](https://github.com/bridgecrewio/checkov/pull/4787)
 
 ## [2.3.128](https://github.com/bridgecrewio/checkov/compare/2.3.124...2.3.128) - 2023-03-28
 
