@@ -452,6 +452,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                         entity_config=entity_config,
                         resource_attributes_to_omit=runner_filter.resource_attr_to_omit
                     )
+
                     record = Record(
                         check_id=check.id,
                         bc_check_id=check.bc_id,
