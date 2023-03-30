@@ -179,6 +179,7 @@ def test_resources_flow():
 
 
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
+@mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
 def test_tf_definitions_and_breadcrumbs():
     from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
     dir_name = 'foreach_examples/depend_resources'

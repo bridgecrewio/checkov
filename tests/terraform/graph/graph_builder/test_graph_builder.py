@@ -194,6 +194,7 @@ class TestGraphBuilder(TestCase):
         self.check_edge(local_graph, node_from=resource_kubernetes_deployment, node_to=locals_name,
                         expected_label="spec.template.spec.volume.1.config_map.name")
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_blocks_from_local_graph_module(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/stacks'))
         graph_manager = TerraformGraphManager(NetworkxConnector())
