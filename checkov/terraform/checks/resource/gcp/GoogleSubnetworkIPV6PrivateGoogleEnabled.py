@@ -13,6 +13,10 @@ class GoogleSubnetworkLoggingEnabled(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
+        if conf.get("purpose") \
+                and isinstance(conf.get('purpose'), list) \
+                and conf.get("purpose")[0] == "INTERNAL_HTTPS_LOAD_BALANCER":
+            return CheckResult.UNKNOWN
 
         stack = conf.get("stack_type")
         if stack and stack[0] != "IPV4_IPV6":
