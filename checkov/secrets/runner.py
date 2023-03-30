@@ -119,7 +119,7 @@ class Runner(BaseRunner[None]):
             {'name': 'TwilioKeyDetector'},
             {'name': 'EntropyKeywordCombinator', 'path': f'file://{current_dir}/plugins/entropy_keyword_combinator.py'}
         ]
-
+        logging.info("Checkov is overridden!!!")
         # load runnable plugins
         customer_run_config = bc_integration.customer_run_config_response
         plugins_index = 0
