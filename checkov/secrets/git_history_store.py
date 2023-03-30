@@ -10,6 +10,20 @@ from checkov.secrets.consts import ADDED, REMOVED, GIT_HISTORY_OPTIONS, GIT_HIST
 if TYPE_CHECKING:
     from detect_secrets.core.potential_secret import PotentialSecret
 
+RENAME_STR = 'rename'
+FILE_RESULTS_STR = 'file_results'
+RAW_STORE_TYPES = {RENAME_STR, FILE_RESULTS_STR}
+
+
+class RawStore(TypedDict):
+    file_results: List[PotentialSecret]
+    file_name: str
+    commit: Dict[str, str | Dict[str, str]]
+    commit_hash: str
+    type: str  # rename / file results
+    rename_from: str
+    rename_to: str
+
 
 class EnrichedPotentialSecret(TypedDict):
     added_commit_hash: str
@@ -53,8 +67,8 @@ class GitHistorySecretStore:
                 self.secrets_by_file_value_type[secret_key])
             # Update secret map with the new potential secret
             if all_removed:
-                self.secrets_by_file_value_type[secret_key][0].update(
-                    {'potential_secret': secret, 'removed_commit_hash': ''})
+                self.secrets_by_file_value_type[secret_key][0].update({'potential_secret': secret,
+                                                                       'removed_commit_hash': ''})
                 return
         code_line = search_for_code_line(commit[secret.filename], secret.secret_value, secret.is_added)
         self.secrets_by_file_value_type[secret_key].append(

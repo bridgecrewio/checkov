@@ -15,12 +15,12 @@ from pathlib import Path
 from time import sleep
 from typing import List, Dict, TYPE_CHECKING, Any, cast
 
-import boto3  # type:ignore[import]
+import boto3
 import dpath
 import requests
 import urllib3
-from botocore.exceptions import ClientError  # type:ignore[import]
-from botocore.config import Config  # type:ignore[import]
+from botocore.exceptions import ClientError
+from botocore.config import Config
 from cachetools import cached, TTLCache
 from colorama import Style
 from termcolor import colored
@@ -48,9 +48,9 @@ from checkov.version import version as checkov_version
 
 if TYPE_CHECKING:
     import argparse
-    from botocore.client import BaseClient  # type:ignore[import]
     from checkov.common.bridgecrew.bc_source import SourceType
     from checkov.common.output.report import Report
+    from mypy_boto3_s3.client import S3Client
     from requests import Response
     from typing_extensions import TypeGuard
 
@@ -86,7 +86,7 @@ CI_METADATA_EXTRACTOR = registry.get_extractor()
 class BcPlatformIntegration:
     def __init__(self) -> None:
         self.bc_api_key = read_key()
-        self.s3_client: BaseClient | None = None
+        self.s3_client: S3Client | None = None
         self.bucket: str | None = None
         self.credentials: dict[str, str] | None = None
         self.repo_path: str | None = None
@@ -413,7 +413,7 @@ class BcPlatformIntegration:
         Persist checkov's scan result into bridgecrew's platform.
         :param scan_reports: List of checkov scan reports
         """
-        if not self.use_s3_integration:
+        if not self.use_s3_integration or not self.s3_client:
             return
         if not self.bucket or not self.repo_path:
             logging.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
@@ -429,6 +429,9 @@ class BcPlatformIntegration:
         persist_checks_results(reduced_scan_reports, self.s3_client, self.bucket, self.repo_path)
 
     def persist_image_scan_results(self, report: dict[str, Any] | None, file_path: str, image_name: str, branch: str) -> None:
+        if not self.s3_client:
+            logging.error("S3 upload was not correctly initialized")
+            return
         if not self.bucket or not self.repo_path:
             logging.error("Bucket or repo_path was not set")
             return
@@ -450,23 +453,27 @@ class BcPlatformIntegration:
                           ' enabled it via env var CKV_VALIDATE_SECRETS and provide an api key')
             return None
 
+        if not self.s3_client:
+            logging.error("S3 upload was not correctly initialized")
+            return None
+
         base_path = re.sub(REPO_PATH_PATTERN, r'original_secrets/\1', self.repo_path)
         s3_path = f'{base_path}/{uuid.uuid4()}.json'
         try:
-            _put_json_object(self.s3_client, enriched_secrets, self.bucket, s3_path)
+            _put_json_object(self.s3_client, enriched_secrets, self.bucket, s3_path, log_stack_trace_on_error=False)
         except ClientError:
             logging.warning("Got access denied, retrying as s3 role changes should be propagated")
             sleep(4)
             try:
-                _put_json_object(self.s3_client, enriched_secrets, self.bucket, s3_path)
+                _put_json_object(self.s3_client, enriched_secrets, self.bucket, s3_path, log_stack_trace_on_error=False)
             except ClientError:
-                logging.error("Getting access denied consistently, aborting secrets verification")
+                logging.error("Getting access denied consistently, skipping secrets verification, please try again")
                 return None
 
         return s3_path
 
     def persist_run_metadata(self, run_metadata: dict[str, str | list[str]]) -> None:
-        if not self.use_s3_integration:
+        if not self.use_s3_integration or not self.s3_client:
             return
         if not self.bucket or not self.repo_path:
             logging.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
@@ -474,7 +481,7 @@ class BcPlatformIntegration:
         persist_run_metadata(run_metadata, self.s3_client, self.bucket, self.repo_path)
 
     def persist_logs_stream(self, logs_stream: StringIO) -> None:
-        if not self.use_s3_integration:
+        if not self.use_s3_integration or not self.s3_client:
             return
         if not self.bucket or not self.repo_path:
             logging.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
