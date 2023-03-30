@@ -18,42 +18,55 @@ TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
 class TestRendererScenarios(TestCase):
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_maze_of_variables(self):
         self.go('maze_of_variables')
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_merge_function(self):
         self.go("merge_function")
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_empty_file(self):
         self.go("empty_file")
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_simple_bucket_single_file(self):
         self.go("simple_bucket_single_file")
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_variable_defaults(self):
         self.go("variable_defaults")
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_variable_defaults_separate_files(self):
         self.go("variable_defaults_separate_files")
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_local_block(self):
         self.go("local_block")
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_local_bool_string_conversion(self):
         self.go("local_bool_string_conversion")
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_compound_local(self):
         self.go("compound_local")
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_concat_function(self):
         self.go("concat_function")
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_merge_function_unresolved_var(self):
         self.go("merge_function_unresolved_var", replace_expected=True)
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_tobool_function(self):
         self.go("tobool_function", {"JUNK": ['tobool("invalid")']})
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_tolist_function(self):
         self.go("tolist_function")
 
@@ -61,21 +74,27 @@ class TestRendererScenarios(TestCase):
         self.skipTest("not reliable")
         self.go("tomap_function")
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_map_function(self):
         self.go("map_function", {"INVALID_ODD_ARGS": ['map("only one")']})
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_tonumber_function(self):
         self.go("tonumber_function", {"INVALID": ['tonumber("no")']})
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_toset_function(self):
         self.go("toset_function", {"VAR": [{'c', 'b', 'a'}]})
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_tostring_function(self):
         self.go("tostring_function", {"INVALID_ARRAY": ['tostring([])']})
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_module_simple(self):
         self.go("module_simple")
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_module_simple_up_dir_ref(self):
         self.go("module_simple_up_dir_ref")
 
@@ -113,14 +132,17 @@ class TestRendererScenarios(TestCase):
         expected = expected.replace(resources_dir, '')
         assert result == expected
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "False"})
     def test_module_matryoshka(self):
         self.go("module_matryoshka")
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "True"})
     def test_module_matryoshka_nested_module_enable(self):
         self.go("module_matryoshka_nested_module_enable", remove_abs_dir=True)
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_list_default_622(self):  # see https://github.com/bridgecrewio/checkov/issues/622
         different_expected = {
             "log_types_enabled": {
@@ -142,28 +164,35 @@ class TestRendererScenarios(TestCase):
         }
         self.go("list_default_622", different_expected)
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_module_reference(self):
         self.go("module_reference")
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_module_output_reference(self):
         self.go("module_output_reference")
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_bad_ref_fallbacks(self):
         self.go("bad_ref_fallbacks", replace_expected=True)
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_doc_evaluations_verify(self):
         self.go("doc_evaluations_verify", replace_expected=True)
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "False"})
     def test_bad_tf(self):
         # Note: this hits the _clean_bad_definitions internal function
         self.go("bad_tf")
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "True"})
     def test_bad_tf_nested_modules_enable(self):
         # Note: this hits the _clean_bad_definitions internal function
         self.go("bad_tf_nested_modules_enable")
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_colon(self):
         # Note: this hits the _clean_bad_definitions internal function
         self.go("colon", replace_expected=True)
@@ -172,12 +201,15 @@ class TestRendererScenarios(TestCase):
         self.skipTest("different implementation, we keep the original variable reference")
         self.go("null_variables_651")
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_ternaries(self):
         self.go("ternaries")
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_ternary_793(self):
         self.go("ternary_793")
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_tfvars(self):
         # variable evaluation order (later values overwrite earlier values):
         # 1. default values in variable definition
@@ -210,6 +242,7 @@ class TestRendererScenarios(TestCase):
         }
         self.go("tfvars", vars_files=['other3.tfvars', 'other2.tfvars'], different_expected=different_expected)
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_account_dirs_and_modules(self):
         self.go("account_dirs_and_modules")
 
@@ -217,6 +250,7 @@ class TestRendererScenarios(TestCase):
         self.skipTest("invalid values are not supported")
         self.go("bogus_function")
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_default_var_types(self):
         self.go("default_var_types")
 

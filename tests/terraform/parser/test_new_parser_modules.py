@@ -199,6 +199,7 @@ class TestParserInternals(unittest.TestCase):
         assert module
         assert tf_definitions
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_old_parser(self):
         parser = Parser()
         directory = os.path.join(self.resources_dir, "parser_dup_nested")

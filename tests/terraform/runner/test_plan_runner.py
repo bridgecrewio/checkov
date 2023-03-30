@@ -754,6 +754,7 @@ class TestRunnerValid(unittest.TestCase):
         assert report.passed_checks[1].file_path.endswith('.json')
 
     @mock.patch.dict(os.environ, {'CHECKOV_ENABLE_NESTED_MODULES': 'False'})
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_plan_resources_ids(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_plan_path = current_dir + "/resources/plan_resources_ids/tfplan.json"
