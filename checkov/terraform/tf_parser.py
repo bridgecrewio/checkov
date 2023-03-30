@@ -321,10 +321,7 @@ class TFParser:
     def _remove_unused_path_recursive(self, path) -> None:
         self.out_definitions.pop(path, None)
         for key in list(self.module_to_resolved.keys()):
-            if isinstance(key[0], TFDefinitionKey):
-                file_key = key[0]
-            else:
-                file_key, module_index, module_name = key
+            file_key, module_index, module_name = key
             if path == file_key:
                 for resolved_path in self.module_to_resolved[key]:
                     self._remove_unused_path_recursive(resolved_path)
