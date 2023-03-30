@@ -78,7 +78,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         super().__init__(file_extensions=['.tf', '.hcl'])
         self.external_registries = [] if external_registries is None else external_registries
         self.graph_class = graph_class
-        self.parser = parser or TFParser() if strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'False')) else Parser()
+        self.parser = parser or TFParser() if strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'True')) else Parser()
         self.definitions: dict[TFDefinitionKeyType, dict[str, Any]] | None = None
         self.context = None
         self.breadcrumbs = None
@@ -588,9 +588,10 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                     for module_name, module_config in block_configs.items():
                         # append the skipped checks also from a module to another module
                         module_config["skipped_checks"] += skipped_checks
-                        module_context = next(m for m in self.definitions.get(resolved_paths[ind]).get(block_type) if module_name in m)
-                        recursive_resolved_paths = module_context.get(module_name).get(RESOLVED_MODULE_ENTRY_NAME)
-                        self.push_skipped_checks_down(definition_context, skipped_checks, recursive_resolved_paths)
+                        if self.definitions.get(resolved_paths[ind]):
+                            module_context = next(m for m in self.definitions.get(resolved_paths[ind]).get(block_type) if module_name in m)
+                            recursive_resolved_paths = module_context.get(module_name).get(RESOLVED_MODULE_ENTRY_NAME)
+                            self.push_skipped_checks_down(definition_context, skipped_checks, recursive_resolved_paths)
                 else:
                     # there may be multiple resource types - aws_bucket, etc
                     for resource_configs in block_configs.values():
