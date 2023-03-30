@@ -78,7 +78,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         super().__init__(file_extensions=['.tf', '.hcl'])
         self.external_registries = [] if external_registries is None else external_registries
         self.graph_class = graph_class
-        self.parser = parser or TFParser() if strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'True')) else Parser()
+        self.parser = parser or TFParser() if strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'False')) else Parser()
         self.definitions: dict[TFDefinitionKeyType, dict[str, Any]] | None = None
         self.context = None
         self.breadcrumbs = None
