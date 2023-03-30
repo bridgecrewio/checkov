@@ -48,7 +48,7 @@ if [ -n "$INPUT_USE_ENFORCEMENT_RULES" ] && [ "$INPUT_USE_ENFORCEMENT_RULES" =  
   USE_ENFORCEMENT_RULES_FLAG="--use-enforcement-rules"
 fi
 
-if [ -n "$INPUTS_ENABLE_SECRETS_SCAN_ALL_FILES" ] && [ "$INPUTS_ENABLE_SECRETS_SCAN_ALL_FILES" =  "true" ]; then
+if [ -n "$INPUT_ENABLE_SECRETS_SCAN_ALL_FILES" ] && [ "$INPUT_ENABLE_SECRETS_SCAN_ALL_FILES" =  "true" ]; then
   ENABLE_SECRETS_SCAN_ALL_FILES="--enable-secret-scan-all-files"
 fi
 
