@@ -26,7 +26,7 @@ from checkov.azure_pipelines.runner import Runner as azure_pipelines_runner
 from checkov.bitbucket.runner import Runner as bitbucket_configuration_runner
 from checkov.bitbucket_pipelines.runner import Runner as bitbucket_pipelines_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
-from checkov.common.bridgecrew.bc_source import SourceTypes, BCSourceType, get_source_type
+from checkov.common.bridgecrew.bc_source import SourceTypes, BCSourceType, get_source_type, SourceType
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
     integration as policy_metadata_integration
 from checkov.common.bridgecrew.integration_features.features.repo_config_integration import \
@@ -196,7 +196,7 @@ class Checkov:
         # Parse mask into json with default dict. If self.config.mask is empty list, default dict will be assigned
         self._parse_mask_to_resource_attributes_to_omit()
 
-    def run(self, banner: str = checkov_banner, tool: str = checkov_tool) -> int | None:
+    def run(self, banner: str = checkov_banner, tool: str = checkov_tool, source_type: SourceType | None = None) -> int | None:
         self.run_metadata = {
             "checkov_version": version,
             "python_executable": sys.executable,
@@ -290,7 +290,7 @@ class Checkov:
             )
 
             source_env_val = os.getenv('BC_SOURCE', 'cli')
-            source = get_source_type(source_env_val)
+            source = source_type if source_type else get_source_type(source_env_val)
             if source == SourceTypes[BCSourceType.DISABLED]:
                 logger.warning(
                     f'Received unexpected value for BC_SOURCE: {source_env_val}; Should be one of {{{",".join(SourceTypes.keys())}}} setting source to DISABLED')
