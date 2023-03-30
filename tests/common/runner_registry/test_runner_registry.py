@@ -562,7 +562,8 @@ def test_output_file_path_with_output_mapping(tmp_path: Path, capsys: CaptureFix
         output_file_path=f"{json_file_path},console,{xml_file_path}",
         use_enforcement_rules=None,
         output_bc_ids=False,
-        summary_position="top"
+        summary_position="top",
+        openai_api_key=None,
     )
 
     # when
