@@ -11,10 +11,12 @@ class APIManagementBackendHTTPS(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        if 'https' in conf.get('url'):
-            return CheckResult.PASSED
-        self.evaluated_keys = ['/url/']
-        return CheckResult.FAILED
+        if isinstance(conf.get('url'), list):
+            if 'https' in conf.get('url')[0]:
+                return CheckResult.PASSED
+            self.evaluated_keys = ['/url/']
+            return CheckResult.FAILED
+        return CheckResult.UNKNOWN
 
 
 check = APIManagementBackendHTTPS()
