@@ -1,20 +1,26 @@
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
-from checkov.common.models.enums import CheckCategories
+from checkov.common.models.enums import CheckCategories, CheckResult
 
 
-class EKSSecretsEncryption(BaseResourceValueCheck):
+class EKSPlatformVersion(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure EKS Cluster has Secrets Encryption Enabled"
-        id = "CKV_AWS_58"
+        """
+        NIST.800-53.r5 CA-9(1), NIST.800-53.r5 CM-2, NIST.800-53.r5 SI-2, NIST.800-53.r5 SI-2(2),
+        NIST.800-53.r5 SI-2(4), NIST.800-53.r5 SI-2(5)
+        EKS clusters should run on a supported Kubernetes version
+        """
+        name = "Ensure EKS clusters run on a supported Kubernetes version"
+        id = "CKV_AWS_339"
         supported_resources = ['aws_eks_cluster']
         categories = [CheckCategories.KUBERNETES]
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,
+                         missing_block_result=CheckResult.PASSED)
 
     def get_inspected_key(self):
-        return "encryption_config/[0]/resources"
+        return "version"
 
-    def get_expected_value(self):
-        return ["secrets"]
+    def get_expected_values(self):
+        return ["1.22", "1.23", "1.24", "1.25"]
 
 
-check = EKSSecretsEncryption()
+check = EKSPlatformVersion()
