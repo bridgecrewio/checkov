@@ -1,5 +1,9 @@
+from __future__ import annotations
+
 import unittest
 import json
+from typing import Any
+
 import jsonschema
 import urllib.request
 
@@ -346,8 +350,97 @@ class TestSarifReport(unittest.TestCase):
         self.assertTrue(are_rule_indexes_correct_in_results(sarif.json))
         self.assertTrue(are_rules_without_help_uri_correct(sarif.json))
 
+    def test_non_url_guideline_link(self):
+        # given
+        record1 = Record(
+            check_id="CKV_AWS_21",
+            check_name="Some Check",
+            check_result={"result": CheckResult.FAILED},
+            code_block=[
+                (1, 'resource aws_s3_bucket "operations" {\n'),
+                (2, '  bucket = "example"\n'),
+                (3, "}\n"),
+            ],
+            file_path="./s3.tf",
+            file_line_range=[1, 3],
+            resource="aws_s3_bucket.operations",
+            evaluations=None,
+            check_class=None,
+            file_abs_path="./s3.tf",
+            entity_tags={"tag1": "value1"},
+        )
+        record1.set_guideline("some random text")
 
-def get_sarif_schema():
+        r = Report("terraform")
+        r.add_record(record=record1)
+
+        #  when
+        sarif = Sarif(reports=[r], tool="")
+
+        # then
+        self.assertEqual(
+            None,
+            jsonschema.validate(instance=sarif.json, schema=get_sarif_schema()),
+        )
+
+        sarif.json["runs"][0]["tool"]["driver"]["version"] = "9.9.9"  # override the version
+
+        # sarif.json["runs"][0]["tool"]["driver"]["rules"][0] shouldn't include key "helpUri"
+        self.assertDictEqual(
+            sarif.json,
+            {
+                "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+                "version": "2.1.0",
+                "runs": [
+                    {
+                        "tool": {
+                            "driver": {
+                                "name": "Bridgecrew",
+                                "version": "9.9.9",
+                                "informationUri": "https://docs.bridgecrew.io",
+                                "rules": [
+                                    {
+                                        "id": "CKV_AWS_21",
+                                        "name": "Some Check",
+                                        "shortDescription": {"text": "Some Check"},
+                                        "fullDescription": {"text": "Some Check"},
+                                        "help": {"text": "Some Check\nResource: aws_s3_bucket.operations"},
+                                        "defaultConfiguration": {"level": "error"},
+                                    }
+                                ],
+                                "organization": "bridgecrew",
+                            }
+                        },
+                        "results": [
+                            {
+                                "ruleId": "CKV_AWS_21",
+                                "ruleIndex": 0,
+                                "level": "error",
+                                "attachments": [],
+                                "message": {"text": "Some Check"},
+                                "locations": [
+                                    {
+                                        "physicalLocation": {
+                                            "artifactLocation": {"uri": "s3.tf"},
+                                            "region": {
+                                                "startLine": 1,
+                                                "endLine": 3,
+                                                "snippet": {
+                                                    "text": 'resource aws_s3_bucket "operations" {\n  bucket = "example"\n}\n'
+                                                },
+                                            },
+                                        }
+                                    }
+                                ],
+                            }
+                        ],
+                    }
+                ],
+            },
+        )
+
+
+def get_sarif_schema() -> dict[str, Any]:
     file_name, headers = urllib.request.urlretrieve(
         "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Documents/CommitteeSpecifications/2.1.0/sarif-schema-2.1.0.json"
     )
