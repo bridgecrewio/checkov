@@ -16,23 +16,7 @@ from checkov.common.output.sarif import Sarif
 class TestSarifReport(unittest.TestCase):
     def test_valid_passing_valid_testcases(self):
         # given
-        record1 = Record(
-            check_id="CKV_AWS_21",
-            check_name="Some Check",
-            check_result={"result": CheckResult.FAILED},
-            code_block=[
-                (1, 'resource aws_s3_bucket "operations" {\n'),
-                (2, '  bucket = "example"\n'),
-                (3, "}\n"),
-            ],
-            file_path="./s3.tf",
-            file_line_range=[1, 3],
-            resource="aws_s3_bucket.operations",
-            evaluations=None,
-            check_class=None,
-            file_abs_path="./s3.tf",
-            entity_tags={"tag1": "value1"},
-        )
+        record1 = get_ckv_aws_21_record()
         record1.set_guideline("https://docs.bridgecrew.io/docs/s3_16-enable-versioning")
 
         record2 = Record(
@@ -160,19 +144,7 @@ class TestSarifReport(unittest.TestCase):
         )
 
     def test_multiple_instances_of_same_rule_do_not_break_schema(self):
-        record1 = Record(
-            check_id="CKV_AWS_21",
-            check_name="Some Check",
-            check_result={"result": CheckResult.FAILED},
-            code_block=[(1, "some code")],
-            file_path="./s3.tf",
-            file_line_range=[1, 3],
-            resource="aws_s3_bucket.operations",
-            evaluations=None,
-            check_class=None,
-            file_abs_path=",.",
-            entity_tags={"tag1": "value1"},
-        )
+        record1 = get_ckv_aws_21_record()
         record1.set_guideline("")
 
         record2 = Record(
@@ -352,23 +324,7 @@ class TestSarifReport(unittest.TestCase):
 
     def test_non_url_guideline_link(self):
         # given
-        record1 = Record(
-            check_id="CKV_AWS_21",
-            check_name="Some Check",
-            check_result={"result": CheckResult.FAILED},
-            code_block=[
-                (1, 'resource aws_s3_bucket "operations" {\n'),
-                (2, '  bucket = "example"\n'),
-                (3, "}\n"),
-            ],
-            file_path="./s3.tf",
-            file_line_range=[1, 3],
-            resource="aws_s3_bucket.operations",
-            evaluations=None,
-            check_class=None,
-            file_abs_path="./s3.tf",
-            entity_tags={"tag1": "value1"},
-        )
+        record1 = get_ckv_aws_21_record()
         record1.set_guideline("some random text")
 
         r = Report("terraform")
@@ -448,6 +404,25 @@ def get_sarif_schema() -> dict[str, Any]:
         schema = json.load(file)
     return schema
 
+
+def get_ckv_aws_21_record() -> Record:
+    return Record(
+        check_id="CKV_AWS_21",
+        check_name="Some Check",
+        check_result={"result": CheckResult.FAILED},
+        code_block=[
+            (1, 'resource aws_s3_bucket "operations" {\n'),
+            (2, '  bucket = "example"\n'),
+            (3, "}\n"),
+        ],
+        file_path="./s3.tf",
+        file_line_range=[1, 3],
+        resource="aws_s3_bucket.operations",
+        evaluations=None,
+        check_class=None,
+        file_abs_path="./s3.tf",
+        entity_tags={"tag1": "value1"},
+    )
 
 def are_duplicates_in_sarif_rules(sarif_json) -> bool:
     rules = sarif_json["runs"][0]["tool"]["driver"]["rules"]
