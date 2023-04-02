@@ -65,7 +65,7 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
             runner_filter: RunnerFilter | None = None,
             collect_skip_comments: bool = True,
     ) -> Report | list[Report]:
-        logging.info("Checkov is overridden!!!")
+        print("Checkov is overridden!!!")
         runner_filter = runner_filter or RunnerFilter()
         report = super().run(root_folder=root_folder, external_checks_dir=external_checks_dir,
                              files=files, runner_filter=runner_filter, collect_skip_comments=collect_skip_comments)
