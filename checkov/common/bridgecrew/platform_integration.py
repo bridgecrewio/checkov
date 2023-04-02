@@ -15,12 +15,12 @@ from pathlib import Path
 from time import sleep
 from typing import List, Dict, TYPE_CHECKING, Any, cast
 
-import boto3  # type:ignore[import]
+import boto3
 import dpath
 import requests
 import urllib3
-from botocore.exceptions import ClientError  # type:ignore[import]
-from botocore.config import Config  # type:ignore[import]
+from botocore.exceptions import ClientError
+from botocore.config import Config
 from cachetools import cached, TTLCache
 from colorama import Style
 from termcolor import colored
@@ -48,9 +48,9 @@ from checkov.version import version as checkov_version
 
 if TYPE_CHECKING:
     import argparse
-    from botocore.client import BaseClient  # type:ignore[import]
     from checkov.common.bridgecrew.bc_source import SourceType
     from checkov.common.output.report import Report
+    from mypy_boto3_s3.client import S3Client
     from requests import Response
     from typing_extensions import TypeGuard
 
@@ -86,10 +86,12 @@ CI_METADATA_EXTRACTOR = registry.get_extractor()
 class BcPlatformIntegration:
     def __init__(self) -> None:
         self.bc_api_key = read_key()
-        self.s3_client: BaseClient | None = None
+        self.s3_client: S3Client | None = None
         self.bucket: str | None = None
         self.credentials: dict[str, str] | None = None
         self.repo_path: str | None = None
+        self.support_bucket: str | None = None
+        self.support_repo_path: str | None = None
         self.repo_id: str | None = None
         self.repo_branch: str | None = None
         self.skip_fixes = False
@@ -111,6 +113,7 @@ class BcPlatformIntegration:
         self.http: urllib3.PoolManager | urllib3.ProxyManager | None = None
         self.bc_skip_mapping = False
         self.cicd_details: _CicdDetails = {}
+        self.support_flag_enabled = False
 
     def set_bc_api_url(self, new_url: str) -> None:
         self.bc_api_url = normalize_bc_url(new_url)
@@ -270,8 +273,9 @@ class BcPlatformIntegration:
 
         try:
             self.skip_fixes = True  # no need to run fixes on CI integration
-            repo_full_path, response = self.get_s3_role(self.repo_id)  # type: ignore
+            repo_full_path, support_path, response = self.get_s3_role(self.repo_id)  # type: ignore
             self.bucket, self.repo_path = repo_full_path.split("/", 1)
+
             self.timestamp = self.repo_path.split("/")[-2]
             self.credentials = cast("dict[str, str]", response["creds"])
             config = Config(
@@ -287,6 +291,14 @@ class BcPlatformIntegration:
                 region_name=region,
                 config=config,
             )
+
+            if support_path:
+                self.support_bucket, self.support_repo_path = support_path.split("/", 1)
+            elif self.support_flag_enabled:
+                logging.debug('--support was used, but we did not get a support file upload path in the platform response. Using the old location.')
+                self.support_bucket = self.bucket
+                self.support_repo_path = self.repo_path
+
             self.use_s3_integration = True
         except MaxRetryError:
             logging.error("An SSL error occurred connecting to the platform. If you are on a VPN, please try "
@@ -305,13 +317,13 @@ class BcPlatformIntegration:
             logging.error("Received an error response during authentication")
             raise
 
-    def get_s3_role(self, repo_id: str) -> tuple[str, dict[str, Any]]:
+    def get_s3_role(self, repo_id: str) -> tuple[str, str | None, dict[str, Any]]:
         token = self.get_auth_token()
 
         if not self.http:
             raise AttributeError("HTTP manager was not correctly created")
 
-        request = self.http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id}),  # type:ignore[no-untyped-call]
+        request = self.http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id, "support": self.support_flag_enabled}),  # type:ignore[no-untyped-call]
                                     headers=merge_dicts({"Authorization": token, "Content-Type": "application/json"},
                                                         get_user_agent_header()))
         if request.status == 403:
@@ -333,7 +345,8 @@ class BcPlatformIntegration:
                 response = json.loads(request.data.decode("utf8"))
 
         repo_full_path = response["path"]
-        return repo_full_path, response
+        support_path = response.get("supportPath")
+        return repo_full_path, support_path, response
 
     def is_integration_configured(self) -> bool:
         """
@@ -413,7 +426,7 @@ class BcPlatformIntegration:
         Persist checkov's scan result into bridgecrew's platform.
         :param scan_reports: List of checkov scan reports
         """
-        if not self.use_s3_integration:
+        if not self.use_s3_integration or not self.s3_client:
             return
         if not self.bucket or not self.repo_path:
             logging.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
@@ -429,6 +442,9 @@ class BcPlatformIntegration:
         persist_checks_results(reduced_scan_reports, self.s3_client, self.bucket, self.repo_path)
 
     def persist_image_scan_results(self, report: dict[str, Any] | None, file_path: str, image_name: str, branch: str) -> None:
+        if not self.s3_client:
+            logging.error("S3 upload was not correctly initialized")
+            return
         if not self.bucket or not self.repo_path:
             logging.error("Bucket or repo_path was not set")
             return
@@ -450,36 +466,46 @@ class BcPlatformIntegration:
                           ' enabled it via env var CKV_VALIDATE_SECRETS and provide an api key')
             return None
 
+        if not self.s3_client:
+            logging.error("S3 upload was not correctly initialized")
+            return None
+
         base_path = re.sub(REPO_PATH_PATTERN, r'original_secrets/\1', self.repo_path)
         s3_path = f'{base_path}/{uuid.uuid4()}.json'
         try:
-            _put_json_object(self.s3_client, enriched_secrets, self.bucket, s3_path)
+            _put_json_object(self.s3_client, enriched_secrets, self.bucket, s3_path, log_stack_trace_on_error=False)
         except ClientError:
             logging.warning("Got access denied, retrying as s3 role changes should be propagated")
             sleep(4)
             try:
-                _put_json_object(self.s3_client, enriched_secrets, self.bucket, s3_path)
+                _put_json_object(self.s3_client, enriched_secrets, self.bucket, s3_path, log_stack_trace_on_error=False)
             except ClientError:
-                logging.error("Getting access denied consistently, aborting secrets verification")
+                logging.error("Getting access denied consistently, skipping secrets verification, please try again")
                 return None
 
         return s3_path
 
     def persist_run_metadata(self, run_metadata: dict[str, str | list[str]]) -> None:
-        if not self.use_s3_integration:
+        if not self.use_s3_integration or not self.s3_client:
             return
         if not self.bucket or not self.repo_path:
             logging.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
             return
-        persist_run_metadata(run_metadata, self.s3_client, self.bucket, self.repo_path)
+        persist_run_metadata(run_metadata, self.s3_client, self.bucket, self.repo_path, True)
+        # only upload it if we did not fall back to use the same location
+        if self.support_bucket and self.support_repo_path and self.support_repo_path != self.repo_path:
+            logging.debug('Also uploading run_metadata.json to support location')
+            persist_run_metadata(run_metadata, self.s3_client, self.support_bucket, self.support_repo_path, False)
 
     def persist_logs_stream(self, logs_stream: StringIO) -> None:
-        if not self.use_s3_integration:
+        if not self.use_s3_integration or not self.s3_client:
             return
-        if not self.bucket or not self.repo_path:
-            logging.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
+        if not self.support_bucket or not self.support_repo_path:
+            logging.error(f"Something went wrong with the log upload location: bucket {self.support_bucket}, repo path {self.support_repo_path}")
             return
-        persist_logs_stream(logs_stream, self.s3_client, self.bucket, self.repo_path)
+        # use checkov_results if we fall back to using the same location
+        log_path = f'{self.support_repo_path}/checkov_results' if self.support_repo_path == self.repo_path else self.support_repo_path
+        persist_logs_stream(logs_stream, self.s3_client, self.support_bucket, log_path)
 
     def commit_repository(self, branch: str) -> str | None:
         """

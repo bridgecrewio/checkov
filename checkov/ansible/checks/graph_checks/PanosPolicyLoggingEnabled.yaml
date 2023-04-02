@@ -1,0 +1,12 @@
+metadata:
+  id: "CKV_PAN_10"
+  name: "Ensure logging at session end is enabled within security policies"
+  category: "NETWORKING"
+definition:
+  # Logging config flag "log_end" is not specified, defaults to true, which is a pass
+  cond_type: attribute
+  resource_types:
+    - tasks.paloaltonetworks.panos.panos_security_rule
+  attribute: log_end
+  operator: not_equals
+  value: false

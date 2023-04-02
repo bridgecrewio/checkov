@@ -14,7 +14,7 @@ jobs:
   bandit:
     runs-on: [self-hosted, public, linux, x64]
     steps:
-      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f  # v3
+      - uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3  # v3
       - name: security test
         uses: jpetrucciani/bandit-check@a3625769b94d074865d7c410b9ba4019b4c80681  # v1
         with:
@@ -22,7 +22,7 @@ jobs:
   detect-secrets:
     runs-on: [self-hosted, public, linux, x64]
     steps:
-      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f  # v3
+      - uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3  # v3
       - name: detect secrets
         uses: edplato/trufflehog-actions-scan@0af17d9dd1410283f740eb76b0b8f6b696cadefc  # v0.9
         with:

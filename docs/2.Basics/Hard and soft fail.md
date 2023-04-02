@@ -23,7 +23,7 @@ Use the `--soft-fail` (`-s`) option to have Checkov always return a `0` exit cod
 
 Use the `--soft-fail-on` option to pass one or more check IDs (including wildcards) and / or severity levels to specify which failed checks will result in a soft fail result. Any failed check that does not match a criteria in the soft-fail list will result in an error exit code (`1`).
 
-For soft fails, a a failed check *matches* the threshold if its severity is less than or equal to the soft fail severity. If you specify more than one severity for soft fail, then the highest severity will be used as the threshold.
+For soft fails, a failed check *matches* the threshold if its severity is less than or equal to the soft fail severity. If you specify more than one severity for soft fail, then the highest severity will be used as the threshold.
 
 ### --hard-fail-on
 
