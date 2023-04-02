@@ -53,7 +53,7 @@ class Module:
     def _add_to_blocks(self, block: TerraformBlock) -> None:
         if self.enable_nested_modules:
             if self.use_new_tf_parser:
-                if isinstance(block.path, str) and block.path.endswith('tfvars'):
+                if isinstance(block.path, str):
                     block.source_module_object = None
                     block.path = block.path
                 else:
