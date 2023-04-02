@@ -1,6 +1,31 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.140...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.148...HEAD)
+
+## [2.3.148](https://github.com/bridgecrewio/checkov/compare/2.3.140...2.3.148) - 2023-04-02
+
+### Feature
+
+- **kubernetes:** support non-utf-8 encoded Kubernetes manifest files - [#4820](https://github.com/bridgecrewio/checkov/pull/4820)
+- **terraform:** ElasticCache for Redis cluster should automatically take minor updates - [#4726](https://github.com/bridgecrewio/checkov/pull/4726)
+- **terraform:** Ensure opensearch is configured for HA - [#4717](https://github.com/bridgecrewio/checkov/pull/4717)
+- **terraform:** Ensure Redshift specifies a DB name - [#4723](https://github.com/bridgecrewio/checkov/pull/4723)
+- **terraform:** Ensure Redshift uses enhanced vpc routing - [#4724](https://github.com/bridgecrewio/checkov/pull/4724)
+- **terraform:** Fix up ES logging check - [#4720](https://github.com/bridgecrewio/checkov/pull/4720)
+
+### Bug Fix
+
+- **general:** don't add an invalid URL to helpUri field in SARIF output - [#4814](https://github.com/bridgecrewio/checkov/pull/4814)
+- **graph:** support string values for resource_types in graph checks properly - [#4819](https://github.com/bridgecrewio/checkov/pull/4819)
+- **kubernetes:** Don't require ImagePullPolicy when digest (#4776) - [#4781](https://github.com/bridgecrewio/checkov/pull/4781)
+- **secrets:** catch errors in middle of process of getting commit diffs - [#4823](https://github.com/bridgecrewio/checkov/pull/4823)
+- **terraform:** Fix add_to_block condition to support more edge cases   - [#4822](https://github.com/bridgecrewio/checkov/pull/4822)
+- **terraform:** fix false positive CKV2_GCP_20 (fails for any non-MySQL instance) - [#4813](https://github.com/bridgecrewio/checkov/pull/4813)
+- **terraform:** Length resolvers evaluate length of `dict` as 1. - [#4808](https://github.com/bridgecrewio/checkov/pull/4808)
+
+### Platform
+
+- **general:** Save error lines in IR records - [#4821](https://github.com/bridgecrewio/checkov/pull/4821)
 
 ## [2.3.140](https://github.com/bridgecrewio/checkov/compare/2.3.134...2.3.140) - 2023-03-30
 
