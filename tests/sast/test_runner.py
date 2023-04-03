@@ -2,12 +2,7 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.enums import CheckResult
 from checkov.sast.consts import SastLanguages
 from checkov.sast.runner import Runner
-from semgrep.rule_match import RuleMatch
-from semgrep.rule import Rule
 from checkov.runner_filter import RunnerFilter
-from semgrep.output import OutputSettings, OutputHandler
-from semgrep.constants import OutputFormat, RuleSeverity
-import semgrep.output_from_core as core
 import pathlib
 import json
 import os
@@ -90,8 +85,10 @@ def get_parsed_rule():
 def test_sast_runner_python():
     runner = Runner()
     runner.registry.temp_semgrep_rules_path = os.path.join(pathlib.Path(__file__).parent.resolve(), 'test_runner_python_temp_rules.yaml')
-    source = os.path.join(pathlib.Path(__file__).parent.resolve(), 'source_code')
-    reports = runner.run(source, runner_filter=RunnerFilter(framework=['sast_python']))
+    cur_dir = pathlib.Path(__file__).parent.resolve()
+    source = os.path.join(cur_dir, 'source_code')
+    external_dir_checks = os.path.join(cur_dir, 'external_checks')
+    reports = runner.run(source, runner_filter=RunnerFilter(framework=['sast_python']), external_checks_dir=[str(external_dir_checks)])
 
     assert len(reports) == 1
     assert reports[0].check_type == CheckType.SAST_PYTHON

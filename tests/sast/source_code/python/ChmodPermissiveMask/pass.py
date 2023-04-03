@@ -1,1 +1,0 @@
-os.chmod(var1, var2)
