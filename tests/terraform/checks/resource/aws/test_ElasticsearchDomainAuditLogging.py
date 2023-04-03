@@ -2,14 +2,14 @@ import unittest
 from pathlib import Path
 
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.resource.aws.CodeBuildEncrypted import check
+from checkov.terraform.checks.resource.aws.ElasticsearchDomainAuditLogging import check
 from checkov.terraform.runner import Runner
 
 
-class TestCodeBuildEncrypted(unittest.TestCase):
+class TestElasticsearchDomainAuditLogging(unittest.TestCase):
     def test(self):
         # given
-        test_files_dir = Path(__file__).parent / "example_CodeBuildProjectEncrypted"
+        test_files_dir = Path(__file__).parent / "example_ElasticsearchDomainAuditLogging"
 
         # when
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
@@ -18,19 +18,22 @@ class TestCodeBuildEncrypted(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "aws_codebuild_project.enabled",
+            "aws_elasticsearch_domain.pass",
+            "aws_opensearch_domain.pass",
         }
+
         failing_resources = {
-            "aws_codebuild_project.default",
+            "aws_elasticsearch_domain.fail",
+            "aws_opensearch_domain.fail",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 1)
-        self.assertEqual(summary["failed"], 1)
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
+        self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
-        self.assertEqual(summary["resource_count"], 3)
 
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)

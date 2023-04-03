@@ -7,7 +7,7 @@ class ImagePullPolicyAlways(BaseResourceCheck):
     def __init__(self):
         """
         Image pull policy should be set to always to ensure you get the correct image and imagePullSecrets are correct
-        Default is 'IfNotPresent' unless image tag is omitted or :latest
+        Default is 'IfNotPresent' unless image tag/digest is omitted or :latest
         https://kubernetes.io/docs/concepts/configuration/overview/#container-images
 
         An admission controller could be used to enforce imagePullPolicy
@@ -46,6 +46,8 @@ class ImagePullPolicyAlways(BaseResourceCheck):
                     if container.get("image"):
                         name = container.get("image")[0]
                         if "latest" in name:
+                            break
+                        if "@" in name:
                             break
                 self.evaluated_keys = [f'{evaluated_keys_path}/[0]/container/[{idx}]']
                 return CheckResult.FAILED

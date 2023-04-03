@@ -12,6 +12,7 @@ import asyncio
 from typing import Any, TYPE_CHECKING, cast, Optional, overload
 
 from urllib3.response import HTTPResponse
+from urllib3.util import parse_url
 
 from checkov.common.util.consts import DEV_API_GET_HEADERS, DEV_API_POST_HEADERS, PRISMA_API_GET_HEADERS, \
     PRISMA_PLATFORM, BRIDGECREW_PLATFORM
@@ -113,6 +114,19 @@ def get_default_post_headers(client: SourceType, client_version: str | None) -> 
 
 def get_prisma_get_headers() -> dict[str, str]:
     return merge_dicts(PRISMA_API_GET_HEADERS, get_user_agent_header())
+
+
+def valid_url(url: str | None) -> bool:
+    """Checks for a valid URL, otherwise returns False"""
+
+    if not url:
+        return False
+
+    try:
+        result = parse_url(url)
+        return all([result.scheme, result.netloc])
+    except Exception:
+        return False
 
 
 def request_wrapper(

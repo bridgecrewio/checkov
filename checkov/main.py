@@ -13,7 +13,7 @@ from collections import defaultdict
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-import argcomplete  # type:ignore[import]
+import argcomplete
 import configargparse
 from urllib3.exceptions import MaxRetryError
 
@@ -26,7 +26,7 @@ from checkov.azure_pipelines.runner import Runner as azure_pipelines_runner
 from checkov.bitbucket.runner import Runner as bitbucket_configuration_runner
 from checkov.bitbucket_pipelines.runner import Runner as bitbucket_pipelines_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
-from checkov.common.bridgecrew.bc_source import SourceTypes, BCSourceType, get_source_type
+from checkov.common.bridgecrew.bc_source import SourceTypes, BCSourceType, get_source_type, SourceType
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
     integration as policy_metadata_integration
 from checkov.common.bridgecrew.integration_features.features.repo_config_integration import \
@@ -196,7 +196,7 @@ class Checkov:
         # Parse mask into json with default dict. If self.config.mask is empty list, default dict will be assigned
         self._parse_mask_to_resource_attributes_to_omit()
 
-    def run(self, banner: str = checkov_banner, tool: str = checkov_tool) -> int | None:
+    def run(self, banner: str = checkov_banner, tool: str = checkov_tool, source_type: SourceType | None = None) -> int | None:
         self.run_metadata = {
             "checkov_version": version,
             "python_executable": sys.executable,
@@ -220,6 +220,9 @@ class Checkov:
             if self.config.output is None:
                 self.config.output = ['cli']
 
+            if self.config.support:
+                bc_integration.support_flag_enabled = True
+
             if self.config.bc_api_key and not self.config.include_all_checkov_policies:
                 if self.config.skip_download and not self.config.external_checks_dir:
                     print('You are using an API key along with --skip-download but not --include-all-checkov-policies or --external-checks-dir. '
@@ -241,7 +244,7 @@ class Checkov:
 
             # bridgecrew uses both the urllib3 and requests libraries, while checkov uses the requests library.
             # Allow the user to specify a CA bundle to be used by both libraries.
-            bc_integration.setup_http_manager(self.config.ca_certificate)
+            bc_integration.setup_http_manager(self.config.ca_certificate, self.config.no_cert_verify)
 
             # if a repo is passed in it'll save it.  Otherwise a default will be created based on the file or dir
             self.config.repo_id = bc_integration.persist_repo_id(self.config)
@@ -290,7 +293,7 @@ class Checkov:
             )
 
             source_env_val = os.getenv('BC_SOURCE', 'cli')
-            source = get_source_type(source_env_val)
+            source = source_type if source_type else get_source_type(source_env_val)
             if source == SourceTypes[BCSourceType.DISABLED]:
                 logger.warning(
                     f'Received unexpected value for BC_SOURCE: {source_env_val}; Should be one of {{{",".join(SourceTypes.keys())}}} setting source to DISABLED')

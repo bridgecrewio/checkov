@@ -9,6 +9,7 @@ from typing import List, Optional, Union, Any, Dict, Set, Tuple
 
 from typing_extensions import TypedDict
 
+import checkov.terraform.graph_builder.foreach.consts
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder import reserved_attribute_names
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
@@ -17,10 +18,10 @@ from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimme
 from checkov.common.runners.base_runner import strtobool
 from checkov.common.util.parser_utils import get_abs_path, get_tf_definition_key_from_module_dependency
 from checkov.common.util.type_forcers import force_int
+from checkov.terraform.graph_builder.foreach.builder import ForeachBuilder
 from checkov.terraform.modules.module_objects import TFModule
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
 from checkov.terraform.context_parsers.registry import parser_registry
-import checkov.terraform.graph_builder.foreach_handler as foreach_module
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
@@ -55,6 +56,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self.vertices_by_module_dependency_by_name: Dict[Tuple[str, str], Dict[BlockType, Dict[str, List[int]]]] = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
         self.vertices_by_module_dependency: Dict[Tuple[str, str], Dict[BlockType, List[int]]] = defaultdict(lambda: defaultdict(list))
         self.enable_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_FOREACH_HANDLING', 'False'))
+        self.enable_modules_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_MODULES_FOREACH_HANDLING', 'False'))
         self.use_new_tf_parser = strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'False'))
         self.foreach_blocks: Dict[str, List[int]] = {BlockType.RESOURCE: [], BlockType.MODULE: []}
 
@@ -65,8 +67,8 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         logging.info(f"[TerraformLocalGraph] created {len(self.edges)} edges")
         if self.enable_foreach_handling:
             try:
-                foreach_handler = foreach_module.ForeachHandler(self)
-                foreach_handler.handle_foreach_rendering(self.foreach_blocks)
+                foreach_builder = ForeachBuilder(self)
+                foreach_builder.handle(self.foreach_blocks)
                 self._arrange_graph_data()
                 self._build_edges()
                 logging.info(f"[TerraformLocalGraph] finished handling foreach values with {len(self.vertices)} vertices and {len(self.edges)} edges")
@@ -93,7 +95,8 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         for i, block in enumerate(self.module.blocks):
             self.vertices[i] = block
             self._add_block_data_to_graph(i, block)
-            if self.enable_foreach_handling and (foreach_module.FOREACH_STRING in block.attributes or foreach_module.COUNT_STRING in block.attributes) \
+            if self.enable_foreach_handling and (
+                    checkov.terraform.graph_builder.foreach.consts.FOREACH_STRING in block.attributes or checkov.terraform.graph_builder.foreach.consts.COUNT_STRING in block.attributes) \
                     and block.block_type in (BlockType.MODULE, BlockType.RESOURCE):
                 self.foreach_blocks[block.block_type].append(i)
 
@@ -107,10 +110,8 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
 
         if self.use_new_tf_parser:
             self.vertices_by_module_dependency[block.source_module_object][block.block_type].append(idx)
-            self.vertices_by_module_dependency_by_name[block.source_module_object][block.block_type][block.name].append(idx)
         else:
             self.vertices_by_module_dependency[(block.module_dependency, block.module_dependency_num)][block.block_type].append(idx)
-            self.vertices_by_module_dependency_by_name[(block.module_dependency, block.module_dependency_num)][block.block_type][block.name].append(idx)
 
         self.in_edges[idx] = []
         self.out_edges[idx] = []
@@ -121,7 +122,6 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self.vertices_block_name_map = defaultdict(lambda: defaultdict(list))
         self.map_path_to_module = {}
         self.vertices_by_module_dependency = defaultdict(lambda: defaultdict(list))
-        self.vertices_by_module_dependency_by_name = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
         self.edges = []
         for i in range(len(self.vertices)):
             self.out_edges[i] = []
@@ -155,6 +155,8 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                     if vertex.source_module_object.path != self.vertices[idx].path:
                         continue
                     if vertex.source_module_object.nested_tf_module != self.vertices[idx].source_module_object:
+                        continue
+                    if vertex.source_module_object.foreach_idx != self.vertices[idx].for_each_index:
                         continue
                     vertex.source_module.add(idx)
                     break
@@ -408,7 +410,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             module_dependency_by_name_key = next(k for k, v in self.vertices_by_module_dependency.items() if v.get(BlockType.MODULE, []).__contains__(relative_module_idx))
         else:
             module_dependency_by_name_key = (module_path, module_num)
-        possible_vertices = self.vertices_by_module_dependency_by_name.get(module_dependency_by_name_key, {}).get(block_type, {}).get(name, [])
+        possible_vertices = [v for v in self.vertices_by_module_dependency.get(module_dependency_by_name_key, {}).get(block_type, {}) if self.vertices[v].name == name]
         for vertex_index in possible_vertices:
             vertex = self.vertices[vertex_index]
             if self.get_dirname(vertex.path) == self.get_dirname(block_path):
