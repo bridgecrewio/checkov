@@ -9,8 +9,8 @@ root_logger = logging.getLogger()
 stream_handler = root_logger.handlers[0]
 stream_handler.setFormatter(log_formatter)
 stream_handler.setLevel(LOG_LEVEL)
-root_logger.setLevel(logging.DEBUG)
-logging.getLogger().setLevel(logging.DEBUG)
+root_logger.setLevel(LOG_LEVEL)
+logging.getLogger().setLevel(LOG_LEVEL)
 logging.getLogger("urllib3").setLevel(logging.ERROR)
 logging.getLogger("urllib3.connectionpool").setLevel(logging.ERROR)
 logging.getLogger("urllib3.connectionpool").propagate = False
