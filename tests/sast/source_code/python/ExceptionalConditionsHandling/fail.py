@@ -1,1 +1,0 @@
-assert(var == 3)

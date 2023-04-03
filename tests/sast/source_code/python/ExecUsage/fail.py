@@ -1,2 +1,0 @@
-import something
-exec(var)
