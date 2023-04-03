@@ -1,7 +1,7 @@
 metadata:
   id: "CKV2_OCI_5"
   name: "Ensure Kubernetes Engine Cluster boot volume is configured with in-transit data encryption"
-  category: "GENERAL_SECURITY"
+  category: "ENCRYPTION"
 
 definition:
   and:

@@ -1,7 +1,7 @@
 metadata:
   id: "CKV2_OCI_3"
   name: "Ensure Kubernetes engine cluster is configured with NSG(s)"
-  category: "GENERAL_SECURITY"
+  category: "NETWORKING"
 
 definition:
   and:

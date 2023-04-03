@@ -1,7 +1,7 @@
 metadata:
   id: "CKV2_OCI_2"
   name: "Ensure NSG does not allow all traffic on RDP port (3389)"
-  category: "GENERAL_SECURITY"
+  category: "NETWORKING"
 
 definition:
   or:
