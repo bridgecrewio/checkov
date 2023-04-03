@@ -2,14 +2,14 @@ import unittest
 from pathlib import Path
 
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.resource.kubernetes.ImagePullPolicyAlways import check
+from checkov.terraform.checks.resource.aws.ElasticsearchDomainHA import check
 from checkov.terraform.runner import Runner
 
 
-class TestImagePullPolicyAlways(unittest.TestCase):
+class TestElasticsearchDomainHA(unittest.TestCase):
     def test(self):
         # given
-        test_files_dir = Path(__file__).parent / "example_ImagePullPolicyAlways"
+        test_files_dir = Path(__file__).parent / "example_ElasticsearchDomainHA"
 
         # when
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
@@ -18,26 +18,15 @@ class TestImagePullPolicyAlways(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "kubernetes_pod.pass",
-            "kubernetes_pod.pass2",
-            "kubernetes_pod_v1.pass",
-            "kubernetes_pod_v1.pass2",
-            "kubernetes_deployment.pass",
-            "kubernetes_deployment.pass2",
-            "kubernetes_deployment_v1.pass",
-            "kubernetes_deployment_v1.pass2",
-            "kubernetes_deployment_v1.pass3",
+            "aws_elasticsearch_domain.pass",
+            "aws_opensearch_domain.pass",
         }
 
         failing_resources = {
-            "kubernetes_pod.fail",
-            "kubernetes_pod.fail2",
-            "kubernetes_pod_v1.fail",
-            "kubernetes_pod_v1.fail2",
-            "kubernetes_deployment.fail",
-            "kubernetes_deployment.fail2",
-            "kubernetes_deployment_v1.fail",
-            "kubernetes_deployment_v1.fail2",
+            "aws_elasticsearch_domain.fail",
+            "aws_elasticsearch_domain.fail2",
+            "aws_opensearch_domain.fail",
+            "aws_opensearch_domain.fail2",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
@@ -52,5 +41,5 @@ class TestImagePullPolicyAlways(unittest.TestCase):
         self.assertEqual(failing_resources, failed_check_resources)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

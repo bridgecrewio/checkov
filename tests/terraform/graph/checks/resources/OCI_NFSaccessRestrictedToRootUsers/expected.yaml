@@ -1,0 +1,7 @@
+pass:
+  - "oci_file_storage_export.pass_1"
+  - "oci_file_storage_export.pass_2"
+
+fail:
+  - "oci_file_storage_export.fail_1"
+  - "oci_file_storage_export.fail_2"
