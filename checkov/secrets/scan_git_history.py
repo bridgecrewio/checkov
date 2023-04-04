@@ -157,15 +157,15 @@ def _run_scan_one_commit(commit: Dict[str, str | Dict[str, str]]) -> Tuple[List[
                     f"Found {len(file_results)} secrets in file path {file_name} in commit {commit_hash}")
                 results.append(RawStore(file_results=file_results, file_name=file_name, commit=commit,
                                         commit_hash=commit_hash, type=FILE_RESULTS_STR,
-                                        rename_from='', rename_to='', committer=commit[COMMIT_COMMITTER],
-                                        committed_datetime=commit[COMMIT_COMMITTED_DATETIME]))
+                                        rename_from='', rename_to='', committer=commit.get(COMMIT_COMMITTER),
+                                        committed_datetime=commit.get(COMMIT_COMMITTED_DATETIME)))
         elif isinstance(file_diff, dict):
             rename_from = file_diff['rename_from']
             rename_to = file_diff['rename_to']
             results.append(RawStore(file_results=[], file_name='', commit=commit,
                                     commit_hash=commit_hash, type=RENAME_STR,
-                                    rename_from=rename_from, rename_to=rename_to, committer=commit[COMMIT_COMMITTER],
-                                    committed_datetime=commit[COMMIT_COMMITTED_DATETIME]))
+                                    rename_from=rename_from, rename_to=rename_to, committer=commit.get(COMMIT_COMMITTER),
+                                    committed_datetime=commit.get(COMMIT_COMMITTED_DATETIME)))
         scanned_file_count += 1
     return results, scanned_file_count
 

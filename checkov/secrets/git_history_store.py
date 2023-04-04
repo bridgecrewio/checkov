@@ -62,7 +62,7 @@ class GitHistorySecretStore:
             if secret.is_added:
                 self._add_new_secret(secret_key, commit_hash, secret, commit)
             if secret.is_removed:
-                removed_date = commit[COMMIT_COMMITTED_DATETIME]
+                removed_date = commit.get(COMMIT_COMMITTED_DATETIME, '')
                 self._update_removed_secret(secret_key, secret, file_name, commit_hash, removed_date)
 
     def _add_new_secret(self, secret_key: str,
@@ -86,9 +86,9 @@ class GitHistorySecretStore:
             'removed_commit_hash': '',
             'potential_secret': secret,
             'code_line': code_line,
-            'created_by': commit[COMMIT_COMMITTER],
+            'created_by': commit.get(COMMIT_COMMITTER, ''),
             'removed_date': '',
-            'create_date': commit[COMMIT_COMMITTED_DATETIME]
+            'create_date': commit.get(COMMIT_COMMITTED_DATETIME, '')
         }
         self.secrets_by_file_value_type[secret_key].append(enriched_potential_secret)
 
@@ -96,7 +96,7 @@ class GitHistorySecretStore:
                                secret: PotentialSecret,
                                file_name: str,
                                commit_hash: str,
-                               removed_date: str) -> None:
+                               removed_date: str = '') -> None:
         # Try to find the corresponding added secret in the git history secret map
         secrets_in_file = self.secrets_by_file_value_type.get(secret_key, None)
         if secrets_in_file:

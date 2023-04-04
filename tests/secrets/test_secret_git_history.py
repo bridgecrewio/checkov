@@ -62,7 +62,7 @@ def test_scan_git_history_merge_added_removed() -> None:
                         runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
     assert len(report.failed_checks) == 1
     for failed_check in report.failed_checks:
-        assert failed_check.removed_commit_hash is None
+        assert failed_check.removed_commit_hash == ''
         assert failed_check.added_commit_hash == '11e59e4e578c6ebcb48aae1e5e078a54c62920eb'
 
 
@@ -97,9 +97,9 @@ def test_scan_git_history_merge_added_removed2() -> None:
                         runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
     assert len(report.failed_checks) == 2
     assert ((report.failed_checks[0].removed_commit_hash == '697308e61171e33224757e620aaf67b1a877c99d'
-             and report.failed_checks[1].removed_commit_hash is None)
+             and report.failed_checks[1].removed_commit_hash == '')
             or (report.failed_checks[1].removed_commit_hash == '697308e61171e33224757e620aaf67b1a877c99d'
-                and report.failed_checks[0].removed_commit_hash is None))
+                and report.failed_checks[0].removed_commit_hash == ''))
     assert ((report.failed_checks[0].added_commit_hash == '900b1e8f6f336a92e8f5fca3babca764e32c3b3d'
              and report.failed_checks[1].added_commit_hash == '3c8cb7eedb3986308c96713fc65b006adcf3bc44')
             or (report.failed_checks[1].added_commit_hash == '900b1e8f6f336a92e8f5fca3babca764e32c3b3d'
@@ -158,7 +158,7 @@ def test_scan_git_history_rename_file() -> None:
     report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                         runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
     assert len(report.failed_checks) == 2
-    assert (report.failed_checks[0].removed_commit_hash is None and
+    assert (report.failed_checks[0].removed_commit_hash == '' and
             report.failed_checks[0].added_commit_hash == '2e1a500e688990e065fc6f1202bc64ed0ba53027')
     assert (report.failed_checks[1].removed_commit_hash == '2e1a500e688990e065fc6f1202bc64ed0ba53027' and
             report.failed_checks[1].added_commit_hash == 'adef7360b86c62666f0a70521214220763b9c593')
