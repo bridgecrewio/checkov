@@ -32,9 +32,9 @@ class EnrichedPotentialSecretMetadata(TypedDict, total=False):
     added_commit_hash: str
     removed_commit_hash: str
     code_line: Optional[str]
-    created_by: Optional[str]
+    added_by: Optional[str]
     removed_date: Optional[str]
-    create_date: Optional[str]
+    added_date: Optional[str]
 
 
 class EnrichedPotentialSecret(EnrichedPotentialSecretMetadata):
@@ -86,9 +86,9 @@ class GitHistorySecretStore:
             'removed_commit_hash': '',
             'potential_secret': secret,
             'code_line': code_line,
-            'created_by': commit.get(COMMIT_COMMITTER, ''),
+            'added_by': commit.get(COMMIT_COMMITTER, ''),
             'removed_date': '',
-            'create_date': commit.get(COMMIT_DATETIME, '')
+            'added_date': commit.get(COMMIT_DATETIME, '')
         }
         self.secrets_by_file_value_type[secret_key].append(enriched_potential_secret)
 
@@ -129,9 +129,9 @@ class GitHistorySecretStore:
                         'removed_commit_hash': '',
                         'potential_secret': new_secret,
                         'code_line': code,
-                        'created_by': secret_data.get('created_by'),
+                        'added_by': secret_data.get('added_by'),
                         'removed_date': secret_data.get('removed_date'),
-                        'create_date': secret_data.get('create_date')
+                        'added_date': secret_data.get('added_date')
                     }
                     temp_secrets_by_file_value_type[new_secret_key].append(enriched_potential_secret)
         self.secrets_by_file_value_type.update(temp_secrets_by_file_value_type)
@@ -163,9 +163,9 @@ class GitHistorySecretStore:
                 'added_commit_hash': chosen_secret.get('added_commit_hash', ''),
                 'removed_commit_hash': chosen_secret.get('removed_commit_hash', ''),
                 'code_line': chosen_secret.get('code_line'),
-                'created_by': chosen_secret.get('created_by'),
+                'added_by': chosen_secret.get('added_by'),
                 'removed_date': chosen_secret.get('removed_date'),
-                'create_date': chosen_secret.get('create_date')
+                'added_date': chosen_secret.get('added_date')
             }
         except Exception as e:
             logging.warning(f"Failed set added_commit_hash and removed_commit_hash due to: {e}")

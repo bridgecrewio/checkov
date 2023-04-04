@@ -58,9 +58,9 @@ class SecretsRecord(Record):
                  validation_status: Optional[str] = None,
                  added_commit_hash: Optional[str] = None,
                  removed_commit_hash: Optional[str] = None,
-                 created_by: Optional[str] = None,
+                 added_by: Optional[str] = None,
                  removed_date: Optional[str] = None,
-                 create_date: Optional[str] = None
+                 added_date: Optional[str] = None
                  ):
         super().__init__(check_id=check_id,
                          check_name=check_name,
@@ -91,9 +91,9 @@ class SecretsRecord(Record):
         self.validation_status = validation_status
         self.added_commit_hash = added_commit_hash
         self.removed_commit_hash = removed_commit_hash
-        self.created_by = created_by
+        self.added_by = added_by
         self.removed_date = removed_date
-        self.create_date = create_date
+        self.added_date = added_date
 
     def to_string(self, compact: bool = False, use_bc_ids: bool = False) -> str:
         processed_record = super().to_string(compact=compact, use_bc_ids=use_bc_ids)
