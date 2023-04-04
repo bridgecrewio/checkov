@@ -134,7 +134,7 @@ class ForeachModuleHandler(ForeachAbstractHandler):
         Go through all child vertices and update source_module_object with foreach_idx
         """
         if current_module_key is None:
-            current_module_key = deepcopy(original_module_key)
+            current_module_key = original_module_key
         if current_module_key not in self.local_graph.vertices_by_module_dependency:
             return
         values = self.local_graph.vertices_by_module_dependency[current_module_key].values()
@@ -194,7 +194,7 @@ class ForeachModuleHandler(ForeachAbstractHandler):
         else:
             self.local_graph.vertices[resource_idx] = new_resource
 
-            key_with_foreach_index = deepcopy(main_resource_module_key)
+            key_with_foreach_index = main_resource_module_key
             key_with_foreach_index.foreach_idx = idx_to_change
             self.local_graph.vertices_by_module_dependency[key_with_foreach_index] = main_resource_module_value
 
