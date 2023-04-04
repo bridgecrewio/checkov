@@ -8,4 +8,4 @@ definition:
     - RUN
   attribute: value
   operator: not_regex_match
-  value: ".*(((yum)|(dnf))(\\s+|-)config-manager[^\\|&;]*\\s+--setopt=['\"]?([^=\\s]+\\.)?sslverify['\"]?=((0)|('0')|(\"0\")|([Ff]alse)|('[Ff]alse')|(\"[Ff]alse\")|([Nn]o)|('[Nn]o')|(\"[Nn]o\"))['\"]?).*"
+  value: "(?i).*(((yum)|(dnf))(\\s+|-)config-manager[^\\|&;]*\\s+--setopt=['\"]?([^=\\s]+\\.)?sslverify['\"]?=((0)|('0')|(\"0\")|(false)|('false')|(\"false\")|(no)|('no')|(\"no\"))['\"]?).*"
