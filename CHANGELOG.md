@@ -1,6 +1,16 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.148...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.150...HEAD)
+
+## [2.3.150](https://github.com/bridgecrewio/checkov/compare/2.3.148...2.3.150) - 2023-04-03
+
+### Feature
+
+- **terraform:** Adding yaml based build time policies for corresponding PC runtime policies - [#4800](https://github.com/bridgecrewio/checkov/pull/4800)
+
+### Bug Fix
+
+- **terraform:** Fix for edge cases in for_each modules - [#4831](https://github.com/bridgecrewio/checkov/pull/4831)
 
 ## [2.3.148](https://github.com/bridgecrewio/checkov/compare/2.3.140...2.3.148) - 2023-04-02
 
