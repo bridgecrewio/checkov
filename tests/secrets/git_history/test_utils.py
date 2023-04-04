@@ -30,23 +30,33 @@ def mock_git_repo_commits1(root_folder: str, last_commit_sha: str) -> List[Dict[
     return dict_to_list({
         "8a21fa691e17907afee57e93b7820c5943b12746":
             {
-                "Dockerfile": "diff --git a/Dockerfile b/Dockerfile\nindex 0000..0000 0000\n--- a/Dockerfile\n+++ b/Dockerfile\n@@ -4,6 +4,8 @@ FROM public.ecr.aws/lambda/python:3.9\n \n ENV PIP_ENV_VERSION=\"2022.1.8\"\n \n+ENV AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n+\n COPY Pipfile Pipfile.lock ./\n \n RUN pip install pipenv==${PIP_ENV_VERSION} \\\n"
+                "Dockerfile": "diff --git a/Dockerfile b/Dockerfile\nindex 0000..0000 0000\n--- a/Dockerfile\n+++ b/Dockerfile\n@@ -4,6 +4,8 @@ FROM public.ecr.aws/lambda/python:3.9\n \n ENV PIP_ENV_VERSION=\"2022.1.8\"\n \n+ENV AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n+\n COPY Pipfile Pipfile.lock ./\n \n RUN pip install pipenv==${PIP_ENV_VERSION} \\\n",
+                "\u003d\u003dcommitter\u003d\u003d": "Cherry🍒",
+                "\u003d\u003dcommitted_datetime\u003d\u003d": "2022-12-14T16:10:21+00:00"
             },
         "d3249f33376b94a939b67a638aba4557b071875f":
             {
-                "Dockerfile": "diff --git a/Dockerfile b/Dockerfile\nindex 0000..0000 0000\n--- a/Dockerfile\n+++ b/Dockerfile\n@@ -1,10 +1,9 @@\n #checkov:skip=CKV_DOCKER_2:Healthcheck is not relevant for ephemral containers\n #checkov:skip=CKV_DOCKER_3:User is created automatically by lambda runtime\n FROM public.ecr.aws/lambda/python:3.9\n-\n+ENV AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n ENV PIP_ENV_VERSION=\"2022.1.8\"\n \n-ENV AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n \n COPY Pipfile Pipfile.lock ./\n \n"
+                "Dockerfile": "diff --git a/Dockerfile b/Dockerfile\nindex 0000..0000 0000\n--- a/Dockerfile\n+++ b/Dockerfile\n@@ -1,10 +1,9 @@\n #checkov:skip=CKV_DOCKER_2:Healthcheck is not relevant for ephemral containers\n #checkov:skip=CKV_DOCKER_3:User is created automatically by lambda runtime\n FROM public.ecr.aws/lambda/python:3.9\n-\n+ENV AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n ENV PIP_ENV_VERSION=\"2022.1.8\"\n \n-ENV AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n \n COPY Pipfile Pipfile.lock ./\n \n",
+                "\u003d\u003dcommitter\u003d\u003d": "🍒Cherry🍒",
+                "\u003d\u003dcommitted_datetime\u003d\u003d": '2022-12-14T16:28:47+00:00'
             },
         "3d79bba03c6f0ddcfb8334f531701942c4be0f32":
             {
-                "Dockerfile": "diff --git a/Dockerfile b/Dockerfile\nindex 0000..0000 0000\n--- a/Dockerfile\n+++ b/Dockerfile\n@@ -1,7 +1,7 @@\n #checkov:skip=CKV_DOCKER_2:Healthcheck is not relevant for ephemral containers\n #checkov:skip=CKV_DOCKER_3:User is created automatically by lambda runtime\n FROM public.ecr.aws/lambda/python:3.9\n-ENV AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n+ENV AWS_ACCESS_KEY_ID=\"AKIAZZZZZZZZZZZZZZZZ\"\n ENV PIP_ENV_VERSION=\"2022.1.8\"\n \n \n"
+                "Dockerfile": "diff --git a/Dockerfile b/Dockerfile\nindex 0000..0000 0000\n--- a/Dockerfile\n+++ b/Dockerfile\n@@ -1,7 +1,7 @@\n #checkov:skip=CKV_DOCKER_2:Healthcheck is not relevant for ephemral containers\n #checkov:skip=CKV_DOCKER_3:User is created automatically by lambda runtime\n FROM public.ecr.aws/lambda/python:3.9\n-ENV AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n+ENV AWS_ACCESS_KEY_ID=\"AKIAZZZZZZZZZZZZZZZZ\"\n ENV PIP_ENV_VERSION=\"2022.1.8\"\n \n \n",
+                "\u003d\u003dcommitter\u003d\u003d": "Cherry🍒",
+                "\u003d\u003dcommitted_datetime\u003d\u003d": '2022-12-14T16:32:13+00:00'
             },
         "7dff3b21fc2563f51655f34f0d3601cdf79d0d5e":
             {
-                "Dockerfile": "diff --git a/Dockerfile b/Dockerfile\nindex 0000..0000 0000\n--- a/Dockerfile\n+++ b/Dockerfile\n@@ -1,7 +1,7 @@\n #checkov:skip=CKV_DOCKER_2:Healthcheck is not relevant for ephemral containers\n #checkov:skip=CKV_DOCKER_3:User is created automatically by lambda runtime\n FROM public.ecr.aws/lambda/python:3.9\n-ENV AWS_ACCESS_KEY_ID=\"AKIAZZZZZZZZZZZZZZZZ\"\n+\n ENV PIP_ENV_VERSION=\"2022.1.8\"\n \n \n"
+                "Dockerfile": "diff --git a/Dockerfile b/Dockerfile\nindex 0000..0000 0000\n--- a/Dockerfile\n+++ b/Dockerfile\n@@ -1,7 +1,7 @@\n #checkov:skip=CKV_DOCKER_2:Healthcheck is not relevant for ephemral containers\n #checkov:skip=CKV_DOCKER_3:User is created automatically by lambda runtime\n FROM public.ecr.aws/lambda/python:3.9\n-ENV AWS_ACCESS_KEY_ID=\"AKIAZZZZZZZZZZZZZZZZ\"\n+\n ENV PIP_ENV_VERSION=\"2022.1.8\"\n \n \n",
+                "\u003d\u003dcommitter\u003d\u003d": "🍒Cherry🍒",
+                "\u003d\u003dcommitted_datetime\u003d\u003d": '2022-12-14T16:54:05+00:00'
             },
         "6941281550a12659bdbe87c9a537f88124f78fac":
             {
-                "main.py": "diff --git a/None b/main.py\nindex 0000..0000 0000\n--- a/None\n+++ b/main.py\n@@ -0,0 +1,4 @@\n+AWS_ACCESS_TOKEN=\"AKIAZZZZZZZZZZZZZZZZ\"\n+\n+if __name__ == \"__main__\":\n+    print(AWS_ACCESS_TOKEN)\n\\ No newline at end of file\n"
+                "main.py": "diff --git a/None b/main.py\nindex 0000..0000 0000\n--- a/None\n+++ b/main.py\n@@ -0,0 +1,4 @@\n+AWS_ACCESS_TOKEN=\"AKIAZZZZZZZZZZZZZZZZ\"\n+\n+if __name__ == \"__main__\":\n+    print(AWS_ACCESS_TOKEN)\n\\ No newline at end of file\n",
+                "\u003d\u003dcommitter\u003d\u003d": "🍒Cherry🍒",
+                "\u003d\u003dcommitted_datetime\u003d\u003d": '2022-12-14T16:57:26+00:00'
             }
     })
 
@@ -61,19 +71,29 @@ def mock_git_repo_commits2(root_folder: str, last_commit_sha: str) -> List[Dict[
     """
     return dict_to_list({
         "11e59e4e578c6ebcb48aae1e5e078a54c62920eb": {
-            "folder1/folder2/Dockerfile": "diff --git a/folder1/folder2/Dockerfile b/folder1/folder2/Dockerfile\nindex 0000..0000 0000\n--- a/folder1/folder2/Dockerfile\n+++ b/folder1/folder2/Dockerfile\n@@ -5,7 +5,7 @@ FROM public.ecr.aws/lambda/python:3.9\n \n ENV PIP_ENV_VERSION=\"2022.1.8\"\n COPY Pipfile Pipfile.lock ./\n-\n+ENV AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n \n RUN pip install pipenv==${PIP_ENV_VERSION} \\\n  && pipenv lock -r > requirements.txt \\\n"
+            "folder1/folder2/Dockerfile": "diff --git a/folder1/folder2/Dockerfile b/folder1/folder2/Dockerfile\nindex 0000..0000 0000\n--- a/folder1/folder2/Dockerfile\n+++ b/folder1/folder2/Dockerfile\n@@ -5,7 +5,7 @@ FROM public.ecr.aws/lambda/python:3.9\n \n ENV PIP_ENV_VERSION=\"2022.1.8\"\n COPY Pipfile Pipfile.lock ./\n-\n+ENV AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n \n RUN pip install pipenv==${PIP_ENV_VERSION} \\\n  && pipenv lock -r > requirements.txt \\\n",
+            "\u003d\u003dcommitter\u003d\u003d": "Mango🥭",
+            "\u003d\u003dcommitted_datetime\u003d\u003d": "2022-12-14T16:10:21+00:00"
         },
         "c7c932ef4d31c487a921d2ce8544a4a468adf6b9": {
-            "folder1/folder2/Dockerfile": "diff --git a/folder1/folder2/Dockerfile b/folder1/folder2/Dockerfile\nindex 0000..0000 0000\n--- a/folder1/folder2/Dockerfile\n+++ b/folder1/folder2/Dockerfile\n@@ -2,10 +2,10 @@\n #checkov:skip=CKV_DOCKER_3:User is created automatically by lambda runtime\n FROM public.ecr.aws/lambda/python:3.9\n \n-\n+ENV AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n ENV PIP_ENV_VERSION=\"2022.1.8\"\n COPY Pipfile Pipfile.lock ./\n-ENV AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n+\n \n RUN pip install pipenv==${PIP_ENV_VERSION} \\\n  && pipenv lock -r > requirements.txt \\\n"
+            "folder1/folder2/Dockerfile": "diff --git a/folder1/folder2/Dockerfile b/folder1/folder2/Dockerfile\nindex 0000..0000 0000\n--- a/folder1/folder2/Dockerfile\n+++ b/folder1/folder2/Dockerfile\n@@ -2,10 +2,10 @@\n #checkov:skip=CKV_DOCKER_3:User is created automatically by lambda runtime\n FROM public.ecr.aws/lambda/python:3.9\n \n-\n+ENV AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n ENV PIP_ENV_VERSION=\"2022.1.8\"\n COPY Pipfile Pipfile.lock ./\n-ENV AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n+\n \n RUN pip install pipenv==${PIP_ENV_VERSION} \\\n  && pipenv lock -r > requirements.txt \\\n",
+            "\u003d\u003dcommitter\u003d\u003d": "🥭Mango🥭",
+            "\u003d\u003dcommitted_datetime\u003d\u003d": '2022-12-14T16:28:47+00:00'
         },
         "4b8321e46217a87e21240afd88cdc0f1a861c0f5": {
-            "folder1/folder2/Dockerfile": "diff --git a/folder1/folder2/Dockerfile b/folder1/folder2/Dockerfile\nindex 0000..0000 0000\n--- a/folder1/folder2/Dockerfile\n+++ b/folder1/folder2/Dockerfile\n@@ -2,7 +2,6 @@\n #checkov:skip=CKV_DOCKER_3:User is created automatically by lambda runtime\n FROM public.ecr.aws/lambda/python:3.9\n \n-ENV AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n ENV PIP_ENV_VERSION=\"2022.1.8\"\n COPY Pipfile Pipfile.lock ./\n \n"
+            "folder1/folder2/Dockerfile": "diff --git a/folder1/folder2/Dockerfile b/folder1/folder2/Dockerfile\nindex 0000..0000 0000\n--- a/folder1/folder2/Dockerfile\n+++ b/folder1/folder2/Dockerfile\n@@ -2,7 +2,6 @@\n #checkov:skip=CKV_DOCKER_3:User is created automatically by lambda runtime\n FROM public.ecr.aws/lambda/python:3.9\n \n-ENV AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n ENV PIP_ENV_VERSION=\"2022.1.8\"\n COPY Pipfile Pipfile.lock ./\n \n",
+            "\u003d\u003dcommitter\u003d\u003d": "Mango🥭",
+            "\u003d\u003dcommitted_datetime\u003d\u003d": '2022-12-14T16:32:13+00:00'
         },
         "7bb5c69d95b31bc2242bcf08ce25e74e953f9ae9": {
-            "folder1/folder2/Dockerfile": "diff --git a/folder1/folder2/Dockerfile b/folder1/folder2/Dockerfile\nindex 0000..0000 0000\n--- a/folder1/folder2/Dockerfile\n+++ b/folder1/folder2/Dockerfile\n@@ -4,7 +4,7 @@ FROM public.ecr.aws/lambda/python:3.9\n \n ENV PIP_ENV_VERSION=\"2022.1.8\"\n COPY Pipfile Pipfile.lock ./\n-\n+ENV AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n \n RUN pip install pipenv==${PIP_ENV_VERSION} \\\n  && pipenv lock -r > requirements.txt \\\n"
+            "folder1/folder2/Dockerfile": "diff --git a/folder1/folder2/Dockerfile b/folder1/folder2/Dockerfile\nindex 0000..0000 0000\n--- a/folder1/folder2/Dockerfile\n+++ b/folder1/folder2/Dockerfile\n@@ -4,7 +4,7 @@ FROM public.ecr.aws/lambda/python:3.9\n \n ENV PIP_ENV_VERSION=\"2022.1.8\"\n COPY Pipfile Pipfile.lock ./\n-\n+ENV AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n \n RUN pip install pipenv==${PIP_ENV_VERSION} \\\n  && pipenv lock -r > requirements.txt \\\n",
+            "\u003d\u003dcommitter\u003d\u003d": "🥭Mango🥭",
+            "\u003d\u003dcommitted_datetime\u003d\u003d": '2022-12-14T16:54:05+00:00'
         },
         "2675bffd2662aae7025b7f3bb5fd384cdab355b1": {
-            "folder1/folder2/Dockerfile": "diff --git a/folder1/folder2/Dockerfile b/folder1/folder2/Dockerfile\nindex 0000..0000 0000\n--- a/folder1/folder2/Dockerfile\n+++ b/folder1/folder2/Dockerfile\n@@ -1,10 +1,11 @@\n #checkov:skip=CKV_DOCKER_2:Healthcheck is not relevant for ephemral containers\n #checkov:skip=CKV_DOCKER_3:User is created automatically by lambda runtime\n FROM public.ecr.aws/lambda/python:3.9\n+ENV AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n \n ENV PIP_ENV_VERSION=\"2022.1.8\"\n COPY Pipfile Pipfile.lock ./\n-ENV AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n+\n \n RUN pip install pipenv==${PIP_ENV_VERSION} \\\n  && pipenv lock -r > requirements.txt \\\n"
+            "folder1/folder2/Dockerfile": "diff --git a/folder1/folder2/Dockerfile b/folder1/folder2/Dockerfile\nindex 0000..0000 0000\n--- a/folder1/folder2/Dockerfile\n+++ b/folder1/folder2/Dockerfile\n@@ -1,10 +1,11 @@\n #checkov:skip=CKV_DOCKER_2:Healthcheck is not relevant for ephemral containers\n #checkov:skip=CKV_DOCKER_3:User is created automatically by lambda runtime\n FROM public.ecr.aws/lambda/python:3.9\n+ENV AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n \n ENV PIP_ENV_VERSION=\"2022.1.8\"\n COPY Pipfile Pipfile.lock ./\n-ENV AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n+\n \n RUN pip install pipenv==${PIP_ENV_VERSION} \\\n  && pipenv lock -r > requirements.txt \\\n",
+            "\u003d\u003dcommitter\u003d\u003d": "🥭Mango🥭",
+            "\u003d\u003dcommitted_datetime\u003d\u003d": '2022-12-14T16:57:26+00:00'
         }
     })
 
@@ -104,13 +124,19 @@ def mock_git_repo_commits3(root_folder: str, last_commit_sha: str) -> List[Dict[
 def mock_git_repo_commits_remove_file(root_folder: str, last_commit_sha: str) -> List[Dict[str, str | Dict[str, str]]]:
     return dict_to_list({
         "63342dbee285973a37770bbb1ff4258a3184901e": {
-            "Dockerfile": "diff --git a/Dockerfile b/Dockerfile\nindex 0000..0000 0000\n--- a/Dockerfile\n+++ b/Dockerfile\n@@ -4,6 +4,7 @@ FROM public.ecr.aws/lambda/python:3.9\n \n ENV PIP_ENV_VERSION=\"2022.1.8\"\n \n+ENV AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n COPY Pipfile Pipfile.lock ./\n \n RUN pip install pipenv==${PIP_ENV_VERSION} \\\n"
+            "Dockerfile": "diff --git a/Dockerfile b/Dockerfile\nindex 0000..0000 0000\n--- a/Dockerfile\n+++ b/Dockerfile\n@@ -4,6 +4,7 @@ FROM public.ecr.aws/lambda/python:3.9\n \n ENV PIP_ENV_VERSION=\"2022.1.8\"\n \n+ENV AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n COPY Pipfile Pipfile.lock ./\n \n RUN pip install pipenv==${PIP_ENV_VERSION} \\\n",
+            "\u003d\u003dcommitter\u003d\u003d": "Lemon🍋",
+            "\u003d\u003dcommitted_datetime\u003d\u003d": "2022-12-14T16:10:21+00:00"
         },
         "bca377900d08d442b1080893e50b8dc8276cfcc0": {
-            "Dockerfile": "diff --git a/Dockerfile b/Dockerfile\nindex 0000..0000 0000\n--- a/Dockerfile\n+++ b/Dockerfile\n@@ -13,6 +13,7 @@ RUN pip install pipenv==${PIP_ENV_VERSION} \\\n  && rm -f requirements.txt Pipfile Pipfile.lock \\\n  && pip uninstall -y pipenv\n \n+\n COPY src/ \"${LAMBDA_TASK_ROOT}/src/\"\n COPY utilsPython/ \"${LAMBDA_TASK_ROOT}/utilsPython/\"\n \n"
+            "Dockerfile": "diff --git a/Dockerfile b/Dockerfile\nindex 0000..0000 0000\n--- a/Dockerfile\n+++ b/Dockerfile\n@@ -13,6 +13,7 @@ RUN pip install pipenv==${PIP_ENV_VERSION} \\\n  && rm -f requirements.txt Pipfile Pipfile.lock \\\n  && pip uninstall -y pipenv\n \n+\n COPY src/ \"${LAMBDA_TASK_ROOT}/src/\"\n COPY utilsPython/ \"${LAMBDA_TASK_ROOT}/utilsPython/\"\n \n",
+            "\u003d\u003dcommitter\u003d\u003d": "Lemon🍋",
+            "\u003d\u003dcommitted_datetime\u003d\u003d": '2022-12-14T16:28:47+00:00'
         },
         "4bd08cd0b2874025ce32d0b1e9cd84ca20d59ce1": {
-            "Dockerfile": "diff --git a/Dockerfile b/None\nindex 0000..0000 0000\n--- a/Dockerfile\n+++ b/None\n@@ -1,20 +0,0 @@\n-#checkov:skip=CKV_DOCKER_2:Healthcheck is not relevant for ephemral containers\n-#checkov:skip=CKV_DOCKER_3:User is created automatically by lambda runtime\n-FROM public.ecr.aws/lambda/python:3.9\n-\n-ENV PIP_ENV_VERSION=\"2022.1.8\"\n-\n-ENV AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n-COPY Pipfile Pipfile.lock ./\n-\n-RUN pip install pipenv==${PIP_ENV_VERSION} \\\n- && pipenv lock -r > requirements.txt \\\n- && pipenv run pip install -r requirements.txt --target \"${LAMBDA_TASK_ROOT}\" \\\n- && rm -f requirements.txt Pipfile Pipfile.lock \\\n- && pip uninstall -y pipenv\n-\n-\n-COPY src/ \"${LAMBDA_TASK_ROOT}/src/\"\n-COPY utilsPython/ \"${LAMBDA_TASK_ROOT}/utilsPython/\"\n-\n-CMD [\"src.secrets_setup.image.src.app.handler\"]\n"
+            "Dockerfile": "diff --git a/Dockerfile b/None\nindex 0000..0000 0000\n--- a/Dockerfile\n+++ b/None\n@@ -1,20 +0,0 @@\n-#checkov:skip=CKV_DOCKER_2:Healthcheck is not relevant for ephemral containers\n-#checkov:skip=CKV_DOCKER_3:User is created automatically by lambda runtime\n-FROM public.ecr.aws/lambda/python:3.9\n-\n-ENV PIP_ENV_VERSION=\"2022.1.8\"\n-\n-ENV AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n-COPY Pipfile Pipfile.lock ./\n-\n-RUN pip install pipenv==${PIP_ENV_VERSION} \\\n- && pipenv lock -r > requirements.txt \\\n- && pipenv run pip install -r requirements.txt --target \"${LAMBDA_TASK_ROOT}\" \\\n- && rm -f requirements.txt Pipfile Pipfile.lock \\\n- && pip uninstall -y pipenv\n-\n-\n-COPY src/ \"${LAMBDA_TASK_ROOT}/src/\"\n-COPY utilsPython/ \"${LAMBDA_TASK_ROOT}/utilsPython/\"\n-\n-CMD [\"src.secrets_setup.image.src.app.handler\"]\n",
+            "\u003d\u003dcommitter\u003d\u003d": "Lemon🍋",
+            "\u003d\u003dcommitted_datetime\u003d\u003d": '2022-12-14T16:32:13+00:00'
         }
     })
 
@@ -146,16 +172,22 @@ def mock_remove_file_with_two_secret(root_folder: str, last_commit_sha: str) -> 
 def mock_git_repo_commits_rename_file(root_folder: str, last_commit_sha: str) -> List[Dict[str, str | Dict[str, str]]]:
     return dict_to_list({
         "adef7360b86c62666f0a70521214220763b9c593": {
-            "main.py": "diff --git a/main.py b/main.py\nindex 0000..0000 0000\n--- a/main.py\n+++ b/main.py\n@@ -1,3 +1,3 @@\n-\n+AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n if __name__ == '__main__':\n     print('test')\n"
+            "main.py": "diff --git a/main.py b/main.py\nindex 0000..0000 0000\n--- a/main.py\n+++ b/main.py\n@@ -1,3 +1,3 @@\n-\n+AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n if __name__ == '__main__':\n     print('test')\n",
+            "\u003d\u003dcommitter\u003d\u003d": "Strawberry🍓",
+            "\u003d\u003dcommitted_datetime\u003d\u003d": "2022-12-14T16:10:21+00:00"
         },
         "7b12f891358f690f254476c80988bfa837f36ac6": {
-            "main.py": "diff --git a/main.py b/main.py\nindex 0000..0000 0000\n--- a/main.py\n+++ b/main.py\n@@ -1,3 +1,4 @@\n AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n+\n if __name__ == '__main__':\n     print('test')\n"
+            "main.py": "diff --git a/main.py b/main.py\nindex 0000..0000 0000\n--- a/main.py\n+++ b/main.py\n@@ -1,3 +1,4 @@\n AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"\n+\n if __name__ == '__main__':\n     print('test')\n",
+            "\u003d\u003dcommitter\u003d\u003d": "Strawberry🍓",
+            "\u003d\u003dcommitted_datetime\u003d\u003d": '2022-12-14T16:28:47+00:00'
         },
         "2e1a500e688990e065fc6f1202bc64ed0ba53027": {
             "main.py": {
                 "rename_from": "main.py",
                 "rename_to": "test.py"
-            }
+            },
+            "\u003d\u003dcommitter\u003d\u003d": "Strawberry🍓",
+            "\u003d\u003dcommitted_datetime\u003d\u003d": '2022-12-14T16:32:13+00:00'
         }
     })
 

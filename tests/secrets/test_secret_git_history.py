@@ -30,6 +30,10 @@ def test_scan_git_history() -> None:
     assert len(report.skipped_checks) == 0
     for failed_check in report.failed_checks:
         assert failed_check.added_commit_hash or failed_check.removed_commit_hash
+        if failed_check.removed_commit_hash:
+            assert failed_check.removed_date
+        assert failed_check.created_by
+        assert failed_check.create_date
 
 
 @mock.patch('checkov.secrets.scan_git_history._get_commits_diff', mock_git_repo_commits1)
@@ -63,6 +67,7 @@ def test_scan_git_history_merge_added_removed() -> None:
     assert len(report.failed_checks) == 1
     for failed_check in report.failed_checks:
         assert failed_check.removed_commit_hash == ''
+        assert failed_check.removed_date
         assert failed_check.added_commit_hash == '11e59e4e578c6ebcb48aae1e5e078a54c62920eb'
 
 
@@ -146,8 +151,9 @@ def test_scan_git_history_remove_file() -> None:
     report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                         runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
     assert len(report.failed_checks) == 1
-    assert (report.failed_checks[0].removed_commit_hash == '4bd08cd0b2874025ce32d0b1e9cd84ca20d59ce1' and
-            report.failed_checks[0].added_commit_hash == '63342dbee285973a37770bbb1ff4258a3184901e')
+    assert report.failed_checks[0].removed_commit_hash == '4bd08cd0b2874025ce32d0b1e9cd84ca20d59ce1'
+    assert report.failed_checks[0].added_commit_hash == '63342dbee285973a37770bbb1ff4258a3184901e'
+    assert report.failed_checks[0].removed_date
 
 
 @mock.patch('checkov.secrets.scan_git_history._get_commits_diff', mock_git_repo_commits_rename_file)
@@ -158,9 +164,10 @@ def test_scan_git_history_rename_file() -> None:
     report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                         runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
     assert len(report.failed_checks) == 2
-    assert (report.failed_checks[0].removed_commit_hash == '' and
+    assert (report.failed_checks[0].removed_commit_hash == '' and report.failed_checks[0].removed_date == '' and
             report.failed_checks[0].added_commit_hash == '2e1a500e688990e065fc6f1202bc64ed0ba53027')
     assert (report.failed_checks[1].removed_commit_hash == '2e1a500e688990e065fc6f1202bc64ed0ba53027' and
+            report.failed_checks[1].removed_date == '2022-12-14T16:32:13+00:00' and
             report.failed_checks[1].added_commit_hash == 'adef7360b86c62666f0a70521214220763b9c593')
 
 
