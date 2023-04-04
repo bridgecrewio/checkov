@@ -10,7 +10,8 @@ from checkov.common.parallelizer.parallel_runner import parallel_runner
 from detect_secrets.core import scan
 
 from checkov.secrets.git_history_store import GitHistorySecretStore, RawStore, RENAME_STR, FILE_RESULTS_STR
-from checkov.secrets.consts import GIT_HISTORY_NOT_BEEN_REMOVED
+from checkov.secrets.consts import GIT_HISTORY_NOT_BEEN_REMOVED, COMMIT_HASH_KEY, COMMIT_COMMITTER, \
+    COMMIT_COMMITTED_DATETIME, COMMIT_CONSTANTS
 
 if TYPE_CHECKING:
     from detect_secrets import SecretsCollection
@@ -23,7 +24,6 @@ try:
 except ImportError as e:
     git_import_error = e
 
-COMMIT_HASH_KEY = '==commit_hash=='
 MIN_SPLIT = 100
 
 
@@ -52,11 +52,15 @@ def _get_commits_diff(root_folder: str, last_commit_sha: Optional[str] = None) -
         try:
             current_commit_idx = previous_commit_idx - 1
             current_commit_hash = commits[current_commit_idx].hexsha
+            committed_datetime = commits[current_commit_idx].committed_datetime.isoformat()
+            committer = commits[current_commit_idx].committer.name
             git_diff = commits[previous_commit_idx].diff(current_commit_hash, create_patch=True)
 
             for file_diff in git_diff:
                 curr_diff: Dict[str, str | Dict[str, str]] = {
                     COMMIT_HASH_KEY: current_commit_hash,
+                    COMMIT_COMMITTER: committer,
+                    COMMIT_COMMITTED_DATETIME: committed_datetime
                 }
                 if file_diff.renamed_file:
                     logging.debug(f"File was renamed from {file_diff.rename_from} to {file_diff.rename_to}")
@@ -143,7 +147,7 @@ def _run_scan_one_commit(commit: Dict[str, str | Dict[str, str]]) -> Tuple[List[
     scanned_file_count = 0
     commit_hash = str(commit[COMMIT_HASH_KEY])
     for file_name in commit.keys():
-        if file_name == COMMIT_HASH_KEY:
+        if file_name in COMMIT_CONSTANTS:
             continue
         file_diff = commit[file_name]
         if isinstance(file_diff, str):
@@ -153,13 +157,15 @@ def _run_scan_one_commit(commit: Dict[str, str | Dict[str, str]]) -> Tuple[List[
                     f"Found {len(file_results)} secrets in file path {file_name} in commit {commit_hash}")
                 results.append(RawStore(file_results=file_results, file_name=file_name, commit=commit,
                                         commit_hash=commit_hash, type=FILE_RESULTS_STR,
-                                        rename_from='', rename_to=''))
+                                        rename_from='', rename_to='', committer=commit[COMMIT_COMMITTER],
+                                        committed_datetime=commit[COMMIT_COMMITTED_DATETIME]))
         elif isinstance(file_diff, dict):
             rename_from = file_diff['rename_from']
             rename_to = file_diff['rename_to']
             results.append(RawStore(file_results=[], file_name='', commit=commit,
                                     commit_hash=commit_hash, type=RENAME_STR,
-                                    rename_from=rename_from, rename_to=rename_to))
+                                    rename_from=rename_from, rename_to=rename_to, committer=commit[COMMIT_COMMITTER],
+                                    committed_datetime=commit[COMMIT_COMMITTED_DATETIME]))
         scanned_file_count += 1
     return results, scanned_file_count
 
