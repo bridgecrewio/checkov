@@ -11,9 +11,12 @@ from checkov.common.output.report import Report
 
 from checkov.common.runners.base_post_runner import BasePostRunner
 from checkov.common.util.type_forcers import force_list
+from checkov.policies_3d.checks_parser import Policy3dParser
 from checkov.policies_3d.record import Policy3dRecord
 from checkov.policies_3d.checks_infra.base_check import Base3dPolicyCheck
+from checkov.policies_3d.syntax.syntax import IACPredicate, CVEPredicate, SecretsPredicate
 from checkov.runner_filter import RunnerFilter
+from checkov.sca_image.models import ReportCVE
 
 
 class CVECheckAttribute(str, Enum):
@@ -28,12 +31,136 @@ CVE_CHECK_TO_REPORT_ATTRIBUTE = {
     CVECheckAttribute.RISK_FACTORS: CVEReportAttribute.RISK_FACTORS
 }
 
+module_to_check_types = {
+    "iac": filter(lambda _type: _type in [CheckType.SECRETS, CheckType.SCA_IMAGE], list(CheckType.__dict__.keys())),
+    "secrets": [CheckType.SECRETS],
+    "cves": [CheckType.SCA_IMAGE]
+}
 
 class Policy3dRunner(BasePostRunner):
     check_type = CheckType.POLICY_3D  # noqa: CCE003  # a static attribute
 
     def __init__(self) -> None:
         super().__init__()
+
+    def run_v2(self,
+               raw_checks: list[dict[str, dict[str, Any]]] | None = None,
+               scan_reports: list[Report] | None = None,
+               runner_filter: RunnerFilter | None = None
+               ) -> Report:
+        runner_filter = runner_filter or RunnerFilter()
+        if not runner_filter.show_progress_bar:
+            self.pbar.turn_off_progress_bar()
+
+        report = Report(self.check_type)
+
+        if not raw_checks or not scan_reports:
+            logging.debug("No checks or reports scan, skipping 3D policies runner")
+            return report
+
+        self.pbar.initiate(len(raw_checks))
+
+        failed_checks_by_resource = self.create_failed_checks_by_resource_mapping(scan_reports)
+        records_3d = []
+        for raw_3d_check in raw_checks:
+            for resource, modules_records in failed_checks_by_resource.items():
+                check = Policy3dParser(raw_3d_check).parse(
+                    iac_records=modules_records.get("iac", []),
+                    secrets_records=modules_records.get("secrets", []),
+                    cves_reports=modules_records.get("cves", [])
+                )
+
+                check_result = CheckResult.PASSED
+                if all(predicament() for predicament in check.predicaments):
+                    check_result = CheckResult.FAILED
+                    logging.debug(f"Resource {resource} is violating 3D policy {check.bc_id}")
+
+                records_3d.append(self.create_record(check, check_result))
+
+        for record in records_3d:
+            if record:
+                report.add_record(record=record)
+
+        return report
+
+    @staticmethod
+    def create_record(check: Base3dPolicyCheck, check_result: CheckResult) -> Record | None:
+        true_vulnerabilities_cve_reports = []
+        true_iac_records = []
+        true_secrets_records = []
+
+        all_predicates = []
+        for predicament in check.predicaments:
+            all_predicates.extend(predicament.get_all_children_predicates())
+
+        for predicate in all_predicates:
+            if predicate.is_true:
+                if isinstance(predicate, IACPredicate):
+                    true_iac_records.append(predicate.record)
+                elif isinstance(predicate, CVEPredicate):
+                    true_vulnerabilities_cve_reports.append(predicate.cve_report)
+                elif isinstance(predicate, SecretsPredicate):
+                    true_secrets_records.append(predicate.record)
+
+        record_data_source = true_iac_records[0] if len(true_iac_records) > 0 else true_secrets_records[0]
+
+
+        record = Policy3dRecord(
+            check_id=check.id,
+            bc_check_id=check.bc_id,
+            check_name=check.name,
+            check_result={'result': check_result},
+            code_block=record_data_source.code_block,
+            file_path=record_data_source.file_path,
+            file_line_range=record_data_source.file_line_range,
+            resource=f'{record_data_source.file_path}:{record_data_source.resource}',
+            evaluations=None,
+            check_class=check.__class__.__module__,
+            file_abs_path=record_data_source.file_abs_path,
+            severity=check.severity,
+            vulnerabilities=true_vulnerabilities_cve_reports,
+            iac_records=true_iac_records + true_secrets_records,
+            composed_from_iac_records=true_iac_records,
+            composed_from_secrets_records=true_secrets_records,
+            composed_from_cves=true_vulnerabilities_cve_reports
+        )
+
+        record.set_guideline(check.guideline)
+        return record
+
+    @staticmethod
+    def create_failed_checks_by_resource_mapping(scan_reports: list[Report]) -> dict[str, dict[str, list[Record] | list[ReportCVE]]]:
+        """
+        Output structure:
+        {
+            resource_id: {
+                "iac": [...], # list of failed checks of type Record
+                "secrets": [...], # list of failed checks of type Record
+                "cves": [...] # list of vulnerabilities of type ReportCVE
+            }
+        }
+        """
+        failed_checks_by_resource: dict[str, dict[str, list[Record] | list[ReportCVE]]] = {}
+        for report in scan_reports:
+            if report.check_type == CheckType.SCA_IMAGE:
+                # Save image cached results on a resource
+                for result in report.image_cached_results:
+                    resource_id = result.relatedResourceId
+                    if resource_id in failed_checks_by_resource.keys():
+                        failed_checks_by_resource[resource_id]["cves"] += result.vulnerabilities
+                    else:
+                        failed_checks_by_resource[resource_id]["cves"] = result.vulnerabilities
+
+            else:
+                # Save failed checks on a resource
+                iac_or_secrets = "secrets" if report.check_type == CheckType.SECRETS else "iac"
+                for failed_check in report.failed_checks:
+                    if failed_check.resource in failed_checks_by_resource.keys():
+                        failed_checks_by_resource[failed_check.resource][iac_or_secrets].append(failed_check)
+                    else:
+                        failed_checks_by_resource[failed_check.resource][iac_or_secrets] = [failed_check]
+
+        return failed_checks_by_resource
 
     def run(  # type:ignore[override]
             self,

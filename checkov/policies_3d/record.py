@@ -3,6 +3,7 @@ from typing import List, Dict, Any, Tuple, Optional
 from checkov.common.bridgecrew.severities import Severity
 from checkov.common.output.record import Record
 from checkov.common.typing import _CheckResult
+from checkov.sca_image.models import ReportCVE
 
 
 class Policy3dRecord(Record):
@@ -19,8 +20,11 @@ class Policy3dRecord(Record):
                  check_class: str,
                  file_abs_path: str,
                  severity: Optional[Severity],
-                 vulnerabilities: List[Dict[str, Any]],
-                 iac_records: List[Record]
+                 vulnerabilities: List[ReportCVE],
+                 iac_records: List[Record],
+                 composed_from_iac_records: List[Record],
+                 composed_from_secrets_records: list[Record],
+                 composed_from_cves: list[ReportCVE]
                  ) -> None:
         super().__init__(
             check_id=check_id,
@@ -38,3 +42,6 @@ class Policy3dRecord(Record):
         )
         self.vulnerabilities = vulnerabilities
         self.iac_records = iac_records
+        self.composed_from_iac_records = composed_from_iac_records
+        self.composed_from_secrets_records = composed_from_secrets_records
+        self.composed_from_cves = composed_from_cves

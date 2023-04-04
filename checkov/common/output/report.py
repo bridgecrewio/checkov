@@ -21,6 +21,7 @@ from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME
 from checkov.common.util.consts import PARSE_ERROR_FAIL_FLAG, CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
 from checkov.common.util.json_utils import CustomJSONEncoder
 from checkov.runner_filter import RunnerFilter
+from checkov.sca_image.models import ImageCachedResult
 
 from checkov.sca_package_2.output import create_cli_output as create_sca_package_cli_output_v2
 
@@ -54,7 +55,7 @@ class Report:
         self.parsing_errors: list[str] = []
         self.resources: set[str] = set()
         self.extra_resources: set[ExtraResource] = set()
-        self.image_cached_results: List[dict[str, Any]] = []
+        self.image_cached_results: List[ImageCachedResult] = []
         self.error_status: ErrorStatus = ErrorStatus.SUCCESS
 
     def set_error_status(self, error_status: ErrorStatus) -> None:
