@@ -1,6 +1,18 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.150...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.152...HEAD)
+
+## [2.3.152](https://github.com/bridgecrewio/checkov/compare/2.3.150...2.3.152) - 2023-04-04
+
+### Feature
+
+- **dockerfile:** Add CKV2_DOCKER_15 for yum-config-manager sslverify - [#4622](https://github.com/bridgecrewio/checkov/pull/4622)
+
+### Bug Fix
+
+- **cloudformation:** Security Group check now work for ranges and strings - [#4797](https://github.com/bridgecrewio/checkov/pull/4797)
+- **terraform:** Ensure APPService default action is to ignore not fail - [#4790](https://github.com/bridgecrewio/checkov/pull/4790)
+- **terraform:** Subnetworks with internal purpose can have private_ipv6_google_access… - [#4804](https://github.com/bridgecrewio/checkov/pull/4804)
 
 ## [2.3.150](https://github.com/bridgecrewio/checkov/compare/2.3.148...2.3.150) - 2023-04-03
 
