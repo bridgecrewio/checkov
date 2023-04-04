@@ -6,7 +6,7 @@ from collections import defaultdict
 from typing import TYPE_CHECKING, Dict, List, Tuple, Optional
 from typing_extensions import TypedDict
 from checkov.secrets.consts import ADDED, REMOVED, GIT_HISTORY_OPTIONS, GIT_HISTORY_NOT_BEEN_REMOVED, COMMIT_COMMITTER, \
-    COMMIT_COMMITTED_DATETIME
+    COMMIT_DATETIME
 
 if TYPE_CHECKING:
     from detect_secrets.core.potential_secret import PotentialSecret
@@ -62,7 +62,7 @@ class GitHistorySecretStore:
             if secret.is_added:
                 self._add_new_secret(secret_key, commit_hash, secret, commit)
             if secret.is_removed:
-                removed_date = commit.get(COMMIT_COMMITTED_DATETIME, '')
+                removed_date = commit.get(COMMIT_DATETIME, '')
                 self._update_removed_secret(secret_key, secret, file_name, commit_hash, removed_date)
 
     def _add_new_secret(self, secret_key: str,
@@ -88,7 +88,7 @@ class GitHistorySecretStore:
             'code_line': code_line,
             'created_by': commit.get(COMMIT_COMMITTER, ''),
             'removed_date': '',
-            'create_date': commit.get(COMMIT_COMMITTED_DATETIME, '')
+            'create_date': commit.get(COMMIT_DATETIME, '')
         }
         self.secrets_by_file_value_type[secret_key].append(enriched_potential_secret)
 

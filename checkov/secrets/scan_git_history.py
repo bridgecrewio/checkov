@@ -11,7 +11,7 @@ from detect_secrets.core import scan
 
 from checkov.secrets.git_history_store import GitHistorySecretStore, RawStore, RENAME_STR, FILE_RESULTS_STR
 from checkov.secrets.consts import GIT_HISTORY_NOT_BEEN_REMOVED, COMMIT_HASH_KEY, COMMIT_COMMITTER, \
-    COMMIT_COMMITTED_DATETIME, COMMIT_CONSTANTS
+    COMMIT_DATETIME, COMMIT_CONSTANTS
 
 if TYPE_CHECKING:
     from detect_secrets import SecretsCollection
@@ -60,7 +60,7 @@ def _get_commits_diff(root_folder: str, last_commit_sha: Optional[str] = None) -
                 curr_diff: Dict[str, str | Dict[str, str]] = {
                     COMMIT_HASH_KEY: current_commit_hash,
                     COMMIT_COMMITTER: committer,
-                    COMMIT_COMMITTED_DATETIME: committed_datetime
+                    COMMIT_DATETIME: committed_datetime
                 }
                 if file_diff.renamed_file:
                     logging.debug(f"File was renamed from {file_diff.rename_from} to {file_diff.rename_to}")
@@ -158,14 +158,14 @@ def _run_scan_one_commit(commit: Dict[str, str | Dict[str, str]]) -> Tuple[List[
                 results.append(RawStore(file_results=file_results, file_name=file_name, commit=commit,
                                         commit_hash=commit_hash, type=FILE_RESULTS_STR,
                                         rename_from='', rename_to='', committer=commit.get(COMMIT_COMMITTER),
-                                        committed_datetime=commit.get(COMMIT_COMMITTED_DATETIME)))
+                                        committed_datetime=commit.get(COMMIT_DATETIME)))
         elif isinstance(file_diff, dict):
             rename_from = file_diff['rename_from']
             rename_to = file_diff['rename_to']
             results.append(RawStore(file_results=[], file_name='', commit=commit,
                                     commit_hash=commit_hash, type=RENAME_STR,
                                     rename_from=rename_from, rename_to=rename_to, committer=commit.get(COMMIT_COMMITTER),
-                                    committed_datetime=commit.get(COMMIT_COMMITTED_DATETIME)))
+                                    committed_datetime=commit.get(COMMIT_DATETIME)))
         scanned_file_count += 1
     return results, scanned_file_count
 
