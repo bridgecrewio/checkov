@@ -39,29 +39,29 @@ def mock_bc_integration() -> BcPlatformIntegration:
 @pytest.fixture(scope='package')
 def scan_result_2() -> Dict[str, Dict[str, Any]]:
     return {
-        "/path/to/requirements.txt": {
-            "repository": "/path/to/requirements.txt",
+        "/requirements.txt": {
+            "repository": "/requirements.txt",
             "passed": True,
             "packages": [
                 {
                     "type": "python",
                     "name": "requests",
                     "version": "2.26.0",
-                    "path": "/path/to/requirements.txt",
+                    "path": "/requirements.txt",
                     "registry": "https://pypi.python.org/",
                 },
                 {
                     "type": "python",
                     "name": "django",
                     "version": "1.2",
-                    "path": "/path/to/requirements.txt",
+                    "path": "/requirements.txt",
                     "registry": "https://pypi.python.org/"
                 },
                 {
                     "type": "python",
                     "name": "flask",
                     "version": "0.6",
-                    "path": "/path/to/requirements.txt",
+                    "path": "/requirements.txt",
                     "registry": "https://pypi.python.org/"
                 },
             ],

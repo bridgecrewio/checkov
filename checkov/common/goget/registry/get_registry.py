@@ -4,6 +4,7 @@ import os
 
 from checkov.common.goget.base_getter import BaseGetter
 from checkov.common.util.file_utils import extract_tar_archive
+from checkov.common.util.http_utils import DEFAULT_TIMEOUT
 
 
 class RegistryGetter(BaseGetter):
@@ -17,7 +18,7 @@ class RegistryGetter(BaseGetter):
         download_path = os.path.join(self.temp_dir, 'module_source.tar.gz')
         # download zip
         dest_path = os.path.dirname(download_path)
-        with requests.get(self.url, stream=True) as r:
+        with requests.get(self.url, stream=True, timeout=DEFAULT_TIMEOUT) as r:
             r.raise_for_status()
             os.makedirs(dest_path, exist_ok=True)
             with open(download_path, 'wb+') as f:

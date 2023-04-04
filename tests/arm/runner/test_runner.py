@@ -321,6 +321,20 @@ class TestRunnerValid(unittest.TestCase):
         assert summary["skipped"] == 0
         assert summary["parsing_errors"] == 0
 
+    def test_no_resource_raises_no_exception(self):
+        # given
+        test_file_path = RESOURCES_DIR / "no_resource.json"
+
+        # when
+        report = Runner().run(files=[str(test_file_path)])
+
+        # then
+        summary = report.get_summary()
+
+        assert summary["passed"] == 0
+        assert summary["failed"] == 0
+        assert summary["skipped"] == 0
+        assert summary["parsing_errors"] == 0
 
     def tearDown(self):
         arm_resource_registry.checks = self.orig_checks

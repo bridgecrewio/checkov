@@ -1,0 +1,21 @@
+pass:
+  - "tasks.paloaltonetworks.panos.panos_security_rule.Security_rule_pass_1"
+  - "tasks.paloaltonetworks.panos.panos_security_rule.Security_rule_pass_2"
+  - "tasks.paloaltonetworks.panos.panos_security_rule.Security_rule_pass_3"
+  - "tasks.paloaltonetworks.panos.panos_security_rule.Security_rule_pass_4"
+  - "tasks.paloaltonetworks.panos.panos_security_rule.Security_rule_pass_5"
+  - "tasks.paloaltonetworks.panos.panos_security_rule.Security_rule_pass_6"
+  - "tasks.paloaltonetworks.panos.panos_security_rule.Security_rule_pass_7"
+  - "tasks.paloaltonetworks.panos.panos_security_rule.Security_rule_pass_8"
+  - "tasks.paloaltonetworks.panos.panos_security_rule.Security_rule_pass_9"
+  - "tasks.paloaltonetworks.panos.panos_security_rule.Security_rule_pass_10"
+  - "tasks.paloaltonetworks.panos.panos_security_rule.Security_rule_pass_11"
+fail:
+  - "tasks.paloaltonetworks.panos.panos_security_rule.Security_rule_fail_1"
+  - "tasks.paloaltonetworks.panos.panos_security_rule.Security_rule_fail_2"
+  - "tasks.paloaltonetworks.panos.panos_security_rule.Security_rule_fail_3"
+  - "tasks.paloaltonetworks.panos.panos_security_rule.Security_rule_fail_4"
+  - "tasks.paloaltonetworks.panos.panos_security_rule.Security_rule_fail_5"
+evaluated_keys:
+  - "source_ip"
+  - "destination_ip"

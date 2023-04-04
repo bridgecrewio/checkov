@@ -149,7 +149,7 @@ class Runner(BaseRunner[ArmGraphManager]):
                         resource_id = arm_context_parser.extract_arm_resource_id(resource)
                         resource_name = arm_context_parser.extract_arm_resource_name(resource)
                         if resource_id is None or resource_name is None:
-                            logging.info(f"Could not determine 'resource_id' of Resource {resource}")
+                            logging.debug(f"Could not determine 'resource_id' of Resource {resource}")
                             continue
 
                         report.add_resource(f"{arm_file}:{resource_id}")

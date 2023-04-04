@@ -16,7 +16,6 @@ from checkov.common.bridgecrew.vulnerability_scanning.integrations.docker_image_
     docker_image_scanning_integration
 from checkov.common.output.common import ImageDetails
 from checkov.common.output.report import Report, CheckType
-from checkov.common.runners.base_runner import strtobool
 from checkov.common.sca.commons import should_run_scan
 from checkov.common.sca.output import add_to_report_sca_data, get_license_statuses_async
 from checkov.common.typing import _LicenseStatus
@@ -163,6 +162,8 @@ class ImageReferencerMixin(Generic[_Definitions]):
                 cached_results = results[results_index]
             except ValueError:
                 cached_results = {}
+
+            file_line_range = [image.start_line, image.end_line]
             self._add_image_records(
                 report=report,
                 root_path=root_path,
@@ -173,7 +174,8 @@ class ImageReferencerMixin(Generic[_Definitions]):
                 report_type=report_type,
                 bc_integration=bc_integration,
                 cached_results=cached_results,
-                license_statuses=license_statuses_by_image.get(image.name) or []
+                license_statuses=license_statuses_by_image.get(image.name) or [],
+                file_line_range=file_line_range if None not in file_line_range else None
             )
 
         return report
@@ -202,7 +204,8 @@ class ImageReferencerMixin(Generic[_Definitions]):
         report_type: str,
         bc_integration: BcPlatformIntegration,
         cached_results: dict[str, Any],
-        license_statuses: list[_LicenseStatus]
+        license_statuses: list[_LicenseStatus],
+        file_line_range: list[int] | None = None
     ) -> None:
         """Adds an image record to the given report, if possible"""
         if cached_results:
@@ -214,7 +217,8 @@ class ImageReferencerMixin(Generic[_Definitions]):
                 file_content=f'image: {image.name}',
                 docker_image_name=image.name,
                 related_resource_id=image.related_resource_id,
-                root_folder=root_path
+                root_folder=root_path,
+                error_lines=file_line_range
             )
             report.image_cached_results.append(image_scanning_report)
 
@@ -241,37 +245,7 @@ class ImageReferencerMixin(Generic[_Definitions]):
                 runner_filter=runner_filter,
                 report_type=report_type,
                 license_statuses=license_statuses,
-            )
-        elif strtobool(os.getenv("CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING", "False")):
-            # experimental flag on running image referencers via local twistcli
-            from checkov.sca_image.runner import Runner as sca_image_runner
-
-            runner = sca_image_runner()
-
-            image_id = ImageReferencer.inspect(image.name)
-            if not image_id:
-                logging.info(f"(IR debug) No image with image.name={image.name} found. hence image_id={image_id}.")
-                return None
-
-            scan_result = runner.scan(image_id, dockerfile_path, runner_filter)
-            if scan_result is None:
-                return None
-
-            self.raw_report = scan_result
-            result = scan_result.get('results', [{}])[0]
-            rootless_file_path_to_report = f"{dockerfile_path} ({image.name} lines:{image.start_line}-" \
-                                           f"{image.end_line} ({image_id}))"
-
-            self._add_vulnerability_records(
-                report=report,
-                result=result,
-                check_class=check_class,
-                dockerfile_path=dockerfile_path,
-                rootless_file_path=rootless_file_path_to_report,
-                image_details=None,
-                runner_filter=runner_filter,
-                report_type=report_type,
-                license_statuses=license_statuses,
+                file_line_range=file_line_range
             )
         else:
             logging.info(f"No cache hit for image {image.name}")
@@ -313,6 +287,7 @@ class ImageReferencerMixin(Generic[_Definitions]):
         license_statuses: list[_LicenseStatus],
         runner_filter: RunnerFilter,
         report_type: str,
+        file_line_range: list[int] | None = None
     ) -> None:
         vulnerabilities = result.get("vulnerabilities", [])
         packages = result.get("packages", [])
@@ -327,6 +302,7 @@ class ImageReferencerMixin(Generic[_Definitions]):
             license_statuses=license_statuses,
             sca_details=image_details,
             report_type=report_type,
+            file_line_range=file_line_range
         )
 
     @abstractmethod

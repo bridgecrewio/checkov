@@ -39,15 +39,21 @@ from checkov.terraform.checks.data.registry import data_registry
 CUSTOM_GRAPH_CHECK_ID = 'CKV2_CUSTOM_1'
 EXTERNAL_MODULES_DOWNLOAD_PATH = os.environ.get('EXTERNAL_MODULES_DIR', DEFAULT_EXTERNAL_MODULES_DIR)
 
+
 @parameterized_class([
-   {"db_connector": NetworkxConnector},
-   {"db_connector": IgraphConnector}
+    {"db_connector": NetworkxConnector, "use_new_tf_parser": "True"},
+    {"db_connector": NetworkxConnector, "use_new_tf_parser": "False"},
+    {"db_connector": IgraphConnector, "use_new_tf_parser": "True"},
+    {"db_connector": IgraphConnector, "use_new_tf_parser": "False"}
 ])
 class TestRunnerValid(unittest.TestCase):
-
     def setUp(self) -> None:
         self.orig_checks = resource_registry.checks
         self.db_connector = self.db_connector
+        os.environ["CHECKOV_NEW_TF_PARSER"] = self.use_new_tf_parser
+
+    def tearDown(self):
+        del os.environ["CHECKOV_NEW_TF_PARSER"]
 
     def test_registry_has_type(self):
         self.assertEqual(resource_registry.report_type, CheckType.TERRAFORM)
@@ -120,7 +126,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
-        self.assertEqual(4, summary['failed'])
+        self.assertEqual(8, summary['failed'])
         self.assertEqual(1, summary['skipped'])
         self.assertEqual(0, summary["parsing_errors"])
 
@@ -243,7 +249,7 @@ class TestRunnerValid(unittest.TestCase):
         # self.assertEqual(report.get_exit_code(), 0)
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
-        self.assertEqual(2, summary['failed'])
+        self.assertEqual(4, summary['failed'])
         self.assertEqual(0, summary["parsing_errors"])
 
     def test_check_ids_dont_collide(self):
@@ -362,7 +368,7 @@ class TestRunnerValid(unittest.TestCase):
         for check_list in [aws_checks, gcp_checks, azure_checks]:
             check_list.sort(reverse=True, key=lambda s: int(s.split('_')[-1]))
 
-        for i in range(1, len(aws_checks) + 1):
+        for i in range(1, len(aws_checks) + 5):
             if f'CKV2_AWS_{i}' == 'CKV2_AWS_17':
                 # CKV2_AWS_17 was overly keen and those resources it checks are created by default
                 continue
@@ -468,6 +474,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(len(result.passed_checks), 1)
         self.assertIn('some-module', map(lambda record: record.resource, result.passed_checks))
 
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "False"})
     def test_terraform_multiple_module_versions(self):
         # given
         root_dir = Path(__file__).parent / "resources/multiple_module_versions"
@@ -1027,6 +1034,9 @@ class TestRunnerValid(unittest.TestCase):
 
     @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "False"})
     def test_record_definition_context_path(self):
+        if self.use_new_tf_parser == "True":
+            # We assume CHECKOV_ENABLE_NESTED_MODULES is True for the case of the new TF parser
+            return
         resources_path = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), "resources", "definition_context_path_nested_modules")
         checks_allow_list = ['CKV_AWS_20']

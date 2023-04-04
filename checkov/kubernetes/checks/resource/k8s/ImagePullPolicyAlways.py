@@ -29,6 +29,9 @@ class ImagePullPolicyAlways(BaseK8sContainerCheck):
                 return CheckResult.UNKNOWN
             if "@" in image_val:
                 image_val = image_val[0 : image_val.index("@")]
+                has_digest = True
+            else:
+                has_digest = False
             if "imagePullPolicy" not in conf:
                 image_tag_match = re.findall(DOCKER_IMAGE_REGEX, image_val)
                 if len(image_tag_match) != 1:
@@ -38,11 +41,13 @@ class ImagePullPolicyAlways(BaseK8sContainerCheck):
                 if tag == "latest" or tag == "":
                     # Default imagePullPolicy = Always
                     return CheckResult.PASSED
+                elif has_digest:
+                    return CheckResult.PASSED
                 else:
                     # Default imagePullPolicy = IfNotPresent
                     return CheckResult.FAILED
             else:
-                if conf["imagePullPolicy"] != "Always":
+                if not has_digest and conf["imagePullPolicy"] != "Always":
                     return CheckResult.FAILED
 
         else:

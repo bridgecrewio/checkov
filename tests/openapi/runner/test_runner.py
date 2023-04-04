@@ -4,6 +4,7 @@ import json
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
+from checkov.common.output.sarif import Sarif
 from checkov.openapi.runner import Runner
 from checkov.runner_filter import RunnerFilter
 from checkov.openapi.checks.registry import openapi_registry
@@ -142,7 +143,8 @@ class TestRunnerValid(unittest.TestCase):
 
         with open(results_file_path) as f:
             expected_report_dict = json.loads(f.read())
-        json_sarif_report = report.get_sarif_json("test")
+
+        json_sarif_report = Sarif(reports=[report], tool="test").json
         self.assertEqual(len(json_sarif_report["runs"][0]["results"]), len(expected_report_dict["runs"][0]["results"]))
 
 

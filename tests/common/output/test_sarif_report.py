@@ -1,41 +1,39 @@
+from __future__ import annotations
+
 import unittest
 import json
+from typing import Any
+
 import jsonschema
 import urllib.request
 
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.report import Report
 from checkov.common.output.record import Record
+from checkov.common.output.sarif import Sarif
 
 
 class TestSarifReport(unittest.TestCase):
     def test_valid_passing_valid_testcases(self):
-        record1 = Record(
-            check_id="CKV_AWS_21",
-            check_name="Some Check",
-            check_result={"result": CheckResult.FAILED},
-            code_block=None,
-            file_path="./s3.tf",
-            file_line_range=[1, 3],
-            resource="aws_s3_bucket.operations",
-            evaluations=None,
-            check_class=None,
-            file_abs_path=",.",
-            entity_tags={"tag1": "value1"},
-        )
+        # given
+        record1 = get_ckv_aws_21_record()
         record1.set_guideline("https://docs.bridgecrew.io/docs/s3_16-enable-versioning")
 
         record2 = Record(
             check_id="CKV_AWS_3",
             check_name="Ensure all data stored in the EBS is securely encrypted",
             check_result={"result": CheckResult.FAILED},
-            code_block=None,
+            code_block=[
+                (5, 'resource aws_ebs_volume "web_host_storage" {\n'),
+                (6, '  availability_zone = "us-west-2a"\n'),
+                (7, "}\n"),
+            ],
             file_path="./ec2.tf",
-            file_line_range=[1, 3],
+            file_line_range=[5, 7],
             resource="aws_ebs_volume.web_host_storage",
             evaluations=None,
             check_class=None,
-            file_abs_path=",.",
+            file_abs_path="./ec2.tf",
             entity_tags={"tag1": "value1"},
         )
         record2.set_guideline("https://docs.bridgecrew.io/docs/general_7")
@@ -43,17 +41,20 @@ class TestSarifReport(unittest.TestCase):
         r = Report("terraform")
         r.add_record(record=record1)
         r.add_record(record=record2)
-        json_structure = r.get_sarif_json("")
 
+        #  when
+        sarif = Sarif(reports=[r], tool="")
+
+        # then
         self.assertEqual(
             None,
-            jsonschema.validate(instance=json_structure, schema=get_sarif_schema()),
+            jsonschema.validate(instance=sarif.json, schema=get_sarif_schema()),
         )
 
-        json_structure["runs"][0]["tool"]["driver"]["version"] = "9.9.9"  # override the version
+        sarif.json["runs"][0]["tool"]["driver"]["version"] = "9.9.9"  # override the version
 
         self.assertDictEqual(
-            json_structure,
+            sarif.json,
             {
                 "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
                 "version": "2.1.0",
@@ -70,7 +71,7 @@ class TestSarifReport(unittest.TestCase):
                                         "name": "Some Check",
                                         "shortDescription": {"text": "Some Check"},
                                         "fullDescription": {"text": "Some Check"},
-                                        "help": {"text": '"Some Check\nResource: aws_s3_bucket.operations"'},
+                                        "help": {"text": "Some Check\nResource: aws_s3_bucket.operations"},
                                         "helpUri": "https://docs.bridgecrew.io/docs/s3_16-enable-versioning",
                                         "defaultConfiguration": {"level": "error"},
                                     },
@@ -84,7 +85,7 @@ class TestSarifReport(unittest.TestCase):
                                             "text": "Ensure all data stored in the EBS is securely encrypted"
                                         },
                                         "help": {
-                                            "text": '"Ensure all data stored in the EBS is securely encrypted\nResource: aws_ebs_volume.web_host_storage"'
+                                            "text": "Ensure all data stored in the EBS is securely encrypted\nResource: aws_ebs_volume.web_host_storage"
                                         },
                                         "helpUri": "https://docs.bridgecrew.io/docs/general_7",
                                         "defaultConfiguration": {"level": "error"},
@@ -103,8 +104,14 @@ class TestSarifReport(unittest.TestCase):
                                 "locations": [
                                     {
                                         "physicalLocation": {
-                                            "artifactLocation": {"uri": "./s3.tf"},
-                                            "region": {"startLine": 1, "endLine": 3},
+                                            "artifactLocation": {"uri": "s3.tf"},
+                                            "region": {
+                                                "startLine": 1,
+                                                "endLine": 3,
+                                                "snippet": {
+                                                    "text": 'resource aws_s3_bucket "operations" {\n  bucket = "example"\n}\n'
+                                                },
+                                            },
                                         }
                                     }
                                 ],
@@ -118,8 +125,14 @@ class TestSarifReport(unittest.TestCase):
                                 "locations": [
                                     {
                                         "physicalLocation": {
-                                            "artifactLocation": {"uri": "./ec2.tf"},
-                                            "region": {"startLine": 1, "endLine": 3},
+                                            "artifactLocation": {"uri": "ec2.tf"},
+                                            "region": {
+                                                "startLine": 5,
+                                                "endLine": 7,
+                                                "snippet": {
+                                                    "text": 'resource aws_ebs_volume "web_host_storage" {\n  availability_zone = "us-west-2a"\n}\n'
+                                                },
+                                            },
                                         }
                                     }
                                 ],
@@ -131,26 +144,14 @@ class TestSarifReport(unittest.TestCase):
         )
 
     def test_multiple_instances_of_same_rule_do_not_break_schema(self):
-        record1 = Record(
-            check_id="CKV_AWS_21",
-            check_name="Some Check",
-            check_result={"result": CheckResult.FAILED},
-            code_block=None,
-            file_path="./s3.tf",
-            file_line_range=[1, 3],
-            resource="aws_s3_bucket.operations",
-            evaluations=None,
-            check_class=None,
-            file_abs_path=",.",
-            entity_tags={"tag1": "value1"},
-        )
+        record1 = get_ckv_aws_21_record()
         record1.set_guideline("")
 
         record2 = Record(
             check_id="CKV_AWS_111",
             check_name="Ensure IAM policies does not allow write access without constraints",
             check_result={"result": CheckResult.FAILED},
-            code_block=None,
+            code_block=[(1, "some code")],
             file_path="./ec2.tf",
             file_line_range=[22, 25],
             resource="aws_ebs_volume.web_host_storage",
@@ -165,7 +166,7 @@ class TestSarifReport(unittest.TestCase):
             check_id="CKV2_AWS_3",
             check_name="Ensure GuardDuty is enabled to specific org/region",
             check_result={"result": CheckResult.FAILED},
-            code_block=None,
+            code_block=[(1, "some code")],
             file_path="./ec2.tf",
             file_line_range=[1, 3],
             resource="aws_ebs_volume.web_host_storage",
@@ -180,7 +181,7 @@ class TestSarifReport(unittest.TestCase):
             check_id="CKV2_AWS_3",
             check_name="Ensure GuardDuty is enabled to specific org/region",
             check_result={"result": CheckResult.FAILED},
-            code_block=None,
+            code_block=[(1, "some code")],
             file_path="./org.tf",
             file_line_range=[7, 10],
             resource="aws_ebs_volume.web_host_storage",
@@ -195,7 +196,7 @@ class TestSarifReport(unittest.TestCase):
             check_id="CKV2_AWS_3",
             check_name="Ensure GuardDuty is enabled to specific org/region",
             check_result={"result": CheckResult.FAILED},
-            code_block=None,
+            code_block=[(1, "some code")],
             file_path="./org.tf",
             file_line_range=[15, 20],
             resource="aws_ebs_volume.web_host_storage",
@@ -210,7 +211,7 @@ class TestSarifReport(unittest.TestCase):
             check_id="CKV2_AWS_3",
             check_name="Ensure GuardDuty is enabled to specific org/region",
             check_result={"result": CheckResult.FAILED},
-            code_block=None,
+            code_block=[(1, "some code")],
             file_path="./org.tf",
             file_line_range=[25, 28],
             resource="aws_ebs_volume.web_host_storage",
@@ -225,7 +226,7 @@ class TestSarifReport(unittest.TestCase):
             check_id="CKV_AWS_107",
             check_name="Ensure IAM policies does not allow credentials exposure",
             check_result={"result": CheckResult.FAILED},
-            code_block=None,
+            code_block=[(1, "some code")],
             file_path="./ec2.tf",
             file_line_range=[30, 35],
             resource="aws_ebs_volume.web_host_storage",
@@ -240,7 +241,7 @@ class TestSarifReport(unittest.TestCase):
             check_id="CKV_AWS_110",
             check_name="Ensure IAM policies does not allow privilege escalation",
             check_result={"result": CheckResult.FAILED},
-            code_block=None,
+            code_block=[(1, "some code")],
             file_path="./ec2.tf",
             file_line_range=[30, 35],
             resource="aws_ebs_volume.web_host_storage",
@@ -255,7 +256,7 @@ class TestSarifReport(unittest.TestCase):
             check_id="CKV_AWS_110",
             check_name="Ensure IAM policies does not allow privilege escalation",
             check_result={"result": CheckResult.FAILED},
-            code_block=None,
+            code_block=[(1, "some code")],
             file_path="./ec2.tf",
             file_line_range=[38, 40],
             resource="aws_ebs_volume.web_host_storage",
@@ -271,7 +272,7 @@ class TestSarifReport(unittest.TestCase):
             check_id="CKV_AWS_23",
             check_name="Some Check",
             check_result={"result": CheckResult.FAILED},
-            code_block=None,
+            code_block=[(1, "some code")],
             file_path="./s3.tf",
             file_line_range=[1, 3],
             resource="aws_s3_bucket.operations",
@@ -287,7 +288,7 @@ class TestSarifReport(unittest.TestCase):
             check_id="CKV_AWS_24",
             check_name="Some Check",
             check_result={"result": CheckResult.FAILED},
-            code_block=None,
+            code_block=[(1, "some code")],
             file_path="./s3.tf",
             file_line_range=[1, 3],
             resource="aws_s3_bucket.operations",
@@ -310,18 +311,92 @@ class TestSarifReport(unittest.TestCase):
         r.add_record(record=record9)
         r.add_record(record=record10)
         r.add_record(record=record11)
-        json_structure = r.get_sarif_json("")
-        print(json.dumps(json_structure))
+
+        sarif = Sarif(reports=[r], tool="")
+
         self.assertEqual(
             None,
-            jsonschema.validate(instance=json_structure, schema=get_sarif_schema()),
+            jsonschema.validate(instance=sarif.json, schema=get_sarif_schema()),
         )
-        self.assertFalse(are_duplicates_in_sarif_rules(json_structure))
-        self.assertTrue(are_rule_indexes_correct_in_results(json_structure))
-        self.assertTrue(are_rules_without_help_uri_correct(json_structure))
+        self.assertFalse(are_duplicates_in_sarif_rules(sarif.json))
+        self.assertTrue(are_rule_indexes_correct_in_results(sarif.json))
+        self.assertTrue(are_rules_without_help_uri_correct(sarif.json))
+
+    def test_non_url_guideline_link(self):
+        # given
+        record1 = get_ckv_aws_21_record()
+        record1.set_guideline("some random text")
+
+        r = Report("terraform")
+        r.add_record(record=record1)
+
+        #  when
+        sarif = Sarif(reports=[r], tool="")
+
+        # then
+        self.assertEqual(
+            None,
+            jsonschema.validate(instance=sarif.json, schema=get_sarif_schema()),
+        )
+
+        sarif.json["runs"][0]["tool"]["driver"]["version"] = "9.9.9"  # override the version
+
+        # sarif.json["runs"][0]["tool"]["driver"]["rules"][0] shouldn't include key "helpUri"
+        self.assertDictEqual(
+            sarif.json,
+            {
+                "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+                "version": "2.1.0",
+                "runs": [
+                    {
+                        "tool": {
+                            "driver": {
+                                "name": "Bridgecrew",
+                                "version": "9.9.9",
+                                "informationUri": "https://docs.bridgecrew.io",
+                                "rules": [
+                                    {
+                                        "id": "CKV_AWS_21",
+                                        "name": "Some Check",
+                                        "shortDescription": {"text": "Some Check"},
+                                        "fullDescription": {"text": "Some Check"},
+                                        "help": {"text": "Some Check\nResource: aws_s3_bucket.operations"},
+                                        "defaultConfiguration": {"level": "error"},
+                                    }
+                                ],
+                                "organization": "bridgecrew",
+                            }
+                        },
+                        "results": [
+                            {
+                                "ruleId": "CKV_AWS_21",
+                                "ruleIndex": 0,
+                                "level": "error",
+                                "attachments": [],
+                                "message": {"text": "Some Check"},
+                                "locations": [
+                                    {
+                                        "physicalLocation": {
+                                            "artifactLocation": {"uri": "s3.tf"},
+                                            "region": {
+                                                "startLine": 1,
+                                                "endLine": 3,
+                                                "snippet": {
+                                                    "text": 'resource aws_s3_bucket "operations" {\n  bucket = "example"\n}\n'
+                                                },
+                                            },
+                                        }
+                                    }
+                                ],
+                            }
+                        ],
+                    }
+                ],
+            },
+        )
 
 
-def get_sarif_schema():
+def get_sarif_schema() -> dict[str, Any]:
     file_name, headers = urllib.request.urlretrieve(
         "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Documents/CommitteeSpecifications/2.1.0/sarif-schema-2.1.0.json"
     )
@@ -329,6 +404,25 @@ def get_sarif_schema():
         schema = json.load(file)
     return schema
 
+
+def get_ckv_aws_21_record() -> Record:
+    return Record(
+        check_id="CKV_AWS_21",
+        check_name="Some Check",
+        check_result={"result": CheckResult.FAILED},
+        code_block=[
+            (1, 'resource aws_s3_bucket "operations" {\n'),
+            (2, '  bucket = "example"\n'),
+            (3, "}\n"),
+        ],
+        file_path="./s3.tf",
+        file_line_range=[1, 3],
+        resource="aws_s3_bucket.operations",
+        evaluations=None,
+        check_class=None,
+        file_abs_path="./s3.tf",
+        entity_tags={"tag1": "value1"},
+    )
 
 def are_duplicates_in_sarif_rules(sarif_json) -> bool:
     rules = sarif_json["runs"][0]["tool"]["driver"]["rules"]
@@ -348,6 +442,7 @@ def are_rule_indexes_correct_in_results(sarif_json) -> bool:
                 if result["ruleIndex"] != rules.index(rule) or result["ruleIndex"] > len(rules):
                     return False
     return True
+
 
 def are_rules_without_help_uri_correct(sarif_json) -> bool:
     rules = sarif_json["runs"][0]["tool"]["driver"]["rules"]

@@ -300,6 +300,14 @@ resource "aws_security_group_rule" "pass3" {
   security_group_id = aws_security_group.bar-sg.id
 }
 
+resource "aws_security_group_rule" "pass4" {
+  type              = "ingress"
+  from_port         = 22
+  to_port           = 22
+  protocol          = "tcp"
+  self = true
+  security_group_id = aws_security_group.bar-sg.id
+}
 
 
 resource "aws_vpc_security_group_ingress_rule" "pass" {
@@ -309,4 +317,47 @@ resource "aws_vpc_security_group_ingress_rule" "pass" {
   from_port   = 80
   ip_protocol = "tcp"
   to_port     = 8080
+
+}
+
+resource "aws_security_group" "pass_self" {
+  name   = "sg-bar"
+  vpc_id = aws_vpc.main.id
+  ingress {
+    description = "Self"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    self        = true
+  }
+}
+
+
+resource "aws_security_group" "not_self" {
+  name   = "sg-bar"
+  vpc_id = aws_vpc.main.id
+  ingress {
+    description = "Self"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    self        = false
+  }
+}
+
+resource "aws_security_group" "pass_self2" {
+  description = "SG with inline rules"
+  ingress = [
+    {
+      cidr_blocks      = ["0.0.0.0/0"]
+      description      = "Wide Open"
+      from_port        = 0
+      ipv6_cidr_blocks = []
+      prefix_list_ids  = []
+      security_groups  = []
+      protocol         = "-1"
+      self             = true
+      to_port          = 65535
+    }
+  ]
 }

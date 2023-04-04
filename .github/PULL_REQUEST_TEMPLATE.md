@@ -12,7 +12,7 @@
     Additionally a scope is needs to be added to the prefix, which indicates the targeted framework, in doubt choose 'general'.
     #    
     Allowed prefixs:
-    ansible|argo|arm|azure|bicep|bitbucket|circleci|cloudformation|dockerfile|github|gha|gitlab|helm|kubernetes|kustomize|openapi|sca|secrets|serverless|terraform|general|graph|terraform_plan
+    ansible|argo|arm|azure|bicep|bitbucket|circleci|cloudformation|dockerfile|github|gha|gitlab|helm|kubernetes|kustomize|openapi|sca|secrets|serverless|terraform|general|graph|terraform_plan|terraform_json
     #
     ex.
     feat(terraform): add CKV_AWS_123 to ensure that VPC Endpoint Service is configured for Manual Acceptance

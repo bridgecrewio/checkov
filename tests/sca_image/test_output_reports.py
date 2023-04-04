@@ -10,6 +10,7 @@ from pytest_mock import MockerFixture
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.output.csv import CSVSBOM
 from checkov.common.output.cyclonedx import CycloneDX
+from checkov.common.output.sarif import Sarif
 
 EXAMPLES_DIR = Path(__file__).parent / "examples"
 OUTPUTS_DIR = Path(__file__).parent / "outputs"
@@ -143,106 +144,157 @@ def test_get_csv_report(sca_image_report, tmp_path: Path):
     assert csv_output_str_as_list == expected_csv_output_str
 
 
-def test_get_sarif_json(sca_image_report_scope_function):
+def test_sarif_output(sca_image_report_scope_function):
     # The creation of sarif_json may change the input report. in order not to affect the other tests, we use
     # a report that is unique for the scope of the function
 
     # given
-    sarif_output = sca_image_report_scope_function.get_sarif_json("Checkov")
+    sarif_output = Sarif(reports=[sca_image_report_scope_function], tool="Checkov").json
 
     # then
     sarif_output["runs"][0]["tool"]["driver"]["version"] = "2.0.x"
     expected_sarif_json = {
-        '$schema': 'https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json',
-        'version': '2.1.0',
-        'runs':
-            [{'tool': {'driver': {'name': 'Checkov', 'version': "2.0.x",
-                                  'informationUri': 'https://checkov.io',
-                                  'rules':
-                                      [{'id': 'BC_LIC_1',
-                                        'name': 'SCA license',
-                                        'shortDescription': {'text': 'License Apache-2.0-Fake - perl: 5.34.0-3ubuntu1'},
-                                        'fullDescription': {'text': 'SCA license'},
-                                        'help': {
-                                            'text': '"SCA license\nResource: path/to/Dockerfile (sha256:123456).perl"'},
-                                        'defaultConfiguration': {'level': 'error'}},
-                                       {'id': 'CKV_CVE_2020_16156',
-                                        'name': 'SCA package scan',
-                                        'shortDescription': {'text': 'CVE-2020-16156 - perl: 5.34.0-3ubuntu1'},
-                                        'fullDescription': {'text': 'CPAN 2.28 allows Signature Verification Bypass.'},
-                                        'help': {
-                                            'text': '"SCA package scan\nResource: path/to/Dockerfile ('
-                                                    'sha256:123456).perl"'},
-                                        'defaultConfiguration': {'level': 'error'},
-                                        'helpUri': 'https://people.canonical.com/~ubuntu-security/cve/2020/CVE-2020'
-                                                   '-16156'},
-                                       {'id': 'CKV_CVE_2022_1587',
-                                        'name': 'SCA package scan',
-                                        'shortDescription': {'text': 'CVE-2022-1587 - pcre2: 10.39-3build1'},
-                                        'fullDescription': {
-                                            'text': 'An out-of-bounds read vulnerability was discovered in the PCRE2 '
-                                                    'library in the get_recurse_data_length() function of the '
-                                                    'pcre2_jit_compile.c file. This issue affects recursions in '
-                                                    'JIT-compiled regular expressions caused by duplicate data '
-                                                    'transfers.'},
-                                        'help': {
-                                            'text': '"SCA package scan\nResource: path/to/Dockerfile ('
-                                                    'sha256:123456).pcre2"'},
-                                        'defaultConfiguration': {'level': 'error'},
-                                        'helpUri': 'https://people.canonical.com/~ubuntu-security/cve/2022/CVE-2022'
-                                                   '-1587'},
-                                       {'id': 'CKV_CVE_2022_1586',
-                                        'name': 'SCA package scan',
-                                        'shortDescription': {'text': 'CVE-2022-1586 - pcre2: 10.39-3build1'},
-                                        'fullDescription':
-                                            {
-                                                'text': 'An out-of-bounds read vulnerability was discovered in the '
-                                                        'PCRE2 library in the compile_xclass_matchingpath() function '
-                                                        'of the pcre2_jit_compile.c file. This involves a unicode '
-                                                        'property matching issue in JIT-compiled regular expressions. '
-                                                        'The issue occurs because the character was not fully read in '
-                                                        'case-less matching within JIT.'},
-                                        'help': {
-                                            'text': '"SCA package scan\nResource: path/to/Dockerfile ('
-                                                    'sha256:123456).pcre2"'},
-                                        'defaultConfiguration': {'level': 'error'},
-                                        'helpUri': 'https://people.canonical.com/~ubuntu-security/cve/2022/CVE-2022'
-                                                   '-1586'}],
-                                  'organization': 'bridgecrew'}},
-              'results': [{'ruleId': 'BC_LIC_1', 'ruleIndex': 0, 'level': 'error', 'attachments': [],
-                           'message': {'text': 'SCA license'},
-                           'locations': [
-                               {'physicalLocation': {'artifactLocation': {'uri': 'path/to/Dockerfile (sha256:123456)'},
-                                                     'region': {'startLine': 1, 'endLine': 1}}}]},
-                          {'ruleId': 'CKV_CVE_2020_16156', 'ruleIndex': 1, 'level': 'warning', 'attachments': [],
-                           'message': {'text': 'CPAN 2.28 allows Signature Verification Bypass.'},
-                           'locations': [{
-                                         'physicalLocation': {
-                                             'artifactLocation': {
-                                                 'uri': 'path/to/Dockerfile (sha256:123456)'},
-                                             'region': {
-                                                 'startLine': 1,
-                                                 'endLine': 1}}}]},
-                          {'ruleId': 'CKV_CVE_2022_1587', 'ruleIndex': 2, 'level': 'note', 'attachments': [],
-                           'message': {
-                               'text': 'An out-of-bounds read vulnerability was discovered in the PCRE2 library in '
-                                       'the get_recurse_data_length() function of the pcre2_jit_compile.c file. This '
-                                       'issue affects recursions in JIT-compiled regular expressions caused by '
-                                       'duplicate data transfers.'},
-                           'locations': [{'physicalLocation': {
-                               'artifactLocation': {'uri': 'path/to/Dockerfile (sha256:123456)'},
-                               'region': {'startLine': 1, 'endLine': 1}}}]},
-                          {'ruleId': 'CKV_CVE_2022_1586', 'ruleIndex': 3, 'level': 'note', 'attachments': [],
-                           'message': {
-                               'text': 'An out-of-bounds read vulnerability was discovered in the PCRE2 library in '
-                                       'the compile_xclass_matchingpath() function of the pcre2_jit_compile.c file. '
-                                       'This involves a unicode property matching issue in JIT-compiled regular '
-                                       'expressions. The issue occurs because the character was not fully read in '
-                                       'case-less matching within JIT.'},
-                           'locations': [{'physicalLocation': {
-                               'artifactLocation': {'uri': 'path/to/Dockerfile (sha256:123456)'},
-                               'region': {'startLine': 1, 'endLine': 1}}}],
-                           'suppressions': [{'kind': 'external', 'justification': 'CVE-2022-1586 is skipped'}]}]}]}
+        "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+        "version": "2.1.0",
+        "runs": [
+            {
+                "tool": {
+                    "driver": {
+                        "name": "Checkov",
+                        "version": "2.0.x",
+                        "informationUri": "https://checkov.io",
+                        "rules": [
+                            {
+                                "id": "Apache-2.0-Fake_perl@5.34.0-3ubuntu1",
+                                "name": "License Apache-2.0-Fake - perl: 5.34.0-3ubuntu1",
+                                "shortDescription": {"text": "License Apache-2.0-Fake - perl: 5.34.0-3ubuntu1"},
+                                "fullDescription": {"text": "Package perl@5.34.0-3ubuntu1 has license Apache-2.0-Fake"},
+                                "help": {"text": "SCA license\nResource: path/to/Dockerfile (sha256:123456).perl"},
+                                "defaultConfiguration": {"level": "error"},
+                            },
+                            {
+                                "id": "CVE-2020-16156_perl@5.34.0-3ubuntu1",
+                                "name": "CVE-2020-16156 - perl: 5.34.0-3ubuntu1",
+                                "shortDescription": {"text": "CVE-2020-16156 - perl: 5.34.0-3ubuntu1"},
+                                "fullDescription": {"text": "CPAN 2.28 allows Signature Verification Bypass."},
+                                "help": {
+                                    "text": "SCA package scan\nResource: path/to/Dockerfile (sha256:123456).perl\nStatus: needed"
+                                },
+                                "defaultConfiguration": {"level": "error"},
+                                "helpUri": "https://people.canonical.com/~ubuntu-security/cve/2020/CVE-2020-16156",
+                            },
+                            {
+                                "id": "CVE-2022-1587_pcre2@10.39-3build1",
+                                "name": "CVE-2022-1587 - pcre2: 10.39-3build1",
+                                "shortDescription": {"text": "CVE-2022-1587 - pcre2: 10.39-3build1"},
+                                "fullDescription": {
+                                    "text": "An out-of-bounds read vulnerability was discovered in the PCRE2 library in the get_recurse_data_length() function of the pcre2_jit_compile.c file. This issue affects recursions in JIT-compiled regular expressions caused by duplicate data transfers."
+                                },
+                                "help": {
+                                    "text": "SCA package scan\nResource: path/to/Dockerfile (sha256:123456).pcre2\nStatus: needed"
+                                },
+                                "defaultConfiguration": {"level": "error"},
+                                "helpUri": "https://people.canonical.com/~ubuntu-security/cve/2022/CVE-2022-1587",
+                            },
+                            {
+                                "id": "CVE-2022-1586_pcre2@10.39-3build1",
+                                "name": "CVE-2022-1586 - pcre2: 10.39-3build1",
+                                "shortDescription": {"text": "CVE-2022-1586 - pcre2: 10.39-3build1"},
+                                "fullDescription": {
+                                    "text": "An out-of-bounds read vulnerability was discovered in the PCRE2 library in the compile_xclass_matchingpath() function of the pcre2_jit_compile.c file. This involves a unicode property matching issue in JIT-compiled regular expressions. The issue occurs because the character was not fully read in case-less matching within JIT."
+                                },
+                                "help": {
+                                    "text": "SCA package scan\nResource: path/to/Dockerfile (sha256:123456).pcre2\nStatus: needed"
+                                },
+                                "defaultConfiguration": {"level": "error"},
+                                "helpUri": "https://people.canonical.com/~ubuntu-security/cve/2022/CVE-2022-1586",
+                            },
+                        ],
+                        "organization": "bridgecrew",
+                    }
+                },
+                "results": [
+                    {
+                        "ruleId": "Apache-2.0-Fake_perl@5.34.0-3ubuntu1",
+                        "ruleIndex": 0,
+                        "level": "error",
+                        "attachments": [],
+                        "message": {"text": "License Apache-2.0-Fake - perl: 5.34.0-3ubuntu1"},
+                        "locations": [
+                            {
+                                "physicalLocation": {
+                                    "artifactLocation": {"uri": "path/to/Dockerfile"},
+                                    "region": {
+                                        "startLine": 1,
+                                        "endLine": 1,
+                                        "snippet": {"text": "perl: 5.34.0-3ubuntu1"},
+                                    },
+                                }
+                            }
+                        ],
+                    },
+                    {
+                        "ruleId": "CVE-2020-16156_perl@5.34.0-3ubuntu1",
+                        "ruleIndex": 1,
+                        "level": "warning",
+                        "attachments": [],
+                        "message": {"text": "CVE-2020-16156 - perl: 5.34.0-3ubuntu1"},
+                        "locations": [
+                            {
+                                "physicalLocation": {
+                                    "artifactLocation": {"uri": "path/to/Dockerfile"},
+                                    "region": {
+                                        "startLine": 1,
+                                        "endLine": 1,
+                                        "snippet": {"text": "perl: 5.34.0-3ubuntu1"},
+                                    },
+                                }
+                            }
+                        ],
+                    },
+                    {
+                        "ruleId": "CVE-2022-1587_pcre2@10.39-3build1",
+                        "ruleIndex": 2,
+                        "level": "note",
+                        "attachments": [],
+                        "message": {"text": "CVE-2022-1587 - pcre2: 10.39-3build1"},
+                        "locations": [
+                            {
+                                "physicalLocation": {
+                                    "artifactLocation": {"uri": "path/to/Dockerfile"},
+                                    "region": {
+                                        "startLine": 1,
+                                        "endLine": 1,
+                                        "snippet": {"text": "pcre2: 10.39-3build1"},
+                                    },
+                                }
+                            }
+                        ],
+                    },
+                    {
+                        "ruleId": "CVE-2022-1586_pcre2@10.39-3build1",
+                        "ruleIndex": 3,
+                        "level": "note",
+                        "attachments": [],
+                        "message": {"text": "CVE-2022-1586 - pcre2: 10.39-3build1"},
+                        "locations": [
+                            {
+                                "physicalLocation": {
+                                    "artifactLocation": {"uri": "path/to/Dockerfile"},
+                                    "region": {
+                                        "startLine": 1,
+                                        "endLine": 1,
+                                        "snippet": {"text": "pcre2: 10.39-3build1"},
+                                    },
+                                }
+                            }
+                        ],
+                        "suppressions": [{"kind": "external", "justification": "CVE-2022-1586 is skipped"}],
+                    },
+                ],
+            }
+        ],
+    }
 
     assert sarif_output == expected_sarif_json
 

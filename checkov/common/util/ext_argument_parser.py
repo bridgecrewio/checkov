@@ -401,6 +401,13 @@ class ExtArgumentParser(configargparse.ArgumentParser):
             "-ca", "--ca-certificate", help="Custom CA certificate (bundle) file", default=None, env_var="BC_CA_BUNDLE"
         )
         self.add(
+            "--no-cert-verify",
+            action="store_true",
+            help="Skip SSL certificate verification. Use this to bypass errors related to SSL certificates. Warning: "
+                 "this should only be used for testing purposes. Skipping certificate verification is dangerous as "
+                 "invalid and falsified certificates cannot be detected."
+        )
+        self.add(
             "--repo-root-for-plan-enrichment",
             help="Directory containing the hcl code used to generate a given plan file. Use with -f.",
             dest="repo_root_for_plan_enrichment",
@@ -525,4 +532,12 @@ class ExtArgumentParser(configargparse.ArgumentParser):
             action="store",
             default='12h',
             help="maximum time to stop the scan "
+        )
+        self.add(
+            "--openai-api-key",
+            env_var="CKV_OPENAI_API_KEY",
+            sanitize=True,
+            help="Add an OpenAI API key to enhance finding guidelines by sending violated policies and "
+                 "resource code to OpenAI to request remediation guidance. This will use your OpenAI credits. "
+                 "Set your number of findings that will receive enhanced guidelines using CKV_OPENAI_MAX_FINDINGS",
         )

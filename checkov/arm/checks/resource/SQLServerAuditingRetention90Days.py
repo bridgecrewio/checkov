@@ -26,7 +26,7 @@ class SQLServerAuditingRetention90Days(BaseResourceCheck):
                 f"resources/[{idx}]/properties/retentionDays",
             ]
             if resource.get("type") in (
-                "Microsoft.Sql servers/databases/auditingSettings",
+                "Microsoft.Sql/servers/databases/auditingSettings",
                 "auditingSettings",
             ):
                 properties = resource.get("properties")

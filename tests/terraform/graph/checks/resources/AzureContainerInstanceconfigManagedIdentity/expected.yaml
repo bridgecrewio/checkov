@@ -1,0 +1,4 @@
+pass:
+  - "azurerm_container_group.pass"
+fail:
+  - "azurerm_container_group.fail"

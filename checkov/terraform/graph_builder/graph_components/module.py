@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import os
 from copy import deepcopy
-from typing import List, Dict, Any, Set, Callable, Tuple, TYPE_CHECKING
+from typing import List, Dict, Any, Set, Callable, Tuple, TYPE_CHECKING, Optional
 
 from checkov.common.runners.base_runner import strtobool
 from checkov.common.util.parser_utils import get_abs_path, get_module_from_full_path
@@ -23,10 +23,10 @@ class Module:
     def __init__(
         self,
         source_dir: str,
-        module_dependency_map: Dict[str, List[List[str]]],
         module_address_map: Dict[Tuple[str, str], str],
         external_modules_source_map: Dict[Tuple[str, str], str],
-        dep_index_mapping: Dict[Tuple[str, str], List[str]],
+        module_dependency_map: Optional[Dict[str, List[List[str]]]] = None,
+        dep_index_mapping: Optional[Dict[Tuple[str, str], List[str]]] = None,
     ) -> None:
         self.dep_index_mapping = dep_index_mapping
         self.module_dependency_map = module_dependency_map
@@ -41,6 +41,7 @@ class Module:
         self.source_dir = source_dir
         self.render_dynamic_blocks_env_var = os.getenv('CHECKOV_RENDER_DYNAMIC_MODULES', 'True')
         self.enable_nested_modules = strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'True'))
+        self.use_new_tf_parser = strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'False'))
 
     def add_blocks(
         self, block_type: BlockType, blocks: List[Dict[str, Dict[str, Any]]], path: str, source: str
@@ -51,8 +52,16 @@ class Module:
 
     def _add_to_blocks(self, block: TerraformBlock) -> None:
         if self.enable_nested_modules:
-            block.module_dependency, block.module_dependency_num = get_module_from_full_path(block.path)
-            block.path = get_abs_path(block.path)
+            if self.use_new_tf_parser:
+                if isinstance(block.path, str):
+                    block.source_module_object = None
+                    block.path = block.path
+                else:
+                    block.source_module_object = block.path.tf_source_modules
+                    block.path = block.path.file_path
+            else:
+                block.module_dependency, block.module_dependency_num = get_module_from_full_path(block.path)
+                block.path = get_abs_path(block.path)
             self.blocks.append(block)
             return
 
@@ -126,18 +135,17 @@ class Module:
 
     def _add_output(self, blocks: List[Dict[str, Dict[str, Any]]], path: str) -> None:
         for output_dict in blocks:
-            for name in output_dict:
-                if type(output_dict[name]) is not dict:
-                    continue
-                output_block = TerraformBlock(
-                    block_type=BlockType.OUTPUT,
-                    name=name,
-                    config=output_dict,
-                    path=path,
-                    attributes={"value": output_dict[name].get("value")},
-                    source=self.source,
-                )
-                self._add_to_blocks(output_block)
+            for name, attributes in output_dict.items():
+                if isinstance(attributes, dict):
+                    output_block = TerraformBlock(
+                        block_type=BlockType.OUTPUT,
+                        name=name,
+                        config=output_dict,
+                        path=path,
+                        attributes={"value": attributes.get("value")},
+                        source=self.source,
+                    )
+                    self._add_to_blocks(output_block)
 
     def _add_module(self, blocks: List[Dict[str, Dict[str, Any]]], path: str) -> None:
         for module_dict in blocks:

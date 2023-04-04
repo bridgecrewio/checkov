@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from checkov.common.runners.base_runner import BaseRunner  # noqa
     from networkx import DiGraph
     from igraph import Graph
-
+    from checkov.terraform.modules.module_objects import TFDefinitionKey
 
 _BaseRunner = TypeVar("_BaseRunner", bound="BaseRunner[Any]")
 
@@ -24,6 +24,7 @@ _Attributes: TypeAlias = Set[str]
 ResourceAttributesToOmit: TypeAlias = Dict[_Resource, _Attributes]
 LibraryGraph: TypeAlias = "Union[DiGraph, Graph]"
 LibraryGraphConnector: TypeAlias = "Union[DBConnector[DiGraph], DBConnector[Graph]]"
+TFDefinitionKeyType: TypeAlias = "Union[str, TFDefinitionKey]"
 
 
 class _CheckResult(TypedDict, total=False):
@@ -40,6 +41,11 @@ class _SkippedCheck(TypedDict, total=False):
     id: str
     suppress_comment: str
     line_number: int | None
+
+
+class _ScaSuppressions(TypedDict, total=False):
+    cve: dict[str, _SkippedCheck]
+    package: dict[str, _SkippedCheck | dict[str, _SkippedCheck]]
 
 
 class _BaselineFinding(TypedDict):

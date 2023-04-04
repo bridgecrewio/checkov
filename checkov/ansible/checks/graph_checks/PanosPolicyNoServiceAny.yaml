@@ -1,0 +1,22 @@
+metadata:
+  id: "CKV_PAN_6"
+  name: "Ensure security rules do not have 'service' set to 'any'"
+  category: "NETWORKING"
+definition:
+  and:
+  - cond_type: attribute
+    resource_types:
+      - tasks.paloaltonetworks.panos.panos_security_rule
+    attribute: service
+    operator: exists
+  - cond_type: attribute
+    resource_types:
+      - tasks.paloaltonetworks.panos.panos_security_rule
+    attribute: service
+    operator: is_not_empty
+  - cond_type: attribute
+    resource_types:
+      - tasks.paloaltonetworks.panos.panos_security_rule
+    attribute: service
+    operator: not_equals_ignore_case
+    value: 'any'

@@ -19,7 +19,7 @@ from checkov.terraform.module_loading.registry import module_loader_registry as 
     ModuleLoaderRegistry
 from checkov.common.util.parser_utils import is_acceptable_module_param
 from checkov.terraform.modules.module_utils import load_or_die_quietly, safe_index, \
-    remove_module_dependency_from_path, get_module_dependency_map_support_nested_modules, \
+    remove_module_dependency_from_path, \
     clean_parser_types, serialize_definitions
 from checkov.terraform.modules.module_objects import TFModule, TFDefinitionKey
 
@@ -321,7 +321,10 @@ class TFParser:
     def _remove_unused_path_recursive(self, path) -> None:
         self.out_definitions.pop(path, None)
         for key in list(self.module_to_resolved.keys()):
-            file_key, module_index, module_name = key
+            if isinstance(key[0], TFDefinitionKey):
+                file_key = key[0]
+            else:
+                file_key, module_index, module_name = key
             if path == file_key:
                 for resolved_path in self.module_to_resolved[key]:
                     self._remove_unused_path_recursive(resolved_path)
@@ -355,13 +358,10 @@ class TFParser:
         source_dir: str,
         source: str,
     ) -> Tuple[Module, Dict[str, Dict[str, Any]]]:
-        module_dependency_map, tf_definitions, dep_index_mapping = get_module_dependency_map_support_nested_modules(tf_definitions)
         module = self.get_new_module(
             source_dir=source_dir,
-            module_dependency_map=module_dependency_map,
             module_address_map=self.module_address_map,
             external_modules_source_map=self.external_modules_source_map,
-            dep_index_mapping=dep_index_mapping,
         )
         self.add_tfvars(module, source)
         copy_of_tf_definitions = deepcopy(tf_definitions)
@@ -535,17 +535,13 @@ class TFParser:
     @staticmethod
     def get_new_module(
             source_dir: str,
-            module_dependency_map: dict[str, list[list[str]]],
             module_address_map: dict[tuple[str, str], str],
             external_modules_source_map: dict[tuple[str, str], str],
-            dep_index_mapping: dict[tuple[str, str], list[str]],
     ) -> Module:
         return Module(
             source_dir=source_dir,
-            module_dependency_map=module_dependency_map,
             module_address_map=module_address_map,
             external_modules_source_map=external_modules_source_map,
-            dep_index_mapping=dep_index_mapping
         )
 
 

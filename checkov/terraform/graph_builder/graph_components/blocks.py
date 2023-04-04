@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import os
 from typing import Union, Dict, Any, List, Optional, Set
-import dpath.util
+import dpath
 import re
 
 from checkov.common.runners.base_runner import strtobool
+from checkov.terraform import TFModule
 from checkov.terraform.graph_builder.utils import INTERPOLATION_EXPR
 from checkov.common.graph.graph_builder.graph_components.blocks import Block
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
@@ -21,7 +22,9 @@ class TerraformBlock(Block):
         "source_module",
         "has_dynamic_block",
         "dynamic_attributes",
-        "foreach_attrs"
+        "foreach_attrs",
+        "source_module_object",
+        "for_each_index"
     )
 
     def __init__(self, name: str, config: Dict[str, Any], path: str, block_type: BlockType, attributes: Dict[str, Any],
@@ -51,12 +54,18 @@ class TerraformBlock(Block):
         self.module_connections: Dict[str, List[int]] = {}
         self.source_module: Set[int] = set()
         self.has_dynamic_block = has_dynamic_block
+        if strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'False')):
+            self.source_module_object: Optional[TFModule] = None
+            self.for_each_index: Optional[Any] = None
 
     def add_module_connection(self, attribute_key: str, vertex_id: int) -> None:
         self.module_connections.setdefault(attribute_key, []).append(vertex_id)
 
     def extract_additional_changed_attributes(self, attribute_key: str) -> List[str]:
-        if self.has_dynamic_block:
+        # if the `attribute_key` starts with a `for_each.` we know the attribute can't be a dynamic attribute as it
+        # represents the for_each of the block, so we don't need extract dynamic changed attributes
+        # Fix: https://github.com/bridgecrewio/checkov/issues/4324
+        if self.has_dynamic_block and not attribute_key.startswith('for_each'):
             return self._extract_dynamic_changed_attributes(attribute_key)
         return super().extract_additional_changed_attributes(attribute_key)
 

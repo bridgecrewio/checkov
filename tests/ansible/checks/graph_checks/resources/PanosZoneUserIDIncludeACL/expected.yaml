@@ -1,0 +1,10 @@
+pass:
+  - "tasks.paloaltonetworks.panos.panos_zone.Zone_pass_1"
+  - "tasks.paloaltonetworks.panos.panos_zone.Zone_pass_2"
+  - "tasks.paloaltonetworks.panos.panos_zone.Zone_pass_3"
+fail:
+  - "tasks.paloaltonetworks.panos.panos_zone.Zone_fail_1"
+  - "tasks.paloaltonetworks.panos.panos_zone.Zone_fail_2"
+evaluated_keys:
+  - "include_acl"
+  - "enable_userid"

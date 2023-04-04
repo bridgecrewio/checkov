@@ -98,6 +98,7 @@ class TestGraphBuilder(TestCase):
         actual_config = local_graph.vertices[local_graph.vertices_by_block_type.get(BlockType.RESOURCE)[0]].config
         self.assertDictEqual(expected_config, actual_config)
 
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "False"})
     def test_build_graph_with_linked_modules(self):
         # see the image to view the expected graph in tests/resources/modules/linked_modules/expected_graph.png
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/linked_modules'))
@@ -138,6 +139,7 @@ class TestGraphBuilder(TestCase):
         self.check_edge(local_graph, node_from=output_this_s3_bucket_id, node_to=resource_aws_s3_bucket,
                         expected_label='value')
 
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "False"})
     def test_build_graph_with_linked_registry_modules(self):
         resources_dir = os.path.realpath(
             os.path.join(TEST_DIRNAME, '../resources/modules/registry_security_group_inner_module'))
@@ -322,3 +324,11 @@ class TestGraphBuilder(TestCase):
         assert resource_2.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS) == 'aws_s3_bucket.example'
         provider = self.get_vertex_by_name_and_type(local_graph, BlockType.PROVIDER, 'aws.test_provider')
         assert provider.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS) == 'aws.test_provider'
+
+    # Related to https://github.com/bridgecrewio/checkov/issues/4324
+    def test_build_graph_for_each_with_variables_and_dynamic_not_crash(self):
+        resources_dir = os.path.join(TEST_DIRNAME, '../resources/for_each')
+
+        graph_manager = TerraformGraphManager(db_connector=NetworkxConnector())
+        # Shouldn't throw exception
+        graph_manager.build_graph_from_source_directory(resources_dir)

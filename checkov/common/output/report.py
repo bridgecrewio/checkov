@@ -16,6 +16,7 @@ from checkov.common.bridgecrew.code_categories import CodeCategoryType
 from checkov.common.bridgecrew.severities import BcSeverities, Severity
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.enums import CheckResult, ErrorStatus
+from checkov.common.output.ai import OpenAi
 from checkov.common.typing import _ExitCodeThresholds, _ScaExitCodeThresholds
 from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME
 from checkov.common.util.consts import PARSE_ERROR_FAIL_FLAG, CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
@@ -269,7 +270,8 @@ class Report:
             created_baseline_path: str | None = None,
             baseline: Baseline | None = None,
             use_bc_ids: bool = False,
-            summary_position: str = 'top'
+            summary_position: str = 'top',
+            openai_api_key: str | None = None,
     ) -> str:
         summary = self.get_summary()
         output_data = colored(f"{self.check_type} scan results:\n", "blue")
@@ -302,6 +304,8 @@ class Report:
             if not is_quiet:
                 for record in self.passed_checks:
                     output_data += record.to_string(compact=is_compact, use_bc_ids=use_bc_ids)
+            if self.failed_checks:
+                OpenAi(api_key=openai_api_key).enhance_records(runner_type=self.check_type, records=self.failed_checks)
             for record in self.failed_checks:
                 output_data += record.to_string(compact=is_compact, use_bc_ids=use_bc_ids)
             if not is_quiet:
@@ -329,127 +333,6 @@ class Report:
     @staticmethod
     def _print_parsing_error_console(file: str) -> None:
         print(colored(f"Error parsing file {file}", "red"))
-
-    def get_sarif_json(self, tool: str) -> Dict[str, Any]:
-        runs = []
-        rules = []
-        results = []
-        ruleset = set()
-        idx = 0
-        level = "warning"
-        tool = tool if tool else "Bridgecrew"
-        information_uri = "https://docs.bridgecrew.io" if tool.lower() == "bridgecrew" else "https://checkov.io"
-
-        for record in self.failed_checks + self.skipped_checks:
-            if self.check_type == CheckType.SCA_PACKAGE and record.check_name != SCA_PACKAGE_SCAN_CHECK_NAME:
-                continue
-
-            help_uri = record.guideline
-            if record.vulnerability_details:
-                # use the CVE link, if it is a SCA record
-                help_uri = record.vulnerability_details.get("link")
-
-            rule = {
-                "id": record.check_id,
-                "name": record.check_name,
-                "shortDescription": {
-                    "text": record.short_description if record.short_description else record.check_name,
-                },
-                "fullDescription": {
-                    "text": record.description if record.description else record.check_name,
-                },
-                "help": {
-                    "text": f'"{record.check_name}\nResource: {record.resource}"',
-                },
-                "defaultConfiguration": {"level": "error"},
-            }
-            if help_uri:
-                rule["helpUri"] = help_uri
-
-            if record.check_id not in ruleset:
-                ruleset.add(record.check_id)
-                rules.append(rule)
-                idx = rules.index(rule)
-            else:
-                for r in rules:
-                    if r['id'] == rule['id']:
-                        idx = rules.index(r)
-                        break
-            if record.file_line_range[0] == 0:
-                record.file_line_range[0] = 1
-            if record.file_line_range[1] == 0:
-                record.file_line_range[1] = 1
-
-            if record.severity:
-                level = SEVERITY_TO_SARIF_LEVEL.get(record.severity.name.lower(), "none")
-            elif record.check_result.get("result") == CheckResult.FAILED:
-                level = "error"
-
-            result = {
-                "ruleId": record.check_id,
-                "ruleIndex": idx,
-                "level": level,
-                "attachments": [{'description': detail} for detail in record.details],
-                "message": {
-                    "text": record.description if record.description else record.check_name,
-                },
-                "locations": [
-                    {
-                        "physicalLocation": {
-                            "artifactLocation": {"uri": record.file_path.lstrip("/")},
-                            "region": {
-                                "startLine": int(record.file_line_range[0]),
-                                "endLine": int(record.file_line_range[1]),
-                            },
-                        }
-                    }
-                ],
-            }
-
-            if record.check_result.get("result") == CheckResult.SKIPPED:
-                # sca_package suppressions can only be enabled via flag
-                # other runners only report in source suppressions
-                kind = "external" if record.vulnerability_details else "inSource"
-                justification = record.check_result.get("suppress_comment")
-                if justification is None:
-                    justification = "No comment provided"
-
-                result["suppressions"] = [
-                    {
-                        "kind": kind,
-                        "justification": justification,
-                    }
-                ]
-
-            results.append(result)
-
-        runs.append({
-            "tool": {
-                "driver": {
-                    "name": tool,
-                    "version": version,
-                    "informationUri": information_uri,
-                    "rules": rules,
-                    "organization": "bridgecrew",
-                }
-            },
-            "results": results,
-        })
-        sarif_template_report = {
-            "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
-            "version": "2.1.0",
-            "runs": runs,
-        }
-        return sarif_template_report
-
-    def write_sarif_output(self, tool: str) -> None:
-        try:
-            with open("results.sarif", "w") as f:
-                f.write(json.dumps(self.get_sarif_json(tool)))
-                print("\nWrote output in SARIF format to the file 'results.sarif'")
-        except EnvironmentError as e:
-            print("\nAn error occurred while writing SARIF results to file: results.sarif")
-            print(f"More details: \n {e}")
 
     @staticmethod
     def get_junit_xml_string(ts: list[TestSuite]) -> str:

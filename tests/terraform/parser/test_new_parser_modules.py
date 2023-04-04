@@ -7,8 +7,10 @@ from unittest import mock
 import pytest
 
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
-from checkov.terraform import TFDefinitionKey, TFModule
+from checkov.terraform.modules.module_objects import TFDefinitionKey, TFModule
+from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.tf_parser import TFParser
+from checkov.terraform.parser import Parser
 
 
 @pytest.fixture
@@ -19,6 +21,10 @@ def tmp_path(request, tmp_path: Path):
 
 @pytest.mark.usefixtures("tmp_path")
 class TestParserInternals(unittest.TestCase):
+    expected_source_modules = {0: set(), 1: set(), 2: set(), 3: {0}, 4: {0}, 5: {0}, 6: {0}, 7: {1}, 8: {1}, 9: {1},
+                               10: {1}, 11: {3}, 12: {3}, 13: {3}, 14: {3}, 15: {3}, 16: {7}, 17: {7}, 18: {7}, 19: {7},
+                               20: {7}, 21: {4}, 22: {4}, 23: {4}, 24: {4}, 25: {4}, 26: {8}, 27: {8}, 28: {8}, 29: {8},
+                               30: {8}}
 
     def setUp(self) -> None:
         from checkov.terraform.module_loading.registry import ModuleLoaderRegistry
@@ -176,3 +182,42 @@ class TestParserInternals(unittest.TestCase):
         assert module2_key1_nest1 in o_definitions
         assert module2_key0_nest0 in o_definitions
         assert module2_key1_nest0 in o_definitions
+
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "True"})
+    def test_new_tf_parser(self):
+        parser = TFParser()
+        directory = os.path.join(self.resources_dir, "parser_dup_nested")
+        module, tf_definitions = parser.parse_hcl_module(source_dir=directory, source='terraform')
+
+        local_graph = TerraformLocalGraph(module)
+        local_graph.build_graph(render_variables=True)
+
+        for i, vertex in enumerate(local_graph.vertices):
+            assert vertex.source_module == self.expected_source_modules[i]
+
+        assert len(local_graph.edges) == 20
+
+        assert module
+        assert tf_definitions
+
+    def test_old_parser(self):
+        parser = Parser()
+        directory = os.path.join(self.resources_dir, "parser_dup_nested")
+        module, tf_definitions = parser.parse_hcl_module(source_dir=directory, source='terraform')
+
+        local_graph = TerraformLocalGraph(module)
+        local_graph.build_graph(render_variables=True)
+
+        for i, vertex in enumerate(local_graph.vertices):
+            assert vertex.source_module == self.expected_source_modules[i]
+
+        assert len(local_graph.edges) == 20
+
+        assert module
+        assert tf_definitions
+
+    def test_parser_with_tvars(self):
+        parser = TFParser()
+        directory = os.path.join(self.resources_dir, "parser_tfvars")
+        module, tf_definitions = parser.parse_hcl_module(source_dir=directory, source='terraform')
+        assert module
