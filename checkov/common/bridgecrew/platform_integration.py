@@ -173,7 +173,7 @@ class BcPlatformIntegration:
             raise ValueError("A Prisma Cloud token was set, but no Prisma Cloud API URL was set")
         if not self.bc_api_key:
             # should usually not happen
-            raise ValueError("A Prisma Cloud or Birdgecrew token was not set")
+            raise ValueError("A Prisma Cloud or Bridgecrew token was not set")
         if '::' not in self.bc_api_key:
             raise ValueError(
                 "A Prisma Cloud token was set, but the token is not in the correct format: <access_key_id>::<secret_key>")
