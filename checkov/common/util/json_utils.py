@@ -37,7 +37,7 @@ class CustomJSONEncoder(json.JSONEncoder):
         elif isinstance(o, TFDefinitionKey):
             return str(o)
         elif isinstance(o, TFModule):
-            return str(o)
+            return dict(o)
         elif isinstance(o, PotentialSecret):
             return o.json()
         else:

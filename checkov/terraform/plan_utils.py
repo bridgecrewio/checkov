@@ -63,39 +63,55 @@ def create_definitions(
     return tf_definitions, definitions_raw
 
 
-def build_definitions_context(definitions: Dict[str, DictNode], definitions_raw: Dict[str, List[Tuple[int, str]]]) -> \
-        Dict[str, Dict[str, Any]]:
+def build_definitions_context(
+    definitions: dict[str, dict[str, list[dict[str, Any]]]],
+    definitions_raw: Dict[str, List[Tuple[int, str]]]
+) -> Dict[str, Dict[str, Any]]:
     definitions_context = defaultdict(dict)
-    block_type = 'resource'
+    supported_block_types = ("data", "resource")
     for full_file_path, definition in definitions.items():
-        entities = definition.get(block_type, [])
-        for entity in entities:
-            context_parser = parser_registry.context_parsers[block_type]
-            definition_path = context_parser.get_entity_context_path(entity)
+        for block_type in supported_block_types:
+            entities = definition.get(block_type, [])
+            for entity in entities:
+                context_parser = parser_registry.context_parsers[block_type]
+                definition_path = context_parser.get_entity_context_path(entity)
 
-            if len(definition_path) > 1:
-                resource_type = definition_path[0]
-                resource_name = definition_path[1]
-                entity_id = entity.get(resource_type, {}).get(resource_name, {}).get(TF_PLAN_RESOURCE_ADDRESS)
-            else:
-                entity_id = definition_path[0]
+                if len(definition_path) > 1:
+                    resource_type = definition_path[0]
+                    resource_name = definition_path[1]
+                    entity_id = entity.get(resource_type, {}).get(resource_name, {}).get(TF_PLAN_RESOURCE_ADDRESS)
+                else:
+                    entity_id = definition_path[0]
 
-            # Entity can exist only once per dir, for file as well
-            entity_context = get_entity_context(definitions, definitions_raw, definition_path, full_file_path, entity_id)
-            definitions_context[full_file_path][entity_id] = entity_context
+                # Entity can exist only once per dir, for file as well
+                entity_context = get_entity_context(
+                    definitions=definitions,
+                    definitions_raw=definitions_raw,
+                    definition_path=definition_path,
+                    full_file_path=full_file_path,
+                    entity_id=entity_id,
+                    block_type=block_type,
+                )
+                definitions_context[full_file_path][entity_id] = entity_context
     return definitions_context
 
 
-def get_entity_context(definitions, definitions_raw, definition_path, full_file_path, entity_id):
-    # return self.context.get(full_file_path, {})
-    entity_context = {}
+def get_entity_context(
+    definitions: dict[str, dict[str, list[dict[str, Any]]]],
+    definitions_raw: dict[str, list[tuple[int, str]]],
+    definition_path: list[str],
+    full_file_path: str,
+    entity_id: str,
+    block_type: str = "resource",
+) -> dict[str, Any]:
+    entity_context: dict[str, Any] = {}
 
     if full_file_path not in definitions:
         logging.debug(
             f'Tried to look up file {full_file_path} in TF plan entity definitions, but it does not exist')
         return entity_context
 
-    for resource in definitions.get(full_file_path, {}).get('resource', []):
+    for resource in definitions.get(full_file_path, {}).get(block_type, []):
         resource_type = definition_path[0]
         resource_type_dict = resource.get(resource_type)
         if not resource_type_dict:

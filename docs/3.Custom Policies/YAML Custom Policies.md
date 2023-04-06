@@ -115,7 +115,7 @@ definition:
 | Is Empty                     | `is_empty`                     |
 | Is Not Empty                 | `is_not_empty`                 |
 | Length Equals                | `length_equals`                |
-| Length Not Equals            | `length_equals`                |
+| Length Not Equals            | `length_not_equals`            |
 | Length Less Than             | `length_less_than`             |
 | Length Less Than Or Equal    | `length_less_than_or_equal`    |
 | Length Greater Than          | `length_greater_than`          |

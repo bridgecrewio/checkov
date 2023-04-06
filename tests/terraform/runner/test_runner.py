@@ -474,6 +474,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(len(result.passed_checks), 1)
         self.assertIn('some-module', map(lambda record: record.resource, result.passed_checks))
 
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "False"})
     def test_terraform_multiple_module_versions(self):
         # given
         root_dir = Path(__file__).parent / "resources/multiple_module_versions"

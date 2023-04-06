@@ -18,6 +18,10 @@ class LengthGreaterThanOrEqualAttributeSolver(LengthLessThanAttributeSolver):
         if value_int is None:
             return False
         if isinstance(attr, Sized):
+            # this resolver assumes the attribute is a string or a list.
+            # if a dict is received, default the length to 1.
+            if isinstance(attr, dict):
+                return 1 >= value_int
             return len(attr) >= value_int
 
         return False

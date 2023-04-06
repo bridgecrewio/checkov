@@ -376,7 +376,8 @@ class RunnerRegistry:
                     created_baseline_path=created_baseline_path,
                     baseline=baseline,
                     use_bc_ids=config.output_bc_ids,
-                    summary_position=config.summary_position
+                    summary_position=config.summary_position,
+                    openai_api_key=config.openai_api_key,
                 )
 
             self._print_to_console(

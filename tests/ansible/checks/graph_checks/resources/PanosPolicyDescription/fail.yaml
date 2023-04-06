@@ -22,6 +22,7 @@
         application: ['ssl']
         service: ['service-http', 'service-https']
         action: 'allow'
+        log_setting: 'default'
         # No description provided
 
     - name: Security_rule_fail_2
@@ -35,3 +36,4 @@
         service: ['service-http', 'service-https']
         action: 'allow'
         description: '' # Description is empty
+        log_setting: 'default'
