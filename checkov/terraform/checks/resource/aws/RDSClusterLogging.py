@@ -6,7 +6,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 
 
 class DBInstanceLogging(BaseResourceValueCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         """
         NIST.800-53.r5 AC-2(4), NIST.800-53.r5 AC-4(26), NIST.800-53.r5 AC-6(9), NIST.800-53.r5 AU-10,
         NIST.800-53.r5 AU-12, NIST.800-53.r5 AU-2, NIST.800-53.r5 AU-3, NIST.800-53.r5 AU-6(3), NIST.800-53.r5 AU-6(4),
@@ -16,18 +16,12 @@ class DBInstanceLogging(BaseResourceValueCheck):
         """
         name = "Ensure that RDS Cluster log capture is enabled"
         id = "CKV_AWS_324"
-        supported_resources = ["aws_rds_cluster"]
-        categories = [CheckCategories.LOGGING]
+        supported_resources = ("aws_rds_cluster",)
+        categories = (CheckCategories.LOGGING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self) -> str:
         return "enabled_cloudwatch_logs_exports/[0]"
-
-    def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
-        logs_exports = conf.get('enabled_cloudwatch_logs_exports', [[]])
-        if not logs_exports:
-            return CheckResult.FAILED
-        return CheckResult.PASSED if logs_exports[0] else CheckResult.FAILED
 
     def get_expected_value(self) -> Any:
         return ANY_VALUE

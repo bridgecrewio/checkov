@@ -15,6 +15,7 @@ class TestRDSClusterAuditLogging(unittest.TestCase):
 
         passing_resources = {
             "aws_rds_cluster.pass",
+            "aws_rds_cluster.pass2",
         }
         failing_resources = {
             "aws_rds_cluster.fail",
