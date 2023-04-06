@@ -1,0 +1,5 @@
+pass:
+  - "oci_containerengine_cluster.pass_1"
+fail:
+  - "oci_containerengine_cluster.fail_1"
+  - "oci_containerengine_cluster.fail_2"
