@@ -23,3 +23,4 @@
         service: ['service-http', 'service-https']
         description: "A nice rule" # Description provided
         action: 'allow'
+        log_setting: 'default'

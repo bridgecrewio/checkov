@@ -90,6 +90,8 @@ class BcPlatformIntegration:
         self.bucket: str | None = None
         self.credentials: dict[str, str] | None = None
         self.repo_path: str | None = None
+        self.support_bucket: str | None = None
+        self.support_repo_path: str | None = None
         self.repo_id: str | None = None
         self.repo_branch: str | None = None
         self.skip_fixes = False
@@ -111,6 +113,7 @@ class BcPlatformIntegration:
         self.http: urllib3.PoolManager | urllib3.ProxyManager | None = None
         self.bc_skip_mapping = False
         self.cicd_details: _CicdDetails = {}
+        self.support_flag_enabled = False
 
     def set_bc_api_url(self, new_url: str) -> None:
         self.bc_api_url = normalize_bc_url(new_url)
@@ -270,8 +273,9 @@ class BcPlatformIntegration:
 
         try:
             self.skip_fixes = True  # no need to run fixes on CI integration
-            repo_full_path, response = self.get_s3_role(self.repo_id)  # type: ignore
+            repo_full_path, support_path, response = self.get_s3_role(self.repo_id)  # type: ignore
             self.bucket, self.repo_path = repo_full_path.split("/", 1)
+
             self.timestamp = self.repo_path.split("/")[-2]
             self.credentials = cast("dict[str, str]", response["creds"])
             config = Config(
@@ -287,6 +291,14 @@ class BcPlatformIntegration:
                 region_name=region,
                 config=config,
             )
+
+            if support_path:
+                self.support_bucket, self.support_repo_path = support_path.split("/", 1)
+            elif self.support_flag_enabled:
+                logging.debug('--support was used, but we did not get a support file upload path in the platform response. Using the old location.')
+                self.support_bucket = self.bucket
+                self.support_repo_path = self.repo_path
+
             self.use_s3_integration = True
         except MaxRetryError:
             logging.error("An SSL error occurred connecting to the platform. If you are on a VPN, please try "
@@ -305,13 +317,13 @@ class BcPlatformIntegration:
             logging.error("Received an error response during authentication")
             raise
 
-    def get_s3_role(self, repo_id: str) -> tuple[str, dict[str, Any]]:
+    def get_s3_role(self, repo_id: str) -> tuple[str, str | None, dict[str, Any]]:
         token = self.get_auth_token()
 
         if not self.http:
             raise AttributeError("HTTP manager was not correctly created")
 
-        request = self.http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id}),  # type:ignore[no-untyped-call]
+        request = self.http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id, "support": self.support_flag_enabled}),  # type:ignore[no-untyped-call]
                                     headers=merge_dicts({"Authorization": token, "Content-Type": "application/json"},
                                                         get_user_agent_header()))
         if request.status == 403:
@@ -333,7 +345,8 @@ class BcPlatformIntegration:
                 response = json.loads(request.data.decode("utf8"))
 
         repo_full_path = response["path"]
-        return repo_full_path, response
+        support_path = response.get("supportPath")
+        return repo_full_path, support_path, response
 
     def is_integration_configured(self) -> bool:
         """
@@ -478,15 +491,21 @@ class BcPlatformIntegration:
         if not self.bucket or not self.repo_path:
             logging.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
             return
-        persist_run_metadata(run_metadata, self.s3_client, self.bucket, self.repo_path)
+        persist_run_metadata(run_metadata, self.s3_client, self.bucket, self.repo_path, True)
+        # only upload it if we did not fall back to use the same location
+        if self.support_bucket and self.support_repo_path and self.support_repo_path != self.repo_path:
+            logging.debug('Also uploading run_metadata.json to support location')
+            persist_run_metadata(run_metadata, self.s3_client, self.support_bucket, self.support_repo_path, False)
 
     def persist_logs_stream(self, logs_stream: StringIO) -> None:
         if not self.use_s3_integration or not self.s3_client:
             return
-        if not self.bucket or not self.repo_path:
-            logging.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
+        if not self.support_bucket or not self.support_repo_path:
+            logging.error(f"Something went wrong with the log upload location: bucket {self.support_bucket}, repo path {self.support_repo_path}")
             return
-        persist_logs_stream(logs_stream, self.s3_client, self.bucket, self.repo_path)
+        # use checkov_results if we fall back to using the same location
+        log_path = f'{self.support_repo_path}/checkov_results' if self.support_repo_path == self.repo_path else self.support_repo_path
+        persist_logs_stream(logs_stream, self.s3_client, self.support_bucket, log_path)
 
     def commit_repository(self, branch: str) -> str | None:
         """

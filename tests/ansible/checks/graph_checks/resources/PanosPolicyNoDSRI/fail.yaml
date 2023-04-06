@@ -24,3 +24,4 @@
         disable_server_response_inspection: true
         action: 'allow'
         description: 'The description'
+        log_setting: 'default'
