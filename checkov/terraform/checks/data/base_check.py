@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from abc import abstractmethod
+from collections.abc import Iterable
 from typing import Dict, List, Callable, Optional, Any
 
 from checkov.common.checks.base_check import BaseCheck
@@ -8,8 +11,14 @@ from checkov.terraform.checks.data.registry import data_registry
 
 
 class BaseDataCheck(BaseCheck):
-    def __init__(self, name: str, id: str, categories: List[CheckCategories], supported_data: List[str],
-                 guideline=None) -> None:
+    def __init__(
+        self,
+        name: str,
+        id: str,
+        categories: Iterable[CheckCategories],
+        supported_data: Iterable[str],
+        guideline: str | None = None,
+    ) -> None:
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_data,
                          block_type="data", guideline=guideline)
         self.supported_data = supported_data
