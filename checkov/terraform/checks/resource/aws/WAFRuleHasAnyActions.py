@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 class WAFRuleHasAnyActions(BaseResourceCheck):
     def __init__(self):
         name = "Ensure WAF rule has any actions"
-        id = "CKV_AWS_338"
+        id = "CKV_AWS_342"
         supported_resources = ['aws_waf_web_acl', 'aws_wafregional_web_acl', 'aws_wafv2_web_acl',
                                'aws_wafv2_rule_group', 'aws_wafregional_rule_group', 'aws_waf_rule_group']
         categories = [CheckCategories.APPLICATION_SECURITY]
