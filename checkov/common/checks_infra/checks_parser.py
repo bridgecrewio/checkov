@@ -228,6 +228,9 @@ class GraphCheckParser(BaseGraphCheckParser):
                     or (isinstance(resource_type, list) and resource_type[0].lower() == "all")
             ):
                 check.resource_types = resources_types or []
+            elif isinstance(resource_type, str):
+                #  for the case the "resource_types" value is a string, which can result in a silent exception
+                check.resource_types = [resource_type]
             else:
                 check.resource_types = resource_type
 

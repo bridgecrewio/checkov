@@ -1,0 +1,17 @@
+metadata:
+  id: "CKV2_OCI_5"
+  name: "Ensure Kubernetes Engine Cluster boot volume is configured with in-transit data encryption"
+  category: "ENCRYPTION"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types: "oci_containerengine_node_pool"
+      attribute: "node_config_details.is_pv_encryption_in_transit_enabled"
+      operator: "exists"
+
+    - cond_type: "attribute"
+      resource_types: "oci_containerengine_node_pool"
+      attribute: "node_config_details.is_pv_encryption_in_transit_enabled"
+      operator: "equals_ignore_case"
+      value: "true"
