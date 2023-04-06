@@ -1,0 +1,4 @@
+pass:
+  - "aws_sqs_queue.pass"
+fail:
+  - "aws_sqs_queue.fail"
