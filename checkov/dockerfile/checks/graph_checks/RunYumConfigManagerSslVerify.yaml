@@ -1,0 +1,11 @@
+metadata:
+  id: "CKV2_DOCKER_15"
+  name: "Ensure that the yum and dnf package managers are not configured to disable SSL certificate validation via the 'sslverify' configuration option"
+  category: "APPLICATION_SECURITY"
+definition:
+  cond_type: attribute
+  resource_types:
+    - RUN
+  attribute: value
+  operator: not_regex_match
+  value: "(?i).*(((yum)|(dnf))(\\s+|-)config-manager[^\\|&;]*\\s+--setopt=['\"]?([^=\\s]+\\.)?sslverify['\"]?=((0)|('0')|(\"0\")|(false)|('false')|(\"false\")|(no)|('no')|(\"no\"))['\"]?).*"

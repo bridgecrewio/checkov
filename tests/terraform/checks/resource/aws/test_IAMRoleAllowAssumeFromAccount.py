@@ -1,4 +1,3 @@
-
 import unittest
 from pathlib import Path
 
@@ -21,17 +20,20 @@ class TestIAMRoleAllowAssumeFromAccount(unittest.TestCase):
         passing_resources = {
             "aws_iam_role.pass",
             "aws_iam_role.pass2",
+            "aws_iam_role.pass3",
         }
         failing_resources = {
             "aws_iam_role.fail",
             "aws_iam_role.fail2",
+            "aws_iam_role.fail3",
+            "aws_iam_role.fail4",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 2)
-        self.assertEqual(summary["failed"], 2)
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
