@@ -378,6 +378,21 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_AzureStorageAccConfigWithPrivateEndpoint(self):
         self.go("AzureStorageAccConfigWithPrivateEndpoint")
+    
+    def test_OCI_K8EngineClusterBootVolConfigInTransitEncryption(self):
+            self.go("OCI_K8EngineClusterBootVolConfigInTransitEncryption")
+
+    def test_OCI_K8EngineClusterPodSecPolicyEnforced(self):
+            self.go("OCI_K8EngineClusterPodSecPolicyEnforced")
+
+    def test_OCI_KubernetesEngineClusterEndpointConfigWithNSG(self):
+            self.go("OCI_KubernetesEngineClusterEndpointConfigWithNSG")
+
+    def test_OCI_NFSaccessRestrictedToRootUsers(self):
+            self.go("OCI_NFSaccessRestrictedToRootUsers")
+
+    def test_OCI_NSGNotAllowRDP(self):
+            self.go("OCI_NSGNotAllowRDP")
 
     def test_registry_load(self):
         registry = Registry(parser=GraphCheckParser(), checks_dir=str(

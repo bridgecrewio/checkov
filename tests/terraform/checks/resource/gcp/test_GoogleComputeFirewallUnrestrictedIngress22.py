@@ -1,5 +1,8 @@
+import os
 import unittest
 from pathlib import Path
+
+import mock
 
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.gcp.GoogleComputeFirewallUnrestrictedIngress22 import check
@@ -7,6 +10,7 @@ from checkov.terraform.runner import Runner
 
 
 class TestGoogleComputeFirewallUnrestrictedIngress22(unittest.TestCase):
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
     def test(self):
         # given
         test_files_dir = Path(__file__).parent / "example_GoogleComputeFirewallUnrestrictedIngress22"

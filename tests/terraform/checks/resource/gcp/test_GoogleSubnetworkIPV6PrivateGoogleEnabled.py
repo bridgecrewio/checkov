@@ -34,7 +34,7 @@ class TestGoogleIPV6PrivateGoogleEnabled(unittest.TestCase):
         self.assertEqual(summary["failed"], 2)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
-        self.assertEqual(summary["resource_count"], 5)  # 1 unknown
+        self.assertEqual(summary["resource_count"], 6)  # 2 unknown
 
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)
