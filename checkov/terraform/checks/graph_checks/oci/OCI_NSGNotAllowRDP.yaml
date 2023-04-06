@@ -1,0 +1,68 @@
+metadata:
+  id: "CKV2_OCI_2"
+  name: "Ensure NSG does not allow all traffic on RDP port (3389)"
+  category: "NETWORKING"
+
+definition:
+  or:
+    - and:
+        - cond_type: "attribute"
+          resource_types: "oci_core_network_security_group_security_rule"
+          attribute: "direction"
+          operator: "equals_ignore_case"
+          value: "INGRESS"
+
+        - cond_type: "attribute"
+          resource_types: "oci_core_network_security_group_security_rule"
+          attribute: "source"
+          operator: "not_equals"
+          value: "0.0.0.0/0"
+
+        - cond_type: "attribute"
+          resource_types: "oci_core_network_security_group_security_rule"
+          attribute: "protocol"
+          operator: "not_equals_ignore_case"
+          value: "all"
+
+        - or:
+            - cond_type: "attribute"
+              resource_types: "oci_core_network_security_group_security_rule"
+              attribute: "tcp_options"
+              operator: "exists"
+
+            - cond_type: "attribute"
+              resource_types: "oci_core_network_security_group_security_rule"
+              attribute: "udp_options"
+              operator: "exists"
+
+            - cond_type: "attribute"
+              resource_types: "oci_core_network_security_group_security_rule"
+              attribute: "protocol"
+              operator: "not_equals"
+              value: 1
+
+    - and:
+        - cond_type: "attribute"
+          resource_types: "oci_core_network_security_group_security_rule"
+          attribute: "tcp_options.destination_port_range.min"
+          operator: "not_equals"
+          value: 3389
+
+        - cond_type: "attribute"
+          resource_types: "oci_core_network_security_group_security_rule"
+          attribute: "tcp_options.destination_port_range.min"
+          operator: "greater_than"
+          value: 3389
+
+    - and:
+        - cond_type: "attribute"
+          resource_types: "oci_core_network_security_group_security_rule"
+          attribute: "udp_options.destination_port_range.min"
+          operator: "not_equals"
+          value: 3389
+
+        - cond_type: "attribute"
+          resource_types: "oci_core_network_security_group_security_rule"
+          attribute: "udp_options.destination_port_range.min"
+          operator: "greater_than"
+          value: 3389
