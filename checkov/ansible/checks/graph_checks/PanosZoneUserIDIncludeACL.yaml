@@ -1,0 +1,31 @@
+metadata:
+  id: "CKV_PAN_15"
+  name: "Ensure an Include ACL is defined for a Zone when User-ID is enabled"
+  category: "NETWORKING"
+definition:
+  or:
+      # If User-ID is enabled, also check for a non-empty Include ACL
+      - and:
+            - cond_type: attribute
+              resource_types:
+                - tasks.paloaltonetworks.panos.panos_zone
+              attribute: enable_userid
+              operator: equals
+              value: true
+            - cond_type: attribute
+              resource_types:
+                - tasks.paloaltonetworks.panos.panos_zone
+              attribute: include_acl
+              operator: exists
+            - cond_type: attribute
+              resource_types:
+                - tasks.paloaltonetworks.panos.panos_zone
+              attribute: include_acl
+              operator: is_not_empty
+
+      # Or if User-ID is not enabled, there is no need to check for an Include ACL
+      - cond_type: attribute
+        resource_types:
+          - tasks.paloaltonetworks.panos.panos_zone
+        attribute: enable_userid
+        operator: not_exists
