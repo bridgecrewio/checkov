@@ -49,31 +49,35 @@ def _get_commits_diff(root_folder: str, last_commit_sha: Optional[str] = None) -
     else:
         commits = list(repo.iter_commits(repo.active_branch))
     for previous_commit_idx in range(len(commits) - 1, 0, -1):
-        current_commit_idx = previous_commit_idx - 1
-        current_commit_hash = commits[current_commit_idx].hexsha
-        git_diff = commits[previous_commit_idx].diff(current_commit_hash, create_patch=True)
+        try:
+            current_commit_idx = previous_commit_idx - 1
+            current_commit_hash = commits[current_commit_idx].hexsha
+            git_diff = commits[previous_commit_idx].diff(current_commit_hash, create_patch=True)
 
-        for file_diff in git_diff:
-            curr_diff: Dict[str, str | Dict[str, str]] = {
-                COMMIT_HASH_KEY: current_commit_hash,
-            }
-            if file_diff.renamed_file:
-                logging.debug(f"File was renamed from {file_diff.rename_from} to {file_diff.rename_to}")
-                curr_diff[file_diff.a_path] = {
-                    'rename_from': file_diff.rename_from,
-                    'rename_to': file_diff.rename_to
+            for file_diff in git_diff:
+                curr_diff: Dict[str, str | Dict[str, str]] = {
+                    COMMIT_HASH_KEY: current_commit_hash,
                 }
+                if file_diff.renamed_file:
+                    logging.debug(f"File was renamed from {file_diff.rename_from} to {file_diff.rename_to}")
+                    curr_diff[file_diff.a_path] = {
+                        'rename_from': file_diff.rename_from,
+                        'rename_to': file_diff.rename_to
+                    }
+                    commits_diff.append(curr_diff)
+                    continue
+
+                elif file_diff.deleted_file:
+                    logging.debug(f"File {file_diff.a_path} was deleted")
+
+                base_diff_format = f'diff --git a/{file_diff.a_path} b/{file_diff.b_path}' \
+                                   f'\nindex 0000..0000 0000\n--- a/{file_diff.a_path}\n+++ b/{file_diff.b_path}\n'
+                file_name = file_diff.a_path if file_diff.a_path else file_diff.b_path
+                curr_diff[file_name] = base_diff_format + file_diff.diff.decode()
                 commits_diff.append(curr_diff)
-                continue
-
-            elif file_diff.deleted_file:
-                logging.debug(f"File {file_diff.a_path} was deleted")
-
-            base_diff_format = f'diff --git a/{file_diff.a_path} b/{file_diff.b_path}' \
-                               f'\nindex 0000..0000 0000\n--- a/{file_diff.a_path}\n+++ b/{file_diff.b_path}\n'
-            file_name = file_diff.a_path if file_diff.a_path else file_diff.b_path
-            curr_diff[file_name] = base_diff_format + file_diff.diff.decode()
-            commits_diff.append(curr_diff)
+        except Exception as e:
+            logging.warning(f"got error while getting commits diff, iteration: {previous_commit_idx}, error: {e}")
+            continue
     logging.info("[_get_commits_diff] ended")
     return commits_diff
 
