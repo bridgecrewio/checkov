@@ -1,0 +1,27 @@
+metadata:
+  id: "CKV2_OCI_4"
+  name: "Ensure File Storage File System access is restricted to root users"
+  category: "GENERAL_SECURITY"
+
+definition:
+  or:
+    - cond_type: "attribute"
+      resource_types: "oci_file_storage_export"
+      attribute: "export_options[?(@.identity_squash =~ '(?i)^ROOT$')]"
+      operator: "jsonpath_not_exists"
+
+    - cond_type: "attribute"
+      resource_types: "oci_file_storage_export"
+      attribute: "export_options[?(@.identity_squash =~ '(?i)^ROOT$' & @.anonymous_gid == 65534 & @.anonymous_uid == 65534)]"
+      operator: "jsonpath_exists"
+
+
+#                       REGEX explained:
+# ============================================================ #
+# =~ is an inline regular expression matching operator.
+# '(?i)' is a modifier that enables case-insensitive matching.
+# '^' is the start of the string.
+# 'root' matches the case-insensitive string "root".
+# '$'' is the end of the string.
+
+# Therefore, =~ '(?i)^root$' matches the case-insensitive string "root".

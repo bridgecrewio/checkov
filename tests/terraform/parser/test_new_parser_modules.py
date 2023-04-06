@@ -215,3 +215,9 @@ class TestParserInternals(unittest.TestCase):
 
         assert module
         assert tf_definitions
+
+    def test_parser_with_tvars(self):
+        parser = TFParser()
+        directory = os.path.join(self.resources_dir, "parser_tfvars")
+        module, tf_definitions = parser.parse_hcl_module(source_dir=directory, source='terraform')
+        assert module

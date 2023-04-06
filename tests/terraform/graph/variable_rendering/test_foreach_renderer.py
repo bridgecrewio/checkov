@@ -51,6 +51,7 @@ def checkov_source_path() -> str:
         (6, None, False)
     ]
 )
+@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "False"})
 def test_static_foreach_resource(block_index, expected_res, obj):
     dir_name = 'foreach_resources/static_foreach_value'
     local_graph = build_and_get_graph_by_path(dir_name)[0]
@@ -215,6 +216,7 @@ def test_tf_definitions_and_breadcrumbs():
         assert expected_breadcrumbs[list(expected_breadcrumbs.keys())[0]][f'aws_s3_bucket.foreach_map{name}'][location_var][0]['path'].endswith('depend_resources/variable.tf')
 
 
+@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
 @pytest.mark.parametrize(
     "attrs,k_v_to_change,expected_attrs,expected_res",
     [
@@ -226,7 +228,8 @@ def test_tf_definitions_and_breadcrumbs():
         ({"test_key": ["${test_val}"]}, {"test_val": 123}, {"test_key": [123]}, ['test_key']),
         ({"test_key": ["${test_val}"]}, {"test_val": True}, {"test_key": [True]}, ['test_key']),
         ({"test_key": {"a": "${test_val}"}}, {"test_val": "new_val"}, {"test_key": {"a": "new_val"}}, ['test_key.a']),
-        ({"test_key": {"a": {"b": "${test_val}"}}}, {"test_val": "new_val"}, {"test_key": {"a": {"b": "new_val"}}}, ['test_key.a.b'])
+        ({"test_key": {"a": {"b": "${test_val}"}}}, {"test_val": "new_val"}, {"test_key": {"a": {"b": "new_val"}}}, ['test_key.a.b']),
+        ({'ports': '${each.value.port}', 'protocol': 'tcp'}, {'each.value': {'name': 'name-open-ssh', 'port': '22', 'range': '0.0.0.0/0', 'tag': 'allow-ssh'}}, {'ports': '22', 'protocol': 'tcp'}, ['ports'])
     ]
 )
 def test_update_attrs(attrs, k_v_to_change, expected_attrs, expected_res):
@@ -372,6 +375,7 @@ def test_foreach_module_with_more_than_two_resources(checkov_source_path):
     assert len(tf_definitions.keys()) == 17
 
 
+@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
 @pytest.mark.parametrize(
     "statement,expected",
     [
