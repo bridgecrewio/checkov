@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any
 
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.cyclonedx_consts import SCA_CHECKTYPES
+from checkov.common.util.http_utils import valid_url
 from checkov.version import version
 
 if TYPE_CHECKING:
@@ -100,7 +101,7 @@ class Sarif:
         }
 
         help_uri = record.guideline
-        if help_uri:
+        if valid_url(help_uri):
             rule["helpUri"] = help_uri
 
         return rule
@@ -127,7 +128,7 @@ class Sarif:
         }
 
         help_uri = details.get("link")
-        if help_uri:
+        if valid_url(help_uri):
             rule["helpUri"] = help_uri
 
         return rule
@@ -154,7 +155,7 @@ class Sarif:
         }
 
         help_uri = record.guideline
-        if help_uri:
+        if valid_url(help_uri):
             rule["helpUri"] = help_uri
 
         return rule

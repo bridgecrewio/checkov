@@ -380,6 +380,8 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                     module_name_index = len(full_definition_path) - full_definition_path[::-1][1:].index(BlockType.MODULE) - 1  # the next item after the last 'module' prefix is the module name
                     module_name = full_definition_path[module_name_index]
                     caller_context = definition_context[module].get(BlockType.MODULE, {}).get(module_name)
+                    if not caller_context:
+                        continue
                     caller_file_line_range = [caller_context.get('start_line'), caller_context.get('end_line')]
                     abs_caller_file = get_abs_path(module)
                     caller_file_path = f"/{os.path.relpath(abs_caller_file, root_folder)}"
@@ -452,6 +454,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                         entity_config=entity_config,
                         resource_attributes_to_omit=runner_filter.resource_attr_to_omit
                     )
+
                     record = Record(
                         check_id=check.id,
                         bc_check_id=check.bc_id,
@@ -568,7 +571,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
             definition_modules_context = definition_context.get(full_file_path, {}).get(BlockType.MODULE, {})
             for entity in definition.get(BlockType.MODULE, []):
                 module_name = module_context_parser.get_entity_context_path(entity)[0]
-                skipped_checks = definition_modules_context.get(module_name).get('skipped_checks')
+                skipped_checks = definition_modules_context.get(module_name, {}).get('skipped_checks')
                 resolved_paths = entity.get(module_name).get(RESOLVED_MODULE_ENTRY_NAME)
                 self.push_skipped_checks_down(definition_context, skipped_checks, resolved_paths)
 
