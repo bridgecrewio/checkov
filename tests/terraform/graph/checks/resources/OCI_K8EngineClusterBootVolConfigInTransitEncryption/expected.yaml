@@ -1,0 +1,6 @@
+pass:
+  - "oci_containerengine_node_pool.pass"
+
+fail:
+  - "oci_containerengine_node_pool.fail_1"
+  - "oci_containerengine_node_pool.fail_2"

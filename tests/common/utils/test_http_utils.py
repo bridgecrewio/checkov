@@ -7,7 +7,7 @@ from pytest_mock import MockerFixture
 from aioresponses import aioresponses
 import aiohttp
 
-from checkov.common.util.http_utils import request_wrapper, aiohttp_client_session_wrapper
+from checkov.common.util.http_utils import request_wrapper, aiohttp_client_session_wrapper, valid_url
 
 
 def get_report_url() -> str:
@@ -187,3 +187,19 @@ async def test_raiohttp_client_session_wrapper_with_one_not_handled_exception(mo
         except aiohttp.ServerTimeoutError:
             # case the specific error was raised
             assert True
+
+
+@pytest.mark.parametrize(
+    "input,expected",
+    [
+        (None, False),
+        ("", False),
+        ("/path/to", False),
+        ("some random text", False),
+        ("https://www.checkov.io", True),
+        ("https://docs.bridgecrew.io/docs/bc_aws_iam_45", True),
+    ],
+    ids=["None", "empty", "local path", "text", "url", "url with subdirectory"],
+)
+def test_valid_url(input, expected):
+    assert valid_url(input) == expected
