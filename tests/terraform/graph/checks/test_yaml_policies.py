@@ -479,3 +479,5 @@ def load_yaml_data(source_file_name: str, dir_path: str) -> dict[str, Any] | Non
         expected_data = yaml.safe_load(f)
 
     return json.loads(json.dumps(expected_data))
+
+
