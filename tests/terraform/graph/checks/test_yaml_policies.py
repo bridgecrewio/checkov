@@ -394,6 +394,21 @@ class TestYamlPolicies(unittest.TestCase):
     def test_OCI_NSGNotAllowRDP(self):
             self.go("OCI_NSGNotAllowRDP")
 
+    def test_GCPfirewallNotAllowsAllTrafficOnTelnetPort23(self):
+            self.go("GCPfirewallNotAllowsAllTrafficOnTelnetPort23")
+
+    def test_GCPfirewallRestrictAllTrafficOnMongoDBPort27017(self):
+            self.go("GCPfirewallRestrictAllTrafficOnMongoDBPort27017")
+
+    def test_GCPfirewallRestrictAllTrafficOnOracleDBPort1521(self):
+            self.go("GCPfirewallRestrictAllTrafficOnOracleDBPort1521")
+
+    def test_GCPfirewallRestrictAllTrafficOnPostgreSQLport5432(self):
+            self.go("GCPfirewallRestrictAllTrafficOnPostgreSQLport5432")
+
+    def test_GCPKubernetesClusterInRedundantZone(self):
+            self.go("GCPKubernetesClusterInRedundantZone")
+
     def test_registry_load(self):
         registry = Registry(parser=GraphCheckParser(), checks_dir=str(
             Path(__file__).parent.parent.parent.parent.parent / "checkov" / "terraform" / "checks" / "graph_checks"))
