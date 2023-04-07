@@ -1,0 +1,6 @@
+pass:
+  - "google_compute_firewall.pass"
+
+fail:
+  - "google_compute_firewall.fail_1"
+  - "google_compute_firewall.fail_2"

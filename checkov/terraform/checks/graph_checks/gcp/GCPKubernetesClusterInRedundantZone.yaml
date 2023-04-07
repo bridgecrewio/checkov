@@ -1,0 +1,19 @@
+metadata:
+  id: "CKV2_GCP_25"
+  name: "Ensure K8s cluster is located in at least 3 zones"
+  category: "KUBERNETES"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types: "google_container_cluster"
+      attribute: "location"
+      operator: "exists"
+
+    - cond_type: "attribute"
+      resource_types: "google_container_cluster"
+      attribute: "node_locations"
+      operator: "jsonpath_length_greater_than_or_equal"
+      value: "3"
+
+      

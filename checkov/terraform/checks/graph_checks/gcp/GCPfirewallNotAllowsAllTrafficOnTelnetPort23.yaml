@@ -1,0 +1,67 @@
+metadata:
+  id: "CKV2_GCP_23"
+  name: "Ensure firewall does NOT allow Telnet traffic (port 23)"
+  category: "NETWORKING"
+
+definition:
+  or:
+    - and:
+        - cond_type: "attribute"
+          resource_types: "google_compute_firewall"
+          attribute: "direction"
+          operator: "equals_ignore_case"
+          value: "INGRESS"
+
+        - cond_type: "attribute"
+          resource_types: "google_compute_firewall"
+          attribute: "source_ranges"
+          operator: "not_contains"
+          value: "0.0.0.0/0"
+
+        - cond_type: "attribute"
+          resource_types: "google_compute_firewall"
+          attribute: "source_ranges"
+          operator: "not_contains"
+          value: "0.0.0.0"
+
+        - cond_type: "attribute"
+          resource_types: "google_compute_firewall"
+          attribute: "source_ranges"
+          operator: "not_contains"
+          value: "::/0"
+
+        - cond_type: "attribute"
+          resource_types: "google_compute_firewall"
+          attribute: "source_ranges"
+          operator: "not_contains"
+          value: ":"
+
+    - and:
+        - cond_type: "attribute"
+          resource_types: "google_compute_firewall"
+          attribute: "allow.*.ports"
+          operator: "not_contains"
+          value: 23
+
+        - cond_type: "attribute"
+          resource_types: "google_compute_firewall"
+          attribute: "allow.*.ports"
+          operator: "not_contains"
+          value: "23"
+
+        - cond_type: "attribute"
+          resource_types: "google_compute_firewall"
+          attribute: "allow.*.ports"
+          operator: "exists"
+
+        - cond_type: "attribute"
+          resource_types: "google_compute_firewall"
+          attribute: "allow.*.protocol"
+          operator: "not_equals_ignore_case"
+          value: "TCP"
+
+        - cond_type: "attribute"
+          resource_types: "google_compute_firewall"
+          attribute: "allow.*.protocol"
+          operator: "not_equals_ignore_case"
+          value: "UDP"
