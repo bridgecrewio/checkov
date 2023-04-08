@@ -6,6 +6,7 @@ from checkov.common.checks_infra.solvers.attribute_solvers.base_attribute_solver
 
 def test_get_cached_jsonpath_statement(mocker: MockerFixture):
     # given
+    BaseAttributeSolver.jsonpath_parsed_statement_cache = {}  # reset cache
     statement = "policy.Statement[?(@.Effect == Allow)].Action[*]"
     solver_1 = BaseAttributeSolver(
         resource_types=["aws_iam_policy"],
