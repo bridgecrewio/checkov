@@ -10,7 +10,7 @@ class RedshiftClusterAutoSnap(BaseResourceNegativeValueCheck):
         Amazon Redshift clusters should have automatic snapshots enabled
         """
         name = "Ensure Amazon Redshift clusters should have automatic snapshots enabled"
-        id = "CKV_AWS_342"
+        id = "CKV_AWS_343"
         supported_resources = ['aws_redshift_cluster']
         categories = [CheckCategories.BACKUP_AND_RECOVERY]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,
