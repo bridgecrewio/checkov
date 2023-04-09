@@ -1,7 +1,5 @@
 from __future__ import annotations
 from enum import Enum
-from typing_extensions import TypedDict
-from typing import Union, Final
 
 
 class ValidationStatus(Enum):
@@ -32,23 +30,3 @@ class VerifySecretsResult(Enum):
         # needed, because of a Python 3.11 change
         return self.value
 
-
-GIT_HISTORY_NOT_BEEN_REMOVED = 'not-removed'
-ADDED = 'added'
-REMOVED = 'removed'
-GIT_HISTORY_OPTIONS = {ADDED, REMOVED}
-
-
-class CommitMetadata(TypedDict, total=False):
-    __commit_hash_key__: str
-    __committer__: str
-    __committed_datetime__: str
-
-
-COMMIT_METADATA: Final = "__commit_metadata__"
-COMMIT_HASH_KEY: Final = "__commit_hash_key__"
-COMMIT_COMMITTER: Final = '__committer__'
-COMMIT_DATETIME: Final = '__committed_datetime__'
-COMMIT_CONSTANTS = {COMMIT_HASH_KEY, COMMIT_COMMITTER, COMMIT_DATETIME}
-
-Commit = dict[str, Union[str, CommitMetadata]]

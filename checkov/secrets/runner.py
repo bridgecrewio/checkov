@@ -41,7 +41,8 @@ from checkov.runner_filter import RunnerFilter
 from checkov.secrets.consts import ValidationStatus, VerifySecretsResult
 from checkov.secrets.coordinator import EnrichedSecret, SecretsCoordinator
 from checkov.secrets.plugins.load_detectors import get_runnable_plugins
-from checkov.secrets.git_history_store import EnrichedPotentialSecret, GitHistorySecretStore
+from checkov.secrets.git_history_store import GitHistorySecretStore
+from checkov.secrets.git_types import EnrichedPotentialSecret
 from checkov.secrets.scan_git_history import GitHistoryScanner
 
 if TYPE_CHECKING:

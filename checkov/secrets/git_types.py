@@ -1,0 +1,75 @@
+from __future__ import annotations
+
+import logging
+from typing import Optional
+
+from detect_secrets.core.potential_secret import PotentialSecret
+from typing_extensions import TypedDict
+
+GIT_HISTORY_NOT_BEEN_REMOVED = 'not-removed'
+ADDED = 'added'
+REMOVED = 'removed'
+GIT_HISTORY_OPTIONS = {ADDED, REMOVED}
+
+
+CommitDiff = str
+
+
+class RenamedFile(TypedDict):
+    rename_from: str
+    rename_to: str
+
+
+class Commit:
+    __slots__ = ("metadata", "files", "renamed_files")
+
+    def __init__(
+            self,
+            metadata: CommitMetadata,
+            files: dict[str, CommitDiff] = None,
+            renamed_files: dict[str, RenamedFile] = None
+    ):
+        self.metadata: CommitMetadata = metadata
+        self.files: dict[str, CommitDiff] | None = files or {}
+        self.renamed_files: dict[str, RenamedFile] = renamed_files or {}
+
+    def add_file(self, filename: str, commit_diff: CommitDiff) -> None:
+        if self.files.get(filename):
+            logging.warning(f'add_file-file {filename} already exist in commit')
+            return
+        self.files[filename] = commit_diff
+
+    def rename_file(self, file_path: str, prev_filename: str, new_filename: str) -> None:
+        if self.renamed_files.get(new_filename):
+            logging.warning(f"rename_file-new filename {new_filename} was already renamed, might be an error")
+            return
+        self.renamed_files[file_path] = {
+            'rename_from': prev_filename,
+            'rename_to': new_filename
+        }
+
+    def remove_file(self, filename) -> None:
+        if self.files.get(filename):
+            del self.files[filename]
+
+
+class CommitMetadata:
+    __slots__ = ("commit_hash_key", "committer", "committed_datetime")
+
+    def __init__(self, commit_hash_key: str = None, committer: str = None, committed_datetime: str = None):
+        self.commit_hash_key: str | None = commit_hash_key
+        self.committer: str | None = committer
+        self.committed_datetime: str | None = committed_datetime
+
+
+class EnrichedPotentialSecretMetadata(TypedDict, total=False):
+    added_commit_hash: str
+    removed_commit_hash: str
+    code_line: Optional[str]
+    added_by: Optional[str]
+    removed_date: Optional[str]
+    added_date: Optional[str]
+
+
+class EnrichedPotentialSecret(EnrichedPotentialSecretMetadata):
+    potential_secret: PotentialSecret  # noqa: CCE003  # a static attribute
