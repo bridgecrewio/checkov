@@ -165,6 +165,9 @@ class Policy3dRunner(BasePostRunner):
                         failed_checks_by_resource[resource_id] = {}
                         failed_checks_by_resource[resource_id]["cves"] = result.get("vulnerabilities", [])
 
+                    for cve in failed_checks_by_resource[resource_id]["cves"]:
+                        cve["dockerImageName"] = result.get("dockerImageName")
+
             else:
                 # Save failed checks on a resource
                 iac_or_secrets = "secrets" if report.check_type == CheckType.SECRETS else "iac"
