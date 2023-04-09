@@ -61,7 +61,7 @@ class GitHistorySecretStore:
                 return
         code_line = search_for_code_line(commit.files[secret.filename], secret.secret_value, secret.is_added)
         enriched_potential_secret: EnrichedPotentialSecret = {
-            'added_commit_hash': commit.metadata.commit_hash_key,
+            'added_commit_hash': commit.metadata.commit_hash,
             'removed_commit_hash': '',
             'potential_secret': secret,
             'code_line': code_line,
@@ -77,7 +77,7 @@ class GitHistorySecretStore:
         if secrets_in_file:
             for secret_in_file in secrets_in_file:
                 if secret_in_file['potential_secret'].is_added:
-                    secret_in_file['removed_commit_hash'] = commit.metadata.commit_hash_key
+                    secret_in_file['removed_commit_hash'] = commit.metadata.commit_hash
                     secret_in_file['potential_secret'] = secret
                     secret_in_file['removed_date'] = commit.metadata.committed_datetime
                     break
@@ -93,13 +93,13 @@ class GitHistorySecretStore:
                 secret_in_file = self.secrets_by_file_value_type[secret_key]
                 for secret_data in secret_in_file:
                     # defines the secret in the old file as removed and add the secret to the new file
-                    secret_data['removed_commit_hash'] = commit.metadata.commit_hash_key
+                    secret_data['removed_commit_hash'] = commit.metadata.commit_hash
                     secret_data['removed_date'] = commit.metadata.committed_datetime
                     new_secret = copy.deepcopy(secret_data['potential_secret'])
                     new_secret.filename = rename_to
                     code = secret_data.get('code_line')
                     enriched_potential_secret: EnrichedPotentialSecret = {
-                        'added_commit_hash': commit.metadata.commit_hash_key,
+                        'added_commit_hash': commit.metadata.commit_hash,
                         'removed_commit_hash': '',
                         'potential_secret': new_secret,
                         'code_line': code,

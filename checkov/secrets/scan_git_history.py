@@ -58,7 +58,7 @@ def _get_commits_diff(root_folder: str, last_commit_sha: Optional[str] = None) -
             for file_diff in git_diff:
                 curr_diff: Commit = Commit(
                     metadata=CommitMetadata(
-                        commit_hash_key=current_commit_hash,
+                        commit_hash=current_commit_hash,
                         committer=committer,
                         committed_datetime=committed_datetime
                     )
@@ -150,7 +150,7 @@ def _run_scan_one_bulk(commits_diff: List[Commit] | Commit) -> List[RawStore]:
 def _run_scan_one_commit(commit: Commit) -> Tuple[List[RawStore], int]:
     results: List[RawStore] = []
     scanned_file_count = 0
-    commit_hash = commit.metadata.commit_hash_key
+    commit_hash = commit.metadata.commit_hash
     for file_name, file_diff in commit.files.items():
         file_results = [*scan.scan_diff(file_diff)]
         if file_results:

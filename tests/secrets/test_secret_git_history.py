@@ -339,6 +339,7 @@ def test_scan_git_history_real() -> None:
     report = runner.run(root_folder=str(dir_path), external_checks_dir=None,
                         runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
     assert len(report.failed_checks) == 2
-    assert report.failed_checks[0].added_commit_hash and report.failed_checks[0].removed_commit_hash is None
-    assert report.failed_checks[1].added_commit_hash and report.failed_checks[1].removed_commit_hash
+    assert report.failed_checks[0].added_commit_hash and not report.failed_checks[0].removed_commit_hash
+    assert report.failed_checks[0].added_date and not report.failed_checks[0].removed_date
+    assert report.failed_checks[1].added_commit_hash and report.failed_checks[1].removed_commit_hash and report.failed_checks[1].removed_date
     shutil.rmtree(tmp_git_conf_dir)  # just for cleaning

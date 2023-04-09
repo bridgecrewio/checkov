@@ -55,10 +55,10 @@ class Commit:
 
 
 class CommitMetadata:
-    __slots__ = ("commit_hash_key", "committer", "committed_datetime")
+    __slots__ = ("commit_hash", "committer", "committed_datetime")
 
-    def __init__(self, commit_hash_key: str, committer: str, committed_datetime: str):
-        self.commit_hash_key: str = commit_hash_key
+    def __init__(self, commit_hash: str, committer: str, committed_datetime: str):
+        self.commit_hash: str = commit_hash
         self.committer: str = committer
         self.committed_datetime: str = committed_datetime
 

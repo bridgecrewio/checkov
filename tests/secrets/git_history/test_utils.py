@@ -40,7 +40,7 @@ def mock_git_repo_commits1(root_folder: str, last_commit_sha: str) -> List[Commi
     commits_mock = [
         Commit(
             metadata=CommitMetadata(
-                commit_hash_key='8a21fa691e17907afee57e93b7820c5943b12746',
+                commit_hash='8a21fa691e17907afee57e93b7820c5943b12746',
                 committer='Cherry🍒',
                 committed_datetime='2022-12-14T16:10:21+00:00'),
             files={
@@ -48,7 +48,7 @@ def mock_git_repo_commits1(root_folder: str, last_commit_sha: str) -> List[Commi
         ),
         Commit(
             metadata=CommitMetadata(
-                commit_hash_key='d3249f33376b94a939b67a638aba4557b071875f',
+                commit_hash='d3249f33376b94a939b67a638aba4557b071875f',
                 committer='🍒Cherry🍒',
                 committed_datetime='2022-12-14T16:28:47+00:00'),
             files={
@@ -56,7 +56,7 @@ def mock_git_repo_commits1(root_folder: str, last_commit_sha: str) -> List[Commi
         ),
         Commit(
             metadata=CommitMetadata(
-                commit_hash_key='3d79bba03c6f0ddcfb8334f531701942c4be0f32',
+                commit_hash='3d79bba03c6f0ddcfb8334f531701942c4be0f32',
                 committer='Cherry🍒',
                 committed_datetime='2022-12-14T16:32:13+00:00'),
             files={
@@ -64,7 +64,7 @@ def mock_git_repo_commits1(root_folder: str, last_commit_sha: str) -> List[Commi
         ),
         Commit(
             metadata=CommitMetadata(
-                commit_hash_key='7dff3b21fc2563f51655f34f0d3601cdf79d0d5e',
+                commit_hash='7dff3b21fc2563f51655f34f0d3601cdf79d0d5e',
                 committer='🍒Cherry🍒',
                 committed_datetime='2022-12-14T16:54:05+00:00'),
             files={
@@ -72,7 +72,7 @@ def mock_git_repo_commits1(root_folder: str, last_commit_sha: str) -> List[Commi
         ),
         Commit(
             metadata=CommitMetadata(
-                commit_hash_key='6941281550a12659bdbe87c9a537f88124f78fac',
+                commit_hash='6941281550a12659bdbe87c9a537f88124f78fac',
                 committer='🍒Cherry🍒',
                 committed_datetime='2022-12-14T16:57:26+00:00'),
             files={
@@ -94,7 +94,7 @@ def mock_git_repo_commits2(root_folder: str, last_commit_sha: str) -> List[Commi
     commits_mock = [
         Commit(
             metadata=CommitMetadata(
-                commit_hash_key='11e59e4e578c6ebcb48aae1e5e078a54c62920eb',
+                commit_hash='11e59e4e578c6ebcb48aae1e5e078a54c62920eb',
                 committer='Mango🥭',
                 committed_datetime='2022-12-14T16:10:21+00:00'),
             files={
@@ -102,7 +102,7 @@ def mock_git_repo_commits2(root_folder: str, last_commit_sha: str) -> List[Commi
         ),
         Commit(
             metadata=CommitMetadata(
-                commit_hash_key='c7c932ef4d31c487a921d2ce8544a4a468adf6b9',
+                commit_hash='c7c932ef4d31c487a921d2ce8544a4a468adf6b9',
                 committer='🥭Mango🥭',
                 committed_datetime='2022-12-14T16:28:47+00:00'),
             files={
@@ -110,7 +110,7 @@ def mock_git_repo_commits2(root_folder: str, last_commit_sha: str) -> List[Commi
         ),
         Commit(
             metadata=CommitMetadata(
-                commit_hash_key='4b8321e46217a87e21240afd88cdc0f1a861c0f5',
+                commit_hash='4b8321e46217a87e21240afd88cdc0f1a861c0f5',
                 committer='Mango🥭',
                 committed_datetime='2022-12-14T16:32:13+00:00'),
             files={
@@ -118,7 +118,7 @@ def mock_git_repo_commits2(root_folder: str, last_commit_sha: str) -> List[Commi
         ),
         Commit(
             metadata=CommitMetadata(
-                commit_hash_key='7bb5c69d95b31bc2242bcf08ce25e74e953f9ae9',
+                commit_hash='7bb5c69d95b31bc2242bcf08ce25e74e953f9ae9',
                 committer='🥭Mango🥭',
                 committed_datetime='2022-12-14T16:54:05+00:00'),
             files={
@@ -126,7 +126,7 @@ def mock_git_repo_commits2(root_folder: str, last_commit_sha: str) -> List[Commi
         ),
         Commit(
             metadata=CommitMetadata(
-                commit_hash_key='2675bffd2662aae7025b7f3bb5fd384cdab355b1',
+                commit_hash='2675bffd2662aae7025b7f3bb5fd384cdab355b1',
                 committer='🥭Mango🥭',
                 committed_datetime='2022-12-14T16:57:26+00:00'),
             files={
@@ -146,7 +146,7 @@ def mock_git_repo_commits3(root_folder: str, last_commit_sha: str) -> List[Commi
     commits_mock = [
         Commit(
             metadata=CommitMetadata(
-                commit_hash_key='900b1e8f6f336a92e8f5fca3babca764e32c3b3d',
+                commit_hash='900b1e8f6f336a92e8f5fca3babca764e32c3b3d',
                 committer='baguette🥖',
                 committed_datetime='2022-12-14T16:10:21+00:00'),
             files={
@@ -154,7 +154,7 @@ def mock_git_repo_commits3(root_folder: str, last_commit_sha: str) -> List[Commi
         ),
         Commit(
             metadata=CommitMetadata(
-                commit_hash_key='4229974aec78152c426b40db8b6912ba098f3add',
+                commit_hash='4229974aec78152c426b40db8b6912ba098f3add',
                 committer='baguette🥖',
                 committed_datetime='2022-12-14T16:28:47+00:00'),
             files={
@@ -162,7 +162,7 @@ def mock_git_repo_commits3(root_folder: str, last_commit_sha: str) -> List[Commi
         ),
         Commit(
             metadata=CommitMetadata(
-                commit_hash_key='3c8cb7eedb3986308c96713fc65b006adcf3bc44',
+                commit_hash='3c8cb7eedb3986308c96713fc65b006adcf3bc44',
                 committer='baguette🥖',
                 committed_datetime='2022-12-14T16:32:13+00:00'),
             files={
@@ -170,7 +170,7 @@ def mock_git_repo_commits3(root_folder: str, last_commit_sha: str) -> List[Commi
         ),
         Commit(
             metadata=CommitMetadata(
-                commit_hash_key='697308e61171e33224757e620aaf67b1a877c99d',
+                commit_hash='697308e61171e33224757e620aaf67b1a877c99d',
                 committer='baguette🥖',
                 committed_datetime='2022-12-14T16:54:05+00:00'),
             files={
@@ -184,7 +184,7 @@ def mock_git_repo_commits_remove_file(root_folder: str, last_commit_sha: str) ->
     commits_mock = [
         Commit(
             metadata=CommitMetadata(
-                commit_hash_key='63342dbee285973a37770bbb1ff4258a3184901e',
+                commit_hash='63342dbee285973a37770bbb1ff4258a3184901e',
                 committer='Lemon🍋',
                 committed_datetime='2022-12-14T16:10:21+00:00'),
             files={
@@ -192,7 +192,7 @@ def mock_git_repo_commits_remove_file(root_folder: str, last_commit_sha: str) ->
         ),
         Commit(
             metadata=CommitMetadata(
-                commit_hash_key='bca377900d08d442b1080893e50b8dc8276cfcc0',
+                commit_hash='bca377900d08d442b1080893e50b8dc8276cfcc0',
                 committer='Lemon🍋',
                 committed_datetime='2022-12-14T16:28:47+00:00'),
             files={
@@ -200,7 +200,7 @@ def mock_git_repo_commits_remove_file(root_folder: str, last_commit_sha: str) ->
         ),
         Commit(
             metadata=CommitMetadata(
-                commit_hash_key='4bd08cd0b2874025ce32d0b1e9cd84ca20d59ce1',
+                commit_hash='4bd08cd0b2874025ce32d0b1e9cd84ca20d59ce1',
                 committer='Lemon🍋',
                 committed_datetime='2022-12-14T16:32:13+00:00'),
             files={
@@ -214,7 +214,7 @@ def mock_remove_file_with_two_equal_secret(root_folder: str, last_commit_sha: st
     commits_mock = [
         Commit(
             metadata=CommitMetadata(
-                commit_hash_key='d76977ac656abdaa77a7791a11adfb96efb48a35',
+                commit_hash='d76977ac656abdaa77a7791a11adfb96efb48a35',
                 committer='🍕🍕pizza',
                 committed_datetime='2022-12-14T16:10:21+00:00'),
             files={
@@ -222,7 +222,7 @@ def mock_remove_file_with_two_equal_secret(root_folder: str, last_commit_sha: st
         ),
         Commit(
             metadata=CommitMetadata(
-                commit_hash_key='c211bfc4ae4514627f104ce0bf664dd9521d9c16',
+                commit_hash='c211bfc4ae4514627f104ce0bf664dd9521d9c16',
                 committer='🍕🍕pizza',
                 committed_datetime='2022-12-14T16:28:47+00:00'),
             files={
@@ -230,7 +230,7 @@ def mock_remove_file_with_two_equal_secret(root_folder: str, last_commit_sha: st
         ),
         Commit(
             metadata=CommitMetadata(
-                commit_hash_key='8d96e18c1c924ba396211bf2d4fdd8d2418b8420',
+                commit_hash='8d96e18c1c924ba396211bf2d4fdd8d2418b8420',
                 committer='🍕🍕pizza',
                 committed_datetime='2022-12-14T16:32:13+00:00'),
             files={
@@ -244,7 +244,7 @@ def mock_remove_file_with_two_secret(root_folder: str, last_commit_sha: str) -> 
     commits_mock = [
         Commit(
             metadata=CommitMetadata(
-                commit_hash_key='f0d117c1d65e90d4d6d7a1b6aaf4e23f4fd33b82',
+                commit_hash='f0d117c1d65e90d4d6d7a1b6aaf4e23f4fd33b82',
                 committer='🍻2secrets',
                 committed_datetime='2022-12-14T16:10:21+00:00'),
             files={
@@ -252,7 +252,7 @@ def mock_remove_file_with_two_secret(root_folder: str, last_commit_sha: str) -> 
         ),
         Commit(
             metadata=CommitMetadata(
-                commit_hash_key='1166ee830a03f6721fb8cba794496ee82895a0ba',
+                commit_hash='1166ee830a03f6721fb8cba794496ee82895a0ba',
                 committer='🍻2secrets',
                 committed_datetime='2022-12-14T16:28:47+00:00'),
             files={
@@ -260,7 +260,7 @@ def mock_remove_file_with_two_secret(root_folder: str, last_commit_sha: str) -> 
         ),
         Commit(
             metadata=CommitMetadata(
-                commit_hash_key='bdb3678fc44702132fa7d661a1c425e65c1e9dde',
+                commit_hash='bdb3678fc44702132fa7d661a1c425e65c1e9dde',
                 committer='🍻2secrets',
                 committed_datetime='2022-12-14T16:32:13+00:00'),
             files={
@@ -274,7 +274,7 @@ def mock_git_repo_commits_rename_file(root_folder: str, last_commit_sha: str) ->
     commits_mock = [
         Commit(
             metadata=CommitMetadata(
-                commit_hash_key='adef7360b86c62666f0a70521214220763b9c593',
+                commit_hash='adef7360b86c62666f0a70521214220763b9c593',
                 committer='Strawberry🍓',
                 committed_datetime='2022-12-14T16:10:21+00:00'),
             files={
@@ -282,7 +282,7 @@ def mock_git_repo_commits_rename_file(root_folder: str, last_commit_sha: str) ->
         ),
         Commit(
             metadata=CommitMetadata(
-                commit_hash_key='7b12f891358f690f254476c80988bfa837f36ac6',
+                commit_hash='7b12f891358f690f254476c80988bfa837f36ac6',
                 committer='Strawberry🍓',
                 committed_datetime='2022-12-14T16:28:47+00:00'),
             files={
@@ -290,7 +290,7 @@ def mock_git_repo_commits_rename_file(root_folder: str, last_commit_sha: str) ->
         ),
         Commit(
             metadata=CommitMetadata(
-                commit_hash_key='2e1a500e688990e065fc6f1202bc64ed0ba53027',
+                commit_hash='2e1a500e688990e065fc6f1202bc64ed0ba53027',
                 committer='Strawberry🍓',
                 committed_datetime='2022-12-14T16:32:13+00:00'),
             renamed_files={
@@ -313,7 +313,7 @@ def mock_git_repo_commits_modify_and_rename_file(root_folder: str, last_commit_s
     commits_mock = [
         Commit(
             metadata=CommitMetadata(
-                commit_hash_key='62da8e5e04ec5c3a474467e9012bf3427cff0407',
+                commit_hash='62da8e5e04ec5c3a474467e9012bf3427cff0407',
                 committer='🍹rename',
                 committed_datetime='2022-12-14T16:10:21+00:00'),
             files={
@@ -321,7 +321,7 @@ def mock_git_repo_commits_modify_and_rename_file(root_folder: str, last_commit_s
         ),
         Commit(
             metadata=CommitMetadata(
-                commit_hash_key='61ee79aea3d151a40c8e054295f330d233eaf7d5',
+                commit_hash='61ee79aea3d151a40c8e054295f330d233eaf7d5',
                 committer='🍹rename',
                 committed_datetime='2022-12-14T16:28:47+00:00'),
             files={
@@ -336,7 +336,7 @@ def mock_git_repo_multiline_json(root_folder: str, last_commit_sha: str) -> List
     commits_mock = [
         Commit(
             metadata=CommitMetadata(
-                commit_hash_key='6b99e255555eacbd5f79a4efe77dcacdc63ed10f',
+                commit_hash='6b99e255555eacbd5f79a4efe77dcacdc63ed10f',
                 committer='🍽multiline_json',
                 committed_datetime='2022-12-14T16:10:21+00:00'),
             files={
@@ -350,7 +350,7 @@ def mock_git_repo_multiline_terraform(root_folder: str, last_commit_sha: str) ->
     commits_mock = [
         Commit(
             metadata=CommitMetadata(
-                commit_hash_key='6bee3eb2f69e06095395ae1d54c810c3a2a99841',
+                commit_hash='6bee3eb2f69e06095395ae1d54c810c3a2a99841',
                 committer='🥢multiline_terraform',
                 committed_datetime='2022-12-14T16:10:21+00:00'),
             files={
@@ -364,7 +364,7 @@ def mock_git_repo_multiline_yml(root_folder: str, last_commit_sha: str) -> List[
     commits_mock = [
         Commit(
             metadata=CommitMetadata(
-                commit_hash_key='cee6ad9d172ff447bd0afe8a478348b3ed6d3734',
+                commit_hash='cee6ad9d172ff447bd0afe8a478348b3ed6d3734',
                 committer='🥢multiline_yml',
                 committed_datetime='2022-12-14T16:10:21+00:00'),
             files={
