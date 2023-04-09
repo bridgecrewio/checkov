@@ -261,7 +261,8 @@ class ForeachModuleHandler(ForeachAbstractHandler):
             config = child.config[child_name][child_type]
         else:
             config = child.config.get(child.name)
-        if isinstance(config, dict) and config.get(RESOLVED_MODULE_ENTRY_NAME) is not None:
+        if isinstance(config, dict) and config.get(RESOLVED_MODULE_ENTRY_NAME) is not None and \
+                len(config.get(RESOLVED_MODULE_ENTRY_NAME)) > 0:
             tf_moudle: TFModule = config[RESOLVED_MODULE_ENTRY_NAME][0].tf_source_modules
             ForeachAbstractHandler._update_nested_tf_module_foreach_idx(original_foreach_or_count_key,
                                                                         original_module_key,
