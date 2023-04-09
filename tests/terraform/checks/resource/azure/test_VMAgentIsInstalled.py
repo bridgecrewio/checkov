@@ -22,6 +22,7 @@ class TestVMAgentIsInstalled(unittest.TestCase):
             "azurerm_windows_virtual_machine.pass",
             "azurerm_linux_virtual_machine_scale_set.pass",
             "azurerm_windows_virtual_machine_scale_set.pass",
+            "azurerm_linux_virtual_machine_scale_set.passdefault",
         }
         failing_resources = {
             "azurerm_linux_virtual_machine.fail",
