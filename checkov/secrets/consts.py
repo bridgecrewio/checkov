@@ -1,6 +1,6 @@
 from __future__ import annotations
 from enum import Enum
-from typing import Union
+from typing import Union, TypedDict, Final
 
 
 class ValidationStatus(Enum):
@@ -38,10 +38,16 @@ REMOVED = 'removed'
 GIT_HISTORY_OPTIONS = {ADDED, REMOVED}
 
 
-Commit = dict[str, Union[str, dict[str, str], list[str]]]
-COMMIT_HASH_KEY = '==commit_hash=='
-COMMIT_COMMITTER = '==committer=='
-COMMIT_DATETIME = '==committed_datetime=='
+class CommitMetadata(TypedDict, total=False):
+    __commit_hash_key__: str
+    __committer__: str
+    __committed_datetime__: str
+
+
+COMMIT_METADATA: Final = "__commit_metadata__"
+COMMIT_HASH_KEY: Final = "__commit_hash_key__"
+COMMIT_COMMITTER: Final = '__committer__'
+COMMIT_DATETIME: Final = '__committed_datetime__'
 COMMIT_CONSTANTS = {COMMIT_HASH_KEY, COMMIT_COMMITTER, COMMIT_DATETIME}
 
-
+Commit = dict[str, Union[str, CommitMetadata]]

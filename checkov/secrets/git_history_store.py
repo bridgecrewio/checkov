@@ -3,10 +3,10 @@ from __future__ import annotations
 import logging
 import copy
 from collections import defaultdict
-from typing import TYPE_CHECKING, Dict, List,Optional
+from typing import TYPE_CHECKING, Dict, List, Optional
 from typing_extensions import TypedDict
 from checkov.secrets.consts import ADDED, REMOVED, GIT_HISTORY_OPTIONS, GIT_HISTORY_NOT_BEEN_REMOVED, COMMIT_COMMITTER, \
-    COMMIT_DATETIME, COMMIT_HASH_KEY, Commit
+    COMMIT_DATETIME, COMMIT_HASH_KEY, Commit, COMMIT_METADATA
 
 if TYPE_CHECKING:
     from detect_secrets.core.potential_secret import PotentialSecret
@@ -35,7 +35,7 @@ class EnrichedPotentialSecretMetadata(TypedDict, total=False):
 
 
 class EnrichedPotentialSecret(EnrichedPotentialSecretMetadata):
-    potential_secret: PotentialSecret
+    potential_secret: PotentialSecret # noqa: CCE003  # a static attribute
 
 
 class GitHistorySecretStore:
@@ -44,7 +44,7 @@ class GitHistorySecretStore:
 
     def set_secret_map(self, file_results: List[PotentialSecret], file_name: str, commit: Commit) -> None:
         # First find if secret was moved in the file
-        equal_secret_in_commit: Commit = defaultdict(list)
+        equal_secret_in_commit: Dict[str, List[str]] = defaultdict(list)
         for secret in file_results:
             secret_key = get_secret_key(file_name, secret.secret_hash, secret.type)
             equal_secret_in_commit[secret_key].append(ADDED if secret.is_added else REMOVED)
@@ -61,7 +61,7 @@ class GitHistorySecretStore:
                 self._update_removed_secret(secret_key, secret, file_name, commit)
 
     def _add_new_secret(self, secret_key: str, secret: PotentialSecret, commit: Commit) -> None:
-        commit_hash = commit[COMMIT_HASH_KEY]
+        commit_hash: str = commit[COMMIT_METADATA][COMMIT_HASH_KEY]
         if secret_key not in self.secrets_by_file_value_type:
             self.secrets_by_file_value_type[secret_key] = []
         else:
@@ -79,16 +79,16 @@ class GitHistorySecretStore:
             'removed_commit_hash': '',
             'potential_secret': secret,
             'code_line': code_line,
-            'added_by': commit[COMMIT_COMMITTER],
+            'added_by': commit[COMMIT_METADATA][COMMIT_COMMITTER],
             'removed_date': '',
-            'added_date': commit[COMMIT_DATETIME]
+            'added_date': commit[COMMIT_METADATA][COMMIT_DATETIME]
         }
         self.secrets_by_file_value_type[secret_key].append(enriched_potential_secret)
 
     def _update_removed_secret(self, secret_key: str, secret: PotentialSecret, file_name: str, commit: Commit) -> None:
         # Try to find the corresponding added secret in the git history secret map
-        commit_hash = commit[COMMIT_HASH_KEY]
-        removed_date = commit[COMMIT_DATETIME]
+        commit_hash = commit[COMMIT_METADATA][COMMIT_HASH_KEY]
+        removed_date = commit[COMMIT_METADATA][COMMIT_DATETIME]
         secrets_in_file = self.secrets_by_file_value_type.get(secret_key, None)
         if secrets_in_file:
             for secret_in_file in secrets_in_file:
@@ -101,8 +101,8 @@ class GitHistorySecretStore:
             logging.error(f"No added secret commit found for secret in file {file_name}.")
 
     def handle_renamed_file(self, rename_from: str, rename_to: str, commit: Commit) -> None:
-        commit_hash = commit[COMMIT_HASH_KEY]
-        commit_datetime = commit[COMMIT_DATETIME]
+        commit_hash = commit[COMMIT_METADATA][COMMIT_HASH_KEY]
+        commit_datetime = commit[COMMIT_METADATA][COMMIT_DATETIME]
         temp_secrets_by_file_value_type: Dict[str, List[EnrichedPotentialSecret]] = {}
         for secret_key in self.secrets_by_file_value_type.keys():
             if rename_from in secret_key:
@@ -164,7 +164,7 @@ class GitHistorySecretStore:
             return {}
 
 
-def search_for_code_line(commit: Commit, secret_value: Optional[str], is_added: Optional[bool]) -> str:
+def search_for_code_line(commit: str | Dict[str, str], secret_value: Optional[str], is_added: Optional[bool]) -> str:
     if secret_value is None:
         return ''
     if isinstance(commit, dict):

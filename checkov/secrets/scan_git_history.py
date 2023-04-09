@@ -11,7 +11,7 @@ from detect_secrets.core import scan
 
 from checkov.secrets.git_history_store import GitHistorySecretStore, RawStore, RENAME_STR, FILE_RESULTS_STR
 from checkov.secrets.consts import GIT_HISTORY_NOT_BEEN_REMOVED, COMMIT_HASH_KEY, COMMIT_COMMITTER, \
-    COMMIT_DATETIME, COMMIT_CONSTANTS, Commit
+    COMMIT_DATETIME, COMMIT_CONSTANTS, Commit, COMMIT_METADATA
 
 if TYPE_CHECKING:
     from detect_secrets import SecretsCollection
@@ -28,13 +28,13 @@ MIN_SPLIT = 100
 
 
 @time_it
-def _get_commits_diff(root_folder: str, last_commit_sha: Optional[str] = None) -> List[Dict[str, str | Dict[str, str]]]:
+def _get_commits_diff(root_folder: str, last_commit_sha: Optional[str] = None) -> List[Commit]:
     """
     :param: last_commit_sha = is the last commit we have already scanned. in case it exist the function will
     return the commits from the revision of param to the current head
     """
     logging.info("[_get_commits_diff] started")
-    commits_diff: List[Dict[str, str | Dict[str, str]]] = []
+    commits_diff: List[Commit] = []
     if git_import_error is not None:
         logging.warning(f"Unable to load git module (is the git executable available?) {git_import_error}")
         return commits_diff
@@ -52,15 +52,17 @@ def _get_commits_diff(root_folder: str, last_commit_sha: Optional[str] = None) -
         try:
             current_commit_idx = previous_commit_idx - 1
             current_commit_hash = commits[current_commit_idx].hexsha
-            committed_datetime = commits[current_commit_idx].committed_datetime.isoformat()
-            committer = commits[current_commit_idx].committer.name
+            committed_datetime: str = commits[current_commit_idx].committed_datetime.isoformat()
+            committer: str = commits[current_commit_idx].committer.name or ''
             git_diff = commits[previous_commit_idx].diff(current_commit_hash, create_patch=True)
 
             for file_diff in git_diff:
                 curr_diff: Dict[str, str | Dict[str, str]] = {
-                    COMMIT_HASH_KEY: current_commit_hash,
-                    COMMIT_COMMITTER: committer,
-                    COMMIT_DATETIME: committed_datetime
+                    COMMIT_METADATA: {
+                        COMMIT_HASH_KEY: current_commit_hash,
+                        COMMIT_COMMITTER: committer,
+                        COMMIT_DATETIME: committed_datetime
+                    }
                 }
                 if file_diff.renamed_file:
                     logging.debug(f"File was renamed from {file_diff.rename_from} to {file_diff.rename_to}")
@@ -125,7 +127,7 @@ def _run_scan_parallel(commits_diff: List[Dict[str, str | Dict[str, str]]]) -> L
     return final_results
 
 
-def _run_scan_one_bulk(commits_diff: List[Dict[str, str | Dict[str, str]]]) -> List[RawStore]:
+def _run_scan_one_bulk(commits_diff: List[Commit]) -> List[RawStore]:
     scanned_file_count = 0
     results: List[RawStore] = []
     # parallel runner can make the list flat, so I can get here dict instead of list
@@ -143,9 +145,9 @@ def _run_scan_one_bulk(commits_diff: List[Dict[str, str | Dict[str, str]]]) -> L
 def _run_scan_one_commit(commit: Commit) -> Tuple[List[RawStore], int]:
     results: List[RawStore] = []
     scanned_file_count = 0
-    commit_hash = str(commit[COMMIT_HASH_KEY])
+    commit_hash = commit[COMMIT_METADATA][COMMIT_HASH_KEY]
     for file_name in commit.keys():
-        if file_name in COMMIT_CONSTANTS:
+        if file_name == COMMIT_METADATA:
             continue
         file_diff = commit[file_name]
         if isinstance(file_diff, str):

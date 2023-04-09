@@ -13,7 +13,7 @@ from tests.secrets.git_history.test_utils import mock_git_repo_commits1, mock_gi
     mock_git_repo_commits_too_much, mock_git_repo_commits_remove_file, mock_git_repo_commits_rename_file, \
     mock_git_repo_commits_modify_and_rename_file, mock_remove_file_with_two_equal_secret, \
     mock_remove_file_with_two_secret, mock_git_repo_multiline_json, mock_git_repo_multiline_terraform, \
-    mock_git_repo_multiline_yml, COMMIT_HASH_KEY
+    mock_git_repo_multiline_yml
 
 
 @mock.patch('checkov.secrets.scan_git_history._get_commits_diff', mock_git_repo_commits1)
