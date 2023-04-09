@@ -17,6 +17,7 @@ from checkov.cloudformation.image_referencer.manager import CloudFormationImageR
 from checkov.cloudformation.parser.cfn_keywords import TemplateSections
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.checks_infra.registry import BaseRegistry
+from checkov.common.models.enums import CheckResult
 from checkov.common.typing import LibraryGraphConnector
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.graph.graph_builder.consts import GraphSource
@@ -218,6 +219,18 @@ class Runner(ImageReferencerMixin[None], BaseRunner[CloudformationGraphManager])
                 entity_context = self.context[entity_file_abs_path][TemplateSections.RESOURCES][
                     entity_name
                 ]
+
+                skipped_check = next(
+                    (
+                        skipped_check
+                        for skipped_check in entity_context.get("skipped_checks", [])
+                        if skipped_check["id"] in (check.id, check.bc_id)
+                    ),
+                    None,
+                )
+                if skipped_check:
+                    check_result["result"] = CheckResult.SKIPPED
+                    check_result["suppress_comment"] = skipped_check.get("suppress_comment", "")
 
                 record = Record(
                     check_id=check.id,

@@ -57,10 +57,14 @@ class TestCloudformationGraphManager(TestCase):
                 "AWS::WAFv2::WebACL.GoodWAFv2WebACL",
                 "AWS::WAFv2::WebACLAssociation.WebACLAssociation",
                 "AWS::AppSync::GraphQLApi.NoWAFAppSyncGraphQLApi"
+            ],
+            os.path.join(root_dir, "suppress_graph_check.yaml"): [
+                "AWS::AppSync::GraphQLApi.CommentSuppress",
+                "AWS::AppSync::GraphQLApi.MetadataSuppress"
             ]
         }
-        self.assertEqual(47, len(local_graph.vertices))
-        self.assertEqual(27, len(local_graph.vertices_by_block_type[BlockType.RESOURCE]))
+        self.assertEqual(49, len(local_graph.vertices))
+        self.assertEqual(29, len(local_graph.vertices_by_block_type[BlockType.RESOURCE]))
         self.assertEqual(9, len(local_graph.vertices_by_block_type[BlockType.PARAMETERS]))
         self.assertEqual(6, len(local_graph.vertices_by_block_type[BlockType.OUTPUTS]))
         self.assertEqual(4, len(local_graph.vertices_by_block_type[BlockType.CONDITIONS]))
