@@ -98,6 +98,7 @@ def _scan_history(
     if not commits_diff:
         return
     logging.info(f"[_scan_history] got {len(commits_diff)} commits to scan")
+    raw_store: List[RawStore]
     if len(commits_diff) > MIN_SPLIT:
         logging.info("[_scan_history] starting parallel scan")
         raw_store = _run_scan_parallel(commits_diff)
@@ -115,9 +116,9 @@ def _process_raw_store(base_history_store: GitHistorySecretStore, results: List[
     for raw_res in results:
         res_type = raw_res.get('type')
         if res_type == FILE_RESULTS_STR:
-            base_history_store.set_secret_map(raw_res.get('file_results', []), raw_res.get('file_name', ''), raw_res.get('commit', {}))
+            base_history_store.set_secret_map(raw_res.get('file_results', []), raw_res.get('file_name', ''), raw_res['commit'])
         elif res_type == RENAME_STR:
-            base_history_store.handle_renamed_file(raw_res.get('rename_from', ''), raw_res.get('rename_to', ''), raw_res.get('commit', {}))
+            base_history_store.handle_renamed_file(raw_res.get('rename_from', ''), raw_res.get('rename_to', ''), raw_res['commit'])
 
 
 def _run_scan_parallel(commits_diff: List[Commit]) -> List[RawStore]:
@@ -157,7 +158,7 @@ def _run_scan_one_commit(commit: Commit) -> Tuple[List[RawStore], int]:
                 f"Found {len(file_results)} secrets in file path {file_name} in commit {commit_hash}")
             results.append(RawStore(file_results=file_results, file_name=file_name, commit=commit,
                                     type=FILE_RESULTS_STR, rename_from='', rename_to=''))
-    for file_name, details in commit.renamed_files.items():
+    for _, details in commit.renamed_files.items():
         rename_from = details['rename_from']
         rename_to = details['rename_to']
         results.append(RawStore(file_results=[], file_name='', commit=commit, type=RENAME_STR,

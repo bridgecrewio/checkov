@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import logging
-from typing import Optional
-
-from detect_secrets.core.potential_secret import PotentialSecret
+from typing import Optional, TYPE_CHECKING
 from typing_extensions import TypedDict
+
+if TYPE_CHECKING:
+    from detect_secrets.core.potential_secret import PotentialSecret
 
 GIT_HISTORY_NOT_BEEN_REMOVED = 'not-removed'
 ADDED = 'added'
@@ -26,11 +27,11 @@ class Commit:
     def __init__(
             self,
             metadata: CommitMetadata,
-            files: dict[str, CommitDiff] = None,
-            renamed_files: dict[str, RenamedFile] = None
+            files: dict[str, CommitDiff] | None = None,
+            renamed_files: dict[str, RenamedFile] | None = None
     ):
         self.metadata: CommitMetadata = metadata
-        self.files: dict[str, CommitDiff] | None = files or {}
+        self.files: dict[str, CommitDiff] = files or {}
         self.renamed_files: dict[str, RenamedFile] = renamed_files or {}
 
     def add_file(self, filename: str, commit_diff: CommitDiff) -> None:
@@ -48,7 +49,7 @@ class Commit:
             'rename_to': new_filename
         }
 
-    def remove_file(self, filename) -> None:
+    def remove_file(self, filename: str) -> None:
         if self.files.get(filename):
             del self.files[filename]
 
@@ -56,10 +57,10 @@ class Commit:
 class CommitMetadata:
     __slots__ = ("commit_hash_key", "committer", "committed_datetime")
 
-    def __init__(self, commit_hash_key: str = None, committer: str = None, committed_datetime: str = None):
-        self.commit_hash_key: str | None = commit_hash_key
-        self.committer: str | None = committer
-        self.committed_datetime: str | None = committed_datetime
+    def __init__(self, commit_hash_key: str, committer: str, committed_datetime: str):
+        self.commit_hash_key: str = commit_hash_key
+        self.committer: str = committer
+        self.committed_datetime: str = committed_datetime
 
 
 class EnrichedPotentialSecretMetadata(TypedDict, total=False):
