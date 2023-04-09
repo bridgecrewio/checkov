@@ -22,7 +22,8 @@ resource "azurerm_windows_virtual_machine" "pass" {
     version   = "latest"
   }
 }
-resource "azurerm_windows_virtual_machine" "fail" {
+
+resource "azurerm_windows_virtual_machine" "missing" {
   name                = "example-machine"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
@@ -46,7 +47,7 @@ resource "azurerm_windows_virtual_machine" "fail" {
   }
 }
 
-resource "azurerm_windows_virtual_machine" "fail2" {
+resource "azurerm_windows_virtual_machine" "fail" {
   name                = "example-machine"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
@@ -104,6 +105,7 @@ resource "azurerm_windows_virtual_machine_scale_set" "pass" {
     }
   }
 }
+
 resource "azurerm_windows_virtual_machine_scale_set" "fail" {
   name                = "example-vmss"
   resource_group_name = azurerm_resource_group.example.name
@@ -138,7 +140,7 @@ resource "azurerm_windows_virtual_machine_scale_set" "fail" {
   }
 }
 
-resource "azurerm_windows_virtual_machine_scale_set" "fail2" {
+resource "azurerm_windows_virtual_machine_scale_set" "missing" {
   name                = "example-vmss"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
