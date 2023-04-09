@@ -7,6 +7,7 @@ import pytest
 from checkov.common.util.json_utils import object_hook, CustomJSONEncoder
 from checkov.terraform.graph_builder.foreach.abstract_handler import ForeachAbstractHandler
 from checkov.terraform.graph_builder.foreach.builder import ForeachBuilder
+from checkov.terraform.graph_builder.foreach.module_handler import ForeachModuleHandler
 from checkov.terraform.graph_builder.foreach.resource_handler import ForeachResourceHandler
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
@@ -390,3 +391,14 @@ def test_foreach_module_with_more_than_two_resources(checkov_source_path):
 def test__is_static_foreach_statement(statement, expected):
     abstract_handler = ForeachAbstractHandler(None)
     assert abstract_handler._is_static_foreach_statement(statement) == expected
+
+
+def test__update_resolved_entry_for_tf_definition_with_empty_resolved_config_does_not_fail():
+    from checkov.terraform import TFModule
+    from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
+    from checkov.terraform.graph_builder.graph_components.block_types import BlockType
+
+    child = TerraformBlock(name='test', config={'test': {'__resolved__': []}}, path='', block_type=BlockType.MODULE,
+                           attributes={})
+    ForeachModuleHandler._update_resolved_entry_for_tf_definition(child, 1, TFModule('', ''))
+    assert True  # Makes sure the above line doesn't fail
