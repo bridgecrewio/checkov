@@ -308,7 +308,7 @@ def test_scan_git_history_real() -> None:
     runs over a real repo inside the resource dir and takes the results
     """
 
-    dir_path = Path(__file__).parent / 'git_history/test_git_repo'
+    dir_path = Path(__file__).parent / 'git_history/testing_repo'
     git_conf_dir = dir_path / 'git_to_change'
     tmp_git_conf_dir = dir_path / '.git'
     shutil.rmtree(tmp_git_conf_dir, ignore_errors=True)    # make sure no left overs from prev run
@@ -318,6 +318,6 @@ def test_scan_git_history_real() -> None:
     report = runner.run(root_folder=str(dir_path), external_checks_dir=None,
                         runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
     assert len(report.failed_checks) == 2
-    assert report.failed_checks[0].added_commit_hash != ''
-    assert report.failed_checks[1].removed_commit_hash != ''
+    assert report.failed_checks[0].added_commit_hash and report.failed_checks[0].removed_commit_hash is None
+    assert report.failed_checks[1].added_commit_hash and report.failed_checks[1].removed_commit_hash
     shutil.rmtree(tmp_git_conf_dir)  # just for cleaning
