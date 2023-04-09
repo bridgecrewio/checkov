@@ -1,6 +1,7 @@
 from __future__ import annotations
 from enum import Enum
-from typing import Union, TypedDict, Final
+from typing_extensions import TypedDict
+from typing import Union, Final
 
 
 class ValidationStatus(Enum):
