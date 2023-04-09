@@ -149,7 +149,7 @@ class GitHistorySecretStore:
 def search_for_code_line(commit_diff: CommitDiff, secret_value: Optional[str], is_added: Optional[bool]) -> str:
     if secret_value is None:
         return ''
-    splitted = CommitDiff.split('\n')
+    splitted = commit_diff.split('\n')
     start_char = '+' if is_added else '-'
     for line in splitted:
         if line.startswith(start_char) and secret_value in line:
