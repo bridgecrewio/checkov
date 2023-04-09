@@ -84,9 +84,15 @@ class ForeachAbstractHandler:
         attrs.pop(FOREACH_STRING, None)
 
     @staticmethod
-    def __update_str_attrs(attrs: dict[str, Any], key_to_change: str, val_to_change: str, k: str) -> bool:
+    def __update_str_attrs(attrs: dict[str, Any], key_to_change: str, val_to_change: str | dict[str, Any], k: str) -> bool:
+        if key_to_change not in attrs[k]:
+            return False
         if attrs[k] == "${" + key_to_change + "}":
             attrs[k] = val_to_change
+            return True
+        elif f"{key_to_change}." in attrs[k] and isinstance(val_to_change, dict):
+            key = attrs[k].replace("}", "").split('.')[-1]
+            attrs[k] = val_to_change.get(key)
             return True
         else:
             attrs[k] = attrs[k].replace("${" + key_to_change + "}", str(val_to_change))
@@ -119,15 +125,19 @@ class ForeachAbstractHandler:
                 v_changed = False
                 if isinstance(v, str):
                     v_changed = self.__update_str_attrs(attrs, key_to_change, val_to_change, k)
-                if isinstance(v, dict):
+                elif isinstance(v, dict):
                     nested_attrs = self._update_attributes(v, {key_to_change: val_to_change})
                     foreach_attributes.extend([k + '.' + na for na in nested_attrs])
-                if isinstance(v, list) and len(v) == 1 and isinstance(v[0], dict):
+                elif isinstance(v, list) and len(v) == 1 and isinstance(v[0], dict):
                     nested_attrs = self._update_attributes(v[0], {key_to_change: val_to_change})
                     foreach_attributes.extend([k + '.' + na for na in nested_attrs])
                 elif isinstance(v, list) and len(v) == 1 and isinstance(v[0], str) and key_to_change in v[0]:
                     if attrs[k][0] == "${" + key_to_change + "}":
                         attrs[k][0] = val_to_change
+                        v_changed = True
+                    elif f"{key_to_change}." in attrs[k][0] and isinstance(val_to_change, dict):
+                        key = attrs[k][0].replace("}", "").split('.')[-1]
+                        attrs[k][0] = val_to_change.get(key)
                         v_changed = True
                     else:
                         attrs[k][0] = attrs[k][0].replace("${" + key_to_change + "}", str(val_to_change))
@@ -205,8 +215,11 @@ class ForeachAbstractHandler:
             statement = self.extract_from_list(statement)
         if isinstance(statement, str) and re.search(REFERENCES_VALUES, statement):
             return False
-        if isinstance(statement, (list, dict)) and any([re.search(REFERENCES_VALUES, s) for s in statement]):
-            return False
+        if isinstance(statement, (list, dict)):
+            result = True
+            for s in statement:
+                result &= self._is_static_foreach_statement(s)
+            return result
         return True
 
     def _is_static_count_statement(self, statement: list[str] | int) -> bool:
