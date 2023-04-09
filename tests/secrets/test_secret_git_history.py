@@ -1,5 +1,7 @@
 from __future__ import annotations
 from unittest import mock
+from pathlib import Path
+import shutil
 from pytest_mock import MockerFixture
 
 from detect_secrets import SecretsCollection
@@ -299,3 +301,23 @@ def test_scan_git_history_middle(mocker: MockerFixture) -> None:
     assert len(report3.skipped_checks) == 0
     for failed_check in report3.failed_checks:
         assert failed_check.added_commit_hash or failed_check.removed_commit_hash
+
+
+def test_scan_git_history_real() -> None:
+    """
+    runs over a real repo inside the resource dir and takes the results
+    """
+
+    dir_path = Path(__file__).parent / 'git_history/test_git_repo'
+    git_conf_dir = dir_path / 'git_to_change'
+    tmp_git_conf_dir = dir_path / '.git'
+    shutil.rmtree(tmp_git_conf_dir, ignore_errors=True)    # make sure no left overs from prev run
+    shutil.copytree(git_conf_dir, tmp_git_conf_dir)
+
+    runner = Runner()
+    report = runner.run(root_folder=str(dir_path), external_checks_dir=None,
+                        runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
+    assert len(report.failed_checks) == 2
+    assert report.failed_checks[0].added_commit_hash != ''
+    assert report.failed_checks[1].removed_commit_hash != ''
+    shutil.rmtree(tmp_git_conf_dir)  # just for cleaning
