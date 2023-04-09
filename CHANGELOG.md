@@ -1,6 +1,23 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.152...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.155...HEAD)
+
+## [2.3.155](https://github.com/bridgecrewio/checkov/compare/2.3.152...2.3.155) - 2023-04-09
+
+### Feature
+
+- **cloudformation:** support inline suppression of CFN graph checks - [#4843](https://github.com/bridgecrewio/checkov/pull/4843)
+- **terraform:** Aurora DB should enable backtrack - [#4739](https://github.com/bridgecrewio/checkov/pull/4739)
+- **terraform:** Desync must be set to defensive or strictest - [#4766](https://github.com/bridgecrewio/checkov/pull/4766)
+- **terraform:** Ensure that RDS clusters are encrypted using a CMK - [#4742](https://github.com/bridgecrewio/checkov/pull/4742)
+- **terraform:** RDS Cluster - make sure rds cluster defined defaults for logging and audit logging - [#4736](https://github.com/bridgecrewio/checkov/pull/4736)
+
+### Bug Fix
+
+- **general:** be more forgiving of skipped checks without comment - [#4844](https://github.com/bridgecrewio/checkov/pull/4844)
+- **terraform:** default case should pass for auto updates - [#4847](https://github.com/bridgecrewio/checkov/pull/4847)
+- **terraform:** False negative for CKV_AZURE_179 - [#4846](https://github.com/bridgecrewio/checkov/pull/4846)
+- **terraform:** Only update config if len is bigger than 0 - [#4855](https://github.com/bridgecrewio/checkov/pull/4855)
 
 ## [2.3.152](https://github.com/bridgecrewio/checkov/compare/2.3.150...2.3.152) - 2023-04-04
 
