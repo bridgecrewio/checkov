@@ -67,25 +67,71 @@ class Policies3DIntegration(BaseIntegrationFeature):
 
             policies = self.bc_integration.customer_run_config_response.get('Policies3D')
             logging.debug(f'Got {len(policies)} 3d policies from the platform.')
-            checks = []
+            # checks = []
+            policies = [
+                {
+                    'id': 'BC_3D_500',
+                    'title': 'title_500',
+                    'guideline': 'guideline_500',
+                    'severity': 'CRITICAL',
+                    'pcSeverity': 'CRITICAL',
+                    'category': 'Policy3D',
+                    'code': """
+                    {
+  "version": "v1",
+  "definition": [
+    {
+      "cves": {
+        "or": [
+          {
+            "and": [
+              {
+                "risk_factors": "DoS"
+              },
+              {
+                "risk_factors": "RCE"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "iac": {
+        "or": [
+          {
+            "violation_id": "BC_K8S_29"
+          },
+          {
+            "violation_id": "BC_K8S_23"
+          }
+        ]
+      }
+    }
+  ]
+}
+                    """
+                }
+            ]
             runner = Policy3dRunner()
-            for policy in policies:
-                try:
-                    logging.debug(f"Loading 3d policy id: {policy.get('id')}")
-                    converted_check = self._convert_raw_check(policy)
-                    check = self.platform_policy_parser.parse_raw_check(converted_check)
-                    check.severity = Severities[policy['severity']]
-                    check.bc_id = check.id
-                    checks.append(check)
-                except Exception:
-                    logging.debug(f"Failed to load 3d policy id: {policy.get('id')}", exc_info=True)
+            # for policy in policies:
+            #     try:
+            #         logging.debug(f"Loading 3d policy id: {policy.get('id')}")
+            #         converted_check = self._convert_raw_check(policy)
+            #         check = self.platform_policy_parser.parse_raw_check(converted_check)
+            #         check.severity = Severities[policy['severity']]
+            #         check.bc_id = check.id
+            #         checks.append(check)
+            #     except Exception:
+            #         logging.debug(f"Failed to load 3d policy id: {policy.get('id')}", exc_info=True)
 
-            report = runner.run(checks=checks, scan_reports=scan_reports)
+            report = runner.run_v2(raw_checks=policies, scan_reports=scan_reports)
             return report
 
         except Exception as e:
             self.integration_feature_failures = True
             logging.debug(f'Scanning without applying 3d policies from the platform.\n{e}')
+            raise e
             return None
 
 

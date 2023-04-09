@@ -71,7 +71,12 @@ class Policy3dRunner(BasePostRunner):
                 )
 
                 check_result = CheckResult.PASSED
-                if all(predicament() for predicament in check.predicaments):
+                # for predicament in check.predicaments:
+                #     if predicament():
+                #         check_result = CheckResult.FAILED
+                #         logging.debug(f"Resource {resource} is violating 3D policy {check.bc_id}")
+
+                if any(predicament() for predicament in check.predicaments):
                     check_result = CheckResult.FAILED
                     logging.debug(f"Resource {resource} is violating 3D policy {check.bc_id}")
 
@@ -89,9 +94,11 @@ class Policy3dRunner(BasePostRunner):
         true_iac_records = []
         true_secrets_records = []
 
+
         all_predicates = []
         for predicament in check.predicaments:
             all_predicates.extend(predicament.get_all_children_predicates())
+        all_predicates = set(all_predicates)
 
         for predicate in all_predicates:
             if predicate.is_true:
@@ -101,6 +108,10 @@ class Policy3dRunner(BasePostRunner):
                     true_vulnerabilities_cve_reports.append(predicate.cve_report)
                 elif isinstance(predicate, SecretsPredicate):
                     true_secrets_records.append(predicate.record)
+
+
+        if not true_iac_records and not true_secrets_records:
+            return None
 
         record_data_source = true_iac_records[0] if len(true_iac_records) > 0 else true_secrets_records[0]
 
@@ -129,7 +140,7 @@ class Policy3dRunner(BasePostRunner):
         return record
 
     @staticmethod
-    def create_failed_checks_by_resource_mapping(scan_reports: list[Report]) -> dict[str, dict[str, list[Record] | list[ReportCVE]]]:
+    def create_failed_checks_by_resource_mapping(scan_reports: list[Report]) -> dict[str, dict[str, list[Record] | list[dict[str, Any]]]]:
         """
         Output structure:
         {
@@ -140,25 +151,30 @@ class Policy3dRunner(BasePostRunner):
             }
         }
         """
-        failed_checks_by_resource: dict[str, dict[str, list[Record] | list[ReportCVE]]] = {}
+        failed_checks_by_resource: dict[str, dict[str, list[Record] | list[dict[str, Any]]]] = {}
         for report in scan_reports:
             if report.check_type == CheckType.SCA_IMAGE:
                 # Save image cached results on a resource
                 for result in report.image_cached_results:
-                    resource_id = result.relatedResourceId
+                    resource_id = result.get('relatedResourceId').split(result.get('dockerFilePath'))[1][1:]
                     if resource_id in failed_checks_by_resource.keys():
-                        failed_checks_by_resource[resource_id]["cves"] += result.vulnerabilities
+                        if "cves" not in failed_checks_by_resource[resource_id]:
+                            failed_checks_by_resource[resource_id]["cves"] = []
+                        failed_checks_by_resource[resource_id]["cves"] += result.get("vulnerabilities")
                     else:
-                        failed_checks_by_resource[resource_id]["cves"] = result.vulnerabilities
+                        failed_checks_by_resource[resource_id] = {}
+                        failed_checks_by_resource[resource_id]["cves"] = result.get("vulnerabilities", [])
 
             else:
                 # Save failed checks on a resource
                 iac_or_secrets = "secrets" if report.check_type == CheckType.SECRETS else "iac"
                 for failed_check in report.failed_checks:
+                    resource = failed_check.resource.lstrip(failed_check.file_abs_path)
                     if failed_check.resource in failed_checks_by_resource.keys():
-                        failed_checks_by_resource[failed_check.resource][iac_or_secrets].append(failed_check)
+                        failed_checks_by_resource[resource][iac_or_secrets].append(failed_check)
                     else:
-                        failed_checks_by_resource[failed_check.resource][iac_or_secrets] = [failed_check]
+                        failed_checks_by_resource[resource] = {}
+                        failed_checks_by_resource[resource][iac_or_secrets] = [failed_check]
 
         return failed_checks_by_resource
 
