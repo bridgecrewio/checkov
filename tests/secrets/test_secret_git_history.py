@@ -32,8 +32,8 @@ def test_scan_git_history() -> None:
         assert failed_check.added_commit_hash or failed_check.removed_commit_hash
         if failed_check.removed_commit_hash:
             assert failed_check.removed_date
-        assert failed_check.created_by
-        assert failed_check.create_date
+        assert failed_check.added_by
+        assert failed_check.added_date
 
 
 @mock.patch('checkov.secrets.scan_git_history._get_commits_diff', mock_git_repo_commits1)
@@ -69,6 +69,8 @@ def test_scan_git_history_merge_added_removed() -> None:
         assert failed_check.removed_commit_hash == ''
         assert failed_check.removed_date
         assert failed_check.added_commit_hash == '11e59e4e578c6ebcb48aae1e5e078a54c62920eb'
+        assert failed_check.added_by
+        assert failed_check.added_date
 
 
 @mock.patch('checkov.secrets.scan_git_history._get_commits_diff', mock_git_repo_commits2)
@@ -102,9 +104,13 @@ def test_scan_git_history_merge_added_removed2() -> None:
                         runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
     assert len(report.failed_checks) == 2
     assert ((report.failed_checks[0].removed_commit_hash == '697308e61171e33224757e620aaf67b1a877c99d'
+            and report.failed_checks[0].removed_date
              and report.failed_checks[1].removed_commit_hash == '')
             or (report.failed_checks[1].removed_commit_hash == '697308e61171e33224757e620aaf67b1a877c99d'
+                and report.failed_checks[1].removed_date
                 and report.failed_checks[0].removed_commit_hash == ''))
+    assert report.failed_checks[0].added_by and report.failed_checks[0].added_date
+    assert report.failed_checks[1].added_by and report.failed_checks[1].added_date
     assert ((report.failed_checks[0].added_commit_hash == '900b1e8f6f336a92e8f5fca3babca764e32c3b3d'
              and report.failed_checks[1].added_commit_hash == '3c8cb7eedb3986308c96713fc65b006adcf3bc44')
             or (report.failed_checks[1].added_commit_hash == '900b1e8f6f336a92e8f5fca3babca764e32c3b3d'
@@ -152,7 +158,9 @@ def test_scan_git_history_remove_file() -> None:
                         runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
     assert len(report.failed_checks) == 1
     assert report.failed_checks[0].removed_commit_hash == '4bd08cd0b2874025ce32d0b1e9cd84ca20d59ce1'
+    assert report.failed_checks[0].removed_date
     assert report.failed_checks[0].added_commit_hash == '63342dbee285973a37770bbb1ff4258a3184901e'
+    assert report.failed_checks[0].added_by and report.failed_checks[0].added_date
     assert report.failed_checks[0].removed_date
 
 
@@ -180,8 +188,10 @@ def test_scan_git_history_modify_and_rename_file() -> None:
     report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                         runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
     assert len(report.failed_checks) == 1
-    assert (report.failed_checks[0].removed_commit_hash == '61ee79aea3d151a40c8e054295f330d233eaf7d5' and
-            report.failed_checks[0].added_commit_hash == '62da8e5e04ec5c3a474467e9012bf3427cff0407')
+    assert report.failed_checks[0].added_commit_hash == '62da8e5e04ec5c3a474467e9012bf3427cff0407'
+    assert report.failed_checks[0].added_by and report.failed_checks[0].added_date
+    assert report.failed_checks[0].removed_commit_hash == '61ee79aea3d151a40c8e054295f330d233eaf7d5'
+    assert report.failed_checks[0].removed_date
 
 
 @mock.patch('checkov.secrets.scan_git_history._get_commits_diff',
@@ -192,8 +202,9 @@ def test_scan_git_history_rename_file_with_two_equal_secrets() -> None:
     report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                         runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
     assert len(report.failed_checks) == 2
-    assert (report.failed_checks[0].removed_commit_hash == report.failed_checks[1].removed_commit_hash and
-            report.failed_checks[1].removed_commit_hash is not None)
+    assert report.failed_checks[0].removed_commit_hash == report.failed_checks[1].removed_commit_hash
+    assert report.failed_checks[1].removed_commit_hash
+    assert report.failed_checks[0].removed_date and report.failed_checks[0].removed_date == report.failed_checks[1].removed_date
 
 
 @mock.patch('checkov.secrets.scan_git_history._get_commits_diff', mock_remove_file_with_two_secret)
@@ -203,8 +214,9 @@ def test_scan_git_history_rename_file_with_two_secrets() -> None:
     report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                         runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
     assert len(report.failed_checks) == 2
-    assert (report.failed_checks[0].removed_commit_hash == report.failed_checks[1].removed_commit_hash and
-            report.failed_checks[1].removed_commit_hash is not None)
+    report.failed_checks[0].removed_commit_hash == report.failed_checks[1].removed_commit_hash
+    assert report.failed_checks[1].removed_commit_hash
+    assert report.failed_checks[0].removed_date and report.failed_checks[0].removed_date == report.failed_checks[1].removed_date
 
 
 def assert_for_commit_str(report_str: [str], commit_type: str, commit_hash: str, found: bool = True) -> None:
@@ -284,6 +296,7 @@ def test_scan_git_history_middle(mocker: MockerFixture) -> None:
     assert len(report.failed_checks) == 3
     for failed_check in report.failed_checks:
         assert failed_check.added_commit_hash or failed_check.removed_commit_hash
+        assert failed_check.added_by and failed_check.added_date
 
     mocker.patch(
         "checkov.secrets.scan_git_history._get_commits_diff", return_value=all_commits[0:1])
@@ -306,3 +319,4 @@ def test_scan_git_history_middle(mocker: MockerFixture) -> None:
     assert len(report3.skipped_checks) == 0
     for failed_check in report3.failed_checks:
         assert failed_check.added_commit_hash or failed_check.removed_commit_hash
+        assert failed_check.added_by and failed_check.added_date

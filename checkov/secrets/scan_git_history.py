@@ -113,7 +113,8 @@ def _process_raw_store(base_history_store: GitHistorySecretStore, results: List[
                                               raw_res.get('commit_hash', ''), raw_res.get('commit', {}))
         elif res_type == RENAME_STR:
             base_history_store.handle_renamed_file(raw_res.get('rename_from', ''),
-                                                   raw_res.get('rename_to', ''), raw_res.get('commit_hash', ''))
+                                                   raw_res.get('rename_to', ''), raw_res.get('commit_hash', ''),
+                                                   raw_res.get('commit', {}))
 
 
 def _run_scan_parallel(commits_diff: List[Dict[str, str | Dict[str, str]]]) -> List[RawStore]:
@@ -157,15 +158,15 @@ def _run_scan_one_commit(commit: Dict[str, str | Dict[str, str]]) -> Tuple[List[
                     f"Found {len(file_results)} secrets in file path {file_name} in commit {commit_hash}")
                 results.append(RawStore(file_results=file_results, file_name=file_name, commit=commit,
                                         commit_hash=commit_hash, type=FILE_RESULTS_STR,
-                                        rename_from='', rename_to='', committer=commit.get(COMMIT_COMMITTER),
-                                        committed_datetime=commit.get(COMMIT_DATETIME)))
+                                        rename_from='', rename_to='', committer=commit[COMMIT_COMMITTER],
+                                        committed_datetime=commit[COMMIT_DATETIME]))
         elif isinstance(file_diff, dict):
             rename_from = file_diff['rename_from']
             rename_to = file_diff['rename_to']
             results.append(RawStore(file_results=[], file_name='', commit=commit,
                                     commit_hash=commit_hash, type=RENAME_STR,
-                                    rename_from=rename_from, rename_to=rename_to, committer=commit.get(COMMIT_COMMITTER),
-                                    committed_datetime=commit.get(COMMIT_DATETIME)))
+                                    rename_from=rename_from, rename_to=rename_to, committer=commit[COMMIT_COMMITTER],
+                                    committed_datetime=commit[COMMIT_DATETIME]))
         scanned_file_count += 1
     return results, scanned_file_count
 
@@ -176,8 +177,7 @@ def _create_secret_collection(
     # run over the entire history store and create the secret collection
     for secrets_data in history_store.secrets_by_file_value_type.values():
         for secret_data in secrets_data:
-            removed = secret_data["removed_commit_hash"] if secret_data[
-                "removed_commit_hash"] else GIT_HISTORY_NOT_BEEN_REMOVED
+            removed = secret_data["removed_commit_hash"] if secret_data["removed_commit_hash"] else GIT_HISTORY_NOT_BEEN_REMOVED
             key = f'{secret_data["added_commit_hash"]}_{removed}_{secret_data["potential_secret"].filename}'
             secret_store[key].add(secret_data["potential_secret"])
     logging.info(f"Created secret collection for {len(history_store.secrets_by_file_value_type)} secrets")

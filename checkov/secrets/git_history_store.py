@@ -62,7 +62,7 @@ class GitHistorySecretStore:
             if secret.is_added:
                 self._add_new_secret(secret_key, commit_hash, secret, commit)
             if secret.is_removed:
-                removed_date = commit.get(COMMIT_DATETIME, '')
+                removed_date = commit[COMMIT_DATETIME]
                 self._update_removed_secret(secret_key, secret, file_name, commit_hash, removed_date)
 
     def _add_new_secret(self, secret_key: str,
@@ -86,9 +86,9 @@ class GitHistorySecretStore:
             'removed_commit_hash': '',
             'potential_secret': secret,
             'code_line': code_line,
-            'added_by': commit.get(COMMIT_COMMITTER, ''),
+            'added_by': commit[COMMIT_COMMITTER],
             'removed_date': '',
-            'added_date': commit.get(COMMIT_DATETIME, '')
+            'added_date': commit[COMMIT_DATETIME]
         }
         self.secrets_by_file_value_type[secret_key].append(enriched_potential_secret)
 
@@ -111,7 +111,8 @@ class GitHistorySecretStore:
 
     def handle_renamed_file(self, rename_from: str,
                             rename_to: str,
-                            commit_hash: str) -> None:
+                            commit_hash: str,
+                            commit: Dict[str, str | Dict[str, str]]) -> None:
         temp_secrets_by_file_value_type: Dict[str, List[EnrichedPotentialSecret]] = {}
         for secret_key in self.secrets_by_file_value_type.keys():
             if rename_from in secret_key:
@@ -121,6 +122,7 @@ class GitHistorySecretStore:
                 for secret_data in secret_in_file:
                     # defines the secret in the old file as removed and add the secret to the new file
                     secret_data['removed_commit_hash'] = commit_hash
+                    secret_data['removed_date'] = commit[COMMIT_DATETIME]
                     new_secret = copy.deepcopy(secret_data['potential_secret'])
                     new_secret.filename = rename_to
                     code = secret_data.get('code_line')
@@ -130,7 +132,7 @@ class GitHistorySecretStore:
                         'potential_secret': new_secret,
                         'code_line': code,
                         'added_by': secret_data.get('added_by'),
-                        'removed_date': secret_data.get('removed_date'),
+                        'removed_date': '',
                         'added_date': secret_data.get('added_date')
                     }
                     temp_secrets_by_file_value_type[new_secret_key].append(enriched_potential_secret)
