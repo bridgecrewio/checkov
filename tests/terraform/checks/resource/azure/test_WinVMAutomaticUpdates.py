@@ -20,12 +20,12 @@ class TestWinVMAutomaticUpdates(unittest.TestCase):
         passing_resources = {
             "azurerm_windows_virtual_machine.pass",
             "azurerm_windows_virtual_machine_scale_set.pass",
+            "azurerm_windows_virtual_machine.missing",
+            "azurerm_windows_virtual_machine_scale_set.missing"
         }
         failing_resources = {
             "azurerm_windows_virtual_machine.fail",
-            "azurerm_windows_virtual_machine.fail2",
             "azurerm_windows_virtual_machine_scale_set.fail",
-            "azurerm_windows_virtual_machine_scale_set.fail2"
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
