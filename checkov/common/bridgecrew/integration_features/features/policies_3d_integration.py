@@ -114,24 +114,12 @@ class Policies3DIntegration(BaseIntegrationFeature):
                 }
             ]
             runner = Policy3dRunner()
-            # for policy in policies:
-            #     try:
-            #         logging.debug(f"Loading 3d policy id: {policy.get('id')}")
-            #         converted_check = self._convert_raw_check(policy)
-            #         check = self.platform_policy_parser.parse_raw_check(converted_check)
-            #         check.severity = Severities[policy['severity']]
-            #         check.bc_id = check.id
-            #         checks.append(check)
-            #     except Exception:
-            #         logging.debug(f"Failed to load 3d policy id: {policy.get('id')}", exc_info=True)
-
             report = runner.run_v2(raw_checks=policies, scan_reports=scan_reports)
             return report
 
         except Exception as e:
             self.integration_feature_failures = True
             logging.debug(f'Scanning without applying 3d policies from the platform.\n{e}')
-            raise e
             return None
 
 

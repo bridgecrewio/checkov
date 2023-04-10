@@ -6,7 +6,9 @@ from typing import Dict, Any
 from checkov.common.output.record import Record
 from checkov.policies_3d.checks_infra.base_parser import Base3dPolicyCheckParser
 from checkov.policies_3d.checks_infra.base_check import Base3dPolicyCheck
-from checkov.policies_3d.syntax.syntax import Predicament, RiskFactorCVEContains, ViolationIdEquals
+from checkov.policies_3d.syntax.cves_syntax import RiskFactorCVEContains
+from checkov.policies_3d.syntax.iac_syntax import ViolationIdEquals
+from checkov.policies_3d.syntax.syntax import Predicament
 from checkov.sca_image.models import ReportCVE
 import itertools
 

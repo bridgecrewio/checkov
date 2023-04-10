@@ -4,6 +4,8 @@ import logging
 from enum import Enum
 from typing import Dict, Any
 
+from checkov.common.bridgecrew.severities import Severities
+
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
@@ -14,9 +16,10 @@ from checkov.common.util.type_forcers import force_list
 from checkov.policies_3d.checks_parser import Policy3dParser
 from checkov.policies_3d.record import Policy3dRecord
 from checkov.policies_3d.checks_infra.base_check import Base3dPolicyCheck
-from checkov.policies_3d.syntax.syntax import IACPredicate, CVEPredicate, SecretsPredicate
+from checkov.policies_3d.syntax.iac_syntax import IACPredicate
+from checkov.policies_3d.syntax.cves_syntax import CVEPredicate
+from checkov.policies_3d.syntax.secrets_syntax import SecretsPredicate
 from checkov.runner_filter import RunnerFilter
-from checkov.sca_image.models import ReportCVE
 
 
 class CVECheckAttribute(str, Enum):
@@ -70,12 +73,10 @@ class Policy3dRunner(BasePostRunner):
                     cves_reports=modules_records.get("cves", [])
                 )
 
-                check_result = CheckResult.PASSED
-                # for predicament in check.predicaments:
-                #     if predicament():
-                #         check_result = CheckResult.FAILED
-                #         logging.debug(f"Resource {resource} is violating 3D policy {check.bc_id}")
+                check.severity = Severities[raw_3d_check['severity']]
+                check.bc_id = check.id
 
+                check_result = CheckResult.PASSED
                 if any(predicament() for predicament in check.predicaments):
                     check_result = CheckResult.FAILED
                     logging.debug(f"Resource {resource} is violating 3D policy {check.bc_id}")
