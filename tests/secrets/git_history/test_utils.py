@@ -7,28 +7,6 @@ from typing import Dict, List
 from checkov.secrets.git_types import Commit, CommitMetadata
 
 
-# def t(a):
-#     b = []
-#     info = '    commits_mock = [\n'
-#     for commit in a:
-#         commit_metadata = None
-#         for k,v in commit.items():
-#             if k.startswith('__'):
-#                 commit_metadata = CommitMetadata(v[COMMIT_HASH_KEY], v[COMMIT_COMMITTER], v[COMMIT_DATETIME])
-#                 commit_metadata_str = 'me'
-#         commit_new = Commit(commit_metadata)
-#         for k, v in commit.items():
-#             if not k.startswith('__'):
-#                 if isinstance(v, str):
-#                     commit_new.add_file(filename=k, commit_diff=v)
-#                 else:
-#                     commit_new.rename_file(prev_filename=v['rename_from'], new_filename=v['rename_to'])
-#         b.append(commit_new)
-#         info += f"Commit(\n            metadata=CommitMetadata(\n                commit_hash_key='{v[COMMIT_HASH_KEY]}',\n                committer='{v[COMMIT_COMMITTER]}',\n                committed_datetime='{v[COMMIT_DATETIME]}'),\n            files={commit_new.files}\n        ),\n"
-#     info += '    ]\n    return commits_mock'
-#     return b, info
-
-
 def mock_git_repo_commits1(root_folder: str, last_commit_sha: str) -> List[Commit]:
     """
         add secret (secret1 added) - +1
@@ -175,6 +153,14 @@ def mock_git_repo_commits3(root_folder: str, last_commit_sha: str) -> List[Commi
                 committed_datetime='2022-12-14T16:54:05+00:00'),
             files={
                 'folder1/folder2/Dockerfile': 'diff --git a/folder1/folder2/Dockerfile b/folder1/folder2/Dockerfile\nindex 0000..0000 0000\n--- a/folder1/folder2/Dockerfile\n+++ b/folder1/folder2/Dockerfile\n@@ -5,7 +5,7 @@ FROM public.ecr.aws/lambda/python:3.9\n \n ENV PIP_ENV_VERSION="2022.1.8"\n COPY Pipfile Pipfile.lock ./\n-ENV AWS_ACCESS_KEY_ID="AKIAZZZZZZZZZZZZZZZZ"\n+\n ENV AWS_ACCESS_KEY_ID="AKIAZZZZZZZZZZZZZZZZ"\n RUN pip install pipenv==${PIP_ENV_VERSION} \\\n  && pipenv lock -r > requirements.txt \\\n'}
+        ),
+        Commit(  # this commit should make no difference - its just to have 5 commits returned from this mock
+            metadata=CommitMetadata(
+                commit_hash='697308e61171e332247z2i2bi0aaf67b1a877c99d',
+                committer='baguette🥖',
+                committed_datetime='2022-12-14T16:54:05+00:00'),
+            files={
+                'Dockerfile': 'diff --git a/Dockerfile b/Dockerfile\nindex 0000..0000 0000\n--- a/Dockerfile\n+++ b/Dockerfile\n@@ -5,7 +5,7 @@ FROM public.ecr.aws/lambda/python:3.9\n \n ENV PIP_ENV_VERSION="2022.1.8"\n COPY Pipfile Pipfile.lock ./\n-ENV AWS_PIPY="something"\n+\n ENV AWS_DIP="ELSE"\n RUN pip install pipenv==${PIP_ENV_VERSION} \\\n  && pipenv lock -r > requirements.txt \\\n'}
         ),
     ]
     return commits_mock
@@ -404,3 +390,30 @@ def mock_git_repo_commits_too_much(root_folder: str, last_commit_sha: str) -> Di
     for k in keys:
         res[k] = mock_case()
     return res
+
+
+def previous_run_for_history() -> str:
+    return """{"Dockerfile_d70eab08607a4d05faa2d0d6647206599e9abc65_AWS-Access-Key": [
+        {"added_commit_hash": "8a21fa691e17907afee57e93b7820c5943b12746",
+         "removed_commit_hash": "3d79bba03c6f0ddcfb8334f531701942c4be0f32",
+         "potential_secret": {"type": "AWS Access Key", "filename": "Dockerfile",
+                              "hashed_secret": "d70eab08607a4d05faa2d0d6647206599e9abc65", "is_verified": false,
+                              "line_number": 4, "is_added": false, "is_removed": true},
+         "code_line": "ENV AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"",
+         "added_by": "Cherry\ud83c\udf52", "removed_date": "2022-12-14T16:32:13+00:00",
+         "added_date": "2022-12-14T16:10:21+00:00"}],
+     "Dockerfile_d3ddda599442c7940ef18b3834c809d388dba7e5_AWS-Access-Key": [
+         {"added_commit_hash": "3d79bba03c6f0ddcfb8334f531701942c4be0f32",
+          "removed_commit_hash": "7dff3b21fc2563f51655f34f0d3601cdf79d0d5e",
+          "potential_secret": {"type": "AWS Access Key", "filename": "Dockerfile",
+                               "hashed_secret": "d3ddda599442c7940ef18b3834c809d388dba7e5", "is_verified": false,
+                               "line_number": 4, "is_added": false, "is_removed": true},
+          "code_line": "ENV AWS_ACCESS_KEY_ID=\"AKIAZZZZZZZZZZZZZZZZ\"", "added_by": "Cherry\ud83c\udf52",
+          "removed_date": "2022-12-14T16:54:05+00:00", "added_date": "2022-12-14T16:32:13+00:00"}],
+     "main.py_d3ddda599442c7940ef18b3834c809d388dba7e5_AWS-Access-Key": [
+         {"added_commit_hash": "6941281550a12659bdbe87c9a537f88124f78fac", "removed_commit_hash": "",
+          "potential_secret": {"type": "AWS Access Key", "filename": "main.py",
+                               "hashed_secret": "d3ddda599442c7940ef18b3834c809d388dba7e5", "is_verified": false,
+                               "line_number": 1, "is_added": true, "is_removed": false},
+          "code_line": "AWS_ACCESS_TOKEN=\"AKIAZZZZZZZZZZZZZZZZ\"", "added_by": "\ud83c\udf52Cherry\ud83c\udf52",
+          "removed_date": "", "added_date": "2022-12-14T16:57:26+00:00"}]}"""
