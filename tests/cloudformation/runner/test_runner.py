@@ -23,6 +23,9 @@ from checkov.cloudformation.runner import Runner
 from checkov.common.output.report import Report
 from checkov.cloudformation.cfn_utils import create_definitions
 
+RESOURCES_DIR = Path(__file__).parent / "resources"
+
+
 @parameterized_class([
    {"db_connector": NetworkxConnector},
    {"db_connector": IgraphConnector}
@@ -526,6 +529,22 @@ class TestRunnerValid(unittest.TestCase):
 
         all_checks = report.failed_checks + report.passed_checks
         self.assertTrue(any(c.check_id == custom_check_id for c in all_checks))
+
+    def test_graph_check_suppressions(self):
+        # given
+        test_file = RESOURCES_DIR / "suppress_graph_check.yaml"
+
+        # when
+        report = Runner(db_connector=self.db_connector()).run(
+            root_folder=None,
+            files=[str(test_file)],
+            runner_filter=RunnerFilter(framework=["cloudformation"], checks=["CKV2_AWS_33"]),
+        )
+
+        # then
+        self.assertEqual(len(report.failed_checks), 0)
+        self.assertEqual(len(report.passed_checks), 0)
+        self.assertEqual(len(report.skipped_checks), 2)
 
     def tearDown(self):
         cfn_registry.checks = self.orig_checks
