@@ -27,9 +27,12 @@ class Base3dPolicyCheckParser:
         check.category = self.raw_check.get("category", "")
         check.guideline = self.raw_check.get("guideline", "")
 
-    def parse(self, iac_records: list[Record], secrets_records: list[Record], cves_reports: list[ReportCVE]) -> Base3dPolicyCheck | None:
+    def parse(self, iac_records: list[Record] | None = None,
+              secrets_records: list[Record] | None = None,
+              cves_reports: list[ReportCVE] | None = None
+          ) -> Base3dPolicyCheck | None:
         if self.schema_version == 'v1':
-            return self._parse_check_v1(iac_records, secrets_records, cves_reports)
+            return self._parse_check_v1(iac_records or [], secrets_records or [], cves_reports or [])
 
     @abstractmethod
     def _parse_check_v1(self, iac_records: list[Record], secrets_records: list[Record], cves_reports: list[ReportCVE]) -> Base3dPolicyCheck:

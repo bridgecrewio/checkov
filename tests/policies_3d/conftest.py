@@ -136,6 +136,44 @@ def policy_3d_3() -> dict[str, Any]:
                'category': 'Policy3D',
                'code': '{"iac":{"kubernetes":["BC_K8S_1", "BC_K8S_2"]},"cve":{"risk_factors":["Recent vulnerability"]}}'}
 
+@pytest.fixture
+def raw_3d_policy():
+  return {'id': 'BC_3D_500', 'title': 'title_500', 'guideline': 'guideline_500',
+          'severity': 'CRITICAL', 'pcSeverity': 'CRITICAL', 'category': 'Policy3D',
+          'code': """{
+            "version": "v1",
+            "definition": [
+              {
+                "cves": {
+                  "or": [
+                    {
+                      "and": [
+                        {
+                          "risk_factors": "DoS"
+                        },
+                        {
+                          "risk_factors": "Medium Severity"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "iac": {
+                  "or": [
+                    {
+                      "violation_id": "BC_K8S_1"
+                    },
+                    {
+                      "violation_id": "BC_K8S_23"
+                    }
+                  ]
+                }
+              }
+            ]
+          }"""
+        }
 
 @pytest.fixture()
 def policy_3d_record_single_iac_single_cve(k8s_record_1, cve_1) -> Policy3dRecord:
@@ -153,7 +191,10 @@ def policy_3d_record_single_iac_single_cve(k8s_record_1, cve_1) -> Policy3dRecor
         file_line_range=[-1, -1],
         iac_records=[k8s_record_1],
         vulnerabilities=[cve_1],
-        severity=Severities[BcSeverities.LOW]
+        severity=Severities[BcSeverities.LOW],
+        composed_from_iac_records=[],
+        composed_from_secrets_records=[],
+        composed_from_cves=[]
     )
     record.set_guideline('https://docs.bridgecrew.io/docs/bc_p3d_1')
     return record
@@ -174,7 +215,10 @@ def policy_3d_record_multi_iac_multi_cve(k8s_record_1, k8s_record_2, k8s_record_
         file_line_range=[-1, -1],
         iac_records=[k8s_record_1, k8s_record_2, k8s_record_3],
         vulnerabilities=[cve_1, cve_2],
-        severity=Severities[BcSeverities.LOW]
+        severity=Severities[BcSeverities.LOW],
+        composed_from_iac_records=[],
+        composed_from_secrets_records=[],
+        composed_from_cves=[]
     )
     record.set_guideline('https://docs.bridgecrew.io/docs/bc_p3d_1')
     return record

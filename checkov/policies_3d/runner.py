@@ -77,7 +77,7 @@ class Policy3dRunner(BasePostRunner):
                 check.bc_id = check.id
 
                 check_result = CheckResult.PASSED
-                if any(predicament() for predicament in check.predicaments):
+                if any([predicament() for predicament in check.predicaments]):
                     check_result = CheckResult.FAILED
                     logging.debug(f"Resource {resource} is violating 3D policy {check.bc_id}")
 
@@ -95,6 +95,9 @@ class Policy3dRunner(BasePostRunner):
         true_iac_records = []
         true_secrets_records = []
 
+        records_ids = set()
+
+        any_record_data_source = None
 
         all_predicates = []
         for predicament in check.predicaments:
@@ -102,20 +105,24 @@ class Policy3dRunner(BasePostRunner):
         all_predicates = set(all_predicates)
 
         for predicate in all_predicates:
+            if not any_record_data_source and \
+                (isinstance(predicate, IACPredicate) or isinstance(predicate, SecretsPredicate)):
+                any_record_data_source = predicate.record
+
             if predicate.is_true:
-                if isinstance(predicate, IACPredicate):
+                if isinstance(predicate, IACPredicate) and predicate.record.bc_check_id not in records_ids:
                     true_iac_records.append(predicate.record)
-                elif isinstance(predicate, CVEPredicate):
+                    records_ids.add(predicate.record.bc_check_id)
+                elif isinstance(predicate, CVEPredicate) and predicate.cve_report.get('cveId') not in records_ids:
                     true_vulnerabilities_cve_reports.append(predicate.cve_report)
-                elif isinstance(predicate, SecretsPredicate):
+                    records_ids.add(predicate.cve_report.get('cveId'))
+                elif isinstance(predicate, SecretsPredicate) and predicate.record.bc_check_id not in records_ids:
                     true_secrets_records.append(predicate.record)
-
-
-        if not true_iac_records and not true_secrets_records:
-            return None
-
-        record_data_source = true_iac_records[0] if len(true_iac_records) > 0 else true_secrets_records[0]
-
+                    records_ids.add(predicate.record.bc_check_id)
+        try:
+            record_data_source = list(true_iac_records)[0] if len(true_iac_records) > 0 else list(true_secrets_records)[0]
+        except IndexError:
+            record_data_source = any_record_data_source
 
         record = Policy3dRecord(
             check_id=check.id,
@@ -294,5 +301,8 @@ class Policy3dRunner(BasePostRunner):
             file_abs_path=iac_record.file_abs_path,
             severity=check.severity,
             vulnerabilities=vulnerabilities,
-            iac_records=iac_records
+            iac_records=iac_records,
+            composed_from_iac_records=[],
+            composed_from_secrets_records=[],
+            composed_from_cves=[]
         )

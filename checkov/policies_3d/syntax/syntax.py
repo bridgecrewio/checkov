@@ -45,8 +45,9 @@ class Predicament:
     def get_all_children_predicates(self) -> list[Predicate]:
         predicates = []
         for sub_predicament in self.predicaments:
-            for predicate in sub_predicament.predicates:
-                    predicates.append(predicate)
+            predicates.extend(sub_predicament.get_all_children_predicates())
+            # for predicate in sub_predicament.predicates:
+            #         predicates.append(predicate)
 
         predicates.extend(self.predicates)
         return predicates

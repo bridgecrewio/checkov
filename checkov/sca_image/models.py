@@ -15,20 +15,3 @@ class ReportCVE:
     vector: str | None
     description: str | None
     riskFactors: Any | None
-
-@dataclass
-class ImageCachedResult:
-    dockerImageName: str
-    dockerFilePath: str
-    dockerFileContent: str
-    type: str
-    sourceId: str | None
-    branch: str | None
-    sourceType: str
-    vulnerabilities: list[ReportCVE]
-    packages: list[dict[str, Any]]
-    relatedResourceId: str
-    cicdDetails: dict[str, Any] | None
-    errorLines: list[int] | None
-
-
