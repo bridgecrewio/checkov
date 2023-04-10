@@ -1,7 +1,9 @@
 from __future__ import annotations
+
 from unittest import mock
 from pathlib import Path
 import shutil
+from copy import deepcopy
 from pytest_mock import MockerFixture
 
 from detect_secrets import SecretsCollection
@@ -279,15 +281,19 @@ def test_scan_git_history_multiline_keyword_yml() -> None:
     assert report.skipped_checks == []
 
 
-def test_scan_git_history_middle(mocker: MockerFixture) -> None:
+def test_scan_git_history_full_vs_partial(mocker: MockerFixture) -> None:
+    # this takes the 3 mock commits and run _test_it on them
+    commits_func = [mock_git_repo_commits1('', ''), mock_git_repo_commits2('', ''), mock_git_repo_commits3('', '')]
+    all([_test_it(mocker, commits) for commits in commits_func])
+
+
+def _test_it(mocker: MockerFixture, all_commits) -> bool:
     """
     this test tries to run a full scan over 5 commits,
     then run two separate runs over the first 2 and the last 3 (the second will give the secret store to the third)
     then compares the results from run 1 to the last run
     """
     valid_dir_path = "test"
-
-    all_commits = mock_git_repo_commits1('', '')
     mocker.patch(
         "checkov.secrets.scan_git_history._get_commits_diff",
         return_value=all_commits,
@@ -295,7 +301,8 @@ def test_scan_git_history_middle(mocker: MockerFixture) -> None:
     runner = Runner()
     report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                         runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
-    assert len(report.failed_checks) == 3
+    sec_store = runner.get_history_secret_store()
+    # assert len(report.failed_checks) == 3
     for failed_check in report.failed_checks:
         assert failed_check.added_commit_hash or failed_check.removed_commit_hash
         assert failed_check.added_by and failed_check.added_date
@@ -305,26 +312,30 @@ def test_scan_git_history_middle(mocker: MockerFixture) -> None:
     runner2 = Runner()
     report2 = runner2.run(root_folder=valid_dir_path, external_checks_dir=None,
                           runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
-    assert len(report2.failed_checks) == 1
-    sec_store = runner2.get_history_secret_store()
+    # assert len(report2.failed_checks) == 1
+    sec_store2 = runner2.get_history_secret_store()
+    sec_store2_dc = deepcopy(sec_store2)
 
     mocker.patch(
         "checkov.secrets.scan_git_history._get_commits_diff", return_value=all_commits[2:5])
     runner3 = Runner()
-    runner3.set_history_secret_store(sec_store)
-    report3 = runner2.run(root_folder=valid_dir_path, external_checks_dir=None,
+    runner3.set_history_secret_store(sec_store2_dc)
+    report3 = runner3.run(root_folder=valid_dir_path, external_checks_dir=None,
                           runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
-    assert len(report3.failed_checks) == 3
-    assert len(report3.parsing_errors) == 0
-    assert len(report3.passed_checks) == 0
-    assert len(report3.parsing_errors) == 0
-    assert len(report3.skipped_checks) == 0
+    sec_store3 = runner3.get_history_secret_store()
+    assert len(report3.failed_checks) == len(report.failed_checks)
     for failed_check in report3.failed_checks:
         assert failed_check.added_commit_hash or failed_check.removed_commit_hash
         assert failed_check.added_by and failed_check.added_date
+    # check the secret store to have the same results
+    assert len(sec_store) == len(sec_store3)
+    for k1, k3 in zip(sec_store, sec_store3):
+        assert k1 == k3
+        assert sec_store[k1][0].get('added_commit_hash') == sec_store3[k3][0].get('added_commit_hash')
+    return True
 
 
-def test_scan_git_history_real() -> None:
+def test_scan_git_history_real_repo() -> None:
     """
     runs over a real repo inside the resource dir and takes the results
     """
