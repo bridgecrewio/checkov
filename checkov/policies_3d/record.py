@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import List, Dict, Any, Tuple, Optional
 
 from checkov.common.bridgecrew.severities import Severity
