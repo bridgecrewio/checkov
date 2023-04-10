@@ -287,8 +287,8 @@ class Checkov:
                 repo_root_for_plan_enrichment=self.config.repo_root_for_plan_enrichment,
                 resource_attr_to_omit=self.config.mask,
                 # TODO modify the output for git_history secret and remove the rewrite of enable_git_history_secret_scan
-                enable_git_history_secret_scan=self.config.scan_secrets_history,
-                # enable_git_history_secret_scan=False,  # expose after unite git history with secret scan
+                # enable_git_history_secret_scan=self.config.scan_secrets_history,
+                enable_git_history_secret_scan=False,  # expose after unite git history with secret scan
                 git_history_timeout=self.config.secrets_history_timeout
             )
 
