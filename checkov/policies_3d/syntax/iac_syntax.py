@@ -1,3 +1,4 @@
+from __future__ import annotations
 import abc
 
 from checkov.common.output.record import Record
