@@ -67,52 +67,6 @@ class Policies3DIntegration(BaseIntegrationFeature):
 
             policies = self.bc_integration.customer_run_config_response.get('Policies3D')
             logging.debug(f'Got {len(policies)} 3d policies from the platform.')
-            # checks = []
-            policies = [
-                {
-                    'id': 'BC_3D_500',
-                    'title': 'title_500',
-                    'guideline': 'guideline_500',
-                    'severity': 'CRITICAL',
-                    'pcSeverity': 'CRITICAL',
-                    'category': 'Policy3D',
-                    'code': """
-                    {
-  "version": "v1",
-  "definition": [
-    {
-      "cves": {
-        "or": [
-          {
-            "and": [
-              {
-                "risk_factors": "DoS"
-              },
-              {
-                "risk_factors": "RCE"
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "iac": {
-        "or": [
-          {
-            "violation_id": "BC_K8S_29"
-          },
-          {
-            "violation_id": "BC_K8S_23"
-          }
-        ]
-      }
-    }
-  ]
-}
-                    """
-                }
-            ]
             runner = Policy3dRunner()
             report = runner.run_v2(raw_checks=policies, scan_reports=scan_reports)
             return report
