@@ -6,6 +6,8 @@ import platform
 
 from typing import Type, Optional
 
+import pathlib
+
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.typing import LibraryGraphConnector
 from checkov.common.graph.graph_builder.consts import GraphSource
@@ -190,18 +192,23 @@ class Runner(TerraformRunner):
 
     def check_tf_definition(self, report, root_folder, runner_filter, collect_skip_comments=True):
         for full_file_path, definition in self.definitions.items():
-            if isinstance(full_file_path, TFDefinitionKey):
-                full_file_path = full_file_path.file_path
-            if platform.system() == "Windows":
-                temp = os.path.split(full_file_path)[0]
-                scanned_file = f"/{os.path.relpath(full_file_path,temp)}"
-            else:
-                scanned_file = f"/{os.path.relpath(full_file_path, root_folder)}"
+            full_file_path, scanned_file = self._get_file_path(full_file_path, root_folder)
             logging.debug(f"Scanning file: {scanned_file}")
             for block_type in definition.keys():
                 if block_type in self.block_type_registries.keys():
                     self.run_block(definition[block_type], None, full_file_path, root_folder, report, scanned_file,
                                    block_type, runner_filter)
+
+    @staticmethod
+    def _get_file_path(full_file_path: str | TFDefinitionKey, root_folder: str | pathlib.Path) -> tuple[str, str]:
+        if isinstance(full_file_path, TFDefinitionKey):
+            full_file_path = full_file_path.file_path
+        if platform.system() == "Windows":
+            temp = os.path.split(full_file_path)[0]
+            scanned_file = f"/{os.path.relpath(full_file_path, temp)}"
+        else:
+            scanned_file = f"/{os.path.relpath(full_file_path, root_folder)}"
+        return full_file_path, scanned_file
 
     def run_block(self, entities,
                   definition_context,
