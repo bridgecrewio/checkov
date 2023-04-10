@@ -9,6 +9,7 @@ from typing import Type, Optional
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.typing import LibraryGraphConnector
 from checkov.common.graph.graph_builder.consts import GraphSource
+from checkov.terraform.modules.module_objects import TFDefinitionKey
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_manager import TerraformGraphManager
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
@@ -189,6 +190,8 @@ class Runner(TerraformRunner):
 
     def check_tf_definition(self, report, root_folder, runner_filter, collect_skip_comments=True):
         for full_file_path, definition in self.definitions.items():
+            if isinstance(full_file_path, TFDefinitionKey):
+                full_file_path = full_file_path.file_path
             if platform.system() == "Windows":
                 temp = os.path.split(full_file_path)[0]
                 scanned_file = f"/{os.path.relpath(full_file_path,temp)}"
