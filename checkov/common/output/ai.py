@@ -95,7 +95,7 @@ class OpenAi:
             if details:
                 record.details = details
         except Exception:
-            logging.info(f"Something went wrong while querying OpenAI", exc_info=True)
+            logging.info("Something went wrong while querying OpenAI", exc_info=True)
 
     def _prioritize_findings(self, records: list[Record]) -> list[Record]:
         if 0 < OPENAI_MAX_FINDINGS < len(records):
