@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import logging
 import typing
-from copy import deepcopy
 from typing import Any, Optional
 
+from checkov.common.util.data_structures_utils import deepcopy
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.foreach.abstract_handler import ForeachAbstractHandler
 from checkov.terraform.graph_builder.foreach.consts import FOREACH_STRING, COUNT_STRING, FOR_EACH_BLOCK_TYPE

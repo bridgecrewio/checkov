@@ -4,9 +4,9 @@ import abc
 import json
 import re
 import typing
-from copy import deepcopy
 from typing import Any
 
+from checkov.common.util.data_structures_utils import deepcopy
 from checkov.terraform import TFModule
 from checkov.terraform.graph_builder.foreach.consts import COUNT_STRING, FOREACH_STRING, COUNT_KEY, EACH_VALUE, \
     EACH_KEY, REFERENCES_VALUES

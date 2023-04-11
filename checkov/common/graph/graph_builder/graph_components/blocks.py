@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from collections.abc import Collection
-from copy import deepcopy
 from typing import Union, Dict, Any, List
 
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimmed_strings
 from checkov.common.graph.graph_builder.variable_rendering.breadcrumb_metadata import BreadcrumbMetadata
+from checkov.common.util.data_structures_utils import deepcopy
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 
 

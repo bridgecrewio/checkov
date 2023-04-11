@@ -6,7 +6,6 @@ import logging
 import os
 from collections import defaultdict
 from collections.abc import Sequence
-from copy import deepcopy
 from pathlib import Path
 from typing import Any, Optional, TYPE_CHECKING
 
@@ -15,6 +14,7 @@ from lark import Tree
 import re
 
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
+from checkov.common.util.data_structures_utils import deepcopy
 from checkov.common.util.json_utils import CustomJSONEncoder, object_hook
 
 if TYPE_CHECKING:

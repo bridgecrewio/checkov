@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import logging
 import os
-from copy import deepcopy
 from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List
 
 import deep_merge
 
 from checkov.common.runners.base_runner import filter_ignored_paths, IGNORE_HIDDEN_DIRECTORY_ENV
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
+from checkov.common.util.data_structures_utils import deepcopy
 from checkov.common.util.type_forcers import force_list
 from checkov.common.variables.context import EvaluationContext
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType

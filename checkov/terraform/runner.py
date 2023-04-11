@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import copy
 import dataclasses
 import logging
 import os
@@ -25,6 +24,7 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
 from checkov.common.util import data_structures_utils
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
+from checkov.common.util.data_structures_utils import deepcopy
 from checkov.common.util.parser_utils import get_module_from_full_path, get_abs_path, \
     get_tf_definition_key_from_module_dependency, TERRAFORM_NESTED_MODULE_PATH_PREFIX, \
     TERRAFORM_NESTED_MODULE_PATH_ENDING, TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH, \
@@ -222,7 +222,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                 entity_context, entity_evaluations = self.get_entity_context_and_evaluations(entity)
                 if entity_context:
                     full_file_path = entity[CustomAttributes.FILE_PATH]
-                    copy_of_check_result = copy.deepcopy(check_result)
+                    copy_of_check_result = deepcopy(check_result)
                     for skipped_check in entity_context.get('skipped_checks', []):
                         if skipped_check['id'] == check.id:
                             copy_of_check_result['result'] = CheckResult.SKIPPED

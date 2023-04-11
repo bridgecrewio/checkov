@@ -3,10 +3,10 @@ from __future__ import annotations
 import itertools
 import typing
 from collections import defaultdict
-from copy import deepcopy
 from typing import Any
 
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
+from checkov.common.util.data_structures_utils import deepcopy
 from checkov.terraform import TFModule
 from checkov.terraform.graph_builder.foreach.abstract_handler import ForeachAbstractHandler
 from checkov.terraform.graph_builder.foreach.consts import FOREACH_STRING, COUNT_STRING

@@ -6,7 +6,6 @@ import logging
 import os
 import re
 from collections.abc import Hashable
-from copy import deepcopy
 from json import JSONDecodeError
 
 import dpath
@@ -17,7 +16,7 @@ from lark.tree import Tree
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.utils import join_trimmed_strings
 from checkov.common.graph.graph_builder.variable_rendering.renderer import VariableRenderer
-from checkov.common.util.data_structures_utils import find_in_dict
+from checkov.common.util.data_structures_utils import find_in_dict, deepcopy
 from checkov.common.util.type_forcers import force_int
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes, reserved_attribute_names
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType

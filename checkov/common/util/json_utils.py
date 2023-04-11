@@ -1,6 +1,5 @@
 import datetime
 import json
-from copy import deepcopy
 from json import JSONDecodeError
 from typing import Any, Dict
 
@@ -11,6 +10,8 @@ from checkov.common.bridgecrew.severities import Severity
 from checkov.common.output.common import ImageDetails
 from checkov.common.packaging.version import LegacyVersion, Version
 from detect_secrets.core.potential_secret import PotentialSecret
+
+from checkov.common.util.data_structures_utils import deepcopy
 
 type_of_function = type(lambda x: x)
 

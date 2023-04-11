@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, TypeVar
+import pickle
+from typing import Any, TypeVar, cast
 
 _T = TypeVar("_T")
 
@@ -86,6 +87,12 @@ def find_in_dict(input_dict: dict[str, Any], key_path: str) -> Any:
         return None
 
     return value
+
+
+def deepcopy(obj: _T) -> _T:
+    """More performant version of the built-in deepcopy"""
+
+    return cast("_T", pickle.loads(pickle.dumps(obj, pickle.HIGHEST_PROTOCOL)))
 
 
 def get_empty_list_str() -> list[str]:
