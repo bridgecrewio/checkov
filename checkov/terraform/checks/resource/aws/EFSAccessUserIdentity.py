@@ -10,7 +10,7 @@ class EFSAccessUserIdentity(BaseResourceValueCheck):
         NIST.800-53.r5 AC-6(2)
         EFS access points should enforce a user identity
         """
-        name = "EFS access points enforce a user identity"
+        name = "EFS access points should enforce a user identity"
         id = "CKV_AWS_330"
         supported_resources = ['aws_efs_access_point']
         categories = [CheckCategories.GENERAL_SECURITY]
