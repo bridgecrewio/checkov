@@ -7,7 +7,8 @@ from checkov.common.models.consts import ANY_VALUE
 
 class NetworkFirewallPolicyDefinesCMK(BaseResourceValueCheck):
     def __init__(self) -> None:
-        name = "Ensure Network Firewall Policyt defines a customer managed Key (CMK)"
+        name = "Ensure Network Firewall Policy defines an encryption configuration that uses a " \
+               "customer managed Key (CMK)"
         id = "CKV_AWS_346"
         supported_resources = ("aws_networkfirewall_firewall_policy",)
         categories = (CheckCategories.ENCRYPTION,)
