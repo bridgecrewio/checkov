@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.158...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.160...HEAD)
+
+## [2.3.160](https://github.com/bridgecrewio/checkov/compare/2.3.158...2.3.160) - 2023-04-11
+
+### Bug Fix
+
+- **general:** catch unexpected errors when querying OpenAI - [#4883](https://github.com/bridgecrewio/checkov/pull/4883)
 
 ## [2.3.158](https://github.com/bridgecrewio/checkov/compare/2.3.155...2.3.158) - 2023-04-10
 
