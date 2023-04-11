@@ -51,3 +51,63 @@ resource "aws_networkfirewall_firewall" "pass" {
 
   delete_protection = true
 }
+
+resource "aws_networkfirewall_rule_group" "fail" {
+  capacity = 100
+  name     = "example"
+  type     = "STATEFUL"
+  rule_group {
+    rules_source {
+      rules_source_list {
+        generated_rules_type = "DENYLIST"
+        target_types         = ["HTTP_HOST"]
+        targets              = ["test.example.com"]
+      }
+    }
+    reference_sets {
+      ip_set_references {
+        key = "example"
+        ip_set_reference {
+          reference_arn = aws_ec2_managed_prefix_list.this.arn
+        }
+      }
+    }
+  }
+
+  tags = {
+    Tag1 = "Value1"
+    Tag2 = "Value2"
+  }
+}
+
+resource "aws_networkfirewall_rule_group" "pass" {
+  capacity = 100
+  name     = "example"
+  type     = "STATEFUL"
+  rule_group {
+    rules_source {
+      rules_source_list {
+        generated_rules_type = "DENYLIST"
+        target_types         = ["HTTP_HOST"]
+        targets              = ["test.example.com"]
+      }
+    }
+    reference_sets {
+      ip_set_references {
+        key = "example"
+        ip_set_reference {
+          reference_arn = aws_ec2_managed_prefix_list.this.arn
+        }
+      }
+    }
+  }
+
+  encryption_configuration {
+    key_id=aws_kms_key.pike.id
+    type="CUSTOMER_KMS"
+  }
+  tags = {
+    Tag1 = "Value1"
+    Tag2 = "Value2"
+  }
+}

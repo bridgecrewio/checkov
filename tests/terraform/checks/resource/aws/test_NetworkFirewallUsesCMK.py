@@ -19,10 +19,12 @@ class TestNetworkFirewallUsesCMK(unittest.TestCase):
 
         passing_resources = {
             "aws_networkfirewall_firewall.pass",
+            "aws_networkfirewall_rule_group.pass"
         }
         failing_resources = {
             "aws_networkfirewall_firewall.fail",
             "aws_networkfirewall_firewall.fail2",
+            "aws_networkfirewall_rule_group.fail"
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}

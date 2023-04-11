@@ -9,7 +9,7 @@ class NetworkFirewallUsesCMK(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure that Network firewall encryption is via a CMK"
         id = "CKV_AWS_345"
-        supported_resources = ['aws_networkfirewall_firewall']
+        supported_resources = ['aws_networkfirewall_firewall', 'aws_networkfirewall_rule_group']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
