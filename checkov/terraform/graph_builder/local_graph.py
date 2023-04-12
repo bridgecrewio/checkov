@@ -56,7 +56,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self.dirname_cache: Dict[str, str] = {}
         self.vertices_by_module_dependency_by_name: Dict[Tuple[str, str], Dict[BlockType, Dict[str, List[int]]]] = defaultdict(partial(defaultdict, partial(defaultdict, list)))
         self.vertices_by_module_dependency: Dict[Tuple[str, str], Dict[BlockType, List[int]]] = defaultdict(partial(defaultdict, list))
-        self.enable_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_FOREACH_HANDLING', 'True'))
+        self.enable_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_FOREACH_HANDLING', 'False'))
         self.enable_modules_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_MODULES_FOREACH_HANDLING', 'False'))
         self.use_new_tf_parser = strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'False'))
         self.foreach_blocks: Dict[str, List[int]] = {BlockType.RESOURCE: [], BlockType.MODULE: []}
@@ -120,9 +120,9 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
     def _arrange_graph_data(self) -> None:
         # reset all the relevant data
         self.vertices_by_block_type = defaultdict(list)
-        self.vertices_block_name_map = defaultdict(lambda: defaultdict(list))
+        self.vertices_block_name_map = defaultdict(partial(defaultdict, list))
         self.map_path_to_module = {}
-        self.vertices_by_module_dependency = defaultdict(lambda: defaultdict(list))
+        self.vertices_by_module_dependency = defaultdict(partial(defaultdict, list))
         self.edges = []
         for i in range(len(self.vertices)):
             self.out_edges[i] = []

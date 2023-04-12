@@ -131,7 +131,7 @@ class Checkov:
         self.parse_config(argv=argv)
 
     def _parse_mask_to_resource_attributes_to_omit(self) -> None:
-        resource_attributes_to_omit = defaultdict(lambda: set())
+        resource_attributes_to_omit = defaultdict(set)
         for entry in self.config.mask:
             splitted_entry = entry.split(':')
             # if we have 2 entries, this is resource & variable to mask

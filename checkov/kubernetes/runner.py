@@ -3,7 +3,6 @@ from __future__ import annotations
 import logging
 import os
 from typing import Type, Any, TYPE_CHECKING
-from copy import deepcopy
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.checks_infra.registry import BaseRegistry
@@ -16,6 +15,7 @@ from checkov.common.output.record import Record
 from checkov.common.output.report import Report, merge_reports
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
+from checkov.common.util.data_structures_utils import deepcopy
 from checkov.kubernetes.checks.resource.registry import registry
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
 from checkov.kubernetes.graph_manager import KubernetesGraphManager

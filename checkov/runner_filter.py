@@ -72,7 +72,7 @@ class RunnerFilter(object):
         self.checks = []
         self.bc_cloned_checks: dict[str, list[dict[str, Any]]] = defaultdict(list)
         self.skip_checks = []
-        self.skip_checks_regex_patterns = defaultdict(lambda: [])
+        self.skip_checks_regex_patterns = defaultdict(list)
         self.show_progress_bar = show_progress_bar
 
         # split out check/skip thresholds so we can access them easily later
@@ -141,7 +141,7 @@ class RunnerFilter(object):
 
     @staticmethod
     def _load_resource_attr_to_omit(resource_attr_to_omit_input: Optional[Dict[str, Set[str]]]) -> DefaultDict[str, Set[str]]:
-        resource_attributes_to_omit: DefaultDict[str, Set[str]] = defaultdict(lambda: set())
+        resource_attributes_to_omit: DefaultDict[str, Set[str]] = defaultdict(set)
         # In order to create new object (and not a reference to the given one)
         if resource_attr_to_omit_input:
             resource_attributes_to_omit.update(resource_attr_to_omit_input)

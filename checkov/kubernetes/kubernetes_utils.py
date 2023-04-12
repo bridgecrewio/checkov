@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import logging
 import os
-from copy import deepcopy
 from typing import Dict, Any, TYPE_CHECKING
 
 import dpath
 
 from checkov.common.models.enums import CheckResult
+from checkov.common.util.data_structures_utils import deepcopy
 from checkov.runner_filter import RunnerFilter
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.models.consts import YAML_COMMENT_MARK

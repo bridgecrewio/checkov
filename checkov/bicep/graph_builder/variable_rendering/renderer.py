@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from copy import deepcopy
 from typing import TYPE_CHECKING, Any
 
 from pycep.transformer import BicepElement
@@ -9,6 +8,7 @@ from checkov.bicep.graph_builder.graph_components.block_types import BlockType
 from checkov.bicep.utils import adjust_value
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.variable_rendering.renderer import VariableRenderer
+from checkov.common.util.data_structures_utils import deepcopy
 
 if TYPE_CHECKING:
     from checkov.bicep.graph_builder.local_graph import BicepLocalGraph

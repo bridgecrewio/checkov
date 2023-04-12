@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-from copy import deepcopy
 from typing import TYPE_CHECKING, Tuple, List, Any, Dict, Optional, Callable
 
 from typing_extensions import TypedDict
@@ -13,6 +12,7 @@ from checkov.cloudformation.parser.cfn_keywords import IntrinsicFunctions, Condi
 from checkov.common.graph.graph_builder import Edge, CustomAttributes
 from checkov.common.graph.graph_builder.graph_components.blocks import Block
 from checkov.common.graph.graph_builder.variable_rendering.renderer import VariableRenderer
+from checkov.common.util.data_structures_utils import deepcopy
 
 if TYPE_CHECKING:
     from checkov.cloudformation.graph_builder.graph_components.blocks import CloudformationBlock

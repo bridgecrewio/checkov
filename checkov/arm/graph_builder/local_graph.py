@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-from copy import deepcopy
 from typing import Any, TYPE_CHECKING
 
 from checkov.arm.graph_builder.graph_components.block_types import BlockType
@@ -10,6 +9,7 @@ from checkov.arm.utils import ArmElements
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.util.consts import START_LINE, END_LINE
+from checkov.common.util.data_structures_utils import deepcopy
 
 if TYPE_CHECKING:
     from checkov.common.graph.graph_builder.local_graph import _Block

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 from collections import defaultdict
-from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
@@ -12,6 +11,7 @@ from checkov.common.graph.graph_builder.graph_components.block_types import Bloc
 from checkov.common.graph.graph_builder.graph_components.blocks import Block
 from checkov.common.runners.graph_builder.local_graph import ObjectLocalGraph
 from checkov.common.util.consts import START_LINE, END_LINE
+from checkov.common.util.data_structures_utils import deepcopy
 from checkov.github_actions.graph_builder.graph_components.resource_types import ResourceType
 from checkov.github_actions.utils import get_scannable_file_paths, parse_file
 

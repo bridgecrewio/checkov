@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import logging
-from copy import deepcopy
 from typing import Any, List, Dict
 from collections import defaultdict
 
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.util.consts import START_LINE, END_LINE
+from checkov.common.util.data_structures_utils import deepcopy
 from checkov.kubernetes.graph_builder.graph_components.blocks import KubernetesBlock, KubernetesBlockMetadata, KubernetesSelector
 from checkov.kubernetes.kubernetes_utils import DEFAULT_NESTED_RESOURCE_TYPE, is_invalid_k8_definition, get_resource_id, is_invalid_k8_pod_definition, \
     remove_metadata_from_attribute, PARENT_RESOURCE_KEY_NAME, PARENT_RESOURCE_ID_KEY_NAME, SUPPORTED_POD_CONTAINERS_TYPES
