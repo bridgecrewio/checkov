@@ -91,7 +91,7 @@ def find_var_blocks(value: str) -> List[VarBlockMatch]:
     """
 
     if "$" not in value:
-        # not relevant, ttpically just a normal string value
+        # not relevant, typically just a normal string value
         return []
 
     to_return: List[VarBlockMatch] = []

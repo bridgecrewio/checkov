@@ -92,7 +92,7 @@ def find_in_dict(input_dict: dict[str, Any], key_path: str) -> Any:
 def deepcopy(obj: _T) -> _T:
     """More performant version of the built-in deepcopy"""
 
-    return cast("_T", pickle.loads(pickle.dumps(obj, pickle.HIGHEST_PROTOCOL)))
+    return cast("_T", pickle.loads(pickle.dumps(obj, pickle.HIGHEST_PROTOCOL)))  # nosec
 
 
 def get_empty_list_str() -> list[str]:

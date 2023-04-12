@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import os
 from collections import defaultdict
+from functools import partial
 from pathlib import Path
 from typing import List, Optional, Union, Any, Dict, Set, Tuple
 
@@ -53,8 +54,8 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self.relative_paths_cache = {}
         self.abspath_cache: Dict[str, str] = {}
         self.dirname_cache: Dict[str, str] = {}
-        self.vertices_by_module_dependency_by_name: Dict[Tuple[str, str], Dict[BlockType, Dict[str, List[int]]]] = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
-        self.vertices_by_module_dependency: Dict[Tuple[str, str], Dict[BlockType, List[int]]] = defaultdict(lambda: defaultdict(list))
+        self.vertices_by_module_dependency_by_name: Dict[Tuple[str, str], Dict[BlockType, Dict[str, List[int]]]] = defaultdict(partial(defaultdict, partial(defaultdict, list)))
+        self.vertices_by_module_dependency: Dict[Tuple[str, str], Dict[BlockType, List[int]]] = defaultdict(partial(defaultdict, list))
         self.enable_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_FOREACH_HANDLING', 'False'))
         self.enable_modules_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_MODULES_FOREACH_HANDLING', 'False'))
         self.use_new_tf_parser = strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'False'))
