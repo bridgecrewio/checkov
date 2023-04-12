@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-import pickle
+import pickle  # nosec
 from typing import Any, TypeVar, cast
 
 _T = TypeVar("_T")
