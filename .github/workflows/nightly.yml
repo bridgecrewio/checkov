@@ -38,7 +38,7 @@ jobs:
       - name: Build GitHub Release changelog
         if: steps.prepare_release.outputs.create_release == 'true'
         id: build_github_release
-        uses: mikepenz/release-changelog-builder-action@c73ff7421c59fa0d090dcfe62e24a758977c699d  # v3
+        uses: mikepenz/release-changelog-builder-action@f7dd0f5932037ca4fff56395ffb04837fd97851a  # v3
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT_SECRET }}
         with:
