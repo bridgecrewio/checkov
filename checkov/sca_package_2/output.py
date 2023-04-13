@@ -392,7 +392,7 @@ def create_package_overview_table_part(
                 package_name_col_val = dep_sign
 
             fix_version = cve["fixed_version"] if is_root else cve.get("root_package_fix_version", "")
-            fix_version_overview = fix_version + is_public_overview if fix_version else ""
+            fix_version_overview = fix_version + is_public_overview if fix_version and fix_version != UNFIXABLE_VERSION else fix_version
             package_table.add_row(
                 [
                     package_name_col_val,
