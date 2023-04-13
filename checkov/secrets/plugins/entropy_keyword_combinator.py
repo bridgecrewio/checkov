@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 from detect_secrets.plugins.high_entropy_strings import Base64HighEntropyString
 from detect_secrets.plugins.high_entropy_strings import HexHighEntropyString
 from detect_secrets.plugins.keyword import KeywordDetector
-from detect_secrets.plugins.keyword import DENYLIST
+from detect_secrets.plugins.keyword import DENYLIST_REGEX
 from detect_secrets.plugins.keyword import AFFIX_REGEX
 from detect_secrets.plugins.keyword import CLOSING
 from detect_secrets.plugins.keyword import OPTIONAL_WHITESPACE
@@ -18,7 +18,8 @@ from detect_secrets.plugins.base import BasePlugin
 
 from detect_secrets.util.filetype import determine_file_type
 from checkov.secrets.plugins.detector_utils import SINGLE_LINE_PARSER, MULTILINE_PARSERS, \
-    REGEX_VALUE_KEYWORD_BY_FILETYPE, REGEX_VALUE_SECRET_BY_FILETYPE, remove_fp_secrets_in_keys, detect_secret, analyze_multiline_keyword_combinator
+    REGEX_VALUE_KEYWORD_BY_FILETYPE, REGEX_VALUE_SECRET_BY_FILETYPE, remove_fp_secrets_in_keys, detect_secret, \
+    analyze_multiline_keyword_combinator
 
 from checkov.secrets.runner import SOURCE_CODE_EXTENSION
 
@@ -32,10 +33,9 @@ ENTROPY_KEYWORD_COMBINATOR_LIMIT = 3
 ENTROPY_KEYWORD_LIMIT = 4.5
 
 
-DENY_LIST_REGEX = r'|'.join(DENYLIST)
 # Support for suffix after keyword i.e. password_secure = "value"
 DENY_LIST_REGEX2 = r'({denylist}){suffix}'.format(
-    denylist=DENY_LIST_REGEX,
+    denylist=DENYLIST_REGEX,
     suffix=AFFIX_REGEX,
 )
 
