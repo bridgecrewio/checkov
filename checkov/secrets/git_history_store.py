@@ -3,9 +3,10 @@ from __future__ import annotations
 import logging
 import copy
 from collections import defaultdict
-from typing import TYPE_CHECKING, Dict, List, Tuple, Optional
+from typing import TYPE_CHECKING, Dict, List, Optional
 from typing_extensions import TypedDict
-from checkov.secrets.consts import ADDED, REMOVED, GIT_HISTORY_OPTIONS, GIT_HISTORY_NOT_BEEN_REMOVED
+from checkov.secrets.git_types import EnrichedPotentialSecretMetadata, EnrichedPotentialSecret, Commit, ADDED, REMOVED, \
+    GIT_HISTORY_OPTIONS, CommitDiff, GIT_HISTORY_NOT_BEEN_REMOVED
 
 if TYPE_CHECKING:
     from detect_secrets.core.potential_secret import PotentialSecret
@@ -18,26 +19,17 @@ RAW_STORE_TYPES = {RENAME_STR, FILE_RESULTS_STR}
 class RawStore(TypedDict):
     file_results: List[PotentialSecret]
     file_name: str
-    commit: Dict[str, str | Dict[str, str]]
-    commit_hash: str
+    commit: Commit
     type: str  # rename / file results
     rename_from: str
     rename_to: str
-
-
-class EnrichedPotentialSecret(TypedDict):
-    added_commit_hash: str
-    removed_commit_hash: str
-    potential_secret: PotentialSecret
-    code_line: Optional[str]
 
 
 class GitHistorySecretStore:
     def __init__(self) -> None:
         self.secrets_by_file_value_type: Dict[str, List[EnrichedPotentialSecret]] = {}
 
-    def set_secret_map(self, file_results: List[PotentialSecret],
-                       file_name: str, commit_hash: str, commit: Dict[str, str | Dict[str, str]]) -> None:
+    def set_secret_map(self, file_results: List[PotentialSecret], file_name: str, commit: Commit) -> None:
         # First find if secret was moved in the file
         equal_secret_in_commit: Dict[str, List[str]] = defaultdict(list)
         for secret in file_results:
@@ -51,14 +43,11 @@ class GitHistorySecretStore:
             if all(value in equal_secret_in_commit[secret_key] for value in GIT_HISTORY_OPTIONS):
                 continue
             if secret.is_added:
-                self._add_new_secret(secret_key, commit_hash, secret, commit)
+                self._add_new_secret(secret_key, secret, commit)
             if secret.is_removed:
-                self._update_removed_secret(secret_key, secret, file_name, commit_hash)
+                self._update_removed_secret(secret_key, secret, file_name, commit)
 
-    def _add_new_secret(self, secret_key: str,
-                        commit_hash: str,
-                        secret: PotentialSecret,
-                        commit: Dict[str, str | Dict[str, str]]) -> None:
+    def _add_new_secret(self, secret_key: str, secret: PotentialSecret, commit: Commit) -> None:
         if secret_key not in self.secrets_by_file_value_type:
             self.secrets_by_file_value_type[secret_key] = []
         else:
@@ -70,32 +59,32 @@ class GitHistorySecretStore:
                 self.secrets_by_file_value_type[secret_key][0].update({'potential_secret': secret,
                                                                        'removed_commit_hash': ''})
                 return
-        code_line = search_for_code_line(commit[secret.filename], secret.secret_value, secret.is_added)
-        self.secrets_by_file_value_type[secret_key].append(
-            {'added_commit_hash': commit_hash,
-             'removed_commit_hash': '',
-             'potential_secret': secret,
-             'code_line': code_line
-             })
+        code_line = search_for_code_line(commit.files[secret.filename], secret.secret_value, secret.is_added)
+        enriched_potential_secret: EnrichedPotentialSecret = {
+            'added_commit_hash': commit.metadata.commit_hash,
+            'removed_commit_hash': '',
+            'potential_secret': secret,
+            'code_line': code_line,
+            'added_by': commit.metadata.committer,
+            'removed_date': '',
+            'added_date': commit.metadata.committed_datetime
+        }
+        self.secrets_by_file_value_type[secret_key].append(enriched_potential_secret)
 
-    def _update_removed_secret(self, secret_key: str,
-                               secret: PotentialSecret,
-                               file_name: str,
-                               commit_hash: str) -> None:
+    def _update_removed_secret(self, secret_key: str, secret: PotentialSecret, file_name: str, commit: Commit) -> None:
         # Try to find the corresponding added secret in the git history secret map
         secrets_in_file = self.secrets_by_file_value_type.get(secret_key, None)
         if secrets_in_file:
             for secret_in_file in secrets_in_file:
                 if secret_in_file['potential_secret'].is_added:
-                    secret_in_file['removed_commit_hash'] = commit_hash
+                    secret_in_file['removed_commit_hash'] = commit.metadata.commit_hash
                     secret_in_file['potential_secret'] = secret
+                    secret_in_file['removed_date'] = commit.metadata.committed_datetime
                     break
         else:
             logging.error(f"No added secret commit found for secret in file {file_name}.")
 
-    def handle_renamed_file(self, rename_from: str,
-                            rename_to: str,
-                            commit_hash: str) -> None:
+    def handle_renamed_file(self, rename_from: str, rename_to: str, commit: Commit) -> None:
         temp_secrets_by_file_value_type: Dict[str, List[EnrichedPotentialSecret]] = {}
         for secret_key in self.secrets_by_file_value_type.keys():
             if rename_from in secret_key:
@@ -104,18 +93,24 @@ class GitHistorySecretStore:
                 secret_in_file = self.secrets_by_file_value_type[secret_key]
                 for secret_data in secret_in_file:
                     # defines the secret in the old file as removed and add the secret to the new file
-                    secret_data['removed_commit_hash'] = commit_hash
+                    secret_data['removed_commit_hash'] = commit.metadata.commit_hash
+                    secret_data['removed_date'] = commit.metadata.committed_datetime
                     new_secret = copy.deepcopy(secret_data['potential_secret'])
                     new_secret.filename = rename_to
                     code = secret_data.get('code_line')
-                    temp_secrets_by_file_value_type[new_secret_key].append({'added_commit_hash': commit_hash,
-                                                                            'removed_commit_hash': '',
-                                                                            'potential_secret': new_secret,
-                                                                            'code_line': code})
+                    enriched_potential_secret: EnrichedPotentialSecret = {
+                        'added_commit_hash': commit.metadata.commit_hash,
+                        'removed_commit_hash': '',
+                        'potential_secret': new_secret,
+                        'code_line': code,
+                        'added_by': secret_data.get('added_by'),
+                        'removed_date': '',
+                        'added_date': secret_data.get('added_date')
+                    }
+                    temp_secrets_by_file_value_type[new_secret_key].append(enriched_potential_secret)
         self.secrets_by_file_value_type.update(temp_secrets_by_file_value_type)
 
-    def get_added_and_removed_commit_hash(self, key: str, secret: PotentialSecret) -> \
-            Tuple[str | None, str | None, str | None]:
+    def get_added_and_removed_commit_hash(self, key: str, secret: PotentialSecret) -> EnrichedPotentialSecretMetadata:
         """
         now we have only the current commit_hash - in the added_commit_hash or in the removed_commit_hash.
         in the next step we will add the connection and the missing data
@@ -129,7 +124,8 @@ class GitHistorySecretStore:
             enriched_secrets = self.secrets_by_file_value_type[secret_key]
             chosen_secret = enriched_secrets[0]
             if len(enriched_secrets) > 1:
-                added, removed, _file = key.split("_")
+                res = key.split("_")
+                added, removed = res[0], res[1]
                 if removed == GIT_HISTORY_NOT_BEEN_REMOVED:
                     removed = ''
                 for enriched_secret in enriched_secrets:
@@ -138,21 +134,23 @@ class GitHistorySecretStore:
                         chosen_secret = enriched_secret
                         break
 
-            added_commit_hash = chosen_secret.get('added_commit_hash')
-            removed_commit_hash = chosen_secret.get('removed_commit_hash') or None
-            code = chosen_secret.get('code_line')
-            return added_commit_hash, removed_commit_hash, code
+            return {
+                'added_commit_hash': chosen_secret.get('added_commit_hash', ''),
+                'removed_commit_hash': chosen_secret.get('removed_commit_hash', ''),
+                'code_line': chosen_secret.get('code_line'),
+                'added_by': chosen_secret.get('added_by'),
+                'removed_date': chosen_secret.get('removed_date'),
+                'added_date': chosen_secret.get('added_date')
+            }
         except Exception as e:
             logging.warning(f"Failed set added_commit_hash and removed_commit_hash due to: {e}")
-            return None, None, None
+            return {}
 
 
-def search_for_code_line(commit: str | Dict[str, str], secret_value: Optional[str], is_added: Optional[bool]) -> str:
+def search_for_code_line(commit_diff: CommitDiff, secret_value: Optional[str], is_added: Optional[bool]) -> str:
     if secret_value is None:
         return ''
-    if isinstance(commit, dict):
-        return ''  # no need to support rename
-    splitted = commit.split('\n')
+    splitted = commit_diff.split('\n')
     start_char = '+' if is_added else '-'
     for line in splitted:
         if line.startswith(start_char) and secret_value in line:

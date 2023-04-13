@@ -22,7 +22,10 @@ def time_it(func: Callable[P, T]) -> Callable[P, T]:
         end = default_timer()
 
         func_path = f"{func.__code__.co_filename.replace('.py', '')}.{func.__name__}"
-        logging.info(f"'{func_path}' took: {timedelta(seconds=end - start)}")
+        info = f"'{func_path}' took: {timedelta(seconds=end - start)}\n"
+        with open('time_it.txt', 'a') as f:
+            f.writelines(info)
+        logging.info(info)
 
         return output
     return wrapper
