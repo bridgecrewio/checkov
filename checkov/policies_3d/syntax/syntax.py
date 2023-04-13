@@ -7,11 +7,11 @@ class Predicate:
 
     @abc.abstractmethod
     def __eq__(self, other: Predicate):
-        raise NotImplemented()
+        raise NotImplementedError()
 
     @abc.abstractmethod
     def __hash__(self):
-        raise NotImplemented()
+        raise NotImplementedError()
 
 
 class Predicament:
@@ -41,12 +41,10 @@ class Predicament:
 
         return all([predicate() for predicate in self.predicates]) and sub_predicaments_result
 
-    def get_all_children_predicates(self) -> list[Predicate]:
-        predicates = []
+    def get_all_children_predicates(self) -> set[Predicate]:
+        predicates = set()
         for sub_predicament in self.predicaments:
-            predicates.extend(sub_predicament.get_all_children_predicates())
-            # for predicate in sub_predicament.predicates:
-            #         predicates.append(predicate)
+            predicates.update(sub_predicament.get_all_children_predicates())
 
-        predicates.extend(self.predicates)
+        predicates.update(set(self.predicates))
         return predicates

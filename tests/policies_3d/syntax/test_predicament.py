@@ -51,7 +51,7 @@ def test_get_all_children_predicates(record_1):
     predicates = predicament.get_all_children_predicates()
 
     # Assert
-    assert predicates == [p1]
+    assert predicates == {p1}
 
 
 def test_get_all_children_predicates_with_nested_predicaments(record_1, record_2):
@@ -67,7 +67,7 @@ def test_get_all_children_predicates_with_nested_predicaments(record_1, record_2
     predicates = predicament.get_all_children_predicates()
 
     # Assert
-    assert set(predicates) == {p1, p2}
+    assert predicates == {p1, p2}
 
 
 def test_and_predicament_true(record_1, record_2):

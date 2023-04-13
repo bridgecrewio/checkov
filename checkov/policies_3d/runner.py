@@ -23,7 +23,7 @@ from checkov.runner_filter import RunnerFilter
 
 
 class CVECheckAttribute(str, Enum):
-    RISK_FACTORS = "risk_factors"
+    RISK_FACTORS = "risk_factor"
 
 
 class CVEReportAttribute(str, Enum):
@@ -99,10 +99,10 @@ class Policy3dRunner(BasePostRunner):
 
         any_record_data_source = None
 
-        all_predicates = []
+        all_predicates = set()
         for predicament in check.predicaments:
-            all_predicates.extend(predicament.get_all_children_predicates())
-        all_predicates = set(all_predicates)
+            all_predicates.update(predicament.get_all_children_predicates())
+        # all_predicates = set(all_predicates)
 
         for predicate in all_predicates:
             if not any_record_data_source and \
@@ -123,6 +123,10 @@ class Policy3dRunner(BasePostRunner):
             record_data_source = list(true_iac_records)[0] if len(true_iac_records) > 0 else list(true_secrets_records)[0]
         except IndexError:
             record_data_source = any_record_data_source
+
+        if not record_data_source:
+            logging.debug("Unable to create record from an empty record data source")
+            return None
 
         record = Policy3dRecord(
             check_id=check.id,

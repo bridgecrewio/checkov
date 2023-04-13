@@ -12,7 +12,7 @@ class IACPredicate(Predicate):
 
     @abc.abstractmethod
     def __call__(self):
-        raise NotImplemented()
+        raise NotImplementedError()
 
 
 class ViolationIdEquals(IACPredicate):

@@ -122,19 +122,19 @@ def scan_reports_2(k8s_report_2, sca_image_report) -> list[Report]:
 @pytest.fixture()
 def policy_3d_1() -> dict[str, Any]:
     return {'id': 'CKV_P3D_1', 'title': '3d policy 1', 'guideline': 'guideline-1', 'severity': 'CRITICAL',
-               'category': 'Policy3D', 'code': '{"iac":{"kubernetes":["BC_K8S_1"]},"cve":{"risk_factors":["DoS"]}}'}
+               'category': 'Policy3D', 'code': '{"iac":{"kubernetes":["BC_K8S_1"]},"cve":{"risk_factor":["DoS"]}}'}
 
 @pytest.fixture()
 def policy_3d_2() -> dict[str, Any]:
     return {'id': 'CKV_P3D_2', 'title': '3d policy 2', 'guideline': 'guideline-2', 'severity': 'CRITICAL',
                'category': 'Policy3D',
-               'code': '{"iac":{"kubernetes":["BC_K8S_2"]},"cve":{"risk_factors":["Recent vulnerability"]}}'}
+               'code': '{"iac":{"kubernetes":["BC_K8S_2"]},"cve":{"risk_factor":["Recent vulnerability"]}}'}
 
 @pytest.fixture()
 def policy_3d_3() -> dict[str, Any]:
     return {'id': 'CKV_P3D_3', 'title': '3d policy 3', 'guideline': 'guideline-3', 'severity': 'CRITICAL',
                'category': 'Policy3D',
-               'code': '{"iac":{"kubernetes":["BC_K8S_1", "BC_K8S_2"]},"cve":{"risk_factors":["Recent vulnerability"]}}'}
+               'code': '{"iac":{"kubernetes":["BC_K8S_1", "BC_K8S_2"]},"cve":{"risk_factor":["Recent vulnerability"]}}'}
 
 @pytest.fixture
 def raw_3d_policy():
@@ -149,10 +149,10 @@ def raw_3d_policy():
                     {
                       "and": [
                         {
-                          "risk_factors": "DoS"
+                          "risk_factor": "DoS"
                         },
                         {
-                          "risk_factors": "Medium Severity"
+                          "risk_factor": "Medium Severity"
                         }
                       ]
                     }

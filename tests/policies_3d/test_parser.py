@@ -13,10 +13,10 @@ def test_3d_policy_parser_init(raw_3d_policy):
             {
               "and": [
                 {
-                  "risk_factors": "DoS"
+                  "risk_factor": "DoS"
                 },
                 {
-                  "risk_factors": "Medium Severity"
+                  "risk_factor": "Medium Severity"
                 }
               ]
             }
