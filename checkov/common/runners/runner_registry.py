@@ -409,8 +409,9 @@ class RunnerRegistry:
                     ))
 
             if output_format == CONSOLE_OUTPUT:
-                # don't write to file, if an explicit file path was set
-                sarif.write_sarif_output()
+                if not config.output_file_path or "," in config.output_file_path:
+                    # don't write to file, if an explicit file path was set
+                    sarif.write_sarif_output()
 
                 del output_formats["sarif"]
 
