@@ -33,14 +33,6 @@ DENY_LIST_REGEX2 = r'({denylist}){suffix}'.format(
     suffix=AFFIX_REGEX,
 )
 
-ALLOW_LIST = ['secretsmanager']  # can add more keys like that
-# Support for suffix of function name i.e "secretsmanager:GetSecretValue"
-CAMEL_CASE_NAMES = r'[A-Z]([A-Z0-9]*[a-z][a-z0-9]*[A-Z]|[a-z0-9]*[A-Z][A-Z0-9]*[a-z])[A-Za-z0-9]*'
-FUNCTION_CALL_AFTER_KEYWORD_REGEX = re.compile(r'{allowlist}:{suffix}'.format(
-    allowlist=ALLOW_LIST,
-    suffix=CAMEL_CASE_NAMES,
-))
-
 KEY = r'{words}({closing})?'.format(
     words=AFFIX_REGEX,
     closing=CLOSING,
@@ -115,6 +107,14 @@ FOLLOWED_BY_EQUAL_VALUE_SECRET_REGEX = re.compile(
     ),
     flags=re.IGNORECASE,
 )
+
+ALLOW_LIST = ['secretsmanager']  # can add more keys like that
+# Support for suffix of function name i.e "secretsmanager:GetSecretValue"
+CAMEL_CASE_NAMES = r'[A-Z]([A-Z0-9]*[a-z][a-z0-9]*[A-Z]|[a-z0-9]*[A-Z][A-Z0-9]*[a-z])[A-Za-z0-9]*'
+FUNCTION_CALL_AFTER_KEYWORD_REGEX = re.compile(r'{allowlist}:{suffix}'.format(
+    allowlist=ALLOW_LIST,
+    suffix=CAMEL_CASE_NAMES,
+))
 
 #  if the current regex is not enough, can add more regexes to check
 
