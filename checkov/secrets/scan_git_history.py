@@ -48,17 +48,17 @@ class GitHistoryScanner:
         return True
 
     def _scan_history(self, last_commit_scanned: Optional[str] = '') -> None:
-        commits_diff = GitHistoryScanner._get_commits_diff(self.root_folder, last_commit_sha=last_commit_scanned)
+        commits_diff = self._get_commits_diff(self.root_folder, last_commit_sha=last_commit_scanned)
         if not commits_diff:
             return
         logging.info(f"[_scan_history] got {len(commits_diff)} commits to scan")
         raw_store: List[RawStore]
         if len(commits_diff) > MIN_SPLIT:
             logging.info("[_scan_history] starting parallel scan")
-            raw_store = GitHistoryScanner._run_scan_parallel(commits_diff)
+            raw_store = self._run_scan_parallel(commits_diff)
         else:
             logging.info("[_scan_history] starting single scan")
-            raw_store = GitHistoryScanner._run_scan_one_bulk(commits_diff)
+            raw_store = self._run_scan_one_bulk(commits_diff)
 
         self._process_raw_store(raw_store)
 
