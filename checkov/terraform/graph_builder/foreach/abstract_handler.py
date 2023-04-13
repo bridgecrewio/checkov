@@ -4,7 +4,7 @@ import abc
 import json
 import re
 import typing
-from checkov.common.util.data_structures_utils import deepcopy
+from copy import deepcopy
 from typing import Any
 
 from checkov.terraform import TFModule
