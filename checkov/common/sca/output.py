@@ -130,6 +130,7 @@ def create_report_cve_record(
         runner_filter: RunnerFilter | None = None,
         sca_details: SCADetails | None = None,
         scan_data_format: ScanDataFormat = ScanDataFormat.TWISTCLI,
+        file_line_range: list[int] | None = None
 ) -> Record:
     runner_filter = runner_filter or RunnerFilter()
     package_name = vulnerability_details["packageName"]
@@ -191,7 +192,7 @@ def create_report_cve_record(
         check_result=check_result,
         code_block=code_block,
         file_path=get_file_path_for_record(rootless_file_path),
-        file_line_range=[0, 0],
+        file_line_range=file_line_range or [0, 0],
         resource=get_resource_for_record(rootless_file_path, package_name),
         check_class=check_class,
         evaluations=None,
@@ -276,6 +277,7 @@ def add_to_reports_cves_and_packages(
         report_type: str | None = None,
         inline_suppressions: _ScaSuppressions | None = None,
         scan_data_format: ScanDataFormat = ScanDataFormat.TWISTCLI,
+        file_line_range: list[int] | None = None
 ) -> None:
     is_dependency_tree_flow = bool(dependencies)
 
@@ -313,7 +315,8 @@ def add_to_reports_cves_and_packages(
                                      scan_data_format=scan_data_format,
                                      report_type=report_type,
                                      report=report,
-                                     inline_suppressions=inline_suppressions)
+                                     inline_suppressions=inline_suppressions,
+                                     file_line_range=file_line_range)
 
 
 def add_to_reports_dependency_tree_cves(check_class: str | None, packages_map: dict[str, dict[str, Any]],
@@ -374,7 +377,8 @@ def add_cve_record_to_report(vulnerability_details: dict[str, Any], package_name
                              report_type: Optional[str], report: Report,
                              root_package_version: str | None = None, root_package_name: str | None = None,
                              root_package_fixed_version: str | None = None,
-                             inline_suppressions: _ScaSuppressions | None = None) -> None:
+                             inline_suppressions: _ScaSuppressions | None = None,
+                             file_line_range: list[int] | None = None) -> None:
     package_alias = get_package_alias(package_name, package_version)
     cve_record = create_report_cve_record(
         rootless_file_path=rootless_file_path,
@@ -388,7 +392,8 @@ def add_cve_record_to_report(vulnerability_details: dict[str, Any], package_name
         scan_data_format=scan_data_format,
         root_package_version=root_package_version,
         root_package_name=root_package_name,
-        root_package_fixed_version=root_package_fixed_version
+        root_package_fixed_version=root_package_fixed_version,
+        file_line_range=file_line_range
     )
     suppressed = apply_inline_suppressions(
         record=cve_record, vulnerability_details=vulnerability_details, inline_suppressions=inline_suppressions
@@ -521,6 +526,7 @@ def add_to_report_sca_data(
         sca_details: SCADetails | None = None,
         report_type: str | None = None,
         inline_suppressions: _ScaSuppressions | None = None,
+        file_line_range: list[int] | None = None
 ) -> None:
     packages_map: dict[str, dict[str, Any]] = {get_package_alias(p["name"], p["version"]): p for p in packages}
     licenses_per_package_map: dict[str, list[str]] = \
@@ -539,7 +545,8 @@ def add_to_report_sca_data(
                                      report_type=report_type,
                                      scan_data_format=ScanDataFormat.DEPENDENCY_TREE,
                                      dependencies=dependencies,
-                                     inline_suppressions=inline_suppressions)
+                                     inline_suppressions=inline_suppressions,
+                                     file_line_range=file_line_range)
 
 
 def _get_request_input(packages: list[dict[str, Any]]) -> list[dict[str, Any]]:
