@@ -119,8 +119,8 @@ class GitHistoryScanner:
 
                 for file_diff in git_diff:
                     file_name = file_diff.a_path if file_diff.a_path else file_diff.b_path
-                    # if file_name.endswith(FILES_TO_IGNORE_IN_GIT_HISTORY):
-                    #     continue
+                    if file_name.endswith(FILES_TO_IGNORE_IN_GIT_HISTORY):
+                        continue
 
                     curr_diff: Commit = Commit(
                         metadata=CommitMetadata(
