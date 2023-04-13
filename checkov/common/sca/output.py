@@ -177,7 +177,8 @@ def create_report_cve_record(
             days=vulnerability_details.get("publishedDays", 0))).isoformat(),
         "licenses": licenses,
         "root_package_name": root_package_name,
-        "root_package_version": root_package_version
+        "root_package_version": root_package_version,
+        "is_private_fix": vulnerability_details.get("isPrivateRegFix", False)
     }
 
     if root_package_fixed_version:
