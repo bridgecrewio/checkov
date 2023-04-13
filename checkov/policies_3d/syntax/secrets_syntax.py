@@ -8,7 +8,7 @@ class SecretsPredicate(Predicate):
     def __init__(self, record: Record):
         super().__init__()
         self.record = record
+
     @abc.abstractmethod
     def __call__(self):
-        raise NotImplemented()
-
+        raise NotImplementedError()

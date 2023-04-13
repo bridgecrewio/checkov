@@ -7,6 +7,7 @@ from checkov.policies_3d.checks_infra.base_check import Base3dPolicyCheck
 from checkov.sca_image.models import ReportCVE
 import json
 
+
 class Base3dPolicyCheckParser:
     def __init__(self, raw_check: dict[str, dict[str, Any]]):
         if not raw_check:
@@ -31,7 +32,7 @@ class Base3dPolicyCheckParser:
     def parse(self, iac_records: list[Record] | None = None,
               secrets_records: list[Record] | None = None,
               cves_reports: list[ReportCVE] | None = None
-          ) -> Base3dPolicyCheck | None:
+                ) -> Base3dPolicyCheck | None:
         if self.schema_version == 'v1':
             return self._parse_check_v1(iac_records or [], secrets_records or [], cves_reports or [])
 

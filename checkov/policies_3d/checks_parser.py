@@ -12,16 +12,16 @@ from checkov.policies_3d.checks_infra.base_check import Base3dPolicyCheck
 from checkov.policies_3d.syntax.cves_syntax import RiskFactorCVEContains
 from checkov.policies_3d.syntax.iac_syntax import ViolationIdEquals
 from checkov.policies_3d.syntax.syntax import Predicament, Predicate
-from checkov.sca_image.models import ReportCVE
 import itertools
 
 SUPPORTED_LOGICAL_OPERATORS = ['and', 'or']
 SCA_CHECK_ID_PREFIXES = ['CKV_CVE_', 'BC_LIC_1', 'BC_LIC_2']
 SECRETS_CHECK_ID_PREFIXES = ['BC_GIT_']
 
+
 class PredicateAttributes(str, Enum):
-    risk_factor = 'risk_factor'
-    violation_id = 'violation_id'
+    RISK_FACTOR = 'risk_factor'
+    VIOLATION_ID = 'violation_id'
 
 
 class Policy3dParser(Base3dPolicyCheckParser):
@@ -80,17 +80,15 @@ class Policy3dParser(Base3dPolicyCheckParser):
 
         return check
 
-
     @staticmethod
     def _create_predicate(key: str, value: Any, record: Record | dict[str, Any]) -> Predicate | None:
-        if key == PredicateAttributes.risk_factor:
+        if key == PredicateAttributes.RISK_FACTOR:
             return RiskFactorCVEContains(force_list(value), record)
-        elif key == PredicateAttributes.violation_id:
+        elif key == PredicateAttributes.VIOLATION_ID:
             return ViolationIdEquals(record, value)
 
         logging.debug(f"Unable to create predicate for unsupported key {key}")
         return None
-
 
     def _create_module_predicament(self, policy_definition: dict[str, Any], record: Record | dict[str, Any]) -> Predicament | None:
         if not policy_definition:

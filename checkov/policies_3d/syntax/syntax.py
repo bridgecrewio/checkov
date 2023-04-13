@@ -1,6 +1,7 @@
 from __future__ import annotations
 import abc
 
+
 class Predicate:
     def __init__(self):
         self.is_true = False

@@ -13,7 +13,7 @@ class CVEPredicate(Predicate):
 
     @abc.abstractmethod
     def __call__(self) -> bool:
-        raise NotImplemented()
+        raise NotImplementedError()
 
 
 class RiskFactorCVEContains(CVEPredicate):
@@ -42,4 +42,3 @@ class RiskFactorCVEContains(CVEPredicate):
 
     def __hash__(self):
         return hash(('risk_factors', tuple(self.risk_factors), 'cveId', self.cve_report['cveId']))
-

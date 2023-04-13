@@ -21,7 +21,7 @@ class ViolationIdEquals(IACPredicate):
         self.violation_id = violation_id
 
     def __call__(self) -> bool:
-        self.is_true =  isinstance(self.violation_id, str) and self.record.bc_check_id == self.violation_id
+        self.is_true = isinstance(self.violation_id, str) and self.record.bc_check_id == self.violation_id
         return self.is_true
 
     def __eq__(self, other) -> bool:
@@ -29,4 +29,3 @@ class ViolationIdEquals(IACPredicate):
 
     def __hash__(self):
         return hash(('violation_id', self.violation_id, 'bc_check_id', self.record.bc_check_id))
-
