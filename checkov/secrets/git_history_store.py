@@ -124,7 +124,8 @@ class GitHistorySecretStore:
             enriched_secrets = self.secrets_by_file_value_type[secret_key]
             chosen_secret = enriched_secrets[0]
             if len(enriched_secrets) > 1:
-                added, removed, _file = key.split("_")
+                res = key.split("_")
+                added, removed = res[0], res[1]
                 if removed == GIT_HISTORY_NOT_BEEN_REMOVED:
                     removed = ''
                 for enriched_secret in enriched_secrets:
