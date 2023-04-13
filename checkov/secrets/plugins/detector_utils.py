@@ -185,7 +185,12 @@ def remove_fp_secrets_in_keys(detected_secrets: set[PotentialSecret], line: str)
                 FUNCTION_CALL_AFTER_KEYWORD_REGEX.search(formatted_line):
             # found a function name at the end of the line
             secrets_to_remove.add(detected_secret)
-    [detected_secrets.remove(sec) for sec in secrets_to_remove]
+    detected_secrets -= secrets_to_remove
+
+
+def ret_and_remove(detected_secrets: set[PotentialSecret], to_rmv: Optional[PotentialSecret]) -> None:
+    if to_rmv:  # safe remove
+        detected_secrets.remove(to_rmv)
 
 
 def format_reducing_noise_secret(string: str) -> str:
