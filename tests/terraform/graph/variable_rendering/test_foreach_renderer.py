@@ -114,13 +114,11 @@ def test_build_sub_graph():
     assert len(sub_graph.edges) < len(local_graph.edges)
 
 
-@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "False"})
+@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
 def test_new_resources_count():
     dir_name = 'foreach_examples/count_dup_resources'
     local_graph = build_and_get_graph_by_path(dir_name)[0]
-    vertices_names = [vertice.name for vertice in local_graph.vertices]
     main_count_resource = 'aws_s3_bucket.count_var_resource'
-    assert main_count_resource in vertices_names
 
     foreach_builder = ForeachBuilder(local_graph)
     foreach_builder.handle({'resource': [3], 'module': []})
@@ -132,7 +130,7 @@ def test_new_resources_count():
     assert main_count_resource not in new_vertices_names
 
 
-@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "False"})
+@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
 def test_new_resources_foreach():
     dir_name = 'foreach_examples/foreach_dup_resources'
     local_graph = build_and_get_graph_by_path(dir_name)[0]
