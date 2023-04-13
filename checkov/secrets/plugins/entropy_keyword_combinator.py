@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 from detect_secrets.plugins.high_entropy_strings import Base64HighEntropyString
 from detect_secrets.plugins.high_entropy_strings import HexHighEntropyString
 from detect_secrets.plugins.keyword import KeywordDetector
-from detect_secrets.plugins.keyword import DENYLIST_REGEX
+from detect_secrets.plugins.keyword import DENYLIST
 from detect_secrets.plugins.keyword import AFFIX_REGEX
 from detect_secrets.plugins.keyword import CLOSING
 from detect_secrets.plugins.keyword import OPTIONAL_WHITESPACE
@@ -32,10 +32,10 @@ MAX_KEYWORD_LIMIT = 500
 ENTROPY_KEYWORD_COMBINATOR_LIMIT = 3
 ENTROPY_KEYWORD_LIMIT = 4.5
 
-
+DENY_LIST_REGEX = r'|'.join(DENYLIST)
 # Support for suffix after keyword i.e. password_secure = "value"
 DENY_LIST_REGEX2 = r'({denylist}){suffix}'.format(
-    denylist=DENYLIST_REGEX,
+    denylist=DENY_LIST_REGEX,
     suffix=AFFIX_REGEX,
 )
 
