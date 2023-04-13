@@ -175,20 +175,17 @@ MULTILINE_PARSERS = {
 
 def remove_fp_secrets_in_keys(detected_secrets: set[PotentialSecret], line: str) -> None:
     formatted_line = line.replace('"', '').replace("'", '')
+    secrets_to_remove = set()
     for detected_secret in detected_secrets:
         if detected_secret.secret_value and formatted_line.startswith(
                 detected_secret.secret_value):
             # Found keyword prefix as potential secret
-            return ret_and_remove(detected_secrets, detected_secret)
+            secrets_to_remove.add(detected_secret)
         if detected_secret.secret_value and formatted_line and \
                 FUNCTION_CALL_AFTER_KEYWORD_REGEX.search(formatted_line):
             # found a function name at the end of the line
-            return ret_and_remove(detected_secrets, detected_secret)
-
-
-def ret_and_remove(detected_secrets: set[PotentialSecret], to_rmv: Optional[PotentialSecret]) -> None:
-    if to_rmv:  # safe remove
-        detected_secrets.remove(to_rmv)
+            secrets_to_remove.add(detected_secret)
+    [detected_secrets.remove(sec) for sec in secrets_to_remove]
 
 
 def format_reducing_noise_secret(string: str) -> str:
