@@ -392,28 +392,12 @@ def mock_git_repo_commits_too_much(root_folder: str, last_commit_sha: str) -> Di
     return res
 
 
-def previous_run_for_history() -> str:
-    return """{"Dockerfile_d70eab08607a4d05faa2d0d6647206599e9abc65_AWS-Access-Key": [
-        {"added_commit_hash": "8a21fa691e17907afee57e93b7820c5943b12746",
-         "removed_commit_hash": "3d79bba03c6f0ddcfb8334f531701942c4be0f32",
-         "potential_secret": {"type": "AWS Access Key", "filename": "Dockerfile",
-                              "hashed_secret": "d70eab08607a4d05faa2d0d6647206599e9abc65", "is_verified": false,
-                              "line_number": 4, "is_added": false, "is_removed": true},
-         "code_line": "ENV AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"",
-         "added_by": "Cherry\ud83c\udf52", "removed_date": "2022-12-14T16:32:13+00:00",
-         "added_date": "2022-12-14T16:10:21+00:00"}],
-     "Dockerfile_d3ddda599442c7940ef18b3834c809d388dba7e5_AWS-Access-Key": [
-         {"added_commit_hash": "3d79bba03c6f0ddcfb8334f531701942c4be0f32",
-          "removed_commit_hash": "7dff3b21fc2563f51655f34f0d3601cdf79d0d5e",
-          "potential_secret": {"type": "AWS Access Key", "filename": "Dockerfile",
-                               "hashed_secret": "d3ddda599442c7940ef18b3834c809d388dba7e5", "is_verified": false,
-                               "line_number": 4, "is_added": false, "is_removed": true},
-          "code_line": "ENV AWS_ACCESS_KEY_ID=\"AKIAZZZZZZZZZZZZZZZZ\"", "added_by": "Cherry\ud83c\udf52",
-          "removed_date": "2022-12-14T16:54:05+00:00", "added_date": "2022-12-14T16:32:13+00:00"}],
-     "main.py_d3ddda599442c7940ef18b3834c809d388dba7e5_AWS-Access-Key": [
-         {"added_commit_hash": "6941281550a12659bdbe87c9a537f88124f78fac", "removed_commit_hash": "",
-          "potential_secret": {"type": "AWS Access Key", "filename": "main.py",
-                               "hashed_secret": "d3ddda599442c7940ef18b3834c809d388dba7e5", "is_verified": false,
-                               "line_number": 1, "is_added": true, "is_removed": false},
-          "code_line": "AWS_ACCESS_TOKEN=\"AKIAZZZZZZZZZZZZZZZZ\"", "added_by": "\ud83c\udf52Cherry\ud83c\udf52",
-          "removed_date": "", "added_date": "2022-12-14T16:57:26+00:00"}]}"""
+def mock_commit_with_keyword_combinator() -> List[Commit]:
+    return [Commit(
+            metadata=CommitMetadata(
+                commit_hash='8a21fa691e17907afee57e93b7820c5943b12746',
+                committer='Cherry🍒',
+                committed_datetime='2022-12-14T16:10:21+00:00'),
+            files={
+                'main.py': 'diff --git a/None b/main.py\nindex 0000..0000 0000\n--- a/None\n+++ b/main.py\n@@ -0,0 +1,4 @@\n+api_key = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMAAAKEY"\n+\n+if __name__ == "__main__":\n+    print(api_key)\n\\ No newline at end of file\n'}
+        )]

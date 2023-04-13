@@ -17,7 +17,7 @@ from tests.secrets.git_history.test_utils import mock_git_repo_commits1, mock_gi
     mock_git_repo_commits_too_much, mock_git_repo_commits_remove_file, mock_git_repo_commits_rename_file, \
     mock_git_repo_commits_modify_and_rename_file, mock_remove_file_with_two_equal_secret, \
     mock_remove_file_with_two_secret, mock_git_repo_multiline_json, mock_git_repo_multiline_terraform, \
-    mock_git_repo_multiline_yml
+    mock_git_repo_multiline_yml, mock_commit_with_keyword_combinator
 
 
 @mock.patch('checkov.secrets.scan_git_history._get_commits_diff', mock_git_repo_commits1)
@@ -354,3 +354,17 @@ def test_scan_git_history_real_repo() -> None:
     assert report.failed_checks[0].added_date and not report.failed_checks[0].removed_date
     assert report.failed_checks[1].added_commit_hash and report.failed_checks[1].removed_commit_hash and report.failed_checks[1].removed_date
     shutil.rmtree(tmp_git_conf_dir)  # just for cleaning
+
+
+def test_git_history_plugin(mocker: MockerFixture) -> None:
+    valid_dir_path = "test"
+    commits = mock_commit_with_keyword_combinator()
+    mocker.patch(
+        "checkov.secrets.scan_git_history._get_commits_diff", return_value=commits)
+    runner = Runner()
+    report = runner.run(root_folder=str(valid_dir_path), external_checks_dir=None,
+                        runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
+    assert len(report.failed_checks) == 1
+    check = report.failed_checks[0]
+    assert check.added_commit_hash
+    assert check.check_name == 'Base64 High Entropy String'
