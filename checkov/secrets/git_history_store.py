@@ -143,7 +143,7 @@ class GitHistorySecretStore:
                 'added_date': chosen_secret.get('added_date')
             }
         except Exception as e:
-            logging.warning(f"Failed set added_commit_hash and removed_commit_hash due to: {e}")
+            logging.warning(f"Failed set added_commit_hash and removed_commit_hash due to: {str(e)}")
             return {}
 
 
