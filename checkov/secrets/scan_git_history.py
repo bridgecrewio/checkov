@@ -24,6 +24,7 @@ except ImportError as e:
     git_import_error = e
 
 MIN_SPLIT = 100
+FILES_TO_IGNORE_IN_GIT_HISTORY = ('.md',)
 
 
 class GitHistoryScanner:
@@ -117,6 +118,10 @@ class GitHistoryScanner:
                 git_diff = commits[previous_commit_idx].diff(current_commit_hash, create_patch=True)
 
                 for file_diff in git_diff:
+                    file_name = file_diff.a_path if file_diff.a_path else file_diff.b_path
+                    # if file_name.endswith(FILES_TO_IGNORE_IN_GIT_HISTORY):
+                    #     continue
+
                     curr_diff: Commit = Commit(
                         metadata=CommitMetadata(
                             commit_hash=current_commit_hash,
@@ -139,7 +144,7 @@ class GitHistoryScanner:
 
                     base_diff_format = f'diff --git a/{file_diff.a_path} b/{file_diff.b_path}' \
                                        f'\nindex 0000..0000 0000\n--- a/{file_diff.a_path}\n+++ b/{file_diff.b_path}\n'
-                    file_name = file_diff.a_path if file_diff.a_path else file_diff.b_path
+                    # file_name = file_diff.a_path if file_diff.a_path else file_diff.b_path
                     curr_diff.add_file(filename=file_name, commit_diff=base_diff_format + file_diff.diff.decode())
                     commits_diff.append(curr_diff)
             except Exception as e:
@@ -182,7 +187,7 @@ class GitHistoryScanner:
         for file_name, file_diff in commit.files.items():
             file_results = [*scan.scan_diff(file_diff)]
             if file_results:
-                logging.info(
+                logging.debug(
                     f"Found {len(file_results)} secrets in file path {file_name} in commit {commit_hash}")
                 results.append(RawStore(file_results=file_results, file_name=file_name, commit=commit,
                                         type=FILE_RESULTS_STR, rename_from='', rename_to=''))
