@@ -360,7 +360,7 @@ def test_git_history_plugin(mocker: MockerFixture) -> None:
     valid_dir_path = "test"
     commits = mock_commit_with_keyword_combinator()
     mocker.patch(
-        "checkov.secrets.scan_git_history._get_commits_diff", return_value=commits)
+        "checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff", return_value=commits)
     runner = Runner()
     report = runner.run(root_folder=str(valid_dir_path), external_checks_dir=None,
                         runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
