@@ -283,7 +283,7 @@ def test_scan_git_history_multiline_keyword_yml() -> None:
 
 def test_scan_git_history_full_vs_partial(mocker: MockerFixture) -> None:
     # this takes the 3 mock commits and run _test_it on them
-    commits_func = [mock_git_repo_commits1('', ''), mock_git_repo_commits2('', ''), mock_git_repo_commits3('', '')]
+    commits_func = [mock_git_repo_commits1('', '', ''), mock_git_repo_commits2('', '', ''), mock_git_repo_commits3('', '', '')]
     all([_test_it(mocker, commits) for commits in commits_func])
 
 
