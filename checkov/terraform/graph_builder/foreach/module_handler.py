@@ -3,7 +3,7 @@ from __future__ import annotations
 import itertools
 import typing
 from collections import defaultdict
-from copy import deepcopy
+from checkov.common.util.data_structures_utils import deepcopy
 from typing import Any
 
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME

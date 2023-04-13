@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import typing
-from copy import deepcopy
+from checkov.common.util.data_structures_utils import deepcopy
 from typing import Any, Optional
 
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
