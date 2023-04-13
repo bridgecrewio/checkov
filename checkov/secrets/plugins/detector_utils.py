@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import re
 from re import Pattern
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, Optional
 
 from detect_secrets.util.filetype import FileType
 from detect_secrets.plugins.keyword import DENYLIST
@@ -32,6 +32,14 @@ DENY_LIST_REGEX2 = r'({denylist}){suffix}'.format(
     denylist=DENY_LIST_REGEX,
     suffix=AFFIX_REGEX,
 )
+
+ALLOW_LIST = ['secretsmanager']  # can add more keys like that
+# Support for suffix of function name i.e "secretsmanager:GetSecretValue"
+CAMEL_CASE_NAMES = r'[A-Z]([A-Z0-9]*[a-z][a-z0-9]*[A-Z]|[a-z0-9]*[A-Z][A-Z0-9]*[a-z])[A-Za-z0-9]*'
+FUNCTION_CALL_AFTER_KEYWORD_REGEX = re.compile(r'{allowlist}:{suffix}'.format(
+    allowlist=ALLOW_LIST,
+    suffix=CAMEL_CASE_NAMES,
+))
 
 KEY = r'{words}({closing})?'.format(
     words=AFFIX_REGEX,
@@ -166,12 +174,21 @@ MULTILINE_PARSERS = {
 
 
 def remove_fp_secrets_in_keys(detected_secrets: set[PotentialSecret], line: str) -> None:
+    formatted_line = line.replace('"', '').replace("'", '')
     for detected_secret in detected_secrets:
-        if detected_secret.secret_value and line.replace('"', '').replace("'", '').startswith(
+        if detected_secret.secret_value and formatted_line.startswith(
                 detected_secret.secret_value):
             # Found keyword prefix as potential secret
-            detected_secrets.remove(detected_secret)
-            break
+            return ret_and_remove(detected_secrets, detected_secret)
+        if detected_secret.secret_value and formatted_line and \
+                FUNCTION_CALL_AFTER_KEYWORD_REGEX.search(formatted_line):
+            # found a function name at the end of the line
+            return ret_and_remove(detected_secrets, detected_secret)
+
+
+def ret_and_remove(detected_secrets: set[PotentialSecret], to_rmv: Optional[PotentialSecret]) -> None:
+    if to_rmv:  # safe remove
+        detected_secrets.remove(to_rmv)
 
 
 def format_reducing_noise_secret(string: str) -> str:
