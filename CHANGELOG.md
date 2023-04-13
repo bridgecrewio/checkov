@@ -1,6 +1,23 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.160...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.165...HEAD)
+
+## [2.3.165](https://github.com/bridgecrewio/checkov/compare/2.3.160...2.3.165) - 2023-04-13
+
+### Feature
+
+- **terraform:** ECS Service should not auto assign public IPs 333  - [#4777](https://github.com/bridgecrewio/checkov/pull/4777)
+- **terraform:** EFS access points should define a user and a path 329-330  - [#4768](https://github.com/bridgecrewio/checkov/pull/4768)
+- **terraform:** Ensure ECS Fargate uses latest version 332 - [#4775](https://github.com/bridgecrewio/checkov/pull/4775)
+- **terraform:** Transit gateway should not be set  up to autoaccept any VPC 331  - [#4770](https://github.com/bridgecrewio/checkov/pull/4770)
+
+### Bug Fix
+
+- **general:** fix duplicate sarif output - [#4886](https://github.com/bridgecrewio/checkov/pull/4886)
+- **secrets:** fix slicing in githistory  - [#4889](https://github.com/bridgecrewio/checkov/pull/4889)
+- **terraform:** exclude GCP asymmetric keys from key rotation - [#4879](https://github.com/bridgecrewio/checkov/pull/4879)
+- **terraform:** Paid is now standard - [#4880](https://github.com/bridgecrewio/checkov/pull/4880)
+- **terraform:** support empty filter in S3 lifecycle config - [#4875](https://github.com/bridgecrewio/checkov/pull/4875)
 
 ## [2.3.160](https://github.com/bridgecrewio/checkov/compare/2.3.158...2.3.160) - 2023-04-11
 
