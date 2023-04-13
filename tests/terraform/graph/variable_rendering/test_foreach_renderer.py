@@ -242,7 +242,6 @@ def test_update_attrs(attrs, k_v_to_change, expected_attrs, expected_res):
 
 
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
-@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
 def test_new_tf_parser_with_foreach_modules(checkov_source_path):
     dir_name = 'parser_dup_nested'
     local_graph, tf_definitions = build_and_get_graph_by_path(dir_name, render_var=True)
@@ -306,7 +305,6 @@ def test_new_tf_parser_with_foreach_modules(checkov_source_path):
 
 
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
-@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
 def test_tf_definitions_for_foreach_on_modules(checkov_source_path):
     dir_name = 'parser_dup_nested'
     _, tf_definitions = build_and_get_graph_by_path(dir_name, render_var=True)
@@ -322,7 +320,6 @@ def test_tf_definitions_for_foreach_on_modules(checkov_source_path):
 
 
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
-@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
 def test_foreach_module_in_second_level_module(checkov_source_path):
     dir_name = 'foreach_module'
     graph, tf_definitions = build_and_get_graph_by_path(dir_name, render_var=True)
@@ -332,9 +329,7 @@ def test_foreach_module_in_second_level_module(checkov_source_path):
     assert len(tf_definitions.keys()) == 11
 
 
-
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
-@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
 def test_foreach_module_in_both_levels_module(checkov_source_path):
     dir_name = 'foreach_module_dup_foreach'
     graph, tf_definitions = build_and_get_graph_by_path(dir_name, render_var=True)
@@ -344,9 +339,7 @@ def test_foreach_module_in_both_levels_module(checkov_source_path):
     assert len(tf_definitions.keys()) == 22
 
 
-
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
-@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
 def test_foreach_module_and_resource(checkov_source_path):
     dir_name = 'foreach_module_and_resource'
     graph, tf_definitions = build_and_get_graph_by_path(dir_name, render_var=True)
@@ -361,9 +354,7 @@ def test_foreach_module_and_resource(checkov_source_path):
     assert graph.vertices[13].config['aws_s3_bucket_public_access_block']['var_bucket["b"]']['__address__'] == 'module.s3_module["b"].aws_s3_bucket_public_access_block.var_bucket["b"]'
 
 
-
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
-@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
 def test_foreach_module_with_more_than_two_resources(checkov_source_path):
     dir_name = 'foreach_module_with_more_than_two_resources'
     graph, tf_definitions = build_and_get_graph_by_path(dir_name, render_var=True)

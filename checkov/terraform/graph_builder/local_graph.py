@@ -56,7 +56,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self.vertices_by_module_dependency_by_name: Dict[Tuple[str, str], Dict[BlockType, Dict[str, List[int]]]] = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
         self.vertices_by_module_dependency: Dict[Tuple[str, str], Dict[BlockType, List[int]]] = defaultdict(lambda: defaultdict(list))
         self.enable_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_FOREACH_HANDLING', 'False'))
-        self.enable_modules_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_MODULES_FOREACH_HANDLING', 'False'))
+        self.enable_modules_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_MODULES_FOREACH_HANDLING', 'True'))
         self.use_new_tf_parser = strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'True'))
         self.foreach_blocks: Dict[str, List[int]] = {BlockType.RESOURCE: [], BlockType.MODULE: []}
 
@@ -65,7 +65,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         logging.info(f"[TerraformLocalGraph] created {len(self.vertices)} vertices")
         self._build_edges()
         logging.info(f"[TerraformLocalGraph] created {len(self.edges)} edges")
-        if self.enable_foreach_handling:
+        if self.enable_foreach_handling or self.enable_modules_foreach_handling:
             try:
                 foreach_builder = ForeachBuilder(self)
                 foreach_builder.handle(self.foreach_blocks)

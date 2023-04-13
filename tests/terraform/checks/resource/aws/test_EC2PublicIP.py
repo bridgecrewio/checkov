@@ -44,7 +44,6 @@ class TestEC2PublicIP(unittest.TestCase):
         self.assertEqual(failing_resources, failed_check_resources)
 
     @mock.patch.dict(os.environ, {
-        "CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True",
         "CHECKOV_ENABLE_FOREACH_HANDLING": "True"
     })
     def test_for_each_poc(self):
