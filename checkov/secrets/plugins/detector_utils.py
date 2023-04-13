@@ -188,11 +188,6 @@ def remove_fp_secrets_in_keys(detected_secrets: set[PotentialSecret], line: str)
     detected_secrets -= secrets_to_remove
 
 
-def ret_and_remove(detected_secrets: set[PotentialSecret], to_rmv: Optional[PotentialSecret]) -> None:
-    if to_rmv:  # safe remove
-        detected_secrets.remove(to_rmv)
-
-
 def format_reducing_noise_secret(string: str) -> str:
     return json.dumps(string)
 
