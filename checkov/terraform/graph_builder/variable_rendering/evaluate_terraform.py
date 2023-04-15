@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import ast
 import json
 import logging
@@ -22,6 +24,10 @@ CHECKOV_RENDER_MAX_LEN = force_int(os.getenv("CHECKOV_RENDER_MAX_LEN", "10000"))
 
 
 def evaluate_terraform(input_str: Any, keep_interpolations: bool = True) -> Any:
+    if input_str is None:
+        # no need for further evaluation
+        return input_str
+
     if isinstance(input_str, str) and CHECKOV_RENDER_MAX_LEN and 0 < CHECKOV_RENDER_MAX_LEN < len(input_str):
         logging.debug(f'Rendering was skipped for a {len(input_str)}-character-long string. If you wish to have it '
                       f'evaluated, please set the environment variable CHECKOV_RENDER_MAX_LEN '
@@ -275,13 +281,13 @@ def _extract_expression_from_statement(statement: str, start_expression_idx: int
 
 def _handle_for_loop_in_dict(object_to_run_on: str, statement: str, start_expression_idx: int) -> Optional[str]:
     try:
-        object_to_run_on = json.loads(object_to_run_on)
-    except JSONDecodeError:
-        return
+        object_to_run_on = ast.literal_eval(object_to_run_on.replace(' ', ''))
+    except (ValueError, SyntaxError):
+        return None
     expression = _extract_expression_from_statement(statement, start_expression_idx)
     split_expression = expression.replace(' ', '').split(renderer.FOR_EXPRESSION_DICT)
     if len(split_expression) != 2:
-        return
+        return None
     k_expression, v_expression = split_expression
     obj_key = statement.split(' ')[1]
     if k_expression.startswith(f'{obj_key}.'):
@@ -300,14 +306,48 @@ def _handle_for_loop_in_list(object_to_run_on: str, statement: str, start_expres
     try:
         object_to_run_on = ast.literal_eval(object_to_run_on.replace(' ', ''))
     except (ValueError, SyntaxError):
-        return
+        return None
     expression = _extract_expression_from_statement(statement, start_expression_idx)
-    if renderer.DOLLAR_PREFIX in expression or renderer.LOOKUP in expression:
-        return
+    if renderer.LOOKUP in expression:
+        return None
+    if renderer.DOLLAR_PREFIX in expression:
+        return _handle_for_loop_in_list_of_dicts(
+            object_to_run_on=object_to_run_on,
+            statement=statement,
+            expression=expression,
+        )
+
     rendered_result = []
     for obj in object_to_run_on:
         val_to_assign = obj if statement.startswith(f'{renderer.LEFT_BRACKET}{renderer.FOR_LOOP} {expression}') else evaluate_terraform(expression)
         rendered_result.append(val_to_assign)
+    return json.dumps(rendered_result)
+
+
+def _handle_for_loop_in_list_of_dicts(object_to_run_on: list[Any], statement: str, expression: str) -> str:
+    rendered_result = []
+    loop_key = f"${{{statement.split(' ')[1]}."  # ex. "${val."
+    if loop_key in expression:
+        for obj in object_to_run_on:
+            val_to_assign = expression
+            if isinstance(obj, dict):
+                for obj_key, obj_value in obj.items():
+                    replace_value = f"{loop_key}{obj_key}}}"  # ex. "${val.name}"
+                    if replace_value in val_to_assign:
+                        if isinstance(obj_value, (list, dict)):
+                            obj_value = json.dumps(obj_value)
+                        if isinstance(obj_value, (bool, int)):
+                            # need to also remove the surrounding quotes
+                            val_to_assign = val_to_assign.replace(f"'{replace_value}'", str(obj_value))
+                        else:
+                            val_to_assign = val_to_assign.replace(replace_value, obj_value)
+            try:
+                # it should be a JSON, but better be safe than sorry
+                val_to_assign = ast.literal_eval(val_to_assign)
+            except (ValueError, SyntaxError):
+                # ignore unparsable expressions
+                continue
+            rendered_result.append(val_to_assign)
     return json.dumps(rendered_result)
 
 
