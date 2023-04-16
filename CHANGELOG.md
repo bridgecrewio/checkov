@@ -1,6 +1,20 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.165...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.171...HEAD)
+
+## [2.3.171](https://github.com/bridgecrewio/checkov/compare/2.3.165...2.3.171) - 2023-04-16
+
+### Feature
+
+- **secrets:** improve timing git history - [#4890](https://github.com/bridgecrewio/checkov/pull/4890)
+- **terraform:** add support for list of dicts in for loop - [#4895](https://github.com/bridgecrewio/checkov/pull/4895)
+
+### Bug Fix
+
+- **cloudformation:** fix invalid fn sub param in cfn - [#4900](https://github.com/bridgecrewio/checkov/pull/4900)
+- **secrets:** fix error if writing to file when don't have access - [#4896](https://github.com/bridgecrewio/checkov/pull/4896)
+- **secrets:** fix None in file name - [#4899](https://github.com/bridgecrewio/checkov/pull/4899)
+- **secrets:** reduce false positives in yaml files - case of serverless and secretmanager - [#4892](https://github.com/bridgecrewio/checkov/pull/4892)
 
 ## [2.3.165](https://github.com/bridgecrewio/checkov/compare/2.3.160...2.3.165) - 2023-04-13
 
