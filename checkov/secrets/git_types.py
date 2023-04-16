@@ -34,8 +34,8 @@ class Commit:
         self.files: dict[str, CommitDiff] = files or {}
         self.renamed_files: dict[str, RenamedFile] = renamed_files or {}
 
-    def not_empty(self) -> bool:
-        return bool(self.files or self.renamed_files)
+    def is_empty(self) -> bool:
+        return not bool(self.files or self.renamed_files)
 
     def add_file(self, filename: str, commit_diff: CommitDiff) -> None:
         if self.files.get(filename):

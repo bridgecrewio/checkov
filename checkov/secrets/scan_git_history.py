@@ -143,7 +143,7 @@ class GitHistoryScanner:
                     base_diff_format = f'diff --git {root_folder}/{file_diff.a_path} {root_folder}/{file_diff.b_path}' \
                                        f'\nindex 0000..0000 0000\n--- {root_folder}/{file_diff.a_path}\n+++ {root_folder}/{file_diff.b_path}\n'
                     curr_diff.add_file(filename=file_path, commit_diff=base_diff_format + file_diff.diff.decode())
-                if curr_diff.not_empty():
+                if curr_diff.is_empty():
                     self.commits_diff.append(curr_diff)
             except Exception as e:
                 logging.warning(f"got error while getting commits diff, iteration: {previous_commit_idx}, error: {e}")
