@@ -123,7 +123,7 @@ class GitHistorySecretStore:
         try:
             secret_key = get_secret_key(secret.filename, secret.secret_hash, secret.type)  # by value type
             enriched_secrets = self.secrets_by_file_value_type.get(secret_key)
-            if not enriched_secrets:
+            if not enriched_secrets and root_folder:
                 # sometimes the secret key is from the project path instead of abs path
                 filename = f'{root_folder}/{secret.filename}'
                 secret_key = get_secret_key(filename, secret.secret_hash, secret.type)  # by value type
