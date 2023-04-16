@@ -5,6 +5,7 @@ from checkov.common.output.record import Record
 from checkov.policies_3d.syntax.syntax import Predicate
 from typing import Any
 
+
 class IACPredicate(Predicate):
     def __init__(self, record: Record) -> None:
         super().__init__()

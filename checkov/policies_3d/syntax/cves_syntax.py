@@ -42,5 +42,5 @@ class RiskFactorCVEContains(CVEPredicate):
 
         return set(self.risk_factors) == set(other.risk_factors) and self.cve_report['cveId'] == other.cve_report['cveId']
 
-    def __hash__(self):
+    def __hash__(self) -> Any:
         return hash(('risk_factors', tuple(self.risk_factors), 'cveId', self.cve_report['cveId']))

@@ -51,17 +51,17 @@ class Policy3dParser(Base3dPolicyCheckParser):
         self._fill_check_metadata(check)
         check.predicaments = []
 
-        cves_definition = {}
-        iac_definition = {}
-        secrets_definition = {}
+        cves_definition: dict[str, Any] = {}
+        iac_definition: dict[str, Any] = {}
+        secrets_definition: dict[str, Any] = {}
 
         for definition in self.check_definition:
             if "cves" in definition.keys():
-                cves_definition: dict[str, Any] = definition["cves"]
+                cves_definition = definition["cves"]
             elif "iac" in definition.keys():
-                iac_definition: dict[str, Any] = definition["iac"]
+                iac_definition = definition["iac"]
             elif "secrets" in definition.keys():
-                secrets_definition: dict[str, Any] = definition["secrets"]
+                secrets_definition = definition["secrets"]
 
         cve_predicaments = list(filter(None, [self._create_module_predicament(cves_definition, cve_report) for cve_report in cves_reports]))
         iac_predicaments = list(filter(None, [self._create_module_predicament(iac_definition, iac_record) for iac_record in iac_records]))
@@ -82,10 +82,13 @@ class Policy3dParser(Base3dPolicyCheckParser):
 
     @staticmethod
     def _create_predicate(key: str, value: Any, record: Record | dict[str, Any]) -> Predicate | None:
-        if key == PredicateAttributes.RISK_FACTOR:
-            return RiskFactorCVEContains(force_list(value), record)
-        elif key == PredicateAttributes.VIOLATION_ID:
-            return ViolationIdEquals(record, value)
+        if isinstance(record, dict):
+            # Specific to cve records passed as dicts
+            if key == PredicateAttributes.RISK_FACTOR:
+                return RiskFactorCVEContains(force_list(value), record)
+        elif isinstance(record, Record):
+            if key == PredicateAttributes.VIOLATION_ID:
+                return ViolationIdEquals(record, value)
 
         logging.debug(f"Unable to create predicate for unsupported key {key}")
         return None
