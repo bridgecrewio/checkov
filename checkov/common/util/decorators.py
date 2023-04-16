@@ -17,17 +17,12 @@ def time_it(func: Callable[P, T]) -> Callable[P, T]:
 
     @wraps(func)
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
-        try:
-            start = default_timer()
-            output = func(*args, **kwargs)
-            end = default_timer()
+        start = default_timer()
+        output = func(*args, **kwargs)
+        end = default_timer()
 
-            func_path = f"{func.__code__.co_filename.replace('.py', '')}.{func.__name__}"
-            logging.info(f"'{func_path}' took: {timedelta(seconds=end - start)}\n")
+        func_path = f"{func.__code__.co_filename.replace('.py', '')}.{func.__name__}"
+        logging.info(f"'{func_path}' took: {timedelta(seconds=end - start)}\n")
 
-            return output
-        except Exception as e:
-            # we don't want exception in wrapper to affect real run
-            logging.warning(f"[time_it] got exception: {e}")
-            return func(*args, **kwargs)
+        return output
     return wrapper
