@@ -48,7 +48,7 @@ class Policy3dRunner(BasePostRunner):
         super().__init__()
 
     def run_v2(self,
-               raw_checks: list[dict[str, dict[str, Any]]] | None = None,
+               raw_checks: list[dict[str, Any]] | None = None,
                scan_reports: list[Report] | None = None,
                runner_filter: RunnerFilter | None = None
                ) -> Report:
@@ -68,11 +68,17 @@ class Policy3dRunner(BasePostRunner):
         records_3d = []
         for raw_3d_check in raw_checks:
             for resource, modules_records in failed_checks_by_resource.items():
+                iac_records: list[Record] = modules_records.get("iac", [])
+                secrets_records: list[Record] = modules_records.get("secrets", [])
+                cves_reports: list[dict[str, Any]] = modules_records.get("cves", [])
                 check = Policy3dParser(raw_3d_check).parse(
-                    iac_records=modules_records.get("iac", []),
-                    secrets_records=modules_records.get("secrets", []),
-                    cves_reports=modules_records.get("cves", [])
+                    iac_records=iac_records,
+                    secrets_records=secrets_records,
+                    cves_reports=cves_reports
                 )
+
+                if not check:
+                    continue
 
                 check.severity = Severities[raw_3d_check['severity']]
                 check.bc_id = check.id

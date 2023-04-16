@@ -34,6 +34,8 @@ class Base3dPolicyCheckParser:
         if self.schema_version == 'v1':
             return self._parse_check_v1(iac_records or [], secrets_records or [], cves_reports or [])
 
+        return None
+
     @abstractmethod
     def _parse_check_v1(self, iac_records: list[Record], secrets_records: list[Record], cves_reports: list[dict[str, Any]]) -> Base3dPolicyCheck:
         pass

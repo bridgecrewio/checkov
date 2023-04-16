@@ -12,7 +12,7 @@ class IACPredicate(Predicate):
         self.record = record
 
     @abc.abstractmethod
-    def __call__(self):
+    def __call__(self) -> bool:
         raise NotImplementedError()
 
 
