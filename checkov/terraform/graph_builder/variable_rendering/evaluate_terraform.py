@@ -5,7 +5,6 @@ import json
 import logging
 import os
 import re
-from json import JSONDecodeError
 from typing import Any, Union, Optional, List, Dict, Callable, TypeVar, Tuple
 
 from checkov.common.util.type_forcers import force_int
@@ -24,7 +23,7 @@ CHECKOV_RENDER_MAX_LEN = force_int(os.getenv("CHECKOV_RENDER_MAX_LEN", "10000"))
 
 
 def evaluate_terraform(input_str: Any, keep_interpolations: bool = True) -> Any:
-    if input_str is None:
+    if input_str is None or isinstance(input_str, int):
         # no need for further evaluation
         return input_str
 
