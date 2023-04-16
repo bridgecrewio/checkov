@@ -127,7 +127,7 @@ class GitHistorySecretStore:
                 # sometimes the secret key is from the project path instead of abs path
                 filename = f'{root_folder}/{secret.filename}'
                 secret_key = get_secret_key(filename, secret.secret_hash, secret.type)  # by value type
-                enriched_secrets = self.secrets_by_file_value_type.get(secret_key, None)
+                enriched_secrets = self.secrets_by_file_value_type.get(secret_key)
                 if not enriched_secrets:
                     logging.warning(f'Did not find added_commit_hash and removed_commit_hash for {secret_key}')
                     return {}
