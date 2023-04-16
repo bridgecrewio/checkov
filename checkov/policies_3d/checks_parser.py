@@ -51,17 +51,17 @@ class Policy3dParser(Base3dPolicyCheckParser):
         self._fill_check_metadata(check)
         check.predicaments = []
 
-        cves_definition = None
-        iac_definition = None
-        secrets_definition = None
+        cves_definition = {}
+        iac_definition = {}
+        secrets_definition = {}
 
         for definition in self.check_definition:
             if "cves" in definition.keys():
-                cves_definition = definition["cves"]
+                cves_definition: dict[str, Any] = definition["cves"]
             elif "iac" in definition.keys():
-                iac_definition = definition["iac"]
+                iac_definition: dict[str, Any] = definition["iac"]
             elif "secrets" in definition.keys():
-                secrets_definition = definition["secrets"]
+                secrets_definition: dict[str, Any] = definition["secrets"]
 
         cve_predicaments = list(filter(None, [self._create_module_predicament(cves_definition, cve_report) for cve_report in cves_reports]))
         iac_predicaments = list(filter(None, [self._create_module_predicament(iac_definition, iac_record) for iac_record in iac_records]))

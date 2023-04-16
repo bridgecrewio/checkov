@@ -3,7 +3,7 @@ import abc
 
 from checkov.common.output.record import Record
 from checkov.policies_3d.syntax.syntax import Predicate
-
+from typing import Any
 
 class IACPredicate(Predicate):
     def __init__(self, record: Record) -> None:
@@ -30,5 +30,5 @@ class ViolationIdEquals(IACPredicate):
 
         return self.violation_id == other.violation_id and self.record.bc_check_id == other.record.bc_check_id
 
-    def __hash__(self):
+    def __hash__(self) -> Any:
         return hash(('violation_id', self.violation_id, 'bc_check_id', self.record.bc_check_id))

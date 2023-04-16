@@ -8,6 +8,10 @@ class Predicate:
         self.is_true = False
 
     @abc.abstractmethod
+    def __call__(self, *args, **kwargs) -> bool:
+        raise NotImplementedError()
+
+    @abc.abstractmethod
     def __eq__(self, other: object) -> bool:
         raise NotImplementedError()
 

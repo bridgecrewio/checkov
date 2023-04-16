@@ -36,7 +36,7 @@ class RiskFactorCVEContains(CVEPredicate):
 
         return self.is_true
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, RiskFactorCVEContains):
             return False
 

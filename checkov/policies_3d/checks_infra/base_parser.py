@@ -8,13 +8,13 @@ import json
 
 
 class Base3dPolicyCheckParser:
-    def __init__(self, raw_check: dict[str, dict[str, Any]]):
+    def __init__(self, raw_check: dict[str, Any]):
         if not raw_check:
             return
 
         self.raw_check = raw_check
 
-        check_code = json.loads(raw_check.get('code', {}))
+        check_code = json.loads(raw_check.get('code', ''))
         self.schema_version = check_code.get('version')
         self.check_definition = check_code.get('definition')
 
