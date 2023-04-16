@@ -157,7 +157,7 @@ class Policy3dRunner(BasePostRunner):
         return record
 
     @staticmethod
-    def create_failed_checks_by_resource_mapping(scan_reports: list[Report]) -> dict[str, dict[str, list[Record] | list[dict[str, Any]]]]:
+    def create_failed_checks_by_resource_mapping(scan_reports: list[Report]) -> dict[str, Any]:
         """
         Output structure:
         {
@@ -168,7 +168,7 @@ class Policy3dRunner(BasePostRunner):
             }
         }
         """
-        failed_checks_by_resource: dict[str, dict[str, list[Record] | list[dict[str, Any]]]] = {}
+        failed_checks_by_resource: dict[str, Any] = {}
         for report in scan_reports:
             if report.check_type == CheckType.SCA_IMAGE:
                 # Save image cached results on a resource
@@ -177,7 +177,7 @@ class Policy3dRunner(BasePostRunner):
                     if resource_id in failed_checks_by_resource.keys():
                         if "cves" not in failed_checks_by_resource[resource_id]:
                             failed_checks_by_resource[resource_id]["cves"] = []
-                        failed_checks_by_resource[resource_id]["cves"] += result.get("vulnerabilities")
+                        failed_checks_by_resource[resource_id]["cves"] += result.get("vulnerabilities", [])
                     else:
                         failed_checks_by_resource[resource_id] = {}
                         failed_checks_by_resource[resource_id]["cves"] = result.get("vulnerabilities", [])

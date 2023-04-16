@@ -25,7 +25,7 @@ class PredicateAttributes(str, Enum):
 
 
 class Policy3dParser(Base3dPolicyCheckParser):
-    def __init__(self, raw_check: dict[str, Any] | None = None,
+    def __init__(self, raw_check: dict[str, Any],
                  resource: str | None = None, records: list[Record] | None = None):
         super().__init__(raw_check)
         self.resource = resource
