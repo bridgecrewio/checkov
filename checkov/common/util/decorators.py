@@ -17,15 +17,17 @@ def time_it(func: Callable[P, T]) -> Callable[P, T]:
 
     @wraps(func)
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
-        start = default_timer()
-        output = func(*args, **kwargs)
-        end = default_timer()
+        try:
+            start = default_timer()
+            output = func(*args, **kwargs)
+            end = default_timer()
 
-        func_path = f"{func.__code__.co_filename.replace('.py', '')}.{func.__name__}"
-        info = f"'{func_path}' took: {timedelta(seconds=end - start)}\n"
-        with open('time_it.txt', 'a') as f:
-            f.writelines(info)
-        logging.info(info)
+            func_path = f"{func.__code__.co_filename.replace('.py', '')}.{func.__name__}"
+            info = f"'{func_path}' took: {timedelta(seconds=end - start)}\n"
+            logging.info(info)
 
-        return output
+            return output
+        except Exception as e:
+            # we don't want exception in wrapper to affect real run
+            logging.warning(f"[time_it] got exception: {e}")
     return wrapper
