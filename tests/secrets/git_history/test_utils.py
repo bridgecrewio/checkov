@@ -7,7 +7,7 @@ from typing import Dict, List
 from checkov.secrets.git_types import Commit, CommitMetadata
 
 
-def mock_git_repo_commits1(root_folder: str, last_commit_sha: str) -> List[Commit]:
+def mock_git_repo_commits1(self, root_folder: str, last_commit_sha: str) -> List[Commit]:
     """
         add secret (secret1 added) - +1
         move the secret to different line - 0
@@ -60,7 +60,7 @@ def mock_git_repo_commits1(root_folder: str, last_commit_sha: str) -> List[Commi
     return commits_mock
 
 
-def mock_git_repo_commits2(root_folder: str, last_commit_sha: str) -> List[Commit]:
+def mock_git_repo_commits2(self, root_folder: str, last_commit_sha: str) -> List[Commit]:
     """
         add secret (secret1 added) - +1
         move the secret to different line - 0
@@ -114,7 +114,7 @@ def mock_git_repo_commits2(root_folder: str, last_commit_sha: str) -> List[Commi
     return commits_mock
 
 
-def mock_git_repo_commits3(root_folder: str, last_commit_sha: str) -> List[Commit]:
+def mock_git_repo_commits3(self, root_folder: str, last_commit_sha: str) -> List[Commit]:
     """
             add secret (secret1 added) - +1
             move the secret to different line - 0
@@ -166,7 +166,7 @@ def mock_git_repo_commits3(root_folder: str, last_commit_sha: str) -> List[Commi
     return commits_mock
 
 
-def mock_git_repo_commits_remove_file(root_folder: str, last_commit_sha: str) -> List[Commit]:
+def mock_git_repo_commits_remove_file(self, root_folder: str, last_commit_sha: str) -> List[Commit]:
     commits_mock = [
         Commit(
             metadata=CommitMetadata(
@@ -196,7 +196,7 @@ def mock_git_repo_commits_remove_file(root_folder: str, last_commit_sha: str) ->
     return commits_mock
 
 
-def mock_remove_file_with_two_equal_secret(root_folder: str, last_commit_sha: str) -> List[Commit]:
+def mock_remove_file_with_two_equal_secret(self, root_folder: str, last_commit_sha: str) -> List[Commit]:
     commits_mock = [
         Commit(
             metadata=CommitMetadata(
@@ -226,7 +226,7 @@ def mock_remove_file_with_two_equal_secret(root_folder: str, last_commit_sha: st
     return commits_mock
 
 
-def mock_remove_file_with_two_secret(root_folder: str, last_commit_sha: str) -> List[Commit]:
+def mock_remove_file_with_two_secret(self, root_folder: str, last_commit_sha: str) -> List[Commit]:
     commits_mock = [
         Commit(
             metadata=CommitMetadata(
@@ -256,7 +256,7 @@ def mock_remove_file_with_two_secret(root_folder: str, last_commit_sha: str) -> 
     return commits_mock
 
 
-def mock_git_repo_commits_rename_file(root_folder: str, last_commit_sha: str) -> List[Commit]:
+def mock_git_repo_commits_rename_file(self, root_folder: str, last_commit_sha: str) -> List[Commit]:
     commits_mock = [
         Commit(
             metadata=CommitMetadata(
@@ -290,7 +290,7 @@ def mock_git_repo_commits_rename_file(root_folder: str, last_commit_sha: str) ->
     return commits_mock
 
 
-def mock_git_repo_commits_modify_and_rename_file(root_folder: str, last_commit_sha: str) -> List[Commit]:
+def mock_git_repo_commits_modify_and_rename_file(self, root_folder: str, last_commit_sha: str) -> List[Commit]:
     """
     when we rename a file and modify it in the same commit it will consider as deleting the old file and creating a new file
     add secret to file +1
@@ -318,7 +318,7 @@ def mock_git_repo_commits_modify_and_rename_file(root_folder: str, last_commit_s
     return commits_mock
 
 
-def mock_git_repo_multiline_json(root_folder: str, last_commit_sha: str) -> List[Commit]:
+def mock_git_repo_multiline_json(self, root_folder: str, last_commit_sha: str) -> List[Commit]:
     commits_mock = [
         Commit(
             metadata=CommitMetadata(
@@ -332,7 +332,7 @@ def mock_git_repo_multiline_json(root_folder: str, last_commit_sha: str) -> List
     return commits_mock
 
 
-def mock_git_repo_multiline_terraform(root_folder: str, last_commit_sha: str) -> List[Commit]:
+def mock_git_repo_multiline_terraform(self, root_folder: str, last_commit_sha: str) -> List[Commit]:
     commits_mock = [
         Commit(
             metadata=CommitMetadata(
@@ -346,7 +346,7 @@ def mock_git_repo_multiline_terraform(root_folder: str, last_commit_sha: str) ->
     return commits_mock
 
 
-def mock_git_repo_multiline_yml(root_folder: str, last_commit_sha: str) -> List[Commit]:
+def mock_git_repo_multiline_yml(self, root_folder: str, last_commit_sha: str) -> List[Commit]:
     commits_mock = [
         Commit(
             metadata=CommitMetadata(
@@ -384,7 +384,7 @@ def mock_case() -> Dict[str, str]:
     return random.choice(cases)
 
 
-def mock_git_repo_commits_too_much(root_folder: str, last_commit_sha: str) -> Dict[str, Dict[str, str]]:
+def mock_git_repo_commits_too_much(self, root_folder: str, last_commit_sha: str) -> Dict[str, Dict[str, str]]:
     res: Dict[str, Dict[str, str]] = {}
     keys = [get_random_string(40) for _i in range(10000)]
     for k in keys:
