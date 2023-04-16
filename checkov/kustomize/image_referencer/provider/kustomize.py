@@ -11,10 +11,9 @@ if TYPE_CHECKING:
 
 
 class KustomizeProvider(BaseKustomizeProvider):
-    def __init__(self, graph_connector: Graph | DiGraph, report_mutator_data: Dict[str, Dict[str, Any]], root_folder: str):
+    def __init__(self, graph_connector: Graph | DiGraph, report_mutator_data: Dict[str, Dict[str, Any]]):
         super().__init__(
             graph_connector=graph_connector,
             supported_resource_types=SUPPORTED_K8S_IMAGE_RESOURCE_TYPES,
-            report_mutator_data=report_mutator_data,
-            root_folder=root_folder
+            report_mutator_data=report_mutator_data
         )

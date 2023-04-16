@@ -56,25 +56,6 @@ class K8sKustomizeRunner(K8sRunner):
         self.original_root_dir: str = ''
         self.pbar.turn_off_progress_bar()
 
-    def run(
-        self,
-        root_folder: str | None,
-        external_checks_dir: list[str] | None = None,
-        files: list[str] | None = None,
-        runner_filter: RunnerFilter | None = None,
-        collect_skip_comments: bool = True
-    ) -> Report | list[Report]:
-        results = super().run(root_folder, external_checks_dir=external_checks_dir, runner_filter=runner_filter)
-
-        sca_image_report = None
-        if isinstance(results, list):
-            sca_image_report = next(result for result in results if result.check_type == CheckType.SCA_IMAGE)
-
-        if root_folder is not None:
-            fix_related_resource_ids(report=sca_image_report, tmp_dir=root_folder)
-
-        return results
-
     def set_external_data(
         self,
         definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None,
@@ -215,6 +196,13 @@ class K8sKustomizeRunner(K8sRunner):
 
         return report
 
+    def get_image_report(self, root_folder: str | None, runner_filter: RunnerFilter):
+        return self.check_container_image_references(
+            graph_connector=self.graph_manager.get_reader_endpoint(),
+            root_path=self.original_root_dir,
+            runner_filter=runner_filter,
+        )
+
     def extract_images(
             self,
             graph_connector: DiGraph | None = None,
@@ -225,7 +213,7 @@ class K8sKustomizeRunner(K8sRunner):
             # should not happen
             return []
 
-        manager = KustomizeImageReferencerManager(graph_connector=graph_connector, report_mutator_data=self.report_mutator_data, root_folder=self.original_root_dir)
+        manager = KustomizeImageReferencerManager(graph_connector=graph_connector, report_mutator_data=self.report_mutator_data)
         images = manager.extract_images_from_resources()
 
         return images

@@ -70,8 +70,7 @@ def test_deployment_resources(mocker: MockerFixture):
 
     assert sca_image_report.image_cached_results[0]["dockerImageName"] == image_name
     assert (
-        sca_image_report.image_cached_results[0]["relatedResourceId"]
-        == "/kustomization.yaml:Pod.default.prod-wordpress.app-wordpress"
+        sca_image_report.image_cached_results[0]["relatedResourceId"].endswith("/kustomization.yaml:Pod.default.prod-wordpress.app-wordpress")
     )
     assert sca_image_report.image_cached_results[0]["packages"] == [
         {"type": "os", "name": "tzdata", "version": "2021a-1+deb11u5", "licenses": []}
