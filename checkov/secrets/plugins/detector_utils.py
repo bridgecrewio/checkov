@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import re
 from re import Pattern
-from typing import Any, TYPE_CHECKING, Optional
+from typing import Any, TYPE_CHECKING
 
 from detect_secrets.util.filetype import FileType
 from detect_secrets.plugins.keyword import DENYLIST
