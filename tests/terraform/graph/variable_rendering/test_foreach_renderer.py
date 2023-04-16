@@ -68,9 +68,9 @@ def test_dynamic_foreach_resource():
     dir_name = 'foreach_resources/dynamic_foreach_value'
     local_graph = build_and_get_graph_by_path(dir_name)[0]
     foreach_handler = ForeachResourceHandler(local_graph)
-    res = foreach_handler._handle_dynamic_statement([6, 7, 8, 9, 10])
+    res = foreach_handler._handle_dynamic_statement([4, 5, 6, 7, 8])
     expected_res = {
-        6: {'a_group': 'eastus', 'another_group': 'westus2'}, 7: ['s3-bucket-a', 's3-bucket-b'], 8: 5, 9: 2, 10: None
+        4: {'a_group': 'eastus', 'another_group': 'westus2'}, 5: ['s3-bucket-a', 's3-bucket-b'], 6: 5, 7: 2, 8: None
     }
     assert_object_equal(res, expected_res)
 
@@ -82,18 +82,18 @@ def test_foreach_resource():
     foreach_handler = ForeachResourceHandler(local_graph)
     res = foreach_handler._get_statements([6, 7, 8, 9, 10, 19, 20, 21, 22, 23, 24, 25])
     expected_res = {
-        6: {'a_group': 'eastus', 'another_group': 'westus2'},
-        7: ['s3-bucket-a', 's3-bucket-b'],
-        8: 5,
-        9: 2,
-        10: None,
-        19: ['bucket_a', 'bucket_b'],
-        20: {'key1': '${var.a}', 'key2': '${var.b}'},
-        21: None,
+        4: {'a_group': 'eastus', 'another_group': 'westus2'},
+        5: ['s3-bucket-a', 's3-bucket-b'],
+        6: 5,
+        7: 2,
+        8: None,
+        17: ['bucket_a', 'bucket_b'],
+        18: {'key1': '${var.a}', 'key2': '${var.b}'},
+        19: None,
+        20: None,
+        21: 5,
         22: None,
-        23: 5,
-        24: None,
-        25: None
+        23: None
     }
     for key, _ in expected_res.items():
         if isinstance(expected_res[key], (list, dict)):
@@ -107,7 +107,7 @@ def test_build_sub_graph():
     dir_name = 'foreach_resources'
     local_graph = build_and_get_graph_by_path(dir_name)[0]
     foreach_handler = ForeachAbstractHandler(local_graph)
-    blocks = [6, 7, 8, 9, 10, 21, 22, 24, 25]
+    blocks = [6, 7, 8, 9, 10, 21, 22]
     sub_graph = foreach_handler._build_sub_graph(blocks)
     assert all(sub_graph.vertices[i] for i in blocks)
     assert not all(sub_graph.vertices[i] for i in range(len(sub_graph.vertices)))
@@ -124,7 +124,7 @@ def test_new_resources_count():
 
     foreach_builder = ForeachBuilder(local_graph)
     foreach_builder.handle({'resource': [3], 'module': []})
-    for i, resource in enumerate([local_graph.vertices[3], local_graph.vertices[8], local_graph.vertices[9]]):
+    for i, resource in enumerate([local_graph.vertices[1], local_graph.vertices[6], local_graph.vertices[7]]):
         assert resource.name.endswith(f"[{i}]")
         assert resource.id.endswith(f"[{i}]")
         assert list(resource.config['aws_s3_bucket'].keys())[0].endswith(f'[{i}]')
@@ -250,10 +250,10 @@ def test_new_tf_parser_with_foreach_modules(checkov_source_path):
     assert len([block for block in local_graph.vertices if block.block_type == 'resource']) == 8
     assert len([block for block in local_graph.vertices if block.block_type == 'module']) == 12
 
-    assert len(local_graph.vertices) == 63
+    assert len(local_graph.vertices) == 47
     assert len(local_graph.vertices_by_module_dependency) == 13
 
-    assert local_graph.vertices_by_module_dependency[None]['module'] == [0, 1, 33, 48]
+    assert local_graph.vertices_by_module_dependency[None]['module'] == [0, 1, 25, 36]
 
     first_module_vertex = local_graph.vertices[0]
     assert first_module_vertex.name == 's3_module["a"]' and first_module_vertex.for_each_index == 'a'
@@ -261,14 +261,14 @@ def test_new_tf_parser_with_foreach_modules(checkov_source_path):
     second_module_vertex = local_graph.vertices[1]
     assert second_module_vertex.name == 's3_module2[0]' and second_module_vertex.for_each_index == 0
 
-    thirty_third_module_vertex = local_graph.vertices[33]
-    assert thirty_third_module_vertex.name == 's3_module["b"]' and thirty_third_module_vertex.for_each_index == 'b'
+    twenty_fifth_module_vertex = local_graph.vertices[25]
+    assert twenty_fifth_module_vertex.name == 's3_module["b"]' and twenty_fifth_module_vertex.for_each_index == 'b'
 
-    forty_eight_module_vertex = local_graph.vertices[48]
-    assert forty_eight_module_vertex.name == 's3_module2[1]' and forty_eight_module_vertex.for_each_index == 1
+    thrirty_six_module_vertex = local_graph.vertices[36]
+    assert thrirty_six_module_vertex.name == 's3_module2[1]' and thrirty_six_module_vertex.for_each_index == 1
 
-    assert local_graph.vertices[34].source_module == {33}
-    assert local_graph.vertices[49].source_module == {48}
+    assert local_graph.vertices[26].source_module == {25}
+    assert local_graph.vertices[37].source_module == {36}
 
     # check foreach_idx is updated correctly
     first_key = list(tf_definitions.keys())[0]
@@ -357,10 +357,10 @@ def test_foreach_module_and_resource(checkov_source_path):
     assert len([block for block in graph.vertices if block.block_type == 'resource']) == 4
     assert len(tf_definitions.keys()) == 3
 
-    assert graph.vertices[4].config['aws_s3_bucket_public_access_block']['var_bucket["a"]']['__address__'] == 'module.s3_module["a"].aws_s3_bucket_public_access_block.var_bucket["a"]'
-    assert graph.vertices[10].config['aws_s3_bucket_public_access_block']['var_bucket["a"]']['__address__'] == 'module.s3_module["b"].aws_s3_bucket_public_access_block.var_bucket["a"]'
-    assert graph.vertices[12].config['aws_s3_bucket_public_access_block']['var_bucket["b"]']['__address__'] == 'module.s3_module["a"].aws_s3_bucket_public_access_block.var_bucket["b"]'
-    assert graph.vertices[13].config['aws_s3_bucket_public_access_block']['var_bucket["b"]']['__address__'] == 'module.s3_module["b"].aws_s3_bucket_public_access_block.var_bucket["b"]'
+    assert graph.vertices[2].config['aws_s3_bucket_public_access_block']['var_bucket["a"]']['__address__'] == 'module.s3_module["a"].aws_s3_bucket_public_access_block.var_bucket["a"]'
+    assert graph.vertices[6].config['aws_s3_bucket_public_access_block']['var_bucket["a"]']['__address__'] == 'module.s3_module["b"].aws_s3_bucket_public_access_block.var_bucket["a"]'
+    assert graph.vertices[8].config['aws_s3_bucket_public_access_block']['var_bucket["b"]']['__address__'] == 'module.s3_module["a"].aws_s3_bucket_public_access_block.var_bucket["b"]'
+    assert graph.vertices[9].config['aws_s3_bucket_public_access_block']['var_bucket["b"]']['__address__'] == 'module.s3_module["b"].aws_s3_bucket_public_access_block.var_bucket["b"]'
 
 
 @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "True"})
