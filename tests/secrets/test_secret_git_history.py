@@ -71,7 +71,7 @@ def test_scan_git_history_merge_added_removed() -> None:
     assert len(report.failed_checks) == 1
     for failed_check in report.failed_checks:
         assert failed_check.removed_commit_hash == ''
-        assert failed_check.removed_date
+        assert failed_check.removed_date == ''
         assert failed_check.added_commit_hash == '11e59e4e578c6ebcb48aae1e5e078a54c62920eb'
         assert failed_check.added_by
         assert failed_check.added_date
