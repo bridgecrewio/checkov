@@ -40,6 +40,7 @@ module_to_check_types = {
     "cves": [CheckType.SCA_IMAGE]
 }
 
+
 class Policy3dRunner(BasePostRunner):
     check_type = CheckType.POLICY_3D  # noqa: CCE003  # a static attribute
 
@@ -102,11 +103,9 @@ class Policy3dRunner(BasePostRunner):
         all_predicates = set()
         for predicament in check.predicaments:
             all_predicates.update(predicament.get_all_children_predicates())
-        # all_predicates = set(all_predicates)
 
         for predicate in all_predicates:
-            if not any_record_data_source and \
-                (isinstance(predicate, IACPredicate) or isinstance(predicate, SecretsPredicate)):
+            if not any_record_data_source and (isinstance(predicate, IACPredicate) or isinstance(predicate, SecretsPredicate)):
                 any_record_data_source = predicate.record
 
             if predicate.is_true:

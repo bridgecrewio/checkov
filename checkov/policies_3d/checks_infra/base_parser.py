@@ -4,7 +4,6 @@ from typing import Dict, Any
 
 from checkov.common.output.record import Record
 from checkov.policies_3d.checks_infra.base_check import Base3dPolicyCheck
-from checkov.sca_image.models import ReportCVE
 import json
 
 
@@ -31,11 +30,11 @@ class Base3dPolicyCheckParser:
 
     def parse(self, iac_records: list[Record] | None = None,
               secrets_records: list[Record] | None = None,
-              cves_reports: list[ReportCVE] | None = None
-                ) -> Base3dPolicyCheck | None:
+              cves_reports: list[dict[str, Any]] | None = None
+        ) -> Base3dPolicyCheck | None:
         if self.schema_version == 'v1':
             return self._parse_check_v1(iac_records or [], secrets_records or [], cves_reports or [])
 
     @abstractmethod
-    def _parse_check_v1(self, iac_records: list[Record], secrets_records: list[Record], cves_reports: list[ReportCVE]) -> Base3dPolicyCheck:
+    def _parse_check_v1(self, iac_records: list[Record], secrets_records: list[Record], cves_reports: list[dict[str, Any]]) -> Base3dPolicyCheck:
         pass

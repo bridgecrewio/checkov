@@ -3,11 +3,10 @@ import abc
 from typing import Any
 
 from checkov.policies_3d.syntax.syntax import Predicate
-from checkov.sca_image.models import ReportCVE
 
 
 class CVEPredicate(Predicate):
-    def __init__(self, cve_report: ReportCVE | dict[str, Any]):
+    def __init__(self, cve_report: dict[str, Any]):
         super().__init__()
         self.cve_report = cve_report
 
