@@ -37,7 +37,7 @@ class GitHistorySecretStore:
             equal_secret_in_commit[secret_key].append(ADDED if secret.is_added else REMOVED)
 
         for secret in file_results:
-            if secret.filename == '' or 'None' in secret.filename:
+            if not secret.filename or 'None' in secret.filename:
                 secret.filename = file_name
             secret_key = get_secret_key(file_name, secret.secret_hash, secret.type)
             if all(value in equal_secret_in_commit[secret_key] for value in GIT_HISTORY_OPTIONS):
