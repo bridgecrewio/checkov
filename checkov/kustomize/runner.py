@@ -225,7 +225,7 @@ class K8sKustomizeRunner(K8sRunner):
             # should not happen
             return []
 
-        manager = KustomizeImageReferencerManager(graph_connector=graph_connector, report_mutator_data=self.report_mutator_data)
+        manager = KustomizeImageReferencerManager(graph_connector=graph_connector, report_mutator_data=self.report_mutator_data, root_folder=self.original_root_dir)
         images = manager.extract_images_from_resources()
 
         return images

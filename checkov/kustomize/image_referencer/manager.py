@@ -13,12 +13,14 @@ if TYPE_CHECKING:
 
 class KustomizeImageReferencerManager(GraphImageReferencerManager):
 
-    def __init__(self, graph_connector: Union[Graph, DiGraph], report_mutator_data: dict[str, dict[str, Any]]):
+    def __init__(self, graph_connector: Union[Graph, DiGraph], report_mutator_data: dict[str, dict[str, Any]], root_folder: str):
         super().__init__(graph_connector)
         self.report_mutator_data = report_mutator_data
+        self.root_folder = root_folder
 
     def extract_images_from_resources(self) -> list[Image]:
-        kustomize_provider = KustomizeProvider(graph_connector=self.graph_connector, report_mutator_data=self.report_mutator_data)
+        kustomize_provider = KustomizeProvider(graph_connector=self.graph_connector,
+                                               report_mutator_data=self.report_mutator_data, root_folder=self.root_folder)
         images = kustomize_provider.extract_images_from_resources()
 
         return images
