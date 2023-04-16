@@ -105,6 +105,7 @@ class Policy3dRunner(BasePostRunner):
         records_ids = set()
 
         any_record_data_source = None
+        record_data_source: Record | None
 
         all_predicates = set()
         for predicament in check.predicaments:
@@ -173,7 +174,7 @@ class Policy3dRunner(BasePostRunner):
             if report.check_type == CheckType.SCA_IMAGE:
                 # Save image cached results on a resource
                 for result in report.image_cached_results:
-                    resource_id = result.get('relatedResourceId').split(result.get('dockerFilePath'))[1][1:]
+                    resource_id = result.get('relatedResourceId', '').split(result.get('dockerFilePath'))[1][1:]
                     if resource_id in failed_checks_by_resource.keys():
                         if "cves" not in failed_checks_by_resource[resource_id]:
                             failed_checks_by_resource[resource_id]["cves"] = []

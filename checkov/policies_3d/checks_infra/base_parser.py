@@ -8,7 +8,7 @@ import json
 
 
 class Base3dPolicyCheckParser:
-    def __init__(self, raw_check: dict[str, Any]):
+    def __init__(self, raw_check: dict[str, Any] | None = None):
         if not raw_check:
             return
 
