@@ -14,9 +14,11 @@ import tempfile
 import yaml
 from typing import Optional, Dict, Any, TextIO, TYPE_CHECKING
 
+from networkx import DiGraph
+
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.graph.graph_builder.consts import GraphSource
-from checkov.common.images.image_referencer import fix_related_resource_ids
+from checkov.common.images.image_referencer import fix_related_resource_ids, Image
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.bridgecrew.check_type import CheckType
@@ -25,6 +27,7 @@ from checkov.common.typing import _CheckResult
 from checkov.kubernetes.kubernetes_utils import get_resource_id
 from checkov.kubernetes.runner import Runner as K8sRunner
 from checkov.kubernetes.runner import _get_entity_abs_path
+from checkov.kustomize.image_referencer.manager import KustomizeImageReferencerManager
 from checkov.kustomize.utils import get_kustomize_version
 from checkov.runner_filter import RunnerFilter
 from checkov.common.graph.checks_infra.registry import BaseRegistry
@@ -211,6 +214,21 @@ class K8sKustomizeRunner(K8sRunner):
                 report.add_record(record=record)
 
         return report
+
+    def extract_images(
+            self,
+            graph_connector: DiGraph | None = None,
+            definitions: None = None,
+            definitions_raw: dict[str, list[tuple[int, str]]] | None = None
+    ) -> list[Image]:
+        if not graph_connector:
+            # should not happen
+            return []
+
+        manager = KustomizeImageReferencerManager(graph_connector=graph_connector, report_mutator_data=self.report_mutator_data)
+        images = manager.extract_images_from_resources()
+
+        return images
 
 
 class Runner(BaseRunner["KubernetesGraphManager"]):
