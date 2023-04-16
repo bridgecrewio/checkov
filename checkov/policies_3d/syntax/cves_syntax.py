@@ -6,7 +6,7 @@ from checkov.policies_3d.syntax.syntax import Predicate
 
 
 class CVEPredicate(Predicate):
-    def __init__(self, cve_report: dict[str, Any]):
+    def __init__(self, cve_report: dict[str, Any]) -> None:
         super().__init__()
         self.cve_report = cve_report
 
@@ -16,7 +16,7 @@ class CVEPredicate(Predicate):
 
 
 class RiskFactorCVEContains(CVEPredicate):
-    def __init__(self, risk_factors: list[str], cve_report: dict[str, Any]):
+    def __init__(self, risk_factors: list[str], cve_report: dict[str, Any]) -> None:
         super().__init__(cve_report)
         self.risk_factors = [rf.lower() for rf in risk_factors]
         report_risk_factors = cve_report.get('riskFactors', []) or []
@@ -37,6 +37,9 @@ class RiskFactorCVEContains(CVEPredicate):
         return self.is_true
 
     def __eq__(self, other) -> bool:
+        if not isinstance(other, RiskFactorCVEContains):
+            return False
+
         return set(self.risk_factors) == set(other.risk_factors) and self.cve_report['cveId'] == other.cve_report['cveId']
 
     def __hash__(self):

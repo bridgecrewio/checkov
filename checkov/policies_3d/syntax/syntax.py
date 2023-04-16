@@ -1,23 +1,24 @@
 from __future__ import annotations
 import abc
+from typing import Any
 
 
 class Predicate:
-    def __init__(self):
+    def __init__(self) -> None:
         self.is_true = False
 
     @abc.abstractmethod
-    def __eq__(self, other: Predicate):
+    def __eq__(self, other: object) -> bool:
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def __hash__(self):
+    def __hash__(self) -> Any:
         raise NotImplementedError()
 
 
 class Predicament:
     def __init__(self, logical_op: str, predicates: list[Predicate] | None = None,
-                 predicaments: list[Predicament] | None = None):
+                 predicaments: list[Predicament] | None = None) -> None:
         self.predicates = predicates or []
         self.predicaments = predicaments or []
         self.logical_op = logical_op.lower()

@@ -30,8 +30,7 @@ class Base3dPolicyCheckParser:
 
     def parse(self, iac_records: list[Record] | None = None,
               secrets_records: list[Record] | None = None,
-              cves_reports: list[dict[str, Any]] | None = None
-        ) -> Base3dPolicyCheck | None:
+              cves_reports: list[dict[str, Any]] | None = None) -> Base3dPolicyCheck | None:
         if self.schema_version == 'v1':
             return self._parse_check_v1(iac_records or [], secrets_records or [], cves_reports or [])
 
