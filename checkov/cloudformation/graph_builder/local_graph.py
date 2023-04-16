@@ -339,7 +339,7 @@ class CloudformationLocalGraph(LocalGraph[CloudformationBlock]):
         try:
             return TOKENIZED_FIELD_PATTERN.findall(string)
         except Exception as e:
-            logging.warning(f'fn sub parameter is not string: {string}, {str(e)}')
+            logging.warning(f'cant find fn sub parameter for: {string}, error: {str(e)}')
             return []
 
     def _fill_in_out_edges(self) -> None:
