@@ -28,7 +28,7 @@ FILES_TO_IGNORE_IN_GIT_HISTORY = ('.md',)
 
 
 class GitHistoryScanner:
-    commits_count = 0
+    commits_count = 0  # noqa: CCE003
 
     def __init__(self, root_folder: str, secrets: SecretsCollection,
                  history_store: Optional[GitHistorySecretStore] = None, timeout: int = 43200):
@@ -151,7 +151,7 @@ class GitHistoryScanner:
         logging.info("[_get_commits_diff] ended")
         return self.commits_diff
 
-    def _run_scan_parallel(self, commits_diff: List[Commit]):
+    def _run_scan_parallel(self, commits_diff: List[Commit]) -> None:
         results = parallel_runner.run_function(GitHistoryScanner._run_scan_one_bulk, commits_diff)
 
         for result in results:
