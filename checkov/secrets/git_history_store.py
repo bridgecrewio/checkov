@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 import copy
-from pathlib import Path
 from collections import defaultdict
 from typing import TYPE_CHECKING, Dict, List, Optional
 from typing_extensions import TypedDict
