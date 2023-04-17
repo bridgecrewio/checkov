@@ -31,9 +31,7 @@ class BaseResourceNegativeValueCheck(BaseResourceCheck):
 
     @staticmethod
     def _is_variable_dependant(value: Any) -> bool:
-        if isinstance(value, str) and re.match(VARIABLE_DEPENDANT_REGEX, value):
-            return True
-        return False
+        return bool(isinstance(value, str) and re.match(VARIABLE_DEPENDANT_REGEX, value))
 
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:  # type:ignore[override]  # issue with multi_signature annotation
         inspected_key = self.get_inspected_key()
