@@ -17,6 +17,7 @@ from checkov.common.graph.db_connectors.igraph.igraph_db_connector import Igraph
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.runner_filter import RunnerFilter
+from checkov.terraform import TFDefinitionKey
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.terraform.plan_runner import Runner, resource_registry
 
@@ -817,7 +818,12 @@ class TestRunnerValid(unittest.TestCase):
         assert passed_checks_CKV_GCP_88[1].resource == 'module.achia_test_valid_ports.google_compute_firewall.custom[0]'
         assert passed_checks_CKV_GCP_88[2].resource == 'module.achia_test_violating_no_ports.google_compute_firewall.custom[0]'
         assert passed_checks_CKV_GCP_88[3].resource == 'module.achia_test_violating_port.google_compute_firewall.custom[0]'
-        
+
+    def test___get_file_path__with_tf_definition_key_uses_correct_file_path(self):
+        tf_definition = TFDefinitionKey(file_path='test')
+        file_path, scanned_file = Runner()._get_file_path(tf_definition, 'test')
+        assert file_path == 'test'
+        assert scanned_file == '/.'
 
     def tearDown(self) -> None:
         resource_registry.checks = self.orig_checks
