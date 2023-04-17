@@ -108,6 +108,14 @@ FOLLOWED_BY_EQUAL_VALUE_SECRET_REGEX = re.compile(
     flags=re.IGNORECASE,
 )
 
+ALLOW_LIST = ['secretsmanager']  # can add more keys like that
+# Support for suffix of function name i.e "secretsmanager:GetSecretValue"
+CAMEL_CASE_NAMES = r'[A-Z]([A-Z0-9]*[a-z][a-z0-9]*[A-Z]|[a-z0-9]*[A-Z][A-Z0-9]*[a-z])[A-Za-z0-9]*'
+FUNCTION_CALL_AFTER_KEYWORD_REGEX = re.compile(r'{allowlist}:{suffix}'.format(
+    allowlist=ALLOW_LIST,
+    suffix=CAMEL_CASE_NAMES,
+))
+
 #  if the current regex is not enough, can add more regexes to check
 
 YML_PAIR_VALUE_KEYWORD_REGEX_TO_GROUP = {
@@ -166,12 +174,18 @@ MULTILINE_PARSERS = {
 
 
 def remove_fp_secrets_in_keys(detected_secrets: set[PotentialSecret], line: str) -> None:
+    formatted_line = line.replace('"', '').replace("'", '')
+    secrets_to_remove = set()
     for detected_secret in detected_secrets:
-        if detected_secret.secret_value and line.replace('"', '').replace("'", '').startswith(
+        if detected_secret.secret_value and formatted_line.startswith(
                 detected_secret.secret_value):
             # Found keyword prefix as potential secret
-            detected_secrets.remove(detected_secret)
-            break
+            secrets_to_remove.add(detected_secret)
+        if detected_secret.secret_value and formatted_line and \
+                FUNCTION_CALL_AFTER_KEYWORD_REGEX.search(formatted_line):
+            # found a function name at the end of the line
+            secrets_to_remove.add(detected_secret)
+    detected_secrets -= secrets_to_remove
 
 
 def format_reducing_noise_secret(string: str) -> str:
