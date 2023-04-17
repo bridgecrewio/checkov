@@ -24,4 +24,4 @@ class BaseKustomizeProvider(BaseKubernetesProvider):
         k8s_path = resource.get(CustomAttributes.FILE_PATH, "")
         dir_path = self.report_mutator_data.get('kustomizeFileMappings', {}).get(k8s_path, "")
         file_metadata = self.report_mutator_data.get('kustomizeMetadata', {}).get(dir_path, {})
-        return file_metadata.get('filePath', "")
+        return str(file_metadata.get('filePath', ""))

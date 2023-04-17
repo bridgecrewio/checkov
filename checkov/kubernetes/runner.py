@@ -133,7 +133,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
 
     def get_image_report(self, root_folder: str | None, runner_filter: RunnerFilter) -> Report | None:
         if not self.graph_manager:
-            return
+            return None
         return self.check_container_image_references(
             graph_connector=self.graph_manager.get_reader_endpoint(),
             root_path=root_folder,
