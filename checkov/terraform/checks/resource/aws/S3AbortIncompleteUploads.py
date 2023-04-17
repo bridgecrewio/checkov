@@ -23,12 +23,13 @@ class S3AbortIncompleteUploads(BaseResourceCheck):
         rules = conf.get("rule")
         if rules and isinstance(rules, list):
             for idx_rule, rule in enumerate(rules):
-                if (
-                    rule.get("abort_incomplete_multipart_upload")
-                    and rule.get("status") == ["Enabled"]
-                    and not rule.get("filter")
-                ):
+                if rule.get("abort_incomplete_multipart_upload") and rule.get("status") == ["Enabled"]:
                     self.evaluated_keys = [f"rule/[{idx_rule}]/abort_incomplete_multipart_upload"]
+                    filter = rule.get("filter")
+                    if filter and isinstance(filter, list) and filter[0]:
+                        # it is possible to set an empty filter, which applies then to all objects
+                        continue
+
                     return CheckResult.PASSED
 
         return CheckResult.FAILED
