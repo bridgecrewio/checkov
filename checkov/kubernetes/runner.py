@@ -131,11 +131,13 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
 
         return report
 
-    def get_image_report(self, root_folder: str | None, runner_filter: RunnerFilter):
+    def get_image_report(self, root_folder: str | None, runner_filter: RunnerFilter) -> Report | None:
+        if not self.graph_manager:
+            return
         return self.check_container_image_references(
-                    graph_connector=self.graph_manager.get_reader_endpoint(),
-                    root_path=root_folder,
-                    runner_filter=runner_filter,
+            graph_connector=self.graph_manager.get_reader_endpoint(),
+            root_path=root_folder,
+            runner_filter=runner_filter,
         )
 
     def spread_list_items(self) -> None:

@@ -14,11 +14,10 @@ import tempfile
 import yaml
 from typing import Optional, Dict, Any, TextIO, TYPE_CHECKING
 
-from networkx import DiGraph
 
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.graph.graph_builder.consts import GraphSource
-from checkov.common.images.image_referencer import fix_related_resource_ids, Image
+from checkov.common.images.image_referencer import Image
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.bridgecrew.check_type import CheckType
@@ -38,6 +37,7 @@ if TYPE_CHECKING:
     from checkov.common.checks.base_check import BaseCheck
     from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
     from checkov.kubernetes.graph_manager import KubernetesGraphManager
+    from networkx import DiGraph
 
 
 class K8sKustomizeRunner(K8sRunner):
@@ -196,7 +196,9 @@ class K8sKustomizeRunner(K8sRunner):
 
         return report
 
-    def get_image_report(self, root_folder: str | None, runner_filter: RunnerFilter):
+    def get_image_report(self, root_folder: str | None, runner_filter: RunnerFilter) -> Report | None:
+        if not self.graph_manager:
+            return
         return self.check_container_image_references(
             graph_connector=self.graph_manager.get_reader_endpoint(),
             root_path=self.original_root_dir,
