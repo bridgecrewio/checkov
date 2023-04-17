@@ -22,7 +22,7 @@ def time_it(func: Callable[P, T]) -> Callable[P, T]:
         end = default_timer()
 
         func_path = f"{func.__code__.co_filename.replace('.py', '')}.{func.__name__}"
-        logging.info(f"'{func_path}' took: {timedelta(seconds=end - start)}")
+        logging.info(f"'{func_path}' took: {timedelta(seconds=end - start)}\n")
 
         return output
     return wrapper
