@@ -401,7 +401,7 @@ class Report:
                 if self.check_type == CheckType.SCA_PACKAGE:
                     test_case.add_skipped_info(f"{check_id} skipped for {test_name_detail}")
                 else:
-                    test_case.add_skipped_info(record.check_result["suppress_comment"])
+                    test_case.add_skipped_info(record.check_result.get("suppress_comment", ""))
 
             test_cases.append(test_case)
 

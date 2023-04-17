@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
 OPENAI_API_KEY = os.getenv("CKV_OPENAI_API_KEY")
-OPENAI_MAX_FINDINGS = int(os.getenv("CKV_OPENAI_MAX_FINDINGS", 2))
+OPENAI_MAX_FINDINGS = int(os.getenv("CKV_OPENAI_MAX_FINDINGS", 5))
 OPENAI_MAX_TOKENS = int(os.getenv("CKV_OPENAI_MAX_TOKENS", 512))
 OPENAI_MODEL = os.getenv("CKV_OPENAI_MODEL", "gpt-3.5-turbo")
 
@@ -70,29 +70,32 @@ class OpenAi:
             # no need to ask OpenAI about guidelines, if we have no code blocks
             return
 
-        completion = await openai.ChatCompletion.acreate(  # type:ignore[no-untyped-call]
-            model=OPENAI_MODEL,
-            messages=[
-                {"role": "system", "content": "You are a security tool"},
-                {
-                    "role": "user",
-                    "content": "".join(
-                        [
-                            f"fix following code, which violates checkov policy '{record.check_name}':\n",
-                            *[line for _, line in record.code_block],
-                        ]
-                    ),
-                },
-                {"role": "user", "content": "Explain"},
-            ],
-            temperature=0,
-            max_tokens=OPENAI_MAX_TOKENS,
-        )
-        logging.info(f"OpenAI request consumed {completion.usage.total_tokens} tokens")
+        try:
+            completion = await openai.ChatCompletion.acreate(  # type:ignore[no-untyped-call]
+                model=OPENAI_MODEL,
+                messages=[
+                    {"role": "system", "content": "You are a security tool"},
+                    {
+                        "role": "user",
+                        "content": "".join(
+                            [
+                                f"fix following code, which violates checkov policy '{record.check_name}':\n",
+                                *[line for _, line in record.code_block],
+                            ]
+                        ),
+                    },
+                    {"role": "user", "content": "Explain"},
+                ],
+                temperature=0,
+                max_tokens=OPENAI_MAX_TOKENS,
+            )
+            logging.info(f"OpenAI request consumed {completion.usage.total_tokens} tokens")
 
-        details = self._parse_completion_response(completion_content=completion.choices[0].message.content)
-        if details:
-            record.details = details
+            details = self._parse_completion_response(completion_content=completion.choices[0].message.content)
+            if details:
+                record.details = details
+        except Exception:
+            logging.info("Something went wrong while querying OpenAI", exc_info=True)
 
     def _prioritize_findings(self, records: list[Record]) -> list[Record]:
         if 0 < OPENAI_MAX_FINDINGS < len(records):

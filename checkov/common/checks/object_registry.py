@@ -195,7 +195,7 @@ class Registry(BaseCheckRegistry):
             results[result_key] = {
                 "check": check,
                 "result": result,
-                "suppress_comment": check_result["suppress_comment"],
+                "suppress_comment": check_result.get("suppress_comment", ""),
                 "results_configuration": None,
             }
             return result
