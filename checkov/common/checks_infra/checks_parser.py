@@ -202,7 +202,10 @@ class GraphCheckParser(BaseGraphCheckParser):
     @staticmethod
     def _get_check_providers(raw_check: Dict[str, Any]) -> List[str]:
         providers = raw_check.get("scope", {}).get("provider", [""])
-        return [providers] if isinstance(providers, str) else providers
+        if isinstance(providers, list):
+            return providers
+        if isinstance(providers, str):
+            return [providers]
 
     def _parse_raw_check(self, raw_check: Dict[str, Any], resources_types: Optional[List[str]], providers: Optional[List[str]]) -> BaseGraphCheck:
         check = BaseGraphCheck()
