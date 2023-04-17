@@ -149,7 +149,7 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                                                                                          ""),
                             "package_name": package_name,
                             "package_version": package_version,
-                            "is_private_fix": record.vulnerability_details["is_private_fix"]
+                            "is_private_fix": record.vulnerability_details.get("is_private_fix", None)
                         }
                     )
                 elif record.check_name == SCA_LICENSE_CHECK_NAME:
@@ -355,9 +355,10 @@ def create_package_overview_table_part(
             package_version = cve["package_version"]
             package_alias = get_package_alias(package_name, package_version)
             is_root = package_alias == root_package_alias
-            is_public_overview = "(Public)" if not cve['is_private_fix'] else ""
-            compliant_version_overview = compliant_version + is_public_overview if compliant_version and compliant_version != UNFIXABLE_VERSION else compliant_version
+            is_public_overview = "(Public)" if not cve['is_private_fix'] and cve['is_private_fix'] is not None else ""
+            compliant_version_overview = ""
             if cve_idx == 0:
+                cur_compliant_version = compliant_version + is_public_overview if compliant_version and compliant_version != UNFIXABLE_VERSION else compliant_version
                 if not is_root:  # no cves on root package
                     package_table.add_row(
                         [
@@ -366,9 +367,11 @@ def create_package_overview_table_part(
                             "",
                             cve["root_package_version"],
                             "",
-                            compliant_version_overview,
+                            cur_compliant_version,
                         ]
                     )
+                else:
+                    compliant_version_overview = cur_compliant_version
 
             is_sub_dep_changed = previous_package != package_alias
             dep_sign = ""
