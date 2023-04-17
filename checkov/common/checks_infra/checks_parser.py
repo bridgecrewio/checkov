@@ -207,7 +207,7 @@ class GraphCheckParser(BaseGraphCheckParser):
         elif isinstance(providers, str):
             return [providers]
         else:
-            [""]
+            return [""]
 
     def _parse_raw_check(self, raw_check: Dict[str, Any], resources_types: Optional[List[str]], providers: Optional[List[str]]) -> BaseGraphCheck:
         check = BaseGraphCheck()
