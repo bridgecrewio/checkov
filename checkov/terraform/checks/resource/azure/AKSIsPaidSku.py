@@ -20,7 +20,7 @@ class AKSIsPaidSku(BaseResourceValueCheck):
         return "sku_tier"
 
     def get_expected_value(self) -> Any:
-        return "Paid"
+        return "Standard"
 
 
 check = AKSIsPaidSku()

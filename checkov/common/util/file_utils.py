@@ -76,9 +76,9 @@ def read_file_safe(file_path: str) -> str:
 def get_file_size_safe(file_path: str) -> int:
     try:
         return os.path.getsize(file_path)
-    except Exception:
+    except Exception as e:
         logging.warning(
-            "Could not obtain file size",
+            f"Could not obtain file size, {str(e)}",
             extra={"file_path": file_path}
         )
         return -1
