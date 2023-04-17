@@ -185,7 +185,7 @@ class GraphCheckParser(BaseGraphCheckParser):
         return True
 
     def parse_raw_check(self, raw_check: Dict[str, Dict[str, Any]], **kwargs: Any) -> BaseGraphCheck:
-        providers = [raw_check.get("scope", {}).get("provider", "").lower()]
+        providers = raw_check.get("scope", {}).get("provider", "").lower()
         policy_definition = raw_check.get("definition", {})
         check = self._parse_raw_check(policy_definition, kwargs.get("resources_types"), providers)
         check.id = raw_check.get("metadata", {}).get("id", "")
@@ -199,7 +199,7 @@ class GraphCheckParser(BaseGraphCheckParser):
 
         return check
 
-    def _parse_raw_check(self, raw_check: Dict[str, Any], resources_types: Optional[List[str]], providers: Optional[List[str]]) -> BaseGraphCheck:
+    def _parse_raw_check(self, raw_check: Dict[str, Any], resources_types: Optional[List[str]], providers: Optional[List[str] | str]) -> BaseGraphCheck:
         check = BaseGraphCheck()
         complex_operator = get_complex_operator(raw_check)
         if complex_operator:
