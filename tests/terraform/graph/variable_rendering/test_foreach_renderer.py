@@ -8,6 +8,7 @@ from checkov.common.util.json_utils import object_hook, CustomJSONEncoder
 from checkov.terraform.graph_builder.foreach.abstract_handler import ForeachAbstractHandler
 from checkov.terraform.graph_builder.foreach.builder import ForeachBuilder
 from checkov.terraform.graph_builder.foreach.resource_handler import ForeachResourceHandler
+from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
@@ -245,7 +246,9 @@ def test_update_attrs(attrs, k_v_to_change, expected_attrs, expected_res):
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
 def test_new_tf_parser_with_foreach_modules(checkov_source_path):
     dir_name = 'parser_dup_nested'
-    local_graph, tf_definitions = build_and_get_graph_by_path(dir_name, render_var=True)
+    local_graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
+    tf_definitions, _ = convert_graph_vertices_to_tf_definitions(vertices=local_graph.vertices, root_folder=dir_name)
+
     assert len(tf_definitions.keys()) == 14
     assert len([block for block in local_graph.vertices if block.block_type == 'resource']) == 8
     assert len([block for block in local_graph.vertices if block.block_type == 'module']) == 12
@@ -310,7 +313,8 @@ def test_new_tf_parser_with_foreach_modules(checkov_source_path):
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
 def test_tf_definitions_for_foreach_on_modules(checkov_source_path):
     dir_name = 'parser_dup_nested'
-    _, tf_definitions = build_and_get_graph_by_path(dir_name, render_var=True)
+    local_graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
+    tf_definitions, _ = convert_graph_vertices_to_tf_definitions(vertices=local_graph.vertices, root_folder=dir_name)
 
     file_path = os.path.join(os.path.dirname(__file__), 'expected_foreach_modules_tf_definitions.json')
     with open(file_path, 'r') as f:
@@ -327,7 +331,8 @@ def test_tf_definitions_for_foreach_on_modules(checkov_source_path):
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
 def test_foreach_module_in_second_level_module(checkov_source_path):
     dir_name = 'foreach_module'
-    graph, tf_definitions = build_and_get_graph_by_path(dir_name, render_var=True)
+    graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
+    tf_definitions, _ = convert_graph_vertices_to_tf_definitions(vertices=graph.vertices, root_folder=dir_name)
 
     assert len([block for block in graph.vertices if block.block_type == 'module']) == 10
     assert len([block for block in graph.vertices if block.block_type == 'resource']) == 8
@@ -339,7 +344,8 @@ def test_foreach_module_in_second_level_module(checkov_source_path):
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
 def test_foreach_module_in_both_levels_module(checkov_source_path):
     dir_name = 'foreach_module_dup_foreach'
-    graph, tf_definitions = build_and_get_graph_by_path(dir_name, render_var=True)
+    graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
+    tf_definitions, _ = convert_graph_vertices_to_tf_definitions(vertices=graph.vertices, root_folder=dir_name)
 
     assert len([block for block in graph.vertices if block.block_type == 'module']) == 20
     assert len([block for block in graph.vertices if block.block_type == 'resource']) == 16
@@ -351,7 +357,8 @@ def test_foreach_module_in_both_levels_module(checkov_source_path):
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
 def test_foreach_module_and_resource(checkov_source_path):
     dir_name = 'foreach_module_and_resource'
-    graph, tf_definitions = build_and_get_graph_by_path(dir_name, render_var=True)
+    graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
+    tf_definitions, _ = convert_graph_vertices_to_tf_definitions(vertices=graph.vertices, root_folder=dir_name)
 
     assert len([block for block in graph.vertices if block.block_type == 'module']) == 2
     assert len([block for block in graph.vertices if block.block_type == 'resource']) == 4
@@ -368,7 +375,8 @@ def test_foreach_module_and_resource(checkov_source_path):
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
 def test_foreach_module_with_more_than_two_resources(checkov_source_path):
     dir_name = 'foreach_module_with_more_than_two_resources'
-    graph, tf_definitions = build_and_get_graph_by_path(dir_name, render_var=True)
+    graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
+    tf_definitions, _ = convert_graph_vertices_to_tf_definitions(vertices=graph.vertices, root_folder=dir_name)
 
     assert len([block for block in graph.vertices if block.block_type == 'module']) == 16
     assert len([block for block in graph.vertices if block.block_type == 'resource']) == 14
