@@ -184,3 +184,16 @@ resource "aws_s3_bucket_lifecycle_configuration" "pass" {
     status = "Enabled"
   }
 }
+
+resource "aws_s3_bucket_lifecycle_configuration" "pass3" {
+  bucket = aws_s3_bucket.bucket.id
+
+  rule {
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
+    }
+    filter {}
+    id = "log"
+    status = "Enabled"
+  }
+}
