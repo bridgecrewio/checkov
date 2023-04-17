@@ -57,12 +57,12 @@ class ForeachModuleHandler(ForeachAbstractHandler):
             count = module_block.attributes.get(COUNT_STRING)
             if for_each:
                 for_each = self._handle_static_statement(module_idx, sub_graph)
-                if not self._is_static_statement(module_idx, sub_graph):
+                if not for_each and not self._is_static_statement(module_idx, sub_graph):
                     continue
                 self._duplicate_module_with_for_each(module_idx, for_each)
             elif count:
                 count = self._handle_static_statement(module_idx, sub_graph)
-                if not self._is_static_statement(module_idx, sub_graph):
+                if not count or not self._is_static_statement(module_idx, sub_graph):
                     continue
                 self._duplicate_module_with_count(module_idx, count)
         return self._get_modules_to_render(current_level)
