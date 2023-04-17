@@ -199,7 +199,8 @@ class Runner(BaseRunner[None]):
             for key, secret in secrets:
                 added_commit_hash, removed_commit_hash, code_line, added_by, removed_date, added_date = None, None, None, None, None, None
                 if runner_filter.enable_git_history_secret_scan:
-                    enriched_potential_secret = git_history_scanner.history_store.get_added_and_removed_commit_hash(key, secret)
+                    enriched_potential_secret = git_history_scanner.\
+                        history_store.get_added_and_removed_commit_hash(key, secret, root_folder)
                     added_commit_hash = enriched_potential_secret.get('added_commit_hash')
                     removed_commit_hash = enriched_potential_secret.get('removed_commit_hash')
                     code_line = enriched_potential_secret.get('code_line')

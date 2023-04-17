@@ -7,7 +7,7 @@ from typing import Dict, List
 from checkov.secrets.git_types import Commit, CommitMetadata
 
 
-def mock_git_repo_commits1(root_folder: str, last_commit_sha: str) -> List[Commit]:
+def mock_git_repo_commits1(self, root_folder: str, last_commit_sha: str) -> List[Commit]:
     """
         add secret (secret1 added) - +1
         move the secret to different line - 0
@@ -60,7 +60,7 @@ def mock_git_repo_commits1(root_folder: str, last_commit_sha: str) -> List[Commi
     return commits_mock
 
 
-def mock_git_repo_commits2(root_folder: str, last_commit_sha: str) -> List[Commit]:
+def mock_git_repo_commits2(self, root_folder: str, last_commit_sha: str) -> List[Commit]:
     """
         add secret (secret1 added) - +1
         move the secret to different line - 0
@@ -114,7 +114,7 @@ def mock_git_repo_commits2(root_folder: str, last_commit_sha: str) -> List[Commi
     return commits_mock
 
 
-def mock_git_repo_commits3(root_folder: str, last_commit_sha: str) -> List[Commit]:
+def mock_git_repo_commits3(self, root_folder: str, last_commit_sha: str) -> List[Commit]:
     """
             add secret (secret1 added) - +1
             move the secret to different line - 0
@@ -166,7 +166,7 @@ def mock_git_repo_commits3(root_folder: str, last_commit_sha: str) -> List[Commi
     return commits_mock
 
 
-def mock_git_repo_commits_remove_file(root_folder: str, last_commit_sha: str) -> List[Commit]:
+def mock_git_repo_commits_remove_file(self, root_folder: str, last_commit_sha: str) -> List[Commit]:
     commits_mock = [
         Commit(
             metadata=CommitMetadata(
@@ -196,7 +196,7 @@ def mock_git_repo_commits_remove_file(root_folder: str, last_commit_sha: str) ->
     return commits_mock
 
 
-def mock_remove_file_with_two_equal_secret(root_folder: str, last_commit_sha: str) -> List[Commit]:
+def mock_remove_file_with_two_equal_secret(self, root_folder: str, last_commit_sha: str) -> List[Commit]:
     commits_mock = [
         Commit(
             metadata=CommitMetadata(
@@ -226,7 +226,7 @@ def mock_remove_file_with_two_equal_secret(root_folder: str, last_commit_sha: st
     return commits_mock
 
 
-def mock_remove_file_with_two_secret(root_folder: str, last_commit_sha: str) -> List[Commit]:
+def mock_remove_file_with_two_secret(self, root_folder: str, last_commit_sha: str) -> List[Commit]:
     commits_mock = [
         Commit(
             metadata=CommitMetadata(
@@ -256,7 +256,7 @@ def mock_remove_file_with_two_secret(root_folder: str, last_commit_sha: str) -> 
     return commits_mock
 
 
-def mock_git_repo_commits_rename_file(root_folder: str, last_commit_sha: str) -> List[Commit]:
+def mock_git_repo_commits_rename_file(self, root_folder: str, last_commit_sha: str) -> List[Commit]:
     commits_mock = [
         Commit(
             metadata=CommitMetadata(
@@ -290,7 +290,7 @@ def mock_git_repo_commits_rename_file(root_folder: str, last_commit_sha: str) ->
     return commits_mock
 
 
-def mock_git_repo_commits_modify_and_rename_file(root_folder: str, last_commit_sha: str) -> List[Commit]:
+def mock_git_repo_commits_modify_and_rename_file(self, root_folder: str, last_commit_sha: str) -> List[Commit]:
     """
     when we rename a file and modify it in the same commit it will consider as deleting the old file and creating a new file
     add secret to file +1
@@ -318,7 +318,7 @@ def mock_git_repo_commits_modify_and_rename_file(root_folder: str, last_commit_s
     return commits_mock
 
 
-def mock_git_repo_multiline_json(root_folder: str, last_commit_sha: str) -> List[Commit]:
+def mock_git_repo_multiline_json(self, root_folder: str, last_commit_sha: str) -> List[Commit]:
     commits_mock = [
         Commit(
             metadata=CommitMetadata(
@@ -332,7 +332,7 @@ def mock_git_repo_multiline_json(root_folder: str, last_commit_sha: str) -> List
     return commits_mock
 
 
-def mock_git_repo_multiline_terraform(root_folder: str, last_commit_sha: str) -> List[Commit]:
+def mock_git_repo_multiline_terraform(self, root_folder: str, last_commit_sha: str) -> List[Commit]:
     commits_mock = [
         Commit(
             metadata=CommitMetadata(
@@ -346,7 +346,7 @@ def mock_git_repo_multiline_terraform(root_folder: str, last_commit_sha: str) ->
     return commits_mock
 
 
-def mock_git_repo_multiline_yml(root_folder: str, last_commit_sha: str) -> List[Commit]:
+def mock_git_repo_multiline_yml(self, root_folder: str, last_commit_sha: str) -> List[Commit]:
     commits_mock = [
         Commit(
             metadata=CommitMetadata(
@@ -384,7 +384,7 @@ def mock_case() -> Dict[str, str]:
     return random.choice(cases)
 
 
-def mock_git_repo_commits_too_much(root_folder: str, last_commit_sha: str) -> Dict[str, Dict[str, str]]:
+def mock_git_repo_commits_too_much(self, root_folder: str, last_commit_sha: str) -> Dict[str, Dict[str, str]]:
     res: Dict[str, Dict[str, str]] = {}
     keys = [get_random_string(40) for _i in range(10000)]
     for k in keys:
@@ -392,28 +392,12 @@ def mock_git_repo_commits_too_much(root_folder: str, last_commit_sha: str) -> Di
     return res
 
 
-def previous_run_for_history() -> str:
-    return """{"Dockerfile_d70eab08607a4d05faa2d0d6647206599e9abc65_AWS-Access-Key": [
-        {"added_commit_hash": "8a21fa691e17907afee57e93b7820c5943b12746",
-         "removed_commit_hash": "3d79bba03c6f0ddcfb8334f531701942c4be0f32",
-         "potential_secret": {"type": "AWS Access Key", "filename": "Dockerfile",
-                              "hashed_secret": "d70eab08607a4d05faa2d0d6647206599e9abc65", "is_verified": false,
-                              "line_number": 4, "is_added": false, "is_removed": true},
-         "code_line": "ENV AWS_ACCESS_KEY_ID=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"",
-         "added_by": "Cherry\ud83c\udf52", "removed_date": "2022-12-14T16:32:13+00:00",
-         "added_date": "2022-12-14T16:10:21+00:00"}],
-     "Dockerfile_d3ddda599442c7940ef18b3834c809d388dba7e5_AWS-Access-Key": [
-         {"added_commit_hash": "3d79bba03c6f0ddcfb8334f531701942c4be0f32",
-          "removed_commit_hash": "7dff3b21fc2563f51655f34f0d3601cdf79d0d5e",
-          "potential_secret": {"type": "AWS Access Key", "filename": "Dockerfile",
-                               "hashed_secret": "d3ddda599442c7940ef18b3834c809d388dba7e5", "is_verified": false,
-                               "line_number": 4, "is_added": false, "is_removed": true},
-          "code_line": "ENV AWS_ACCESS_KEY_ID=\"AKIAZZZZZZZZZZZZZZZZ\"", "added_by": "Cherry\ud83c\udf52",
-          "removed_date": "2022-12-14T16:54:05+00:00", "added_date": "2022-12-14T16:32:13+00:00"}],
-     "main.py_d3ddda599442c7940ef18b3834c809d388dba7e5_AWS-Access-Key": [
-         {"added_commit_hash": "6941281550a12659bdbe87c9a537f88124f78fac", "removed_commit_hash": "",
-          "potential_secret": {"type": "AWS Access Key", "filename": "main.py",
-                               "hashed_secret": "d3ddda599442c7940ef18b3834c809d388dba7e5", "is_verified": false,
-                               "line_number": 1, "is_added": true, "is_removed": false},
-          "code_line": "AWS_ACCESS_TOKEN=\"AKIAZZZZZZZZZZZZZZZZ\"", "added_by": "\ud83c\udf52Cherry\ud83c\udf52",
-          "removed_date": "", "added_date": "2022-12-14T16:57:26+00:00"}]}"""
+def mock_commit_with_keyword_combinator() -> List[Commit]:
+    return [Commit(
+            metadata=CommitMetadata(
+                commit_hash='8a21fa691e17907afee57e93b7820c5943b12746',
+                committer='Cherry🍒',
+                committed_datetime='2022-12-14T16:10:21+00:00'),
+            files={
+                'main.py': 'diff --git a/None b/main.py\nindex 0000..0000 0000\n--- a/None\n+++ b/main.py\n@@ -0,0 +1,4 @@\n+api_key = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMAAAKEY"\n+\n+if __name__ == "__main__":\n+    print(api_key)\n\\ No newline at end of file\n'}
+        )]

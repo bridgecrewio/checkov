@@ -451,17 +451,23 @@ class TestTerraformEvaluation(TestCase):
         expected = "11 Hours and 1 Minute(s)"
         self.assertEqual(expected, evaluate_terraform(input_str))
 
-    def test_handle_for_loop(self):
+    def test_handle_for_loop_in_dict(self):
         input_str = "{for val in [{'name': 'key3'},{'name': 'key4'}] : val.name => true}"
         expected = {'key3': 'true', 'key4': 'true'}
         self.assertEqual(expected, evaluate_terraform(input_str))
 
+    def test_handle_for_loop_in_list(self):
         input_str = "[for val in ['k', 'v'] : val]"
         expected = ['k', 'v']
         self.assertEqual(expected, evaluate_terraform(input_str))
 
         input_str = "{for val in ['k', 'v'] : val.name => true}"
         expected = "{for val in ['k', 'v'] : val.name :> true}"
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
+    def test_handle_for_loop_in_list_of_dicts(self):
+        input_str = "[for val in [{'name': 'raw', 'type': 'container'}, {'name': 'masked', 'type': 'blob'}] : {'name': '${val.name}', 'type': '${val.type}'}]"
+        expected = [{'name': 'raw', 'type': 'container'}, {'name': 'masked', 'type': 'blob'}]
         self.assertEqual(expected, evaluate_terraform(input_str))
 
     def test_base64_value(self):
