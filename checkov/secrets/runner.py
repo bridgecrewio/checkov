@@ -125,7 +125,12 @@ class Runner(BaseRunner[None]):
         # load runnable plugins
         customer_run_config = bc_integration.customer_run_config_response
         plugins_index = 0
-        work_path = str(os.getenv('WORKDIR', tempfile.gettempdir()))
+        work_dir_obj = None
+        work_path = str(os.getenv('WORKDIR')) if os.getenv('WORKDIR') else None
+        if work_path is None:
+            work_dir_obj = tempfile.TemporaryDirectory()
+            work_path = work_dir_obj.name
+
         if customer_run_config:
             policies_list = customer_run_config.get('secretsPolicies', [])
             if policies_list:
@@ -284,12 +289,21 @@ class Runner(BaseRunner[None]):
                 self.verify_secrets(report, enriched_secrets_s3_path)
             logging.debug(f'report fail checks len: {len(report.failed_checks)}')
 
-            self.cleanup_plugin_files(work_path, plugins_index)
+            self.cleanup_plugin_files(work_path, plugins_index, work_dir_obj)
             if runner_filter.skip_invalid_secrets:
                 self._modify_invalid_secrets_check_result_to_skipped(report)
             return report
 
-    def cleanup_plugin_files(self, work_path: str, amount: int) -> None:
+    def cleanup_plugin_files(
+            self,
+            work_path: str,
+            amount: int,
+            dir_obj: Optional[tempfile.TemporaryDirectory] = None
+    ) -> None:
+        if dir_obj is not None:
+            logging.info(f"Cleanup the whole temp directory")
+            dir_obj.cleanup()
+            return
         for index in range(1, amount):
             try:
                 os.remove(f"{work_path}/runnable_plugin_{index}.py")
