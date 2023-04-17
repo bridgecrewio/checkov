@@ -10,7 +10,7 @@ from checkov.common.parallelizer.parallel_runner import parallel_runner
 from detect_secrets.core import scan
 
 from checkov.secrets.git_history_store import GitHistorySecretStore, RawStore, RENAME_STR, FILE_RESULTS_STR
-from checkov.secrets.git_types import Commit, CommitMetadata, GIT_HISTORY_NOT_BEEN_REMOVED
+from checkov.secrets.git_types import Commit, CommitMetadata, GIT_HISTORY_NOT_BEEN_REMOVED, PROHIBITED_FILES
 
 if TYPE_CHECKING:
     from detect_secrets import SecretsCollection
@@ -24,7 +24,7 @@ except ImportError as e:
     git_import_error = e
 
 MIN_SPLIT = 100
-FILES_TO_IGNORE_IN_GIT_HISTORY = ('.md',)
+FILES_TO_IGNORE_IN_GIT_HISTORY = ('.md',) + PROHIBITED_FILES
 
 
 class GitHistoryScanner:
