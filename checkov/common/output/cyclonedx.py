@@ -46,6 +46,7 @@ from checkov.common.output.cyclonedx_consts import (
     BC_SEVERITY_TO_CYCLONEDX_LEVEL,
 )
 from checkov.common.output.record import SCA_PACKAGE_SCAN_CHECK_NAME
+from checkov.common.sca.commons import UNFIXABLE_VERSION
 from checkov.common.util.consts import CHECKOV_DISPLAY_REGISTRY_URL
 
 if sys.version_info >= (3, 8):
@@ -380,6 +381,10 @@ class CycloneDX:
             method = VulnerabilityScoreSource.get_from_vector(vector)
             vector = method.get_localised_vector(vector)
 
+        is_private_fix = resource.vulnerability_details.get("is_private_fix")
+        public_fix_version_prefix = "No private fix available. " if is_private_fix is False else ""
+        status = resource.vulnerability_details.get("status")
+        recommendation = public_fix_version_prefix + status if status and status != UNFIXABLE_VERSION else status
         vulnerability = Vulnerability(
             id=resource.vulnerability_details["id"],
             source=source,
@@ -393,7 +398,7 @@ class CycloneDX:
                 )
             ],
             description=resource.vulnerability_details.get("description"),
-            recommendation=resource.vulnerability_details.get("status"),
+            recommendation=recommendation,
             published=datetime.fromisoformat(resource.vulnerability_details["published_date"].replace("Z", "")),
             affects_targets=[BomTarget(ref=component.bom_ref.value)],
         )

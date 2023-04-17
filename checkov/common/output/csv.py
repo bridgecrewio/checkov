@@ -11,6 +11,7 @@ from checkov.common.models.enums import CheckResult
 from checkov.common.output.common import format_string_to_licenses, is_raw_formatted
 from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME
 from checkov.common.output.report import Report, CheckType
+from checkov.common.sca.commons import get_lowest_fix_version, UNFIXABLE_VERSION
 from checkov.common.util.consts import CHECKOV_DISPLAY_REGISTRY_URL
 
 if TYPE_CHECKING:
@@ -28,6 +29,7 @@ HEADER_OSS_PACKAGES = [
     "Severity",
     "Description",
     "Licenses",
+    "Fix Version"
 ]
 if CHECKOV_DISPLAY_REGISTRY_URL:
     HEADER_OSS_PACKAGES.append("Registry URL")
@@ -82,6 +84,10 @@ class CSVSBOM:
             CheckType.SCA_IMAGE: self.container_rows
         }
 
+        is_private_fix = resource.vulnerability_details.get("is_private_fix")
+        public_fix_version_suffix = " (Public)" if is_private_fix is False else ""
+        lowest_fix_version = get_lowest_fix_version(resource.vulnerability_details)
+        fix_version = lowest_fix_version + public_fix_version_suffix if lowest_fix_version and lowest_fix_version != UNFIXABLE_VERSION else lowest_fix_version
         csv_table[check_type].append(
             {
                 "Package": resource.vulnerability_details["package_name"],
@@ -93,6 +99,7 @@ class CSVSBOM:
                 "Severity": severity,
                 "Description": resource.vulnerability_details.get("description"),
                 "Licenses": resource.vulnerability_details.get("licenses"),
+                "Fix Version": fix_version
             }
         )
 

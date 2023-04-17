@@ -302,7 +302,8 @@ def add_to_reports_cves_and_packages(
     if is_dependency_tree_flow:
         add_to_reports_dependency_tree_cves(check_class, packages_map, licenses_per_package_map, packages, report,
                                             root_packages_list, rootless_file_path, runner_filter,
-                                            scanned_file_path, used_private_registry, scan_data_format, sca_details, report_type)
+                                            scanned_file_path, used_private_registry, scan_data_format, sca_details,
+                                            report_type)
     else:  # twistlock scan results.
         for vulnerability in vulnerabilities:
             package_name, package_version = vulnerability["packageName"], vulnerability["packageVersion"]
@@ -427,7 +428,7 @@ def add_cve_record_to_report(vulnerability_details: dict[str, Any], package_name
 
 
 def apply_inline_suppressions(
-    record: Record, vulnerability_details: dict[str, Any], inline_suppressions: _ScaSuppressions | None = None
+        record: Record, vulnerability_details: dict[str, Any], inline_suppressions: _ScaSuppressions | None = None
 ) -> bool:
     """Applies the inline suppression and returns an accomplish status"""
 
@@ -451,7 +452,8 @@ def apply_inline_suppressions(
                         }
                         return True
         if "cve" in inline_suppressions:
-            cve_suppression = inline_suppressions["cve"].get(vulnerability_details.get("cveId", vulnerability_details.get("id", "")))
+            cve_suppression = inline_suppressions["cve"].get(
+                vulnerability_details.get("cveId", vulnerability_details.get("id", "")))
             if cve_suppression:
                 record.check_result = {
                     "result": CheckResult.SKIPPED,
