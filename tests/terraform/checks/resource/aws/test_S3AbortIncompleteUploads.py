@@ -21,6 +21,7 @@ class TestS3AbortIncompleteUploads(unittest.TestCase):
         passing_resources = {
             "aws_s3_bucket_lifecycle_configuration.pass",
             "aws_s3_bucket_lifecycle_configuration.pass2",
+            "aws_s3_bucket_lifecycle_configuration.pass3",
         }
         failing_resources = {
             "aws_s3_bucket_lifecycle_configuration.fail",

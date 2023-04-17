@@ -18,7 +18,8 @@ from detect_secrets.plugins.base import BasePlugin
 
 from detect_secrets.util.filetype import determine_file_type
 from checkov.secrets.plugins.detector_utils import SINGLE_LINE_PARSER, MULTILINE_PARSERS, \
-    REGEX_VALUE_KEYWORD_BY_FILETYPE, REGEX_VALUE_SECRET_BY_FILETYPE, remove_fp_secrets_in_keys, detect_secret, analyze_multiline_keyword_combinator
+    REGEX_VALUE_KEYWORD_BY_FILETYPE, REGEX_VALUE_SECRET_BY_FILETYPE, remove_fp_secrets_in_keys, detect_secret, \
+    analyze_multiline_keyword_combinator
 
 from checkov.secrets.runner import SOURCE_CODE_EXTENSION
 
@@ -30,7 +31,6 @@ MAX_LINE_LENGTH = 10000
 MAX_KEYWORD_LIMIT = 500
 ENTROPY_KEYWORD_COMBINATOR_LIMIT = 3
 ENTROPY_KEYWORD_LIMIT = 4.5
-
 
 DENY_LIST_REGEX = r'|'.join(DENYLIST)
 # Support for suffix after keyword i.e. password_secure = "value"
