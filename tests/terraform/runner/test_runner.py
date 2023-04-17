@@ -39,18 +39,18 @@ from checkov.terraform.checks.data.registry import data_registry
 CUSTOM_GRAPH_CHECK_ID = 'CKV2_CUSTOM_1'
 EXTERNAL_MODULES_DOWNLOAD_PATH = os.environ.get('EXTERNAL_MODULES_DIR', DEFAULT_EXTERNAL_MODULES_DIR)
 
-#
-# @parameterized_class([
-#     {"db_connector": NetworkxConnector, "use_new_tf_parser": "True"},
-#     {"db_connector": NetworkxConnector, "use_new_tf_parser": "False"},
-#     {"db_connector": IgraphConnector, "use_new_tf_parser": "True"},
-#     {"db_connector": IgraphConnector, "use_new_tf_parser": "False"}
-# ])
+
+@parameterized_class([
+    {"db_connector": NetworkxConnector, "use_new_tf_parser": "True"},
+    {"db_connector": NetworkxConnector, "use_new_tf_parser": "False"},
+    {"db_connector": IgraphConnector, "use_new_tf_parser": "True"},
+    {"db_connector": IgraphConnector, "use_new_tf_parser": "False"}
+])
 class TestRunnerValid(unittest.TestCase):
     def setUp(self) -> None:
         self.orig_checks = resource_registry.checks
-        self.db_connector = IgraphConnector
-        os.environ["CHECKOV_NEW_TF_PARSER"] = "False"
+        self.db_connector = self.db_connector
+        os.environ["CHECKOV_NEW_TF_PARSER"] = self.use_new_tf_parser
 
     def tearDown(self):
         del os.environ["CHECKOV_NEW_TF_PARSER"]

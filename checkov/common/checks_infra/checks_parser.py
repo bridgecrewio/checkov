@@ -185,7 +185,7 @@ class GraphCheckParser(BaseGraphCheckParser):
         return True
 
     def parse_raw_check(self, raw_check: Dict[str, Dict[str, Any]], **kwargs: Any) -> BaseGraphCheck:
-        providers = raw_check.get("scope", {}).get("provider", "").lower()
+        providers = self._get_check_providers(raw_check)
         policy_definition = raw_check.get("definition", {})
         check = self._parse_raw_check(policy_definition, kwargs.get("resources_types"), providers)
         check.id = raw_check.get("metadata", {}).get("id", "")
@@ -199,7 +199,12 @@ class GraphCheckParser(BaseGraphCheckParser):
 
         return check
 
-    def _parse_raw_check(self, raw_check: Dict[str, Any], resources_types: Optional[List[str]], providers: Optional[List[str] | str]) -> BaseGraphCheck:
+    @staticmethod
+    def _get_check_providers(raw_check: Dict[str, Any]) -> List[str]:
+        providers = raw_check.get("scope", {}).get("provider", [""])
+        return [providers] if isinstance(providers, str) else providers
+
+    def _parse_raw_check(self, raw_check: Dict[str, Any], resources_types: Optional[List[str]], providers: Optional[List[str]]) -> BaseGraphCheck:
         check = BaseGraphCheck()
         complex_operator = get_complex_operator(raw_check)
         if complex_operator:
@@ -230,7 +235,8 @@ class GraphCheckParser(BaseGraphCheckParser):
             ):
                 check.resource_types = resources_types or []
             elif "provider" in resource_type and providers:
-                check.resource_types.append(f"provider.{providers}")
+                for provider in providers:
+                    check.resource_types.append(f"provider.{provider.lower()}")
             elif isinstance(resource_type, str):
                 #  for the case the "resource_types" value is a string, which can result in a silent exception
                 check.resource_types = [resource_type]
