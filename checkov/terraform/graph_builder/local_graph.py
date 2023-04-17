@@ -16,6 +16,7 @@ from checkov.common.graph.graph_builder.graph_components.attribute_names import 
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimmed_strings, filter_sub_keys
 from checkov.common.runners.base_runner import strtobool
+from checkov.common.util.consts import END_LINE, START_LINE
 from checkov.common.util.parser_utils import get_abs_path, get_tf_definition_key_from_module_dependency
 from checkov.common.util.type_forcers import force_int
 from checkov.terraform.graph_builder.foreach.builder import ForeachBuilder
@@ -83,7 +84,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             renderer.render_variables_from_local_graph()
             self.update_vertices_breadcrumbs_and_module_connections()
             self.update_nested_modules_address()
-            if strtobool(os.getenv("CHECKOV_EXPERIMENTAL_CROSS_VARIABLE_EDGES", "True")):
+            if True:
                 # experimental flag on building cross variable edges for terraform graph
                 logging.info("Building cross variable edges")
                 edges_count = len(self.edges)
@@ -209,7 +210,8 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         for origin_node_index, vertex in enumerate(self.vertices):
             self._build_edges_for_vertex(origin_node_index, vertex, aliases, resources_types)
 
-    def _build_edges_for_vertex(self, origin_node_index: int, vertex: TerraformBlock, aliases: Dict[str, Dict[str, BlockType]], resources_types: List[str], cross_variable_edges: bool = False, referenced_module: Optional[Dict[str, Any]] = None):
+    def _build_edges_for_vertex(self, origin_node_index: int, vertex: TerraformBlock, aliases: Dict[str, Dict[str, BlockType]],
+                                resources_types: List[str], cross_variable_edges: bool = False, referenced_module: Optional[Dict[str, Any]] = None):
         referenced_module_idx = referenced_module.get("idx") if referenced_module else None
         referenced_module_path = referenced_module.get("path") if referenced_module else None
         referenced_module_object = referenced_module.get("source_module_object") if referenced_module else None
@@ -235,8 +237,10 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                     if referenced_module is not None:
                         source_module_object = referenced_module_object if source_module_object else None
                         dest_node_index = self._find_vertex_index_relative_to_path(
-                            vertex_reference.block_type, reference_name, referenced_module_path, vertex.module_dependency,
-                            vertex.module_dependency_num, referenced_module_idx, source_module_object=source_module_object
+                            vertex_reference.block_type, reference_name, referenced_module_path,
+                            vertex.module_dependency,
+                            vertex.module_dependency_num, referenced_module_idx,
+                            source_module_object=source_module_object
                         )
                     elif vertex.module_dependency or hasattr(vertex, "source_module_object"):
                         dest_node_index = self._find_vertex_index_relative_to_path(
@@ -253,7 +257,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                             vertex_reference.block_type, reference_name, vertex.path, vertex.module_dependency,
                             vertex.module_dependency_num, source_module_object=source_module_object
                         )
-                    if dest_node_index > -1 and origin_node_index > -1:
+                    if dest_node_index > -1:
                         if vertex_reference.block_type == BlockType.MODULE:
                             try:
                                 self._connect_module(
@@ -267,30 +271,6 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                         else:
                             self._create_edge(origin_node_index, dest_node_index, attribute_key, cross_variable_edges)
                         break
-
-        if vertex.block_type == BlockType.MODULE and vertex.attributes.get('source') \
-                and isinstance(vertex.attributes.get('source')[0], str):
-            dest_module_path = self._get_dest_module_path(
-                curr_module_dir=self.get_dirname(vertex.path),
-                dest_module_source=vertex.attributes["source"][0],
-                dest_module_version=vertex.attributes.get("version", ["latest"])[0]
-            )
-            target_variables = self._get_target_variables(vertex, dest_module_path)
-            for attribute in vertex.attributes.keys():
-                if attribute in MODULE_RESERVED_ATTRIBUTES:
-                    continue
-                target_variable = next((v for v in target_variables if self.vertices[v].name == attribute), None)
-                if target_variable is not None:
-                    self._create_edge(target_variable, origin_node_index, "default", cross_variable_edges)
-        elif vertex.block_type == BlockType.TF_VARIABLE:
-            # Assuming the tfvars file is in the same directory as the variables file (best practice)
-            target_variables = [
-                index
-                for index in self.vertices_block_name_map.get(BlockType.VARIABLE, {}).get(vertex.name, [])
-                if self.get_dirname(self.vertices[index].path) == self.get_dirname(vertex.path)
-            ]
-            if len(target_variables) == 1:
-                self._create_edge(target_variables[0], origin_node_index, "default", cross_variable_edges)
 
     def _get_target_variables(self, vertex: TerraformBlock, dest_module_path: str) -> list[int]:
         if self.use_new_tf_parser:
@@ -311,17 +291,20 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             ]
 
     def _build_cross_variable_edges(self):
-        target_nodes_indexes = [v for v, referenced_vertices in self.out_edges.items() if
-                                self.vertices[v].block_type == BlockType.RESOURCE and any(
-            self.vertices[e.dest].block_type != BlockType.RESOURCE for e in referenced_vertices)]
+        # target_nodes_indexes = [v for v, referenced_vertices in self.out_edges.items() if
+        #                         self.vertices[v].block_type == BlockType.RESOURCE and any(
+        #     self.vertices[e.dest].block_type != BlockType.RESOURCE for e in referenced_vertices)]
         aliases = self._get_aliases()
         resources_types = self.get_resources_types_in_graph()
-        for origin_node_index in target_nodes_indexes:
-            vertex = self.vertices[origin_node_index]
-            self._build_edges_for_vertex(origin_node_index, vertex, aliases, resources_types, True)
-            modules = vertex.breadcrumbs.get(CustomAttributes.SOURCE_MODULE, [])
-            for module in modules:
-                self._build_edges_for_vertex(origin_node_index, vertex, aliases, resources_types, True, module)
+        for v, referenced_vertices in self.out_edges.items():
+            if self.vertices[v].block_type == BlockType.RESOURCE and any(
+            self.vertices[e.dest].block_type != BlockType.RESOURCE for e in referenced_vertices):
+                origin_node_index = v
+                vertex = self.vertices[origin_node_index]
+                self._build_edges_for_vertex(origin_node_index, vertex, aliases, resources_types, True)
+                modules = vertex.breadcrumbs.get(CustomAttributes.SOURCE_MODULE, [])
+                for module in modules:
+                    self._build_edges_for_vertex(origin_node_index, vertex, aliases, resources_types, True, module)
 
     def _create_edge(self, origin_vertex_index: int, dest_vertex_index: int, label: str,
                      cross_variable_edges: bool = False) -> bool:
