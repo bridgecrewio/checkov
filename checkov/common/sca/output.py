@@ -531,7 +531,7 @@ def add_to_report_sca_data(
         vulnerabilities: list[dict[str, Any]],
         packages: list[dict[str, Any]],
         license_statuses: list[_LicenseStatus],
-        used_private_registry: bool,
+        used_private_registry: bool = False,
         dependencies: dict[str, list[int]] | None = None,
         sca_details: SCADetails | None = None,
         report_type: str | None = None,
