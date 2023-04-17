@@ -23,4 +23,4 @@ class BaseHelmProvider(BaseKubernetesProvider):
 
     def _get_resource_path(self, resource: dict[str, Any]) -> str:
         k8s_path = resource.get(CustomAttributes.FILE_PATH, "")
-        return k8s_path.replace(self.temp_root_dir, self.original_root_dir, 1)
+        return str(k8s_path.replace(self.temp_root_dir, self.original_root_dir, 1))
