@@ -363,7 +363,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
 
         self.assertEqual(report.get_summary()["failed"], 4)
-        self.assertEqual(report.get_summary()["passed"], 0)
+        self.assertEqual(report.get_summary()["passed"], 1)
 
         failed_check_ids = set([c.check_id for c in report.failed_checks])
         expected_failed_check_ids = {
