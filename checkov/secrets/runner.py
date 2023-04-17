@@ -298,7 +298,7 @@ class Runner(BaseRunner[None]):
             self,
             work_path: str,
             amount: int,
-            dir_obj: Optional[tempfile.TemporaryDirectory] = None
+            dir_obj: Optional[tempfile.TemporaryDirectory[Any]] = None
     ) -> None:
         if dir_obj is not None:
             logging.info(f"Cleanup the whole temp directory: {work_path}")
