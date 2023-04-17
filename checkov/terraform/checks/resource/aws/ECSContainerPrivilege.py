@@ -28,6 +28,13 @@ class ECSContainerPrivilege(BaseResourceCheck):
                         self.evaluated_keys = [f"container_definitions/[0]/[{idx}]/privilege"]
                         return CheckResult.FAILED
                 return CheckResult.PASSED
+            elif isinstance(containers, dict):
+                # TF plan file case
+                for idx, container in enumerate(container_definitions):
+                    if isinstance(container, dict) and container.get("privilege"):
+                        self.evaluated_keys = [f"container_definitions/[{idx}]/privilege"]
+                        return CheckResult.FAILED
+                return CheckResult.PASSED
 
         return CheckResult.UNKNOWN
 
