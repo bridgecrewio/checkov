@@ -298,7 +298,7 @@ class TestRunnerValid(unittest.TestCase):
         # If more eks checks are added then this number will need to increase correspondingly to reflect
         # This reasoning holds for all current pass/fails in these tests
         self.assertEqual(report.get_summary()["failed"], 4)
-        self.assertEqual(report.get_summary()["passed"], 0)
+        self.assertEqual(report.get_summary()["passed"], 1)
 
         failed_check_ids = set([c.check_id for c in report.failed_checks])
         expected_failed_check_ids = {
