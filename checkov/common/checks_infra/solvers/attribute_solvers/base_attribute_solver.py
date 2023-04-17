@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     from bc_jsonpath_ng import JSONPath
     from checkov.common.typing import LibraryGraph
 
-SUPPORTED_BLOCK_TYPES = {BlockType.RESOURCE, TerraformBlockType.DATA, TerraformBlockType.MODULE}
+SUPPORTED_BLOCK_TYPES = {BlockType.RESOURCE, TerraformBlockType.DATA, TerraformBlockType.MODULE, TerraformBlockType.PROVIDER}
 WILDCARD_PATTERN = re.compile(r"(\S+[.][*][.]*)+")
 
 
