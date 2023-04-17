@@ -20,7 +20,7 @@ class TestGraphBuilder(TestCase):
         graph, tf_definitions = graph_manager.build_graph_from_source_directory(resources_dir)
 
         expected_num_of_var_nodes = 3
-        expected_num_of_locals_nodes = 3
+        expected_num_of_locals_nodes = 1
         expected_num_of_resources_nodes = 1
         expected_num_of_provider_nodes = 1
         vertices_by_block_type = graph.vertices_by_block_type
