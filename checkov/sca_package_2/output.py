@@ -145,9 +145,11 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                             "fixed_version": record.vulnerability_details["lowest_fixed_version"],
                             "root_package_name": record.vulnerability_details["root_package_name"],
                             "root_package_version": record.vulnerability_details["root_package_version"],
-                            "root_package_fix_version": record.vulnerability_details.get("root_package_fix_version", ""),
+                            "root_package_fix_version": record.vulnerability_details.get("root_package_fix_version",
+                                                                                         ""),
                             "package_name": package_name,
                             "package_version": package_version,
+                            "is_private_fix": record.vulnerability_details.get("is_private_fix", None)
                         }
                     )
                 elif record.check_name == SCA_LICENSE_CHECK_NAME:
@@ -163,7 +165,8 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                     )
 
             if root_package_alias in package_cves_details_map:
-                package_cves_details_map[root_package_alias]["cves"].sort(key=compare_table_items_severity, reverse=True)
+                package_cves_details_map[root_package_alias]["cves"].sort(key=compare_table_items_severity,
+                                                                          reverse=True)
                 package_cves_details_map[root_package_alias]["compliant_version"] = calculate_lowest_compliant_version(
                     fix_versions_lists)
 
@@ -347,12 +350,15 @@ def create_package_overview_table_part(
                                                details['cves'][-1]['package_version'])
         previous_package = ""
         for cve_idx, cve in enumerate(details["cves"]):
-            compliant_version = ""
+            compliant_version = details.get("compliant_version", "")
             package_name = cve["package_name"]
             package_version = cve["package_version"]
             package_alias = get_package_alias(package_name, package_version)
             is_root = package_alias == root_package_alias
+            is_public_overview = "(Public)" if not cve['is_private_fix'] and cve['is_private_fix'] is not None else ""
+            compliant_version_overview = ""
             if cve_idx == 0:
+                cur_compliant_version = compliant_version + is_public_overview if compliant_version and compliant_version != UNFIXABLE_VERSION else compliant_version
                 if not is_root:  # no cves on root package
                     package_table.add_row(
                         [
@@ -361,11 +367,11 @@ def create_package_overview_table_part(
                             "",
                             cve["root_package_version"],
                             "",
-                            details.get("compliant_version", ""),
+                            cur_compliant_version,
                         ]
                     )
                 else:
-                    compliant_version = details["compliant_version"]
+                    compliant_version_overview = cur_compliant_version
 
             is_sub_dep_changed = previous_package != package_alias
             dep_sign = ""
@@ -376,10 +382,9 @@ def create_package_overview_table_part(
                     else:
                         dep_sign = package_table.left_junction_char + package_table.horizontal_char
                 else:
-                    if last_package_alias == package_alias:
-                        dep_sign = ""
-                    else:
+                    if last_package_alias != package_alias:
                         dep_sign = package_table.vertical_char
+
             package_name_col_val = ""
             if is_sub_dep_changed:
                 if dep_sign:
@@ -389,14 +394,16 @@ def create_package_overview_table_part(
             elif dep_sign:
                 package_name_col_val = dep_sign
 
+            fix_version = cve["fixed_version"] if is_root else cve.get("root_package_fix_version", "")
+            fix_version_overview = fix_version + is_public_overview if fix_version and fix_version != UNFIXABLE_VERSION else fix_version
             package_table.add_row(
                 [
                     package_name_col_val,
                     cve["id"],
                     cve["severity"],
                     package_version if is_sub_dep_changed else "",
-                    cve["fixed_version"] if is_root else cve.get("root_package_fix_version", ""),
-                    compliant_version
+                    fix_version_overview,
+                    compliant_version_overview
                 ]
             )
 
