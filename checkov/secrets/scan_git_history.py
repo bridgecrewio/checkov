@@ -46,18 +46,18 @@ class GitHistoryScanner:
         timeout_class = ThreadingTimeout if platform.system() == 'Windows' else SignalTimeout
         # mark the scan to finish within the timeout
         with timeout_class(self.timeout) as to_ctx_mgr:
-            self._scan_history(last_commit_scanned)
+            scanned = self._scan_history(last_commit_scanned)
         if to_ctx_mgr.state == to_ctx_mgr.TIMED_OUT:
             logging.info(f"timeout reached ({self.timeout}), stopping scan.")
             return False
         # else: everything was OK
-        return True
+        return scanned
 
-    def _scan_history(self, last_commit_scanned: Optional[str] = '') -> None:
+    def _scan_history(self, last_commit_scanned: Optional[str] = '') -> bool:
         # commits_diff = self._get_commits_diff(self.root_folder, last_commit_sha=last_commit_scanned)
         self.commits_diff = self._get_commits_diff(self.root_folder, last_commit_sha=last_commit_scanned)
         if not self.commits_diff:
-            return
+            return False
         logging.info(f"[_scan_history] got {len(self.commits_diff)} files diffs in {self.commits_count} commits")
         if len(self.commits_diff) > MIN_SPLIT:
             logging.info("[_scan_history] starting parallel scan")
@@ -66,6 +66,8 @@ class GitHistoryScanner:
             logging.info("[_scan_history] starting single scan")
             self.raw_store = self._run_scan_one_bulk(self.commits_diff)
 
+        if not self.raw_store:  # scanned nothing
+            return False
         self._process_raw_store()
         self._create_secret_collection()
 
@@ -157,8 +159,6 @@ class GitHistoryScanner:
         return self.commits_diff
 
     def _run_scan_parallel(self, commits_diff: List[Commit]) -> None:
-        if not commits_diff:
-            return
         results = parallel_runner.run_function(GitHistoryScanner._run_scan_one_bulk, commits_diff)
 
         for result in results:

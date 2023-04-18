@@ -148,7 +148,7 @@ def test_scan_history_secrets_timeout() -> None:
         'plugins_used': plugins_used
     }) as settings:
         settings.disable_filters(*['detect_secrets.filters.common.is_invalid_file'])
-        finished = GitHistoryScanner(valid_dir_path, secrets, None, 1).scan_history()
+        finished = GitHistoryScanner(valid_dir_path, secrets, None, 0.1).scan_history()
 
     assert finished is False
 
