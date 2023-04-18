@@ -124,6 +124,7 @@ def test_new_resources_count():
     assert main_count_resource in vertices_names
 
     foreach_builder = ForeachBuilder(local_graph)
+    foreach_builder._module_handler.local_graph.enable_foreach_handling = True
     foreach_builder.handle({'resource': [3], 'module': []})
     for i, resource in enumerate([local_graph.vertices[1], local_graph.vertices[6], local_graph.vertices[7]]):
         assert resource.name.endswith(f"[{i}]")
@@ -138,6 +139,7 @@ def test_new_resources_foreach():
     dir_name = 'foreach_examples/foreach_dup_resources'
     local_graph = build_and_get_graph_by_path(dir_name)[0]
     foreach_builder = ForeachBuilder(local_graph)
+    foreach_builder._module_handler.local_graph.enable_foreach_handling = True
     foreach_builder.handle({'resource': [0, 1], 'module': []})
     for resource in [local_graph.vertices[0], local_graph.vertices[1], local_graph.vertices[5], local_graph.vertices[6]]:
         assert resource.name.endswith("[\"bucket_a\"]") or resource.name.endswith("[\"bucket_b\"]")
