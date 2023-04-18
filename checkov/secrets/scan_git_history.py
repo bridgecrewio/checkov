@@ -70,6 +70,7 @@ class GitHistoryScanner:
             return False
         self._process_raw_store()
         self._create_secret_collection()
+        return True
 
     def _process_raw_store(self) -> None:
         for raw_res in self.raw_store:
