@@ -381,7 +381,7 @@ class CycloneDX:
             method = VulnerabilityScoreSource.get_from_vector(vector)
             vector = method.get_localised_vector(vector)
 
-        fix_version = self.get_fix_version(resource)
+        fix_version = self.get_fix_version(resource.vulnerability_details)
         vulnerability = Vulnerability(
             id=resource.vulnerability_details["id"],
             source=source,
@@ -401,10 +401,10 @@ class CycloneDX:
         )
         return vulnerability
 
-    def get_fix_version(self, resource: Record) -> str | None:
-        is_private_fix = resource.vulnerability_details.get("is_private_fix")
+    def get_fix_version(self, vulnerability_details: dict[str, Any]) -> str | None:
+        is_private_fix = vulnerability_details.get("is_private_fix")
         public_fix_version_prefix = "No private fix available. " if is_private_fix is False else ""
-        status: str | None = resource.vulnerability_details.get("status")
+        status: str | None = vulnerability_details.get("status")
         fix_version = public_fix_version_prefix + status if status and status != UNFIXABLE_VERSION else status
         return fix_version
 

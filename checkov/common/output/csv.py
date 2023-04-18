@@ -84,7 +84,7 @@ class CSVSBOM:
             CheckType.SCA_IMAGE: self.container_rows
         }
 
-        fix_version = self.get_fix_version(resource)
+        fix_version = self.get_fix_version(resource.vulnerability_details)
         csv_table[check_type].append(
             {
                 "Package": resource.vulnerability_details["package_name"],
@@ -104,10 +104,10 @@ class CSVSBOM:
         if CHECKOV_DISPLAY_REGISTRY_URL:
             csv_table[check_type][-1]["Registry URL"] = registry_url
 
-    def get_fix_version(self, resource: Record) -> str:
-        is_private_fix = resource.vulnerability_details.get("is_private_fix")
+    def get_fix_version(self, vulnerability_details: dict[str, Any]) -> str:
+        is_private_fix = vulnerability_details.get("is_private_fix")
         public_fix_version_suffix = " (Public)" if is_private_fix is False else ""
-        lowest_fix_version: str = get_lowest_fix_version(resource.vulnerability_details)
+        lowest_fix_version: str = get_lowest_fix_version(vulnerability_details)
         fix_version = lowest_fix_version + public_fix_version_suffix if lowest_fix_version and lowest_fix_version != UNFIXABLE_VERSION else lowest_fix_version
         return fix_version
 
