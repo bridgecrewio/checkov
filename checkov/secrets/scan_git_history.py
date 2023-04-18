@@ -232,7 +232,6 @@ class GitHistoryScanner:
 
         # create all the folders first
         for item in first_commit.tree.traverse():
-            # check if item is a file
             if item.type == 'blob':
                 file_data = item.data_stream.read()
                 with open(os.path.join(tmp_git_history_dir, item.path), 'wb') as f:
@@ -242,9 +241,11 @@ class GitHistoryScanner:
 
         # Get the content of each file changed in the first commit
         for file_name in files_changed:
-            file_path = str(tmp_git_history_dir / file_name)
-            file_results = [*scan.scan_file(file_path)]
             file_content = self.repo.git.show('{}:{}'.format(first_commit, file_name))
+            file_path = str(tmp_git_history_dir / file_name)
+            # file_diff = f"--- ''\n+++ {file_path}\n@@ -1 +0,0 @@\n-{file_content}\n"
+            # file_results = [*scan.scan_diff(file_diff)]
+            file_results = [*scan.scan_file(file_path)]
             if file_results:
                 for potential_secret in file_results:
                     potential_secret.is_added = True
