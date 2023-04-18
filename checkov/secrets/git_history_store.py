@@ -60,7 +60,7 @@ class GitHistorySecretStore:
                                                                        'removed_commit_hash': '',
                                                                        'removed_date': ''})
                 return
-        code_line = search_for_code_line(commit.files.get(secret.filename, ''), secret.secret_value, secret.is_added)
+        code_line = search_for_code_line(commit.files[secret.filename], secret.secret_value, secret.is_added, first_commit=commit.is_first)
         enriched_potential_secret: EnrichedPotentialSecret = {
             'added_commit_hash': commit.metadata.commit_hash,
             'removed_commit_hash': '',
@@ -156,16 +156,21 @@ class GitHistorySecretStore:
             return {}
 
 
-def search_for_code_line(commit_diff: CommitDiff, secret_value: Optional[str], is_added: Optional[bool]) -> str:
+def search_for_code_line(commit_diff: CommitDiff, secret_value: Optional[str], is_added: Optional[bool], first_commit: Optional[bool]) -> str:
     if not commit_diff:
         logging.warning(f'missing file name for {commit_diff}, hence no available code line')
     if secret_value is None:
         return ''
     splitted = commit_diff.split('\n')
-    start_char = '+' if is_added else '-'
-    for line in splitted:
-        if line.startswith(start_char) and secret_value in line:
-            return line[1:].strip()  # remove +/- in the beginning & spaces
+    if first_commit:
+        for line in splitted:
+            if secret_value in line:
+                return line.strip()  # remove +/- in the beginning & spaces
+    else:
+        start_char = '+' if is_added else '-'
+        for line in splitted:
+            if line.startswith(start_char) and secret_value in line:
+                return line[1:].strip()  # remove +/- in the beginning & spaces
     return ''  # not found
 
 

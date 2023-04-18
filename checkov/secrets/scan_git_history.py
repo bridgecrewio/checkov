@@ -3,6 +3,8 @@ from __future__ import annotations
 import logging
 import os
 import platform
+import shutil
+from pathlib import Path
 
 from typing import TYPE_CHECKING, Optional, List, Tuple
 from checkov.common.util.stopit import ThreadingTimeout, SignalTimeout, TimeoutException
@@ -40,12 +42,17 @@ class GitHistoryScanner:
         self.history_store: GitHistorySecretStore = history_store or GitHistorySecretStore()
         self.raw_store: List[RawStore] = []
         self.commits_diff: List[Commit] = []
+        self.repo = None
 
     def scan_history(self, last_commit_scanned: Optional[str] = '') -> bool:
         """return true if the scan finished without timeout"""
         timeout_class = ThreadingTimeout if platform.system() == 'Windows' else SignalTimeout
         # mark the scan to finish within the timeout
         with timeout_class(self.timeout) as to_ctx_mgr:
+            if not self.set_repo():
+                logging.info(f"Couldn't set git repo. Cannot proceed with git history scan.")
+                return False
+            self._scan_first_commit()
             scanned = self._scan_history(last_commit_scanned)
         if to_ctx_mgr.state == to_ctx_mgr.TIMED_OUT:
             logging.info(f"timeout reached ({self.timeout}), stopping scan.")
@@ -54,9 +61,8 @@ class GitHistoryScanner:
         return scanned
 
     def _scan_history(self, last_commit_scanned: Optional[str] = '') -> bool:
-        # commits_diff = self._get_commits_diff(self.root_folder, last_commit_sha=last_commit_scanned)
         self.commits_diff = self._get_commits_diff(self.root_folder, last_commit_sha=last_commit_scanned)
-        if not self.commits_diff:
+        if self.commits_diff is None:
             return False
         logging.info(f"[_scan_history] got {len(self.commits_diff)} files diffs in {self.commits_count} commits")
         if self.commits_count > MIN_SPLIT:
@@ -64,7 +70,7 @@ class GitHistoryScanner:
             self._run_scan_parallel(self.commits_diff)
         else:
             logging.info("[_scan_history] starting single scan")
-            self.raw_store = self._run_scan_one_bulk(self.commits_diff)
+            self.raw_store.extend(self._run_scan_one_bulk(self.commits_diff))
 
         if not self.raw_store:  # scanned nothing
             return False
@@ -92,6 +98,19 @@ class GitHistoryScanner:
                 self.secrets[key].add(secret_data["potential_secret"])
         logging.info(f"Created secret collection for {len(self.history_store.secrets_by_file_value_type)} secrets")
 
+    def set_repo(self, root_folder: str | None = None) -> bool:
+        if not root_folder:
+            root_folder = self.root_folder
+        if git_import_error is not None:
+            logging.warning(f"Unable to load git module (is the git executable available?) {git_import_error}")
+            return False
+        try:
+            self.repo = git.Repo(root_folder)
+            return True
+        except Exception as e:
+            logging.error(f"Folder {root_folder} is not a GIT project {e}")
+            return False
+
     @time_it
     def _get_commits_diff(self, root_folder: str, last_commit_sha: Optional[str] = None) -> List[Commit]:
         """
@@ -99,19 +118,11 @@ class GitHistoryScanner:
         return the commits from the revision of param to the current head
         """
         logging.info("[_get_commits_diff] started")
-        if git_import_error is not None:
-            logging.warning(f"Unable to load git module (is the git executable available?) {git_import_error}")
-            return self.commits_diff
-        try:
-            repo = git.Repo(root_folder)
-        except Exception as e:
-            logging.error(f"Folder {root_folder} is not a GIT project {e}")
-            return self.commits_diff
         if last_commit_sha:
-            curr_rev = repo.head.commit.hexsha
-            commits = list(repo.iter_commits(last_commit_sha + '..' + curr_rev))
+            curr_rev = self.repo.head.commit.hexsha
+            commits = list(self.repo.iter_commits(last_commit_sha + '..' + curr_rev))
         else:
-            commits = list(repo.iter_commits(repo.active_branch))
+            commits = list(self.repo.iter_commits(self.repo.active_branch))
         GitHistoryScanner.commits_count = len(commits)
         for previous_commit_idx in range(GitHistoryScanner.commits_count - 1, 0, -1):
             try:
@@ -200,3 +211,49 @@ class GitHistoryScanner:
                                     rename_from=rename_from, rename_to=rename_to))
             scanned_file_count += 1
         return results, scanned_file_count
+
+    def _scan_first_commit(self):
+        first_commit_sha = self.repo.git.log('--format=%H', '--max-parents=0', 'HEAD').split()[0]
+        first_commit = self.repo.commit(first_commit_sha)
+        files_changed = self.repo.git.show('--pretty=format:', '--name-only', first_commit).splitlines()
+
+        commit_diff: Commit = Commit(
+            metadata=CommitMetadata(
+                commit_hash=first_commit.hexsha,
+                committer=first_commit.committer.name or '',
+                committed_datetime=first_commit.committed_datetime.isoformat()
+            ),
+            is_first=True
+        )
+
+        tmp_git_history_dir = Path(__file__).parent / 'tmp_git_history'
+        if not os.path.exists(tmp_git_history_dir):
+            os.makedirs(tmp_git_history_dir, exist_ok=True)
+
+        # create all the folders first
+        for item in first_commit.tree.traverse():
+            # check if item is a file
+            if item.type == 'blob':
+                file_data = item.data_stream.read()
+                with open(os.path.join(tmp_git_history_dir, item.path), 'wb') as f:
+                    f.write(file_data)
+            elif item.type == 'tree':
+                os.makedirs(os.path.join(tmp_git_history_dir, item.path), exist_ok=True)
+
+        # Get the content of each file changed in the first commit
+        for file_name in files_changed:
+            file_path = str(tmp_git_history_dir / file_name)
+            file_results = [*scan.scan_file(file_path)]
+            file_content = self.repo.git.show('{}:{}'.format(first_commit, file_name))
+            if file_results:
+                for potential_secret in file_results:
+                    potential_secret.is_added = True
+                logging.info(
+                    f"Found {len(file_results)} secrets in file path {file_name} in first commit {first_commit_sha}")
+
+                commit_diff.add_file(filename=file_path, commit_diff=file_content)
+                self.raw_store.append(RawStore(file_results=file_results, file_name=file_path, commit=commit_diff,
+                                               type=FILE_RESULTS_STR, rename_from='', rename_to=''))
+
+        if os.path.exists(tmp_git_history_dir):
+            shutil.rmtree(tmp_git_history_dir)

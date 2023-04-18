@@ -25,17 +25,19 @@ class RenamedFile(TypedDict):
 
 
 class Commit:
-    __slots__ = ("metadata", "files", "renamed_files")
+    __slots__ = ("metadata", "files", "renamed_files", "is_first")
 
     def __init__(
             self,
             metadata: CommitMetadata,
             files: dict[str, CommitDiff] | None = None,
-            renamed_files: dict[str, RenamedFile] | None = None
+            renamed_files: dict[str, RenamedFile] | None = None,
+            is_first: bool = False
     ):
         self.metadata: CommitMetadata = metadata
         self.files: dict[str, CommitDiff] = files or {}
         self.renamed_files: dict[str, RenamedFile] = renamed_files or {}
+        self.is_first = is_first
 
     def is_empty(self) -> bool:
         return not bool(self.files or self.renamed_files)
