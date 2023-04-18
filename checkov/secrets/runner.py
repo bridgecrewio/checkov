@@ -43,7 +43,7 @@ from checkov.secrets.consts import ValidationStatus, VerifySecretsResult
 from checkov.secrets.coordinator import EnrichedSecret, SecretsCoordinator
 from checkov.secrets.plugins.load_detectors import get_runnable_plugins
 from checkov.secrets.git_history_store import GitHistorySecretStore
-from checkov.secrets.git_types import EnrichedPotentialSecret
+from checkov.secrets.git_types import EnrichedPotentialSecret, PROHIBITED_FILES
 from checkov.secrets.scan_git_history import GitHistoryScanner
 
 if TYPE_CHECKING:
@@ -75,7 +75,6 @@ SECRET_TYPE_TO_ID = {
 }
 CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 
-PROHIBITED_FILES = ['Pipfile.lock', 'yarn.lock', 'package-lock.json', 'requirements.txt']
 
 MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is default limit
 
