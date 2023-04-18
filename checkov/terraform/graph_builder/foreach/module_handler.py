@@ -207,9 +207,12 @@ class ForeachModuleHandler(ForeachAbstractHandler):
                                          new_resource_module_key: TFModule | None = None) -> None:
         if new_resource is None:
             new_resource = deepcopy(main_resource)
+            new_resource_name = new_resource.name
             new_resource_module_key = TFModule(new_resource.path, new_resource.name, new_resource.source_module_object,
                                                new_resource.for_each_index)
             del new_resource
+        else:
+            new_resource_name = new_resource.name
 
         new_resource_vertex_idx = len(self.local_graph.vertices) - 1
         original_vertex_source_module = self.local_graph.vertices[resource_idx].source_module_object
@@ -222,10 +225,10 @@ class ForeachModuleHandler(ForeachAbstractHandler):
         else:
             source_module_key = None
         self.local_graph.vertices_by_module_dependency[source_module_key][BlockType.MODULE].append(new_resource_vertex_idx)
-        self.local_graph.vertices_by_module_dependency_by_name[source_module_key][BlockType.MODULE][original_vertex_source_module.name].append(new_resource_vertex_idx)
+        self.local_graph.vertices_by_module_dependency_by_name[source_module_key][BlockType.MODULE][new_resource_name].append(new_resource_vertex_idx)
         new_vertices_module_value = self._add_new_vertices_for_module(new_resource_module_key, main_resource_module_value, new_resource_vertex_idx)
         self.local_graph.vertices_by_module_dependency.update({new_resource_module_key: new_vertices_module_value})
-        self.local_graph.vertices_by_module_dependency_by_name.update({new_resource_module_key: {new_resource.name: new_vertices_module_value}})
+        self.local_graph.vertices_by_module_dependency_by_name.update({new_resource_module_key: {new_resource_name: new_vertices_module_value}})
 
     def _add_new_vertices_for_module(self, new_module_key: TFModule, new_module_value: dict[str, list[int]],
                                      new_resource_vertex_idx: int) -> dict[str, list[int]]:
