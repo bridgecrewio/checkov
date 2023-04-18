@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import logging
 import os
+import platform
 
 from typing import TYPE_CHECKING, Optional, List, Tuple
-from checkov.common.util.stopit import ThreadingTimeout
+from checkov.common.util.stopit import ThreadingTimeout, SignalTimeout, TimeoutException
 from checkov.common.util.decorators import time_it
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from detect_secrets.core import scan
@@ -42,8 +43,9 @@ class GitHistoryScanner:
 
     def scan_history(self, last_commit_scanned: Optional[str] = '') -> bool:
         """return true if the scan finished without timeout"""
+        timeout_class = ThreadingTimeout if platform.system() == 'Windows' else SignalTimeout
         # mark the scan to finish within the timeout
-        with ThreadingTimeout(self.timeout) as to_ctx_mgr:
+        with timeout_class(self.timeout) as to_ctx_mgr:
             self._scan_history(last_commit_scanned)
         if to_ctx_mgr.state == to_ctx_mgr.TIMED_OUT:
             logging.info(f"timeout reached ({self.timeout}), stopping scan.")
@@ -145,8 +147,11 @@ class GitHistoryScanner:
                     curr_diff.add_file(filename=file_path, commit_diff=base_diff_format + file_diff.diff.decode('utf-8'))
                 if not curr_diff.is_empty():
                     self.commits_diff.append(curr_diff)
-            except Exception as e:
-                logging.warning(f"got error while getting commits diff, iteration: {previous_commit_idx}, error: {e}")
+            except TimeoutException:
+                logging.error(f"stopped while getting commits diff, iteration: {previous_commit_idx}")
+                return []
+            except Exception as err:
+                logging.warning(f"got error while getting commits diff, iteration: {previous_commit_idx}, error: {err}")
                 continue
         logging.info("[_get_commits_diff] ended")
         return self.commits_diff
