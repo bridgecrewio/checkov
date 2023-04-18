@@ -66,6 +66,9 @@ class Policies3DIntegration(BaseIntegrationFeature):
 
             policies = self.bc_integration.customer_run_config_response.get('Policies3D')
             logging.debug(f'Got {len(policies)} 3d policies from the platform.')
+            if not policies:
+                return None
+
             runner = Policy3dRunner()
             report = runner.run_v2(raw_checks=policies, scan_reports=scan_reports)
             return report

@@ -63,9 +63,9 @@ class Policy3dParser(Base3dPolicyCheckParser):
             elif "secrets" in definition.keys():
                 secrets_definition = definition["secrets"]
 
-        cve_predicaments = list(filter(None, [self._create_module_predicament(cves_definition, cve_report) for cve_report in cves_reports]))
-        iac_predicaments = list(filter(None, [self._create_module_predicament(iac_definition, iac_record) for iac_record in iac_records]))
-        secrets_predicaments = list(filter(None, [self._create_module_predicament(secrets_definition, secrets_record) for secrets_record in secrets_records]))
+        cve_predicaments: list[Predicament] = list(filter(None, [self._create_module_predicament(cves_definition, cve_report) for cve_report in cves_reports]))
+        iac_predicaments: list[Predicament] = list(filter(None, [self._create_module_predicament(iac_definition, iac_record) for iac_record in iac_records]))
+        secrets_predicaments: list[Predicament] = list(filter(None, [self._create_module_predicament(secrets_definition, secrets_record) for secrets_record in secrets_records]))
 
         # Generating all predicaments combinations while filtering empty lists
         all_combinations = list(itertools.product(*filter(bool, [cve_predicaments, iac_predicaments, secrets_predicaments])))
@@ -97,11 +97,12 @@ class Policy3dParser(Base3dPolicyCheckParser):
         if not policy_definition:
             return None
 
-        if not any(op in policy_definition.keys() for op in SUPPORTED_LOGICAL_OPERATORS):
-            return None
-
-        top_level_predicament = Predicament(logical_op='')
         top_level_logical_op = ''
+        if not any(op in policy_definition.keys() for op in SUPPORTED_LOGICAL_OPERATORS):
+            top_level_logical_op = 'and'
+
+        top_level_predicament = Predicament(logical_op=top_level_logical_op)
+
         for key, value in policy_definition.items():
             if key in SUPPORTED_LOGICAL_OPERATORS:
                 top_level_logical_op = key
@@ -111,7 +112,10 @@ class Policy3dParser(Base3dPolicyCheckParser):
                 if predicate:
                     top_level_predicament.predicates.append(predicate)
 
-        nested_definition = policy_definition[top_level_logical_op]
+        nested_definition = policy_definition.get(top_level_logical_op)
+        if not nested_definition:
+            return top_level_predicament
+
         nested_logical_op = None
         for definition in nested_definition:
             for key, value in definition.items():
