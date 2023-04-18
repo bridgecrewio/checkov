@@ -65,7 +65,8 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         logging.info(f"[TerraformLocalGraph] created {len(self.vertices)} vertices")
         self._build_edges()
         logging.info(f"[TerraformLocalGraph] created {len(self.edges)} edges")
-        if self.enable_foreach_handling:
+        if (self.enable_foreach_handling or self.enable_modules_foreach_handling) \
+                and (self.foreach_blocks[BlockType.RESOURCE] or self.foreach_blocks[BlockType.MODULE]):
             try:
                 foreach_builder = ForeachBuilder(self)
                 foreach_builder.handle(self.foreach_blocks)
