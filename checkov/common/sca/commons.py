@@ -3,8 +3,10 @@ from __future__ import annotations
 from typing import List, Optional, Any
 
 from checkov.common.output.common import SCADetails
+from checkov.common.packaging import version as packaging_version
 
 UNFIXABLE_VERSION = "N/A"
+OPEN_STATUS = "open"
 
 TWISTCLI_TO_CHECKOV_LANG_NORMALIZATION = {
     "gem": "ruby",
@@ -47,3 +49,24 @@ def normalize_twistcli_language(language: str) -> str:
 
 def should_run_scan(runner_filter_checks: Optional[List[str]]) -> bool:
     return not (runner_filter_checks and all(not (check.startswith("CKV_CVE") or check.startswith("BC_CVE") or check.startswith("BC_LIC")) for check in runner_filter_checks))
+
+
+def get_lowest_fix_version(vulnerability_details: dict[str, Any]) -> str:
+    if "cveStatus" in vulnerability_details:
+        return str(vulnerability_details["cveStatus"])
+
+    lowest_fixed_version = UNFIXABLE_VERSION
+    package_version = vulnerability_details["package_version"]
+    fixed_versions: list[packaging_version.Version | packaging_version.LegacyVersion] = []
+    status = vulnerability_details.get("status") or OPEN_STATUS
+    if status != OPEN_STATUS:
+        parsed_current_version = packaging_version.parse(package_version)
+        for version in status.replace("fixed in", "").split(","):
+            parsed_version = packaging_version.parse(version.strip())
+            if parsed_version > parsed_current_version:
+                fixed_versions.append(parsed_version)
+
+        if fixed_versions:
+            lowest_fixed_version = str(min(fixed_versions))
+
+    return lowest_fixed_version
