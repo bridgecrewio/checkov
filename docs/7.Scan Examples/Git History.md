@@ -15,7 +15,8 @@ Each secret found can be traced to the first commit in which it appeared and the
 
 Git history scan uses the same signatures and models as a regular secrets scan.
 The only difference is that the root directory is the path to either the root git directory or the bare git repo.
-Using the `--scan-secrets-history` flag will scan git history for secrets only. This will not scan for other issues such as IaC misconfiguration. Use `--secrets-history-timeout` to set how long the secrets scan will run on history before stopping and returning results. The default is `12h`.
+Using the `--scan-secrets-history` flag will scan git history for secrets only. This will not scan for other issues such as IaC misconfiguration. 
+Use `--secrets-history-timeout` to set how long the secrets scan will run on history before stopping and returning results. The default is `12h`.
 
 A run with a timeout of `12h` by default:
 ```bash
