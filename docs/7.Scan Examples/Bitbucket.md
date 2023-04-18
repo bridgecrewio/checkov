@@ -16,7 +16,7 @@ Full list of bitbucket organization and repository settings related checks can b
 |-------------|----------|-------------------------------------------|
 | CKV_BITBUCKET_CONFIG_FETCH_DATA| "True" | checkov will try to fetch Bitbucket configuration from API by default (unless no access token provided)  |
 | CKV_BITBUCKET_CONF_DIR_NAME   | "bitbucket_conf" | checkov will create a new directory named "bitbucket_conf" under current working directory                          |
-| BITBUCKET_API_URL   | "https://api.bitbucket.com/" |  |
+| CI_SERVER_URL   | "https://api.bitbucket.com/" |  |
 | APP_PASSWORD   |  | Bitbucket personal access token to be used to fetch Bitbucket configuration |
 | BITBUCKET_USERNAME |  | Bitbucket username (not email) |
 | BITBUCKET_REPO_FULL_NAME |  | workspace/repository, for example bridgecrewio/terragoat |
