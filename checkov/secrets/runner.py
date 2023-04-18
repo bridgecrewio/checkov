@@ -6,6 +6,7 @@ import linecache
 import logging
 import os
 import re
+import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING, cast, Optional, Iterable, Any, List, Dict
 
@@ -42,7 +43,7 @@ from checkov.secrets.consts import ValidationStatus, VerifySecretsResult
 from checkov.secrets.coordinator import EnrichedSecret, SecretsCoordinator
 from checkov.secrets.plugins.load_detectors import get_runnable_plugins
 from checkov.secrets.git_history_store import GitHistorySecretStore
-from checkov.secrets.git_types import EnrichedPotentialSecret
+from checkov.secrets.git_types import EnrichedPotentialSecret, PROHIBITED_FILES
 from checkov.secrets.scan_git_history import GitHistoryScanner
 
 if TYPE_CHECKING:
@@ -74,7 +75,6 @@ SECRET_TYPE_TO_ID = {
 }
 CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 
-PROHIBITED_FILES = ['Pipfile.lock', 'yarn.lock', 'package-lock.json', 'requirements.txt']
 
 MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is default limit
 
@@ -124,7 +124,12 @@ class Runner(BaseRunner[None]):
         # load runnable plugins
         customer_run_config = bc_integration.customer_run_config_response
         plugins_index = 0
-        work_path = str(os.getenv('WORKDIR', current_dir))
+        work_dir_obj = None
+        work_path = str(os.getenv('WORKDIR')) if os.getenv('WORKDIR') else None
+        if work_path is None:
+            work_dir_obj = tempfile.TemporaryDirectory()
+            work_path = work_dir_obj.name
+
         if customer_run_config:
             policies_list = customer_run_config.get('secretsPolicies', [])
             if policies_list:
@@ -283,12 +288,21 @@ class Runner(BaseRunner[None]):
                 self.verify_secrets(report, enriched_secrets_s3_path)
             logging.debug(f'report fail checks len: {len(report.failed_checks)}')
 
-            self.cleanup_plugin_files(work_path, plugins_index)
+            self.cleanup_plugin_files(work_path, plugins_index, work_dir_obj)
             if runner_filter.skip_invalid_secrets:
                 self._modify_invalid_secrets_check_result_to_skipped(report)
             return report
 
-    def cleanup_plugin_files(self, work_path: str, amount: int) -> None:
+    def cleanup_plugin_files(
+            self,
+            work_path: str,
+            amount: int,
+            dir_obj: Optional[tempfile.TemporaryDirectory[Any]] = None
+    ) -> None:
+        if dir_obj is not None:
+            logging.info(f"Cleanup the whole temp directory: {work_path}")
+            dir_obj.cleanup()
+            return
         for index in range(1, amount):
             try:
                 os.remove(f"{work_path}/runnable_plugin_{index}.py")

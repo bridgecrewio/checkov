@@ -66,7 +66,8 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         logging.info(f"[TerraformLocalGraph] created {len(self.vertices)} vertices")
         self._build_edges()
         logging.info(f"[TerraformLocalGraph] created {len(self.edges)} edges")
-        if self.enable_foreach_handling:
+        if (self.enable_foreach_handling or self.enable_modules_foreach_handling) \
+                and (self.foreach_blocks[BlockType.RESOURCE] or self.foreach_blocks[BlockType.MODULE]):
             try:
                 foreach_builder = ForeachBuilder(self)
                 foreach_builder.handle(self.foreach_blocks)
@@ -111,8 +112,10 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
 
         if self.use_new_tf_parser:
             self.vertices_by_module_dependency[block.source_module_object][block.block_type].append(idx)
+            self.vertices_by_module_dependency_by_name[block.source_module_object][block.block_type][block.name].append(idx)
         else:
             self.vertices_by_module_dependency[(block.module_dependency, block.module_dependency_num)][block.block_type].append(idx)
+            self.vertices_by_module_dependency_by_name[(block.module_dependency, block.module_dependency_num)][block.block_type][block.name].append(idx)
 
         self.in_edges[idx] = []
         self.out_edges[idx] = []
@@ -123,6 +126,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self.vertices_block_name_map = defaultdict(partial(defaultdict, list))
         self.map_path_to_module = {}
         self.vertices_by_module_dependency = defaultdict(partial(defaultdict, list))
+        self.vertices_by_module_dependency_by_name = defaultdict(partial(defaultdict, partial(defaultdict, list)))
         self.edges = []
         for i in range(len(self.vertices)):
             self.out_edges[i] = []
@@ -411,7 +415,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             module_dependency_by_name_key = next(k for k, v in self.vertices_by_module_dependency.items() if v.get(BlockType.MODULE, []).__contains__(relative_module_idx))
         else:
             module_dependency_by_name_key = (module_path, module_num)
-        possible_vertices = [v for v in self.vertices_by_module_dependency.get(module_dependency_by_name_key, {}).get(block_type, {}) if self.vertices[v].name == name]
+        possible_vertices = self.vertices_by_module_dependency_by_name.get(module_dependency_by_name_key, {}).get(block_type, {}).get(name, [])  # important to use this specific map for big graph performance
         for vertex_index in possible_vertices:
             vertex = self.vertices[vertex_index]
             if self.get_dirname(vertex.path) == self.get_dirname(block_path):

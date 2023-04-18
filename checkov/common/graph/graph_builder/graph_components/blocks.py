@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Collection
-from typing import Union, Dict, Any, List
+from typing import Union, Dict, Any, List, cast
 
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimmed_strings
@@ -112,6 +112,13 @@ class Block:
         if self.block_type == BlockType.MODULE:
             # since module names are user defined we are just setting 'module' as resource type for easier searching
             base_attributes[CustomAttributes.RESOURCE_TYPE] = "module"
+
+        if self.block_type == BlockType.PROVIDER:
+            # provider_name is always a string, base_attributes needs better typing pipenv run mypy
+            provider_name = cast(str, base_attributes[CustomAttributes.BLOCK_NAME])
+            provider_type = provider_name.split(".")[0]
+            # ex: provider.aws
+            base_attributes[CustomAttributes.RESOURCE_TYPE] = f"provider.{provider_type}"
 
         if "changed_attributes" in base_attributes:
             # removed changed attributes if it was added previously for calculating hash.
