@@ -7,6 +7,14 @@ from typing import Dict, List
 from checkov.secrets.git_types import Commit, CommitMetadata
 
 
+def mock_set_repo(self) -> bool:
+    return True
+
+
+def mock_scan_first_commit(self) -> None:
+    return None
+
+
 def mock_git_repo_commits1(self, root_folder: str, last_commit_sha: str) -> List[Commit]:
     """
         add secret (secret1 added) - +1
