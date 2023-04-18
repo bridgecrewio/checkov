@@ -405,7 +405,7 @@ class CycloneDX:
         is_private_fix = vulnerability_details.get("is_private_fix")
         public_fix_version_prefix = "No private fix available. " if is_private_fix is False else ""
         status: str | None = vulnerability_details.get("status")
-        fix_version = public_fix_version_prefix + status if status and status != UNFIXABLE_VERSION else status
+        fix_version = public_fix_version_prefix + status.capitalize() if status and status != UNFIXABLE_VERSION else status
         return fix_version
 
     def get_output(self, output_format: OutputFormat) -> str:
