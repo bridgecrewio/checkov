@@ -181,7 +181,7 @@
 				</rating>
 			</ratings>
 			<description>Cross-site scripting (XSS) vulnerability in the dismissChangeRelatedObjectPopup function in contrib/admin/static/admin/js/admin/RelatedObjectLookups.js in Django before 1.8.14, 1.9.x before 1.9.8, and 1.10.x before 1.10rc1 allows remote attackers to inject arbitrary web script or HTML via vectors involving unsafe usage of Element.innerHTML.</description>
-			<recommendation>fixed in 1.9.8, 1.8.14</recommendation>
+			<recommendation>Fixed in 1.9.8, 1.8.14</recommendation>
 			<published>2016-08-05T17:59:00+02:00</published>
 			<affects>
 				<target>
@@ -206,7 +206,7 @@
 				</rating>
 			</ratings>
 			<description>The cookie parsing code in Django before 1.8.15 and 1.9.x before 1.9.10, when used on a site with Google Analytics, allows remote attackers to bypass an intended CSRF protection mechanism by setting arbitrary cookies.</description>
-			<recommendation>fixed in 1.9.10, 1.8.15</recommendation>
+			<recommendation>Fixed in 1.9.10, 1.8.15</recommendation>
 			<published>2016-10-03T20:59:00+02:00</published>
 			<affects>
 				<target>
@@ -231,7 +231,7 @@
 				</rating>
 			</ratings>
 			<description>Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover. A suitably crafted email address (that is equal to an existing user\'s email address after case transformation of Unicode characters) would allow an attacker to be sent a password reset token for the matched user account. (One mitigation in the new releases is to send password reset tokens only to the registered user email address.)</description>
-			<recommendation>fixed in 3.0.1, 2.2.9, 1.11.27</recommendation>
+			<recommendation>Fixed in 3.0.1, 2.2.9, 1.11.27</recommendation>
 			<published>2019-12-18T20:15:00+01:00</published>
 			<affects>
 				<target>
@@ -256,7 +256,7 @@
 				</rating>
 			</ratings>
 			<description>Django before 2.2.24, 3.x before 3.1.12, and 3.2.x before 3.2.4 has a potential directory traversal via django.contrib.admindocs. Staff members could use the TemplateDetailView view to check the existence of arbitrary files. Additionally, if (and only if) the default admindocs templates have been customized by application developers to also show file contents, then not only the existence but also the file contents would have been exposed. In other words, there is directory traversal outside of the template root directories.</description>
-			<recommendation>fixed in 3.2.4, 3.1.12, 2.2.24</recommendation>
+			<recommendation>Fixed in 3.2.4, 3.1.12, 2.2.24</recommendation>
 			<published>2021-06-08T20:15:00+02:00</published>
 			<affects>
 				<target>
@@ -281,7 +281,7 @@
 				</rating>
 			</ratings>
 			<description>The Pallets Project flask version Before 0.12.3 contains a CWE-20: Improper Input Validation vulnerability in flask that can result in Large amount of memory usage possibly leading to denial of service. This attack appear to be exploitable via Attacker provides JSON data in incorrect encoding. This vulnerability appears to have been fixed in 0.12.3. NOTE: this may overlap CVE-2019-1010083.</description>
-			<recommendation>fixed in 0.12.3</recommendation>
+			<recommendation>Fixed in 0.12.3</recommendation>
 			<published>2018-08-20T21:31:00+02:00</published>
 			<affects>
 				<target>
@@ -306,7 +306,7 @@
 				</rating>
 			</ratings>
 			<description>The Pallets Project Flask before 1.0 is affected by: unexpected memory usage. The impact is: denial of service. The attack vector is: crafted encoded JSON data. The fixed version is: 1. NOTE: this may overlap CVE-2018-1000656.</description>
-			<recommendation>fixed in 1.0</recommendation>
+			<recommendation>Fixed in 1.0</recommendation>
 			<published>2019-07-17T16:15:00+02:00</published>
 			<affects>
 				<target>
@@ -331,7 +331,7 @@
 				</rating>
 			</ratings>
 			<description>jwt-go before 4.0.0-preview1 allows attackers to bypass intended access restrictions in situations with []string{} for m[\&quot;aud\&quot;] (which is allowed by the specification). Because the type assertion fails, \&quot;\&quot; is the value of aud. This is a security problem if the JWT token is presented to a service that lacks its own audience check.</description>
-			<recommendation>fixed in v4.0.0-preview1</recommendation>
+			<recommendation>Fixed in v4.0.0-preview1</recommendation>
 			<published>2020-09-30T20:15:00+02:00</published>
 			<affects>
 				<target>
@@ -356,7 +356,7 @@
 				</rating>
 			</ratings>
 			<description>A nil pointer dereference in the golang.org/x/crypto/ssh component through v0.0.3 for Go allows remote attackers to cause a denial of service against SSH servers.</description>
-			<recommendation>fixed in v0.0.2</recommendation>
+			<recommendation>Fixed in v0.0.2</recommendation>
 			<published>2020-12-17T06:15:00+01:00</published>
 			<affects>
 				<target>
