@@ -59,7 +59,7 @@ class GitHistoryScanner:
         if not self.commits_diff:
             return False
         logging.info(f"[_scan_history] got {len(self.commits_diff)} files diffs in {self.commits_count} commits")
-        if len(self.commits_diff) > MIN_SPLIT:
+        if self.commits_count > MIN_SPLIT:
             logging.info("[_scan_history] starting parallel scan")
             self._run_scan_parallel(self.commits_diff)
         else:
