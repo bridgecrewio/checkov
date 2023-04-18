@@ -386,7 +386,7 @@ def mock_case() -> Dict[str, str]:
 
 def mock_git_repo_commits_too_much(self, root_folder: str, last_commit_sha: str) -> Dict[str, Dict[str, str]]:
     res: Dict[str, Dict[str, str]] = {}
-    keys = [get_random_string(40) for _i in range(10000)]
+    keys = [get_random_string(40) for _i in range(30000)]
     for k in keys:
         res[k] = mock_case()
     return res

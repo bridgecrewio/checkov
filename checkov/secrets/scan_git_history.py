@@ -157,6 +157,8 @@ class GitHistoryScanner:
         return self.commits_diff
 
     def _run_scan_parallel(self, commits_diff: List[Commit]) -> None:
+        if not commits_diff:
+            return
         results = parallel_runner.run_function(GitHistoryScanner._run_scan_one_bulk, commits_diff)
 
         for result in results:
