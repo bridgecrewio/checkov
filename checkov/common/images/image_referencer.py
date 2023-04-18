@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import os
 from abc import abstractmethod
 from collections.abc import Iterable
 from pathlib import Path
