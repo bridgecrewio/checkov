@@ -197,6 +197,7 @@ class ForeachModuleHandler(ForeachAbstractHandler):
             key_with_foreach_index = deepcopy(main_resource_module_key)
             key_with_foreach_index.foreach_idx = idx_to_change
             self.local_graph.vertices_by_module_dependency[key_with_foreach_index] = main_resource_module_value
+            self.local_graph.vertices_by_module_dependency_by_name[key_with_foreach_index][new_resource.name] = main_resource_module_value
 
         del copy_of_vertices_by_module_dependency, new_resource, main_resource_module_key, main_resource_module_value
 
@@ -220,12 +221,11 @@ class ForeachModuleHandler(ForeachAbstractHandler):
             )
         else:
             source_module_key = None
-        self.local_graph.vertices_by_module_dependency[source_module_key][BlockType.MODULE].append(
-            new_resource_vertex_idx)
-        new_vertices_module_value = self._add_new_vertices_for_module(new_resource_module_key,
-                                                                      main_resource_module_value,
-                                                                      new_resource_vertex_idx)
+        self.local_graph.vertices_by_module_dependency[source_module_key][BlockType.MODULE].append(new_resource_vertex_idx)
+        self.local_graph.vertices_by_module_dependency_by_name[source_module_key][BlockType.MODULE][original_vertex_source_module.name].append(new_resource_vertex_idx)
+        new_vertices_module_value = self._add_new_vertices_for_module(new_resource_module_key, main_resource_module_value, new_resource_vertex_idx)
         self.local_graph.vertices_by_module_dependency.update({new_resource_module_key: new_vertices_module_value})
+        self.local_graph.vertices_by_module_dependency_by_name.update({new_resource_module_key: {new_resource.name: new_vertices_module_value}})
 
     def _add_new_vertices_for_module(self, new_module_key: TFModule, new_module_value: dict[str, list[int]],
                                      new_resource_vertex_idx: int) -> dict[str, list[int]]:
