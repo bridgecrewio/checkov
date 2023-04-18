@@ -1,23 +1,30 @@
 ---
 layout: default
 published: false
-title: SCA scanning
+title: Git History
 nav_order: 20
 ---
 
 # Git History
-Checkov supports scanning for secrets in git history, to identify and flag secrets which might not be in the current brunches, but are still visible by accessing the git history of the repo.
-Checkov fetches all the available commits, and uses the same strategy as in 'secrets' checkov framework to search for secrets in the diff available from git history.
-Each secret found, can be traced by the first commit in which it appeared, and the last commit, if it has been removed. 
+Checkov supports scanning of secrets in git history to identify and flag secrets, that might not be in the head commit of the branch but are still visible by accessing the git history of the repo.
+Checkov fetches all the available commits and uses same scan as the Checkov 'secrets' checkov framework to search for secrets in the diff available from git history.
+Each secret found can be traced to the first commit in which it appeared and the last commit that contained the secret if it was removed.
 
 
 ## Git History scanning
 
-Git history scan is the same as secrets scan.
+Git history scan uses the same signatures and models as a regular secrets scan.
 The only difference is that the root directory is the path to either the root git directory or the bare git repo.
+Using the `--scan-secrets-history` flag will scan git history for secrets only. This will not scan for other issues such as IaC misconfiguration. Use `--secrets-history-timeout` to set how long the secrets scan will run on history before stopping and returning results. The default is `12h`.
 
+A run with a timeout of `12h` by default:
 ```bash
-checkov -d <git dir> --framework secrets --bc-api-key <your_api_key>
+checkov -d <git dir> --scan-secrets-history --bc-api-key <your_api_key>
+```
+
+A run with a timeout of `1h`:
+```bash
+checkov -d <git dir> --scan-secrets-history --secrets-history-timeout 1h --bc-api-key <your_api_key>
 ```
 
 ### Example output
