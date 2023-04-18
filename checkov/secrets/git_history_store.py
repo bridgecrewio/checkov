@@ -37,7 +37,7 @@ class GitHistorySecretStore:
             equal_secret_in_commit[secret_key].append(ADDED if secret.is_added else REMOVED)
 
         for secret in file_results:
-            if secret.filename in ['None', '']:
+            if not secret.filename or 'None' in secret.filename:
                 secret.filename = file_name
             secret_key = get_secret_key(file_name, secret.secret_hash, secret.type)
             if all(value in equal_secret_in_commit[secret_key] for value in GIT_HISTORY_OPTIONS):
@@ -111,7 +111,7 @@ class GitHistorySecretStore:
                     temp_secrets_by_file_value_type[new_secret_key].append(enriched_potential_secret)
         self.secrets_by_file_value_type.update(temp_secrets_by_file_value_type)
 
-    def get_added_and_removed_commit_hash(self, key: str, secret: PotentialSecret) -> EnrichedPotentialSecretMetadata:
+    def get_added_and_removed_commit_hash(self, key: str, secret: PotentialSecret, root_folder: Optional[str]) -> EnrichedPotentialSecretMetadata:
         """
         now we have only the current commit_hash - in the added_commit_hash or in the removed_commit_hash.
         in the next step we will add the connection and the missing data
@@ -122,7 +122,15 @@ class GitHistorySecretStore:
         """
         try:
             secret_key = get_secret_key(secret.filename, secret.secret_hash, secret.type)  # by value type
-            enriched_secrets = self.secrets_by_file_value_type[secret_key]
+            enriched_secrets: List[EnrichedPotentialSecret] = self.secrets_by_file_value_type.get(secret_key, [])
+            if not enriched_secrets and root_folder:
+                # sometimes the secret key is from the project path instead of abs path
+                filename = f'{root_folder}/{secret.filename}'
+                secret_key = get_secret_key(filename, secret.secret_hash, secret.type)  # by value type
+                enriched_secrets = self.secrets_by_file_value_type.get(secret_key, [])
+                if not enriched_secrets:
+                    logging.warning(f'Did not find added_commit_hash and removed_commit_hash for {secret_key}')
+                    return {}
             chosen_secret = enriched_secrets[0]
             if len(enriched_secrets) > 1:
                 res = key.split("_")
