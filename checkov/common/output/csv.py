@@ -84,10 +84,7 @@ class CSVSBOM:
             CheckType.SCA_IMAGE: self.container_rows
         }
 
-        is_private_fix = resource.vulnerability_details.get("is_private_fix")
-        public_fix_version_suffix = " (Public)" if is_private_fix is False else ""
-        lowest_fix_version = get_lowest_fix_version(resource.vulnerability_details)
-        fix_version = lowest_fix_version + public_fix_version_suffix if lowest_fix_version and lowest_fix_version != UNFIXABLE_VERSION else lowest_fix_version
+        fix_version = self.get_fix_version(resource)
         csv_table[check_type].append(
             {
                 "Package": resource.vulnerability_details["package_name"],
@@ -106,6 +103,13 @@ class CSVSBOM:
         registry_url = resource.vulnerability_details.get("package_registry")
         if CHECKOV_DISPLAY_REGISTRY_URL:
             csv_table[check_type][-1]["Registry URL"] = registry_url
+
+    def get_fix_version(self, resource: Record) -> str:
+        is_private_fix = resource.vulnerability_details.get("is_private_fix")
+        public_fix_version_suffix = " (Public)" if is_private_fix is False else ""
+        lowest_fix_version: str = get_lowest_fix_version(resource.vulnerability_details)
+        fix_version = lowest_fix_version + public_fix_version_suffix if lowest_fix_version and lowest_fix_version != UNFIXABLE_VERSION else lowest_fix_version
+        return fix_version
 
     def add_iac_resources(self, resource: Record | ExtraResource, git_org: str, git_repository: str) -> None:
         resource_id = f"{git_org}/{git_repository}/{resource.file_path}/{resource.resource}"

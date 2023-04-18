@@ -381,10 +381,7 @@ class CycloneDX:
             method = VulnerabilityScoreSource.get_from_vector(vector)
             vector = method.get_localised_vector(vector)
 
-        is_private_fix = resource.vulnerability_details.get("is_private_fix")
-        public_fix_version_prefix = "No private fix available. " if is_private_fix is False else ""
-        status = resource.vulnerability_details.get("status")
-        recommendation = public_fix_version_prefix + status if status and status != UNFIXABLE_VERSION else status
+        fix_version = self.get_fix_version(resource)
         vulnerability = Vulnerability(
             id=resource.vulnerability_details["id"],
             source=source,
@@ -398,11 +395,18 @@ class CycloneDX:
                 )
             ],
             description=resource.vulnerability_details.get("description"),
-            recommendation=recommendation,
+            recommendation=fix_version,
             published=datetime.fromisoformat(resource.vulnerability_details["published_date"].replace("Z", "")),
             affects_targets=[BomTarget(ref=component.bom_ref.value)],
         )
         return vulnerability
+
+    def get_fix_version(self, resource: Record) -> str | None:
+        is_private_fix = resource.vulnerability_details.get("is_private_fix")
+        public_fix_version_prefix = "No private fix available. " if is_private_fix is False else ""
+        status: str | None = resource.vulnerability_details.get("status")
+        fix_version = public_fix_version_prefix + status if status and status != UNFIXABLE_VERSION else status
+        return fix_version
 
     def get_output(self, output_format: OutputFormat) -> str:
         """Returns the SBOM as a formatted string"""
