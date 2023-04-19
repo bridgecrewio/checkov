@@ -19,7 +19,6 @@ if TYPE_CHECKING:
 
 os.environ["GIT_PYTHON_REFRESH"] = "quiet"
 try:
-    import git
     from git import Repo, Tree
 
     git_import_error = None
@@ -214,7 +213,7 @@ class GitHistoryScanner:
     def _get_first_commit(self) -> List[Commit]:
         first_commit_sha = self.repo.git.log('--format=%H', '--max-parents=0', 'HEAD').split()[0]
         first_commit = self.repo.commit(first_commit_sha)
-        empty_tree_sha = bytes.fromhex(hashlib.sha1(b'tree 0\0', usedforsecurity=False).hexdigest())
+        empty_tree_sha = bytes.fromhex(hashlib.sha1(b'tree 0\0').hexdigest())
         empty_tree = Tree(self.repo, empty_tree_sha)
         git_diff = empty_tree.diff(first_commit, create_patch=True)
 
