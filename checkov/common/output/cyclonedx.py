@@ -403,10 +403,9 @@ class CycloneDX:
 
     def get_fix_version_overview(self, vulnerability_details: dict[str, Any]) -> str | None:
         is_private_fix = vulnerability_details.get("is_private_fix")
-        public_fix_version_prefix = "No private fix available. " if is_private_fix is False else ""
+        public_fix_version_prefix = "No private fix available." if is_private_fix is False else ""
         fix_version: str = get_fix_version(vulnerability_details)
-        fix_version = f'Fixed in {fix_version}' if fix_version else fix_version
-        return public_fix_version_prefix + fix_version if fix_version and fix_version != UNFIXABLE_VERSION else fix_version
+        return f'{public_fix_version_prefix} Fixed in {fix_version}' if fix_version and fix_version != UNFIXABLE_VERSION else fix_version
 
     def get_output(self, output_format: OutputFormat) -> str:
         """Returns the SBOM as a formatted string"""
