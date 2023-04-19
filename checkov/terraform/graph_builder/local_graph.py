@@ -50,7 +50,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self.vertices: list[TerraformBlock] = []
         self.module = module
         self.map_path_to_module: Dict[str, List[int]] = {}
-        self.relative_paths_cache: dict[str, str] = {}
+        self.relative_paths_cache: dict[tuple[str, str], str] = {}
         self.abspath_cache: Dict[str, str] = {}
         self.dirname_cache: Dict[str, str] = {}
         self.vertices_by_module_dependency_by_name: Dict[Tuple[str, str], Dict[BlockType, Dict[str, List[int]]]] = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
@@ -383,12 +383,12 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         :param dest_module_source: the value of module.source
         :return: the real path in the local file system of the dest module
         """
-
-        if dest_module_source in self.relative_paths_cache:
-            return self.relative_paths_cache[dest_module_source]
+        relative_path_key = (curr_module_dir, dest_module_source)
+        if relative_path_key in self.relative_paths_cache:
+            return self.relative_paths_cache[relative_path_key]
         elif is_local_path(curr_module_dir, dest_module_source):
-            self.relative_paths_cache[dest_module_source] = os.path.abspath(Path(curr_module_dir) / dest_module_source)
-            return self.relative_paths_cache[dest_module_source]
+            self.relative_paths_cache[relative_path_key] = os.path.abspath(Path(curr_module_dir) / dest_module_source)
+            return self.relative_paths_cache[relative_path_key]
         elif (dest_module_source, dest_module_version) in self.module.external_modules_source_map:
             return self.module.external_modules_source_map[(dest_module_source, dest_module_version)]
 

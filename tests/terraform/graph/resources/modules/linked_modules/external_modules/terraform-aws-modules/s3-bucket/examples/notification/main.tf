@@ -40,7 +40,7 @@ data "null_data_source" "downloaded_package" {
 }
 
 module "lambda_function1" {
-  source  = "terraform-aws-modules/lambda/"
+  source  = "terraform-aws-modules/lambda/aws"
   version = "~> 1.0"
 
   function_name = "${random_pet.this.id}-lambda1"
