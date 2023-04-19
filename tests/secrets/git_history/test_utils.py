@@ -11,8 +11,8 @@ def mock_set_repo(self) -> bool:
     return True
 
 
-def mock_scan_first_commit(self) -> None:
-    return None
+def mock_get_first_commit(self) -> None:
+    return []
 
 
 def mock_git_repo_commits1(self, root_folder: str, last_commit_sha: str) -> List[Commit]:
@@ -392,12 +392,16 @@ def mock_case() -> Dict[str, str]:
     return random.choice(cases)
 
 
-def mock_git_repo_commits_too_much(self, root_folder: str, last_commit_sha: str) -> Dict[str, Dict[str, str]]:
-    res: Dict[str, Dict[str, str]] = {}
-    keys = [get_random_string(40) for _i in range(30000)]
-    for k in keys:
-        res[k] = mock_case()
-    return res
+def mock_git_repo_commits_too_much(self, root_folder: str, last_commit_sha: str) -> List[Commit]:
+    return [
+        Commit(
+            metadata=CommitMetadata(
+                commit_hash=get_random_string(40),
+                committer='Cherry🍒moi-moi-lots-of-commits',
+                committed_datetime='2022-12-14T16:10:21+00:00'),
+            files=mock_case()
+        ) for _i in range(30000)
+    ]
 
 
 def mock_commit_with_keyword_combinator() -> List[Commit]:

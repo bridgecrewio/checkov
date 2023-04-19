@@ -41,7 +41,6 @@ class GitHistoryScanner:
         # in case we start from mid-history (git) we want to continue from where we've been
         self.history_store: GitHistorySecretStore = history_store or GitHistorySecretStore()
         self.raw_store: List[RawStore] = []
-        self.commits_diff: List[Commit] = []
         self.repo = None
 
     def scan_history(self, last_commit_scanned: Optional[str] = '') -> bool:
@@ -60,17 +59,16 @@ class GitHistoryScanner:
         return scanned
 
     def _scan_history(self, last_commit_scanned: Optional[str] = '') -> bool:
-        self._get_first_commit()
-        self._get_commits_diff(self.root_folder, last_commit_sha=last_commit_scanned)
-        if self.commits_diff is None:
-            return False
-        logging.info(f"[_scan_history] got {len(self.commits_diff)} files diffs in {self.commits_count} commits")
+        commits_diff: List[Commit] = []
+        commits_diff.extend(self._get_first_commit())
+        commits_diff.extend(self._get_commits_diff(self.root_folder, last_commit_sha=last_commit_scanned))
+        logging.info(f"[_scan_history] got {len(commits_diff)} files diffs in {self.commits_count} commits")
         if self.commits_count > MIN_SPLIT:
             logging.info("[_scan_history] starting parallel scan")
-            self._run_scan_parallel(self.commits_diff)
+            self._run_scan_parallel(commits_diff)
         else:
             logging.info("[_scan_history] starting single scan")
-            self.raw_store.extend(self._run_scan_one_bulk(self.commits_diff))
+            self.raw_store.extend(self._run_scan_one_bulk(commits_diff))
 
         if not self.raw_store:  # scanned nothing
             return False
@@ -124,6 +122,7 @@ class GitHistoryScanner:
         else:
             commits = list(self.repo.iter_commits(self.repo.active_branch))
         GitHistoryScanner.commits_count = len(commits)
+        commits_diff: List[Commit] = []
         for previous_commit_idx in range(GitHistoryScanner.commits_count - 1, 0, -1):
             try:
                 current_commit_idx = previous_commit_idx - 1
@@ -160,7 +159,7 @@ class GitHistoryScanner:
                                        f'\nindex 0000..0000 0000\n--- {root_folder}/{file_diff.a_path}\n+++ {root_folder}/{file_diff.b_path}\n'
                     curr_diff.add_file(filename=file_path, commit_diff=base_diff_format + file_diff.diff.decode('utf-8'))
                 if not curr_diff.is_empty():
-                    self.commits_diff.append(curr_diff)
+                    commits_diff.append(curr_diff)
             except TimeoutException:
                 logging.error(f"stopped while getting commits diff, iteration: {previous_commit_idx}")
                 return []
@@ -168,7 +167,7 @@ class GitHistoryScanner:
                 logging.warning(f"got error while getting commits diff, iteration: {previous_commit_idx}, error: {err}")
                 continue
         logging.info("[_get_commits_diff] ended")
-        return self.commits_diff
+        return commits_diff
 
     def _run_scan_parallel(self, commits_diff: List[Commit]) -> None:
         results = parallel_runner.run_function(GitHistoryScanner._run_scan_one_bulk, commits_diff)
@@ -235,4 +234,4 @@ class GitHistoryScanner:
             base_diff_format = f"--- ''\n+++ {file_path}\n"
             full_diff_format = base_diff_format + file_diff.diff.decode('utf-8')
             first_commit_diff.add_file(filename=file_path, commit_diff=full_diff_format)
-        self.commits_diff.append(first_commit_diff)
+        return [first_commit_diff]
