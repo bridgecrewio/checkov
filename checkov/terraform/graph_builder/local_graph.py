@@ -50,7 +50,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self.vertices: list[TerraformBlock] = []
         self.module = module
         self.map_path_to_module: Dict[str, List[int]] = {}
-        self.relative_paths_cache = {}
+        self.relative_paths_cache: dict[str, str] = {}
         self.abspath_cache: Dict[str, str] = {}
         self.dirname_cache: Dict[str, str] = {}
         self.vertices_by_module_dependency_by_name: Dict[Tuple[str, str], Dict[BlockType, Dict[str, List[int]]]] = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
@@ -383,26 +383,17 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         :param dest_module_source: the value of module.source
         :return: the real path in the local file system of the dest module
         """
-        dest_module_path = Path()
-        if is_local_path(curr_module_dir, dest_module_source):
-            dest_module_path = Path(curr_module_dir) / dest_module_source
+
+        if dest_module_source in self.relative_paths_cache:
+            return self.relative_paths_cache[dest_module_source]
+        elif is_local_path(curr_module_dir, dest_module_source):
+            self.relative_paths_cache[dest_module_source] = os.path.abspath(Path(curr_module_dir) / dest_module_source)
+            return self.relative_paths_cache[dest_module_source]
         elif (dest_module_source, dest_module_version) in self.module.external_modules_source_map:
             return self.module.external_modules_source_map[(dest_module_source, dest_module_version)]
-        else:
-            try:
-                if dest_module_source not in self.relative_paths_cache:
-                    self.relative_paths_cache[dest_module_source] = list(Path(self.module.source_dir).rglob(dest_module_source))
-                dest_module_path = next(
-                    (path for path in self.relative_paths_cache.get(dest_module_source)), dest_module_path
-                )
-            except (OSError, ValueError):
-                logging.debug(f"Error to get dest_module_path {dest_module_source}", exc_info=True)
-                return ""
-            except NotImplementedError as e:
-                if 'Non-relative patterns are unsupported' in str(e):
-                    return ""
-                raise e
-        return os.path.abspath(dest_module_path)
+
+        # this happens, when we have external modules, which weren't downloaded
+        return ""
 
     def _find_vertex_index_relative_to_path(
         self, block_type: BlockType, name: str, block_path: str, module_path: str, module_num: str, relative_module_idx: Optional[int] = None, source_module_object: Optional[TFModule] = None
