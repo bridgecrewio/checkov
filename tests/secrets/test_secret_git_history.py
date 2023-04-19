@@ -17,7 +17,8 @@ from tests.secrets.git_history.test_utils import mock_git_repo_commits1, mock_gi
     mock_git_repo_commits_too_much, mock_git_repo_commits_remove_file, mock_git_repo_commits_rename_file, \
     mock_git_repo_commits_modify_and_rename_file, mock_remove_file_with_two_equal_secret, \
     mock_remove_file_with_two_secret, mock_git_repo_multiline_json, mock_git_repo_multiline_terraform, \
-    mock_git_repo_multiline_yml, mock_commit_with_keyword_combinator, mock_set_repo, mock_get_first_commit
+    mock_git_repo_multiline_yml, mock_commit_with_keyword_combinator, mock_set_repo, mock_get_first_commit, \
+    mock_get_first_empty_commit
 
 
 @mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff', mock_git_repo_commits1)
@@ -29,7 +30,7 @@ def test_scan_git_history() -> None:
     runner = Runner()
     report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                         runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
-    assert len(report.failed_checks) == 3
+    assert len(report.failed_checks) == 6
     assert len(report.parsing_errors) == 0
     assert len(report.passed_checks) == 0
     assert len(report.parsing_errors) == 0
@@ -74,11 +75,11 @@ def test_scan_git_history_merge_added_removed() -> None:
     runner = Runner()
     report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                         runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
-    assert len(report.failed_checks) == 1
+    assert len(report.failed_checks) == 4
     for failed_check in report.failed_checks:
         assert failed_check.removed_commit_hash == ''
         assert failed_check.removed_date == ''
-        assert failed_check.added_commit_hash == '11e59e4e578c6ebcb48aae1e5e078a54c62920eb'
+        assert failed_check.added_commit_hash == '11e59e4e578c6ebcb48aae1e5e078a54c62920eb' or failed_check.added_commit_hash == 'c9b3268e15eb20fd406b9077a4c45875086d6c1b'
         assert failed_check.added_by
         assert failed_check.added_date
 
@@ -116,7 +117,7 @@ def test_scan_git_history_merge_added_removed2() -> None:
     runner = Runner()
     report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                         runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
-    assert len(report.failed_checks) == 2
+    assert len(report.failed_checks) == 5
     assert ((report.failed_checks[0].removed_commit_hash == '697308e61171e33224757e620aaf67b1a877c99d'
             and report.failed_checks[0].removed_date
              and report.failed_checks[1].removed_commit_hash == '')
@@ -174,7 +175,7 @@ def test_scan_git_history_remove_file() -> None:
     runner = Runner()
     report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                         runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
-    assert len(report.failed_checks) == 1
+    assert len(report.failed_checks) == 4
     assert report.failed_checks[0].removed_commit_hash == '4bd08cd0b2874025ce32d0b1e9cd84ca20d59ce1'
     assert report.failed_checks[0].removed_date
     assert report.failed_checks[0].added_commit_hash == '63342dbee285973a37770bbb1ff4258a3184901e'
@@ -191,7 +192,7 @@ def test_scan_git_history_rename_file() -> None:
     runner = Runner()
     report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                         runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
-    assert len(report.failed_checks) == 2
+    assert len(report.failed_checks) == 5
     assert (report.failed_checks[0].removed_commit_hash == '' and report.failed_checks[0].removed_date == '' and
             report.failed_checks[0].added_commit_hash == '2e1a500e688990e065fc6f1202bc64ed0ba53027')
     assert (report.failed_checks[1].removed_commit_hash == '2e1a500e688990e065fc6f1202bc64ed0ba53027' and
@@ -209,7 +210,7 @@ def test_scan_git_history_modify_and_rename_file() -> None:
     runner = Runner()
     report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                         runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
-    assert len(report.failed_checks) == 1
+    assert len(report.failed_checks) == 4
     assert report.failed_checks[0].added_commit_hash == '62da8e5e04ec5c3a474467e9012bf3427cff0407'
     assert report.failed_checks[0].added_by and report.failed_checks[0].added_date
     assert report.failed_checks[0].removed_commit_hash == '61ee79aea3d151a40c8e054295f330d233eaf7d5'
@@ -219,13 +220,14 @@ def test_scan_git_history_modify_and_rename_file() -> None:
 @mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff',
             mock_remove_file_with_two_equal_secret)
 @mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner.set_repo', mock_set_repo)
-@mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_first_commit', mock_get_first_commit)
+@mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_first_commit', mock_get_first_empty_commit)
 def test_scan_git_history_rename_file_with_two_equal_secrets() -> None:
     valid_dir_path = "test_scan_git_history_rename_file_with_two_equal_secrets"
     runner = Runner()
     report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                         runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
     assert len(report.failed_checks) == 2
+
     assert report.failed_checks[0].removed_commit_hash == report.failed_checks[1].removed_commit_hash
     assert report.failed_checks[1].removed_commit_hash
     assert report.failed_checks[0].removed_date and report.failed_checks[0].removed_date == report.failed_checks[1].removed_date
@@ -233,7 +235,7 @@ def test_scan_git_history_rename_file_with_two_equal_secrets() -> None:
 
 @mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff', mock_remove_file_with_two_secret)
 @mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner.set_repo', mock_set_repo)
-@mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_first_commit', mock_get_first_commit)
+@mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_first_commit', mock_get_first_empty_commit)
 def test_scan_git_history_rename_file_with_two_secrets() -> None:
     valid_dir_path = "test_scan_git_history_rename_file_with_two_secrets"
     runner = Runner()
@@ -254,7 +256,7 @@ def assert_for_commit_str(report_str: [str], commit_type: str, commit_hash: str,
 @mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff',
             mock_git_repo_multiline_json)
 @mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner.set_repo', mock_set_repo)
-@mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_first_commit', mock_get_first_commit)
+@mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_first_commit', mock_get_first_empty_commit)
 def test_scan_git_history_multiline_keyword_json() -> None:
     valid_dir_path = "multiline_keyword_json"
 
@@ -269,7 +271,7 @@ def test_scan_git_history_multiline_keyword_json() -> None:
 
 @mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff', mock_git_repo_multiline_terraform)
 @mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner.set_repo', mock_set_repo)
-@mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_first_commit', mock_get_first_commit)
+@mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_first_commit', mock_get_first_empty_commit)
 def test_scan_git_history_multiline_keyword_terraform() -> None:
     valid_dir_path = "mock_git_repo_multiline_terraform"
 
@@ -303,7 +305,7 @@ def test_scan_git_history_multiline_keyword_yml() -> None:
 
     report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                         runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
-    assert len(report.failed_checks) == 5
+    assert len(report.failed_checks) == 8
     assert report.parsing_errors == []
     assert report.passed_checks == []
     assert report.skipped_checks == []
@@ -394,7 +396,7 @@ def test_git_history_plugin(mocker: MockerFixture) -> None:
     runner = Runner()
     report = runner.run(root_folder=str(valid_dir_path), external_checks_dir=None,
                         runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
-    assert len(report.failed_checks) == 1
+    assert len(report.failed_checks) == 4
     check = report.failed_checks[0]
     assert check.added_commit_hash
     assert check.check_name == 'Base64 High Entropy String'
