@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
 os.environ["GIT_PYTHON_REFRESH"] = "quiet"
 try:
-    from git import Repo, Tree
+    from git import Repo, Tree  # type: ignore
 
     git_import_error = None
 except ImportError as e:
@@ -213,7 +213,7 @@ class GitHistoryScanner:
     def _get_first_commit(self) -> List[Commit]:
         first_commit_sha = self.repo.git.log('--format=%H', '--max-parents=0', 'HEAD').split()[0]
         first_commit = self.repo.commit(first_commit_sha)
-        hash_func = hashlib.sha1(usedforsecurity=False)
+        hash_func = hashlib.sha1(usedforsecurity=False)  # type: ignore
         hash_func.update(b'tree 0\0')
         empty_tree_sha = bytes.fromhex(hash_func.hexdigest())
         empty_tree = Tree(self.repo, empty_tree_sha)
