@@ -26,9 +26,10 @@ CHECKOV_RENDER_MAX_LEN = force_int(os.getenv("CHECKOV_RENDER_MAX_LEN", "10000"))
 def is_local_path(root_dir: str, source: str) -> bool:
     # https://www.terraform.io/docs/modules/sources.html#local-paths
     return (
-        source.startswith("./")
-        or source.startswith("/./")
-        or source.startswith("../")
+        source.startswith(r"./")
+        or source.startswith(r"/./")
+        or source.startswith(r"../")
+        or source in os.listdir(root_dir)
     )
 
 
@@ -74,7 +75,7 @@ def get_vertices_references(
     words_in_str_value = str_value.split()
 
     for word in words_in_str_value:
-        if word.startswith(".") or word.startswith("/."):
+        if word.startswith(".") or word.startswith(r"/."):
             # check if word is a relative path
             continue
 

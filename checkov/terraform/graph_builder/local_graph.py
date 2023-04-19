@@ -68,6 +68,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         if (self.enable_foreach_handling or self.enable_modules_foreach_handling) \
                 and (self.foreach_blocks[BlockType.RESOURCE] or self.foreach_blocks[BlockType.MODULE]):
             try:
+                logging.info('[TerraformLocalGraph] start handling foreach')
                 foreach_builder = ForeachBuilder(self)
                 foreach_builder.handle(self.foreach_blocks)
                 self._arrange_graph_data()
@@ -317,8 +318,8 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         aliases = self._get_aliases()
         resources_types = self.get_resources_types_in_graph()
         for v, referenced_vertices in self.out_edges.items():
-            if self.vertices[v].block_type == BlockType.RESOURCE and any(
-            self.vertices[e.dest].block_type != BlockType.RESOURCE for e in referenced_vertices):
+            if self.vertices[v].block_type == BlockType.RESOURCE and \
+                    any(self.vertices[e.dest].block_type != BlockType.RESOURCE for e in referenced_vertices):
                 origin_node_index = v
                 vertex = self.vertices[origin_node_index]
                 self._build_edges_for_vertex(origin_node_index, vertex, aliases, resources_types, True)
