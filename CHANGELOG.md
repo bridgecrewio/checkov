@@ -1,6 +1,87 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.155...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.183...HEAD)
+
+## [2.3.183](https://github.com/bridgecrewio/checkov/compare/2.3.176...2.3.183) - 2023-04-18
+
+### Feature
+
+- **sca:** add is public fix version to sbom report  - [#4915](https://github.com/bridgecrewio/checkov/pull/4915)
+- **secrets:** add more files to ignore list in git history - [#4912](https://github.com/bridgecrewio/checkov/pull/4912)
+- **terraform:** Ensure that container definition is not privileged 334 - [#4779](https://github.com/bridgecrewio/checkov/pull/4779)
+- **terraform:** TF provider check support - [#4911](https://github.com/bridgecrewio/checkov/pull/4911)
+
+### Bug Fix
+
+- **general:** Dedup results contain multiple identical images if using template syntax - [#4924](https://github.com/bridgecrewio/checkov/pull/4924)
+- **general:** fix wrong abs path in IR record - [#4919](https://github.com/bridgecrewio/checkov/pull/4919)
+- **secrets:** Save fetched policy destination from current work dir to temp - [#4914](https://github.com/bridgecrewio/checkov/pull/4914)
+- **secrets:** timeout in unix to work with signals - [#4920](https://github.com/bridgecrewio/checkov/pull/4920)
+- **terraform:** Fix for_each flow conditions - [#4918](https://github.com/bridgecrewio/checkov/pull/4918)
+- **terraform:** make sure K8s volume is a dict - [#4917](https://github.com/bridgecrewio/checkov/pull/4917)
+
+## [2.3.176](https://github.com/bridgecrewio/checkov/compare/2.3.171...2.3.176) - 2023-04-17
+
+### Feature
+
+- **arm:** add Storage accounts disallow public access check for ARM - [#4906](https://github.com/bridgecrewio/checkov/pull/4906)
+- **dockerfile:** Add CKV2_DOCKER_16 for PIP_TRUSTED_HOST - [#4893](https://github.com/bridgecrewio/checkov/pull/4893)
+- **sca:** add is private fix version to sca output - [#4891](https://github.com/bridgecrewio/checkov/pull/4891)
+
+### Bug Fix
+
+- **secrets:** fix absolute file path cases - [#4901](https://github.com/bridgecrewio/checkov/pull/4901)
+- **terraform:** fix foreach count is none bug - [#4907](https://github.com/bridgecrewio/checkov/pull/4907)
+- **terraform:** limit RDS cluster audit logging to MySQL engine - [#4897](https://github.com/bridgecrewio/checkov/pull/4897)
+- **terraform:** remove duplicate call to convert graph vertices - [#4909](https://github.com/bridgecrewio/checkov/pull/4909)
+- **terraform:** remove local blocks with just line number - [#4902](https://github.com/bridgecrewio/checkov/pull/4902)
+
+## [2.3.171](https://github.com/bridgecrewio/checkov/compare/2.3.165...2.3.171) - 2023-04-16
+
+### Feature
+
+- **secrets:** improve timing git history - [#4890](https://github.com/bridgecrewio/checkov/pull/4890)
+- **terraform:** add support for list of dicts in for loop - [#4895](https://github.com/bridgecrewio/checkov/pull/4895)
+
+### Bug Fix
+
+- **cloudformation:** fix invalid fn sub param in cfn - [#4900](https://github.com/bridgecrewio/checkov/pull/4900)
+- **secrets:** fix error if writing to file when don't have access - [#4896](https://github.com/bridgecrewio/checkov/pull/4896)
+- **secrets:** fix None in file name - [#4899](https://github.com/bridgecrewio/checkov/pull/4899)
+- **secrets:** reduce false positives in yaml files - case of serverless and secretmanager - [#4892](https://github.com/bridgecrewio/checkov/pull/4892)
+
+## [2.3.165](https://github.com/bridgecrewio/checkov/compare/2.3.160...2.3.165) - 2023-04-13
+
+### Feature
+
+- **terraform:** ECS Service should not auto assign public IPs 333  - [#4777](https://github.com/bridgecrewio/checkov/pull/4777)
+- **terraform:** EFS access points should define a user and a path 329-330  - [#4768](https://github.com/bridgecrewio/checkov/pull/4768)
+- **terraform:** Ensure ECS Fargate uses latest version 332 - [#4775](https://github.com/bridgecrewio/checkov/pull/4775)
+- **terraform:** Transit gateway should not be set  up to autoaccept any VPC 331  - [#4770](https://github.com/bridgecrewio/checkov/pull/4770)
+
+### Bug Fix
+
+- **general:** fix duplicate sarif output - [#4886](https://github.com/bridgecrewio/checkov/pull/4886)
+- **secrets:** fix slicing in githistory  - [#4889](https://github.com/bridgecrewio/checkov/pull/4889)
+- **terraform:** exclude GCP asymmetric keys from key rotation - [#4879](https://github.com/bridgecrewio/checkov/pull/4879)
+- **terraform:** Paid is now standard - [#4880](https://github.com/bridgecrewio/checkov/pull/4880)
+- **terraform:** support empty filter in S3 lifecycle config - [#4875](https://github.com/bridgecrewio/checkov/pull/4875)
+
+## [2.3.160](https://github.com/bridgecrewio/checkov/compare/2.3.158...2.3.160) - 2023-04-11
+
+### Bug Fix
+
+- **general:** catch unexpected errors when querying OpenAI - [#4883](https://github.com/bridgecrewio/checkov/pull/4883)
+
+## [2.3.158](https://github.com/bridgecrewio/checkov/compare/2.3.155...2.3.158) - 2023-04-10
+
+### Feature
+
+- **secrets:** Add fields to record of secrets in git history - [#4838](https://github.com/bridgecrewio/checkov/pull/4838)
+
+### Bug Fix
+
+- **terraform_plan:** Handled TFDefinitionKey in plan runner as well - [#4864](https://github.com/bridgecrewio/checkov/pull/4864)
 
 ## [2.3.155](https://github.com/bridgecrewio/checkov/compare/2.3.152...2.3.155) - 2023-04-09
 

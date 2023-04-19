@@ -37,7 +37,7 @@ class GitHistorySecretStore:
             equal_secret_in_commit[secret_key].append(ADDED if secret.is_added else REMOVED)
 
         for secret in file_results:
-            if secret.filename in ['None', '']:
+            if not secret.filename or 'None' in secret.filename:
                 secret.filename = file_name
             secret_key = get_secret_key(file_name, secret.secret_hash, secret.type)
             if all(value in equal_secret_in_commit[secret_key] for value in GIT_HISTORY_OPTIONS):
@@ -57,9 +57,10 @@ class GitHistorySecretStore:
             # Update secret map with the new potential secret
             if all_removed:
                 self.secrets_by_file_value_type[secret_key][0].update({'potential_secret': secret,
-                                                                       'removed_commit_hash': ''})
+                                                                       'removed_commit_hash': '',
+                                                                       'removed_date': ''})
                 return
-        code_line = search_for_code_line(commit.files[secret.filename], secret.secret_value, secret.is_added)
+        code_line = search_for_code_line(commit.files.get(secret.filename, ''), secret.secret_value, secret.is_added)
         enriched_potential_secret: EnrichedPotentialSecret = {
             'added_commit_hash': commit.metadata.commit_hash,
             'removed_commit_hash': '',
@@ -110,7 +111,7 @@ class GitHistorySecretStore:
                     temp_secrets_by_file_value_type[new_secret_key].append(enriched_potential_secret)
         self.secrets_by_file_value_type.update(temp_secrets_by_file_value_type)
 
-    def get_added_and_removed_commit_hash(self, key: str, secret: PotentialSecret) -> EnrichedPotentialSecretMetadata:
+    def get_added_and_removed_commit_hash(self, key: str, secret: PotentialSecret, root_folder: Optional[str]) -> EnrichedPotentialSecretMetadata:
         """
         now we have only the current commit_hash - in the added_commit_hash or in the removed_commit_hash.
         in the next step we will add the connection and the missing data
@@ -121,10 +122,19 @@ class GitHistorySecretStore:
         """
         try:
             secret_key = get_secret_key(secret.filename, secret.secret_hash, secret.type)  # by value type
-            enriched_secrets = self.secrets_by_file_value_type[secret_key]
+            enriched_secrets: List[EnrichedPotentialSecret] = self.secrets_by_file_value_type.get(secret_key, [])
+            if not enriched_secrets and root_folder:
+                # sometimes the secret key is from the project path instead of abs path
+                filename = f'{root_folder}/{secret.filename}'
+                secret_key = get_secret_key(filename, secret.secret_hash, secret.type)  # by value type
+                enriched_secrets = self.secrets_by_file_value_type.get(secret_key, [])
+                if not enriched_secrets:
+                    logging.warning(f'Did not find added_commit_hash and removed_commit_hash for {secret_key}')
+                    return {}
             chosen_secret = enriched_secrets[0]
             if len(enriched_secrets) > 1:
-                added, removed, _file = key.split("_")
+                res = key.split("_")
+                added, removed = res[0], res[1]
                 if removed == GIT_HISTORY_NOT_BEEN_REMOVED:
                     removed = ''
                 for enriched_secret in enriched_secrets:
@@ -142,11 +152,13 @@ class GitHistorySecretStore:
                 'added_date': chosen_secret.get('added_date')
             }
         except Exception as e:
-            logging.warning(f"Failed set added_commit_hash and removed_commit_hash due to: {e}")
+            logging.warning(f"Failed set added_commit_hash and removed_commit_hash due to: {str(e)}")
             return {}
 
 
 def search_for_code_line(commit_diff: CommitDiff, secret_value: Optional[str], is_added: Optional[bool]) -> str:
+    if not commit_diff:
+        logging.warning(f'missing file name for {commit_diff}, hence no available code line')
     if secret_value is None:
         return ''
     splitted = commit_diff.split('\n')
