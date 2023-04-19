@@ -6,7 +6,7 @@ import os
 import platform
 from typing import TYPE_CHECKING, Optional, List, Tuple
 
-from git import Repo
+
 
 from checkov.common.util.stopit import ThreadingTimeout, SignalTimeout, TimeoutException
 from checkov.common.util.decorators import time_it
@@ -22,6 +22,7 @@ if TYPE_CHECKING:
 os.environ["GIT_PYTHON_REFRESH"] = "quiet"
 try:
     import git
+    from git import Repo
 
     git_import_error = None
 except ImportError as e:
@@ -50,7 +51,7 @@ class GitHistoryScanner:
         # mark the scan to finish within the timeout
         with timeout_class(self.timeout) as to_ctx_mgr:
             if not self.set_repo():
-                logging.info(f"Couldn't set git repo. Cannot proceed with git history scan.")
+                logging.info("Couldn't set git repo. Cannot proceed with git history scan.")
                 return False
             scanned = self._scan_history(last_commit_scanned)
         if to_ctx_mgr.state == to_ctx_mgr.TIMED_OUT:
@@ -216,7 +217,7 @@ class GitHistoryScanner:
     def _get_first_commit(self) -> List[Commit]:
         first_commit_sha = self.repo.git.log('--format=%H', '--max-parents=0', 'HEAD').split()[0]
         first_commit = self.repo.commit(first_commit_sha)
-        empty_tree_sha = bytes.fromhex(hashlib.sha1(b'tree 0\0').hexdigest())
+        empty_tree_sha = bytes.fromhex(hashlib.sha1(b'tree 0\0', usedforsecurity=False).hexdigest())
         empty_tree = git.Tree(self.repo, empty_tree_sha)
         git_diff = empty_tree.diff(first_commit, create_patch=True)
 
