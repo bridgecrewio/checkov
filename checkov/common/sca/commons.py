@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import List, Optional, Any
 
 from checkov.common.output.common import SCADetails
-from checkov.common.packaging import version as packaging_version
 
 UNFIXABLE_VERSION = "N/A"
 OPEN_STATUS = "open"
