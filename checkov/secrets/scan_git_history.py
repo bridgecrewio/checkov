@@ -6,8 +6,6 @@ import os
 import platform
 from typing import TYPE_CHECKING, Optional, List, Tuple
 
-
-
 from checkov.common.util.stopit import ThreadingTimeout, SignalTimeout, TimeoutException
 from checkov.common.util.decorators import time_it
 from checkov.common.parallelizer.parallel_runner import parallel_runner
@@ -105,13 +103,12 @@ class GitHistoryScanner:
             logging.warning(f"Unable to load git module (is the git executable available?) {git_import_error}")
             return False
         try:
-            self.repo = git.Repo(root_folder)
+            self.repo = Repo(root_folder)
             return True
         except Exception as e:
             logging.error(f"Folder {root_folder} is not a GIT project {e}")
             return False
 
-    @time_it
     def _get_commits_diff(self, root_folder: str, last_commit_sha: Optional[str] = None) -> List[Commit]:
         """
         :param: last_commit_sha = is the last commit we have already scanned. in case it exist the function will
