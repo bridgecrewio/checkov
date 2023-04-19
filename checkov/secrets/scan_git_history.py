@@ -3,10 +3,10 @@ from __future__ import annotations
 import logging
 import os
 import platform
-import shutil
-from pathlib import Path
-
 from typing import TYPE_CHECKING, Optional, List, Tuple
+
+from gitdb.util import to_bin_sha
+
 from checkov.common.util.stopit import ThreadingTimeout, SignalTimeout, TimeoutException
 from checkov.common.util.decorators import time_it
 from checkov.common.parallelizer.parallel_runner import parallel_runner
@@ -52,7 +52,6 @@ class GitHistoryScanner:
             if not self.set_repo():
                 logging.info(f"Couldn't set git repo. Cannot proceed with git history scan.")
                 return False
-            self._scan_first_commit()
             scanned = self._scan_history(last_commit_scanned)
         if to_ctx_mgr.state == to_ctx_mgr.TIMED_OUT:
             logging.info(f"timeout reached ({self.timeout}), stopping scan.")
@@ -61,7 +60,8 @@ class GitHistoryScanner:
         return scanned
 
     def _scan_history(self, last_commit_scanned: Optional[str] = '') -> bool:
-        self.commits_diff = self._get_commits_diff(self.root_folder, last_commit_sha=last_commit_scanned)
+        self._get_first_commit()
+        self._get_commits_diff(self.root_folder, last_commit_sha=last_commit_scanned)
         if self.commits_diff is None:
             return False
         logging.info(f"[_scan_history] got {len(self.commits_diff)} files diffs in {self.commits_count} commits")
@@ -212,49 +212,27 @@ class GitHistoryScanner:
             scanned_file_count += 1
         return results, scanned_file_count
 
-    def _scan_first_commit(self):
+    @time_it
+    def _get_first_commit(self):
         first_commit_sha = self.repo.git.log('--format=%H', '--max-parents=0', 'HEAD').split()[0]
         first_commit = self.repo.commit(first_commit_sha)
-        files_changed = self.repo.git.show('--pretty=format:', '--name-only', first_commit).splitlines()
+        empty_tree = git.Tree(self.repo, to_bin_sha("4b825dc642cb6eb9a060e54bf8d69288fbee4904"))
+        git_diff = empty_tree.diff(first_commit, create_patch=True)
 
-        commit_diff: Commit = Commit(
+        first_commit_diff: Commit = Commit(
             metadata=CommitMetadata(
                 commit_hash=first_commit.hexsha,
                 committer=first_commit.committer.name or '',
                 committed_datetime=first_commit.committed_datetime.isoformat()
-            ),
-            is_first=True
+            )
         )
 
-        tmp_git_history_dir = Path(__file__).parent / 'tmp_git_history'
-        if not os.path.exists(tmp_git_history_dir):
-            os.makedirs(tmp_git_history_dir, exist_ok=True)
-
-        # create all the folders first
-        for item in first_commit.tree.traverse():
-            if item.type == 'blob':
-                file_data = item.data_stream.read()
-                with open(os.path.join(tmp_git_history_dir, item.path), 'wb') as f:
-                    f.write(file_data)
-            elif item.type == 'tree':
-                os.makedirs(os.path.join(tmp_git_history_dir, item.path), exist_ok=True)
-
-        # Get the content of each file changed in the first commit
-        for file_name in files_changed:
-            file_content = self.repo.git.show('{}:{}'.format(first_commit, file_name))
-            file_path = str(tmp_git_history_dir / file_name)
-            # file_diff = f"--- ''\n+++ {file_path}\n@@ -1 +0,0 @@\n-{file_content}\n"
-            # file_results = [*scan.scan_diff(file_diff)]
-            file_results = [*scan.scan_file(file_path)]
-            if file_results:
-                for potential_secret in file_results:
-                    potential_secret.is_added = True
-                logging.info(
-                    f"Found {len(file_results)} secrets in file path {file_name} in first commit {first_commit_sha}")
-
-                commit_diff.add_file(filename=file_path, commit_diff=file_content)
-                self.raw_store.append(RawStore(file_results=file_results, file_name=file_path, commit=commit_diff,
-                                               type=FILE_RESULTS_STR, rename_from='', rename_to=''))
-
-        if os.path.exists(tmp_git_history_dir):
-            shutil.rmtree(tmp_git_history_dir)
+        for file_diff in git_diff:
+            file_name = file_diff.b_path
+            if file_name.endswith(FILES_TO_IGNORE_IN_GIT_HISTORY):
+                continue
+            file_path = os.path.join(self.root_folder, file_name)
+            base_diff_format = f"--- ''\n+++ {file_path}\n"
+            full_diff_format = base_diff_format + file_diff.diff.decode('utf-8')
+            first_commit_diff.add_file(filename=file_path, commit_diff=full_diff_format)
+        self.commits_diff.append(first_commit_diff)
