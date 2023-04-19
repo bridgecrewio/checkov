@@ -17,7 +17,7 @@ def filter_excluded_paths(
 ) -> None:
     """Special build of checkov.common.runners.base_runner.filter_ignored_paths for Secrets scanning"""
 
-    # old logic
+    # support for the --skip-path flag
     if excluded_paths:
         compiled = []
         for p in excluded_paths:
@@ -32,7 +32,7 @@ def filter_excluded_paths(
             if any(pattern.search(full_path) for pattern in compiled) or any(p in full_path for p in excluded_paths):
                 safe_remove(names, entry)
 
-    # new logic
+    # support for our own excluded paths list
     for entry in list(names):
         path = entry.name if isinstance(entry, os.DirEntry) else entry
         if path in EXCLUDED_PATHS:
