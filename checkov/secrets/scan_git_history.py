@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+import hashlib
 import logging
 import os
 import platform
 from typing import TYPE_CHECKING, Optional, List, Tuple
 
-from gitdb.util import to_bin_sha
+from git import Repo
 
 from checkov.common.util.stopit import ThreadingTimeout, SignalTimeout, TimeoutException
 from checkov.common.util.decorators import time_it
@@ -41,7 +42,7 @@ class GitHistoryScanner:
         # in case we start from mid-history (git) we want to continue from where we've been
         self.history_store: GitHistorySecretStore = history_store or GitHistorySecretStore()
         self.raw_store: List[RawStore] = []
-        self.repo = None
+        self.repo: Repo
 
     def scan_history(self, last_commit_scanned: Optional[str] = '') -> bool:
         """return true if the scan finished without timeout"""
@@ -212,10 +213,11 @@ class GitHistoryScanner:
         return results, scanned_file_count
 
     @time_it
-    def _get_first_commit(self):
+    def _get_first_commit(self) -> List[Commit]:
         first_commit_sha = self.repo.git.log('--format=%H', '--max-parents=0', 'HEAD').split()[0]
         first_commit = self.repo.commit(first_commit_sha)
-        empty_tree = git.Tree(self.repo, to_bin_sha("4b825dc642cb6eb9a060e54bf8d69288fbee4904"))
+        empty_tree_sha = bytes.fromhex(hashlib.sha1(b'tree 0\0').hexdigest())
+        empty_tree = git.Tree(self.repo, empty_tree_sha)
         git_diff = empty_tree.diff(first_commit, create_patch=True)
 
         first_commit_diff: Commit = Commit(
