@@ -11,7 +11,7 @@ from checkov.common.models.enums import CheckResult
 from checkov.common.output.common import format_string_to_licenses, is_raw_formatted
 from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME
 from checkov.common.output.report import Report, CheckType
-from checkov.common.sca.commons import get_lowest_fix_version, UNFIXABLE_VERSION
+from checkov.common.sca.commons import get_fix_version, UNFIXABLE_VERSION
 from checkov.common.util.consts import CHECKOV_DISPLAY_REGISTRY_URL
 
 if TYPE_CHECKING:
@@ -84,7 +84,7 @@ class CSVSBOM:
             CheckType.SCA_IMAGE: self.container_rows
         }
 
-        fix_version = self.get_fix_version(resource.vulnerability_details)
+        fix_version = self.get_fix_version_overview(resource.vulnerability_details)
         csv_table[check_type].append(
             {
                 "Package": resource.vulnerability_details["package_name"],
@@ -104,12 +104,11 @@ class CSVSBOM:
         if CHECKOV_DISPLAY_REGISTRY_URL:
             csv_table[check_type][-1]["Registry URL"] = registry_url
 
-    def get_fix_version(self, vulnerability_details: dict[str, Any]) -> str:
+    def get_fix_version_overview(self, vulnerability_details: dict[str, Any]) -> str:
         is_private_fix = vulnerability_details.get("is_private_fix")
         public_fix_version_suffix = " (Public)" if is_private_fix is False else ""
-        lowest_fix_version: str = get_lowest_fix_version(vulnerability_details)
-        fix_version = lowest_fix_version + public_fix_version_suffix if lowest_fix_version and lowest_fix_version != UNFIXABLE_VERSION else lowest_fix_version
-        return fix_version
+        fix_version: str = get_fix_version(vulnerability_details)
+        return fix_version + public_fix_version_suffix if fix_version and fix_version != UNFIXABLE_VERSION else fix_version
 
     def add_iac_resources(self, resource: Record | ExtraResource, git_org: str, git_repository: str) -> None:
         resource_id = f"{git_org}/{git_repository}/{resource.file_path}/{resource.resource}"
