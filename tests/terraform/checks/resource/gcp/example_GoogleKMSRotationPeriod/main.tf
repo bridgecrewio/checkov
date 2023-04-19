@@ -24,3 +24,11 @@ resource "google_kms_crypto_key" "default" {
   name     = "crypto-key-example"
   key_ring = "google_kms_key_ring.keyring.id"
 }
+
+# unknown
+
+resource "google_kms_crypto_key" "asymmetric" {
+  name     = "crypto-key-example"
+  key_ring = "google_kms_key_ring.keyring.id"
+  purpose  = "ASYMMETRIC_SIGN"
+}

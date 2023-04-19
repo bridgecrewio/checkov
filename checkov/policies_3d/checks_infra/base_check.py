@@ -4,6 +4,7 @@ from typing import Optional, Dict, Any, TYPE_CHECKING
 
 
 from checkov.common.graph.checks_infra.enums import SolverType
+from checkov.policies_3d.syntax.syntax import Predicament
 
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.severities import Severity
@@ -22,3 +23,4 @@ class Base3dPolicyCheck:
         self.bc_category: Optional[str] = None
         self.iac: Dict[str, Any] = {}
         self.cve: Dict[CVECheckAttribute, Any] = {}
+        self.predicaments: list[Predicament] = []
