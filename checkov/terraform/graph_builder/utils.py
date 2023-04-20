@@ -29,7 +29,6 @@ def is_local_path(root_dir: str, source: str) -> bool:
         source.startswith("./")
         or source.startswith("/./")
         or source.startswith("../")
-        or source in os.listdir(root_dir)
     )
 
 
