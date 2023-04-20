@@ -1,6 +1,40 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.176...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.187...HEAD)
+
+## [2.3.187](https://github.com/bridgecrewio/checkov/compare/2.3.183...2.3.187) - 2023-04-19
+
+### Feature
+
+- **general:** 3D policies syntax refactor - [#4865](https://github.com/bridgecrewio/checkov/pull/4865)
+- **secrets:** support scanning of secrets in hidden paths - [#4925](https://github.com/bridgecrewio/checkov/pull/4925)
+
+### Bug Fix
+
+- **secrets:** Revert timeout in unix to work with signals - [#4932](https://github.com/bridgecrewio/checkov/pull/4932)
+- **secrets:** timeout in unix to work with signals - [#4933](https://github.com/bridgecrewio/checkov/pull/4933)
+
+### Documentation
+
+- **secrets:** Add readme file for Git History - [#4913](https://github.com/bridgecrewio/checkov/pull/4913)
+
+## [2.3.183](https://github.com/bridgecrewio/checkov/compare/2.3.176...2.3.183) - 2023-04-18
+
+### Feature
+
+- **sca:** add is public fix version to sbom report  - [#4915](https://github.com/bridgecrewio/checkov/pull/4915)
+- **secrets:** add more files to ignore list in git history - [#4912](https://github.com/bridgecrewio/checkov/pull/4912)
+- **terraform:** Ensure that container definition is not privileged 334 - [#4779](https://github.com/bridgecrewio/checkov/pull/4779)
+- **terraform:** TF provider check support - [#4911](https://github.com/bridgecrewio/checkov/pull/4911)
+
+### Bug Fix
+
+- **general:** Dedup results contain multiple identical images if using template syntax - [#4924](https://github.com/bridgecrewio/checkov/pull/4924)
+- **general:** fix wrong abs path in IR record - [#4919](https://github.com/bridgecrewio/checkov/pull/4919)
+- **secrets:** Save fetched policy destination from current work dir to temp - [#4914](https://github.com/bridgecrewio/checkov/pull/4914)
+- **secrets:** timeout in unix to work with signals - [#4920](https://github.com/bridgecrewio/checkov/pull/4920)
+- **terraform:** Fix for_each flow conditions - [#4918](https://github.com/bridgecrewio/checkov/pull/4918)
+- **terraform:** make sure K8s volume is a dict - [#4917](https://github.com/bridgecrewio/checkov/pull/4917)
 
 ## [2.3.176](https://github.com/bridgecrewio/checkov/compare/2.3.171...2.3.176) - 2023-04-17
 

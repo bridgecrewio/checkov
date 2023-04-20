@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING, Any
 
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
 from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.common.bridgecrew.severities import Severities
 from checkov.policies_3d.checks_parser import Policy3dParser
 from checkov.policies_3d.runner import Policy3dRunner
 
@@ -67,20 +66,11 @@ class Policies3DIntegration(BaseIntegrationFeature):
 
             policies = self.bc_integration.customer_run_config_response.get('Policies3D')
             logging.debug(f'Got {len(policies)} 3d policies from the platform.')
-            checks = []
-            runner = Policy3dRunner()
-            for policy in policies:
-                try:
-                    logging.debug(f"Loading 3d policy id: {policy.get('id')}")
-                    converted_check = self._convert_raw_check(policy)
-                    check = self.platform_policy_parser.parse_raw_check(converted_check)
-                    check.severity = Severities[policy['severity']]
-                    check.bc_id = check.id
-                    checks.append(check)
-                except Exception:
-                    logging.debug(f"Failed to load 3d policy id: {policy.get('id')}", exc_info=True)
+            if not policies:
+                return None
 
-            report = runner.run(checks=checks, scan_reports=scan_reports)
+            runner = Policy3dRunner()
+            report = runner.run_v2(raw_checks=policies, scan_reports=scan_reports)
             return report
 
         except Exception as e:

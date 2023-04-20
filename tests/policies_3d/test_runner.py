@@ -113,3 +113,19 @@ def test_runner_and_logic_for_iac_checks(policy_3d_3, scan_reports_2):
     assert len(report.parsing_errors) == 0
     assert len(report.passed_checks) == 0
     assert len(report.skipped_checks) == 0
+
+
+def test_run_v2(raw_3d_policy, scan_reports):
+    # Arrange
+    runner = Policy3dRunner()
+
+    # Act
+    report = runner.run_v2([raw_3d_policy], scan_reports)
+
+    # Assert
+    assert report
+    assert len(report.failed_checks) == 1
+    assert len(report.passed_checks) == 1
+    assert len(report.failed_checks[0].composed_from_cves) == 2
+    assert len(report.failed_checks[0].composed_from_iac_records) == 1
+
