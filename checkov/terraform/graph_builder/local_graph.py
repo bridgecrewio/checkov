@@ -68,6 +68,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         if (self.enable_foreach_handling or self.enable_modules_foreach_handling) \
                 and (self.foreach_blocks[BlockType.RESOURCE] or self.foreach_blocks[BlockType.MODULE]):
             try:
+                logging.info('[TerraformLocalGraph] start handling foreach')
                 foreach_builder = ForeachBuilder(self)
                 foreach_builder.handle(self.foreach_blocks)
                 self._arrange_graph_data()
@@ -209,7 +210,8 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         for origin_node_index, vertex in enumerate(self.vertices):
             self._build_edges_for_vertex(origin_node_index, vertex, aliases, resources_types)
 
-    def _build_edges_for_vertex(self, origin_node_index: int, vertex: TerraformBlock, aliases: Dict[str, Dict[str, BlockType]], resources_types: List[str], cross_variable_edges: bool = False, referenced_module: Optional[Dict[str, Any]] = None):
+    def _build_edges_for_vertex(self, origin_node_index: int, vertex: TerraformBlock, aliases: Dict[str, Dict[str, BlockType]],
+                                resources_types: List[str], cross_variable_edges: bool = False, referenced_module: Optional[Dict[str, Any]] = None):
         referenced_module_idx = referenced_module.get("idx") if referenced_module else None
         referenced_module_path = referenced_module.get("path") if referenced_module else None
         referenced_module_object = referenced_module.get("source_module_object") if referenced_module else None
@@ -235,8 +237,10 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                     if referenced_module is not None:
                         source_module_object = referenced_module_object if source_module_object else None
                         dest_node_index = self._find_vertex_index_relative_to_path(
-                            vertex_reference.block_type, reference_name, referenced_module_path, vertex.module_dependency,
-                            vertex.module_dependency_num, referenced_module_idx, source_module_object=source_module_object
+                            vertex_reference.block_type, reference_name, referenced_module_path,
+                            vertex.module_dependency,
+                            vertex.module_dependency_num, referenced_module_idx,
+                            source_module_object=source_module_object
                         )
                     elif vertex.module_dependency or hasattr(vertex, "source_module_object"):
                         dest_node_index = self._find_vertex_index_relative_to_path(
@@ -311,17 +315,16 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             ]
 
     def _build_cross_variable_edges(self):
-        target_nodes_indexes = [v for v, referenced_vertices in self.out_edges.items() if
-                                self.vertices[v].block_type == BlockType.RESOURCE and any(
-            self.vertices[e.dest].block_type != BlockType.RESOURCE for e in referenced_vertices)]
         aliases = self._get_aliases()
         resources_types = self.get_resources_types_in_graph()
-        for origin_node_index in target_nodes_indexes:
+        for origin_node_index, referenced_vertices in self.out_edges.items():
             vertex = self.vertices[origin_node_index]
-            self._build_edges_for_vertex(origin_node_index, vertex, aliases, resources_types, True)
-            modules = vertex.breadcrumbs.get(CustomAttributes.SOURCE_MODULE, [])
-            for module in modules:
-                self._build_edges_for_vertex(origin_node_index, vertex, aliases, resources_types, True, module)
+            if vertex.block_type == BlockType.RESOURCE and \
+                    any(self.vertices[e.dest].block_type != BlockType.RESOURCE for e in referenced_vertices):
+                self._build_edges_for_vertex(origin_node_index, vertex, aliases, resources_types, True)
+                modules = vertex.breadcrumbs.get(CustomAttributes.SOURCE_MODULE, [])
+                for module in modules:
+                    self._build_edges_for_vertex(origin_node_index, vertex, aliases, resources_types, True, module)
 
     def _create_edge(self, origin_vertex_index: int, dest_vertex_index: int, label: str,
                      cross_variable_edges: bool = False) -> bool:
