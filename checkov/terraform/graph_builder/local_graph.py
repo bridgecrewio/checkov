@@ -263,10 +263,9 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                             vertex_reference.block_type, reference_name, vertex.path, vertex.module_dependency,
                             vertex.module_dependency_num, source_module_object=source_module_object
                         )
-                    if dest_node_index > -1 and origin_node_index > -1:
-                        self._create_edge_from_reference(attribute_key, origin_node_index, dest_node_index, sub_values,
-                                                         vertex_reference, cross_variable_edges)
-                        break
+                    self._create_edge_from_reference(attribute_key, origin_node_index, dest_node_index,
+                                                         sub_values, vertex_reference, cross_variable_edges)
+                    break
 
         if vertex.block_type == BlockType.MODULE and vertex.attributes.get('source') \
                 and isinstance(vertex.attributes.get('source')[0], str):
@@ -292,7 +291,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             if len(target_variables) == 1:
                 self._create_edge(target_variables[0], origin_node_index, "default", cross_variable_edges)
 
-    def _create_edge_from_reference(self, attribute_key: Any, origin_node_index: int, dest_node_index: int,
+    def _create_edge_from_reference(self, attribute_key: Any,  origin_node_index: int, dest_node_index: int,
                                     sub_values: List[Any], vertex_reference: TerraformVertexReference,
                                     cross_variable_edges: bool) -> None:
         if dest_node_index > -1 and origin_node_index > -1:
