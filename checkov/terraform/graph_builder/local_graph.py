@@ -318,14 +318,13 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         aliases = self._get_aliases()
         resources_types = self.get_resources_types_in_graph()
         for v, referenced_vertices in self.out_edges.items():
-            if self.vertices[v].block_type == BlockType.RESOURCE and \
+            vertex = self.vertices[v]
+            if vertex.block_type == BlockType.RESOURCE and \
                     any(self.vertices[e.dest].block_type != BlockType.RESOURCE for e in referenced_vertices):
-                origin_node_index = v
-                vertex = self.vertices[origin_node_index]
-                self._build_edges_for_vertex(origin_node_index, vertex, aliases, resources_types, True)
+                self._build_edges_for_vertex(v, vertex, aliases, resources_types, True)
                 modules = vertex.breadcrumbs.get(CustomAttributes.SOURCE_MODULE, [])
                 for module in modules:
-                    self._build_edges_for_vertex(origin_node_index, vertex, aliases, resources_types, True, module)
+                    self._build_edges_for_vertex(v, vertex, aliases, resources_types, True, module)
 
     def _create_edge(self, origin_vertex_index: int, dest_vertex_index: int, label: str,
                      cross_variable_edges: bool = False) -> bool:
