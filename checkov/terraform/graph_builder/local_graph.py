@@ -419,13 +419,13 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             module_dependency_by_name_key = source_module_object
         elif relative_module_idx is not None:
             relative_vertex = self.vertices[relative_module_idx]
-            relative_source_module_idx = relative_vertex.source_module
-            if len(relative_source_module_idx) == 0:
+            relative_source_module_set = relative_vertex.source_module
+            if len(relative_source_module_set) == 0:
                 module_dependency_by_name_key = (None, None)
             else:
-                relative_source_vertex = self.vertices[relative_source_module_idx.pop()]
+                relative_source_module_idx = list(relative_source_module_set)[0]
+                relative_source_vertex = self.vertices[relative_source_module_idx]
                 module_dependency_by_name_key = (relative_source_vertex.path, relative_vertex.module_dependency_num)
-            # module_dependency_by_name_key = next(k for k, v in self.vertices_by_module_dependency.items() if v.get(BlockType.MODULE, []).__contains__(relative_module_idx))
         else:
             module_dependency_by_name_key = (module_path, module_num)
         possible_vertices = self.vertices_by_module_dependency_by_name.get(module_dependency_by_name_key, {}).get(block_type, {}).get(name, [])  # important to use this specific map for big graph performance
