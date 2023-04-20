@@ -36,7 +36,7 @@ class GitHistoryScanner:
                  history_store: Optional[GitHistorySecretStore] = None, timeout: int = 43200):
         """
         root_folder: is necessary for initializing the Repo to read from
-        secrets: an object which will be field with secrets during the run of the secrets scan
+        secrets: an object which will be filled with secrets during the run of the secrets scan
         history_store: a helper objects which will be field during the run, to map between found secrets and commits. is not used afterwards for outside-of-class work
         """
         self.root_folder = root_folder
