@@ -27,36 +27,46 @@ class RegistryLoader(ModuleLoader):
         self.best_version = ""
 
     def discover(self, module_params):
-        module_params.REGISTRY_URL_PREFIX = os.getenv("REGISTRY_URL_PREFIX", "https://registry.terraform.io/v1/modules")
+        module_params.tf_host_name = os.getenv("TF_HOST_NAME", TFC_HOST_NAME)
         module_params.token = os.getenv("TFC_TOKEN", "")
 
     def _is_matching_loader(self, module_params: ModuleParams) -> bool:
-
-        # Since the registry loader is the first one to be checked,
-        # it shouldn't process any github modules
-        if module_params.module_source.startswith(("github.com", "bitbucket.org", "git::")):
+        if module_params.module_source.startswith("git::"):
             return False
-
+            
         self._process_inner_registry_module(module_params)
         if os.path.exists(module_params.dest_dir):
             return True
 
-        if module_params.module_source.startswith(TFC_HOST_NAME):
-            # indicates a private registry module
-            module_params.REGISTRY_URL_PREFIX = f"https://{TFC_HOST_NAME}/api/registry/v1/modules"
-            module_params.module_source = module_params.module_source.replace(f"{TFC_HOST_NAME}/", "")
-        else:
-            # url for the public registry
-            module_params.REGISTRY_URL_PREFIX = "https://registry.terraform.io/v1/modules"
-
-        if module_params.module_source.startswith(module_params.REGISTRY_URL_PREFIX):
-            # TODO: implement registry url validation using remote service discovery
+        if module_params.module_source.startswith(module_params.tf_host_name):
+            module_params.module_source = module_params.module_source.replace(f"{module_params.tf_host_name}/", "")
             # https://www.terraform.io/internals/remote-service-discovery#remote-service-discovery
-            pass
-        module_params.module_version_url = "/".join((module_params.REGISTRY_URL_PREFIX, module_params.module_source, "versions"))
-        if not module_params.module_version_url.startswith(module_params.REGISTRY_URL_PREFIX):
-            # Local paths don't get the prefix appended
-            return False
+            # based on tf_host_name construct the service discovery url and check if the server supports native Terraform services
+            try:
+                response = requests.get(
+                    url=f"https://{module_params.tf_host_name}/.well-known/terraform.json",
+                    timeout=DEFAULT_TIMEOUT,
+                    # delete
+                    verify=False
+                )
+                response.raise_for_status()
+            except HTTPError as e:
+                self.logger.debug(e)
+                if response.status_code != HTTPStatus.OK and response.status_code != HTTPStatus.NO_CONTENT:
+                    return False
+
+            self.logger.debug(f"Service discovery response: {response.json()}")
+            module_params.tf_modules_url = f"https://{module_params.tf_host_name}{response.json().get('modules.v1')}"
+            module_params.module_version_url = "/".join((module_params.tf_modules_url, module_params.module_source, "versions"))
+        else:
+            # use terraform cloud host name and url for the public registry
+            module_params.tf_host_name = TFC_HOST_NAME
+            module_params.tf_modules_url = "https://registry.terraform.io/v1/modules"
+            module_params.module_version_url = "/".join((module_params.tf_modules_url, module_params.module_source, "versions"))
+
+        # if not module_params.module_version_url.startswith(module_params.tf_host_name):
+        #     # Local paths don't get the prefix appended
+        #     return False
 
         # If versions for a module are cached, determine the best version and return True.
         # If versions are not cached, get versions, then determine the best version and return True.
@@ -70,7 +80,7 @@ class RegistryLoader(ModuleLoader):
 
         if not module_params.inner_module:
             module_params.dest_dir = os.path.join(module_params.root_dir, module_params.external_modules_folder_name,
-                                                  TFC_HOST_NAME, *module_params.module_source.split("/"),
+                                                  module_params.tf_host_name, *module_params.module_source.split("/"),
                                                   module_params.best_version)
         if os.path.exists(module_params.dest_dir):
             return True
@@ -84,14 +94,16 @@ class RegistryLoader(ModuleLoader):
             return ModuleContent(dir=module_params.dest_dir)
 
         best_version = module_params.best_version
-        logging.debug(
-            f"Best version for {module_params.module_source} is {best_version} based on the version constraint {module_params.version}")
-        request_download_url = "/".join((module_params.REGISTRY_URL_PREFIX, module_params.module_source, best_version, "download"))
+        request_download_url = "/".join((module_params.tf_modules_url, module_params.module_source, best_version, "download"))
+        logging.debug(f"Best version for {module_params.module_source} is {best_version} based on the version constraint {module_params.version}.")
+        logging.debug(f"Module download url: {request_download_url}")
         try:
             response = requests.get(
                 url=request_download_url,
                 headers={"Authorization": f"Bearer {module_params.token}"},
-                timeout=DEFAULT_TIMEOUT
+                timeout=DEFAULT_TIMEOUT,
+                # delete
+                verify=False
             )
             response.raise_for_status()
         except HTTPError as e:
@@ -102,7 +114,7 @@ class RegistryLoader(ModuleLoader):
             # https://www.terraform.io/registry/api-docs#download-source-code-for-a-specific-module-version
             module_download_url = response.headers.get('X-Terraform-Get', '')
             self.logger.debug(f"Cloning module from: X-Terraform-Get: {module_download_url}")
-            if module_download_url.startswith("https://archivist.terraform.io/v1/object"):
+            if module_download_url.startswith("https://archivist.terraform.io/v1/object") or module_download_url.startswith(f"https://{module_params.tf_host_name}/_archivist/v1/object"):
                 try:
                     registry_getter = RegistryGetter(module_download_url)
                     registry_getter.temp_dir = module_params.dest_dir
@@ -149,6 +161,8 @@ class RegistryLoader(ModuleLoader):
                 url=module_params.module_version_url,
                 headers={"Authorization": f"Bearer {module_params.token}"},
                 timeout=DEFAULT_TIMEOUT,
+                # delete
+                verify=False
             )
             response.raise_for_status()
             available_versions = [
