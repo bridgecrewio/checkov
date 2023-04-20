@@ -45,7 +45,7 @@ def mock_get_first_commit(self) -> List[Commit]:
     return commits_mock
 
 
-def mock_git_repo_commits1(self, root_folder: str, last_commit_sha: str) -> List[Commit]:
+def mock_git_repo_commits1(self, last_commit_sha: str) -> List[Commit]:
     """
         add secret (secret1 added) - +1
         move the secret to different line - 0
@@ -98,7 +98,7 @@ def mock_git_repo_commits1(self, root_folder: str, last_commit_sha: str) -> List
     return commits_mock
 
 
-def mock_git_repo_commits2(self, root_folder: str, last_commit_sha: str) -> List[Commit]:
+def mock_git_repo_commits2(self, last_commit_sha: str) -> List[Commit]:
     """
         add secret (secret1 added) - +1
         move the secret to different line - 0
@@ -152,7 +152,7 @@ def mock_git_repo_commits2(self, root_folder: str, last_commit_sha: str) -> List
     return commits_mock
 
 
-def mock_git_repo_commits3(self, root_folder: str, last_commit_sha: str) -> List[Commit]:
+def mock_git_repo_commits3(self, last_commit_sha: str) -> List[Commit]:
     """
             add secret (secret1 added) - +1
             move the secret to different line - 0
@@ -204,7 +204,7 @@ def mock_git_repo_commits3(self, root_folder: str, last_commit_sha: str) -> List
     return commits_mock
 
 
-def mock_git_repo_commits_remove_file(self, root_folder: str, last_commit_sha: str) -> List[Commit]:
+def mock_git_repo_commits_remove_file(self, last_commit_sha: str) -> List[Commit]:
     commits_mock = [
         Commit(
             metadata=CommitMetadata(
@@ -234,7 +234,7 @@ def mock_git_repo_commits_remove_file(self, root_folder: str, last_commit_sha: s
     return commits_mock
 
 
-def mock_remove_file_with_two_equal_secret(self, root_folder: str, last_commit_sha: str) -> List[Commit]:
+def mock_remove_file_with_two_equal_secret(self, last_commit_sha: str) -> List[Commit]:
     commits_mock = [
         Commit(
             metadata=CommitMetadata(
@@ -264,7 +264,7 @@ def mock_remove_file_with_two_equal_secret(self, root_folder: str, last_commit_s
     return commits_mock
 
 
-def mock_remove_file_with_two_secret(self, root_folder: str, last_commit_sha: str) -> List[Commit]:
+def mock_remove_file_with_two_secret(self, last_commit_sha: str) -> List[Commit]:
     commits_mock = [
         Commit(
             metadata=CommitMetadata(
@@ -294,7 +294,7 @@ def mock_remove_file_with_two_secret(self, root_folder: str, last_commit_sha: st
     return commits_mock
 
 
-def mock_git_repo_commits_rename_file(self, root_folder: str, last_commit_sha: str) -> List[Commit]:
+def mock_git_repo_commits_rename_file(self, last_commit_sha: str) -> List[Commit]:
     commits_mock = [
         Commit(
             metadata=CommitMetadata(
@@ -328,7 +328,7 @@ def mock_git_repo_commits_rename_file(self, root_folder: str, last_commit_sha: s
     return commits_mock
 
 
-def mock_git_repo_commits_modify_and_rename_file(self, root_folder: str, last_commit_sha: str) -> List[Commit]:
+def mock_git_repo_commits_modify_and_rename_file(self, last_commit_sha: str) -> List[Commit]:
     """
     when we rename a file and modify it in the same commit it will consider as deleting the old file and creating a new file
     add secret to file +1
@@ -356,7 +356,7 @@ def mock_git_repo_commits_modify_and_rename_file(self, root_folder: str, last_co
     return commits_mock
 
 
-def mock_git_repo_multiline_json(self, root_folder: str, last_commit_sha: str) -> List[Commit]:
+def mock_git_repo_multiline_json(self, last_commit_sha: str) -> List[Commit]:
     commits_mock = [
         Commit(
             metadata=CommitMetadata(
@@ -370,7 +370,7 @@ def mock_git_repo_multiline_json(self, root_folder: str, last_commit_sha: str) -
     return commits_mock
 
 
-def mock_git_repo_multiline_terraform(self, root_folder: str, last_commit_sha: str) -> List[Commit]:
+def mock_git_repo_multiline_terraform(self, last_commit_sha: str) -> List[Commit]:
     commits_mock = [
         Commit(
             metadata=CommitMetadata(
@@ -384,7 +384,7 @@ def mock_git_repo_multiline_terraform(self, root_folder: str, last_commit_sha: s
     return commits_mock
 
 
-def mock_git_repo_multiline_yml(self, root_folder: str, last_commit_sha: str) -> List[Commit]:
+def mock_git_repo_multiline_yml(self, last_commit_sha: str) -> List[Commit]:
     commits_mock = [
         Commit(
             metadata=CommitMetadata(
@@ -422,7 +422,7 @@ def mock_case() -> Dict[str, str]:
     return random.choice(cases)
 
 
-def mock_git_repo_commits_too_much(self, root_folder: str, last_commit_sha: str) -> List[Commit]:
+def mock_git_repo_commits_too_much(self, last_commit_sha: str) -> List[Commit]:
     return [
         Commit(
             metadata=CommitMetadata(

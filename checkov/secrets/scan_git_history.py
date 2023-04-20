@@ -34,6 +34,11 @@ class GitHistoryScanner:
 
     def __init__(self, root_folder: str, secrets: SecretsCollection,
                  history_store: Optional[GitHistorySecretStore] = None, timeout: int = 43200):
+        """
+        root_folder: is necessary for initializing the Repo to read from
+        secrets: an object which will be field with secrets during the run of the secrets scan
+        history_store: a helper objects which will be field during the run, to map between found secrets and commits. is not used afterwards for outside-of-class work
+        """
         self.root_folder = root_folder
         self.secrets = secrets
         self.timeout = timeout
@@ -44,12 +49,13 @@ class GitHistoryScanner:
 
     def scan_history(self, last_commit_scanned: Optional[str] = '') -> bool:
         """return true if the scan finished without timeout"""
+        is_repo_set = self.set_repo()  # for mocking purposes in testing
+        if not is_repo_set:
+            logging.info("Couldn't set git repo. Cannot proceed with git history scan.")
+            return False
         timeout_class = ThreadingTimeout if platform.system() == 'Windows' else SignalTimeout
         # mark the scan to finish within the timeout
         with timeout_class(self.timeout) as to_ctx_mgr:
-            if not self.set_repo():
-                logging.info("Couldn't set git repo. Cannot proceed with git history scan.")
-                return False
             scanned = self._scan_history(last_commit_scanned)
         if to_ctx_mgr.state == to_ctx_mgr.TIMED_OUT:
             logging.info(f"timeout reached ({self.timeout}), stopping scan.")
@@ -60,7 +66,7 @@ class GitHistoryScanner:
     def _scan_history(self, last_commit_scanned: Optional[str] = '') -> bool:
         commits_diff: List[Commit] = []
         commits_diff.extend(self._get_first_commit())
-        commits_diff.extend(self._get_commits_diff(self.root_folder, last_commit_sha=last_commit_scanned))
+        commits_diff.extend(self._get_commits_diff(last_commit_sha=last_commit_scanned))
         logging.info(f"[_scan_history] got {len(commits_diff)} files diffs in {self.commits_count} commits")
         if self.commits_count > MIN_SPLIT:
             logging.info("[_scan_history] starting parallel scan")
@@ -108,7 +114,7 @@ class GitHistoryScanner:
             logging.error(f"Folder {root_folder} is not a GIT project {e}")
             return False
 
-    def _get_commits_diff(self, root_folder: str, last_commit_sha: Optional[str] = None) -> List[Commit]:
+    def _get_commits_diff(self, last_commit_sha: Optional[str] = None) -> List[Commit]:
         """
         :param: last_commit_sha = is the last commit we have already scanned. in case it exist the function will
         return the commits from the revision of param to the current head
@@ -139,7 +145,7 @@ class GitHistoryScanner:
                     file_name = file_diff.a_path if file_diff.a_path else file_diff.b_path
                     if file_name.endswith(FILES_TO_IGNORE_IN_GIT_HISTORY):
                         continue
-                    file_path = os.path.join(root_folder, file_name)
+                    file_path = os.path.join(self.root_folder, file_name)
 
                     if file_diff.renamed_file:
                         logging.debug(f"File was renamed from {file_diff.rename_from} to {file_diff.rename_to}")
@@ -153,8 +159,8 @@ class GitHistoryScanner:
                     elif file_diff.deleted_file:
                         logging.debug(f"File {file_diff.a_path} was deleted")
 
-                    base_diff_format = f'diff --git {root_folder}/{file_diff.a_path} {root_folder}/{file_diff.b_path}' \
-                                       f'\nindex 0000..0000 0000\n--- {root_folder}/{file_diff.a_path}\n+++ {root_folder}/{file_diff.b_path}\n'
+                    base_diff_format = f'diff --git {self.root_folder}/{file_diff.a_path} {self.root_folder}/{file_diff.b_path}' \
+                                       f'\nindex 0000..0000 0000\n--- {self.root_folder}/{file_diff.a_path}\n+++ {self.root_folder}/{file_diff.b_path}\n'
                     curr_diff.add_file(filename=file_path, commit_diff=base_diff_format + file_diff.diff.decode('utf-8'))
                 if not curr_diff.is_empty():
                     commits_diff.append(curr_diff)
