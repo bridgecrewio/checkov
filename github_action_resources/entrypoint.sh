@@ -170,8 +170,9 @@ echo "${CHECKOV_RESULTS}"
 CHECKOV_RESULTS="${CHECKOV_RESULTS//$'\\n'/''}"
 
 # save output to GitHub files for further usage
-{ echo "CHECKOV_RESULTS<<EOF"; echo "${CHECKOV_RESULTS:0:65536}"; echo "EOF"; } >> $GITHUB_ENV
-{ echo "results<<EOF"; echo "$CHECKOV_RESULTS"; echo "EOF"; } >> $GITHUB_OUTPUT
+EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+{ echo "CHECKOV_RESULTS<<$EOF"; echo "${CHECKOV_RESULTS:0:65536}"; echo "$EOF"; } >> $GITHUB_ENV
+{ echo "results<<$EOF"; echo "$CHECKOV_RESULTS"; echo "$EOF"; } >> $GITHUB_OUTPUT
 
 if [ -n "$INPUT_DOWNLOAD_EXTERNAL_MODULES" ] && [ "$INPUT_DOWNLOAD_EXTERNAL_MODULES" = "true" ]; then
   echo "Cleaning up $INPUT_DIRECTORY/.external_modules directory"
