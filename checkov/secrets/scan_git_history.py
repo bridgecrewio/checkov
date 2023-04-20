@@ -65,7 +65,10 @@ class GitHistoryScanner:
 
     def _scan_history(self, last_commit_scanned: Optional[str] = '') -> bool:
         commits_diff: List[Commit] = []
-        commits_diff.extend(self._get_first_commit())
+        if not last_commit_scanned:
+            first_commit_diff = self._get_first_commit()
+            if first_commit_diff:
+                commits_diff.append(self._get_first_commit())
         commits_diff.extend(self._get_commits_diff(last_commit_sha=last_commit_scanned))
         logging.info(f"[_scan_history] got {len(commits_diff)} files diffs in {self.commits_count} commits")
         if self.commits_count > MIN_SPLIT:
@@ -216,7 +219,7 @@ class GitHistoryScanner:
         return results, scanned_file_count
 
     @time_it
-    def _get_first_commit(self) -> List[Commit]:
+    def _get_first_commit(self) -> Commit:
         first_commit_sha = self.repo.git.log('--format=%H', '--max-parents=0', 'HEAD').split()[0]
         first_commit = self.repo.commit(first_commit_sha)
         empty_tree_sha = bytes.fromhex(hashlib.sha1(b'tree 0\0').hexdigest())  # nosec
@@ -239,4 +242,4 @@ class GitHistoryScanner:
             base_diff_format = f"--- ''\n+++ {file_path}\n"
             full_diff_format = base_diff_format + file_diff.diff.decode('utf-8')
             first_commit_diff.add_file(filename=file_path, commit_diff=full_diff_format)
-        return [first_commit_diff]
+        return first_commit_diff
