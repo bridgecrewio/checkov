@@ -336,7 +336,6 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             vertex = self.vertices[origin_node_index]
             if vertex.block_type == BlockType.RESOURCE and \
                     any(self.vertices[e.dest].block_type != BlockType.RESOURCE for e in referenced_vertices):
-                # self._build_edges_for_vertex(origin_node_index, vertex, aliases, resources_types, True)
                 modules = vertex.breadcrumbs.get(CustomAttributes.SOURCE_MODULE, [])
                 self._build_edges_for_vertex(origin_node_index, vertex, aliases, resources_types, True, modules)
 
