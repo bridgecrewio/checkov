@@ -572,8 +572,8 @@ class Report:
         report.image_cached_results = json_report['image_cached_results']
 
         all_json_records = json_report["checks"]["passed_checks"] + \
-                        json_report["checks"]["failed_checks"] + \
-                        json_report["checks"]["skipped_checks"]
+                           json_report["checks"]["failed_checks"] + \
+                           json_report["checks"]["skipped_checks"]
 
         for json_record in all_json_records:
             report.add_record(
