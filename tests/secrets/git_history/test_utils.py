@@ -434,6 +434,14 @@ def mock_git_repo_commits_too_much(self, last_commit_sha: str) -> List[Commit]:
     ]
 
 
+def mock_run_forever(self, root_folder: str, last_commit_sha: str) -> Dict[str, Dict[str, str]]:
+    res: Dict[str, Dict[str, str]] = {}
+    while True:
+        a = 1 + 1
+        _ = a
+    return res
+
+
 def mock_commit_with_keyword_combinator() -> List[Commit]:
     return [Commit(
             metadata=CommitMetadata(
