@@ -81,7 +81,7 @@ Ex. YAML
 Plan file scans can be enriched with the Terraform files to improve outputs, add skip comments and expand coverage. Note that these will increase scan times.
 
 ### Enrichment
-Using the `--repo-root-for-plan-enrichment` flag, code blocks and resource IDs in the output will be from the Terraform files and skip comments in the Terraform files will be respected in the Plan file scan.
+Using the `--repo-root-for-plan-enrichment` flag, code blocks, and resource IDs in the output will be from the Terraform files and skip comments in the Terraform files will be respected in the Plan file scan.
 
 Example:
 ```
@@ -89,7 +89,7 @@ checkov -f tfplan.json --repo-root-for-plan-enrichment /pathToTF/
 ```
 
 ### Deep Analysis
-Using the `--deep-analysis` flag in combination with the `--repo-root-for-plan-enrichment` flag will combine the graph of the Plan file scan and the Terraform files scans. This allows Checkov to make graph connections where there is incomplete information in the Plan file. For example, locals do not have the connections defined in plan file, but can make that connection with the Deep Analysis.
+Using the `--deep-analysis` flag in combination with the `--repo-root-for-plan-enrichment` flag will combine the graph of the Plan file scan and the Terraform files scans. This allows Checkov to make graph connections where there is incomplete information in the Plan file. For example, locals do not have the connections defined in the plan file but can make that connection with the Deep Analysis.
 
 Example:
 ```
