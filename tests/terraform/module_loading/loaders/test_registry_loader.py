@@ -17,6 +17,7 @@ def test_module_version_url_invoked_once():
     loader = RegistryLoader()
     RegistryLoader.modules_versions_cache = {}  # reset cache
     module_params = ModuleParams("", "", "terraform-aws-modules/example", "", "", "")
+    loader.discover(module_params)
 
     # when
     loader._is_matching_loader(module_params)
