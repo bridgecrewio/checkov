@@ -35,8 +35,6 @@ class RegistryLoader(ModuleLoader):
             return False
             
         self._process_inner_registry_module(module_params)
-        if os.path.exists(module_params.dest_dir):
-            return True
 
         if module_params.module_source.startswith(module_params.tf_host_name):
             module_params.module_source = module_params.module_source.replace(f"{module_params.tf_host_name}/", "")
@@ -90,10 +88,14 @@ class RegistryLoader(ModuleLoader):
         return False
 
     def _load_module(self, module_params: ModuleParams) -> ModuleContent:
+        if module_params.best_version:
+            best_version = module_params.best_version
+        else:
+            if self._cache_available_versions(module_params):
+                module_params.best_version = self._find_best_version(module_params)
         if os.path.exists(module_params.dest_dir):
             return ModuleContent(dir=module_params.dest_dir)
 
-        best_version = module_params.best_version
         request_download_url = "/".join((module_params.tf_modules_url, module_params.module_source, best_version, "download"))
         logging.debug(f"Best version for {module_params.module_source} is {best_version} based on the version constraint {module_params.version}.")
         logging.debug(f"Module download url: {request_download_url}")
