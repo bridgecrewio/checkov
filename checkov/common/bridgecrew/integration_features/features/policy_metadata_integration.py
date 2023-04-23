@@ -52,8 +52,6 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
             else:
                 registries = ('terraform', 'cloudformation', 'kubernetes', 'bicep', 'terraform_plan')
 
-            # registries = ('terraform', 'cloudformation', 'kubernetes', 'bicep', 'terraform_plan')
-
             for r in registries:
                 registry = get_graph_checks_registry(r)
                 registry.load_checks()

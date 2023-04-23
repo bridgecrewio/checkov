@@ -18,7 +18,16 @@ class PreBuildCommand(build_py):
 
         import yaml  # can't be top-level, because it needs to be first installed via 'setup_requires'
 
-        graph_check_paths = ("checkov/terraform/checks/graph_checks",)
+        graph_check_paths = (
+            "checkov/ansible/checks/graph_checks",
+            "checkov/arm/checks/graph_checks",
+            "checkov/bicep/checks/graph_checks",
+            "checkov/cloudformation/checks/graph_checks",
+            "checkov/dockerfile/checks/graph_checks",
+            "checkov/github_actions/checks/graph_checks",
+            "checkov/kubernetes/checks/graph_checks",
+            "checkov/terraform/checks/graph_checks",
+        )
         build_path = Path(self.build_lib)
         src_path = Path()
 
@@ -119,26 +128,23 @@ setup(
     author="bridgecrew",
     author_email="meet@bridgecrew.io",
     url="https://github.com/bridgecrewio/checkov",
-    packages=find_packages(exclude=["tests*", "integration_tests*"]),
+    packages=find_packages(exclude=[
+        "dogfood_tests*",
+        "integration_tests*",
+        "performance_tests*"
+        "tests*",
+    ]),
     include_package_data=True,
-    package_dir={
-        "checkov.ansible.checks.graph_checks": "checkov/ansible/checks/graph_checks",
-        "checkov.arm.checks.graph_checks": "checkov/arm/checks/graph_checks",
-        "checkov.bicep.checks.graph_checks": "checkov/bicep/checks/graph_checks",
-        "checkov.cloudformation.checks.graph_checks": "checkov/cloudformation/checks/graph_checks",
-        "checkov.dockerfile.checks.graph_checks": "checkov/dockerfile/checks/graph_checks",
-        "checkov.github_actions.checks.graph_checks": "checkov/github_actions/checks/graph_checks",
-        "checkov.kubernetes.checks.graph_checks": "checkov/kubernetes/checks/graph_checks",
-    },
     package_data={
         "checkov": ["py.typed"],
-        "checkov.ansible.checks.graph_checks": ["*.yaml"],
-        "checkov.arm.checks.graph_checks": ["*.yaml"],
-        "checkov.bicep.checks.graph_checks": ["*.yaml"],
         "checkov.common.util.templates": ["*.jinja2"],
-        "checkov.dockerfile.checks.graph_checks": ["*.yaml"],
-        "checkov.github_actions.checks.graph_checks": ["*.yaml"],
-        "checkov.kubernetes.checks.graph_checks": ["*.yaml"],
+        "checkov.ansible.checks.graph_checks": ["**/*.json"],
+        "checkov.arm.checks.graph_checks": ["**/*.json"],
+        "checkov.bicep.checks.graph_checks": ["**/*.json"],
+        "checkov.cloudformation.checks.graph_checks": ["**/*.json"],
+        "checkov.dockerfile.checks.graph_checks": ["**/*.json"],
+        "checkov.github_actions.checks.graph_checks": ["**/*.json"],
+        "checkov.kubernetes.checks.graph_checks": ["**/*.json"],
         "checkov.terraform.checks.graph_checks": ["**/*.json"],
     },
     scripts=["bin/checkov", "bin/checkov.cmd"],
