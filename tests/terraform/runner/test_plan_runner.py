@@ -277,6 +277,10 @@ class TestRunnerValid(unittest.TestCase):
 
         assert failed_check_ids == expected_failed_check_ids
 
+        # reset graph checks
+        runner.graph_registry.checks = []
+        runner.graph_registry.load_checks()
+
     def test_runner_root_module_resources_no_values(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_plan_path = current_dir + "/resources/plan_root_module_resources_no_values/tfplan.json"
@@ -310,6 +314,10 @@ class TestRunnerValid(unittest.TestCase):
         }
 
         assert failed_check_ids == expected_failed_check_ids
+
+        # reset graph checks
+        runner.graph_registry.checks = []
+        runner.graph_registry.load_checks()
 
     def test_runner_root_module_resources_no_values_route53(self):
         #given
