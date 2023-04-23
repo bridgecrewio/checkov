@@ -5,5 +5,4 @@ recursive-include checkov/bicep/checks/graph_checks *.yaml *.yml
 recursive-include checkov/cloudformation/checks/graph_checks *.yaml *.yml
 recursive-include checkov/dockerfile/checks/graph_checks *.yaml *.yml
 recursive-include checkov/github_actions/checks/graph_checks *.yaml *.yml
-recursive-include checkov/terraform/checks/graph_checks *.yaml *.yml
 recursive-include checkov/kubernetes/checks/graph_checks *.yaml *.yml

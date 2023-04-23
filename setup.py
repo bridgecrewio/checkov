@@ -1,10 +1,36 @@
 #!/usr/bin/env python
+import json
 import logging
 import os
 from importlib import util
 from os import path
+from pathlib import Path
 
+import yaml
 from setuptools import setup, find_packages
+from setuptools.command.build_py import build_py
+
+
+class PreBuildCommand(build_py):
+    """Pre-build command"""
+
+    def transform_graph_yaml_to_json(self) -> None:
+        """Transforms YAML graph checks to JSON and copies them to build/lib"""
+
+        graph_check_paths = ("checkov/terraform/checks/graph_checks",)
+        build_path = Path(self.build_lib)
+        src_path = Path()
+
+        for graph_check_path in graph_check_paths:
+            for yaml_file in (src_path / graph_check_path).rglob("*.yaml"):
+                json_file = (build_path / yaml_file).with_suffix(".json")
+                self.mkpath(str(json_file.parent))
+                json_file.write_text(json.dumps(yaml.safe_load(yaml_file.read_text())))
+
+    def run(self) -> None:
+        self.execute(self.transform_graph_yaml_to_json, ())
+        build_py.run(self)
+
 
 # read the contents of your README file
 this_directory = path.abspath(path.dirname(__file__))
@@ -21,6 +47,9 @@ spec.loader.exec_module(mod)  # type: ignore
 version = mod.version  # type: ignore
 
 setup(
+    cmdclass={
+        'build_py': PreBuildCommand,
+    },
     extras_require={
         "dev": [
             "pytest==5.3.1",
@@ -95,7 +124,6 @@ setup(
         "checkov.cloudformation.checks.graph_checks": "checkov/cloudformation/checks/graph_checks",
         "checkov.dockerfile.checks.graph_checks": "checkov/dockerfile/checks/graph_checks",
         "checkov.github_actions.checks.graph_checks": "checkov/github_actions/checks/graph_checks",
-        "checkov.terraform.checks.graph_checks": "checkov/terraform/checks/graph_checks",
         "checkov.kubernetes.checks.graph_checks": "checkov/kubernetes/checks/graph_checks",
     },
     package_data={
@@ -106,12 +134,8 @@ setup(
         "checkov.common.util.templates": ["*.jinja2"],
         "checkov.dockerfile.checks.graph_checks": ["*.yaml"],
         "checkov.github_actions.checks.graph_checks": ["*.yaml"],
-        "checkov.terraform.checks.graph_checks": [
-            "aws/*.yaml",
-            "gcp/*.yaml",
-            "azure/*.yaml",
-        ],
         "checkov.kubernetes.checks.graph_checks": ["*.yaml"],
+        "checkov.terraform.checks.graph_checks": ["**/*.json"],
     },
     scripts=["bin/checkov", "bin/checkov.cmd"],
     long_description=long_description,

@@ -17,7 +17,7 @@ from checkov.common.checks_infra.resources_types import resources_types
 if TYPE_CHECKING:
     from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 
-CHECKS_POSSIBLE_ENDING = [".yaml", ".yml"]
+CHECKS_POSSIBLE_ENDING = {".json", ".yaml", ".yml"}
 
 
 class Registry(BaseRegistry):
@@ -30,11 +30,15 @@ class Registry(BaseRegistry):
         self.logger = logging.getLogger(__name__)
 
     def load_checks(self) -> None:
+        if self.checks:
+            # checks were previously loaded
+            return
+
         self._load_checks_from_dir(self.checks_dir, False)
 
     def _load_checks_from_dir(self, directory: str, external_check: bool) -> None:
         dir = os.path.expanduser(directory)
-        self.logger.debug("Loading external checks from {}".format(dir))
+        self.logger.debug(f"Loading external checks from {dir}")
         for root, d_names, f_names in os.walk(dir):
             self.logger.debug(f"Searching through {d_names} and {f_names}")
             for file in f_names:
@@ -43,8 +47,13 @@ class Registry(BaseRegistry):
                     with open(os.path.join(root, file), "r") as f:
                         if dir != self.checks_dir:
                             self.logger.info(f"loading {file}")
-                        check_yaml = yaml.safe_load(f)
-                        check_json = json.loads(json.dumps(check_yaml))
+
+                        if file_ending == ".json":
+                            check_json = json.load(f)
+                        else:
+                            check_yaml = yaml.safe_load(f)
+                            check_json = json.loads(json.dumps(check_yaml))
+
                         if not isinstance(check_json, dict):
                             self.logger.error(f"Loaded data from JSON is not Dict. Skipping. Data: {check_json}.")
                             continue
