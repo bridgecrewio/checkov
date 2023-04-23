@@ -6,7 +6,6 @@ from importlib import util
 from os import path
 from pathlib import Path
 
-import yaml
 from setuptools import setup, find_packages
 from setuptools.command.build_py import build_py
 
@@ -16,6 +15,8 @@ class PreBuildCommand(build_py):
 
     def transform_graph_yaml_to_json(self) -> None:
         """Transforms YAML graph checks to JSON and copies them to build/lib"""
+
+        import yaml  # can't be top-level, because it needs to be first installed via 'setup_requires'
 
         graph_check_paths = ("checkov/terraform/checks/graph_checks",)
         build_path = Path(self.build_lib)
@@ -50,6 +51,9 @@ setup(
     cmdclass={
         'build_py': PreBuildCommand,
     },
+    setup_requires=[
+        "pyyaml",
+    ],
     extras_require={
         "dev": [
             "pytest==5.3.1",
