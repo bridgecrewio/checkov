@@ -566,6 +566,22 @@ class Report:
             resource_raw_id = resource_raw_id[:resource_raw_id.index('[')]
         return resource_raw_id
 
+    @classmethod
+    def from_reduced_json(cls, json_report: dict[str, Any], check_type: str) -> Report:
+        report = Report(check_type)
+        report.image_cached_results = json_report['image_cached_results']
+
+        all_json_records = json_report["checks"]["passed_checks"] + \
+            json_report["checks"]["failed_checks"] + \
+            json_report["checks"]["skipped_checks"]
+
+        for json_record in all_json_records:
+            report.add_record(
+                Record.from_reduced_json(json_record)
+            )
+
+        return report
+
 
 def merge_reports(base_report: Report, report_to_merge: Report) -> None:
     base_report.passed_checks.extend(report_to_merge.passed_checks)

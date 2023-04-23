@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import os
 from abc import abstractmethod
 from collections.abc import Iterable
 from pathlib import Path
@@ -225,13 +224,14 @@ class ImageReferencerMixin(Generic[_Definitions]):
             result = cached_results.get("results", [{}])[0]
             image_id = self._extract_image_short_id(result)
             image_details = self._get_image_details_from_twistcli_result(scan_result=result, image_id=image_id)
+            dockerfile_rel_path = dockerfile_path
             if root_path:
                 try:
-                    dockerfile_path = str(Path(dockerfile_path).relative_to(root_path))
+                    dockerfile_rel_path = str(Path(dockerfile_path).relative_to(root_path))
                 except ValueError:
                     # Path.is_relative_to() was implemented in Python 3.9
                     pass
-            rootless_file_path = dockerfile_path.replace(Path(dockerfile_path).anchor, "", 1)
+            rootless_file_path = dockerfile_rel_path.replace(Path(dockerfile_rel_path).anchor, "", 1)
             rootless_file_path_to_report = f"{rootless_file_path} ({image.name} lines:{image.start_line}-" \
                                            f"{image.end_line} ({image_id}))"
 
@@ -294,7 +294,7 @@ class ImageReferencerMixin(Generic[_Definitions]):
         add_to_report_sca_data(
             report=report,
             check_class=check_class,
-            scanned_file_path=os.path.abspath(dockerfile_path),
+            scanned_file_path=dockerfile_path,
             rootless_file_path=rootless_file_path,
             runner_filter=runner_filter,
             vulnerabilities=vulnerabilities,

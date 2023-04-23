@@ -5,6 +5,12 @@ from typing import Any
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
+SUPPORTED_ENGINES = {
+    "aurora",
+    "aurora-mysql",
+    "mysql"
+}
+
 
 class RDSClusterAuditLogging(BaseResourceCheck):
     def __init__(self) -> None:
@@ -15,13 +21,18 @@ class RDSClusterAuditLogging(BaseResourceCheck):
         NIST.800-53.r5 SI-4(20), NIST.800-53.r5 SI-7(8)
         Database logging should be enabled
         """
-        name = "Ensure that RDS Cluster audit logging is enabled"
+        name = "Ensure that RDS Cluster audit logging is enabled for MySQL engine"
         id = "CKV_AWS_325"
         supported_resources = ("aws_rds_cluster",)
         categories = (CheckCategories.LOGGING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
+        engine = conf.get("engine")
+        if engine and isinstance(engine, list) and engine[0] not in SUPPORTED_ENGINES:
+            # only MySQL cluster support easy audit logging export
+            return CheckResult.UNKNOWN
+
         logs_exports = conf.get("enabled_cloudwatch_logs_exports")
         if (
             logs_exports

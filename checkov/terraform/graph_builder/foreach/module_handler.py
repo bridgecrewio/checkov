@@ -57,12 +57,12 @@ class ForeachModuleHandler(ForeachAbstractHandler):
             count = module_block.attributes.get(COUNT_STRING)
             if for_each:
                 for_each = self._handle_static_statement(module_idx, sub_graph)
-                if not self._is_static_statement(module_idx, sub_graph):
+                if not for_each or not self._is_static_statement(module_idx, sub_graph):
                     continue
                 self._duplicate_module_with_for_each(module_idx, for_each)
             elif count:
                 count = self._handle_static_statement(module_idx, sub_graph)
-                if not self._is_static_statement(module_idx, sub_graph):
+                if not count or not self._is_static_statement(module_idx, sub_graph):
                     continue
                 self._duplicate_module_with_count(module_idx, count)
         return self._get_modules_to_render(current_level)
@@ -197,6 +197,7 @@ class ForeachModuleHandler(ForeachAbstractHandler):
             key_with_foreach_index = deepcopy(main_resource_module_key)
             key_with_foreach_index.foreach_idx = idx_to_change
             self.local_graph.vertices_by_module_dependency[key_with_foreach_index] = main_resource_module_value
+            self.local_graph.vertices_by_module_dependency_by_name[key_with_foreach_index][new_resource.name] = main_resource_module_value
 
         del copy_of_vertices_by_module_dependency, new_resource, main_resource_module_key, main_resource_module_value
 
@@ -206,9 +207,12 @@ class ForeachModuleHandler(ForeachAbstractHandler):
                                          new_resource_module_key: TFModule | None = None) -> None:
         if new_resource is None:
             new_resource = deepcopy(main_resource)
+            new_resource_name = new_resource.name
             new_resource_module_key = TFModule(new_resource.path, new_resource.name, new_resource.source_module_object,
                                                new_resource.for_each_index)
             del new_resource
+        else:
+            new_resource_name = new_resource.name
 
         new_resource_vertex_idx = len(self.local_graph.vertices) - 1
         original_vertex_source_module = self.local_graph.vertices[resource_idx].source_module_object
@@ -220,12 +224,11 @@ class ForeachModuleHandler(ForeachAbstractHandler):
             )
         else:
             source_module_key = None
-        self.local_graph.vertices_by_module_dependency[source_module_key][BlockType.MODULE].append(
-            new_resource_vertex_idx)
-        new_vertices_module_value = self._add_new_vertices_for_module(new_resource_module_key,
-                                                                      main_resource_module_value,
-                                                                      new_resource_vertex_idx)
+        self.local_graph.vertices_by_module_dependency[source_module_key][BlockType.MODULE].append(new_resource_vertex_idx)
+        self.local_graph.vertices_by_module_dependency_by_name[source_module_key][BlockType.MODULE][new_resource_name].append(new_resource_vertex_idx)
+        new_vertices_module_value = self._add_new_vertices_for_module(new_resource_module_key, main_resource_module_value, new_resource_vertex_idx)
         self.local_graph.vertices_by_module_dependency.update({new_resource_module_key: new_vertices_module_value})
+        self.local_graph.vertices_by_module_dependency_by_name.update({new_resource_module_key: {new_resource_name: new_vertices_module_value}})
 
     def _add_new_vertices_for_module(self, new_module_key: TFModule, new_module_value: dict[str, list[int]],
                                      new_resource_vertex_idx: int) -> dict[str, list[int]]:
