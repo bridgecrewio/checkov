@@ -156,8 +156,7 @@ class TFParser:
         for i in range(0, 10):
             logging.debug(f"Module load loop {i}")
             dir_filter(directory)
-            has_more_modules = self.
-            (
+            has_more_modules = self._load_modules(
                 directory, module_loader_registry, dir_filter,
                 keys_referenced_as_modules, force_final_module_load,
                 nested_modules_data=nested_modules_data
