@@ -194,7 +194,7 @@ def test_ecs_resources(mocker: MockerFixture, graph_framework):
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
     assert len(tf_report.resources) == 1
-    assert len(tf_report.passed_checks) == 3
+    assert len(tf_report.passed_checks) == 4
     assert len(tf_report.failed_checks) == 1
     assert len(tf_report.skipped_checks) == 0
     assert len(tf_report.parsing_errors) == 0

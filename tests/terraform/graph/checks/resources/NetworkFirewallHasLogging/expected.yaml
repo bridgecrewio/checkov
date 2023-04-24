@@ -1,0 +1,4 @@
+pass:
+  - "aws_networkfirewall_firewall.pass"
+fail:
+  - "aws_networkfirewall_firewall.fail"
