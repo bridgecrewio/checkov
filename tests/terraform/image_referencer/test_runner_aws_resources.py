@@ -192,7 +192,7 @@ def test_ecs_resources(mocker: MockerFixture, graph_framework):
 
     assert len(tf_report.resources) == 1
     assert len(tf_report.passed_checks) == 4
-    assert len(tf_report.failed_checks) == 0
+    assert len(tf_report.failed_checks) == 1
     assert len(tf_report.skipped_checks) == 0
     assert len(tf_report.parsing_errors) == 0
 
