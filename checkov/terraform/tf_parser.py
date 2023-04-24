@@ -156,7 +156,8 @@ class TFParser:
         for i in range(0, 10):
             logging.debug(f"Module load loop {i}")
             dir_filter(directory)
-            has_more_modules = self._load_modules(
+            has_more_modules = self.
+            (
                 directory, module_loader_registry, dir_filter,
                 keys_referenced_as_modules, force_final_module_load,
                 nested_modules_data=nested_modules_data
@@ -201,6 +202,9 @@ class TFParser:
         skipped_a_module = False
         for file in list(self.out_definitions.keys()):
             if not self.should_loaded_file(file, root_dir):
+                continue
+                
+            if file.tf_source_modules:
                 continue
 
             file_data = self.out_definitions.get(file)
