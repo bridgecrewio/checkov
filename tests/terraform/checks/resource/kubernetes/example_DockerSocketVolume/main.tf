@@ -75,12 +75,7 @@ resource "kubernetes_pod_v1" "fail" {
 
   spec {
 
-    volume {
-      host_path {
-        path = "/var/run/docker.sock"
-        type = "Directory"
-      }
-    }
+    volume = "invalid"
 
     volume {
       host_path {
