@@ -122,31 +122,6 @@
 		<ns0:dependency ref="pkg:oci/bridgecrewio/example/path/to/Dockerfile@sha256:123456"/>
 	</ns0:dependencies>
 	<ns0:vulnerabilities>
-		<ns0:vulnerability bom-ref="76003c55-f10b-42a3-95bf-c6eae15d8006">
-			<ns0:id>CVE-2022-1587</ns0:id>
-			<ns0:source>
-				<ns0:url>https://people.canonical.com/~ubuntu-security/cve/2022/CVE-2022-1587</ns0:url>
-			</ns0:source>
-			<ns0:ratings>
-				<ns0:rating>
-					<ns0:source>
-						<ns0:url>https://people.canonical.com/~ubuntu-security/cve/2022/CVE-2022-1587</ns0:url>
-					</ns0:source>
-					<ns0:score>9.1</ns0:score>
-					<ns0:severity>low</ns0:severity>
-					<ns0:method>CVSSv3</ns0:method>
-					<ns0:vector>AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:H</ns0:vector>
-				</ns0:rating>
-			</ns0:ratings>
-			<ns0:description>An out-of-bounds read vulnerability was discovered in the PCRE2 library in the get_recurse_data_length() function of the pcre2_jit_compile.c file. This issue affects recursions in JIT-compiled regular expressions caused by duplicate data transfers.</ns0:description>
-			<ns0:recommendation>N/A</ns0:recommendation>
-			<ns0:published>2022-05-17T00:15:00+03:00</ns0:published>
-			<ns0:affects>
-				<ns0:target>
-					<ns0:ref>pkg:deb/bridgecrewio/example/path/to/Dockerfile/ubuntu/pcre2@10.39-3build1?distro=jammy</ns0:ref>
-				</ns0:target>
-			</ns0:affects>
-		</ns0:vulnerability>
 		<ns0:vulnerability bom-ref="7e2e6e05-54b2-4a97-b246-95d69c792bc3">
 			<ns0:id>CVE-2020-16156</ns0:id>
 			<ns0:source>
@@ -169,6 +144,31 @@
 			<ns0:affects>
 				<ns0:target>
 					<ns0:ref>pkg:deb/bridgecrewio/example/path/to/Dockerfile/ubuntu/perl@5.34.0-3ubuntu1?distro=jammy</ns0:ref>
+				</ns0:target>
+			</ns0:affects>
+		</ns0:vulnerability>
+		<ns0:vulnerability bom-ref="76003c55-f10b-42a3-95bf-c6eae15d8006">
+			<ns0:id>CVE-2022-1587</ns0:id>
+			<ns0:source>
+				<ns0:url>https://people.canonical.com/~ubuntu-security/cve/2022/CVE-2022-1587</ns0:url>
+			</ns0:source>
+			<ns0:ratings>
+				<ns0:rating>
+					<ns0:source>
+						<ns0:url>https://people.canonical.com/~ubuntu-security/cve/2022/CVE-2022-1587</ns0:url>
+					</ns0:source>
+					<ns0:score>9.1</ns0:score>
+					<ns0:severity>low</ns0:severity>
+					<ns0:method>CVSSv3</ns0:method>
+					<ns0:vector>AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:H</ns0:vector>
+				</ns0:rating>
+			</ns0:ratings>
+			<ns0:description>An out-of-bounds read vulnerability was discovered in the PCRE2 library in the get_recurse_data_length() function of the pcre2_jit_compile.c file. This issue affects recursions in JIT-compiled regular expressions caused by duplicate data transfers.</ns0:description>
+			<ns0:recommendation>N/A</ns0:recommendation>
+			<ns0:published>2022-05-17T00:15:00+03:00</ns0:published>
+			<ns0:affects>
+				<ns0:target>
+					<ns0:ref>pkg:deb/bridgecrewio/example/path/to/Dockerfile/ubuntu/pcre2@10.39-3build1?distro=jammy</ns0:ref>
 				</ns0:target>
 			</ns0:affects>
 		</ns0:vulnerability>
