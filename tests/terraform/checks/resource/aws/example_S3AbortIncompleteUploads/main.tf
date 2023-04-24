@@ -1,3 +1,5 @@
+# fail
+
 resource "aws_s3_bucket_lifecycle_configuration" "fail" {
   # Must have bucket versioning enabled first
   depends_on = [aws_s3_bucket_versioning.versioning]
@@ -81,6 +83,21 @@ resource "aws_s3_bucket_lifecycle_configuration" "fail2" {
   }
 }
 
+resource "aws_s3_bucket_lifecycle_configuration" "fail3" {
+  bucket = aws_s3_bucket.bucket.id
+
+  rule {
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
+    }
+    id = "log"
+
+    status = "Disabled"
+  }
+}
+
+# pass
+
 resource "aws_s3_bucket_lifecycle_configuration" "pass2" {
   bucket = aws_s3_bucket.bucket.id
 
@@ -92,17 +109,6 @@ resource "aws_s3_bucket_lifecycle_configuration" "pass2" {
 
     expiration {
       days = 90
-    }
-
-    filter {
-      and {
-        prefix = "log/"
-
-        tags = {
-          rule      = "log"
-          autoclean = "true"
-        }
-      }
     }
 
     status = "Enabled"
@@ -118,6 +124,14 @@ resource "aws_s3_bucket_lifecycle_configuration" "pass2" {
     }
   }
 
+  rule {
+    id     = "id-2"
+    status = "Enabled"
+
+    noncurrent_version_expiration {
+      noncurrent_days = 1
+    }
+  }
 }
 
 resource "aws_s3_bucket_lifecycle_configuration" "pass" {
@@ -163,14 +177,23 @@ resource "aws_s3_bucket_lifecycle_configuration" "pass" {
     }
     id = "tmp"
 
-    filter {
-      prefix = "tmp/"
-    }
-
     expiration {
       date = "2023-01-13T00:00:00Z"
     }
 
+    status = "Enabled"
+  }
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "pass3" {
+  bucket = aws_s3_bucket.bucket.id
+
+  rule {
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
+    }
+    filter {}
+    id = "log"
     status = "Enabled"
   }
 }

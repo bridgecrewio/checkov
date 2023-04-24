@@ -250,7 +250,8 @@ class Runner(PackageRunner):
             file_content=f'image: {image.name}',
             docker_image_name=image.name,
             related_resource_id=image.related_resource_id,
-            root_folder=root_folder)
+            root_folder=root_folder,
+            error_lines=[image.start_line, image.end_line])
         return payload
 
     def get_image_report(self, dockerfile_path: str, image: Image, runner_filter: RunnerFilter,

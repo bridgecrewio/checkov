@@ -85,8 +85,6 @@
 				<ns0:license>
 					<ns0:name>DUMMY_OTHER_LICENSE</ns0:name>
 				</ns0:license>
-			</ns0:licenses>
-			<ns0:licenses>
 				<ns0:license>
 					<ns0:name>OSI_APACHE</ns0:name>
 				</ns0:license>
@@ -165,7 +163,7 @@
 		<ns0:dependency ref="pkg:pypi/bridgecrewio/example/requirements.txt/requests@2.26.0"/>
 	</ns0:dependencies>
 	<ns0:vulnerabilities>
-		<ns0:vulnerability bom-ref="2c9af596-ec96-4b0b-a77e-5cc3750205e6">
+		<ns0:vulnerability bom-ref="1639877a-5e7f-425e-af0a-93796261f90a">
 			<ns0:id>CVE-2016-7401</ns0:id>
 			<ns0:source>
 				<ns0:url>https://nvd.nist.gov/vuln/detail/CVE-2016-7401</ns0:url>
@@ -182,7 +180,7 @@
 				</ns0:rating>
 			</ns0:ratings>
 			<ns0:description>The cookie parsing code in Django before 1.8.15 and 1.9.x before 1.9.10, when used on a site with Google Analytics, allows remote attackers to bypass an intended CSRF protection mechanism by setting arbitrary cookies.</ns0:description>
-			<ns0:recommendation>fixed in 1.9.10, 1.8.15</ns0:recommendation>
+			<ns0:recommendation>Fixed in 1.8.15</ns0:recommendation>
 			<ns0:published>2016-10-03T20:59:00+02:00</ns0:published>
 			<ns0:affects>
 				<ns0:target>
@@ -190,57 +188,7 @@
 				</ns0:target>
 			</ns0:affects>
 		</ns0:vulnerability>
-		<ns0:vulnerability bom-ref="1b96a5d6-21dd-4a60-8af1-7ef4ebebaaba">
-			<ns0:id>CVE-2018-1000656</ns0:id>
-			<ns0:source>
-				<ns0:url>https://nvd.nist.gov/vuln/detail/CVE-2018-1000656</ns0:url>
-			</ns0:source>
-			<ns0:ratings>
-				<ns0:rating>
-					<ns0:source>
-						<ns0:url>https://nvd.nist.gov/vuln/detail/CVE-2018-1000656</ns0:url>
-					</ns0:source>
-					<ns0:score>7.5</ns0:score>
-					<ns0:severity>high</ns0:severity>
-					<ns0:method>CVSSv3</ns0:method>
-					<ns0:vector>AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H</ns0:vector>
-				</ns0:rating>
-			</ns0:ratings>
-			<ns0:description>The Pallets Project flask version Before 0.12.3 contains a CWE-20: Improper Input Validation vulnerability in flask that can result in Large amount of memory usage possibly leading to denial of service. This attack appear to be exploitable via Attacker provides JSON data in incorrect encoding. This vulnerability appears to have been fixed in 0.12.3. NOTE: this may overlap CVE-2019-1010083.</ns0:description>
-			<ns0:recommendation>fixed in 0.12.3</ns0:recommendation>
-			<ns0:published>2018-08-20T21:31:00+02:00</ns0:published>
-			<ns0:affects>
-				<ns0:target>
-					<ns0:ref>pkg:pypi/bridgecrewio/example/requirements.txt/flask@0.6</ns0:ref>
-				</ns0:target>
-			</ns0:affects>
-		</ns0:vulnerability>
-		<ns0:vulnerability bom-ref="19d4d65f-ac95-4636-864a-66dd3187fc1a">
-			<ns0:id>CVE-2019-1010083</ns0:id>
-			<ns0:source>
-				<ns0:url>https://nvd.nist.gov/vuln/detail/CVE-2019-1010083</ns0:url>
-			</ns0:source>
-			<ns0:ratings>
-				<ns0:rating>
-					<ns0:source>
-						<ns0:url>https://nvd.nist.gov/vuln/detail/CVE-2019-1010083</ns0:url>
-					</ns0:source>
-					<ns0:score>7.5</ns0:score>
-					<ns0:severity>high</ns0:severity>
-					<ns0:method>CVSSv3</ns0:method>
-					<ns0:vector>AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H</ns0:vector>
-				</ns0:rating>
-			</ns0:ratings>
-			<ns0:description>The Pallets Project Flask before 1.0 is affected by: unexpected memory usage. The impact is: denial of service. The attack vector is: crafted encoded JSON data. The fixed version is: 1. NOTE: this may overlap CVE-2018-1000656.</ns0:description>
-			<ns0:recommendation>fixed in 1.0</ns0:recommendation>
-			<ns0:published>2019-07-17T16:15:00+02:00</ns0:published>
-			<ns0:affects>
-				<ns0:target>
-					<ns0:ref>pkg:pypi/bridgecrewio/example/requirements.txt/flask@0.6</ns0:ref>
-				</ns0:target>
-			</ns0:affects>
-		</ns0:vulnerability>
-		<ns0:vulnerability bom-ref="3c1edf36-dda8-4ffa-b759-f76852b77fe0">
+		<ns0:vulnerability bom-ref="333f956a-4811-47ab-b294-42e3adcb33e9">
 			<ns0:id>CVE-2019-19844</ns0:id>
 			<ns0:source>
 				<ns0:url>https://nvd.nist.gov/vuln/detail/CVE-2019-19844</ns0:url>
@@ -257,7 +205,7 @@
 				</ns0:rating>
 			</ns0:ratings>
 			<ns0:description>Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover. A suitably crafted email address (that is equal to an existing user\'s email address after case transformation of Unicode characters) would allow an attacker to be sent a password reset token for the matched user account. (One mitigation in the new releases is to send password reset tokens only to the registered user email address.)</ns0:description>
-			<ns0:recommendation>fixed in 3.0.1, 2.2.9, 1.11.27</ns0:recommendation>
+			<ns0:recommendation>Fixed in 1.11.27</ns0:recommendation>
 			<ns0:published>2019-12-18T20:15:00+01:00</ns0:published>
 			<ns0:affects>
 				<ns0:target>
@@ -265,57 +213,7 @@
 				</ns0:target>
 			</ns0:affects>
 		</ns0:vulnerability>
-		<ns0:vulnerability bom-ref="027403f8-05db-4895-8ef7-d7f5dbe1f934">
-			<ns0:id>CVE-2020-26160</ns0:id>
-			<ns0:source>
-				<ns0:url>https://nvd.nist.gov/vuln/detail/CVE-2020-26160</ns0:url>
-			</ns0:source>
-			<ns0:ratings>
-				<ns0:rating>
-					<ns0:source>
-						<ns0:url>https://nvd.nist.gov/vuln/detail/CVE-2020-26160</ns0:url>
-					</ns0:source>
-					<ns0:score>7.7</ns0:score>
-					<ns0:severity>high</ns0:severity>
-					<ns0:method>CVSSv3</ns0:method>
-					<ns0:vector>AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N</ns0:vector>
-				</ns0:rating>
-			</ns0:ratings>
-			<ns0:description>jwt-go before 4.0.0-preview1 allows attackers to bypass intended access restrictions in situations with []string{} for m[\&quot;aud\&quot;] (which is allowed by the specification). Because the type assertion fails, \&quot;\&quot; is the value of aud. This is a security problem if the JWT token is presented to a service that lacks its own audience check.</ns0:description>
-			<ns0:recommendation>fixed in v4.0.0-preview1</ns0:recommendation>
-			<ns0:published>2020-09-30T20:15:00+02:00</ns0:published>
-			<ns0:affects>
-				<ns0:target>
-					<ns0:ref>pkg:golang/bridgecrewio/example/path/to/go.sum/github.com/dgrijalva/jwt-go@v3.2.0</ns0:ref>
-				</ns0:target>
-			</ns0:affects>
-		</ns0:vulnerability>
-		<ns0:vulnerability bom-ref="4ed9fde0-9b0f-4088-8eea-e7e29d98fce0">
-			<ns0:id>CVE-2020-29652</ns0:id>
-			<ns0:source>
-				<ns0:url>https://nvd.nist.gov/vuln/detail/CVE-2020-29652</ns0:url>
-			</ns0:source>
-			<ns0:ratings>
-				<ns0:rating>
-					<ns0:source>
-						<ns0:url>https://nvd.nist.gov/vuln/detail/CVE-2020-29652</ns0:url>
-					</ns0:source>
-					<ns0:score>7.5</ns0:score>
-					<ns0:severity>high</ns0:severity>
-					<ns0:method>CVSSv3</ns0:method>
-					<ns0:vector>AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H</ns0:vector>
-				</ns0:rating>
-			</ns0:ratings>
-			<ns0:description>A nil pointer dereference in the golang.org/x/crypto/ssh component through v0.0.3 for Go allows remote attackers to cause a denial of service against SSH servers.</ns0:description>
-			<ns0:recommendation>fixed in v0.0.2</ns0:recommendation>
-			<ns0:published>2020-12-17T06:15:00+01:00</ns0:published>
-			<ns0:affects>
-				<ns0:target>
-					<ns0:ref>pkg:golang/bridgecrewio/example/path/to/go.sum/golang.org/x/crypto@v0.0.1</ns0:ref>
-				</ns0:target>
-			</ns0:affects>
-		</ns0:vulnerability>
-		<ns0:vulnerability bom-ref="57e48b5d-1d3d-47f6-ad16-fbbae30dd906">
+		<ns0:vulnerability bom-ref="e3b7a0b0-c656-4e00-9eaf-94733d332e43">
 			<ns0:id>CVE-2021-33203</ns0:id>
 			<ns0:source>
 				<ns0:url>https://nvd.nist.gov/vuln/detail/CVE-2021-33203</ns0:url>
@@ -332,11 +230,111 @@
 				</ns0:rating>
 			</ns0:ratings>
 			<ns0:description>Django before 2.2.24, 3.x before 3.1.12, and 3.2.x before 3.2.4 has a potential directory traversal via django.contrib.admindocs. Staff members could use the TemplateDetailView view to check the existence of arbitrary files. Additionally, if (and only if) the default admindocs templates have been customized by application developers to also show file contents, then not only the existence but also the file contents would have been exposed. In other words, there is directory traversal outside of the template root directories.</ns0:description>
-			<ns0:recommendation>fixed in 3.2.4, 3.1.12, 2.2.24</ns0:recommendation>
+			<ns0:recommendation>Fixed in 2.2.24</ns0:recommendation>
 			<ns0:published>2021-06-08T20:15:00+02:00</ns0:published>
 			<ns0:affects>
 				<ns0:target>
 					<ns0:ref>pkg:pypi/bridgecrewio/example/requirements.txt/django@1.2</ns0:ref>
+				</ns0:target>
+			</ns0:affects>
+		</ns0:vulnerability>
+		<ns0:vulnerability bom-ref="55888e48-7eaa-4119-8ee8-e477ba04e5ca">
+			<ns0:id>CVE-2018-1000656</ns0:id>
+			<ns0:source>
+				<ns0:url>https://nvd.nist.gov/vuln/detail/CVE-2018-1000656</ns0:url>
+			</ns0:source>
+			<ns0:ratings>
+				<ns0:rating>
+					<ns0:source>
+						<ns0:url>https://nvd.nist.gov/vuln/detail/CVE-2018-1000656</ns0:url>
+					</ns0:source>
+					<ns0:score>7.5</ns0:score>
+					<ns0:severity>high</ns0:severity>
+					<ns0:method>CVSSv3</ns0:method>
+					<ns0:vector>AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H</ns0:vector>
+				</ns0:rating>
+			</ns0:ratings>
+			<ns0:description>The Pallets Project flask version Before 0.12.3 contains a CWE-20: Improper Input Validation vulnerability in flask that can result in Large amount of memory usage possibly leading to denial of service. This attack appear to be exploitable via Attacker provides JSON data in incorrect encoding. This vulnerability appears to have been fixed in 0.12.3. NOTE: this may overlap CVE-2019-1010083.</ns0:description>
+			<ns0:recommendation>Fixed in 0.12.3</ns0:recommendation>
+			<ns0:published>2018-08-20T21:31:00+02:00</ns0:published>
+			<ns0:affects>
+				<ns0:target>
+					<ns0:ref>pkg:pypi/bridgecrewio/example/requirements.txt/flask@0.6</ns0:ref>
+				</ns0:target>
+			</ns0:affects>
+		</ns0:vulnerability>
+		<ns0:vulnerability bom-ref="ee466789-4a82-43f8-8fdc-46b698f88d8d">
+			<ns0:id>CVE-2019-1010083</ns0:id>
+			<ns0:source>
+				<ns0:url>https://nvd.nist.gov/vuln/detail/CVE-2019-1010083</ns0:url>
+			</ns0:source>
+			<ns0:ratings>
+				<ns0:rating>
+					<ns0:source>
+						<ns0:url>https://nvd.nist.gov/vuln/detail/CVE-2019-1010083</ns0:url>
+					</ns0:source>
+					<ns0:score>7.5</ns0:score>
+					<ns0:severity>high</ns0:severity>
+					<ns0:method>CVSSv3</ns0:method>
+					<ns0:vector>AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H</ns0:vector>
+				</ns0:rating>
+			</ns0:ratings>
+			<ns0:description>The Pallets Project Flask before 1.0 is affected by: unexpected memory usage. The impact is: denial of service. The attack vector is: crafted encoded JSON data. The fixed version is: 1. NOTE: this may overlap CVE-2018-1000656.</ns0:description>
+			<ns0:recommendation>Fixed in 1.0</ns0:recommendation>
+			<ns0:published>2019-07-17T16:15:00+02:00</ns0:published>
+			<ns0:affects>
+				<ns0:target>
+					<ns0:ref>pkg:pypi/bridgecrewio/example/requirements.txt/flask@0.6</ns0:ref>
+				</ns0:target>
+			</ns0:affects>
+		</ns0:vulnerability>
+		<ns0:vulnerability bom-ref="269f2e3c-bbe5-4277-bb23-0bbe8a5d5ce4">
+			<ns0:id>CVE-2020-26160</ns0:id>
+			<ns0:source>
+				<ns0:url>https://nvd.nist.gov/vuln/detail/CVE-2020-26160</ns0:url>
+			</ns0:source>
+			<ns0:ratings>
+				<ns0:rating>
+					<ns0:source>
+						<ns0:url>https://nvd.nist.gov/vuln/detail/CVE-2020-26160</ns0:url>
+					</ns0:source>
+					<ns0:score>7.7</ns0:score>
+					<ns0:severity>high</ns0:severity>
+					<ns0:method>CVSSv3</ns0:method>
+					<ns0:vector>AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N</ns0:vector>
+				</ns0:rating>
+			</ns0:ratings>
+			<ns0:description>jwt-go before 4.0.0-preview1 allows attackers to bypass intended access restrictions in situations with []string{} for m[\&quot;aud\&quot;] (which is allowed by the specification). Because the type assertion fails, \&quot;\&quot; is the value of aud. This is a security problem if the JWT token is presented to a service that lacks its own audience check.</ns0:description>
+			<ns0:recommendation>Fixed in 4.0.0rc1</ns0:recommendation>
+			<ns0:published>2020-09-30T20:15:00+02:00</ns0:published>
+			<ns0:affects>
+				<ns0:target>
+					<ns0:ref>pkg:golang/bridgecrewio/example/path/to/go.sum/github.com/dgrijalva/jwt-go@v3.2.0</ns0:ref>
+				</ns0:target>
+			</ns0:affects>
+		</ns0:vulnerability>
+		<ns0:vulnerability bom-ref="f6aab757-a60c-463d-811a-eb61769fcfb8">
+			<ns0:id>CVE-2020-29652</ns0:id>
+			<ns0:source>
+				<ns0:url>https://nvd.nist.gov/vuln/detail/CVE-2020-29652</ns0:url>
+			</ns0:source>
+			<ns0:ratings>
+				<ns0:rating>
+					<ns0:source>
+						<ns0:url>https://nvd.nist.gov/vuln/detail/CVE-2020-29652</ns0:url>
+					</ns0:source>
+					<ns0:score>7.5</ns0:score>
+					<ns0:severity>high</ns0:severity>
+					<ns0:method>CVSSv3</ns0:method>
+					<ns0:vector>AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H</ns0:vector>
+				</ns0:rating>
+			</ns0:ratings>
+			<ns0:description>A nil pointer dereference in the golang.org/x/crypto/ssh component through v0.0.3 for Go allows remote attackers to cause a denial of service against SSH servers.</ns0:description>
+			<ns0:recommendation>Fixed in 0.0.2</ns0:recommendation>
+			<ns0:published>2020-12-17T06:15:00+01:00</ns0:published>
+			<ns0:affects>
+				<ns0:target>
+					<ns0:ref>pkg:golang/bridgecrewio/example/path/to/go.sum/golang.org/x/crypto@v0.0.1</ns0:ref>
 				</ns0:target>
 			</ns0:affects>
 		</ns0:vulnerability>

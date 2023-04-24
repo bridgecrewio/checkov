@@ -20,15 +20,17 @@ from checkov.common.util.var_utils import is_terraform_variable_dependent
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType as TerraformBlockType
 
 if TYPE_CHECKING:
+    from bc_jsonpath_ng import JSONPath
     from checkov.common.typing import LibraryGraph
 
-SUPPORTED_BLOCK_TYPES = {BlockType.RESOURCE, TerraformBlockType.DATA, TerraformBlockType.MODULE}
+SUPPORTED_BLOCK_TYPES = {BlockType.RESOURCE, TerraformBlockType.DATA, TerraformBlockType.MODULE, TerraformBlockType.PROVIDER}
 WILDCARD_PATTERN = re.compile(r"(\S+[.][*][.]*)+")
 
 
 class BaseAttributeSolver(BaseSolver):
     operator = ""  # noqa: CCE003  # a static attribute
-    is_value_attribute_check = True    # noqa: CCE003  # a static attribute
+    is_value_attribute_check = True  # noqa: CCE003  # a static attribute
+    jsonpath_parsed_statement_cache: "dict[str, JSONPath]" = {}  # noqa: CCE003  # global cache
 
     def __init__(
         self, resource_types: List[str], attribute: Optional[str], value: Any, is_jsonpath_check: bool = False
@@ -38,7 +40,6 @@ class BaseAttributeSolver(BaseSolver):
         self.attribute = attribute
         self.value = value
         self.is_jsonpath_check = is_jsonpath_check
-        self.parsed_attributes: Dict[Optional[str], Any] = {}
 
     def run(self, graph_connector: LibraryGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         executer = ThreadPoolExecutor()
@@ -141,11 +142,8 @@ class BaseAttributeSolver(BaseSolver):
     def get_attribute_matches(self, vertex: Dict[str, Any]) -> List[str]:
         try:
             attribute_matches: List[str] = []
-            if self.is_jsonpath_check:
-                parsed_attr = self.parsed_attributes.get(self.attribute)
-                if parsed_attr is None:
-                    parsed_attr = parse(self.attribute)  # type:ignore[arg-type]  # self.attribute is no longer going to be Optional here
-                    self.parsed_attributes[self.attribute] = parsed_attr
+            if self.is_jsonpath_check and self.attribute:
+                parsed_attr = self._get_cached_jsonpath_statement(statement=self.attribute)
 
                 for match in parsed_attr.find(vertex):
                     full_path = str(match.full_path)
@@ -225,3 +223,13 @@ class BaseAttributeSolver(BaseSolver):
         except Exception as e:
             logging.info(f'cant parse policy str to object, {str(e)}')
         return value_to_check
+
+    def _get_cached_jsonpath_statement(self, statement: str) -> JSONPath:
+        """Returns the parsed jsonpath statement from the cache or adds it"""
+
+        if statement not in BaseAttributeSolver.jsonpath_parsed_statement_cache:
+            parsed_attr = parse(statement)
+            BaseAttributeSolver.jsonpath_parsed_statement_cache[statement] = parsed_attr
+            return parsed_attr
+
+        return BaseAttributeSolver.jsonpath_parsed_statement_cache[statement]

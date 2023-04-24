@@ -59,3 +59,18 @@ class TestCombinatorPlugin(unittest.TestCase):
             for i, line in enumerate(f.readlines()):
                 result = self.plugin.analyze_line("secret-no-false-positive.yml", line, i)
                 self.assertEqual(0, len(result))
+
+    def test_no_false_positive_yml_2(self):
+        test_file_path = Path(__file__).parent / "resources/cfn/secret-no-false-positive2.yml"
+        with open(file=str(test_file_path)) as f:
+            for i, line in enumerate(f.readlines()):
+                result = self.plugin.analyze_line("secret-no-false-positive2.yml", line, i)
+                self.assertEqual(0, len(result))
+
+    def test_no_false_positive_image_bytes(self):
+        result = self.plugin.analyze_line("main.py", "'image/jpeg' : b'/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0a\nHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIy\nMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAACAAIDASIA\nAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQA\nAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3\nODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWm\np6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEA\nAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSEx\nBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElK\nU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3\nuLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD5/ooo\noAoo2Qoo'", 1)
+        self.assertEqual(0, len(result))
+
+    def test_no_false_positive_token(self):
+        result = self.plugin.analyze_line("main.go", 'fmt.Sprintf("https://%s:%s@", token, token)', 1)
+        self.assertEqual(0, len(result))

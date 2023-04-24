@@ -1,5 +1,7 @@
 import unittest
+import os
 from pathlib import Path
+from unittest import mock
 
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.aws.NetworkACLUnrestrictedIngress3389 import check
@@ -7,6 +9,7 @@ from checkov.terraform.runner import Runner
 
 
 class TestNetworkACLUnrestrictedIngress3389(unittest.TestCase):
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "False"})
     def test(self):
         # given
         test_files_dir = Path(__file__).parent / "example_NetworkACLUnrestrictedIngress3389"

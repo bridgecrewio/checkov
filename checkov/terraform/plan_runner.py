@@ -6,9 +6,12 @@ import platform
 
 from typing import Type, Optional
 
+import pathlib
+
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.typing import LibraryGraphConnector
 from checkov.common.graph.graph_builder.consts import GraphSource
+from checkov.terraform.modules.module_objects import TFDefinitionKey
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_manager import TerraformGraphManager
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
@@ -21,6 +24,7 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import CHECKOV_CREATE_GRAPH
 from checkov.runner_filter import RunnerFilter
+from checkov.terraform.checks.data.registry import data_registry
 from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.plan_parser import TF_PLAN_RESOURCE_ADDRESS
@@ -89,6 +93,7 @@ class Runner(TerraformRunner):
 
     block_type_registries = {  # noqa: CCE003  # a static attribute
         'resource': resource_registry,
+        'data': data_registry,
     }
 
     def run(
@@ -187,16 +192,23 @@ class Runner(TerraformRunner):
 
     def check_tf_definition(self, report, root_folder, runner_filter, collect_skip_comments=True):
         for full_file_path, definition in self.definitions.items():
-            if platform.system() == "Windows":
-                temp = os.path.split(full_file_path)[0]
-                scanned_file = f"/{os.path.relpath(full_file_path,temp)}"
-            else:
-                scanned_file = f"/{os.path.relpath(full_file_path, root_folder)}"
+            full_file_path, scanned_file = self._get_file_path(full_file_path, root_folder)
             logging.debug(f"Scanning file: {scanned_file}")
             for block_type in definition.keys():
                 if block_type in self.block_type_registries.keys():
                     self.run_block(definition[block_type], None, full_file_path, root_folder, report, scanned_file,
                                    block_type, runner_filter)
+
+    @staticmethod
+    def _get_file_path(full_file_path: str | TFDefinitionKey, root_folder: str | pathlib.Path) -> tuple[str, str]:
+        if isinstance(full_file_path, TFDefinitionKey):
+            full_file_path = full_file_path.file_path
+        if platform.system() == "Windows":
+            temp = os.path.split(full_file_path)[0]
+            scanned_file = f"/{os.path.relpath(full_file_path, temp)}"
+        else:
+            scanned_file = f"/{os.path.relpath(full_file_path, root_folder)}"
+        return full_file_path, scanned_file
 
     def run_block(self, entities,
                   definition_context,

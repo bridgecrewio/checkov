@@ -23,6 +23,7 @@ class TestEC2PublicIP(unittest.TestCase):
             "aws_instance.public_foreach[\"key2\"]",
             "aws_instance.public_foreach_loop_list[\"k\"]",
             "aws_instance.public_foreach_loop_list[\"v\"]",
+            "aws_instance.public_foreach_loop_list_of_dicts[\"private\"]",
         }
         failing_resources = {
             "aws_instance.public",
@@ -30,6 +31,37 @@ class TestEC2PublicIP(unittest.TestCase):
             "aws_instance.public_foreach[\"key1\"]",
             "aws_instance.public_foreach_loop[\"key3\"]",
             "aws_instance.public_foreach_loop[\"key4\"]",
+            "aws_instance.public_foreach_loop_list_of_dicts[\"public\"]",
+        }
+
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
+
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
+
+    @mock.patch.dict(os.environ, {
+        "CHECKOV_ENABLE_FOREACH_HANDLING": "True",
+        "CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True",
+        "CHECKOV_NEW_TF_PARSER": "True"
+    })
+    def test_for_each_poc(self):
+        test_files_dir = Path(__file__).parent / "example_EC2PublicIP_foreach"
+        report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
+        summary = report.get_summary()
+
+        passing_resources = {
+            "module.s3_module[\"a\"].aws_instance.poc_modules_foreach[\"key2\"]",
+            "module.s3_module[\"b\"].aws_instance.poc_modules_foreach[\"key2\"]",
+        }
+        failing_resources = {
+            "module.s3_module[\"a\"].aws_instance.poc_modules_foreach[\"key1\"]",
+            "module.s3_module[\"b\"].aws_instance.poc_modules_foreach[\"key1\"]",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
