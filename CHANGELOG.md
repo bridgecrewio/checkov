@@ -1,6 +1,25 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.194...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.199...HEAD)
+
+## [2.3.199](https://github.com/bridgecrewio/checkov/compare/2.3.194...2.3.199) - 2023-04-24
+
+### Feature
+
+- **terraform:** Ensure container defines a readonly root drive 336  - [#4788](https://github.com/bridgecrewio/checkov/pull/4788)
+- **terraform:** ensure pidmode is not set to host 335  - [#4786](https://github.com/bridgecrewio/checkov/pull/4786)
+- **terraform:** Ensure SSM params are encrypted using a CMK 337  - [#4789](https://github.com/bridgecrewio/checkov/pull/4789)
+- **terraform:** Network firewall must define a logging configuration CKV2_AWS_63 - [#4872](https://github.com/bridgecrewio/checkov/pull/4872)
+- **terraform:** Reduce module loading in TF Parser - [#4959](https://github.com/bridgecrewio/checkov/pull/4959)
+
+### Bug Fix
+
+- **kustomize:** fix image_referencer paths - [#4898](https://github.com/bridgecrewio/checkov/pull/4898)
+- **terraform:** support TF provider v3 for lifecycle existence check - [#4952](https://github.com/bridgecrewio/checkov/pull/4952)
+
+### Documentation
+
+- **terraform_plan:** Add Deep Analysis to docs - [#4950](https://github.com/bridgecrewio/checkov/pull/4950)
 
 ## [2.3.194](https://github.com/bridgecrewio/checkov/compare/2.3.192...2.3.194) - 2023-04-23
 
