@@ -19,20 +19,13 @@ class PreBuildCommand(build_py):
         import yaml  # can't be top-level, because it needs to be first installed via 'setup_requires'
 
         graph_check_paths = (
-            "checkov/ansible/checks/graph_checks",
-            "checkov/arm/checks/graph_checks",
-            "checkov/bicep/checks/graph_checks",
-            "checkov/cloudformation/checks/graph_checks",
-            "checkov/dockerfile/checks/graph_checks",
-            "checkov/github_actions/checks/graph_checks",
-            "checkov/kubernetes/checks/graph_checks",
-            "checkov/terraform/checks/graph_checks",
+            "checkov/*/checks/graph_checks",
         )
         build_path = Path(self.build_lib)
         src_path = Path()
 
         for graph_check_path in graph_check_paths:
-            for yaml_file in (src_path / graph_check_path).rglob("*.yaml"):
+            for yaml_file in src_path.glob(f"{graph_check_path}/**/*.yaml"):
                 json_file = (build_path / yaml_file).with_suffix(".json")
                 self.mkpath(str(json_file.parent))
                 json_file.write_text(json.dumps(yaml.safe_load(yaml_file.read_text())))
