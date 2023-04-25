@@ -23,8 +23,6 @@ class RegistryLoader(ModuleLoader):
 
     def __init__(self) -> None:
         super().__init__()
-        self.module_version_url = ""
-        self.best_version = ""
 
     def discover(self, module_params):
         module_params.tf_host_name = os.getenv("TF_HOST_NAME", TFC_HOST_NAME)
@@ -42,7 +40,7 @@ class RegistryLoader(ModuleLoader):
         # If versions for a module are cached, determine the best version and return True.
         # If versions are not cached, get versions, then determine the best version and return True.
         # Best version needs to be determined here for setting most accurate dest_dir.
-        if module_params.module_version_url in RegistryLoader.modules_versions_cache.keys():
+        if module_params.tf_modules_versions_endpoint in RegistryLoader.modules_versions_cache.keys():
             module_params.best_version = self._find_best_version(module_params)
             return True
         if not self._cache_available_versions(module_params):
@@ -56,7 +54,7 @@ class RegistryLoader(ModuleLoader):
         if os.path.exists(module_params.dest_dir):
             return True
         # verify cache again after refresh
-        if module_params.module_version_url in RegistryLoader.modules_versions_cache.keys():
+        if module_params.tf_modules_versions_endpoint in RegistryLoader.modules_versions_cache.keys():
             return True
         return False
 
@@ -69,7 +67,7 @@ class RegistryLoader(ModuleLoader):
         if os.path.exists(module_params.dest_dir):
             return ModuleContent(dir=module_params.dest_dir)
 
-        request_download_url = "/".join((module_params.tf_modules_url, module_params.module_source, best_version, "download"))
+        request_download_url = "/".join((module_params.tf_modules_endpoint, module_params.module_source, best_version, "download"))
         logging.debug(f"Best version for {module_params.module_source} is {best_version} based on the version constraint {module_params.version}.")
         logging.debug(f"Module download url: {request_download_url}")
         try:
@@ -111,7 +109,7 @@ class RegistryLoader(ModuleLoader):
         return ""
 
     def _find_best_version(self, module_params: ModuleParams) -> str:
-        versions_by_size = RegistryLoader.modules_versions_cache.get(module_params.module_version_url, [])
+        versions_by_size = RegistryLoader.modules_versions_cache.get(module_params.tf_modules_versions_endpoint, [])
         if module_params.version == "latest":
             module_params.version = versions_by_size[0]
         version_constraints = get_version_constraints(module_params.version)
@@ -133,7 +131,7 @@ class RegistryLoader(ModuleLoader):
         # Returns False on failure.
         try:
             response = requests.get(
-                url=module_params.module_version_url,
+                url=module_params.tf_modules_versions_endpoint,
                 headers={"Authorization": f"Bearer {module_params.token}"},
                 timeout=DEFAULT_TIMEOUT,
                 # delete
@@ -143,7 +141,7 @@ class RegistryLoader(ModuleLoader):
             available_versions = [
                 v.get("version") for v in response.json().get("modules", [{}])[0].get("versions", {})
             ]
-            RegistryLoader.modules_versions_cache[module_params.module_version_url] = order_versions_in_descending_order(
+            RegistryLoader.modules_versions_cache[module_params.tf_modules_versions_endpoint] = order_versions_in_descending_order(
                 available_versions)
             return True
         except HTTPError as e:
@@ -163,7 +161,7 @@ class RegistryLoader(ModuleLoader):
     
     def _determine_tf_api_endpoints(self, module_params: ModuleParams) -> None:
         """
-        Determines terraform registry endpoints - tf_host_name, tf_modules_url, module_version_url
+        Determines terraform registry endpoints - tf_host_name, tf_modules_endpoint, tf_modules_versions_endpoint
         """
         if module_params.module_source.startswith(module_params.tf_host_name):
             # check if module source supports native Terraform services
@@ -183,12 +181,12 @@ class RegistryLoader(ModuleLoader):
                     return False
 
             self.logger.debug(f"Service discovery response: {response.json()}")
-            module_params.tf_modules_url = f"https://{module_params.tf_host_name}{response.json().get('modules.v1')}"
+            module_params.tf_modules_endpoint = f"https://{module_params.tf_host_name}{response.json().get('modules.v1')}"
         else:
             # use terraform cloud host name and url for the public registry
             module_params.tf_host_name = TFC_HOST_NAME
-            module_params.tf_modules_url = "https://registry.terraform.io/v1/modules"
-        module_params.module_version_url = "/".join((module_params.tf_modules_url, module_params.module_source, "versions"))
+            module_params.tf_modules_endpoint = "https://registry.terraform.io/v1/modules"
+        module_params.tf_modules_versions_endpoint = "/".join((module_params.tf_modules_endpoint, module_params.module_source, "versions"))
 
 
 loader = RegistryLoader()

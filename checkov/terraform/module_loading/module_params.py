@@ -22,5 +22,5 @@ class ModuleParams:
 
         # terraform cloud / enterprise specific params
         self.tf_host_name: Optional[str] = None
-        self.tf_modules_url: Optional[str] = None
-        self.module_version_url: Optional[str] = None
+        self.tf_modules_endpoint: Optional[str] = None
+        self.tf_modules_versions_endpoint: Optional[str] = None
