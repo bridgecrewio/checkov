@@ -36,35 +36,8 @@ class RegistryLoader(ModuleLoader):
             
         self._process_inner_registry_module(module_params)
 
-        if module_params.module_source.startswith(module_params.tf_host_name):
-            module_params.module_source = module_params.module_source.replace(f"{module_params.tf_host_name}/", "")
-            # https://www.terraform.io/internals/remote-service-discovery#remote-service-discovery
-            # based on tf_host_name construct the service discovery url and check if the server supports native Terraform services
-            try:
-                response = requests.get(
-                    url=f"https://{module_params.tf_host_name}/.well-known/terraform.json",
-                    timeout=DEFAULT_TIMEOUT,
-                    # delete
-                    verify=False
-                )
-                response.raise_for_status()
-            except HTTPError as e:
-                self.logger.debug(e)
-                if response.status_code != HTTPStatus.OK and response.status_code != HTTPStatus.NO_CONTENT:
-                    return False
-
-            self.logger.debug(f"Service discovery response: {response.json()}")
-            module_params.tf_modules_url = f"https://{module_params.tf_host_name}{response.json().get('modules.v1')}"
-            module_params.module_version_url = "/".join((module_params.tf_modules_url, module_params.module_source, "versions"))
-        else:
-            # use terraform cloud host name and url for the public registry
-            module_params.tf_host_name = TFC_HOST_NAME
-            module_params.tf_modules_url = "https://registry.terraform.io/v1/modules"
-            module_params.module_version_url = "/".join((module_params.tf_modules_url, module_params.module_source, "versions"))
-
-        # if not module_params.module_version_url.startswith(module_params.tf_host_name):
-        #     # Local paths don't get the prefix appended
-        #     return False
+        # determine tf api endpoints
+        self._determine_tf_api_endpoints(module_params)
 
         # If versions for a module are cached, determine the best version and return True.
         # If versions are not cached, get versions, then determine the best version and return True.
@@ -187,6 +160,35 @@ class RegistryLoader(ModuleLoader):
             module_params.module_source = module_source_components[0]
             module_params.dest_dir = module_params.dest_dir.split("//")[0]
             module_params.inner_module = module_source_components[1]
+    
+    def _determine_tf_api_endpoints(self, module_params: ModuleParams) -> None:
+        """
+        Determines terraform registry endpoints - tf_host_name, tf_modules_url, module_version_url
+        """
+        if module_params.module_source.startswith(module_params.tf_host_name):
+            # check if module source supports native Terraform services
+            # https://www.terraform.io/internals/remote-service-discovery#remote-service-discovery
+            module_params.module_source = module_params.module_source.replace(f"{module_params.tf_host_name}/", "")
+            try:
+                response = requests.get(
+                    url=f"https://{module_params.tf_host_name}/.well-known/terraform.json",
+                    timeout=DEFAULT_TIMEOUT,
+                    # delete
+                    verify=False
+                )
+                response.raise_for_status()
+            except HTTPError as e:
+                self.logger.debug(e)
+                if response.status_code != HTTPStatus.OK and response.status_code != HTTPStatus.NO_CONTENT:
+                    return False
+
+            self.logger.debug(f"Service discovery response: {response.json()}")
+            module_params.tf_modules_url = f"https://{module_params.tf_host_name}{response.json().get('modules.v1')}"
+        else:
+            # use terraform cloud host name and url for the public registry
+            module_params.tf_host_name = TFC_HOST_NAME
+            module_params.tf_modules_url = "https://registry.terraform.io/v1/modules"
+        module_params.module_version_url = "/".join((module_params.tf_modules_url, module_params.module_source, "versions"))
 
 
 loader = RegistryLoader()

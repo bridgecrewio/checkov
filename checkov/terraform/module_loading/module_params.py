@@ -17,10 +17,10 @@ class ModuleParams:
         self.token: Optional[str] = None
         self.username: Optional[str] = None
         self.vcs_base_url: Optional[str] = None
+        self.module_source_prefix: Optional[str] = None
+        self.best_version: Optional[str] = None
+
+        # terraform cloud / enterprise specific params
         self.tf_host_name: Optional[str] = None
         self.tf_modules_url: Optional[str] = None
-        self.module_source_prefix: Optional[str] = None
-        self.is_public_module: bool = False
-        # self.REGISTRY_URL_PREFIX: Optional[str] = None
-        self.best_version: Optional[str] = None
         self.module_version_url: Optional[str] = None
