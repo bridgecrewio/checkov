@@ -68,16 +68,16 @@ Scheduled scan result in Jenkins
  * Python >= 3.7 (Data classes are available for Python 3.7+)
  * Terraform >= 0.12
 
-### Installation
+### Installation or upgrade
 
 ```sh
-pip3 install checkov
+pip3 install checkov --upgrade
 ```
 
-Installation on Alpine:
+Installation or upgrade on Alpine:
 ```sh
 pip3 install --upgrade pip && pip3 install --upgrade setuptools
-pip3 install checkov
+pip3 install checkov --upgrade
 ```
 
 Installation on Ubuntu 18.04 LTS:
