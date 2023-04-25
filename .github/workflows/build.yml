@@ -77,7 +77,7 @@ jobs:
         env:
           LOG_LEVEL: INFO
           BC_KEY: ${{ secrets.BC_API_KEY }}
-          TFC_TOKEN: ${{ secrets.TFC_TOKEN }}
+          TF_REGISTRY_TOKEN: ${{ secrets.TFC_TOKEN }}
           GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       - name: Run integration tests
         run: |

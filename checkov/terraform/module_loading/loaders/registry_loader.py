@@ -26,7 +26,11 @@ class RegistryLoader(ModuleLoader):
 
     def discover(self, module_params):
         module_params.tf_host_name = os.getenv("TF_HOST_NAME", TFC_HOST_NAME)
-        module_params.token = os.getenv("TFC_TOKEN", "")
+        module_params.token = os.getenv("TF_REGISTRY_TOKEN", "")
+        tfc_token = os.getenv("TFC_TOKEN")
+        if tfc_token:
+            self.logger.warn("Environment variable TFC_TOKEN will be deprecated in the future. Please use TF_REGISTRY_TOKEN instead.") 
+            module_params.token = tfc_token
 
     def _is_matching_loader(self, module_params: ModuleParams) -> bool:
         if module_params.module_source.startswith("git::"):

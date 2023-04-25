@@ -46,15 +46,17 @@ checkov -d . --download-external-modules true --external-modules-download-path e
 
 ### Scanning Private Terraform Modules
 
-In case third-party modules are stored in a private repository or a private Terraform Cloud registry, you can provide access tokens as environment variables for checkov to attempt to clone those modules. 
+In case third-party modules are stored in a private repository or a private Terraform Cloud registry, you can provide access tokens as environment variables for checkov to attempt to clone those modules.
 
-| Variable Name          | Description                                                                |
-|------------------------|----------------------------------------------------------------------------|
-| GITHUB_PAT             | Github personal access token with read access to the private repository    |
-| BITBUCKET_TOKEN        | Bitbucket personal access token with read access to the private repository |
-| TFC_TOKEN              | Terraform Cloud token which can access the private registry                |
-| BITBUCKET_USERNAME     | Bitbucket username (can only be used with a BITBUCKET_APP_PASSWORD         |
-| BITBUCKET_APP_PASSWORD | Bitbucket app password (can only be used with a BITBUCKET_USERNAME)        |
+| Variable Name          | Description                                                                                      |
+|------------------------|--------------------------------------------------------------------------------------------------|
+| GITHUB_PAT             | Github personal access token with read access to the private repository                          |
+| BITBUCKET_TOKEN        | Bitbucket personal access token with read access to the private repository                       |
+| TF_HOST_NAME           | Terraform Enterprise host name: example.com                                                      |
+| TFC_TOKEN*             | (deprecated, use TF_REGISTRY_TOKEN) Terraform Cloud token which can access the private registry  |
+| TF_REGISTRY_TOKEN      | Private registry access token (supports terraform cloud / enterprise and third-party registries) |
+| BITBUCKET_USERNAME     | Bitbucket username (can only be used with a BITBUCKET_APP_PASSWORD)                              |
+| BITBUCKET_APP_PASSWORD | Bitbucket app password (can only be used with a BITBUCKET_USERNAME)                              |
 
 For self-hosted VCS repositories, use the following environment variables:
 
