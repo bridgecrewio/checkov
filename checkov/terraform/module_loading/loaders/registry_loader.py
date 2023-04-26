@@ -78,7 +78,7 @@ class RegistryLoader(ModuleLoader):
             response = requests.get(
                 url=request_download_url,
                 headers={"Authorization": f"Bearer {module_params.token}"},
-                timeout=DEFAULT_TIMEOUT,
+                timeout=DEFAULT_TIMEOUT
             )
             response.raise_for_status()
         except HTTPError as e:
