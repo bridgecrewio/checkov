@@ -48,7 +48,8 @@ def test_create_report_cve_record():
         licenses='OSI_BDS',
         package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
         root_package_version="1.12",
-        root_package_name="django"
+        root_package_name="django",
+        used_private_registry=False
     )
 
     # then
@@ -138,7 +139,8 @@ def test_create_report_cve_record_results_from_platform():
         package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
         scan_data_format=ScanDataFormat.PLATFORM,
         root_package_version="1.2",
-        root_package_name='django'
+        root_package_name='django',
+        used_private_registry=False
     )
 
     # then
@@ -185,7 +187,8 @@ def test_create_report_cve_record_moderate_severity():
         licenses='OSI_BDS',
         package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
         root_package_version="1.2",
-        root_package_name='django'
+        root_package_name='django',
+        used_private_registry=False
     )
 
     # then
@@ -227,7 +230,8 @@ def test_create_report_cve_record_severity_filter():
         licenses='OSI_BDS',
         package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
         root_package_version="1.2",
-        root_package_name='django'
+        root_package_name='django',
+        used_private_registry=False
     )
 
     # then
@@ -292,7 +296,8 @@ def test_create_report_cve_record_package_filter():
         licenses='OSI_BDS',
         package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
         root_package_version="1.2",
-        root_package_name='django'
+        root_package_name='django',
+        used_private_registry=False
     )
 
     # then
@@ -352,18 +357,21 @@ def test_create_cli_cves_table():
                       "root_package_name": 'django',
                       "root_package_version:": "1.2",
                       "package_name": 'django',
-                      "package_version": "1.2"},
+                      "package_version": "1.2",
+                      "is_private_fix": None},
                      {'id': 'CVE-2016-6186', 'severity': 'medium', 'fixed_version': '1.8.14',
                       "root_package_name": 'django',
                       "root_package_version:": "1.2",
                       "package_name": 'django',
-                      "package_version": "1.2"
+                      "package_version": "1.2",
+                      "is_private_fix": None
                       },
                      {'id': 'CVE-2021-33203', 'severity': 'medium', 'fixed_version': '2.2.24',
                       "root_package_name": 'django',
                       "root_package_version:": "1.2",
                       "package_name": 'django',
-                      "package_version": "1.2"
+                      "package_version": "1.2",
+                      "is_private_fix": None
                       }],
             'compliant_version': '2.2.24'},
         'flask@0.6': {
@@ -371,13 +379,15 @@ def test_create_cli_cves_table():
                       "root_package_name": 'flask',
                       "root_package_version:": "0.6",
                       "package_name": 'flask',
-                      "package_version": "0.6"
+                      "package_version": "0.6",
+                      "is_private_fix": None
                       },
                      {'id': 'CVE-2018-1000656', 'severity': 'high', 'fixed_version': '0.12.3',
                       "root_package_name": 'flask',
                       "root_package_version:": "0.6",
                       "package_name": 'flask',
-                      "package_version": "0.6"
+                      "package_version": "0.6",
+                      "is_private_fix": None
                       }],
             'compliant_version': '1.0'}}
 
@@ -521,7 +531,8 @@ def test_create_cli_output():
             licenses='Unknown',
             package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
             root_package_name='django',
-            root_package_version='1.2'
+            root_package_version='1.2',
+            used_private_registry=False
         )
         for details in get_vulnerabilities_details()
     ]
@@ -579,7 +590,8 @@ def test_create_cli_output_without_license_records():
             licenses='Unknown',
             package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
             root_package_version='1.2',
-            root_package_name='django'
+            root_package_name='django',
+            used_private_registry=False
         )
         for details in get_vulnerabilities_details()
     ]
@@ -668,7 +680,8 @@ def test_create_cli_table_for_sca_package_with_dependencies():
             package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
             root_package_version=details["root_package_version"],
             root_package_name=details["root_package_name"],
-            root_package_fixed_version=details.get('root_package_fix_version', None)
+            root_package_fixed_version=details.get('root_package_fix_version', None),
+            used_private_registry=False
         )
         for details in get_vulnerabilities_details_package_json()
     ]
@@ -738,7 +751,8 @@ def test_create_cli_output_without_dependencies():
             licenses='Unknown',
             package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
             root_package_name=details["packageName"],
-            root_package_version=details["packageVersion"]
+            root_package_version=details["packageVersion"],
+            used_private_registry=False
         )
         for details in get_vulnerabilities_details_no_deps()
     ]
@@ -780,7 +794,8 @@ def test_create_cli_table_for_package_with_diff_CVEs():
             package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
             root_package_version=details["root_package_version"],
             root_package_name=details["root_package_name"],
-            root_package_fixed_version=details.get('root_package_fix_version', None)
+            root_package_fixed_version=details.get('root_package_fix_version', None),
+            used_private_registry=False
         )
         for details in get_vulnerabilities_details_package_lock_json()
     ]

@@ -42,7 +42,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
-      - uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435  # v4
+      - uses: actions/setup-python@57ded4d7d5e986d7296eab16560982c6dd7c923b  # v4
         with:
           python-version: ${{ matrix.python }}
       - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c  # v3
@@ -86,7 +86,7 @@ jobs:
     runs-on: [ self-hosted, public, linux, x64 ]
     steps:
       - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
-      - uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435  # v4
+      - uses: actions/setup-python@57ded4d7d5e986d7296eab16560982c6dd7c923b  # v4
         with:
           python-version: 3.7
       - name: Install pipenv
@@ -114,7 +114,7 @@ jobs:
     steps:
       - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
       - name: Set up Python 3.7
-        uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435  # v4
+        uses: actions/setup-python@57ded4d7d5e986d7296eab16560982c6dd7c923b  # v4
         with:
           python-version: 3.7
       - uses: azure/setup-helm@f382f75448129b3be48f8121b9857be18d815a82  # v3
@@ -151,7 +151,7 @@ jobs:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
       - name: Set up Python 3.7
-        uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435  # v4
+        uses: actions/setup-python@57ded4d7d5e986d7296eab16560982c6dd7c923b  # v4
         with:
           python-version: 3.7
       - name: Install pipenv
@@ -280,7 +280,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Docker meta
         id: docker_meta
-        uses: docker/metadata-action@507c2f2dc502c992ad446e3d7a5dfbe311567a96  # v4
+        uses: docker/metadata-action@c4ee3adeed93b1fa6a762f209fb01608c1a22f1e  # v4
         with:
           images: ${{ env.DH_IMAGE_NAME }}
           labels: |

@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import List, Dict, Any, Tuple, Optional
 
 from checkov.common.bridgecrew.severities import Severity
@@ -20,7 +21,10 @@ class Policy3dRecord(Record):
                  file_abs_path: str,
                  severity: Optional[Severity],
                  vulnerabilities: List[Dict[str, Any]],
-                 iac_records: List[Record]
+                 iac_records: List[Record],
+                 composed_from_iac_records: List[Record],
+                 composed_from_secrets_records: list[Record],
+                 composed_from_cves: list[Dict[str, Any]]
                  ) -> None:
         super().__init__(
             check_id=check_id,
@@ -38,3 +42,6 @@ class Policy3dRecord(Record):
         )
         self.vulnerabilities = vulnerabilities
         self.iac_records = iac_records
+        self.composed_from_iac_records = composed_from_iac_records
+        self.composed_from_secrets_records = composed_from_secrets_records
+        self.composed_from_cves = composed_from_cves

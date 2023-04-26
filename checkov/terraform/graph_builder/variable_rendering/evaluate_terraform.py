@@ -335,7 +335,7 @@ def _handle_for_loop_in_list_of_dicts(object_to_run_on: list[Any], statement: st
                     if replace_value in val_to_assign:
                         if isinstance(obj_value, (list, dict)):
                             obj_value = json.dumps(obj_value)
-                        if isinstance(obj_value, (bool, int)):
+                        if isinstance(obj_value, (bool, int)) or obj_value is None:
                             # need to also remove the surrounding quotes
                             val_to_assign = val_to_assign.replace(f"'{replace_value}'", str(obj_value))
                         else:
