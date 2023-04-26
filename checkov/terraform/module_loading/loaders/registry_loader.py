@@ -29,13 +29,13 @@ class RegistryLoader(ModuleLoader):
         module_params.token = os.getenv("TF_REGISTRY_TOKEN", "")
         tfc_token = os.getenv("TFC_TOKEN")
         if tfc_token:
-            self.logger.warn("Environment variable TFC_TOKEN will be deprecated in the future. Please use TF_REGISTRY_TOKEN instead.") 
+            self.logger.warn("Environment variable TFC_TOKEN will be deprecated in the future. Please use TF_REGISTRY_TOKEN instead.")
             module_params.token = tfc_token
 
     def _is_matching_loader(self, module_params: ModuleParams) -> bool:
         if module_params.module_source.startswith("git::"):
             return False
-            
+
         self._process_inner_registry_module(module_params)
 
         # determine tf api endpoints
@@ -158,7 +158,7 @@ class RegistryLoader(ModuleLoader):
             module_params.module_source = module_source_components[0]
             module_params.dest_dir = module_params.dest_dir.split("//")[0]
             module_params.inner_module = module_source_components[1]
-    
+
     def _determine_tf_api_endpoints(self, module_params: ModuleParams) -> None:
         """
         Determines terraform registry endpoints - tf_host_name, tf_modules_endpoint, tf_modules_versions_endpoint
