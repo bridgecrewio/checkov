@@ -70,28 +70,28 @@ For self-hosted VCS repositories, use the following environment variables:
 
 1. Terraform Cloud registry private module scan
 
-```shell
-# TF_HOST_NAME will default to app.terraform.io
-export TF_REGISTRY_TOKEN=xxxxxx
-checkov -d . --download-external-modules true
-```
+  ```shell
+  # TF_HOST_NAME will default to app.terraform.io
+  export TF_REGISTRY_TOKEN=xxxxxx
+  checkov -d . --download-external-modules true
+  ```
 
-2.Terraform Enterprise registry private module scan
+2. Terraform Enterprise registry private module scan
 
-```shell
-export TF_HOST_NAME=tfe.example.com
-export TF_REGISTRY_TOKEN=xxxxxx
-checkov -d . --download-external-modules true
-```
+  ```shell
+  export TF_HOST_NAME=tfe.example.com
+  export TF_REGISTRY_TOKEN=xxxxxx
+  checkov -d . --download-external-modules true
+  ```
 
-3.Gitlab registry public module scan
+3. Gitlab registry public module scan
 
 ```shell
 export TF_HOST_NAME=gitlab.com
 checkov -d . --download-external-modules true
 ```
 
-4.Gitlab self-hosted registry private module scan
+4. Gitlab self-hosted registry private module scan
 
 ```shell
 export TF_HOST_NAME=gitlab.example.com
