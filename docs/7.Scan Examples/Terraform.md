@@ -54,7 +54,7 @@ If you have modules stored in a private repository or a private Terraform regist
 | BITBUCKET_TOKEN        | Bitbucket personal access token with read access to the private repository                       |
 | TF_HOST_NAME           | (defaults to app.terraform.io) Terraform Enterprise host name: example.com                       |
 | TFC_TOKEN*             | (deprecated, use TF_REGISTRY_TOKEN) Terraform Cloud token which can access the private registry  |
-| TF_REGISTRY_TOKEN      | Private registry access token (supports terraform cloud / enterprise and third-party registries) |
+| TF_REGISTRY_TOKEN      | Private registry access token (supports Terraform Cloud / Enterprise and third-party registries) |
 | BITBUCKET_USERNAME     | Bitbucket username (can only be used with a BITBUCKET_APP_PASSWORD)                              |
 | BITBUCKET_APP_PASSWORD | Bitbucket app password (can only be used with a BITBUCKET_USERNAME)                              |
 
