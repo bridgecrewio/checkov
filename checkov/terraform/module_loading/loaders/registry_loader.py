@@ -79,8 +79,6 @@ class RegistryLoader(ModuleLoader):
                 url=request_download_url,
                 headers={"Authorization": f"Bearer {module_params.token}"},
                 timeout=DEFAULT_TIMEOUT,
-                # delete
-                verify=False
             )
             response.raise_for_status()
         except HTTPError as e:
@@ -138,8 +136,6 @@ class RegistryLoader(ModuleLoader):
                 url=module_params.tf_modules_versions_endpoint,
                 headers={"Authorization": f"Bearer {module_params.token}"},
                 timeout=DEFAULT_TIMEOUT,
-                # delete
-                verify=False
             )
             response.raise_for_status()
             available_versions = [
@@ -175,8 +171,6 @@ class RegistryLoader(ModuleLoader):
                 response = requests.get(
                     url=f"https://{module_params.tf_host_name}/.well-known/terraform.json",
                     timeout=DEFAULT_TIMEOUT,
-                    # delete
-                    verify=False
                 )
                 response.raise_for_status()
             except HTTPError as e:
