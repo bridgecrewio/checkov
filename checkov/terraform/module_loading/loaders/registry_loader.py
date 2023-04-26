@@ -5,6 +5,7 @@ from typing import List, Dict
 
 import requests
 from requests.exceptions import HTTPError
+from urllib.parse import urlparse
 
 from checkov.common.models.consts import TFC_HOST_NAME
 from checkov.common.goget.registry.get_registry import RegistryGetter
@@ -16,6 +17,9 @@ from checkov.terraform.module_loading.loaders.versions_parser import (
     get_version_constraints
 )
 from checkov.terraform.module_loading.module_params import ModuleParams
+
+# https://developer.hashicorp.com/terraform/language/modules/sources#fetching-archives-over-http
+MODULE_ARCHIVE_EXTENSIONS = ["zip", "tar.bz2", "tar.gz", "tgz", "tar.xz", "txz"]
 
 
 class RegistryLoader(ModuleLoader):
@@ -35,12 +39,9 @@ class RegistryLoader(ModuleLoader):
     def _is_matching_loader(self, module_params: ModuleParams) -> bool:
         if module_params.module_source.startswith("git::"):
             return False
-
         self._process_inner_registry_module(module_params)
-
         # determine tf api endpoints
         self._determine_tf_api_endpoints(module_params)
-
         # If versions for a module are cached, determine the best version and return True.
         # If versions are not cached, get versions, then determine the best version and return True.
         # Best version needs to be determined here for setting most accurate dest_dir.
@@ -50,7 +51,6 @@ class RegistryLoader(ModuleLoader):
         if not self._cache_available_versions(module_params):
             return False
         module_params.best_version = self._find_best_version(module_params)
-
         if not module_params.inner_module:
             module_params.dest_dir = os.path.join(module_params.root_dir, module_params.external_modules_folder_name,
                                                   module_params.tf_host_name, *module_params.module_source.split("/"),
@@ -77,7 +77,7 @@ class RegistryLoader(ModuleLoader):
         try:
             response = requests.get(
                 url=request_download_url,
-                headers={"Authorization": f"Bearer {module_params.token}"},
+                headers={"Authorization": f"Bearer {module_params.token}"} if module_params.token else None,
                 timeout=DEFAULT_TIMEOUT
             )
             response.raise_for_status()
@@ -85,26 +85,27 @@ class RegistryLoader(ModuleLoader):
             self.logger.warning(e)
             if response.status_code != HTTPStatus.OK and response.status_code != HTTPStatus.NO_CONTENT:
                 return ModuleContent(dir=None)
+        # https://www.terraform.io/registry/api-docs#download-source-code-for-a-specific-module-version
+        module_download_url = response.headers.get('X-Terraform-Get', '')
+        self.logger.debug(f"X-Terraform-Get: {module_download_url}")
+        module_download_url = self._normalize_module_download_url(module_params, module_download_url)
+        self.logger.debug(f"Cloning module from normalized url {module_download_url}")
+        if self._is_download_url_archive(module_download_url):
+            try:
+                registry_getter = RegistryGetter(module_download_url)
+                registry_getter.temp_dir = module_params.dest_dir
+                registry_getter.do_get()
+                return_dir = module_params.dest_dir
+            except Exception as e:
+                str_e = str(e)
+                if 'File exists' not in str_e and 'already exists and is not an empty directory' not in str_e:
+                    self.logger.error(f"failed to get {module_params.module_source} because of {e}")
+                    return ModuleContent(dir=None, failed_url=module_params.module_source)
+            if module_params.inner_module:
+                return_dir = os.path.join(module_params.dest_dir, module_params.inner_module)
+            return ModuleContent(dir=return_dir)
         else:
-            # https://www.terraform.io/registry/api-docs#download-source-code-for-a-specific-module-version
-            module_download_url = response.headers.get('X-Terraform-Get', '')
-            self.logger.debug(f"Cloning module from: X-Terraform-Get: {module_download_url}")
-            if module_download_url.startswith("https://archivist.terraform.io/v1/object") or module_download_url.startswith(f"https://{module_params.tf_host_name}/_archivist/v1/object"):
-                try:
-                    registry_getter = RegistryGetter(module_download_url)
-                    registry_getter.temp_dir = module_params.dest_dir
-                    registry_getter.do_get()
-                    return_dir = module_params.dest_dir
-                except Exception as e:
-                    str_e = str(e)
-                    if 'File exists' not in str_e and 'already exists and is not an empty directory' not in str_e:
-                        self.logger.error(f"failed to get {module_params.module_source} because of {e}")
-                        return ModuleContent(dir=None, failed_url=module_params.module_source)
-                if module_params.inner_module:
-                    return_dir = os.path.join(module_params.dest_dir, module_params.inner_module)
-                return ModuleContent(dir=return_dir)
-            else:
-                return ModuleContent(dir=None, next_url=response.headers.get("X-Terraform-Get", ""))
+            return ModuleContent(dir=None, next_url=response.headers.get("X-Terraform-Get", ""))
 
     def _find_module_path(self, module_params: ModuleParams) -> str:
         # to determine the exact path here would be almost a duplicate of the git_loader functionality
@@ -134,7 +135,7 @@ class RegistryLoader(ModuleLoader):
         try:
             response = requests.get(
                 url=module_params.tf_modules_versions_endpoint,
-                headers={"Authorization": f"Bearer {module_params.token}"},
+                headers={"Authorization": f"Bearer {module_params.token}"} if module_params.token else None,
                 timeout=DEFAULT_TIMEOUT,
             )
             response.raise_for_status()
@@ -185,6 +186,24 @@ class RegistryLoader(ModuleLoader):
             module_params.tf_host_name = TFC_HOST_NAME
             module_params.tf_modules_endpoint = "https://registry.terraform.io/v1/modules"
         module_params.tf_modules_versions_endpoint = "/".join((module_params.tf_modules_endpoint, module_params.module_source, "versions"))
+
+    def _normalize_module_download_url(self, module_params: ModuleParams, module_download_url) -> str:
+        if not urlparse(module_download_url).netloc:
+            module_download_url = f"https://{module_params.tf_host_name}{module_download_url}"
+        return module_download_url
+
+    @staticmethod
+    def _is_download_url_archive(module_download_url) -> bool:
+        for extension in MODULE_ARCHIVE_EXTENSIONS:
+            if module_download_url.endswith(extension):
+                return True
+        query_params = urlparse(module_download_url).query
+        if query_params:
+            query_params = query_params.split("&")
+            for query_param in query_params:
+                if query_param.startswith("archive="):
+                    return True
+        return False
 
 
 loader = RegistryLoader()
