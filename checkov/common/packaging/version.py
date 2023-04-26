@@ -33,7 +33,7 @@ def parse(version: str) -> packaging_version.Version | LegacyVersion:
 class LegacyVersion(packaging_version._BaseVersion):
     def __init__(self, version: str) -> None:
         self._version = str(version)
-        self._key = _legacy_cmpkey(self._version)  # type:ignore[assignment]
+        self._key = _legacy_cmpkey(self._version)
 
     def __str__(self) -> str:
         return self._version

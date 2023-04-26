@@ -1,14 +1,18 @@
 from __future__ import annotations
 
+import logging
 from collections.abc import Hashable
 from pathlib import Path
 from typing import Tuple, Dict, Any, List, TYPE_CHECKING
 
 import yaml
+from charset_normalizer import from_path
 from yaml.loader import SafeLoader
 
 if TYPE_CHECKING:
     from yaml import MappingNode
+
+logger = logging.getLogger(__name__)
 
 
 def loads(content: str) -> list[dict[str, Any]]:
@@ -35,7 +39,12 @@ def load(filename: Path) -> Tuple[List[Dict[str, Any]], List[Tuple[int, str]]]:
     """
 
     file_path = filename if isinstance(filename, Path) else Path(filename)
-    content = file_path.read_text()
+
+    try:
+        content = file_path.read_text()
+    except UnicodeDecodeError:
+        logger.debug(f"Encoding for file {file_path} is not UTF-8, trying to detect it")
+        content = str(from_path(file_path).best())
 
     if not all(key in content for key in ("apiVersion", "kind")):
         return [{}], []

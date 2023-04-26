@@ -53,8 +53,12 @@ class Module:
     def _add_to_blocks(self, block: TerraformBlock) -> None:
         if self.enable_nested_modules:
             if self.use_new_tf_parser:
-                block.source_module_object = block.path.tf_source_modules
-                block.path = block.path.file_path
+                if isinstance(block.path, str):
+                    block.source_module_object = None
+                    block.path = block.path
+                else:
+                    block.source_module_object = block.path.tf_source_modules
+                    block.path = block.path.file_path
             else:
                 block.module_dependency, block.module_dependency_num = get_module_from_full_path(block.path)
                 block.path = get_abs_path(block.path)
@@ -119,6 +123,10 @@ class Module:
     def _add_locals(self, blocks: List[Dict[str, Dict[str, Any]]], path: str) -> None:
         for blocks_section in blocks:
             for name in blocks_section:
+                if name in (START_LINE, END_LINE):
+                    # locals block generates single block sections for the start/end lines
+                    continue
+
                 local_block = TerraformBlock(
                     block_type=BlockType.LOCALS,
                     name=name,

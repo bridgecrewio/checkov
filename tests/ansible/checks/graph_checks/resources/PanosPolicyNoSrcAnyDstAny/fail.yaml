@@ -26,6 +26,7 @@
         service: ['service-http', 'service-https']
         description: "A nice rule"
         action: 'allow'
+        log_setting: 'default'
 
     - name: Security_rule_fail_2
       paloaltonetworks.panos.panos_security_rule:
@@ -39,6 +40,7 @@
         service: ['service-http', 'service-https']
         description: "A nice rule"
         action: 'allow'
+        log_setting: 'default'
 
     - name: Security_rule_fail_3
       paloaltonetworks.panos.panos_security_rule:
@@ -53,6 +55,7 @@
         service: ['service-http', 'service-https']
         description: "A nice rule"
         action: 'allow'
+        log_setting: 'default'
 
     - name: Security_rule_fail_4
       paloaltonetworks.panos.panos_security_rule:
@@ -67,6 +70,7 @@
         service: ['service-http', 'service-https']
         description: "A nice rule"
         action: 'allow'
+        log_setting: 'default'
 
     - name: Security_rule_fail_5
       paloaltonetworks.panos.panos_security_rule:
@@ -82,3 +86,4 @@
         service: ['service-http', 'service-https']
         description: "A nice rule"
         action: 'allow'
+        log_setting: 'default'

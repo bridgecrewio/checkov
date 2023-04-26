@@ -46,6 +46,7 @@ from checkov.common.output.cyclonedx_consts import (
     BC_SEVERITY_TO_CYCLONEDX_LEVEL,
 )
 from checkov.common.output.record import SCA_PACKAGE_SCAN_CHECK_NAME
+from checkov.common.sca.commons import UNFIXABLE_VERSION, get_fix_version
 from checkov.common.util.consts import CHECKOV_DISPLAY_REGISTRY_URL
 
 if sys.version_info >= (3, 8):
@@ -380,6 +381,7 @@ class CycloneDX:
             method = VulnerabilityScoreSource.get_from_vector(vector)
             vector = method.get_localised_vector(vector)
 
+        fix_version = self.get_fix_version_overview(resource.vulnerability_details)
         vulnerability = Vulnerability(
             id=resource.vulnerability_details["id"],
             source=source,
@@ -393,11 +395,17 @@ class CycloneDX:
                 )
             ],
             description=resource.vulnerability_details.get("description"),
-            recommendation=resource.vulnerability_details.get("status"),
+            recommendation=fix_version,
             published=datetime.fromisoformat(resource.vulnerability_details["published_date"].replace("Z", "")),
             affects_targets=[BomTarget(ref=component.bom_ref.value)],
         )
         return vulnerability
+
+    def get_fix_version_overview(self, vulnerability_details: dict[str, Any]) -> str | None:
+        is_private_fix = vulnerability_details.get("is_private_fix")
+        public_fix_version_prefix = "No private fix available. " if is_private_fix is False else ""
+        fix_version: str = get_fix_version(vulnerability_details)
+        return f'{public_fix_version_prefix}Fixed in {fix_version}' if fix_version and fix_version != UNFIXABLE_VERSION else fix_version
 
     def get_output(self, output_format: OutputFormat) -> str:
         """Returns the SBOM as a formatted string"""

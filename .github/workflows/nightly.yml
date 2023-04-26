@@ -15,7 +15,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f  # v3
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
         with:
           fetch-depth: 0
           token: ${{ secrets.GH_PAT_SECRET }}
@@ -38,7 +38,7 @@ jobs:
       - name: Build GitHub Release changelog
         if: steps.prepare_release.outputs.create_release == 'true'
         id: build_github_release
-        uses: mikepenz/release-changelog-builder-action@c73ff7421c59fa0d090dcfe62e24a758977c699d  # v3
+        uses: mikepenz/release-changelog-builder-action@f7dd0f5932037ca4fff56395ffb04837fd97851a  # v3
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT_SECRET }}
         with:
@@ -54,7 +54,7 @@ jobs:
           body: ${{ steps.build_github_release.outputs.changelog }}
       - name: Update CHANGELOG.md
         if: steps.build_github_release.outputs.changelog != ''
-        uses: stefanzweifel/changelog-updater-action@bbfa2bd8afcc53bf7ec1f01e69a7847d82a8b4c6  # v1
+        uses: stefanzweifel/changelog-updater-action@3ad74a04f312e09210fdb3b0d8bf7ee66865288e  # v1
         with:
           latest-version: ${{ steps.prepare_release.outputs.version }}
           release-notes: ${{ steps.build_github_release.outputs.changelog }}

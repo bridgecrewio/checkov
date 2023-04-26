@@ -1,0 +1,28 @@
+metadata:
+  id: "CKV2_OCI_3"
+  name: "Ensure Kubernetes engine cluster is configured with NSG(s)"
+  category: "NETWORKING"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types: "oci_containerengine_cluster"
+      attribute: "endpoint_config.nsg_ids"
+      operator: "exists"
+
+    - cond_type: "attribute"
+      resource_types: "oci_containerengine_cluster"
+      attribute: "endpoint_config.nsg_ids"
+      operator: "not_equals_ignore_case"
+      value: "null"
+
+    - cond_type: "attribute"
+      resource_types: "oci_containerengine_cluster"
+      attribute: "endpoint_config.nsg_ids"
+      operator: "is_not_empty"
+
+    - cond_type: "attribute"
+      resource_types: "oci_containerengine_cluster"
+      attribute: "endpoint_config.nsg_ids"
+      operator: "number_of_words_not_equals"
+      value: 0

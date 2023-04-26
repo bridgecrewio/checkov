@@ -203,6 +203,10 @@ class TFParser:
             if not self.should_loaded_file(file, root_dir):
                 continue
 
+            #  Dont run over the nested because we already run on them - dont remove.
+            if file.tf_source_modules:
+                continue
+
             file_data = self.out_definitions.get(file)
             if file_data is None:
                 continue
@@ -321,7 +325,10 @@ class TFParser:
     def _remove_unused_path_recursive(self, path) -> None:
         self.out_definitions.pop(path, None)
         for key in list(self.module_to_resolved.keys()):
-            file_key, module_index, module_name = key
+            if isinstance(key[0], TFDefinitionKey):
+                file_key = key[0]
+            else:
+                file_key, module_index, module_name = key
             if path == file_key:
                 for resolved_path in self.module_to_resolved[key]:
                     self._remove_unused_path_recursive(resolved_path)

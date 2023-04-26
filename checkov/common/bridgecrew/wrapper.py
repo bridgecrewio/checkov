@@ -34,11 +34,11 @@ def _is_scanned_file(file: str) -> bool:
     return file_ending in SUPPORTED_FILE_EXTENSIONS
 
 
-def _put_json_object(s3_client: S3Client, json_obj: Any, bucket: str, object_path: str) -> None:
+def _put_json_object(s3_client: S3Client, json_obj: Any, bucket: str, object_path: str, log_stack_trace_on_error: bool = True) -> None:
     try:
         s3_client.put_object(Bucket=bucket, Key=object_path, Body=json.dumps(json_obj, cls=CustomJSONEncoder))
     except Exception:
-        logging.error(f"failed to persist object into S3 bucket {bucket}", exc_info=True)
+        logging.error(f"failed to persist object into S3 bucket {bucket}", exc_info=log_stack_trace_on_error)
         raise
 
 
@@ -98,9 +98,9 @@ def persist_checks_results(
 
 
 def persist_run_metadata(
-        run_metadata: dict[str, str | list[str]], s3_client: S3Client, bucket: str, full_repo_object_key: str
+        run_metadata: dict[str, str | list[str]], s3_client: S3Client, bucket: str, full_repo_object_key: str, use_checkov_results: bool = True
 ) -> None:
-    object_path = f'{full_repo_object_key}/{checkov_results_prefix}/run_metadata.json'
+    object_path = f'{full_repo_object_key}/{checkov_results_prefix}/run_metadata.json' if use_checkov_results else f'{full_repo_object_key}/run_metadata.json'
     try:
         s3_client.put_object(Bucket=bucket, Key=object_path, Body=json.dumps(run_metadata, indent=2))
 
@@ -111,7 +111,7 @@ def persist_run_metadata(
 
 def persist_logs_stream(logs_stream: StringIO, s3_client: S3Client, bucket: str, full_repo_object_key: str) -> None:
     file_io = compress_string_io_tar(logs_stream)
-    object_path = f'{full_repo_object_key}/{checkov_results_prefix}/logs_file.tar.gz'
+    object_path = f'{full_repo_object_key}/logs_file.tar.gz'
     try:
         s3_client.put_object(Bucket=bucket, Key=object_path, Body=file_io)
     except Exception:

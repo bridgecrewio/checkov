@@ -20,6 +20,10 @@ class TestCustomYamlPolicies(unittest.TestCase):
     def test_CustomPolicy1(self):
         self.go("CustomPolicy1")
 
+    def test_CustomPolicy2(self):
+        # tests resource_types value to be a string
+        self.go("CustomPolicy2")
+
     def test_CustomAwsEMRSecurityConfiguration(self):
         self.go('CustomAwsEMRSecurityConfiguration')
 
