@@ -9,6 +9,7 @@ resource "aws_emr_security_configuration" "pass" {
         "EncryptionMode": "SSE-S3"
       },
       "LocalDiskEncryptionConfiguration": {
+        "EnableEbsEncryption": true,
         "EncryptionKeyProviderType": "AwsKms",
         "AwsKmsKey": "arn:aws:kms:eu-west-2:680235478471:key/27b6fd31-ca6d-4c71-8dca-06ebd0f94174"
       }

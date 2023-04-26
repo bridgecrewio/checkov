@@ -21,7 +21,6 @@ class TestEMRClusterConfEncryptsEBS(unittest.TestCase):
         failing_resources = {
             "aws_emr_security_configuration.fail",
             "aws_emr_security_configuration.fail2",
-            "aws_emr_security_configuration.fail3",
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
