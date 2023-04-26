@@ -46,7 +46,7 @@ checkov -d . --download-external-modules true --external-modules-download-path e
 
 ### Scanning Private Terraform Modules
 
-In case third-party modules are stored in a private repository or a private terraform registry (hosted on Terraform Cloud / Enterprise or a third-party provider like Gitlab), you can provide access tokens as environment variables for checkov to attempt to clone those modules.
+If you have modules stored in a private repository or a private Terraform registry (hosted on Terraform Cloud, Terraform Enterprise or a third-party provider like GitLab), you can grant Checkov access by providing access tokens as environment variables. This will enable Checkov to attempt to clone and scan those modules.
 
 | Variable Name          | Description                                                                                      |
 |------------------------|--------------------------------------------------------------------------------------------------|
