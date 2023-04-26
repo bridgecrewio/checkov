@@ -46,7 +46,7 @@ checkov -d . --download-external-modules true --external-modules-download-path e
 
 ### Scanning Private Terraform Modules
 
-In case third-party modules are stored in a private repository or a private terraform registry (hosted on Terraform Cloud / Enterprise or a third-party provider like Gitlab), you can provide access tokens as environment variables for checkov to attempt to clone those modules.
+If you have modules stored in a private repository or a private Terraform registry (hosted on Terraform Cloud, Terraform Enterprise or a third-party provider like GitLab), you can grant Checkov access by providing access tokens as environment variables. This will enable Checkov to attempt to clone and scan those modules.
 
 | Variable Name          | Description                                                                                      |
 |------------------------|--------------------------------------------------------------------------------------------------|
@@ -54,7 +54,7 @@ In case third-party modules are stored in a private repository or a private terr
 | BITBUCKET_TOKEN        | Bitbucket personal access token with read access to the private repository                       |
 | TF_HOST_NAME           | (defaults to app.terraform.io) Terraform Enterprise host name: example.com                       |
 | TFC_TOKEN*             | (deprecated, use TF_REGISTRY_TOKEN) Terraform Cloud token which can access the private registry  |
-| TF_REGISTRY_TOKEN      | Private registry access token (supports terraform cloud / enterprise and third-party registries) |
+| TF_REGISTRY_TOKEN      | Private registry access token (supports Terraform Cloud / Enterprise and third-party registries) |
 | BITBUCKET_USERNAME     | Bitbucket username (can only be used with a BITBUCKET_APP_PASSWORD)                              |
 | BITBUCKET_APP_PASSWORD | Bitbucket app password (can only be used with a BITBUCKET_USERNAME)                              |
 
