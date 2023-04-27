@@ -139,6 +139,10 @@ jobs:
     needs: [integration-tests, unit-tests, prisma-tests]
     runs-on: [self-hosted, public, linux, x64]
     environment: release
+    permissions:
+      contents: write
+      # IMPORTANT: this permission is mandatory for trusted publishing to pypi
+      id-token: write
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
@@ -240,8 +244,6 @@ jobs:
           pipenv run python setup.py sdist bdist_wheel
       - name: Publish a Python distribution to PyPI
         uses: pypa/gh-action-pypi-publish@0bf742be3ebe032c25dd15117957dc15d0cfc38d  # v1
-        with:
-          password: ${{ secrets.PYPI_TOKEN }}
       - name: sleep and wait for package to refresh
         run: |
           sleep 2m
