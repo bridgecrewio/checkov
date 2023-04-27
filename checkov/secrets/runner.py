@@ -202,7 +202,7 @@ class Runner(BaseRunner[None]):
             secrets_duplication: dict[str, bool] = {}
 
             for key, secret in secrets:
-                added_commit_hash, removed_commit_hash, code_line, added_by, removed_date, added_date = None, None, None, None, None, None
+                added_commit_hash, removed_commit_hash, code_line, added_by, removed_date, added_date = '', '', '', '', '', ''
                 if runner_filter.enable_git_history_secret_scan:
                     enriched_potential_secret = git_history_scanner.\
                         history_store.get_added_and_removed_commit_hash(key, secret, root_folder)
