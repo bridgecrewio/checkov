@@ -17,7 +17,6 @@ However, in doing so abstracts the Terraform configuration away from a regular C
 ```hcl
 module "eks" {
   source          = "terraform-aws-modules/eks/aws"
-
   cluster_name    = "my-cluster"
   cluster_version = "1.24"
   subnets         = ["subnet-abcde012", "subnet-bcde012a", "subnet-fghi345a"]
