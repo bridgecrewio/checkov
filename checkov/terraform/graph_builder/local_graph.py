@@ -415,10 +415,17 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self, block_type: BlockType, name: str, block_path: str, module_path: str, module_num: str, relative_module_idx: Optional[int] = None, source_module_object: Optional[TFModule] = None
     ) -> int:
         relative_vertices = []
-        if self.use_new_tf_parser and relative_module_idx is None:
-            module_dependency_by_name_key = source_module_object
+        if self.use_new_tf_parser:
+            if relative_module_idx is None:
+                module_dependency_by_name_key = source_module_object
+            else:
+                vertex = self.vertices[relative_module_idx]
+                module_dependency_by_name_key = vertex.source_module_object
         elif relative_module_idx is not None:
-            module_dependency_by_name_key = next(k for k, v in self.vertices_by_module_dependency.items() if v.get(BlockType.MODULE, []).__contains__(relative_module_idx))
+            # This part of the code is very inefficient for large graphs
+            # It's better to avoid using it by setting `self.use_new_tf_parser`
+            module_dependency_by_name_key = next(k for k, v in self.vertices_by_module_dependency.items() if
+                                                 v.get(BlockType.MODULE, []).__contains__(relative_module_idx))
         else:
             module_dependency_by_name_key = (module_path, module_num)
         possible_vertices = self.vertices_by_module_dependency_by_name.get(module_dependency_by_name_key, {}).get(block_type, {}).get(name, [])  # important to use this specific map for big graph performance
