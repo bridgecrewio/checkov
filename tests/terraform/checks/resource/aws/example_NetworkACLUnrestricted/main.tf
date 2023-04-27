@@ -22,7 +22,7 @@ resource "aws_network_acl_rule" "pass" {
    rule_number    = 200
  }
 
-resource "aws_network_acl_rule" "pass2" {
+resource "aws_network_acl_rule" "ignore" {
    egress         = true
    protocol       = "all"
    rule_action    = "allow"

@@ -18,12 +18,11 @@ class TestNetworkACLUnrestricted(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "aws_network_acl.pass",
-            "aws_network_acl.pass2",
+            "aws_network_acl_rule.pass",
         }
         failing_resources = {
-            "aws_network_acl.fail",
-            "aws_network_acl.fail2",
+            "aws_network_acl_rule.fail",
+            "aws_network_acl_rule.fail2",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
