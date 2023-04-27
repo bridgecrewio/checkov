@@ -107,3 +107,21 @@ def test_normalize_module_download_url(tf_host_name, module_download_url, expect
 
     # then
     assert normalized_url == expected_result
+
+@pytest.mark.parametrize(
+    "source_url",
+    [
+        ("git::https://example.com/repo.git"),
+        ("git@github.com:org/repo"),
+        ("github.com/org/repo"),
+        ("bitbucket.org/org/repo"),
+    ]
+)
+def test_is_matching_loader_git_sources(source_url):
+    #given
+    loader = RegistryLoader()
+    module_params = ModuleParams("", "", source_url, "", "", "")
+    loader.discover(module_params)
+
+    # then
+    assert not loader._is_matching_loader(module_params)
