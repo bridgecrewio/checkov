@@ -37,7 +37,8 @@ class RegistryLoader(ModuleLoader):
             module_params.token = tfc_token
 
     def _is_matching_loader(self, module_params: ModuleParams) -> bool:
-        if module_params.module_source.startswith("git::"):
+        # https://developer.hashicorp.com/terraform/language/modules/sources#github
+        if module_params.module_source.startswith(("github.com", "bitbucket.org", "git::", "git@github.com")):
             return False
         self._process_inner_registry_module(module_params)
         # determine tf api endpoints
