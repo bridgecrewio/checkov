@@ -72,7 +72,7 @@ class RepoConfigIntegration(BaseIntegrationFeature):
         other_rules = [r for r in rules if r != default_rule]
 
         logging.debug(f'Default enforcement rule: {json.dumps(default_rule, indent=2)}')
-        logging.debug(f'Other enforcement rules: {json.dumps(other_rules, indent=2)}')
+        logging.debug(f'Other enforcement rules ({len(other_rules)} total): {json.dumps(other_rules, indent=2)}')
 
         matched_rules = []
 
