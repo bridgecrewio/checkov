@@ -1,6 +1,56 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.187...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.199...HEAD)
+
+## [2.3.199](https://github.com/bridgecrewio/checkov/compare/2.3.194...2.3.199) - 2023-04-24
+
+### Feature
+
+- **terraform:** Ensure container defines a readonly root drive 336  - [#4788](https://github.com/bridgecrewio/checkov/pull/4788)
+- **terraform:** ensure pidmode is not set to host 335  - [#4786](https://github.com/bridgecrewio/checkov/pull/4786)
+- **terraform:** Ensure SSM params are encrypted using a CMK 337  - [#4789](https://github.com/bridgecrewio/checkov/pull/4789)
+- **terraform:** Network firewall must define a logging configuration CKV2_AWS_63 - [#4872](https://github.com/bridgecrewio/checkov/pull/4872)
+- **terraform:** Reduce module loading in TF Parser - [#4959](https://github.com/bridgecrewio/checkov/pull/4959)
+
+### Bug Fix
+
+- **kustomize:** fix image_referencer paths - [#4898](https://github.com/bridgecrewio/checkov/pull/4898)
+- **terraform:** support TF provider v3 for lifecycle existence check - [#4952](https://github.com/bridgecrewio/checkov/pull/4952)
+
+### Documentation
+
+- **terraform_plan:** Add Deep Analysis to docs - [#4950](https://github.com/bridgecrewio/checkov/pull/4950)
+
+## [2.3.194](https://github.com/bridgecrewio/checkov/compare/2.3.192...2.3.194) - 2023-04-23
+
+### Feature
+
+- **general:** deserialize report & record from json  - [#4947](https://github.com/bridgecrewio/checkov/pull/4947)
+- **sca:** fix extract fix version in sbom report - [#4936](https://github.com/bridgecrewio/checkov/pull/4936)
+- **terraform:** cross variable performance improvement - [#4946](https://github.com/bridgecrewio/checkov/pull/4946)
+
+### Bug Fix
+
+- **github:** make GH Actions delimiter unique in multiline env vars - [#4938](https://github.com/bridgecrewio/checkov/pull/4938)
+
+## [2.3.192](https://github.com/bridgecrewio/checkov/compare/2.3.187...2.3.192) - 2023-04-20
+
+### Feature
+
+- **general:** add policy-metadata-filter to gh action - [#4941](https://github.com/bridgecrewio/checkov/pull/4941)
+- **secrets:** support first commit results - [#4927](https://github.com/bridgecrewio/checkov/pull/4927)
+- **terraform:** Used generator instead of list comprehension to improve performance for large graphs - [#4939](https://github.com/bridgecrewio/checkov/pull/4939)
+
+### Bug Fix
+
+- **terraform:** make the ECS cluster logging check more resilient - [#4942](https://github.com/bridgecrewio/checkov/pull/4942)
+- **terraform:** remove invalid Terraform module reference support - [#4931](https://github.com/bridgecrewio/checkov/pull/4931)
+- **terraform:** support null values in list of dicts - [#4937](https://github.com/bridgecrewio/checkov/pull/4937)
+
+### Documentation
+
+- **bitbucket:** Update Bitbucket documentation to match the code. - [#4934](https://github.com/bridgecrewio/checkov/pull/4934)
+- **sca:** Add more ways to skip CVEs - [#4928](https://github.com/bridgecrewio/checkov/pull/4928)
 
 ## [2.3.187](https://github.com/bridgecrewio/checkov/compare/2.3.183...2.3.187) - 2023-04-19
 

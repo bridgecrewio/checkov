@@ -13,9 +13,10 @@ import tempfile
 import yaml
 from typing import Optional, Dict, Any, TextIO, TYPE_CHECKING
 
+
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.graph.graph_builder.consts import GraphSource
-from checkov.common.images.image_referencer import fix_related_resource_ids
+from checkov.common.images.image_referencer import Image
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.bridgecrew.check_type import CheckType
@@ -25,6 +26,7 @@ from checkov.common.util.data_structures_utils import deepcopy
 from checkov.kubernetes.kubernetes_utils import get_resource_id
 from checkov.kubernetes.runner import Runner as K8sRunner
 from checkov.kubernetes.runner import _get_entity_abs_path
+from checkov.kustomize.image_referencer.manager import KustomizeImageReferencerManager
 from checkov.kustomize.utils import get_kustomize_version
 from checkov.runner_filter import RunnerFilter
 from checkov.common.graph.checks_infra.registry import BaseRegistry
@@ -35,6 +37,7 @@ if TYPE_CHECKING:
     from checkov.common.checks.base_check import BaseCheck
     from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
     from checkov.kubernetes.graph_manager import KubernetesGraphManager
+    from networkx import DiGraph
 
 
 class K8sKustomizeRunner(K8sRunner):
@@ -52,25 +55,6 @@ class K8sKustomizeRunner(K8sRunner):
         self.report_mutator_data: "dict[str, dict[str, Any]]" = {}
         self.original_root_dir: str = ''
         self.pbar.turn_off_progress_bar()
-
-    def run(
-        self,
-        root_folder: str | None,
-        external_checks_dir: list[str] | None = None,
-        files: list[str] | None = None,
-        runner_filter: RunnerFilter | None = None,
-        collect_skip_comments: bool = True
-    ) -> Report | list[Report]:
-        results = super().run(root_folder, external_checks_dir=external_checks_dir, runner_filter=runner_filter)
-
-        sca_image_report = None
-        if isinstance(results, list):
-            sca_image_report = next(result for result in results if result.check_type == CheckType.SCA_IMAGE)
-
-        if root_folder is not None:
-            fix_related_resource_ids(report=sca_image_report, tmp_dir=root_folder)
-
-        return results
 
     def set_external_data(
         self,
@@ -211,6 +195,30 @@ class K8sKustomizeRunner(K8sRunner):
                 report.add_record(record=record)
 
         return report
+
+    def get_image_report(self, root_folder: str | None, runner_filter: RunnerFilter) -> Report | None:
+        if not self.graph_manager:
+            return None
+        return self.check_container_image_references(
+            graph_connector=self.graph_manager.get_reader_endpoint(),
+            root_path=self.original_root_dir,
+            runner_filter=runner_filter,
+        )
+
+    def extract_images(
+            self,
+            graph_connector: DiGraph | None = None,
+            definitions: None = None,
+            definitions_raw: dict[str, list[tuple[int, str]]] | None = None
+    ) -> list[Image]:
+        if not graph_connector:
+            # should not happen
+            return []
+
+        manager = KustomizeImageReferencerManager(graph_connector=graph_connector, report_mutator_data=self.report_mutator_data)
+        images = manager.extract_images_from_resources()
+
+        return images
 
 
 class Runner(BaseRunner["KubernetesGraphManager"]):

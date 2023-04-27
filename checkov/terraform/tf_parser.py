@@ -203,6 +203,10 @@ class TFParser:
             if not self.should_loaded_file(file, root_dir):
                 continue
 
+            #  Dont run over the nested because we already run on them - dont remove.
+            if file.tf_source_modules:
+                continue
+
             file_data = self.out_definitions.get(file)
             if file_data is None:
                 continue

@@ -61,7 +61,7 @@ class GitHistorySecretStore:
                                                                        'removed_commit_hash': '',
                                                                        'removed_date': ''})
                 return
-        code_line = search_for_code_line(commit.files.get(secret.filename, ''), secret.secret_value, secret.is_added)
+        code_line = search_for_code_line(commit.files[secret.filename], secret.secret_value, secret.is_added)
         enriched_potential_secret: EnrichedPotentialSecret = {
             'added_commit_hash': commit.metadata.commit_hash,
             'removed_commit_hash': '',
