@@ -336,8 +336,11 @@ class CloudformationLocalGraph(LocalGraph[CloudformationBlock]):
     @staticmethod
     def _find_fn_sub_parameter(string: str) -> list[str]:
         """Search string for tokenized fields"""
-
-        return TOKENIZED_FIELD_PATTERN.findall(string)
+        try:
+            return TOKENIZED_FIELD_PATTERN.findall(string)
+        except Exception as e:
+            logging.warning(f'cant find fn sub parameter for: {string}, error: {str(e)}')
+            return []
 
     def _fill_in_out_edges(self) -> None:
         for i in range(len(self.vertices)):

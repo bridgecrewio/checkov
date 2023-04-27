@@ -645,5 +645,9 @@ class TestLocalGraph(TestCase):
         with open(os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/nested_modules_instances/expected_local_graph.json')), 'r') as f:
             expected = json.load(f)
 
-        assert json.dumps(vertices).replace(resources_dir, '') == json.dumps(expected.get('vertices')).replace(resources_dir, '')
-        assert json.dumps(edges) == json.dumps(expected.get('edges'))
+        self.assertCountEqual(
+            json.loads(json.dumps(vertices).replace(resources_dir, '')),
+            json.loads(json.dumps(expected.get('vertices')).replace(resources_dir, '')),
+
+        )
+        self.assertCountEqual(edges, expected.get('edges'))

@@ -415,7 +415,10 @@ class Checkov:
 
             bc_integration.get_prisma_build_policies(self.config.policy_metadata_filter)
 
+            # set config to make it usable inside the integration features
+            integration_feature_registry.config = self.config
             integration_feature_registry.run_pre_scan()
+
             policy_level_suppression = suppressions_integration.get_policy_level_suppressions()
             bc_cloned_checks = custom_policies_integration.bc_cloned_checks
             runner_filter.bc_cloned_checks = bc_cloned_checks
@@ -626,6 +629,10 @@ class Checkov:
             baseline: Baseline | None = None,
     ) -> Literal[0, 1]:
         """Print scan results to stdout"""
+
+        if convert_str_to_bool(os.getenv("CHECKOV_NO_OUTPUT", "False")):
+            # this is mainly used for testing, where the report output is not needed
+            return 0
 
         return runner_registry.print_reports(
             scan_reports=self.scan_reports,

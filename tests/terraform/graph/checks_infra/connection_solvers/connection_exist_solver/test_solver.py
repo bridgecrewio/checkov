@@ -30,7 +30,7 @@ class ConnectionSolver(TestBaseSolver):
     def test_output_connection(self):
         root_folder = '../../../resources/output_example'
         check_id = "VPCForSubnet"
-        should_pass = ['aws_vpc.my_vpc','aws_subnet.my_subnet']
+        should_pass = ['module.submodule.aws_vpc.my_vpc','aws_subnet.my_subnet']
         should_fail = []
         expected_results = {check_id: {"should_pass": should_pass, "should_fail": should_fail}}
 

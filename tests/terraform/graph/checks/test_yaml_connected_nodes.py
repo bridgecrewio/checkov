@@ -1,6 +1,8 @@
 import os
 import unittest
 import warnings
+from unittest import mock
+
 from checkov.terraform import checks
 from .test_yaml_policies import load_yaml_data, get_policy_results
 
@@ -58,4 +60,6 @@ class TestYamlConnectedNodes(unittest.TestCase):
                     continue
                 policy = load_yaml_data(f_name, root)
                 assert policy is not None
-                return get_policy_results(dir_path, policy)
+                with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': 'NETWORKX'}):
+                    # connected nodes don't exist in igraph, because they are not needed
+                    return get_policy_results(dir_path, policy)

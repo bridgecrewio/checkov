@@ -22,6 +22,7 @@ class TestEC2PublicIP(unittest.TestCase):
             "aws_instance.public_foreach[\"key2\"]",
             "aws_instance.public_foreach_loop_list[\"k\"]",
             "aws_instance.public_foreach_loop_list[\"v\"]",
+            "aws_instance.public_foreach_loop_list_of_dicts[\"private\"]",
         }
         failing_resources = {
             "aws_instance.public",
@@ -29,6 +30,7 @@ class TestEC2PublicIP(unittest.TestCase):
             "aws_instance.public_foreach[\"key1\"]",
             "aws_instance.public_foreach_loop[\"key3\"]",
             "aws_instance.public_foreach_loop[\"key4\"]",
+            "aws_instance.public_foreach_loop_list_of_dicts[\"public\"]",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
