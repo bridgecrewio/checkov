@@ -468,7 +468,7 @@ class Checkov:
                         self.exit_run()
                     if baseline:
                         baseline.compare_and_reduce_reports(self.scan_reports)
-                    if bc_integration.is_integration_configured() and bc_integration.bc_source and bc_integration.bc_source.upload_results:
+                    if bc_integration.is_integration_configured() and bc_integration.bc_source and bc_integration.bc_source.upload_results and not self.config.skip_results_upload:
                         self.upload_results(
                             root_folder=root_folder,
                             excluded_paths=runner_filter.excluded_paths,
