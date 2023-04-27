@@ -54,8 +54,7 @@ class ForeachAbstractHandler:
     def _build_sub_graph(self, blocks_to_render: list[int]) -> TerraformLocalGraph:
         from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 
-        module = deepcopy(self.local_graph.module)
-        sub_graph = TerraformLocalGraph(module)
+        sub_graph = TerraformLocalGraph(self.local_graph.module)
         sub_graph.vertices = [{}] * len(self.local_graph.vertices)
         for i, block in enumerate(self.local_graph.vertices):
             if not (block.block_type == BlockType.RESOURCE and i not in blocks_to_render):
