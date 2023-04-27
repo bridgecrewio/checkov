@@ -4,7 +4,7 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 
 class NetworkACLUnrestricted(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure NACL ingress is not Allow All"
+        name = "Ensure NACL ingress is not allow all Ports"
         id = "CKV_AWS_352"
         supported_resources = ['aws_network_acl_rule']
         categories = [CheckCategories.NETWORKING]
