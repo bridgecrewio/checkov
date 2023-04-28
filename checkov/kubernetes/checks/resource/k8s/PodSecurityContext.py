@@ -34,7 +34,6 @@ class PodSecurityContext(BaseK8Check):
         if conf["kind"] == "Pod":
             if "spec" in conf:
                 spec = conf["spec"]
-                
         elif conf["kind"] == "CronJob":
             spec = conf.get("spec")
             if spec:
