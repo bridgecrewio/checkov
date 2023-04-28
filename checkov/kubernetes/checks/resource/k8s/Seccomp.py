@@ -33,8 +33,8 @@ class Seccomp(BaseK8Check):
                     passed_containers = 0
                     for container in conf["spec"]["containers"]:
                         if "securityContext" in container:
-                            if container["securityContext"].get("seccompProfile", {}):
-                                if container["securityContext"].get("seccompProfile", {}).get("type"):
+                            if container["securityContext"].get("seccompProfile", {}) is not None:
+                                if container["securityContext"].get("seccompProfile", {}).get("type") is not None:
                                     if container["securityContext"].get("seccompProfile", {}).get("type") != "RuntimeDefault":
                                         return CheckResult.FAILED
                                     else:
