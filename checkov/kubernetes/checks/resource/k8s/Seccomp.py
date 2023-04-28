@@ -31,7 +31,7 @@ class Seccomp(BaseK8Check):
                 if "containers" in conf["spec"] and conf["spec"]["containers"] is not None:
                     num_containers = len(conf["spec"]["containers"])
                     passed_containers = 0
-                    for container in conf["spec"]["containers"]:
+                    for container in force_list(conf["spec"]["containers"]):
                         if "securityContext" in container:
                             if container["securityContext"].get("seccompProfile", {}) is not None:
                                 if container["securityContext"].get("seccompProfile", {}).get("type") is not None:
