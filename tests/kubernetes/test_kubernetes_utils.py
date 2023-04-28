@@ -43,6 +43,10 @@ def test_get_skipped_checks():
     skipped = get_skipped_checks(entity_conf=manifest)
 
     # then
+    # remove 'bc_id' if present
+    for skip in skipped:
+        skip.pop("bc_id", None)
+
     assert sorted(skipped, key=itemgetter("id")) == sorted(
         [
             {"id": "CKV_K8S_11", "suppress_comment": "I have not set CPU limits as I want BestEffort QoS"},
