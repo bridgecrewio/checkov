@@ -423,7 +423,7 @@ def mock_git_repo_commits_too_much(self, last_commit_sha: str) -> List[Commit]:
                 committer='Cherry🍒moi-moi-lots-of-commits',
                 committed_datetime='2022-12-14T16:10:21+00:00'),
             files=mock_case()
-        ) for _i in range(50000)
+        ) for _i in range(40000)
     ]
 
 
