@@ -29,16 +29,14 @@ class Seccomp(BaseK8Check):
                 metadata = conf["metadata"]
             if "spec" in conf:
                 if "containers" in conf["spec"] and conf["spec"]["containers"] is not None:
-                    num_containers = len(conf["spec"]["containers"])
-                    passed_containers = 0
-                    for container in conf["spec"]["containers"]:
+                    for container in force_list(conf["spec"]["containers"]):
                         if "securityContext" in container:
                             if container["securityContext"].get("seccompProfile", {}) is not None:
                                 if container["securityContext"].get("seccompProfile", {}).get("type") is not None:
-                                    if container["securityContext"].get("seccompProfile", {}).get("type") != "RuntimeDefault":
+                                    if container["securityContext"].get("seccompProfile", {}).get(
+                                        "type"
+                                        ) != "RuntimeDefault":
                                         return CheckResult.FAILED
-                                    else:
-                                        passed_containers += 1
 
                             # if "seccompProfile" in container["securityContext"]:
                             #     if "type" in container["securityContext"]["seccompProfile"]:
@@ -46,8 +44,7 @@ class Seccomp(BaseK8Check):
                             #             return CheckResult.FAILED
                             #         else:
                             #             passed_containers += 1
-                    if passed_containers >= num_containers:
-                        return CheckResult.PASSED
+                    return CheckResult.PASSED
 
         if conf['kind'] in ['Deployment', 'StatefulSet', 'DaemonSet', 'Job', 'ReplicaSet']:
             security_profile = find_in_dict(conf, 'spec/template/spec/securityContext/seccompProfile/type')
