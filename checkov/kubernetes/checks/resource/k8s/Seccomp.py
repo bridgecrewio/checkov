@@ -40,7 +40,7 @@ class Seccomp(BaseK8Check):
                                     passed_containers+=1
                 if passed_containers >= num_containers:
                     return CheckResult.PASSED
-        
+
         if conf['kind'] in ['Deployment', 'StatefulSet', 'DaemonSet', 'Job', 'ReplicaSet']:
             security_profile = find_in_dict(conf, 'spec/template/spec/securityContext/seccompProfile/type')
             if security_profile:
