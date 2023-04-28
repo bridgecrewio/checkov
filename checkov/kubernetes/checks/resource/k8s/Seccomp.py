@@ -28,7 +28,7 @@ class Seccomp(BaseK8Check):
             if "metadata" in conf:
                 metadata = conf["metadata"]
             if "spec" in conf:
-                if "containers" in conf["spec"]:
+                if "containers" in conf["spec"] and conf["spec"]["containers"] is not None:
                     num_containers = len(conf["spec"]["containers"])
                     passed_containers = 0
                     for container in conf["spec"]["containers"]:
