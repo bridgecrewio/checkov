@@ -34,16 +34,7 @@ class PodSecurityContext(BaseK8Check):
         if conf["kind"] == "Pod":
             if "spec" in conf:
                 spec = conf["spec"]
-            if "containers" in spec:
-                num_containers = len(conf["spec"]["containers"])
-                passed_containers = 0
-                for container in conf["spec"]["containers"]:
-                    if "securityContext" in container:
-                        passed_containers += 1
-                    else:
-                        return CheckResult.FAILED
-                if passed_containers >= num_containers:
-                    return CheckResult.PASSED
+                
         elif conf["kind"] == "CronJob":
             spec = conf.get("spec")
             if spec:
