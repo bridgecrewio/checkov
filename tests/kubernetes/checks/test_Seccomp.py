@@ -33,10 +33,12 @@ class TestSeccomp(unittest.TestCase):
             "Pod.default.seccomp-passed-metadata-annotations-runtime",
             "Pod.default.seccomp-passed-security-context",
             "StatefulSet.default.RELEASE-NAME",
+            "Pod.default.my-secure-pod",
         ]
         expected_failed_resources = [
             "Deployment.infra.app-cert-manager",
             "Pod.default.seccomp-failed",
+            "Pod.default.my-insecure-pod",
         ]
         self.assertCountEqual(expected_passed_resources, passed_resources)
         self.assertCountEqual(expected_failed_resources, failed_resources)
