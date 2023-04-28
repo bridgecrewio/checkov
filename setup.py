@@ -123,8 +123,9 @@ setup(
     url="https://github.com/bridgecrewio/checkov",
     packages=find_packages(exclude=[
         "dogfood_tests*",
+        "flake8_plugins*",
         "integration_tests*",
-        "performance_tests*"
+        "performance_tests*",
         "tests*",
     ]),
     include_package_data=True,
