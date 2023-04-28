@@ -47,7 +47,10 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
 
             all_checks = BaseCheckRegistry.get_all_registered_checks()
 
-            registries = ['terraform', 'cloudformation', 'kubernetes', 'bicep', 'terraform_plan']
+            if self.config and self.config.framework and "all" not in self.config.framework:
+                registries = self.config.framework
+            else:
+                registries = ('terraform', 'cloudformation', 'kubernetes', 'bicep', 'terraform_plan')
 
             for r in registries:
                 registry = get_graph_checks_registry(r)
