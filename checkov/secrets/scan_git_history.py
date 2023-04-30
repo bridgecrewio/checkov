@@ -58,6 +58,7 @@ class GitHistoryScanner:
         # mark the scan to finish within the timeout
         with timeout_class(self.timeout) as to_ctx_mgr:
             scanned = self._scan_history(last_commit_scanned)
+            self._create_secret_collection()
         if to_ctx_mgr.state == to_ctx_mgr.TIMED_OUT:
             logging.info(f"timeout reached ({self.timeout}), stopping scan.")
             return False
@@ -81,8 +82,8 @@ class GitHistoryScanner:
 
         if not self.raw_store:  # scanned nothing
             return False
+
         self._process_raw_store()
-        self._create_secret_collection()
         return True
 
     def _process_raw_store(self) -> None:
