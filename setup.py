@@ -18,9 +18,7 @@ class PreBuildCommand(build_py):
 
         import yaml  # can't be top-level, because it needs to be first installed via 'setup_requires'
 
-        graph_check_paths = (
-            "checkov/*/checks/graph_checks",
-        )
+        graph_check_paths = ("checkov/*/checks/graph_checks",)
         build_path = Path(self.build_lib)
         src_path = Path()
 
@@ -51,7 +49,7 @@ version = mod.version  # type: ignore
 
 setup(
     cmdclass={
-        'build_py': PreBuildCommand,
+        "build_py": PreBuildCommand,
     },
     setup_requires=[
         "pyyaml",
@@ -68,7 +66,7 @@ setup(
     },
     install_requires=[
         "bc-python-hcl2==0.3.51",
-        "bc-detect-secrets==1.4.21",
+        "bc-detect-secrets==1.4.24",
         "bc-jsonpath-ng==1.5.9",
         "deep-merge",
         "tabulate",
@@ -95,7 +93,7 @@ setup(
         "typing-extensions>=4.1.0",
         "importlib-metadata>=0.12",
         "cachetools",
-        "cyclonedx-python-lib>=2.4.0,<4.0.0",
+        "cyclonedx-python-lib<4.0.0,>=2.4.0",
         "packageurl-python",
         "click>=8.0.0",
         "aiohttp",
@@ -103,7 +101,7 @@ setup(
         "aiomultiprocess",
         "jsonschema<5.0.0,>=4.6.0",
         "prettytable>=3.0.0",
-        "pycep-parser==0.3.9",
+        "pycep-parser==0.4.0",
         "charset-normalizer",
         "pyston-autoload==2.3.5; python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64' and implementation_name == 'cpython'",
         "pyston==2.3.5; python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64' and implementation_name == 'cpython'",
@@ -121,12 +119,15 @@ setup(
     author="bridgecrew",
     author_email="meet@bridgecrew.io",
     url="https://github.com/bridgecrewio/checkov",
-    packages=find_packages(exclude=[
-        "dogfood_tests*",
-        "integration_tests*",
-        "performance_tests*"
-        "tests*",
-    ]),
+    packages=find_packages(
+        exclude=[
+            "dogfood_tests*",
+            "flake8_plugins*",
+            "integration_tests*",
+            "performance_tests*",
+            "tests*",
+        ]
+    ),
     include_package_data=True,
     package_data={
         "checkov": ["py.typed"],

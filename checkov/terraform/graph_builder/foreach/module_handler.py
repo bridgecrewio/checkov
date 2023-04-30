@@ -28,7 +28,8 @@ class ForeachModuleHandler(ForeachAbstractHandler):
         if not modules_blocks:
             return
         current_level = [None]
-        main_module_modules = deepcopy(self.local_graph.vertices_by_module_dependency.get(None)[BlockType.MODULE])
+        # We use `[:]` instead of deepcopy as it's much faster and the list has only primitive types (int indexes)
+        main_module_modules = self.local_graph.vertices_by_module_dependency.get(None)[BlockType.MODULE][:]
         modules_to_render = main_module_modules
 
         while modules_to_render:
@@ -134,7 +135,7 @@ class ForeachModuleHandler(ForeachAbstractHandler):
         Go through all child vertices and update source_module_object with foreach_idx
         """
         if current_module_key is None:
-            current_module_key = deepcopy(original_module_key)
+            current_module_key = original_module_key
         if current_module_key not in self.local_graph.vertices_by_module_dependency:
             return
         values = self.local_graph.vertices_by_module_dependency[current_module_key].values()
@@ -194,7 +195,7 @@ class ForeachModuleHandler(ForeachAbstractHandler):
         else:
             self.local_graph.vertices[resource_idx] = new_resource
 
-            key_with_foreach_index = deepcopy(main_resource_module_key)
+            key_with_foreach_index = main_resource_module_key
             key_with_foreach_index.foreach_idx = idx_to_change
             self.local_graph.vertices_by_module_dependency[key_with_foreach_index] = main_resource_module_value
             self.local_graph.vertices_by_module_dependency_by_name[key_with_foreach_index][new_resource.name] = main_resource_module_value
@@ -206,11 +207,9 @@ class ForeachModuleHandler(ForeachAbstractHandler):
                                          resource_idx: Any, new_resource: TerraformBlock | None = None,
                                          new_resource_module_key: TFModule | None = None) -> None:
         if new_resource is None:
-            new_resource = deepcopy(main_resource)
-            new_resource_name = new_resource.name
-            new_resource_module_key = TFModule(new_resource.path, new_resource.name, new_resource.source_module_object,
-                                               new_resource.for_each_index)
-            del new_resource
+            new_resource_name = main_resource.name
+            new_resource_module_key = TFModule(main_resource.path, new_resource_name, main_resource.source_module_object,
+                                               main_resource.for_each_index)
         else:
             new_resource_name = new_resource.name
 

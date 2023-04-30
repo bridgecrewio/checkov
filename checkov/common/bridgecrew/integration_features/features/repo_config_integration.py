@@ -71,6 +71,9 @@ class RepoConfigIntegration(BaseIntegrationFeature):
         default_rule = next(r for r in rules if r['mainRule'] is True)
         other_rules = [r for r in rules if r != default_rule]
 
+        logging.debug(f'Default enforcement rule: {json.dumps(default_rule, indent=2)}')
+        logging.debug(f'Other enforcement rules ({len(other_rules)} total): {json.dumps(other_rules, indent=2)}')
+
         matched_rules = []
 
         for rule in other_rules:
