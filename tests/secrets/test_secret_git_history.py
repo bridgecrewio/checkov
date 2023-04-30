@@ -457,7 +457,7 @@ def test_scan_history_secrets_with_history_store_and_no_new_commit() -> None:
         metadata=CommitMetadata(
             commit_hash="8a21fa691e17907afee57e93b7820c5943b12746",
             committer="Momo",
-            committed_datetime="'2022-12-24T01:02:03+00:00'",
+            committed_datetime="2022-12-24T01:02:03+00:00",
         ),
         files={
             "Dockerfile": 'diff --git a/Dockerfile b/Dockerfile\nindex 0000..0000 0000\n--- a/Dockerfile\n+++ b/Dockerfile\n@@ -4,6 +4,8 @@ FROM public.ecr.aws/lambda/python:3.9\n \n ENV PIP_ENV_VERSION="2022.1.8"\n \n+ENV AWS_ACCESS_KEY_ID="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"\n+\n COPY Pipfile Pipfile.lock ./\n \n RUN pip install pipenv==${PIP_ENV_VERSION} \\\n'
