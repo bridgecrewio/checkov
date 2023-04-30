@@ -1,6 +1,61 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.192...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.205...HEAD)
+
+## [2.3.205](https://github.com/bridgecrewio/checkov/compare/2.3.204...2.3.205) - 2023-04-28
+
+### Bug Fix
+
+- **gitlab:** fix resource id parsing recursive - [#4987](https://github.com/bridgecrewio/checkov/pull/4987)
+
+### Documentation
+
+- **terraform:** fix docs formatting - [#4988](https://github.com/bridgecrewio/checkov/pull/4988)
+
+## [2.3.204](https://github.com/bridgecrewio/checkov/compare/2.3.199...2.3.204) - 2023-04-27
+
+### Feature
+
+- **terraform:** add support for private terraform registries - [#4964](https://github.com/bridgecrewio/checkov/pull/4964)
+- **terraform:** remove cross varaibles bad list comprehension - [#4948](https://github.com/bridgecrewio/checkov/pull/4948)
+
+### Bug Fix
+
+- **general:** log all returned enforcement rules for debugging - [#4989](https://github.com/bridgecrewio/checkov/pull/4989)
+- **general:** remove invalid URLs in GitLab SAST output - [#4960](https://github.com/bridgecrewio/checkov/pull/4960)
+- **secrets:** change default value of secret values to empty strings - [#4973](https://github.com/bridgecrewio/checkov/pull/4973)
+- **terraform:** Added a condition to not override source module object for old parser - [#4975](https://github.com/bridgecrewio/checkov/pull/4975)
+
+## [2.3.199](https://github.com/bridgecrewio/checkov/compare/2.3.194...2.3.199) - 2023-04-24
+
+### Feature
+
+- **terraform:** Ensure container defines a readonly root drive 336  - [#4788](https://github.com/bridgecrewio/checkov/pull/4788)
+- **terraform:** ensure pidmode is not set to host 335  - [#4786](https://github.com/bridgecrewio/checkov/pull/4786)
+- **terraform:** Ensure SSM params are encrypted using a CMK 337  - [#4789](https://github.com/bridgecrewio/checkov/pull/4789)
+- **terraform:** Network firewall must define a logging configuration CKV2_AWS_63 - [#4872](https://github.com/bridgecrewio/checkov/pull/4872)
+- **terraform:** Reduce module loading in TF Parser - [#4959](https://github.com/bridgecrewio/checkov/pull/4959)
+
+### Bug Fix
+
+- **kustomize:** fix image_referencer paths - [#4898](https://github.com/bridgecrewio/checkov/pull/4898)
+- **terraform:** support TF provider v3 for lifecycle existence check - [#4952](https://github.com/bridgecrewio/checkov/pull/4952)
+
+### Documentation
+
+- **terraform_plan:** Add Deep Analysis to docs - [#4950](https://github.com/bridgecrewio/checkov/pull/4950)
+
+## [2.3.194](https://github.com/bridgecrewio/checkov/compare/2.3.192...2.3.194) - 2023-04-23
+
+### Feature
+
+- **general:** deserialize report & record from json  - [#4947](https://github.com/bridgecrewio/checkov/pull/4947)
+- **sca:** fix extract fix version in sbom report - [#4936](https://github.com/bridgecrewio/checkov/pull/4936)
+- **terraform:** cross variable performance improvement - [#4946](https://github.com/bridgecrewio/checkov/pull/4946)
+
+### Bug Fix
+
+- **github:** make GH Actions delimiter unique in multiline env vars - [#4938](https://github.com/bridgecrewio/checkov/pull/4938)
 
 ## [2.3.192](https://github.com/bridgecrewio/checkov/compare/2.3.187...2.3.192) - 2023-04-20
 
