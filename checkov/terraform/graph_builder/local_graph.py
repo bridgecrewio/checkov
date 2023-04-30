@@ -239,7 +239,8 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                             referenced_module_idx = module.get("idx")
                             referenced_module_path = module.get("path")
                             referenced_module_object = module.get("source_module_object")
-                            source_module_object = referenced_module_object if source_module_object else None
+                            if not self.use_new_tf_parser:
+                                source_module_object = referenced_module_object if source_module_object else None
                             dest_node_index = self._find_vertex_index_relative_to_path(
                                 vertex_reference.block_type, reference_name, referenced_module_path,
                                 vertex.module_dependency,
