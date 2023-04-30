@@ -24,13 +24,13 @@ class TestCombinatorPluginMultilineJson(unittest.TestCase):
 
     def test_non_multiline_pair_time_limit_creating_report(self):
         # given
-        test_file_path = Path(__file__).parent / "json_multiline/pomerium_compose.json"
+        test_files = [str(Path(__file__).parent / "json_multiline/pomerium_compose.json")]
+        runner = Runner()
+        runner_filter = RunnerFilter(framework=['secrets'])
 
         # when
         start_time = time.time()
-        report = Runner().run(
-            root_folder=None, files=[str(test_file_path)], runner_filter=RunnerFilter(framework=['secrets'])
-        )
+        report = runner.run(root_folder=None, files=test_files, runner_filter=runner_filter)
         end_time = time.time()
 
         # then

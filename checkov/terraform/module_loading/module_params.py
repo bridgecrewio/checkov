@@ -18,6 +18,9 @@ class ModuleParams:
         self.username: Optional[str] = None
         self.vcs_base_url: Optional[str] = None
         self.module_source_prefix: Optional[str] = None
-        self.REGISTRY_URL_PREFIX: Optional[str] = None
         self.best_version: Optional[str] = None
-        self.module_version_url: Optional[str] = None
+
+        # terraform cloud / enterprise specific params
+        self.tf_host_name: Optional[str] = None
+        self.tf_modules_endpoint: Optional[str] = None
+        self.tf_modules_versions_endpoint: Optional[str] = None
