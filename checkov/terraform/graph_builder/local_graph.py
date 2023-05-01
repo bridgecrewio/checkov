@@ -218,7 +218,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         for attribute_key, attribute_value in vertex.attributes.items():
             if attribute_key in reserved_attribute_names:
                 continue
-            has_nested_attribute =  attribute_has_nested_attributes(attribute_key, vertex.attributes)
+            has_nested_attribute = attribute_has_nested_attributes(attribute_key, vertex.attributes)
             vertex.attributes_has_nested_attributes[attribute_key] = has_nested_attribute
             if has_nested_attribute:
                 continue
