@@ -6,8 +6,10 @@ from unittest import mock
 
 import jmespath
 
+from checkov.common.util.json_utils import object_hook
 from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_PREFIX, TERRAFORM_NESTED_MODULE_PATH_ENDING, \
     TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR, TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH
+from checkov.terraform.modules.module_objects import TFDefinitionKey
 from checkov.terraform.checks.utils.dependency_path_handler import PATH_SEPARATOR, unify_dependency_path
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
@@ -18,55 +20,42 @@ TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
 class TestRendererScenarios(TestCase):
 
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_maze_of_variables(self):
         self.go('maze_of_variables')
 
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_merge_function(self):
         self.go("merge_function")
 
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_empty_file(self):
         self.go("empty_file")
 
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_simple_bucket_single_file(self):
         self.go("simple_bucket_single_file")
 
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_variable_defaults(self):
         self.go("variable_defaults")
 
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_variable_defaults_separate_files(self):
         self.go("variable_defaults_separate_files")
 
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_local_block(self):
         self.go("local_block")
 
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_local_bool_string_conversion(self):
         self.go("local_bool_string_conversion")
 
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_compound_local(self):
         self.go("compound_local")
 
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_concat_function(self):
         self.go("concat_function")
 
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_merge_function_unresolved_var(self):
         self.go("merge_function_unresolved_var", replace_expected=True)
 
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_tobool_function(self):
         self.go("tobool_function", {"JUNK": ['tobool("invalid")']})
 
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_tolist_function(self):
         self.go("tolist_function")
 
@@ -74,27 +63,21 @@ class TestRendererScenarios(TestCase):
         self.skipTest("not reliable")
         self.go("tomap_function")
 
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_map_function(self):
         self.go("map_function", {"INVALID_ODD_ARGS": ['map("only one")']})
 
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_tonumber_function(self):
         self.go("tonumber_function", {"INVALID": ['tonumber("no")']})
 
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_toset_function(self):
         self.go("toset_function", {"VAR": [{'c', 'b', 'a'}]})
 
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_tostring_function(self):
         self.go("tostring_function", {"INVALID_ARRAY": ['tostring([])']})
 
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_module_simple(self):
         self.go("module_simple")
 
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_module_simple_up_dir_ref(self):
         self.go("module_simple_up_dir_ref")
 
@@ -142,7 +125,6 @@ class TestRendererScenarios(TestCase):
     def test_module_matryoshka_nested_module_enable(self):
         self.go("module_matryoshka_nested_module_enable", remove_abs_dir=True)
 
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_list_default_622(self):  # see https://github.com/bridgecrewio/checkov/issues/622
         different_expected = {
             "log_types_enabled": {
@@ -164,19 +146,15 @@ class TestRendererScenarios(TestCase):
         }
         self.go("list_default_622", different_expected)
 
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_module_reference(self):
         self.go("module_reference")
 
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_module_output_reference(self):
         self.go("module_output_reference")
 
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_bad_ref_fallbacks(self):
         self.go("bad_ref_fallbacks", replace_expected=True)
 
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_doc_evaluations_verify(self):
         self.go("doc_evaluations_verify", replace_expected=True)
 
@@ -192,7 +170,6 @@ class TestRendererScenarios(TestCase):
         # Note: this hits the _clean_bad_definitions internal function
         self.go("bad_tf_nested_modules_enable")
 
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_colon(self):
         # Note: this hits the _clean_bad_definitions internal function
         self.go("colon", replace_expected=True)
@@ -201,15 +178,12 @@ class TestRendererScenarios(TestCase):
         self.skipTest("different implementation, we keep the original variable reference")
         self.go("null_variables_651")
 
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_ternaries(self):
         self.go("ternaries")
 
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_ternary_793(self):
         self.go("ternary_793")
 
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_tfvars(self):
         # variable evaluation order (later values overwrite earlier values):
         # 1. default values in variable definition
@@ -242,7 +216,6 @@ class TestRendererScenarios(TestCase):
         }
         self.go("tfvars", vars_files=['other3.tfvars', 'other2.tfvars'], different_expected=different_expected)
 
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_account_dirs_and_modules(self):
         self.go("account_dirs_and_modules")
 
@@ -250,7 +223,6 @@ class TestRendererScenarios(TestCase):
         self.skipTest("invalid values are not supported")
         self.go("bogus_function")
 
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_default_var_types(self):
         self.go("default_var_types")
 
@@ -329,7 +301,10 @@ def load_expected(replace_expected, dir_name, resources_dir, remove_abs_dir=Fals
         old_expected = load_expected_data(f"{dir_name}_expected.json", expected_file_dir)
         expected = {}
         for file_path in old_expected:
-            new_file_path = file_path.replace(expected_file_dir, resources_dir)
+            if isinstance(file_path, TFDefinitionKey):
+                new_file_path = TFDefinitionKey.from_json(replace_tf_definition_obj_keys(file_path.to_json(), expected_file_dir, resources_dir))
+            else:
+                new_file_path = file_path.replace(expected_file_dir, resources_dir)
             expected[new_file_path] = old_expected[file_path]
     else:
         expected = load_expected_data("expected.json", resources_dir, remove_abs_dir)
@@ -342,7 +317,9 @@ def load_expected_data(source_file_name, dir_path, remove_abs_dir=False):
         return None
 
     with open(expected_path, "r") as f:
-        expected_data = json.load(f)
+        expected_data = json.load(f, object_hook=object_hook)
+
+    # return expected_data
 
     if remove_abs_dir:
         return expected_data
@@ -358,25 +335,44 @@ def load_expected_data(source_file_name, dir_path, remove_abs_dir=False):
     keys = list(expected_data.keys())
     for key in keys:
         # NOTE: Sometimes keys have module referrers, sometimes they don't
-
-        match = resolved_pattern.match(key)
-        if match:
-            new_key = _make_module_ref_absolute(match, dir_path)
+        if isinstance(key, TFDefinitionKey):
+            new_key = TFDefinitionKey.from_json(replace_tf_definition_obj_keys(key.to_json(), dir_path))
         else:
-            if os.path.isabs(key):
-                continue
-            new_key = os.path.join(dir_path, key)
+            match = resolved_pattern.match(key)
+            if match:
+                new_key = _make_module_ref_absolute(match, dir_path)
+            else:
+                if os.path.isabs(key):
+                    continue
+                new_key = os.path.join(dir_path, key)
         expected_data[new_key] = expected_data[key]
         del expected_data[key]
 
     for resolved_list in jmespath.search("*.module[].*[].__resolved__", expected_data):
         for list_index in range(0, len(resolved_list)):
-            match = resolved_pattern.match(resolved_list[list_index])
-            assert match is not None, f"Unexpected module resolved data: {resolved_list[list_index]}"
-            resolved_list[list_index] = _make_module_ref_absolute(match, dir_path)
-            # print(f"{match[0]} -> {resolved_list[list_index]}")
+            if isinstance(resolved_list[list_index], TFDefinitionKey):
+                match = TFDefinitionKey.from_json(replace_tf_definition_obj_keys(resolved_list[list_index].to_json(), dir_path))
+                assert match is not None, f"Unexpected module resolved data: {resolved_list[list_index]}"
+                resolved_list[list_index] = match
+            else:
+                match = resolved_pattern.match(resolved_list[list_index])
+                assert match is not None, f"Unexpected module resolved data: {resolved_list[list_index]}"
+                resolved_list[list_index] = _make_module_ref_absolute(match, dir_path)
 
     return expected_data
+
+
+def replace_tf_definition_obj_keys(json_obj, dir_path, change_str=None):
+    if isinstance(json_obj, dict):
+        for k, v in json_obj.items():
+            if k == "file_path" or k == "path":
+                if change_str:
+                    json_obj[k] = v.replace(dir_path, change_str)
+                else:
+                    json_obj[k] = os.path.join(dir_path, v)
+            elif isinstance(v, dict):
+                replace_tf_definition_obj_keys(v, dir_path)
+    return json_obj
 
 
 def _make_module_ref_absolute(match, dir_path) -> str:
