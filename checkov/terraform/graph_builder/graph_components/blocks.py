@@ -24,8 +24,7 @@ class TerraformBlock(Block):
         "dynamic_attributes",
         "foreach_attrs",
         "source_module_object",
-        "for_each_index",
-        "attributes_has_nested_attributes"
+        "for_each_index"
     )
 
     def __init__(self, name: str, config: Dict[str, Any], path: str, block_type: BlockType, attributes: Dict[str, Any],
@@ -58,7 +57,7 @@ class TerraformBlock(Block):
         if strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'False')):
             self.source_module_object: Optional[TFModule] = None
             self.for_each_index: Optional[Any] = None
-        self.attributes_has_nested_attributes: Dict[str, bool] = {}
+        self.attribute_has_nested_attributes: Dict[str, bool] = {}
 
     def add_module_connection(self, attribute_key: str, vertex_id: int) -> None:
         self.module_connections.setdefault(attribute_key, []).append(vertex_id)
