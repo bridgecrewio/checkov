@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import Generator
+from typing import Generator, Set, Tuple
 from typing import Any
 from typing import TYPE_CHECKING
 
@@ -151,6 +151,9 @@ class EntropyKeywordCombinator(BasePlugin):
             # classic key-value pair
             if keyword_on_key:
                 if single_line_parser:
+                    # Getting last detected one as only 1 violation available for line
+                    secret_value, quoted_secret = EntropyKeywordCombinator.receive_last_secret_detected(keyword_on_key)
+                    line = quoted_secret if quoted_secret else line
                     return single_line_parser.detect_secret(
                         scanners=self.high_entropy_scanners_iac,
                         filename=filename,
@@ -162,11 +165,9 @@ class EntropyKeywordCombinator(BasePlugin):
                 else:
                     # preprocess line before detecting secrets - add quotes on potential secrets to allow triggering
                     # entropy detector
-                    for pt in keyword_on_key:
-                        if pt.secret_value:
-                            quoted_secret = f"\"{pt.secret_value}\""
-                            if line.find(quoted_secret) < 0:    # replace potential secret with quoted version
-                                line = line.replace(pt.secret_value, f"\"{pt.secret_value}\"", 1)
+                    secret_value, quoted_secret = EntropyKeywordCombinator.receive_last_secret_detected(keyword_on_key)
+                    if line.find(quoted_secret) < 0:    # replace potential secret with quoted version
+                        line = line.replace(secret_value, quoted_secret, 1)
                     detected_secrets = detect_secret(
                         scanners=self.high_entropy_scanners_iac,
                         filename=filename,
@@ -214,3 +215,20 @@ class EntropyKeywordCombinator(BasePlugin):
             )
 
         return set()
+
+    @staticmethod
+    def convert_to_reduce_noise(secret_value: str) -> str:
+        # For empty string return empty string
+        if not secret_value:
+            return ''
+        return f"\"{secret_value}\""
+
+    @classmethod
+    def receive_last_secret_detected(cls, keyword_on_key: Set[PotentialSecret]) -> Tuple[str, str]:
+        secret_value = ''
+        quoted_secret = ''
+        for pt in keyword_on_key:
+            if pt.secret_value:
+                secret_value = pt.secret_value
+                quoted_secret = EntropyKeywordCombinator.convert_to_reduce_noise(pt.secret_value)
+        return secret_value, quoted_secret
