@@ -222,7 +222,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             vertex.attributes_has_nested_attributes[attribute_key] = has_nested_attribute
             if has_nested_attribute:
                 continue
-            
+
             referenced_vertices = get_referenced_vertices_in_value(
                 value=attribute_value,
                 aliases=aliases,

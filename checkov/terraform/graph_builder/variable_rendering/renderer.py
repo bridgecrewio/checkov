@@ -484,7 +484,7 @@ class TerraformVariableRenderer(VariableRenderer):
                     has_nested_attributes = attribute_has_nested_attributes(attr, vertex.attributes)
                 if attr not in reserved_attribute_names and not has_nested_attributes and not attribute_has_dup_with_dynamic_attributes(attr, vertex.attributes):
                     filtered_attributes.append(attr)
-            
+
             for attribute in filtered_attributes:
                 curr_val = vertex.attributes.get(attribute)
                 lst_curr_val = curr_val
