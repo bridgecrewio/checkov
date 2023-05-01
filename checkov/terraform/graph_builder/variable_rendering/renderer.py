@@ -477,12 +477,14 @@ class TerraformVariableRenderer(VariableRenderer):
             changed_attributes = {}
             attributes: Dict[str, Any] = {}
             vertex.get_origin_attributes(attributes)
-            filtered_attributes = [
-                attr
-                for attr in vertex.attributes
-                if attr not in reserved_attribute_names and not attribute_has_nested_attributes(attr, vertex.attributes)
-                and not attribute_has_dup_with_dynamic_attributes(attr, vertex.attributes)
-            ]
+            filtered_attributes = []
+            for attr in vertex.attributes:
+                has_nested_attributes = vertex.attributes_has_nested_attributes.get(attr, None)
+                if has_nested_attributes is None:
+                    has_nested_attributes = attribute_has_nested_attributes(attr, vertex.attributes)
+                if attr not in reserved_attribute_names and not has_nested_attributes and not attribute_has_dup_with_dynamic_attributes(attr, vertex.attributes):
+                    filtered_attributes.append(attr)
+            
             for attribute in filtered_attributes:
                 curr_val = vertex.attributes.get(attribute)
                 lst_curr_val = curr_val

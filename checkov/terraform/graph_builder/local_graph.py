@@ -216,10 +216,13 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                                 referenced_modules: Optional[List[Dict[str, Any]]] = None):
 
         for attribute_key, attribute_value in vertex.attributes.items():
-            if attribute_key in reserved_attribute_names or attribute_has_nested_attributes(
-                    attribute_key, vertex.attributes
-            ):
+            if attribute_key in reserved_attribute_names:
                 continue
+            has_nested_attribute =  attribute_has_nested_attributes(attribute_key, vertex.attributes)
+            vertex.attributes_has_nested_attributes[attribute_key] = has_nested_attribute
+            if has_nested_attribute:
+                continue
+            
             referenced_vertices = get_referenced_vertices_in_value(
                 value=attribute_value,
                 aliases=aliases,

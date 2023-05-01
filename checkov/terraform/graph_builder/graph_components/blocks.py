@@ -57,6 +57,7 @@ class TerraformBlock(Block):
         if strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'False')):
             self.source_module_object: Optional[TFModule] = None
             self.for_each_index: Optional[Any] = None
+        self.attributes_has_nested_attributes: Dict[str, bool] = {}
 
     def add_module_connection(self, attribute_key: str, vertex_id: int) -> None:
         self.module_connections.setdefault(attribute_key, []).append(vertex_id)
