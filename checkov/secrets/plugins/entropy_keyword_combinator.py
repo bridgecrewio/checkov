@@ -225,10 +225,10 @@ class EntropyKeywordCombinator(BasePlugin):
 
     @classmethod
     def receive_last_secret_detected(cls, keyword_on_key: Set[PotentialSecret]) -> Tuple[str, str]:
-        secret_value = ''
-        quoted_secret = ''
+        return_value = ''
+        quoted_return_value = ''
         for pt in keyword_on_key:
             if pt.secret_value:
-                secret_value = pt.secret_value
-                quoted_secret = EntropyKeywordCombinator.convert_to_reduce_noise(pt.secret_value)
-        return secret_value, quoted_secret
+                return_value = pt.secret_value
+                quoted_return_value = EntropyKeywordCombinator.convert_to_reduce_noise(pt.secret_value)
+        return return_value, quoted_return_value
