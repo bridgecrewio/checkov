@@ -61,7 +61,9 @@ class TestCombinatorPluginMultilineYml(unittest.TestCase):
         )
         expected_secret_value = 'Zmlyc3Rfc2VjcmV0MjIyMjIyX2hlcmVfd2hvYV9tdWx0aWxsaW5lX3Nob3VsZF93b3JrXzI'
         assert res
-        assert expected_secret_value == res.pop().secret_value
+        po_secret = res.pop()
+        assert expected_secret_value == po_secret.secret_value
+        assert po_secret.is_multiline is True
 
     def test_keyword_in_value_pair2(self):
         # first line is password, next line underneath is keyword
@@ -109,7 +111,9 @@ class TestCombinatorPluginMultilineYml(unittest.TestCase):
 
         expected_secret_value = 'Zo5Zhexnf9TUggdn+zBKGEkmUUvuKzVN+/fKPaMBA4zVyef4irH5H5YfwoC4IqAX0DNoMD12yIF67nIdIMg13atW4WM33eNMfXlE'
         assert res
-        assert expected_secret_value == res.pop().secret_value
+        po_secret = res.pop()
+        assert expected_secret_value == po_secret.secret_value
+        assert po_secret.is_multiline is True
 
     def test_keyword_in_value_pair_long_password(self):
         # first line is keyword, next line (underneath) is a long multiline password
@@ -150,7 +154,9 @@ class TestCombinatorPluginMultilineYml(unittest.TestCase):
         )
         expected_secret_value = 'm9+1ONt6FdpnByhlaKDwZ/jjA5gaPzrKY9q5G8cr6kjn092ogigwEOGGryjDqq/NkX1DnKGGG7iduJUJ48+Rv0tgpdVAxwLQuiszRnssmi2ck/Zf1iDFlNQtiE8rvXE6OTCsb6mrpyItLOVnEwsRSpggyRa3KLSuiguiZsK5KyXQ6BsiAclpLvz6QFBQoQkZNxownQrqgLwVwkK1gW0/EEm0m1ylz20ZeLgYO6tRSvKDW0lrgAI7g60F7/eJGv1UqQlxK58T+7u1UX/K11Q69e9jJE+LkQ932eY37U70oVbBVchHwSFKUoffernEaG9XP1tyEpIptPqVpcS2BMpktoR1p1yyWuxC5GsPc2RlPQzEbs3n5lPPnC/uEVu7/cJENSw5+9DzigiHYPz1Cq/p5HedIl5ysn2U2VFgHWekGBYin6ytfmF2Sx+hYqeRd6RcxyU434CXspWQqc330sp9q7vwPQHNecBrvG2Iy7mqVSvaJDnkZ8AN'
         assert res
-        assert expected_secret_value == res.pop().secret_value
+        po_secret = res.pop()
+        assert expected_secret_value == po_secret.secret_value
+        assert po_secret.is_multiline is True
 
     def test_multiline_keyword_password_report(self):
         test_file_path = Path(__file__).parent / "yml_multiline/test-multiline-secrets.yml"
