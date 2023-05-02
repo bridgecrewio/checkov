@@ -6,7 +6,7 @@ from checkov.bicep.checks.resource.base_resource_value_check import BaseResource
 
 
 class AzureFirewallDenyThreatIntelMode(BaseResourceValueCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         """
         https://azure.github.io/PSRule.Rules.Azure/en/rules/Azure.Firewall.Mode/
         Configure deny on threat intel for classic managed Azure Firewalls
