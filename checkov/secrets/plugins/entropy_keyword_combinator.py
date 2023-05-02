@@ -223,8 +223,8 @@ class EntropyKeywordCombinator(BasePlugin):
             return ''
         return f"\"{secret_value}\""
 
-    @classmethod
-    def receive_last_secret_detected(cls, keyword_on_key: Set[PotentialSecret]) -> Tuple[str, str]:
+    @staticmethod
+    def receive_last_secret_detected(keyword_on_key: Set[PotentialSecret]) -> Tuple[str, str]:
         return_value = ''
         quoted_return_value = ''
         for pt in keyword_on_key:
