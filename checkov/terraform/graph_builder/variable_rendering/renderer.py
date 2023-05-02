@@ -479,9 +479,9 @@ class TerraformVariableRenderer(VariableRenderer):
             vertex.get_origin_attributes(attributes)
             filtered_attributes = []
             for attr in vertex.attributes:
-                has_nested_attributes = vertex.attribute_has_nested_attributes.get(attr, None)
-                if has_nested_attributes is None:
-                    has_nested_attributes = attribute_has_nested_attributes(attr, vertex.attributes)
+                # has_nested_attributes = vertex.attribute_has_nested_attributes.get(attr, None)
+                # if has_nested_attributes is None:
+                has_nested_attributes = attribute_has_nested_attributes(attr, vertex.attributes)
                 if attr not in reserved_attribute_names and not has_nested_attributes and not attribute_has_dup_with_dynamic_attributes(attr, vertex.attributes):
                     filtered_attributes.append(attr)
 
