@@ -1,294 +1,177 @@
-@description('Admin username for the backend servers')
-param adminUsername string
+@description('Virtual Network name')
+param virtualNetworkName string
 
-@description('Password for the admin account on the backend servers')
-@secure()
-param adminPassword string
+@description('Virtual Network address range')
+param vnetAddressPrefix string = '10.0.0.0/16'
+
+@description('Subnet Name')
+param subnetName string = 'subnet1'
+
+@description('Subnet prefix')
+param subnetPrefix string = '10.0.0.0/24'
+
+@description('Application Gateway name')
+param applicationGatewayName string = 'fail'
+
+@description('Application Gateway size')
+@allowed([
+  'Standard_Small'
+  'Standard_Medium'
+  'Standard_Large'
+])
+param applicationGatewaySize string = 'Standard_Small'
+
+@description('Application Gateway instance count')
+@allowed([
+  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+  10
+])
+param applicationGatewayInstanceCount int = 2
+
+@description('Application Gateway front end port')
+param frontendPort int = 80
+
+@description('Application Gateway back end port')
+param backendPort int = 80
+
+@description('Backend pool ip addresses')
+param backendIPAddresses array = [
+  {
+    IpAddress: '10.0.0.4'
+  }
+  {
+    IpAddress: '10.0.0.5'
+  }
+]
+
+@description('Cookie based affinity')
+@allowed([
+  'Enabled'
+  'Disabled'
+])
+param cookieBasedAffinity string = 'Disabled'
 
 @description('Location for all resources.')
 param location string = resourceGroup().location
 
-@description('Size of the virtual machine.')
-param vmSize string = 'Standard_B2ms'
+var subnetRef = resourceId('Microsoft.Network/virtualNetworks/subnets', virtualNetworkName, subnetName)
 
-var virtualMachines_myVM_name = 'myVM'
-var virtualNetworks_myVNet_name_var = 'myVNet'
-var myNic_name = 'net-int'
-var ipconfig_name = 'ipconfig'
-var publicIPAddress_name = 'public_ip'
-var nsg_name = 'vm-nsg'
-var applicationGateways_myAppGateway_name = 'myAppGateway'
-var vnet_prefix = '10.0.0.0/16'
-var ag_subnet_prefix = '10.0.0.0/24'
-var backend_subnet_prefix = '10.0.1.0/24'
-var AppGW_AppFW_Pol_name = 'WafPol01'
-
-resource nsg_name_0_2_1 'Microsoft.Network/networkSecurityGroups@2021-08-01' = [for i in range(0, length(range(0, 2))): {
-  name: '${nsg_name}${(range(0, 2)[i] + 1)}'
-  location: location
-  properties: {
-    securityRules: [
-      {
-        name: 'RDP'
-        properties: {
-          protocol: 'Tcp'
-          sourcePortRange: '*'
-          destinationPortRange: '3389'
-          sourceAddressPrefix: '*'
-          destinationAddressPrefix: '*'
-          access: 'Allow'
-          priority: 300
-          direction: 'Inbound'
-        }
-      }
-    ]
-  }
-}]
-
-resource publicIPAddress_name_0_3 'Microsoft.Network/publicIPAddresses@2021-08-01' = [for i in range(0, length(range(0, 3))): {
-  name: '${publicIPAddress_name}${range(0, 3)[i]}'
-  location: location
-  sku: {
-    name: 'Standard'
-  }
-  properties: {
-    publicIPAddressVersion: 'IPv4'
-    publicIPAllocationMethod: 'Static'
-    idleTimeoutInMinutes: 4
-  }
-}]
-
-resource virtualNetworks_myVNet_name 'Microsoft.Network/virtualNetworks@2021-08-01' = {
-  name: virtualNetworks_myVNet_name_var
+resource virtualNetwork 'Microsoft.Network/virtualNetworks@2020-05-01' = {
+  name: virtualNetworkName
   location: location
   properties: {
     addressSpace: {
       addressPrefixes: [
-        vnet_prefix
+        vnetAddressPrefix
       ]
     }
     subnets: [
       {
-        name: 'myAGSubnet'
+        name: subnetName
         properties: {
-          addressPrefix: ag_subnet_prefix
-          privateEndpointNetworkPolicies: 'Enabled'
-          privateLinkServiceNetworkPolicies: 'Enabled'
-        }
-      }
-      {
-        name: 'myBackendSubnet'
-        properties: {
-          addressPrefix: backend_subnet_prefix
-          privateEndpointNetworkPolicies: 'Enabled'
-          privateLinkServiceNetworkPolicies: 'Enabled'
+          addressPrefix: subnetPrefix
         }
       }
     ]
-    enableDdosProtection: false
-    enableVmProtection: false
   }
 }
 
-resource virtualMachines_myVM_name_0_2_1 'Microsoft.Compute/virtualMachines@2021-11-01' = [for i in range(0, length(range(0, 2))): {
-  name: '${virtualMachines_myVM_name}${(range(0, 2)[i] + 1)}'
-  location: location
-  properties: {
-    hardwareProfile: {
-      vmSize: vmSize
-    }
-    storageProfile: {
-      imageReference: {
-        publisher: 'MicrosoftWindowsServer'
-        offer: 'WindowsServer'
-        sku: '2019-Datacenter'
-        version: 'latest'
-      }
-      osDisk: {
-        osType: 'Windows'
-        createOption: 'FromImage'
-        caching: 'ReadWrite'
-        managedDisk: {
-          storageAccountType: 'StandardSSD_LRS'
-        }
-        diskSizeGB: 127
-      }
-    }
-    osProfile: {
-      computerName: '${virtualMachines_myVM_name}${(range(0, 2)[i] + 1)}'
-      adminUsername: adminUsername
-      adminPassword: adminPassword
-      windowsConfiguration: {
-        provisionVMAgent: true
-        enableAutomaticUpdates: true
-      }
-      allowExtensionOperations: true
-    }
-    networkProfile: {
-      networkInterfaces: [
-        {
-          id: resourceId('Microsoft.Network/networkInterfaces', '${myNic_name}${(range(0, 2)[i] + 1)}')
-        }
-      ]
-    }
-  }
-  dependsOn: [
-    myNic_name_0_2_1
-  ]
-}]
-
-resource virtualMachines_myVM_name_0_2_1_IIS 'Microsoft.Compute/virtualMachines/extensions@2021-11-01' = [for i in range(0, length(range(0, 2))): {
-  name: '${virtualMachines_myVM_name}${(range(0, 2)[i] + 1)}/IIS'
-  location: location
-  properties: {
-    autoUpgradeMinorVersion: true
-    publisher: 'Microsoft.Compute'
-    type: 'CustomScriptExtension'
-    typeHandlerVersion: '1.4'
-    settings: {
-      commandToExecute: 'powershell Add-WindowsFeature Web-Server; powershell Add-Content -Path "C:\\inetpub\\wwwroot\\Default.htm" -Value $($env:computername)'
-    }
-  }
-  dependsOn: [
-    virtualMachines_myVM_name_0_2_1
-  ]
-}]
-
-resource fail 'Microsoft.Network/applicationGateways@2021-08-01' = {
-  name: 'fail'
+resource applicationGateway 'Microsoft.Network/applicationGateways@2020-05-01' = {
+  name: applicationGatewayName
   location: location
   properties: {
     sku: {
-      name: 'WAF_v2'
-      tier: 'WAF_v2'
-      capacity: 2
+      name: applicationGatewaySize
+      tier: 'Standard'
+      capacity: applicationGatewayInstanceCount
     }
     gatewayIPConfigurations: [
       {
         name: 'appGatewayIpConfig'
         properties: {
           subnet: {
-            id: resourceId('Microsoft.Network/virtualNetworks/subnets', virtualNetworks_myVNet_name_var, 'myAGSubnet')
+            id: subnetRef
           }
         }
       }
     ]
     frontendIPConfigurations: [
       {
-        name: 'appGwPublicFrontendIp'
+        name: 'appGatewayFrontendIP'
         properties: {
-          privateIPAllocationMethod: 'Dynamic'
-          publicIPAddress: {
-            id: resourceId('Microsoft.Network/publicIPAddresses', '${publicIPAddress_name}0')
+          subnet: {
+            id: subnetRef
           }
         }
       }
     ]
     frontendPorts: [
       {
-        name: 'port_80'
+        name: 'appGatewayFrontendPort'
         properties: {
-          port: 80
+          port: frontendPort
         }
       }
     ]
     backendAddressPools: [
       {
-        name: 'myBackendPool'
-        properties: {}
+        name: 'appGatewayBackendPool'
+        properties: {
+          backendAddresses: backendIPAddresses
+        }
       }
     ]
     backendHttpSettingsCollection: [
       {
-        name: 'myHTTPSetting'
+        name: 'appGatewayBackendHttpSettings'
         properties: {
-          port: 80
+          port: backendPort
           protocol: 'Http'
-          cookieBasedAffinity: 'Disabled'
-          pickHostNameFromBackendAddress: false
-          requestTimeout: 20
+          cookieBasedAffinity: cookieBasedAffinity
         }
       }
     ]
     httpListeners: [
       {
-        name: 'myListener'
+        name: 'appGatewayHttpListener'
         properties: {
-          firewallPolicy: {
-            id: resourceId('Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies', AppGW_AppFW_Pol_name)
-          }
           frontendIPConfiguration: {
-            id: resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', applicationGateways_myAppGateway_name, 'appGwPublicFrontendIp')
+            id: resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', applicationGatewayName, 'appGatewayFrontendIP')
           }
           frontendPort: {
-            id: resourceId('Microsoft.Network/applicationGateways/frontendPorts', applicationGateways_myAppGateway_name, 'port_80')
+            id: resourceId('Microsoft.Network/applicationGateways/frontendPorts', applicationGatewayName, 'appGatewayFrontendPort')
           }
           protocol: 'Http'
-          requireServerNameIndication: false
         }
       }
     ]
     requestRoutingRules: [
       {
-        name: 'myRoutingRule'
+        name: 'rule1'
         properties: {
           ruleType: 'Basic'
-          priority: 10
           httpListener: {
-            id: resourceId('Microsoft.Network/applicationGateways/httpListeners', applicationGateways_myAppGateway_name, 'myListener')
+            id: resourceId('Microsoft.Network/applicationGateways/httpListeners', applicationGatewayName, 'appGatewayHttpListener')
           }
           backendAddressPool: {
-            id: resourceId('Microsoft.Network/applicationGateways/backendAddressPools', applicationGateways_myAppGateway_name, 'myBackendPool')
+            id: resourceId('Microsoft.Network/applicationGateways/backendAddressPools', applicationGatewayName, 'appGatewayBackendPool')
           }
           backendHttpSettings: {
-            id: resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', applicationGateways_myAppGateway_name, 'myHTTPSetting')
+            id: resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', applicationGatewayName, 'appGatewayBackendHttpSettings')
           }
         }
       }
     ]
-    enableHttp2: false
   }
   dependsOn: [
-    virtualNetworks_myVNet_name
-    publicIPAddress_name_0_3
+    virtualNetwork
   ]
 }
-
-resource myNic_name_0_2_1 'Microsoft.Network/networkInterfaces@2021-08-01' = [for i in range(0, length(range(0, 2))): {
-  name: '${myNic_name}${(range(0, 2)[i] + 1)}'
-  location: location
-  properties: {
-    ipConfigurations: [
-      {
-        name: '${ipconfig_name}${(range(0, 2)[i] + 1)}'
-        properties: {
-          privateIPAllocationMethod: 'Dynamic'
-          publicIPAddress: {
-            id: resourceId('Microsoft.Network/publicIPAddresses', '${publicIPAddress_name}${(range(0, 2)[i] + 1)}')
-          }
-          subnet: {
-            id: resourceId('Microsoft.Network/virtualNetworks/subnets', virtualNetworks_myVNet_name_var, 'myBackendSubnet')
-          }
-          primary: true
-          privateIPAddressVersion: 'IPv4'
-          applicationGatewayBackendAddressPools: [
-            {
-              id: resourceId('Microsoft.Network/applicationGateways/backendAddressPools', applicationGateways_myAppGateway_name, 'myBackendPool')
-            }
-          ]
-        }
-      }
-    ]
-    enableAcceleratedNetworking: false
-    enableIPForwarding: false
-    networkSecurityGroup: {
-      id: resourceId('Microsoft.Network/networkSecurityGroups', '${nsg_name}${(range(0, 2)[i] + 1)}')
-    }
-  }
-  dependsOn: [
-    resourceId('Microsoft.Network/applicationGateways', applicationGateways_myAppGateway_name)
-    virtualNetworks_myVNet_name
-    nsg_name_0_2_1
-    publicIPAddress_name_0_3
-  ]
-}]

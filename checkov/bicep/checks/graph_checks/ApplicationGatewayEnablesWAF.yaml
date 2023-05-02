@@ -25,7 +25,7 @@ definition:
                     - Microsoft.Network/FrontDoorWebApplicationFirewallPolicies
                   operator: exists
                 - cond_type: attribute
-                  attribute: policySettings.enabledState
+                  attribute: policySettings.State
                   operator: equals
                   value: 'Enabled'
                   resource_types:

@@ -1,342 +1,412 @@
-@description('Admin username for the backend servers')
-param adminUsername string
+@description('Application gateway name')
+param applicationGatewayName string = 'pass'
 
-@description('Password for the admin account on the backend servers')
-@secure()
-param adminPassword string
-
-@description('Location for all resources.')
+@description('Application gateway location')
 param location string = resourceGroup().location
 
-@description('Size of the virtual machine.')
-param vmSize string = 'Standard_B2ms'
+@description('Application gateway tier')
+@allowed([
+  'Standard'
+  'WAF'
+  'Standard_v2'
+  'WAF_v2'
+])
+param tier string = 'WAF_v2'
 
-var virtualMachines_myVM_name = 'myVM'
-var virtualNetworks_myVNet_name_var = 'myVNet'
-var myNic_name = 'net-int'
-var ipconfig_name = 'ipconfig'
-var publicIPAddress_name = 'public_ip'
-var nsg_name = 'vm-nsg'
-var applicationGateways_myAppGateway_name = 'pass'
-var vnet_prefix = '10.0.0.0/16'
-var ag_subnet_prefix = '10.0.0.0/24'
-var backend_subnet_prefix = '10.0.1.0/24'
-var AppGW_AppFW_Pol_name_var = 'WafPol01'
+@description('Application gateway sku')
+@allowed([
+  'Standard_Small'
+  'Standard_Medium'
+  'Standard_Large'
+  'WAF_Medium'
+  'WAF_Large'
+  'Standard_v2'
+  'WAF_v2'
+])
+param sku string = 'WAF_v2'
 
-resource nsg_name_0_2_1 'Microsoft.Network/networkSecurityGroups@2021-08-01' = [for i in range(0, length(range(0, 2))): {
-  name: '${nsg_name}${(range(0, 2)[i] + 1)}'
-  location: location
-  properties: {
-    securityRules: [
-      {
-        name: 'RDP'
-        properties: {
-          protocol: 'Tcp'
-          sourcePortRange: '*'
-          destinationPortRange: '3389'
-          sourceAddressPrefix: '*'
-          destinationAddressPrefix: '*'
-          access: 'Allow'
-          priority: 300
-          direction: 'Inbound'
-        }
-      }
-    ]
-  }
-}]
+@description('Enable HTTP/2 support')
+param http2Enabled bool = true
 
-resource publicIPAddress_name_0_3 'Microsoft.Network/publicIPAddresses@2021-08-01' = [for i in range(0, length(range(0, 3))): {
-  name: '${publicIPAddress_name}${range(0, 3)[i]}'
+@description('Capacity (instance count) of application gateway')
+@minValue(1)
+@maxValue(32)
+param capacity int = 2
+
+@description('Autoscale capacity (instance count) of application gateway')
+@minValue(1)
+@maxValue(32)
+param autoScaleMaxCapacity int = 10
+
+@description('Public ip address name')
+param publicIpAddressName string = 'appGwpublicIp'
+
+@description('Virutal network subscription id')
+param vNetSubscriptionId string = subscription().subscriptionId
+
+@description('Virutal network resource group')
+param existingVnetResourceGroup string
+
+@description('Virutal network name')
+param existingVnetName string
+
+@description('Application gateway subnet name')
+param existingSubnetName string
+
+@description('Array containing ssl certificates')
+param sslCertificates array = []
+
+@description('Array containing trusted root certificates')
+param trustedRootCertificates array = []
+
+@description('Array containing http listeners')
+param httpListeners array = [
+{
+name: 'HttpListener01'
+protocol: 'Http'
+frontEndPort: 'port_80'
+firewallPolicy: 'Enabled'
+}
+]
+
+@description('Array containing backend address pools')
+param backendAddressPools array = [
+{
+name: 'BackendPool01'
+backendAddresses: [
+{
+ipAddress: '10.1.2.3'
+}
+]
+}
+]
+
+@description('Array containing backend http settings')
+param backendHttpSettings array = [
+{
+name: 'BackendHttpSetting01'
+port: 80
+protocol: 'Http'
+cookieBasedAffinity: 'Enabled'
+affinityCookieName: 'CookieAffinity01'
+requestTimeout: 300
+connectionDraining: {
+drainTimeoutInSec: 60
+enabled: true
+}
+}
+]
+
+@description('Array containing request routing rules')
+param rules array = [
+{
+name: 'Rule01'
+ruleType: 'Basic'
+listener: 'HttpListener01'
+backendPool: 'BackendPool01'
+backendHttpSettings: 'BackendHttpSetting01'
+}
+]
+
+@description('Array containing redirect configurations')
+param redirectConfigurations array = []
+
+@description('Array containing front end ports')
+param frontEndPorts array = [
+{
+name: 'port_80'
+port: 80
+}
+]
+
+@description('Array containing custom probes')
+param customProbes array = []
+
+@description('Enable web application firewall')
+param enableWebApplicationFirewall bool = true
+
+@description('Name of the firewall policy. Only required if enableWebApplicationFirewall is set to true')
+param firewallPolicyName string = 'FirewallPolicy01'
+
+@description('Array containing the firewall policy settings. Only required if enableWebApplicationFirewall is set to true')
+param firewallPolicySettings object = {
+requestBodyCheck: true
+maxRequestBodySizeInKb: 128
+fileUploadLimitInMb: 100
+state: 'Enabled'
+mode: 'Detection'
+}
+
+@description('Array containing the firewall policy custom rules. Only required if enableWebApplicationFirewall is set to true')
+param firewallPolicyCustomRules array = []
+
+@description('Array containing the firewall policy managed rule sets. Only required if enableWebApplicationFirewall is set to true')
+param firewallPolicyManagedRuleSets array = [
+{
+ruleSetType: 'OWASP'
+ruleSetVersion: '3.2'
+}
+]
+
+@description('Array containing the firewall policy managed rule exclusions. Only required if enableWebApplicationFirewall is set to true')
+param firewallPolicyManagedRuleExclusions array = []
+
+@description('Enable delete lock')
+param enableDeleteLock bool = false
+
+@description('Enable diagnostic logs')
+param enableDiagnostics bool = false
+
+@description('Storage account resource id. Only required if enableDiagnostics is set to true')
+param diagnosticStorageAccountId string = ''
+
+@description('Log analytics workspace resource id. Only required if enableDiagnostics is set to true')
+param logAnalyticsWorkspaceId string = ''
+
+var publicIpLockName = '${publicIpAddressName}-lck'
+var publicIpDiagnosticsName = '${publicIpAddressName}-dgs'
+var appGatewayLockName = '${applicationGatewayName}-lck'
+var appGatewayDiagnosticsName = '${applicationGatewayName}-dgs'
+var gatewayIpConfigurationName = 'appGatewayIpConfig'
+var frontendIpConfigurationName = 'appGwPublicFrontendIp'
+
+resource publicIpAddress 'Microsoft.Network/publicIPAddresses@2021-03-01' = {
+  name: publicIpAddressName
   location: location
   sku: {
     name: 'Standard'
   }
   properties: {
-    publicIPAddressVersion: 'IPv4'
     publicIPAllocationMethod: 'Static'
-    idleTimeoutInMinutes: 4
-  }
-}]
-
-resource virtualNetworks_myVNet_name 'Microsoft.Network/virtualNetworks@2021-08-01' = {
-  name: virtualNetworks_myVNet_name_var
-  location: location
-  properties: {
-    addressSpace: {
-      addressPrefixes: [
-        vnet_prefix
-      ]
-    }
-    subnets: [
-      {
-        name: 'myAGSubnet'
-        properties: {
-          addressPrefix: ag_subnet_prefix
-          privateEndpointNetworkPolicies: 'Enabled'
-          privateLinkServiceNetworkPolicies: 'Enabled'
-        }
-      }
-      {
-        name: 'myBackendSubnet'
-        properties: {
-          addressPrefix: backend_subnet_prefix
-          privateEndpointNetworkPolicies: 'Enabled'
-          privateLinkServiceNetworkPolicies: 'Enabled'
-        }
-      }
-    ]
-    enableDdosProtection: false
-    enableVmProtection: false
   }
 }
 
-resource virtualMachines_myVM_name_0_2_1 'Microsoft.Compute/virtualMachines@2021-11-01' = [for i in range(0, length(range(0, 2))): {
-  name: '${virtualMachines_myVM_name}${(range(0, 2)[i] + 1)}'
-  location: location
+resource publicIpDiagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = if (enableDiagnostics) {
+  scope: publicIpAddress
+  name: publicIpDiagnosticsName
   properties: {
-    hardwareProfile: {
-      vmSize: vmSize
-    }
-    storageProfile: {
-      imageReference: {
-        publisher: 'MicrosoftWindowsServer'
-        offer: 'WindowsServer'
-        sku: '2019-Datacenter'
-        version: 'latest'
+    workspaceId: (empty(logAnalyticsWorkspaceId) ? null : logAnalyticsWorkspaceId)
+    storageAccountId: (empty(diagnosticStorageAccountId) ? null : diagnosticStorageAccountId)
+    logs: [
+      {
+        category: 'DDoSProtectionNotifications'
+        enabled: true
       }
-      osDisk: {
-        osType: 'Windows'
-        createOption: 'FromImage'
-        caching: 'ReadWrite'
-        managedDisk: {
-          storageAccountType: 'StandardSSD_LRS'
-        }
-        diskSizeGB: 127
+      {
+        category: 'DDoSMitigationFlowLogs'
+        enabled: true
       }
-    }
-    osProfile: {
-      computerName: '${virtualMachines_myVM_name}${(range(0, 2)[i] + 1)}'
-      adminUsername: adminUsername
-      adminPassword: adminPassword
-      windowsConfiguration: {
-        provisionVMAgent: true
-        enableAutomaticUpdates: true
+      {
+        category: 'DDoSMitigationReports'
+        enabled: true
       }
-      allowExtensionOperations: true
-    }
-    networkProfile: {
-      networkInterfaces: [
-        {
-          id: resourceId('Microsoft.Network/networkInterfaces', '${myNic_name}${(range(0, 2)[i] + 1)}')
-        }
-      ]
-    }
+    ]
+    metrics: [
+      {
+        category: 'AllMetrics'
+        enabled: true
+      }
+    ]
   }
-  dependsOn: [
-    myNic_name_0_2_1
-  ]
-}]
+}
 
-resource virtualMachines_myVM_name_0_2_1_IIS 'Microsoft.Compute/virtualMachines/extensions@2021-11-01' = [for i in range(0, length(range(0, 2))): {
-  name: '${virtualMachines_myVM_name}${(range(0, 2)[i] + 1)}/IIS'
-  location: location
+resource publicIpLock 'Microsoft.Authorization/locks@2017-04-01' = if (enableDeleteLock) {
+  scope: publicIpAddress
+  name: publicIpLockName
   properties: {
-    autoUpgradeMinorVersion: true
-    publisher: 'Microsoft.Compute'
-    type: 'CustomScriptExtension'
-    typeHandlerVersion: '1.4'
-    settings: {
-      commandToExecute: 'powershell Add-WindowsFeature Web-Server; powershell Add-Content -Path "C:\\inetpub\\wwwroot\\Default.htm" -Value $($env:computername)'
-    }
+    level: 'CanNotDelete'
   }
-  dependsOn: [
-    virtualMachines_myVM_name_0_2_1
-  ]
-}]
+}
 
-resource pass 'Microsoft.Network/applicationGateways@2021-08-01' = {
-  name: 'pass'
+resource applicationGateway 'Microsoft.Network/applicationGateways@2021-03-01' = {
+  name: applicationGatewayName
   location: location
   properties: {
+    frontendPorts: [for item in frontEndPorts: {
+      name: item.name
+      properties: {
+        port: item.port
+      }
+    }]
+    probes: [for item in customProbes: {
+      name: item.name
+      properties: {
+        protocol: item.protocol
+        host: item.host
+        path: item.path
+        interval: item.interval
+        timeout: item.timeout
+        unhealthyThreshold: item.unhealthyThreshold
+        pickHostNameFromBackendHttpSettings: item.pickHostNameFromBackendHttpSettings
+        minServers: item.minServers
+        match: item.match
+      }
+    }]
+    backendAddressPools: [for item in backendAddressPools: {
+      name: item.name
+      properties: {
+        backendAddresses: item.backendAddresses
+      }
+    }]
+    trustedRootCertificates: [for item in trustedRootCertificates: {
+      name: item.name
+      properties: {
+        keyVaultSecretId: '${reference(item.keyVaultResourceId, '2021-10-01').vaultUri}secrets/${item.secretName}'
+      }
+    }]
+    sslCertificates: [for item in sslCertificates: {
+      name: item.name
+      properties: {
+        keyVaultSecretId: '${reference(item.keyVaultResourceId, '2021-10-01').vaultUri}secrets/${item.secretName}'
+      }
+    }]
+    backendHttpSettingsCollection: [for item in backendHttpSettings: {
+      name: item.name
+      properties: {
+        port: item.port
+        protocol: item.protocol
+        cookieBasedAffinity: item.cookieBasedAffinity
+        affinityCookieName: (contains(item, 'affinityCookieName') ? item.affinityCookieName : null)
+        requestTimeout: item.requestTimeout
+        connectionDraining: item.connectionDraining
+        probe: (contains(item, 'probeName') ? json('{"id": "${resourceId('Microsoft.Network/applicationGateways/probes', applicationGatewayName, item.probeName)}"}') : null)
+        trustedRootCertificates: (contains(item, 'trustedRootCertificate') ? json('[{"id": "${resourceId('Microsoft.Network/applicationGateways/trustedRootCertificates', applicationGatewayName, item.trustedRootCertificate)}"}]') : null)
+        hostName: (contains(item, 'hostName') ? item.hostName : null)
+        pickHostNameFromBackendAddress: (contains(item, 'pickHostNameFromBackendAddress') ? item.pickHostNameFromBackendAddress : false)
+      }
+    }]
+    httpListeners: [for item in httpListeners: {
+      name: item.name
+      properties: {
+        frontendIPConfiguration: {
+          id: resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', applicationGatewayName, frontendIpConfigurationName)
+        }
+        frontendPort: {
+          id: resourceId('Microsoft.Network/applicationGateways/frontendPorts', applicationGatewayName, item.frontEndPort)
+        }
+        protocol: item.protocol
+        sslCertificate: (contains(item, 'sslCertificate') ? json('{"id": "${resourceId('Microsoft.Network/applicationGateways/sslCertificates', applicationGatewayName, item.sslCertificate)}"}') : null)
+        hostNames: (contains(item, 'hostNames') ? item.hostNames : null)
+        hostName: (contains(item, 'hostName') ? item.hostName : null)
+        requireServerNameIndication: (contains(item, 'requireServerNameIndication') ? item.requireServerNameIndication : false)
+        firewallPolicy: (contains(item, 'firewallPolicy') ? json('{"id": "${firewallPolicyName_placeholdervalue_firewallPolicy.id}"}') : null)
+      }
+    }]
+    requestRoutingRules: [for item in rules: {
+      name: item.name
+      properties: {
+        ruleType: item.ruleType
+        httpListener: (contains(item, 'listener') ? json('{"id": "${resourceId('Microsoft.Network/applicationGateways/httpListeners', applicationGatewayName, item.listener)}"}') : null)
+        backendAddressPool: (contains(item, 'backendPool') ? json('{"id": "${resourceId('Microsoft.Network/applicationGateways/backendAddressPools', applicationGatewayName, item.backendPool)}"}') : null)
+        backendHttpSettings: (contains(item, 'backendHttpSettings') ? json('{"id": "${resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', applicationGatewayName, item.backendHttpSettings)}"}') : null)
+        redirectConfiguration: (contains(item, 'redirectConfiguration') ? json('{"id": "${resourceId('Microsoft.Network/applicationGateways/redirectConfigurations', applicationGatewayName, item.redirectConfiguration)}"}') : null)
+      }
+    }]
+    redirectConfigurations: [for item in redirectConfigurations: {
+      name: item.name
+      properties: {
+        redirectType: item.redirectType
+        targetUrl: item.targetUrl
+        targetListener: (contains(item, 'targetListener') ? json('{"id": "${resourceId('Microsoft.Network/applicationGateways/httpListeners', applicationGatewayName, item.targetListener)}"}') : null)
+        includePath: item.includePath
+        includeQueryString: item.includeQueryString
+        requestRoutingRules: [
+          {
+            id: resourceId('Microsoft.Network/applicationGateways/requestRoutingRules', applicationGatewayName, item.requestRoutingRule)
+          }
+        ]
+      }
+    }]
     sku: {
-      name: 'WAF_v2'
-      tier: 'WAF_v2'
-      capacity: 2
+      name: sku
+      tier: tier
     }
+    autoscaleConfiguration: {
+      minCapacity: capacity
+      maxCapacity: autoScaleMaxCapacity
+    }
+    enableHttp2: http2Enabled
+    webApplicationFirewallConfiguration: {
+      enabled:  true
+      firewallMode: firewallPolicySettings.mode
+      ruleSetType: 'OWASP'
+      ruleSetVersion: '3.2'
+    } 
     gatewayIPConfigurations: [
       {
-        name: 'appGatewayIpConfig'
+        name: gatewayIpConfigurationName
         properties: {
           subnet: {
-            id: resourceId('Microsoft.Network/virtualNetworks/subnets', virtualNetworks_myVNet_name_var, 'myAGSubnet')
+            id: resourceId(vNetSubscriptionId, existingVnetResourceGroup, 'Microsoft.Network/virtualNetworks/subnets', existingVnetName, existingSubnetName)
           }
         }
       }
     ]
     frontendIPConfigurations: [
       {
-        name: 'appGwPublicFrontendIp'
+        name: frontendIpConfigurationName
         properties: {
-          privateIPAllocationMethod: 'Dynamic'
           publicIPAddress: {
-            id: resourceId('Microsoft.Network/publicIPAddresses', '${publicIPAddress_name}0')
+            id: publicIpAddress.id
           }
         }
       }
     ]
-    frontendPorts: [
-      {
-        name: 'port_80'
-        properties: {
-          port: 80
-        }
-      }
-    ]
-    backendAddressPools: [
-      {
-        name: 'myBackendPool'
-        properties: {}
-      }
-    ]
-    backendHttpSettingsCollection: [
-      {
-        name: 'myHTTPSetting'
-        properties: {
-          port: 80
-          protocol: 'Http'
-          cookieBasedAffinity: 'Disabled'
-          pickHostNameFromBackendAddress: false
-          requestTimeout: 20
-        }
-      }
-    ]
-    httpListeners: [
-      {
-        name: 'myListener'
-        properties: {
-          firewallPolicy: {
-            id: AppGW_AppFW_Pol_name.id
-          }
-          frontendIPConfiguration: {
-            id: resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', applicationGateways_myAppGateway_name, 'appGwPublicFrontendIp')
-          }
-          frontendPort: {
-            id: resourceId('Microsoft.Network/applicationGateways/frontendPorts', applicationGateways_myAppGateway_name, 'port_80')
-          }
-          protocol: 'Http'
-          requireServerNameIndication: false
-        }
-      }
-    ]
-    requestRoutingRules: [
-      {
-        name: 'myRoutingRule'
-        properties: {
-          ruleType: 'Basic'
-          priority: 10
-          httpListener: {
-            id: resourceId('Microsoft.Network/applicationGateways/httpListeners', applicationGateways_myAppGateway_name, 'myListener')
-          }
-          backendAddressPool: {
-            id: resourceId('Microsoft.Network/applicationGateways/backendAddressPools', applicationGateways_myAppGateway_name, 'myBackendPool')
-          }
-          backendHttpSettings: {
-            id: resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', applicationGateways_myAppGateway_name, 'myHTTPSetting')
-          }
-        }
-      }
-    ]
-    enableHttp2: false
-    firewallPolicy: {
-      id: AppGW_AppFW_Pol_name.id
-    }
+    firewallPolicy: (enableWebApplicationFirewall ? {
+      id: firewallPolicyName_placeholdervalue_firewallPolicy.id
+    } : null)
   }
-  dependsOn: [
-
-    virtualNetworks_myVNet_name
-    publicIPAddress_name_0_3
-  ]
 }
 
-resource AppGW_AppFW_Pol_name 'Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies@2021-08-01' = {
-  name: AppGW_AppFW_Pol_name_var
-  location: location
+resource appGatewayDiagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = if (enableDiagnostics) {
+  scope: applicationGateway
+  name: appGatewayDiagnosticsName
   properties: {
-    customRules: [
+    workspaceId: (empty(logAnalyticsWorkspaceId) ? null : logAnalyticsWorkspaceId)
+    storageAccountId: (empty(diagnosticStorageAccountId) ? null : diagnosticStorageAccountId)
+    logs: [
       {
-        name: 'CustRule01'
-        priority: 100
-        ruleType: 'MatchRule'
-        action: 'Block'
-        matchConditions: [
-          {
-            matchVariables: [
-              {
-                variableName: 'RemoteAddr'
-              }
-            ]
-            operator: 'IPMatch'
-            negationConditon: true
-            matchValues: [
-              '10.10.10.0/24'
-            ]
-          }
-        ]
+        category: 'ApplicationGatewayAccessLog'
+        enabled: true
+      }
+      {
+        category: 'ApplicationGatewayPerformanceLog'
+        enabled: true
+      }
+      {
+        category: 'ApplicationGatewayFirewallLog'
+        enabled: true
       }
     ]
-    policySettings: {
-      requestBodyCheck: true
-      maxRequestBodySizeInKb: 128
-      fileUploadLimitInMb: 100
-      state: 'Enabled'
-      mode: 'Prevention'
-    }
+    metrics: [
+      {
+        category: 'AllMetrics'
+        enabled: true
+      }
+    ]
+  }
+}
+
+resource appGatewayLock 'Microsoft.Authorization/locks@2017-04-01' = if (enableDeleteLock) {
+  scope: applicationGateway
+  name: appGatewayLockName
+  properties: {
+    level: 'CanNotDelete'
+  }
+}
+
+resource firewallPolicyName_placeholdervalue_firewallPolicy 'Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies@2021-03-01' = if (enableWebApplicationFirewall) {
+  name: ((firewallPolicyName == '') ? 'placeholdervalue' : firewallPolicyName)
+  location: location
+  properties: {
+    customRules: firewallPolicyCustomRules
+    policySettings: firewallPolicySettings
     managedRules: {
-      managedRuleSets: [
-        {
-          ruleSetType: 'OWASP'
-          ruleSetVersion: '3.1'
-        }
-      ]
+      managedRuleSets: firewallPolicyManagedRuleSets
+      exclusions: firewallPolicyManagedRuleExclusions
     }
   }
 }
 
-resource myNic_name_0_2_1 'Microsoft.Network/networkInterfaces@2021-08-01' = [for i in range(0, length(range(0, 2))): {
-  name: '${myNic_name}${(range(0, 2)[i] + 1)}'
-  location: location
-  properties: {
-    ipConfigurations: [
-      {
-        name: '${ipconfig_name}${(range(0, 2)[i] + 1)}'
-        properties: {
-          privateIPAllocationMethod: 'Dynamic'
-          publicIPAddress: {
-            id: resourceId('Microsoft.Network/publicIPAddresses', '${publicIPAddress_name}${(range(0, 2)[i] + 1)}')
-          }
-          subnet: {
-            id: resourceId('Microsoft.Network/virtualNetworks/subnets', virtualNetworks_myVNet_name_var, 'myBackendSubnet')
-          }
-          primary: true
-          privateIPAddressVersion: 'IPv4'
-          applicationGatewayBackendAddressPools: [
-            {
-              id: resourceId('Microsoft.Network/applicationGateways/backendAddressPools', applicationGateways_myAppGateway_name, 'myBackendPool')
-            }
-          ]
-        }
-      }
-    ]
-    enableAcceleratedNetworking: false
-    enableIPForwarding: false
-    networkSecurityGroup: {
-      id: resourceId('Microsoft.Network/networkSecurityGroups', '${nsg_name}${(range(0, 2)[i] + 1)}')
-    }
-  }
-  dependsOn: [
-    resourceId('Microsoft.Network/applicationGateways', applicationGateways_myAppGateway_name)
-    virtualNetworks_myVNet_name
-    nsg_name_0_2_1
-    publicIPAddress_name_0_3
-  ]
-}]
+output name string = applicationGatewayName
+output id string = applicationGateway.id
