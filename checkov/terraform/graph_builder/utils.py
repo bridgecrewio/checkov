@@ -1,4 +1,5 @@
 from __future__ import annotations
+import copy
 
 import logging
 import os
@@ -327,7 +328,9 @@ def setup_file_path_to_referred_id(graph_object: DiGraph | igraph.Graph) -> dict
 
 def get_attribute_is_leaf(vertex: TerraformBlock) -> Dict[str, bool]:
     attribute_is_leaf = {}
-    for attribute in vertex.attributes:
+    attribute_keys = copy.copy(vertex.attributes)
+    attribute_keys.sort()
+    for attribute in attribute_keys:
         attribute_is_leaf[attribute] = True
         other = '.'.join(attribute.split('.')[:-1])
         if other in attribute_is_leaf:
