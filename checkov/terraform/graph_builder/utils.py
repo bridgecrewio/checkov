@@ -322,6 +322,7 @@ def setup_file_path_to_referred_id(graph_object: DiGraph | igraph.Graph) -> dict
     else:  # the default value of the graph framework is 'NETWORKX'
         return get_file_path_to_referred_id_networkx(graph_object)
 
+
 def get_attribute_is_leaf(vertex: TerraformBlock) -> Dict[str, bool]:
     attribute_is_leaf = {}
     for attribute in vertex.attributes:
