@@ -222,8 +222,11 @@ class Runner(BaseRunner[None]):
                     removed_date = enriched_potential_secret.get('removed_date') or ''
                     added_date = enriched_potential_secret.get('added_date') or ''
                 check_id = getattr(secret, "check_id", SECRET_TYPE_TO_ID.get(secret.type))
-                if not check_id or check_id in secret_suppressions_id:
+                if not check_id:
                     logging.debug(f'Secret was filtered - no check_id for line_number {secret.line_number}')
+                    continue
+                if check_id in secret_suppressions_id:
+                    logging.debug(f'Secret was filtered - check {check_id} was suppressed')
                     continue
                 secret_key = f'{key}_{secret.line_number}_{secret.secret_hash}'
                 if secret.secret_value and is_potential_uuid(secret.secret_value):
