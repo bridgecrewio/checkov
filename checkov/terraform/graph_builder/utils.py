@@ -5,7 +5,6 @@ import os
 import re
 from typing import Tuple
 from typing import Union, List, Any, Dict, Optional, Callable, TYPE_CHECKING
-from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 
 import igraph
 
@@ -14,6 +13,7 @@ from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_SEPARA
 
 if TYPE_CHECKING:
     from networkx import DiGraph
+    from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 
 from checkov.common.util.type_forcers import force_int
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
