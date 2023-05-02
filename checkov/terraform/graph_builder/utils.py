@@ -328,7 +328,7 @@ def setup_file_path_to_referred_id(graph_object: DiGraph | igraph.Graph) -> dict
 
 def get_attribute_is_leaf(vertex: TerraformBlock) -> Dict[str, bool]:
     attribute_is_leaf = {}
-    attribute_keys = copy.copy(vertex.attributes)
+    attribute_keys = copy.copy(list(vertex.attributes.keys()))
     attribute_keys.sort()
     for attribute in attribute_keys:
         attribute_is_leaf[attribute] = True
