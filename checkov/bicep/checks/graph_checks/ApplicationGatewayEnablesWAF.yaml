@@ -1,0 +1,32 @@
+metadata:
+  id: "CKV_AZURE_120"
+  name: "Ensure that Application Gateway enables WAF"
+  category: "APPLICATION_SECURITY"
+definition:
+  and:
+    - cond_type: filter
+      value:
+        - Microsoft.Network/applicationGateways
+      operator: within
+      attribute: resource_type
+    - or:
+        - cond_type: attribute
+          attribute: webApplicationFirewallConfiguration.enabled
+          operator: equals
+          value: true
+          resource_types:
+            - Microsoft.Network/applicationGateways
+        - or:
+            - and:
+                - cond_type: connection
+                  resource_types:
+                    - Microsoft.Network/applicationGateways
+                  connected_resource_types:
+                    - Microsoft.Network/FrontDoorWebApplicationFirewallPolicies
+                  operator: exists
+                - cond_type: attribute
+                  attribute: policySettings.enabledState
+                  operator: equals
+                  value: 'Enabled'
+                  resource_types:
+                    - Microsoft.Network/FrontDoorWebApplicationFirewallPolicies

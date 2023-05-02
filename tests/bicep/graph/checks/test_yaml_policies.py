@@ -45,6 +45,9 @@ class TestYamlPolicies(TestYamlPoliciesBase):
     def test_SQLServerAuditingEnabled(self):
         self.go("SQLServerAuditingEnabled")
 
+    def test_ApplicationGatewayEnablesWAF(self):
+        self.go("ApplicationGatewayEnablesWAF")
+
     def test_registry_load(self):
         registry = self.get_checks_registry()
         self.assertGreater(len(registry.checks), 0)

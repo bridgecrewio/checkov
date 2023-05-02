@@ -1,0 +1,5 @@
+pass:
+  - 'Microsoft.Network/applicationGateways.pass'
+fail:
+  - 'Microsoft.Network/applicationGateways.fail'
+
