@@ -19,11 +19,17 @@ class TestIAMStarResourcePolicyDocument(unittest.TestCase):
 
         passing_resources = {
             "aws_iam_policy.pass",
-            "aws_iam_role_policy.pass"
+            "aws_iam_role_policy.pass",
+            "aws_iam_user_policy.pass",
+            "aws_iam_group_policy.pass",
+            "aws_ssoadmin_permission_set_inline_policy.pass"
         }
         failing_resources = {
             "aws_iam_policy.fail",
-            "aws_iam_role_policy.fail"
+            "aws_iam_role_policy.fail",
+            "aws_iam_user_policy.fail",
+            "aws_iam_group_policy.fail",
+            "aws_ssoadmin_permission_set_inline_policy.fail"
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
