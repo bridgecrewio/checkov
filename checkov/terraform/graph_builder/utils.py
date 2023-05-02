@@ -244,7 +244,7 @@ def generate_possible_strings_from_wildcards(origin_string: str, max_entries: in
     return generated_strings
 
 
-def attribute_has_nested_attributes(attribute_key: str, attributes: Dict[str, Any], attribute_is_leaf: Dict[str, bool]) -> bool:
+def attribute_has_nested_attributes(attribute_key: str, attributes: Dict[str, Any], attribute_is_leaf: Optional[Dict[str, bool]] = None) -> bool:
     """
     :param attribute_key: key inside the  `attributes` dictionary
     :param attributes:
@@ -252,6 +252,8 @@ def attribute_has_nested_attributes(attribute_key: str, attributes: Dict[str, An
     Example 1: if attributes.keys == [key1, key.key2], type(attributes[key1]) is dict and return True for key1
     Example 2: if attributes.keys == [key1, key1.0], type(attributes[key1]) is list and return True for key1
     """
+    if attribute_is_leaf is None:
+        attribute_is_leaf = {}
     if attribute_is_leaf.get(attribute_key):
         prefixes_with_attribute_key = []
     else:
