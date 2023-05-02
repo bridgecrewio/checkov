@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+from typing import Any
 from checkov.common.models.enums import CheckCategories
 from checkov.bicep.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
@@ -14,10 +17,10 @@ class AzureFirewallDenyThreatIntelMode(BaseResourceValueCheck):
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def get_inspected_key(self):
+    def get_inspected_key(self) -> str:
         return 'properties/threatIntelMode'
 
-    def get_expected_value(self):
+    def get_expected_value(self) -> Any:
         return "Deny"
 
 
