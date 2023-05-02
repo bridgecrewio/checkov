@@ -264,7 +264,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
 
         self.assertEqual(report.get_summary()["failed"], 15)
-        self.assertEqual(report.get_summary()["passed"], 0)
+        self.assertEqual(report.get_summary()["passed"], 3)
 
         failed_check_ids = set([c.check_id for c in report.failed_checks])
         expected_failed_check_ids = {
@@ -276,6 +276,10 @@ class TestRunnerValid(unittest.TestCase):
         }
 
         assert failed_check_ids == expected_failed_check_ids
+
+        # reset graph checks
+        runner.graph_registry.checks = []
+        runner.graph_registry.load_checks()
 
     def test_runner_root_module_resources_no_values(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -299,7 +303,7 @@ class TestRunnerValid(unittest.TestCase):
         # If more eks checks are added then this number will need to increase correspondingly to reflect
         # This reasoning holds for all current pass/fails in these tests
         self.assertEqual(report.get_summary()["failed"], 4)
-        self.assertEqual(report.get_summary()["passed"], 0)
+        self.assertEqual(report.get_summary()["passed"], 1)
 
         failed_check_ids = set([c.check_id for c in report.failed_checks])
         expected_failed_check_ids = {
@@ -310,6 +314,10 @@ class TestRunnerValid(unittest.TestCase):
         }
 
         assert failed_check_ids == expected_failed_check_ids
+
+        # reset graph checks
+        runner.graph_registry.checks = []
+        runner.graph_registry.load_checks()
 
     def test_runner_root_module_resources_no_values_route53(self):
         #given
@@ -363,7 +371,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
 
         self.assertEqual(report.get_summary()["failed"], 4)
-        self.assertEqual(report.get_summary()["passed"], 0)
+        self.assertEqual(report.get_summary()["passed"], 1)
 
         failed_check_ids = set([c.check_id for c in report.failed_checks])
         expected_failed_check_ids = {
