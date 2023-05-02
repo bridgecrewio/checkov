@@ -17,6 +17,7 @@ tests/common/suppressions_resources/suppressions.tf
 tests/secrets/.*
 tests/common/utils/test_secrets_utils.py
 tests/terraform/runner/resources/example/example.tf
+tests/terraform/checks/resource/aws/example_EC2Credentials/main.tf
 tests/terraform/checks/resource/aws/example_LambdaEnvironmentCredentials/main.tf
 tests/terraform/checks/provider/aws/test_credentials.py
 tests/terraform/checks/resource/aws/test_EC2Credentials.py

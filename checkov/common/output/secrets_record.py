@@ -22,7 +22,7 @@ WARNING_SIGN_UNICODE = '\u26a0'
 TEXT_BY_SECRET_VALIDATION_STATUS = {
     ValidationStatus.VALID.value: colored(f'\t{WARNING_SIGN_UNICODE} This secret has been validated'
                                           f' and should be prioritized', "red"),
-    ValidationStatus.INVALID.value: '\tThis is not a valid secret and can be de-prioritized',
+    ValidationStatus.INVALID.value: colored('\tThis is not a valid secret and can be de-prioritized', "white"),
     ValidationStatus.UNKNOWN.value: '\tWe were not able to validate this secret',
     ValidationStatus.UNAVAILABLE.value: ''
 }
