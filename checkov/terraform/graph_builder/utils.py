@@ -299,9 +299,6 @@ def get_file_path_to_referred_id_networkx(graph_object: DiGraph) -> dict[str, st
 
 def get_file_path_to_referred_id_igraph(graph_object: igraph.Graph) -> dict[str, str]:
     file_path_to_module_id = {}
-    for v in graph_object.vs:
-        if v[CustomAttributes.BLOCK_TYPE] == BlockType.MODULE:
-            modules = v
     modules = [v for v in graph_object.vs if
                v[CustomAttributes.BLOCK_TYPE] == BlockType.MODULE]
     for module_vertex in modules:
