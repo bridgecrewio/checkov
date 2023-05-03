@@ -207,16 +207,16 @@ class Runner(BaseRunner[None]):
             secrets_duplication: dict[str, bool] = {}
 
             for key, secret in secrets:
-                added_commit_hash, removed_commit_hash, code_line, added_by, removed_date, added_date = None, None, None, None, None, None
+                added_commit_hash, removed_commit_hash, code_line, added_by, removed_date, added_date = '', '', '', '', '', ''
                 if runner_filter.enable_git_history_secret_scan:
                     enriched_potential_secret = git_history_scanner.\
                         history_store.get_added_and_removed_commit_hash(key, secret, root_folder)
-                    added_commit_hash = enriched_potential_secret.get('added_commit_hash')
-                    removed_commit_hash = enriched_potential_secret.get('removed_commit_hash')
-                    code_line = enriched_potential_secret.get('code_line')
-                    added_by = enriched_potential_secret.get('added_by')
-                    removed_date = enriched_potential_secret.get('removed_date')
-                    added_date = enriched_potential_secret.get('added_date')
+                    added_commit_hash = enriched_potential_secret.get('added_commit_hash') or ''
+                    removed_commit_hash = enriched_potential_secret.get('removed_commit_hash') or ''
+                    code_line = enriched_potential_secret.get('code_line') or ''
+                    added_by = enriched_potential_secret.get('added_by') or ''
+                    removed_date = enriched_potential_secret.get('removed_date') or ''
+                    added_date = enriched_potential_secret.get('added_date') or ''
                 check_id = getattr(secret, "check_id", SECRET_TYPE_TO_ID.get(secret.type))
                 if not check_id:
                     logging.debug(f'Secret was filtered - no check_id for line_number {secret.line_number}')

@@ -138,7 +138,7 @@
 				</rating>
 			</ratings>
 			<description>An out-of-bounds read vulnerability was discovered in the PCRE2 library in the get_recurse_data_length() function of the pcre2_jit_compile.c file. This issue affects recursions in JIT-compiled regular expressions caused by duplicate data transfers.</description>
-			<recommendation>Needed</recommendation>
+			<recommendation>N/A</recommendation>
 			<published>2022-05-17T00:15:00+03:00</published>
 			<affects>
 				<target>
@@ -163,7 +163,7 @@
 				</rating>
 			</ratings>
 			<description>CPAN 2.28 allows Signature Verification Bypass.</description>
-			<recommendation>Needed</recommendation>
+			<recommendation>N/A</recommendation>
 			<published>2021-12-13T20:15:00+02:00</published>
 			<affects>
 				<target>

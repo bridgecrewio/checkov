@@ -22,6 +22,9 @@ class TestYamlPolicies(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
+    def test_NetworkFirewallHasLogging(self):
+        self.go("NetworkFirewallHasLogging")
+
     def test_SecretsAreRotated(self):
         self.go("SecretsAreRotated")
 

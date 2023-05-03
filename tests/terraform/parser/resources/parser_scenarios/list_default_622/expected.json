@@ -1,5 +1,5 @@
 {
-  "test.tf": {
+  "{\"file_path\": \"test.tf\", \"tf_source_modules\": null}": {
     "resource": [
       {
         "aws_eks_cluster": {

@@ -9,7 +9,7 @@ class EC2Credentials(BaseResourceCheck):
     def __init__(self):
         name = "Ensure no hard-coded secrets exist in EC2 user data"
         id = "CKV_AWS_46"
-        supported_resources = ['aws_instance']
+        supported_resources = ['aws_instance', 'aws_launch_template', 'aws_launch_configuration']
         categories = [CheckCategories.SECRETS]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 

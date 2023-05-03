@@ -1,5 +1,5 @@
 {
-  "skip_bad_tf_example.tf": {
+  "{\"file_path\": \"skip_bad_tf_example.tf\", \"tf_source_modules\": null}": {
     "module": [
       {
         "bar": {
