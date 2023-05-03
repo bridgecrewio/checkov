@@ -1,5 +1,0 @@
-#pass:
-#  - "azurerm_security_center_subscription_pricing.pass"
-#
-#fail:
-#  - "azurerm_security_center_subscription_pricing.fail"
