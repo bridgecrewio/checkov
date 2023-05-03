@@ -124,7 +124,7 @@ class Runner(BaseRunner[None]):
         customer_run_config = bc_integration.customer_run_config_response
         plugins_index = 0
         work_dir_obj = None
-        secret_suppressions_id = []
+        secret_suppressions_id: list[str] = []
         work_path = str(os.getenv('WORKDIR')) if os.getenv('WORKDIR') else None
         if work_path is None:
             work_dir_obj = tempfile.TemporaryDirectory()
