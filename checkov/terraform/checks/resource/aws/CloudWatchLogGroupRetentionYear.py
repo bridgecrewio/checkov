@@ -3,7 +3,8 @@ from __future__ import annotations
 from typing import Any
 
 from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
+from checkov.terraform.checks.resource.base_resource_check import \
+    BaseResourceCheck
 
 
 class CloudWatchLogGroupRetentionYear(BaseResourceCheck):
@@ -13,7 +14,7 @@ class CloudWatchLogGroupRetentionYear(BaseResourceCheck):
         NIST.800-53.r5 CA-7, NIST.800-53.r5 SI-12
         CloudWatch log groups should be retained for at least 1 year
         """
-        name = "Ensure that CloudWatch Log Group specifies retention days"
+        name = "Ensure CloudWatch log groups retains logs for at least 1 year"
         id = "CKV_AWS_338"
         supported_resource = ("aws_cloudwatch_log_group",)
         categories = (CheckCategories.LOGGING,)
@@ -26,8 +27,8 @@ class CloudWatchLogGroupRetentionYear(BaseResourceCheck):
             if not isinstance(retention, int):
                 # probably a dependent variable
                 return CheckResult.UNKNOWN
-
-            if retention >= 365:
+            # If you select 0, the events in the log group are always retained and never expire.
+            if retention == 0 or retention >= 365:
                 return CheckResult.PASSED
 
         return CheckResult.FAILED
