@@ -28,6 +28,7 @@ from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlo
 from checkov.terraform.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
 from checkov.terraform.graph_builder.graph_components.module import Module
 from checkov.terraform.graph_builder.utils import (
+    get_attribute_is_leaf,
     get_referenced_vertices_in_value,
     attribute_has_nested_attributes, remove_index_pattern_from_str,
 )
@@ -56,9 +57,9 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self.dirname_cache: Dict[str, str] = {}
         self.vertices_by_module_dependency_by_name: Dict[Tuple[str, str], Dict[BlockType, Dict[str, List[int]]]] = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
         self.vertices_by_module_dependency: Dict[Tuple[str, str], Dict[BlockType, List[int]]] = defaultdict(lambda: defaultdict(list))
-        self.enable_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_FOREACH_HANDLING', 'False'))
+        self.enable_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_FOREACH_HANDLING', 'True'))
         self.enable_modules_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_MODULES_FOREACH_HANDLING', 'False'))
-        self.use_new_tf_parser = strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'False'))
+        self.use_new_tf_parser = strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'True'))
         self.foreach_blocks: Dict[str, List[int]] = {BlockType.RESOURCE: [], BlockType.MODULE: []}
 
     def build_graph(self, render_variables: bool) -> None:
@@ -215,9 +216,10 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                                 resources_types: List[str], cross_variable_edges: bool = False,
                                 referenced_modules: Optional[List[Dict[str, Any]]] = None):
 
+        attribute_is_leaf = get_attribute_is_leaf(vertex)
         for attribute_key, attribute_value in vertex.attributes.items():
             if attribute_key in reserved_attribute_names or attribute_has_nested_attributes(
-                    attribute_key, vertex.attributes
+                    attribute_key, vertex.attributes, attribute_is_leaf
             ):
                 continue
             referenced_vertices = get_referenced_vertices_in_value(
