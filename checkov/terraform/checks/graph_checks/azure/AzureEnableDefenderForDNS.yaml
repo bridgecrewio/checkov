@@ -1,6 +1,6 @@
 metadata:
-  id: CKV2_AZURE_34XXXXXX
-  name: "Ensure Defender "
+  id: "CKV2_AZURE_34XXXXXX"
+  name: "Ensure Defender for DNS in enabled"
   category: "GENERAL_SECURITY"
 
 definition:
@@ -13,6 +13,11 @@ definition:
 
     - cond_type: "attribute"
       resource_types: "azurerm_security_center_subscription_pricing"
-      attribute: "resource_type"
+      attribute: "xresource_type"
       operator: "equals_ignore_case"
       value: "Dns"
+
+    - cond_type: "attribute"
+      resource_types: "azurerm_security_center_subscription_pricing"
+      attribute: "xresource_type"
+      operator: "exists"
