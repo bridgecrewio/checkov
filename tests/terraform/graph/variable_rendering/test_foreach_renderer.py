@@ -381,3 +381,11 @@ def test_foreach_module_with_more_than_two_resources(checkov_source_path):
 def test__is_static_foreach_statement(statement, expected):
     abstract_handler = ForeachAbstractHandler(None)
     assert abstract_handler._is_static_foreach_statement(statement) == expected
+
+
+@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
+def test_foreach_with_lookup():
+    dir_name = 'foreach_examples/foreach_lookup'
+    graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
+    assert graph.vertices[0].attributes.get('uniform_bucket_level_access') == [True]
+    assert graph.vertices[1].attributes.get('uniform_bucket_level_access') == [True]
