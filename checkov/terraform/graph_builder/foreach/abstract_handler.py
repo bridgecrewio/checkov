@@ -140,7 +140,10 @@ class ForeachAbstractHandler:
                         v_changed = True
                     else:
                         attrs[k][0] = attrs[k][0].replace("${" + key_to_change + "}", str(val_to_change))
-                        attrs[k][0] = attrs[k][0].replace(key_to_change, str(val_to_change))
+                        if self.need_to_add_quotes(attrs[k][0], key_to_change):
+                            attrs[k][0] = attrs[k][0].replace(key_to_change, f'"{str(val_to_change)}"')
+                        else:
+                            attrs[k][0] = attrs[k][0].replace(key_to_change, str(val_to_change))
                         v_changed = True
                 elif isinstance(v, list) and len(v) == 1 and isinstance(v[0], list):
                     for i, item in enumerate(v):
@@ -246,3 +249,11 @@ class ForeachAbstractHandler:
     @staticmethod
     def extract_from_list(val: Any) -> Any:
         return val[0] if len(val) == 1 and isinstance(val[0], (str, int, list)) else val
+
+    @staticmethod
+    def need_to_add_quotes(code, key) -> bool:
+        patterns = [r'lower\(' + key + r'\)']
+        for pattern in patterns:
+            if re.search(pattern, code):
+                return True
+        return False
