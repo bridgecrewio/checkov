@@ -323,6 +323,7 @@ class BcPlatformIntegration:
         if not self.http:
             raise AttributeError("HTTP manager was not correctly created")
 
+        tries = 0
         response = self._get_s3_creds(repo_id, token)
         while ('Message' in response or 'message' in response):
             if response.get('Message') and response['Message'] == UNAUTHORIZED_MESSAGE:
@@ -338,7 +339,11 @@ class BcPlatformIntegration:
                                                 get_user_agent_header()))
                 response = json.loads(request.data.decode("utf8"))
             if response.get('message') is None and response.get('Message') is None:
-                response = self._get_s3_creds(repo_id, token)
+                if tries < 3:
+                    tries += 1
+                    response = self._get_s3_creds(repo_id, token)
+                else:
+                    raise BridgecrewAuthError("Checkov got an unexpected error that may be due to BE issues. Please contact support.")
         repo_full_path = response["path"]
         support_path = response.get("supportPath")
         return repo_full_path, support_path, response
