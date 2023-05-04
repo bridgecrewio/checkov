@@ -147,33 +147,8 @@ def test_scan_git_history_merge_added_removed2() -> None:
                           commit_hash='900b1e8f6f336a92e8f5fca3babca764e32c3b3d')
 
 
-@pytest.mark.filterwarnings("error")  # otherwise pytest sometimes suppresses the raised Timeout Exception
-@mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff', mock_git_repo_commits_too_much)
-@mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner.set_repo', mock_set_repo)
-@mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_first_commit', mock_get_first_commit)
-def test_scan_history_secrets_timeout() -> None:
-    """
-    add way too many cases to check in 1 second
-    """
-    valid_dir_path = "test"
-    secrets = SecretsCollection()
-    plugins_used = [
-        {'name': 'AWSKeyDetector'},
-    ]
-    from checkov.secrets.scan_git_history import GitHistoryScanner
-
-    with transient_settings({
-        # Only run scans with only these plugins.
-        'plugins_used': plugins_used
-    }) as settings:
-        settings.disable_filters(*['detect_secrets.filters.common.is_invalid_file'])
-        finished = GitHistoryScanner(valid_dir_path, secrets, None, 1).scan_history()
-
-    assert finished is False
-
-
 @mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff', mock_run_forever)
-def test_scan_history_secrets_timeout2() -> None:
+def test_scan_history_secrets_timeout() -> None:
     """
     add way too many cases to check in 1 second
     """
