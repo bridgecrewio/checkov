@@ -382,6 +382,7 @@ def test__is_static_foreach_statement(statement, expected):
     abstract_handler = ForeachAbstractHandler(None)
     assert abstract_handler._is_static_foreach_statement(statement) == expected
 
+
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
 def test_foreach_with_lookup():
     dir_name = 'foreach_examples/foreach_lookup'
