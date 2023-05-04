@@ -2,28 +2,25 @@ import os
 import unittest
 
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.resource.aws.ElasticBeanstalkUseEnhancedHealthChecks import check
+from checkov.terraform.checks.resource.aws.ElasticBeanstalkUseManagedUpdates import check
 from checkov.terraform.runner import Runner
 
 
-class TestElasticBeanstalkUseEnhancedHealthChecks(unittest.TestCase):
+class TestElasticBeanstalkUseManagedUpdates(unittest.TestCase):
     def test(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
-        test_files_dir = current_dir + "/example_ElasticBeanstalkUseEnhancedHealthChecks"
+        test_files_dir = current_dir + "/example_ElasticBeanstalkUseManagedUpdates"
         report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
 
         passing_resources = {
             "aws_elastic_beanstalk_environment.pass",
-            "aws_elastic_beanstalk_environment.pass2",
         }
         failing_resources = {
             "aws_elastic_beanstalk_environment.fail",
             "aws_elastic_beanstalk_environment.fail2",
-            "aws_elastic_beanstalk_environment.fail3",
-            "aws_elastic_beanstalk_environment.fail4",
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
