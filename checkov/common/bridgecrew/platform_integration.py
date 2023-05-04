@@ -348,16 +348,15 @@ class BcPlatformIntegration:
         support_path = response.get("supportPath")
         return repo_full_path, support_path, response
 
-    def _get_s3_creds(self, repo_id, token):
-        request = self.http.request("POST", self.integrations_api_url,
+    def _get_s3_creds(self, repo_id: str, token: str) -> dict[str, Any]:
+        request = self.http.request("POST", self.integrations_api_url,  # type:ignore[union-attr]
                                     body=json.dumps({"repoId": repo_id, "support": self.support_flag_enabled}),
-                                    # type:ignore[no-untyped-call]
                                     headers=merge_dicts({"Authorization": token, "Content-Type": "application/json"},
                                                         get_user_agent_header()))
         if request.status == 403:
             error_message = get_auth_error_message(request.status, self.is_prisma_integration(), True)
             raise BridgecrewAuthError(error_message)
-        response = json.loads(request.data.decode("utf8"))
+        response: dict[str, Any] = json.loads(request.data.decode("utf8"))
         return response
 
     def is_integration_configured(self) -> bool:
