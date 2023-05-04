@@ -7,7 +7,7 @@ from checkov.common.models.enums import CheckCategories
 
 
 class AzureFrontDoorEnablesWAF(BaseResourceValueCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure that Azure Front Door enables WAF"
         id = "CKV_AZURE_121"
         supported_resources = ['Microsoft.Network/frontDoors']
