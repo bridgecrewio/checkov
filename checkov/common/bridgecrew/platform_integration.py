@@ -333,17 +333,13 @@ class BcPlatformIntegration:
                     "Checkov got an unexpected authorization error that may not be due to your credentials. Please contact support.")
             if response.get('message') and "cannot be found" in response['message']:
                 self.loading_output("creating role")
-                request = self.http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id}),  # type:ignore[no-untyped-call]
-                                            headers=merge_dicts(
-                                                {"Authorization": token, "Content-Type": "application/json"},
-                                                get_user_agent_header()))
-                response = json.loads(request.data.decode("utf8"))
+                response = self._get_s3_creds(repo_id, token)
             if response.get('message') is None and response.get('Message') is None:
                 if tries < 3:
                     tries += 1
                     response = self._get_s3_creds(repo_id, token)
                 else:
-                    raise BridgecrewAuthError("Checkov got an unexpected error that may be due to BE issues. Please contact support.")
+                    raise BridgecrewAuthError("Checkov got an unexpected error that may be due to backend issues. Please contact support.")
         repo_full_path = response["path"]
         support_path = response.get("supportPath")
         return repo_full_path, support_path, response
