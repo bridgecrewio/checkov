@@ -388,3 +388,4 @@ def test_foreach_with_lookup():
     dir_name = 'foreach_examples/foreach_lookup'
     graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
     assert graph.vertices[0].attributes.get('uniform_bucket_level_access') == [True]
+    assert graph.vertices[1].attributes.get('uniform_bucket_level_access') == [True]

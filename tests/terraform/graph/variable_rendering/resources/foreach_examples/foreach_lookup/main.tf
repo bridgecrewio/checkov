@@ -1,4 +1,14 @@
-resource "google_storage_bucket" "buckets" {
+resource "google_storage_bucket" "buckets_upper" {
+  for_each = var.names
+
+  uniform_bucket_level_access = lookup(
+    var.bucket_policy_only,
+    upper(each.value),
+    true,
+  )
+}
+
+resource "google_storage_bucket" "buckets_lower" {
   for_each = var.names
 
   uniform_bucket_level_access = lookup(
