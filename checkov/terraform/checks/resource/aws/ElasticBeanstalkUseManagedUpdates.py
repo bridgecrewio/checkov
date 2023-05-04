@@ -8,7 +8,7 @@ class ElasticBeanstalkUseManagedUpdates(BaseResourceCheck):
         NIST.800-53.r5 SI-2, NIST.800-53.r5 SI-2(2), NIST.800-53.r5 SI-2(4), NIST.800-53.r5 SI-2(5)
         Elastic Beanstalk managed platform updates should be enabled
         """
-        name = "Ensure Elastic Beanstalk managed platform updates are be enabled"
+        name = "Ensure Elastic Beanstalk managed platform updates are enabled"
         id = "CKV_AWS_340"
         supported_resources = ('aws_elastic_beanstalk_environment',)
         categories = (CheckCategories.GENERAL_SECURITY,)
@@ -24,9 +24,10 @@ class ElasticBeanstalkUseManagedUpdates(BaseResourceCheck):
                 if isinstance(namespace, list) and namespace[0] == "aws:elasticbeanstalk:managedactions":
                     name = setting.get("name")
                     if isinstance(name, list) and name[0] == "ManagedActionsEnabled":
-                        if isinstance(setting.get("value"), list):
-                            if setting.get("value")[0] == "True" or \
-                                    (isinstance(setting.get("value")[0], bool) and setting.get("value")[0]):
+                        value = setting.get("value")
+                        if value and isinstance(value, list):
+                            value = value[0]
+                            if value == "True" or (value and isinstance(value, bool)):
                                 return CheckResult.PASSED
         return CheckResult.FAILED
 
