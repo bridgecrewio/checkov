@@ -26,7 +26,7 @@ except ImportError as e:
     git_import_error = e
 
 MIN_SPLIT = 100
-FILES_TO_IGNORE_IN_GIT_HISTORY = ('.md',) + PROHIBITED_FILES
+FILES_TO_IGNORE_IN_GIT_HISTORY = ('.md', '.svg', '.png', '.jpg') + PROHIBITED_FILES
 
 
 class GitHistoryScanner:
