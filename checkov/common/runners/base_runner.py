@@ -65,7 +65,7 @@ class BaseRunner(ABC, Generic[_GraphManager]):
         self.file_names = file_names or []
         self.pbar = ProgressBar(self.check_type)
         db_connector_class: "type[NetworkxConnector | IgraphConnector]" = NetworkxConnector
-        graph_framework = os.getenv("CHECKOV_GRAPH_FRAMEWORK", "NETWORKX")
+        graph_framework = os.getenv("CHECKOV_GRAPH_FRAMEWORK", "IGRAPH")
         if graph_framework == "IGRAPH":
             db_connector_class = IgraphConnector
         elif graph_framework == "NETWORKX":

@@ -7,6 +7,9 @@ from typing_extensions import TypedDict
 if TYPE_CHECKING:
     from detect_secrets.core.potential_secret import PotentialSecret
 
+PROHIBITED_FILES = ('Pipfile.lock', 'yarn.lock', 'package-lock.json', 'requirements.txt', 'go.sum')
+
+
 GIT_HISTORY_NOT_BEEN_REMOVED = 'not-removed'
 ADDED = 'added'
 REMOVED = 'removed'

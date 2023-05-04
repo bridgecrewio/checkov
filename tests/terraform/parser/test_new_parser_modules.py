@@ -22,9 +22,8 @@ def tmp_path(request, tmp_path: Path):
 @pytest.mark.usefixtures("tmp_path")
 class TestParserInternals(unittest.TestCase):
     expected_source_modules = {0: set(), 1: set(), 2: set(), 3: {0}, 4: {0}, 5: {0}, 6: {0}, 7: {1}, 8: {1}, 9: {1},
-                               10: {1}, 11: {3}, 12: {3}, 13: {3}, 14: {3}, 15: {3}, 16: {7}, 17: {7}, 18: {7}, 19: {7},
-                               20: {7}, 21: {4}, 22: {4}, 23: {4}, 24: {4}, 25: {4}, 26: {8}, 27: {8}, 28: {8}, 29: {8},
-                               30: {8}}
+                               10: {1}, 11: {3}, 12: {3}, 13: {3}, 14: {7}, 15: {7}, 16: {7}, 17: {4}, 18: {4}, 19: {4},
+                               20: {8}, 21: {8}, 22: {8}, 23: {8}, 24: {8}}
 
     def setUp(self) -> None:
         from checkov.terraform.module_loading.registry import ModuleLoaderRegistry
@@ -183,7 +182,6 @@ class TestParserInternals(unittest.TestCase):
         assert module2_key0_nest0 in o_definitions
         assert module2_key1_nest0 in o_definitions
 
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "True"})
     def test_new_tf_parser(self):
         parser = TFParser()
         directory = os.path.join(self.resources_dir, "parser_dup_nested")
@@ -200,6 +198,7 @@ class TestParserInternals(unittest.TestCase):
         assert module
         assert tf_definitions
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_old_parser(self):
         parser = Parser()
         directory = os.path.join(self.resources_dir, "parser_dup_nested")

@@ -4,6 +4,7 @@ import logging
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from argparse import Namespace
     from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
     from checkov.common.output.report import Report
     from checkov.common.typing import _BaseRunner
@@ -11,6 +12,7 @@ if TYPE_CHECKING:
 
 class IntegrationFeatureRegistry:
     def __init__(self) -> None:
+        self.config: Namespace | None = None
         self.features: list[BaseIntegrationFeature] = []
 
     def register(self, integration_feature: BaseIntegrationFeature) -> None:
@@ -23,6 +25,7 @@ class IntegrationFeatureRegistry:
     def run_pre_scan(self) -> None:
         for integration in self.features:
             if integration.is_valid():
+                integration.config = self.config
                 integration.pre_scan()
 
     def run_pre_runner(self, runner: _BaseRunner) -> None:

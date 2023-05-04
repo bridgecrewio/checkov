@@ -137,6 +137,7 @@ class CustomRegexDetector(RegexBasedDetector):
                 is_verified=is_verified,
                 is_added=is_added,
                 is_removed=is_removed,
+                is_multiline=is_multiline,
             )
             ps.check_id = current_regex_to_metadata[regex.pattern]["Check_ID"]  # type:ignore[attr-defined]
             if is_multiline:
