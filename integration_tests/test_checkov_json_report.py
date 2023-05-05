@@ -81,7 +81,7 @@ class TestCheckovJsonReport(unittest.TestCase):
     def report_has_url(self, report_path):
         with open(report_path) as json_file:
             report = json.load(json_file)
-            return report.get("url").startswith("https://")
+            return report.get("url", "").startswith("https://")
 
 
 if __name__ == '__main__':
