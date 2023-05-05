@@ -5,6 +5,7 @@ echo "Received $1 and then $2"
 if [[ "$1" == "windows-latest" ]]
 then
   pipenv run checkov -s --framework terraform -d terragoat\\terraform\\ -o json > checkov_report_terragoat.json
+  pipenv run checkov -s --framework terraform --skip-results-upload -d terragoat\\terraform\\ -o json > checkov_report_terragoat_no_upload.json
   pipenv run checkov -s --framework terraform -d terragoat\\terraform\\ -o junitxml > checkov_report_terragoat.xml
   pipenv run checkov -s --framework cloudformation -d cfngoat\\ -o json --external-checks-dir .\\checkov\\cloudformation\\checks\\graph_checks\\aws > checkov_report_cfngoat.json
   pipenv run checkov -s -d kubernetes-goat\\ --framework kubernetes -o json > checkov_report_kubernetes-goat.json
@@ -16,6 +17,7 @@ then
   pipenv run checkov -s -d terragoat\\terraform\\ --config-file integration_tests\\example_config_files\\config.yaml -o json > checkov_config_report_terragoat.json
 else
   pipenv run checkov -s --framework terraform -d terragoat/terraform/ -o json > checkov_report_terragoat.json
+  pipenv run checkov -s --framework terraform --skip-results-upload -d terragoat\\terraform\\ -o json > checkov_report_terragoat_no_upload.json
   pipenv run checkov -s --framework terraform -d terragoat/terraform/ -o junitxml > checkov_report_terragoat.xml
   pipenv run checkov -s --framework terraform -d terragoat/terraform/ -o cyclonedx > checkov_report_terragoat_cyclonedx.xml
   pipenv run checkov -s --framework terraform -d terragoat/terraform/ -o sarif

@@ -13,6 +13,10 @@ class TestCheckovJsonReport(unittest.TestCase):
         report_path = os.path.join(os.path.dirname(current_dir), 'checkov_report_terragoat.json')
         self.validate_report(os.path.abspath(report_path))
 
+    def test_terragoat_report_no_upload(self):
+        report_path = os.path.join(os.path.dirname(current_dir), 'checkov_report_terragoat_no_upload.json')
+        self.assertFalse(self.report_has_url(os.path.abspath(report_path)))
+
     def test_kustomizegoat_report(self):
         if not sys.platform.startswith('win'):
             report_path = os.path.join(os.path.dirname(current_dir), 'checkov_report_kustomizegoat.json')
@@ -73,6 +77,11 @@ class TestCheckovJsonReport(unittest.TestCase):
             data = json.load(json_file)[0]
         assert any(check["check_id"] == check_id for check in
                    itertools.chain(data["results"]["failed_checks"], data["results"]["passed_checks"]))
+
+    def report_has_url(self, report_path):
+        with open(report_path) as json_file:
+            report = json.load(json_file)
+            return report.get("url").startswith("https://")
 
 
 if __name__ == '__main__':
