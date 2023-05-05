@@ -11,7 +11,6 @@
 
 prepare_data () {
   python checkov/main.py -s --framework terraform -d repositories/terragoat/terraform/ -o json > checkov_report_terragoat.json
-  python checkov/main.py -s --framework terraform --skip-results-upload -d repositories/terragoat/terraform/ -o json > checkov_report_terragoat_no_upload.json
   python checkov/main.py -s --framework terraform -d repositories/terragoat/terraform/ -o junitxml > checkov_report_terragoat.xml
   python checkov/main.py -s --framework terraform -d repositories/terragoat/terraform/ -o cyclonedx > checkov_report_terragoat_cyclonedx.xml
   python checkov/main.py -s --framework terraform -d repositories/terragoat/terraform/ -o sarif

@@ -5,7 +5,6 @@ echo "Received $1 and then $2"
 if [[ "$1" == "windows-latest" ]]
 then
   pipenv run checkov -s --framework terraform -d terragoat\\terraform\\ -o json > checkov_report_terragoat.json
-  pipenv run checkov -s --framework terraform --skip-results-upload -d terragoat\\terraform\\ -o json > checkov_report_terragoat_no_upload.json
   pipenv run checkov -s --framework terraform -d terragoat\\terraform\\ -o junitxml > checkov_report_terragoat.xml
   pipenv run checkov -s --framework cloudformation -d cfngoat\\ -o json --external-checks-dir .\\checkov\\cloudformation\\checks\\graph_checks\\aws > checkov_report_cfngoat.json
   pipenv run checkov -s -d kubernetes-goat\\ --framework kubernetes -o json > checkov_report_kubernetes-goat.json
@@ -17,7 +16,6 @@ then
   pipenv run checkov -s -d terragoat\\terraform\\ --config-file integration_tests\\example_config_files\\config.yaml -o json > checkov_config_report_terragoat.json
 else
   pipenv run checkov -s --framework terraform -d terragoat/terraform/ -o json > checkov_report_terragoat.json
-  pipenv run checkov -s --framework terraform --skip-results-upload -d terragoat/terraform/ -o json > checkov_report_terragoat_no_upload.json
   pipenv run checkov -s --framework terraform -d terragoat/terraform/ -o junitxml > checkov_report_terragoat.xml
   pipenv run checkov -s --framework terraform -d terragoat/terraform/ -o cyclonedx > checkov_report_terragoat_cyclonedx.xml
   pipenv run checkov -s --framework terraform -d terragoat/terraform/ -o sarif
@@ -35,6 +33,7 @@ if [[ "$2" == "3.7" && "$1" == "ubuntu-latest" ]]
 then
   pipenv run checkov -s -f terragoat/terraform/aws/s3.tf --bc-api-key $BC_KEY > checkov_report_s3_singlefile_api_key_terragoat.txt
   pipenv run checkov -s -d terragoat/terraform/azure/ --bc-api-key $BC_KEY > checkov_report_azuredir_api_key_terragoat.txt
+  pipenv run checkov -s -d terragoat/terraform/azure/ --skip-results-upload --bc-api-key $BC_KEY > checkov_report_azuredir_api_key_terragoat_no_upload.txt
   echo "running image referencing"
   pipenv run checkov -s -d integration_tests/example_workflow_file/.github/workflows/ -o json --bc-api-key $BC_KEY --include-all-checkov-policies > checkov_report_workflow_cve.json
   pipenv run checkov -s -d integration_tests/example_workflow_file/bitbucket/ -o json --bc-api-key $BC_KEY --include-all-checkov-policies > checkov_report_bitbucket_pipelines_cve.json
