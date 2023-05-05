@@ -16,8 +16,8 @@ class FrontdoorUseWAFMode(BaseResourceCheck):
 
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
         if conf.get('properties') and isinstance(conf.get('properties'), dict):
-            properties = conf.get('properties')
-            if isinstance(properties.get('policySettings'), dict) and properties.get('policySettings'):
+            properties = conf['properties']
+            if isinstance(properties['policySettings'], dict) and properties['policySettings']:
                 policy_settings = properties.get('policySettings')
                 if isinstance(policy_settings.get('enabledState'), str)  \
                         and policy_settings.get('enabledState') == "Enabled":
