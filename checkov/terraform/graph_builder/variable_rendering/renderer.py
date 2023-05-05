@@ -21,6 +21,7 @@ from checkov.common.util.type_forcers import force_int
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes, reserved_attribute_names
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.utils import (
+    get_attribute_is_leaf,
     get_referenced_vertices_in_value,
     remove_index_pattern_from_str,
     attribute_has_nested_attributes, attribute_has_dup_with_dynamic_attributes,
@@ -476,10 +477,11 @@ class TerraformVariableRenderer(VariableRenderer):
             changed_attributes = {}
             attributes: Dict[str, Any] = {}
             vertex.get_origin_attributes(attributes)
+            attribute_is_leaf = get_attribute_is_leaf(vertex)
             filtered_attributes = [
                 attr
                 for attr in vertex.attributes
-                if attr not in reserved_attribute_names and not attribute_has_nested_attributes(attr, vertex.attributes)
+                if attr not in reserved_attribute_names and not attribute_has_nested_attributes(attr, vertex.attributes, attribute_is_leaf)
                 and not attribute_has_dup_with_dynamic_attributes(attr, vertex.attributes)
             ]
             for attribute in filtered_attributes:

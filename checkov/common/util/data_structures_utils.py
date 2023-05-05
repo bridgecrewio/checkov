@@ -10,7 +10,13 @@ _T = TypeVar("_T")
 def get_inner_dict(source_dict: dict[str, Any], path_as_list: list[str]) -> dict[str, Any]:
     result = source_dict
     for index in path_as_list:
-        result = result[index]
+        try:
+            result = result[index]
+        except KeyError:
+            # for getting the source context for resources with for_each name - index can be "resource_name[0]"
+            for k in result:
+                if index.startswith(k):
+                    result = result[k]
     return result
 
 

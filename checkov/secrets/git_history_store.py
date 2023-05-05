@@ -84,7 +84,7 @@ class GitHistorySecretStore:
                     secret_in_file['removed_date'] = commit.metadata.committed_datetime
                     break
         else:
-            logging.error(f"No added secret commit found for secret in file {file_name}.")
+            logging.warning(f"No added secret commit found for secret in file {file_name}.")
 
     def handle_renamed_file(self, rename_from: str, rename_to: str, commit: Commit) -> None:
         temp_secrets_by_file_value_type: Dict[str, List[EnrichedPotentialSecret]] = {}

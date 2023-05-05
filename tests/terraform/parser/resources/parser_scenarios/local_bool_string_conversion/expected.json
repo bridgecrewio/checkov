@@ -1,5 +1,5 @@
 {
-  "name_doesnt_matter.tf": {
+  "{\"file_path\": \"name_doesnt_matter.tf\", \"tf_source_modules\": null}": {
     "locals": [
       {
         "TRUE_STRING": [true],

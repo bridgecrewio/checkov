@@ -1,6 +1,44 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.212...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.223...HEAD)
+
+## [2.3.223](https://github.com/bridgecrewio/checkov/compare/2.3.220...2.3.223) - 2023-05-04
+
+### Feature
+
+- **terraform:** Elastic beanstalk uses managed updates and fixes the EB check while i… 340 - [#4816](https://github.com/bridgecrewio/checkov/pull/4816)
+
+### Bug Fix
+
+- **secrets:** don't scan images in git history - [#5040](https://github.com/bridgecrewio/checkov/pull/5040)
+- **terraform:** fix foreach render value for lookup - [#5037](https://github.com/bridgecrewio/checkov/pull/5037)
+- **terraform:** Handle entity context for for_each resources - [#5036](https://github.com/bridgecrewio/checkov/pull/5036)
+
+## [2.3.220](https://github.com/bridgecrewio/checkov/compare/2.3.214...2.3.220) - 2023-05-03
+
+### Feature
+
+- **secrets:** open the feature - scan git history - [#5022](https://github.com/bridgecrewio/checkov/pull/5022)
+- **terraform:** Set TF Modules for_each env var to true - [#5021](https://github.com/bridgecrewio/checkov/pull/5021)
+- **terraform:** Set TF modules for_each env vars as True - [#4794](https://github.com/bridgecrewio/checkov/pull/4794)
+
+### Bug Fix
+
+- **secrets:** add filter for suppressed custom secret checks - [#5016](https://github.com/bridgecrewio/checkov/pull/5016)
+- **terraform:** improve attribute performance - [#5014](https://github.com/bridgecrewio/checkov/pull/5014)
+- **terraform:** Update CKV_AWS_338 message and retention check for 0 - [#5018](https://github.com/bridgecrewio/checkov/pull/5018)
+- **terraform:** Update CKV2_AZURE_33 to remove checks on unrelated conditions - [#5020](https://github.com/bridgecrewio/checkov/pull/5020)
+
+## [2.3.214](https://github.com/bridgecrewio/checkov/compare/2.3.212...2.3.214) - 2023-05-02
+
+### Bug Fix
+
+- **secrets:** Adding quote to required secret in case needed - [#5008](https://github.com/bridgecrewio/checkov/pull/5008)
+- **secrets:** change color of invalid secret message - [#5007](https://github.com/bridgecrewio/checkov/pull/5007)
+
+### Platform
+
+- **general:** upload checks code_block to report - [#5001](https://github.com/bridgecrewio/checkov/pull/5001)
 
 ## [2.3.212](https://github.com/bridgecrewio/checkov/compare/2.3.205...2.3.212) - 2023-04-30
 

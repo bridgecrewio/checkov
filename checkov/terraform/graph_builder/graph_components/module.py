@@ -41,7 +41,7 @@ class Module:
         self.source_dir = source_dir
         self.render_dynamic_blocks_env_var = os.getenv('CHECKOV_RENDER_DYNAMIC_MODULES', 'True')
         self.enable_nested_modules = strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'True'))
-        self.use_new_tf_parser = strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'False'))
+        self.use_new_tf_parser = strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'True'))
 
     def add_blocks(
         self, block_type: BlockType, blocks: List[Dict[str, Dict[str, Any]]], path: str, source: str
