@@ -14,7 +14,7 @@ class TestCheckovJsonReport(unittest.TestCase):
 
     def test_terragoat_report_dir_no_upload_api_key(self):
         report_path = os.path.join(current_dir, '..', 'checkov_report_azuredir_api_key_terragoat_no_upload.txt')
-        self.validate_report(os.path.abspath(report_path))
+        self.validate_report(os.path.abspath(report_path), False)
 
     def test_terragoat_report_file_api_key(self):
         report_path = os.path.join(current_dir, '..', 'checkov_report_s3_singlefile_api_key_terragoat.txt')
