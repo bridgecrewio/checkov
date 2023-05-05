@@ -26,7 +26,7 @@ class TestCheckovJsonReport(unittest.TestCase):
             with open(report_path) as f:
                 if 'More details: https://www.bridgecrew.cloud/projects?' in f.read():
                     platform_url_found = True
-            self.assertTrue(platform_url_found == url_should_exist, "when using api key and not --skip-results-upload, platform code review url should exist")
+            self.assertEqual(platform_url_found, url_should_exist, "when using api key and not --skip-results-upload, platform code review url should exist")
 
     def test_workflow_report_api_key(self):
         report_path = os.path.join(current_dir, '..', 'checkov_report_workflow_cve.json')
