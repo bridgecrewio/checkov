@@ -323,30 +323,37 @@ class BcPlatformIntegration:
         if not self.http:
             raise AttributeError("HTTP manager was not correctly created")
 
-        request = self.http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id, "support": self.support_flag_enabled}),  # type:ignore[no-untyped-call]
+        tries = 0
+        response = self._get_s3_creds(repo_id, token)
+        while ('Message' in response or 'message' in response):
+            if response.get('Message') and response['Message'] == UNAUTHORIZED_MESSAGE:
+                raise BridgecrewAuthError()
+            if response.get('message') and ASSUME_ROLE_UNUATHORIZED_MESSAGE in response['message']:
+                raise BridgecrewAuthError(
+                    "Checkov got an unexpected authorization error that may not be due to your credentials. Please contact support.")
+            if response.get('message') and "cannot be found" in response['message']:
+                self.loading_output("creating role")
+                response = self._get_s3_creds(repo_id, token)
+            if response.get('message') is None and response.get('Message') is None:
+                if tries < 3:
+                    tries += 1
+                    response = self._get_s3_creds(repo_id, token)
+                else:
+                    raise BridgecrewAuthError("Checkov got an unexpected error that may be due to backend issues. Please contact support.")
+        repo_full_path = response["path"]
+        support_path = response.get("supportPath")
+        return repo_full_path, support_path, response
+
+    def _get_s3_creds(self, repo_id: str, token: str) -> dict[str, Any]:
+        request = self.http.request("POST", self.integrations_api_url,  # type:ignore[union-attr]
+                                    body=json.dumps({"repoId": repo_id, "support": self.support_flag_enabled}),
                                     headers=merge_dicts({"Authorization": token, "Content-Type": "application/json"},
                                                         get_user_agent_header()))
         if request.status == 403:
             error_message = get_auth_error_message(request.status, self.is_prisma_integration(), True)
             raise BridgecrewAuthError(error_message)
-        response = json.loads(request.data.decode("utf8"))
-        while ('Message' in response or 'message' in response):
-            if 'Message' in response and response['Message'] == UNAUTHORIZED_MESSAGE:
-                raise BridgecrewAuthError()
-            if 'message' in response and ASSUME_ROLE_UNUATHORIZED_MESSAGE in response['message']:
-                raise BridgecrewAuthError(
-                    "Checkov got an unexpected authorization error that may not be due to your credentials. Please contact support.")
-            if 'message' in response and "cannot be found" in response['message']:
-                self.loading_output("creating role")
-                request = self.http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id}),  # type:ignore[no-untyped-call]
-                                            headers=merge_dicts(
-                                                {"Authorization": token, "Content-Type": "application/json"},
-                                                get_user_agent_header()))
-                response = json.loads(request.data.decode("utf8"))
-
-        repo_full_path = response["path"]
-        support_path = response.get("supportPath")
-        return repo_full_path, support_path, response
+        response: dict[str, Any] = json.loads(request.data.decode("utf8"))
+        return response
 
     def is_integration_configured(self) -> bool:
         """
