@@ -469,7 +469,10 @@ class Checkov:
                         self.exit_run()
                     if baseline:
                         baseline.compare_and_reduce_reports(self.scan_reports)
-                    if bc_integration.is_integration_configured() and bc_integration.bc_source and bc_integration.bc_source.upload_results and not self.config.skip_results_upload:
+                    if bc_integration.is_integration_configured() \
+                            and bc_integration.bc_source \
+                            and bc_integration.bc_source.upload_results \
+                            and not self.config.skip_results_upload:
                         self.upload_results(
                             root_folder=root_folder,
                             excluded_paths=runner_filter.excluded_paths,
@@ -518,14 +521,14 @@ class Checkov:
                     logger.error(f"SCA image runner returned {len(self.scan_reports)} reports; expected 1")
 
                 integration_feature_registry.run_post_runner(self.scan_reports[0])
-                bc_integration.persist_repository(os.path.dirname(self.config.dockerfile_path), files=files)
-                bc_integration.persist_scan_results(self.scan_reports)
-                bc_integration.persist_image_scan_results(runner.raw_report, self.config.dockerfile_path,
-                                                          self.config.docker_image,
-                                                          self.config.branch)
-
-                bc_integration.persist_run_metadata(self.run_metadata)
-                self.url = self.commit_repository()
+                if not self.config.skip_results_upload:
+                    bc_integration.persist_repository(os.path.dirname(self.config.dockerfile_path), files=files)
+                    bc_integration.persist_scan_results(self.scan_reports)
+                    bc_integration.persist_image_scan_results(runner.raw_report, self.config.dockerfile_path,
+                                                              self.config.docker_image,
+                                                              self.config.branch)
+                    bc_integration.persist_run_metadata(self.run_metadata)
+                    self.url = self.commit_repository()
                 exit_code = self.print_results(runner_registry=runner_registry, url=self.url)
                 return exit_code
             elif self.config.file:
@@ -548,7 +551,10 @@ class Checkov:
                     with open(created_baseline_path, 'w') as f:
                         json.dump(overall_baseline.to_dict(), f, indent=4)
 
-                if bc_integration.is_integration_configured():
+                if bc_integration.is_integration_configured() \
+                        and bc_integration.bc_source \
+                        and bc_integration.bc_source.upload_results \
+                        and not self.config.skip_results_upload:
                     files = [os.path.abspath(file) for file in self.config.file]
                     root_folder = os.path.split(os.path.commonprefix(files))[0]
 
