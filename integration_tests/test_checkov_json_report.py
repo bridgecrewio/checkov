@@ -12,6 +12,7 @@ class TestCheckovJsonReport(unittest.TestCase):
     def test_terragoat_report(self):
         report_path = os.path.join(os.path.dirname(current_dir), 'checkov_report_terragoat.json')
         self.validate_report(os.path.abspath(report_path))
+        self.assertTrue(self.report_has_url(os.path.abspath(report_path)))
 
     def test_terragoat_report_no_upload(self):
         report_path = os.path.join(os.path.dirname(current_dir), 'checkov_report_terragoat_no_upload.json')
