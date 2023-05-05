@@ -10,12 +10,12 @@ class LaunchTemplateMetadataHop(BaseResourceValueCheck):
         """
         name = "Ensure Launch template should not have a metadata response hop limit greater than 1"
         id = "CKV_AWS_341"
-        supported_resources = ["aws_launch_configuration", "aws_launch_template"]
-        categories = [CheckCategories.GENERAL_SECURITY, ]
+        supported_resources = ("aws_launch_configuration", "aws_launch_template")
+        categories = (CheckCategories.GENERAL_SECURITY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,
                          missing_block_result=CheckResult.PASSED)
 
-    def get_inspected_key(self):
+    def get_inspected_key(self) -> str:
         return "metadata_options/[0]/http_put_response_hop_limit"
 
     def get_expected_value(self):
