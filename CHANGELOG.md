@@ -1,6 +1,18 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.220...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.223...HEAD)
+
+## [2.3.223](https://github.com/bridgecrewio/checkov/compare/2.3.220...2.3.223) - 2023-05-04
+
+### Feature
+
+- **terraform:** Elastic beanstalk uses managed updates and fixes the EB check while i… 340 - [#4816](https://github.com/bridgecrewio/checkov/pull/4816)
+
+### Bug Fix
+
+- **secrets:** don't scan images in git history - [#5040](https://github.com/bridgecrewio/checkov/pull/5040)
+- **terraform:** fix foreach render value for lookup - [#5037](https://github.com/bridgecrewio/checkov/pull/5037)
+- **terraform:** Handle entity context for for_each resources - [#5036](https://github.com/bridgecrewio/checkov/pull/5036)
 
 ## [2.3.220](https://github.com/bridgecrewio/checkov/compare/2.3.214...2.3.220) - 2023-05-03
 
