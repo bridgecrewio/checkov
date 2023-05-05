@@ -138,6 +138,7 @@ class Runner(BaseRunner[None]):
                 report_type=self.report_type,
                 dependencies=result.get("dependencies", None),
                 inline_suppressions=inline_suppressions,
+                used_private_registry=result.get("used_private_reg", False)
             )
 
         return report

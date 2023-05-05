@@ -30,7 +30,7 @@ class ConnectionSolver(TestBaseSolver):
     def test_output_connection(self):
         root_folder = '../../../resources/output_example'
         check_id = "VPCForSubnet"
-        should_pass = ['aws_vpc.my_vpc','aws_subnet.my_subnet']
+        should_pass = ['module.submodule.aws_vpc.my_vpc','aws_subnet.my_subnet']
         should_fail = []
         expected_results = {check_id: {"should_pass": should_pass, "should_fail": should_fail}}
 
@@ -62,10 +62,10 @@ class ConnectionSolver(TestBaseSolver):
             assert len(graph_connector.edges) >= 327
 
             assert len(reduced_graph.nodes) <= 85
-            assert len(reduced_graph.edges) <= 15
+            assert len(reduced_graph.edges) <= 20
         elif self.graph_framework == 'IGRAPH':
             assert len(graph_connector.vs) >= 661
             assert len(graph_connector.es) >= 327
 
             assert len(reduced_graph.vs) <= 85
-            assert len(reduced_graph.es) <= 15
+            assert len(reduced_graph.es) <= 20

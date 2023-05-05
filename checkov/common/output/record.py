@@ -227,3 +227,20 @@ class Record:
 
     def get_unique_string(self) -> str:
         return f"{self.check_id}.{self.check_result}.{self.file_abs_path}.{self.file_line_range}.{self.resource}"
+
+    @classmethod
+    def from_reduced_json(cls, record_json: dict[str, Any]) -> Record:
+        return Record(
+            check_id=record_json['check_id'],
+            bc_check_id=record_json['bc_check_id'],
+            check_name=record_json['check_name'],
+            check_result=record_json['check_result'],
+            code_block=record_json['code_block'],
+            file_path=record_json['file_path'],
+            file_line_range=record_json['file_line_range'],
+            resource=record_json['resource'],
+            evaluations=record_json.get('evaluations'),
+            check_class='',
+            file_abs_path=record_json['file_abs_path'],
+            severity=record_json.get('severity')
+        )

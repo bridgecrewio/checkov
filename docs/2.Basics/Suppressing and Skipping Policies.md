@@ -184,8 +184,9 @@ Check: CKV_AWS_18: "Ensure the S3 bucket has access logging enabled"
 ```
 
 ### SCA
-Depending on the package manager there are different ways to suppress CVEs.
-You can either suppress a CVE for all packages, all CVEs for a package or specific CVE for a package. 
+CVEs can be suppressed using `--skip-check CKV_CVE_2022_1234` to suppress a specific CVE for that run or `--skip-cve-package package` to skip all CVEs for a specific package.
+
+For inline suppressions, depending on the package manager there are different ways to suppress CVEs. You can either suppress a CVE for all packages, all CVEs for a package or specific CVE for a package. Today, only requirements.txt is supported.
 
 #### Python - requirements.txt
 The skip comment can be anywhere

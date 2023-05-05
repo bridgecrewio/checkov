@@ -503,7 +503,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
             "--deep-analysis",
             default=False,
             action="store_true",
-            help="Enable combine tf graph and rf plan graph",
+            help="Combine the TF Plan and TF graphs to make connections not available in either",
         )
         self.add(
             "--no-fail-on-crash",

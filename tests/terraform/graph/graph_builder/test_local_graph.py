@@ -18,6 +18,7 @@ from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_grap
 from checkov.terraform.parser import Parser
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.graph_manager import TerraformGraphManager
+from checkov.terraform.tf_parser import TFParser
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
@@ -54,10 +55,63 @@ class TestLocalGraph(TestCase):
             else:
                 edges_hash.append(edge_hash)
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_set_variables_values_from_modules(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME,
                                                       '../resources/variable_rendering/render_from_module_vpc'))
         hcl_config_parser = Parser()
+        module, _ = hcl_config_parser.parse_hcl_module(resources_dir, source=self.source)
+        local_graph = TerraformLocalGraph(module)
+        local_graph._create_vertices()
+
+        variables_before_module_definitions = {
+            "cidr": "0.0.0.0/0",
+            "private_subnets": [],
+            "public_subnets": [],
+            "enable_nat_gateway": False,
+            "single_nat_gateway": False,
+            "enable_dns_hostnames": False,
+            "public_subnet_tags": {},
+            "private_subnet_tags": {},
+        }
+
+        for var_name, var_value in variables_before_module_definitions.items():
+            vertex_index = local_graph.vertices_block_name_map[BlockType.VARIABLE].get(var_name)[0]
+            vertex = local_graph.vertices[vertex_index]
+            default_val = vertex.attributes['default']
+            if type(default_val) == list:
+                self.assertEqual(var_value, default_val[0])
+            else:
+                self.assertEqual(var_value, default_val)
+
+        local_graph.build_graph(resources_dir)
+
+        expected_variables_after = {
+            "cidr": "172.16.0.0/16",
+            "private_subnets": ["172.16.1.0/24", "172.16.2.0/24", "172.16.3.0/24"],
+            "public_subnets": ["172.16.4.0/24", "172.16.5.0/24", "172.16.6.0/24"],
+            "enable_nat_gateway": True,
+            "single_nat_gateway": True,
+            "enable_dns_hostnames": True,
+            "public_subnet_tags": {"kubernetes.io/cluster/${local.cluster_name}": "shared",
+                                    "kubernetes.io/role/elb": "1"},
+            "private_subnet_tags": {"kubernetes.io/cluster/${local.cluster_name}": "shared",
+                                    "kubernetes.io/role/internal-elb": "1"}
+        }
+
+        for var_name, var_value in expected_variables_after.items():
+            vertex_index = local_graph.vertices_block_name_map[BlockType.VARIABLE].get(var_name)[0]
+            vertex = local_graph.vertices[vertex_index]
+            default_val = vertex.attributes['default']
+            if type(default_val) == list:
+                self.assertEqual(var_value, default_val[0])
+            else:
+                self.assertEqual(var_value, default_val)
+
+    def test_set_variables_values_from_modules_with_new_tf_parser(self):
+        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME,
+                                                      '../resources/variable_rendering/render_from_module_vpc'))
+        hcl_config_parser = TFParser()
         module, _ = hcl_config_parser.parse_hcl_module(resources_dir, source=self.source)
         local_graph = TerraformLocalGraph(module)
         local_graph._create_vertices()
@@ -212,6 +266,7 @@ class TestLocalGraph(TestCase):
         self.assertEqual(len(list(filter(lambda block: block.block_type == BlockType.MODULE and block.name == 'sub-module', module.blocks))), 1)
 
     @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "False"})
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_vertices_from_local_graph_module(self):
         parent_dir = Path(TEST_DIRNAME).parent
         resources_dir = str(parent_dir / "resources/modules/stacks")
@@ -347,6 +402,7 @@ class TestLocalGraph(TestCase):
         )
 
     @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "True"})
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_vertices_from_local_graph_module_nested_module_enable(self):
         parent_dir = Path(TEST_DIRNAME).parent
         resources_dir = str(parent_dir / "resources/modules/stacks")
@@ -481,6 +537,7 @@ class TestLocalGraph(TestCase):
             bucket_vertex_3.breadcrumbs,
         )
 
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_variables_same_name_different_modules(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/same_var_names'))
         hcl_config_parser = Parser()
@@ -512,7 +569,69 @@ class TestLocalGraph(TestCase):
         self.assertEqual(2, len(module_variable_edges))
         self.assertNotEqual(local_graph.vertices[module_variable_edges[0].origin], local_graph.vertices[module_variable_edges[1].origin])
 
-    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "True"})
+    def test_variables_same_name_different_modules_with_new_tf_parser(self):
+        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/same_var_names'))
+        hcl_config_parser = TFParser()
+        module, _ = hcl_config_parser.parse_hcl_module(resources_dir, self.source)
+        local_graph = TerraformLocalGraph(module)
+        local_graph.build_graph(render_variables=True)
+        print(local_graph.edges)
+        self.assertEqual(12, len(local_graph.edges))
+        self.assertEqual(13, len(local_graph.vertices))
+
+        module_variable_edges = [
+            e for e in local_graph.edges
+            if local_graph.vertices[e.dest].block_type == "module" and local_graph.vertices[e.dest].path.endswith(
+                'same_var_names/module2/main.tf')
+        ]
+
+        # Check they point to 2 different modules
+        self.assertEqual(2, len(module_variable_edges))
+        self.assertNotEqual(local_graph.vertices[module_variable_edges[0].origin],
+                            local_graph.vertices[module_variable_edges[1].origin])
+
+
+        module_variable_edges = [
+            e for e in local_graph.edges
+            if local_graph.vertices[e.dest].block_type == "module" and local_graph.vertices[e.dest].path.endswith('same_var_names/module1/main.tf')
+        ]
+
+        # Check they point to 2 different modules
+        self.assertEqual(2, len(module_variable_edges))
+        self.assertNotEqual(local_graph.vertices[module_variable_edges[0].origin], local_graph.vertices[module_variable_edges[1].origin])
+
+    def test_variables_same_name_different_modules_with_new_tf_parser(self):
+        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/same_var_names'))
+        hcl_config_parser = TFParser()
+        module, _ = hcl_config_parser.parse_hcl_module(resources_dir, self.source)
+        local_graph = TerraformLocalGraph(module)
+        local_graph.build_graph(render_variables=True)
+        print(local_graph.edges)
+        self.assertEqual(12, len(local_graph.edges))
+        self.assertEqual(13, len(local_graph.vertices))
+
+        module_variable_edges = [
+            e for e in local_graph.edges
+            if local_graph.vertices[e.dest].block_type == "module" and local_graph.vertices[e.dest].path.endswith(
+                'same_var_names/module2/main.tf')
+        ]
+
+        # Check they point to 2 different modules
+        self.assertEqual(2, len(module_variable_edges))
+        self.assertNotEqual(local_graph.vertices[module_variable_edges[0].origin],
+                            local_graph.vertices[module_variable_edges[1].origin])
+
+
+        module_variable_edges = [
+            e for e in local_graph.edges
+            if local_graph.vertices[e.dest].block_type == "module" and local_graph.vertices[e.dest].path.endswith('same_var_names/module1/main.tf')
+        ]
+
+        # Check they point to 2 different modules
+        self.assertEqual(2, len(module_variable_edges))
+        self.assertNotEqual(local_graph.vertices[module_variable_edges[0].origin], local_graph.vertices[module_variable_edges[1].origin])
+
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "True", "CHECKOV_NEW_TF_PARSER": "False"})
     def test_nested_modules_instances(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/nested_modules_instances'))
         hcl_config_parser = Parser()
@@ -526,5 +645,9 @@ class TestLocalGraph(TestCase):
         with open(os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/nested_modules_instances/expected_local_graph.json')), 'r') as f:
             expected = json.load(f)
 
-        assert json.dumps(vertices).replace(resources_dir, '') == json.dumps(expected.get('vertices')).replace(resources_dir, '')
-        assert json.dumps(edges) == json.dumps(expected.get('edges'))
+        self.assertCountEqual(
+            json.loads(json.dumps(vertices).replace(resources_dir, '')),
+            json.loads(json.dumps(expected.get('vertices')).replace(resources_dir, '')),
+
+        )
+        self.assertCountEqual(edges, expected.get('edges'))

@@ -83,7 +83,7 @@ class GitHistorySecretStore:
                     secret_in_file['removed_date'] = commit.metadata.committed_datetime
                     break
         else:
-            logging.error(f"No added secret commit found for secret in file {file_name}.")
+            logging.warning(f"No added secret commit found for secret in file {file_name}.")
 
     def handle_renamed_file(self, rename_from: str, rename_to: str, commit: Commit) -> None:
         temp_secrets_by_file_value_type: Dict[str, List[EnrichedPotentialSecret]] = {}
@@ -157,6 +157,8 @@ class GitHistorySecretStore:
 
 
 def search_for_code_line(commit_diff: CommitDiff, secret_value: Optional[str], is_added: Optional[bool]) -> str:
+    if not commit_diff:
+        logging.warning(f'missing file name for {commit_diff}, hence no available code line')
     if secret_value is None:
         return ''
     splitted = commit_diff.split('\n')

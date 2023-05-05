@@ -57,4 +57,4 @@ class GitlabCiProvider(WorkflowImageReferencerProvider):
                                                                                     end_line=end_line)
                             )
                             images.append(image_obj)
-        return images
+        return list(set(images))

@@ -5,6 +5,7 @@ from typing import List, Optional, Any
 from checkov.common.output.common import SCADetails
 
 UNFIXABLE_VERSION = "N/A"
+OPEN_STATUS = "open"
 
 TWISTCLI_TO_CHECKOV_LANG_NORMALIZATION = {
     "gem": "ruby",
@@ -47,3 +48,13 @@ def normalize_twistcli_language(language: str) -> str:
 
 def should_run_scan(runner_filter_checks: Optional[List[str]]) -> bool:
     return not (runner_filter_checks and all(not (check.startswith("CKV_CVE") or check.startswith("BC_CVE") or check.startswith("BC_LIC")) for check in runner_filter_checks))
+
+
+def get_fix_version(vulnerability_details: dict[str, Any]) -> str:
+    if "fix_version" in vulnerability_details:
+        return str(vulnerability_details["fix_version"])
+
+    if "lowest_fixed_version" in vulnerability_details:
+        return str(vulnerability_details["lowest_fixed_version"])
+
+    return UNFIXABLE_VERSION

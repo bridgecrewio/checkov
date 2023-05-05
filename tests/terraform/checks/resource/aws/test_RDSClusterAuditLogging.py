@@ -10,7 +10,7 @@ class TestRDSClusterAuditLogging(unittest.TestCase):
     def test(self):
         test_files_dir = Path(__file__).parent / "example_RDSClusterAuditLogging"
 
-        report = Runner().run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
+        report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
 
         passing_resources = {
@@ -29,6 +29,7 @@ class TestRDSClusterAuditLogging(unittest.TestCase):
         self.assertEqual(summary["failed"], len(failing_resources))
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
+        self.assertEqual(summary["resource_count"], 5)
 
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)

@@ -123,17 +123,22 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
                     # 'root_folder' shouldn't be empty to remove the whole path later and only leave the shortened form
                     root_folder = os.path.split(os.path.commonprefix(files))[0]
 
-                image_report = self.check_container_image_references(
-                    graph_connector=self.graph_manager.get_reader_endpoint(),
-                    root_path=root_folder,
-                    runner_filter=runner_filter,
-                )
+                image_report = self.get_image_report(root_folder, runner_filter)
 
                 if image_report:
                     # due too many tests failing only return a list, if there is an image report
                     return [report, image_report]
 
         return report
+
+    def get_image_report(self, root_folder: str | None, runner_filter: RunnerFilter) -> Report | None:
+        if not self.graph_manager:
+            return None
+        return self.check_container_image_references(
+            graph_connector=self.graph_manager.get_reader_endpoint(),
+            root_path=root_folder,
+            runner_filter=runner_filter,
+        )
 
     def spread_list_items(self) -> None:
         for _, file_conf in self.definitions.items():

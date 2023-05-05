@@ -24,7 +24,7 @@ def test_deployment_resources(mocker: MockerFixture):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
     # given
-    file_name = "image_referencer/overlays/prod/Deployment-default-prod-wordpress.yaml"
+    file_name = "kustomization.yaml"
     image_name = "wordpress:4.8-apache"
     code_lines = "15-31"
     test_folder = RESOURCES_PATH / "image_referencer/overlays/prod"
@@ -70,8 +70,7 @@ def test_deployment_resources(mocker: MockerFixture):
 
     assert sca_image_report.image_cached_results[0]["dockerImageName"] == image_name
     assert (
-        sca_image_report.image_cached_results[0]["relatedResourceId"]
-        == "/image_referencer/overlays/prod/Deployment-default-prod-wordpress.yaml:Pod.default.prod-wordpress.app-wordpress"
+        sca_image_report.image_cached_results[0]["relatedResourceId"].endswith("/kustomization.yaml:Pod.default.prod-wordpress.app-wordpress")
     )
     assert sca_image_report.image_cached_results[0]["packages"] == [
         {"type": "os", "name": "tzdata", "version": "2021a-1+deb11u5", "licenses": []}
