@@ -25,6 +25,7 @@ from checkov.arm.runner import Runner as arm_runner
 from checkov.azure_pipelines.runner import Runner as azure_pipelines_runner
 from checkov.bitbucket.runner import Runner as bitbucket_configuration_runner
 from checkov.bitbucket_pipelines.runner import Runner as bitbucket_pipelines_runner
+from checkov.cdk.runner import CdkRunner
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.bc_source import SourceTypes, BCSourceType, get_source_type
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
@@ -117,7 +118,8 @@ DEFAULT_RUNNERS = [
     azure_pipelines_runner(),
     ansible_runner(),
     TerraformJsonRunner(),
-    sast_runner()
+    sast_runner(),
+    CdkRunner(),
 ]
 
 

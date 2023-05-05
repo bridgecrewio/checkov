@@ -690,6 +690,7 @@ class TestRunnerFilter(unittest.TestCase):
             'azure_pipelines': Severities[BcSeverities.INFO],
             'bicep': Severities[BcSeverities.LOW],
             'bitbucket_pipelines': Severities[BcSeverities.INFO],
+            'cdk': Severities[BcSeverities.LOW],
             'circleci_pipelines': Severities[BcSeverities.INFO],
             'cloudformation': Severities[BcSeverities.LOW],
             'dockerfile': Severities[BcSeverities.LOW],
