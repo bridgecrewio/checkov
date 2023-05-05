@@ -307,7 +307,7 @@ class TestRunnerRegistry(unittest.TestCase):
             banner, runner_filter, *DEFAULT_RUNNERS, sca_package_runner_2()
         )
         runner_registry.filter_runners_for_files(['file.py'])
-        self.assertEqual(set(r.check_type for r in runner_registry.runners), {'sast', 'secrets'})
+        self.assertEqual(set(r.check_type for r in runner_registry.runners), {'cdk', 'sast', 'secrets'})
 
     def test_runners_have_code_category(self):
         checkov_runners = [value for attr, value in CheckType.__dict__.items() if not attr.startswith("__")]

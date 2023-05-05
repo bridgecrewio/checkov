@@ -22,6 +22,7 @@ from checkov.runner_filter import RunnerFilter
                 "arm",
                 "azure_pipelines",
                 "bicep",
+                "cdk",
                 "cloudformation",
                 "dockerfile",
                 "helm",

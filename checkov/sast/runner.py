@@ -105,11 +105,19 @@ class Runner():
                     raise TypeError(f'file type {rule_match.path.suffix} is not supported by sast framework')
                 semgrep_results_by_language.setdefault(match_lang.value, []).append(rule_match)
 
+        # add empty reports for checked languages without findings
+        for target in targets:
+            suffix = target.rsplit(".", maxsplit=1)
+            if len(suffix) == 2:
+                match_lang_extra = FILE_EXT_TO_SAST_LANG.get(suffix[1])
+                if match_lang_extra and match_lang_extra.value not in semgrep_results_by_language:
+                    semgrep_results_by_language[match_lang_extra.value] = []
+
         self.registry.delete_temp_rules_file()
 
         reports = []
         for language, results in semgrep_results_by_language.items():
-            if results:
+            if isinstance(results, list):
                 reports.append(create_report(self.check_type, language, results))
         return reports
 

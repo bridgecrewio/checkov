@@ -9,6 +9,7 @@ class CheckType:
     AZURE_PIPELINES = "azure_pipelines"
     BICEP = "bicep"
     BITBUCKET_PIPELINES = "bitbucket_pipelines"
+    CDK = "cdk"
     CIRCLECI_PIPELINES = "circleci_pipelines"
     CLOUDFORMATION = "cloudformation"
     DOCKERFILE = "dockerfile"

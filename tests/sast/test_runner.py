@@ -116,8 +116,7 @@ def test_sast_runner():
                          runner_filter=RunnerFilter(framework=['sast'], checks=['CKV3_SAST_11', 'seam-log-injection']),
                          external_checks_dir=[external_dir_checks],)
     assert len(reports) == 2
-    python_report = reports[0]
-    assert python_report.check_type == CheckType.SAST_PYTHON
+    python_report = next(report for report in reports if report.check_type == CheckType.SAST_PYTHON)
     assert len(python_report.failed_checks) == 1
     assert python_report.failed_checks[0].check_id == 'CKV3_SAST_11'
     assert python_report.failed_checks[0].severity.name == 'MEDIUM'
@@ -128,7 +127,7 @@ def test_sast_runner():
     assert python_report.failed_checks[0].file_line_range == [2, 2]
     assert python_report.failed_checks[0].check_result.get('result') == CheckResult.FAILED
 
-    java_report = reports[1]
+    java_report = next(report for report in reports if report.check_type == CheckType.SAST_JAVA)
     assert len(java_report.failed_checks) == 2
     assert java_report.failed_checks[0].check_id == 'seam-log-injection'
     assert java_report.failed_checks[0].severity.name == 'HIGH'

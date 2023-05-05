@@ -49,6 +49,7 @@ class TestLicensingIntegration(unittest.TestCase):
             'bicep',
             'bitbucket_configuration',
             'bitbucket_pipelines',
+            'cdk',
             'circleci_pipelines',
             'cloudformation',
             'dockerfile',
@@ -88,6 +89,7 @@ class TestLicensingIntegration(unittest.TestCase):
         self.assertEqual(CodeCategoryMapping.get(CheckType.ARM), CodeCategoryType.IAC)
         self.assertEqual(CodeCategoryMapping.get(CheckType.AZURE_PIPELINES), CodeCategoryType.BUILD_INTEGRITY)
         self.assertEqual(CodeCategoryMapping.get(CheckType.BICEP), CodeCategoryType.IAC)
+        self.assertEqual(CodeCategoryMapping.get(CheckType.CDK), CodeCategoryType.IAC)
         self.assertEqual(CodeCategoryMapping.get(CheckType.CLOUDFORMATION), CodeCategoryType.IAC)
         self.assertEqual(CodeCategoryMapping.get(CheckType.DOCKERFILE), CodeCategoryType.IAC)
         self.assertEqual(CodeCategoryMapping.get(CheckType.GITHUB_CONFIGURATION), CodeCategoryType.BUILD_INTEGRITY)
@@ -115,6 +117,7 @@ class TestLicensingIntegration(unittest.TestCase):
         self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.ARM), CustomerSubscription.IAC)
         self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.AZURE_PIPELINES), CustomerSubscription.IAC)
         self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.BICEP), CustomerSubscription.IAC)
+        self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.CDK), CustomerSubscription.IAC)
         self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.CLOUDFORMATION), CustomerSubscription.IAC)
         self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.DOCKERFILE), CustomerSubscription.IAC)
         self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.GITHUB_CONFIGURATION), CustomerSubscription.IAC)

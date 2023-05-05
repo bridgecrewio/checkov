@@ -74,7 +74,7 @@ def test_run():
     assert ckv.run_metadata["args"] and isinstance(ckv.run_metadata["args"], list)
 
     # check all runners were initialized, but only 2 were actually run
-    assert len(ckv.runners) == 28
+    assert len(ckv.runners) == 29
 
     assert len(ckv.scan_reports) == 2
     assert {report.check_type for report in ckv.scan_reports} == {"kubernetes", "terraform"}
