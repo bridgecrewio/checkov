@@ -1,0 +1,6 @@
+enable-secret-scan-all-files: true
+framework:
+- secrets
+skip-path:
+- tests/secrets
+summary-position: bottom

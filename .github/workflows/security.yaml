@@ -35,5 +35,4 @@ jobs:
         uses: bridgecrewio/checkov-action@master  # use latest and greatest
         with:
           api-key: ${{ secrets.BC_API_KEY }}
-          framework: secrets
-          enable_secrets_scan_all_files: true
+          config_file: .github/checkov.yaml
