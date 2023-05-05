@@ -54,18 +54,17 @@ class ForeachAbstractHandler:
     def _build_sub_graph(self, blocks_to_render: list[int]) -> TerraformLocalGraph:
         from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 
-        module = deepcopy(self.local_graph.module)
-        sub_graph = TerraformLocalGraph(module)
+        sub_graph = TerraformLocalGraph(self.local_graph.module)
         sub_graph.vertices = [{}] * len(self.local_graph.vertices)
         for i, block in enumerate(self.local_graph.vertices):
             if not (block.block_type == BlockType.RESOURCE and i not in blocks_to_render):
                 sub_graph.vertices[i] = deepcopy(block)
         sub_graph.edges = [
-            deepcopy(edge) for edge in self.local_graph.edges if
+            edge for edge in self.local_graph.edges if
             (sub_graph.vertices[edge.dest] and sub_graph.vertices[edge.origin])
         ]
-        sub_graph.in_edges = deepcopy(self.local_graph.in_edges)
-        sub_graph.out_edges = deepcopy(self.local_graph.out_edges)
+        sub_graph.in_edges = self.local_graph.in_edges
+        sub_graph.out_edges = self.local_graph.out_edges
         return sub_graph
 
     @staticmethod
@@ -141,7 +140,10 @@ class ForeachAbstractHandler:
                         v_changed = True
                     else:
                         attrs[k][0] = attrs[k][0].replace("${" + key_to_change + "}", str(val_to_change))
-                        attrs[k][0] = attrs[k][0].replace(key_to_change, str(val_to_change))
+                        if self.need_to_add_quotes(attrs[k][0], key_to_change):
+                            attrs[k][0] = attrs[k][0].replace(key_to_change, f'"{str(val_to_change)}"')
+                        else:
+                            attrs[k][0] = attrs[k][0].replace(key_to_change, str(val_to_change))
                         v_changed = True
                 elif isinstance(v, list) and len(v) == 1 and isinstance(v[0], list):
                     for i, item in enumerate(v):
@@ -247,3 +249,11 @@ class ForeachAbstractHandler:
     @staticmethod
     def extract_from_list(val: Any) -> Any:
         return val[0] if len(val) == 1 and isinstance(val[0], (str, int, list)) else val
+
+    @staticmethod
+    def need_to_add_quotes(code, key) -> bool:
+        patterns = [r'lower\(' + key + r'\)', r'upper\(' + key + r'\)']
+        for pattern in patterns:
+            if re.search(pattern, code):
+                return True
+        return False

@@ -124,6 +124,7 @@ class Runner(BaseRunner[None]):
         customer_run_config = bc_integration.customer_run_config_response
         plugins_index = 0
         work_dir_obj = None
+        secret_suppressions_id: list[str] = []
         work_path = str(os.getenv('WORKDIR')) if os.getenv('WORKDIR') else None
         if work_path is None:
             work_dir_obj = tempfile.TemporaryDirectory()
@@ -131,6 +132,9 @@ class Runner(BaseRunner[None]):
 
         if customer_run_config:
             policies_list = customer_run_config.get('secretsPolicies', [])
+            suppressions = customer_run_config.get('suppressions', [])
+            if suppressions:
+                secret_suppressions_id = [suppression['checkovPolicyId'] for suppression in suppressions if suppression['suppressionType'] == 'SecretsPolicy']
             if policies_list:
                 runnable_plugins: dict[str, str] = get_runnable_plugins(policies_list)
                 logging.info(f"Found {len(runnable_plugins)} runnable plugins")
@@ -207,19 +211,22 @@ class Runner(BaseRunner[None]):
             secrets_duplication: dict[str, bool] = {}
 
             for key, secret in secrets:
-                added_commit_hash, removed_commit_hash, code_line, added_by, removed_date, added_date = None, None, None, None, None, None
+                added_commit_hash, removed_commit_hash, code_line, added_by, removed_date, added_date = '', '', '', '', '', ''
                 if runner_filter.enable_git_history_secret_scan:
                     enriched_potential_secret = git_history_scanner.\
                         history_store.get_added_and_removed_commit_hash(key, secret, root_folder)
-                    added_commit_hash = enriched_potential_secret.get('added_commit_hash')
-                    removed_commit_hash = enriched_potential_secret.get('removed_commit_hash')
-                    code_line = enriched_potential_secret.get('code_line')
-                    added_by = enriched_potential_secret.get('added_by')
-                    removed_date = enriched_potential_secret.get('removed_date')
-                    added_date = enriched_potential_secret.get('added_date')
+                    added_commit_hash = enriched_potential_secret.get('added_commit_hash') or ''
+                    removed_commit_hash = enriched_potential_secret.get('removed_commit_hash') or ''
+                    code_line = enriched_potential_secret.get('code_line') or ''
+                    added_by = enriched_potential_secret.get('added_by') or ''
+                    removed_date = enriched_potential_secret.get('removed_date') or ''
+                    added_date = enriched_potential_secret.get('added_date') or ''
                 check_id = getattr(secret, "check_id", SECRET_TYPE_TO_ID.get(secret.type))
                 if not check_id:
                     logging.debug(f'Secret was filtered - no check_id for line_number {secret.line_number}')
+                    continue
+                if check_id in secret_suppressions_id:
+                    logging.debug(f'Secret was filtered - check {check_id} was suppressed')
                     continue
                 secret_key = f'{key}_{secret.line_number}_{secret.secret_hash}'
                 if secret.secret_value and is_potential_uuid(secret.secret_value):

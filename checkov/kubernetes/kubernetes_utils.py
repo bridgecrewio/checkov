@@ -84,23 +84,19 @@ def get_skipped_checks(entity_conf: dict[str, Any]) -> list[_SkippedCheck]:
             for key in annotation:
                 skipped_item: "_SkippedCheck" = {}
                 if "checkov.io/skip" in key or "bridgecrew.io/skip" in key:
-                    if "CKV_K8S" in annotation[key] or "BC_K8S" in annotation[key] or "CKV2_K8S" in annotation[key]:
-                        if "=" in annotation[key]:
-                            (skipped_item["id"], skipped_item["suppress_comment"]) = annotation[key].split("=")
-                        else:
-                            skipped_item["id"] = annotation[key]
-                            skipped_item["suppress_comment"] = "No comment provided"
-
-                        # No matter which ID was used to skip, save the pair of IDs in the appropriate fields
-                        if bc_id_mapping and skipped_item["id"] in bc_id_mapping:
-                            skipped_item["bc_id"] = skipped_item["id"]
-                            skipped_item["id"] = bc_id_mapping[skipped_item["id"]]
-                        elif metadata_integration.check_metadata:
-                            skipped_item["bc_id"] = metadata_integration.get_bc_id(skipped_item["id"])
-                        skipped.append(skipped_item)
+                    if "=" in annotation[key]:
+                        (skipped_item["id"], skipped_item["suppress_comment"]) = annotation[key].split("=")
                     else:
-                        logging.debug(f"Parse of Annotation Failed for {metadata['annotations'][key]}: {entity_conf}")
-                        continue
+                        skipped_item["id"] = annotation[key]
+                        skipped_item["suppress_comment"] = "No comment provided"
+
+                    # No matter which ID was used to skip, save the pair of IDs in the appropriate fields
+                    if bc_id_mapping and skipped_item["id"] in bc_id_mapping:
+                        skipped_item["bc_id"] = skipped_item["id"]
+                        skipped_item["id"] = bc_id_mapping[skipped_item["id"]]
+                    elif metadata_integration.check_metadata:
+                        skipped_item["bc_id"] = metadata_integration.get_bc_id(skipped_item["id"])
+                    skipped.append(skipped_item)
     return skipped
 
 

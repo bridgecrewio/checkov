@@ -33,8 +33,8 @@ def _generate_resource_key_recursive(conf: dict[str, Any] | list[str] | str, key
             if value and isinstance(value[0], dict):
                 next_key = f'{key}.{k}' if key else k
 
-                for idx, value_dict in enumerate(value):
-                    if value_dict[START_LINE] <= start_line <= end_line <= value_dict[END_LINE]:
+                for idx, entry in enumerate(value):
+                    if entry and isinstance(entry, dict) and entry[START_LINE] <= start_line <= end_line <= entry[END_LINE]:
                         next_key += f'.{idx + 1}'
                         break  # There can be only one match in terms of line range
 
