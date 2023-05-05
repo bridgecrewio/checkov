@@ -74,11 +74,6 @@ class TestCheckovJsonReport(unittest.TestCase):
         assert any(check["check_id"] == check_id for check in
                    itertools.chain(data["results"]["failed_checks"], data["results"]["passed_checks"]))
 
-    def report_has_url(self, report_path):
-        with open(report_path) as json_file:
-            report = json.load(json_file)
-            return report.get("url", "").startswith("https://")
-
 
 if __name__ == '__main__':
     unittest.main()
