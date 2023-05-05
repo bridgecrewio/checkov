@@ -360,7 +360,7 @@ class Checkov:
                                                                 repo_branch=self.config.branch,
                                                                 prisma_api_url=self.config.prisma_api_url)
 
-                    should_run_contributor_metrics = source.report_contributor_metrics and self.config.repo_id and self.config.prisma_api_url
+                    should_run_contributor_metrics = bc_integration.bc_api_key and self.config.repo_id and self.config.prisma_api_url
                     logger.debug(f"Should run contributor metrics report: {should_run_contributor_metrics}")
                     if should_run_contributor_metrics:
                         try:  # collect contributor info and upload
