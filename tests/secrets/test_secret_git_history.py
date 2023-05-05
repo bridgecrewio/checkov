@@ -145,6 +145,7 @@ def test_scan_git_history_merge_added_removed2() -> None:
                           commit_type=COMMIT_ADDED_STR,
                           commit_hash='900b1e8f6f336a92e8f5fca3babca764e32c3b3d')
 
+
 # this test is too flaky !
 # @pytest.mark.filterwarnings("error")  # otherwise pytest sometimes suppresses the raised Timeout Exception
 # @mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff', mock_git_repo_commits_too_much)
@@ -172,7 +173,7 @@ def test_scan_git_history_merge_added_removed2() -> None:
 
 
 @mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff', mock_run_forever)
-def test_scan_history_secrets_timeout2() -> None:
+def test_scan_history_secrets_timeout() -> None:
     """
     add way too many cases to check in 1 second
     """
