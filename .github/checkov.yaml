@@ -2,5 +2,15 @@ enable-secret-scan-all-files: true
 framework:
 - secrets
 skip-path:
+- docs
+- tests/arm/checks/resource/example_StorageAccountAzureServicesAccessEnabled/storageAccountAzureServicesAccessEnabled-FAILED2.json
+- tests/arm/checks/resource/example_StorageAccountDefaultNetworkAccessDeny/storageAccountDefaultNetworkAccessDeny-FAILED2.json
 - tests/secrets
+- tests/terraform/parser/resources/plan_tags/tfplan.json
+- tests/terraform/runner/resources/plan/tfplan.json
+- tests/terraform/runner/tf_plan_skip_check_regex/resource/skip_directory/tfplan2.json
+- tests/terraform/runner/tf_plan_skip_check_regex/resource/tfplan1.json
+- tests/terraform/runner/tfplan2.json
+- tests/unit/test_secrets.py
+- anton
 summary-position: bottom

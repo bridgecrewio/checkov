@@ -9,7 +9,7 @@ from checkov.terraform.runner import Runner
 class TestBigQueryTableEncryptedWithCMK(unittest.TestCase):
     def test(self):
         # given
-        test_files_dir = Path(__file__).parent / "example_BigQueryTableEncryptedWithCMK"
+        test_files_dir = Path(__file__).parent / "example_BigQueryTableEncryptedWithCMK"  # checkov:skip=CKV_SECRET_6 false positive
 
         # when
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))

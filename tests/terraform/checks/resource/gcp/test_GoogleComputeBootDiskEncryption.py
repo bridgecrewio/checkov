@@ -28,7 +28,7 @@ class TestGoogleComputeBootDiskEncryption(unittest.TestCase):
               machine_type = "n1-standard-1"
               zone         = "us-central1-a"
               boot_disk {
-                disk_encryption_key_raw = "acXTX3rxrKAFTF0tYVLvydU1riRZTvUNC4g5I11NY-c="
+                disk_encryption_key_raw = "acXTX3rxrKAFTF0tYVLvydU1riRZTvUNC4g5I11NY-c="  # checkov:skip=CKV_SECRET_6 test secret
                 }
             }
                 """)
