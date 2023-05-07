@@ -1,7 +1,7 @@
 name: security
 
 on:
-  pull_request:
+  pull_request_target:
     branches:
       - '*'
   push:
@@ -35,7 +35,6 @@ jobs:
         continue-on-error: true  # should be removed after checking all findings
         uses: bridgecrewio/checkov-action@master  # use latest and greatest
         with:
+          api-key: ${{ secrets.BC_API_KEY }}
           config_file: .github/checkov.yaml
           log_level: DEBUG
-        env:
-          BC_API_KEY: ${{ secrets.BC_API_KEY }}
