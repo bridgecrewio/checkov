@@ -2,8 +2,7 @@ name: security
 
 on:
   pull_request_target:
-    branches:
-      - '*'
+    types: [opened, synchronize, reopened, edited]
   push:
     branches:
       - main
