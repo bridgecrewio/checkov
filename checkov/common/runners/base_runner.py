@@ -99,6 +99,9 @@ class BaseRunner(ABC, Generic[_GraphManager]):
 
         return False
 
+    def included_paths(self) -> Iterable[str]:
+        return []
+
     def set_external_data(
             self,
             definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None,
