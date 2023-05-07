@@ -1,6 +1,20 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.224...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.227...HEAD)
+
+## [2.3.227](https://github.com/bridgecrewio/checkov/compare/2.3.224...2.3.227) - 2023-05-07
+
+### Feature
+
+- **general:** include missing files in save repository - [#5056](https://github.com/bridgecrewio/checkov/pull/5056)
+- **terraform:** launch config/template Ensure metadata hop =1 341 - [#4817](https://github.com/bridgecrewio/checkov/pull/4817)
+- **terraform:** Update CKV_AZURE_43 StorageAccountName.py VARIABLE_REFS - [#5045](https://github.com/bridgecrewio/checkov/pull/5045)
+
+### Bug Fix
+
+- **arm:** enabled is not true - [#5051](https://github.com/bridgecrewio/checkov/pull/5051)
+- **cloudformation:** Enable ALB to support tls1.3 policies #4962 - [#5035](https://github.com/bridgecrewio/checkov/pull/5035)
+- **secrets:** add handling of unicode error - [#5055](https://github.com/bridgecrewio/checkov/pull/5055)
 
 ## [2.3.224](https://github.com/bridgecrewio/checkov/compare/2.3.223...2.3.224) - 2023-05-05
 
