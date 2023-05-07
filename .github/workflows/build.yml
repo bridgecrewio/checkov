@@ -76,7 +76,7 @@ jobs:
           bash -c './integration_tests/prepare_data.sh "${{ matrix.os }}" "${{ matrix.python }}"'
         env:
           LOG_LEVEL: INFO
-          BC_KEY: ${{ secrets.BC_API_KEY }}
+          BC_KEY: ${{ secrets.BC_API_KEY_NEW }}
           TF_REGISTRY_TOKEN: ${{ secrets.TFC_TOKEN }}
           GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       - name: Run integration tests
@@ -317,7 +317,7 @@ jobs:
         continue-on-error: true
         uses: bridgecrewio/checkov-action@master  # use latest and greatest
         with:
-          api-key: ${{ secrets.BC_API_KEY }}
+          api-key: ${{ secrets.BC_API_KEY_NEW }}
           docker_image: ${{ env.DH_IMAGE_NAME }}:${{ env.FULL_IMAGE_TAG }}
           dockerfile_path: Dockerfile
           output_format: cyclonedx_json

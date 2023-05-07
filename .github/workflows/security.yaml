@@ -35,5 +35,5 @@ jobs:
         continue-on-error: true  # should be removed after checking all findings
         uses: bridgecrewio/checkov-action@master  # use latest and greatest
         with:
-          api-key: ${{ secrets.BC_API_KEY }}
+          api-key: ${{ secrets.BC_API_KEY_NEW }}
           config_file: .github/checkov.yaml
