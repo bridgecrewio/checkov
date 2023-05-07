@@ -1,6 +1,7 @@
 enable-secret-scan-all-files: true
 framework:
 - secrets
+quiet: true
 skip-path:
 - docs
 - tests/arm/checks/resource/example_StorageAccountAzureServicesAccessEnabled/storageAccountAzureServicesAccessEnabled-FAILED2.json
@@ -12,5 +13,4 @@ skip-path:
 - tests/terraform/runner/tf_plan_skip_check_regex/resource/tfplan1.json
 - tests/terraform/runner/tfplan2.json
 - tests/unit/test_secrets.py
-- anton
 summary-position: bottom
