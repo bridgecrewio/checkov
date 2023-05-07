@@ -4,7 +4,7 @@ import hashlib
 import logging
 import os
 import platform
-from typing import TYPE_CHECKING, Optional, List, Tuple, Union
+from typing import TYPE_CHECKING, Optional, List, Tuple
 
 from checkov.common.util.stopit import ThreadingTimeout, SignalTimeout, TimeoutException
 from checkov.common.util.decorators import time_it
@@ -247,7 +247,7 @@ class GitHistoryScanner:
         return first_commit_diff
 
     @staticmethod
-    def get_decoded_diff(diff: Union[str, bytes, None]) -> str:
+    def get_decoded_diff(diff: bytes) -> str:
         if diff is None:
             return ''
         try:
