@@ -18,8 +18,6 @@ from checkov.common.images.image_referencer import ImageReferencerMixin
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.models.enums import CheckResult
-from checkov.common.output.graph_record import GraphRecord
-from checkov.common.output.record import Record
 from checkov.common.output.report import Report, merge_reports, remove_duplicate_results
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
@@ -46,6 +44,9 @@ from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_grap
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.graph_manager import TerraformGraphManager
 from checkov.terraform.image_referencer.manager import TerraformImageReferencerManager
+from checkov.terraform.output.record import TerraformRecord
+
+from checkov.terraform.output.graph_record import TerraformGraphRecord
 from checkov.terraform.parser import Parser
 from checkov.terraform.tf_parser import TFParser
 from checkov.terraform.plan_utils import get_resource_id_without_nested_modules
@@ -260,7 +261,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                         entity_config=entity_config,
                         resource_attributes_to_omit=runner_filter.resource_attr_to_omit
                     )
-                    record = Record(
+                    record = TerraformRecord(
                         check_id=check.id,
                         bc_check_id=check.bc_id,
                         check_name=check.name,
@@ -287,7 +288,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                         else:
                             breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(resource_id)
                         if breadcrumb:
-                            record = GraphRecord(record, breadcrumb)
+                            record = TerraformGraphRecord(record, breadcrumb)
                     record.set_guideline(check.guideline)
                     report.add_record(record=record)
         return report
@@ -455,7 +456,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                         resource_attributes_to_omit=runner_filter.resource_attr_to_omit
                     )
 
-                    record = Record(
+                    record = TerraformRecord(
                         check_id=check.id,
                         bc_check_id=check.bc_id,
                         check_name=check.name,
@@ -483,7 +484,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                             entity_key = f"{entity_type}.{entity_name}"
                         breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(entity_key)
                         if breadcrumb:
-                            record = GraphRecord(record, breadcrumb)
+                            record = TerraformGraphRecord(record, breadcrumb)
 
                     record.set_guideline(check.guideline)
                     report.add_record(record=record)
