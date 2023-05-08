@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import Any
+
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.common.util.data_structures_utils import find_in_dict
 from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
@@ -6,7 +10,7 @@ from checkov.common.util.type_forcers import force_list
 
 class Seccomp(BaseK8Check):
 
-    def __init__(self):
+    def __init__(self) -> None:
         # CIS-1.5 5.7.2
         name = "Ensure that the seccomp profile is set to docker/default or runtime/default"
         id = "CKV_K8S_31"
@@ -14,11 +18,11 @@ class Seccomp(BaseK8Check):
         # Location: CronJob.spec.jobTemplate.spec.template.metadata.annotations.seccomp.security.alpha.kubernetes.io/pod
         # Location: *.spec.template.metadata.annotations.seccomp.security.alpha.kubernetes.io/pod
         # Location: *.spec.securityContext.seccompProfile.type
-        supported_kind = ['Pod', 'Deployment', 'DaemonSet', 'StatefulSet', 'ReplicaSet', 'ReplicationController', 'Job', 'CronJob']
-        categories = [CheckCategories.KUBERNETES]
+        supported_kind = ('Pod', 'Deployment', 'DaemonSet', 'StatefulSet', 'ReplicaSet', 'ReplicationController', 'Job', 'CronJob')
+        categories = (CheckCategories.KUBERNETES,)
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
-    def scan_spec_conf(self, conf):
+    def scan_spec_conf(self, conf: dict[str, Any]) -> CheckResult:
         metadata = {}
 
         if conf['kind'] == 'Pod':
@@ -28,25 +32,19 @@ class Seccomp(BaseK8Check):
             if "metadata" in conf:
                 metadata = conf["metadata"]
             if "spec" in conf:
-                if "containers" in conf["spec"] and conf["spec"]["containers"] is not None:
-                    num_containers = len(conf["spec"]["containers"])
+                containers = conf["spec"].get("containers")
+                if containers:
+                    containers = force_list(containers)
+                    num_containers = len(containers)
                     passed_containers = 0
-                    for container in force_list(conf["spec"]["containers"]):
-                        if "securityContext" in container:
-                            if container["securityContext"].get("seccompProfile", {}) is not None:
-                                if container["securityContext"].get("seccompProfile", {}).get("type") is not None:
-                                    if container["securityContext"].get("seccompProfile", {}).get("type") != "RuntimeDefault":
-                                        return CheckResult.FAILED
-                                    else:
-                                        passed_containers += 1
-
-                            # if "seccompProfile" in container["securityContext"]:
-                            #     if "type" in container["securityContext"]["seccompProfile"]:
-                            #         if container["securityContext"]["seccompProfile"]["type"] != "RuntimeDefault":
-                            #             return CheckResult.FAILED
-                            #         else:
-                            #             passed_containers += 1
-                    if passed_containers >= num_containers:
+                    for container in containers:
+                        security_profile = find_in_dict(container, "securityContext/seccompProfile/type")
+                        if security_profile:
+                            if security_profile == "RuntimeDefault":
+                                passed_containers += 1
+                            else:
+                                return CheckResult.FAILED
+                    if passed_containers == num_containers:
                         return CheckResult.PASSED
 
         if conf['kind'] in ['Deployment', 'StatefulSet', 'DaemonSet', 'Job', 'ReplicaSet']:
