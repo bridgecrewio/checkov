@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 checkov_results_prefix = 'checkov_results'
 check_reduced_keys = (
     'check_id', 'check_result', 'resource', 'file_path',
-    'file_line_range', 'code_block')
+    'file_line_range', 'code_block', 'caller_file_path', 'caller_file_line_range')
 secrets_check_reduced_keys = check_reduced_keys + ('validation_status',)
 check_metadata_keys = ('evaluations', 'code_block', 'workflow_name', 'triggers', 'job')
 
