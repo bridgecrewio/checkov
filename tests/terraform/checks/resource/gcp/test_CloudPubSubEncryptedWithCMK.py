@@ -9,7 +9,7 @@ from checkov.terraform.runner import Runner
 class TestCloudPubSubEncryptedWithCMK(unittest.TestCase):
     def test(self):
         # given
-        test_files_dir = Path(__file__).parent / "example_CloudPubSubEncryptedWithCMK"
+        test_files_dir = Path(__file__).parent / "example_CloudPubSubEncryptedWithCMK"  # checkov:skip=CKV_SECRET_6 false positive
 
         # when
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
