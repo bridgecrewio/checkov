@@ -2,14 +2,14 @@ import unittest
 from pathlib import Path
 
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.resource.gcp.BigQueryTableEncryptedWithCMK import check
+from checkov.terraform.checks.resource.aws.LaunchTemplateMetadataHop import check
 from checkov.terraform.runner import Runner
 
 
-class TestBigQueryTableEncryptedWithCMK(unittest.TestCase):
+class TestLaunchTemplateMetadataHop(unittest.TestCase):
     def test(self):
         # given
-        test_files_dir = Path(__file__).parent / "example_BigQueryTableEncryptedWithCMK"  # checkov:skip=CKV_SECRET_6 false positive
+        test_files_dir = Path(__file__).parent / "example_LaunchTemplateMetadataHop"
 
         # when
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
@@ -18,18 +18,21 @@ class TestBigQueryTableEncryptedWithCMK(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "google_bigquery_table.pass",
+            "aws_launch_configuration.pass",
+            "aws_launch_configuration.pass2",
+            "aws_launch_template.pass",
+            "aws_launch_template.pass2",
         }
-
         failing_resources = {
-            "google_bigquery_table.fail",
+            "aws_launch_configuration.fail",
+            "aws_launch_template.fail"
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 1)
-        self.assertEqual(summary["failed"], 1)
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
@@ -37,5 +40,5 @@ class TestBigQueryTableEncryptedWithCMK(unittest.TestCase):
         self.assertEqual(failing_resources, failed_check_resources)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
