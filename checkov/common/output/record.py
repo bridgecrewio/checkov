@@ -230,7 +230,7 @@ class Record:
 
     @classmethod
     def from_reduced_json(cls, record_json: dict[str, Any]) -> Record:
-        return Record(
+        return cls(
             check_id=record_json['check_id'],
             bc_check_id=record_json['bc_check_id'],
             check_name=record_json['check_name'],

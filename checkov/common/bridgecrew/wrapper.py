@@ -25,6 +25,7 @@ checkov_results_prefix = 'checkov_results'
 check_reduced_keys = (
     'check_id', 'check_result', 'resource', 'file_path',
     'file_line_range', 'code_block')
+terraform_check_reduced_keys = check_reduced_keys + ('origin_modules_metadata')
 secrets_check_reduced_keys = check_reduced_keys + ('validation_status',)
 check_metadata_keys = ('evaluations', 'code_block', 'workflow_name', 'triggers', 'job')
 
@@ -62,7 +63,10 @@ def reduce_scan_reports(scan_reports: list[Report]) -> dict[str, _ReducedScanRep
     reduced_scan_reports: dict[str, _ReducedScanReport] = {}
     for report in scan_reports:
         check_type = report.check_type
-        reduced_keys = secrets_check_reduced_keys if check_type == CheckType.SECRETS else check_reduced_keys
+        if check_type == CheckType.SECRETS:
+            reduced_keys = secrets_check_reduced_keys
+        elif check_type == CheckType.TERRAFORM:
+            reduced_keys = terraform_check_reduced_keys
         reduced_scan_reports[check_type] = \
             {
                 "checks": {
