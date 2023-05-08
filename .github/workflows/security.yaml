@@ -2,7 +2,6 @@ name: security
 
 on:
   pull_request_target:
-    types: [opened, synchronize, reopened, edited]
   push:
     branches:
       - main
@@ -30,10 +29,11 @@ jobs:
     runs-on: [self-hosted, public, linux, x64]
     steps:
       - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}  # this is needed to use the API key in a PR
       - name: Scan for secrets
         continue-on-error: true  # should be removed after checking all findings
         uses: bridgecrewio/checkov-action@master  # use latest and greatest
         with:
           api-key: ${{ secrets.BC_API_KEY }}
           config_file: .github/checkov.yaml
-          log_level: DEBUG
