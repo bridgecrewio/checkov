@@ -74,3 +74,7 @@ class TestCombinatorPlugin(unittest.TestCase):
     def test_no_false_positive_token(self):
         result = self.plugin.analyze_line("main.go", 'fmt.Sprintf("https://%s:%s@", token, token)', 1)
         self.assertEqual(0, len(result))
+
+    def test_secret_value_in_keyword(self):
+        result = self.plugin.analyze_line("mock.tf", 'export AWS_SECRET_ACCESS_KEY=h4t2TJheVRR8em5VdNCjrSJdQ+p7OHl33SxrZoUi', 1)
+        self.assertEqual(1, len(result))

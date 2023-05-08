@@ -8,10 +8,12 @@ from checkov.common.util.type_forcers import force_list
 from checkov.cloudformation.parser.cfn_keywords import ConditionFunctions, IntrinsicFunctions
 
 supported_policy_prefixes = {
-    # ALBs support TLS v1.2
-    'HTTPS': ("ELBSecurityPolicy-FS-1-2", "ELBSecurityPolicy-TLS-1-2"),
+    # ALBs support TLS v1.2 and 1.3
+    'HTTPS': ("ELBSecurityPolicy-FS-1-2", "ELBSecurityPolicy-TLS-1-2", "ELBSecurityPolicy-TLS13-1-2",
+              "ELBSecurityPolicy-TLS13-1-3"),
     # NLBs support TLS v1.2 and 1.3
-    'TLS': ("ELBSecurityPolicy-TLS13-1-3-2021-06", "ELBSecurityPolicy-TLS13-1-2", "ELBSecurityPolicy-FS-1-2", "ELBSecurityPolicy-TLS-1-2")
+    'TLS': ("ELBSecurityPolicy-TLS13-1-3-2021-06", "ELBSecurityPolicy-TLS13-1-2", "ELBSecurityPolicy-FS-1-2",
+            "ELBSecurityPolicy-TLS-1-2")
 }
 
 
