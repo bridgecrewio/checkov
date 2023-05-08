@@ -31,7 +31,7 @@ class Seccomp(BaseK8Check):
                 return CheckResult.PASSED if security_profile == 'RuntimeDefault' else CheckResult.FAILED
             if "metadata" in conf:
                 metadata = conf["metadata"]
-            if "spec" in conf:
+            if "spec" in conf and isinstance(conf["spec"], dict):
                 containers = conf["spec"].get("containers")
                 if containers:
                     containers = force_list(containers)
