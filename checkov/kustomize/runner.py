@@ -23,7 +23,7 @@ from checkov.common.output.report import Report
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.common.typing import _CheckResult
-from checkov.kubernetes.kubernetes_utils import get_resource_id
+from checkov.kubernetes.kubernetes_utils import create_check_result, get_resource_id
 from checkov.kubernetes.runner import Runner as K8sRunner
 from checkov.kubernetes.runner import _get_entity_abs_path
 from checkov.kustomize.image_referencer.manager import KustomizeImageReferencerManager
@@ -178,10 +178,12 @@ class K8sKustomizeRunner(K8sRunner):
                 code_lines = entity_context["code_lines"]
                 file_line_range = self.line_range(code_lines)
 
+                clean_check_result = create_check_result(check_result=check_result, entity_context=entity_context, check_id=check.id)
+
                 record = Record(
                     check_id=check.id,
                     check_name=check.name,
-                    check_result=check_result,
+                    check_result=clean_check_result,
                     code_block=code_lines,
                     file_path=realKustomizeEnvMetadata['filePath'],
                     file_line_range=file_line_range,
