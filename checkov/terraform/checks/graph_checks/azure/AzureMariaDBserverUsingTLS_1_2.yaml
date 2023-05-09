@@ -1,5 +1,5 @@
 metadata:
-  id: "CKV2_AZURE_37XXXXXXXXXXXXXXX"
+  id: "CKV2_AZURE_37"
   name: "Ensure Azure MariaDB server is using latest TLS (1.2)"
   category: "GENERAL_SECURITY"
 
