@@ -134,7 +134,7 @@ class Runner(BaseRunner[None]):
             policies_list = customer_run_config.get('secretsPolicies', [])
             suppressions = customer_run_config.get('suppressions', [])
             if suppressions:
-                secret_suppressions_id = [suppression['checkovPolicyId'] for suppression in suppressions if suppression['suppressionType'] == 'SecretsPolicy']
+                secret_suppressions_id = [suppression['policyId'] for suppression in suppressions if suppression['suppressionType'] == 'SecretsPolicy']
             if policies_list:
                 runnable_plugins: dict[str, str] = get_runnable_plugins(policies_list)
                 logging.info(f"Found {len(runnable_plugins)} runnable plugins")
@@ -225,9 +225,6 @@ class Runner(BaseRunner[None]):
                 if not check_id:
                     logging.debug(f'Secret was filtered - no check_id for line_number {secret.line_number}')
                     continue
-                if check_id in secret_suppressions_id:
-                    logging.debug(f'Secret was filtered - check {check_id} was suppressed')
-                    continue
                 secret_key = f'{key}_{secret.line_number}_{secret.secret_hash}'
                 if secret.secret_value and is_potential_uuid(secret.secret_value):
                     logging.info(
@@ -240,6 +237,9 @@ class Runner(BaseRunner[None]):
                 else:
                     secrets_duplication[secret_key] = True
                 bc_check_id = metadata_integration.get_bc_id(check_id)
+                if bc_check_id in secret_suppressions_id:
+                    logging.debug(f'Secret was filtered - check {check_id} was suppressed')
+                    continue
                 severity = metadata_integration.get_severity(check_id)
                 if not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id, severity=severity,
                                                       report_type=CheckType.SECRETS):
