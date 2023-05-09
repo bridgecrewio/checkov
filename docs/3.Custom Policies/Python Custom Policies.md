@@ -67,7 +67,7 @@ def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
 **Note:**
 
 The `conf` parameter is dependent on the resource type, which was chosen via the `supported_resources` class instance attribute.
-For `aws_db_instance` we get following example value
+For example, for the `aws_db_instance` resource, we get the following value:
 
 ```python
 conf = {
