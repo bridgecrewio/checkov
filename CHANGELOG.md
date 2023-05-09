@@ -1,6 +1,51 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.220...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.231...HEAD)
+
+## [2.3.231](https://github.com/bridgecrewio/checkov/compare/2.3.227...2.3.231) - 2023-05-08
+
+### Feature
+
+- **terraform:** aws ensure delete protection for firewalls 344 - [#4870](https://github.com/bridgecrewio/checkov/pull/4870)
+- **terraform:** check that WAF rules have an action 342 - [#4806](https://github.com/bridgecrewio/checkov/pull/4806)
+- **terraform:** Ensure encryption for firewall uses a CMK CKV_AWS_345 - [#4871](https://github.com/bridgecrewio/checkov/pull/4871)
+- **terraform:** Ensure Network firewall policy defines a encryption configuration that uses a CMK - CKV_AWS_346 - [#4877](https://github.com/bridgecrewio/checkov/pull/4877)
+
+### Bug Fix
+
+- **kubernetes:** Update ckv_k8s_31 - [#4991](https://github.com/bridgecrewio/checkov/pull/4991)
+
+## [2.3.227](https://github.com/bridgecrewio/checkov/compare/2.3.224...2.3.227) - 2023-05-07
+
+### Feature
+
+- **general:** include missing files in save repository - [#5056](https://github.com/bridgecrewio/checkov/pull/5056)
+- **terraform:** launch config/template Ensure metadata hop =1 341 - [#4817](https://github.com/bridgecrewio/checkov/pull/4817)
+- **terraform:** Update CKV_AZURE_43 StorageAccountName.py VARIABLE_REFS - [#5045](https://github.com/bridgecrewio/checkov/pull/5045)
+
+### Bug Fix
+
+- **arm:** enabled is not true - [#5051](https://github.com/bridgecrewio/checkov/pull/5051)
+- **cloudformation:** Enable ALB to support tls1.3 policies #4962 - [#5035](https://github.com/bridgecrewio/checkov/pull/5035)
+- **secrets:** add handling of unicode error - [#5055](https://github.com/bridgecrewio/checkov/pull/5055)
+
+## [2.3.224](https://github.com/bridgecrewio/checkov/compare/2.3.223...2.3.224) - 2023-05-05
+
+### Platform
+
+- **general:** Catch None responses from BE - [#5033](https://github.com/bridgecrewio/checkov/pull/5033)
+
+## [2.3.223](https://github.com/bridgecrewio/checkov/compare/2.3.220...2.3.223) - 2023-05-04
+
+### Feature
+
+- **terraform:** Elastic beanstalk uses managed updates and fixes the EB check while i… 340 - [#4816](https://github.com/bridgecrewio/checkov/pull/4816)
+
+### Bug Fix
+
+- **secrets:** don't scan images in git history - [#5040](https://github.com/bridgecrewio/checkov/pull/5040)
+- **terraform:** fix foreach render value for lookup - [#5037](https://github.com/bridgecrewio/checkov/pull/5037)
+- **terraform:** Handle entity context for for_each resources - [#5036](https://github.com/bridgecrewio/checkov/pull/5036)
 
 ## [2.3.220](https://github.com/bridgecrewio/checkov/compare/2.3.214...2.3.220) - 2023-05-03
 

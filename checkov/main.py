@@ -470,10 +470,13 @@ class Checkov:
                     if baseline:
                         baseline.compare_and_reduce_reports(self.scan_reports)
                     if bc_integration.is_integration_configured() and bc_integration.bc_source and bc_integration.bc_source.upload_results:
+                        included_paths = [self.config.external_modules_download_path]
+                        for r in runner_registry.runners:
+                            included_paths.extend(r.included_paths())
                         self.upload_results(
                             root_folder=root_folder,
                             excluded_paths=runner_filter.excluded_paths,
-                            included_paths=[self.config.external_modules_download_path],
+                            included_paths=included_paths,
                             git_configuration_folders=git_configuration_folders,
                         )
 
