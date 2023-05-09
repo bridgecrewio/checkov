@@ -1,3 +1,13 @@
+.templates:
+  - &go
+    image: "nginx: 14.6"
+
+  - &install-go
+    - curl code
+    - ln code
+
+  - &version-tag export tag
+
 planOnlySubset:
   script: echo "This job creates double pipelines!"
   rules:

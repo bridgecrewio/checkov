@@ -46,7 +46,7 @@ class TFModule:
     def from_json(json_dct):
         return TFModule(path=json_dct['path'], name=json_dct['name'], foreach_idx=json_dct['foreach_idx'],
                         nested_tf_module=TFModule.from_json(json_dct['nested_tf_module']) if json_dct.get(
-                            'nested_tf_module') else None)
+                            'nested_tf_module') else None) if json_dct else None
 
 
 class TFDefinitionKey:

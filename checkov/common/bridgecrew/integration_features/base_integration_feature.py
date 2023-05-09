@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 
 if TYPE_CHECKING:
+    from argparse import Namespace
     from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
     from checkov.common.output.report import Report
     from checkov.common.typing import _BaseRunner
@@ -17,6 +18,7 @@ class BaseIntegrationFeature(ABC):
         self.order = order
         integration_feature_registry.register(self)
         self.integration_feature_failures = False
+        self.config: Namespace | None = None  # is set during pre_scan()
 
     @abstractmethod
     def is_valid(self) -> bool:

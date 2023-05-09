@@ -4,7 +4,7 @@ resource "azurerm_sql_server" "failure" {
   location                     = azurerm_resource_group.example.location
   version                      = "12.0"
   administrator_login          = "mradministrator"
-  administrator_login_password = "thisIsDog11"
+  administrator_login_password = "thisIsDog11"  # checkov:skip=CKV_SECRET_6 test secret
 }
 
 resource "azurerm_sql_server" "success" {

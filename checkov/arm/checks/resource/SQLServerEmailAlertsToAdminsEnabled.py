@@ -34,7 +34,7 @@ class SQLServerEmailAlertsToAdminsEnabled(BaseResourceCheck):
                     state = properties.get("state")
                     if isinstance(state, str) and state.lower() == "enabled":
                         email_admins = properties.get("emailAccountAdmins")
-                        if email_admins and email_admins.lower() == "enabled":
+                        if email_admins:
                             return CheckResult.PASSED
 
         return CheckResult.FAILED
