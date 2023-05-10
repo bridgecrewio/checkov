@@ -174,7 +174,7 @@ def run_framework_test(caplog: LogCaptureFixture, framework: str, excluded_paths
     )
 
     # when
-    scan_reports = runner_registry.run(root_folder=str(TESTS_DIR))
+    scan_reports, _ = runner_registry.run(root_folder=str(TESTS_DIR))
 
     # then
     for report in scan_reports:
