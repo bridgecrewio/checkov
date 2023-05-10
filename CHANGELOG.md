@@ -1,6 +1,36 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.227...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.234...HEAD)
+
+## [2.3.234](https://github.com/bridgecrewio/checkov/compare/2.3.231...2.3.234) - 2023-05-09
+
+### Feature
+
+- **terraform:** Added caller_file_path and caller_file_line_range to reduced report - [#5062](https://github.com/bridgecrewio/checkov/pull/5062)
+- **terraform:** AWS IAM don't generate root credentials 348 - [#4966](https://github.com/bridgecrewio/checkov/pull/4966)
+- **terraform:** Ensure Neptune cluster is encrypted with a CMK CKV_AWS_347 - [#4965](https://github.com/bridgecrewio/checkov/pull/4965)
+
+### Bug Fix
+
+- **terraform:** fix SQS encryption check CKV_AWS_27 - [#5065](https://github.com/bridgecrewio/checkov/pull/5065)
+
+### Documentation
+
+- **general:** Fix some links - [#5064](https://github.com/bridgecrewio/checkov/pull/5064)
+- **general:** update Python custom checks docs - [#5054](https://github.com/bridgecrewio/checkov/pull/5054)
+
+## [2.3.231](https://github.com/bridgecrewio/checkov/compare/2.3.227...2.3.231) - 2023-05-08
+
+### Feature
+
+- **terraform:** aws ensure delete protection for firewalls 344 - [#4870](https://github.com/bridgecrewio/checkov/pull/4870)
+- **terraform:** check that WAF rules have an action 342 - [#4806](https://github.com/bridgecrewio/checkov/pull/4806)
+- **terraform:** Ensure encryption for firewall uses a CMK CKV_AWS_345 - [#4871](https://github.com/bridgecrewio/checkov/pull/4871)
+- **terraform:** Ensure Network firewall policy defines a encryption configuration that uses a CMK - CKV_AWS_346 - [#4877](https://github.com/bridgecrewio/checkov/pull/4877)
+
+### Bug Fix
+
+- **kubernetes:** Update ckv_k8s_31 - [#4991](https://github.com/bridgecrewio/checkov/pull/4991)
 
 ## [2.3.227](https://github.com/bridgecrewio/checkov/compare/2.3.224...2.3.227) - 2023-05-07
 

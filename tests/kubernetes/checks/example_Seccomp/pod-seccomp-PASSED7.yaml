@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-secure-pod
+spec:
+  containers:
+  - name: my-container
+    image: my-image
+    securityContext:
+      seccompProfile:
+        type: RuntimeDefault

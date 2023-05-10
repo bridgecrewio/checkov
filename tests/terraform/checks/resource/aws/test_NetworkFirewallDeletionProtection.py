@@ -2,14 +2,14 @@ import unittest
 from pathlib import Path
 
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.resource.aws.SQSQueueEncryption import check
+from checkov.terraform.checks.resource.aws.NetworkFirewallDeletionProtection import check
 from checkov.terraform.runner import Runner
 
 
-class TestSQSQueueEncryption(unittest.TestCase):
+class TestNetworkFirewallDeletionProtection(unittest.TestCase):
     def test(self):
         # given
-        test_files_dir = Path(__file__).parent / "example_SQSQueueEncryption"
+        test_files_dir = Path(__file__).parent / "example_NetworkFirewallDeletionProtection"
 
         # when
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
@@ -18,14 +18,11 @@ class TestSQSQueueEncryption(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "aws_sqs_queue.pass",
-            "aws_sqs_queue.pass2",
-            "aws_sqs_queue.pass3",
+            "aws_networkfirewall_firewall.pass",
         }
         failing_resources = {
-            "aws_sqs_queue.fail",
-            "aws_sqs_queue.fail2",
-            "aws_sqs_queue.fail3",
+            "aws_networkfirewall_firewall.fail",
+            "aws_networkfirewall_firewall.fail2",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}

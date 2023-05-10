@@ -1,15 +1,18 @@
 import unittest
+import os
 from pathlib import Path
+from unittest import mock
 
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.resource.aws.SQSQueueEncryption import check
+from checkov.terraform.checks.resource.aws.NetworkFirewallPolicyDefinesCMK import check
 from checkov.terraform.runner import Runner
 
 
-class TestSQSQueueEncryption(unittest.TestCase):
+class TestNetworkFirewallPolicyDefinesCMK(unittest.TestCase):
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "False"})
     def test(self):
         # given
-        test_files_dir = Path(__file__).parent / "example_SQSQueueEncryption"
+        test_files_dir = Path(__file__).parent / "example_NetworkFirewallPolicyDefinesCMK"
 
         # when
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
@@ -18,14 +21,11 @@ class TestSQSQueueEncryption(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "aws_sqs_queue.pass",
-            "aws_sqs_queue.pass2",
-            "aws_sqs_queue.pass3",
+            "aws_networkfirewall_firewall_policy.pass",
         }
         failing_resources = {
-            "aws_sqs_queue.fail",
-            "aws_sqs_queue.fail2",
-            "aws_sqs_queue.fail3",
+            "aws_networkfirewall_firewall_policy.fail",
+            "aws_networkfirewall_firewall_policy.fail2",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
