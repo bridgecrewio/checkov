@@ -21,6 +21,13 @@ SEVERITY_TO_SARIF_LEVEL = {
     "none": "none",
 }
 
+SEVERITY_TO_SCORE = {
+    "critical": "10.0",
+    "high": "8.9",
+    "medium": "6.9",
+    "low": "3.9",
+    "none": "0.0",
+}
 
 class Sarif:
     def __init__(self, reports: list[Report], tool: str | None) -> None:
@@ -85,15 +92,11 @@ class Sarif:
         return rules
 
     def _create_iac_rule(self, check_type: str, record: Record) -> dict[str, Any]:
-        # Adding severity to the name. If severity is not present, it will append an empty string.
-        severity = f" ({record.severity.name.lower()})" if record.severity else ""
-        name = (record.short_description or record.check_name) + severity
-
         rule = {
             "id": self._create_rule_id(check_type=check_type, record=record),
-            "name": name,
+            "name": record.short_description or record.check_name,
             "shortDescription": {
-                "text": name,
+                "text": record.short_description or record.check_name,
             },
             "fullDescription": {
                 "text": record.description or record.check_name,
@@ -102,6 +105,9 @@ class Sarif:
                 "text": f"{record.check_name}\nResource: {record.resource}",
             },
             "defaultConfiguration": {"level": "error"},
+            "properties": {
+                "security-severity": SEVERITY_TO_SCORE.get(record.severity.name.lower(), "0.0") if record.severity else "0.0",
+            }
         }
 
         help_uri = record.guideline
@@ -115,16 +121,12 @@ class Sarif:
         if not details:
             # this shouldn't happen
             return None
-        
-        # Adding severity to the name. If severity is not present, it will append an empty string.
-        severity = f" ({record.severity.name.lower()})" if record.severity else ""
-        name = (record.short_description or record.check_name) + severity
 
         rule = {
             "id": self._create_rule_id(check_type=check_type, record=record),
-            "name": name,
+            "name": record.short_description or record.check_name,
             "shortDescription": {
-                "text": name,
+                "text": record.short_description or record.check_name,
             },
             "fullDescription": {
                 "text": record.description or record.check_name,
@@ -133,6 +135,9 @@ class Sarif:
                 "text": f"{record.check_name}\nResource: {record.resource}\nStatus: {details.get('status')}",
             },
             "defaultConfiguration": {"level": "error"},
+            "properties": {
+                "security-severity": SEVERITY_TO_SCORE.get(record.severity.name.lower(), "0.0") if record.severity else "0.0",
+            }
         }
 
         help_uri = details.get("link")
@@ -147,15 +152,11 @@ class Sarif:
             # this shouldn't happen
             return None
 
-        # Adding severity to the name. If severity is not present, it will append an empty string.
-        severity = f" ({record.severity.name.lower()})" if record.severity else ""
-        name = (record.short_description or record.check_name) + severity
-
         rule = {
             "id": self._create_rule_id(check_type=check_type, record=record),
-            "name": name,
+            "name": record.short_description or record.check_name,
             "shortDescription": {
-                "text": name,
+                "text": record.short_description or record.check_name,
             },
             "fullDescription": {
                 "text": f"Package {details['package_name']}@{details['package_version']} has license {details['license']}",
@@ -164,6 +165,9 @@ class Sarif:
                 "text": f"{record.check_name}\nResource: {record.resource}",
             },
             "defaultConfiguration": {"level": "error"},
+            "properties": {
+                "security-severity": SEVERITY_TO_SCORE.get(record.severity.name.lower(), "0.0") if record.severity else "0.0",
+            }
         }
 
         help_uri = record.guideline
@@ -188,17 +192,13 @@ class Sarif:
                     # can happen if data is missing
                     continue
 
-                # Adding severity to the name. If severity is not present, it will append an empty string.
-                severity = f" ({record.severity.name.lower()})" if record.severity else ""
-                name = (record.short_description or record.check_name) + severity
-
                 result = {
                     "ruleId": rule_id,
                     "ruleIndex": self.rule_index_map[rule_id],
                     "level": level,
                     "attachments": [{"description": detail} for detail in record.details],
                     "message": {
-                        "text": name,
+                        "text": record.short_description or record.check_name,
                     },
                     "locations": [
                         {
