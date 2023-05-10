@@ -277,9 +277,14 @@ def clean_parser_types_lst(values: list[Any]) -> list[Any]:
                 values[idx] = False
         elif isinstance(val, set):
             values[idx] = clean_parser_types_lst(list(val))
-    str_values_in_lst = [val for val in values if isinstance(val, str)]
+    str_values_in_lst = []
+    result_values = []
+    for val in values:
+        if isinstance(val, str):
+            str_values_in_lst.append(val)
+        else:
+            result_values.append(val)
     str_values_in_lst.sort()
-    result_values = [val for val in values if not isinstance(val, str)]
     result_values.extend(str_values_in_lst)
     return result_values
 

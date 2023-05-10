@@ -289,9 +289,7 @@ class Checkov:
                 deep_analysis=self.config.deep_analysis,
                 repo_root_for_plan_enrichment=self.config.repo_root_for_plan_enrichment,
                 resource_attr_to_omit=self.config.mask,
-                # TODO modify the output for git_history secret and remove the rewrite of enable_git_history_secret_scan
-                # enable_git_history_secret_scan=self.config.scan_secrets_history,
-                enable_git_history_secret_scan=False,  # expose after unite git history with secret scan
+                enable_git_history_secret_scan=self.config.scan_secrets_history,
                 git_history_timeout=self.config.secrets_history_timeout
             )
 
@@ -475,10 +473,13 @@ class Checkov:
                     if baseline:
                         baseline.compare_and_reduce_reports(self.scan_reports)
                     if bc_integration.is_integration_configured() and bc_integration.bc_source and bc_integration.bc_source.upload_results:
+                        included_paths = [self.config.external_modules_download_path]
+                        for r in runner_registry.runners:
+                            included_paths.extend(r.included_paths())
                         self.upload_results(
                             root_folder=root_folder,
                             excluded_paths=runner_filter.excluded_paths,
-                            included_paths=[self.config.external_modules_download_path],
+                            included_paths=included_paths,
                             git_configuration_folders=git_configuration_folders,
                         )
 

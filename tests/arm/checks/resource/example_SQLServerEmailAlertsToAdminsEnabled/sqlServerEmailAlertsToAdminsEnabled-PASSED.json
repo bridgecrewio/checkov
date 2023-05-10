@@ -98,7 +98,7 @@
         "properties": {
           "state": "Enabled",
           "emailAddresses": "[variables('emailAddresses')[copyIndex()]]",
-          "emailAccountAdmins": "Enabled"
+          "emailAccountAdmins": true
         }
       }]
     }

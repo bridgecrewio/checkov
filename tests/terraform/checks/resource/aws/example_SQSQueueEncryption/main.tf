@@ -24,3 +24,10 @@ resource "aws_sqs_queue" "pass2" {
   name                    = "unencrypted-queue"
   sqs_managed_sse_enabled = true
 }
+
+resource "aws_sqs_queue" "pass3" {
+  name                              = "unencrypted-queue"
+  kms_master_key_id                 = "alias/aws/sqs"
+  kms_data_key_reuse_period_seconds = 300
+  sqs_managed_sse_enabled           = false
+}

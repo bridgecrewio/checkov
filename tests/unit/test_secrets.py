@@ -8,9 +8,9 @@ class TestSecrets(unittest.TestCase):
 
     def test_secrets(self):
         test_strings = [
-            'AKIAIOSFODNN7EXAMPLE',
-            'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',
-            '-----BEGIN RSA PRIVATE KEY-----\n',
+            'AKIAIOSFODNN7EXAMPLE',  # checkov:skip=CKV_SECRET_2 test secret
+            'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',  # checkov:skip=CKV_SECRET_6 test secret
+            '-----BEGIN RSA PRIVATE KEY-----\n',  # checkov:skip=CKV_SECRET_13 test secret
             'Hello from Bridgecrew'
         ]
 
@@ -38,7 +38,7 @@ class TestSecrets(unittest.TestCase):
         self.assertFalse(string_has_secrets("d9de48cf0676e9edb99bd8ee1ed44a21"))
 
     def test_omit_secret_value_from_line(self):
-        secret = 'AKIAIOSFODNN7EXAMPLE'
+        secret = 'AKIAIOSFODNN7EXAMPLE'  # checkov:skip=CKV_SECRET_6 test secret
         line = 'access_key: "AKIAIOSFODNN7EXAMPLE"'
 
         censored_line = omit_secret_value_from_line(secret, line)
@@ -56,7 +56,7 @@ class TestSecrets(unittest.TestCase):
         self.assertEqual(line, omit_secret_value_from_line(secret, line))
 
     def test_omit_long_secret_value_from_line(self):
-        secret = '123456AKIAIOSFODNN7EXAMPLEAKIAIOSFODNN7EXAMPLEAKIAIOSFODNN7EXAM'
+        secret = '123456AKIAIOSFODNN7EXAMPLEAKIAIOSFODNN7EXAMPLEAKIAIOSFODNN7EXAM'  # checkov:skip=CKV_SECRET_6 test secret
         line = 'access_key: "123456AKIAIOSFODNN7EXAMPLEAKIAIOSFODNN7EXAMPLEAKIAIOSFODNN7EXAM"'
 
         censored_line = omit_secret_value_from_line(secret, line)

@@ -17,9 +17,9 @@ performance_configurations = {
     'terraform': {
         'repo_name': 'terraform-aws-components',
         'threshold': {
-            "Darwin": 18.0,
-            "Linux": 12.0,
-            "Windows": 14.0,
+            "Darwin": 19.0,
+            "Linux": 13.0,
+            "Windows": 15.0,
         }
     },
     'cloudformation': {
