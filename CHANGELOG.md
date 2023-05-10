@@ -1,6 +1,23 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.231...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.234...HEAD)
+
+## [2.3.234](https://github.com/bridgecrewio/checkov/compare/2.3.231...2.3.234) - 2023-05-09
+
+### Feature
+
+- **terraform:** Added caller_file_path and caller_file_line_range to reduced report - [#5062](https://github.com/bridgecrewio/checkov/pull/5062)
+- **terraform:** AWS IAM don't generate root credentials 348 - [#4966](https://github.com/bridgecrewio/checkov/pull/4966)
+- **terraform:** Ensure Neptune cluster is encrypted with a CMK CKV_AWS_347 - [#4965](https://github.com/bridgecrewio/checkov/pull/4965)
+
+### Bug Fix
+
+- **terraform:** fix SQS encryption check CKV_AWS_27 - [#5065](https://github.com/bridgecrewio/checkov/pull/5065)
+
+### Documentation
+
+- **general:** Fix some links - [#5064](https://github.com/bridgecrewio/checkov/pull/5064)
+- **general:** update Python custom checks docs - [#5054](https://github.com/bridgecrewio/checkov/pull/5054)
 
 ## [2.3.231](https://github.com/bridgecrewio/checkov/compare/2.3.227...2.3.231) - 2023-05-08
 
