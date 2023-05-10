@@ -85,8 +85,8 @@ class Sarif:
         return rules
 
     def _create_iac_rule(self, check_type: str, record: Record) -> dict[str, Any]:
-        severity = f"({record.severity.name.lower()})" if record.severity else ""
-        name = (record.short_description or record.check_name) + " " + severity
+        severity = f" ({record.severity.name.lower()})" if record.severity else ""
+        name = (record.short_description or record.check_name) + severity
 
         rule = {
             "id": self._create_rule_id(check_type=check_type, record=record),
@@ -115,8 +115,8 @@ class Sarif:
             # this shouldn't happen
             return None
 
-        severity = f"({record.severity.name.lower()})" if record.severity else ""
-        name = (record.short_description or record.check_name) + " " + severity
+        severity = f" ({record.severity.name.lower()})" if record.severity else ""
+        name = (record.short_description or record.check_name) + severity
 
         rule = {
             "id": self._create_rule_id(check_type=check_type, record=record),
@@ -145,8 +145,8 @@ class Sarif:
             # this shouldn't happen
             return None
 
-        severity = f"({record.severity.name.lower()})" if record.severity else ""
-        name = (record.short_description or record.check_name) + " " + severity
+        severity = f" ({record.severity.name.lower()})" if record.severity else ""
+        name = (record.short_description or record.check_name) + severity
 
         rule = {
             "id": self._create_rule_id(check_type=check_type, record=record),
@@ -185,8 +185,8 @@ class Sarif:
                     # can happen if data is missing
                     continue
 
-                severity = f"({record.severity.name.lower()})" if record.severity else ""
-                name = (record.short_description or record.check_name) + " " + severity
+                severity = f" ({record.severity.name.lower()})" if record.severity else ""
+                name = (record.short_description or record.check_name) + severity
 
                 result = {
                     "ruleId": rule_id,
