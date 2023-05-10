@@ -174,4 +174,4 @@ def persist_graphs(graphs: dict[str, list[Tuple[DiGraph | Graph, Optional[str]]]
             return_when=futures.FIRST_EXCEPTION,
             timeout=timeout
         )
-    logging.info(f"Done persisting {len(graphs)} graphs")
+    logging.info(f"Done persisting {len(list(itertools.chain(*graphs.values())))} graphs")

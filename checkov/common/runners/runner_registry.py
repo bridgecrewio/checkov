@@ -753,5 +753,5 @@ class RunnerRegistry:
         if all_graphs:
             return all_graphs
         elif runner.graph_manager:
-            return [(graph, None) for graph in runner.graph_manager.get_reader_endpoint()]
+            return [(runner.graph_manager.get_reader_endpoint(), None)]
         return []
