@@ -221,7 +221,7 @@ class Runner(BaseRunner[None]):
                     added_by = enriched_potential_secret.get('added_by') or ''
                     removed_date = enriched_potential_secret.get('removed_date') or ''
                     added_date = enriched_potential_secret.get('added_date') or ''
-                check_id = getattr(secret, "check_id", SECRET_TYPE_TO_ID.get(secret.type))
+                check_id = secret.check_id if secret.check_id else SECRET_TYPE_TO_ID.get(secret.type)
                 if not check_id:
                     logging.debug(f'Secret was filtered - no check_id for line_number {secret.line_number}')
                     continue
