@@ -60,14 +60,14 @@ SECRET_TYPE_TO_ID = {
     'Base64 High Entropy String': 'CKV_SECRET_6',
     'IBM Cloud IAM Key': 'CKV_SECRET_7',
     'IBM COS HMAC Credentials': 'CKV_SECRET_8',
-    'JSON Web Token': 'CKV_SECRET_9',
+    'JSON Web Token': 'CKV_SECRET_9',  # checkov:skip=CKV_SECRET_6 false positive
     'Secret Keyword': 'CKV_SECRET_10',
     'Mailchimp Access Key': 'CKV_SECRET_11',
-    'NPM tokens': 'CKV_SECRET_12',
+    'NPM tokens': 'CKV_SECRET_12',  # checkov:skip=CKV_SECRET_6 false positive
     'Private Key': 'CKV_SECRET_13',
-    'Slack Token': 'CKV_SECRET_14',
+    'Slack Token': 'CKV_SECRET_14',  # checkov:skip=CKV_SECRET_6 false positive
     'SoftLayer Credentials': 'CKV_SECRET_15',
-    'Square OAuth Secret': 'CKV_SECRET_16',
+    'Square OAuth Secret': 'CKV_SECRET_16',  # checkov:skip=CKV_SECRET_6 false positive
     'Stripe Access Key': 'CKV_SECRET_17',
     'Twilio API Key': 'CKV_SECRET_18',
     'Hex High Entropy String': 'CKV_SECRET_19'

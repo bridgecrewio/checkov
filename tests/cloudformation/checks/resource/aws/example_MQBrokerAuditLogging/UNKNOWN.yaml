@@ -14,4 +14,4 @@ Resources:
       PubliclyAccessible: true
       Users:
         - Password: AmazonMqPassword
-          Username: AmazonMqUsername
+          Username: AmazonMqUsername  # checkov:skip=CKV_SECRET_6 test secret
