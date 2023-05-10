@@ -21,6 +21,7 @@ SEVERITY_TO_SARIF_LEVEL = {
     "none": "none",
 }
 
+
 SEVERITY_TO_SCORE = {
     "critical": "10.0",
     "high": "8.9",
@@ -105,10 +106,13 @@ class Sarif:
                 "text": f"{record.check_name}\nResource: {record.resource}",
             },
             "defaultConfiguration": {"level": "error"},
-            "properties": {
-                "security-severity": SEVERITY_TO_SCORE.get(record.severity.name.lower(), "0.0") if record.severity else "0.0",
-            }
         }
+
+        # Adding 'properties' dictionary only if 'record.severity' exists
+        if record.severity:
+            rule["properties"] = {
+                "security-severity": SEVERITY_TO_SCORE.get(record.severity.name.lower(), "0.0"),
+            }
 
         help_uri = record.guideline
         if valid_url(help_uri):
@@ -135,10 +139,13 @@ class Sarif:
                 "text": f"{record.check_name}\nResource: {record.resource}\nStatus: {details.get('status')}",
             },
             "defaultConfiguration": {"level": "error"},
-            "properties": {
-                "security-severity": SEVERITY_TO_SCORE.get(record.severity.name.lower(), "0.0") if record.severity else "0.0",
-            }
         }
+
+        # Adding 'properties' dictionary only if 'record.severity' exists
+        if record.severity:
+            rule["properties"] = {
+                "security-severity": SEVERITY_TO_SCORE.get(record.severity.name.lower(), "0.0"),
+            }
 
         help_uri = details.get("link")
         if valid_url(help_uri):
@@ -165,10 +172,13 @@ class Sarif:
                 "text": f"{record.check_name}\nResource: {record.resource}",
             },
             "defaultConfiguration": {"level": "error"},
-            "properties": {
-                "security-severity": SEVERITY_TO_SCORE.get(record.severity.name.lower(), "0.0") if record.severity else "0.0",
-            }
         }
+
+        # Adding 'properties' dictionary only if 'record.severity' exists
+        if record.severity:
+            rule["properties"] = {
+                "security-severity": SEVERITY_TO_SCORE.get(record.severity.name.lower(), "0.0"),
+            }
 
         help_uri = record.guideline
         if valid_url(help_uri):
