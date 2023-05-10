@@ -23,8 +23,6 @@ from botocore.exceptions import ClientError
 from botocore.config import Config
 from cachetools import cached, TTLCache
 from colorama import Style
-from igraph import Graph
-from networkx import DiGraph
 from termcolor import colored
 from tqdm import trange
 from urllib3.exceptions import HTTPError, MaxRetryError
@@ -55,6 +53,8 @@ if TYPE_CHECKING:
     from mypy_boto3_s3.client import S3Client
     from requests import Response
     from typing_extensions import TypeGuard
+    from igraph import Graph
+    from networkx import DiGraph
 
 
 SLEEP_SECONDS = 1

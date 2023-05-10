@@ -1,10 +1,13 @@
-from typing import Dict, Any
-from igraph import Graph as Igraph
+from __future__ import annotations
+from typing import Dict, Any, TYPE_CHECKING
 
 from checkov.common.graph.graph_builder import CustomAttributes
 
+if TYPE_CHECKING:
+    from igraph import Graph
 
-def serialize_to_json(igraph: Igraph) -> Dict[str, Any]:
+
+def serialize_to_json(igraph: Graph) -> Dict[str, Any]:
     nodes = []
     for i, vertex in enumerate(igraph.vs):
         attr = {k: v for k, v in vertex.attributes()['attr'].items() if v is not None}
