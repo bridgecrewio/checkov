@@ -571,6 +571,7 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
 
             # the returned report can be a list of reports, which also includes an SCA image report
             report = k8s_runner.run(target_dir, external_checks_dir=None, runner_filter=runner_filter)
+            self.graph_manager = k8s_runner.graph_manager
             logging.debug(f"Sucessfully ran k8s scan on Kustomization templated files in tmp scan dir : {target_dir}")
 
             shutil.rmtree(target_dir)

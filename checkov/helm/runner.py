@@ -385,7 +385,9 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
         k8s_runner.chart_dir_and_meta = self.convert_helm_to_k8s(root_folder, files, runner_filter)
         k8s_runner.original_root_dir = str(root_folder)
         k8s_runner.tmp_root_dir = self.get_k8s_target_folder_path()
-        return k8s_runner.run(self.get_k8s_target_folder_path(), external_checks_dir=external_checks_dir, runner_filter=runner_filter)
+        report = k8s_runner.run(self.get_k8s_target_folder_path(), external_checks_dir=external_checks_dir, runner_filter=runner_filter)
+        self.graph_manager = k8s_runner.graph_manager
+        return report
 
 
 def fix_report_paths(report: Report, tmp_dir: str) -> None:

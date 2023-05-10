@@ -10,7 +10,7 @@ import re
 from collections import defaultdict
 from collections.abc import Iterable
 from pathlib import Path
-from typing import List, Dict, Any, Optional, cast, TYPE_CHECKING, Type
+from typing import List, Dict, Any, Optional, cast, TYPE_CHECKING, Type, Tuple
 
 from typing_extensions import Literal
 
@@ -49,6 +49,8 @@ if TYPE_CHECKING:
     from checkov.common.output.baseline import Baseline
     from checkov.common.runners.base_runner import BaseRunner  # noqa
     from checkov.runner_filter import RunnerFilter
+    from igraph import Graph
+    from networkx import DiGraph
 
 CONSOLE_OUTPUT = "console"
 CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
@@ -89,12 +91,12 @@ class RunnerRegistry:
             files: Optional[List[str]] = None,
             collect_skip_comments: bool = True,
             repo_root_for_plan_enrichment: list[str | Path] | None = None,
-    ) -> list[Report]:
+    ) -> Tuple[list[Report], dict[str, DiGraph | Graph]]:
         if not self.runners:
             logging.error('There are no runners to run. This can happen if you specify a file type and a framework that are not compatible '
                           '(e.g., `--file xyz.yaml --framework terraform`), or if you specify a framework with missing dependencies (e.g., '
                           'helm or kustomize, which require those tools to be on your system). Running with LOG_LEVEL=DEBUG may provide more information.')
-            return []
+            return [], {}
         elif len(self.runners) == 1:
             runner_check_type = self.runners[0].check_type
             if self.licensing_integration.is_runner_valid(runner_check_type):
@@ -158,7 +160,10 @@ class RunnerRegistry:
 
         for scan_report in merged_reports:
             self._handle_report(scan_report, repo_root_for_plan_enrichment)
-        return self.scan_reports
+
+        check_type_to_graph = {runner.check_type: runner.graph_manager.get_reader_endpoint() for runner in self.runners
+                               if runner.graph_manager}
+        return self.scan_reports, check_type_to_graph
 
     def _merge_reports(self, reports: Iterable[Report | list[Report]]) -> list[Report]:
         """Merges reports with the same check_type"""
