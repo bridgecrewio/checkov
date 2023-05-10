@@ -463,11 +463,12 @@ class Checkov:
                         logger.error(f'Directory {root_folder} does not exist; skipping it')
                         continue
                     file = self.config.file
-                    self.scan_reports, self.graphs = runner_registry.run(
+                    self.scan_reports = runner_registry.run(
                         root_folder=root_folder,
                         external_checks_dir=external_checks_dir,
                         files=file,
                     )
+                    self.graphs = runner_registry.check_type_to_graph
                     if runner_registry.is_error_in_reports(self.scan_reports):
                         self.exit_run()
                     if baseline:
@@ -538,11 +539,12 @@ class Checkov:
                 return exit_code
             elif self.config.file:
                 runner_registry.filter_runners_for_files(self.config.file)
-                self.scan_reports, self.graphs = runner_registry.run(
+                self.scan_reports = runner_registry.run(
                     external_checks_dir=external_checks_dir,
                     files=self.config.file,
                     repo_root_for_plan_enrichment=self.config.repo_root_for_plan_enrichment,
                 )
+                self.graphs = runner_registry.check_type_to_graph
                 if runner_registry.is_error_in_reports(self.scan_reports):
                     self.exit_run()
                 if baseline:

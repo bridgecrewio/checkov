@@ -22,7 +22,7 @@ class TestRunnerRegistryEnrichment(unittest.TestCase):
         repo_root = Path(__file__).parent / "plan_with_hcl_for_enrichment"
         valid_plan_path = repo_root / "tfplan.json"
 
-        report = runner_registry.run(repo_root_for_plan_enrichment=[repo_root], files=[str(valid_plan_path)])[0][0]
+        report = runner_registry.run(repo_root_for_plan_enrichment=[repo_root], files=[str(valid_plan_path)])[0]
 
         failed_check_ids = {c.check_id for c in report.failed_checks}
         skipped_check_ids = {c.check_id for c in report.skipped_checks}
@@ -91,7 +91,7 @@ class TestRunnerRegistryEnrichment(unittest.TestCase):
         repo_root = Path(__file__).parent / "plan_with_tf_modules_for_enrichment"
         valid_plan_path = repo_root / "tfplan.json"
 
-        report = runner_registry.run(repo_root_for_plan_enrichment=[repo_root], files=[str(valid_plan_path)])[0][0]
+        report = runner_registry.run(repo_root_for_plan_enrichment=[repo_root], files=[str(valid_plan_path)])[0]
 
         failed_check_ids = [c.check_id for c in report.failed_checks]
         passed_check_ids = [c.check_id for c in report.passed_checks]
@@ -129,7 +129,7 @@ class TestRunnerRegistryEnrichment(unittest.TestCase):
         repo_root = Path(__file__).parent / "plan_with_hcl_for_enrichment"
         valid_plan_path = repo_root / "tfplan.json"
 
-        report = runner_registry.run(repo_root_for_plan_enrichment=[repo_root], files=[str(valid_plan_path)])[0][0]
+        report = runner_registry.run(repo_root_for_plan_enrichment=[repo_root], files=[str(valid_plan_path)])[0]
 
         failed_check_ids = {c.check_id for c in report.failed_checks}
         skipped_check_ids = {c.check_id for c in report.skipped_checks}
@@ -148,7 +148,7 @@ class TestRunnerRegistryEnrichment(unittest.TestCase):
         repo_root = Path(__file__).parent / "plan_module_skip_for_enrichment" / "tf"
         valid_plan_path = repo_root / "tfplan.json"
 
-        report = runner_registry.run(repo_root_for_plan_enrichment=[repo_root], files=[str(valid_plan_path)])[0][0]
+        report = runner_registry.run(repo_root_for_plan_enrichment=[repo_root], files=[str(valid_plan_path)])[0]
 
         failed_check_ids = {c.check_id for c in report.failed_checks}
         skipped_check_ids = {c.check_id for c in report.skipped_checks}
@@ -183,7 +183,7 @@ def test_enrichment_of_plan_report_with_external_modules(mocker: MockerFixture):
     mocker.patch("checkov.terraform.parser.load_tf_modules", side_effect=_load_tf_modules)
 
     # when
-    report = runner_registry.run(repo_root_for_plan_enrichment=[repo_root], files=[str(valid_plan_path)])[0][0]
+    report = runner_registry.run(repo_root_for_plan_enrichment=[repo_root], files=[str(valid_plan_path)])[0]
 
     # reset module cache
     module_loader_registry.reset_module_content_cache()
