@@ -2,9 +2,12 @@ import json
 import os
 from pathlib import Path
 
+from cyclonedx.model import Property
 from cyclonedx.model.component import Component, ComponentType
 from cyclonedx.model.vulnerability import VulnerabilitySeverity
 from packageurl import PackageURL
+from sortedcontainers import SortedSet
+
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.report import Report, CheckType
 from pytest_mock import MockerFixture
@@ -181,7 +184,7 @@ def test_sca_packages_cyclonedx_bom():
             vulnerability_details={
                 "package_name": "testpkg",
                 "package_version": "1.1.1",
-                "licenses": "MIT"
+                "licenses": "MIT",
             }
         )
     )
@@ -253,6 +256,7 @@ def test_create_library_component_maven_package_without_group_name() -> None:
             "package_version": package["version"],
             "licenses": "Unknown",
             "package_type": 'jar',
+            # "lines": [2, 5]
         },
     )
 
@@ -261,7 +265,6 @@ def test_create_library_component_maven_package_without_group_name() -> None:
     assert component.purl.name == 'bcpkix-jdk15on'
     assert component.purl.version == '1.69.00'
     assert component.purl.namespace == '12345/Dockerfile'
-
 
 def test_create_json_output():
     # given

@@ -17,7 +17,7 @@ from cyclonedx.model import (
     HashAlgorithm,
     HashType,
     LicenseChoice,
-    License,
+    License, Property,
 )
 from cyclonedx.model.bom import Bom, Tool
 from cyclonedx.model.component import Component, ComponentType
@@ -188,6 +188,10 @@ class CycloneDX:
           <name>flask</name>
           <version>0.6</version>
           <purl>pkg:pypi/cli_repo/pd/requirements.txt/flask@0.6</purl>
+          <properties>
+            <property name="startLine">5</property>
+            <property name="endLine">6</property>
+          </properties>
         </component>
         """
 
@@ -230,10 +234,19 @@ class CycloneDX:
         # add licenses, if exists
         license_choices = None
         licenses = resource.vulnerability_details.get("licenses")
+
         if licenses:
             license_choices = [
                 LicenseChoice(license_=License(license_name=license)) for license in format_string_to_licenses(licenses)
             ]
+
+        lines = resource.vulnerability_details.get("lines", "")
+        if lines:
+            start_line = lines[0]
+            end_line = lines[1]
+            properties = [Property(name="startLine", value=start_line), Property(name="endLine", value=end_line)]
+        else:
+            properties = []
 
         purl = PackageURL(
             type=purl_type,
@@ -250,6 +263,7 @@ class CycloneDX:
             component_type=ComponentType.LIBRARY,
             licenses=license_choices,
             purl=purl,
+            properties=properties
         )
         return component
 
