@@ -37,7 +37,7 @@ class TestRunnerRegistry(unittest.TestCase):
         runner_registry = RunnerRegistry(
             banner, runner_filter, tf_runner(), cfn_runner(), k8_runner()
         )
-        reports = runner_registry.run(root_folder=test_files_dir)
+        reports, _ = runner_registry.run(root_folder=test_files_dir)
         for report in reports:
             self.assertGreater(len(report.passed_checks), 1)
 
@@ -48,7 +48,7 @@ class TestRunnerRegistry(unittest.TestCase):
         runner_registry = RunnerRegistry(
             banner, runner_filter, tf_runner(), cfn_runner(), k8_runner()
         )
-        reports = runner_registry.run(root_folder=test_files_dir)
+        reports, _ = runner_registry.run(root_folder=test_files_dir)
 
         # The number of resources that will get scan results. Note that this may change if we add policies covering new resource types.
         counts_by_type = {"kubernetes": 14, "terraform": 3, "cloudformation": 4}
@@ -85,7 +85,7 @@ class TestRunnerRegistry(unittest.TestCase):
         runner_registry = RunnerRegistry(
             banner, runner_filter, tf_runner(), cfn_runner(), k8_runner()
         )
-        reports = runner_registry.run(root_folder=test_files_dir, files=files)
+        reports, _ = runner_registry.run(root_folder=test_files_dir, files=files)
         for report in reports:
             self.assertEqual(report.failed_checks, [])
             self.assertEqual(report.skipped_checks, [])
@@ -98,7 +98,7 @@ class TestRunnerRegistry(unittest.TestCase):
         runner_registry = RunnerRegistry(
             banner, runner_filter, tf_runner(), cfn_runner(), k8_runner()
         )
-        reports = runner_registry.run(root_folder=test_files_dir)
+        reports, _ = runner_registry.run(root_folder=test_files_dir)
 
         config = argparse.Namespace(
             file=['./example_s3_tf/main.tf'],
@@ -130,7 +130,7 @@ class TestRunnerRegistry(unittest.TestCase):
         runner_registry = RunnerRegistry(
             banner, runner_filter, tf_runner(), cfn_runner(), k8_runner()
         )
-        reports = runner_registry.run(root_folder=test_files_dir)
+        reports, _ = runner_registry.run(root_folder=test_files_dir)
 
         config = argparse.Namespace(
             file=['./example_s3_tf/main.tf'],
@@ -229,7 +229,7 @@ class TestRunnerRegistry(unittest.TestCase):
         runner_registry = RunnerRegistry('', runner_filter, *DEFAULT_RUNNERS)
         runner_registry.filter_runners_for_files(['tfplan.json'])
         with self.assertLogs(level='ERROR') as log:
-            reports = runner_registry.run(root_folder=None, files=[scan_file])
+            reports, _ = runner_registry.run(root_folder=None, files=[scan_file])
             self.assertEqual(len(reports), 0)  # checking that we get an empty report, not an exception
             self.assertIn(
                 'There are no runners to run. This can happen if you specify a file type and a framework that are not compatible',
@@ -458,7 +458,7 @@ def test_non_compact_json_output(capsys):
     runner_registry = RunnerRegistry(
         banner, runner_filter, tf_runner(), cfn_runner(), k8_runner()
     )
-    reports = runner_registry.run(root_folder=test_files_dir)
+    reports, _ = runner_registry.run(root_folder=test_files_dir)
 
     config = argparse.Namespace(
         file=['./example_s3_tf/main.tf'],
@@ -488,7 +488,7 @@ def test_extra_resources_in_report(capsys):
     runner_registry = RunnerRegistry(
         banner, runner_filter, bicep_runner()
     )
-    reports = runner_registry.run(root_folder=test_files_dir)
+    reports, _ = runner_registry.run(root_folder=test_files_dir)
 
     config = argparse.Namespace(
         file=['./example_bicep_with_empty_resources/playground.bicep'],
@@ -517,7 +517,7 @@ def test_extra_resources_removed_from_report(capsys):
     runner_registry = RunnerRegistry(
         banner, runner_filter, bicep_runner()
     )
-    reports = runner_registry.run(root_folder=test_files_dir)
+    reports, _ = runner_registry.run(root_folder=test_files_dir)
 
     config = argparse.Namespace(
         file=['./example_bicep_with_empty_resources/playground.bicep'],
@@ -547,7 +547,7 @@ def test_output_file_path_with_output_mapping(tmp_path: Path, capsys: CaptureFix
     runner_registry = RunnerRegistry(
         banner, runner_filter, tf_runner(), cfn_runner(), k8_runner()
     )
-    reports = runner_registry.run(root_folder=str(test_files_dir))
+    reports, _ = runner_registry.run(root_folder=str(test_files_dir))
 
     json_file_path = tmp_path / "result.json"
     xml_file_path = tmp_path / "sub_folder/result.xml"

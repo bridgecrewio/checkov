@@ -17,7 +17,7 @@ class TestBomOutput:
         runner_registry = RunnerRegistry(
             banner, runner_filter, tf_runner(), cfn_runner(), k8_runner()
         )
-        reports = runner_registry.run(root_folder=test_files_dir)
+        reports, _ = runner_registry.run(root_folder=test_files_dir)
 
         with patch('sys.stdout', new=io.StringIO()) as captured_output:
             runner_registry.print_iac_bom_reports(output_path=str(tmp_path),
@@ -54,7 +54,7 @@ class TestBomOutput:
         runner_registry = RunnerRegistry(
             banner, runner_filter, tf_runner(), cfn_runner(), k8_runner()
         )
-        reports = runner_registry.run(root_folder=test_files_dir)
+        reports, _ = runner_registry.run(root_folder=test_files_dir)
         output_types = ["cyclonedx", "csv"]
         output_path = tmp_path
 
