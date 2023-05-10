@@ -23,7 +23,7 @@ class OrganizationSchema(VCSSchema):
                 "node_id": {
                     "type": "string",
                     "examples": [
-                        "MDEyOk9yZ2FuaXphdGlvbjE\u003d"
+                        "MDEyOk9yZ2FuaXphdGlvbjE\u003d"  # checkov:skip=CKV_SECRET_6 false positive
                     ]
                 },
                 "url": {

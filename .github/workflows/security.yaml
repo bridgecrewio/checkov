@@ -1,3 +1,7 @@
+# !!! Important !!!
+# any change to this workflow will not take into effect on the same PR and only after,
+# because of security implications from target 'pull_request_target'
+
 name: security
 
 on:
