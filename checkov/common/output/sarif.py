@@ -85,11 +85,14 @@ class Sarif:
         return rules
 
     def _create_iac_rule(self, check_type: str, record: Record) -> dict[str, Any]:
+        severity = f"({record.severity.name.lower()})" if record.severity else ""
+        name = (record.short_description or record.check_name) + " " + severity
+
         rule = {
             "id": self._create_rule_id(check_type=check_type, record=record),
-            "name": record.short_description or record.check_name,
+            "name": name,
             "shortDescription": {
-                "text": record.short_description or record.check_name,
+                "text": name,
             },
             "fullDescription": {
                 "text": record.description or record.check_name,
@@ -112,11 +115,14 @@ class Sarif:
             # this shouldn't happen
             return None
 
+        severity = f"({record.severity.name.lower()})" if record.severity else ""
+        name = (record.short_description or record.check_name) + " " + severity
+
         rule = {
             "id": self._create_rule_id(check_type=check_type, record=record),
-            "name": record.short_description or record.check_name,
+            "name": name,
             "shortDescription": {
-                "text": record.short_description or record.check_name,
+                "text": name,
             },
             "fullDescription": {
                 "text": record.description or record.check_name,
@@ -139,11 +145,14 @@ class Sarif:
             # this shouldn't happen
             return None
 
+        severity = f"({record.severity.name.lower()})" if record.severity else ""
+        name = (record.short_description or record.check_name) + " " + severity
+
         rule = {
             "id": self._create_rule_id(check_type=check_type, record=record),
-            "name": record.short_description or record.check_name,
+            "name": name,
             "shortDescription": {
-                "text": record.short_description or record.check_name,
+                "text": name,
             },
             "fullDescription": {
                 "text": f"Package {details['package_name']}@{details['package_version']} has license {details['license']}",
@@ -176,13 +185,16 @@ class Sarif:
                     # can happen if data is missing
                     continue
 
+                severity = f"({record.severity.name.lower()})" if record.severity else ""
+                name = (record.short_description or record.check_name) + " " + severity
+
                 result = {
                     "ruleId": rule_id,
                     "ruleIndex": self.rule_index_map[rule_id],
                     "level": level,
                     "attachments": [{"description": detail} for detail in record.details],
                     "message": {
-                        "text": record.short_description or record.check_name,
+                        "text": name,
                     },
                     "locations": [
                         {
