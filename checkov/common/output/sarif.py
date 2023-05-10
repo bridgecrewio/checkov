@@ -85,6 +85,7 @@ class Sarif:
         return rules
 
     def _create_iac_rule(self, check_type: str, record: Record) -> dict[str, Any]:
+        # Adding severity to the name. If severity is not present, it will append an empty string.
         severity = f" ({record.severity.name.lower()})" if record.severity else ""
         name = (record.short_description or record.check_name) + severity
 
@@ -114,7 +115,8 @@ class Sarif:
         if not details:
             # this shouldn't happen
             return None
-
+        
+        # Adding severity to the name. If severity is not present, it will append an empty string.
         severity = f" ({record.severity.name.lower()})" if record.severity else ""
         name = (record.short_description or record.check_name) + severity
 
@@ -145,6 +147,7 @@ class Sarif:
             # this shouldn't happen
             return None
 
+        # Adding severity to the name. If severity is not present, it will append an empty string.
         severity = f" ({record.severity.name.lower()})" if record.severity else ""
         name = (record.short_description or record.check_name) + severity
 
@@ -185,6 +188,7 @@ class Sarif:
                     # can happen if data is missing
                     continue
 
+                # Adding severity to the name. If severity is not present, it will append an empty string.
                 severity = f" ({record.severity.name.lower()})" if record.severity else ""
                 name = (record.short_description or record.check_name) + severity
 
