@@ -293,7 +293,7 @@ class TestLicensingIntegration(unittest.TestCase):
         runner_filter = RunnerFilter(framework=['terraform'], runners=checkov_runners)
         runner_registry = RunnerRegistry('', runner_filter, *DEFAULT_RUNNERS)
         runner_registry.licensing_integration = licensing_integration
-        reports = runner_registry.run(root_folder=scan_dir)
+        reports, _ = runner_registry.run(root_folder=scan_dir)
         self.assertEqual(len(reports), 1)
         self.assertIsNotNone(reports[0])
 
