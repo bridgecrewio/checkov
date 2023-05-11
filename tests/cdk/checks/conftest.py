@@ -16,4 +16,4 @@ def setup() -> None:
 
     for check in registry.rules:
         for lang in check['languages']:
-            CHECK_ID_MAP[f"{lang}_{check['metadata']['check_file'].split('.')[0]}"] = check['id']
+            CHECK_ID_MAP[f"{lang}_{check['metadata']['check_file'].split('.')[0]}"] = check['id'].rsplit("_", maxsplit=1)[0]

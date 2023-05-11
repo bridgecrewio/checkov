@@ -12,7 +12,7 @@ def run_check(check_name: str, lang: str) -> None:
     # setup sast runner
     runner = CdkRunner()
     runner.registry.temp_semgrep_rules_path = str(
-        Path(__file__).parent / "test_runner_temp_rules.yaml"
+        Path(__file__).parent / f"test_runner_temp_rules_{lang}.yaml"
     )
 
     # run actual check

@@ -65,6 +65,7 @@ class Registry(BaseCheckRegistry):
                         continue
                     for lang in parsed_rule.get('languages', []):
                         if lang in [lan.value for lan in sast_languages]:
+                            parsed_rule["id"] = f"{parsed_rule['id']}_{lang}"
                             rules[parsed_rule['id']] = parsed_rule
                             break
         self.rules += rules.values()

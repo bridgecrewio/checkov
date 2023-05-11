@@ -1,0 +1,19 @@
+metadata:
+  id: CKV_AWS_19
+  name: Ensure all data stored in the S3 bucket is securely encrypted at rest
+  category: ENCRYPTION
+scope:
+  languages:
+    - python
+definition:
+  - or:
+      - and:
+          - cond_type: pattern
+            operator: equals
+            value: "aws_cdk.aws_s3.Bucket(...)"
+          - cond_type: pattern
+            operator: not_equals
+            value: "aws_cdk.aws_s3.Bucket(..., encryption=aws_cdk.aws_s3.BucketEncryption.$ANY_VAR, ...)"
+      - cond_type: pattern
+        operator: equals
+        value: "aws_cdk.aws_s3.Bucket(..., encryption=aws_cdk.aws_s3.BucketEncryption.UNENCRYPTED, ...)"
