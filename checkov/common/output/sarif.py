@@ -146,7 +146,7 @@ class Sarif:
         if record.vulnerability_details:
             # If vulnerability_details exists, use cvss
             rule["properties"] = {
-                "security-severity": f"{record.vulnerability_details['cvss']}",
+                "security-severity": record.vulnerability_details.get("cvss", "0.0"),
             }
         elif record.severity:
             # Else If severity exists, map severity level to a score for security-severity
