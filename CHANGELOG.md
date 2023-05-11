@@ -1,6 +1,14 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.234...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.237...HEAD)
+
+## [2.3.237](https://github.com/bridgecrewio/checkov/compare/2.3.234...2.3.237) - 2023-05-10
+
+### Bug Fix
+
+- **secrets:** add filter for suppressed custom secret checks - [#5068](https://github.com/bridgecrewio/checkov/pull/5068)
+- **secrets:** exclude Kubernetes secretName from secret scanning - [#5071](https://github.com/bridgecrewio/checkov/pull/5071)
+- **secrets:** omit the code line - [#5075](https://github.com/bridgecrewio/checkov/pull/5075)
 
 ## [2.3.234](https://github.com/bridgecrewio/checkov/compare/2.3.231...2.3.234) - 2023-05-09
 
