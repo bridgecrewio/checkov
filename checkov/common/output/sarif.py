@@ -30,6 +30,7 @@ SEVERITY_TO_SCORE = {
     "none": "0.0",
 }
 
+
 class Sarif:
     def __init__(self, reports: list[Report], tool: str | None) -> None:
         self.reports = reports
