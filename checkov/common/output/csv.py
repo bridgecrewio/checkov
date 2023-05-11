@@ -85,7 +85,7 @@ class CSVSBOM:
             CheckType.SCA_IMAGE: self.container_rows
         }
 
-        lines = resource.vulnerability_details["lines"]
+        lines = resource.vulnerability_details.get("lines")
         lines = validate_lines(lines)
         fix_version = self.get_fix_version_overview(resource.vulnerability_details)
         csv_table[check_type].append(

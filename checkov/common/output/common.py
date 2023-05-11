@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Optional, Any
 
 from checkov.common.bridgecrew.severities import Severities
 from checkov.common.output.record import DEFAULT_SEVERITY
