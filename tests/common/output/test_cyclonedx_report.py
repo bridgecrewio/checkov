@@ -2,11 +2,9 @@ import json
 import os
 from pathlib import Path
 
-from cyclonedx.model import Property
 from cyclonedx.model.component import Component, ComponentType
 from cyclonedx.model.vulnerability import VulnerabilitySeverity
 from packageurl import PackageURL
-from sortedcontainers import SortedSet
 
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.report import Report, CheckType
