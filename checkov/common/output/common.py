@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Optional, Any
 
 from checkov.common.bridgecrew.severities import Severities
 from checkov.common.output.record import DEFAULT_SEVERITY
@@ -41,7 +42,8 @@ def format_string_to_licenses(licenses_str: str) -> list[str]:
         return [licenses_str]
     elif licenses_str:
         # remove first and last quotes
-        licenses_str = licenses_str[1:-1] if licenses_str.startswith('"') and licenses_str.endswith('"') else licenses_str
+        licenses_str = licenses_str[1:-1] if licenses_str.startswith('"') and licenses_str.endswith(
+            '"') else licenses_str
         license_lst = licenses_str.split('","')
 
         return license_lst
@@ -52,3 +54,9 @@ def format_string_to_licenses(licenses_str: str) -> list[str]:
 def compare_table_items_severity(table_item: dict[str, str]) -> int:
     severity = (table_item.get("severity") or DEFAULT_SEVERITY).upper()
     return Severities[severity].level
+
+
+def validate_lines(lines: list[int] | None) -> list[int] | None:
+    if lines and len(lines) > 0 and lines[0] > 0 and lines[1] > 0:
+        return lines
+    return None

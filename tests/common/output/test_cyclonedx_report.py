@@ -256,7 +256,7 @@ def test_create_library_component_maven_package_without_group_name() -> None:
             "package_version": package["version"],
             "licenses": "Unknown",
             "package_type": 'jar',
-            # "lines": [2, 5]
+            "lines": [2, 5]
         },
     )
 
@@ -265,6 +265,27 @@ def test_create_library_component_maven_package_without_group_name() -> None:
     assert component.purl.name == 'bcpkix-jdk15on'
     assert component.purl.version == '1.69.00'
     assert component.purl.namespace == '12345/Dockerfile'
+    assert component.properties[0].name == 'endLine'
+    assert component.properties[0].value == '5'
+    assert component.properties[1].name == 'startLine'
+    assert component.properties[1].value == '2'
+
+    resource2 = ExtraResource(
+        file_abs_path="/path/to/package.json",
+        file_path='package.json',
+        resource=f"package.json.{package['name']}",
+        vulnerability_details={
+            "package_name": package["name"],
+            "package_version": package["version"],
+            "licenses": "Unknown",
+            "package_type": 'jar',
+            "lines": [0, 0]
+        },
+    )
+
+    component2 = cyclone.create_library_component(resource2, CheckType.SCA_PACKAGE)
+    assert component2.properties.key is None
+
 
 def test_create_json_output():
     # given

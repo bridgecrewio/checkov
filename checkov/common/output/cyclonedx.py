@@ -7,7 +7,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, cast, Any
-from checkov.common.output.common import format_string_to_licenses
+from checkov.common.output.common import format_string_to_licenses, validate_lines
 
 from cyclonedx.model import (
     XsUri,
@@ -240,14 +240,6 @@ class CycloneDX:
                 LicenseChoice(license_=License(license_name=license)) for license in format_string_to_licenses(licenses)
             ]
 
-        lines = resource.vulnerability_details.get("lines", "")
-        if lines:
-            start_line = lines[0]
-            end_line = lines[1]
-            properties = [Property(name="startLine", value=start_line), Property(name="endLine", value=end_line)]
-        else:
-            properties = []
-
         purl = PackageURL(
             type=purl_type,
             namespace=namespace,
@@ -255,6 +247,13 @@ class CycloneDX:
             version=package_version,
             qualifiers=qualifiers,
         )
+
+        lines = resource.vulnerability_details.get("lines")
+        lines = validate_lines(lines)
+        properties = None
+        if lines:
+            properties = [Property(name="endLine", value=str(lines[1])), Property(name="startLine", value=str(lines[0]))]
+
         component = Component(
             bom_ref=str(purl),
             group=package_group,
@@ -265,6 +264,7 @@ class CycloneDX:
             purl=purl,
             properties=properties
         )
+
         return component
 
     def create_image_component(self, resource: Record, bom: Bom) -> None:
