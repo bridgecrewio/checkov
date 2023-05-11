@@ -1,0 +1,15 @@
+metadata:
+  id: CKV2_AWS_6
+  name: Ensure that S3 bucket has a Public Access block
+  category: NETWORKING
+scope:
+  languages:
+    - python
+definition:
+  - and:
+      - cond_type: pattern
+        operator: equals
+        value: "aws_cdk.aws_s3.Bucket(...)"
+      - cond_type: pattern
+        operator: not_equals
+        value: "aws_cdk.aws_s3.Bucket(..., block_public_access=$ANY_VAR, ...)"

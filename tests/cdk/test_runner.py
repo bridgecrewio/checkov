@@ -61,3 +61,34 @@ def test_runner_failing_check():
     assert summary["failed"] == 1
     assert summary["skipped"] == 0
     assert summary["parsing_errors"] == 0
+
+
+def test_runner_multiple_languages():
+    # given
+    test_dir = EXAMPLES_DIR
+
+    # when
+    reports = CdkRunner().run(root_folder=str(test_dir), runner_filter=RunnerFilter(checks=["CKV_AWS_21"]))
+
+    # then
+    assert len(reports) == 2
+
+    report_python = next(iter(report for report in reports if report.check_type == "cdk_python"))
+    summary_python = report_python.get_summary()
+
+    assert summary_python["passed"] == 0
+    assert summary_python["failed"] == 1
+    assert summary_python["skipped"] == 0
+    assert summary_python["parsing_errors"] == 0
+
+    assert report_python.failed_checks[0].check_id == "CKV_AWS_21"
+
+    report_typescript = next(iter(report for report in reports if report.check_type == "cdk_typescript"))
+    summary_typescript = report_typescript.get_summary()
+
+    assert summary_typescript["passed"] == 0
+    assert summary_typescript["failed"] == 1
+    assert summary_typescript["skipped"] == 0
+    assert summary_typescript["parsing_errors"] == 0
+
+    assert report_typescript.failed_checks[0].check_id == "CKV_AWS_21"

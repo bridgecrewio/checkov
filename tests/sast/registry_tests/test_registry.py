@@ -5,7 +5,7 @@ import pathlib
 import os
 import unittest
 
-python_rule = {'id': 'CKV_SAST_1', 'message': 'module setting superuser port', 'severity': 'INFO',
+python_rule = {'id': 'CKV_SAST_1_python', 'message': 'module setting superuser port', 'severity': 'INFO',
                        'languages': ['python'], 'metadata': {'name': 'superuser port',
                                                              'cwe': 'CWE-289: Authentication Bypass by Alternate Name',
                                                              'check_file': 'python_rule.yaml'},
@@ -13,7 +13,7 @@ python_rule = {'id': 'CKV_SAST_1', 'message': 'module setting superuser port', '
                            'metavariable': '$ARG', 'comparison': '$ARG < 1024'}}]}
 
 
-java_rule = {'id': 'seam-log-injection', 'message': 'Seam Logging API support an expression language to introduce bean property to log messages. The expression language can also be the source to unwanted code execution. In this context, an expression is built with a dynamic value. The source of the value(s) should be verified to avoid that unfiltered values fall into this risky code evaluation.',
+java_rule = {'id': 'seam-log-injection_java', 'message': 'Seam Logging API support an expression language to introduce bean property to log messages. The expression language can also be the source to unwanted code execution. In this context, an expression is built with a dynamic value. The source of the value(s) should be verified to avoid that unfiltered values fall into this risky code evaluation.',
              'severity': 'ERROR', 'languages': ['java'], 'metadata': {
                 'name': 'seam log injection',
                 'cwe': "CWE-95: Improper Neutralization of Directives in Dynamically Evaluated Code ('Eval Injection')",

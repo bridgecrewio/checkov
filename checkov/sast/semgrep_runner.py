@@ -64,6 +64,7 @@ def create_report(check_type: str, lang: str, semgrep_matches: List[RuleMatch]) 
     report = Report(f'{check_type}_{lang}')
     for match in semgrep_matches:
         check_id = match.rule_id.split('.')[-1]
+        check_id = check_id.rsplit("_", maxsplit=1)[0]  # remove the added language suffix, ex. CKV_AWS_21_python
         check_name = match.metadata.get('name', '')
         check_cwe = match.metadata.get('cwe')
         check_owasp = match.metadata.get('owasp')
