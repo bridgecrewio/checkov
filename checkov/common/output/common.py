@@ -56,6 +56,6 @@ def compare_table_items_severity(table_item: dict[str, str]) -> int:
 
 
 def validate_lines(lines: list[int] | None) -> list[int] | None:
-    if lines and len(lines) > 0 and lines[0] > 0 and lines[1] > 0:
+    if lines and lines[0] > 0 and lines[1] > 0:
         return lines
     return None
