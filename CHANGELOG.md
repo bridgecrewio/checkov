@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.238...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.239...HEAD)
+
+## [2.3.239](https://github.com/bridgecrewio/checkov/compare/2.3.238...2.3.239) - 2023-05-12
+
+### Bug Fix
+
+- **sca:** only run image referencer with sca_image framework - [#5081](https://github.com/bridgecrewio/checkov/pull/5081)
 
 ## [2.3.238](https://github.com/bridgecrewio/checkov/compare/2.3.237...2.3.238) - 2023-05-11
 
