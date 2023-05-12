@@ -1,34 +1,35 @@
+from __future__ import annotations
+
+from typing import Any
 
 from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.util.data_structures_utils import find_in_dict
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
 class EMRClusterConfEncryptsEBS(BaseResourceCheck):
-    def __init__(self):
-        name = "Ensure Cluster security configuration encrypts ebs disks"
+    def __init__(self) -> None:
+        name = "Ensure EMR Cluster security configuration encrypts ebs disks"
         id = "CKV_AWS_350"
-        supported_resources = ['aws_emr_security_configuration']
-        categories = [CheckCategories.ENCRYPTION]
+        supported_resources = ("aws_emr_security_configuration",)
+        categories = (CheckCategories.ENCRYPTION,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
-        if 'configuration' not in conf:
-            return CheckResult.SKIPPED
-        configuration = conf['configuration'][0]
-        if configuration.get("EncryptionConfiguration") \
-                and isinstance(configuration.get("EncryptionConfiguration"), dict):
-            config = configuration.get("EncryptionConfiguration")
-            if config.get("EnableAtRestEncryption") and isinstance(config.get("EnableAtRestEncryption"), bool):
-                if config.get("AtRestEncryptionConfiguration") \
-                        and isinstance(config.get("AtRestEncryptionConfiguration"), dict):
-                    atrest = config.get("AtRestEncryptionConfiguration")
-                    if atrest.get("LocalDiskEncryptionConfiguration") \
-                            and isinstance(atrest.get("LocalDiskEncryptionConfiguration"), dict):
-                        ebs = atrest.get("LocalDiskEncryptionConfiguration")
-                        if ebs.get("EnableEbsEncryption"):
-                            return CheckResult.PASSED
+    def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
+        security_conf = conf.get("configuration")
+        if security_conf and isinstance(security_conf, list) and isinstance(security_conf[0], dict):
+            encrypt_conf = security_conf[0].get("EncryptionConfiguration")
+            if encrypt_conf and isinstance(encrypt_conf, dict) and encrypt_conf.get("EnableAtRestEncryption") is True:
+                ebs_encrypt = find_in_dict(
+                    input_dict=encrypt_conf,
+                    key_path="AtRestEncryptionConfiguration/LocalDiskEncryptionConfiguration/EnableEbsEncryption",
+                )
+                if ebs_encrypt:
+                    return CheckResult.PASSED
 
-        return CheckResult.FAILED
+            return CheckResult.FAILED
+
+        return CheckResult.UNKNOWN
 
 
 check = EMRClusterConfEncryptsEBS()
