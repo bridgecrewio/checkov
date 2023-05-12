@@ -41,7 +41,7 @@ from checkov.common.bridgecrew.integration_features.features.licensing_integrati
 from checkov.common.bridgecrew.severities import BcSeverities
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.output.baseline import Baseline
-from checkov.common.bridgecrew.check_type import checkov_runners
+from checkov.common.bridgecrew.check_type import checkov_runners, CheckType
 from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.common.util import prompt
 from checkov.common.util.banner import banner as checkov_banner, tool as checkov_tool
@@ -421,7 +421,11 @@ class Checkov:
             bc_cloned_checks = custom_policies_integration.bc_cloned_checks
             runner_filter.bc_cloned_checks = bc_cloned_checks
             custom_policies_integration.policy_level_suppression = list(policy_level_suppression.keys())
-            runner_filter.run_image_referencer = licensing_integration.should_run_image_referencer()
+
+            if any(framework in runner_filter.framework for framework in ("all", CheckType.SCA_IMAGE)):
+                # only run image referencer, when sca_image framework is enabled
+                runner_filter.run_image_referencer = licensing_integration.should_run_image_referencer()
+
             runner_filter.filtered_policy_ids = policy_metadata_integration.filtered_policy_ids
             logger.debug(f"Filtered list of policies: {runner_filter.filtered_policy_ids}")
 
