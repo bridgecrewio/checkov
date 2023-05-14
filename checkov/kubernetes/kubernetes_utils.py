@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import logging
 import os
-from copy import deepcopy
 from typing import Dict, Any, TYPE_CHECKING
 
 import dpath
 
 from checkov.common.models.enums import CheckResult
+from checkov.common.util.consts import LINE_FIELD_NAMES, START_LINE, END_LINE
 from checkov.runner_filter import RunnerFilter
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.models.consts import YAML_COMMENT_MARK
@@ -19,6 +19,7 @@ from checkov.kubernetes.parser.parser import parse
 if TYPE_CHECKING:
     from checkov.common.typing import _SkippedCheck, _CheckResult, _EntityContext
 
+EXCLUDED_FILE_NAMES = {"package.json", "package-lock.json"}
 K8_POSSIBLE_ENDINGS = {".yaml", ".yml", ".json"}
 DEFAULT_NESTED_RESOURCE_TYPE = "Pod"
 SUPPORTED_POD_CONTAINERS_TYPES = {"Deployment", "DeploymentConfig", "DaemonSet", "Job", "ReplicaSet", "ReplicationController", "StatefulSet"}
@@ -39,7 +40,7 @@ def get_folder_definitions(
             file_ending = os.path.splitext(file)[1]
             if file_ending in K8_POSSIBLE_ENDINGS:
                 full_path = os.path.join(root, file)
-                if "/." not in full_path and file not in ['package.json', 'package-lock.json']:
+                if "/." not in full_path and file not in EXCLUDED_FILE_NAMES:
                     # skip temp directories
                     files_list.append(full_path)
     return get_files_definitions(files_list)
@@ -121,12 +122,12 @@ def build_definitions_context(
     definitions: dict[str, list[dict[str, Any]]], definitions_raw: dict[str, list[tuple[int, str]]]
 ) -> dict[str, dict[str, Any]]:
     definitions_context: Dict[str, Dict[str, Any]] = {}
-    definitions = deepcopy(definitions)
     # iterate on the files
     for file_path, resources in definitions.items():
-
         for resource in resources:
             if resource.get("kind") == "List":
+                # this could be inefficient, if more than one 'List' object exists in the same file
+                resources = resources[:]
                 resources.extend(item for item in resource.get("items", []) if item)
                 resources.remove(resource)
 
@@ -137,8 +138,8 @@ def build_definitions_context(
             resource_id = get_resource_id(resource)
             if not resource_id:
                 continue
-            start_line = resource["__startline__"]
-            end_line = min(resource["__endline__"], len(definitions_raw[file_path]))
+            start_line = resource[START_LINE]
+            end_line = min(resource[END_LINE], len(definitions_raw[file_path]))
             first_line_index = 0
             # skip empty lines
             while not str.strip(definitions_raw[file_path][first_line_index][1]):
@@ -212,19 +213,20 @@ def get_resource_id(resource: dict[str, Any] | None) -> str | None:
     name = metadata.get("name")
     if name:
         return f'{resource_type}.{namespace}.{name}'
-    labels = deepcopy(metadata.get("labels"))
+    labels = metadata.get("labels")
     if labels:
         return build_resource_id_from_labels(resource_type, namespace, labels, resource)
     return None
-
 
 def build_resource_id_from_labels(resource_type: str,
                                   namespace: str,
                                   labels: dict[str, str],
                                   resource: dict[str, Any]) -> str:
-    labels.pop('__startline__', None)
-    labels.pop('__endline__', None)
-    labels_list = [f"{k}-{v}" for k, v in labels.items()]
+    labels_list = [
+        f"{label}-{value}"
+        for label, value in labels.items()
+        if label not in LINE_FIELD_NAMES
+    ]
     labels_string = ".".join(labels_list) if labels_list else "default"
     parent_resource = resource.get(PARENT_RESOURCE_KEY_NAME)
     if parent_resource:
