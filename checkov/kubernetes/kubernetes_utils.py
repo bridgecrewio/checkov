@@ -218,6 +218,7 @@ def get_resource_id(resource: dict[str, Any] | None) -> str | None:
         return build_resource_id_from_labels(resource_type, namespace, labels, resource)
     return None
 
+
 def build_resource_id_from_labels(resource_type: str,
                                   namespace: str,
                                   labels: dict[str, str],
