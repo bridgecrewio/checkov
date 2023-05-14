@@ -81,6 +81,8 @@ if TYPE_CHECKING:
     from checkov.common.output.report import Report
     from configargparse import Namespace
     from typing_extensions import Literal
+    from igraph import Graph
+    from networkx import DiGraph
 
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
@@ -126,6 +128,7 @@ class Checkov:
         self.runners = DEFAULT_RUNNERS
         self.scan_reports: "list[Report]" = []
         self.run_metadata: dict[str, str | list[str]] = {}
+        self.graphs: dict[str, DiGraph | Graph] = {}
         self.url: str | None = None
 
         self.parse_config(argv=argv)
@@ -469,6 +472,7 @@ class Checkov:
                         external_checks_dir=external_checks_dir,
                         files=file,
                     )
+                    self.graphs = runner_registry.check_type_to_graph
                     if runner_registry.is_error_in_reports(self.scan_reports):
                         self.exit_run()
                     if baseline:
@@ -532,6 +536,8 @@ class Checkov:
                                                           self.config.branch)
 
                 bc_integration.persist_run_metadata(self.run_metadata)
+                if bc_integration.enable_persist_graphs:
+                    bc_integration.persist_graphs(self.graphs)
                 self.url = self.commit_repository()
                 exit_code = self.print_results(runner_registry=runner_registry, url=self.url)
                 return exit_code
@@ -542,6 +548,7 @@ class Checkov:
                     files=self.config.file,
                     repo_root_for_plan_enrichment=self.config.repo_root_for_plan_enrichment,
                 )
+                self.graphs = runner_registry.check_type_to_graph
                 if runner_registry.is_error_in_reports(self.scan_reports):
                     self.exit_run()
                 if baseline:
@@ -624,6 +631,8 @@ class Checkov:
             bc_integration.persist_git_configuration(os.getcwd(), git_configuration_folders)
         bc_integration.persist_scan_results(self.scan_reports)
         bc_integration.persist_run_metadata(self.run_metadata)
+        if bc_integration.enable_persist_graphs:
+            bc_integration.persist_graphs(self.graphs)
         self.url = self.commit_repository()
 
     def print_results(

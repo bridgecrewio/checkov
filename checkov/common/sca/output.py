@@ -131,7 +131,7 @@ def create_report_cve_record(
         runner_filter: RunnerFilter | None = None,
         sca_details: SCADetails | None = None,
         scan_data_format: ScanDataFormat = ScanDataFormat.TWISTCLI,
-        file_line_range: list[int] | None = None
+        file_line_range: list[int] | None = None,
 ) -> Record:
     runner_filter = runner_filter or RunnerFilter()
     package_name = vulnerability_details["packageName"]
@@ -179,6 +179,7 @@ def create_report_cve_record(
         "licenses": licenses,
         "root_package_name": root_package_name,
         "root_package_version": root_package_version,
+        "lines": package.get("lines", "")
     }
     if used_private_registry:
         details["is_private_fix"] = vulnerability_details.get("isPrivateRegFix", False)
@@ -519,6 +520,7 @@ def add_extra_resources_to_report(report: Report, scanned_file_path: str, rootle
                 "licenses": format_licenses_to_string(
                     licenses_per_package_map[package_alias]),
                 "package_type": get_package_type(package_name, package_version, sca_details),
+                "lines": package.get("lines", "")
             },
         )
     )
