@@ -36,7 +36,7 @@ def test_create_report_cve_record():
         "impactedVersions": ["<1.11.27"],
         "publishedDate": "2019-12-18T20:15:00+01:00",
         "discoveredDate": "2019-12-18T19:15:00Z",
-        "fixDate": "2019-12-18T20:15:00+01:00",
+        "fixDate": "2019-12-18T20:15:00+01:00"
     }
 
     # when
@@ -46,7 +46,7 @@ def test_create_report_cve_record():
         check_class=check_class,
         vulnerability_details=vulnerability_details,
         licenses='OSI_BDS',
-        package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
+        package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False, "lines": [5, 10]},
         root_package_version="1.12",
         root_package_name="django",
         used_private_registry=False
@@ -79,6 +79,7 @@ def test_create_report_cve_record():
     assert record.vulnerability_details["licenses"] == 'OSI_BDS'
     assert record.vulnerability_details["root_package_version"] == "1.12"
     assert record.vulnerability_details["root_package_name"] == "django"
+    assert record.vulnerability_details["lines"] == [5, 10]
 
 
 def test_create_report_cve_record_results_from_platform():
