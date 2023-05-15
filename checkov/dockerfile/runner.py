@@ -266,22 +266,28 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, list[_Instruction]]]"], B
 
         if result_instruction:
             entity_context = next(
-                resource
-                for resource in self.context[docker_file_path][result_instruction]
-                if resource["start_line"] == startline + 1
-            )
-            codeblock = entity_context["code_lines"]
-            skipped_check = next(
                 (
-                    skipped_check
-                    for skipped_check in entity_context.get("skipped_checks", [])
-                    if skipped_check["id"] in (check.id, check.bc_id)
+                    resource
+                    for resource in self.context[docker_file_path][result_instruction]
+                    if resource["start_line"] == startline + 1
                 ),
                 None,
             )
-            if skipped_check:
-                check_result["result"] = CheckResult.SKIPPED
-                check_result["suppress_comment"] = skipped_check.get("suppress_comment", "")
+            if entity_context:
+                codeblock = entity_context["code_lines"]
+                skipped_check = next(
+                    (
+                        skipped_check
+                        for skipped_check in entity_context.get("skipped_checks", [])
+                        if skipped_check["id"] in (check.id, check.bc_id)
+                    ),
+                    None,
+                )
+                if skipped_check:
+                    check_result["result"] = CheckResult.SKIPPED
+                    check_result["suppress_comment"] = skipped_check.get("suppress_comment", "")
+            else:
+                logging.info(f"Could not find context for resource with start line {startline + 1} in {self.context[docker_file_path][result_instruction]}")
         else:
             self.calc_record_codeblock(codeblock, definitions_raw, docker_file_path, endline, startline)
 
