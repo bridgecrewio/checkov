@@ -119,7 +119,9 @@ class TestKubernetesLocalGraph(TestGraph):
         graph_flags = K8sGraphFlags(create_complex_vertices=True, create_edges=True)
 
         local_graph = KubernetesLocalGraph(definitions)
-        local_graph.edge_builders = (KeywordEdgeBuilder, )
+        from checkov.kubernetes.graph_builder.graph_components.edge_builders.ServiceAccountEdgeBuilder import \
+            ServiceAccountEdgeBuilder
+        local_graph.edge_builders = (KeywordEdgeBuilder, ServiceAccountEdgeBuilder())
         local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
         self.assertEqual(4, len(local_graph.vertices))
         self.assertEqual(3, len(local_graph.edges))

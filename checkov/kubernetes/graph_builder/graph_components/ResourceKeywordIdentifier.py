@@ -17,9 +17,9 @@ class ResourceKeywordIdentifier:
         # TODO: "ClusterRole": ["rules[].resources", "rules[].resourceNames"],
         # TODO: "Role": ["rules[].resources", "rules[].resourceNames"],
 
-        "ServiceAccount": [
-            {"spec.serviceAccountName": "metadata.name"}
-        ],
+        # "ServiceAccount": [
+        #     {"spec.serviceAccountName": "metadata.name"}
+        # ],
         "ClusterRoleBinding": [
             {"metadata.name": "roleRef.name", "kind": "roleRef.kind"},
             [{"subjects": {"metadata.name": "name", "kind": "kind"}}]
