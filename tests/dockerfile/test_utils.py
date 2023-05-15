@@ -49,6 +49,10 @@ def test_build_definitions_context():
     assert run_instruction["start_line"] == 4
     assert run_instruction["end_line"] == 4
     assert run_instruction["code_lines"] == [(4, "RUN apk --no-cache add nginx\n")]
+
+    for skip in run_instruction["skipped_checks"]:
+        skip.pop("bc_id", None)  # depending on the test order they are set or not
+
     assert sorted(run_instruction["skipped_checks"], key=itemgetter("id")) == sorted(
         [
             {"id": "CKV_DOCKER_1", "line_number": 5, "suppress_comment": " required"},
