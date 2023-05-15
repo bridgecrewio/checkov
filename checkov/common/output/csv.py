@@ -8,7 +8,7 @@ from datetime import datetime
 from typing import Any, TYPE_CHECKING
 
 from checkov.common.models.enums import CheckResult
-from checkov.common.output.common import format_string_to_licenses, is_raw_formatted
+from checkov.common.output.common import format_string_to_licenses, is_raw_formatted, validate_lines
 from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME
 from checkov.common.output.report import Report, CheckType
 from checkov.common.sca.commons import get_fix_version, UNFIXABLE_VERSION
@@ -23,6 +23,7 @@ HEADER_OSS_PACKAGES = [
     "Package",
     "Version",
     "Path",
+    "Line(s)",
     "Git Org",
     "Git Repository",
     "Vulnerability",
@@ -84,12 +85,15 @@ class CSVSBOM:
             CheckType.SCA_IMAGE: self.container_rows
         }
 
+        lines = resource.vulnerability_details.get("lines")
+        lines = validate_lines(lines)
         fix_version = self.get_fix_version_overview(resource.vulnerability_details)
         csv_table[check_type].append(
             {
                 "Package": resource.vulnerability_details["package_name"],
                 "Version": resource.vulnerability_details["package_version"],
                 "Path": resource.file_path,
+                "Line(s)": lines,
                 "Git Org": git_org,
                 "Git Repository": git_repository,
                 "Vulnerability": resource.vulnerability_details.get("id"),
