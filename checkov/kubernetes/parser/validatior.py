@@ -1,5 +1,5 @@
 import re
-from typing import Any
+from typing import Any, Dict
 
 
 class K8sValidator:
@@ -10,11 +10,11 @@ class K8sValidator:
         return isinstance(template, dict) and K8sValidator._has_required_fields(template) and K8sValidator._is_section_valid(template)
 
     @staticmethod
-    def _has_required_fields(template: dict[str, Any]) -> bool:
+    def _has_required_fields(template: Dict[str, Any]) -> bool:
         return bool({'apiVersion', 'kind', 'metadata', 'spec'} - template.keys() == set())
 
     @staticmethod
-    def _is_section_valid(template: dict[str, Any]) -> bool:
+    def _is_section_valid(template: Dict[str, Any]) -> bool:
         for segment in template.keys():
             if isinstance(template[segment], dict):
                 if not K8sValidator._is_section_valid(template[segment]):
