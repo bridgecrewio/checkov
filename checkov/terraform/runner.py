@@ -377,7 +377,12 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                 module, _ = get_module_from_full_path(full_file_path)
                 if module:
                     full_definition_path = entity_id.split('.')
-                    module_name_index = len(full_definition_path) - full_definition_path[::-1][1:].index(BlockType.MODULE) - 1  # the next item after the last 'module' prefix is the module name
+                    try:
+                        module_name_index = len(full_definition_path) - full_definition_path[::-1][1:].index(BlockType.MODULE) - 1  # the next item after the last 'module' prefix is the module name
+                    except ValueError as e:
+                        # TODO handle multiple modules with the same name in repo
+                        logging.warning(f'Failed to get module name for resource {entity_id}. {str(e)}')
+                        continue
                     module_name = full_definition_path[module_name_index]
                     caller_context = definition_context[module].get(BlockType.MODULE, {}).get(module_name)
                     if not caller_context:

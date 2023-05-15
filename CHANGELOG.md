@@ -1,6 +1,18 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.238...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.240...HEAD)
+
+## [2.3.240](https://github.com/bridgecrewio/checkov/compare/2.3.239...2.3.240) - 2023-05-14
+
+### Bug Fix
+
+- **terraform:** skip invalid multiple modules names - [#5079](https://github.com/bridgecrewio/checkov/pull/5079)
+
+## [2.3.239](https://github.com/bridgecrewio/checkov/compare/2.3.238...2.3.239) - 2023-05-12
+
+### Bug Fix
+
+- **sca:** only run image referencer with sca_image framework - [#5081](https://github.com/bridgecrewio/checkov/pull/5081)
 
 ## [2.3.238](https://github.com/bridgecrewio/checkov/compare/2.3.237...2.3.238) - 2023-05-11
 
