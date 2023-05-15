@@ -3,12 +3,11 @@ from typing import Any
 
 
 class K8sValidator:
-    name_disallowed_chars = re.compile("(\#|\{|\})+")
+    name_disallowed_chars = re.compile("[#{}]+") # noqa: CCE003  # a static attribute
 
     @staticmethod
     def is_valid_template(template: Any) -> bool:
-        return isinstance(template, dict) and \
-               K8sValidator._has_required_fields(template) and \
+        return isinstance(template, dict) and K8sValidator._has_required_fields(template) and \
                K8sValidator._is_section_valid(template)
 
     @staticmethod
