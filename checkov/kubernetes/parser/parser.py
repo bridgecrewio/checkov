@@ -22,10 +22,10 @@ def parse(filename: str) -> tuple[list[dict[str, Any]], list[tuple[int, str]]] |
         if filename.endswith(".json"):
             (template, template_lines) = k8_json.load(Path(filename))
         if template:
-            k8s_validator = K8sValidator()
             if isinstance(template, list):
                 for t in template:
-                    if k8s_validator.is_valid_template(t):
+                    is_valid, reason = K8sValidator.is_valid_template(t)
+                    if is_valid:
                         valid_templates.append(t)
             else:
                 return None
