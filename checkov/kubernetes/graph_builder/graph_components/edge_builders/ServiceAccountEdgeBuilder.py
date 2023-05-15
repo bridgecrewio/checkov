@@ -10,7 +10,6 @@ class VertexConncetions:
         self.destination_vertices_indices = destination_vertices_indices or []
 
 
-
 class ServiceAccountEdgeBuilder(K8SEdgeBuilder):
     def __init__(self) -> None:
         self._cache = {}
