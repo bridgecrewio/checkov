@@ -24,7 +24,9 @@ def parse(filename: str) -> tuple[list[dict[str, Any]], list[tuple[int, str]]] |
         if template:
             k8s_validator = K8sValidator()
             if isinstance(template, list):
-                [valid_templates.append(t) for t in template if k8s_validator.is_valid_template(t)]
+                for t in template:
+                    if k8s_validator.is_valid_template(t):
+                        valid_templates.append(t)
             else:
                 return None
         else:

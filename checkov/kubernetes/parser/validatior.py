@@ -12,11 +12,11 @@ class K8sValidator:
                K8sValidator._is_section_valid(template)
 
     @staticmethod
-    def _has_required_fields(template) -> bool:
-        return {'apiVersion', 'kind', 'metadata', 'spec'} - template.keys() == set()
+    def _has_required_fields(template: dict[str, Any]) -> bool:
+        return bool({'apiVersion', 'kind', 'metadata', 'spec'} - template.keys() == set())
 
     @staticmethod
-    def _is_section_valid(template) -> bool:
+    def _is_section_valid(template: dict[str, Any]) -> bool:
         for segment in template.keys():
             if isinstance(template[segment], dict):
                 if not K8sValidator._is_section_valid(template[segment]):
@@ -31,7 +31,7 @@ class K8sValidator:
         return True
 
     @staticmethod
-    def _is_name_valid(name: Any):
+    def _is_name_valid(name: Any) -> bool:
         if not isinstance(name, str) or len(name) > 253:
             return False
         if K8sValidator.name_disallowed_chars.search(name):
