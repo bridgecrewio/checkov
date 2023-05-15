@@ -23,10 +23,12 @@ def parse(filename: str) -> tuple[list[dict[str, Any]], list[tuple[int, str]]] |
             (template, template_lines) = k8_json.load(Path(filename))
         if template:
             if isinstance(template, list):
-                for t in template:
+                for i, t in enumerate(template):
                     is_valid, reason = K8sValidator.is_valid_template(t)
                     if is_valid:
                         valid_templates.append(t)
+                    else:
+                        logging.debug(f"template {i} from file {filename} is not a valid k8s template, reason: {reason}")
             else:
                 return None
         else:

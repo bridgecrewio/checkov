@@ -9,7 +9,7 @@ class K8sValidator:
     def is_valid_template(template: Any) -> Tuple[bool, str]:
         is_valid = isinstance(template, dict)
         if not is_valid:
-            return is_valid, f'template is nto a dict, but {type(template)}'
+            return is_valid, f'template is not a dict, but {type(template)}'
 
         is_valid, reason = K8sValidator._has_required_fields(template)
         if not is_valid:
