@@ -512,7 +512,7 @@ def add_extra_resources_to_report(report: Report, scanned_file_path: str, rootle
             file_abs_path=scanned_file_path,
             file_path=get_file_path_for_record(rootless_file_path),
             resource=get_resource_for_record(rootless_file_path, package_name),
-            file_line_range=package.get("lines", ""),
+            file_line_range=package.get("lines"),
             vulnerability_details={
                 "package_name": package_name,
                 "package_version": package_version,
