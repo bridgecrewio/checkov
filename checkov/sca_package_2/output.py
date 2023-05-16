@@ -101,7 +101,7 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
         package_cves_details_map: dict[str, dict[str, Any]] = defaultdict(dict)
         package_licenses_details_map = defaultdict(list)
         should_print_licenses_table = False
-        lines_details_found = False
+        lines_details_found_cves = False
         for root_package_alias, records in packages.items():
             fix_versions_lists = []
             for record in records:
@@ -142,7 +142,7 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                     lines = record.file_line_range
                     root_package_lines = record.vulnerability_details.get("root_package_file_line_range")
                     if lines and root_package_lines:
-                        lines_details_found = True
+                        lines_details_found_cves = True
 
                     package_cves_details_map[root_package_alias].setdefault("cves", []).append(
                         {
@@ -184,7 +184,7 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                     file_path=file_path,
                     cve_count=cve_count,
                     package_details_map=package_cves_details_map,
-                    lines_details_found=lines_details_found
+                    lines_details_found=lines_details_found_cves
                 )
             )
         if should_print_licenses_table:
