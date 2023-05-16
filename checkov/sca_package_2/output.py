@@ -11,7 +11,7 @@ from prettytable import PrettyTable, SINGLE_BORDER
 from checkov.common.bridgecrew.severities import BcSeverities
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME, SCA_LICENSE_CHECK_NAME
-from checkov.common.output.common import get_package_name_with_lines
+from checkov.common.output.common import get_package_name_with_lines, validate_lines
 from checkov.common.packaging import version as packaging_version
 from checkov.common.sca.commons import UNFIXABLE_VERSION, get_package_alias
 from checkov.common.typing import _LicenseStatus
@@ -113,7 +113,7 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
 
                 package_name = record.vulnerability_details["package_name"]
                 package_version = record.vulnerability_details["package_version"]
-                lines = record.file_line_range
+                lines = validate_lines(record.file_line_range)
                 if record.check_name == SCA_PACKAGE_SCAN_CHECK_NAME:
                     cve_count.total += 1
 
@@ -140,7 +140,7 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                             parsed_version = packaging_version.parse(root_package_fix_version.strip())
                             fix_versions_lists.append([parsed_version])
 
-                    root_package_lines = record.vulnerability_details.get("root_package_file_line_range")
+                    root_package_lines = validate_lines(record.vulnerability_details.get("root_package_file_line_range"))
                     if lines and root_package_lines:
                         lines_details_found_cves = True
 

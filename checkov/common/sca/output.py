@@ -307,9 +307,11 @@ def add_to_reports_cves_and_packages(
                                             report_type)
     else:  # twistlock scan results.
         for vulnerability in vulnerabilities:
-            package_alias = get_package_alias(vulnerability["packageName"], vulnerability["packageVersion"])
+            package_name, package_version = vulnerability["packageName"], vulnerability["packageVersion"]
             add_cve_record_to_report(vulnerability_details=vulnerability,
-                                     package=packages_map.get(package_alias, {}),
+                                     package_name=package_name,
+                                     package_version=package_version,
+                                     packages_map=packages_map,
                                      rootless_file_path=rootless_file_path,
                                      scanned_file_path=scanned_file_path,
                                      check_class=check_class or "",
@@ -345,7 +347,9 @@ def add_to_reports_dependency_tree_cves(check_class: str | None, packages_map: d
                 cve_alias = f'{cve["cveId"]}@{cve["causePackageName"]}@{cve["causePackageVersion"]}'
                 indirect_packages[cve_alias] = cve
                 continue
-            add_cve_record_to_report(vulnerability_details=cve, package=root_package,
+
+            add_cve_record_to_report(vulnerability_details=cve, package_name=root_package['name'],
+                                     package_version=root_package['version'], packages_map=packages_map,
                                      rootless_file_path=rootless_file_path, scanned_file_path=scanned_file_path,
                                      check_class=check_class, licenses_per_package_map=licenses_per_package_map,
                                      runner_filter=runner_filter, sca_details=sca_details,
@@ -359,9 +363,9 @@ def add_to_reports_dependency_tree_cves(check_class: str | None, packages_map: d
                 root_package_fixed_version = None
                 if cve_alias in indirect_packages:
                     root_package_fixed_version = indirect_packages[cve_alias]['fixVersion']
-                indirect_package_alias = get_package_alias(dep['name'], dep['version'])
-                add_cve_record_to_report(vulnerability_details=dep_cve,
-                                         package=packages_map.get(indirect_package_alias, {}),
+
+                add_cve_record_to_report(vulnerability_details=dep_cve, package_name=dep['name'],
+                                         package_version=dep['version'], packages_map=packages_map,
                                          rootless_file_path=rootless_file_path, scanned_file_path=scanned_file_path,
                                          check_class=check_class, licenses_per_package_map=licenses_per_package_map,
                                          runner_filter=runner_filter, sca_details=sca_details,
@@ -371,7 +375,8 @@ def add_to_reports_dependency_tree_cves(check_class: str | None, packages_map: d
                                          used_private_registry=used_private_registry)
 
 
-def add_cve_record_to_report(vulnerability_details: dict[str, Any], package: dict[str, Any], rootless_file_path: str,
+def add_cve_record_to_report(vulnerability_details: dict[str, Any], package_name: str, package_version: str,
+                             packages_map: dict[str, dict[str, Any]], rootless_file_path: str,
                              scanned_file_path: str, check_class: Optional[str],
                              licenses_per_package_map: dict[str, list[str]], runner_filter: RunnerFilter,
                              sca_details: Optional[SCADetails], scan_data_format: ScanDataFormat,
@@ -379,13 +384,14 @@ def add_cve_record_to_report(vulnerability_details: dict[str, Any], package: dic
                              root_package: dict[str, Any] | None = None, root_package_fixed_version: str | None = None,
                              inline_suppressions: _ScaSuppressions | None = None,
                              file_line_range: list[int] | None = None) -> None:
+    package_alias = get_package_alias(package_name, package_version)
     cve_record = create_report_cve_record(
         rootless_file_path=rootless_file_path,
         file_abs_path=scanned_file_path,
         check_class=check_class or "",
         vulnerability_details=vulnerability_details,
-        licenses=format_licenses_to_string(licenses_per_package_map[get_package_alias(package["name"], package["version"])]),
-        package=package,
+        licenses=format_licenses_to_string(licenses_per_package_map[package_alias]),
+        package=packages_map.get(package_alias, {}),
         runner_filter=runner_filter,
         sca_details=sca_details,
         scan_data_format=scan_data_format,

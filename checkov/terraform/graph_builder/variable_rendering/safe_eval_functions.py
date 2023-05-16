@@ -293,7 +293,7 @@ SAFE_EVAL_DICT["upper"] = lambda input_str: input_str.upper()
 SAFE_EVAL_DICT["chunklist"] = lambda lst, chunk_size: [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
 SAFE_EVAL_DICT["coalesce"] = coalesce
 SAFE_EVAL_DICT["coalescelist"] = coalesce_list
-SAFE_EVAL_DICT["compact"] = lambda lst: list(filter(lambda l: l != "", lst))
+SAFE_EVAL_DICT["compact"] = lambda lst: list(filter(lambda value: value != "", lst))
 SAFE_EVAL_DICT["concat"] = lambda *lists: list(itertools.chain(*lists))
 SAFE_EVAL_DICT["contains"] = lambda lst, value: value in lst
 SAFE_EVAL_DICT["distinct"] = lambda lst: list(dict.fromkeys(lst))
