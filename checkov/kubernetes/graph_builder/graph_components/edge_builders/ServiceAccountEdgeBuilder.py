@@ -16,7 +16,8 @@ class ServiceAccountEdgeBuilder(K8SEdgeBuilder):
 
     @staticmethod
     def should_search_for_edges(vertex: KubernetesBlock) -> bool:
-        return vertex.attributes.get('kind') == 'ServiceAccount'
+        kind: str | None = vertex.attributes.get('kind')
+        return kind == 'ServiceAccount'
 
     def _find_all_service_accounts(self, vertices: list[KubernetesBlock]) -> None:
         for index, vertex in enumerate(vertices):

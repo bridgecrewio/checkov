@@ -9,6 +9,7 @@ from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.kubernetes.graph_builder.graph_components.blocks import KubernetesBlock, KubernetesBlockMetadata, KubernetesSelector
+from checkov.kubernetes.graph_builder.graph_components.edge_builders.K8SEdgeBuilder import K8SEdgeBuilder
 from checkov.kubernetes.graph_builder.graph_components.edge_builders.ServiceAccountEdgeBuilder import ServiceAccountEdgeBuilder
 from checkov.kubernetes.kubernetes_utils import DEFAULT_NESTED_RESOURCE_TYPE, is_invalid_k8_definition, get_resource_id, is_invalid_k8_pod_definition, \
     remove_metadata_from_attribute, PARENT_RESOURCE_KEY_NAME, PARENT_RESOURCE_ID_KEY_NAME, SUPPORTED_POD_CONTAINERS_TYPES
@@ -21,8 +22,8 @@ from checkov.kubernetes.graph_builder.graph_components.edge_builders.NetworkPoli
 class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
     def __init__(self, definitions: dict[str, list[dict[str, Any]]]) -> None:
         self.definitions = definitions
-        self.edge_builders = (LabelSelectorEdgeBuilder, KeywordEdgeBuilder, NetworkPolicyEdgeBuilder,
-                              ServiceAccountEdgeBuilder())
+        self.edge_builders: list[type[K8SEdgeBuilder] | ServiceAccountEdgeBuilder] = \
+            [LabelSelectorEdgeBuilder, KeywordEdgeBuilder, NetworkPolicyEdgeBuilder, ServiceAccountEdgeBuilder()]
         super().__init__()
 
     def build_graph(self, render_variables: bool, graph_flags: K8sGraphFlags | None = None) -> None:
