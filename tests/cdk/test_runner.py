@@ -16,10 +16,10 @@ def test_runner_honors_enforcement_rules():
     test_file = EXAMPLES_DIR / "s3.ts"
 
     # when
-    filter = RunnerFilter(framework=[CheckType.CDK], use_enforcement_rules=True)
+    filter = RunnerFilter(framework=[CheckType.SAST], use_enforcement_rules=True)
     # this is not quite a true test, because the checks don't have severities. However, this shows that the check registry
     # passes the report type properly to RunnerFilter.should_run_check, and we have tests for that method
-    filter.enforcement_rule_configs = {CheckType.CDK: Severities[BcSeverities.OFF]}
+    filter.enforcement_rule_configs = {CheckType.SAST: Severities[BcSeverities.OFF]}
     report = CdkRunner().run(files=[str(test_file)], runner_filter=filter)
 
     # then
@@ -36,7 +36,7 @@ def test_runner_passing_check():
     test_file = EXAMPLES_DIR / "s3.ts"
 
     # when
-    report = CdkRunner().run(root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=["CKV_AWS_19"]))
+    report = CdkRunner().run(root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=["CKV_AWS_19"], framework=[CheckType.SAST]))
 
     # then
     summary = report[0].get_summary()
@@ -52,7 +52,8 @@ def test_runner_failing_check():
     test_file = EXAMPLES_DIR / "s3.ts"
 
     # when
-    report = CdkRunner().run(root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=["CKV_AWS_21"]))
+    report = CdkRunner().run(root_folder="", files=[str(test_file)],
+                             runner_filter=RunnerFilter(checks=["CKV_AWS_21"], framework=[CheckType.SAST]))
 
     # then
     summary = report[0].get_summary()
@@ -68,12 +69,12 @@ def test_runner_multiple_languages():
     test_dir = EXAMPLES_DIR
 
     # when
-    reports = CdkRunner().run(root_folder=str(test_dir), runner_filter=RunnerFilter(checks=["CKV_AWS_21"]))
+    reports = CdkRunner().run(root_folder=str(test_dir), runner_filter=RunnerFilter(checks=["CKV_AWS_21"], framework=[CheckType.SAST]))
 
     # then
     assert len(reports) == 2
 
-    report_python = next(iter(report for report in reports if report.check_type == "cdk_python"))
+    report_python = next(iter(report for report in reports if report.check_type == "sast_python"))
     summary_python = report_python.get_summary()
 
     assert summary_python["passed"] == 0
@@ -83,7 +84,7 @@ def test_runner_multiple_languages():
 
     assert report_python.failed_checks[0].check_id == "CKV_AWS_21"
 
-    report_typescript = next(iter(report for report in reports if report.check_type == "cdk_typescript"))
+    report_typescript = next(iter(report for report in reports if report.check_type == "sast_typescript"))
     summary_typescript = report_typescript.get_summary()
 
     assert summary_typescript["passed"] == 0

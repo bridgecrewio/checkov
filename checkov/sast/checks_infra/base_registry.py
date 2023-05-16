@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
+from pathlib import Path
 
 import yaml
 from typing import List, Any, Optional, Set, Dict, Iterable
@@ -14,6 +15,8 @@ from checkov.sast.checks_infra.checks_parser import SastCheckParser
 from checkov.sast.consts import SastLanguages
 from checkov.common.checks_infra.registry import CHECKS_POSSIBLE_ENDING
 
+logger = logging.getLogger(__name__)
+
 
 class Registry(BaseCheckRegistry):
     def __init__(self, checks_dir: str, temp_semgrep_rules_path: str | None = None) -> None:
@@ -23,6 +26,7 @@ class Registry(BaseCheckRegistry):
         self.logger = logging.getLogger(__name__)
         self.parser = SastCheckParser()
         self.runner_filter: Optional[RunnerFilter] = None
+        self.checks_dirs_path: List[str] = [checks_dir]
         self.temp_semgrep_rules_path = temp_semgrep_rules_path if temp_semgrep_rules_path else \
             os.path.join(self.checks_dir, 'temp_semgrep_rules.yaml')
 
@@ -32,6 +36,22 @@ class Registry(BaseCheckRegistry):
 
     def set_runner_filter(self, runner_filter: RunnerFilter) -> None:
         self.runner_filter = runner_filter
+
+    def add_external_dirs(self, external_dirs: Optional[List[str]]) -> None:
+        if external_dirs:
+            for path in external_dirs:
+                if os.path.exists(path):
+                    if not os.path.isabs(path):
+                        path = os.path.abspath(path)
+                    self.checks_dirs_path.append(path)
+                else:
+                    logger.warning(f"path: {path} not found")
+
+    def load_semgrep_checks(self, languages: Set[SastLanguages]) -> int:
+        rules_loaded = 0
+        for dir in self.checks_dirs_path:
+            rules_loaded += self._load_checks_from_dir(dir, languages)
+        return rules_loaded
 
     def load_rules(self, frameworks: Iterable[str], sast_languages: Optional[Set[SastLanguages]]) -> int:
         actual_sast_languages = sast_languages if 'all' not in frameworks else SastLanguages.set()
@@ -93,8 +113,13 @@ class Registry(BaseCheckRegistry):
 
     def create_temp_rules_file(self) -> None:
         rules_obj = {'rules': self.rules}
+
+        temp_yaml_file = Path(self.temp_semgrep_rules_path)
+        if not temp_yaml_file.exists():
+            temp_yaml_file.touch(exist_ok=True)
+
         with open(self.temp_semgrep_rules_path, 'w') as tempfile:
-            yaml.safe_dump(rules_obj, tempfile)
+            yaml.safe_dump(rules_obj, tempfile, indent=2)
         logging.debug(f'created semgrep temporary rules file at: {self.temp_semgrep_rules_path}')
 
     def delete_temp_rules_file(self) -> None:

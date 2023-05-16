@@ -1,6 +1,8 @@
 from checkov.common.bridgecrew.check_type import CheckType
+from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.models.enums import CheckResult
-from checkov.sast.consts import SastLanguages
+from checkov.sast.consts import SastLanguages, SastEngines
+from checkov.sast.engines.semgrep_engine import SemgrepEngine
 from checkov.sast.runner import Runner
 from checkov.runner_filter import RunnerFilter
 import pathlib
@@ -151,6 +153,47 @@ def test_sast_runner():
 def test_get_generic_ast():
     cur_dir = pathlib.Path(__file__).parent.resolve()
     path = os.path.join(cur_dir, 'source_code', 'external_check', 'fail.py')
-    result = Runner._get_generic_ast(SastLanguages.PYTHON, path)
+    result = SemgrepEngine._get_generic_ast(SastLanguages.PYTHON, path)
     result_json = json.dumps(result).replace(str(cur_dir), '')
     assert json.dumps(get_generic_ast_mock()) == result_json
+
+def test_sast_prisma_runner_missing_key(mocker):
+    mocker.patch("checkov.sast.engines.prisma_engine.PrismaEngine.run_go_library", return_value=[])
+    mocker.patch("checkov.sast.engines.prisma_engine.PrismaEngine.setup_sast_artifact", return_value='')
+    mocker.patch("checkov.sast.engines.prisma_engine.PrismaEngine.get_sast_artifact", return_value='')
+
+    runner = Runner()
+    runner.registry.temp_semgrep_rules_path = os.path.join(pathlib.Path(__file__).parent.resolve(),
+                                                           'test_runner_temp_rules.yaml')
+    cur_dir = pathlib.Path(__file__).parent.resolve()
+    source = os.path.join(cur_dir / 'source_code' / 'external_check')
+    external_dir_checks = os.path.join(cur_dir, 'external_checks')
+    reports = runner.run(source,
+                         runner_filter=RunnerFilter(framework=['sast'], checks=['CKV3_SAST_11', 'seam-log-injection']),
+                         external_checks_dir=[external_dir_checks],)
+
+    assert len(reports) == 2
+    assert runner.get_engine() == SastEngines.SEMGREP
+
+def test_sast_prisma_runner(mocker):
+    temp = bc_integration.bc_api_key
+    bc_integration.bc_api_key = "123456"
+
+    mocker.patch("checkov.sast.engines.prisma_engine.PrismaEngine.run_go_library", return_value=[])
+    mocker.patch("checkov.sast.engines.prisma_engine.PrismaEngine.setup_sast_artifact", return_value='')
+    mocker.patch("checkov.sast.engines.prisma_engine.PrismaEngine.get_sast_artifact", return_value='')
+
+    runner = Runner()
+    runner.registry.temp_semgrep_rules_path = os.path.join(pathlib.Path(__file__).parent.resolve(),
+                                                           'test_runner_temp_rules.yaml')
+    cur_dir = pathlib.Path(__file__).parent.resolve()
+    source = os.path.join(cur_dir / 'source_code' / 'external_check')
+    external_dir_checks = os.path.join(cur_dir, 'external_checks')
+    reports = runner.run(source,
+                         runner_filter=RunnerFilter(framework=['sast'], checks=['CKV3_SAST_11', 'seam-log-injection']),
+                         external_checks_dir=[external_dir_checks],)
+
+    assert runner.get_engine() == SastEngines.PRISMA
+    bc_integration.bc_api_key = temp
+
+    assert len(reports) == 0

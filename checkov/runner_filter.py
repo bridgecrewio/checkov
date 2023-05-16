@@ -134,7 +134,7 @@ class RunnerFilter(object):
         self.resource_attr_to_omit: DefaultDict[str, Set[str]] = RunnerFilter._load_resource_attr_to_omit(
             resource_attr_to_omit
         )
-        self.sast_languages: Optional[Set[SastLanguages]] = RunnerFilter.get_sast_languages(framework)
+        self.sast_languages: Set[SastLanguages] = RunnerFilter.get_sast_languages(framework)
         if self.sast_languages:
             self.framework = [item for item in self.framework if not item.startswith(CheckType.SAST)]
             self.framework.append(CheckType.SAST)
@@ -372,7 +372,7 @@ class RunnerFilter(object):
         self.suppressed_policies = policy_level_suppressions
 
     @staticmethod
-    def get_sast_languages(frameworks: Optional[List[str]]) -> Optional[Set[SastLanguages]]:
+    def get_sast_languages(frameworks: Optional[List[str]]) -> Set[SastLanguages]:
         langs: Set[SastLanguages] = set()
         if not frameworks:
             return langs

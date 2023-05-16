@@ -75,7 +75,8 @@ setup(
         "schema",
         "requests>=2.27.0",
         "yarl",
-        "semgrep==1.10.0"
+        "semgrep==1.10.0",
+        "pydantic==1.10.7"
     ],
     dependency_links=[],  # keep it empty, needed for pipenv-setup
     license="Apache License 2.0",

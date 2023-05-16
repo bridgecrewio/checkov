@@ -77,9 +77,9 @@ class SastRecord(Record):
         cwe_message = colored(f'\t{self.cwe}\n') if self.cwe else ''
 
         if self.check_result["result"] == CheckResult.FAILED and code_lines and not compact:
-            return f"{check_message}{status_message}{severity_message}{cwe_message}{detail}{caller_file_details}{guideline_message}{code_lines}{evaluation_message}"
+            return f"{check_message}{status_message}{severity_message}{cwe_message}{detail}{caller_file_details}{guideline_message}{code_lines}{evaluation_message}\n"
 
         if self.check_result["result"] == CheckResult.SKIPPED:
-            return f"{check_message}{status_message}{severity_message}{cwe_message}{suppress_comment}{detail}{caller_file_details}{guideline_message}"
+            return f"{check_message}{status_message}{severity_message}{cwe_message}{suppress_comment}{detail}{caller_file_details}{guideline_message}\n"
         else:
-            return f"{check_message}{status_message}{severity_message}{cwe_message}{detail}{caller_file_details}{evaluation_message}{guideline_message}"
+            return f"{check_message}{status_message}{severity_message}{cwe_message}{detail}{caller_file_details}{evaluation_message}{guideline_message}\n"
