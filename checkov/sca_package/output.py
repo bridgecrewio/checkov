@@ -10,7 +10,7 @@ from prettytable import PrettyTable, SINGLE_BORDER
 
 from checkov.common.bridgecrew.severities import BcSeverities
 from checkov.common.models.enums import CheckResult
-from checkov.common.output.common import compare_table_items_severity, validate_lines
+from checkov.common.output.common import compare_table_items_severity
 from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME, SCA_LICENSE_CHECK_NAME
 from checkov.common.packaging import version as packaging_version
 from checkov.common.sca.commons import UNFIXABLE_VERSION
