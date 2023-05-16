@@ -451,7 +451,8 @@ def test_create_cli_license_violations_table():
     # when
     table = create_cli_license_violations_table(
         file_path=file_path,
-        package_licenses_details_map=package_licenses_details_map
+        package_licenses_details_map=package_licenses_details_map,
+        lines_details_found=False
     )
 
     # then
