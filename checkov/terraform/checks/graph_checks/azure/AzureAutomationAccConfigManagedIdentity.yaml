@@ -1,7 +1,7 @@
 metadata:
   id: "CKV2_AZURE_36"
   name: "Ensure Azure automation account is configured with managed identity"
-  category: "GENERAL_SECURITY"
+  category: "IAM"
 
 definition:
   and:

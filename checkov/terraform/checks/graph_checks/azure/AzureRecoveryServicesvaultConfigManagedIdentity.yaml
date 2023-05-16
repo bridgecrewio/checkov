@@ -1,7 +1,7 @@
 metadata:
   id: "CKV2_AZURE_35"
   name: "Ensure Azure recovery services vault is configured with managed identity"
-  category: "GENERAL_SECURITY"
+  category: "IAM"
 
 definition:
   and:

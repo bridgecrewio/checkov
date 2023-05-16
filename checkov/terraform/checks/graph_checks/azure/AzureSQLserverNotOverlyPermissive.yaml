@@ -1,7 +1,7 @@
 metadata:
   id: "CKV2_AZURE_34"
   name: "Ensure Azure SQL server firewall is not overly permissive"
-  category: "GENERAL_SECURITY"
+  category: "NETWORKING"
 
 definition:
   or:
