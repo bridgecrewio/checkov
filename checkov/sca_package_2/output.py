@@ -14,7 +14,7 @@ from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME, SC
 from checkov.common.output.common import get_package_name_with_lines, validate_lines
 from checkov.common.packaging import version as packaging_version
 from checkov.common.sca.commons import UNFIXABLE_VERSION, get_package_alias
-from checkov.common.typing import _LicenseStatus, _LicenseStatusWithLines
+from checkov.common.typing import _LicenseStatusWithLines
 from checkov.common.output.common import compare_table_items_severity
 
 

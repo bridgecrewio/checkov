@@ -139,8 +139,7 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                                        package_version=record.vulnerability_details["package_version"],
                                        policy=record.vulnerability_details["policy"],
                                        license=record.vulnerability_details["license"],
-                                       status=record.vulnerability_details["status"],
-                                       file_line_range=lines)
+                                       status=record.vulnerability_details["status"])
                     )
 
             if package_name in package_cves_details_map:
