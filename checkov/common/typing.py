@@ -95,6 +95,7 @@ class _LicenseStatus(TypedDict):
     policy: str
     license: str
     status: str
+    file_line_range: list[int]
 
 
 class _EntityContext(TypedDict, total=False):
