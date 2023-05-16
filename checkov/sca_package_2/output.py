@@ -101,9 +101,8 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
         package_cves_details_map: dict[str, dict[str, Any]] = defaultdict(dict)
         package_licenses_details_map = defaultdict(list)
         should_print_licenses_table = False
-
+        lines_details_found = False
         for root_package_alias, records in packages.items():
-            lines_details_found = False
             fix_versions_lists = []
             for record in records:
                 if not record.vulnerability_details:
