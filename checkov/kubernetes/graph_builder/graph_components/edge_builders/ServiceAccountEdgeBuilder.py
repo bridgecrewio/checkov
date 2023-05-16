@@ -12,7 +12,7 @@ class VertexConncetions:
 
 class ServiceAccountEdgeBuilder(K8SEdgeBuilder):
     def __init__(self) -> None:
-        self._cache = {}
+        self._cache: dict[str, VertexConncetions] = {}
 
     @staticmethod
     def should_search_for_edges(vertex: KubernetesBlock) -> bool:
@@ -26,7 +26,7 @@ class ServiceAccountEdgeBuilder(K8SEdgeBuilder):
             self._cache[service_account_name] = VertexConncetions(index)
 
     def find_connections(self, vertex: KubernetesBlock, vertices: list[KubernetesBlock]) -> list[int]:
-        if self._cache == {}:
+        if not self._cache:
             self._find_all_service_accounts(vertices)
             for index, destination_vertex in enumerate(vertices):
                 if destination_vertex.id == vertex.id:
@@ -37,5 +37,6 @@ class ServiceAccountEdgeBuilder(K8SEdgeBuilder):
                     self._cache[destination_vertex_ref].destination_vertices_indices.append(index)
 
         vertex_ref = vertex.attributes.get('metadata.name')
+        if vertex_ref is None:
+            return []
         return self._cache[vertex_ref].destination_vertices_indices
-
