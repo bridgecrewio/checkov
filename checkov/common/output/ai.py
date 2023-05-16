@@ -101,7 +101,7 @@ class OpenAi:
         if 0 < OPENAI_MAX_FINDINGS < len(records):
             # the higher severities should be preferred
             sorted_records = sorted(
-                records, key=lambda record: record.severity.level if record.severity else 0, reverse=True
+                records, key=lambda record: record.severity.level if record.severity else 0, reverse=True  # type:ignore[has-type]
             )
 
             # to protect the user, just take the last x findings
