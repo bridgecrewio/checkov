@@ -24,8 +24,14 @@ class ServiceAccountEdgeBuilder(K8SEdgeBuilder):
             if vertex.attributes.get('kind') != 'ServiceAccount' or service_account_name is None:
                 continue
             self._cache[service_account_name] = VertexConncetions(index)
+        return
 
-    def find_connections(self, vertex: KubernetesBlock, vertices: list[KubernetesBlock]) -> list[int]:
+    @staticmethod
+    def find_connections(vertex: KubernetesBlock, vertices: list[KubernetesBlock]) -> list[int]:
+        # DEPRECATED - this is just here for this builder to support the interface. Use `find_connections_for_instance`
+        raise NotImplementedError
+
+    def find_connections_for_instance(self, vertex: KubernetesBlock, vertices: list[KubernetesBlock]) -> list[int]:
         if not self._cache:
             self._find_all_service_accounts(vertices)
             for index, destination_vertex in enumerate(vertices):
