@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, TypeVar, Set, Union, Optional
+from typing import TYPE_CHECKING, Any, Callable, Dict, TypeVar, Set, Union
 from typing_extensions import TypeAlias, TypedDict
 
 if TYPE_CHECKING:
@@ -98,7 +98,7 @@ class _LicenseStatus(TypedDict):
 
 
 class _LicenseStatusWithLines(_LicenseStatus):
-    file_line_range: Optional[list[int]]
+    file_line_range: list[int] | None  # noqa: CCE003  # a static attribute
 
 
 class _EntityContext(TypedDict, total=False):
