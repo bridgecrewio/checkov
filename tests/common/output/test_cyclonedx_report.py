@@ -249,12 +249,12 @@ def test_create_library_component_maven_package_without_group_name() -> None:
         file_abs_path="/path/to/Dockerfile",
         file_path=rootless_file_path,
         resource=f"{rootless_file_path}.{package['name']}",
+        file_line_range=[2, 5],
         vulnerability_details={
             "package_name": package["name"],
             "package_version": package["version"],
             "licenses": "Unknown",
-            "package_type": 'jar',
-            "lines": [2, 5]
+            "package_type": 'jar'
         },
     )
 

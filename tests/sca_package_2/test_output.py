@@ -64,7 +64,7 @@ def test_create_report_cve_record():
             == "Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover. ..."
     )
     assert record.file_abs_path == file_abs_path
-    assert record.file_line_range == [0, 0]
+    assert record.file_line_range == [5, 10]
     assert record.file_path == f"/{rootless_file_path}"
     assert record.repo_file_path == file_abs_path
     assert record.resource == "requirements.txt.django"
@@ -79,7 +79,6 @@ def test_create_report_cve_record():
     assert record.vulnerability_details["licenses"] == 'OSI_BDS'
     assert record.vulnerability_details["root_package_version"] == "1.12"
     assert record.vulnerability_details["root_package_name"] == "django"
-    assert record.vulnerability_details["lines"] == [5, 10]
 
 
 def test_create_report_cve_record_results_from_platform():

@@ -160,6 +160,7 @@ def create_report_cve_record(
         }
 
     code_block = [(0, f"{package_name}: {package_version}")]
+    file_line_range = package.get("lines") or file_line_range or [0, 0]
 
     details = {
         "id": cve_id,
@@ -179,7 +180,6 @@ def create_report_cve_record(
         "licenses": licenses,
         "root_package_name": root_package_name,
         "root_package_version": root_package_version,
-        "lines": package.get("lines", "")
     }
     if used_private_registry:
         details["is_private_fix"] = vulnerability_details.get("isPrivateRegFix", False)
@@ -196,7 +196,7 @@ def create_report_cve_record(
         check_result=check_result,
         code_block=code_block,
         file_path=get_file_path_for_record(rootless_file_path),
-        file_line_range=file_line_range or [0, 0],
+        file_line_range=file_line_range,
         resource=get_resource_for_record(rootless_file_path, package_name),
         check_class=check_class,
         evaluations=None,
@@ -512,6 +512,7 @@ def add_extra_resources_to_report(report: Report, scanned_file_path: str, rootle
             file_abs_path=scanned_file_path,
             file_path=get_file_path_for_record(rootless_file_path),
             resource=get_resource_for_record(rootless_file_path, package_name),
+            file_line_range=package.get("lines"),
             vulnerability_details={
                 "package_name": package_name,
                 "package_version": package_version,
@@ -519,8 +520,7 @@ def add_extra_resources_to_report(report: Report, scanned_file_path: str, rootle
                 "is_private_registry": package.get("isPrivateRegistry", False),
                 "licenses": format_licenses_to_string(
                     licenses_per_package_map[package_alias]),
-                "package_type": get_package_type(package_name, package_version, sca_details),
-                "lines": package.get("lines", "")
+                "package_type": get_package_type(package_name, package_version, sca_details)
             },
         )
     )
