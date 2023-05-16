@@ -95,6 +95,9 @@ class _LicenseStatus(TypedDict):
     policy: str
     license: str
     status: str
+
+
+class _LicenseStatusWithLines(_LicenseStatus):
     file_line_range: list[int]
 
 

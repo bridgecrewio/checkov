@@ -14,7 +14,7 @@ from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME, SC
 from checkov.common.output.common import get_package_name_with_lines, validate_lines
 from checkov.common.packaging import version as packaging_version
 from checkov.common.sca.commons import UNFIXABLE_VERSION, get_package_alias
-from checkov.common.typing import _LicenseStatus
+from checkov.common.typing import _LicenseStatus, _LicenseStatusWithLines
 from checkov.common.output.common import compare_table_items_severity
 
 
@@ -167,12 +167,12 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                     if lines:
                         lines_details_found_licenses = True
                     package_licenses_details_map[package_name].append(
-                        _LicenseStatus(package_name=package_name,
-                                       package_version=package_version,
-                                       policy=record.vulnerability_details["policy"],
-                                       license=record.vulnerability_details["license"],
-                                       status=record.vulnerability_details["status"],
-                                       file_line_range=lines)
+                        _LicenseStatusWithLines(package_name=package_name,
+                                                package_version=package_version,
+                                                policy=record.vulnerability_details["policy"],
+                                                license=record.vulnerability_details["license"],
+                                                status=record.vulnerability_details["status"],
+                                                file_line_range=lines)
                     )
 
             if root_package_alias in package_cves_details_map:
@@ -202,7 +202,7 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
 
 
 def create_cli_license_violations_table(file_path: str,
-                                        package_licenses_details_map: Dict[str, List[_LicenseStatus]],
+                                        package_licenses_details_map: Dict[str, List[_LicenseStatusWithLines]],
                                         lines_details_found: bool) -> str:
     package_table_lines: List[str] = []
     columns = 5
@@ -234,14 +234,15 @@ def create_cli_license_violations_table(file_path: str,
                 col_package_version = license_status["package_version"]
 
             curr_row = [
-                    col_package_name,
-                    col_package_version,
-                    license_status["policy"],
-                    license_status["license"],
-                    license_status["status"],
-                ]
+                col_package_name,
+                col_package_version,
+                license_status["policy"],
+                license_status["license"],
+                license_status["status"],
+            ]
             if lines_details_found:
-                curr_row.insert(1, license_status["file_line_range"])
+                lines = validate_lines(license_status["file_line_range"])
+                curr_row.insert(1, f"{lines[0]}-{lines[0]}" if lines else "")
             package_table.add_row(curr_row)
 
         package_table.align = "l"

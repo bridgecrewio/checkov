@@ -10,7 +10,7 @@ from prettytable import PrettyTable, SINGLE_BORDER
 
 from checkov.common.bridgecrew.severities import BcSeverities
 from checkov.common.models.enums import CheckResult
-from checkov.common.output.common import compare_table_items_severity
+from checkov.common.output.common import compare_table_items_severity, validate_lines
 from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME, SCA_LICENSE_CHECK_NAME
 from checkov.common.packaging import version as packaging_version
 from checkov.common.sca.commons import UNFIXABLE_VERSION
@@ -101,7 +101,7 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                     #  this shouldn't happen
                     logging.error(f"'vulnerability_details' is not set for {record.check_id}")
                     continue
-
+                lines = validate_lines(record.file_line_range)
                 if record.check_name == SCA_PACKAGE_SCAN_CHECK_NAME:
                     cve_count.total += 1
 
@@ -139,7 +139,8 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                                        package_version=record.vulnerability_details["package_version"],
                                        policy=record.vulnerability_details["policy"],
                                        license=record.vulnerability_details["license"],
-                                       status=record.vulnerability_details["status"])
+                                       status=record.vulnerability_details["status"],
+                                       file_line_range=lines)
                     )
 
             if package_name in package_cves_details_map:
