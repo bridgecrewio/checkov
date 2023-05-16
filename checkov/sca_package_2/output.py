@@ -11,6 +11,7 @@ from prettytable import PrettyTable, SINGLE_BORDER
 from checkov.common.bridgecrew.severities import BcSeverities
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME, SCA_LICENSE_CHECK_NAME
+from checkov.common.output.common import get_package_name_with_lines
 from checkov.common.packaging import version as packaging_version
 from checkov.common.sca.commons import UNFIXABLE_VERSION, get_package_alias
 from checkov.common.typing import _LicenseStatus
@@ -149,7 +150,9 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                                                                                          ""),
                             "package_name": package_name,
                             "package_version": package_version,
-                            "is_private_fix": record.vulnerability_details.get("is_private_fix", None)
+                            "lines": record.file_line_range,
+                            "root_package_lines": record.vulnerability_details.get("root_package_file_line_range"),
+                            "is_private_fix": record.vulnerability_details.get("is_private_fix")
                         }
                     )
                 elif record.check_name == SCA_LICENSE_CHECK_NAME:
@@ -331,7 +334,7 @@ def create_package_overview_table_part(
     package_table = PrettyTable(min_table_width=table_width, max_table_width=table_width)
     package_table.set_style(SINGLE_BORDER)
     package_table.field_names = [
-        "Package",
+        "Package (Lines)",
         "CVE ID",
         "Severity",
         "Current version",
@@ -360,9 +363,10 @@ def create_package_overview_table_part(
             if cve_idx == 0:
                 cur_compliant_version = compliant_version + is_public_overview if compliant_version and compliant_version != UNFIXABLE_VERSION else compliant_version
                 if not is_root:  # no cves on root package
+                    package_name_col_val = get_package_name_with_lines(cve["root_package_name"], cve.get("root_package_lines"))
                     package_table.add_row(
                         [
-                            cve["root_package_name"],
+                            package_name_col_val,
                             "",
                             "",
                             cve["root_package_version"],
@@ -391,6 +395,7 @@ def create_package_overview_table_part(
                     package_name_col_val = " ".join([dep_sign, package_name])
                 else:
                     package_name_col_val = package_name
+                package_name_col_val = get_package_name_with_lines(package_name_col_val, cve.get("lines"))
             elif dep_sign:
                 package_name_col_val = dep_sign
 

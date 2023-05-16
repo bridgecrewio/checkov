@@ -59,3 +59,9 @@ def validate_lines(lines: list[int] | None) -> list[int] | None:
     if lines and lines[0] > 0 and lines[1] > 0:
         return lines
     return None
+
+
+def get_package_name_with_lines(package_name: str, lines: list[int] | None) -> str:
+    if lines and validate_lines(lines):
+        return f"{package_name} ({lines[0]}-{lines[1]})"
+    return package_name
