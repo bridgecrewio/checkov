@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.243...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.245...HEAD)
+
+## [2.3.245](https://github.com/bridgecrewio/checkov/compare/2.3.243...2.3.245) - 2023-05-16
+
+### Feature
+
+- **dockerfile:** Support docker graph check skips - [#5085](https://github.com/bridgecrewio/checkov/pull/5085)
+- **sca:** using the lines in the directly in the record, rather than in the "vulnerability_details" + having it in ExtraResources - [#5092](https://github.com/bridgecrewio/checkov/pull/5092)
 
 ## [2.3.243](https://github.com/bridgecrewio/checkov/compare/2.3.240...2.3.243) - 2023-05-15
 
