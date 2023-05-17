@@ -142,7 +142,7 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                             fix_versions_lists.append([parsed_version])
 
                     root_package_lines = validate_lines(record.vulnerability_details.get("root_package_file_line_range"))
-                    if lines and root_package_lines:
+                    if lines or root_package_lines:
                         lines_details_found_cves = True
 
                     package_cves_details_map[root_package_alias].setdefault("cves", []).append(
@@ -167,7 +167,7 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                     should_print_licenses_table = True
                     if lines:
                         lines_details_found_licenses = True
-                    package_licenses_details_map[package_name].append(
+                    package_licenses_details_map[get_package_alias(package_name, package_version)].append(
                         _LicenseStatusWithLines(package_name=package_name,
                                                 package_version=package_version,
                                                 policy=record.vulnerability_details["policy"],
@@ -221,7 +221,7 @@ def create_cli_license_violations_table(file_path: str,
     if lines_details_found:
         field_names.insert(1, "Package lines")
     package_table.field_names = field_names
-    for package_idx, (package_name, license_statuses) in enumerate(package_licenses_details_map.items()):
+    for package_idx, (_, license_statuses) in enumerate(package_licenses_details_map.items()):
         if package_idx > 0:
             del package_table_lines[-1]
             package_table.header = False
@@ -230,9 +230,11 @@ def create_cli_license_violations_table(file_path: str,
         for idx, license_status in enumerate(license_statuses):
             col_package_name = ""
             col_package_version = ""
+            col_lines = None
             if idx == 0:
-                col_package_name = package_name
+                col_package_name = license_status["package_name"]
                 col_package_version = license_status["package_version"]
+                col_lines = validate_lines(license_status["lines"])
 
             curr_row = [
                 col_package_name,
@@ -242,8 +244,7 @@ def create_cli_license_violations_table(file_path: str,
                 license_status["status"],
             ]
             if lines_details_found:
-                lines = validate_lines(license_status["lines"])
-                curr_row.insert(1, f"{lines[0]}-{lines[0]}" if lines else "")
+                curr_row.insert(1, f"{col_lines[0]}-{col_lines[1]}" if col_lines else "")
             package_table.add_row(curr_row)
 
         package_table.align = "l"
