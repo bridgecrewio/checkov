@@ -98,7 +98,7 @@ class _LicenseStatus(TypedDict):
 
 
 class _LicenseStatusWithLines(_LicenseStatus):
-    file_line_range: list[int] | None  # noqa: CCE003  # a static attribute
+    lines: list[int] | None  # noqa: CCE003  # a static attribute
 
 
 class _EntityContext(TypedDict, total=False):
