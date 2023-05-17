@@ -352,7 +352,7 @@ def create_package_overview_table_part(
     package_table = PrettyTable(min_table_width=table_width, max_table_width=table_width)
     package_table.set_style(SINGLE_BORDER)
     package_table.field_names = [
-        "Package (Lines)" if lines_details_found else "Package",
+        "Package [Lines]" if lines_details_found else "Package",
         "CVE ID",
         "Severity",
         "Current version",
