@@ -353,7 +353,8 @@ def test_create_cli_cves_table():
                       "root_package_version:": "1.2",
                       "package_name": 'django',
                       "package_version": "1.2",
-                      "is_private_fix": None},
+                      "is_private_fix": None,
+                      "lines": [1, 2]},
                      {'id': 'CVE-2016-6186', 'severity': 'medium', 'fixed_version': '1.8.14',
                       "root_package_name": 'django',
                       "root_package_version:": "1.2",
@@ -391,7 +392,7 @@ def test_create_cli_cves_table():
         file_path=file_path,
         cve_count=cve_count,
         package_details_map=package_details_map,
-        lines_details_found=False
+        lines_details_found=True
     )
 
     # then
@@ -403,9 +404,9 @@ def test_create_cli_cves_table():
             "\t├──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┤\n",
             "\t│ To fix 5/5 CVEs, go to https://www.bridgecrew.cloud/                                                                                    │\n",
             "\t├──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┤\n",
-            "\t│ Package              │ CVE ID               │ Severity             │ Current version      │ Root fixed version   │ Compliant version    │\n",
+            "\t│ Package [Lines]      │ CVE ID               │ Severity             │ Current version      │ Root fixed version   │ Compliant version    │\n",
             "\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n",
-            "\t│ django               │ CVE-2016-7401        │ high                 │ 1.2                  │ 1.8.15               │ 2.2.24               │\n",
+            "\t│ django [1-2]         │ CVE-2016-7401        │ high                 │ 1.2                  │ 1.8.15               │ 2.2.24               │\n",
             "\t│                      │ CVE-2016-6186        │ medium               │                      │ 1.8.14               │                      │\n",
             "\t│                      │ CVE-2021-33203       │ medium               │                      │ 2.2.24               │                      │\n",
             "\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n",
