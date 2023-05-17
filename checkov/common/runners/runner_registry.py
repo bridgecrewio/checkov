@@ -49,6 +49,8 @@ if TYPE_CHECKING:
     from checkov.common.output.baseline import Baseline
     from checkov.common.runners.base_runner import BaseRunner  # noqa
     from checkov.runner_filter import RunnerFilter
+    from igraph import Graph
+    from networkx import DiGraph
 
 CONSOLE_OUTPUT = "console"
 CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
@@ -78,6 +80,7 @@ class RunnerRegistry:
         self._check_type_to_report_map: dict[str, Report] = {}  # used for finding reports with the same check type
         self.licensing_integration = licensing_integration  # can be maniuplated by unit tests
         self.secrets_omitter_class = secrets_omitter_class
+        self.check_type_to_graph: dict[str, Graph | DiGraph] = {}
         for runner in runners:
             if isinstance(runner, image_runner):
                 runner.image_referencers = self.image_referencing_runners
@@ -158,6 +161,9 @@ class RunnerRegistry:
 
         for scan_report in merged_reports:
             self._handle_report(scan_report, repo_root_for_plan_enrichment)
+
+        self.check_type_to_graph = {runner.check_type: runner.graph_manager.get_reader_endpoint() for runner
+                                    in self.runners if runner.graph_manager}
         return self.scan_reports
 
     def _merge_reports(self, reports: Iterable[Report | list[Report]]) -> list[Report]:

@@ -9,7 +9,7 @@ resource "azurerm_sql_server" "okExample" {
   location                     = azurerm_resource_group.okExample.location
   version                      = "12.0"
   administrator_login          = "4dm1n157r470r"
-  administrator_login_password = "4-v3ry-53cr37-p455w0rd"
+  administrator_login_password = "4-v3ry-53cr37-p455w0rd"  # checkov:skip=CKV_SECRET_6 test secret
 }
 
 resource "azurerm_storage_account" "okExample" {
@@ -66,7 +66,7 @@ resource "azurerm_sql_server" "badExample" {
   location                     = azurerm_resource_group.badExample.location
   version                      = "12.0"
   administrator_login          = "mradministrator"
-  administrator_login_password = "thisIsDog11"
+  administrator_login_password = "thisIsDog11"  # checkov:skip=CKV_SECRET_6 test secret
 
   extended_auditing_policy {
     storage_endpoint                        = azurerm_storage_account.badExample.primary_blob_endpoint

@@ -41,7 +41,7 @@ from checkov.common.bridgecrew.integration_features.features.licensing_integrati
 from checkov.common.bridgecrew.severities import BcSeverities
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.output.baseline import Baseline
-from checkov.common.bridgecrew.check_type import checkov_runners
+from checkov.common.bridgecrew.check_type import checkov_runners, CheckType
 from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.common.util import prompt
 from checkov.common.util.banner import banner as checkov_banner, tool as checkov_tool
@@ -81,6 +81,8 @@ if TYPE_CHECKING:
     from checkov.common.output.report import Report
     from configargparse import Namespace
     from typing_extensions import Literal
+    from igraph import Graph
+    from networkx import DiGraph
 
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
@@ -126,6 +128,7 @@ class Checkov:
         self.runners = DEFAULT_RUNNERS
         self.scan_reports: "list[Report]" = []
         self.run_metadata: dict[str, str | list[str]] = {}
+        self.graphs: dict[str, DiGraph | Graph] = {}
         self.url: str | None = None
 
         self.parse_config(argv=argv)
@@ -421,7 +424,11 @@ class Checkov:
             bc_cloned_checks = custom_policies_integration.bc_cloned_checks
             runner_filter.bc_cloned_checks = bc_cloned_checks
             custom_policies_integration.policy_level_suppression = list(policy_level_suppression.keys())
-            runner_filter.run_image_referencer = licensing_integration.should_run_image_referencer()
+
+            if any(framework in runner_filter.framework for framework in ("all", CheckType.SCA_IMAGE)):
+                # only run image referencer, when sca_image framework is enabled
+                runner_filter.run_image_referencer = licensing_integration.should_run_image_referencer()
+
             runner_filter.filtered_policy_ids = policy_metadata_integration.filtered_policy_ids
             logger.debug(f"Filtered list of policies: {runner_filter.filtered_policy_ids}")
 
@@ -465,18 +472,23 @@ class Checkov:
                         external_checks_dir=external_checks_dir,
                         files=file,
                     )
+                    self.graphs = runner_registry.check_type_to_graph
                     if runner_registry.is_error_in_reports(self.scan_reports):
                         self.exit_run()
                     if baseline:
                         baseline.compare_and_reduce_reports(self.scan_reports)
+
                     if bc_integration.is_integration_configured() \
                             and bc_integration.bc_source \
                             and bc_integration.bc_source.upload_results \
                             and not self.config.skip_results_upload:
+                        included_paths = [self.config.external_modules_download_path]
+                        for r in runner_registry.runners:
+                            included_paths.extend(r.included_paths())
                         self.upload_results(
                             root_folder=root_folder,
                             excluded_paths=runner_filter.excluded_paths,
-                            included_paths=[self.config.external_modules_download_path],
+                            included_paths=included_paths,
                             git_configuration_folders=git_configuration_folders,
                         )
 
@@ -521,14 +533,19 @@ class Checkov:
                     logger.error(f"SCA image runner returned {len(self.scan_reports)} reports; expected 1")
 
                 integration_feature_registry.run_post_runner(self.scan_reports[0])
+
                 if not self.config.skip_results_upload:
                     bc_integration.persist_repository(os.path.dirname(self.config.dockerfile_path), files=files)
                     bc_integration.persist_scan_results(self.scan_reports)
                     bc_integration.persist_image_scan_results(runner.raw_report, self.config.dockerfile_path,
                                                               self.config.docker_image,
                                                               self.config.branch)
+
                     bc_integration.persist_run_metadata(self.run_metadata)
+                    if bc_integration.enable_persist_graphs:
+                        bc_integration.persist_graphs(self.graphs)
                     self.url = self.commit_repository()
+
                 exit_code = self.print_results(runner_registry=runner_registry, url=self.url)
                 return exit_code
             elif self.config.file:
@@ -538,6 +555,7 @@ class Checkov:
                     files=self.config.file,
                     repo_root_for_plan_enrichment=self.config.repo_root_for_plan_enrichment,
                 )
+                self.graphs = runner_registry.check_type_to_graph
                 if runner_registry.is_error_in_reports(self.scan_reports):
                     self.exit_run()
                 if baseline:
@@ -623,6 +641,8 @@ class Checkov:
             bc_integration.persist_git_configuration(os.getcwd(), git_configuration_folders)
         bc_integration.persist_scan_results(self.scan_reports)
         bc_integration.persist_run_metadata(self.run_metadata)
+        if bc_integration.enable_persist_graphs:
+            bc_integration.persist_graphs(self.graphs)
         self.url = self.commit_repository()
 
     def print_results(

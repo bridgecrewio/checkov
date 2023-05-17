@@ -295,9 +295,6 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
                 record.set_guideline(check.guideline)
                 report.add_record(record=record)
 
-    def included_paths(self) -> Iterable[str]:
-        return []
-
     def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str],
                      start_line: int = -1, end_line: int = -1, graph_resource: bool = False) -> str:
         return f"{file_path}.{key}"
