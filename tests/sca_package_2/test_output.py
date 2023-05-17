@@ -428,14 +428,16 @@ def test_create_cli_license_violations_table():
                 "package_version": "1.2",
                 "license": "DUMMY_LICENSE",
                 "status": "OPEN",
-                "policy": "BC_LIC_1"
+                "policy": "BC_LIC_1",
+                "lines": [1, 2]
             },
             {
                 "package_name": "django",
                 "package_version": "1.2",
                 "license": "DUMMY_LICENSE2",
                 "status": "OPEN",
-                "policy": "BC_LIC_1"
+                "policy": "BC_LIC_1",
+                "lines": [0, 0]
             },
         ],
         "flask": [
@@ -444,7 +446,8 @@ def test_create_cli_license_violations_table():
                 "package_version": "0.6",
                 "license": "DUMMY_LICENSE3",
                 "status": "OPEN",
-                "policy": "BC_LIC_1"
+                "policy": "BC_LIC_1",
+                "lines": [0, 0]
             },
         ]
     }
@@ -453,21 +456,21 @@ def test_create_cli_license_violations_table():
     table = create_cli_license_violations_table(
         file_path=file_path,
         package_licenses_details_map=package_licenses_details_map,
-        lines_details_found=False
+        lines_details_found=True
     )
 
     # then
     assert table == "".join(
         [
             "\t/requirements.txt - Licenses Statuses:\n",
-            "\t┌──────────────────────────┬──────────────────────────┬──────────────────────────┬──────────────────────────┬───────────────────────────┐\n",
-            "\t│ Package name             │ Package version          │ Policy ID                │ License                  │ Status                    │\n",
-            "\t├──────────────────────────┼──────────────────────────┼──────────────────────────┼──────────────────────────┼───────────────────────────┤\n",
-            "\t│ django                   │ 1.2                      │ BC_LIC_1                 │ DUMMY_LICENSE            │ OPEN                      │\n",
-            "\t│                          │                          │ BC_LIC_1                 │ DUMMY_LICENSE2           │ OPEN                      │\n",
-            "\t├──────────────────────────┼──────────────────────────┼──────────────────────────┼──────────────────────────┼───────────────────────────┤\n",
-            "\t│ flask                    │ 0.6                      │ BC_LIC_1                 │ DUMMY_LICENSE3           │ OPEN                      │\n",
-            "\t└──────────────────────────┴──────────────────────────┴──────────────────────────┴──────────────────────────┴───────────────────────────┘\n",
+            "\t┌──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬───────────────────────┐\n",
+            "\t│ Package name         │ Package lines        │ Package version      │ Policy ID            │ License              │ Status                │\n",
+            "\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼───────────────────────┤\n",
+            "\t│ django               │ 1-1                  │ 1.2                  │ BC_LIC_1             │ DUMMY_LICENSE        │ OPEN                  │\n",
+            "\t│                      │                      │                      │ BC_LIC_1             │ DUMMY_LICENSE2       │ OPEN                  │\n",
+            "\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼───────────────────────┤\n",
+            "\t│ flask                │                      │ 0.6                  │ BC_LIC_1             │ DUMMY_LICENSE3       │ OPEN                  │\n",
+            "\t└──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴───────────────────────┘\n",
         ]
     )
 

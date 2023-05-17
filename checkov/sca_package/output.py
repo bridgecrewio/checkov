@@ -101,6 +101,7 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                     #  this shouldn't happen
                     logging.error(f"'vulnerability_details' is not set for {record.check_id}")
                     continue
+
                 if record.check_name == SCA_PACKAGE_SCAN_CHECK_NAME:
                     cve_count.total += 1
 

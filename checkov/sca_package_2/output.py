@@ -114,6 +114,7 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                 package_name = record.vulnerability_details["package_name"]
                 package_version = record.vulnerability_details["package_version"]
                 lines = validate_lines(record.file_line_range)
+
                 if record.check_name == SCA_PACKAGE_SCAN_CHECK_NAME:
                     cve_count.total += 1
 
@@ -172,7 +173,7 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                                                 policy=record.vulnerability_details["policy"],
                                                 license=record.vulnerability_details["license"],
                                                 status=record.vulnerability_details["status"],
-                                                file_line_range=lines)
+                                                lines=lines)
                     )
 
             if root_package_alias in package_cves_details_map:
@@ -241,7 +242,7 @@ def create_cli_license_violations_table(file_path: str,
                 license_status["status"],
             ]
             if lines_details_found:
-                lines = validate_lines(license_status["file_line_range"])
+                lines = validate_lines(license_status["lines"])
                 curr_row.insert(1, f"{lines[0]}-{lines[0]}" if lines else "")
             package_table.add_row(curr_row)
 
