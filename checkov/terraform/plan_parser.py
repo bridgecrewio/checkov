@@ -6,7 +6,7 @@ import logging
 from typing import Optional, Tuple, Dict, List, Any, cast
 
 from checkov.common.graph.graph_builder import CustomAttributes
-from checkov.common.parsers.node import DictNode, ListNode
+from checkov.common.parsers.node import ListNode
 from checkov.common.util.type_forcers import force_list
 from checkov.terraform.context_parsers.tf_plan import parse
 

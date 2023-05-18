@@ -3,13 +3,10 @@ from __future__ import annotations
 import json
 import logging
 from collections.abc import Hashable
-from typing import Dict, List, Union, Any, TYPE_CHECKING, Callable
+from typing import Dict, List, Union, Any, Callable
 
 from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.common.util.parser_utils import eval_string, split_merge_args, string_to_native, to_string
-
-if TYPE_CHECKING:
-    from typing_extensions import Literal
 
 #
 # Functions defined in this file implement terraform functions.

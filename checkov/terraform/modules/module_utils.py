@@ -22,8 +22,6 @@ from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_PREFIX
     is_nested, get_abs_path, get_module_from_full_path
 
 if TYPE_CHECKING:
-    from checkov.terraform import TFDefinitionKey
-    from collections.abc import Hashable
     from typing_extensions import TypeAlias
 
 _Conf = TypeVar("_Conf", bound="dict")

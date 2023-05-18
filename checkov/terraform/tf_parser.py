@@ -74,15 +74,17 @@ class TFParser:
         else:
             return False
 
-    def parse_directory(self, directory: str,
-                        out_evaluations_context: Dict[str, Dict[str, EvaluationContext]] | None = None,
-                        out_parsing_errors: Dict[str, Exception] | None = None,
-                        env_vars: Mapping[str, str] | None = None,
-                        download_external_modules: bool = False,
-                        external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR,
-                        excluded_paths: Optional[List[str]] = None,
-                        vars_files: Optional[List[str]] = None,
-                        external_modules_content_cache: Optional[Dict[str, ModuleContent | None]] = None,
+    def parse_directory(
+        self,
+        directory: str,
+        out_evaluations_context: Dict[str, Dict[str, EvaluationContext]] | None = None,
+        out_parsing_errors: Dict[str, Exception] | None = None,
+        env_vars: Mapping[str, str] | None = None,
+        download_external_modules: bool = False,
+        external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR,
+        excluded_paths: Optional[List[str]] = None,
+        vars_files: Optional[List[str]] = None,
+        external_modules_content_cache: Optional[Dict[str, ModuleContent | None]] = None,
     ) -> dict[TFDefinitionKey, dict[str, list[dict[str, Any]]]]:
         self._init(directory, out_evaluations_context, out_parsing_errors, env_vars,
                    download_external_modules, external_modules_download_path, excluded_paths)
