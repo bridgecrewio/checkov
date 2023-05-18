@@ -1,15 +1,23 @@
 from __future__ import annotations
+import itertools
+import logging
+
+from checkov.common.output.record import SCA_PACKAGE_SCAN_CHECK_NAME
+from license_expression import get_spdx_licensing
 
 from io import StringIO
 
 from spdx.creationinfo import Tool, Organization
 from spdx.document import Document
 from spdx.license import License
+from spdx.package import Package
 from spdx.writers.tagvalue import write_document
 
+from checkov.common.output.cyclonedx_consts import SCA_CHECKTYPES
 from checkov.common.output.report import Report
 
 DOCUMENT_NAME = "checkov-sbom"
+SPDXREF = "SPDXRef-"
 
 
 class SPDX:
@@ -36,6 +44,61 @@ class SPDX:
     def get_tag_value_output(self) -> str:
         output = StringIO()
 
-        write_document(document=self.document, out=output, validate=False)  # later set to True
+        self.add_packages_to_doc()
+        write_document(document=self.document, out=output, validate=True)  # later set to True
 
         return output.getvalue()
+
+    def validate_licenses(self, package, license_):
+        if license_ and license_ not in ['Unknown license', 'NOT_FOUND', 'Unknown']:
+            license_ = license_.split(",")
+            licenses = []
+
+            for lic in license_:
+                lic = lic.strip('"')
+                try:
+                    is_spdx_license = License(get_spdx_licensing().parse(lic), lic)
+                    licenses.append(is_spdx_license)
+                except:
+                    logging.info(f"error occured when trying to parse the license:{license_}")
+            package.licenses_from_files = licenses
+
+    def create_package(self, check) -> Package:
+        package_data = check.vulnerability_details
+        package_name = package_data['package_name']
+        package = Package(
+            name=package_name,
+            spdx_id=f"{SPDXREF}{package_name}",
+            version=package_data['package_version'],
+            download_location='N/A',
+            file_name=check.file_path
+        )
+        license_ = package_data.get('licenses', "")
+        self.validate_licenses(package=package, license_=license_)
+
+        return package
+
+    def add_packages_to_doc(self):
+        packages_set = set()
+        for report in self.reports:
+            for check in itertools.chain(report.passed_checks, report.skipped_checks):
+                if report.check_type in SCA_CHECKTYPES and check.check_name != SCA_PACKAGE_SCAN_CHECK_NAME:
+                    continue
+                package = self.create_package(check)
+                if package not in packages_set:
+                    packages_set.add(package)
+
+            for check in report.failed_checks:
+                if report.check_type in SCA_CHECKTYPES and check.check_name != SCA_PACKAGE_SCAN_CHECK_NAME:
+                    continue
+                package = self.create_package(check)
+                if package not in packages_set:
+                    packages_set.add(package)
+
+            for resource in sorted(report.extra_resources):
+                package = self.create_package(resource)
+                if package not in packages_set:
+                    packages_set.add(package)
+
+        if packages_set:
+            self.document.packages = list(packages_set)
