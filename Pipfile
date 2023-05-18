@@ -87,6 +87,7 @@ schema = "*"
 requests = ">=2.27.0"
 yarl = "*"
 openai = "*"
+spdx-tools = "<0.8.0"
 
 [requires]
 python_version = "3.7"
