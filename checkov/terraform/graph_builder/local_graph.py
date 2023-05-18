@@ -286,12 +286,10 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 if target_variable is not None:
                     self._create_edge(target_variable, origin_node_index, "default", cross_variable_edges)
         elif vertex.block_type == BlockType.TF_VARIABLE:
-            # Assuming the tfvars file is in the same directory as the variables file (best practice)
             target_variable = 0
             for index in self.vertices_block_name_map.get(BlockType.VARIABLE, {}).get(vertex.name, []):
-                if self.get_dirname(self.vertices[index].path) == self.get_dirname(vertex.path):
-                    target_variable = index
-                    break
+                target_variable = index
+                break
             if target_variable:
                 self._create_edge(target_variable, origin_node_index, "default", cross_variable_edges)
 
