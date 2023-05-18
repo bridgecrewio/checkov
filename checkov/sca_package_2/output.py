@@ -211,16 +211,13 @@ def create_cli_license_violations_table(file_path: str,
     column_width = int(table_width / columns)
     package_table = PrettyTable(min_table_width=table_width, max_table_width=table_width)
     package_table.set_style(SINGLE_BORDER)
-    field_names = [
-        "Package name",
+    package_table.field_names = [
+        "Package name [Lines]" if lines_details_found else "Package name",
         "Package version",
         "Policy ID",
         "License",
         "Status",
     ]
-    if lines_details_found:
-        field_names.insert(1, "Package lines")
-    package_table.field_names = field_names
     for package_idx, (_, license_statuses) in enumerate(package_licenses_details_map.items()):
         if package_idx > 0:
             del package_table_lines[-1]
@@ -230,11 +227,9 @@ def create_cli_license_violations_table(file_path: str,
         for idx, license_status in enumerate(license_statuses):
             col_package_name = ""
             col_package_version = ""
-            col_lines = None
             if idx == 0:
-                col_package_name = license_status["package_name"]
+                col_package_name = get_package_name_with_lines(license_status["package_name"], license_status["lines"])
                 col_package_version = license_status["package_version"]
-                col_lines = validate_lines(license_status["lines"])
 
             curr_row = [
                 col_package_name,
@@ -243,8 +238,6 @@ def create_cli_license_violations_table(file_path: str,
                 license_status["license"],
                 license_status["status"],
             ]
-            if lines_details_found:
-                curr_row.insert(1, f"{col_lines[0]}-{col_lines[1]}" if col_lines else "")
             package_table.add_row(curr_row)
 
         package_table.align = "l"
