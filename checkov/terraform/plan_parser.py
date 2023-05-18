@@ -3,7 +3,7 @@ from __future__ import annotations
 import itertools
 import json
 import logging
-from typing import Optional, Tuple, Dict, List, Any
+from typing import Optional, Tuple, Dict, List, Any, cast
 
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.parsers.node import DictNode, ListNode
@@ -112,7 +112,7 @@ def jsonify(obj: dict[str, Any], resource_type: str) -> dict[str, Any] | None:
     jsonify_key = RESOURCE_TYPES_JSONIFY[resource_type]
     if jsonify_key in obj:
         try:
-            return json.loads(obj[jsonify_key])
+            return cast("dict[str, Any]", json.loads(obj[jsonify_key]))
         except json.JSONDecodeError:
             logging.debug(
                 f"Attribute {jsonify_key} of resource type {resource_type} is not json encoded {obj[jsonify_key]}"
@@ -122,7 +122,7 @@ def jsonify(obj: dict[str, Any], resource_type: str) -> dict[str, Any] | None:
 
 
 def _prepare_resource_block(
-    resource: DictNode, conf: Optional[DictNode], resource_changes: dict[str, dict[str, Any]]
+    resource: dict[str, Any], conf: dict[str, Any] | None, resource_changes: dict[str, dict[str, Any]]
 ) -> tuple[dict[str, dict[str, Any]], str, bool]:
     """hclify resource if pre-conditions met.
 
@@ -142,7 +142,7 @@ def _prepare_resource_block(
     mode = ""
     block_type = ""
     if "mode" in resource:
-        mode = resource.get("mode")
+        mode = resource["mode"]
         block_type = "data" if mode == "data" else "resource"
 
     # Rare cases where data block appears in resources with same name as resource block and only partial values
@@ -155,10 +155,10 @@ def _prepare_resource_block(
             conf=expressions,
             resource_type=resource_type,
         )
-        resource_address = resource.get("address")
-        resource_conf[TF_PLAN_RESOURCE_ADDRESS] = resource_address
+        resource_address: str | None = resource.get("address")
+        resource_conf[TF_PLAN_RESOURCE_ADDRESS] = resource_address  # type:ignore[assignment]  # special field
 
-        changes = resource_changes.get(resource_address)
+        changes = resource_changes.get(resource_address)  # type:ignore[arg-type]  # becaus eit can be None
         if changes:
             resource_conf[TF_PLAN_RESOURCE_CHANGE_ACTIONS] = changes.get("change", {}).get("actions") or []
 

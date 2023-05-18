@@ -95,7 +95,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
 
     def _create_vertices(self) -> None:
         logging.info("Creating vertices")
-        self.vertices: List[TerraformBlock] = [None] * len(self.module.blocks)
+        self.vertices = [None] * len(self.module.blocks)
         for i, block in enumerate(self.module.blocks):
             self.vertices[i] = block
             self._add_block_data_to_graph(i, block)

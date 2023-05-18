@@ -21,7 +21,7 @@ def create_definitions(
     files: list[str] | None = None,
     runner_filter: RunnerFilter | None = None,
     out_parsing_errors: dict[str, str] | None = None,
-) -> tuple[dict[str, DictNode], dict[str, list[tuple[int, str]]]]:
+) -> tuple[dict[str, dict[str, Any]], dict[str, list[tuple[int, str]]]]:
     runner_filter = runner_filter or RunnerFilter()
     out_parsing_errors = {} if out_parsing_errors is None else out_parsing_errors
 
@@ -67,7 +67,7 @@ def build_definitions_context(
     definitions: dict[str, dict[str, list[dict[str, Any]]]],
     definitions_raw: Dict[str, List[Tuple[int, str]]]
 ) -> Dict[str, Dict[str, Any]]:
-    definitions_context = defaultdict(dict)
+    definitions_context: dict[str, dict[str, Any]] = defaultdict(dict)
     supported_block_types = ("data", "resource")
     for full_file_path, definition in definitions.items():
         for block_type in supported_block_types:
