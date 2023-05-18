@@ -246,7 +246,7 @@ def _get_resource_changes(template: dict[str, Any]) -> dict[str, dict[str, Any]]
             resource_changes_map[each["address"]] = each
             changes = []
             for field in each["change"]["before"]:
-                if each["change"]["before"][field] != each["change"]["after"][field]:
+                if each["change"]["before"][field] != each["change"]["after"].get(field):
                     changes.append(field)
             
             resource_changes_map[each["address"]]["changed_keys"] = changes
