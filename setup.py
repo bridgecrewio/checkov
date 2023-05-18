@@ -110,7 +110,7 @@ setup(
         "yarl",
         "openai",
         "spdx-tools<0.8.0",
-        "license-expression"
+        "license-expression",
     ],
     dependency_links=[],  # keep it empty, needed for pipenv-setup
     license="Apache License 2.0",
