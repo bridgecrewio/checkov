@@ -66,6 +66,11 @@ class SPDX:
 
     def create_package(self, check: Record | ExtraResource) -> Package:
         package_data = check.vulnerability_details
+        if not package_data:
+            # this shouldn't happen
+            logging.error(f"Check {check.resource} doesn't have 'vulnerability_details' set")
+            return Package(name="unknown")
+
         package_name = package_data.get('package_name')
         package = Package(
             name=package_name,
