@@ -248,7 +248,7 @@ class CycloneDX:
             qualifiers=qualifiers,
         )
 
-        lines = resource.vulnerability_details.get("lines")
+        lines = resource.file_line_range
         lines = validate_lines(lines)
         properties = None
         if lines:
