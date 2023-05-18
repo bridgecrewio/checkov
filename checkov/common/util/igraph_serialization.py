@@ -14,10 +14,11 @@ def get_git_root_path(path: str) -> str:
         import git  # Local import to make sure we don't fail if `git` is not installed on computer
         git_repo = git.Repo(path, search_parent_directories=True)
         git_root = git_repo.git.rev_parse("--show-toplevel")
-        return git_root
+        return str(git_root)
     except Exception as e:
         logging.debug(f'Failed to reolve git root path with error: {e}')
         return ''
+
 
 def serialize_to_json(igraph: Graph) -> Dict[str, Any]:
     nodes = []
