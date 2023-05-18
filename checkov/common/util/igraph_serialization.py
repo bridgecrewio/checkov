@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+import logging
 from typing import Dict, Any, TYPE_CHECKING
 
 from checkov.common.graph.graph_builder import CustomAttributes
@@ -6,6 +8,16 @@ from checkov.common.graph.graph_builder import CustomAttributes
 if TYPE_CHECKING:
     from igraph import Graph
 
+
+def get_git_root_path(path: str) -> str:
+    try:
+        import git  # Local import to make sure we don't fail if `git` is not installed on computer
+        git_repo = git.Repo(path, search_parent_directories=True)
+        git_root = git_repo.git.rev_parse("--show-toplevel")
+        return git_root
+    except Exception as e:
+        logging.debug(f'Failed to reolve git root path with error: {e}')
+        return ''
 
 def serialize_to_json(igraph: Graph) -> Dict[str, Any]:
     nodes = []
@@ -26,5 +38,8 @@ def serialize_to_json(igraph: Graph) -> Dict[str, Any]:
         for edge in igraph.es
     ]
 
-    graph = {"graph_type": "igraph", "nodes": nodes, "links": links}
+    graph_path = nodes[0]['attr'][CustomAttributes.FILE_PATH] if nodes else ''
+    git_root_path = get_git_root_path(graph_path)  # Allows to compare a node with only its relative file path to the git root
+    graph = {"graph_type": "igraph", "git_root_path": git_root_path, "nodes": nodes, "links": links}
+
     return graph
