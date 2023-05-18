@@ -123,14 +123,13 @@ def jsonify(obj: dict[str, Any], resource_type: str) -> dict[str, Any] | None:
 
 
 def _prepare_resource_block(
-    resource: DictNode, conf: Optional[DictNode], resource_changes: dict[str, dict[str, Any]], changed_keys: list[str]
+    resource: DictNode, conf: Optional[DictNode], resource_changes: dict[str, dict[str, Any]]
 ) -> tuple[dict[str, dict[str, Any]], str, bool]:
     """hclify resource if pre-conditions met.
 
     :param resource: tf planned_values resource block
     :param conf: tf configuration resource block
     :param resource_changes: tf resource_changes block
-    :param changed_keys: list of keys contributing to the change in the plan
     :returns:
         - resource_block: a list of strings representing the header columns
         - prepared: whether conditions met to prepare data
@@ -162,7 +161,7 @@ def _prepare_resource_block(
         changes = resource_changes.get(resource_address)
         if changes:
             resource_conf[TF_PLAN_RESOURCE_CHANGE_ACTIONS] = changes.get("change", {}).get("actions") or []
-            resource_conf[TF_PLAN_RESOURCE_CHANGE_KEYS] = changed_keys
+            resource_conf[TF_PLAN_RESOURCE_CHANGE_KEYS] = changes["changed_keys"]
 
         resource_block[resource_type][resource.get("name", "default")] = resource_conf
         prepared = True
@@ -170,14 +169,13 @@ def _prepare_resource_block(
 
 
 def _find_child_modules(
-    child_modules: ListNode, resource_changes: dict[str, dict[str, Any]], root_module_conf: dict[str, Any], relevant_attributes: list[dict[str, str]]
+    child_modules: ListNode, resource_changes: dict[str, dict[str, Any]], root_module_conf: dict[str, Any]
 ) -> dict[str, list[dict[str, dict[str, Any]]]]:
     """ Find all child modules if any. Including any amount of nested child modules.
 
     :param child_modules: list of terraform child_module objects
     :param resource_changes: a resource address to resource changes dict
     :param root_module_conf: configuration block of the root module
-    :param relevant_attributes: list of tf "relevant_attributes" objects (derived from plan representation)
     :returns:
         list of terraform resource blocks
     """
@@ -190,7 +188,6 @@ def _find_child_modules(
                 child_modules=nested_child_modules,
                 resource_changes=resource_changes,
                 root_module_conf=root_module_conf,
-                relevant_attributes=relevant_attributes,
             )
             for block_type, resource_blocks in nested_blocks.items():
                 blocks[block_type].extend(resource_blocks)
@@ -217,7 +214,6 @@ def _find_child_modules(
                 resource=resource,
                 conf=module_call_conf,
                 resource_changes=resource_changes,
-                changed_keys=list(map(lambda x: x["attribute"], filter(lambda x: x["resource"] == resource["address"], relevant_attributes))),
             )
             if prepared is True:
                 if block_type == "resource":
@@ -243,14 +239,17 @@ def _get_resource_changes(template: dict[str, Any]) -> dict[str, dict[str, Any]]
     """Returns a resource address to resource changes dict"""
 
     resource_changes_map = {}
-
     resource_changes = template.get("resource_changes")
-    if resource_changes and isinstance(resource_changes, list):
-        resource_changes_map = {
-            change.get("address", ""): change
-            for change in resource_changes
-        }
 
+    if resource_changes and isinstance(resource_changes, list):
+        for each in resource_changes:
+            resource_changes_map[each["address"]] = each
+            changes = []
+            for field in each["change"]["before"]:
+                if each["change"]["before"][field] != each["change"]["after"][field]:
+                    changes.append(field)
+            
+            resource_changes_map[each["address"]]["changed_keys"] = changes
     return resource_changes_map
 
 
@@ -299,7 +298,6 @@ def parse_tf_plan(tf_plan_file: str, out_parsing_errors: Dict[str, str]) -> Tupl
             resource=resource,
             conf=conf,
             resource_changes=resource_changes,
-            changed_keys=list(map(lambda x: x["attribute"], filter(lambda x: x["resource"] == resource["address"], template.get("relevant_attributes", {})))),
         )
         if prepared is True:
             if block_type == "resource":
@@ -314,7 +312,6 @@ def parse_tf_plan(tf_plan_file: str, out_parsing_errors: Dict[str, str]) -> Tupl
         child_modules=child_modules,
         resource_changes=resource_changes,
         root_module_conf=root_module_conf,
-        relevant_attributes=template.get("relevant_attributes", {}),
     )
     for block_type, resource_blocks in module_blocks.items():
         tf_definition[block_type].extend(resource_blocks)
