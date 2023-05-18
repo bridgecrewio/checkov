@@ -59,8 +59,8 @@ class SPDX:
                 try:
                     is_spdx_license = License(get_spdx_licensing().parse(lic), lic)
                     licenses.append(is_spdx_license)
-                except:
-                    logging.info(f"error occured when trying to parse the license:{license_}")
+                except Exception as e:
+                    logging.info(f"error occured when trying to parse the license:{license_} due to error {e}")
             package.licenses_from_files = licenses
 
     def create_package(self, check) -> Package:
