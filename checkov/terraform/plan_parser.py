@@ -245,6 +245,13 @@ def _get_resource_changes(template: dict[str, Any]) -> dict[str, dict[str, Any]]
         for each in resource_changes:
             resource_changes_map[each["address"]] = each
             changes = []
+
+            # before + after are None when resources are created/destroyed, so make them safe
+            if not each["change"]["before"]:
+                each["change"]["before"] = {}
+            if not each["change"]["after"]:
+                each["change"]["after"] = {}
+
             for field in each["change"]["before"]:
                 if each["change"]["before"][field] != each["change"]["after"].get(field):
                     changes.append(field)
