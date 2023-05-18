@@ -2,7 +2,7 @@ from __future__ import annotations
 import itertools
 import logging
 
-from checkov.common.output.record import SCA_PACKAGE_SCAN_CHECK_NAME
+from checkov.common.output.record import SCA_PACKAGE_SCAN_CHECK_NAME, Record
 from license_expression import get_spdx_licensing
 
 from io import StringIO
@@ -49,7 +49,7 @@ class SPDX:
 
         return output.getvalue()
 
-    def validate_licenses(self, package, license_):
+    def validate_licenses(self, package: Package, license_: str) -> None:
         if license_ and license_ not in ['Unknown license', 'NOT_FOUND', 'Unknown']:
             license_ = license_.split(",")
             licenses = []
@@ -63,7 +63,7 @@ class SPDX:
                     logging.info(f"error occured when trying to parse the license:{license_} due to error {e}")
             package.licenses_from_files = licenses
 
-    def create_package(self, check) -> Package:
+    def create_package(self, check: Record) -> Package:
         package_data = check.vulnerability_details
         package_name = package_data['package_name']
         package = Package(
@@ -78,7 +78,7 @@ class SPDX:
 
         return package
 
-    def add_packages_to_doc(self):
+    def add_packages_to_doc(self) -> None:
         packages_set = set()
         for report in self.reports:
             for check in itertools.chain(report.passed_checks, report.skipped_checks):
