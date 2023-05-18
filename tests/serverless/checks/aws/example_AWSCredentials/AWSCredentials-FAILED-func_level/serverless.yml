@@ -20,8 +20,8 @@ functions:
   myFunc:
     environment:
       FUNC_NAME: "myfunc"
-      AWS_ACCESS_KEY: "AKIAIOSFODNN7EXAMPLE"
-      AWS_SECRET_KEY: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      AWS_ACCESS_KEY: "AKIAIOSFODNN7EXAMPLE"  # checkov:skip=CKV_SECRET_2 test secret
+      AWS_SECRET_KEY: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"  # checkov:skip=CKV_SECRET_2 test secret
     name: myFunc
     tags:
       RESOURCE: lambda

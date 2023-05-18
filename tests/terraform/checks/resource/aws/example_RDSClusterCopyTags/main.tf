@@ -7,7 +7,7 @@ resource "aws_rds_cluster" "fail" {
   allocated_storage         = 100
   iops                      = 1000
   master_username           = "test"
-  master_password           = "mustbeeightcharaters"
+  master_password           = "mustbeeightcharaters"  # checkov:skip=CKV_SECRET_6 test secret
 }
 
 resource "aws_rds_cluster" "fail2" {

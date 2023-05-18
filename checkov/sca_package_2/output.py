@@ -11,6 +11,7 @@ from prettytable import PrettyTable, SINGLE_BORDER
 from checkov.common.bridgecrew.severities import BcSeverities
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME, SCA_LICENSE_CHECK_NAME
+from checkov.common.output.common import get_package_name_with_lines, validate_lines
 from checkov.common.packaging import version as packaging_version
 from checkov.common.sca.commons import UNFIXABLE_VERSION, get_package_alias
 from checkov.common.typing import _LicenseStatus
@@ -100,7 +101,7 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
         package_cves_details_map: dict[str, dict[str, Any]] = defaultdict(dict)
         package_licenses_details_map = defaultdict(list)
         should_print_licenses_table = False
-
+        lines_details_found_cves = False
         for root_package_alias, records in packages.items():
             fix_versions_lists = []
             for record in records:
@@ -138,6 +139,11 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                             parsed_version = packaging_version.parse(root_package_fix_version.strip())
                             fix_versions_lists.append([parsed_version])
 
+                    lines = validate_lines(record.file_line_range)
+                    root_package_lines = validate_lines(record.vulnerability_details.get("root_package_file_line_range"))
+                    if lines and root_package_lines:
+                        lines_details_found_cves = True
+
                     package_cves_details_map[root_package_alias].setdefault("cves", []).append(
                         {
                             "id": record.vulnerability_details["id"],
@@ -149,7 +155,9 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                                                                                          ""),
                             "package_name": package_name,
                             "package_version": package_version,
-                            "is_private_fix": record.vulnerability_details.get("is_private_fix", None)
+                            "lines": lines,
+                            "root_package_lines": root_package_lines,
+                            "is_private_fix": record.vulnerability_details.get("is_private_fix")
                         }
                     )
                 elif record.check_name == SCA_LICENSE_CHECK_NAME:
@@ -176,6 +184,7 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                     file_path=file_path,
                     cve_count=cve_count,
                     package_details_map=package_cves_details_map,
+                    lines_details_found=lines_details_found_cves
                 )
             )
         if should_print_licenses_table:
@@ -249,7 +258,8 @@ def create_cli_license_violations_table(file_path: str,
     )
 
 
-def create_cli_cves_table(file_path: str, cve_count: CveCount, package_details_map: Dict[str, Dict[str, Any]]) -> str:
+def create_cli_cves_table(file_path: str, cve_count: CveCount, package_details_map: Dict[str, Dict[str, Any]],
+                          lines_details_found: bool) -> str:
     columns = 6
     table_width = 136
     column_width = int(table_width / columns)
@@ -264,7 +274,8 @@ def create_cli_cves_table(file_path: str, cve_count: CveCount, package_details_m
     )
 
     package_table_lines = create_package_overview_table_part(
-        table_width=table_width, column_width=column_width, package_details_map=package_details_map
+        table_width=table_width, column_width=column_width, package_details_map=package_details_map,
+        lines_details_found=lines_details_found
     )
 
     return (
@@ -325,13 +336,13 @@ def create_fixable_cve_summary_table_part(
 
 
 def create_package_overview_table_part(
-        table_width: int, column_width: int, package_details_map: Dict[str, Dict[str, Any]]
+        table_width: int, column_width: int, package_details_map: Dict[str, Dict[str, Any]], lines_details_found: bool
 ) -> str | Any:
     package_table_lines: List[str] = []
     package_table = PrettyTable(min_table_width=table_width, max_table_width=table_width)
     package_table.set_style(SINGLE_BORDER)
     package_table.field_names = [
-        "Package",
+        "Package [Lines]" if lines_details_found else "Package",
         "CVE ID",
         "Severity",
         "Current version",
@@ -360,9 +371,10 @@ def create_package_overview_table_part(
             if cve_idx == 0:
                 cur_compliant_version = compliant_version + is_public_overview if compliant_version and compliant_version != UNFIXABLE_VERSION else compliant_version
                 if not is_root:  # no cves on root package
+                    package_name_col_val = get_package_name_with_lines(cve["root_package_name"], cve.get("root_package_lines"))
                     package_table.add_row(
                         [
-                            cve["root_package_name"],
+                            package_name_col_val,
                             "",
                             "",
                             cve["root_package_version"],
@@ -391,6 +403,7 @@ def create_package_overview_table_part(
                     package_name_col_val = " ".join([dep_sign, package_name])
                 else:
                     package_name_col_val = package_name
+                package_name_col_val = get_package_name_with_lines(package_name_col_val, cve.get("lines"))
             elif dep_sign:
                 package_name_col_val = dep_sign
 
