@@ -13,7 +13,7 @@ from checkov.common.models.enums import CheckResult
 from checkov.common.output.common import compare_table_items_severity
 from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME, SCA_LICENSE_CHECK_NAME
 from checkov.common.packaging import version as packaging_version
-from checkov.common.sca.commons import UNFIXABLE_VERSION
+from checkov.common.sca.commons import UNFIXABLE_VERSION, get_package_alias
 from checkov.common.typing import _LicenseStatus
 
 
@@ -134,7 +134,7 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                     if record.check_result["result"] == CheckResult.SKIPPED:
                         continue
                     should_print_licenses_table = True
-                    package_licenses_details_map[package_name].append(
+                    package_licenses_details_map[get_package_alias(package_name, record.vulnerability_details["package_version"])].append(
                         _LicenseStatus(package_name=package_name,
                                        package_version=record.vulnerability_details["package_version"],
                                        policy=record.vulnerability_details["policy"],
@@ -182,7 +182,7 @@ def create_cli_license_violations_table(file_path: str, package_licenses_details
         "License",
         "Status",
     ]
-    for package_idx, (package_name, license_statuses) in enumerate(package_licenses_details_map.items()):
+    for package_idx, (_, license_statuses) in enumerate(package_licenses_details_map.items()):
         if package_idx > 0:
             del package_table_lines[-1]
             package_table.header = False
@@ -192,7 +192,7 @@ def create_cli_license_violations_table(file_path: str, package_licenses_details
             col_package_name = ""
             col_package_version = ""
             if idx == 0:
-                col_package_name = package_name
+                col_package_name = license_status["package_name"]
                 col_package_version = license_status["package_version"]
 
             package_table.add_row(
