@@ -27,7 +27,7 @@ resource "azurerm_mssql_server" "fail_1" {
   location                     = azurerm_resource_group.dep-rg-j1-1-rlp-77266.location
   version                      = "12.0"
   administrator_login          = "pudadministrator1"
-  administrator_login_password = "thisIspudfortest2"
+  administrator_login_password = "thisIspudfortest2"  # checkov:skip=CKV_SECRET_6 test secret
 }
 
 # FAIL case 2: "azuread_administrator.login_username" exists

@@ -1,5 +1,5 @@
 {
-  "maze.tf": {
+  "{\"file_path\": \"maze.tf\", \"tf_source_modules\": null}": {
     "variable": [
       {
         "gratuitous_var_default": {
@@ -41,7 +41,7 @@
         "bucket": {
           "source": ["./bucket"],
           "name": ["module-input"],
-          "__resolved__": ["bucket/bucket.tf([{maze.tf#*#0}])"],
+          "__resolved__": ["{\"file_path\": \"bucket/bucket.tf\", \"tf_source_modules\": {\"path\": \"maze.tf\", \"name\": \"bucket\", \"foreach_idx\": null, \"nested_tf_module\": null}}"],
           "__start_line__": 20,
           "__end_line__": 23,
           "__address__": "bucket"
@@ -63,7 +63,7 @@
       }
     ]
   },
-  "bucket/bucket.tf([{maze.tf#*#0}])": {
+  "{\"file_path\": \"bucket/bucket.tf\", \"tf_source_modules\": {\"path\": \"maze.tf\", \"name\": \"bucket\", \"foreach_idx\": null, \"nested_tf_module\": null}}": {
     "variable": [
       {
         "name": {
