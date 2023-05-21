@@ -41,7 +41,8 @@ def format_string_to_licenses(licenses_str: str) -> list[str]:
         return [licenses_str]
     elif licenses_str:
         # remove first and last quotes
-        licenses_str = licenses_str[1:-1] if licenses_str.startswith('"') and licenses_str.endswith('"') else licenses_str
+        licenses_str = licenses_str[1:-1] if licenses_str.startswith('"') and licenses_str.endswith(
+            '"') else licenses_str
         license_lst = licenses_str.split('","')
 
         return license_lst
@@ -52,3 +53,15 @@ def format_string_to_licenses(licenses_str: str) -> list[str]:
 def compare_table_items_severity(table_item: dict[str, str]) -> int:
     severity = (table_item.get("severity") or DEFAULT_SEVERITY).upper()
     return Severities[severity].level
+
+
+def validate_lines(lines: list[int] | None) -> list[int] | None:
+    if lines and lines[0] > 0 and lines[1] > 0:
+        return lines
+    return None
+
+
+def get_package_name_with_lines(package_name: str, lines: list[int] | None) -> str:
+    if lines and validate_lines(lines):
+        return f"{package_name} [{lines[0]}-{lines[1]}]"
+    return package_name

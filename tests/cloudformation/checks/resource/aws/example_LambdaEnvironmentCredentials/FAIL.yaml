@@ -8,7 +8,7 @@ Resources:
       Handler: index.handler
       Environment:
         Variables:
-          key1: AKIAAAAAAAAAAAAAAAAA
+          key1: AKIAAAAAAAAAAAAAAAAA  # checkov:skip=CKV_SECRET_2 test secret
           key2: Val2
       Code:
         ZipFile: |

@@ -12,7 +12,10 @@ from checkov.common.bridgecrew.bc_source import SourceType
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration, bc_integration
 from checkov.common.output.report import Report
 from checkov.sca_package_2.runner import Runner
+from checkov.sca_package_2.output import create_cli_license_violations_table, create_cli_output
 from checkov.runner_filter import RunnerFilter
+from checkov.common.sca.commons import get_package_alias
+from checkov.common.sca.output import create_report_cve_record, create_report_license_record
 
 EXAMPLES_DIR = Path(__file__).parent / "examples"
 
@@ -1543,3 +1546,131 @@ def get_vulnerabilities_details_no_deps() -> List[Dict[str, Any]]:
              'riskFactors': ['Has fix', 'High severity', 'Recent vulnerability', 'Attack complexity: low',
                              'Attack vector: network', 'DoS'], 'publishedDate': '2022-01-14T17:15:00Z'}
             ]
+
+
+def create_cli_license_violations_table_wrapper(with_line_numbers: bool) -> str:
+    file_path = "/requirements.txt"
+
+    package_licenses_details_map = {
+        "django@1.2": [
+            {
+                "package_name": "django",
+                "package_version": "1.2",
+                "license": "DUMMY_LICENSE",
+                "status": "OPEN",
+                "policy": "BC_LIC_1",
+                "lines": [1, 2] if with_line_numbers else [0, 0]
+            },
+            {
+                "package_name": "django",
+                "package_version": "1.2",
+                "license": "DUMMY_LICENSE2",
+                "status": "OPEN",
+                "policy": "BC_LIC_1",
+                "lines": [1, 2] if with_line_numbers else [0, 0]
+            },
+        ],
+        "django@1.12": [
+            {
+                "package_name": "django",
+                "package_version": "1.12",
+                "license": "DUMMY_LICENSE3",
+                "status": "OPEN",
+                "policy": "BC_LIC_1",
+                "lines": [0, 0]
+            },
+        ],
+        "flask@0.6": [
+            {
+                "package_name": "flask",
+                "package_version": "0.6",
+                "license": "DUMMY_LICENSE3",
+                "status": "OPEN",
+                "policy": "BC_LIC_1",
+                "lines": [5, 6] if with_line_numbers else [0, 0]
+            },
+        ]
+    }
+
+    return create_cli_license_violations_table(
+        file_path=file_path,
+        package_licenses_details_map=package_licenses_details_map,
+        lines_details_found=with_line_numbers
+    )
+
+
+def create_cli_output_wrapper(with_line_numbers: bool) -> str:
+    # given
+    rootless_file_path = "requirements.txt"
+    file_abs_path = "/path/to/requirements.txt"
+    check_class = "checkov.sca_package.scanner.Scanner"
+    packages = {
+        get_package_alias("django", "1.2"): {
+            'package_registry': "https://registry.npmjs.org/",
+            'is_private_registry': False,
+            'lines': [1, 2] if with_line_numbers else [0, 0]
+        },
+        get_package_alias("flask", "0.6"): {
+            'package_registry': "https://registry.npmjs.org/",
+            'is_private_registry': False,
+            'lines': [5, 6] if with_line_numbers else [0, 0]
+        }
+    }
+    dummy_package = {'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False}
+    license_statuses = [
+        {
+            "package_name": "django",
+            "package_version": "1.2",
+            "license": "DUMMY_LICENSE",
+            "status": "OPEN",
+            "policy": "BC_LIC_1",
+        },
+        {
+            "package_name": "django",
+            "package_version": "1.2",
+            "license": "DUMMY_LICENSE2",
+            "status": "OPEN",
+            "policy": "BC_LIC_1",
+        },
+        {
+            "package_name": "django",
+            "package_version": "1.12",
+            "license": "DUMMY_LICENSE_3",
+            "status": "OPEN",
+            "policy": "BC_LIC_2"
+        },
+        {
+            "package_name": "flask",
+            "package_version": "0.6",
+            "license": "DUMMY_OTHER_LICENSE",
+            "status": "OPEN",
+            "policy": "BC_LIC_1",
+        }
+    ]
+    # when
+    cves_records = [
+        create_report_cve_record(
+            rootless_file_path=rootless_file_path,
+            file_abs_path=file_abs_path,
+            check_class=check_class,
+            vulnerability_details=details,
+            licenses='Unknown',
+            package=packages.get(get_package_alias(details["packageName"], details["packageVersion"]), dummy_package),
+            root_package={'name': "django", 'version': "1.2"},
+            used_private_registry=False
+        )
+        for details in get_vulnerabilities_details()
+    ]
+    license_records = [
+        create_report_license_record(
+            rootless_file_path=rootless_file_path,
+            file_abs_path=file_abs_path,
+            check_class=check_class,
+            licenses_status=license_status,
+            package=packages.get(get_package_alias(license_status["package_name"], license_status["package_version"]),
+                                 dummy_package),
+        )
+        for license_status in license_statuses
+    ]
+    cli_output: str = create_cli_output(True, cves_records + license_records)
+    return cli_output

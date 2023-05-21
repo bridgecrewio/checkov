@@ -18,7 +18,7 @@ To run Checkov in your cluster, you must have Kubernetes CLI access to the clust
 To execute a job against your cluster, run the following manifest:
 
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/bridgecrewio/checkov/master/kubernetes/checkov-job.yaml
+kubectl apply -f https://raw.githubusercontent.com/bridgecrewio/checkov/main/kubernetes/checkov-job.yaml
 ```
 
 Review the output of the job:

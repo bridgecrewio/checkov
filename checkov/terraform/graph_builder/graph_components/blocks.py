@@ -54,7 +54,7 @@ class TerraformBlock(Block):
         self.module_connections: Dict[str, List[int]] = {}
         self.source_module: Set[int] = set()
         self.has_dynamic_block = has_dynamic_block
-        if strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'False')):
+        if strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'True')):
             self.source_module_object: Optional[TFModule] = None
             self.for_each_index: Optional[Any] = None
 

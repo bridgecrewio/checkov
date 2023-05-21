@@ -58,7 +58,7 @@ resource "azurerm_mysql_flexible_server" "fail" {
   resource_group_name    = azurerm_resource_group.example.name
   location               = azurerm_resource_group.example.location
   administrator_login    = "psqladmin"
-  administrator_password = "H@Sh1CoR3!"
+  administrator_password = "H@Sh1CoR3!"  # checkov:skip=CKV_SECRET_80 test secret
   backup_retention_days  = 7
   delegated_subnet_id    = azurerm_subnet.example.id
   private_dns_zone_id    = azurerm_private_dns_zone.example.id

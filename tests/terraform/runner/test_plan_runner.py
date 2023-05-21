@@ -264,7 +264,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
 
         self.assertEqual(report.get_summary()["failed"], 15)
-        self.assertEqual(report.get_summary()["passed"], 0)
+        self.assertEqual(report.get_summary()["passed"], 3)
 
         failed_check_ids = set([c.check_id for c in report.failed_checks])
         expected_failed_check_ids = {
@@ -303,7 +303,7 @@ class TestRunnerValid(unittest.TestCase):
         # If more eks checks are added then this number will need to increase correspondingly to reflect
         # This reasoning holds for all current pass/fails in these tests
         self.assertEqual(report.get_summary()["failed"], 4)
-        self.assertEqual(report.get_summary()["passed"], 0)
+        self.assertEqual(report.get_summary()["passed"], 1)
 
         failed_check_ids = set([c.check_id for c in report.failed_checks])
         expected_failed_check_ids = {
@@ -371,7 +371,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
 
         self.assertEqual(report.get_summary()["failed"], 4)
-        self.assertEqual(report.get_summary()["passed"], 0)
+        self.assertEqual(report.get_summary()["passed"], 1)
 
         failed_check_ids = set([c.check_id for c in report.failed_checks])
         expected_failed_check_ids = {
@@ -763,6 +763,7 @@ class TestRunnerValid(unittest.TestCase):
         assert report.passed_checks[1].file_path.endswith('.json')
 
     @mock.patch.dict(os.environ, {'CHECKOV_ENABLE_NESTED_MODULES': 'False'})
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_plan_resources_ids(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_plan_path = current_dir + "/resources/plan_resources_ids/tfplan.json"

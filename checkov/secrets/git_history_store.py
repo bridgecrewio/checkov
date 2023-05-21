@@ -5,6 +5,7 @@ import copy
 from collections import defaultdict
 from typing import TYPE_CHECKING, Dict, List, Optional
 from typing_extensions import TypedDict
+from checkov.common.util.secrets import omit_secret_value_from_line
 from checkov.secrets.git_types import EnrichedPotentialSecretMetadata, EnrichedPotentialSecret, Commit, ADDED, REMOVED, \
     GIT_HISTORY_OPTIONS, CommitDiff, GIT_HISTORY_NOT_BEEN_REMOVED
 
@@ -83,7 +84,7 @@ class GitHistorySecretStore:
                     secret_in_file['removed_date'] = commit.metadata.committed_datetime
                     break
         else:
-            logging.error(f"No added secret commit found for secret in file {file_name}.")
+            logging.warning(f"No added secret commit found for secret in file {file_name}.")
 
     def handle_renamed_file(self, rename_from: str, rename_to: str, commit: Commit) -> None:
         temp_secrets_by_file_value_type: Dict[str, List[EnrichedPotentialSecret]] = {}
@@ -165,7 +166,8 @@ def search_for_code_line(commit_diff: CommitDiff, secret_value: Optional[str], i
     start_char = '+' if is_added else '-'
     for line in splitted:
         if line.startswith(start_char) and secret_value in line:
-            return line[1:].strip()  # remove +/- in the beginning & spaces
+            # remove +/- in the beginning & spaces and omit
+            return omit_secret_value_from_line(secret_value, line[1:].strip()) or ''
     return ''  # not found
 
 
