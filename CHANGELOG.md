@@ -1,6 +1,24 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.247...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.251...HEAD)
+
+## [2.3.251](https://github.com/bridgecrewio/checkov/compare/2.3.247...2.3.251) - 2023-05-21
+
+### Feature
+
+- **secrets:** add jwt detector to the secret runner - [#5116](https://github.com/bridgecrewio/checkov/pull/5116)
+- **terraform:** Adding yaml based build time policies for corresponding PC runtime policies - [#5089](https://github.com/bridgecrewio/checkov/pull/5089)
+- **terraform:** AWS Ensure RDS performance insights uses a CMK - [#4985](https://github.com/bridgecrewio/checkov/pull/4985)
+- **terraform:** NACL should restrict port ingress - [#4976](https://github.com/bridgecrewio/checkov/pull/4976)
+- **terraform:** RDS Enable Performance insights - [#4983](https://github.com/bridgecrewio/checkov/pull/4983)
+
+### Bug Fix
+
+- **dockerfile:** improve update searching in CKV_DOCKER_5 - [#5115](https://github.com/bridgecrewio/checkov/pull/5115)
+
+### Documentation
+
+- **general:** Update CLI Command Reference.md - [#5114](https://github.com/bridgecrewio/checkov/pull/5114)
 
 ## [2.3.247](https://github.com/bridgecrewio/checkov/compare/2.3.245...2.3.247) - 2023-05-18
 
