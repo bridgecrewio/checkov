@@ -27,7 +27,6 @@ resource "aws_db_instance" "pass" {
 }
 
 resource "aws_rds_cluster_instance" "fail" {
-  count              = 2
   identifier         = "aurora-cluster-demo-${count.index}"
   cluster_identifier = aws_rds_cluster.default.id
   instance_class     = "db.r4.large"
@@ -38,7 +37,6 @@ resource "aws_rds_cluster_instance" "fail" {
 
 
 resource "aws_rds_cluster_instance" "pass" {
-  count                        = 2
   identifier                   = "aurora-cluster-demo-${count.index}"
   cluster_identifier           = aws_rds_cluster.default.id
   instance_class               = "db.r4.large"
