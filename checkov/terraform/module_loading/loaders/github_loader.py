@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from checkov.terraform.module_loading.loaders.git_loader import GenericGitLoader
