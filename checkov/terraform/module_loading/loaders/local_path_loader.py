@@ -2,10 +2,13 @@ import os
 import platform
 import re
 import logging
+from typing import TYPE_CHECKING
 
 from checkov.terraform.module_loading.content import ModuleContent
 from checkov.terraform.module_loading.loader import ModuleLoader
-from checkov.terraform.module_loading.module_params import ModuleParams
+
+if TYPE_CHECKING:
+    from checkov.terraform.module_loading.module_params import ModuleParams
 
 
 class LocalPathLoader(ModuleLoader):
@@ -13,7 +16,7 @@ class LocalPathLoader(ModuleLoader):
         super().__init__()
         self.is_external = False
 
-    def discover(self, module_params: ModuleParams):
+    def discover(self, module_params: ModuleParams) -> None:
         pass
 
     def _is_matching_loader(self, module_params: ModuleParams) -> bool:

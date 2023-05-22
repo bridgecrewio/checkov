@@ -27,7 +27,7 @@ class ModuleLoader(ABC):
         self.root_dir = ""  # root dir for storing external modules
 
     @abstractmethod
-    def discover(self, module_params: ModuleParams):
+    def discover(self, module_params: ModuleParams) -> None:
         """
             discover parameters from execution context of checkov. usually from env variable
         """
