@@ -19,8 +19,8 @@ class TestSeccomp(unittest.TestCase):
         passed_resources = [check.resource for check in report.passed_checks]
         failed_resources = [check.resource for check in report.failed_checks]
 
-        self.assertEqual(summary["passed"], 8)
-        self.assertEqual(summary["failed"], 2)
+        self.assertEqual(summary["passed"], 9)
+        self.assertEqual(summary["failed"], 3)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
@@ -33,10 +33,12 @@ class TestSeccomp(unittest.TestCase):
             "Pod.default.seccomp-passed-metadata-annotations-runtime",
             "Pod.default.seccomp-passed-security-context",
             "StatefulSet.default.RELEASE-NAME",
+            "Pod.default.my-secure-pod",
         ]
         expected_failed_resources = [
             "Deployment.infra.app-cert-manager",
             "Pod.default.seccomp-failed",
+            "Pod.default.my-insecure-pod",
         ]
         self.assertCountEqual(expected_passed_resources, passed_resources)
         self.assertCountEqual(expected_failed_resources, failed_resources)

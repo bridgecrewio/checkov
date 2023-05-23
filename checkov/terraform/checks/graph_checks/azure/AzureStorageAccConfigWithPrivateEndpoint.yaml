@@ -17,15 +17,3 @@ definition:
       connected_resource_types:
         - "azurerm_private_endpoint"
       operator: "exists"
-
-    - cond_type: "attribute"
-      resource_types: "azurerm_storage_account"
-      attribute: "network_rules.default_action"
-      operator: "equals_ignore_case"
-      value: "Allow"
-
-    - cond_type: "attribute"
-      resource_types: "azurerm_storage_account"
-      attribute: "network_rules.ip_rules"
-      operator: "length_greater_than"
-      value: 0

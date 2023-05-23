@@ -1,11 +1,11 @@
 {
-    "/buckets.tf": {
+    "{\"file_path\": \"buckets.tf\", \"tf_source_modules\": null}": {
         "module": [
             {
                 "bucket1": {
                     "source": ["./bucket1"],
                     "__resolved__": [
-                        "/bucket1/bucket.tf([{/buckets.tf#*#0}])"
+                        "{\"file_path\": \"bucket1/bucket.tf\", \"tf_source_modules\": {\"path\": \"buckets.tf\", \"name\": \"bucket1\", \"foreach_idx\": null, \"nested_tf_module\": null}}"
                     ],
                     "__start_line__": 1,
                     "__end_line__": 3,
@@ -26,13 +26,13 @@
             }
         ]
     },
-    "/bucket1/bucket.tf([{/buckets.tf#*#0}])": {
+    "{\"file_path\": \"bucket1/bucket.tf\", \"tf_source_modules\": {\"path\": \"buckets.tf\", \"name\": \"bucket1\", \"foreach_idx\": null, \"nested_tf_module\": null}}": {
         "module": [
             {
                 "bucket2": {
                     "source": ["./bucket2"],
                     "__resolved__": [
-                        "/bucket1/bucket2/bucket.tf([{/bucket1/bucket.tf#*#0([{/buckets.tf#*#0}])}])"
+                        "{\"file_path\": \"bucket1/bucket2/bucket.tf\", \"tf_source_modules\": {\"path\": \"bucket1/bucket.tf\", \"name\": \"bucket2\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \"buckets.tf\", \"name\": \"bucket1\", \"foreach_idx\": null, \"nested_tf_module\": null}}}"
                     ],
                     "__start_line__": 1,
                     "__end_line__": 3,
@@ -53,13 +53,13 @@
             }
         ]
     },
-    "/bucket1/bucket2/bucket.tf([{/bucket1/bucket.tf#*#0([{/buckets.tf#*#0}])}])": {
+    "{\"file_path\": \"bucket1/bucket2/bucket.tf\", \"tf_source_modules\": {\"path\": \"bucket1/bucket.tf\", \"name\": \"bucket2\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \"buckets.tf\", \"name\": \"bucket1\", \"foreach_idx\": null, \"nested_tf_module\": null}}}": {
         "module": [
             {
                 "bucket3": {
                     "source": ["./bucket3"],
                     "__resolved__": [
-                        "/bucket1/bucket2/bucket3/bucket.tf([{/bucket1/bucket2/bucket.tf#*#0([{/bucket1/bucket.tf#*#0([{/buckets.tf#*#0}])}])}])"
+                        "{\"file_path\": \"bucket1/bucket2/bucket3/bucket.tf\", \"tf_source_modules\": {\"path\": \"bucket1/bucket2/bucket.tf\", \"name\": \"bucket3\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \"bucket1/bucket.tf\", \"name\": \"bucket2\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \"buckets.tf\", \"name\": \"bucket1\", \"foreach_idx\": null, \"nested_tf_module\": null}}}}"
                     ],
                     "__start_line__": 1,
                     "__end_line__": 3,
@@ -80,7 +80,7 @@
             }
         ]
     },
-    "/bucket1/bucket2/bucket3/bucket.tf([{/bucket1/bucket2/bucket.tf#*#0([{/bucket1/bucket.tf#*#0([{/buckets.tf#*#0}])}])}])": {
+    "{\"file_path\": \"bucket1/bucket2/bucket3/bucket.tf\", \"tf_source_modules\": {\"path\": \"bucket1/bucket2/bucket.tf\", \"name\": \"bucket3\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \"bucket1/bucket.tf\", \"name\": \"bucket2\", \"foreach_idx\": null, \"nested_tf_module\": {\"path\": \"buckets.tf\", \"name\": \"bucket1\", \"foreach_idx\": null, \"nested_tf_module\": null}}}}": {
         "resource": [
             {
                 "aws_s3_bucket": {

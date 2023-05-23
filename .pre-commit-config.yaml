@@ -4,7 +4,7 @@ repos:
     hooks:
       - id: debug-statements
   - repo: https://github.com/PyCQA/flake8
-    rev: 5.0.4
+    rev: 6.0.0
     hooks:
       - id: flake8
         language_version: python3.9
@@ -18,7 +18,7 @@ repos:
       - id: teyit
         language_version: python3.9
   - repo: https://github.com/rhysd/actionlint
-    rev: v1.6.23
+    rev: v1.6.24
     hooks:
       - id: actionlint-docker
         # SC2129 - Consider using { cmd1; cmd2; } >> file instead of individual redirects.

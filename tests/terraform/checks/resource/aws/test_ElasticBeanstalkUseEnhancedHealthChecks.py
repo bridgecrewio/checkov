@@ -17,6 +17,7 @@ class TestElasticBeanstalkUseEnhancedHealthChecks(unittest.TestCase):
 
         passing_resources = {
             "aws_elastic_beanstalk_environment.pass",
+            "aws_elastic_beanstalk_environment.pass2",
         }
         failing_resources = {
             "aws_elastic_beanstalk_environment.fail",
