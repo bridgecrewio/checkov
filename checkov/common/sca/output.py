@@ -21,7 +21,7 @@ from checkov.common.sca.commons import (
     UNFIXABLE_VERSION,
     get_package_type,
     normalize_twistcli_language,
-    get_registry_url,
+    get_registry_url, get_package_lines,
 )
 from checkov.common.util.http_utils import request_wrapper
 from checkov.runner_filter import RunnerFilter
@@ -77,7 +77,7 @@ def create_report_license_record(
         check_result=check_result,
         code_block=code_block,
         file_path=get_file_path_for_record(rootless_file_path),
-        file_line_range=package.get("lines") or [0, 0],
+        file_line_range=get_package_lines(package) or [0, 0],
         resource=get_resource_for_record(rootless_file_path, package_name),
         check_class=check_class,
         evaluations=None,
@@ -159,7 +159,7 @@ def create_report_cve_record(
         }
 
     code_block = [(0, f"{package_name}: {package_version}")]
-    file_line_range = package.get("lines") or file_line_range or [0, 0]
+    file_line_range = get_package_lines(package) or file_line_range or [0, 0]
 
     details = {
         "id": cve_id,
@@ -179,7 +179,7 @@ def create_report_cve_record(
         "licenses": licenses,
         "root_package_name": root_package.get("name") if root_package else None,
         "root_package_version": root_package.get("version") if root_package else None,
-        "root_package_file_line_range": root_package.get("lines") if root_package else None or [0, 0]
+        "root_package_file_line_range": get_package_lines(root_package) if root_package else None or [0, 0]
     }
     if used_private_registry:
         details["is_private_fix"] = vulnerability_details.get("isPrivateRegFix", False)
@@ -355,8 +355,7 @@ def add_to_reports_dependency_tree_cves(check_class: str | None, packages_map: d
                                      runner_filter=runner_filter, sca_details=sca_details,
                                      scan_data_format=scan_data_format, report_type=report_type, report=report,
                                      root_package=root_package, inline_suppressions=inline_suppressions,
-                                     used_private_registry=used_private_registry,
-                                     file_line_range=root_package.get("lines"))
+                                     used_private_registry=used_private_registry)
 
         for dep in root_package.get("vulnerable_dependencies", []):
             for dep_cve in dep.get("cves", []):
@@ -373,8 +372,7 @@ def add_to_reports_dependency_tree_cves(check_class: str | None, packages_map: d
                                          scan_data_format=scan_data_format, report_type=report_type, report=report,
                                          root_package=root_package, root_package_fixed_version=root_package_fixed_version,
                                          inline_suppressions=inline_suppressions,
-                                         used_private_registry=used_private_registry,
-                                         file_line_range=dep.get("lines"))
+                                         used_private_registry=used_private_registry)
 
 
 def add_cve_record_to_report(vulnerability_details: dict[str, Any], package_name: str, package_version: str,

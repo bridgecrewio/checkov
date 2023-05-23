@@ -46,6 +46,9 @@ def normalize_twistcli_language(language: str) -> str:
     return TWISTCLI_TO_CHECKOV_LANG_NORMALIZATION.get(language, language)
 
 
+def get_package_lines(package: dict[str, Any]) -> list[int] | None:
+    return package.get("lines", package.get("linesNumbers"))
+
 def should_run_scan(runner_filter_checks: Optional[List[str]]) -> bool:
     return not (runner_filter_checks and all(not (check.startswith("CKV_CVE") or check.startswith("BC_CVE") or check.startswith("BC_LIC")) for check in runner_filter_checks))
 
