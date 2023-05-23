@@ -387,6 +387,8 @@ def get_module_from_full_path(file_path: TFDefinitionKeyType) -> Tuple[Optional[
     if not is_nested(file_path):
         return None, None
     if isinstance(file_path, TFDefinitionKey):
+        if file_path.tf_source_modules is None:
+            return None, None
         return file_path.tf_source_modules.path, None
     tmp_path = file_path[file_path.index(TERRAFORM_NESTED_MODULE_PATH_PREFIX) + TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH: -TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH]
     if is_nested(tmp_path):
