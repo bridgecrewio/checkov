@@ -159,7 +159,7 @@ def create_report_cve_record(
         }
 
     code_block = [(0, f"{package_name}: {package_version}")]
-    file_line_range = get_package_lines(package) or file_line_range or [0, 0]
+    file_line_range = file_line_range or [0, 0]
 
     details = {
         "id": cve_id,
@@ -355,7 +355,8 @@ def add_to_reports_dependency_tree_cves(check_class: str | None, packages_map: d
                                      runner_filter=runner_filter, sca_details=sca_details,
                                      scan_data_format=scan_data_format, report_type=report_type, report=report,
                                      root_package=root_package, inline_suppressions=inline_suppressions,
-                                     used_private_registry=used_private_registry)
+                                     used_private_registry=used_private_registry,
+                                     file_line_range=get_package_lines(root_package))
 
         for dep in root_package.get("vulnerable_dependencies", []):
             for dep_cve in dep.get("cves", []):
@@ -372,7 +373,8 @@ def add_to_reports_dependency_tree_cves(check_class: str | None, packages_map: d
                                          scan_data_format=scan_data_format, report_type=report_type, report=report,
                                          root_package=root_package, root_package_fixed_version=root_package_fixed_version,
                                          inline_suppressions=inline_suppressions,
-                                         used_private_registry=used_private_registry)
+                                         used_private_registry=used_private_registry,
+                                         file_line_range=get_package_lines(dep))
 
 
 def add_cve_record_to_report(vulnerability_details: dict[str, Any], package_name: str, package_version: str,
@@ -506,7 +508,7 @@ def add_extra_resources_to_report(report: Report, scanned_file_path: str, rootle
             file_abs_path=scanned_file_path,
             file_path=get_file_path_for_record(rootless_file_path),
             resource=get_resource_for_record(rootless_file_path, package_name),
-            file_line_range=package.get("lines"),
+            file_line_range=get_package_lines(package),
             vulnerability_details={
                 "package_name": package_name,
                 "package_version": package_version,
