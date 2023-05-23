@@ -22,11 +22,15 @@ class IAMStarResourcePolicyDocument(BaseResourceCheck):
 
     def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
         policy_block = None
-        if "policy" in conf.keys():
-            policy_block = extract_policy_dict(conf["policy"][0])
-        elif "inline_policy" in conf.keys():
-            policy_block = extract_policy_dict(conf["inline_policy"][0])
-        if policy_block and "Statement" in policy_block.keys():
+
+        policy = conf.get("policy")
+        inline_policy = conf.get("inline_policy")
+        if policy and isinstance(policy, list):
+            policy_block = extract_policy_dict(policy[0])
+        elif inline_policy and isinstance(inline_policy, list):
+            policy_block = extract_policy_dict(inline_policy[0])
+
+        if policy_block and "Statement" in policy_block:
             for statement in force_list(policy_block["Statement"]):
                 if "Resource" in statement:
                     resources = force_list(statement["Resource"])
