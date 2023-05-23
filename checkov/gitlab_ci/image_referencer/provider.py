@@ -22,6 +22,8 @@ class GitlabCiProvider(WorkflowImageReferencerProvider):
                     if key in self.supported_keys:
                         image_name = ""
                         if isinstance(subjob, dict):
+                            if 'name' not in subjob:
+                                continue
                             start_line, end_line = GitlabCiProvider._get_start_end_lines(subjob)
                             image_name = subjob['name']
                         elif isinstance(subjob, str):
