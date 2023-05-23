@@ -8,7 +8,7 @@ from collections import defaultdict
 from collections.abc import Sequence
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, Optional, TYPE_CHECKING
+from typing import Any, Optional, TYPE_CHECKING, TypeVar
 
 import hcl2
 from lark import Tree
@@ -16,14 +16,15 @@ import re
 
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.json_utils import CustomJSONEncoder, object_hook
-
-if TYPE_CHECKING:
-    from typing_extensions import TypeAlias
-
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
 from checkov.terraform.graph_builder.utils import remove_module_dependency_in_path
 from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_PREFIX, TERRAFORM_NESTED_MODULE_PATH_ENDING, \
     is_nested, get_abs_path, get_module_from_full_path
+
+if TYPE_CHECKING:
+    from typing_extensions import TypeAlias
+
+_Conf = TypeVar("_Conf", bound="dict")
 
 ENTITY_NAME_PATTERN = re.compile(r"[^\W0-9][\w-]*")
 RESOLVED_MODULE_PATTERN = re.compile(r"\[.+\#.+\]")
@@ -53,7 +54,7 @@ def validate_malformed_definitions(raw_data: _Hcl2Payload) -> _Hcl2Payload:
 
 
 def load_or_die_quietly(
-    file: str | Path, parsing_errors: dict[str, Exception], clean_definitions: bool = True
+    file: str | Path | os.DirEntry[str], parsing_errors: dict[str, Exception], clean_definitions: bool = True
 ) -> Optional[_Hcl2Payload]:
     """
 Load JSON or HCL, depending on filename.
@@ -234,7 +235,7 @@ def get_nested_modules_data_as_list(file_path: str) -> (list[tuple[str | None, s
     return modules_list, path
 
 
-def clean_parser_types(conf: dict[str, Any]) -> dict[str, Any]:
+def clean_parser_types(conf: _Conf) -> _Conf:
     if not conf:
         return conf
 
@@ -289,5 +290,5 @@ def clean_parser_types_lst(values: list[Any]) -> list[Any]:
     return result_values
 
 
-def serialize_definitions(tf_definitions: _Hcl2Payload) -> _Hcl2Payload:
+def serialize_definitions(tf_definitions: _Conf) -> _Conf:
     return json.loads(json.dumps(tf_definitions, cls=CustomJSONEncoder), object_hook=object_hook)

@@ -4,6 +4,8 @@ framework:
 quiet: true
 skip-path:
 - docs
+- tests/arm/checks/resource/example_AzureScaleSetPassword/FAILED.json
+- tests/arm/checks/resource/example_AzureScaleSetPassword/UNKNOWN.json
 - tests/arm/checks/resource/example_StorageAccountAzureServicesAccessEnabled/storageAccountAzureServicesAccessEnabled-FAILED2.json
 - tests/arm/checks/resource/example_StorageAccountDefaultNetworkAccessDeny/storageAccountDefaultNetworkAccessDeny-FAILED2.json
 - tests/common/utils/conftest.py

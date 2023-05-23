@@ -1,0 +1,30 @@
+metadata:
+  id: "CKV2_AZURE_38"
+  name: "Ensure soft-delete is enabled on Azure storage account"
+  category: "GENERAL_SECURITY"
+
+definition:
+  and:
+    - or:
+        - cond_type: "attribute"
+          resource_types: "azurerm_storage_account"
+          attribute: "blob_properties.delete_retention_policy.days"
+          operator: "greater_than"
+          value: 0
+
+        - cond_type: "attribute"
+          resource_types: "azurerm_storage_account"
+          attribute: "blob_properties.delete_retention_policy"
+          operator: "exists"
+
+    - or:
+        - cond_type: "attribute"
+          resource_types: "azurerm_storage_account"
+          attribute: "account_kind"
+          operator: "not_exists"
+
+        - cond_type: "attribute"
+          resource_types: "azurerm_storage_account"
+          attribute: "account_kind"
+          operator: "not_equals_ignore_case"
+          value: "FileStorage"

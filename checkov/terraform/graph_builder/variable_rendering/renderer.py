@@ -60,7 +60,7 @@ TYPE_REGEX = re.compile(r'^(\${)?([a-z]+)')
 CHECKOV_RENDER_MAX_LEN = force_int(os.getenv("CHECKOV_RENDER_MAX_LEN", "10000"))
 
 
-class TerraformVariableRenderer(VariableRenderer):
+class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
     def __init__(self, local_graph: "TerraformLocalGraph") -> None:
         super().__init__(local_graph)
 

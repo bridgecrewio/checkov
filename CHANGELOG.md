@@ -1,6 +1,83 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.234...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.251...HEAD)
+
+## [2.3.251](https://github.com/bridgecrewio/checkov/compare/2.3.247...2.3.251) - 2023-05-21
+
+### Feature
+
+- **secrets:** add jwt detector to the secret runner - [#5116](https://github.com/bridgecrewio/checkov/pull/5116)
+- **terraform:** Adding yaml based build time policies for corresponding PC runtime policies - [#5089](https://github.com/bridgecrewio/checkov/pull/5089)
+- **terraform:** AWS Ensure RDS performance insights uses a CMK - [#4985](https://github.com/bridgecrewio/checkov/pull/4985)
+- **terraform:** NACL should restrict port ingress - [#4976](https://github.com/bridgecrewio/checkov/pull/4976)
+- **terraform:** RDS Enable Performance insights - [#4983](https://github.com/bridgecrewio/checkov/pull/4983)
+
+### Bug Fix
+
+- **dockerfile:** improve update searching in CKV_DOCKER_5 - [#5115](https://github.com/bridgecrewio/checkov/pull/5115)
+
+### Documentation
+
+- **general:** Update CLI Command Reference.md - [#5114](https://github.com/bridgecrewio/checkov/pull/5114)
+
+## [2.3.247](https://github.com/bridgecrewio/checkov/compare/2.3.245...2.3.247) - 2023-05-18
+
+### Feature
+
+- **general:** add SPDX output - [#5104](https://github.com/bridgecrewio/checkov/pull/5104)
+- **kubernetes:** seperate service acoount builder to improve performance - [#5093](https://github.com/bridgecrewio/checkov/pull/5093)
+- **sca:** showing line numbers in the cli output for csv - [#5096](https://github.com/bridgecrewio/checkov/pull/5096)
+- **sca:** showing line numbers in the cli output for licenses - [#5098](https://github.com/bridgecrewio/checkov/pull/5098)
+
+## [2.3.245](https://github.com/bridgecrewio/checkov/compare/2.3.243...2.3.245) - 2023-05-16
+
+### Feature
+
+- **dockerfile:** Support docker graph check skips - [#5085](https://github.com/bridgecrewio/checkov/pull/5085)
+- **sca:** using the lines in the directly in the record, rather than in the "vulnerability_details" + having it in ExtraResources - [#5092](https://github.com/bridgecrewio/checkov/pull/5092)
+
+## [2.3.243](https://github.com/bridgecrewio/checkov/compare/2.3.240...2.3.243) - 2023-05-15
+
+### Feature
+
+- **kubernetes:** Improve k8s perf - [#5083](https://github.com/bridgecrewio/checkov/pull/5083)
+- **terraform:** EMR -  At rest local disk, EBS and in transit encryption checks - [#4968](https://github.com/bridgecrewio/checkov/pull/4968)
+
+### Bug Fix
+
+- **kubernetes:** add mini k8s parser for invalid templates - [#5088](https://github.com/bridgecrewio/checkov/pull/5088)
+- **terraform:** handle false-positives for Route53ZoneEnableDNSSECSigning - [#5084](https://github.com/bridgecrewio/checkov/pull/5084)
+
+### Platform
+
+- **general:** Add lines to SBOM  - [#5078](https://github.com/bridgecrewio/checkov/pull/5078)
+- **graph:** upload graphs to the platform - [#5073](https://github.com/bridgecrewio/checkov/pull/5073)
+
+## [2.3.240](https://github.com/bridgecrewio/checkov/compare/2.3.239...2.3.240) - 2023-05-14
+
+### Bug Fix
+
+- **terraform:** skip invalid multiple modules names - [#5079](https://github.com/bridgecrewio/checkov/pull/5079)
+
+## [2.3.239](https://github.com/bridgecrewio/checkov/compare/2.3.238...2.3.239) - 2023-05-12
+
+### Bug Fix
+
+- **sca:** only run image referencer with sca_image framework - [#5081](https://github.com/bridgecrewio/checkov/pull/5081)
+
+## [2.3.238](https://github.com/bridgecrewio/checkov/compare/2.3.237...2.3.238) - 2023-05-11
+
+### Feature
+
+- **kustomize:** Support inline skips for Kubernetes graph checks - [#5070](https://github.com/bridgecrewio/checkov/pull/5070)
+
+## [2.3.237](https://github.com/bridgecrewio/checkov/compare/2.3.234...2.3.237) - 2023-05-10
+
+### Bug Fix
+
+- **secrets:** add filter for suppressed custom secret checks - [#5068](https://github.com/bridgecrewio/checkov/pull/5068)
+- **secrets:** exclude Kubernetes secretName from secret scanning - [#5071](https://github.com/bridgecrewio/checkov/pull/5071)
+- **secrets:** omit the code line - [#5075](https://github.com/bridgecrewio/checkov/pull/5075)
 
 ## [2.3.234](https://github.com/bridgecrewio/checkov/compare/2.3.231...2.3.234) - 2023-05-09
 
