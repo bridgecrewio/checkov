@@ -355,7 +355,8 @@ def add_to_reports_dependency_tree_cves(check_class: str | None, packages_map: d
                                      runner_filter=runner_filter, sca_details=sca_details,
                                      scan_data_format=scan_data_format, report_type=report_type, report=report,
                                      root_package=root_package, inline_suppressions=inline_suppressions,
-                                     used_private_registry=used_private_registry)
+                                     used_private_registry=used_private_registry,
+                                     file_line_range=root_package.get("lines"))
 
         for dep in root_package.get("vulnerable_dependencies", []):
             for dep_cve in dep.get("cves", []):
@@ -372,7 +373,8 @@ def add_to_reports_dependency_tree_cves(check_class: str | None, packages_map: d
                                          scan_data_format=scan_data_format, report_type=report_type, report=report,
                                          root_package=root_package, root_package_fixed_version=root_package_fixed_version,
                                          inline_suppressions=inline_suppressions,
-                                         used_private_registry=used_private_registry)
+                                         used_private_registry=used_private_registry,
+                                         file_line_range=dep.get("lines"))
 
 
 def add_cve_record_to_report(vulnerability_details: dict[str, Any], package_name: str, package_version: str,
