@@ -54,7 +54,7 @@ def get_package_lines(package: dict[str, Any]) -> list[int] | None:
 def get_record_file_line_range(package: dict[str, Any], file_line_range: list[int] | None) -> list[int]:
     """
     Currently, there are 2 way for getting file_line_range for the sca-report:
-    1. by the arg 'file_line_range' which is arrived from the runner - this is specific for entire file (e.g: image referencer)
+    1. by the arg 'file_line_range' which comes from the runner - this is specific for entire file (e.g: image referencer)
     2. by a dedicated attribute in a package-object - (e.g: DT-cli V2)
     The purpose of this function is making sure there are no conflicts between those resources, and return a valid rage
     """
