@@ -272,7 +272,6 @@ def load(filename: str | Path, content_type: ContentType) -> tuple[dict[str, Any
     lines = content.splitlines(keepends=True)
     lines = [bytes(line, 'utf-8').decode('utf-8', 'ignore') for line in lines]
     file_lines = [(idx + 1, line) for idx, line in enumerate(lines)]
-    
 
     if file_path.suffix == ".json":
         file_size = len(content)
