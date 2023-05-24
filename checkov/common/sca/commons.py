@@ -47,7 +47,7 @@ def normalize_twistcli_language(language: str) -> str:
 
 
 def get_package_lines(package: dict[str, Any]) -> list[int] | None:
-    return package.get("lines", package.get("linesNumbers"))
+    return package.get("linesNumbers", package.get("lines"))
 
 
 def should_run_scan(runner_filter_checks: Optional[List[str]]) -> bool:
