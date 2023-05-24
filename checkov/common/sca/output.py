@@ -22,6 +22,7 @@ from checkov.common.sca.commons import (
     get_package_type,
     normalize_twistcli_language,
     get_registry_url, get_package_lines,
+    get_record_file_line_range
 )
 from checkov.common.util.http_utils import request_wrapper
 from checkov.runner_filter import RunnerFilter
@@ -159,7 +160,6 @@ def create_report_cve_record(
         }
 
     code_block = [(0, f"{package_name}: {package_version}")]
-    file_line_range = get_package_lines(package) or file_line_range or [0, 0]
 
     details = {
         "id": cve_id,
@@ -196,7 +196,7 @@ def create_report_cve_record(
         check_result=check_result,
         code_block=code_block,
         file_path=get_file_path_for_record(rootless_file_path),
-        file_line_range=file_line_range,
+        file_line_range=get_record_file_line_range(package, file_line_range),
         resource=get_resource_for_record(rootless_file_path, package_name),
         check_class=check_class,
         evaluations=None,
