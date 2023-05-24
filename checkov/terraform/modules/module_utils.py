@@ -6,7 +6,6 @@ import logging
 import os
 from collections import defaultdict
 from collections.abc import Sequence
-from copy import deepcopy
 from pathlib import Path
 from typing import Any, Optional, TYPE_CHECKING, TypeVar, cast
 
@@ -15,6 +14,7 @@ from lark import Tree
 import re
 
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.json_utils import CustomJSONEncoder, object_hook
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
 from checkov.terraform.graph_builder.utils import remove_module_dependency_in_path
@@ -129,14 +129,14 @@ def get_module_dependency_map(
     for file_path in origin_keys:
         dir_name = os.path.dirname(file_path)
         module_dependency_map[dir_name] = [[]]
-        copy_of_tf_definitions[file_path] = deepcopy(tf_definitions[file_path])
+        copy_of_tf_definitions[file_path] = pickle_deepcopy(tf_definitions[file_path])
 
     next_level, unevaluated_keys = get_next_vertices(origin_keys, unevaluated_keys)
     while next_level:
         for file_path in next_level:
             path, module_dependency, module_dependency_num = remove_module_dependency_in_path(file_path)
             dir_name = os.path.dirname(path)
-            current_deps = deepcopy(module_dependency_map[os.path.dirname(module_dependency)])
+            current_deps = pickle_deepcopy(module_dependency_map[os.path.dirname(module_dependency)])
             for dep in current_deps:
                 dep.append(module_dependency)
             if dir_name not in module_dependency_map:
@@ -145,7 +145,7 @@ def get_module_dependency_map(
                 for dep in current_deps:
                     if dep not in module_dependency_map[dir_name]:
                         module_dependency_map[dir_name].append(dep)
-            copy_of_tf_definitions[path] = deepcopy(tf_definitions[file_path])
+            copy_of_tf_definitions[path] = pickle_deepcopy(tf_definitions[file_path])
             origin_keys.append(path)
             dep_index_mapping.setdefault((path, module_dependency), []).append(module_dependency_num)
         next_level, unevaluated_keys = get_next_vertices(origin_keys, unevaluated_keys)

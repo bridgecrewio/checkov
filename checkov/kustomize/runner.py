@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import copy
 import io
 import logging
 import multiprocessing
@@ -23,6 +22,7 @@ from checkov.common.output.report import Report
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.common.typing import _CheckResult
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.kubernetes.kubernetes_utils import create_check_result, get_resource_id
 from checkov.kubernetes.runner import Runner as K8sRunner
 from checkov.kubernetes.runner import _get_entity_abs_path
@@ -525,7 +525,7 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
 
         manager = multiprocessing.Manager()
         # make sure we have new dict
-        shared_kustomize_file_mappings = copy.copy(manager.dict())  # type:ignore[arg-type]  # works with DictProxy
+        shared_kustomize_file_mappings = pickle_deepcopy(manager.dict())  # type:ignore[arg-type]  # works with DictProxy
         shared_kustomize_file_mappings.clear()
         jobs = []
         for filePath in self.kustomizeProcessedFolderAndMeta:

@@ -6,7 +6,6 @@ import logging
 import os
 import re
 from collections.abc import Hashable
-from copy import deepcopy
 from json import JSONDecodeError
 
 import dpath
@@ -17,7 +16,7 @@ from lark.tree import Tree
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.utils import join_trimmed_strings
 from checkov.common.graph.graph_builder.variable_rendering.renderer import VariableRenderer
-from checkov.common.util.data_structures_utils import find_in_dict
+from checkov.common.util.data_structures_utils import find_in_dict, pickle_deepcopy
 from checkov.common.util.type_forcers import force_int
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes, reserved_attribute_names
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
@@ -90,7 +89,7 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
             if not self.local_graph.vertices[e.origin] or not self.local_graph.vertices[e.dest]:
                 return
         origin_vertex_attributes = self.local_graph.vertices[edge.origin].attributes
-        val_to_eval = deepcopy(origin_vertex_attributes.get(edge.label, ""))
+        val_to_eval = pickle_deepcopy(origin_vertex_attributes.get(edge.label, ""))
 
         referenced_vertices = get_referenced_vertices_in_value(
             value=val_to_eval, aliases={}, resources_types=self.local_graph.get_resources_types_in_graph()
@@ -123,7 +122,7 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
 
         modified_vertex_attributes = self.local_graph.vertices[edge.origin].attributes
         origin_val = modified_vertex_attributes.get(edge.label, "")
-        val_to_eval = deepcopy(origin_val)
+        val_to_eval = pickle_deepcopy(origin_val)
         first_key_path = None
 
         if referenced_vertices:
@@ -366,7 +365,7 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
             if dynamic_arguments and isinstance(dynamic_values, list):
                 block_confs = []
                 for dynamic_value in dynamic_values:
-                    block_conf = deepcopy(block_content)
+                    block_conf = pickle_deepcopy(block_content)
                     block_conf.pop(DYNAMIC_STRING, None)
                     for dynamic_argument in dynamic_arguments:
                         if dynamic_type == DYNAMIC_BLOCKS_MAPS:

@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import json
 import os
-from copy import deepcopy
 from typing import List, Dict, Any, Set, Callable, Tuple, TYPE_CHECKING, Optional
 
 from checkov.common.runners.base_runner import strtobool
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.parser_utils import get_abs_path, get_module_from_full_path
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
@@ -72,14 +72,14 @@ class Module:
             dependencies = [[]]
         for dep_idx, dep_trail in enumerate(dependencies):
             if dep_idx > 0:
-                block = deepcopy(block)
+                block = pickle_deepcopy(block)
             block.module_dependency = unify_dependency_path(dep_trail)
 
             if block.module_dependency:
                 module_dependency_numbers = self.dep_index_mapping.get((block.path, dep_trail[-1]), [])
                 for mod_idx, module_dep_num in enumerate(module_dependency_numbers):
                     if mod_idx > 0:
-                        block = deepcopy(block)
+                        block = pickle_deepcopy(block)
                     block.module_dependency_num = module_dep_num
                     self.blocks.append(block)
             else:
@@ -178,7 +178,7 @@ class Module:
                     if self.render_dynamic_blocks_env_var.lower() == 'false':
                         has_dynamic_block = False
                     else:
-                        old_attributes = deepcopy(attributes)
+                        old_attributes = pickle_deepcopy(attributes)
                         has_dynamic_block = handle_dynamic_values(attributes)
                         dynamic_attributes = {k: attributes[k] for k in set(attributes) - set(old_attributes)}
                     provisioner = attributes.get("provisioner")

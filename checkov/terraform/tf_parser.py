@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import logging
 import os
-from copy import deepcopy
 from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, cast, TYPE_CHECKING
 
 import deep_merge
 
 from checkov.common.runners.base_runner import filter_ignored_paths, IGNORE_HIDDEN_DIRECTORY_ENV
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.type_forcers import force_list
 from checkov.common.variables.context import EvaluationContext
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
@@ -381,7 +381,7 @@ class TFParser:
             external_modules_source_map=self.external_modules_source_map,
         )
         self.add_tfvars(module, source)
-        copy_of_tf_definitions = deepcopy(tf_definitions)
+        copy_of_tf_definitions = pickle_deepcopy(tf_definitions)
         for file_path, blocks in copy_of_tf_definitions.items():
             for block_type in blocks:
                 try:

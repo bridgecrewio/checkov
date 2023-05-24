@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 from collections import defaultdict
-from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
@@ -12,6 +11,7 @@ from checkov.common.graph.graph_builder.graph_components.block_types import Bloc
 from checkov.common.graph.graph_builder.graph_components.blocks import Block
 from checkov.common.runners.graph_builder.local_graph import ObjectLocalGraph
 from checkov.common.util.consts import START_LINE, END_LINE
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.github_actions.graph_builder.graph_components.resource_types import ResourceType
 from checkov.github_actions.utils import get_scannable_file_paths, parse_file
 
@@ -46,7 +46,7 @@ class GitHubActionsLocalGraph(ObjectLocalGraph):
             if name in (START_LINE, END_LINE):
                 continue
 
-            attributes = deepcopy(config)
+            attributes = pickle_deepcopy(config)
             attributes[CustomAttributes.RESOURCE_TYPE] = ResourceType.JOBS
 
             block_name = f"{ResourceType.JOBS}.{name}"
@@ -83,7 +83,7 @@ class GitHubActionsLocalGraph(ObjectLocalGraph):
                     # should not happen
                     continue
 
-                attributes = deepcopy(config)
+                attributes = pickle_deepcopy(config)
                 attributes[CustomAttributes.RESOURCE_TYPE] = ResourceType.STEPS
 
                 block_name = f"{ResourceType.JOBS}.{name}.{ResourceType.STEPS}.{idx + 1}"
@@ -124,7 +124,7 @@ class GitHubActionsLocalGraph(ObjectLocalGraph):
                 END_LINE: permissions[END_LINE],
             }
 
-        attributes = deepcopy(config)
+        attributes = pickle_deepcopy(config)
         attributes[CustomAttributes.RESOURCE_TYPE] = ResourceType.PERMISSIONS
 
         block_name = ResourceType.PERMISSIONS
@@ -160,7 +160,7 @@ class GitHubActionsLocalGraph(ObjectLocalGraph):
         else:
             return
 
-        attributes = deepcopy(config)
+        attributes = pickle_deepcopy(config)
         attributes[CustomAttributes.RESOURCE_TYPE] = ResourceType.ON
 
         block_name = ResourceType.ON

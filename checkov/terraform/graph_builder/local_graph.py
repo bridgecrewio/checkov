@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import os
 from collections import defaultdict
-from copy import deepcopy
+from functools import partial
 from pathlib import Path
 from typing import List, Optional, Union, Any, Dict, Set, Tuple
 
@@ -16,6 +16,7 @@ from checkov.common.graph.graph_builder.graph_components.attribute_names import 
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimmed_strings, filter_sub_keys
 from checkov.common.runners.base_runner import strtobool
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.parser_utils import get_abs_path, get_tf_definition_key_from_module_dependency
 from checkov.common.util.type_forcers import force_int
 from checkov.terraform.graph_builder.foreach.builder import ForeachBuilder
@@ -55,8 +56,8 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self.relative_paths_cache: dict[tuple[str, str], str] = {}
         self.abspath_cache: Dict[str, str] = {}
         self.dirname_cache: Dict[str, str] = {}
-        self.vertices_by_module_dependency_by_name: Dict[Tuple[str, str], Dict[BlockType, Dict[str, List[int]]]] = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
-        self.vertices_by_module_dependency: Dict[Tuple[str, str], Dict[BlockType, List[int]]] = defaultdict(lambda: defaultdict(list))
+        self.vertices_by_module_dependency_by_name: Dict[Tuple[str, str], Dict[BlockType, Dict[str, List[int]]]] = defaultdict(partial(defaultdict, partial(defaultdict, list)))
+        self.vertices_by_module_dependency: Dict[Tuple[str, str], Dict[BlockType, List[int]]] = defaultdict(partial(defaultdict, list))
         self.enable_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_FOREACH_HANDLING', 'True'))
         self.enable_modules_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_MODULES_FOREACH_HANDLING', 'True'))
         self.use_new_tf_parser = strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'True'))
@@ -125,10 +126,10 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
     def _arrange_graph_data(self) -> None:
         # reset all the relevant data
         self.vertices_by_block_type = defaultdict(list)
-        self.vertices_block_name_map = defaultdict(lambda: defaultdict(list))
+        self.vertices_block_name_map = defaultdict(partial(defaultdict, list))
         self.map_path_to_module = {}
-        self.vertices_by_module_dependency = defaultdict(lambda: defaultdict(list))
-        self.vertices_by_module_dependency_by_name = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+        self.vertices_by_module_dependency = defaultdict(partial(defaultdict, list))
+        self.vertices_by_module_dependency_by_name = defaultdict(partial(defaultdict, partial(defaultdict, list)))
         self.edges = []
         for i in range(len(self.vertices)):
             self.out_edges[i] = []
@@ -500,7 +501,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             return
 
         vertex_name = vertex.name
-        updated_config = deepcopy(vertex.config)
+        updated_config = pickle_deepcopy(vertex.config)
         if vertex.block_type == BlockType.PROVIDER:
             # provider blocks set the alias as a suffix to the name, ex. name: "aws.prod"
             vertex_name = vertex_name.split(".")[0]

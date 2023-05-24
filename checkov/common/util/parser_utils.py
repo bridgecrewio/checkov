@@ -91,6 +91,10 @@ def find_var_blocks(value: str) -> List[VarBlockMatch]:
     one another.
     """
 
+    if "$" not in value:
+        # not relevant, typically just a normal string value
+        return []
+
     to_return: List[VarBlockMatch] = []
 
     mode_stack: List[ParserMode] = []

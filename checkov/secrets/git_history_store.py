@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import logging
-import copy
 from collections import defaultdict
 from typing import TYPE_CHECKING, Dict, List, Optional
 from typing_extensions import TypedDict
+
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.secrets import omit_secret_value_from_line
 from checkov.secrets.git_types import EnrichedPotentialSecretMetadata, EnrichedPotentialSecret, Commit, ADDED, REMOVED, \
     GIT_HISTORY_OPTIONS, CommitDiff, GIT_HISTORY_NOT_BEEN_REMOVED
@@ -97,7 +98,7 @@ class GitHistorySecretStore:
                     # defines the secret in the old file as removed and add the secret to the new file
                     secret_data['removed_commit_hash'] = commit.metadata.commit_hash
                     secret_data['removed_date'] = commit.metadata.committed_datetime
-                    new_secret = copy.deepcopy(secret_data['potential_secret'])
+                    new_secret = pickle_deepcopy(secret_data['potential_secret'])
                     new_secret.filename = rename_to
                     code = secret_data.get('code_line')
                     enriched_potential_secret: EnrichedPotentialSecret = {
