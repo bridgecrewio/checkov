@@ -341,6 +341,7 @@ def test_sarif_output(sca_package_report_with_skip_scope_function):
                                     "text": "SCA package scan\nResource: path/to/requirements.txt.django\nStatus: fixed in 3.0.1, 2.2.9, 1.11.27"
                                 },
                                 "defaultConfiguration": {"level": "error"},
+                                "properties": {"security-severity": 9.8},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2019-19844",
                             },
                             {
@@ -354,6 +355,7 @@ def test_sarif_output(sca_package_report_with_skip_scope_function):
                                     "text": "SCA package scan\nResource: path/to/requirements.txt.django\nStatus: fixed in 1.9.8, 1.8.14"
                                 },
                                 "defaultConfiguration": {"level": "error"},
+                                "properties": {"security-severity": 6.1},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2016-6186",
                             },
                             {
@@ -367,6 +369,7 @@ def test_sarif_output(sca_package_report_with_skip_scope_function):
                                     "text": "SCA package scan\nResource: path/to/requirements.txt.django\nStatus: fixed in 1.9.10, 1.8.15"
                                 },
                                 "defaultConfiguration": {"level": "error"},
+                                "properties": {"security-severity": 7.5},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2016-7401",
                             },
                             {
@@ -380,6 +383,7 @@ def test_sarif_output(sca_package_report_with_skip_scope_function):
                                     "text": "SCA package scan\nResource: path/to/requirements.txt.django\nStatus: fixed in 3.2.4, 3.1.12, 2.2.24"
                                 },
                                 "defaultConfiguration": {"level": "error"},
+                                "properties": {"security-severity": 4.9},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2021-33203",
                             },
                             {
@@ -393,6 +397,7 @@ def test_sarif_output(sca_package_report_with_skip_scope_function):
                                     "text": "SCA package scan\nResource: path/to/requirements.txt.flask\nStatus: fixed in 1.0"
                                 },
                                 "defaultConfiguration": {"level": "error"},
+                                "properties": {"security-severity": 7.5},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2019-1010083",
                             },
                             {
@@ -406,6 +411,7 @@ def test_sarif_output(sca_package_report_with_skip_scope_function):
                                     "text": "SCA package scan\nResource: path/to/requirements.txt.flask\nStatus: fixed in 0.12.3"
                                 },
                                 "defaultConfiguration": {"level": "error"},
+                                "properties": {"security-severity": 7.5},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2018-1000656",
                             },
                             {
@@ -419,6 +425,7 @@ def test_sarif_output(sca_package_report_with_skip_scope_function):
                                     "text": "SCA package scan\nResource: path/to/go.sum.github.com/dgrijalva/jwt-go\nStatus: fixed in v4.0.0-preview1"
                                 },
                                 "defaultConfiguration": {"level": "error"},
+                                "properties": {"security-severity": 7.7},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2020-26160",
                             },
                             {
@@ -432,6 +439,7 @@ def test_sarif_output(sca_package_report_with_skip_scope_function):
                                     "text": "SCA package scan\nResource: path/to/go.sum.golang.org/x/crypto\nStatus: fixed in v0.0.2"
                                 },
                                 "defaultConfiguration": {"level": "error"},
+                                "properties": {"security-severity": 7.5},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2020-29652",
                             },
                         ],
@@ -613,7 +621,7 @@ def test_get_junit_xml_string(sca_package_report_with_skip):
                 "Published Date: 2019-12-18T20:15:00+01:00\n",
                 "Base Score: 9.8\n",
                 "Vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H\n",
-                "Risk Factors: ['Attack complexity: low', 'Attack vector: network', 'Critical severity', 'Has fix']\n",
+                "Risk Factors: {'Severity': 'Critical', 'HasFix': True, 'DoS': False, 'AttackVector': 'network', 'AttackComplexity': 'low'}\n",
                 "Fix Details:\n",
                 "  Status: fixed in 3.0.1, 2.2.9, 1.11.27\n",
                 "  Fixed Version: 1.11.27\n",
@@ -630,7 +638,7 @@ def test_get_junit_xml_string(sca_package_report_with_skip):
                 "Published Date: 2016-08-05T17:59:00+02:00\n",
                 "Base Score: 6.1\n",
                 "Vector: CVSS:3.0/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N\n",
-                "Risk Factors: ['Attack complexity: low', 'Attack vector: network', 'Exploit exists', 'Has fix', 'Medium severity']\n",
+                "Risk Factors: {'Severity': 'Medium', 'HasFix': True, 'DoS': False, 'AttackVector': 'network', 'AttackComplexity': 'low', 'Exploit exists': True}\n",
                 "Fix Details:\n"
                 "  Status: fixed in 1.9.8, 1.8.14\n",
                 "  Fixed Version: 1.8.14\n",
@@ -647,7 +655,7 @@ def test_get_junit_xml_string(sca_package_report_with_skip):
                 "Published Date: 2016-10-03T20:59:00+02:00\n",
                 "Base Score: 7.5\n",
                 "Vector: CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N\n",
-                "Risk Factors: ['High severity', 'Attack complexity: low', 'Attack vector: network', 'Has fix']\n",
+                "Risk Factors: {'Severity': 'High', 'HasFix': True, 'DoS': False, 'AttackVector': 'network', 'AttackComplexity': 'low'}\n",
                 "Fix Details:\n",
                 "  Status: fixed in 1.9.10, 1.8.15\n",
                 "  Fixed Version: 1.8.15\n",
@@ -664,7 +672,7 @@ def test_get_junit_xml_string(sca_package_report_with_skip):
                 "Published Date: 2021-06-08T20:15:00+02:00\n",
                 "Base Score: 4.9\n",
                 "Vector: CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:N/A:N\n",
-                "Risk Factors: ['Attack complexity: low', 'Attack vector: network', 'Has fix', 'Medium severity', 'Recent vulnerability']\n",
+                "Risk Factors: {'Severity': 'High', 'HasFix': True, 'DoS': False, 'AttackVector': 'network', 'AttackComplexity': 'low'}\n",
                 "Fix Details:\n"
                 "  Status: fixed in 3.2.4, 3.1.12, 2.2.24\n",
                 "  Fixed Version: 2.2.24\n",
@@ -681,7 +689,7 @@ def test_get_junit_xml_string(sca_package_report_with_skip):
                 "Published Date: 2019-07-17T16:15:00+02:00\n",
                 "Base Score: 7.5\n",
                 "Vector: CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H\n",
-                "Risk Factors: ['Attack complexity: low', 'Attack vector: network', 'DoS', 'Has fix', 'High severity']\n",
+                "Risk Factors: {'Severity': 'High', 'HasFix': True, 'DoS': True, 'AttackVector': 'network', 'AttackComplexity': 'low'}\n",
                 "Fix Details:\n"
                 "  Status: fixed in 1.0\n",
                 "  Fixed Version: 1.0\n",
@@ -698,7 +706,7 @@ def test_get_junit_xml_string(sca_package_report_with_skip):
                 "Published Date: 2018-08-20T21:31:00+02:00\n",
                 "Base Score: 7.5\n",
                 "Vector: CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H\n",
-                "Risk Factors: ['Attack complexity: low', 'Attack vector: network', 'DoS', 'Has fix', 'High severity']\n",
+                "Risk Factors: {'Severity': 'High', 'HasFix': True, 'DoS': True, 'AttackVector': 'network', 'AttackComplexity': 'low'}\n",
                 "Fix Details:\n"
                 "  Status: fixed in 0.12.3\n"
                 "  Fixed Version: 0.12.3\n"
@@ -715,7 +723,7 @@ def test_get_junit_xml_string(sca_package_report_with_skip):
                 "Published Date: 2020-09-30T20:15:00+02:00\n",
                 "Base Score: 7.7\n",
                 "Vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N\n",
-                "Risk Factors: ['High severity', 'Attack complexity: low', 'Attack vector: network', 'Has fix']\n",
+                "Risk Factors: {'Severity': 'High', 'HasFix': True, 'DoS': True, 'AttackVector': 'network', 'AttackComplexity': 'low'}\n",
                 "Fix Details:\n"
                 "  Status: fixed in v4.0.0-preview1\n",
                 "  Fixed Version: 4.0.0rc1\n",

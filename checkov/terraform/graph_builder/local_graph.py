@@ -500,9 +500,13 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             # skip, if there is no change
             return
 
+        vertex_name = vertex.name
         updated_config = deepcopy(vertex.config)
+        if vertex.block_type == BlockType.PROVIDER:
+            # provider blocks set the alias as a suffix to the name, ex. name: "aws.prod"
+            vertex_name = vertex_name.split(".")[0]
         if vertex.block_type != BlockType.LOCALS:
-            parts = vertex.name.split(".")
+            parts = vertex_name.split(".")
             start = 0
             end = 1
             while end <= len(parts):
@@ -511,17 +515,18 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                     updated_config = updated_config[cur_key]
                     start = end
                 end += 1
+
         for changed_attribute in changed_attributes:
             new_value = vertex.attributes.get(changed_attribute, None)
             if new_value is not None:
                 if vertex.block_type == BlockType.LOCALS:
-                    changed_attribute = changed_attribute.replace(vertex.name + ".", "")
+                    changed_attribute = changed_attribute.replace(f"{vertex_name}.", "")
                 updated_config = update_dictionary_attribute(updated_config, changed_attribute, new_value, dynamic_blocks)
 
         if len(changed_attributes) > 0:
             if vertex.block_type == BlockType.LOCALS:
-                updated_config = updated_config.get(vertex.name)
-            update_dictionary_attribute(vertex.config, vertex.name, updated_config, dynamic_blocks)
+                updated_config = updated_config.get(vertex_name)
+            update_dictionary_attribute(vertex.config, vertex_name, updated_config, dynamic_blocks)
 
     def get_resources_types_in_graph(self) -> List[str]:
         return self.module.get_resources_types()
