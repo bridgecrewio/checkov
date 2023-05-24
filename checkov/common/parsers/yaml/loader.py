@@ -35,6 +35,7 @@ def load(filename: str | Path, content: str | None = None) -> tuple[list[dict[st
         content = file_path.read_text()
 
     file_lines = [(idx + 1, line) for idx, line in enumerate(content.splitlines(keepends=True))]
+    file_lines = bytes(file_lines, 'utf-8').decode('utf-8', 'ignore')
 
     template = loads(content)
 
