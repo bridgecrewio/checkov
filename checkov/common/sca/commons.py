@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import List, Optional, Any
 
 from checkov.common.output.common import SCADetails
@@ -59,7 +60,7 @@ def get_record_file_line_range(package: dict[str, Any], file_line_range: list[in
     """
     package_line_range = get_package_lines(package)
     if package_line_range and file_line_range:
-        raise Exception('Both \'package_line_range\' and \'file_line_range\' are not None. Conflict.')
+        logging.error('[get_record_file_line_range] Both \'package_line_range\' and \'file_line_range\' are not None. Conflict.')
     return package_line_range or file_line_range or [0, 0]
 
 
