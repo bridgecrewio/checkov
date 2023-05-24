@@ -173,7 +173,7 @@ def create_report_cve_record(
         "cvss": vulnerability_details.get("cvss"),
         "vector": vulnerability_details.get("vector"),
         "description": description,
-        "risk_factors": vulnerability_details.get("riskFactors"),
+        "risk_factors": vulnerability_details.get("riskFactorsV2"),
         "published_date": vulnerability_details.get("publishedDate") or (datetime.now() - timedelta(
             days=vulnerability_details.get("publishedDays", 0))).isoformat(),
         "licenses": licenses,

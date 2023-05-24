@@ -8,7 +8,7 @@ from collections import defaultdict
 from collections.abc import Sequence
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, Optional, TYPE_CHECKING, TypeVar
+from typing import Any, Optional, TYPE_CHECKING, TypeVar, cast
 
 import hcl2
 from lark import Tree
@@ -24,7 +24,7 @@ from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_PREFIX
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
 
-_Conf = TypeVar("_Conf", bound="dict")
+_Conf = TypeVar("_Conf", bound="dict[Any, Any]")
 
 ENTITY_NAME_PATTERN = re.compile(r"[^\W0-9][\w-]*")
 RESOLVED_MODULE_PATTERN = re.compile(r"\[.+\#.+\]")
@@ -69,7 +69,7 @@ Load JSON or HCL, depending on filename.
 
         with open(file_path, "r", encoding="utf-8-sig") as f:
             if file_name.endswith(".json"):
-                return json.load(f)
+                return cast("_Hcl2Payload", json.load(f))
             else:
                 raw_data = hcl2.load(f)
                 non_malformed_definitions = validate_malformed_definitions(raw_data)
@@ -112,16 +112,16 @@ def remove_module_dependency_from_path(path: str) -> str:
     return path
 
 
-def get_module_dependency_map(tf_definitions: dict[str, Any]) -> (
-        dict[str, list[list] | list], dict[str, Any], dict[tuple[str, str], list[str]]
-):
+def get_module_dependency_map(
+    tf_definitions: dict[str, Any]
+) -> tuple[dict[str, list[list[str]]], dict[str, Any], dict[tuple[str, str], list[str]]]:
     """
     :param tf_definitions, with paths in format 'dir/main.tf[module_dir/main.tf#0]'
     :return module_dependency_map: mapping between directories and the location of its module definition:
             {'dir': 'module_dir/main.tf'}
     :return tf_definitions: with paths in format 'dir/main.tf'
     """
-    module_dependency_map = {}
+    module_dependency_map: dict[str, list[list[str]]] = {}
     copy_of_tf_definitions = {}
     dep_index_mapping: dict[tuple[str, str], list[str]] = {}
     origin_keys = list(filter(lambda k: not k.endswith(TERRAFORM_NESTED_MODULE_PATH_ENDING), tf_definitions.keys()))
@@ -141,8 +141,10 @@ def get_module_dependency_map(tf_definitions: dict[str, Any]) -> (
                 dep.append(module_dependency)
             if dir_name not in module_dependency_map:
                 module_dependency_map[dir_name] = current_deps
-            elif current_deps not in module_dependency_map[dir_name]:
-                module_dependency_map[dir_name] += current_deps
+            else:
+                for dep in current_deps:
+                    if dep not in module_dependency_map[dir_name]:
+                        module_dependency_map[dir_name].append(dep)
             copy_of_tf_definitions[path] = deepcopy(tf_definitions[file_path])
             origin_keys.append(path)
             dep_index_mapping.setdefault((path, module_dependency), []).append(module_dependency_num)
@@ -202,10 +204,10 @@ def get_next_vertices(evaluated_files: list[str], unevaluated_files: list[str]) 
     return next_level, unevaluated
 
 
-def get_module_dependency_map_support_nested_modules(tf_definitions: dict[str, Any]) -> (
-        dict[str, list[str]], dict[str, Any], dict[str, Any]
-):
-    module_dependency_map = defaultdict(list)
+def get_module_dependency_map_support_nested_modules(
+    tf_definitions: dict[str, Any]
+) -> tuple[dict[str, list[list[str]]], dict[str, Any], dict[tuple[str, str | None], Any]]:
+    module_dependency_map: dict[str, list[list[str]]] = defaultdict(list)
     dep_index_mapping = defaultdict(list)
     for tf_definition_key in tf_definitions.keys():
         if not is_nested(tf_definition_key):
@@ -214,7 +216,7 @@ def get_module_dependency_map_support_nested_modules(tf_definitions: dict[str, A
             continue
         modules_list, path = get_nested_modules_data_as_list(tf_definition_key)
         dir_name = os.path.dirname(path)
-        module_dependency_map[dir_name].append([m for m, i in modules_list])
+        module_dependency_map[dir_name].append([m for m, i in modules_list if m])
         dep_index_mapping[(path, modules_list[-1][0])].append(modules_list[-1][1])
 
     for key, dir_list in module_dependency_map.items():
@@ -223,14 +225,15 @@ def get_module_dependency_map_support_nested_modules(tf_definitions: dict[str, A
     return module_dependency_map, tf_definitions, dep_index_mapping
 
 
-def get_nested_modules_data_as_list(file_path: str) -> (list[tuple[str | None, str | None]], str):
+def get_nested_modules_data_as_list(file_path: str) -> tuple[list[tuple[str | None, str | None]], str]:
     path = get_abs_path(file_path)
+    module_path: str | None = file_path
     modules_list = []
 
-    while is_nested(file_path):
-        module, index = get_module_from_full_path(file_path)
+    while is_nested(module_path):
+        module, index = get_module_from_full_path(module_path)
         modules_list.append((module, index))
-        file_path = module
+        module_path = module
     modules_list.reverse()
     return modules_list, path
 
@@ -262,7 +265,7 @@ def clean_parser_types(conf: _Conf) -> _Conf:
             sorted_conf[attribute] = clean_parser_types_lst(list(values))
         elif isinstance(values, Tree):
             sorted_conf[attribute] = str(values)
-    return sorted_conf
+    return sorted_conf  # type:ignore[return-value]  # still the same type as before
 
 
 def clean_parser_types_lst(values: list[Any]) -> list[Any]:
@@ -291,4 +294,4 @@ def clean_parser_types_lst(values: list[Any]) -> list[Any]:
 
 
 def serialize_definitions(tf_definitions: _Conf) -> _Conf:
-    return json.loads(json.dumps(tf_definitions, cls=CustomJSONEncoder), object_hook=object_hook)
+    return cast("_Conf", json.loads(json.dumps(tf_definitions, cls=CustomJSONEncoder), object_hook=object_hook))

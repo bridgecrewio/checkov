@@ -38,7 +38,8 @@ A typical output looks like this
               "helpUri": "https://docs.bridgecrew.io/docs/s3_16-enable-versioning",
               "defaultConfiguration": {
                 "level": "error"
-              }
+              },
+              "properties": {"security-severity": 8.9}
             },
             {
               "id": "CKV_AWS_3",
@@ -55,7 +56,8 @@ A typical output looks like this
               "helpUri": "https://docs.bridgecrew.io/docs/general_7",
               "defaultConfiguration": {
                 "level": "error"
-              }
+              },
+              "properties": {"security-severity": 6.9}
             }
           ],
           "organization": "bridgecrew"

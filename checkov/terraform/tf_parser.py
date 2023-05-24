@@ -104,7 +104,7 @@ class TFParser:
             if parse_result:
                 parse_result = serialize_definitions(parse_result)
                 parse_result = clean_parser_types(parse_result)
-                return parse_result  # type:ignore[no-any-return]  # will be fixed when 'modules' is typed
+                return parse_result
 
         return None
 
@@ -336,7 +336,7 @@ class TFParser:
             if isinstance(key[0], TFDefinitionKey):
                 file_key = key[0]
             elif key[0] is not None:
-                file_key, module_index, module_name = key  # type:ignore[misc]
+                file_key, module_index, module_name = key
             if path == file_key:
                 for resolved_path in self.module_to_resolved[key]:
                     self._remove_unused_path_recursive(resolved_path)
@@ -556,10 +556,10 @@ class TFParser:
     @staticmethod
     def get_content_path(module_loader_registry: ModuleLoaderRegistry, root_dir: str, source: str, version: str) -> Optional[str]:
         content = module_loader_registry.load(root_dir, source, version)
-        if not content.loaded():
+        if not content or not content.loaded():
             logging.info(f'Got no content for {source}:{version}')
             return None
-        return content.path()  # type:ignore[no-any-return]  # will be fixed when 'module_loading' is typed
+        return content.path()
 
     @staticmethod
     def get_new_module(

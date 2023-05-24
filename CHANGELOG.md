@@ -1,6 +1,24 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.251...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.257...HEAD)
+
+## [2.3.257](https://github.com/bridgecrewio/checkov/compare/2.3.251...2.3.257) - 2023-05-23
+
+### Feature
+
+- **sca:** adding the risk factor v2 to the vulnerability details - [#5108](https://github.com/bridgecrewio/checkov/pull/5108)
+- **sca:** dockerfile image-referencer fixes - [#5120](https://github.com/bridgecrewio/checkov/pull/5120)
+- **secrets:** Add new pre-commit hook for secrets - [#5103](https://github.com/bridgecrewio/checkov/pull/5103)
+- **terraform:** add check to look at star resources - [#4996](https://github.com/bridgecrewio/checkov/pull/4996)
+
+### Bug Fix
+
+- **gitlab:** Skipping image blocks without name attribute - [#5126](https://github.com/bridgecrewio/checkov/pull/5126)
+- **terraform:** fix terraform variable rendering for provider alias - [#5124](https://github.com/bridgecrewio/checkov/pull/5124)
+
+### Platform
+
+- **general:** Enhancing Sarif output with Security Severity Level - [#5074](https://github.com/bridgecrewio/checkov/pull/5074)
 
 ## [2.3.251](https://github.com/bridgecrewio/checkov/compare/2.3.247...2.3.251) - 2023-05-21
 
