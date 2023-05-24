@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import re
+from functools import lru_cache
 from pathlib import Path
 from typing import Union, List, Tuple, Optional, Dict, Any
 
@@ -90,6 +91,7 @@ class Record:
         self.definition_context_file_path = definition_context_file_path
 
     @staticmethod
+    @lru_cache(maxsize=None)
     def _determine_repo_file_path(file_path: Union[str, "os.PathLike[str]"]) -> str:
         # matches file paths given in the BC platform and should always be a unix path
         repo_file_path = Path(file_path)

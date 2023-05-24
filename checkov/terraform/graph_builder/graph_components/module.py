@@ -14,6 +14,7 @@ from checkov.terraform.parser_functions import handle_dynamic_values
 from hcl2 import START_LINE, END_LINE
 
 if TYPE_CHECKING:
+    from checkov.terraform.modules import TFDefinitionKey
     from typing_extensions import TypeAlias
 
 _AddBlockTypeCallable: TypeAlias = "Callable[[Module, list[dict[str, dict[str, Any]]], str], None]"
@@ -41,10 +42,10 @@ class Module:
         self.source_dir = source_dir
         self.render_dynamic_blocks_env_var = os.getenv('CHECKOV_RENDER_DYNAMIC_MODULES', 'True')
         self.enable_nested_modules = strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'True'))
-        self.use_new_tf_parser = strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'False'))
+        self.use_new_tf_parser = strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'True'))
 
     def add_blocks(
-        self, block_type: BlockType, blocks: List[Dict[str, Dict[str, Any]]], path: str, source: str
+        self, block_type: str, blocks: List[Dict[str, Dict[str, Any]]], path: str | TFDefinitionKey, source: str
     ) -> None:
         self.source = source
         if block_type in self._block_type_to_func:
@@ -233,17 +234,18 @@ class Module:
             )
             self._add_to_blocks(terraform_block)
 
-    def _add_tf_var(self, blocks: Dict[str, Dict[str, Any]], path: str) -> None:
-        for tf_var_name, attributes in blocks.items():
-            tfvar_block = TerraformBlock(
-                block_type=BlockType.TF_VARIABLE,
-                name=tf_var_name,
-                config={tf_var_name: attributes},
-                path=path,
-                attributes=attributes,
-                source=self.source,
-            )
-            self._add_to_blocks(tfvar_block)
+    def _add_tf_var(self, blocks: list[Dict[str, Dict[str, Any]]], path: str) -> None:
+        for block in blocks:
+            for tf_var_name, attributes in block.items():
+                tfvar_block = TerraformBlock(
+                    block_type=BlockType.TF_VARIABLE,
+                    name=tf_var_name,
+                    config={tf_var_name: attributes},
+                    path=path,
+                    attributes=attributes,
+                    source=self.source,
+                )
+                self._add_to_blocks(tfvar_block)
 
     @staticmethod
     def _handle_provisioner(provisioner: List[Dict[str, Any]], attributes: Dict[str, Any]) -> None:
@@ -259,7 +261,7 @@ class Module:
     def get_resources_types(self) -> List[str]:
         return list(self.resources_types)
 
-    _block_type_to_func: Dict[BlockType, _AddBlockTypeCallable] = {  # noqa: CCE003  # a static attribute
+    _block_type_to_func: Dict[str, _AddBlockTypeCallable] = {  # noqa: CCE003  # a static attribute
         BlockType.DATA: _add_data,
         BlockType.LOCALS: _add_locals,
         BlockType.MODULE: _add_module,

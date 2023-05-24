@@ -262,7 +262,7 @@ def test_get_cyclonedx_json_report_with_licenses_with_comma(tmp_path: Path,
 
 
 @mock.patch("checkov.common.output.csv.HEADER_OSS_PACKAGES", [
-    "Package", "Version", "Path", "Git Org", "Git Repository", "Vulnerability", "Severity", "Description", "Licenses",
+    "Package", "Version", "Path", "Line(s)", "Git Org", "Git Repository", "Vulnerability", "Severity", "Description", "Licenses",
     "Fix Version", "Registry URL"])
 @mock.patch("checkov.common.output.csv.CHECKOV_DISPLAY_REGISTRY_URL", True)
 def test_get_csv_report(sca_package_2_report, tmp_path: Path):
@@ -276,36 +276,36 @@ def test_get_csv_report(sca_package_2_report, tmp_path: Path):
 
     # then
     expected_csv_output = [
-        'Package,Version,Path,Git Org,Git Repository,Vulnerability,Severity,Description,Licenses,Fix Version,Registry URL',
-        'django,1.2,/requirements.txt,acme,bridgecrewio/example,CVE-2019-19844,CRITICAL,"Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover. A suitably crafted email address (that is equal to an existing user\\\'s email address after case transformation of Unicode characters) would allow an attacker to be sent a password reset token for the matched user account. (One mitigation in the new releases is to send password reset tokens only to the registered user email address.)",OSI_BDS,1.11.27,https://pypi.python.org/',
-        'django,1.2,/requirements.txt,acme,bridgecrewio/example,CVE-2016-7401,HIGH,"The cookie parsing code in Django before 1.8.15 and 1.9.x before 1.9.10, when used on a site with Google Analytics, allows remote attackers to bypass an intended CSRF protection mechanism by setting arbitrary cookies.",OSI_BDS,1.8.15,https://pypi.python.org/',
-        'django,1.2,/requirements.txt,acme,bridgecrewio/example,CVE-2021-33203,MEDIUM,"Django before 2.2.24, 3.x before 3.1.12, and 3.2.x before 3.2.4 has a potential directory traversal via django.contrib.admindocs. Staff members could use the TemplateDetailView view to check the existence of arbitrary files. Additionally, if (and only if) the default admindocs templates have been customized by application developers to also show file contents, then not only the existence but also the file contents would have been exposed. In other words, there is directory traversal outside of the template root directories.",OSI_BDS,2.2.24,https://pypi.python.org/',
-        'flask,0.6,/requirements.txt,acme,bridgecrewio/example,CVE-2019-1010083,HIGH,The Pallets Project Flask before 1.0 is affected by: unexpected memory usage. The impact is: denial of service. The attack vector is: crafted encoded JSON data. The fixed version is: 1. NOTE: this may overlap CVE-2018-1000656.,"OSI_APACHE, DUMMY_OTHER_LICENSE",1.0,https://pypi.python.org/',
-        'flask,0.6,/requirements.txt,acme,bridgecrewio/example,CVE-2018-1000656,HIGH,The Pallets Project flask version Before 0.12.3 contains a CWE-20: Improper Input Validation vulnerability in flask that can result in Large amount of memory usage possibly leading to denial of service. This attack appear to be exploitable via Attacker provides JSON data in incorrect encoding. This vulnerability appears to have been fixed in 0.12.3. NOTE: this may overlap CVE-2019-1010083.,"OSI_APACHE, DUMMY_OTHER_LICENSE",0.12.3,https://pypi.python.org/',
-        'golang.org/x/crypto,v0.0.1,/path/to/go.sum,acme,bridgecrewio/example,CVE-2020-29652,HIGH,A nil pointer dereference in the golang.org/x/crypto/ssh component through v0.0.3 for Go allows remote attackers to cause a denial of service against SSH servers.,Unknown,0.0.2,',
-        'github.com/dgrijalva/jwt-go,v3.2.0,/path/to/go.sum,acme,bridgecrewio/example,CVE-2020-26160,HIGH,"jwt-go before 4.0.0-preview1 allows attackers to bypass intended access restrictions in situations with []string{} for m[\\""aud\\""] (which is allowed by the specification). Because the type assertion fails, \\""\\"" is the value of aud. This is a security problem if the JWT token is presented to a service that lacks its own audience check.",Unknown,4.0.0rc1,',
-        'django,1.2,/requirements.txt,acme,bridgecrewio/example,CVE-2016-6186,MEDIUM,"Cross-site scripting (XSS) vulnerability in the dismissChangeRelatedObjectPopup function in contrib/admin/static/admin/js/admin/RelatedObjectLookups.js in Django before 1.8.14, 1.9.x before 1.9.8, and 1.10.x before 1.10rc1 allows remote attackers to inject arbitrary web script or HTML via vectors involving unsafe usage of Element.innerHTML.",OSI_BDS,1.8.14,https://pypi.python.org/',
-        'github.com/miekg/dns,v1.1.41,/path/to/go.sum,acme,bridgecrewio/example,,,,Unknown,N/A,',
-        'github.com/prometheus/client_model,v0.0.0-20190129233127-fd36f4220a90,/path/to/go.sum,acme,bridgecrewio/example,,,,Unknown,N/A,',
-        'requests,2.26.0,/path/to/sub/requirements.txt,acme,bridgecrewio/example,,,,OSI_APACHE,N/A,',
-        'requests,2.26.0,/requirements.txt,acme,bridgecrewio/example,,,,OSI_APACHE,N/A,https://pypi.python.org/', '']
+        'Package,Version,Path,Line(s),Git Org,Git Repository,Vulnerability,Severity,Description,Licenses,Fix Version,Registry URL',
+        'django,1.2,/requirements.txt,,acme,bridgecrewio/example,CVE-2019-19844,CRITICAL,"Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover. A suitably crafted email address (that is equal to an existing user\\\'s email address after case transformation of Unicode characters) would allow an attacker to be sent a password reset token for the matched user account. (One mitigation in the new releases is to send password reset tokens only to the registered user email address.)",OSI_BDS,1.11.27,https://pypi.python.org/',
+        'django,1.2,/requirements.txt,,acme,bridgecrewio/example,CVE-2016-7401,HIGH,"The cookie parsing code in Django before 1.8.15 and 1.9.x before 1.9.10, when used on a site with Google Analytics, allows remote attackers to bypass an intended CSRF protection mechanism by setting arbitrary cookies.",OSI_BDS,1.8.15,https://pypi.python.org/',
+        'django,1.2,/requirements.txt,,acme,bridgecrewio/example,CVE-2021-33203,MEDIUM,"Django before 2.2.24, 3.x before 3.1.12, and 3.2.x before 3.2.4 has a potential directory traversal via django.contrib.admindocs. Staff members could use the TemplateDetailView view to check the existence of arbitrary files. Additionally, if (and only if) the default admindocs templates have been customized by application developers to also show file contents, then not only the existence but also the file contents would have been exposed. In other words, there is directory traversal outside of the template root directories.",OSI_BDS,2.2.24,https://pypi.python.org/',
+        'flask,0.6,/requirements.txt,,acme,bridgecrewio/example,CVE-2019-1010083,HIGH,The Pallets Project Flask before 1.0 is affected by: unexpected memory usage. The impact is: denial of service. The attack vector is: crafted encoded JSON data. The fixed version is: 1. NOTE: this may overlap CVE-2018-1000656.,"OSI_APACHE, DUMMY_OTHER_LICENSE",1.0,https://pypi.python.org/',
+        'flask,0.6,/requirements.txt,,acme,bridgecrewio/example,CVE-2018-1000656,HIGH,The Pallets Project flask version Before 0.12.3 contains a CWE-20: Improper Input Validation vulnerability in flask that can result in Large amount of memory usage possibly leading to denial of service. This attack appear to be exploitable via Attacker provides JSON data in incorrect encoding. This vulnerability appears to have been fixed in 0.12.3. NOTE: this may overlap CVE-2019-1010083.,"OSI_APACHE, DUMMY_OTHER_LICENSE",0.12.3,https://pypi.python.org/',
+        'golang.org/x/crypto,v0.0.1,/path/to/go.sum,,acme,bridgecrewio/example,CVE-2020-29652,HIGH,A nil pointer dereference in the golang.org/x/crypto/ssh component through v0.0.3 for Go allows remote attackers to cause a denial of service against SSH servers.,Unknown,0.0.2,',
+        'github.com/dgrijalva/jwt-go,v3.2.0,/path/to/go.sum,,acme,bridgecrewio/example,CVE-2020-26160,HIGH,"jwt-go before 4.0.0-preview1 allows attackers to bypass intended access restrictions in situations with []string{} for m[\\""aud\\""] (which is allowed by the specification). Because the type assertion fails, \\""\\"" is the value of aud. This is a security problem if the JWT token is presented to a service that lacks its own audience check.",Unknown,4.0.0rc1,',
+        'django,1.2,/requirements.txt,,acme,bridgecrewio/example,CVE-2016-6186,MEDIUM,"Cross-site scripting (XSS) vulnerability in the dismissChangeRelatedObjectPopup function in contrib/admin/static/admin/js/admin/RelatedObjectLookups.js in Django before 1.8.14, 1.9.x before 1.9.8, and 1.10.x before 1.10rc1 allows remote attackers to inject arbitrary web script or HTML via vectors involving unsafe usage of Element.innerHTML.",OSI_BDS,1.8.14,https://pypi.python.org/',
+        'github.com/miekg/dns,v1.1.41,/path/to/go.sum,,acme,bridgecrewio/example,,,,Unknown,N/A,',
+        'github.com/prometheus/client_model,v0.0.0-20190129233127-fd36f4220a90,/path/to/go.sum,,acme,bridgecrewio/example,,,,Unknown,N/A,',
+        'requests,2.26.0,/path/to/sub/requirements.txt,,acme,bridgecrewio/example,,,,OSI_APACHE,N/A,',
+        'requests,2.26.0,/requirements.txt,,acme,bridgecrewio/example,,,,OSI_APACHE,N/A,https://pypi.python.org/', '']
     csv_output_as_list = csv_output.split("\n")
     assert csv_output_as_list == expected_csv_output
 
     expected_csv_output_str = [
-        'Package,Version,Path,Git Org,Git Repository,Vulnerability,Severity,Description,Licenses,Fix Version,Registry URL',
-        '"django",1.2,/requirements.txt,acme,bridgecrewio/example,CVE-2019-19844,CRITICAL,"Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover. A suitably crafted email address (that is equal to an existing user\\\'s email address after case transformation of Unicode characters) would allow an attacker to be sent a password reset token for the matched user account. (One mitigation in the new releases is to send password reset tokens only to the registered user email address.)","OSI_BDS",1.11.27,https://pypi.python.org/',
-        '"django",1.2,/requirements.txt,acme,bridgecrewio/example,CVE-2016-7401,HIGH,"The cookie parsing code in Django before 1.8.15 and 1.9.x before 1.9.10, when used on a site with Google Analytics, allows remote attackers to bypass an intended CSRF protection mechanism by setting arbitrary cookies.","OSI_BDS",1.8.15,https://pypi.python.org/',
-        '"django",1.2,/requirements.txt,acme,bridgecrewio/example,CVE-2021-33203,MEDIUM,"Django before 2.2.24, 3.x before 3.1.12, and 3.2.x before 3.2.4 has a potential directory traversal via django.contrib.admindocs. Staff members could use the TemplateDetailView view to check the existence of arbitrary files. Additionally, if (and only if) the default admindocs templates have been customized by application developers to also show file contents, then not only the existence but also the file contents would have been exposed. In other words, there is directory traversal outside of the template root directories.","OSI_BDS",2.2.24,https://pypi.python.org/',
-        '"flask",0.6,/requirements.txt,acme,bridgecrewio/example,CVE-2019-1010083,HIGH,"The Pallets Project Flask before 1.0 is affected by: unexpected memory usage. The impact is: denial of service. The attack vector is: crafted encoded JSON data. The fixed version is: 1. NOTE: this may overlap CVE-2018-1000656.","OSI_APACHE, DUMMY_OTHER_LICENSE",1.0,https://pypi.python.org/',
-        '"flask",0.6,/requirements.txt,acme,bridgecrewio/example,CVE-2018-1000656,HIGH,"The Pallets Project flask version Before 0.12.3 contains a CWE-20: Improper Input Validation vulnerability in flask that can result in Large amount of memory usage possibly leading to denial of service. This attack appear to be exploitable via Attacker provides JSON data in incorrect encoding. This vulnerability appears to have been fixed in 0.12.3. NOTE: this may overlap CVE-2019-1010083.","OSI_APACHE, DUMMY_OTHER_LICENSE",0.12.3,https://pypi.python.org/',
-        '"golang.org/x/crypto",v0.0.1,/path/to/go.sum,acme,bridgecrewio/example,CVE-2020-29652,HIGH,"A nil pointer dereference in the golang.org/x/crypto/ssh component through v0.0.3 for Go allows remote attackers to cause a denial of service against SSH servers.","Unknown",0.0.2,',
-        '"github.com/dgrijalva/jwt-go",v3.2.0,/path/to/go.sum,acme,bridgecrewio/example,CVE-2020-26160,HIGH,"jwt-go before 4.0.0-preview1 allows attackers to bypass intended access restrictions in situations with []string{} for m[\\"aud\\"] (which is allowed by the specification). Because the type assertion fails, \\"\\" is the value of aud. This is a security problem if the JWT token is presented to a service that lacks its own audience check.","Unknown",4.0.0rc1,',
-        '"django",1.2,/requirements.txt,acme,bridgecrewio/example,CVE-2016-6186,MEDIUM,"Cross-site scripting (XSS) vulnerability in the dismissChangeRelatedObjectPopup function in contrib/admin/static/admin/js/admin/RelatedObjectLookups.js in Django before 1.8.14, 1.9.x before 1.9.8, and 1.10.x before 1.10rc1 allows remote attackers to inject arbitrary web script or HTML via vectors involving unsafe usage of Element.innerHTML.","OSI_BDS",1.8.14,https://pypi.python.org/',
-        '"github.com/miekg/dns",v1.1.41,/path/to/go.sum,acme,bridgecrewio/example,,,"","Unknown",N/A,',
-        '"github.com/prometheus/client_model",v0.0.0-20190129233127-fd36f4220a90,/path/to/go.sum,acme,bridgecrewio/example,,,"","Unknown",N/A,',
-        '"requests",2.26.0,/path/to/sub/requirements.txt,acme,bridgecrewio/example,,,"","OSI_APACHE",N/A,',
-        '"requests",2.26.0,/requirements.txt,acme,bridgecrewio/example,,,"","OSI_APACHE",N/A,https://pypi.python.org/',
+        'Package,Version,Path,Line(s),Git Org,Git Repository,Vulnerability,Severity,Description,Licenses,Fix Version,Registry URL',
+        '"django",1.2,/requirements.txt,,acme,bridgecrewio/example,CVE-2019-19844,CRITICAL,"Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover. A suitably crafted email address (that is equal to an existing user\\\'s email address after case transformation of Unicode characters) would allow an attacker to be sent a password reset token for the matched user account. (One mitigation in the new releases is to send password reset tokens only to the registered user email address.)","OSI_BDS",1.11.27,https://pypi.python.org/',
+        '"django",1.2,/requirements.txt,,acme,bridgecrewio/example,CVE-2016-7401,HIGH,"The cookie parsing code in Django before 1.8.15 and 1.9.x before 1.9.10, when used on a site with Google Analytics, allows remote attackers to bypass an intended CSRF protection mechanism by setting arbitrary cookies.","OSI_BDS",1.8.15,https://pypi.python.org/',
+        '"django",1.2,/requirements.txt,,acme,bridgecrewio/example,CVE-2021-33203,MEDIUM,"Django before 2.2.24, 3.x before 3.1.12, and 3.2.x before 3.2.4 has a potential directory traversal via django.contrib.admindocs. Staff members could use the TemplateDetailView view to check the existence of arbitrary files. Additionally, if (and only if) the default admindocs templates have been customized by application developers to also show file contents, then not only the existence but also the file contents would have been exposed. In other words, there is directory traversal outside of the template root directories.","OSI_BDS",2.2.24,https://pypi.python.org/',
+        '"flask",0.6,/requirements.txt,,acme,bridgecrewio/example,CVE-2019-1010083,HIGH,"The Pallets Project Flask before 1.0 is affected by: unexpected memory usage. The impact is: denial of service. The attack vector is: crafted encoded JSON data. The fixed version is: 1. NOTE: this may overlap CVE-2018-1000656.","OSI_APACHE, DUMMY_OTHER_LICENSE",1.0,https://pypi.python.org/',
+        '"flask",0.6,/requirements.txt,,acme,bridgecrewio/example,CVE-2018-1000656,HIGH,"The Pallets Project flask version Before 0.12.3 contains a CWE-20: Improper Input Validation vulnerability in flask that can result in Large amount of memory usage possibly leading to denial of service. This attack appear to be exploitable via Attacker provides JSON data in incorrect encoding. This vulnerability appears to have been fixed in 0.12.3. NOTE: this may overlap CVE-2019-1010083.","OSI_APACHE, DUMMY_OTHER_LICENSE",0.12.3,https://pypi.python.org/',
+        '"golang.org/x/crypto",v0.0.1,/path/to/go.sum,,acme,bridgecrewio/example,CVE-2020-29652,HIGH,"A nil pointer dereference in the golang.org/x/crypto/ssh component through v0.0.3 for Go allows remote attackers to cause a denial of service against SSH servers.","Unknown",0.0.2,',
+        '"github.com/dgrijalva/jwt-go",v3.2.0,/path/to/go.sum,,acme,bridgecrewio/example,CVE-2020-26160,HIGH,"jwt-go before 4.0.0-preview1 allows attackers to bypass intended access restrictions in situations with []string{} for m[\\"aud\\"] (which is allowed by the specification). Because the type assertion fails, \\"\\" is the value of aud. This is a security problem if the JWT token is presented to a service that lacks its own audience check.","Unknown",4.0.0rc1,',
+        '"django",1.2,/requirements.txt,,acme,bridgecrewio/example,CVE-2016-6186,MEDIUM,"Cross-site scripting (XSS) vulnerability in the dismissChangeRelatedObjectPopup function in contrib/admin/static/admin/js/admin/RelatedObjectLookups.js in Django before 1.8.14, 1.9.x before 1.9.8, and 1.10.x before 1.10rc1 allows remote attackers to inject arbitrary web script or HTML via vectors involving unsafe usage of Element.innerHTML.","OSI_BDS",1.8.14,https://pypi.python.org/',
+        '"github.com/miekg/dns",v1.1.41,/path/to/go.sum,,acme,bridgecrewio/example,,,"","Unknown",N/A,',
+        '"github.com/prometheus/client_model",v0.0.0-20190129233127-fd36f4220a90,/path/to/go.sum,,acme,bridgecrewio/example,,,"","Unknown",N/A,',
+        '"requests",2.26.0,/path/to/sub/requirements.txt,,acme,bridgecrewio/example,,,"","OSI_APACHE",N/A,',
+        '"requests",2.26.0,/requirements.txt,,acme,bridgecrewio/example,,,"","OSI_APACHE",N/A,https://pypi.python.org/',
         '']
     csv_output_str_as_list = csv_output_str.split("\n")
     assert csv_output_str_as_list == expected_csv_output_str
@@ -350,6 +350,7 @@ def test_sarif_output(sca_package_report_2_with_skip_scope_function):
                                     "text": "SCA package scan\nResource: requirements.txt.django\nStatus: fixed in 3.0.1, 2.2.9, 1.11.27"
                                 },
                                 "defaultConfiguration": {"level": "error"},
+                                "properties": {"security-severity": 9.8},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2019-19844",
                             },
                             {
@@ -363,6 +364,7 @@ def test_sarif_output(sca_package_report_2_with_skip_scope_function):
                                     "text": "SCA package scan\nResource: requirements.txt.django\nStatus: fixed in 1.9.10, 1.8.15"
                                 },
                                 "defaultConfiguration": {"level": "error"},
+                                "properties": {"security-severity": 7.5},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2016-7401",
                             },
                             {
@@ -376,6 +378,7 @@ def test_sarif_output(sca_package_report_2_with_skip_scope_function):
                                     "text": "SCA package scan\nResource: requirements.txt.django\nStatus: fixed in 3.2.4, 3.1.12, 2.2.24"
                                 },
                                 "defaultConfiguration": {"level": "error"},
+                                "properties": {"security-severity": 4.9},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2021-33203",
                             },
                             {
@@ -389,6 +392,7 @@ def test_sarif_output(sca_package_report_2_with_skip_scope_function):
                                     "text": "SCA package scan\nResource: requirements.txt.flask\nStatus: fixed in 1.0"
                                 },
                                 "defaultConfiguration": {"level": "error"},
+                                "properties": {"security-severity": 7.5},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2019-1010083",
                             },
                             {
@@ -402,6 +406,7 @@ def test_sarif_output(sca_package_report_2_with_skip_scope_function):
                                     "text": "SCA package scan\nResource: requirements.txt.flask\nStatus: fixed in 0.12.3"
                                 },
                                 "defaultConfiguration": {"level": "error"},
+                                "properties": {"security-severity": 7.5},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2018-1000656",
                             },
                             {
@@ -415,6 +420,7 @@ def test_sarif_output(sca_package_report_2_with_skip_scope_function):
                                     "text": "SCA package scan\nResource: path/to/go.sum.github.com/dgrijalva/jwt-go\nStatus: fixed in v4.0.0-preview1"
                                 },
                                 "defaultConfiguration": {"level": "error"},
+                                "properties": {"security-severity": 7.7},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2020-26160",
                             },
                             {
@@ -428,6 +434,7 @@ def test_sarif_output(sca_package_report_2_with_skip_scope_function):
                                     "text": "SCA package scan\nResource: requirements.txt.django\nStatus: fixed in 1.9.8, 1.8.14"
                                 },
                                 "defaultConfiguration": {"level": "error"},
+                                "properties": {"security-severity": 6.1},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2016-6186",
                             },
                             {
@@ -441,6 +448,7 @@ def test_sarif_output(sca_package_report_2_with_skip_scope_function):
                                     "text": "SCA package scan\nResource: path/to/go.sum.golang.org/x/crypto\nStatus: fixed in v0.0.2"
                                 },
                                 "defaultConfiguration": {"level": "error"},
+                                "properties": {"security-severity": 7.5},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2020-29652",
                             },
                         ],
@@ -628,7 +636,7 @@ def test_get_junit_xml_string(sca_package_2_report_with_skip):
             "Published Date: 2019-12-18T20:15:00+01:00",
             "Base Score: 9.8",
             "Vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
-            "Risk Factors: ['Attack complexity: low', 'Attack vector: network', 'Critical severity', 'Has fix']",
+            "Risk Factors: {'Severity': 'Critical', 'HasFix': True, 'DoS': False, 'AttackComplexity': 'low', 'AttackVector': 'network', 'RemoteExecution': True}",
             "Fix Details:",
             "  Status: fixed in 3.0.1, 2.2.9, 1.11.27",
             "  Fixed Version: 1.11.27",
@@ -651,7 +659,7 @@ def test_get_junit_xml_string(sca_package_2_report_with_skip):
             "Published Date: 2016-10-03T20:59:00+02:00",
             "Base Score: 7.5",
             "Vector: CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N",
-            "Risk Factors: ['High severity', 'Attack complexity: low', 'Attack vector: network', 'Has fix']",
+            "Risk Factors: {'Severity': 'Critical', 'HasFix': True, 'DoS': False, 'AttackComplexity': 'low', 'AttackVector': 'network', 'RemoteExecution': True}",
             "Fix Details:",
             "  Status: fixed in 1.9.10, 1.8.15",
             "  Fixed Version: 1.8.15",
@@ -674,7 +682,7 @@ def test_get_junit_xml_string(sca_package_2_report_with_skip):
             "Published Date: 2021-06-08T20:15:00+02:00",
             "Base Score: 4.9",
             "Vector: CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:N/A:N",
-            "Risk Factors: ['Attack complexity: low', 'Attack vector: network', 'Has fix', 'Medium severity', 'Recent vulnerability']",
+            "Risk Factors: {'Severity': 'Critical', 'HasFix': True, 'DoS': False, 'AttackComplexity': 'low', 'AttackVector': 'network', 'RemoteExecution': True}",
             "Fix Details:",
             "  Status: fixed in 3.2.4, 3.1.12, 2.2.24",
             "  Fixed Version: 2.2.24",
@@ -697,7 +705,7 @@ def test_get_junit_xml_string(sca_package_2_report_with_skip):
             "Published Date: 2019-07-17T16:15:00+02:00",
             "Base Score: 7.5",
             "Vector: CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
-            "Risk Factors: ['Attack complexity: low', 'Attack vector: network', 'DoS', 'Has fix', 'High severity']",
+            "Risk Factors: {'Severity': 'Critical', 'HasFix': True, 'DoS': False, 'AttackComplexity': 'low', 'AttackVector': 'network', 'RemoteExecution': True}",
             "Fix Details:",
             "  Status: fixed in 1.0",
             "  Fixed Version: 1.0",
@@ -720,7 +728,7 @@ def test_get_junit_xml_string(sca_package_2_report_with_skip):
             "Published Date: 2018-08-20T21:31:00+02:00",
             "Base Score: 7.5",
             "Vector: CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
-            "Risk Factors: ['Attack complexity: low', 'Attack vector: network', 'DoS', 'Has fix', 'High severity']",
+            "Risk Factors: {'Severity': 'Critical', 'HasFix': True, 'DoS': False, 'AttackComplexity': 'low', 'AttackVector': 'network', 'RemoteExecution': True}",
             "Fix Details:",
             "  Status: fixed in 0.12.3",
             "  Fixed Version: 0.12.3",
@@ -743,7 +751,7 @@ def test_get_junit_xml_string(sca_package_2_report_with_skip):
             "Published Date: 2020-09-30T20:15:00+02:00",
             "Base Score: 7.7",
             "Vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
-            "Risk Factors: ['High severity', 'Attack complexity: low', 'Attack vector: network', 'Has fix']",
+            "Risk Factors: {'Severity': 'Critical', 'HasFix': True, 'DoS': False, 'AttackComplexity': 'low', 'AttackVector': 'network', 'RemoteExecution': True}",
             "Fix Details:",
             "  Status: fixed in v4.0.0-preview1",
             "  Fixed Version: 4.0.0rc1",
@@ -812,7 +820,7 @@ def test_get_junit_xml_string_py37(sca_package_2_report_with_skip):
             "Published Date: 2019-12-18T20:15:00+01:00",
             "Base Score: 9.8",
             "Vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
-            "Risk Factors: ['Attack complexity: low', 'Attack vector: network', 'Critical severity', 'Has fix']",
+            "Risk Factors: {'Severity': 'Critical', 'HasFix': True, 'DoS': False, 'AttackComplexity': 'low', 'AttackVector': 'network', 'RemoteExecution': True}",
             "Fix Details:",
             "  Status: fixed in 3.0.1, 2.2.9, 1.11.27",
             "  Fixed Version: 1.11.27",
@@ -835,7 +843,7 @@ def test_get_junit_xml_string_py37(sca_package_2_report_with_skip):
             "Published Date: 2016-10-03T20:59:00+02:00",
             "Base Score: 7.5",
             "Vector: CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N",
-            "Risk Factors: ['High severity', 'Attack complexity: low', 'Attack vector: network', 'Has fix']",
+            "Risk Factors: {'Severity': 'Critical', 'HasFix': True, 'DoS': False, 'AttackComplexity': 'low', 'AttackVector': 'network', 'RemoteExecution': True}",
             "Fix Details:",
             "  Status: fixed in 1.9.10, 1.8.15",
             "  Fixed Version: 1.8.15",
@@ -858,7 +866,7 @@ def test_get_junit_xml_string_py37(sca_package_2_report_with_skip):
             "Published Date: 2021-06-08T20:15:00+02:00",
             "Base Score: 4.9",
             "Vector: CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:N/A:N",
-            "Risk Factors: ['Attack complexity: low', 'Attack vector: network', 'Has fix', 'Medium severity', 'Recent vulnerability']",
+            "Risk Factors: {'Severity': 'Critical', 'HasFix': True, 'DoS': False, 'AttackComplexity': 'low', 'AttackVector': 'network', 'RemoteExecution': True}",
             "Fix Details:",
             "  Status: fixed in 3.2.4, 3.1.12, 2.2.24",
             "  Fixed Version: 2.2.24",
@@ -881,7 +889,7 @@ def test_get_junit_xml_string_py37(sca_package_2_report_with_skip):
             "Published Date: 2019-07-17T16:15:00+02:00",
             "Base Score: 7.5",
             "Vector: CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
-            "Risk Factors: ['Attack complexity: low', 'Attack vector: network', 'DoS', 'Has fix', 'High severity']",
+            "Risk Factors: {'Severity': 'Critical', 'HasFix': True, 'DoS': False, 'AttackComplexity': 'low', 'AttackVector': 'network', 'RemoteExecution': True}",
             "Fix Details:",
             "  Status: fixed in 1.0",
             "  Fixed Version: 1.0",
@@ -904,7 +912,7 @@ def test_get_junit_xml_string_py37(sca_package_2_report_with_skip):
             "Published Date: 2018-08-20T21:31:00+02:00",
             "Base Score: 7.5",
             "Vector: CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
-            "Risk Factors: ['Attack complexity: low', 'Attack vector: network', 'DoS', 'Has fix', 'High severity']",
+            "Risk Factors: {'Severity': 'Critical', 'HasFix': True, 'DoS': False, 'AttackComplexity': 'low', 'AttackVector': 'network', 'RemoteExecution': True}",
             "Fix Details:",
             "  Status: fixed in 0.12.3",
             "  Fixed Version: 0.12.3",
@@ -927,7 +935,7 @@ def test_get_junit_xml_string_py37(sca_package_2_report_with_skip):
             "Published Date: 2020-09-30T20:15:00+02:00",
             "Base Score: 7.7",
             "Vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
-            "Risk Factors: ['High severity', 'Attack complexity: low', 'Attack vector: network', 'Has fix']",
+            "Risk Factors: {'Severity': 'Critical', 'HasFix': True, 'DoS': False, 'AttackComplexity': 'low', 'AttackVector': 'network', 'RemoteExecution': True}",
             "Fix Details:",
             "  Status: fixed in v4.0.0-preview1",
             "  Fixed Version: 4.0.0rc1",

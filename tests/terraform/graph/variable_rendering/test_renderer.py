@@ -178,6 +178,7 @@ class TestRenderer(TestCase):
                                      f'error during comparing {v.block_type} in attribute key: {attribute_key}')
 
     @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "False"})
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_graph_rendering_order(self):
         resource_path = os.path.join(TEST_DIRNAME, "..", "resources", "module_rendering", "example")
         graph_manager = TerraformGraphManager('m', ['m'])
@@ -456,3 +457,18 @@ class TestRenderer(TestCase):
             "ip_rules": [],
             "virtual_network_subnet_ids": []
         }
+
+    def test_provider_alias(self):
+        # given
+        resource_path = Path(TEST_DIRNAME) / "test_resources/provider_alias"
+
+        # when
+        graph_manager = TerraformGraphManager('m', ['m'])
+        local_graph, _ = graph_manager.build_graph_from_source_directory(str(resource_path), render_variables=True)
+
+        # then
+        provider = next(vertex for vertex in local_graph.vertices if vertex.block_type == BlockType.PROVIDER and vertex.name == "aws")
+        assert provider.config["aws"]["default_tags"] == [{"tags": [{"test": "Test"}]}]
+
+        provider_alias = next(vertex for vertex in local_graph.vertices if vertex.block_type == BlockType.PROVIDER and vertex.name == "aws.test")
+        assert provider_alias.config["aws"]["default_tags"] == [{"tags": [{"test": "Test"}]}]

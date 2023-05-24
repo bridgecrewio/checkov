@@ -4,7 +4,7 @@ from collections import defaultdict
 import json
 import logging
 import os
-from typing import Dict, List, Tuple, Any, TYPE_CHECKING
+from typing import Dict, List, Tuple, Any
 from charset_normalizer import from_fp
 
 from checkov.terraform.context_parsers.registry import parser_registry
@@ -12,16 +12,13 @@ from checkov.terraform.plan_parser import parse_tf_plan, TF_PLAN_RESOURCE_ADDRES
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.runner_filter import RunnerFilter
 
-if TYPE_CHECKING:
-    from checkov.common.parsers.node import DictNode
-
 
 def create_definitions(
     root_folder: str,
     files: list[str] | None = None,
     runner_filter: RunnerFilter | None = None,
     out_parsing_errors: dict[str, str] | None = None,
-) -> tuple[dict[str, DictNode], dict[str, list[tuple[int, str]]]]:
+) -> tuple[dict[str, dict[str, Any]], dict[str, list[tuple[int, str]]]]:
     runner_filter = runner_filter or RunnerFilter()
     out_parsing_errors = {} if out_parsing_errors is None else out_parsing_errors
 
@@ -67,7 +64,7 @@ def build_definitions_context(
     definitions: dict[str, dict[str, list[dict[str, Any]]]],
     definitions_raw: Dict[str, List[Tuple[int, str]]]
 ) -> Dict[str, Dict[str, Any]]:
-    definitions_context = defaultdict(dict)
+    definitions_context: dict[str, dict[str, Any]] = defaultdict(dict)
     supported_block_types = ("data", "resource")
     for full_file_path, definition in definitions.items():
         for block_type in supported_block_types:
