@@ -9,7 +9,7 @@ from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.graph.graph_builder.graph_components.blocks import Block
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.util.consts import START_LINE, END_LINE
-from checkov.common.util.data_structures_utils import deepcopy
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.dockerfile.graph_builder.graph_components.resource_types import ResourceType
 from checkov.dockerfile.utils import DOCKERFILE_STARTLINE, DOCKERFILE_ENDLINE
 
@@ -71,7 +71,7 @@ class DockerfileLocalGraph(LocalGraph[Block]):
                 END_LINE: instruction[DOCKERFILE_ENDLINE],
             }
 
-            attributes = deepcopy(config)
+            attributes = pickle_deepcopy(config)
             attributes[CustomAttributes.RESOURCE_TYPE] = resource_type
 
             self.vertices.append(

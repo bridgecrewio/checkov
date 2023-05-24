@@ -11,7 +11,7 @@ from checkov.common.output.common import ImageDetails
 from checkov.common.packaging.version import LegacyVersion, Version
 from detect_secrets.core.potential_secret import PotentialSecret
 
-from checkov.common.util.data_structures_utils import deepcopy
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 
 type_of_function = type(lambda x: x)
 
@@ -71,7 +71,7 @@ def object_hook(dct: Dict[Any, Any]) -> Any:
         if dct is None:
             return None
         if isinstance(dct, dict):
-            dct_obj = deepcopy(dct)
+            dct_obj = pickle_deepcopy(dct)
             if 'tf_source_modules' in dct and 'file_path' in dct:
                 return TFDefinitionKey(file_path=dct["file_path"],
                                        tf_source_modules=object_hook(dct["tf_source_modules"]))

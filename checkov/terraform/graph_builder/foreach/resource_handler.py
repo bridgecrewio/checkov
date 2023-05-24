@@ -4,7 +4,7 @@ import logging
 import typing
 from typing import Any, Optional
 
-from checkov.common.util.data_structures_utils import deepcopy
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.foreach.abstract_handler import ForeachAbstractHandler
 from checkov.terraform.graph_builder.foreach.consts import FOREACH_STRING, COUNT_STRING, FOR_EACH_BLOCK_TYPE
@@ -75,7 +75,7 @@ class ForeachResourceHandler(ForeachAbstractHandler):
             foreach_idx: int,
             new_key: int | str | None = None,
     ) -> None:
-        new_resource = deepcopy(main_resource)
+        new_resource = pickle_deepcopy(main_resource)
         block_type, block_name = new_resource.name.split('.')
         key_to_val_changes = self._build_key_to_val_changes(main_resource, new_value, new_key)
         config_attrs = new_resource.config.get(block_type, {}).get(block_name, {})

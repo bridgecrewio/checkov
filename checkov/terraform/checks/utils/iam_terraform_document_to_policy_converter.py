@@ -1,13 +1,13 @@
 from typing import Dict, List, Any
 
-from checkov.common.util.data_structures_utils import deepcopy
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 
 
 def convert_terraform_conf_to_iam_policy(conf: Dict[str, List[Dict[str, Any]]]) -> Dict[str, List[Dict[str, Any]]]:
     """
         converts terraform parsed configuration to iam policy document
     """
-    result = deepcopy(conf)
+    result = pickle_deepcopy(conf)
     if "statement" in result.keys():
         result["Statement"] = result.pop("statement")
         for statement in result["Statement"]:

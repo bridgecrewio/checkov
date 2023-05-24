@@ -7,7 +7,7 @@ from collections import defaultdict
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.util.consts import START_LINE, END_LINE
-from checkov.common.util.data_structures_utils import deepcopy
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.kubernetes.graph_builder.graph_components.blocks import KubernetesBlock, KubernetesBlockMetadata, KubernetesSelector
 from checkov.kubernetes.graph_builder.graph_components.edge_builders.K8SEdgeBuilder import K8SEdgeBuilder
 from checkov.kubernetes.graph_builder.graph_components.edge_builders.ServiceAccountEdgeBuilder import ServiceAccountEdgeBuilder
@@ -57,8 +57,8 @@ class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
                         file_conf.remove(resource)
                         continue
 
-                config = deepcopy(resource)
-                attributes = deepcopy(config)
+                config = pickle_deepcopy(resource)
+                attributes = pickle_deepcopy(config)
                 attributes["resource_type"] = resource_type
                 attributes["kind"] = resource_type
                 attributes[START_LINE] = resource[START_LINE]

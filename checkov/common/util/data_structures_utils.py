@@ -95,7 +95,7 @@ def find_in_dict(input_dict: dict[str, Any], key_path: str) -> Any:
     return value
 
 
-def deepcopy(obj: _T) -> _T:
+def pickle_deepcopy(obj: _T) -> _T:
     """More performant version of the built-in deepcopy"""
 
     return cast("_T", pickle.loads(pickle.dumps(obj, pickle.HIGHEST_PROTOCOL)))  # nosec
