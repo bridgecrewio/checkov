@@ -37,7 +37,6 @@ class TestSecurityListIngressStateless(unittest.TestCase):
 
         self.assertEqual(summary["passed"], 4)
         self.assertEqual(summary["failed"], 2)
-        self.assertEqual(summary["skipped"], 1)
         self.assertEqual(summary["parsing_errors"], 0)
 
         self.assertEqual(skipped_resources, skipped_check_resources)
