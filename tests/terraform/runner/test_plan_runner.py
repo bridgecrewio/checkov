@@ -695,7 +695,7 @@ class TestRunnerValid(unittest.TestCase):
         summary = report.get_summary()
 
         self.assertEqual(summary["passed"], 2)  # "aws_iam_policy.policy_pass" passes both checks
-        self.assertEqual(summary["failed"], 3)
+        self.assertEqual(summary["failed"], 6)  # the rest fails both checks
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
