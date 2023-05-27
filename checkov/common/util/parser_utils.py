@@ -5,9 +5,10 @@ import re
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, List, Optional, Tuple
-from checkov.common.typing import TFDefinitionKeyType
+
 import hcl2
 
+from checkov.common.typing import TFDefinitionKeyType
 
 _FUNCTION_NAME_CHARS = frozenset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 
@@ -89,6 +90,10 @@ def find_var_blocks(value: str) -> List[VarBlockMatch]:
     Find and return all the var blocks within a given string. Order is important and may contain portions of
     one another.
     """
+
+    if "$" not in value:
+        # not relevant, typically just a normal string value
+        return []
 
     to_return: List[VarBlockMatch] = []
 
@@ -356,7 +361,7 @@ def get_current_module_index(full_path: str) -> Optional[int]:
     return tf_index
 
 
-def is_nested(full_path: TFDefinitionKeyType) -> bool:
+def is_nested(full_path: TFDefinitionKeyType | None) -> bool:
     from checkov.terraform.modules.module_objects import TFDefinitionKey
     if isinstance(full_path, str):
         return TERRAFORM_NESTED_MODULE_PATH_PREFIX in full_path
@@ -378,11 +383,13 @@ def get_tf_definition_key_from_module_dependency(path: str, module_dependency: s
     return f"{path}{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{module_dependency[:module_index]}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}{module_dependency_num}{module_dependency[module_index:]}{TERRAFORM_NESTED_MODULE_PATH_ENDING}"
 
 
-def get_module_from_full_path(file_path: TFDefinitionKeyType) -> Tuple[Optional[str], Optional[str]]:
+def get_module_from_full_path(file_path: TFDefinitionKeyType | None) -> Tuple[Optional[str], Optional[str]]:
     from checkov.terraform.modules.module_objects import TFDefinitionKey
-    if not is_nested(file_path):
+    if not file_path or not is_nested(file_path):
         return None, None
     if isinstance(file_path, TFDefinitionKey):
+        if file_path.tf_source_modules is None:
+            return None, None
         return file_path.tf_source_modules.path, None
     tmp_path = file_path[file_path.index(TERRAFORM_NESTED_MODULE_PATH_PREFIX) + TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH: -TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH]
     if is_nested(tmp_path):

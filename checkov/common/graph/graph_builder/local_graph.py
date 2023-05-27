@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from collections import defaultdict
+from functools import partial
 from typing import List, Dict, Callable, Union, Any, Set, Iterable, TypeVar, Generic, TYPE_CHECKING
 
 from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
@@ -23,7 +24,7 @@ class LocalGraph(Generic[_Block]):
         self.out_edges: Dict[int, List[Edge]] = defaultdict(list)  # map between vertex index and the edges exiting it
         self.vertices_by_block_type: Dict[str, List[int]] = defaultdict(list)
         self.vertex_hash_cache: Dict[int, str] = defaultdict(str)
-        self.vertices_block_name_map: Dict[str, Dict[str, List[int]]] = defaultdict(lambda: defaultdict(list))
+        self.vertices_block_name_map: Dict[str, Dict[str, List[int]]] = defaultdict(partial(defaultdict, list))  # type:ignore[arg-type]
         self._graph_resource_encryption_manager = GraphResourcesEncryptionManager()
 
     @abstractmethod

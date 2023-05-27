@@ -1,13 +1,18 @@
+from __future__ import annotations
+
 import os
 import re
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.terraform.module_loading.content import ModuleContent
 
 from checkov.terraform.module_loading.loader import ModuleLoader
-from checkov.terraform.module_loading.module_params import ModuleParams
+
+if TYPE_CHECKING:
+    from checkov.terraform.module_loading.module_params import ModuleParams
 
 DEFAULT_MODULE_SOURCE_PREFIX = "git::https://"
 
@@ -22,19 +27,19 @@ class ModuleSource:
 
 
 class GenericGitLoader(ModuleLoader):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.module_source_prefix = DEFAULT_MODULE_SOURCE_PREFIX
 
     @property
-    def module_source_prefix(self):
+    def module_source_prefix(self) -> str:
         return self._module_source_prefix
 
     @module_source_prefix.setter
-    def module_source_prefix(self, prefix):
+    def module_source_prefix(self, prefix: str) -> None:
         self._module_source_prefix = prefix
 
-    def discover(self, module_params: ModuleParams):
+    def discover(self, module_params: ModuleParams) -> None:
         module_params.vcs_base_url = os.getenv("VCS_BASE_URL", "")  # format - https://example.com
         module_params.module_source_prefix = f"git::{module_params.vcs_base_url}" if module_params.vcs_base_url else None
         module_params.username = os.getenv("VCS_USERNAME", None)
