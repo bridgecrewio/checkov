@@ -72,7 +72,7 @@ class CycloneDX:
         bom = Bom()
 
         try:
-            version = meta_version("checkov")
+            version = meta_version("checkov")  # type:ignore[no-untyped-call]
         except Exception:
             # Unable to determine current version of 'checkov'
             version = "UNKNOWN"
@@ -248,7 +248,7 @@ class CycloneDX:
             qualifiers=qualifiers,
         )
 
-        lines = resource.vulnerability_details.get("lines")
+        lines = resource.file_line_range
         lines = validate_lines(lines)
         properties = None
         if lines:

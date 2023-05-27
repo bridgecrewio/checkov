@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from copy import deepcopy
 from typing import TYPE_CHECKING, Any
 
 from pycep.transformer import BicepElement
@@ -9,6 +8,7 @@ from checkov.bicep.graph_builder.graph_components.block_types import BlockType
 from checkov.bicep.utils import adjust_value
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.variable_rendering.renderer import VariableRenderer
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 
 if TYPE_CHECKING:
     from checkov.bicep.graph_builder.local_graph import BicepLocalGraph
@@ -24,7 +24,7 @@ class BicepVariableRenderer(VariableRenderer["BicepLocalGraph"]):
     def evaluate_vertex_attribute_from_edge(self, edge_list: list[Edge]) -> None:
         edge = edge_list[0]
         origin_vertex_attributes = self.local_graph.vertices[edge.origin].attributes
-        val_to_eval = deepcopy(origin_vertex_attributes.get(edge.label, ""))
+        val_to_eval = pickle_deepcopy(origin_vertex_attributes.get(edge.label, ""))
 
         attr_path, attr_value = self.extract_dest_attribute_path_and_value(dest_index=edge.dest, origin_value=val_to_eval)
 

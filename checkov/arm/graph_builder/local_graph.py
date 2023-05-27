@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-from copy import deepcopy
 from typing import Any, TYPE_CHECKING
 
 from checkov.arm.graph_builder.graph_components.block_types import BlockType
@@ -10,6 +9,7 @@ from checkov.arm.utils import ArmElements
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.util.consts import START_LINE, END_LINE
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 
 if TYPE_CHECKING:
     from checkov.common.graph.graph_builder.local_graph import _Block
@@ -50,7 +50,7 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
                 logging.debug(f"[ArmLocalGraph] parameter {name} has wrong type {type(config)}")
                 continue
 
-            attributes = deepcopy(config)
+            attributes = pickle_deepcopy(config)
 
             self.vertices.append(
                 ArmBlock(
@@ -75,7 +75,7 @@ class ArmLocalGraph(LocalGraph[ArmBlock]):
             resource_name = config.get("name") or "unknown"
             resource_type = config["type"]
 
-            attributes = deepcopy(config)
+            attributes = pickle_deepcopy(config)
             attributes[CustomAttributes.RESOURCE_TYPE] = resource_type
 
             self.vertices.append(

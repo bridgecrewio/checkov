@@ -34,7 +34,7 @@ class ReferenceLatestTag(BaseDockerfileCheck):
                 return CheckResult.FAILED, [content]
             elif base_image.endswith(":latest"):
                 return CheckResult.FAILED, [content]
-        return CheckResult.PASSED, None
+        return CheckResult.PASSED, [content]
 
 
 check = ReferenceLatestTag()

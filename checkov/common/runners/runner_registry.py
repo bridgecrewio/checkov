@@ -32,6 +32,7 @@ from checkov.common.output.cyclonedx import CycloneDX
 from checkov.common.output.gitlab_sast import GitLabSast
 from checkov.common.output.report import Report, merge_reports
 from checkov.common.output.sarif import Sarif
+from checkov.common.output.spdx import SPDX
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.typing import _ExitCodeThresholds, _BaseRunner, _ScaExitCodeThresholds
 from checkov.common.util import data_structures_utils
@@ -55,7 +56,18 @@ if TYPE_CHECKING:
 CONSOLE_OUTPUT = "console"
 CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
 CYCLONEDX_OUTPUTS = ("cyclonedx", "cyclonedx_json")
-OUTPUT_CHOICES = ["cli", "cyclonedx", "cyclonedx_json", "json", "junitxml", "github_failed_only", "gitlab_sast", "sarif", "csv"]
+OUTPUT_CHOICES = [
+    "cli",
+    "csv",
+    "cyclonedx",
+    "cyclonedx_json",
+    "json",
+    "junitxml",
+    "github_failed_only",
+    "gitlab_sast",
+    "sarif",
+    "spdx",
+]
 SUMMARY_POSITIONS = frozenset(['top', 'bottom'])
 OUTPUT_DELIMITER = "\n--- OUTPUT DELIMITER ---\n"
 
@@ -322,6 +334,7 @@ class RunnerRegistry:
         github_reports = []
         cyclonedx_reports = []
         gitlab_reports = []
+        spdx_reports = []
         csv_sbom_report = CSVSBOM()
 
         try:
@@ -350,6 +363,8 @@ class RunnerRegistry:
             if not report.is_empty() or len(report.extra_resources):
                 if any(cyclonedx in config.output for cyclonedx in CYCLONEDX_OUTPUTS):
                     cyclonedx_reports.append(report)
+                if "spdx" in config.output:
+                    spdx_reports.append(report)
                 if "csv" in config.output:
                     git_org = ""
                     git_repository = ""
@@ -500,6 +515,17 @@ class RunnerRegistry:
             )
 
             data_outputs["gitlab_sast"] = json.dumps(gl_sast.sast_json)
+        if "spdx" in config.output:
+            spdx = SPDX(repo_id=metadata_integration.bc_integration.repo_id, reports=spdx_reports)
+            spdx_output = spdx.get_tag_value_output()
+
+            self._print_to_console(
+                output_formats=output_formats,
+                output_format="spdx",
+                output=spdx_output,
+            )
+
+            data_outputs["spdx"] = spdx_output
         if "csv" in config.output:
             is_api_key = False
             if 'bc_api_key' in config and config.bc_api_key is not None:
@@ -516,6 +542,7 @@ class RunnerRegistry:
             'cyclonedx': 'results_cyclonedx.xml',
             'cyclonedx_json': 'results_cyclonedx.json',
             'gitlab_sast': 'results_gitlab_sast.json',
+            'spdx': 'results_spdx.spdx',
         }
 
         if config.output_file_path:

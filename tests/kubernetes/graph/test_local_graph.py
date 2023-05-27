@@ -1,5 +1,7 @@
 import os
 
+from checkov.kubernetes.graph_builder.graph_components.edge_builders.ServiceAccountEdgeBuilder import \
+    ServiceAccountEdgeBuilder
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
 from checkov.kubernetes.parser.parser import parse
 from tests.kubernetes.graph.base_graph_tests import TestGraph
@@ -63,7 +65,7 @@ class TestKubernetesLocalGraph(TestGraph):
         graph_flags = K8sGraphFlags(create_complex_vertices=True, create_edges=True)
 
         local_graph = KubernetesLocalGraph(definitions)
-        local_graph.edge_builders = (LabelSelectorEdgeBuilder, )
+        local_graph.edge_builders = [LabelSelectorEdgeBuilder, ]
         local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
         self.assertEqual(2, len(local_graph.vertices))
         self.assertEqual(1, len(local_graph.edges))
@@ -76,7 +78,7 @@ class TestKubernetesLocalGraph(TestGraph):
         graph_flags = K8sGraphFlags(create_complex_vertices=True, create_edges=True)
 
         local_graph = KubernetesLocalGraph(definitions)
-        local_graph.edge_builders = (LabelSelectorEdgeBuilder, )
+        local_graph.edge_builders = [LabelSelectorEdgeBuilder, ]
         local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
         self.assertEqual(2, len(local_graph.vertices))
         self.assertEqual(0, len(local_graph.edges))
@@ -89,7 +91,7 @@ class TestKubernetesLocalGraph(TestGraph):
         graph_flags = K8sGraphFlags(create_complex_vertices=True, create_edges=True)
 
         local_graph = KubernetesLocalGraph(definitions)
-        local_graph.edge_builders = (LabelSelectorEdgeBuilder, )
+        local_graph.edge_builders = [LabelSelectorEdgeBuilder, ]
         local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
         self.assertEqual(3, len(local_graph.vertices))
         self.assertEqual(1, len(local_graph.edges))
@@ -102,7 +104,7 @@ class TestKubernetesLocalGraph(TestGraph):
         graph_flags = K8sGraphFlags(create_complex_vertices=True, create_edges=True)
 
         local_graph = KubernetesLocalGraph(definitions)
-        local_graph.edge_builders = (KeywordEdgeBuilder, )
+        local_graph.edge_builders = [KeywordEdgeBuilder, ]
         local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
         self.assertEqual(6, len(local_graph.vertices))
         self.assertEqual(3, len(local_graph.edges))
@@ -111,7 +113,7 @@ class TestKubernetesLocalGraph(TestGraph):
         self.assertEqual(local_graph.edges[1].origin, 0)
         self.assertEqual(local_graph.edges[1].dest, 4)
 
-    def test_KeywordEdgeBuilder_on_templates_with_pod_and_service_account(self) -> None:
+    def test_KeywordEdgeBuilder_and_ServiceAccountEdgeBuilder_on_templates_with_pod_and_service_account(self) -> None:
         relative_file_path = "resources/Keyword/pod_service_account.yaml"
         definitions = {}
         file = os.path.realpath(os.path.join(TEST_DIRNAME, relative_file_path))
@@ -119,7 +121,7 @@ class TestKubernetesLocalGraph(TestGraph):
         graph_flags = K8sGraphFlags(create_complex_vertices=True, create_edges=True)
 
         local_graph = KubernetesLocalGraph(definitions)
-        local_graph.edge_builders = (KeywordEdgeBuilder, )
+        local_graph.edge_builders = [KeywordEdgeBuilder, ServiceAccountEdgeBuilder()]
         local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
         self.assertEqual(4, len(local_graph.vertices))
         self.assertEqual(3, len(local_graph.edges))
@@ -138,7 +140,7 @@ class TestKubernetesLocalGraph(TestGraph):
         graph_flags = K8sGraphFlags(create_complex_vertices=True, create_edges=True)
 
         local_graph = KubernetesLocalGraph(definitions)
-        local_graph.edge_builders = (NetworkPolicyEdgeBuilder, LabelSelectorEdgeBuilder)
+        local_graph.edge_builders = [NetworkPolicyEdgeBuilder, LabelSelectorEdgeBuilder]
         local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
         self.assertEqual(5, len(local_graph.vertices))
         self.assertEqual(4, len(local_graph.edges))
@@ -151,7 +153,7 @@ class TestKubernetesLocalGraph(TestGraph):
         graph_flags = K8sGraphFlags(create_complex_vertices=True, create_edges=True)
 
         local_graph = KubernetesLocalGraph(definitions)
-        local_graph.edge_builders = (NetworkPolicyEdgeBuilder, LabelSelectorEdgeBuilder)
+        local_graph.edge_builders = [NetworkPolicyEdgeBuilder, LabelSelectorEdgeBuilder]
         local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
         self.assertEqual(2, len(local_graph.vertices))
         self.assertEqual(1, len(local_graph.edges))
@@ -164,7 +166,7 @@ class TestKubernetesLocalGraph(TestGraph):
         graph_flags = K8sGraphFlags(create_complex_vertices=True, create_edges=True)
 
         local_graph = KubernetesLocalGraph(definitions)
-        local_graph.edge_builders = (NetworkPolicyEdgeBuilder, LabelSelectorEdgeBuilder)
+        local_graph.edge_builders = [NetworkPolicyEdgeBuilder, LabelSelectorEdgeBuilder]
         local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
         self.assertEqual(2, len(local_graph.vertices))
         self.assertEqual(0, len(local_graph.edges))
@@ -177,7 +179,7 @@ class TestKubernetesLocalGraph(TestGraph):
         graph_flags = K8sGraphFlags(create_complex_vertices=True, create_edges=True)
 
         local_graph = KubernetesLocalGraph(definitions)
-        local_graph.edge_builders = (KeywordEdgeBuilder, )
+        local_graph.edge_builders = [KeywordEdgeBuilder, ]
         local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
         self.assertEqual(6, len(local_graph.vertices))
         self.assertEqual(1, len(local_graph.edges))
@@ -190,7 +192,7 @@ class TestKubernetesLocalGraph(TestGraph):
         graph_flags = K8sGraphFlags(create_complex_vertices=True, create_edges=True)
 
         local_graph = KubernetesLocalGraph(definitions)
-        local_graph.edge_builders = (NetworkPolicyEdgeBuilder, LabelSelectorEdgeBuilder)
+        local_graph.edge_builders = [NetworkPolicyEdgeBuilder, LabelSelectorEdgeBuilder]
         local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
         self.assertEqual(0, len(local_graph.vertices))
         self.assertEqual(0, len(local_graph.edges))
@@ -203,7 +205,7 @@ class TestKubernetesLocalGraph(TestGraph):
         graph_flags = K8sGraphFlags(create_complex_vertices=True, create_edges=True)
 
         local_graph = KubernetesLocalGraph(definitions)
-        local_graph.edge_builders = (NetworkPolicyEdgeBuilder, LabelSelectorEdgeBuilder)
+        local_graph.edge_builders = [NetworkPolicyEdgeBuilder, LabelSelectorEdgeBuilder]
         local_graph.build_graph(render_variables=False, graph_flags=graph_flags)
         self.assertEqual(1, len(local_graph.vertices))
         self.assertEqual(0, len(local_graph.edges))

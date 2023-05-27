@@ -4,9 +4,9 @@ import abc
 import json
 import re
 import typing
-from copy import deepcopy
 from typing import Any
 
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.terraform import TFModule
 from checkov.terraform.graph_builder.foreach.consts import COUNT_STRING, FOREACH_STRING, COUNT_KEY, EACH_VALUE, \
     EACH_KEY, REFERENCES_VALUES
@@ -58,7 +58,7 @@ class ForeachAbstractHandler:
         sub_graph.vertices = [{}] * len(self.local_graph.vertices)
         for i, block in enumerate(self.local_graph.vertices):
             if not (block.block_type == BlockType.RESOURCE and i not in blocks_to_render):
-                sub_graph.vertices[i] = deepcopy(block)
+                sub_graph.vertices[i] = pickle_deepcopy(block)
         sub_graph.edges = [
             edge for edge in self.local_graph.edges if
             (sub_graph.vertices[edge.dest] and sub_graph.vertices[edge.origin])
