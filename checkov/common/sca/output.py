@@ -21,7 +21,7 @@ from checkov.common.sca.commons import (
     UNFIXABLE_VERSION,
     get_package_type,
     normalize_twistcli_language,
-    get_registry_url,
+    get_registry_url, get_package_lines,
 )
 from checkov.common.util.http_utils import request_wrapper
 from checkov.runner_filter import RunnerFilter
@@ -77,7 +77,7 @@ def create_report_license_record(
         check_result=check_result,
         code_block=code_block,
         file_path=get_file_path_for_record(rootless_file_path),
-        file_line_range=[0, 0],
+        file_line_range=get_package_lines(package) or [0, 0],
         resource=get_resource_for_record(rootless_file_path, package_name),
         check_class=check_class,
         evaluations=None,
@@ -159,7 +159,7 @@ def create_report_cve_record(
         }
 
     code_block = [(0, f"{package_name}: {package_version}")]
-    file_line_range = package.get("lines") or file_line_range or [0, 0]
+    file_line_range = get_package_lines(package) or file_line_range or [0, 0]
 
     details = {
         "id": cve_id,
@@ -173,13 +173,13 @@ def create_report_cve_record(
         "cvss": vulnerability_details.get("cvss"),
         "vector": vulnerability_details.get("vector"),
         "description": description,
-        "risk_factors": vulnerability_details.get("riskFactors"),
+        "risk_factors": vulnerability_details.get("riskFactorsV2"),
         "published_date": vulnerability_details.get("publishedDate") or (datetime.now() - timedelta(
             days=vulnerability_details.get("publishedDays", 0))).isoformat(),
         "licenses": licenses,
         "root_package_name": root_package.get("name") if root_package else None,
         "root_package_version": root_package.get("version") if root_package else None,
-        "root_package_file_line_range": root_package.get("lines") if root_package else None or [0, 0]
+        "root_package_file_line_range": get_package_lines(root_package) if root_package else None or [0, 0]
     }
     if used_private_registry:
         details["is_private_fix"] = vulnerability_details.get("isPrivateRegFix", False)
@@ -506,7 +506,7 @@ def add_extra_resources_to_report(report: Report, scanned_file_path: str, rootle
             file_abs_path=scanned_file_path,
             file_path=get_file_path_for_record(rootless_file_path),
             resource=get_resource_for_record(rootless_file_path, package_name),
-            file_line_range=package.get("lines"),
+            file_line_range=get_package_lines(package),
             vulnerability_details={
                 "package_name": package_name,
                 "package_version": package_version,

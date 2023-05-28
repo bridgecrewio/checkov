@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import copy
 import io
 import logging
 import multiprocessing
@@ -23,6 +22,7 @@ from checkov.common.output.report import Report
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.common.typing import _CheckResult
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.kubernetes.kubernetes_utils import create_check_result, get_resource_id
 from checkov.kubernetes.runner import Runner as K8sRunner
 from checkov.kubernetes.runner import _get_entity_abs_path
@@ -246,7 +246,7 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
         return {'kustomizeMetadata': self.kustomizeProcessedFolderAndMeta,
                 'kustomizeFileMappings': self.kustomizeFileMappings}
 
-    def _parseKustomization(self, kustomize_dir: str) -> dict[str, str]:
+    def _parseKustomization(self, kustomize_dir: str) -> dict[str, Any]:
         # We may have multiple results for "kustomization.yaml" files. These could be:
         # - Base and Environment (overlay) DIR's for the same kustomize-powered deployment
         # - OR, Multiple different Kustomize-powered deployments
@@ -263,29 +263,33 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
         else:
             return {}
 
-        with open(kustomization_path, 'r') as kustomizationFile:
-            metadata = {}
+        with open(kustomization_path, 'r') as kustomization_file:
+            metadata: dict[str, Any] = {}
             try:
-                fileContent = yaml.safe_load(kustomizationFile)
+                file_content = yaml.safe_load(kustomization_file)
             except yaml.YAMLError:
                 logging.info(f"Failed to load Kustomize metadata from {kustomization_path}.", exc_info=True)
+                return {}
 
-            if 'resources' in fileContent:
+            if not isinstance(file_content, dict):
+                return {}
+
+            if 'resources' in file_content:
                 logging.debug(f"Kustomization contains resources: section. Likley a base. {kustomization_path}")
                 metadata['type'] = "base"
 
-            elif 'patchesStrategicMerge' in fileContent:
+            elif 'patchesStrategicMerge' in file_content:
                 logging.debug(f"Kustomization contains patchesStrategicMerge: section. Likley an overlay/env. {kustomization_path}")
                 metadata['type'] = "overlay"
-                if 'bases' in fileContent:
-                    metadata['referenced_bases'] = fileContent['bases']
+                if 'bases' in file_content:
+                    metadata['referenced_bases'] = file_content['bases']
 
-            elif 'bases' in fileContent:
+            elif 'bases' in file_content:
                 logging.debug(f"Kustomization contains bases: section. Likley an overlay/env. {kustomization_path}")
                 metadata['type'] = "overlay"
-                metadata['referenced_bases'] = fileContent['bases']
+                metadata['referenced_bases'] = file_content['bases']
 
-            metadata['fileContent'] = fileContent
+            metadata['fileContent'] = file_content
             metadata['filePath'] = f"{kustomization_path}"
             if metadata.get('type') == "base":
                 self.potentialBases.append(metadata['filePath'])
@@ -521,7 +525,7 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
 
         manager = multiprocessing.Manager()
         # make sure we have new dict
-        shared_kustomize_file_mappings = copy.copy(manager.dict())  # type:ignore[arg-type]  # works with DictProxy
+        shared_kustomize_file_mappings = pickle_deepcopy(manager.dict())  # type:ignore[arg-type]  # works with DictProxy
         shared_kustomize_file_mappings.clear()
         jobs = []
         for filePath in self.kustomizeProcessedFolderAndMeta:

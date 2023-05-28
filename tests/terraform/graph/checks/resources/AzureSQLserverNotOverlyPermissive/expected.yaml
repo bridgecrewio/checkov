@@ -1,0 +1,6 @@
+pass:
+  - "azurerm_sql_firewall_rule.pass_1"
+  - "azurerm_sql_firewall_rule.pass_2"
+
+fail:
+  - "azurerm_sql_firewall_rule.fail"
