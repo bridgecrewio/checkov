@@ -72,7 +72,7 @@ class PrismaEngine(SastEngine):
     @cached(TTLCache(maxsize=1, ttl=300))
     def download_sast_artifacts(self, current_version: str) -> bool:
         try:
-            machine = platform.uname().machine
+            machine = get_machine()
             os_type = platform.system().lower()
             headers = bc_integration.get_default_headers("GET")
             headers["X-Client-Sast-Version"] = current_version
@@ -188,3 +188,14 @@ def validate_params(languages: Set[SastLanguages],
 
     if len(languages) == 0:
         raise Exception('must provide a language for sast runner')
+
+
+def get_machine() -> str:
+    machine = platform.machine().lower()
+    if machine in ['amd64', 'x86', 'x86_64', 'x64']:
+        return "amd64"
+
+    if machine in ['arm', 'arm64', 'armv8', 'aarch64', 'arm64-v8a']:
+        return 'arm64'
+
+    return ''
