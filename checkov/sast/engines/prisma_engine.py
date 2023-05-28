@@ -62,7 +62,7 @@ class PrismaEngine(SastEngine):
             is_file_exists = [f for f in os.listdir(self.prisma_sast_dir_path) if
                               (self.prisma_sast_dir_path / f).is_file() and "library" in f]
             if len(is_file_exists) > 0:
-                match = re.match(r"(\d+_\d+_\d+)_library\.(so|dll)", is_file_exists[0])
+                match = re.match(r"(\d+_\d+_\d+)_library\.(so|dll|dylib)", is_file_exists[0])
                 if match:
                     current_version = match.groups()[0]
 
@@ -85,7 +85,7 @@ class PrismaEngine(SastEngine):
             if response.status_code == 304:
                 return True
 
-            match = re.match(r'.*\/(?P<name>\d+_\d+_\d+_library\.(so|dll))\?.*', response.url)
+            match = re.match(r'.*\/(?P<name>\d+_\d+_\d+_library\.(so|dll|dylib))\?.*', response.url)
             if match:
                 new_name = match.group('name')
                 cli_file_name_path = self.prisma_sast_dir_path / new_name
