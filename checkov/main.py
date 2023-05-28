@@ -463,6 +463,7 @@ class Checkov:
             if self.config.directory:
                 exit_codes = []
                 for root_folder in self.config.directory:
+                    absolute_root_folder = os.path.abspath(root_folder)
                     if not os.path.exists(root_folder):
                         logger.error(f'Directory {root_folder} does not exist; skipping it')
                         continue
@@ -483,6 +484,7 @@ class Checkov:
                             included_paths.extend(r.included_paths())
                         self.upload_results(
                             root_folder=root_folder,
+                            absolute_root_folder=absolute_root_folder,
                             excluded_paths=runner_filter.excluded_paths,
                             included_paths=included_paths,
                             git_configuration_folders=git_configuration_folders,
@@ -565,9 +567,11 @@ class Checkov:
                 if bc_integration.is_integration_configured():
                     files = [os.path.abspath(file) for file in self.config.file]
                     root_folder = os.path.split(os.path.commonprefix(files))[0]
+                    absolute_root_folder = os.path.abspath(root_folder)
 
                     self.upload_results(
                         root_folder=root_folder,
+                        absolute_root_folder=absolute_root_folder,
                         files=files,
                         excluded_paths=runner_filter.excluded_paths,
                         git_configuration_folders=git_configuration_folders,
@@ -614,6 +618,7 @@ class Checkov:
     def upload_results(
             self,
             root_folder: str,
+            absolute_root_folder: str,
             files: list[str] | None = None,
             excluded_paths: list[str] | None = None,
             included_paths: list[str] | None = None,
@@ -632,7 +637,7 @@ class Checkov:
         bc_integration.persist_scan_results(self.scan_reports)
         bc_integration.persist_run_metadata(self.run_metadata)
         if bc_integration.enable_persist_graphs:
-            bc_integration.persist_graphs(self.graphs)
+            bc_integration.persist_graphs(self.graphs, absolute_root_folder=absolute_root_folder)
         self.url = self.commit_repository()
 
     def print_results(

@@ -519,13 +519,14 @@ class BcPlatformIntegration:
         log_path = f'{self.support_repo_path}/checkov_results' if self.support_repo_path == self.repo_path else self.support_repo_path
         persist_logs_stream(logs_stream, self.s3_client, self.support_bucket, log_path)
 
-    def persist_graphs(self, graphs: dict[str, DiGraph | Graph]) -> None:
+    def persist_graphs(self, graphs: dict[str, DiGraph | Graph], absolute_root_folder: str = '') -> None:
         if not self.use_s3_integration or not self.s3_client:
             return
         if not self.bucket or not self.repo_path:
             logging.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
             return
-        persist_graphs(graphs, self.s3_client, self.bucket, self.repo_path, self.persist_graphs_timeout)
+        persist_graphs(graphs, self.s3_client, self.bucket, self.repo_path, self.persist_graphs_timeout,
+                       absolute_root_folder=absolute_root_folder)
 
     def commit_repository(self, branch: str) -> str | None:
         """
