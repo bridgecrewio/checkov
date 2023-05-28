@@ -142,13 +142,13 @@ def enrich_and_persist_checks_metadata(
 
 
 def persist_graphs(graphs: dict[str, DiGraph | Graph], s3_client: S3Client, bucket: str, full_repo_object_key: str,
-                   timeout: int, absolute_root_folder: str) -> None:
-    def _upload_graph(check_type: str, graph: DiGraph | Graph, absolute_root_folder: str) -> None:
+                   timeout: int, absolute_root_folder: str | None = None) -> None:
+    def _upload_graph(check_type: str, graph: DiGraph | Graph, _absolute_root_folder: str | None = None) -> None:
         if isinstance(graph, DiGraph):
             json_obj = json_graph.node_link_data(graph)
             graph_file_name = 'graph_networkx.json'
         elif isinstance(graph, Graph):
-            json_obj = serialize_to_json(graph, absolute_root_folder)
+            json_obj = serialize_to_json(graph, _absolute_root_folder)
             graph_file_name = 'graph_igraph.json'
         else:
             logging.error(f"unsupported graph type '{graph.__class__.__name__}'")
