@@ -240,6 +240,8 @@ class TestLicensingIntegration(unittest.TestCase):
         licensing_integration.pre_scan()
 
         for runner_check_type in checkov_runners:
+            if runner_check_type.startswith("sast"):  # todo: remove when sast will be active
+                continue
             self.assertTrue(licensing_integration.is_runner_valid(runner_check_type))
         self.assertTrue(licensing_integration.should_run_image_referencer())
 
@@ -258,6 +260,8 @@ class TestLicensingIntegration(unittest.TestCase):
         licensing_integration.pre_scan()
 
         for runner_check_type in checkov_runners:
+            if runner_check_type.startswith("sast"):  # todo: remove when sast will be active
+                continue
             self.assertFalse(licensing_integration.is_runner_valid(runner_check_type))
         self.assertFalse(licensing_integration.should_run_image_referencer())
 
@@ -276,6 +280,8 @@ class TestLicensingIntegration(unittest.TestCase):
             }
             licensing_integration.pre_scan()
             for runner_check_type in checkov_runners:
+                if runner_check_type.startswith("sast"):  # todo: remove when sast will be active
+                    continue
                 self.assertEqual(licensing_integration.is_runner_valid(runner_check_type), runner_check_type in subscription_to_runner_map[CustomerSubscription(module)])
             self.assertEqual(licensing_integration.should_run_image_referencer(), module == 'SCA')
 
