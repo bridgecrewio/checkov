@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from igraph import Graph
 
 
-def serialize_to_json(igraph: Graph, absolute_root_folder: str | None = None) -> Dict[str, Any]:
+def serialize_to_json(igraph: Graph, absolute_root_folder: str = '') -> Dict[str, Any]:
     nodes = []
     for i, vertex in enumerate(igraph.vs):
         attr = {k: v for k, v in vertex.attributes()['attr'].items() if v is not None}

@@ -519,7 +519,7 @@ class BcPlatformIntegration:
         log_path = f'{self.support_repo_path}/checkov_results' if self.support_repo_path == self.repo_path else self.support_repo_path
         persist_logs_stream(logs_stream, self.s3_client, self.support_bucket, log_path)
 
-    def persist_graphs(self, graphs: dict[str, DiGraph | Graph], absolute_root_folder: str | None = None) -> None:
+    def persist_graphs(self, graphs: dict[str, DiGraph | Graph], absolute_root_folder: str = '') -> None:
         if not self.use_s3_integration or not self.s3_client:
             return
         if not self.bucket or not self.repo_path:
