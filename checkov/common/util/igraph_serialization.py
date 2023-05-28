@@ -27,6 +27,6 @@ def serialize_to_json(igraph: Graph, absolute_root_folder: str) -> Dict[str, Any
         for edge in igraph.es
     ]
 
-    graph = {"graph_type": "igraph", "git_root_path": absolute_root_folder, "nodes": nodes, "links": links}
+    graph = {"graph_type": "igraph", "absolute_root_folder": absolute_root_folder, "nodes": nodes, "links": links}
 
     return graph
