@@ -140,8 +140,8 @@ def remove_function_calls_from_str(str_value: str) -> str:
 
 def remove_index_pattern_from_str(str_value: str) -> str:
     str_value = re.sub(INDEX_PATTERN, "", str_value)
-    str_value = str_value.replace("[", " [ ")
-    str_value = str_value.replace("]", " ] ")
+    str_value = str_value.replace('["', "\x00").replace("[", " [ ").replace('\x00', '["')
+    str_value = str_value.replace('"]', '\x00').replace("]", " ] ").replace('\x00', '"]')
     return str_value
 
 
@@ -164,6 +164,7 @@ def replace_map_attribute_access_with_dot(str_value: str) -> str:
 
 DEFAULT_CLEANUP_FUNCTIONS: List[Callable[[str], str]] = [
     remove_function_calls_from_str,
+    remove_index_pattern_from_str,
     replace_map_attribute_access_with_dot,
     remove_interpolation,
 ]
