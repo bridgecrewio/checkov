@@ -344,7 +344,7 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
             entity_context = self.context[entity_file_path].get(entity_id)
 
             if entity_context:
-                code_block = entity_context["code_lines"]
+                code_block = entity_context.get("code_lines")
             else:
                 logging.info(f"Could not find context for resource {entity_id} in file {entity_file_path}")
 
@@ -360,7 +360,7 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
         """Adjusts check result, if inline suppressed"""
 
         if self.context:
-        # not all runners have the 'context' attribute populated
+            # not all runners have the 'context' attribute populated
             entity_file_path = entity[CustomAttributes.FILE_PATH]
             entity_id = entity[CustomAttributes.ID]
             entity_context = self.context[entity_file_path].get(entity_id)
