@@ -1,6 +1,18 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.259...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.261...HEAD)
+
+## [2.3.261](https://github.com/bridgecrewio/checkov/compare/2.3.259...2.3.261) - 2023-05-28
+
+### Feature
+
+- **general:** Added computation of git_root_path to igraph serialization - [#5107](https://github.com/bridgecrewio/checkov/pull/5107)
+- **sca:** adding validation for the file_line_number - [#5132](https://github.com/bridgecrewio/checkov/pull/5132)
+- **terraform:** foreach remove error from info log. - [#5139](https://github.com/bridgecrewio/checkov/pull/5139)
+
+### Bug Fix
+
+- **terraform:** Should use UNKNOWN rather than skipped - [#5136](https://github.com/bridgecrewio/checkov/pull/5136)
 
 ## [2.3.259](https://github.com/bridgecrewio/checkov/compare/2.3.257...2.3.259) - 2023-05-24
 
