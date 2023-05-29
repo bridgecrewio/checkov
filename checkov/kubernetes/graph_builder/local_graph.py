@@ -163,6 +163,10 @@ class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
                 all_resources.append(conf)
                 return
             template[PARENT_RESOURCE_KEY_NAME] = metadata.get('name', "")
+            if not template.get('kind'):
+                template['kind'] = DEFAULT_NESTED_RESOURCE_TYPE
+            if not template.get('apiVersion'):
+                template['apiVersion'] = conf.get('apiVersion')
             spec.pop('template', None)
         else:
             template = {}
