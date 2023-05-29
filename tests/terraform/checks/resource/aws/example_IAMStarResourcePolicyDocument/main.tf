@@ -45,7 +45,7 @@ resource "aws_iam_policy" "pass_unrestrictable" {
     Statement = [
       {
         Action = [
-          "ec2:ListAllMyBuckets",
+          "s3:ListAllMyBuckets",
         ]
         Effect   = "Allow"
         Resource = "*"
