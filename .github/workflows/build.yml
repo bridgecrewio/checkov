@@ -42,7 +42,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
-      - uses: actions/setup-python@57ded4d7d5e986d7296eab16560982c6dd7c923b  # v4
+      - uses: actions/setup-python@bd6b4b6205c4dbad673328db7b31b7fab9e241c0  # v4
         with:
           python-version: ${{ matrix.python }}
       - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c  # v3
@@ -86,7 +86,7 @@ jobs:
     runs-on: [ self-hosted, public, linux, x64 ]
     steps:
       - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
-      - uses: actions/setup-python@57ded4d7d5e986d7296eab16560982c6dd7c923b  # v4
+      - uses: actions/setup-python@bd6b4b6205c4dbad673328db7b31b7fab9e241c0  # v4
         with:
           python-version: 3.7
       - name: Install pipenv
@@ -114,7 +114,7 @@ jobs:
     steps:
       - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
       - name: Set up Python 3.7
-        uses: actions/setup-python@57ded4d7d5e986d7296eab16560982c6dd7c923b  # v4
+        uses: actions/setup-python@bd6b4b6205c4dbad673328db7b31b7fab9e241c0  # v4
         with:
           python-version: 3.7
       - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
@@ -155,7 +155,7 @@ jobs:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
       - name: Set up Python 3.7
-        uses: actions/setup-python@57ded4d7d5e986d7296eab16560982c6dd7c923b  # v4
+        uses: actions/setup-python@bd6b4b6205c4dbad673328db7b31b7fab9e241c0  # v4
         with:
           python-version: 3.7
       - name: Install pipenv
