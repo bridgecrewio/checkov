@@ -164,7 +164,6 @@ def replace_map_attribute_access_with_dot(str_value: str) -> str:
 
 DEFAULT_CLEANUP_FUNCTIONS: List[Callable[[str], str]] = [
     remove_function_calls_from_str,
-    remove_index_pattern_from_str,
     replace_map_attribute_access_with_dot,
     remove_interpolation,
 ]
