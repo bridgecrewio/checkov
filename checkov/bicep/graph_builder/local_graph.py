@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-from copy import deepcopy
 from enum import Enum
 from pathlib import Path
 from typing import Any, TYPE_CHECKING, overload
@@ -16,6 +15,7 @@ from checkov.bicep.utils import adjust_value
 from checkov.common.graph.graph_builder.graph_components.edge import Edge
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.graph.graph_builder.utils import filter_sub_keys
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.type_forcers import force_int
 
 if TYPE_CHECKING:
@@ -82,8 +82,8 @@ class BicepLocalGraph(LocalGraph[BicepBlock]):
             return
 
         # there can only be one target scope per file
-        config = deepcopy(globals_attrs["scope"])
-        attributes = deepcopy(config)
+        config = pickle_deepcopy(globals_attrs["scope"])
+        attributes = pickle_deepcopy(config)
 
         self.vertices.append(
             BicepBlock(
@@ -101,8 +101,8 @@ class BicepLocalGraph(LocalGraph[BicepBlock]):
             return
 
         for name, conf in parameters.items():
-            config = deepcopy(conf)
-            attributes = deepcopy(conf)
+            config = pickle_deepcopy(conf)
+            attributes = pickle_deepcopy(conf)
 
             self.vertices.append(
                 BicepBlock(
@@ -120,8 +120,8 @@ class BicepLocalGraph(LocalGraph[BicepBlock]):
             return
 
         for name, conf in variables.items():
-            config = deepcopy(conf)
-            attributes = deepcopy(conf)
+            config = pickle_deepcopy(conf)
+            attributes = pickle_deepcopy(conf)
 
             self.vertices.append(
                 BicepBlock(
@@ -139,14 +139,14 @@ class BicepLocalGraph(LocalGraph[BicepBlock]):
             return
 
         for name, conf in resources.items():
-            config = deepcopy(conf)
+            config = pickle_deepcopy(conf)
 
             attributes: dict[str, Any] = {}
-            attributes["decorators"] = deepcopy(config["decorators"])
+            attributes["decorators"] = pickle_deepcopy(config["decorators"])
             attributes["type_"] = config["type"]
             attributes["api_version_"] = config["api_version"]
             attributes["existing_"] = config["existing"]
-            attributes.update(deepcopy(config["config"]))
+            attributes.update(pickle_deepcopy(config["config"]))
 
             attributes["resource_type"] = config["type"]
             attributes["__start_line__"] = config["__start_line__"]
@@ -168,13 +168,13 @@ class BicepLocalGraph(LocalGraph[BicepBlock]):
             return
 
         for name, conf in modules.items():
-            config = deepcopy(conf)
+            config = pickle_deepcopy(conf)
 
             attributes: dict[str, Any] = {}
-            attributes["decorators"] = deepcopy(config["decorators"])
+            attributes["decorators"] = pickle_deepcopy(config["decorators"])
             attributes["type_"] = config["type"]
             attributes["detail_"] = config["detail"]
-            attributes.update(deepcopy(config["config"]))
+            attributes.update(pickle_deepcopy(config["config"]))
 
             attributes["resource_type"] = config["type"]
             attributes["__start_line__"] = config["__start_line__"]
@@ -196,8 +196,8 @@ class BicepLocalGraph(LocalGraph[BicepBlock]):
             return
 
         for name, conf in outputs.items():
-            config = deepcopy(conf)
-            attributes = deepcopy(conf)
+            config = pickle_deepcopy(conf)
+            attributes = pickle_deepcopy(conf)
 
             self.vertices.append(
                 BicepBlock(

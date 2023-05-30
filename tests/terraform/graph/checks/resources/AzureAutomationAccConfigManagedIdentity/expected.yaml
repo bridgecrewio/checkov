@@ -1,0 +1,6 @@
+pass:
+  - "azurerm_automation_account.pass"
+
+fail:
+  - "azurerm_automation_account.fail_1"
+  - "azurerm_automation_account.fail_2"

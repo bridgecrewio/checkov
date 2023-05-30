@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-from copy import deepcopy
 from typing import TYPE_CHECKING, Tuple, List, Any, Dict, Optional, Callable
 
 from typing_extensions import TypedDict
@@ -13,6 +12,7 @@ from checkov.cloudformation.parser.cfn_keywords import IntrinsicFunctions, Condi
 from checkov.common.graph.graph_builder import Edge, CustomAttributes
 from checkov.common.graph.graph_builder.graph_components.blocks import Block
 from checkov.common.graph.graph_builder.variable_rendering.renderer import VariableRenderer
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 
 if TYPE_CHECKING:
     from checkov.cloudformation.graph_builder.graph_components.blocks import CloudformationBlock
@@ -61,7 +61,7 @@ class CloudformationVariableRenderer(VariableRenderer["CloudformationLocalGraph"
         edge = edge_list[0]
         origin_vertex = self.local_graph.vertices[edge.origin]
         origin_vertex_attributes = origin_vertex.attributes
-        val_to_eval = deepcopy(origin_vertex_attributes.get(edge.label, ""))
+        val_to_eval = pickle_deepcopy(origin_vertex_attributes.get(edge.label, ""))
 
         referenced_vertices = get_referenced_vertices_in_value(
             value=val_to_eval, vertices_block_name_map=self.vertices_block_name_map
@@ -78,7 +78,7 @@ class CloudformationVariableRenderer(VariableRenderer["CloudformationLocalGraph"
 
     def _render_variables_from_vertices(self) -> None:
         for vertex in self.local_graph.vertices:
-            vertex_attributes = deepcopy(vertex.attributes)
+            vertex_attributes = pickle_deepcopy(vertex.attributes)
             for attr_key, attr_value in vertex_attributes.items():
                 # Iterating on Fn::Join, Fn::Select and checking if they are
                 # in the current attribute value
@@ -416,7 +416,7 @@ class CloudformationVariableRenderer(VariableRenderer["CloudformationLocalGraph"
         return [], ""
 
     def _extract_vertices_block_name_map(self) -> Dict[str, Dict[str, List[int]]]:
-        vertices_block_name_map = deepcopy(self.local_graph.vertices_block_name_map)
+        vertices_block_name_map = pickle_deepcopy(self.local_graph.vertices_block_name_map)
         resources_blocks_name_map = vertices_block_name_map[BlockType.RESOURCE]
 
         updated_resources_blocks_name_map = {}

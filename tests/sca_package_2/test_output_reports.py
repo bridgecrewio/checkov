@@ -350,6 +350,7 @@ def test_sarif_output(sca_package_report_2_with_skip_scope_function):
                                     "text": "SCA package scan\nResource: requirements.txt.django\nStatus: fixed in 3.0.1, 2.2.9, 1.11.27"
                                 },
                                 "defaultConfiguration": {"level": "error"},
+                                "properties": {"security-severity": 9.8},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2019-19844",
                             },
                             {
@@ -363,6 +364,7 @@ def test_sarif_output(sca_package_report_2_with_skip_scope_function):
                                     "text": "SCA package scan\nResource: requirements.txt.django\nStatus: fixed in 1.9.10, 1.8.15"
                                 },
                                 "defaultConfiguration": {"level": "error"},
+                                "properties": {"security-severity": 7.5},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2016-7401",
                             },
                             {
@@ -376,6 +378,7 @@ def test_sarif_output(sca_package_report_2_with_skip_scope_function):
                                     "text": "SCA package scan\nResource: requirements.txt.django\nStatus: fixed in 3.2.4, 3.1.12, 2.2.24"
                                 },
                                 "defaultConfiguration": {"level": "error"},
+                                "properties": {"security-severity": 4.9},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2021-33203",
                             },
                             {
@@ -389,6 +392,7 @@ def test_sarif_output(sca_package_report_2_with_skip_scope_function):
                                     "text": "SCA package scan\nResource: requirements.txt.flask\nStatus: fixed in 1.0"
                                 },
                                 "defaultConfiguration": {"level": "error"},
+                                "properties": {"security-severity": 7.5},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2019-1010083",
                             },
                             {
@@ -402,6 +406,7 @@ def test_sarif_output(sca_package_report_2_with_skip_scope_function):
                                     "text": "SCA package scan\nResource: requirements.txt.flask\nStatus: fixed in 0.12.3"
                                 },
                                 "defaultConfiguration": {"level": "error"},
+                                "properties": {"security-severity": 7.5},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2018-1000656",
                             },
                             {
@@ -415,6 +420,7 @@ def test_sarif_output(sca_package_report_2_with_skip_scope_function):
                                     "text": "SCA package scan\nResource: path/to/go.sum.github.com/dgrijalva/jwt-go\nStatus: fixed in v4.0.0-preview1"
                                 },
                                 "defaultConfiguration": {"level": "error"},
+                                "properties": {"security-severity": 7.7},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2020-26160",
                             },
                             {
@@ -428,6 +434,7 @@ def test_sarif_output(sca_package_report_2_with_skip_scope_function):
                                     "text": "SCA package scan\nResource: requirements.txt.django\nStatus: fixed in 1.9.8, 1.8.14"
                                 },
                                 "defaultConfiguration": {"level": "error"},
+                                "properties": {"security-severity": 6.1},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2016-6186",
                             },
                             {
@@ -441,6 +448,7 @@ def test_sarif_output(sca_package_report_2_with_skip_scope_function):
                                     "text": "SCA package scan\nResource: path/to/go.sum.golang.org/x/crypto\nStatus: fixed in v0.0.2"
                                 },
                                 "defaultConfiguration": {"level": "error"},
+                                "properties": {"security-severity": 7.5},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2020-29652",
                             },
                         ],
@@ -628,7 +636,7 @@ def test_get_junit_xml_string(sca_package_2_report_with_skip):
             "Published Date: 2019-12-18T20:15:00+01:00",
             "Base Score: 9.8",
             "Vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
-            "Risk Factors: ['Attack complexity: low', 'Attack vector: network', 'Critical severity', 'Has fix']",
+            "Risk Factors: {'Severity': 'Critical', 'HasFix': True, 'DoS': False, 'AttackComplexity': 'low', 'AttackVector': 'network', 'RemoteExecution': True}",
             "Fix Details:",
             "  Status: fixed in 3.0.1, 2.2.9, 1.11.27",
             "  Fixed Version: 1.11.27",
@@ -651,7 +659,7 @@ def test_get_junit_xml_string(sca_package_2_report_with_skip):
             "Published Date: 2016-10-03T20:59:00+02:00",
             "Base Score: 7.5",
             "Vector: CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N",
-            "Risk Factors: ['High severity', 'Attack complexity: low', 'Attack vector: network', 'Has fix']",
+            "Risk Factors: {'Severity': 'Critical', 'HasFix': True, 'DoS': False, 'AttackComplexity': 'low', 'AttackVector': 'network', 'RemoteExecution': True}",
             "Fix Details:",
             "  Status: fixed in 1.9.10, 1.8.15",
             "  Fixed Version: 1.8.15",
@@ -674,7 +682,7 @@ def test_get_junit_xml_string(sca_package_2_report_with_skip):
             "Published Date: 2021-06-08T20:15:00+02:00",
             "Base Score: 4.9",
             "Vector: CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:N/A:N",
-            "Risk Factors: ['Attack complexity: low', 'Attack vector: network', 'Has fix', 'Medium severity', 'Recent vulnerability']",
+            "Risk Factors: {'Severity': 'Critical', 'HasFix': True, 'DoS': False, 'AttackComplexity': 'low', 'AttackVector': 'network', 'RemoteExecution': True}",
             "Fix Details:",
             "  Status: fixed in 3.2.4, 3.1.12, 2.2.24",
             "  Fixed Version: 2.2.24",
@@ -697,7 +705,7 @@ def test_get_junit_xml_string(sca_package_2_report_with_skip):
             "Published Date: 2019-07-17T16:15:00+02:00",
             "Base Score: 7.5",
             "Vector: CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
-            "Risk Factors: ['Attack complexity: low', 'Attack vector: network', 'DoS', 'Has fix', 'High severity']",
+            "Risk Factors: {'Severity': 'Critical', 'HasFix': True, 'DoS': False, 'AttackComplexity': 'low', 'AttackVector': 'network', 'RemoteExecution': True}",
             "Fix Details:",
             "  Status: fixed in 1.0",
             "  Fixed Version: 1.0",
@@ -720,7 +728,7 @@ def test_get_junit_xml_string(sca_package_2_report_with_skip):
             "Published Date: 2018-08-20T21:31:00+02:00",
             "Base Score: 7.5",
             "Vector: CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
-            "Risk Factors: ['Attack complexity: low', 'Attack vector: network', 'DoS', 'Has fix', 'High severity']",
+            "Risk Factors: {'Severity': 'Critical', 'HasFix': True, 'DoS': False, 'AttackComplexity': 'low', 'AttackVector': 'network', 'RemoteExecution': True}",
             "Fix Details:",
             "  Status: fixed in 0.12.3",
             "  Fixed Version: 0.12.3",
@@ -743,7 +751,7 @@ def test_get_junit_xml_string(sca_package_2_report_with_skip):
             "Published Date: 2020-09-30T20:15:00+02:00",
             "Base Score: 7.7",
             "Vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
-            "Risk Factors: ['High severity', 'Attack complexity: low', 'Attack vector: network', 'Has fix']",
+            "Risk Factors: {'Severity': 'Critical', 'HasFix': True, 'DoS': False, 'AttackComplexity': 'low', 'AttackVector': 'network', 'RemoteExecution': True}",
             "Fix Details:",
             "  Status: fixed in v4.0.0-preview1",
             "  Fixed Version: 4.0.0rc1",
@@ -812,7 +820,7 @@ def test_get_junit_xml_string_py37(sca_package_2_report_with_skip):
             "Published Date: 2019-12-18T20:15:00+01:00",
             "Base Score: 9.8",
             "Vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
-            "Risk Factors: ['Attack complexity: low', 'Attack vector: network', 'Critical severity', 'Has fix']",
+            "Risk Factors: {'Severity': 'Critical', 'HasFix': True, 'DoS': False, 'AttackComplexity': 'low', 'AttackVector': 'network', 'RemoteExecution': True}",
             "Fix Details:",
             "  Status: fixed in 3.0.1, 2.2.9, 1.11.27",
             "  Fixed Version: 1.11.27",
@@ -835,7 +843,7 @@ def test_get_junit_xml_string_py37(sca_package_2_report_with_skip):
             "Published Date: 2016-10-03T20:59:00+02:00",
             "Base Score: 7.5",
             "Vector: CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N",
-            "Risk Factors: ['High severity', 'Attack complexity: low', 'Attack vector: network', 'Has fix']",
+            "Risk Factors: {'Severity': 'Critical', 'HasFix': True, 'DoS': False, 'AttackComplexity': 'low', 'AttackVector': 'network', 'RemoteExecution': True}",
             "Fix Details:",
             "  Status: fixed in 1.9.10, 1.8.15",
             "  Fixed Version: 1.8.15",
@@ -858,7 +866,7 @@ def test_get_junit_xml_string_py37(sca_package_2_report_with_skip):
             "Published Date: 2021-06-08T20:15:00+02:00",
             "Base Score: 4.9",
             "Vector: CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:N/A:N",
-            "Risk Factors: ['Attack complexity: low', 'Attack vector: network', 'Has fix', 'Medium severity', 'Recent vulnerability']",
+            "Risk Factors: {'Severity': 'Critical', 'HasFix': True, 'DoS': False, 'AttackComplexity': 'low', 'AttackVector': 'network', 'RemoteExecution': True}",
             "Fix Details:",
             "  Status: fixed in 3.2.4, 3.1.12, 2.2.24",
             "  Fixed Version: 2.2.24",
@@ -881,7 +889,7 @@ def test_get_junit_xml_string_py37(sca_package_2_report_with_skip):
             "Published Date: 2019-07-17T16:15:00+02:00",
             "Base Score: 7.5",
             "Vector: CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
-            "Risk Factors: ['Attack complexity: low', 'Attack vector: network', 'DoS', 'Has fix', 'High severity']",
+            "Risk Factors: {'Severity': 'Critical', 'HasFix': True, 'DoS': False, 'AttackComplexity': 'low', 'AttackVector': 'network', 'RemoteExecution': True}",
             "Fix Details:",
             "  Status: fixed in 1.0",
             "  Fixed Version: 1.0",
@@ -904,7 +912,7 @@ def test_get_junit_xml_string_py37(sca_package_2_report_with_skip):
             "Published Date: 2018-08-20T21:31:00+02:00",
             "Base Score: 7.5",
             "Vector: CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
-            "Risk Factors: ['Attack complexity: low', 'Attack vector: network', 'DoS', 'Has fix', 'High severity']",
+            "Risk Factors: {'Severity': 'Critical', 'HasFix': True, 'DoS': False, 'AttackComplexity': 'low', 'AttackVector': 'network', 'RemoteExecution': True}",
             "Fix Details:",
             "  Status: fixed in 0.12.3",
             "  Fixed Version: 0.12.3",
@@ -927,7 +935,7 @@ def test_get_junit_xml_string_py37(sca_package_2_report_with_skip):
             "Published Date: 2020-09-30T20:15:00+02:00",
             "Base Score: 7.7",
             "Vector: CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
-            "Risk Factors: ['High severity', 'Attack complexity: low', 'Attack vector: network', 'Has fix']",
+            "Risk Factors: {'Severity': 'Critical', 'HasFix': True, 'DoS': False, 'AttackComplexity': 'low', 'AttackVector': 'network', 'RemoteExecution': True}",
             "Fix Details:",
             "  Status: fixed in v4.0.0-preview1",
             "  Fixed Version: 4.0.0rc1",

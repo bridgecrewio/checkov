@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from abc import ABC
 from typing import Dict, List, Any
 
@@ -10,7 +12,14 @@ from checkov.terraform.checks.utils.base_cloudsplaining_iam_scanner import BaseT
 
 class BaseTerraformCloudsplainingResourceIAMCheck(BaseResourceCheck, BaseTerraformCloudsplainingIAMScanner, ABC):
     def __init__(self, name: str, id: str) -> None:
-        super().__init__(name=name, id=id, categories=[CheckCategories.IAM], supported_resources=["aws_iam_policy"])
+        supported_resources = (
+            "aws_iam_role_policy",
+            "aws_iam_user_policy",
+            "aws_iam_group_policy",
+            "aws_iam_policy",
+            "aws_ssoadmin_permission_set_inline_policy",
+        )
+        super().__init__(name=name, id=id, categories=(CheckCategories.IAM,), supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
         return self.scan_conf(conf)
@@ -20,8 +29,15 @@ class BaseTerraformCloudsplainingResourceIAMCheck(BaseResourceCheck, BaseTerrafo
         return self.entity_path
 
     def should_scan_conf(self, conf: Dict[str, List[Any]]) -> bool:
-        return "policy" in conf.keys()
+        if self.entity_type == "aws_ssoadmin_permission_set_inline_policy":
+            return "inline_policy" in conf
+
+        return "policy" in conf
 
     def convert_to_iam_policy(self, conf: Dict[str, Any]) -> PolicyDocument:
-        policy = conf['policy'][0]  # type: Dict[str, Any]
+        if self.entity_type == "aws_ssoadmin_permission_set_inline_policy":
+            policy: dict[str, Any] = conf['inline_policy'][0]
+        else:
+            policy = conf['policy'][0]
+
         return PolicyDocument(policy)

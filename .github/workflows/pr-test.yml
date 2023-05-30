@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
-      - uses: actions/setup-python@57ded4d7d5e986d7296eab16560982c6dd7c923b  # v4
+      - uses: actions/setup-python@bd6b4b6205c4dbad673328db7b31b7fab9e241c0  # v4
         with:
           python-version: 3.7
       - name: Install cfn-lint
@@ -37,7 +37,7 @@ jobs:
     steps:
       - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
       - name: Set up Python ${{ matrix.python }}
-        uses: actions/setup-python@57ded4d7d5e986d7296eab16560982c6dd7c923b  # v4
+        uses: actions/setup-python@bd6b4b6205c4dbad673328db7b31b7fab9e241c0  # v4
         with:
           python-version: ${{ matrix.python }}
           cache: "pipenv"
@@ -53,6 +53,8 @@ jobs:
           python -m pip install --no-cache-dir --upgrade pipenv
       - name: Install dependencies
         run: |
+          # remove venv, if exists
+          pipenv --rm || true
           pipenv --python ${{ matrix.python }}
           pipenv install --dev -v
       - name: Unit tests
@@ -70,7 +72,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
-      - uses: actions/setup-python@57ded4d7d5e986d7296eab16560982c6dd7c923b  # v4
+      - uses: actions/setup-python@bd6b4b6205c4dbad673328db7b31b7fab9e241c0  # v4
         with:
           python-version: ${{ matrix.python }}
           cache: "pipenv"
@@ -88,6 +90,8 @@ jobs:
           python -m pip install --no-cache-dir --upgrade pipenv
       - name: Build & install checkov package
         run: |
+          # remove venv, if exists
+          pipenv --rm || true
           pipenv --python ${{ matrix.python }}
           pipenv run pip install pytest pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
@@ -121,7 +125,7 @@ jobs:
     runs-on: [self-hosted, public, linux, x64]
     steps:
       - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
-      - uses: actions/setup-python@57ded4d7d5e986d7296eab16560982c6dd7c923b  # v4
+      - uses: actions/setup-python@bd6b4b6205c4dbad673328db7b31b7fab9e241c0  # v4
         with:
           python-version: ${{ matrix.python }}
           cache: "pipenv"
@@ -138,6 +142,8 @@ jobs:
           python -m pip install --no-cache-dir --upgrade pipenv
       - name: Build & install checkov package
         run: |
+          # remove venv, if exists
+          pipenv --rm || true
           pipenv --python ${{ matrix.python }}
           # 'py' package is used in 'pytest-benchmark', but 'pytest' removed it in their latest version         
           pipenv run pip install pytest pytest-benchmark py
@@ -164,7 +170,7 @@ jobs:
       WORKING_DIRECTORY: ./dogfood_tests
     steps:
       - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
-      - uses: actions/setup-python@57ded4d7d5e986d7296eab16560982c6dd7c923b  # v4
+      - uses: actions/setup-python@bd6b4b6205c4dbad673328db7b31b7fab9e241c0  # v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: "pipenv"
@@ -181,6 +187,8 @@ jobs:
 
       - name: Build & install checkov package
         run: |
+          # remove venv, if exists
+          pipenv --rm || true
           pipenv --python ${{ env.PYTHON_VERSION }}     
           pipenv run pip install pytest pytest-xdist
           pipenv run python setup.py sdist bdist_wheel

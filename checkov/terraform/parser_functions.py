@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import json
 import logging
-from typing import Dict, List, Union, Any
+from collections.abc import Hashable
+from typing import Dict, List, Union, Any, Callable
 
 from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.common.util.parser_utils import eval_string, split_merge_args, string_to_native, to_string
@@ -21,7 +24,7 @@ from checkov.common.util.parser_utils import eval_string, split_merge_args, stri
 FUNCTION_FAILED = "____FUNCTION_FAILED____"
 
 
-def merge(original, var_resolver, **_):
+def merge(original: str, var_resolver: Callable[[Any], Any], **_: Any) -> dict[Hashable, Any] | str:
     # https://www.terraform.io/docs/language/functions/merge.html
     args = split_merge_args(original)
     if args is None:
@@ -41,7 +44,7 @@ def merge(original, var_resolver, **_):
     return merged_map
 
 
-def concat(original, var_resolver, **_):
+def concat(original: str, var_resolver: Callable[[Any], Any], **_: Any) -> list[Any] | str:
     # https://www.terraform.io/docs/language/functions/concat.html
     args = split_merge_args(original)
     if args is None:
@@ -68,7 +71,7 @@ def tobool(original: Union[bool, str], **_: Any) -> Union[bool, str]:
     return bool_value if isinstance(bool_value, bool) else FUNCTION_FAILED
 
 
-def tonumber(original, **_):
+def tonumber(original: str, **_: Any) -> float | str:
     # https://www.terraform.io/docs/configuration/functions/tonumber.html
     if original.startswith('"') and original.endswith('"'):
         original = original[1:-1]
@@ -81,7 +84,7 @@ def tonumber(original, **_):
         return FUNCTION_FAILED
 
 
-def tostring(original, **_):
+def tostring(original: str, **_: Any) -> bool | str:
     # Indicates a safe string, all good
     if original.startswith('"') and original.endswith('"'):
         return original[1:-1]
@@ -99,7 +102,7 @@ def tostring(original, **_):
             return FUNCTION_FAILED  # no change
 
 
-def tolist(original, **_):
+def tolist(original: str, **_: Any) -> list[Any] | str:
     # https://www.terraform.io/docs/configuration/functions/tolist.html
     altered_value = eval_string(original)
     if altered_value is None:
@@ -107,7 +110,7 @@ def tolist(original, **_):
     return altered_value if isinstance(altered_value, list) else list(altered_value)
 
 
-def toset(original, **_):
+def toset(original: str, **_: Any) -> set[Any] | str:
     # https://www.terraform.io/docs/configuration/functions/toset.html
     altered_value = eval_string(original)
     if altered_value is None:
@@ -115,7 +118,7 @@ def toset(original, **_):
     return altered_value if isinstance(altered_value, set) else set(altered_value)
 
 
-def tomap(original, **_):
+def tomap(original: str, **_: Any) -> dict[Hashable, Any] | str:
     # https://www.terraform.io/docs/language/functions/tomap.html
     original = original.replace(":", "=")     # converted to colons by parser #shrug
 
@@ -125,7 +128,7 @@ def tomap(original, **_):
     return _check_map_type_consistency(altered_value)
 
 
-def map(original, **_):
+def map(original: str, **_: Any) -> dict[Hashable, Any] | str:
     # https://www.terraform.io/docs/language/functions/map.html
 
     # NOTE: Splitting by commas is annoying due to possible commas in strings. To avoid
@@ -138,14 +141,14 @@ def map(original, **_):
     return create_map(converted_to_list)
 
 
-def create_map(lst: List):
+def create_map(lst: list[Any]) -> dict[Hashable, Any]:
     new_map = {}
     for i in range(0, len(lst), 2):
         new_map[lst[i]] = lst[i + 1]
     return _check_map_type_consistency(new_map)
 
 
-def _check_map_type_consistency(value: Dict) -> Dict:
+def _check_map_type_consistency(value: dict[Hashable, Any]) -> dict[Hashable, Any]:
     # If there is a string and anything else, convert to string
     had_string = False
     had_something_else = False

@@ -182,6 +182,7 @@ def test_sarif_output(sca_image_report_scope_function):
                                     "text": "SCA package scan\nResource: path/to/Dockerfile (sha256:123456).perl\nStatus: needed"
                                 },
                                 "defaultConfiguration": {"level": "error"},
+                                "properties": {"security-severity": 7.8},
                                 "helpUri": "https://people.canonical.com/~ubuntu-security/cve/2020/CVE-2020-16156",
                             },
                             {
@@ -195,6 +196,7 @@ def test_sarif_output(sca_image_report_scope_function):
                                     "text": "SCA package scan\nResource: path/to/Dockerfile (sha256:123456).pcre2\nStatus: needed"
                                 },
                                 "defaultConfiguration": {"level": "error"},
+                                "properties": {"security-severity": 9.1},
                                 "helpUri": "https://people.canonical.com/~ubuntu-security/cve/2022/CVE-2022-1587",
                             },
                             {
@@ -208,6 +210,7 @@ def test_sarif_output(sca_image_report_scope_function):
                                     "text": "SCA package scan\nResource: path/to/Dockerfile (sha256:123456).pcre2\nStatus: needed"
                                 },
                                 "defaultConfiguration": {"level": "error"},
+                                "properties": {"security-severity": 9.1},
                                 "helpUri": "https://people.canonical.com/~ubuntu-security/cve/2022/CVE-2022-1586",
                             },
                         ],

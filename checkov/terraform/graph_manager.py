@@ -18,18 +18,20 @@ if TYPE_CHECKING:
 
 class TerraformGraphManager(GraphManager[TerraformLocalGraph, "dict[str, dict[str, Any]]"]):
     def __init__(self, db_connector: LibraryGraphConnector, source: str = "") -> None:
+        self.parser: Parser  # just to make sure it won't be None
+
         parser = TFParser() if strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'True')) else Parser()
         super().__init__(db_connector=db_connector, parser=parser, source=source)
 
     def build_graph_from_source_directory(
         self,
         source_dir: str,
-        render_variables: bool = True,
         local_graph_class: Type[TerraformLocalGraph] = TerraformLocalGraph,
+        render_variables: bool = True,
         parsing_errors: dict[str, Exception] | None = None,
         download_external_modules: bool = False,
-        external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR,
         excluded_paths: list[str] | None = None,
+        external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR,
         vars_files: list[str] | None = None,
         create_graph: bool = True,
     ) -> tuple[TerraformLocalGraph | None, dict[str, dict[str, Any]]]:

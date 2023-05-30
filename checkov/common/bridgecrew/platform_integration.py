@@ -39,6 +39,7 @@ from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.typing import _CicdDetails
 from checkov.common.util.consts import PRISMA_PLATFORM, BRIDGECREW_PLATFORM, CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
 from checkov.common.util.data_structures_utils import merge_dicts
+from checkov.common.util.dockerfile import is_docker_file
 from checkov.common.util.http_utils import normalize_prisma_url, get_auth_header, get_default_get_headers, \
     get_user_agent_header, get_default_post_headers, get_prisma_get_headers, get_prisma_auth_header, \
     get_auth_error_message, normalize_bc_url
@@ -404,7 +405,7 @@ class BcPlatformIntegration:
                     _, file_extension = os.path.splitext(file_path)
                     if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 and file_extension in SCANNABLE_PACKAGE_FILES:
                         continue
-                    if file_extension in SUPPORTED_FILE_EXTENSIONS or file_path in SUPPORTED_FILES:
+                    if file_extension in SUPPORTED_FILE_EXTENSIONS or file_path in SUPPORTED_FILES or is_docker_file(file_path):
                         full_file_path = os.path.join(root_path, file_path)
                         relative_file_path = os.path.relpath(full_file_path, root_dir)
                         files_to_persist.append(FileToPersist(full_file_path, relative_file_path))
@@ -518,13 +519,14 @@ class BcPlatformIntegration:
         log_path = f'{self.support_repo_path}/checkov_results' if self.support_repo_path == self.repo_path else self.support_repo_path
         persist_logs_stream(logs_stream, self.s3_client, self.support_bucket, log_path)
 
-    def persist_graphs(self, graphs: dict[str, DiGraph | Graph]) -> None:
+    def persist_graphs(self, graphs: dict[str, DiGraph | Graph], absolute_root_folder: str = '') -> None:
         if not self.use_s3_integration or not self.s3_client:
             return
         if not self.bucket or not self.repo_path:
             logging.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
             return
-        persist_graphs(graphs, self.s3_client, self.bucket, self.repo_path, self.persist_graphs_timeout)
+        persist_graphs(graphs, self.s3_client, self.bucket, self.repo_path, self.persist_graphs_timeout,
+                       absolute_root_folder=absolute_root_folder)
 
     def commit_repository(self, branch: str) -> str | None:
         """

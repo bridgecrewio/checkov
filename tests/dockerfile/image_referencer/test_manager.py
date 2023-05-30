@@ -37,6 +37,6 @@ def test_extract_images_from_resources():
             name="php:7.1-apache",
             start_line=1,
             end_line=1,
-            related_resource_id="/Dockerfile.FROM",
+            related_resource_id="/Dockerfile:/Dockerfile.FROM",
         ),
     ]
