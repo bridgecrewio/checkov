@@ -3,16 +3,17 @@ from pathlib import Path
 
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.aws.IAMStarResourcePolicyDocument import check
+from checkov.terraform.checks.utils.base_cloudsplaining_iam_scanner import BaseTerraformCloudsplainingIAMScanner
 from checkov.terraform.runner import Runner
 
 
 class TestIAMStarResourcePolicyDocument(unittest.TestCase):
     def setUp(self) -> None:
         # make sure nothing is in the cache
-        check.policy_document_cache = {}
+        BaseTerraformCloudsplainingIAMScanner.policy_document_cache = {}
 
     def tearDown(self) -> None:
-        check.policy_document_cache = {}
+        BaseTerraformCloudsplainingIAMScanner.policy_document_cache = {}
 
     def test(self):
         # given
