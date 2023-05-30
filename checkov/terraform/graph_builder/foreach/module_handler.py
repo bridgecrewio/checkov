@@ -3,10 +3,10 @@ from __future__ import annotations
 import itertools
 import typing
 from collections import defaultdict
-from copy import deepcopy
 from typing import Any
 
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.terraform import TFModule
 from checkov.terraform.graph_builder.foreach.abstract_handler import ForeachAbstractHandler
 from checkov.terraform.graph_builder.foreach.consts import FOREACH_STRING, COUNT_STRING
@@ -148,7 +148,7 @@ class ForeachModuleHandler(ForeachAbstractHandler):
                 self._update_resolved_entry_for_tf_definition(child, original_foreach_or_count_key, original_module_key)
 
                 # Important to copy to avoid changing the object by reference
-                child_source_module_object_copy = deepcopy(child.source_module_object)
+                child_source_module_object_copy = pickle_deepcopy(child.source_module_object)
                 if should_override_foreach_key:
                     child_source_module_object_copy.foreach_idx = None
 
@@ -166,7 +166,7 @@ class ForeachModuleHandler(ForeachAbstractHandler):
             resource_idx: int,
             foreach_idx: int,
             new_key: int | str | None = None) -> None:
-        new_resource = deepcopy(main_resource)
+        new_resource = pickle_deepcopy(main_resource)
         block_name = new_resource.name
         config_attrs = new_resource.config.get(block_name, {})
         key_to_val_changes = self._build_key_to_val_changes(main_resource, new_value, new_key)
@@ -181,8 +181,8 @@ class ForeachModuleHandler(ForeachAbstractHandler):
         )
 
         # Without making this copy the test don't pass, as we might access the data structure in the middle of an update
-        copy_of_vertices_by_module_dependency = deepcopy(self.local_graph.vertices_by_module_dependency)
-        main_resource_module_value = deepcopy(copy_of_vertices_by_module_dependency[main_resource_module_key])
+        copy_of_vertices_by_module_dependency = pickle_deepcopy(self.local_graph.vertices_by_module_dependency)
+        main_resource_module_value = pickle_deepcopy(copy_of_vertices_by_module_dependency[main_resource_module_key])
         new_resource_module_key = TFModule(new_resource.path, new_resource.name, new_resource.source_module_object,
                                            idx_to_change)
 
@@ -235,7 +235,7 @@ class ForeachModuleHandler(ForeachAbstractHandler):
         for vertex_type, vertices_idx in new_module_value.items():
             for vertex_idx in vertices_idx:
                 module_vertex = self.local_graph.vertices[vertex_idx]
-                new_vertex = deepcopy(module_vertex)
+                new_vertex = pickle_deepcopy(module_vertex)
                 new_vertex.source_module_object = new_module_key
                 self.local_graph.vertices.append(new_vertex)
 

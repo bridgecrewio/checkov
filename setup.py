@@ -66,7 +66,7 @@ setup(
     },
     install_requires=[
         "bc-python-hcl2==0.3.51",
-        "bc-detect-secrets==1.4.27",
+        "bc-detect-secrets==1.4.29",
         "bc-jsonpath-ng==1.5.9",
         "deep-merge",
         "tabulate",
@@ -99,7 +99,7 @@ setup(
         "aiohttp",
         "aiodns",
         "aiomultiprocess",
-        "jsonschema>=4.6.0,<5.0.0",
+        "jsonschema<5.0.0,>=4.6.0",
         "prettytable>=3.0.0",
         "pycep-parser==0.4.0",
         "charset-normalizer",
@@ -109,6 +109,8 @@ setup(
         "requests>=2.27.0",
         "yarl",
         "openai",
+        "spdx-tools<0.8.0",
+        "license-expression==30.1.0",
     ],
     dependency_links=[],  # keep it empty, needed for pipenv-setup
     license="Apache License 2.0",

@@ -1,0 +1,33 @@
+metadata:
+  id: "CKV2_AZURE_37"
+  name: "Ensure Azure MariaDB server is using latest TLS (1.2)"
+  category: "ENCRYPTION"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types: "azurerm_mariadb_server"
+      attribute: "ssl_enforcement_enabled"
+      operator: "exists"
+
+    - cond_type: "attribute"
+      resource_types: "azurerm_mariadb_server"
+      attribute: "ssl_enforcement_enabled"
+      operator: "equals_ignore_case"
+      value: "true"
+
+    - or:
+        - cond_type: "attribute"
+          resource_types: "azurerm_mariadb_server"
+          attribute: "ssl_minimal_tls_version_enforced"
+          operator: "equals_ignore_case"
+          value: "TLS1_2"
+
+        - cond_type: "attribute"
+          resource_types: "azurerm_mariadb_server"
+          attribute: "ssl_minimal_tls_version_enforced"
+          operator: "not_exists"
+          
+# If ssl_minimal_tls_version_enforced does not exist, it defaults to TLS 1.2
+# Refer docs for more info:
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/mariadb_server#ssl_minimal_tls_version_enforced

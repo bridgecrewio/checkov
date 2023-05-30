@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from collections.abc import Collection
-from copy import deepcopy
 from typing import Union, Dict, Any, List, cast
 
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimmed_strings
 from checkov.common.graph.graph_builder.variable_rendering.breadcrumb_metadata import BreadcrumbMetadata
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 
 
@@ -46,7 +46,7 @@ class Block:
             :param attributes: dictionary of the block's original attributes in the origin file
         """
         self.name = name
-        self.config = deepcopy(config)
+        self.config = pickle_deepcopy(config)
         self.path = path
         self.block_type = block_type
         self.attributes = attributes

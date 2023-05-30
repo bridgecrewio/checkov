@@ -21,9 +21,12 @@ class ALBListenerHTTPS(BaseResourceCheck):
         self.evaluated_keys = ['protocol']
         key = 'protocol'
         if key in conf.keys():
-            if conf[key] in (["HTTPS"], ["TLS"], ["TCP"], ["UDP"], ["TCP_UDP"]):
+            protocol = conf.get(key, [None])[0]
+            if BaseResourceCheck._is_variable_dependant(protocol):
+                return CheckResult.UNKNOWN
+            if protocol in ("HTTPS", "TLS", "TCP", "UDP", "TCP_UDP"):
                 return CheckResult.PASSED
-            elif conf[key] == ["HTTP"]:
+            elif protocol == "HTTP":
                 if 'default_action' in conf.keys():
                     default_action = conf['default_action'][0]
                     action_type = default_action['type']
