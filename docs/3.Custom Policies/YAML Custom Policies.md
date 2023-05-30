@@ -88,48 +88,48 @@ definition:
 
 ### Attribute Condition: Operators
 
-| Operator                     | Value in YAML                  |
-|------------------------------|--------------------------------|
-| Equals                       | `equals`                       |
-| Not Equals                   | `not_equals`                   |
-| Regex Match                  | `regex_match`                  |
-| Not Regex Match              | `not_regex_match`              |
-| Exists                       | `exists`                       |
-| Not Exists                   | `not_exists`                   |
-| One Exists                   | `one_exists`                   |
-| Any                          | `any`                          |
-| Contains                     | `contains`                     |
-| Not Contains                 | `not_contains`                 |
-| Within                       | `within`                       |
-| Not Within                   | `not_within`                   |
-| Starts With                  | `starting_with`                |
-| Not Starts With              | `not_starting_with`            |
-| Ends With                    | `ending_with`                  |
-| Not Ends With                | `not_ending_with`              |
-| Greater Than                 | `greater_than`                 |
-| Greater Than Or Equal        | `greater_than_or_equal`        |
-| Less Than                    | `less_than`                    |
-| Less Than Or Equal           | `less_than_or_equal`           |
-| Subset                       | `subset`                       |
-| Not Subset                   | `not_subset`                   |
-| Is Empty                     | `is_empty`                     |
-| Is Not Empty                 | `is_not_empty`                 |
-| Length Equals                | `length_equals`                |
-| Length Not Equals            | `length_not_equals`            |
-| Length Less Than             | `length_less_than`             |
-| Length Less Than Or Equal    | `length_less_than_or_equal`    |
-| Length Greater Than          | `length_greater_than`          |
-| Length Greater Than Or Equal | `length_greater_than_or_equal` |
-| Is False                     | `is_false`                     |
-| Is True                      | `is_true`                      |
-| Intersects                   | `intersects`                   |
-| Not Intersects               | `not_intersects`               |
-| Equals Ignore Case           | `equals_ignore_case`           |
-| Not Equals Ignore Case       | `not_equals_ignore_case`       |
-| Range Includes               | `range_includes`               |
-| Range Not Includes           | `range_not_includes`           |
-| Number of words Equals       | `number_of_words_equals`       |
-| Number of words not Equals   | `number_of_words_not_equals`   |
+| Value in YAML                  | Description                                      | Value types       | Example                                           |
+|--------------------------------|--------------------------------------------------|-------------------|---------------------------------------------------|
+| `equals`                       | Exact value match                                | String, Int, Bool | operator: "equals"<br>value: "t3.nano"            |
+| `not_equals`                   | Not equal to the value                           | String, Int, Bool | operator: "not_equals"<br>value: "t3.nano"        |
+| `regex_match`                  | The value must match the regular <br>expression      | String (RegEx)    | operator: "regex_match"<br>value: "^myex-.*"      |
+| `not_regex_match`              | The value must not match the regular <br>expression  | String (RegEx)    | operator: "not_regex_match"<br>value: "^myex-.*"  |
+| `exists`                       | The attribute or connection appears in the <br>resource definition | None              | attribute: "name"<br>operator: exists |
+| `not_exists`                   | The attribute or connection does not <br>appear in the resource    | None              | attribute: "name"<br>operator: not_exists |
+| `one_exists`                   | At least one connection of a specific type <br>exists | None         | resource_types:<br>  - aws_vpc<br>connected_resource_types:<br>  - aws_flow_log<br>operator: one_exists<br>attribute: networking<br>cond_type: connection |
+| `any`                          | Any of a list of attribute values match what <br>the resource contains  | (List) Strings    | operator: "any"<br>value: <br>-"value1" |
+| `contains`                     | The values of a resource attribute includes <br>all of these values  | (List) Strings    | operator: "contains"<br>value: <br>-"value1" |
+| `not_contains`                 | The values of a resource attribute includes <br>all of these values  | (List) Strings    | operator: "not_contains"<br>value: <br>-"value1" |
+| `within`                       | Used with filter to focus the findings on a <br>specific resource type or with attribute to <br>provide a list of possible options  | String | cond_type: filter<br>attribute: resource_type<br>value:<br> - google_logging_organization_sink<br>operator: within |
+| `not_within`                   | Specify a list of unacceptable resource <br>and value options | (List) Strings | cond_type: attribute<br>attribute: 'subjects.*.kind'<br>operator: not_within<br>value:<br> - 'Node'<br>resource_types:<br> - ClusterRoleBinding |
+| `starting_with`                | The value must begin with a string                | String | operator: starting_with<br>value: terraform-aws-modules |
+| `not_starting_with`            | The value must not begin with a string            | String | operator: not_starting_with<br>value: terraform-aws-modules |
+| `ending_with`                  | The value used by the attribute must end <br>with this string | String | operator: not_ending_with<br>value: "-good" |
+| `not_ending_with`              | The value used by the attribute must not <br>end with this string | String | operator: ending_with<br>value: "-bad" |
+| `greater_than`                 | The value used by the attribute must be <br>greater than this value | String, Int | operator: greater_than<br>value: "100" |
+| `greater_than_or_equal`        | The value used by the attribute must be <br>greater than or equal to this value | String, Int | operator: less_than_or_equal<br>value: "100" |
+| `less_than`                    | The value used by the attribute must be <br>less than this value | String, Int | operator: less_than<br>value: "100" |
+| `less_than_or_equal`           | The value used by the attribute must be <br>less than or equal to this value | String, Int | operator: less_than_or_equal<br>value: "100" |
+| `subset`                       | The values used by the attribute must be <br>a subset of the listed values and not <br>outside of that | (List) String | operator: subset<br>value: <br> - "a"<br> - "b" |
+| `not_subset`                   | The values used by the attribute must <br>not be any of a subset of the listed <br>values and not outside of that | (List) String | operator: not_subset<br>value: <br> - "a"<br> - "b" |
+| `is_empty`                     | The attribute must not have a value | None | attribute: "audit_log_config.*.exempted_members"<br>operator: is_empty |
+| `is_not_empty`                 | The attribute must have a value | None | attribute: "description"<br>operator: is_not_empty |
+| `length_equals`                | The list of attributes of that type must <br>be of this number | String, Int | resource_types:<br> - aws_security_group<br>attribute: ingress<br>operator: length_equals<br>value: "2" |
+| `length_not_equals`            | The list of attributes of that type must <br>not be of this number | String, Int | resource_types:<br> - aws_security_group<br>attribute: ingress<br>operator: length_not_equals<br>value: "2" |
+| `length_less_than`             | The list of attributes of that type must <br>be less than this number | String, Int | resource_types:<br> - aws_security_group<br>attribute: ingress<br>operator: length_less_than<br>value: "20" |
+| `length_less_than_or_equal`    | The list of attributes of that type must <br>be less than or equal to this number | String, Int | resource_types:<br> - aws_security_group<br>attribute: ingress<br>operator: length_less_than_or_equal<br>value: "20" |
+| `length_greater_than`          | The list of attributes of that type must <br>be greater than this number | String, Int | resource_types:<br> - aws_security_group<br>attribute: ingress<br>operator: length_greater_than<br>value: "20" |
+| `length_greater_than_or_equal` | The list of attributes of that type must <br>be greater than or equal to this number | String, Int | resource_types:<br> - aws_security_group<br>attribute: ingress<br>operator: length_greater_than_or_equal<br>value: "20" |
+| `is_false`                     | The value of the attribute must be false | None | operator: is_false |
+| `is_true`                      | The value of the attribute must be true | None | operator: is_true |
+| `intersects`                   | Given 2 values, check if those values <br>intersect | (List) Strings | attribute: "availability_zone"<br>operator: "intersects"<br>value: "us-" |
+| `not_intersects`               | Given 2 values, check if those values do<br> not intersect | (List) Strings | attribute: "availability_zone"<br>operator: "not_intersects"<br>value: "us-" |
+| `equals_ignore_case`           | The value of the attribute equals this <br>value, ignoring case for both | String | operator: "equals_ignore_case"<br>value: "INGRESS" |
+| `not_equals_ignore_case`       | The value of the attribute does not <br>equal this value, ignoring case for both | String | operator: "not_equals_ignore_case"<br>value: "INGRESS" |
+| `range_includes`               | The range of the value of the attribute <br>includes this single number | String, Int | operator: "range_includes"<br>value: 3000 |
+| `range_not_includes`           | The range of the value of the attribute <br>does not include this single number | String, Int | operator: "range_not_includes"<br>value: 3000 |
+| `number_of_words_equals`       | The number of words in the value of the <br>attribute is equal to this number | String, Int | operator: number_of_words_equals<br>value: 6 |
+| `number_of_words_not_equals`   | The number of words in the value of the <br>attribute is not equal to this number | String, Int | operator: number_of_words_not_equals<br>value: 6 |
 
 All those operators are supporting JSONPath attribute expression by adding the `jsonpath_` prefix to the operator, for example - `jsonpath_length_equals`
 
