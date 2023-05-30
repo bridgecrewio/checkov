@@ -19,6 +19,7 @@ class TestIAMStarResourcePolicyDocument(unittest.TestCase):
 
         passing_resources = {
             "aws_iam_policy.pass",
+            "aws_iam_policy.pass_unrestrictable",
             "aws_iam_role_policy.pass",
             "aws_iam_user_policy.pass",
             "aws_iam_group_policy.pass",
