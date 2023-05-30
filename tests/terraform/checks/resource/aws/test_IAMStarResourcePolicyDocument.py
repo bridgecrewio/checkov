@@ -7,6 +7,13 @@ from checkov.terraform.runner import Runner
 
 
 class TestIAMStarResourcePolicyDocument(unittest.TestCase):
+    def setUp(self) -> None:
+        # make sure nothing is in the cache
+        check.policy_document_cache = {}
+
+    def tearDown(self) -> None:
+        check.policy_document_cache = {}
+
     def test(self):
         # given
         test_files_dir = Path(__file__).parent / "example_IAMStarResourcePolicyDocument"
