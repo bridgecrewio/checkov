@@ -363,14 +363,6 @@ class Checkov:
                                                                 repo_branch=self.config.branch,
                                                                 prisma_api_url=self.config.prisma_api_url)
 
-                    should_run_contributor_metrics = bc_integration.bc_api_key and self.config.repo_id and self.config.prisma_api_url
-                    logger.debug(f"Should run contributor metrics report: {should_run_contributor_metrics}")
-                    if should_run_contributor_metrics:
-                        try:  # collect contributor info and upload
-                            report_contributor_metrics(self.config.repo_id, source.name, bc_integration)
-                        except Exception as e:
-                            logger.warning(f"Unable to report contributor metrics due to: {e}")
-
                 except MaxRetryError:
                     self.exit_run()
                 except Exception:
@@ -507,6 +499,16 @@ class Checkov:
                         created_baseline_path=created_baseline_path,
                         baseline=baseline,
                     ))
+
+                # this needs to run after the upload (otherwise the repository does not exist)
+                should_run_contributor_metrics = bc_integration.bc_api_key and self.config.repo_id  # and self.config.prisma_api_url
+                logger.debug(f"Should run contributor metrics report: {should_run_contributor_metrics}")
+                if should_run_contributor_metrics:
+                    try:  # collect contributor info and upload
+                        report_contributor_metrics(self.config.repo_id, source.name, bc_integration)
+                    except Exception as e:
+                        logger.warning(f"Unable to report contributor metrics due to: {e}")
+
                 exit_code = 1 if 1 in exit_codes else 0
                 return exit_code
             elif self.config.docker_image:
@@ -548,6 +550,14 @@ class Checkov:
                         bc_integration.persist_graphs(self.graphs)
                     self.url = self.commit_repository()
 
+                should_run_contributor_metrics = bc_integration.bc_api_key and self.config.repo_id  # and self.config.prisma_api_url
+                logger.debug(f"Should run contributor metrics report: {should_run_contributor_metrics}")
+                if should_run_contributor_metrics:
+                    try:  # collect contributor info and upload
+                        report_contributor_metrics(self.config.repo_id, source.name, bc_integration)
+                    except Exception as e:
+                        logger.warning(f"Unable to report contributor metrics due to: {e}")
+
                 exit_code = self.print_results(runner_registry=runner_registry, url=self.url)
                 return exit_code
             elif self.config.file:
@@ -586,6 +596,15 @@ class Checkov:
                         excluded_paths=runner_filter.excluded_paths,
                         git_configuration_folders=git_configuration_folders,
                     )
+
+                should_run_contributor_metrics = bc_integration.bc_api_key and self.config.repo_id  # and self.config.prisma_api_url
+                logger.debug(f"Should run contributor metrics report: {should_run_contributor_metrics}")
+                if should_run_contributor_metrics:
+                    try:  # collect contributor info and upload
+                        report_contributor_metrics(self.config.repo_id, source.name, bc_integration)
+                    except Exception as e:
+                        logger.warning(f"Unable to report contributor metrics due to: {e}")
+
                 exit_code = self.print_results(
                     runner_registry=runner_registry,
                     url=self.url,
