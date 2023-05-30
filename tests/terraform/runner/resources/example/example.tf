@@ -646,7 +646,7 @@ resource "aws_s3_bucket" "sse_block_and_rule_block_as_map" {
 }
 
 resource "aws_efs_file_system" "sharedstore" {
-  creation_token                  = "my-product"
+  creation_token                  = "my-product"  # checkov:skip=CKV_SECRET_6 false positive
 
   lifecycle_policy {
     transition_to_ia = "AFTER_30_DAYS"

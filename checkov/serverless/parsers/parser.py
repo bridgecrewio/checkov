@@ -22,7 +22,7 @@ from checkov.common.resource_code_logger_filter import add_resource_code_filter_
 logger = logging.getLogger(__name__)
 add_resource_code_filter_to_logger(logger)
 
-IAM_ROLE_STATEMENTS_TOKEN = 'iamRoleStatements'  # nosec
+IAM_ROLE_STATEMENTS_TOKEN = 'iamRoleStatements'  # nosec  # checkov:skip=CKV_SECRET_6 false positive
 CFN_RESOURCES_TOKEN = 'resources'  # nosec
 PROVIDER_TOKEN = 'provider'  # nosec
 FUNCTIONS_TOKEN = 'functions'  # nosec
