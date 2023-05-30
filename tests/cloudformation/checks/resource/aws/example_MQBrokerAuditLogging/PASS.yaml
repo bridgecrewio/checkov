@@ -16,5 +16,5 @@ Resources:
         - ConsoleAccess: true
           Groups:
             - MyGroup
-          Password: AmazonMqPassword
+          Password: AmazonMqPassword  # checkov:skip=CKV_SECRET_6 test secret
           Username: AmazonMqUsername

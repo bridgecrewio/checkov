@@ -3,7 +3,6 @@ from __future__ import annotations
 import logging
 import os
 from typing import Type, Any, TYPE_CHECKING
-from copy import deepcopy
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.checks_infra.registry import BaseRegistry
@@ -16,6 +15,7 @@ from checkov.common.output.record import Record
 from checkov.common.output.report import Report, merge_reports
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.kubernetes.checks.resource.registry import registry
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
 from checkov.kubernetes.graph_manager import KubernetesGraphManager
@@ -104,7 +104,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
 
             if CHECKOV_CREATE_GRAPH and self.graph_manager:
                 logging.info("creating Kubernetes graph")
-                local_graph = self.graph_manager.build_graph_from_definitions(deepcopy(self.definitions))
+                local_graph = self.graph_manager.build_graph_from_definitions(pickle_deepcopy(self.definitions))
                 logging.info("Successfully created Kubernetes graph")
 
                 for vertex in local_graph.vertices:
@@ -123,17 +123,22 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
                     # 'root_folder' shouldn't be empty to remove the whole path later and only leave the shortened form
                     root_folder = os.path.split(os.path.commonprefix(files))[0]
 
-                image_report = self.check_container_image_references(
-                    graph_connector=self.graph_manager.get_reader_endpoint(),
-                    root_path=root_folder,
-                    runner_filter=runner_filter,
-                )
+                image_report = self.get_image_report(root_folder, runner_filter)
 
                 if image_report:
                     # due too many tests failing only return a list, if there is an image report
                     return [report, image_report]
 
         return report
+
+    def get_image_report(self, root_folder: str | None, runner_filter: RunnerFilter) -> Report | None:
+        if not self.graph_manager:
+            return None
+        return self.check_container_image_references(
+            graph_connector=self.graph_manager.get_reader_endpoint(),
+            root_path=root_folder,
+            runner_filter=runner_filter,
+        )
 
     def spread_list_items(self) -> None:
         for _, file_conf in self.definitions.items():

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import re
+from functools import lru_cache
 from pathlib import Path
 from typing import Union, List, Tuple, Optional, Dict, Any
 
@@ -90,6 +91,7 @@ class Record:
         self.definition_context_file_path = definition_context_file_path
 
     @staticmethod
+    @lru_cache(maxsize=None)
     def _determine_repo_file_path(file_path: Union[str, "os.PathLike[str]"]) -> str:
         # matches file paths given in the BC platform and should always be a unix path
         repo_file_path = Path(file_path)
@@ -227,3 +229,20 @@ class Record:
 
     def get_unique_string(self) -> str:
         return f"{self.check_id}.{self.check_result}.{self.file_abs_path}.{self.file_line_range}.{self.resource}"
+
+    @classmethod
+    def from_reduced_json(cls, record_json: dict[str, Any]) -> Record:
+        return Record(
+            check_id=record_json['check_id'],
+            bc_check_id=record_json['bc_check_id'],
+            check_name=record_json['check_name'],
+            check_result=record_json['check_result'],
+            code_block=record_json['code_block'],
+            file_path=record_json['file_path'],
+            file_line_range=record_json['file_line_range'],
+            resource=record_json['resource'],
+            evaluations=record_json.get('evaluations'),
+            check_class='',
+            file_abs_path=record_json['file_abs_path'],
+            severity=record_json.get('severity')
+        )

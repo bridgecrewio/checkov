@@ -22,6 +22,9 @@ class TestYamlPolicies(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
+    def test_NetworkFirewallHasLogging(self):
+        self.go("NetworkFirewallHasLogging")
+
     def test_SecretsAreRotated(self):
         self.go("SecretsAreRotated")
 
@@ -356,7 +359,7 @@ class TestYamlPolicies(unittest.TestCase):
         self.go("AzurePostgreSQLFlexServerNotOverlyPermissive")
 
     def test_GCPMySQLdbInstancePoint_In_TimeRecoveryBackupIsEnabled(self):
-        self.go("GCPMySQLdbInstancePoint_In_TimeRecoveryBackupIsEnabled")
+        self.go("GCPMySQLdbInstancePoint_In_TimeRecoveryBackupIsEnabled")  # checkov:skip=CKV_SECRET_6 false positive
 
     def test_GCPdisableAlphaClusterFeatureInKubernetesEngineClusters(self):
         self.go("GCPdisableAlphaClusterFeatureInKubernetesEngineClusters")
@@ -378,6 +381,36 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_AzureStorageAccConfigWithPrivateEndpoint(self):
         self.go("AzureStorageAccConfigWithPrivateEndpoint")
+    
+    def test_OCI_K8EngineClusterBootVolConfigInTransitEncryption(self):
+            self.go("OCI_K8EngineClusterBootVolConfigInTransitEncryption")
+
+    def test_OCI_K8EngineClusterPodSecPolicyEnforced(self):
+            self.go("OCI_K8EngineClusterPodSecPolicyEnforced")
+
+    def test_OCI_KubernetesEngineClusterEndpointConfigWithNSG(self):
+            self.go("OCI_KubernetesEngineClusterEndpointConfigWithNSG")
+
+    def test_OCI_NFSaccessRestrictedToRootUsers(self):
+            self.go("OCI_NFSaccessRestrictedToRootUsers")
+
+    def test_OCI_NSGNotAllowRDP(self):
+            self.go("OCI_NSGNotAllowRDP")
+
+    def test_AzureSQLserverNotOverlyPermissive(self):
+            self.go("AzureSQLserverNotOverlyPermissive")
+
+    def test_AzureRecoveryServicesvaultConfigManagedIdentity(self):
+            self.go("AzureRecoveryServicesvaultConfigManagedIdentity")
+
+    def test_AzureAutomationAccConfigManagedIdentity(self):
+            self.go("AzureAutomationAccConfigManagedIdentity")
+
+    def test_AzureMariaDBserverUsingTLS_1_2(self):
+            self.go("AzureMariaDBserverUsingTLS_1_2")
+
+    def test_AzureStorageAccountEnableSoftDelete(self):
+            self.go("AzureStorageAccountEnableSoftDelete")
 
     def test_registry_load(self):
         registry = Registry(parser=GraphCheckParser(), checks_dir=str(

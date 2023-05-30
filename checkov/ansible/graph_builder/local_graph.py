@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
@@ -13,6 +12,7 @@ from checkov.common.runners.graph_builder.local_graph import ObjectLocalGraph
 from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.ansible.graph_builder.graph_components.resource_types import ResourceType
 from checkov.ansible.utils import get_scannable_file_paths, TASK_RESERVED_KEYWORDS, parse_file
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 
 
 class AnsibleLocalGraph(ObjectLocalGraph):
@@ -83,12 +83,7 @@ class AnsibleLocalGraph(ObjectLocalGraph):
                     END_LINE: task[END_LINE],
                 }
 
-            if isinstance(config, str):
-                # this happens when modules have no parameters and are directly used with the user input
-                # ex. ansible.builtin.command: cat /etc/passwd
-                config = {SELF_REFERENCE: config}
-
-            attributes = deepcopy(config)
+            attributes = pickle_deepcopy(config)
             attributes[CustomAttributes.RESOURCE_TYPE] = resource_type
 
             # only the module code is relevant for validation,
@@ -118,7 +113,7 @@ class AnsibleLocalGraph(ObjectLocalGraph):
         block_name = block.get("name") or "unknown"
 
         config = block
-        attributes = deepcopy(config)
+        attributes = pickle_deepcopy(config)
         attributes[CustomAttributes.RESOURCE_TYPE] = ResourceType.BLOCK
         del attributes[ResourceType.BLOCK]  # the real block content are tasks, which have their own vertices
 

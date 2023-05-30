@@ -13,3 +13,11 @@
     files: \.tf$
     exclude: \.+.terraform\/.*$
     require_serial: true
+-   id: checkov_secrets
+    name: Checkov Secrets
+    description: This hook looks for secrets with checkov.
+    entry: checkov -d . --framework secrets --enable-secret-scan-all-files
+    language: python
+    pass_filenames: false
+    always_run: true
+    require_serial: true

@@ -32,6 +32,7 @@ from checkov.common.output.cyclonedx import CycloneDX
 from checkov.common.output.gitlab_sast import GitLabSast
 from checkov.common.output.report import Report, merge_reports
 from checkov.common.output.sarif import Sarif
+from checkov.common.output.spdx import SPDX
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.typing import _ExitCodeThresholds, _BaseRunner, _ScaExitCodeThresholds
 from checkov.common.util import data_structures_utils
@@ -49,11 +50,24 @@ if TYPE_CHECKING:
     from checkov.common.output.baseline import Baseline
     from checkov.common.runners.base_runner import BaseRunner  # noqa
     from checkov.runner_filter import RunnerFilter
+    from igraph import Graph
+    from networkx import DiGraph
 
 CONSOLE_OUTPUT = "console"
 CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
 CYCLONEDX_OUTPUTS = ("cyclonedx", "cyclonedx_json")
-OUTPUT_CHOICES = ["cli", "cyclonedx", "cyclonedx_json", "json", "junitxml", "github_failed_only", "gitlab_sast", "sarif", "csv"]
+OUTPUT_CHOICES = [
+    "cli",
+    "csv",
+    "cyclonedx",
+    "cyclonedx_json",
+    "json",
+    "junitxml",
+    "github_failed_only",
+    "gitlab_sast",
+    "sarif",
+    "spdx",
+]
 SUMMARY_POSITIONS = frozenset(['top', 'bottom'])
 OUTPUT_DELIMITER = "\n--- OUTPUT DELIMITER ---\n"
 
@@ -78,6 +92,7 @@ class RunnerRegistry:
         self._check_type_to_report_map: dict[str, Report] = {}  # used for finding reports with the same check type
         self.licensing_integration = licensing_integration  # can be maniuplated by unit tests
         self.secrets_omitter_class = secrets_omitter_class
+        self.check_type_to_graph: dict[str, Graph | DiGraph] = {}
         for runner in runners:
             if isinstance(runner, image_runner):
                 runner.image_referencers = self.image_referencing_runners
@@ -158,6 +173,9 @@ class RunnerRegistry:
 
         for scan_report in merged_reports:
             self._handle_report(scan_report, repo_root_for_plan_enrichment)
+
+        self.check_type_to_graph = {runner.check_type: runner.graph_manager.get_reader_endpoint() for runner
+                                    in self.runners if runner.graph_manager}
         return self.scan_reports
 
     def _merge_reports(self, reports: Iterable[Report | list[Report]]) -> list[Report]:
@@ -316,6 +334,7 @@ class RunnerRegistry:
         github_reports = []
         cyclonedx_reports = []
         gitlab_reports = []
+        spdx_reports = []
         csv_sbom_report = CSVSBOM()
 
         try:
@@ -344,6 +363,8 @@ class RunnerRegistry:
             if not report.is_empty() or len(report.extra_resources):
                 if any(cyclonedx in config.output for cyclonedx in CYCLONEDX_OUTPUTS):
                     cyclonedx_reports.append(report)
+                if "spdx" in config.output:
+                    spdx_reports.append(report)
                 if "csv" in config.output:
                     git_org = ""
                     git_repository = ""
@@ -376,7 +397,8 @@ class RunnerRegistry:
                     created_baseline_path=created_baseline_path,
                     baseline=baseline,
                     use_bc_ids=config.output_bc_ids,
-                    summary_position=config.summary_position
+                    summary_position=config.summary_position,
+                    openai_api_key=config.openai_api_key,
                 )
 
             self._print_to_console(
@@ -408,8 +430,9 @@ class RunnerRegistry:
                     ))
 
             if output_format == CONSOLE_OUTPUT:
-                # don't write to file, if an explicit file path was set
-                sarif.write_sarif_output()
+                if not config.output_file_path or "," in config.output_file_path:
+                    # don't write to file, if an explicit file path was set
+                    sarif.write_sarif_output()
 
                 del output_formats["sarif"]
 
@@ -492,6 +515,17 @@ class RunnerRegistry:
             )
 
             data_outputs["gitlab_sast"] = json.dumps(gl_sast.sast_json)
+        if "spdx" in config.output:
+            spdx = SPDX(repo_id=metadata_integration.bc_integration.repo_id, reports=spdx_reports)
+            spdx_output = spdx.get_tag_value_output()
+
+            self._print_to_console(
+                output_formats=output_formats,
+                output_format="spdx",
+                output=spdx_output,
+            )
+
+            data_outputs["spdx"] = spdx_output
         if "csv" in config.output:
             is_api_key = False
             if 'bc_api_key' in config and config.bc_api_key is not None:
@@ -508,6 +542,7 @@ class RunnerRegistry:
             'cyclonedx': 'results_cyclonedx.xml',
             'cyclonedx_json': 'results_cyclonedx.json',
             'gitlab_sast': 'results_gitlab_sast.json',
+            'spdx': 'results_spdx.spdx',
         }
 
         if config.output_file_path:

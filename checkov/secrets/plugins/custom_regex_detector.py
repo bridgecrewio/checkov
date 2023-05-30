@@ -139,15 +139,16 @@ class CustomRegexDetector(RegexBasedDetector):
                 is_verified=is_verified,
                 is_added=is_added,
                 is_removed=is_removed,
+                is_multiline=is_multiline,
             )
-            ps.check_id = current_regex_to_metadata[regex.pattern]["Check_ID"]  # type:ignore[attr-defined]
+            ps.check_id = current_regex_to_metadata[regex.pattern]["Check_ID"]
             if is_multiline:
                 output.add(ps)
             elif len(cast(str, ps.secret_value)) in range(MIN_CHARACTERS, MAX_CHARACTERS) or not regex_data['isCustom']:
                 output.add(ps)
             else:
                 logging.info(
-                    f'Finding for check {ps.check_id} are not 5-100 characters in length, was ignored')  # type: ignore
+                    f'Finding for check {ps.check_id} are not 5-100 characters in length, was ignored')
 
     def analyze_string(self, string: str, **kwargs: Optional[Dict[str, Any]]) -> Generator[Tuple[str, Pattern[str]], None, None]:  # type:ignore[override]
         regex_denylist: Set[Pattern[str]] = kwargs.get("regex_denylist", self.denylist)  # type: ignore[assignment]

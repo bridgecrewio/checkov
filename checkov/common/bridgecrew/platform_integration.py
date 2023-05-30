@@ -32,13 +32,14 @@ from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.bridgecrew.platform_key import read_key, persist_key, bridgecrew_file
 from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_checks_results, \
     enrich_and_persist_checks_metadata, checkov_results_prefix, persist_run_metadata, _put_json_object, \
-    persist_logs_stream
+    persist_logs_stream, persist_graphs
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILES, SCANNABLE_PACKAGE_FILES
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.typing import _CicdDetails
 from checkov.common.util.consts import PRISMA_PLATFORM, BRIDGECREW_PLATFORM, CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
 from checkov.common.util.data_structures_utils import merge_dicts
+from checkov.common.util.dockerfile import is_docker_file
 from checkov.common.util.http_utils import normalize_prisma_url, get_auth_header, get_default_get_headers, \
     get_user_agent_header, get_default_post_headers, get_prisma_get_headers, get_prisma_auth_header, \
     get_auth_error_message, normalize_bc_url
@@ -53,6 +54,8 @@ if TYPE_CHECKING:
     from mypy_boto3_s3.client import S3Client
     from requests import Response
     from typing_extensions import TypeGuard
+    from igraph import Graph
+    from networkx import DiGraph
 
 
 SLEEP_SECONDS = 1
@@ -90,6 +93,8 @@ class BcPlatformIntegration:
         self.bucket: str | None = None
         self.credentials: dict[str, str] | None = None
         self.repo_path: str | None = None
+        self.support_bucket: str | None = None
+        self.support_repo_path: str | None = None
         self.repo_id: str | None = None
         self.repo_branch: str | None = None
         self.skip_fixes = False
@@ -111,6 +116,9 @@ class BcPlatformIntegration:
         self.http: urllib3.PoolManager | urllib3.ProxyManager | None = None
         self.bc_skip_mapping = False
         self.cicd_details: _CicdDetails = {}
+        self.support_flag_enabled = False
+        self.enable_persist_graphs = convert_str_to_bool(os.getenv('BC_ENABLE_PERSIST_GRAPHS', 'True'))
+        self.persist_graphs_timeout = int(os.getenv('BC_PERSIST_GRAPHS_TIMEOUT', 60))
 
     def set_bc_api_url(self, new_url: str) -> None:
         self.bc_api_url = normalize_bc_url(new_url)
@@ -270,8 +278,9 @@ class BcPlatformIntegration:
 
         try:
             self.skip_fixes = True  # no need to run fixes on CI integration
-            repo_full_path, response = self.get_s3_role(self.repo_id)  # type: ignore
+            repo_full_path, support_path, response = self.get_s3_role(self.repo_id)  # type: ignore
             self.bucket, self.repo_path = repo_full_path.split("/", 1)
+
             self.timestamp = self.repo_path.split("/")[-2]
             self.credentials = cast("dict[str, str]", response["creds"])
             config = Config(
@@ -287,6 +296,14 @@ class BcPlatformIntegration:
                 region_name=region,
                 config=config,
             )
+
+            if support_path:
+                self.support_bucket, self.support_repo_path = support_path.split("/", 1)
+            elif self.support_flag_enabled:
+                logging.debug('--support was used, but we did not get a support file upload path in the platform response. Using the old location.')
+                self.support_bucket = self.bucket
+                self.support_repo_path = self.repo_path
+
             self.use_s3_integration = True
         except MaxRetryError:
             logging.error("An SSL error occurred connecting to the platform. If you are on a VPN, please try "
@@ -305,35 +322,43 @@ class BcPlatformIntegration:
             logging.error("Received an error response during authentication")
             raise
 
-    def get_s3_role(self, repo_id: str) -> tuple[str, dict[str, Any]]:
+    def get_s3_role(self, repo_id: str) -> tuple[str, str | None, dict[str, Any]]:
         token = self.get_auth_token()
 
         if not self.http:
             raise AttributeError("HTTP manager was not correctly created")
 
-        request = self.http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id}),  # type:ignore[no-untyped-call]
+        tries = 0
+        response = self._get_s3_creds(repo_id, token)
+        while ('Message' in response or 'message' in response):
+            if response.get('Message') and response['Message'] == UNAUTHORIZED_MESSAGE:
+                raise BridgecrewAuthError()
+            if response.get('message') and ASSUME_ROLE_UNUATHORIZED_MESSAGE in response['message']:
+                raise BridgecrewAuthError(
+                    "Checkov got an unexpected authorization error that may not be due to your credentials. Please contact support.")
+            if response.get('message') and "cannot be found" in response['message']:
+                self.loading_output("creating role")
+                response = self._get_s3_creds(repo_id, token)
+            if response.get('message') is None and response.get('Message') is None:
+                if tries < 3:
+                    tries += 1
+                    response = self._get_s3_creds(repo_id, token)
+                else:
+                    raise BridgecrewAuthError("Checkov got an unexpected error that may be due to backend issues. Please contact support.")
+        repo_full_path = response["path"]
+        support_path = response.get("supportPath")
+        return repo_full_path, support_path, response
+
+    def _get_s3_creds(self, repo_id: str, token: str) -> dict[str, Any]:
+        request = self.http.request("POST", self.integrations_api_url,  # type:ignore[union-attr]
+                                    body=json.dumps({"repoId": repo_id, "support": self.support_flag_enabled}),
                                     headers=merge_dicts({"Authorization": token, "Content-Type": "application/json"},
                                                         get_user_agent_header()))
         if request.status == 403:
             error_message = get_auth_error_message(request.status, self.is_prisma_integration(), True)
             raise BridgecrewAuthError(error_message)
-        response = json.loads(request.data.decode("utf8"))
-        while ('Message' in response or 'message' in response):
-            if 'Message' in response and response['Message'] == UNAUTHORIZED_MESSAGE:
-                raise BridgecrewAuthError()
-            if 'message' in response and ASSUME_ROLE_UNUATHORIZED_MESSAGE in response['message']:
-                raise BridgecrewAuthError(
-                    "Checkov got an unexpected authorization error that may not be due to your credentials. Please contact support.")
-            if 'message' in response and "cannot be found" in response['message']:
-                self.loading_output("creating role")
-                request = self.http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id}),  # type:ignore[no-untyped-call]
-                                            headers=merge_dicts(
-                                                {"Authorization": token, "Content-Type": "application/json"},
-                                                get_user_agent_header()))
-                response = json.loads(request.data.decode("utf8"))
-
-        repo_full_path = response["path"]
-        return repo_full_path, response
+        response: dict[str, Any] = json.loads(request.data.decode("utf8"))
+        return response
 
     def is_integration_configured(self) -> bool:
         """
@@ -380,7 +405,7 @@ class BcPlatformIntegration:
                     _, file_extension = os.path.splitext(file_path)
                     if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 and file_extension in SCANNABLE_PACKAGE_FILES:
                         continue
-                    if file_extension in SUPPORTED_FILE_EXTENSIONS or file_path in SUPPORTED_FILES:
+                    if file_extension in SUPPORTED_FILE_EXTENSIONS or file_path in SUPPORTED_FILES or is_docker_file(file_path):
                         full_file_path = os.path.join(root_path, file_path)
                         relative_file_path = os.path.relpath(full_file_path, root_dir)
                         files_to_persist.append(FileToPersist(full_file_path, relative_file_path))
@@ -478,15 +503,30 @@ class BcPlatformIntegration:
         if not self.bucket or not self.repo_path:
             logging.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
             return
-        persist_run_metadata(run_metadata, self.s3_client, self.bucket, self.repo_path)
+        persist_run_metadata(run_metadata, self.s3_client, self.bucket, self.repo_path, True)
+        # only upload it if we did not fall back to use the same location
+        if self.support_bucket and self.support_repo_path and self.support_repo_path != self.repo_path:
+            logging.debug('Also uploading run_metadata.json to support location')
+            persist_run_metadata(run_metadata, self.s3_client, self.support_bucket, self.support_repo_path, False)
 
     def persist_logs_stream(self, logs_stream: StringIO) -> None:
+        if not self.use_s3_integration or not self.s3_client:
+            return
+        if not self.support_bucket or not self.support_repo_path:
+            logging.error(f"Something went wrong with the log upload location: bucket {self.support_bucket}, repo path {self.support_repo_path}")
+            return
+        # use checkov_results if we fall back to using the same location
+        log_path = f'{self.support_repo_path}/checkov_results' if self.support_repo_path == self.repo_path else self.support_repo_path
+        persist_logs_stream(logs_stream, self.s3_client, self.support_bucket, log_path)
+
+    def persist_graphs(self, graphs: dict[str, DiGraph | Graph], absolute_root_folder: str = '') -> None:
         if not self.use_s3_integration or not self.s3_client:
             return
         if not self.bucket or not self.repo_path:
             logging.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
             return
-        persist_logs_stream(logs_stream, self.s3_client, self.bucket, self.repo_path)
+        persist_graphs(graphs, self.s3_client, self.bucket, self.repo_path, self.persist_graphs_timeout,
+                       absolute_root_folder=absolute_root_folder)
 
     def commit_repository(self, branch: str) -> str | None:
         """

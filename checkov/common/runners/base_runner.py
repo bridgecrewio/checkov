@@ -9,7 +9,6 @@ from collections.abc import Iterable
 from typing import List, Any, TYPE_CHECKING, TypeVar, Generic, Dict
 
 from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
-from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.util.tqdm_utils import ProgressBar
 
@@ -64,11 +63,12 @@ class BaseRunner(ABC, Generic[_GraphManager]):
         self.file_extensions = file_extensions or []
         self.file_names = file_names or []
         self.pbar = ProgressBar(self.check_type)
-        db_connector_class: "type[NetworkxConnector | IgraphConnector]" = NetworkxConnector
-        graph_framework = os.getenv("CHECKOV_GRAPH_FRAMEWORK", "NETWORKX")
+        db_connector_class: "type[NetworkxConnector | IgraphConnector]" = IgraphConnector
+        graph_framework = os.getenv("CHECKOV_GRAPH_FRAMEWORK", "IGRAPH")
         if graph_framework == "IGRAPH":
             db_connector_class = IgraphConnector
         elif graph_framework == "NETWORKX":
+            from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
             db_connector_class = NetworkxConnector
 
         self.db_connector = db_connector_class()
@@ -98,6 +98,9 @@ class BaseRunner(ABC, Generic[_GraphManager]):
             return True
 
         return False
+
+    def included_paths(self) -> Iterable[str]:
+        return []
 
     def set_external_data(
             self,

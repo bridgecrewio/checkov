@@ -71,11 +71,11 @@ def test_console_output_in_tty(mocker: MockerFixture, sca_image_report):
     # then
     assert console_output == "".join(
         [
-            "\x1b[34msca_image scan results:\n",
-            "\x1b[0m\x1b[36m\n",
-            "Passed checks: 1, Failed checks: 3, Skipped checks: 1\n",
-            "\n",
-            "\x1b[0m\t/path/to/Dockerfile (sha256:123456) - CVEs Summary:\n",
+            '\x1b[34msca_image scan results:\n',
+            '\x1b[0m\x1b[36m\n',
+            'Passed checks: 1, Failed checks: 3, Skipped checks: 1\n',
+            '\n',
+            '\x1b[0m\t/path/to/Dockerfile (sha256:123456) - CVEs Summary:\n',
             '\t┌──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┐\n',
             '\t│ Total CVEs: 3        │ critical: 0          │ high: 0              │ medium: 1            │ low: 1               │ skipped: 1           │\n',
             '\t├──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┤\n',
@@ -86,8 +86,8 @@ def test_console_output_in_tty(mocker: MockerFixture, sca_image_report):
             '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
             '\t│ pcre2                │ CVE-2022-1587        │ LOW                  │ 10.39-3build1        │ N/A                  │ N/A                  │\n',
             '\t└──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┘\n',
-            "\n",
-            "\t/path/to/Dockerfile (sha256:123456) - Licenses Statuses:\n",
+            '\n',
+            '\t/path/to/Dockerfile (sha256:123456) - Licenses Statuses:\n',
             '\t┌──────────────────────────┬──────────────────────────┬──────────────────────────┬──────────────────────────┬───────────────────────────┐\n',
             '\t│ Package name             │ Package version          │ Policy ID                │ License                  │ Status                    │\n',
             '\t├──────────────────────────┼──────────────────────────┼──────────────────────────┼──────────────────────────┼───────────────────────────┤\n',
@@ -122,24 +122,25 @@ def test_get_csv_report(sca_image_report, tmp_path: Path):
     csv_output_str = csv_sbom_report.get_csv_output_packages(check_type=CheckType.SCA_IMAGE)
 
     # # then
-    expected_csv_output = ['Package,Version,Path,Git Org,Git Repository,Vulnerability,Severity,Description,Licenses',
-                           'perl,5.34.0-3ubuntu1,/path/to/Dockerfile (sha256:123456),acme,bridgecrewio/example,CVE-2020-16156,MEDIUM,CPAN 2.28 allows Signature Verification Bypass.,Apache-2.0-Fake',
-                           'pcre2,10.39-3build1,/path/to/Dockerfile (sha256:123456),acme,bridgecrewio/example,CVE-2022-1587,LOW,An out-of-bounds read vulnerability was discovered in the PCRE2 library in the get_recurse_data_length() function of the pcre2_jit_compile.c file. This issue affects recursions in JIT-compiled regular expressions caused by duplicate data transfers.,Apache-2.0',
-                           'pcre2,10.39-3build1,/path/to/Dockerfile (sha256:123456),acme,bridgecrewio/example,CVE-2022-1586,LOW,An out-of-bounds read vulnerability was discovered in the PCRE2 library in the compile_xclass_matchingpath() function of the pcre2_jit_compile.c file. This involves a unicode property matching issue in JIT-compiled regular expressions. The issue occurs because the character was not fully read in case-less matching within JIT.,Apache-2.0',
-                           'bzip2,1.0.8-5build1,/path/to/Dockerfile (sha256:123456),acme,bridgecrewio/example,,,,Unknown',
-                           'libidn2,2.3.2-2build1,/path/to/Dockerfile (sha256:123456),acme,bridgecrewio/example,,,,Unknown',
-                           '']
+    expected_csv_output = [
+        'Package,Version,Path,Line(s),Git Org,Git Repository,Vulnerability,Severity,Description,Licenses,Fix Version',
+        'perl,5.34.0-3ubuntu1,/path/to/Dockerfile (sha256:123456),,acme,bridgecrewio/example,CVE-2020-16156,MEDIUM,CPAN 2.28 allows Signature Verification Bypass.,Apache-2.0-Fake,N/A',
+        'pcre2,10.39-3build1,/path/to/Dockerfile (sha256:123456),,acme,bridgecrewio/example,CVE-2022-1587,LOW,An out-of-bounds read vulnerability was discovered in the PCRE2 library in the get_recurse_data_length() function of the pcre2_jit_compile.c file. This issue affects recursions in JIT-compiled regular expressions caused by duplicate data transfers.,Apache-2.0,N/A',
+        'pcre2,10.39-3build1,/path/to/Dockerfile (sha256:123456),,acme,bridgecrewio/example,CVE-2022-1586,LOW,An out-of-bounds read vulnerability was discovered in the PCRE2 library in the compile_xclass_matchingpath() function of the pcre2_jit_compile.c file. This involves a unicode property matching issue in JIT-compiled regular expressions. The issue occurs because the character was not fully read in case-less matching within JIT.,Apache-2.0,N/A',
+        'bzip2,1.0.8-5build1,/path/to/Dockerfile (sha256:123456),,acme,bridgecrewio/example,,,,Unknown,N/A',
+        'libidn2,2.3.2-2build1,/path/to/Dockerfile (sha256:123456),,acme,bridgecrewio/example,,,,Unknown,N/A',
+        '']
 
     csv_output_as_list = csv_output.split("\n")
     assert csv_output_as_list == expected_csv_output
 
-    expected_csv_output_str = ['Package,Version,Path,Git Org,Git Repository,Vulnerability,Severity,Description,Licenses',
-                               '"perl",5.34.0-3ubuntu1,/path/to/Dockerfile (sha256:123456),acme,bridgecrewio/example,CVE-2020-16156,MEDIUM,"CPAN 2.28 allows Signature Verification Bypass.","Apache-2.0-Fake"',
-                               '"pcre2",10.39-3build1,/path/to/Dockerfile (sha256:123456),acme,bridgecrewio/example,CVE-2022-1587,LOW,"An out-of-bounds read vulnerability was discovered in the PCRE2 library in the get_recurse_data_length() function of the pcre2_jit_compile.c file. This issue affects recursions in JIT-compiled regular expressions caused by duplicate data transfers.","Apache-2.0"',
-                               '"pcre2",10.39-3build1,/path/to/Dockerfile (sha256:123456),acme,bridgecrewio/example,CVE-2022-1586,LOW,"An out-of-bounds read vulnerability was discovered in the PCRE2 library in the compile_xclass_matchingpath() function of the pcre2_jit_compile.c file. This involves a unicode property matching issue in JIT-compiled regular expressions. The issue occurs because the character was not fully read in case-less matching within JIT.","Apache-2.0"',
-                               '"bzip2",1.0.8-5build1,/path/to/Dockerfile (sha256:123456),acme,bridgecrewio/example,,,"","Unknown"',
-                               '"libidn2",2.3.2-2build1,/path/to/Dockerfile (sha256:123456),acme,bridgecrewio/example,,,"","Unknown"',
-                               '']
+    expected_csv_output_str = [
+        'Package,Version,Path,Line(s),Git Org,Git Repository,Vulnerability,Severity,Description,Licenses,Fix Version',
+        '"perl",5.34.0-3ubuntu1,/path/to/Dockerfile (sha256:123456),,acme,bridgecrewio/example,CVE-2020-16156,MEDIUM,"CPAN 2.28 allows Signature Verification Bypass.","Apache-2.0-Fake",N/A',
+        '"pcre2",10.39-3build1,/path/to/Dockerfile (sha256:123456),,acme,bridgecrewio/example,CVE-2022-1587,LOW,"An out-of-bounds read vulnerability was discovered in the PCRE2 library in the get_recurse_data_length() function of the pcre2_jit_compile.c file. This issue affects recursions in JIT-compiled regular expressions caused by duplicate data transfers.","Apache-2.0",N/A',
+        '"pcre2",10.39-3build1,/path/to/Dockerfile (sha256:123456),,acme,bridgecrewio/example,CVE-2022-1586,LOW,"An out-of-bounds read vulnerability was discovered in the PCRE2 library in the compile_xclass_matchingpath() function of the pcre2_jit_compile.c file. This involves a unicode property matching issue in JIT-compiled regular expressions. The issue occurs because the character was not fully read in case-less matching within JIT.","Apache-2.0",N/A',
+        '"bzip2",1.0.8-5build1,/path/to/Dockerfile (sha256:123456),,acme,bridgecrewio/example,,,"","Unknown",N/A',
+        '"libidn2",2.3.2-2build1,/path/to/Dockerfile (sha256:123456),,acme,bridgecrewio/example,,,"","Unknown",N/A', '']
     csv_output_str_as_list = csv_output_str.split("\n")
     assert csv_output_str_as_list == expected_csv_output_str
 
@@ -181,6 +182,7 @@ def test_sarif_output(sca_image_report_scope_function):
                                     "text": "SCA package scan\nResource: path/to/Dockerfile (sha256:123456).perl\nStatus: needed"
                                 },
                                 "defaultConfiguration": {"level": "error"},
+                                "properties": {"security-severity": 7.8},
                                 "helpUri": "https://people.canonical.com/~ubuntu-security/cve/2020/CVE-2020-16156",
                             },
                             {
@@ -194,6 +196,7 @@ def test_sarif_output(sca_image_report_scope_function):
                                     "text": "SCA package scan\nResource: path/to/Dockerfile (sha256:123456).pcre2\nStatus: needed"
                                 },
                                 "defaultConfiguration": {"level": "error"},
+                                "properties": {"security-severity": 9.1},
                                 "helpUri": "https://people.canonical.com/~ubuntu-security/cve/2022/CVE-2022-1587",
                             },
                             {
@@ -207,6 +210,7 @@ def test_sarif_output(sca_image_report_scope_function):
                                     "text": "SCA package scan\nResource: path/to/Dockerfile (sha256:123456).pcre2\nStatus: needed"
                                 },
                                 "defaultConfiguration": {"level": "error"},
+                                "properties": {"security-severity": 9.1},
                                 "helpUri": "https://people.canonical.com/~ubuntu-security/cve/2022/CVE-2022-1586",
                             },
                         ],

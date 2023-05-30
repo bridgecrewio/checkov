@@ -12,8 +12,8 @@ from checkov.secrets.consts import ValidationStatus
 from checkov.common.bridgecrew.severities import Severity
 
 from checkov.common.output.record import Record
-from checkov.secrets.consts import GIT_HISTORY_NOT_BEEN_REMOVED
 from checkov.common.typing import _CheckResult
+from checkov.secrets.git_types import GIT_HISTORY_NOT_BEEN_REMOVED
 
 COMMIT_ADDED_STR = 'Commit Added'
 COMMIT_REMOVED_STR = 'Commit Removed'
@@ -22,7 +22,7 @@ WARNING_SIGN_UNICODE = '\u26a0'
 TEXT_BY_SECRET_VALIDATION_STATUS = {
     ValidationStatus.VALID.value: colored(f'\t{WARNING_SIGN_UNICODE} This secret has been validated'
                                           f' and should be prioritized', "red"),
-    ValidationStatus.INVALID.value: '\tThis is not a valid secret and can be de-prioritized',
+    ValidationStatus.INVALID.value: colored('\tThis is not a valid secret and can be de-prioritized', "white"),
     ValidationStatus.UNKNOWN.value: '\tWe were not able to validate this secret',
     ValidationStatus.UNAVAILABLE.value: ''
 }
@@ -57,7 +57,10 @@ class SecretsRecord(Record):
                  definition_context_file_path: Optional[str] = None,
                  validation_status: Optional[str] = None,
                  added_commit_hash: Optional[str] = None,
-                 removed_commit_hash: Optional[str] = None
+                 removed_commit_hash: Optional[str] = None,
+                 added_by: Optional[str] = None,
+                 removed_date: Optional[str] = None,
+                 added_date: Optional[str] = None
                  ):
         super().__init__(check_id=check_id,
                          check_name=check_name,
@@ -88,6 +91,9 @@ class SecretsRecord(Record):
         self.validation_status = validation_status
         self.added_commit_hash = added_commit_hash
         self.removed_commit_hash = removed_commit_hash
+        self.added_by = added_by
+        self.removed_date = removed_date
+        self.added_date = added_date
 
     def to_string(self, compact: bool = False, use_bc_ids: bool = False) -> str:
         processed_record = super().to_string(compact=compact, use_bc_ids=use_bc_ids)

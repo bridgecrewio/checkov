@@ -341,7 +341,7 @@ def test_load_local_path(git_getter, tmp_path: Path, source, expected_content_pa
         (
             "github.com/kartikp10/terraform-aws-s3-bucket1",
             "github.com/kartikp10/terraform-aws-s3-bucket1/HEAD",
-            "https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1",
+            "https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1",  # checkov:skip=CKV_SECRET_4 test secret
             "github.com/kartikp10/terraform-aws-s3-bucket1/HEAD",
             "git::https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1",
             "",
@@ -429,7 +429,7 @@ def test_load_github_private(
         (
             "bitbucket.org/kartikp10/terraform-aws-s3-bucket1",
             "bitbucket.org/kartikp10/terraform-aws-s3-bucket1/HEAD",
-            "https://x-token-auth:xxxxxxxxxxxxxxxxx@bitbucket.org/kartikp10/terraform-aws-s3-bucket1",
+            "https://x-token-auth:xxxxxxxxxxxxxxxxx@bitbucket.org/kartikp10/terraform-aws-s3-bucket1",  # checkov:skip=CKV_SECRET_4 test secret
             "bitbucket.org/kartikp10/terraform-aws-s3-bucket1/HEAD",
             "git::https://x-token-auth:xxxxxxxxxxxxxxxxx@bitbucket.org/kartikp10/terraform-aws-s3-bucket1",
             "",
@@ -437,7 +437,7 @@ def test_load_github_private(
     ],
     ids=["module"],
 )
-@mock.patch.dict(os.environ, {"BITBUCKET_TOKEN": "xxxxxxxxxxxxxxxxx"})
+@mock.patch.dict(os.environ, {"BITBUCKET_TOKEN": "xxxxxxxxxxxxxxxxx"})  # checkov:skip=CKV_SECRET_6 test secret
 @mock.patch("checkov.terraform.module_loading.loaders.git_loader.GitGetter", autospec=True)
 def test_load_bitbucket_private(
     git_getter,

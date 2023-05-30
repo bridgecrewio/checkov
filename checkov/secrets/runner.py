@@ -6,6 +6,7 @@ import linecache
 import logging
 import os
 import re
+import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING, cast, Optional, Iterable, Any, List, Dict
 
@@ -32,17 +33,17 @@ from checkov.common.models.enums import CheckResult
 from checkov.common.output.report import Report
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
-from checkov.common.runners.base_runner import ignored_directories
 from checkov.common.typing import _CheckResult
-from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.dockerfile import is_docker_file
 from checkov.common.util.secrets import omit_secret_value_from_line
 from checkov.runner_filter import RunnerFilter
 from checkov.secrets.consts import ValidationStatus, VerifySecretsResult
 from checkov.secrets.coordinator import EnrichedSecret, SecretsCoordinator
 from checkov.secrets.plugins.load_detectors import get_runnable_plugins
-from checkov.secrets.git_history_store import EnrichedPotentialSecret, GitHistorySecretStore
+from checkov.secrets.git_history_store import GitHistorySecretStore
+from checkov.secrets.git_types import EnrichedPotentialSecret, PROHIBITED_FILES
 from checkov.secrets.scan_git_history import GitHistoryScanner
+from checkov.secrets.utils import filter_excluded_paths, EXCLUDED_PATHS
 
 if TYPE_CHECKING:
     from checkov.common.util.tqdm_utils import ProgressBar
@@ -59,21 +60,20 @@ SECRET_TYPE_TO_ID = {
     'Base64 High Entropy String': 'CKV_SECRET_6',
     'IBM Cloud IAM Key': 'CKV_SECRET_7',
     'IBM COS HMAC Credentials': 'CKV_SECRET_8',
-    'JSON Web Token': 'CKV_SECRET_9',
+    'JSON Web Token': 'CKV_SECRET_9',  # checkov:skip=CKV_SECRET_6 false positive
     'Secret Keyword': 'CKV_SECRET_10',
     'Mailchimp Access Key': 'CKV_SECRET_11',
-    'NPM tokens': 'CKV_SECRET_12',
+    'NPM tokens': 'CKV_SECRET_12',  # checkov:skip=CKV_SECRET_6 false positive
     'Private Key': 'CKV_SECRET_13',
-    'Slack Token': 'CKV_SECRET_14',
+    'Slack Token': 'CKV_SECRET_14',  # checkov:skip=CKV_SECRET_6 false positive
     'SoftLayer Credentials': 'CKV_SECRET_15',
-    'Square OAuth Secret': 'CKV_SECRET_16',
+    'Square OAuth Secret': 'CKV_SECRET_16',  # checkov:skip=CKV_SECRET_6 false positive
     'Stripe Access Key': 'CKV_SECRET_17',
     'Twilio API Key': 'CKV_SECRET_18',
     'Hex High Entropy String': 'CKV_SECRET_19'
 }
 CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 
-PROHIBITED_FILES = ['Pipfile.lock', 'yarn.lock', 'package-lock.json', 'requirements.txt']
 
 MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is default limit
 
@@ -110,6 +110,7 @@ class Runner(BaseRunner[None]):
             {'name': 'BasicAuthDetector'},
             {'name': 'CloudantDetector'},
             {'name': 'IbmCloudIamDetector'},
+            {'name': 'JwtTokenDetector'},
             {'name': 'MailchimpDetector'},
             {'name': 'PrivateKeyDetector'},
             {'name': 'SlackDetector'},
@@ -123,9 +124,18 @@ class Runner(BaseRunner[None]):
         # load runnable plugins
         customer_run_config = bc_integration.customer_run_config_response
         plugins_index = 0
-        work_path = str(os.getenv('WORKDIR', current_dir))
+        work_dir_obj = None
+        secret_suppressions_id: list[str] = []
+        work_path = str(os.getenv('WORKDIR')) if os.getenv('WORKDIR') else None
+        if work_path is None:
+            work_dir_obj = tempfile.TemporaryDirectory()
+            work_path = work_dir_obj.name
+
         if customer_run_config:
             policies_list = customer_run_config.get('secretsPolicies', [])
+            suppressions = customer_run_config.get('suppressions', [])
+            if suppressions:
+                secret_suppressions_id = [suppression['policyId'] for suppression in suppressions if suppression['suppressionType'] == 'SecretsPolicy']
             if policies_list:
                 runnable_plugins: dict[str, str] = get_runnable_plugins(policies_list)
                 logging.info(f"Found {len(runnable_plugins)} runnable plugins")
@@ -158,7 +168,7 @@ class Runner(BaseRunner[None]):
 
             # Implement non IaC files (including .terraform dir)
             files_to_scan = files or []
-            excluded_paths = (runner_filter.excluded_paths or []) + ignored_directories + [DEFAULT_EXTERNAL_MODULES_DIR]
+            excluded_paths = (runner_filter.excluded_paths or []) + EXCLUDED_PATHS
             self._add_custom_detectors_to_metadata_integration()
             if root_folder:
                 if runner_filter.enable_git_history_secret_scan:
@@ -172,8 +182,14 @@ class Runner(BaseRunner[None]):
                     block_list_secret_scan = runner_filter.block_list_secret_scan or []
                     block_list_secret_scan_lower = [file_type.lower() for file_type in block_list_secret_scan]
                     for root, d_names, f_names in os.walk(root_folder):
-                        filter_ignored_paths(root, d_names, excluded_paths)
-                        filter_ignored_paths(root, f_names, excluded_paths)
+                        if enable_secret_scan_all_files:
+                            # 'excluded_paths' shouldn't include the static paths from 'EXCLUDED_PATHS'
+                            # they are separately referenced inside the 'filter_excluded_paths' function
+                            filter_excluded_paths(root_dir=root, names=d_names, excluded_paths=runner_filter.excluded_paths)
+                            filter_excluded_paths(root_dir=root, names=f_names, excluded_paths=runner_filter.excluded_paths)
+                        else:
+                            filter_ignored_paths(root, d_names, excluded_paths)
+                            filter_ignored_paths(root, f_names, excluded_paths)
                         for file in f_names:
                             if enable_secret_scan_all_files:
                                 if is_docker_file(file):
@@ -196,12 +212,17 @@ class Runner(BaseRunner[None]):
             secrets_duplication: dict[str, bool] = {}
 
             for key, secret in secrets:
+                added_commit_hash, removed_commit_hash, code_line, added_by, removed_date, added_date = '', '', '', '', '', ''
                 if runner_filter.enable_git_history_secret_scan:
-                    added_commit_hash, removed_commit_hash, code_line = \
-                        git_history_scanner.history_store.get_added_and_removed_commit_hash(key, secret)
-                else:
-                    added_commit_hash, removed_commit_hash, code_line = None, None, None
-                check_id = getattr(secret, "check_id", SECRET_TYPE_TO_ID.get(secret.type))
+                    enriched_potential_secret = git_history_scanner.\
+                        history_store.get_added_and_removed_commit_hash(key, secret, root_folder)
+                    added_commit_hash = enriched_potential_secret.get('added_commit_hash') or ''
+                    removed_commit_hash = enriched_potential_secret.get('removed_commit_hash') or ''
+                    code_line = enriched_potential_secret.get('code_line') or ''
+                    added_by = enriched_potential_secret.get('added_by') or ''
+                    removed_date = enriched_potential_secret.get('removed_date') or ''
+                    added_date = enriched_potential_secret.get('added_date') or ''
+                check_id = secret.check_id if secret.check_id else SECRET_TYPE_TO_ID.get(secret.type)
                 if not check_id:
                     logging.debug(f'Secret was filtered - no check_id for line_number {secret.line_number}')
                     continue
@@ -217,6 +238,9 @@ class Runner(BaseRunner[None]):
                 else:
                     secrets_duplication[secret_key] = True
                 bc_check_id = metadata_integration.get_bc_id(check_id)
+                if bc_check_id in secret_suppressions_id:
+                    logging.debug(f'Secret was filtered - check {check_id} was suppressed')
+                    continue
                 severity = metadata_integration.get_severity(check_id)
                 if not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id, severity=severity,
                                                       report_type=CheckType.SECRETS):
@@ -266,7 +290,10 @@ class Runner(BaseRunner[None]):
                     file_abs_path=os.path.abspath(secret.filename),
                     validation_status=ValidationStatus.UNAVAILABLE.value,
                     added_commit_hash=added_commit_hash,
-                    removed_commit_hash=removed_commit_hash
+                    removed_commit_hash=removed_commit_hash,
+                    added_by=added_by,
+                    removed_date=removed_date,
+                    added_date=added_date
                 ))
 
             enriched_secrets_s3_path = bc_integration.persist_enriched_secrets(self.secrets_coordinator.get_secrets())
@@ -274,12 +301,21 @@ class Runner(BaseRunner[None]):
                 self.verify_secrets(report, enriched_secrets_s3_path)
             logging.debug(f'report fail checks len: {len(report.failed_checks)}')
 
-            self.cleanup_plugin_files(work_path, plugins_index)
+            self.cleanup_plugin_files(work_path, plugins_index, work_dir_obj)
             if runner_filter.skip_invalid_secrets:
                 self._modify_invalid_secrets_check_result_to_skipped(report)
             return report
 
-    def cleanup_plugin_files(self, work_path: str, amount: int) -> None:
+    def cleanup_plugin_files(
+            self,
+            work_path: str,
+            amount: int,
+            dir_obj: Optional[tempfile.TemporaryDirectory[Any]] = None
+    ) -> None:
+        if dir_obj is not None:
+            logging.info(f"Cleanup the whole temp directory: {work_path}")
+            dir_obj.cleanup()
+            return
         for index in range(1, amount):
             try:
                 os.remove(f"{work_path}/runnable_plugin_{index}.py")

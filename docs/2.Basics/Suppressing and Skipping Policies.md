@@ -67,6 +67,19 @@ Resources:
       MasterUserPassword: 'password'
 ```
 
+### Dockerfile Example
+To suppress checks in Dockerfiles the comment can be addded to any line inside the file.
+
+```dockerfile
+#checkov:skip=CKV_DOCKER_5: no need to skip python check
+#checkov:skip=CKV2_DOCKER_7: no need to skip graph check
+FROM alpine:3.3
+RUN apk --no-cache add nginx
+EXPOSE 3000 80 443 22
+#checkov:skip=CKV_DOCKER_1: required
+CMD ["nginx", "-g", "daemon off;"]
+```
+
 ### Kubernetes Example
 To suppress checks in Kubernetes manifests, annotations are used with the following format:
 `checkov.io/skip#: <check_id>=<suppression_comment>`
@@ -184,8 +197,9 @@ Check: CKV_AWS_18: "Ensure the S3 bucket has access logging enabled"
 ```
 
 ### SCA
-Depending on the package manager there are different ways to suppress CVEs.
-You can either suppress a CVE for all packages, all CVEs for a package or specific CVE for a package. 
+CVEs can be suppressed using `--skip-check CKV_CVE_2022_1234` to suppress a specific CVE for that run or `--skip-cve-package package` to skip all CVEs for a specific package.
+
+For inline suppressions, depending on the package manager there are different ways to suppress CVEs. You can either suppress a CVE for all packages, all CVEs for a package or specific CVE for a package. Today, only requirements.txt is supported.
 
 #### Python - requirements.txt
 The skip comment can be anywhere

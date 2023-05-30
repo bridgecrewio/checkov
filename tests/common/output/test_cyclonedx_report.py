@@ -5,12 +5,14 @@ from pathlib import Path
 from cyclonedx.model.component import Component, ComponentType
 from cyclonedx.model.vulnerability import VulnerabilitySeverity
 from packageurl import PackageURL
+
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.report import Report, CheckType
 from pytest_mock import MockerFixture
 
 from checkov.common.output.common import ImageDetails
 from checkov.common.output.cyclonedx import CycloneDX
+from checkov.common.sca.commons import get_package_lines
 from checkov.common.sca.output import create_report_cve_record
 from checkov.common.output.record import Record
 from checkov.terraform.runner import Runner
@@ -158,6 +160,9 @@ def test_sca_packages_cyclonedx_bom():
         "discoveredDate": "2019-12-18T19:15:00Z",
         "fixDate": "2019-12-18T20:15:00+01:00",
     }
+    package = {'package_registry': "https://registry.npmjs.org/",
+               'is_private_registry': False,
+               "linesNumbers": [2, 6]}
 
     # when
     record = create_report_cve_record(
@@ -166,7 +171,8 @@ def test_sca_packages_cyclonedx_bom():
         check_class=check_class,
         vulnerability_details=vulnerability_details,
         licenses='OSI_BDS',
-        package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
+        package=package,
+        file_line_range=get_package_lines(package)
     )
 
     report = Report(CheckType.SCA_PACKAGE)
@@ -181,7 +187,7 @@ def test_sca_packages_cyclonedx_bom():
             vulnerability_details={
                 "package_name": "testpkg",
                 "package_version": "1.1.1",
-                "licenses": "MIT"
+                "licenses": "MIT",
             }
         )
     )
@@ -190,6 +196,7 @@ def test_sca_packages_cyclonedx_bom():
     output = cyclonedx.get_xml_output()
 
     # then
+    assert record.file_line_range == [2, 6]
     assert output
 
 def test_create_schema_version_1_3(mocker: MockerFixture):
@@ -248,11 +255,12 @@ def test_create_library_component_maven_package_without_group_name() -> None:
         file_abs_path="/path/to/Dockerfile",
         file_path=rootless_file_path,
         resource=f"{rootless_file_path}.{package['name']}",
+        file_line_range=[2, 5],
         vulnerability_details={
             "package_name": package["name"],
             "package_version": package["version"],
             "licenses": "Unknown",
-            "package_type": 'jar',
+            "package_type": 'jar'
         },
     )
 
@@ -261,6 +269,26 @@ def test_create_library_component_maven_package_without_group_name() -> None:
     assert component.purl.name == 'bcpkix-jdk15on'
     assert component.purl.version == '1.69.00'
     assert component.purl.namespace == '12345/Dockerfile'
+    assert component.properties[0].name == 'endLine'
+    assert component.properties[0].value == '5'
+    assert component.properties[1].name == 'startLine'
+    assert component.properties[1].value == '2'
+
+    resource2 = ExtraResource(
+        file_abs_path="/path/to/package.json",
+        file_path='package.json',
+        resource=f"package.json.{package['name']}",
+        file_line_range=[0, 0],
+        vulnerability_details={
+            "package_name": package["name"],
+            "package_version": package["version"],
+            "licenses": "Unknown",
+            "package_type": 'jar'
+        },
+    )
+
+    component2 = cyclone.create_library_component(resource2, CheckType.SCA_PACKAGE)
+    assert component2.properties.key is None
 
 
 def test_create_json_output():

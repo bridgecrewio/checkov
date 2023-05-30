@@ -14,10 +14,11 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.typing import LibraryGraphConnector
 from checkov.common.graph.graph_builder.consts import GraphSource
-from checkov.common.images.image_referencer import fix_related_resource_ids
+from checkov.common.images.image_referencer import fix_related_resource_ids, Image
 from checkov.common.output.report import Report
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
+from checkov.helm.image_referencer.manager import HelmImageReferencerManager
 from checkov.helm.registry import registry
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
 from checkov.kubernetes.runner import Runner as k8_runner, handle_timeout
@@ -26,6 +27,7 @@ import signal
 
 if TYPE_CHECKING:
     from checkov.kubernetes.graph_manager import KubernetesGraphManager
+    from networkx import DiGraph
 
 
 class K8sHelmRunner(k8_runner):
@@ -41,6 +43,8 @@ class K8sHelmRunner(k8_runner):
         super().__init__(graph_class, db_connector, source, graph_manager, external_registries)
         self.chart_dir_and_meta: list[tuple[str, dict[str, Any]]] = []
         self.pbar.turn_off_progress_bar()
+        self.original_root_dir = ''
+        self.tmp_root_dir = ''
 
     def run(
         self,
@@ -74,7 +78,10 @@ class K8sHelmRunner(k8_runner):
 
             if root_folder is not None:
                 fix_report_paths(report=helm_report, tmp_dir=root_folder)
-                fix_related_resource_ids(report=sca_image_report, tmp_dir=root_folder)
+                if self.original_root_dir:
+                    fix_related_resource_ids(report=sca_image_report, tmp_dir=self.original_root_dir)
+                else:
+                    fix_related_resource_ids(report=sca_image_report, tmp_dir=root_folder)
 
             return chart_results
         except Exception:
@@ -88,6 +95,31 @@ class K8sHelmRunner(k8_runner):
 
             # TODO: Export helm dependencies for the chart we've extracted in chart_dependencies
             return report
+
+    def get_image_report(self, root_folder: str | None, runner_filter: RunnerFilter) -> Report | None:
+        if not self.graph_manager:
+            return None
+        return self.check_container_image_references(
+            graph_connector=self.graph_manager.get_reader_endpoint(),
+            root_path=self.original_root_dir,
+            runner_filter=runner_filter,
+        )
+
+    def extract_images(
+            self,
+            graph_connector: DiGraph | None = None,
+            definitions: None = None,
+            definitions_raw: dict[str, list[tuple[int, str]]] | None = None
+    ) -> list[Image]:
+        if not graph_connector:
+            # should not happen
+            return []
+
+        manager = HelmImageReferencerManager(graph_connector=graph_connector, original_root_dir=self.original_root_dir,
+                                             temp_root_dir=self.tmp_root_dir)
+        images = manager.extract_images_from_resources()
+
+        return images
 
 
 class Runner(BaseRunner["KubernetesGraphManager"]):
@@ -351,7 +383,11 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
 
         k8s_runner = K8sHelmRunner()
         k8s_runner.chart_dir_and_meta = self.convert_helm_to_k8s(root_folder, files, runner_filter)
-        return k8s_runner.run(self.get_k8s_target_folder_path(), external_checks_dir=external_checks_dir, runner_filter=runner_filter)
+        k8s_runner.original_root_dir = str(root_folder)
+        k8s_runner.tmp_root_dir = self.get_k8s_target_folder_path()
+        report = k8s_runner.run(self.get_k8s_target_folder_path(), external_checks_dir=external_checks_dir, runner_filter=runner_filter)
+        self.graph_manager = k8s_runner.graph_manager
+        return report
 
 
 def fix_report_paths(report: Report, tmp_dir: str) -> None:

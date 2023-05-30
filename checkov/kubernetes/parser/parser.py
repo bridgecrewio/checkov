@@ -7,6 +7,7 @@ from typing import Any
 from yaml import YAMLError
 
 from checkov.kubernetes.parser import k8_yaml, k8_json
+from checkov.kubernetes.parser.validatior import K8sValidator
 
 logger = logging.getLogger(__name__)
 
@@ -22,9 +23,12 @@ def parse(filename: str) -> tuple[list[dict[str, Any]], list[tuple[int, str]]] |
             (template, template_lines) = k8_json.load(Path(filename))
         if template:
             if isinstance(template, list):
-                for t in template:
-                    if t and isinstance(t, dict) and 'apiVersion' in t.keys() and 'kind' in t.keys():
+                for i, t in enumerate(template):
+                    is_valid, reason = K8sValidator.is_valid_template(t)
+                    if is_valid:
                         valid_templates.append(t)
+                    else:
+                        logging.debug(f"template {i} from file {filename} is not a valid k8s template, reason: {reason}")
             else:
                 return None
         else:

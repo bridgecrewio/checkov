@@ -4,9 +4,9 @@ import abc
 import json
 import re
 import typing
-from copy import deepcopy
 from typing import Any
 
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.terraform import TFModule
 from checkov.terraform.graph_builder.foreach.consts import COUNT_STRING, FOREACH_STRING, COUNT_KEY, EACH_VALUE, \
     EACH_KEY, REFERENCES_VALUES
@@ -54,18 +54,17 @@ class ForeachAbstractHandler:
     def _build_sub_graph(self, blocks_to_render: list[int]) -> TerraformLocalGraph:
         from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 
-        module = deepcopy(self.local_graph.module)
-        sub_graph = TerraformLocalGraph(module)
+        sub_graph = TerraformLocalGraph(self.local_graph.module)
         sub_graph.vertices = [{}] * len(self.local_graph.vertices)
         for i, block in enumerate(self.local_graph.vertices):
             if not (block.block_type == BlockType.RESOURCE and i not in blocks_to_render):
-                sub_graph.vertices[i] = deepcopy(block)
+                sub_graph.vertices[i] = pickle_deepcopy(block)
         sub_graph.edges = [
-            deepcopy(edge) for edge in self.local_graph.edges if
+            edge for edge in self.local_graph.edges if
             (sub_graph.vertices[edge.dest] and sub_graph.vertices[edge.origin])
         ]
-        sub_graph.in_edges = deepcopy(self.local_graph.in_edges)
-        sub_graph.out_edges = deepcopy(self.local_graph.out_edges)
+        sub_graph.in_edges = self.local_graph.in_edges
+        sub_graph.out_edges = self.local_graph.out_edges
         return sub_graph
 
     @staticmethod
@@ -84,9 +83,15 @@ class ForeachAbstractHandler:
         attrs.pop(FOREACH_STRING, None)
 
     @staticmethod
-    def __update_str_attrs(attrs: dict[str, Any], key_to_change: str, val_to_change: str, k: str) -> bool:
+    def __update_str_attrs(attrs: dict[str, Any], key_to_change: str, val_to_change: str | dict[str, Any], k: str) -> bool:
+        if key_to_change not in attrs[k]:
+            return False
         if attrs[k] == "${" + key_to_change + "}":
             attrs[k] = val_to_change
+            return True
+        elif f"{key_to_change}." in attrs[k] and isinstance(val_to_change, dict):
+            key = attrs[k].replace("}", "").split('.')[-1]
+            attrs[k] = val_to_change.get(key)
             return True
         else:
             attrs[k] = attrs[k].replace("${" + key_to_change + "}", str(val_to_change))
@@ -119,19 +124,26 @@ class ForeachAbstractHandler:
                 v_changed = False
                 if isinstance(v, str):
                     v_changed = self.__update_str_attrs(attrs, key_to_change, val_to_change, k)
-                if isinstance(v, dict):
+                elif isinstance(v, dict):
                     nested_attrs = self._update_attributes(v, {key_to_change: val_to_change})
                     foreach_attributes.extend([k + '.' + na for na in nested_attrs])
-                if isinstance(v, list) and len(v) == 1 and isinstance(v[0], dict):
+                elif isinstance(v, list) and len(v) == 1 and isinstance(v[0], dict):
                     nested_attrs = self._update_attributes(v[0], {key_to_change: val_to_change})
                     foreach_attributes.extend([k + '.' + na for na in nested_attrs])
                 elif isinstance(v, list) and len(v) == 1 and isinstance(v[0], str) and key_to_change in v[0]:
                     if attrs[k][0] == "${" + key_to_change + "}":
                         attrs[k][0] = val_to_change
                         v_changed = True
+                    elif f"{key_to_change}." in attrs[k][0] and isinstance(val_to_change, dict):
+                        key = attrs[k][0].replace("}", "").split('.')[-1]
+                        attrs[k][0] = val_to_change.get(key)
+                        v_changed = True
                     else:
                         attrs[k][0] = attrs[k][0].replace("${" + key_to_change + "}", str(val_to_change))
-                        attrs[k][0] = attrs[k][0].replace(key_to_change, str(val_to_change))
+                        if self.need_to_add_quotes(attrs[k][0], key_to_change):
+                            attrs[k][0] = attrs[k][0].replace(key_to_change, f'"{str(val_to_change)}"')
+                        else:
+                            attrs[k][0] = attrs[k][0].replace(key_to_change, str(val_to_change))
                         v_changed = True
                 elif isinstance(v, list) and len(v) == 1 and isinstance(v[0], list):
                     for i, item in enumerate(v):
@@ -200,11 +212,16 @@ class ForeachAbstractHandler:
 
     def _is_static_foreach_statement(self, statement: list[str] | dict[str, Any]) -> bool:
         if isinstance(statement, list):
+            if len(statement) == 1 and not statement[0]:
+                return True
             statement = self.extract_from_list(statement)
         if isinstance(statement, str) and re.search(REFERENCES_VALUES, statement):
             return False
-        if isinstance(statement, (list, dict)) and any([re.search(REFERENCES_VALUES, s) for s in statement]):
-            return False
+        if isinstance(statement, (list, dict)):
+            result = True
+            for s in statement:
+                result &= self._is_static_foreach_statement(s)
+            return result
         return True
 
     def _is_static_count_statement(self, statement: list[str] | int) -> bool:
@@ -232,3 +249,11 @@ class ForeachAbstractHandler:
     @staticmethod
     def extract_from_list(val: Any) -> Any:
         return val[0] if len(val) == 1 and isinstance(val[0], (str, int, list)) else val
+
+    @staticmethod
+    def need_to_add_quotes(code, key) -> bool:
+        patterns = [r'lower\(' + key + r'\)', r'upper\(' + key + r'\)']
+        for pattern in patterns:
+            if re.search(pattern, code):
+                return True
+        return False

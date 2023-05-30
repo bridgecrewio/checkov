@@ -24,6 +24,7 @@
         disable_server_response_inspection: false
         action: 'allow'
         description: 'The description'
+        log_setting: 'default'
 
     - name: Security_rule_pass_2
       paloaltonetworks.panos.panos_security_rule:
@@ -36,4 +37,5 @@
         service: ['service-http', 'service-https']
         action: 'allow'
         description: 'The description'
+        log_setting: 'default'
         # No explicit disable_server_response_inspection parameter, therefore uses default: false, which passes the check

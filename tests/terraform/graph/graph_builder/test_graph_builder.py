@@ -20,7 +20,7 @@ class TestGraphBuilder(TestCase):
         graph, tf_definitions = graph_manager.build_graph_from_source_directory(resources_dir)
 
         expected_num_of_var_nodes = 3
-        expected_num_of_locals_nodes = 3
+        expected_num_of_locals_nodes = 1
         expected_num_of_resources_nodes = 1
         expected_num_of_provider_nodes = 1
         vertices_by_block_type = graph.vertices_by_block_type
@@ -98,6 +98,7 @@ class TestGraphBuilder(TestCase):
         actual_config = local_graph.vertices[local_graph.vertices_by_block_type.get(BlockType.RESOURCE)[0]].config
         self.assertDictEqual(expected_config, actual_config)
 
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "False"})
     def test_build_graph_with_linked_modules(self):
         # see the image to view the expected graph in tests/resources/modules/linked_modules/expected_graph.png
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/linked_modules'))
@@ -138,6 +139,7 @@ class TestGraphBuilder(TestCase):
         self.check_edge(local_graph, node_from=output_this_s3_bucket_id, node_to=resource_aws_s3_bucket,
                         expected_label='value')
 
+    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "False"})
     def test_build_graph_with_linked_registry_modules(self):
         resources_dir = os.path.realpath(
             os.path.join(TEST_DIRNAME, '../resources/modules/registry_security_group_inner_module'))
@@ -199,12 +201,13 @@ class TestGraphBuilder(TestCase):
         tf, _ = convert_graph_vertices_to_tf_definitions(local_graph.vertices, resources_dir)
         found_results = 0
         for key, value in tf.items():
-            if key.startswith(os.path.join(os.path.dirname(resources_dir), 's3_inner_modules', 'inner', 'main.tf')):
+            if key.file_path.startswith(os.path.join(os.path.dirname(resources_dir), 's3_inner_modules', 'inner', 'main.tf')):
                 conf = value['resource'][0]['aws_s3_bucket']['inner_s3']
-                if 'stage/main' in key or 'prod/main' in key:
+                new_key = build_new_key_for_tf_definition(key)
+                if 'stage/main' in new_key or 'prod/main' in new_key:
                     self.assertTrue(conf['versioning'][0]['enabled'][0])
                     found_results += 1
-                elif 'test/main' in key:
+                elif 'test/main' in new_key:
                     self.assertFalse(conf['versioning'][0]['enabled'][0])
                     found_results += 1
         self.assertEqual(found_results, 3)
@@ -330,3 +333,12 @@ class TestGraphBuilder(TestCase):
         graph_manager = TerraformGraphManager(db_connector=NetworkxConnector())
         # Shouldn't throw exception
         graph_manager.build_graph_from_source_directory(resources_dir)
+
+
+def build_new_key_for_tf_definition(key):
+    key = key.tf_source_modules
+    new_key = ''
+    while key.nested_tf_module:
+        new_key += f'{key.nested_tf_module.path}'
+        key = key.nested_tf_module
+    return new_key

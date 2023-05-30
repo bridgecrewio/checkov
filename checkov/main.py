@@ -27,7 +27,7 @@ from checkov.bitbucket.runner import Runner as bitbucket_configuration_runner
 from checkov.bitbucket_pipelines.runner import Runner as bitbucket_pipelines_runner
 from checkov.cdk.runner import CdkRunner
 from checkov.cloudformation.runner import Runner as cfn_runner
-from checkov.common.bridgecrew.bc_source import SourceTypes, BCSourceType, get_source_type
+from checkov.common.bridgecrew.bc_source import SourceTypes, BCSourceType, get_source_type, SourceType
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
     integration as policy_metadata_integration
 from checkov.common.bridgecrew.integration_features.features.repo_config_integration import \
@@ -42,7 +42,7 @@ from checkov.common.bridgecrew.integration_features.features.licensing_integrati
 from checkov.common.bridgecrew.severities import BcSeverities
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.output.baseline import Baseline
-from checkov.common.bridgecrew.check_type import checkov_runners
+from checkov.common.bridgecrew.check_type import checkov_runners, CheckType
 from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.common.util import prompt
 from checkov.common.util.banner import banner as checkov_banner, tool as checkov_tool
@@ -83,6 +83,8 @@ if TYPE_CHECKING:
     from checkov.common.output.report import Report
     from configargparse import Namespace
     from typing_extensions import Literal
+    from igraph import Graph
+    from networkx import DiGraph
 
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
@@ -130,12 +132,13 @@ class Checkov:
         self.runners = DEFAULT_RUNNERS.copy()
         self.scan_reports: "list[Report]" = []
         self.run_metadata: dict[str, str | list[str]] = {}
+        self.graphs: dict[str, DiGraph | Graph] = {}
         self.url: str | None = None
 
         self.parse_config(argv=argv)
 
     def _parse_mask_to_resource_attributes_to_omit(self) -> None:
-        resource_attributes_to_omit = defaultdict(lambda: set())
+        resource_attributes_to_omit = defaultdict(set)
         for entry in self.config.mask:
             splitted_entry = entry.split(':')
             # if we have 2 entries, this is resource & variable to mask
@@ -200,7 +203,7 @@ class Checkov:
         # Parse mask into json with default dict. If self.config.mask is empty list, default dict will be assigned
         self._parse_mask_to_resource_attributes_to_omit()
 
-    def run(self, banner: str = checkov_banner, tool: str = checkov_tool) -> int | None:
+    def run(self, banner: str = checkov_banner, tool: str = checkov_tool, source_type: SourceType | None = None) -> int | None:
         self.run_metadata = {
             "checkov_version": version,
             "python_executable": sys.executable,
@@ -223,6 +226,9 @@ class Checkov:
             # Check if --output value is None. If so, replace with ['cli'] for default cli output.
             if self.config.output is None:
                 self.config.output = ['cli']
+
+            if self.config.support:
+                bc_integration.support_flag_enabled = True
 
             if self.config.bc_api_key and not self.config.include_all_checkov_policies:
                 if self.config.skip_download and not self.config.external_checks_dir:
@@ -287,14 +293,12 @@ class Checkov:
                 deep_analysis=self.config.deep_analysis,
                 repo_root_for_plan_enrichment=self.config.repo_root_for_plan_enrichment,
                 resource_attr_to_omit=self.config.mask,
-                # TODO modify the output for git_history secret and remove the rewrite of enable_git_history_secret_scan
-                # enable_git_history_secret_scan=self.config.scan_secrets_history,
-                enable_git_history_secret_scan=False,  # expose after unite git history with secret scan
+                enable_git_history_secret_scan=self.config.scan_secrets_history,
                 git_history_timeout=self.config.secrets_history_timeout
             )
 
             source_env_val = os.getenv('BC_SOURCE', 'cli')
-            source = get_source_type(source_env_val)
+            source = source_type if source_type else get_source_type(source_env_val)
             if source == SourceTypes[BCSourceType.DISABLED]:
                 logger.warning(
                     f'Received unexpected value for BC_SOURCE: {source_env_val}; Should be one of {{{",".join(SourceTypes.keys())}}} setting source to DISABLED')
@@ -416,12 +420,19 @@ class Checkov:
 
             bc_integration.get_prisma_build_policies(self.config.policy_metadata_filter)
 
+            # set config to make it usable inside the integration features
+            integration_feature_registry.config = self.config
             integration_feature_registry.run_pre_scan()
+
             policy_level_suppression = suppressions_integration.get_policy_level_suppressions()
             bc_cloned_checks = custom_policies_integration.bc_cloned_checks
             runner_filter.bc_cloned_checks = bc_cloned_checks
             custom_policies_integration.policy_level_suppression = list(policy_level_suppression.keys())
-            runner_filter.run_image_referencer = licensing_integration.should_run_image_referencer()
+
+            if any(framework in runner_filter.framework for framework in ("all", CheckType.SCA_IMAGE)):
+                # only run image referencer, when sca_image framework is enabled
+                runner_filter.run_image_referencer = licensing_integration.should_run_image_referencer()
+
             runner_filter.filtered_policy_ids = policy_metadata_integration.filtered_policy_ids
             logger.debug(f"Filtered list of policies: {runner_filter.filtered_policy_ids}")
 
@@ -456,6 +467,7 @@ class Checkov:
             if self.config.directory:
                 exit_codes = []
                 for root_folder in self.config.directory:
+                    absolute_root_folder = os.path.abspath(root_folder)
                     if not os.path.exists(root_folder):
                         logger.error(f'Directory {root_folder} does not exist; skipping it')
                         continue
@@ -465,15 +477,20 @@ class Checkov:
                         external_checks_dir=external_checks_dir,
                         files=file,
                     )
+                    self.graphs = runner_registry.check_type_to_graph
                     if runner_registry.is_error_in_reports(self.scan_reports):
                         self.exit_run()
                     if baseline:
                         baseline.compare_and_reduce_reports(self.scan_reports)
                     if bc_integration.is_integration_configured() and bc_integration.bc_source and bc_integration.bc_source.upload_results:
+                        included_paths = [self.config.external_modules_download_path]
+                        for r in runner_registry.runners:
+                            included_paths.extend(r.included_paths())
                         self.upload_results(
                             root_folder=root_folder,
+                            absolute_root_folder=absolute_root_folder,
                             excluded_paths=runner_filter.excluded_paths,
-                            included_paths=[self.config.external_modules_download_path],
+                            included_paths=included_paths,
                             git_configuration_folders=git_configuration_folders,
                         )
 
@@ -525,6 +542,8 @@ class Checkov:
                                                           self.config.branch)
 
                 bc_integration.persist_run_metadata(self.run_metadata)
+                if bc_integration.enable_persist_graphs:
+                    bc_integration.persist_graphs(self.graphs)
                 self.url = self.commit_repository()
                 exit_code = self.print_results(runner_registry=runner_registry, url=self.url)
                 return exit_code
@@ -535,6 +554,7 @@ class Checkov:
                     files=self.config.file,
                     repo_root_for_plan_enrichment=self.config.repo_root_for_plan_enrichment,
                 )
+                self.graphs = runner_registry.check_type_to_graph
                 if runner_registry.is_error_in_reports(self.scan_reports):
                     self.exit_run()
                 if baseline:
@@ -551,9 +571,11 @@ class Checkov:
                 if bc_integration.is_integration_configured():
                     files = [os.path.abspath(file) for file in self.config.file]
                     root_folder = os.path.split(os.path.commonprefix(files))[0]
+                    absolute_root_folder = os.path.abspath(root_folder)
 
                     self.upload_results(
                         root_folder=root_folder,
+                        absolute_root_folder=absolute_root_folder,
                         files=files,
                         excluded_paths=runner_filter.excluded_paths,
                         git_configuration_folders=git_configuration_folders,
@@ -600,6 +622,7 @@ class Checkov:
     def upload_results(
             self,
             root_folder: str,
+            absolute_root_folder: str,
             files: list[str] | None = None,
             excluded_paths: list[str] | None = None,
             included_paths: list[str] | None = None,
@@ -617,6 +640,8 @@ class Checkov:
             bc_integration.persist_git_configuration(os.getcwd(), git_configuration_folders)
         bc_integration.persist_scan_results(self.scan_reports)
         bc_integration.persist_run_metadata(self.run_metadata)
+        if bc_integration.enable_persist_graphs:
+            bc_integration.persist_graphs(self.graphs, absolute_root_folder=absolute_root_folder)
         self.url = self.commit_repository()
 
     def print_results(
@@ -627,6 +652,10 @@ class Checkov:
             baseline: Baseline | None = None,
     ) -> Literal[0, 1]:
         """Print scan results to stdout"""
+
+        if convert_str_to_bool(os.getenv("CHECKOV_NO_OUTPUT", "False")):
+            # this is mainly used for testing, where the report output is not needed
+            return 0
 
         return runner_registry.print_reports(
             scan_reports=self.scan_reports,

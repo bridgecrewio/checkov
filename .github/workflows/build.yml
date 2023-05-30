@@ -37,12 +37,12 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.7", "3.8"]
+        python: ["3.7", "3.8", "3.9", "3.10", "3.11"]
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f  # v3
-      - uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435  # v4
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
+      - uses: actions/setup-python@bd6b4b6205c4dbad673328db7b31b7fab9e241c0  # v4
         with:
           python-version: ${{ matrix.python }}
       - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c  # v3
@@ -61,7 +61,7 @@ jobs:
           pipenv --python ${{ matrix.python }}
           pipenv run pip install pytest pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
-          bash -c 'pipenv run pip install dist/checkov3-*.whl'
+          bash -c 'pipenv run pip install dist/checkov-*.whl'
       - name: Clone Terragoat - vulnerable terraform
         run: git clone https://github.com/bridgecrewio/terragoat
       - name: Clone Cfngoat - vulnerable cloudformation
@@ -77,21 +77,47 @@ jobs:
         env:
           LOG_LEVEL: INFO
           BC_KEY: ${{ secrets.BC_API_KEY }}
-          TFC_TOKEN: ${{ secrets.TFC_TOKEN }}
+          TF_REGISTRY_TOKEN: ${{ secrets.TFC_TOKEN }}
           GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       - name: Run integration tests
         run: |
           pipenv run pytest integration_tests
-  unit-tests:
-    timeout-minutes: 30
-    runs-on: ubuntu-latest
+  prisma-tests:
+    runs-on: [ self-hosted, public, linux, x64 ]
     steps:
-      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f  # v3
-      - name: Set up Python 3.7
-        uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435  # v4
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
+      - uses: actions/setup-python@bd6b4b6205c4dbad673328db7b31b7fab9e241c0  # v4
         with:
           python-version: 3.7
-      - uses: azure/setup-helm@f382f75448129b3be48f8121b9857be18d815a82  # v3
+      - name: Install pipenv
+        run: |
+          python -m pip install --no-cache-dir --upgrade pipenv
+      - name: Clone Terragoat - vulnerable terraform
+        run: git clone https://github.com/bridgecrewio/terragoat
+      - name: Build & install checkov package
+        run: |
+          pipenv --python 3.7
+          pipenv run pip install pytest pytest-xdist
+          pipenv run python setup.py sdist bdist_wheel
+          pipenv run pip install dist/checkov-*.whl
+      - name: Run checkov with Prisma creds
+        env:
+          PRISMA_KEY: ${{ secrets.PRISMA_KEY }}
+          PRISMA_API_URL: ${{ secrets.PRISMA_API_URL }}
+        run: |
+          pipenv run checkov -s -d terragoat --bc-api-key "$PRISMA_KEY" --repo-id yuvalyacoby/terragoat > checkov_report_prisma.txt
+          grep "prismacloud.io" checkov_report_prisma.txt
+          exit $?
+  unit-tests:
+    timeout-minutes: 30
+    runs-on: [self-hosted, public, linux, x64]
+    steps:
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
+      - name: Set up Python 3.7
+        uses: actions/setup-python@bd6b4b6205c4dbad673328db7b31b7fab9e241c0  # v4
+        with:
+          python-version: 3.7
+      - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
@@ -110,15 +136,26 @@ jobs:
         run: |
           pipenv run python -m pytest tests
   bump-version:
-    needs: [integration-tests, unit-tests]
-    runs-on: ubuntu-latest
+    needs: [integration-tests, unit-tests, prisma-tests]
+    runs-on: [self-hosted, public, linux, x64]
+    environment: release
+    permissions:
+      contents: write
+      # IMPORTANT: this permission is mandatory for trusted publishing to pypi
+      id-token: write
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f  # v3
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
         with:
           token: ${{ secrets.GH_PAT_SECRET }}
+      - name: Import GPG key
+        id: import_gpg
+        uses: crazy-max/ghaction-import-gpg@72b6676b71ab476b77e676928516f6982eef7a41  # v5
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.PASSPHRASE }}
       - name: Set up Python 3.7
-        uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435  # v4
+        uses: actions/setup-python@bd6b4b6205c4dbad673328db7b31b7fab9e241c0  # v4
         with:
           python-version: 3.7
       - name: Install pipenv
@@ -206,12 +243,161 @@ jobs:
         run: |
           pipenv run python setup.py sdist bdist_wheel
       - name: Publish a Python distribution to PyPI
-        uses: pypa/gh-action-pypi-publish@a3a3bafbb3e5a75a854ae1bc53ae128cf22c4af4  # v1
-        with:
-          password: ${{ secrets.PYPI_TOKEN }}
+        uses: pypa/gh-action-pypi-publish@a56da0b891b3dc519c7ee3284aff1fad93cc8598  # v1
       - name: sleep and wait for package to refresh
         run: |
           sleep 2m
     outputs:
       version: ${{ steps.calculateVersion.outputs.version }}
       major_version: ${{ steps.calculateVersion.outputs.major_version }}
+  publish-checkov-dockerhub:
+    runs-on: [self-hosted, public, linux, x64]
+    needs: bump-version
+    environment: release
+    permissions:
+      packages: write
+      id-token: write  # Enable OIDC
+    env:
+      DH_IMAGE_NAME: bridgecrew/checkov
+      GHCR_IMAGE_NAME: ghcr.io/${{ github.repository }}
+      FULL_IMAGE_TAG: ${{ needs.bump-version.outputs.version }}
+      SHORT_IMAGE_TAG: ${{ needs.bump-version.outputs.major_version }}
+    steps:
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
+      - uses: sigstore/cosign-installer@9becc617647dfa20ae7b1151972e9b3a2c338a2b  # v2
+      - uses: docker/setup-qemu-action@e81a89b1732b9c48d79cd809d8d81d79c4647a18  # v2
+        with:
+          platforms: 'arm64,arm'
+      - uses: docker/setup-buildx-action@4b4e9c3e2d4531116a6f8ba8e71fc6e2cb6e6c8c  # v2
+      - name: Login to Docker Hub
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a  # v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a  # v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Docker meta
+        id: docker_meta
+        uses: docker/metadata-action@c4ee3adeed93b1fa6a762f209fb01608c1a22f1e  # v4
+        with:
+          images: ${{ env.DH_IMAGE_NAME }}
+          labels: |
+            org.opencontainers.image.authors=Bridgecrew
+            org.opencontainers.image.version=${{ needs.bump-version.outputs.version }}
+      - name: Build and export image to Docker
+        # buildx changes the driver to 'docker-container' which doesn't expose the image to the host,
+        # so it is built and loaded to Docker and in the next step pushed to the registry
+        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671  # v4
+        with:
+          context: .
+          no-cache: true
+          load: true
+          labels: ${{ steps.docker_meta.outputs.labels }}
+          tags: ${{ env.DH_IMAGE_NAME }}:${{ env.FULL_IMAGE_TAG }}
+      - name: Push Docker image
+        id: docker_push
+        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671  # v4
+        with:
+          context: .
+          platforms: 'linux/amd64,linux/arm64'
+          push: true
+          labels: ${{ steps.docker_meta.outputs.labels }}
+          tags: |
+            ${{ env.DH_IMAGE_NAME }}:latest
+            ${{ env.DH_IMAGE_NAME }}:${{ env.SHORT_IMAGE_TAG }}
+            ${{ env.DH_IMAGE_NAME }}:${{ env.FULL_IMAGE_TAG }}
+            ${{ env.GHCR_IMAGE_NAME }}:latest
+            ${{ env.GHCR_IMAGE_NAME }}:${{ env.SHORT_IMAGE_TAG }}
+            ${{ env.GHCR_IMAGE_NAME }}:${{ env.FULL_IMAGE_TAG }}
+      - name: Generate SBOM
+        continue-on-error: true
+        uses: bridgecrewio/checkov-action@master  # use latest and greatest
+        with:
+          api-key: ${{ secrets.BC_API_KEY }}
+          docker_image: ${{ env.DH_IMAGE_NAME }}:${{ env.FULL_IMAGE_TAG }}
+          dockerfile_path: Dockerfile
+          output_format: cyclonedx_json
+          output_file_path: cyclonedx.json,
+      - name: Sign and attest image
+        run: |
+          # sign image
+          cosign sign ${{ env.DH_IMAGE_NAME }}@${{ steps.docker_push.outputs.digest }}
+          cosign sign -f ${{ env.GHCR_IMAGE_NAME }}@${{ steps.docker_push.outputs.digest }}
+          
+          # attest SBOM
+          cosign attest \
+            --type cyclonedx \
+            --predicate cyclonedx.json \
+            ${{ env.DH_IMAGE_NAME }}@${{ steps.docker_push.outputs.digest }}
+          cosign attest -f \
+            --type cyclonedx \
+            --predicate cyclonedx.json \
+            ${{ env.GHCR_IMAGE_NAME }}@${{ steps.docker_push.outputs.digest }}
+        env:
+          COSIGN_EXPERIMENTAL: 1  # needed for keyless signing
+  publish-checkov-k8s-dockerhub:
+    runs-on: [self-hosted, public, linux, x64]
+    needs: bump-version
+    environment: release
+    steps:
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
+      - name: update checkov-k8s version
+        run: |
+          checkov_version=${{ needs.bump-version.outputs.version }}
+          checkov_major_version=$(echo "${checkov_version}" | head -c1)
+          echo "version=$checkov_version" >> "$GITHUB_OUTPUT"
+          echo "major_version=$checkov_major_version" >> "$GITHUB_OUTPUT"
+        id: versions
+      - name: Publish to Registry
+        uses: elgohr/Publish-Docker-Github-Action@43dc228e327224b2eda11c8883232afd5b34943b  # v5
+        with:
+          name: bridgecrew/checkov-k8s
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          tags: "latest,${{ steps.versions.outputs.version }},${{ steps.versions.outputs.major_version }}"
+          dockerfile: kubernetes/Dockerfile
+          buildoptions: "--no-cache"
+  publish-checkov-pyston-dockerhub:
+    runs-on: [self-hosted, public, linux, x64]
+    needs: bump-version
+    environment: release
+    steps:
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
+      - name: Get release version
+        id: versions
+        run: |
+          checkov_version=${{ needs.bump-version.outputs.version }}
+          checkov_major_version=$(echo "${checkov_version}" | head -c1)
+          echo "version=$checkov_version" >> "$GITHUB_OUTPUT"
+          echo "major_version=$checkov_major_version" >> "$GITHUB_OUTPUT"
+      - name: Publish to Registry
+        uses: elgohr/Publish-Docker-Github-Action@43dc228e327224b2eda11c8883232afd5b34943b  # v5
+        with:
+          name: bridgecrew/checkov
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          tags: "pyston,${{ steps.versions.outputs.version }}-pyston,${{ steps.versions.outputs.major_version }}-pyston"
+          dockerfile: Dockerfile.pyston
+          buildoptions: "--no-cache"
+  update-bridgecrew-projects:
+    needs: publish-checkov-dockerhub
+    runs-on: [self-hosted, public, linux, x64]
+    environment: release
+    steps:
+      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
+      - name: update checkov release
+        run: |
+          curl -X POST "https://jenkins-webhook.bridgecrew.cloud/buildByToken/build?job=Open-Source/upgrade-checkov&token=${{ secrets.BC_JENKINS_TOKEN }}"
+
+          # trigger checkov-action update
+          curl -XPOST -u "${{ secrets.GH_PAT_USER}}:${{secrets.GH_PAT_SECRET}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/bridgecrewio/checkov-action/dispatches --data '{"event_type": "build"}'
+
+          # trigger bridgecrew-py update
+          curl -XPOST -u "${{ secrets.GH_PAT_USER}}:${{secrets.GH_PAT_SECRET}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/bridgecrewio/bridgecrew-py/dispatches --data '{"event_type": "build"}'
+
+          # trigger whorf update
+          curl -XPOST -u "${{ secrets.GH_PAT_USER}}:${{secrets.GH_PAT_SECRET}}" -H "Accept: application/vnd.github.everest-preview+json" -H "Content-Type: application/json" https://api.github.com/repos/bridgecrewio/whorf/dispatches --data '{"event_type": "release"}'

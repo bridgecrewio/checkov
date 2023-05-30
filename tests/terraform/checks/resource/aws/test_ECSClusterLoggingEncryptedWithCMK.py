@@ -9,7 +9,7 @@ from checkov.terraform.runner import Runner
 class TestECSClusterLoggingEncryptedWithCMK(unittest.TestCase):
     def test(self):
         # given
-        test_files_dir = Path(__file__).parent / "example_ECSClusterLoggingEncryptedWithCMK"
+        test_files_dir = Path(__file__).parent / "example_ECSClusterLoggingEncryptedWithCMK"  # checkov:skip=CKV_SECRET_6 false positive
 
         # when
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
@@ -26,13 +26,14 @@ class TestECSClusterLoggingEncryptedWithCMK(unittest.TestCase):
             "aws_ecs_cluster.fail2",
             "aws_ecs_cluster.fail3",
             "aws_ecs_cluster.fail4",
+            "aws_ecs_cluster.fail5",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 2)
-        self.assertEqual(summary["failed"], 4)
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 

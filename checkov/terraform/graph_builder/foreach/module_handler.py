@@ -3,10 +3,10 @@ from __future__ import annotations
 import itertools
 import typing
 from collections import defaultdict
-from copy import deepcopy
 from typing import Any
 
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.terraform import TFModule
 from checkov.terraform.graph_builder.foreach.abstract_handler import ForeachAbstractHandler
 from checkov.terraform.graph_builder.foreach.consts import FOREACH_STRING, COUNT_STRING
@@ -28,7 +28,8 @@ class ForeachModuleHandler(ForeachAbstractHandler):
         if not modules_blocks:
             return
         current_level = [None]
-        main_module_modules = deepcopy(self.local_graph.vertices_by_module_dependency.get(None)[BlockType.MODULE])
+        # We use `[:]` instead of deepcopy as it's much faster and the list has only primitive types (int indexes)
+        main_module_modules = self.local_graph.vertices_by_module_dependency.get(None)[BlockType.MODULE][:]
         modules_to_render = main_module_modules
 
         while modules_to_render:
@@ -57,12 +58,12 @@ class ForeachModuleHandler(ForeachAbstractHandler):
             count = module_block.attributes.get(COUNT_STRING)
             if for_each:
                 for_each = self._handle_static_statement(module_idx, sub_graph)
-                if not self._is_static_statement(module_idx, sub_graph):
+                if not for_each or not self._is_static_statement(module_idx, sub_graph):
                     continue
                 self._duplicate_module_with_for_each(module_idx, for_each)
             elif count:
                 count = self._handle_static_statement(module_idx, sub_graph)
-                if not self._is_static_statement(module_idx, sub_graph):
+                if not count or not self._is_static_statement(module_idx, sub_graph):
                     continue
                 self._duplicate_module_with_count(module_idx, count)
         return self._get_modules_to_render(current_level)
@@ -134,7 +135,7 @@ class ForeachModuleHandler(ForeachAbstractHandler):
         Go through all child vertices and update source_module_object with foreach_idx
         """
         if current_module_key is None:
-            current_module_key = deepcopy(original_module_key)
+            current_module_key = original_module_key
         if current_module_key not in self.local_graph.vertices_by_module_dependency:
             return
         values = self.local_graph.vertices_by_module_dependency[current_module_key].values()
@@ -147,7 +148,7 @@ class ForeachModuleHandler(ForeachAbstractHandler):
                 self._update_resolved_entry_for_tf_definition(child, original_foreach_or_count_key, original_module_key)
 
                 # Important to copy to avoid changing the object by reference
-                child_source_module_object_copy = deepcopy(child.source_module_object)
+                child_source_module_object_copy = pickle_deepcopy(child.source_module_object)
                 if should_override_foreach_key:
                     child_source_module_object_copy.foreach_idx = None
 
@@ -165,7 +166,7 @@ class ForeachModuleHandler(ForeachAbstractHandler):
             resource_idx: int,
             foreach_idx: int,
             new_key: int | str | None = None) -> None:
-        new_resource = deepcopy(main_resource)
+        new_resource = pickle_deepcopy(main_resource)
         block_name = new_resource.name
         config_attrs = new_resource.config.get(block_name, {})
         key_to_val_changes = self._build_key_to_val_changes(main_resource, new_value, new_key)
@@ -180,8 +181,8 @@ class ForeachModuleHandler(ForeachAbstractHandler):
         )
 
         # Without making this copy the test don't pass, as we might access the data structure in the middle of an update
-        copy_of_vertices_by_module_dependency = deepcopy(self.local_graph.vertices_by_module_dependency)
-        main_resource_module_value = deepcopy(copy_of_vertices_by_module_dependency[main_resource_module_key])
+        copy_of_vertices_by_module_dependency = pickle_deepcopy(self.local_graph.vertices_by_module_dependency)
+        main_resource_module_value = pickle_deepcopy(copy_of_vertices_by_module_dependency[main_resource_module_key])
         new_resource_module_key = TFModule(new_resource.path, new_resource.name, new_resource.source_module_object,
                                            idx_to_change)
 
@@ -194,9 +195,10 @@ class ForeachModuleHandler(ForeachAbstractHandler):
         else:
             self.local_graph.vertices[resource_idx] = new_resource
 
-            key_with_foreach_index = deepcopy(main_resource_module_key)
+            key_with_foreach_index = main_resource_module_key
             key_with_foreach_index.foreach_idx = idx_to_change
             self.local_graph.vertices_by_module_dependency[key_with_foreach_index] = main_resource_module_value
+            self.local_graph.vertices_by_module_dependency_by_name[key_with_foreach_index][new_resource.name] = main_resource_module_value
 
         del copy_of_vertices_by_module_dependency, new_resource, main_resource_module_key, main_resource_module_value
 
@@ -205,10 +207,11 @@ class ForeachModuleHandler(ForeachAbstractHandler):
                                          resource_idx: Any, new_resource: TerraformBlock | None = None,
                                          new_resource_module_key: TFModule | None = None) -> None:
         if new_resource is None:
-            new_resource = deepcopy(main_resource)
-            new_resource_module_key = TFModule(new_resource.path, new_resource.name, new_resource.source_module_object,
-                                               new_resource.for_each_index)
-            del new_resource
+            new_resource_name = main_resource.name
+            new_resource_module_key = TFModule(main_resource.path, new_resource_name, main_resource.source_module_object,
+                                               main_resource.for_each_index)
+        else:
+            new_resource_name = new_resource.name
 
         new_resource_vertex_idx = len(self.local_graph.vertices) - 1
         original_vertex_source_module = self.local_graph.vertices[resource_idx].source_module_object
@@ -220,12 +223,11 @@ class ForeachModuleHandler(ForeachAbstractHandler):
             )
         else:
             source_module_key = None
-        self.local_graph.vertices_by_module_dependency[source_module_key][BlockType.MODULE].append(
-            new_resource_vertex_idx)
-        new_vertices_module_value = self._add_new_vertices_for_module(new_resource_module_key,
-                                                                      main_resource_module_value,
-                                                                      new_resource_vertex_idx)
+        self.local_graph.vertices_by_module_dependency[source_module_key][BlockType.MODULE].append(new_resource_vertex_idx)
+        self.local_graph.vertices_by_module_dependency_by_name[source_module_key][BlockType.MODULE][new_resource_name].append(new_resource_vertex_idx)
+        new_vertices_module_value = self._add_new_vertices_for_module(new_resource_module_key, main_resource_module_value, new_resource_vertex_idx)
         self.local_graph.vertices_by_module_dependency.update({new_resource_module_key: new_vertices_module_value})
+        self.local_graph.vertices_by_module_dependency_by_name.update({new_resource_module_key: {new_resource_name: new_vertices_module_value}})
 
     def _add_new_vertices_for_module(self, new_module_key: TFModule, new_module_value: dict[str, list[int]],
                                      new_resource_vertex_idx: int) -> dict[str, list[int]]:
@@ -233,7 +235,7 @@ class ForeachModuleHandler(ForeachAbstractHandler):
         for vertex_type, vertices_idx in new_module_value.items():
             for vertex_idx in vertices_idx:
                 module_vertex = self.local_graph.vertices[vertex_idx]
-                new_vertex = deepcopy(module_vertex)
+                new_vertex = pickle_deepcopy(module_vertex)
                 new_vertex.source_module_object = new_module_key
                 self.local_graph.vertices.append(new_vertex)
 
@@ -261,7 +263,8 @@ class ForeachModuleHandler(ForeachAbstractHandler):
             config = child.config[child_name][child_type]
         else:
             config = child.config.get(child.name)
-        if isinstance(config, dict) and config.get(RESOLVED_MODULE_ENTRY_NAME) is not None:
+        if isinstance(config, dict) and config.get(RESOLVED_MODULE_ENTRY_NAME) is not None and \
+                len(config.get(RESOLVED_MODULE_ENTRY_NAME)) > 0:
             tf_moudle: TFModule = config[RESOLVED_MODULE_ENTRY_NAME][0].tf_source_modules
             ForeachAbstractHandler._update_nested_tf_module_foreach_idx(original_foreach_or_count_key,
                                                                         original_module_key,

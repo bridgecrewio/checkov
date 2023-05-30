@@ -95,3 +95,31 @@ resource "aws_instance" "public_foreach_loop_list" {
   associate_public_ip_address = each.value
 }
 
+variable "loop_list_of_dicts" {
+  default = [
+    {
+      "name": "public",
+      "public_ip": true
+    },
+    {
+      "name": "private",
+      "public_ip": false
+    }
+  ]
+}
+
+locals {
+  loop_list_of_dicts = [
+    for val in var.loop_list_of_dicts : {
+      name = val.name
+      public_ip = val.public_ip
+    }
+  ]
+}
+
+resource "aws_instance" "public_foreach_loop_list_of_dicts" {
+  for_each = { for val in local.loop_list_of_dicts : val.name => val }
+
+  name                        = each.value.name
+  associate_public_ip_address = each.value.public_ip
+}

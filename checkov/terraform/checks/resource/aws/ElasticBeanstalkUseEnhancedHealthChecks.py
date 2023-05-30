@@ -21,9 +21,13 @@ class ElasticBeanstalkUseEnhancedHealthChecks(BaseResourceCheck):
             for setting in settings:
                 namespace = setting.get("namespace")
                 if isinstance(namespace, list) and namespace[0] == "aws:elasticbeanstalk:healthreporting:system":
-                    setting_val = setting.get("value")
-                    if isinstance(setting_val, list) and setting_val[0] == "enhanced":
-                        return CheckResult.PASSED
+                    name = setting.get("name")
+                    if isinstance(name, list) and name[0] == "HealthStreamingEnabled":
+                        value = setting.get("value")
+                        if value and isinstance(value, list):
+                            value = value[0]
+                            if value == "True" or (value and isinstance(value, bool)):
+                                return CheckResult.PASSED
         return CheckResult.FAILED
 
 
