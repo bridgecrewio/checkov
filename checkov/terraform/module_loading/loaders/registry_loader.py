@@ -193,7 +193,7 @@ class RegistryLoader(ModuleLoader):
                     return None
 
             self.logger.debug(f"Service discovery response: {response.json()}")
-            module_params.tf_modules_endpoint = f"https://{module_params.tf_host_name}{response.json().get('modules.v1')}"
+            module_params.tf_modules_endpoint = self._normalize_module_download_url(module_params, response.json().get('modules.v1'))
         else:
             # use terraform cloud host name and url for the public registry
             module_params.tf_host_name = TFC_HOST_NAME

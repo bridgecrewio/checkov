@@ -43,8 +43,31 @@ def test_determine_tf_api_endpoints_tfc():
     assert module_params.tf_modules_endpoint == "https://registry.terraform.io/v1/modules"
     assert module_params.tf_modules_versions_endpoint == "https://registry.terraform.io/v1/modules/terraform-aws-modules/example/versions"
 
+@pytest.mark.parametrize(
+    "discovery_response",
+    [
+        ({
+        "modules.v1": "/api/registry/v1/modules/",
+        "providers.v1": "/api/registry/v1/providers/",
+        "state.v2": "/api/v2/",
+        "tfe.v2": "/api/v2/",
+        "tfe.v2.1": "/api/v2/",
+        "tfe.v2.2": "/api/v2/",
+        "versions.v1": "https://checkpoint-api.hashicorp.com/v1/versions/"
+        }),
+        ({
+        "modules.v1": "https://example.registry.com/api/registry/v1/modules/",
+        "providers.v1": "https://example.registry.com/api/registry/v1/providers/",
+        "state.v2": "https://example.registry.com/api/v2/",
+        "tfe.v2": "https://example.registry.com/api/v2/",
+        "tfe.v2.1": "https://example.registry.com/api/v2/",
+        "tfe.v2.2": "https://example.registry.com/api/v2/",
+        "versions.v1": "https://checkpoint-api.hashicorp.com/v1/versions/"
+        }),
+    ]
+)
 @responses.activate
-def test_determine_tf_api_endpoints_tfe():
+def test_determine_tf_api_endpoints_tfe(discovery_response):
     # given
     loader = RegistryLoader()
     module_params = ModuleParams("", "", "example.registry.com/terraform-aws-modules/example", "", "", "")
@@ -53,15 +76,7 @@ def test_determine_tf_api_endpoints_tfe():
     responses.add(
         method=responses.GET,
         url=f"https://{module_params.tf_host_name}/.well-known/terraform.json",
-        json={
-        "modules.v1": "/api/registry/v1/modules/",
-        "providers.v1": "/api/registry/v1/providers/",
-        "state.v2": "/api/v2/",
-        "tfe.v2": "/api/v2/",
-        "tfe.v2.1": "/api/v2/",
-        "tfe.v2.2": "/api/v2/",
-        "versions.v1": "https://checkpoint-api.hashicorp.com/v1/versions/"
-        },
+        json=discovery_response,
         status=200,
     )
 
