@@ -256,4 +256,6 @@ class ForeachAbstractHandler:
         for pattern in patterns:
             if re.search(pattern, code):
                 return True
+        if f'[{key}]' in code:
+            return True
         return False

@@ -35,6 +35,25 @@ resource "aws_iam_policy" "pass" {
   })
 }
 
+resource "aws_iam_policy" "pass_unrestrictable" {
+  name        = "test_policy"
+  path        = "/"
+  description = "My test policy"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "s3:ListAllMyBuckets",
+        ]
+        Effect   = "Allow"
+        Resource = "*"
+      },
+    ]
+  })
+}
+
 resource "aws_iam_role_policy" "fail" {
   name = "test_policy"
   role = aws_iam_role.test_role.id
