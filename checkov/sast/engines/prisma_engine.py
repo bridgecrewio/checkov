@@ -124,10 +124,22 @@ class PrismaEngine(SastEngine):
                        policies: List[str]) -> List[Report]:
 
         validate_params(languages, source_codes, policies)
+
+        if bc_integration.bc_source:
+            name = bc_integration.bc_source.name
+        else:
+            name = "unknown"
+
         document = {
             "source_codes": source_codes,
             "policies": policies,
             "languages": [a.value for a in languages],
+            "auth": {
+                "api_key": bc_integration.bc_api_key,
+                "platform_url": bc_integration.api_url,
+                "client_name": name,
+                "version": bc_integration.bc_source_version
+            }
         }
 
         library = ctypes.cdll.LoadLibrary(self.lib_path)

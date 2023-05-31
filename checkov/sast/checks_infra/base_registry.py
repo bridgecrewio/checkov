@@ -78,6 +78,8 @@ class Registry(BaseCheckRegistry):
                     try:
                         raw_check = yaml.safe_load(f)
                         parsed_rule = self.parser.parse_raw_check_to_semgrep(raw_check, str(file))
+                        if dir not in self.checks_dir:
+                            RunnerFilter.notify_external_check(parsed_rule["id"])
                     except Exception as e:
                         logging.warning(f'Cannot parse rule file {file} due to: {e}')
                         continue
@@ -94,11 +96,12 @@ class Registry(BaseCheckRegistry):
     @staticmethod
     def _get_check_from_rule(rule: Dict[str, Any]) -> Optional[BaseSastCheck]:
         name = rule.get('metadata', {}).get('name', '')
+        severity = rule.get('severity', '')
         id = rule.get('id', '')
         if not name or not id:
             logging.warning('Sast check has no name or ID')
             return None
-        check = BaseSastCheck(name, id)
+        check = BaseSastCheck(name, id, severity)
         return check
 
     def _should_skip_check(self, rule: Dict[str, Any]) -> bool:
