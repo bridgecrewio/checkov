@@ -105,7 +105,7 @@ class Runner(BaseRunner[None]):
         for path, result in scan_results.items():
             if not result:
                 continue
-            bc_integration.sourceId = result.get("sourceId")
+            bc_integration.source_id = result.get("sourceId")
             package_file_path = Path(path)
             if self._code_repo_path:
                 try:
