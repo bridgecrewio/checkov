@@ -1,6 +1,14 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.264...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.267...HEAD)
+
+## [2.3.267](https://github.com/bridgecrewio/checkov/compare/2.3.264...2.3.267) - 2023-05-31
+
+### Bug Fix
+
+- **kubernetes:** fix extracting k8s nested resources - [#5146](https://github.com/bridgecrewio/checkov/pull/5146)
+- **sca:** suppression - fix unit testing - [#5158](https://github.com/bridgecrewio/checkov/pull/5158)
+- **sca:** suppression is not working on SCA packages - [#5156](https://github.com/bridgecrewio/checkov/pull/5156)
 
 ## [2.3.264](https://github.com/bridgecrewio/checkov/compare/2.3.261...2.3.264) - 2023-05-30
 
