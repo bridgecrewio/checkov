@@ -7,6 +7,7 @@ from typing import List, Dict, TYPE_CHECKING
 
 import requests
 from requests.exceptions import HTTPError
+from urllib.parse import urljoin
 from urllib.parse import urlparse
 
 from checkov.common.models.consts import TFC_HOST_NAME
@@ -78,7 +79,7 @@ class RegistryLoader(ModuleLoader):
         elif not module_params.tf_modules_endpoint:
             return ModuleContent(dir=None)
 
-        request_download_url = "/".join((module_params.tf_modules_endpoint, module_params.module_source, best_version, "download"))
+        request_download_url = urljoin(module_params.tf_modules_endpoint, "/".join((module_params.module_source, best_version, "download")))
         logging.debug(f"Best version for {module_params.module_source} is {best_version} based on the version constraint {module_params.version}.")
         logging.debug(f"Module download url: {request_download_url}")
         try:
@@ -197,8 +198,10 @@ class RegistryLoader(ModuleLoader):
         else:
             # use terraform cloud host name and url for the public registry
             module_params.tf_host_name = TFC_HOST_NAME
-            module_params.tf_modules_endpoint = "https://registry.terraform.io/v1/modules"
-        module_params.tf_modules_versions_endpoint = "/".join((module_params.tf_modules_endpoint, module_params.module_source, "versions"))
+            module_params.tf_modules_endpoint = "https://registry.terraform.io/v1/modules/"
+
+        # assume module_params.tf_modules_endpoint ends with a slash as per https://developer.hashicorp.com/terraform/internals/module-registry-protocol#service-discovery
+        module_params.tf_modules_versions_endpoint = urljoin(module_params.tf_modules_endpoint, "/".join((module_params.module_source, "versions")))
 
     def _normalize_module_download_url(self, module_params: ModuleParams, module_download_url: str) -> str:
         if not urlparse(module_download_url).netloc:
