@@ -22,8 +22,8 @@ def test_build_definitions_context():
 
     task_context = definition_context["tasks.uri.http"]
 
-    assert task_context["start_line"] == 25
-    assert task_context["end_line"] == 33
+    assert task_context["start_line"] == 24
+    assert task_context["end_line"] == 31
     assert task_context["code_lines"] == [
         (24, "    - name: http\n"),
         (25, "      #checkov:skip=CKV2_ANSIBLE_1\n"),

@@ -173,12 +173,12 @@ def _create_resource_context(definition_raw: list[tuple[int, str]], resource: di
 
     start_line = resource[START_LINE]
     end_line = resource[END_LINE]
-    code_lines = definition_raw[start_line - 1 : end_line - 1]
+    code_lines = definition_raw[start_line - 1 : end_line - 1]  # lines start with index 0
     skipped_checks = collect_suppressions_for_context(code_lines=code_lines)
 
     return {
-        "start_line": start_line + 1,  # lines start with index 0
-        "end_line": end_line + 1,
+        "start_line": start_line,
+        "end_line": end_line - 1,
         "code_lines": code_lines,
         "skipped_checks": skipped_checks,
     }
