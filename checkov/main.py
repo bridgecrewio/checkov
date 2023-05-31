@@ -501,7 +501,7 @@ class Checkov:
                     ))
 
                 # this needs to run after the upload (otherwise the repository does not exist)
-                should_run_contributor_metrics = bc_integration.bc_api_key and self.config.repo_id  # and self.config.prisma_api_url
+                should_run_contributor_metrics = bc_integration.bc_api_key and self.config.repo_id and self.config.prisma_api_url
                 logger.debug(f"Should run contributor metrics report: {should_run_contributor_metrics}")
                 if should_run_contributor_metrics:
                     try:  # collect contributor info and upload
@@ -550,7 +550,7 @@ class Checkov:
                         bc_integration.persist_graphs(self.graphs)
                     self.url = self.commit_repository()
 
-                should_run_contributor_metrics = bc_integration.bc_api_key and self.config.repo_id  # and self.config.prisma_api_url
+                should_run_contributor_metrics = bc_integration.bc_api_key and self.config.repo_id and self.config.prisma_api_url
                 logger.debug(f"Should run contributor metrics report: {should_run_contributor_metrics}")
                 if should_run_contributor_metrics:
                     try:  # collect contributor info and upload
@@ -597,7 +597,7 @@ class Checkov:
                         git_configuration_folders=git_configuration_folders,
                     )
 
-                should_run_contributor_metrics = bc_integration.bc_api_key and self.config.repo_id  # and self.config.prisma_api_url
+                should_run_contributor_metrics = bc_integration.bc_api_key and self.config.repo_id and self.config.prisma_api_url
                 logger.debug(f"Should run contributor metrics report: {should_run_contributor_metrics}")
                 if should_run_contributor_metrics:
                     try:  # collect contributor info and upload
