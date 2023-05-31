@@ -210,8 +210,9 @@ class RegistryLoader(ModuleLoader):
 
     @staticmethod
     def _is_download_url_archive(module_download_url: str) -> bool:
+        module_download_path = urlparse(module_download_url).path
         for extension in MODULE_ARCHIVE_EXTENSIONS:
-            if module_download_url.endswith(extension):
+            if module_download_path.endswith(extension):
                 return True
         query_params_str = urlparse(module_download_url).query
         if query_params_str:
