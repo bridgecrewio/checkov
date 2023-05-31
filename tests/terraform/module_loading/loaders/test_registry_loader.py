@@ -113,16 +113,16 @@ def test_load_module():
 @pytest.mark.parametrize(
     "download_url, expected_result",
     [
-        ("https://example.com/download?archive=tgz", True),
-        ("https://example.com/download?archive=zip", True),
-        ("https://example.com/download/module.zip", True),
-        ("https://example.com/download/module.zip?sig=foo", True),
-        ("https://example.com/download/module/archive", False),
+        ("https://example.com/download?archive=tgz", "tgz"),
+        ("https://example.com/download?archive=zip", "zip"),
+        ("https://example.com/download/module.zip", "zip"),
+        ("https://example.com/download/module.zip?sig=foo", "zip"),
+        ("https://example.com/download/module/archive", None),
     ]
 )
-def test_is_download_url_archive(download_url, expected_result):
-    is_archive = RegistryLoader._is_download_url_archive(download_url)
-    assert is_archive == expected_result
+def test_get_archive_extension(download_url, expected_result):
+    archive_extension = RegistryLoader._get_archive_extension(download_url)
+    assert archive_extension == expected_result
 
 @pytest.mark.parametrize(
     "tf_host_name, module_download_url, expected_result",

@@ -98,9 +98,10 @@ class RegistryLoader(ModuleLoader):
         self.logger.debug(f"X-Terraform-Get: {module_download_url}")
         module_download_url = self._normalize_module_download_url(module_params, module_download_url)
         self.logger.debug(f"Cloning module from normalized url {module_download_url}")
-        if self._is_download_url_archive(module_download_url):
+        archive_extension = self._get_archive_extension(module_download_url)
+        if archive_extension:
             try:
-                registry_getter = RegistryGetter(module_download_url)
+                registry_getter = RegistryGetter(module_download_url, archive_extension)
                 registry_getter.temp_dir = module_params.dest_dir
                 registry_getter.do_get()
                 return_dir = module_params.dest_dir
@@ -209,18 +210,18 @@ class RegistryLoader(ModuleLoader):
         return module_download_url
 
     @staticmethod
-    def _is_download_url_archive(module_download_url: str) -> bool:
+    def _get_archive_extension(module_download_url: str) -> str:
         module_download_path = urlparse(module_download_url).path
         for extension in MODULE_ARCHIVE_EXTENSIONS:
             if module_download_path.endswith(extension):
-                return True
+                return extension
         query_params_str = urlparse(module_download_url).query
         if query_params_str:
             query_params = query_params_str.split("&")
             for query_param in query_params:
                 if query_param.startswith("archive="):
-                    return True
-        return False
+                    return query_params_str.split("=")[1]
+        return None
 
 
 loader = RegistryLoader()
