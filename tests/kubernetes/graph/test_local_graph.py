@@ -52,6 +52,8 @@ class TestKubernetesLocalGraph(TestGraph):
         assert local_graph.vertices[1].id == 'Pod.default.deployment_name.app-myapp'
         assert local_graph.vertices[1].config[PARENT_RESOURCE_KEY_NAME] == 'deployment_name'
         assert local_graph.vertices[1].config[PARENT_RESOURCE_ID_KEY_NAME] == 'Deployment.default.deployment_name'
+        assert local_graph.vertices[1].config.get('kind') == 'Pod'
+        assert local_graph.vertices[1].config.get('apiVersion') == local_graph.vertices[0].config.get('apiVersion')
         assert len(local_graph.vertices[1].attributes.get('spec').get('containers')) == 1
         assert local_graph.vertices[1].metadata.name is None
         assert local_graph.vertices[1].metadata.selector.match_labels is None
