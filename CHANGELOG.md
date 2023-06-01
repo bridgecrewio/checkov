@@ -1,6 +1,24 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.267...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.273...HEAD)
+
+## [2.3.273](https://github.com/bridgecrewio/checkov/compare/2.3.267...2.3.273) - 2023-06-01
+
+### Feature
+
+- **ansible:** add support of inline suppression for Ansible graph checks - [#5143](https://github.com/bridgecrewio/checkov/pull/5143)
+- **terraform:** Use just AWS regex to check EC2Credentials - [#5159](https://github.com/bridgecrewio/checkov/pull/5159)
+
+### Bug Fix
+
+- **cloudformation:** fix evaluate_default_refs func in cfn - [#5164](https://github.com/bridgecrewio/checkov/pull/5164)
+- **general:** fix SARIF output related to security-severity field - [#5160](https://github.com/bridgecrewio/checkov/pull/5160)
+- **terraform:** adjust CKV_AWS_85 to only look for one log type to pass - [#5162](https://github.com/bridgecrewio/checkov/pull/5162)
+- **terraform:** update latest major version of Postgres to v15 - [#5163](https://github.com/bridgecrewio/checkov/pull/5163)
+
+### Platform
+
+- **general:** Add no upload flag and report contributors for all API key runs - [#5052](https://github.com/bridgecrewio/checkov/pull/5052)
 
 ## [2.3.267](https://github.com/bridgecrewio/checkov/compare/2.3.264...2.3.267) - 2023-05-31
 
