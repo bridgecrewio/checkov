@@ -128,7 +128,7 @@ resource "azurerm_windows_virtual_machine" "pass" {
   location            = azurerm_resource_group.example.location
   size                = "Standard_F2"
   admin_username      = "adminuser"
-  admin_password      = "P@$$w0rd1234!"
+  admin_password      = "P@$$w0rd1234!"  # checkov:skip=CKV_SECRET_80 test secret
 
   network_interface_ids = [
     azurerm_network_interface.example.id,
@@ -212,7 +212,7 @@ resource "azurerm_windows_virtual_machine_scale_set" "fail" {
   location                 = azurerm_resource_group.example.location
   sku                      = "Standard_F2"
   instances                = 1
-  admin_password           = "P@55w0rd1234!"
+  admin_password           = "P@55w0rd1234!"  # checkov:skip=CKV_SECRET_80 test secret
   admin_username           = "adminuser"
   enable_automatic_updates = true
 

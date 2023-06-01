@@ -22,6 +22,7 @@ from checkov.terraform.graph_builder.variable_rendering.vertex_reference import 
 
 MODULE_DEPENDENCY_PATTERN_IN_PATH = re.compile(r"\(\[\{.+\#\*\#.+\}\]\)")
 CHECKOV_RENDER_MAX_LEN = force_int(os.getenv("CHECKOV_RENDER_MAX_LEN", "10000"))
+CHECKOV_LOREM_IPSUM_VAL = '\x00'
 
 
 def is_local_path(root_dir: str, source: str) -> bool:
@@ -140,8 +141,8 @@ def remove_function_calls_from_str(str_value: str) -> str:
 
 def remove_index_pattern_from_str(str_value: str) -> str:
     str_value = re.sub(INDEX_PATTERN, "", str_value)
-    str_value = str_value.replace("[", " [ ")
-    str_value = str_value.replace("]", " ] ")
+    str_value = str_value.replace('["', CHECKOV_LOREM_IPSUM_VAL).replace("[", " [ ").replace(CHECKOV_LOREM_IPSUM_VAL, '["')
+    str_value = str_value.replace('"]', CHECKOV_LOREM_IPSUM_VAL).replace("]", " ] ").replace(CHECKOV_LOREM_IPSUM_VAL, '"]')
     return str_value
 
 
@@ -305,9 +306,6 @@ def get_file_path_to_referred_id_networkx(graph_object: DiGraph) -> dict[str, st
 
 def get_file_path_to_referred_id_igraph(graph_object: igraph.Graph) -> dict[str, str]:
     file_path_to_module_id = {}
-    for v in graph_object.vs:
-        if v[CustomAttributes.BLOCK_TYPE] == BlockType.MODULE:
-            modules = v
     modules = [v for v in graph_object.vs if
                v[CustomAttributes.BLOCK_TYPE] == BlockType.MODULE]
     for module_vertex in modules:

@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import os
 import logging
 from http import HTTPStatus
-from typing import List, Dict
+from typing import List, Dict, TYPE_CHECKING
 
 import requests
 from requests.exceptions import HTTPError
@@ -16,7 +18,9 @@ from checkov.terraform.module_loading.loaders.versions_parser import (
     order_versions_in_descending_order,
     get_version_constraints
 )
-from checkov.terraform.module_loading.module_params import ModuleParams
+
+if TYPE_CHECKING:
+    from checkov.terraform.module_loading.module_params import ModuleParams
 
 # https://developer.hashicorp.com/terraform/language/modules/sources#fetching-archives-over-http
 MODULE_ARCHIVE_EXTENSIONS = ["zip", "tar.bz2", "tar.gz", "tgz", "tar.xz", "txz"]
@@ -28,7 +32,7 @@ class RegistryLoader(ModuleLoader):
     def __init__(self) -> None:
         super().__init__()
 
-    def discover(self, module_params):
+    def discover(self, module_params: ModuleParams) -> None:
         module_params.tf_host_name = os.getenv("TF_HOST_NAME", TFC_HOST_NAME)
         module_params.token = os.getenv("TF_REGISTRY_TOKEN", "")
         tfc_token = os.getenv("TFC_TOKEN")
@@ -52,7 +56,7 @@ class RegistryLoader(ModuleLoader):
         if not self._cache_available_versions(module_params):
             return False
         module_params.best_version = self._find_best_version(module_params)
-        if not module_params.inner_module:
+        if not module_params.inner_module and module_params.tf_host_name:
             module_params.dest_dir = os.path.join(module_params.root_dir, module_params.external_modules_folder_name,
                                                   module_params.tf_host_name, *module_params.module_source.split("/"),
                                                   module_params.best_version)
@@ -71,6 +75,8 @@ class RegistryLoader(ModuleLoader):
                 module_params.best_version = self._find_best_version(module_params)
         if os.path.exists(module_params.dest_dir):
             return ModuleContent(dir=module_params.dest_dir)
+        elif not module_params.tf_modules_endpoint:
+            return ModuleContent(dir=None)
 
         request_download_url = "/".join((module_params.tf_modules_endpoint, module_params.module_source, best_version, "download"))
         logging.debug(f"Best version for {module_params.module_source} is {best_version} based on the version constraint {module_params.version}.")
@@ -113,9 +119,12 @@ class RegistryLoader(ModuleLoader):
         return ""
 
     def _find_best_version(self, module_params: ModuleParams) -> str:
-        versions_by_size = RegistryLoader.modules_versions_cache.get(module_params.tf_modules_versions_endpoint, [])
+        versions_by_size = RegistryLoader.modules_versions_cache.get(module_params.tf_modules_versions_endpoint, [])  # type:ignore[arg-type]  # argument can be None
         if module_params.version == "latest":
             module_params.version = versions_by_size[0]
+        elif module_params.version is None:
+            return "latest"
+
         version_constraints = get_version_constraints(module_params.version)
         num_of_matches = 0
         for version in versions_by_size:
@@ -133,6 +142,9 @@ class RegistryLoader(ModuleLoader):
     def _cache_available_versions(self, module_params: ModuleParams) -> bool:
         # Get all available versions for a module in the registry and cache them.
         # Returns False on failure.
+        if not module_params.tf_modules_versions_endpoint:
+            return False
+
         try:
             response = requests.get(
                 url=module_params.tf_modules_versions_endpoint,
@@ -165,7 +177,7 @@ class RegistryLoader(ModuleLoader):
         """
         Determines terraform registry endpoints - tf_host_name, tf_modules_endpoint, tf_modules_versions_endpoint
         """
-        if module_params.module_source.startswith(module_params.tf_host_name):
+        if module_params.tf_host_name and module_params.module_source.startswith(module_params.tf_host_name):
             # check if module source supports native Terraform services
             # https://www.terraform.io/internals/remote-service-discovery#remote-service-discovery
             module_params.module_source = module_params.module_source.replace(f"{module_params.tf_host_name}/", "")
@@ -178,7 +190,7 @@ class RegistryLoader(ModuleLoader):
             except HTTPError as e:
                 self.logger.debug(e)
                 if response.status_code != HTTPStatus.OK and response.status_code != HTTPStatus.NO_CONTENT:
-                    return False
+                    return None
 
             self.logger.debug(f"Service discovery response: {response.json()}")
             module_params.tf_modules_endpoint = f"https://{module_params.tf_host_name}{response.json().get('modules.v1')}"
@@ -188,19 +200,19 @@ class RegistryLoader(ModuleLoader):
             module_params.tf_modules_endpoint = "https://registry.terraform.io/v1/modules"
         module_params.tf_modules_versions_endpoint = "/".join((module_params.tf_modules_endpoint, module_params.module_source, "versions"))
 
-    def _normalize_module_download_url(self, module_params: ModuleParams, module_download_url) -> str:
+    def _normalize_module_download_url(self, module_params: ModuleParams, module_download_url: str) -> str:
         if not urlparse(module_download_url).netloc:
             module_download_url = f"https://{module_params.tf_host_name}{module_download_url}"
         return module_download_url
 
     @staticmethod
-    def _is_download_url_archive(module_download_url) -> bool:
+    def _is_download_url_archive(module_download_url: str) -> bool:
         for extension in MODULE_ARCHIVE_EXTENSIONS:
             if module_download_url.endswith(extension):
                 return True
-        query_params = urlparse(module_download_url).query
-        if query_params:
-            query_params = query_params.split("&")
+        query_params_str = urlparse(module_download_url).query
+        if query_params_str:
+            query_params = query_params_str.split("&")
             for query_param in query_params:
                 if query_param.startswith("archive="):
                     return True

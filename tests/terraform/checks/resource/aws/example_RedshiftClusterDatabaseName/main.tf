@@ -3,7 +3,7 @@ resource "aws_redshift_cluster" "pass" {
   availability_zone                   = data.aws_availability_zones.available.names[0]
   database_name                       = "mydb"
   master_username                     = "foo_test"
-  master_password                     = "Mustbe8characters"
+  master_password                     = "Mustbe8characters"  # checkov:skip=CKV_SECRET_6 test secret
   node_type                           = "dc2.large"
   automated_snapshot_retention_period = 0
   allow_version_upgrade               = false
