@@ -16,7 +16,7 @@ resource "google_sql_database_instance" "pass_1" {
 #PASS case 2: database_version is not starting with "MYSQL_"
 resource "google_sql_database_instance" "pass_2" {
   name             = "pud_sqldb"
-  database_version = "POSTGRES_14"
+  database_version = "POSTGRES_15"
 
   deletion_protection = false
   settings {
