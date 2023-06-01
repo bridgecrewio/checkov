@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import copy
 import dataclasses
 import logging
 import os
@@ -25,6 +24,7 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
 from checkov.common.util import data_structures_utils
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.parser_utils import get_module_from_full_path, get_abs_path, \
     get_tf_definition_key_from_module_dependency, TERRAFORM_NESTED_MODULE_PATH_PREFIX, \
     TERRAFORM_NESTED_MODULE_PATH_ENDING, TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH, \
@@ -78,7 +78,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         super().__init__(file_extensions=['.tf', '.hcl'])
         self.external_registries = [] if external_registries is None else external_registries
         self.graph_class = graph_class
-        self.parser = parser or TFParser() if strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'False')) else Parser()
+        self.parser = parser or TFParser() if strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'True')) else Parser()
         self.definitions: dict[TFDefinitionKeyType, dict[str, Any]] | None = None
         self.context = None
         self.breadcrumbs = None
@@ -222,7 +222,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                 entity_context, entity_evaluations = self.get_entity_context_and_evaluations(entity)
                 if entity_context:
                     full_file_path = entity[CustomAttributes.FILE_PATH]
-                    copy_of_check_result = copy.deepcopy(check_result)
+                    copy_of_check_result = pickle_deepcopy(check_result)
                     for skipped_check in entity_context.get('skipped_checks', []):
                         if skipped_check['id'] == check.id:
                             copy_of_check_result['result'] = CheckResult.SKIPPED
@@ -377,7 +377,12 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                 module, _ = get_module_from_full_path(full_file_path)
                 if module:
                     full_definition_path = entity_id.split('.')
-                    module_name_index = len(full_definition_path) - full_definition_path[::-1][1:].index(BlockType.MODULE) - 1  # the next item after the last 'module' prefix is the module name
+                    try:
+                        module_name_index = len(full_definition_path) - full_definition_path[::-1][1:].index(BlockType.MODULE) - 1  # the next item after the last 'module' prefix is the module name
+                    except ValueError as e:
+                        # TODO handle multiple modules with the same name in repo
+                        logging.warning(f'Failed to get module name for resource {entity_id}. {str(e)}')
+                        continue
                     module_name = full_definition_path[module_name_index]
                     caller_context = definition_context[module].get(BlockType.MODULE, {}).get(module_name)
                     if not caller_context:

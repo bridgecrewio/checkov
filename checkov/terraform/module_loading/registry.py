@@ -26,11 +26,14 @@ class ModuleLoaderRegistry:
         self.failed_urls_cache: Set[str] = set()
         self.root_dir = ""  # root dir for storing external modules
 
-    def load(self, current_dir: str, source: str, source_version: Optional[str]) -> ModuleContent:
+    def load(self, current_dir: str, source: str | None, source_version: Optional[str]) -> ModuleContent | None:
         """
 Search all registered loaders for the first one which is able to load the module source type. For more
 information, see `loader.ModuleLoader.load`.
         """
+        if source is None:
+            return None
+
         module_address = f'{source}:{source_version}'
         if module_address in self.module_content_cache:
             logging.debug(f'Used the cache for module {module_address}')

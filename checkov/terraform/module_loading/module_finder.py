@@ -15,11 +15,11 @@ class ModuleDownload:
         self.module_link: str | None = None
         self.version: str | None = None
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.source_dir} -> {self.module_link} ({self.version})"
 
     @property
-    def address(self):
+    def address(self) -> str:
         return f'{self.module_link}:{self.version}'
 
 
@@ -41,7 +41,7 @@ def find_modules(path: str) -> List[ModuleDownload]:
                                 in_module = True
                                 curr_md = ModuleDownload(os.path.dirname(os.path.join(root, file_name)))
                                 continue
-                        if in_module:
+                        if in_module and curr_md:
                             if line.startswith('}'):
                                 in_module = False
                                 if curr_md.module_link is None:
@@ -66,17 +66,22 @@ def find_modules(path: str) -> List[ModuleDownload]:
     return modules_found
 
 
-def should_download(path: str) -> bool:
-    return not (path.startswith('./') or path.startswith('../') or path.startswith('/'))
+def should_download(path: str | None) -> bool:
+
+    return path is not None and not (path.startswith('./') or path.startswith('../') or path.startswith('/'))
 
 
-def load_tf_modules(path: str, should_download_module: Callable[[str], bool] = should_download, run_parallel=False,
-                    modules_to_load: List[ModuleDownload] = None):
+def load_tf_modules(
+    path: str,
+    should_download_module: Callable[[str | None], bool] = should_download,
+    run_parallel: bool = False,
+    modules_to_load: List[ModuleDownload] | None = None
+) -> None:
     module_loader_registry.root_dir = path
     if not modules_to_load:
         modules_to_load = find_modules(path)
 
-    def _download_module(m):
+    def _download_module(m: ModuleDownload) -> None:
         if should_download_module(m.module_link):
             logging.info(f'Downloading module {m.address}')
             try:

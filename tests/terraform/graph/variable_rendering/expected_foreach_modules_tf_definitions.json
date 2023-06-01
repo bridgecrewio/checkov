@@ -90,7 +90,7 @@
             "us-west-2"
           ],
           "test_provider": [
-            "${True}"
+            true
           ],
           "__address__": "aws.test_provider"
         }

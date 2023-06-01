@@ -695,7 +695,7 @@ class TestRunnerValid(unittest.TestCase):
         summary = report.get_summary()
 
         self.assertEqual(summary["passed"], 2)  # "aws_iam_policy.policy_pass" passes both checks
-        self.assertEqual(summary["failed"], 3)
+        self.assertEqual(summary["failed"], 6)  # the rest fails both checks
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
@@ -763,6 +763,7 @@ class TestRunnerValid(unittest.TestCase):
         assert report.passed_checks[1].file_path.endswith('.json')
 
     @mock.patch.dict(os.environ, {'CHECKOV_ENABLE_NESTED_MODULES': 'False'})
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_plan_resources_ids(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_plan_path = current_dir + "/resources/plan_resources_ids/tfplan.json"

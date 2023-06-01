@@ -17,18 +17,18 @@ class TestDocDBLogging(unittest.TestCase):
 
         passing_resources = {
             "AWS::DocDB::DBCluster.DocDBEnabled",
-        }
-        failing_resources = {
-            "AWS::DocDB::DBCluster.DocDBDefault",
             "AWS::DocDB::DBCluster.DocDBAudit",
             "AWS::DocDB::DBCluster.DocDBProfiler",
         }
+        failing_resources = {
+            "AWS::DocDB::DBCluster.DocDBDefault",
+        }
 
-        passed_check_resources = set([c.resource for c in report.passed_checks])
-        failed_check_resources = set([c.resource for c in report.failed_checks])
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 1)
-        self.assertEqual(summary["failed"], 3)
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 

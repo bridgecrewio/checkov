@@ -2,6 +2,8 @@ pass:
   - "aws_s3_bucket.enabled"
   - "aws_s3_bucket.enabled_v4"
   - "aws_s3_bucket.enabled_var"
+  - 'aws_s3_bucket.this["test-bucket1"]'
+  - 'aws_s3_bucket.this["test-bucket2"]'
 fail:
   - "aws_s3_bucket.default"
   - "aws_s3_bucket.disabled"

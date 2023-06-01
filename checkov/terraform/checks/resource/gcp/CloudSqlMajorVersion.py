@@ -14,7 +14,7 @@ class CloudSqlMajorVersion(BaseResourceValueCheck):
         return 'database_version'
 
     def get_expected_values(self):
-        return ["POSTGRES_14", "MYSQL_8_0", "SQLSERVER_2019_STANDARD", "SQLSERVER_2019_WEB",
+        return ["POSTGRES_15", "MYSQL_8_0", "SQLSERVER_2019_STANDARD", "SQLSERVER_2019_WEB",
                 "SQLSERVER_2019_ENTERPRISE", "SQLSERVER_2019_EXPRESS"]
 
 

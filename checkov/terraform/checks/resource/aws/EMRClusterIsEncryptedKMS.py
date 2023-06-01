@@ -14,7 +14,7 @@ class EMRClusterIsEncryptedKMS(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         if 'configuration' not in conf:
-            return CheckResult.SKIPPED
+            return CheckResult.UNKNOWN
         configuration = conf['configuration'][0]
         if "SSE-KMS" in str(configuration):
             return CheckResult.PASSED

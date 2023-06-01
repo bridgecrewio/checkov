@@ -4,9 +4,9 @@ import abc
 import json
 import re
 import typing
-from copy import deepcopy
 from typing import Any
 
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.terraform import TFModule
 from checkov.terraform.graph_builder.foreach.consts import COUNT_STRING, FOREACH_STRING, COUNT_KEY, EACH_VALUE, \
     EACH_KEY, REFERENCES_VALUES
@@ -58,7 +58,7 @@ class ForeachAbstractHandler:
         sub_graph.vertices = [{}] * len(self.local_graph.vertices)
         for i, block in enumerate(self.local_graph.vertices):
             if not (block.block_type == BlockType.RESOURCE and i not in blocks_to_render):
-                sub_graph.vertices[i] = deepcopy(block)
+                sub_graph.vertices[i] = pickle_deepcopy(block)
         sub_graph.edges = [
             edge for edge in self.local_graph.edges if
             (sub_graph.vertices[edge.dest] and sub_graph.vertices[edge.origin])
@@ -140,7 +140,10 @@ class ForeachAbstractHandler:
                         v_changed = True
                     else:
                         attrs[k][0] = attrs[k][0].replace("${" + key_to_change + "}", str(val_to_change))
-                        attrs[k][0] = attrs[k][0].replace(key_to_change, str(val_to_change))
+                        if self.need_to_add_quotes(attrs[k][0], key_to_change):
+                            attrs[k][0] = attrs[k][0].replace(key_to_change, f'"{str(val_to_change)}"')
+                        else:
+                            attrs[k][0] = attrs[k][0].replace(key_to_change, str(val_to_change))
                         v_changed = True
                 elif isinstance(v, list) and len(v) == 1 and isinstance(v[0], list):
                     for i, item in enumerate(v):
@@ -246,3 +249,13 @@ class ForeachAbstractHandler:
     @staticmethod
     def extract_from_list(val: Any) -> Any:
         return val[0] if len(val) == 1 and isinstance(val[0], (str, int, list)) else val
+
+    @staticmethod
+    def need_to_add_quotes(code, key) -> bool:
+        patterns = [r'lower\(' + key + r'\)', r'upper\(' + key + r'\)']
+        for pattern in patterns:
+            if re.search(pattern, code):
+                return True
+        if f'[{key}]' in code:
+            return True
+        return False

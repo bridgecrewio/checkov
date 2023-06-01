@@ -8,11 +8,6 @@ resource "azurerm_storage_account" "pass" {
   account_tier             = "Standard"
   account_replication_type = "LRS"
 
-  network_rules {
-    default_action             = "Allow"
-    ip_rules                   = ["100.0.0.2"]
-    virtual_network_subnet_ids = [azurerm_subnet.dep_pud_subn.id]
-  }
   tags = {
     environment = "staging"
   }
@@ -40,12 +35,8 @@ resource "azurerm_storage_account" "fail" {
   location                 = azurerm_resource_group.pud_rg.location
   account_tier             = "Standard"
   account_replication_type = "GRS"
-  network_rules {
-    default_action = "Allow"
-  }
 
   tags = {
     environment = "staging"
   }
 }
-

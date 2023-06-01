@@ -9,7 +9,7 @@ resource "aws_mq_broker" "unknown" {
   # auto_minor_version_upgrade = true
   user {
     username = "ExampleUser"
-    password = "MindTheGapps"
+    password = "MindTheGapps"  # checkov:skip=CKV_SECRET_6 test secret
   }
 }
 
