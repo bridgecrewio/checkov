@@ -40,7 +40,7 @@ resource "aws_emr_cluster" "test" {
   keep_job_flow_alive_when_no_steps = true
 
   kerberos_attributes {
-    kdc_admin_password                = "somePassword"
+    kdc_admin_password                = "somePassword"  # checkov:skip=CKV_SECRET_6 test secret
     realm                             = "EC2.INTERNAL"
     }
 }

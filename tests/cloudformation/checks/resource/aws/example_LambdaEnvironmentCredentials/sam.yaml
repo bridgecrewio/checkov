@@ -33,4 +33,4 @@ Resources:
       Environment:
         Variables:
           key: value
-          AWS_ACCESS_KEY_ID: AKIAIOSFODNN7EXAMPLE
+          AWS_ACCESS_KEY_ID: AKIAIOSFODNN7EXAMPLE  # checkov:skip=CKV_SECRET_2 test secret

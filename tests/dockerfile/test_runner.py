@@ -120,7 +120,7 @@ class TestRunnerValid(unittest.TestCase):
             external_checks_dir=None,
             runner_filter=RunnerFilter(
                 framework=["dockerfile"],
-                checks=["CKV_DOCKER_1", "CKV_DOCKER_5", "CKV_DOCKER_9"],
+                checks=["CKV_DOCKER_1", "CKV_DOCKER_5", "CKV_DOCKER_9", "CKV2_DOCKER_7"],
             ),
         )
 
@@ -129,11 +129,11 @@ class TestRunnerValid(unittest.TestCase):
 
         self.assertEqual(summary["passed"], 1)
         self.assertEqual(summary["failed"], 0)
-        self.assertEqual(summary["skipped"], 2)
+        self.assertEqual(summary["skipped"], 3)
         self.assertEqual(summary["parsing_errors"], 0)
 
         expected_skipped_cehcks = [record.check_id for record in report.skipped_checks]
-        self.assertCountEqual(["CKV_DOCKER_1", "CKV_DOCKER_5"], expected_skipped_cehcks)
+        self.assertCountEqual(["CKV_DOCKER_1", "CKV_DOCKER_5", "CKV2_DOCKER_7"], expected_skipped_cehcks)
 
     def test_record_has_severity(self):
         custom_check_id = "MY_CUSTOM_CHECK"

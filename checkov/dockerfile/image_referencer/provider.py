@@ -43,13 +43,14 @@ class DockerfileProvider:
                 # ex. FROM amazonlinux:2 as run
                 name = name.split(" AS ")[0]
 
+            file_path = f'{removeprefix(file_path, os.getenv("BC_ROOT_DIR", ""))}'
             images.append(
                 Image(
                     file_path=file_path,
                     name=name,
                     start_line=instruction[DOCKERFILE_STARTLINE] + 1,  # starts with 0
                     end_line=instruction[DOCKERFILE_ENDLINE] + 1,
-                    related_resource_id=f'{removeprefix(file_path, os.getenv("BC_ROOT_DIR", ""))}.FROM',
+                    related_resource_id=f'{file_path}:{file_path}.FROM',
                 )
             )
 

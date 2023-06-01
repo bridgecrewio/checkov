@@ -19,7 +19,7 @@ resource "azurerm_batch_pool" "test" {
     container_registries {
       registry_server = "myContainerRegistry.azurecr.io"
       user_name       = "myUserName"
-      password        = "myPassword"
+      password        = "myPassword"  # checkov:skip=CKV_SECRET_6 test secret
     }
   }
 }

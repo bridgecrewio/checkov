@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any
 from checkov.ansible.checks.registry import registry
 from checkov.ansible.graph_builder.graph_components.resource_types import ResourceType
 from checkov.ansible.graph_builder.local_graph import AnsibleLocalGraph
-from checkov.ansible.utils import TASK_RESERVED_KEYWORDS, get_relevant_file_content
+from checkov.ansible.utils import get_relevant_file_content, build_definitions_context, generate_task_name
 from checkov.common.output.report import CheckType
 from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.yaml_doc.runner import Runner as YamlRunner
@@ -51,8 +51,14 @@ class Runner(YamlRunner):
         return None
 
     def get_resource(
-        self, file_path: str, key: str, supported_entities: Iterable[str],
-            start_line: int = -1, end_line: int = -1, graph_resource: bool = False) -> str:
+        self,
+        file_path: str,
+        key: str,
+        supported_entities: Iterable[str],
+        start_line: int = -1,
+        end_line: int = -1,
+        graph_resource: bool = False,
+    ) -> str:
         if not self.definitions or not isinstance(self.definitions, dict):
             return key
 
@@ -82,7 +88,7 @@ class Runner(YamlRunner):
                                 )
                                 if resource_name is not None:
                                     return resource_name
-                            return self._generate_resource_name(task=task) or resource_key
+                            return generate_task_name(task=task) or resource_key
                 elif ResourceType.BLOCK in code_block:
                     resource_name = self._handle_block_tasks(
                         start_line=start_line,
@@ -92,7 +98,7 @@ class Runner(YamlRunner):
                     if resource_name is not None:
                         return resource_name
                 else:
-                    return self._generate_resource_name(task=code_block) or resource_key
+                    return generate_task_name(task=code_block) or resource_key
 
         return resource_key
 
@@ -111,22 +117,13 @@ class Runner(YamlRunner):
                     )
                     if resource_name is not None:
                         return resource_name
-                return self._generate_resource_name(task=block_task, prefix=prefix)
+                return generate_task_name(task=block_task, prefix=prefix)
 
         return None
 
-    def _generate_resource_name(self, task: dict[str, Any], prefix: str = "") -> str | None:
-        # grab the task name at the beginning before trying to find the actual module name
-        task_name = task.get("name") or "unknown"
-
-        for name in task:
-            if name in TASK_RESERVED_KEYWORDS:
-                continue
-
-            if prefix:
-                # if the task is found in a block, then prefix the module name with 'block'
-                name = f"{prefix}{name}"
-
-            return f"{ResourceType.TASKS}.{name}.{task_name}"
-
-        return None
+    def build_definitions_context(
+        self,
+        definitions: dict[str, dict[str, Any] | list[dict[str, Any]]],
+        definitions_raw: dict[str, list[tuple[int, str]]],
+    ) -> dict[str, dict[str, Any]]:
+        return build_definitions_context(definitions=definitions, definitions_raw=definitions_raw)

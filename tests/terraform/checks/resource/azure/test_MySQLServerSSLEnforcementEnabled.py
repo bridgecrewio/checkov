@@ -16,7 +16,7 @@ class TestMySQLServerSSLEnforcementEnabled(unittest.TestCase):
               resource_group_name = azurerm_resource_group.example.name
 
               administrator_login          = "mysqladminun"
-              administrator_login_password = "H@Sh1CoR3!"
+              administrator_login_password = "H@Sh1CoR3!"  # checkov:skip=CKV_SECRET_80 test secret
 
               sku_name   = "B_Gen5_2"
               storage_mb = 5120

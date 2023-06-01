@@ -3,9 +3,10 @@ from __future__ import annotations
 import logging
 import os
 from collections.abc import Iterable
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
+from checkov.common.models.enums import CheckResult
 from checkov.common.typing import LibraryGraphConnector
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.graph.graph_builder.consts import GraphSource
@@ -29,6 +30,7 @@ from checkov.dockerfile.utils import (
     get_files_definitions,
     get_scannable_file_paths,
     get_abs_path,
+    build_definitions_context,
 )
 from checkov.runner_filter import RunnerFilter
 
@@ -59,6 +61,7 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, list[_Instruction]]]"], B
         )
         self.graph_registry = get_graph_checks_registry(self.check_type)
 
+        self.context: dict[str, dict[str, Any]] = {}
         self.definitions: "dict[str, dict[str, list[_Instruction]]]" = {}  # type:ignore[assignment]  # need to check, how to support subclass differences
         self.definitions_raw: "dict[str, list[str]]" = {}       # type:ignore[assignment]
         self.root_folder: str | None = None
@@ -79,32 +82,36 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, list[_Instruction]]]"], B
             self.pbar.turn_off_progress_bar()
 
         report = Report(self.check_type)
-        files_list: "Iterable[str]" = []
-        filepath_fn = None
-        if external_checks_dir:
-            for directory in external_checks_dir:
-                registry.load_external_checks(directory)
 
-                if CHECKOV_CREATE_GRAPH and self.graph_registry:
-                    self.graph_registry.load_external_checks(directory)
+        if not self.context or not self.definitions:
+            files_list: "Iterable[str]" = []
+            filepath_fn = None
+            if external_checks_dir:
+                for directory in external_checks_dir:
+                    registry.load_external_checks(directory)
 
-        if files:
-            files_list = [file for file in files if is_docker_file(os.path.basename(file))]
+                    if CHECKOV_CREATE_GRAPH and self.graph_registry:
+                        self.graph_registry.load_external_checks(directory)
 
-        if root_folder:
-            filepath_fn = lambda f: f"/{os.path.relpath(f, os.path.commonprefix((root_folder, f)))}"
-            self.root_folder = root_folder
+            if files:
+                files_list = [file for file in files if is_docker_file(os.path.basename(file))]
 
-            files_list = get_scannable_file_paths(root_folder=root_folder, excluded_paths=runner_filter.excluded_paths)
+            if root_folder:
+                filepath_fn = lambda f: f"/{os.path.relpath(f, os.path.commonprefix((root_folder, f)))}"
+                self.root_folder = root_folder
 
-        self.definitions, self.definitions_raw = get_files_definitions(files_list, filepath_fn)
+                files_list = get_scannable_file_paths(root_folder=root_folder, excluded_paths=runner_filter.excluded_paths)
 
-        if CHECKOV_CREATE_GRAPH and self.graph_registry and self.graph_manager:
-            logging.info("Creating Dockerfile graph")
-            local_graph = self.graph_manager.build_graph_from_definitions(definitions=self.definitions)
-            logging.info("Successfully created Dockerfile graph")
+            self.definitions, self.definitions_raw = get_files_definitions(files_list, filepath_fn)
 
-            self.graph_manager.save_graph(local_graph)
+            self.context = build_definitions_context(definitions=self.definitions, definitions_raw=self.definitions_raw)
+
+            if CHECKOV_CREATE_GRAPH and self.graph_registry and self.graph_manager:
+                logging.info("Creating Dockerfile graph")
+                local_graph = self.graph_manager.build_graph_from_definitions(definitions=self.definitions)
+                logging.info("Successfully created Dockerfile graph")
+
+                self.graph_manager.save_graph(local_graph)
 
         self.pbar.initiate(len(self.definitions))
 
@@ -256,7 +263,34 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, list[_Instruction]]]"], B
         result_instruction: str,
     ) -> None:
         codeblock: list[tuple[int, str]] = []
-        self.calc_record_codeblock(codeblock, definitions_raw, docker_file_path, endline, startline)
+
+        if result_instruction:
+            entity_context = next(
+                (
+                    resource
+                    for resource in self.context[docker_file_path][result_instruction]
+                    if resource["start_line"] == startline + 1
+                ),
+                None,
+            )
+            if entity_context:
+                codeblock = entity_context["code_lines"]
+                skipped_check = next(
+                    (
+                        skipped_check
+                        for skipped_check in entity_context.get("skipped_checks", [])
+                        if skipped_check["id"] in (check.id, check.bc_id)
+                    ),
+                    None,
+                )
+                if skipped_check:
+                    check_result["result"] = CheckResult.SKIPPED
+                    check_result["suppress_comment"] = skipped_check.get("suppress_comment", "")
+            else:
+                logging.info(f"Could not find context for resource with start line {startline + 1} in {self.context[docker_file_path][result_instruction]}")
+        else:
+            self.calc_record_codeblock(codeblock, definitions_raw, docker_file_path, endline, startline)
+
         record = Record(
             check_id=check.id,
             bc_check_id=check.bc_id,
