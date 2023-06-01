@@ -55,7 +55,8 @@ class SharedHostNetworkNamespace(BaseK8Check):
                 else:
                     return CheckResult.PASSED
             return CheckResult.PASSED
-        return CheckResult.FAILED
+        # This value is by default set to false    
+        return CheckResult.PASSED
 
 
 check = SharedHostNetworkNamespace()
