@@ -311,6 +311,12 @@ class ExtArgumentParser(configargparse.ArgumentParser):
                  "Requires --bc-api-key to be a Prisma Cloud Access Key in the following format: <access_key_id>::<secret_key>",
         )
         self.add(
+            "--skip-results-upload",
+            action='store_true',
+            help="Do not upload scan results to the platform to view in the console. Results are only available locally. "
+                 "If you use the --support flag, logs will still get uploaded.",
+        )
+        self.add(
             "--docker-image",
             "--image",
             help="Scan docker images by name or ID. Only works with --bc-api-key flag",
