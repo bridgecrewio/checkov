@@ -99,6 +99,7 @@ class BcPlatformIntegration:
         self.repo_branch: str | None = None
         self.skip_fixes = False
         self.skip_download = False
+        self.source_id: str | None = None
         self.bc_source: SourceType | None = None
         self.bc_source_version: str | None = None
         self.timestamp: str | None = None

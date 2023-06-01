@@ -1,6 +1,29 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.261...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.267...HEAD)
+
+## [2.3.267](https://github.com/bridgecrewio/checkov/compare/2.3.264...2.3.267) - 2023-05-31
+
+### Bug Fix
+
+- **kubernetes:** fix extracting k8s nested resources - [#5146](https://github.com/bridgecrewio/checkov/pull/5146)
+- **sca:** suppression - fix unit testing - [#5158](https://github.com/bridgecrewio/checkov/pull/5158)
+- **sca:** suppression is not working on SCA packages - [#5156](https://github.com/bridgecrewio/checkov/pull/5156)
+
+## [2.3.264](https://github.com/bridgecrewio/checkov/compare/2.3.261...2.3.264) - 2023-05-30
+
+### Feature
+
+- **terraform:** don't fail CKV_AWS_2 on un-rendered value - [#5147](https://github.com/bridgecrewio/checkov/pull/5147)
+- **terraform:** Foreach support resources edges - [#5145](https://github.com/bridgecrewio/checkov/pull/5145)
+
+### Bug Fix
+
+- **terraform:** exclude unrestrictable actions in CKV_AWS_355 and CKV_AWS_356 - [#5135](https://github.com/bridgecrewio/checkov/pull/5135)
+
+### Documentation
+
+- **general:** Update operators with examples - [#5137](https://github.com/bridgecrewio/checkov/pull/5137)
 
 ## [2.3.261](https://github.com/bridgecrewio/checkov/compare/2.3.259...2.3.261) - 2023-05-28
 
