@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Dict, List, Any
 
 from checkov.common.util.data_structures_utils import pickle_deepcopy
@@ -23,4 +25,13 @@ def convert_terraform_conf_to_iam_policy(conf: Dict[str, List[Dict[str, Any]]]) 
                 statement["Effect"] = statement.pop("effect")[0]
             if "effect" not in statement and "Effect" not in statement:
                 statement["Effect"] = "Allow"
+            if "condition" in statement:
+                conditions = statement.pop("condition")
+                if conditions and isinstance(conditions, list):
+                    statement["Condition"] = {}
+                    for condition in conditions:
+                        cond_operator = condition["test"][0]
+                        cond_key = condition["variable"][0]
+                        cond_value = condition["values"][0]
+                        statement["Condition"].setdefault(cond_operator, {})[cond_key] = cond_value
     return result
