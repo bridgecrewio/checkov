@@ -7,6 +7,7 @@ from typing import Optional, Tuple, Dict, List, Any, cast
 
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.parsers.node import ListNode
+from checkov.common.util.consts import LINE_FIELD_NAMES
 from checkov.common.util.type_forcers import force_list
 from checkov.terraform.context_parsers.tf_plan import parse
 
@@ -161,7 +162,7 @@ def _prepare_resource_block(
         changes = resource_changes.get(resource_address)  # type:ignore[arg-type]  # becaus eit can be None
         if changes:
             resource_conf[TF_PLAN_RESOURCE_CHANGE_ACTIONS] = changes.get("change", {}).get("actions") or []
-            resource_conf[TF_PLAN_RESOURCE_CHANGE_KEYS] = changes["changed_keys"]
+            resource_conf[TF_PLAN_RESOURCE_CHANGE_KEYS] = changes[TF_PLAN_RESOURCE_CHANGE_KEYS]
 
         resource_block[resource_type][resource.get("name", "default")] = resource_conf
         prepared = True
@@ -247,16 +248,18 @@ def _get_resource_changes(template: dict[str, Any]) -> dict[str, dict[str, Any]]
             changes = []
 
             # before + after are None when resources are created/destroyed, so make them safe
-            if not each["change"]["before"]:
+            if each["change"]["before"] is None:
                 each["change"]["before"] = {}
-            if not each["change"]["after"]:
+            if each["change"]["after"] is None:
                 each["change"]["after"] = {}
 
-            for field in each["change"]["before"]:
-                if each["change"]["before"][field] != each["change"]["after"].get(field):
+            for field, value in each["change"]["before"].items():
+                if field in LINE_FIELD_NAMES:
+                    continue # don't care about line #s
+                if value != each["change"]["after"].get(field):
                     changes.append(field)
  
-            resource_changes_map[each["address"]]["changed_keys"] = changes
+            resource_changes_map[each["address"]][TF_PLAN_RESOURCE_CHANGE_KEYS] = changes
     return resource_changes_map
 
 

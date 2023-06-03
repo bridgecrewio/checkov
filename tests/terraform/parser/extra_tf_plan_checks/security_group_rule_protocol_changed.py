@@ -24,4 +24,4 @@ class SecurityGroupRuleProtocolChanged(BaseResourceCheck):
         return CheckResult.PASSED
 
 
-scanner = SecurityGroupRuleProtocolChanged()
+check = SecurityGroupRuleProtocolChanged()
