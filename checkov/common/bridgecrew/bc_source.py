@@ -2,12 +2,11 @@ from dataclasses import dataclass
 
 
 class SourceType:
-    __slots__ = ("name", "upload_results", "report_contributor_metrics")
+    __slots__ = ("name", "upload_results")
 
-    def __init__(self, name: str, upload_results: bool, report_contributor_metrics: bool = False):
+    def __init__(self, name: str, upload_results: bool):
         self.name = name
         self.upload_results = upload_results
-        self.report_contributor_metrics = report_contributor_metrics
 
 
 @dataclass
@@ -30,10 +29,10 @@ SourceTypes = {
     BCSourceType.CLI: SourceType(BCSourceType.CLI, True),
     BCSourceType.KUBERNETES_WORKLOADS: SourceType(BCSourceType.KUBERNETES_WORKLOADS, True),
     BCSourceType.DISABLED: SourceType(BCSourceType.VSCODE, False),
-    BCSourceType.GITHUB_ACTIONS: SourceType(BCSourceType.GITHUB_ACTIONS, True, report_contributor_metrics=True),
-    BCSourceType.CODEBUILD: SourceType(BCSourceType.CODEBUILD, True, report_contributor_metrics=True),
-    BCSourceType.JENKINS: SourceType(BCSourceType.JENKINS, True, report_contributor_metrics=True),
-    BCSourceType.CIRCLECI: SourceType(BCSourceType.CIRCLECI, True, report_contributor_metrics=True),
+    BCSourceType.GITHUB_ACTIONS: SourceType(BCSourceType.GITHUB_ACTIONS, True),
+    BCSourceType.CODEBUILD: SourceType(BCSourceType.CODEBUILD, True),
+    BCSourceType.JENKINS: SourceType(BCSourceType.JENKINS, True),
+    BCSourceType.CIRCLECI: SourceType(BCSourceType.CIRCLECI, True),
     BCSourceType.ADMISSION_CONTROLLER: SourceType(BCSourceType.ADMISSION_CONTROLLER, False)
 }
 
