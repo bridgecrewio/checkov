@@ -55,8 +55,6 @@ class ShareHostIPC(BaseK8Check):
                 else:
                     return CheckResult.PASSED
             return CheckResult.PASSED
-        # This value is by default set to false    
-        return CheckResult.PASSED
 
 
 check = ShareHostIPC()
