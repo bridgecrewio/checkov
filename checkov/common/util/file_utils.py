@@ -5,6 +5,8 @@ import gzip
 import io
 import logging
 
+from zipfile import ZipFile
+
 
 def convert_to_unix_path(path: str) -> str:
     return path.replace('\\', '/')
@@ -13,6 +15,11 @@ def convert_to_unix_path(path: str) -> str:
 def extract_tar_archive(source_path: str, dest_path: str) -> None:
     with tarfile.open(source_path) as tar:
         tar.extractall(path=dest_path)  # nosec  # only trusted source
+
+
+def extract_zip_archive(source_path: str, dest_path: str) -> None:
+    with ZipFile(source_path) as zip:
+        zip.extractall(path=dest_path)  # nosec  # only trusted source
 
 
 def compress_file_gzip_base64(input_path: str) -> str:

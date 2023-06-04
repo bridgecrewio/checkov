@@ -7,6 +7,7 @@ from typing import List, Dict, TYPE_CHECKING
 
 import requests
 from requests.exceptions import HTTPError
+from urllib.parse import urljoin
 from urllib.parse import urlparse
 
 from checkov.common.models.consts import TFC_HOST_NAME
@@ -42,7 +43,7 @@ class RegistryLoader(ModuleLoader):
 
     def _is_matching_loader(self, module_params: ModuleParams) -> bool:
         # https://developer.hashicorp.com/terraform/language/modules/sources#github
-        if module_params.module_source.startswith(("github.com", "bitbucket.org", "git::", "git@github.com")):
+        if module_params.module_source.startswith(("/", "github.com", "bitbucket.org", "git::", "git@github.com")):
             return False
         self._process_inner_registry_module(module_params)
         # determine tf api endpoints
@@ -78,7 +79,7 @@ class RegistryLoader(ModuleLoader):
         elif not module_params.tf_modules_endpoint:
             return ModuleContent(dir=None)
 
-        request_download_url = "/".join((module_params.tf_modules_endpoint, module_params.module_source, best_version, "download"))
+        request_download_url = urljoin(module_params.tf_modules_endpoint, "/".join((module_params.module_source, best_version, "download")))
         logging.debug(f"Best version for {module_params.module_source} is {best_version} based on the version constraint {module_params.version}.")
         logging.debug(f"Module download url: {request_download_url}")
         try:
@@ -97,9 +98,10 @@ class RegistryLoader(ModuleLoader):
         self.logger.debug(f"X-Terraform-Get: {module_download_url}")
         module_download_url = self._normalize_module_download_url(module_params, module_download_url)
         self.logger.debug(f"Cloning module from normalized url {module_download_url}")
-        if self._is_download_url_archive(module_download_url):
+        archive_extension = self._get_archive_extension(module_download_url)
+        if archive_extension:
             try:
-                registry_getter = RegistryGetter(module_download_url)
+                registry_getter = RegistryGetter(module_download_url, archive_extension)
                 registry_getter.temp_dir = module_params.dest_dir
                 registry_getter.do_get()
                 return_dir = module_params.dest_dir
@@ -193,12 +195,14 @@ class RegistryLoader(ModuleLoader):
                     return None
 
             self.logger.debug(f"Service discovery response: {response.json()}")
-            module_params.tf_modules_endpoint = f"https://{module_params.tf_host_name}{response.json().get('modules.v1')}"
+            module_params.tf_modules_endpoint = self._normalize_module_download_url(module_params, response.json().get('modules.v1'))
         else:
             # use terraform cloud host name and url for the public registry
             module_params.tf_host_name = TFC_HOST_NAME
-            module_params.tf_modules_endpoint = "https://registry.terraform.io/v1/modules"
-        module_params.tf_modules_versions_endpoint = "/".join((module_params.tf_modules_endpoint, module_params.module_source, "versions"))
+            module_params.tf_modules_endpoint = "https://registry.terraform.io/v1/modules/"
+
+        # assume module_params.tf_modules_endpoint ends with a slash as per https://developer.hashicorp.com/terraform/internals/module-registry-protocol#service-discovery
+        module_params.tf_modules_versions_endpoint = urljoin(module_params.tf_modules_endpoint, "/".join((module_params.module_source, "versions")))
 
     def _normalize_module_download_url(self, module_params: ModuleParams, module_download_url: str) -> str:
         if not urlparse(module_download_url).netloc:
@@ -206,17 +210,18 @@ class RegistryLoader(ModuleLoader):
         return module_download_url
 
     @staticmethod
-    def _is_download_url_archive(module_download_url: str) -> bool:
+    def _get_archive_extension(module_download_url: str) -> str | None:
+        module_download_path = urlparse(module_download_url).path
         for extension in MODULE_ARCHIVE_EXTENSIONS:
-            if module_download_url.endswith(extension):
-                return True
+            if module_download_path.endswith(extension):
+                return extension
         query_params_str = urlparse(module_download_url).query
         if query_params_str:
             query_params = query_params_str.split("&")
             for query_param in query_params:
                 if query_param.startswith("archive="):
-                    return True
-        return False
+                    return query_params_str.split("=")[1]
+        return None
 
 
 loader = RegistryLoader()
