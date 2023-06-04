@@ -2,7 +2,7 @@ import os
 import unittest
 
 from checkov.runner_filter import RunnerFilter
-from checkov.test.terraform.parser.extra_tf_plan_checks.SecurityGroupRuleProtocolChanged import check
+from tests.terraform.parser.extra_tf_plan_checks.SecurityGroupRuleProtocolChanged import check
 from checkov.terraform.runner import Runner
 
 
