@@ -255,10 +255,10 @@ def _get_resource_changes(template: dict[str, Any]) -> dict[str, dict[str, Any]]
 
             for field, value in each["change"]["before"].items():
                 if field in LINE_FIELD_NAMES:
-                    continue # don't care about line #s
+                    continue  # don't care about line #s
                 if value != each["change"]["after"].get(field):
                     changes.append(field)
- 
+
             resource_changes_map[each["address"]][TF_PLAN_RESOURCE_CHANGE_KEYS] = changes
     return resource_changes_map
 
