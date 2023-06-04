@@ -66,7 +66,10 @@ class PrismaEngine(SastEngine):
                 if match:
                     current_version = match.groups()[0]
 
+        if os.getenv("SAST_ARTIFACT_PATH"):
+            return True
         status: bool = self.download_sast_artifacts(current_version)
+
         return status
 
     @cached(TTLCache(maxsize=1, ttl=300))
@@ -111,6 +114,10 @@ class PrismaEngine(SastEngine):
             self.prisma_sast_dir_path.mkdir(exist_ok=True)
 
     def get_sast_artifact(self) -> Optional[Path]:
+        env_variable_path = os.getenv("SAST_ARTIFACT_PATH")
+        if env_variable_path and os.path.isfile(env_variable_path):
+            return Path(env_variable_path)
+
         files = [(self.prisma_sast_dir_path / f) for f in os.listdir(self.prisma_sast_dir_path) if
                  (self.prisma_sast_dir_path / f).is_file() and "library" in f]
 
@@ -131,9 +138,11 @@ class PrismaEngine(SastEngine):
             name = "unknown"
 
         document = {
-            "source_codes": source_codes,
-            "policies": policies,
-            "languages": [a.value for a in languages],
+            "scan_code_params": {
+                "source_codes": source_codes,
+                "policies": policies,
+                "languages": [a.value for a in languages],
+            },
             "auth": {
                 "api_key": bc_integration.bc_api_key,
                 "platform_url": bc_integration.api_url,
@@ -162,7 +171,7 @@ class PrismaEngine(SastEngine):
     def create_report(self, prisma_report: PrismaReport) -> List[Report]:
         reports: List[Report] = []
         for lang, checks in prisma_report.rule_match.items():
-            report = Report(f'{self.check_type}_{lang}')
+            report = Report(f'{self.check_type.upper()} - {lang.value.title()}')
             for check_id, match_rule in checks.items():
                 check_name = match_rule.check_name
                 check_cwe = match_rule.check_cwe
