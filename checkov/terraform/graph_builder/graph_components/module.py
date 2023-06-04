@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import os
-from typing import List, Dict, Any, Set, Callable, Tuple, TYPE_CHECKING, Optional
+from typing import List, Dict, Any, Set, Callable, Tuple, TYPE_CHECKING, Optional, cast
 
 from checkov.common.runners.base_runner import strtobool
 from checkov.common.util.data_structures_utils import pickle_deepcopy
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from checkov.terraform.modules import TFDefinitionKey
     from typing_extensions import TypeAlias
 
-_AddBlockTypeCallable: TypeAlias = "Callable[[Module, list[dict[str, dict[str, Any]]], str], None]"
+_AddBlockTypeCallable: TypeAlias = "Callable[[Module, list[dict[str, dict[str, Any]]], str | TFDefinitionKey], None]"
 
 
 class Module:
@@ -66,7 +66,7 @@ class Module:
             self.blocks.append(block)
             return
 
-        dependencies = self.module_dependency_map.get(os.path.dirname(block.path), [])
+        dependencies = self.module_dependency_map.get(os.path.dirname(block.path), []) if self.module_dependency_map else []
         module_dependency_num = ""
         if not dependencies:
             dependencies = [[]]
@@ -76,7 +76,7 @@ class Module:
             block.module_dependency = unify_dependency_path(dep_trail)
 
             if block.module_dependency:
-                module_dependency_numbers = self.dep_index_mapping.get((block.path, dep_trail[-1]), [])
+                module_dependency_numbers = self.dep_index_mapping.get((block.path, dep_trail[-1]), []) if self.dep_index_mapping else []
                 for mod_idx, module_dep_num in enumerate(module_dependency_numbers):
                     if mod_idx > 0:
                         block = pickle_deepcopy(block)
@@ -86,7 +86,7 @@ class Module:
                 block.module_dependency_num = module_dependency_num
                 self.blocks.append(block)
 
-    def _add_provider(self, blocks: List[Dict[str, Dict[str, Any]]], path: str) -> None:
+    def _add_provider(self, blocks: List[Dict[str, Dict[str, Any]]], path: str | TFDefinitionKey) -> None:
         for provider_dict in blocks:
             for name in provider_dict:
                 attributes = provider_dict[name]
@@ -107,7 +107,7 @@ class Module:
                 )
                 self._add_to_blocks(provider_block)
 
-    def _add_variable(self, blocks: List[Dict[str, Dict[str, Any]]], path: str) -> None:
+    def _add_variable(self, blocks: List[Dict[str, Dict[str, Any]]], path: str | TFDefinitionKey) -> None:
         for variable_dict in blocks:
             for name in variable_dict:
                 attributes = variable_dict[name]
@@ -121,7 +121,7 @@ class Module:
                 )
                 self._add_to_blocks(variable_block)
 
-    def _add_locals(self, blocks: List[Dict[str, Dict[str, Any]]], path: str) -> None:
+    def _add_locals(self, blocks: List[Dict[str, Dict[str, Any]]], path: str | TFDefinitionKey) -> None:
         for blocks_section in blocks:
             for name in blocks_section:
                 if name in (START_LINE, END_LINE):
@@ -138,7 +138,7 @@ class Module:
                 )
                 self._add_to_blocks(local_block)
 
-    def _add_output(self, blocks: List[Dict[str, Dict[str, Any]]], path: str) -> None:
+    def _add_output(self, blocks: List[Dict[str, Dict[str, Any]]], path: str | TFDefinitionKey) -> None:
         for output_dict in blocks:
             for name, attributes in output_dict.items():
                 if isinstance(attributes, dict):
@@ -152,7 +152,7 @@ class Module:
                     )
                     self._add_to_blocks(output_block)
 
-    def _add_module(self, blocks: List[Dict[str, Dict[str, Any]]], path: str) -> None:
+    def _add_module(self, blocks: List[Dict[str, Dict[str, Any]]], path: str | TFDefinitionKey) -> None:
         for module_dict in blocks:
             for name, attributes in module_dict.items():
                 if isinstance(attributes, dict):
@@ -166,7 +166,7 @@ class Module:
                     )
                     self._add_to_blocks(module_block)
 
-    def _add_resource(self, blocks: List[Dict[str, Dict[str, Any]]], path: str) -> None:
+    def _add_resource(self, blocks: List[Dict[str, Dict[str, Any]]], path: str | TFDefinitionKey) -> None:
         for resource_dict in blocks:
             for resource_type, resources in resource_dict.items():
                 self.resources_types.add(resource_type)
@@ -200,13 +200,13 @@ class Module:
                     self._add_to_blocks(resource_block)
 
     @staticmethod
-    def clean_bad_characters(resource_conf):
+    def clean_bad_characters(resource_conf: dict[str, Any]) -> dict[str, Any]:
         try:
-            return json.loads(json.dumps(resource_conf).replace("\\\\", "\\"))
+            return cast("dict[str, Any]", json.loads(json.dumps(resource_conf).replace("\\\\", "\\")))
         except json.JSONDecodeError:
             return resource_conf
 
-    def _add_data(self, blocks: List[Dict[str, Dict[str, Any]]], path: str) -> None:
+    def _add_data(self, blocks: List[Dict[str, Dict[str, Any]]], path: str | TFDefinitionKey) -> None:
         for data_dict in blocks:
             for data_type in data_dict:
                 for name in data_dict[data_type]:
@@ -222,7 +222,7 @@ class Module:
                     )
                     self._add_to_blocks(data_block)
 
-    def _add_terraform_block(self, blocks: List[Dict[str, Dict[str, Any]]], path: str) -> None:
+    def _add_terraform_block(self, blocks: List[Dict[str, Dict[str, Any]]], path: str | TFDefinitionKey) -> None:
         for terraform_dict in blocks:
             terraform_block = TerraformBlock(
                 block_type=BlockType.TERRAFORM,
@@ -234,7 +234,7 @@ class Module:
             )
             self._add_to_blocks(terraform_block)
 
-    def _add_tf_var(self, blocks: list[Dict[str, Dict[str, Any]]], path: str) -> None:
+    def _add_tf_var(self, blocks: list[Dict[str, Dict[str, Any]]], path: str | TFDefinitionKey) -> None:
         for block in blocks:
             for tf_var_name, attributes in block.items():
                 tfvar_block = TerraformBlock(

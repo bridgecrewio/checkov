@@ -374,7 +374,9 @@ def get_tf_definition_key(nested_module: str, module_name: str, module_index: An
     return f"{nested_module}{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{module_name}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}{module_index}{nested_key}{TERRAFORM_NESTED_MODULE_PATH_ENDING}"
 
 
-def get_tf_definition_key_from_module_dependency(path: str, module_dependency: str, module_dependency_num: str) -> str:
+def get_tf_definition_key_from_module_dependency(
+    path: str, module_dependency: str | None, module_dependency_num: str | None
+) -> str:
     if not module_dependency:
         return path
     if not is_nested(module_dependency):
