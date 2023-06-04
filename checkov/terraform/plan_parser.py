@@ -162,7 +162,7 @@ def _prepare_resource_block(
         changes = resource_changes.get(resource_address)  # type:ignore[arg-type]  # becaus eit can be None
         if changes:
             resource_conf[TF_PLAN_RESOURCE_CHANGE_ACTIONS] = changes.get("change", {}).get("actions") or []
-            resource_conf[TF_PLAN_RESOURCE_CHANGE_KEYS] = changes[TF_PLAN_RESOURCE_CHANGE_KEYS]
+            resource_conf[TF_PLAN_RESOURCE_CHANGE_KEYS] = changes.get(TF_PLAN_RESOURCE_CHANGE_KEYS) or []
 
         resource_block[resource_type][resource.get("name", "default")] = resource_conf
         prepared = True
@@ -248,18 +248,17 @@ def _get_resource_changes(template: dict[str, Any]) -> dict[str, dict[str, Any]]
             changes = []
 
             # before + after are None when resources are created/destroyed, so make them safe
-            if each["change"]["before"] is None:
-                each["change"]["before"] = {}
-            if each["change"]["after"] is None:
-                each["change"]["after"] = {}
+            change_before = each["change"]["before"] or {}
+            change_after = each["change"]["after"] or {}
 
-            for field, value in each["change"]["before"].items():
+            for field, value in change_before.items():
                 if field in LINE_FIELD_NAMES:
                     continue  # don't care about line #s
-                if value != each["change"]["after"].get(field):
+                if value != change_after.get(field):
                     changes.append(field)
 
             resource_changes_map[each["address"]][TF_PLAN_RESOURCE_CHANGE_KEYS] = changes
+
     return resource_changes_map
 
 
