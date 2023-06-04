@@ -52,9 +52,9 @@ class ShareHostIPC(BaseK8Check):
             if "hostIPC" in spec:
                 if spec["hostIPC"]:
                     return CheckResult.FAILED
-                else:
-                    return CheckResult.PASSED
-            return CheckResult.PASSED
+
+        # This value is by default set to false
+        return CheckResult.PASSED
 
 
 check = ShareHostIPC()
