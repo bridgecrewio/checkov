@@ -243,13 +243,13 @@ def _get_resource_changes(template: dict[str, Any]) -> dict[str, dict[str, Any]]
     resource_changes = template.get("resource_changes")
 
     if resource_changes and isinstance(resource_changes, list):
-        for each in resource_changes:
-            resource_changes_map[each["address"]] = each
+        for resource in resource_changes:
+            resource_changes_map[resource["address"]] = resource
             changes = []
 
             # before + after are None when resources are created/destroyed, so make them safe
-            change_before = each["change"]["before"] or {}
-            change_after = each["change"]["after"] or {}
+            change_before = resource["change"]["before"] or {}
+            change_after = resource["change"]["after"] or {}
 
             for field, value in change_before.items():
                 if field in LINE_FIELD_NAMES:
@@ -257,7 +257,7 @@ def _get_resource_changes(template: dict[str, Any]) -> dict[str, dict[str, Any]]
                 if value != change_after.get(field):
                     changes.append(field)
 
-            resource_changes_map[each["address"]][TF_PLAN_RESOURCE_CHANGE_KEYS] = changes
+            resource_changes_map[resource["address"]][TF_PLAN_RESOURCE_CHANGE_KEYS] = changes
 
     return resource_changes_map
 
