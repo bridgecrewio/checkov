@@ -41,7 +41,7 @@ from checkov.common.bridgecrew.integration_features.features.licensing_integrati
 from checkov.common.bridgecrew.severities import BcSeverities
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.output.baseline import Baseline
-from checkov.common.bridgecrew.check_type import checkov_runners
+from checkov.common.bridgecrew.check_type import checkov_runners, CheckType
 from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.common.util import prompt
 from checkov.common.util.banner import banner as checkov_banner, tool as checkov_tool
@@ -81,6 +81,8 @@ if TYPE_CHECKING:
     from checkov.common.output.report import Report
     from configargparse import Namespace
     from typing_extensions import Literal
+    from igraph import Graph
+    from networkx import DiGraph
 
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
@@ -126,12 +128,13 @@ class Checkov:
         self.runners = DEFAULT_RUNNERS
         self.scan_reports: "list[Report]" = []
         self.run_metadata: dict[str, str | list[str]] = {}
+        self.graphs: dict[str, DiGraph | Graph] = {}
         self.url: str | None = None
 
         self.parse_config(argv=argv)
 
     def _parse_mask_to_resource_attributes_to_omit(self) -> None:
-        resource_attributes_to_omit = defaultdict(lambda: set())
+        resource_attributes_to_omit = defaultdict(set)
         for entry in self.config.mask:
             splitted_entry = entry.split(':')
             # if we have 2 entries, this is resource & variable to mask
@@ -286,9 +289,7 @@ class Checkov:
                 deep_analysis=self.config.deep_analysis,
                 repo_root_for_plan_enrichment=self.config.repo_root_for_plan_enrichment,
                 resource_attr_to_omit=self.config.mask,
-                # TODO modify the output for git_history secret and remove the rewrite of enable_git_history_secret_scan
-                # enable_git_history_secret_scan=self.config.scan_secrets_history,
-                enable_git_history_secret_scan=False,  # expose after unite git history with secret scan
+                enable_git_history_secret_scan=self.config.scan_secrets_history,
                 git_history_timeout=self.config.secrets_history_timeout
             )
 
@@ -362,14 +363,6 @@ class Checkov:
                                                                 repo_branch=self.config.branch,
                                                                 prisma_api_url=self.config.prisma_api_url)
 
-                    should_run_contributor_metrics = source.report_contributor_metrics and self.config.repo_id and self.config.prisma_api_url
-                    logger.debug(f"Should run contributor metrics report: {should_run_contributor_metrics}")
-                    if should_run_contributor_metrics:
-                        try:  # collect contributor info and upload
-                            report_contributor_metrics(self.config.repo_id, source.name, bc_integration)
-                        except Exception as e:
-                            logger.warning(f"Unable to report contributor metrics due to: {e}")
-
                 except MaxRetryError:
                     self.exit_run()
                 except Exception:
@@ -423,7 +416,11 @@ class Checkov:
             bc_cloned_checks = custom_policies_integration.bc_cloned_checks
             runner_filter.bc_cloned_checks = bc_cloned_checks
             custom_policies_integration.policy_level_suppression = list(policy_level_suppression.keys())
-            runner_filter.run_image_referencer = licensing_integration.should_run_image_referencer()
+
+            if any(framework in runner_filter.framework for framework in ("all", CheckType.SCA_IMAGE)):
+                # only run image referencer, when sca_image framework is enabled
+                runner_filter.run_image_referencer = licensing_integration.should_run_image_referencer()
+
             runner_filter.filtered_policy_ids = policy_metadata_integration.filtered_policy_ids
             logger.debug(f"Filtered list of policies: {runner_filter.filtered_policy_ids}")
 
@@ -458,6 +455,7 @@ class Checkov:
             if self.config.directory:
                 exit_codes = []
                 for root_folder in self.config.directory:
+                    absolute_root_folder = os.path.abspath(root_folder)
                     if not os.path.exists(root_folder):
                         logger.error(f'Directory {root_folder} does not exist; skipping it')
                         continue
@@ -467,15 +465,24 @@ class Checkov:
                         external_checks_dir=external_checks_dir,
                         files=file,
                     )
+                    self.graphs = runner_registry.check_type_to_graph
                     if runner_registry.is_error_in_reports(self.scan_reports):
                         self.exit_run()
                     if baseline:
                         baseline.compare_and_reduce_reports(self.scan_reports)
-                    if bc_integration.is_integration_configured() and bc_integration.bc_source and bc_integration.bc_source.upload_results:
+
+                    if bc_integration.is_integration_configured() \
+                            and bc_integration.bc_source \
+                            and bc_integration.bc_source.upload_results \
+                            and not self.config.skip_results_upload:
+                        included_paths = [self.config.external_modules_download_path]
+                        for r in runner_registry.runners:
+                            included_paths.extend(r.included_paths())
                         self.upload_results(
                             root_folder=root_folder,
+                            absolute_root_folder=absolute_root_folder,
                             excluded_paths=runner_filter.excluded_paths,
-                            included_paths=[self.config.external_modules_download_path],
+                            included_paths=included_paths,
                             git_configuration_folders=git_configuration_folders,
                         )
 
@@ -492,6 +499,16 @@ class Checkov:
                         created_baseline_path=created_baseline_path,
                         baseline=baseline,
                     ))
+
+                # this needs to run after the upload (otherwise the repository does not exist)
+                should_run_contributor_metrics = bc_integration.bc_api_key and self.config.repo_id and self.config.prisma_api_url
+                logger.debug(f"Should run contributor metrics report: {should_run_contributor_metrics}")
+                if should_run_contributor_metrics:
+                    try:  # collect contributor info and upload
+                        report_contributor_metrics(self.config.repo_id, source.name, bc_integration)
+                    except Exception as e:
+                        logger.warning(f"Unable to report contributor metrics due to: {e}")
+
                 exit_code = 1 if 1 in exit_codes else 0
                 return exit_code
             elif self.config.docker_image:
@@ -520,14 +537,27 @@ class Checkov:
                     logger.error(f"SCA image runner returned {len(self.scan_reports)} reports; expected 1")
 
                 integration_feature_registry.run_post_runner(self.scan_reports[0])
-                bc_integration.persist_repository(os.path.dirname(self.config.dockerfile_path), files=files)
-                bc_integration.persist_scan_results(self.scan_reports)
-                bc_integration.persist_image_scan_results(runner.raw_report, self.config.dockerfile_path,
-                                                          self.config.docker_image,
-                                                          self.config.branch)
 
-                bc_integration.persist_run_metadata(self.run_metadata)
-                self.url = self.commit_repository()
+                if not self.config.skip_results_upload:
+                    bc_integration.persist_repository(os.path.dirname(self.config.dockerfile_path), files=files)
+                    bc_integration.persist_scan_results(self.scan_reports)
+                    bc_integration.persist_image_scan_results(runner.raw_report, self.config.dockerfile_path,
+                                                              self.config.docker_image,
+                                                              self.config.branch)
+
+                    bc_integration.persist_run_metadata(self.run_metadata)
+                    if bc_integration.enable_persist_graphs:
+                        bc_integration.persist_graphs(self.graphs)
+                    self.url = self.commit_repository()
+
+                should_run_contributor_metrics = bc_integration.bc_api_key and self.config.repo_id and self.config.prisma_api_url
+                logger.debug(f"Should run contributor metrics report: {should_run_contributor_metrics}")
+                if should_run_contributor_metrics:
+                    try:  # collect contributor info and upload
+                        report_contributor_metrics(self.config.repo_id, source.name, bc_integration)
+                    except Exception as e:
+                        logger.warning(f"Unable to report contributor metrics due to: {e}")
+
                 exit_code = self.print_results(runner_registry=runner_registry, url=self.url)
                 return exit_code
             elif self.config.file:
@@ -537,6 +567,7 @@ class Checkov:
                     files=self.config.file,
                     repo_root_for_plan_enrichment=self.config.repo_root_for_plan_enrichment,
                 )
+                self.graphs = runner_registry.check_type_to_graph
                 if runner_registry.is_error_in_reports(self.scan_reports):
                     self.exit_run()
                 if baseline:
@@ -550,16 +581,30 @@ class Checkov:
                     with open(created_baseline_path, 'w') as f:
                         json.dump(overall_baseline.to_dict(), f, indent=4)
 
-                if bc_integration.is_integration_configured():
+                if bc_integration.is_integration_configured() \
+                        and bc_integration.bc_source \
+                        and bc_integration.bc_source.upload_results \
+                        and not self.config.skip_results_upload:
                     files = [os.path.abspath(file) for file in self.config.file]
                     root_folder = os.path.split(os.path.commonprefix(files))[0]
+                    absolute_root_folder = os.path.abspath(root_folder)
 
                     self.upload_results(
                         root_folder=root_folder,
+                        absolute_root_folder=absolute_root_folder,
                         files=files,
                         excluded_paths=runner_filter.excluded_paths,
                         git_configuration_folders=git_configuration_folders,
                     )
+
+                should_run_contributor_metrics = bc_integration.bc_api_key and self.config.repo_id and self.config.prisma_api_url
+                logger.debug(f"Should run contributor metrics report: {should_run_contributor_metrics}")
+                if should_run_contributor_metrics:
+                    try:  # collect contributor info and upload
+                        report_contributor_metrics(self.config.repo_id, source.name, bc_integration)
+                    except Exception as e:
+                        logger.warning(f"Unable to report contributor metrics due to: {e}")
+
                 exit_code = self.print_results(
                     runner_registry=runner_registry,
                     url=self.url,
@@ -602,6 +647,7 @@ class Checkov:
     def upload_results(
             self,
             root_folder: str,
+            absolute_root_folder: str,
             files: list[str] | None = None,
             excluded_paths: list[str] | None = None,
             included_paths: list[str] | None = None,
@@ -619,6 +665,8 @@ class Checkov:
             bc_integration.persist_git_configuration(os.getcwd(), git_configuration_folders)
         bc_integration.persist_scan_results(self.scan_reports)
         bc_integration.persist_run_metadata(self.run_metadata)
+        if bc_integration.enable_persist_graphs:
+            bc_integration.persist_graphs(self.graphs, absolute_root_folder=absolute_root_folder)
         self.url = self.commit_repository()
 
     def print_results(

@@ -3,6 +3,8 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 from checkov.common.util.secrets import string_has_secrets
 from typing import List
 
+AWS = 'aws'
+
 
 class EC2Credentials(BaseResourceCheck):
 
@@ -16,7 +18,7 @@ class EC2Credentials(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         if 'user_data' in conf.keys():
             user_data = conf['user_data'][0]
-            if isinstance(user_data, str) and string_has_secrets(user_data):
+            if isinstance(user_data, str) and string_has_secrets(user_data, AWS):
                 conf[f'{self.id}_secret'] = user_data
                 return CheckResult.FAILED
         return CheckResult.PASSED

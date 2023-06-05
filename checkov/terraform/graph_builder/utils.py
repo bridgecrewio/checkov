@@ -13,6 +13,7 @@ from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_SEPARA
 
 if TYPE_CHECKING:
     from networkx import DiGraph
+    from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 
 from checkov.common.util.type_forcers import force_int
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
@@ -21,6 +22,7 @@ from checkov.terraform.graph_builder.variable_rendering.vertex_reference import 
 
 MODULE_DEPENDENCY_PATTERN_IN_PATH = re.compile(r"\(\[\{.+\#\*\#.+\}\]\)")
 CHECKOV_RENDER_MAX_LEN = force_int(os.getenv("CHECKOV_RENDER_MAX_LEN", "10000"))
+CHECKOV_LOREM_IPSUM_VAL = '\x00'
 
 
 def is_local_path(root_dir: str, source: str) -> bool:
@@ -139,8 +141,8 @@ def remove_function_calls_from_str(str_value: str) -> str:
 
 def remove_index_pattern_from_str(str_value: str) -> str:
     str_value = re.sub(INDEX_PATTERN, "", str_value)
-    str_value = str_value.replace("[", " [ ")
-    str_value = str_value.replace("]", " ] ")
+    str_value = str_value.replace('["', CHECKOV_LOREM_IPSUM_VAL).replace("[", " [ ").replace(CHECKOV_LOREM_IPSUM_VAL, '["')
+    str_value = str_value.replace('"]', CHECKOV_LOREM_IPSUM_VAL).replace("]", " ] ").replace(CHECKOV_LOREM_IPSUM_VAL, '"]')
     return str_value
 
 
@@ -243,7 +245,7 @@ def generate_possible_strings_from_wildcards(origin_string: str, max_entries: in
     return generated_strings
 
 
-def attribute_has_nested_attributes(attribute_key: str, attributes: Dict[str, Any]) -> bool:
+def attribute_has_nested_attributes(attribute_key: str, attributes: Dict[str, Any], attribute_is_leaf: Optional[Dict[str, bool]] = None) -> bool:
     """
     :param attribute_key: key inside the  `attributes` dictionary
     :param attributes:
@@ -251,7 +253,12 @@ def attribute_has_nested_attributes(attribute_key: str, attributes: Dict[str, An
     Example 1: if attributes.keys == [key1, key.key2], type(attributes[key1]) is dict and return True for key1
     Example 2: if attributes.keys == [key1, key1.0], type(attributes[key1]) is list and return True for key1
     """
-    prefixes_with_attribute_key = [a for a in attributes.keys() if a.startswith(attribute_key) and a != attribute_key]
+    if attribute_is_leaf is None:
+        attribute_is_leaf = {}
+    if attribute_is_leaf.get(attribute_key):
+        prefixes_with_attribute_key = []
+    else:
+        prefixes_with_attribute_key = [a for a in attributes if a.startswith(attribute_key) and a != attribute_key]
     if not any(re.findall(re.compile(r"\.\d+"), a) for a in prefixes_with_attribute_key):
         # if there aro no numeric parts in the key such as key1.0.key2
         return isinstance(attributes[attribute_key], dict)
@@ -299,9 +306,6 @@ def get_file_path_to_referred_id_networkx(graph_object: DiGraph) -> dict[str, st
 
 def get_file_path_to_referred_id_igraph(graph_object: igraph.Graph) -> dict[str, str]:
     file_path_to_module_id = {}
-    for v in graph_object.vs:
-        if v[CustomAttributes.BLOCK_TYPE] == BlockType.MODULE:
-            modules = v
     modules = [v for v in graph_object.vs if
                v[CustomAttributes.BLOCK_TYPE] == BlockType.MODULE]
     for module_vertex in modules:
@@ -317,3 +321,13 @@ def setup_file_path_to_referred_id(graph_object: DiGraph | igraph.Graph) -> dict
         return get_file_path_to_referred_id_igraph(graph_object)
     else:  # the default value of the graph framework is 'NETWORKX'
         return get_file_path_to_referred_id_networkx(graph_object)
+
+
+def get_attribute_is_leaf(vertex: TerraformBlock) -> Dict[str, bool]:
+    attribute_is_leaf = {}
+    for attribute in vertex.attributes:
+        attribute_is_leaf[attribute] = True
+        other = '.'.join(attribute.split('.')[:-1])
+        if other in attribute_is_leaf:
+            attribute_is_leaf[other] = False
+    return attribute_is_leaf

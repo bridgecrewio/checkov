@@ -45,7 +45,7 @@ def test_extract_images_from_resources():
             name="amazonlinux:2",
             start_line=5,
             end_line=5,
-            related_resource_id="/Dockerfile.FROM",
+            related_resource_id="/Dockerfile:/Dockerfile.FROM",
         ),
     ]
 

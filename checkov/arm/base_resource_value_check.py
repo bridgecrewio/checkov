@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import re
 from abc import abstractmethod
 from collections.abc import Iterable
@@ -16,7 +18,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
         self,
         name: str,
         id: str,
-        categories: List[CheckCategories],
+        categories: Iterable[CheckCategories],
         supported_resources: "Iterable[str]",
         missing_block_result: CheckResult = CheckResult.FAILED,
         guideline: Optional[str] = None,

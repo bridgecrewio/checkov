@@ -1,5 +1,5 @@
 {
-  "colon.tf": {
+  "{\"file_path\": \"colon.tf\", \"tf_source_modules\": null}": {
     "variable": [
       {
         "tags": {

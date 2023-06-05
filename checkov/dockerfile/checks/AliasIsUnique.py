@@ -24,13 +24,12 @@ class AliasIsUnique(BaseDockerfileCheck):
         alias = []
         for instruction in conf:
             if " as " in instruction["value"]:
-                temp = instruction["value"].split()
-                alias += [temp[2]]
+                alias.append(instruction["value"].rsplit(maxsplit=1)[-1])
 
         if len(alias) == len(set(alias)):
             return CheckResult.PASSED, None
-        else:
-            return CheckResult.FAILED, [conf[0]]
+
+        return CheckResult.FAILED, [conf[0]]
 
 
 check = AliasIsUnique()

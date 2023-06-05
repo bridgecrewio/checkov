@@ -1,5 +1,23 @@
 # pass
 
+# App Runner
+
+resource "aws_security_group" "pass_app_runner" {
+  ingress {
+    description = "TLS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_apprunner_vpc_connector" "pass_app_runner" {
+  vpc_connector_name = "name"
+  subnets            = ["subnet1", "subnet2"]
+  security_groups    = [aws_security_group.pass_app_runner.id]
+}
+
 # Batch
 
 resource "aws_security_group" "pass_batch" {
@@ -132,6 +150,24 @@ resource "aws_instance" "pass_ec2" {
   ami             = "data.aws_ami.ubuntu.id"
   instance_type   = "t3.micro"
   security_groups = [aws_security_group.pass_ec2.id]
+}
+
+resource "aws_security_group" "pass_ec2_client_vpn_endpoint" {
+  ingress {
+    description = "TLS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_ec2_client_vpn_endpoint" "pass_ec2_client_vpn_endpoint" {
+  server_certificate_arn = "aws_acm_certificate.cert.arn"
+  client_cidr_block      = "10.0.0.0/16"
+
+  vpc_id             = "vpc_id"
+  security_group_ids = [aws_security_group.pass_ec2_client_vpn_endpoint.id]
 }
 
 resource "aws_security_group" "pass_ec2_client_vpn" {
@@ -392,6 +428,64 @@ resource "aws_lb" "pass_lb" {
   security_groups    = [aws_security_group.pass_lb.id]
 }
 
+# EMR
+
+resource "aws_security_group" "pass_emr" {
+  name        = "block_access"
+  description = "Block all traffic"
+
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["10.0.0.0/16"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["10.0.0.0/16"]
+  }
+}
+
+resource "aws_emr_cluster" "pass_emr" {
+  name                   = "var.cluster_name"
+  release_label          = "var.release_label"
+  security_configuration = "aws_emr_security_configuration.examplea.name"
+
+  ec2_attributes {
+    subnet_id                         = "var.subnet_id"
+    emr_managed_master_security_group = aws_security_group.pass_emr.id
+    emr_managed_slave_security_group  = aws_security_group.pass_emr.id
+    instance_profile                  = "aws_iam_instance_profile.examplea.arn"
+  }
+
+  service_role = "aws_iam_role.emr_service.arn"
+}
+
+resource "aws_security_group" "pass_emr_studio" {
+  ingress {
+    description = "TLS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_emr_studio" "pass_emr_studio" {
+  auth_mode                   = "SSO"
+  default_s3_location         = "s3://example/test"
+  engine_security_group_id    = aws_security_group.pass_emr_studio.id
+  name                        = "example"
+  service_role                = "aws_iam_role.test.arn"
+  subnet_ids                  = ["aws_subnet.test.id"]
+  user_role                   = "aws_iam_role.test.arn"
+  vpc_id                      = "aws_vpc.test.id"
+  workspace_security_group_id = aws_security_group.pass_emr_studio.id
+}
+
 # ENI
 
 resource "aws_security_group" "pass_eni" {
@@ -563,6 +657,26 @@ resource "aws_neptune_cluster" "pass_neptune" {
   vpc_security_group_ids = [aws_security_group.pass_neptune.id]
 }
 
+# Quicksight
+
+resource "aws_security_group" "pass_quicksight" {
+  ingress {
+    description = "TLS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_quicksight_vpc_connection" "pass_quicksight" {
+  vpc_connection_id  = "example-connection-id"
+  name               = "Example Connection"
+  role_arn           = "aws_iam_role.vpc_connection_role.arn"
+  security_group_ids = [aws_security_group.pass_quicksight.id]
+  subnet_ids = ["subnet-00000000000000000"]
+}
+
 # RDS
 
 resource "aws_security_group" "pass_rds" {
@@ -650,9 +764,7 @@ resource "aws_vpc_endpoint" "pass_vpc_endpoint" {
   security_group_ids = [aws_security_group.pass_vpc_endpoint.id]
 }
 
-# fail
-
-resource "aws_security_group" "fail" {
+resource "aws_security_group" "pass_vpclattice" {
   ingress {
     description = "TLS from VPC"
     from_port   = 443
@@ -662,38 +774,21 @@ resource "aws_security_group" "fail" {
   }
 }
 
-resource "aws_emr_cluster" "pass_emr" {
-  name                   = var.cluster_name
-  release_label          = var.release_label
-  security_configuration = aws_emr_security_configuration.examplea.name
-
-  ec2_attributes {
-    subnet_id                         = var.subnet_id
-    emr_managed_master_security_group = aws_security_group.pass_emr.id
-    emr_managed_slave_security_group  = aws_security_group.pass_emr.id
-    instance_profile                  = aws_iam_instance_profile.examplea.arn
-  }
-
-  service_role = aws_iam_role.emr_service.arn
+resource "aws_vpclattice_service_network_vpc_association" "pass_vpclattice" {
+  vpc_identifier             = "aws_vpc.example.id"
+  service_network_identifier = "aws_vpclattice_service_network.example.id"
+  security_group_ids         = [aws_security_group.pass_vpclattice.id]
 }
 
-resource "aws_security_group" "pass_emr" {
-  //todo
-  name        = "block_access"
-  description = "Block all traffic"
+# fail
 
+resource "aws_security_group" "fail" {
   ingress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["10.0.0.0/16"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["10.0.0.0/16"]
+    description = "TLS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 

@@ -26,7 +26,7 @@ def test_batch_resources(mocker: MockerFixture, graph_framework):
 
     file_name = "batch.bicep"
     image_name = "centos7"
-    code_lines = "1-26"
+    code_lines = "1-27"
     test_file = RESOURCES_PATH / file_name
     runner_filter = RunnerFilter(run_image_referencer=True)
 

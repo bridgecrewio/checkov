@@ -104,3 +104,36 @@ def test_extract_images_from_workflow_no_images():
     images = gitlab_ci_provider.extract_images_from_workflow()
 
     assert not images
+
+
+def test_extract_images_from_workflow_image_without_name():
+    file_path = 'tests/gitlab_ci/resources/rules/image_without_name.gitlab-ci.yml'
+    workflow_config = {
+          "unit tests": {
+            "image": {
+              "entrypoint": [
+                "/opt/bin/entry_point_unit_tests.sh"
+              ],
+              "__startline__": 3,
+              "__endline__": 6
+            },
+            "services": [
+              {
+                "name": "postgres:13.2",
+                "alias": "postgres",
+                "__startline__": 7,
+                "__endline__": 8
+              }
+            ],
+            "__startline__": 2,
+            "__endline__": 8
+          },
+          "__startline__": 1,
+          "__endline__": 8
+        }
+
+    gitlab_ci_provider = GitlabCiProvider(workflow_config=workflow_config, file_path=file_path)
+    images = gitlab_ci_provider.extract_images_from_workflow()
+
+    assert len(images) == 1
+    assert images[0] == Image(name='postgres:13.2', file_path=file_path, start_line=7, end_line=8, related_resource_id='unit tests.services.1')

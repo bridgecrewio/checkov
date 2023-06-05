@@ -19,7 +19,7 @@ def get_report_url() -> str:
 @mock.patch.dict(os.environ, {"REQUEST_MAX_TRIES": "5", "SLEEP_BETWEEN_REQUEST_TRIES": "0.01"})
 def test_request_wrapper_all_fail_with_connection_error_for_get_scan_result(mock_bc_integration):
     # given
-    mock_url = mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/scan-results/2e97f5afea42664309f492a1e2083b43479c2936"
+    mock_url = mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/scan-results/2e97f5afea42664309f492a1e2083b43479c2936"  # checkov:skip=CKV_SECRET_6 false positive
     responses.add(
         method=responses.GET,
         url=mock_url,

@@ -78,3 +78,15 @@ class TestCombinatorPlugin(unittest.TestCase):
     def test_secret_value_in_keyword(self):
         result = self.plugin.analyze_line("mock.tf", 'export AWS_SECRET_ACCESS_KEY=h4t2TJheVRR8em5VdNCjrSJdQ+p7OHl33SxrZoUi', 1)
         self.assertEqual(1, len(result))
+
+    def test_k8s_secret_name(self):
+        # given
+        test_file_path = Path(__file__).parent / "resources/k8s/secret-name.yaml"
+
+        # when
+        with open(file=str(test_file_path)) as f:
+            for i, line in enumerate(f.readlines()):
+                result = self.plugin.analyze_line("secret-no-false-positive2.yml", line, i)
+
+                # then
+                self.assertEqual(0, len(result))

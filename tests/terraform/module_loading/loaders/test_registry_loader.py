@@ -40,11 +40,34 @@ def test_determine_tf_api_endpoints_tfc():
 
     # then
     assert module_params.tf_host_name == "app.terraform.io"
-    assert module_params.tf_modules_endpoint == "https://registry.terraform.io/v1/modules"
+    assert module_params.tf_modules_endpoint == "https://registry.terraform.io/v1/modules/"
     assert module_params.tf_modules_versions_endpoint == "https://registry.terraform.io/v1/modules/terraform-aws-modules/example/versions"
 
+@pytest.mark.parametrize(
+    "discovery_response",
+    [
+        ({
+        "modules.v1": "/api/registry/v1/modules/",
+        "providers.v1": "/api/registry/v1/providers/",
+        "state.v2": "/api/v2/",
+        "tfe.v2": "/api/v2/",
+        "tfe.v2.1": "/api/v2/",
+        "tfe.v2.2": "/api/v2/",
+        "versions.v1": "https://checkpoint-api.hashicorp.com/v1/versions/"
+        }),
+        ({
+        "modules.v1": "https://example.registry.com/api/registry/v1/modules/",
+        "providers.v1": "https://example.registry.com/api/registry/v1/providers/",
+        "state.v2": "https://example.registry.com/api/v2/",
+        "tfe.v2": "https://example.registry.com/api/v2/",
+        "tfe.v2.1": "https://example.registry.com/api/v2/",
+        "tfe.v2.2": "https://example.registry.com/api/v2/",
+        "versions.v1": "https://checkpoint-api.hashicorp.com/v1/versions/"
+        }),
+    ]
+)
 @responses.activate
-def test_determine_tf_api_endpoints_tfe():
+def test_determine_tf_api_endpoints_tfe(discovery_response):
     # given
     loader = RegistryLoader()
     module_params = ModuleParams("", "", "example.registry.com/terraform-aws-modules/example", "", "", "")
@@ -53,15 +76,7 @@ def test_determine_tf_api_endpoints_tfe():
     responses.add(
         method=responses.GET,
         url=f"https://{module_params.tf_host_name}/.well-known/terraform.json",
-        json={
-        "modules.v1": "/api/registry/v1/modules/",
-        "providers.v1": "/api/registry/v1/providers/",
-        "state.v2": "/api/v2/",
-        "tfe.v2": "/api/v2/",
-        "tfe.v2.1": "/api/v2/",
-        "tfe.v2.2": "/api/v2/",
-        "versions.v1": "https://checkpoint-api.hashicorp.com/v1/versions/"
-        },
+        json=discovery_response,
         status=200,
     )
 
@@ -72,20 +87,42 @@ def test_determine_tf_api_endpoints_tfe():
     responses.assert_call_count(f"https://{module_params.tf_host_name}/.well-known/terraform.json", 1)
     assert module_params.tf_host_name == "example.registry.com"
     assert module_params.tf_modules_endpoint == "https://example.registry.com/api/registry/v1/modules/"
-    assert module_params.tf_modules_versions_endpoint == "https://example.registry.com/api/registry/v1/modules//terraform-aws-modules/example/versions"
+    assert module_params.tf_modules_versions_endpoint == "https://example.registry.com/api/registry/v1/modules/terraform-aws-modules/example/versions"
+
+@responses.activate
+def test_load_module():
+    # given
+    loader = RegistryLoader()
+    module_params = ModuleParams("", "", "terraform-aws-modules/example", "", "", "")
+    module_params.tf_modules_endpoint = "https://example.registry.com/api/registry/v1/modules/"
+    module_params.best_version = "1.0.0"
+    with mock.patch.dict("os.environ", {"TF_HOST_NAME": "example.registry.com"}):
+        loader.discover(module_params)
+    responses.add(
+        method=responses.GET,
+        url="https://example.registry.com/api/registry/v1/modules/terraform-aws-modules/example/1.0.0/download",
+        status=200,
+    )
+
+    # when
+    loader._load_module(module_params)
+
+    # then
+    responses.assert_call_count("https://example.registry.com/api/registry/v1/modules/terraform-aws-modules/example/1.0.0/download", 1)
 
 @pytest.mark.parametrize(
     "download_url, expected_result",
     [
-        ("https://example.com/download?archive=tgz", True),
-        ("https://example.com/download?archive=zip", True),
-        ("https://example.com/download/module.zip", True),
-        ("https://example.com/download/module/archive", False),
+        ("https://example.com/download?archive=tgz", "tgz"),
+        ("https://example.com/download?archive=zip", "zip"),
+        ("https://example.com/download/module.zip", "zip"),
+        ("https://example.com/download/module.zip?sig=foo", "zip"),
+        ("https://example.com/download/module/archive", None),
     ]
 )
-def test_is_download_url_archive(download_url, expected_result):
-    is_archive = RegistryLoader._is_download_url_archive(download_url)
-    assert is_archive == expected_result
+def test_get_archive_extension(download_url, expected_result):
+    archive_extension = RegistryLoader._get_archive_extension(download_url)
+    assert archive_extension == expected_result
 
 @pytest.mark.parametrize(
     "tf_host_name, module_download_url, expected_result",

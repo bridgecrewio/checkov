@@ -1,5 +1,5 @@
 {
-  "checkov.tf": {
+  "{\"file_path\": \"checkov.tf\", \"tf_source_modules\": null}": {
     "locals": [
       {
         "FIVE": ["five"],

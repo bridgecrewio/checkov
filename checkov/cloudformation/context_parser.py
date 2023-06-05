@@ -34,6 +34,8 @@ class ContextParser:
             ref.pop()  # Get rid of the 'Ref' dict key
 
             # TODO refactor into evaluations
+            if not isinstance(refname, str):
+                continue
             default_value = self.cf_template.get("Parameters", {}).get(refname, {}).get("Properties", {}).get("Default")
             if default_value is not None:
                 logging.debug(
