@@ -121,7 +121,7 @@ class RunnerRegistry:
                 # This is the only runner, so raise a clear indication of failure
                 raise ModuleNotEnabledError(f'The framework "{runner_check_type}" is part of the "{self.licensing_integration.get_subscription_for_runner(runner_check_type).name}" module, which is not enabled in the platform')
         else:
-            def _parallel_run(runner: _BaseRunner) -> Report | list[Report]:
+            def _parallel_run(runner: _BaseRunner) -> tuple[Report | list[Report], dict[str, DiGraph | Graph]]:
                 report = runner.run(
                     root_folder=root_folder,
                     external_checks_dir=external_checks_dir,
@@ -134,7 +134,10 @@ class RunnerRegistry:
                     logging.error(f"Failed to create report for {runner.check_type} framework")
                     report = Report(check_type=runner.check_type)
 
-                return report
+                if runner.graph_manager:
+                    check_type_to_graph = {runner.check_type: runner.graph_manager.get_reader_endpoint()}
+                    return report, check_type_to_graph
+                return report, {}
 
             valid_runners = []
             invalid_runners = []
@@ -161,7 +164,15 @@ class RunnerRegistry:
                 for runner in invalid_runners:
                     logging.log(level, f'The framework "{runner.check_type}" is part of the "{self.licensing_integration.get_subscription_for_runner(runner.check_type).name}" module, which is not enabled in the platform')
 
-            reports = [r for r in parallel_runner.run_function(func=_parallel_run, items=valid_runners, group_size=1) if r]
+            parallel_runner_results = parallel_runner.run_function(func=_parallel_run, items=valid_runners,
+                                                                   group_size=1)
+            reports: list[Report | list[Report]] = []
+            full_check_type_to_graph = {}
+            for report, check_type_to_graph in parallel_runner_results:
+                reports.append(report)
+                if check_type_to_graph != {}:
+                    full_check_type_to_graph.update(check_type_to_graph)
+            self.check_type_to_graph = full_check_type_to_graph
 
         merged_reports = self._merge_reports(reports)
         if bc_integration.bc_api_key:
@@ -174,8 +185,9 @@ class RunnerRegistry:
         for scan_report in merged_reports:
             self._handle_report(scan_report, repo_root_for_plan_enrichment)
 
-        self.check_type_to_graph = {runner.check_type: runner.graph_manager.get_reader_endpoint() for runner
-                                    in self.runners if runner.graph_manager}
+        if not self.check_type_to_graph:
+            self.check_type_to_graph = {runner.check_type: runner.graph_manager.get_reader_endpoint() for runner
+                                        in self.runners if runner.graph_manager}
         return self.scan_reports
 
     def _merge_reports(self, reports: Iterable[Report | list[Report]]) -> list[Report]:
