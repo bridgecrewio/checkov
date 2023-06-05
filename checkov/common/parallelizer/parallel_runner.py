@@ -28,39 +28,10 @@ class ParallelRunner:
             return self._run_function_multiprocess(func, items, group_size)
 
     def _run_function_multiprocess(self, func: Callable[[Any], Any], items: List[Any], group_size: Optional[int]) \
-            -> Generator[Any, None, None]:
-        if not group_size:
-            group_size = int(len(items) / self.workers_number) + 1
-        groups_of_items = [items[i: i + group_size] for i in range(0, len(items), group_size)]
-
-        def func_wrapper(original_func: Callable[[Any], Any], items_group: List[Any], connection: Connection) -> None:
-            for item in items_group:
-                try:
-                    result = original_func(item)
-                except Exception:
-                    logging.error(
-                        f"Failed to invoke function {func.__code__.co_filename.replace('.py', '')}.{func.__name__} with {item}"
-                        , exc_info=True
-                    )
-                    result = None
-
-                connection.send(result)
-            connection.close()
-
-        processes = []
-        for group_of_items in groups_of_items:
-            parent_conn, child_conn = multiprocessing.Pipe(duplex=False)
-            process = multiprocessing.get_context("fork").Process(target=func_wrapper,
-                                                                  args=(func, group_of_items, child_conn))
-            processes.append((process, parent_conn, len(group_of_items)))
-            process.start()
-
-        for _, parent_conn, group_len in processes:
-            for _ in range(group_len):
-                try:
-                    yield parent_conn.recv()
-                except EOFError:
-                    pass
+            -> Iterator[_T]:
+        logging.info(f"[_run_function_multiprocess] starting with {self.workers_number} workers")
+        with concurrent.futures.ProcessPoolExecutor(max_workers=self.workers_number) as executor:
+            return executor.map(func, items)
 
     def _run_function_multithreaded(self, func: Callable[[Any], _T], items: List[Any]) -> Iterator[_T]:
         logging.info(f"[_run_function_multithreaded] starting with {self.workers_number} workers")
