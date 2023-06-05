@@ -60,14 +60,14 @@ SECRET_TYPE_TO_ID = {
     'Base64 High Entropy String': 'CKV_SECRET_6',
     'IBM Cloud IAM Key': 'CKV_SECRET_7',
     'IBM COS HMAC Credentials': 'CKV_SECRET_8',
-    'JSON Web Token': 'CKV_SECRET_9',
+    'JSON Web Token': 'CKV_SECRET_9',  # checkov:skip=CKV_SECRET_6 false positive
     'Secret Keyword': 'CKV_SECRET_10',
     'Mailchimp Access Key': 'CKV_SECRET_11',
-    'NPM tokens': 'CKV_SECRET_12',
+    'NPM tokens': 'CKV_SECRET_12',  # checkov:skip=CKV_SECRET_6 false positive
     'Private Key': 'CKV_SECRET_13',
-    'Slack Token': 'CKV_SECRET_14',
+    'Slack Token': 'CKV_SECRET_14',  # checkov:skip=CKV_SECRET_6 false positive
     'SoftLayer Credentials': 'CKV_SECRET_15',
-    'Square OAuth Secret': 'CKV_SECRET_16',
+    'Square OAuth Secret': 'CKV_SECRET_16',  # checkov:skip=CKV_SECRET_6 false positive
     'Stripe Access Key': 'CKV_SECRET_17',
     'Twilio API Key': 'CKV_SECRET_18',
     'Hex High Entropy String': 'CKV_SECRET_19'
@@ -110,6 +110,7 @@ class Runner(BaseRunner[None]):
             {'name': 'BasicAuthDetector'},
             {'name': 'CloudantDetector'},
             {'name': 'IbmCloudIamDetector'},
+            {'name': 'JwtTokenDetector'},
             {'name': 'MailchimpDetector'},
             {'name': 'PrivateKeyDetector'},
             {'name': 'SlackDetector'},
@@ -134,7 +135,7 @@ class Runner(BaseRunner[None]):
             policies_list = customer_run_config.get('secretsPolicies', [])
             suppressions = customer_run_config.get('suppressions', [])
             if suppressions:
-                secret_suppressions_id = [suppression['checkovPolicyId'] for suppression in suppressions if suppression['suppressionType'] == 'SecretsPolicy']
+                secret_suppressions_id = [suppression['policyId'] for suppression in suppressions if suppression['suppressionType'] == 'SecretsPolicy']
             if policies_list:
                 runnable_plugins: dict[str, str] = get_runnable_plugins(policies_list)
                 logging.info(f"Found {len(runnable_plugins)} runnable plugins")
@@ -221,12 +222,9 @@ class Runner(BaseRunner[None]):
                     added_by = enriched_potential_secret.get('added_by') or ''
                     removed_date = enriched_potential_secret.get('removed_date') or ''
                     added_date = enriched_potential_secret.get('added_date') or ''
-                check_id = getattr(secret, "check_id", SECRET_TYPE_TO_ID.get(secret.type))
+                check_id = secret.check_id if secret.check_id else SECRET_TYPE_TO_ID.get(secret.type)
                 if not check_id:
                     logging.debug(f'Secret was filtered - no check_id for line_number {secret.line_number}')
-                    continue
-                if check_id in secret_suppressions_id:
-                    logging.debug(f'Secret was filtered - check {check_id} was suppressed')
                     continue
                 secret_key = f'{key}_{secret.line_number}_{secret.secret_hash}'
                 if secret.secret_value and is_potential_uuid(secret.secret_value):
@@ -240,6 +238,9 @@ class Runner(BaseRunner[None]):
                 else:
                     secrets_duplication[secret_key] = True
                 bc_check_id = metadata_integration.get_bc_id(check_id)
+                if bc_check_id in secret_suppressions_id:
+                    logging.debug(f'Secret was filtered - check {check_id} was suppressed')
+                    continue
                 severity = metadata_integration.get_severity(check_id)
                 if not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id, severity=severity,
                                                       report_type=CheckType.SECRETS):

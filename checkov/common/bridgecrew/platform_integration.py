@@ -32,13 +32,14 @@ from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.bridgecrew.platform_key import read_key, persist_key, bridgecrew_file
 from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_checks_results, \
     enrich_and_persist_checks_metadata, checkov_results_prefix, persist_run_metadata, _put_json_object, \
-    persist_logs_stream
+    persist_logs_stream, persist_graphs
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILES, SCANNABLE_PACKAGE_FILES
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.typing import _CicdDetails
 from checkov.common.util.consts import PRISMA_PLATFORM, BRIDGECREW_PLATFORM, CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
 from checkov.common.util.data_structures_utils import merge_dicts
+from checkov.common.util.dockerfile import is_docker_file
 from checkov.common.util.http_utils import normalize_prisma_url, get_auth_header, get_default_get_headers, \
     get_user_agent_header, get_default_post_headers, get_prisma_get_headers, get_prisma_auth_header, \
     get_auth_error_message, normalize_bc_url
@@ -53,6 +54,8 @@ if TYPE_CHECKING:
     from mypy_boto3_s3.client import S3Client
     from requests import Response
     from typing_extensions import TypeGuard
+    from igraph import Graph
+    from networkx import DiGraph
 
 
 SLEEP_SECONDS = 1
@@ -96,6 +99,7 @@ class BcPlatformIntegration:
         self.repo_branch: str | None = None
         self.skip_fixes = False
         self.skip_download = False
+        self.source_id: str | None = None
         self.bc_source: SourceType | None = None
         self.bc_source_version: str | None = None
         self.timestamp: str | None = None
@@ -114,6 +118,8 @@ class BcPlatformIntegration:
         self.bc_skip_mapping = False
         self.cicd_details: _CicdDetails = {}
         self.support_flag_enabled = False
+        self.enable_persist_graphs = convert_str_to_bool(os.getenv('BC_ENABLE_PERSIST_GRAPHS', 'True'))
+        self.persist_graphs_timeout = int(os.getenv('BC_PERSIST_GRAPHS_TIMEOUT', 60))
 
     def set_bc_api_url(self, new_url: str) -> None:
         self.bc_api_url = normalize_bc_url(new_url)
@@ -400,7 +406,7 @@ class BcPlatformIntegration:
                     _, file_extension = os.path.splitext(file_path)
                     if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 and file_extension in SCANNABLE_PACKAGE_FILES:
                         continue
-                    if file_extension in SUPPORTED_FILE_EXTENSIONS or file_path in SUPPORTED_FILES:
+                    if file_extension in SUPPORTED_FILE_EXTENSIONS or file_path in SUPPORTED_FILES or is_docker_file(file_path):
                         full_file_path = os.path.join(root_path, file_path)
                         relative_file_path = os.path.relpath(full_file_path, root_dir)
                         files_to_persist.append(FileToPersist(full_file_path, relative_file_path))
@@ -513,6 +519,15 @@ class BcPlatformIntegration:
         # use checkov_results if we fall back to using the same location
         log_path = f'{self.support_repo_path}/checkov_results' if self.support_repo_path == self.repo_path else self.support_repo_path
         persist_logs_stream(logs_stream, self.s3_client, self.support_bucket, log_path)
+
+    def persist_graphs(self, graphs: dict[str, DiGraph | Graph], absolute_root_folder: str = '') -> None:
+        if not self.use_s3_integration or not self.s3_client:
+            return
+        if not self.bucket or not self.repo_path:
+            logging.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
+            return
+        persist_graphs(graphs, self.s3_client, self.bucket, self.repo_path, self.persist_graphs_timeout,
+                       absolute_root_folder=absolute_root_folder)
 
     def commit_repository(self, branch: str) -> str | None:
         """

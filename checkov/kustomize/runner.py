@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import copy
 import io
 import logging
 import multiprocessing
@@ -23,7 +22,8 @@ from checkov.common.output.report import Report
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.common.typing import _CheckResult
-from checkov.kubernetes.kubernetes_utils import get_resource_id
+from checkov.common.util.data_structures_utils import pickle_deepcopy
+from checkov.kubernetes.kubernetes_utils import create_check_result, get_resource_id
 from checkov.kubernetes.runner import Runner as K8sRunner
 from checkov.kubernetes.runner import _get_entity_abs_path
 from checkov.kustomize.image_referencer.manager import KustomizeImageReferencerManager
@@ -178,10 +178,12 @@ class K8sKustomizeRunner(K8sRunner):
                 code_lines = entity_context["code_lines"]
                 file_line_range = self.line_range(code_lines)
 
+                clean_check_result = create_check_result(check_result=check_result, entity_context=entity_context, check_id=check.id)
+
                 record = Record(
                     check_id=check.id,
                     check_name=check.name,
-                    check_result=check_result,
+                    check_result=clean_check_result,
                     code_block=code_lines,
                     file_path=realKustomizeEnvMetadata['filePath'],
                     file_line_range=file_line_range,
@@ -244,7 +246,7 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
         return {'kustomizeMetadata': self.kustomizeProcessedFolderAndMeta,
                 'kustomizeFileMappings': self.kustomizeFileMappings}
 
-    def _parseKustomization(self, kustomize_dir: str) -> dict[str, str]:
+    def _parseKustomization(self, kustomize_dir: str) -> dict[str, Any]:
         # We may have multiple results for "kustomization.yaml" files. These could be:
         # - Base and Environment (overlay) DIR's for the same kustomize-powered deployment
         # - OR, Multiple different Kustomize-powered deployments
@@ -261,29 +263,33 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
         else:
             return {}
 
-        with open(kustomization_path, 'r') as kustomizationFile:
-            metadata = {}
+        with open(kustomization_path, 'r') as kustomization_file:
+            metadata: dict[str, Any] = {}
             try:
-                fileContent = yaml.safe_load(kustomizationFile)
+                file_content = yaml.safe_load(kustomization_file)
             except yaml.YAMLError:
                 logging.info(f"Failed to load Kustomize metadata from {kustomization_path}.", exc_info=True)
+                return {}
 
-            if 'resources' in fileContent:
+            if not isinstance(file_content, dict):
+                return {}
+
+            if 'resources' in file_content:
                 logging.debug(f"Kustomization contains resources: section. Likley a base. {kustomization_path}")
                 metadata['type'] = "base"
 
-            elif 'patchesStrategicMerge' in fileContent:
+            elif 'patchesStrategicMerge' in file_content:
                 logging.debug(f"Kustomization contains patchesStrategicMerge: section. Likley an overlay/env. {kustomization_path}")
                 metadata['type'] = "overlay"
-                if 'bases' in fileContent:
-                    metadata['referenced_bases'] = fileContent['bases']
+                if 'bases' in file_content:
+                    metadata['referenced_bases'] = file_content['bases']
 
-            elif 'bases' in fileContent:
+            elif 'bases' in file_content:
                 logging.debug(f"Kustomization contains bases: section. Likley an overlay/env. {kustomization_path}")
                 metadata['type'] = "overlay"
-                metadata['referenced_bases'] = fileContent['bases']
+                metadata['referenced_bases'] = file_content['bases']
 
-            metadata['fileContent'] = fileContent
+            metadata['fileContent'] = file_content
             metadata['filePath'] = f"{kustomization_path}"
             if metadata.get('type') == "base":
                 self.potentialBases.append(metadata['filePath'])
@@ -519,7 +525,7 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
 
         manager = multiprocessing.Manager()
         # make sure we have new dict
-        shared_kustomize_file_mappings = copy.copy(manager.dict())  # type:ignore[arg-type]  # works with DictProxy
+        shared_kustomize_file_mappings = pickle_deepcopy(manager.dict())  # type:ignore[arg-type]  # works with DictProxy
         shared_kustomize_file_mappings.clear()
         jobs = []
         for filePath in self.kustomizeProcessedFolderAndMeta:
@@ -571,6 +577,7 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
 
             # the returned report can be a list of reports, which also includes an SCA image report
             report = k8s_runner.run(target_dir, external_checks_dir=None, runner_filter=runner_filter)
+            self.graph_manager = k8s_runner.graph_manager
             logging.debug(f"Sucessfully ran k8s scan on Kustomization templated files in tmp scan dir : {target_dir}")
 
             shutil.rmtree(target_dir)

@@ -35,7 +35,7 @@ def test_extract_images_from_resources(graph_framework):
         "container_configuration": {
             "container_image_names": ["python:3.9-alpine"],
             "container_registries": {
-                "password": "myPassword",
+                "password": "myPassword",  # checkov:skip=CKV_SECRET_6 test secret
                 "registry_server": "myContainerRegistry.azurecr.io",
                 "user_name": "myUserName",
             },

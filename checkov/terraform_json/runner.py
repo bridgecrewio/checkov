@@ -49,8 +49,8 @@ class TerraformJsonRunner(TerraformRunner):
         self.file_extensions = TF_JSON_POSSIBLE_FILE_ENDINGS  # override what gets set from the TF runner
         self.graph_registry = get_graph_checks_registry(super().check_type)
 
-        self.definitions = {}
-        self.context = {}
+        self.definitions: dict[str, dict[str, Any]] = {}
+        self.context: dict[str, dict[str, Any]] = {}
         self.root_folder: str | None = None
 
     def run(

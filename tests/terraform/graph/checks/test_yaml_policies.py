@@ -359,7 +359,7 @@ class TestYamlPolicies(unittest.TestCase):
         self.go("AzurePostgreSQLFlexServerNotOverlyPermissive")
 
     def test_GCPMySQLdbInstancePoint_In_TimeRecoveryBackupIsEnabled(self):
-        self.go("GCPMySQLdbInstancePoint_In_TimeRecoveryBackupIsEnabled")
+        self.go("GCPMySQLdbInstancePoint_In_TimeRecoveryBackupIsEnabled")  # checkov:skip=CKV_SECRET_6 false positive
 
     def test_GCPdisableAlphaClusterFeatureInKubernetesEngineClusters(self):
         self.go("GCPdisableAlphaClusterFeatureInKubernetesEngineClusters")
@@ -396,6 +396,21 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_OCI_NSGNotAllowRDP(self):
             self.go("OCI_NSGNotAllowRDP")
+
+    def test_AzureSQLserverNotOverlyPermissive(self):
+            self.go("AzureSQLserverNotOverlyPermissive")
+
+    def test_AzureRecoveryServicesvaultConfigManagedIdentity(self):
+            self.go("AzureRecoveryServicesvaultConfigManagedIdentity")
+
+    def test_AzureAutomationAccConfigManagedIdentity(self):
+            self.go("AzureAutomationAccConfigManagedIdentity")
+
+    def test_AzureMariaDBserverUsingTLS_1_2(self):
+            self.go("AzureMariaDBserverUsingTLS_1_2")
+
+    def test_AzureStorageAccountEnableSoftDelete(self):
+            self.go("AzureStorageAccountEnableSoftDelete")
 
     def test_registry_load(self):
         registry = Registry(parser=GraphCheckParser(), checks_dir=str(
