@@ -121,7 +121,7 @@ class RunnerRegistry:
                 # This is the only runner, so raise a clear indication of failure
                 raise ModuleNotEnabledError(f'The framework "{runner_check_type}" is part of the "{self.licensing_integration.get_subscription_for_runner(runner_check_type).name}" module, which is not enabled in the platform')
         else:
-            def _parallel_run(runner: _BaseRunner) -> tuple[Report | list[Report], dict[str, DiGraph | Graph]]:
+            def _parallel_run(runner: _BaseRunner) -> tuple[Report | list[Report], str | None, DiGraph | Graph | None]:
                 report = runner.run(
                     root_folder=root_folder,
                     external_checks_dir=external_checks_dir,
@@ -135,9 +135,8 @@ class RunnerRegistry:
                     report = Report(check_type=runner.check_type)
 
                 if runner.graph_manager:
-                    check_type_to_graph = {runner.check_type: runner.graph_manager.get_reader_endpoint()}
-                    return report, check_type_to_graph
-                return report, {}
+                    return report, runner.check_type, runner.graph_manager.get_reader_endpoint()
+                return report, None, None
 
             valid_runners = []
             invalid_runners = []
@@ -166,12 +165,12 @@ class RunnerRegistry:
 
             parallel_runner_results = parallel_runner.run_function(func=_parallel_run, items=valid_runners,
                                                                    group_size=1)
-            reports: list[Report | list[Report]] = []
+            reports = []
             full_check_type_to_graph = {}
-            for report, check_type_to_graph in parallel_runner_results:
+            for report, check_type, graph in parallel_runner_results:
                 reports.append(report)
-                if check_type_to_graph != {}:
-                    full_check_type_to_graph.update(check_type_to_graph)
+                if check_type is not None and graph is not None:
+                    full_check_type_to_graph[check_type] = graph
             self.check_type_to_graph = full_check_type_to_graph
 
         merged_reports = self._merge_reports(reports)
