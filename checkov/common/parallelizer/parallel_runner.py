@@ -50,7 +50,8 @@ class ParallelRunner:
         processes = []
         for group_of_items in groups_of_items:
             parent_conn, child_conn = multiprocessing.Pipe(duplex=False)
-            process = multiprocessing.get_context("fork").Process(target=func_wrapper,
+            method = self.get_multithreading_get_context_method()
+            process = multiprocessing.get_context(method).Process(target=func_wrapper,
                                                                   args=(func, group_of_items, child_conn))
             processes.append((process, parent_conn, len(group_of_items)))
             process.start()
@@ -61,6 +62,11 @@ class ParallelRunner:
                     yield parent_conn.recv()
                 except EOFError:
                     pass
+
+    def get_multithreading_get_context_method(self) -> str:
+        if self.os == 'Darwin':
+            return 'spawn'
+        return 'fork'
 
     def _run_function_multithreaded(self, func: Callable[[Any], _T], items: List[Any]) -> Iterator[_T]:
         logging.info(f"[_run_function_multithreaded] starting with {self.workers_number} workers")
