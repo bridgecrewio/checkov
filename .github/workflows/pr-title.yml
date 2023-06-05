@@ -10,7 +10,7 @@ jobs:
   validate:
     runs-on: [self-hosted, public, linux, x64]
     steps:
-      - uses: thehanimo/pr-title-checker@cdafc664bf9b25678d4e6df76ff67b2fe21bb5d2  # v1
+      - uses: thehanimo/pr-title-checker@0cf5902181e78341bb97bb06646396e5bd354b3f  # v1
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           configuration_path: ".github/pr-title-checker-config.json"
