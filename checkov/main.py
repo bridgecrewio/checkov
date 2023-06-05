@@ -39,6 +39,7 @@ from checkov.common.bridgecrew.integration_features.integration_feature_registry
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.integration_features.features.licensing_integration import integration as licensing_integration
 from checkov.common.bridgecrew.severities import BcSeverities
+from checkov.common.cache.file_cache import file_cache
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.output.baseline import Baseline
 from checkov.common.bridgecrew.check_type import checkov_runners, CheckType
@@ -622,6 +623,8 @@ class Checkov:
             raise
 
         finally:
+            file_cache.save_cache()
+
             if self.config.support:
                 bc_integration.persist_logs_stream(logs_stream)
 

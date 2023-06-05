@@ -13,6 +13,7 @@ import hcl2
 from lark import Tree
 import re
 
+from checkov.common.cache.file_cache import file_cache
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.json_utils import CustomJSONEncoder, object_hook
@@ -62,6 +63,11 @@ Load JSON or HCL, depending on filename.
     """
 
     file_path = os.fspath(file)
+
+    definition = file_cache.load_definition(file_path=file_path)
+    if definition:
+        return definition
+
     file_name = os.path.basename(file_path)
 
     try:
@@ -74,9 +80,12 @@ Load JSON or HCL, depending on filename.
                 raw_data = hcl2.load(f)
                 non_malformed_definitions = validate_malformed_definitions(raw_data)
                 if clean_definitions:
-                    return clean_bad_definitions(non_malformed_definitions)
+                    definition = clean_bad_definitions(non_malformed_definitions)
                 else:
-                    return non_malformed_definitions
+                    definition = non_malformed_definitions
+
+                file_cache.save_definition(file_path=file_path, definition=definition)
+                return definition
     except Exception as e:
         logging.debug(f'failed while parsing file {file_path}', exc_info=True)
         parsing_errors[file_path] = e

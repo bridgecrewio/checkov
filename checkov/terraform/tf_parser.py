@@ -237,7 +237,7 @@ class TFParser:
                     self.module_to_resolved[current_nested_data] = resolved_loc_list
 
                     specified_vars = {k: v[0] if isinstance(v, list) else v for k, v in module_call_data.items()
-                                      if k != "source" and k != "version"}
+                                      if k != "source" and k != "version" and v}
                     skipped_a_module = self.should_skip_a_module(specified_vars, ignore_unresolved_params)
                     if skipped_a_module:
                         continue
