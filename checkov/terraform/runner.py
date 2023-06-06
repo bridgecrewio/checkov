@@ -184,8 +184,9 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         report.add_parsing_errors(parsing_errors.keys())
 
         if CHECKOV_CREATE_GRAPH:
-            graph_report = self.get_graph_checks_report(root_folder, runner_filter)
-            merge_reports(report, graph_report)
+            for igraph_graph in all_graphs:
+                graph_report = self.get_graph_checks_report(root_folder, runner_filter, graph=igraph_graph)
+                merge_reports(report, graph_report)
 
         report = remove_duplicate_results(report)
 
@@ -230,9 +231,9 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         connected_node_data['resource_address'] = connected_entity_context.get('address')
         return connected_node_data
 
-    def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter) -> Report:
+    def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter, graph: igraph.Graph | None = None) -> Report:
         report = Report(self.check_type)
-        checks_results = self.run_graph_checks_results(runner_filter, self.check_type)
+        checks_results = self.run_graph_checks_results(runner_filter, self.check_type, graph)
 
         for check, check_results in checks_results.items():
             for check_result in check_results:
