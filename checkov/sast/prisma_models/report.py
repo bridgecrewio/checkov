@@ -5,11 +5,8 @@ from checkov.sast.consts import SastLanguages
 
 
 class Profiler(BaseModel):
-    policies_patterns_parse_time: float  # noqa: CCE003
-    source_code_parse_time: float  # noqa: CCE003
-    memory: float  # noqa: CCE003
-    policy_match_time: Optional[Dict[str, float]]  # noqa: CCE003
-    source_code_match_time: Optional[Dict[str, float]]  # noqa: CCE003
+    duration: str   # noqa: CCE003
+    memory: int     # noqa: CCE003
 
 
 class Point(BaseModel):
@@ -60,4 +57,4 @@ class RuleMatch(BaseModel):
 class PrismaReport(BaseModel):
     rule_match: Dict[SastLanguages, Dict[str, RuleMatch]]  # noqa: CCE003
     errors: List[str]  # noqa: CCE003
-    profiler: Profiler  # noqa: CCE003
+    profiler: Dict[str, Profiler]  # noqa: CCE003
