@@ -64,7 +64,7 @@ Load JSON or HCL, depending on filename.
 
     file_path = os.fspath(file)
 
-    definition = file_cache.load_definition(file_path=file_path)
+    definition = cast("_Hcl2Payload", file_cache.load_definition(file_path=file_path))
     if definition:
         return definition
 

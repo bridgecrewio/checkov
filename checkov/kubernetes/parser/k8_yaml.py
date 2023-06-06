@@ -3,11 +3,13 @@ from __future__ import annotations
 import logging
 from collections.abc import Hashable
 from pathlib import Path
-from typing import List, Dict, Any, Tuple, TYPE_CHECKING
+from typing import List, Dict, Any, Tuple, TYPE_CHECKING, cast
 
 import yaml
 from charset_normalizer import from_path
 from yaml.loader import SafeLoader
+
+from checkov.common.cache.file_cache import file_cache
 
 if TYPE_CHECKING:
     from yaml import MappingNode
@@ -50,7 +52,13 @@ def load(filename: Path) -> Tuple[List[Dict[str, Any]], List[Tuple[int, str]]]:
 
     file_lines = [(idx + 1, line) for idx, line in enumerate(content.splitlines(keepends=True))]
 
+    template = cast("list[dict[str, Any]]", file_cache.load_definition(file_path=str(file_path), file_content=content))
+    if template:
+        return (template, file_lines)
+
     template = loads(content)
+
+    file_cache.save_definition(file_path=str(file_path), definition=template)
 
     return (template, file_lines)
 
