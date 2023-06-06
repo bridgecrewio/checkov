@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Dict, Optional, Tuple, Any, Set, TYPE_CHECKING
 
 import dpath
+import igraph
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.checks_infra.registry import BaseRegistry
@@ -123,7 +124,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
             if root_folder:
                 root_folder = os.path.abspath(root_folder)
 
-                local_graph, self.definitions = self.graph_manager.build_graph_from_source_directory(
+                graphs_and_definitions = self.graph_manager.build_graph_from_source_directory(
                     source_dir=root_folder,
                     local_graph_class=self.graph_class,
                     download_external_modules=runner_filter.download_external_modules,
@@ -133,6 +134,14 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                     vars_files=runner_filter.var_files,
                     create_graph=CHECKOV_CREATE_GRAPH,
                 )
+                all_defintions = {}
+                local_graph = []
+                for g, defintions in graphs_and_definitions:
+                    for definition in defintions:
+                        all_defintions.update(definition)
+                    local_graph.append(g)
+                self.definitions = all_defintions
+
             elif files:
                 files = [os.path.abspath(file) for file in files]
                 root_folder = os.path.split(os.path.commonprefix(files))[0]
@@ -145,18 +154,27 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                 raise Exception("Root directory was not specified, files were not specified")
 
             if CHECKOV_CREATE_GRAPH and local_graph:
-                for vertex in local_graph.vertices:
-                    if vertex.block_type == BlockType.RESOURCE:
-                        if self.enable_nested_modules:
-                            vertex_id = vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS)
-                        else:
-                            vertex_id = vertex.id
-                        report.add_resource(f'{vertex.path}:{vertex_id}')
-                self.graph_manager.save_graph(local_graph)
-                self.definitions, self.breadcrumbs = convert_graph_vertices_to_tf_definitions(
-                    local_graph.vertices,
-                    root_folder,
-                )
+                self.definitions = {}
+                self.breadcrumbs = {}
+                all_graphs = []
+                for graph in local_graph:
+                    for vertex in graph.vertices:
+                        if vertex.block_type == BlockType.RESOURCE:
+                            if self.enable_nested_modules:
+                                vertex_id = vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS)
+                            else:
+                                vertex_id = vertex.id
+                            report.add_resource(f'{vertex.path}:{vertex_id}')
+                    igraph_graph = self.graph_manager.save_graph(graph)
+                    all_graphs.append(igraph_graph)
+                    current_definitions, current_breadcrumbs = convert_graph_vertices_to_tf_definitions(
+                        graph.vertices,
+                        root_folder,
+                    )
+                    self.definitions.update(current_definitions)
+                    self.breadcrumbs.update(current_breadcrumbs)
+                # full_graph = igraph.union(all_graphs, byname=False)
+                # self.graph_manager.save_graph(full_graph)
         else:
             logging.info("Scanning root folder using existing tf_definitions")
 
