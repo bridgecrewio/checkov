@@ -33,6 +33,7 @@ from checkov.common.bridgecrew.platform_key import read_key, persist_key, bridge
 from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_checks_results, \
     enrich_and_persist_checks_metadata, checkov_results_prefix, persist_run_metadata, _put_json_object, \
     persist_logs_stream, persist_graphs
+from checkov.common.cache.file_cache import file_cache
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILES, SCANNABLE_PACKAGE_FILES
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import filter_ignored_paths
@@ -794,6 +795,11 @@ class BcPlatformIntegration:
             logging.debug("Skipping checkov mapping and guidelines API call")
             return
         try:
+            public_metadata = file_cache.cache.get(self.guidelines_api_url)
+            if public_metadata:
+                self.public_metadata_response = public_metadata
+                return
+
             headers: dict[str, Any] = {}
 
             self.setup_http_manager()
@@ -808,6 +814,8 @@ class BcPlatformIntegration:
             self.public_metadata_response = json.loads(request.data.decode("utf8"))
             platform_type = PRISMA_PLATFORM if self.is_prisma_integration() else BRIDGECREW_PLATFORM
             logging.debug(f"Got checkov mappings and guidelines from {platform_type} platform")
+
+            file_cache.cache[self.guidelines_api_url] = self.public_metadata_response
         except Exception:
             logging.warning(f"Failed to get the checkov mappings and guidelines from {self.guidelines_api_url}. Skips using BC_* IDs will not work.",
                             exc_info=True)
