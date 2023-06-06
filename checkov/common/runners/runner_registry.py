@@ -167,10 +167,12 @@ class RunnerRegistry:
                                                                    group_size=1)
             reports = []
             full_check_type_to_graph = {}
-            for report, check_type, graph in parallel_runner_results:
-                reports.append(report)
-                if check_type is not None and graph is not None:
-                    full_check_type_to_graph[check_type] = graph
+            for result in parallel_runner_results:
+                if result is not None:
+                    report, check_type, graph = result
+                    reports.append(report)
+                    if check_type is not None and graph is not None:
+                        full_check_type_to_graph[check_type] = graph
             self.check_type_to_graph = full_check_type_to_graph
 
         merged_reports = self._merge_reports(reports)
