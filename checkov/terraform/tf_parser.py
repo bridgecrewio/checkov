@@ -323,11 +323,41 @@ class TFParser:
         tf_definitions = clean_parser_types(tf_definitions)
         tf_definitions = serialize_definitions(tf_definitions)
 
+        dirs_to_definitions = {}
+        defintion_count = 0
+        for tf_definition_key, tf_value in tf_definitions.items():
+            defintion_count += 1
+            if tf_definition_key.tf_source_modules is None:
+                dir_path = os.path.dirname(tf_definition_key.file_path)
+                if dir_path in dirs_to_definitions:
+                    dirs_to_definitions[dir_path].append({tf_definition_key: tf_value})
+                else:
+                    dirs_to_definitions[dir_path] = [{tf_definition_key: tf_value}]
+            else:
+                source_module = tf_definition_key.tf_source_modules
+                while source_module is not None:
+                    if source_module.nested_tf_module is None:
+                        dir_path = os.path.dirname(source_module.path)
+                        if dir_path in dirs_to_definitions:
+                            dirs_to_definitions[dir_path].append({tf_definition_key: tf_value})
+                        else:
+                            dirs_to_definitions[dir_path] = [{tf_definition_key: tf_value}]
+                    source_module = source_module.nested_tf_module
+
+        count = 0
+        for path, related_defs in dirs_to_definitions.items():
+            count += len(related_defs)
+
+
         module = None
         if create_graph:
-            module, tf_definitions = self.parse_hcl_module_from_tf_definitions(tf_definitions, source_dir, source)
+            modules = []
+            for source_path, definitions in dirs_to_definitions.items():
+                module, tf_definitions = self.parse_hcl_module_from_tf_definitions(definitions, source_path, source)
+                modules.append((module, tf_definitions))
 
-        return module, tf_definitions
+        # return module, tf_definitions
+        return modules
 
     def _remove_unused_path_recursive(self, path: TFDefinitionKey) -> None:
         self.out_definitions.pop(path, None)
@@ -371,7 +401,7 @@ class TFParser:
 
     def parse_hcl_module_from_tf_definitions(
         self,
-        tf_definitions: Dict[TFDefinitionKey, Dict[str, Any]],
+        tf_definitions: list[Dict[TFDefinitionKey, Dict[str, Any]]],
         source_dir: str,
         source: str,
     ) -> Tuple[Module, Dict[TFDefinitionKey, Dict[str, Any]]]:
@@ -380,15 +410,16 @@ class TFParser:
             module_address_map=self.module_address_map,
             external_modules_source_map=self.external_modules_source_map,
         )
-        self.add_tfvars(module, source)
+        self.add_tfvars(module, source, source_dir)
         copy_of_tf_definitions = pickle_deepcopy(tf_definitions)
-        for file_path, blocks in copy_of_tf_definitions.items():
-            for block_type in blocks:
-                try:
-                    module.add_blocks(block_type, blocks[block_type], file_path, source)
-                except Exception as e:
-                    logging.warning(f'Failed to add block {blocks[block_type]}. Error:')
-                    logging.warning(e, exc_info=False)
+        for a in copy_of_tf_definitions:
+            for file_path, blocks in a.items():
+                for block_type in blocks:
+                    try:
+                        module.add_blocks(block_type, blocks[block_type], file_path, source)
+                    except Exception as e:
+                        logging.warning(f'Failed to add block {blocks[block_type]}. Error:')
+                        logging.warning(e, exc_info=False)
         return module, tf_definitions
 
     def get_file_key_with_nested_data(
@@ -412,11 +443,12 @@ class TFParser:
                                                     nested_data.get('nested_modules_data'))
         return get_tf_definition_object_from_module_dependency(key, nested_key, module_name)
 
-    def add_tfvars(self, module: Module, source: str) -> None:
+    def add_tfvars(self, module: Module, source: str, source_dir: str) -> None:
         if not self.external_variables_data:
             return
         for (var_name, default, path) in self.external_variables_data:
-            if ".tfvars" in path:
+            from pathlib import Path
+            if Path(source_dir) in Path(path).parents and ".tfvars" in path:
                 block = [{var_name: {"default": default}}]
                 module.add_blocks(BlockType.TF_VARIABLE, block, path, source)
 
