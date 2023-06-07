@@ -2,7 +2,6 @@ from typing import Dict, Any, List
 
 from checkov.arm.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.common.util.type_forcers import force_list
 
 # https://docs.microsoft.com/en-us/azure/templates/microsoft.sql/2019-06-01-preview/servers
 # https://docs.microsoft.com/en-us/azure/templates/microsoft.sql/2017-03-01-preview/servers/databases/auditingsettings
@@ -16,7 +15,7 @@ class SQLServerAuditingRetention90Days(BaseResourceCheck):
         categories = (CheckCategories.LOGGING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf_20210501preview(self, conf:Dict[str, Any]) -> CheckResult:
+    def scan_resource_conf_20210501preview(self, conf: Dict[str, Any]) -> CheckResult:
         resources = []
         for r in conf.get('resources') or []:
             resources += r.get('resources') or []
