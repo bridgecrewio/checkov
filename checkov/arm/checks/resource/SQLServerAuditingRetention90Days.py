@@ -1,4 +1,4 @@
-from typing import Dict, Any, List
+from typing import Dict, Any
 
 from checkov.arm.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
@@ -16,31 +16,18 @@ class SQLServerAuditingRetention90Days(BaseResourceCheck):
         categories = (CheckCategories.LOGGING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf_20210501preview(self, conf:Dict[str, Any]) -> CheckResult:
-        resources = []
-        for r in conf.get('resources') or []:
-            resources += r.get('resources') or []
-        return self.scan_sub_resources(resources)
-
     def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
-        if conf.get('apiVersion') == '2021-05-01-preview':
-            # The structure is different, example in test dir
-            return self.scan_resource_conf_20210501preview(conf)
         self.evaluated_keys = ["resources"]
         resources = conf.get("resources") or []
-        return self.scan_sub_resources(resources)
-
-    def scan_sub_resources(self, resources: List[Dict[str, Any]]) -> CheckResult:
-        for idx, resource in enumerate(resources):
+        for idx, resource in enumerate(force_list(resources)):
             self.evaluated_keys = [
                 f"resources/[{idx}]/type",
                 f"resources/[{idx}]/properties/state",
                 f"resources/[{idx}]/properties/retentionDays",
             ]
             if resource.get("type") in (
-                    "Microsoft.Sql/servers/databases/auditingPolicies",
-                    "Microsoft.Sql/servers/databases/auditingSettings",
-                    "auditingSettings",
+                "Microsoft.Sql/servers/databases/auditingSettings",
+                "auditingSettings",
             ):
                 properties = resource.get("properties")
                 if isinstance(properties, dict):
