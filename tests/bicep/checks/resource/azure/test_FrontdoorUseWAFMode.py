@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from checkov.bicep.runner import Runner
-from checkov.bicep.checks.resource.azure.FrontdoorUseWAFMode import check
+from checkov.arm.checks.resource.FrontdoorUseWAFMode import check
 from checkov.runner_filter import RunnerFilter
 
 
