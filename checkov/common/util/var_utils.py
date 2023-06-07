@@ -2,9 +2,8 @@ import re
 from typing import Any
 
 from checkov.common.util.parser_utils import find_var_blocks
-from checkov.terraform.graph_builder.variable_rendering.renderer import LOOKUP, DYNAMIC_BLOCKS_LISTS
 
-TF_OPERATOR_PREFIXES = (LOOKUP, DYNAMIC_BLOCKS_LISTS, "file(")
+TF_OPERATOR_PREFIXES = ("lookup(", "list(", "file(")
 
 CFN_VARIABLE_DEPENDANT_REGEX = re.compile(r"(?:Ref)\.\S+")
 TF_BLOCK_REFS = ("var.", "local.", "module.", "data.")
