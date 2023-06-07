@@ -19,7 +19,8 @@ class TestAKSApiServerAuthorizedIpRanges(unittest.TestCase):
 
         passing_resources = {
             "azurerm_kubernetes_cluster.enabled",
-            "azurerm_kubernetes_cluster.private"
+            "azurerm_kubernetes_cluster.private",
+            "azurerm_kubernetes_cluster.version_3_39",
         }
 
         failing_resources = {
@@ -30,8 +31,8 @@ class TestAKSApiServerAuthorizedIpRanges(unittest.TestCase):
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 2)
-        self.assertEqual(summary["failed"], 2)
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
