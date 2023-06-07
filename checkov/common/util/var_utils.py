@@ -2,11 +2,8 @@ import re
 from typing import Any
 
 from checkov.common.util.parser_utils import find_var_blocks
-from checkov.terraform.graph_builder.variable_rendering.renderer import LOOKUP, DYNAMIC_BLOCKS_LISTS
 
-TF_OPERATOR_PREFIXES = (LOOKUP, DYNAMIC_BLOCKS_LISTS, "file(")
-
-CFN_VARIABLE_DEPENDANT_REGEX = re.compile(r"(?:Ref)\.\S+")
+CFN_VARIABLE_DEPENDANT_REGEX = re.compile(r"(?:Ref)\.[^\s]+")
 TF_BLOCK_REFS = ("var.", "local.", "module.", "data.")
 TF_PROVIDER_PREFIXES = (
     "aws_",
@@ -31,9 +28,6 @@ def is_terraform_variable_dependent(value: Any) -> bool:
         return True
 
     if value.startswith(TF_PROVIDER_PREFIXES):
-        return True
-
-    if value.startswith(TF_OPERATOR_PREFIXES):
         return True
 
     if "${" not in value:
