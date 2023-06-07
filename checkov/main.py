@@ -424,6 +424,14 @@ class Checkov:
             runner_filter.filtered_policy_ids = policy_metadata_integration.filtered_policy_ids
             logger.debug(f"Filtered list of policies: {runner_filter.filtered_policy_ids}")
 
+            # ckv_to_bc_cloned_check_ids mapping is essential for correlating cloned "filtered_policy_ids" returned by --policy-metadata-filter with the
+            # original bc check denoted by sourceIncidentId. example: { "org_AWS_1609871234": "BC_ABC_134"}
+            ckv_to_bc_cloned_check_ids = custom_policies_integration.ckv_to_bc_cloned_check_ids
+            for filtered_policy_id in policy_metadata_integration.filtered_policy_ids:
+                if ckv_to_bc_cloned_check_ids.get(filtered_policy_id):
+                    ckv_id = policy_metadata_integration.get_ckv_id_from_bc_id(ckv_to_bc_cloned_check_ids.get(filtered_policy_id))
+                    runner_filter.filtered_policy_ids.append(ckv_id)
+
             runner_filter.excluded_paths = runner_filter.excluded_paths + list(repo_config_integration.skip_paths)
             policy_level_suppression = suppressions_integration.get_policy_level_suppressions()
             bc_cloned_checks = custom_policies_integration.bc_cloned_checks
@@ -437,7 +445,8 @@ class Checkov:
             if self.config.list:
                 print_checks(frameworks=self.config.framework, use_bc_ids=self.config.output_bc_ids,
                              include_all_checkov_policies=self.config.include_all_checkov_policies,
-                             filtered_policy_ids=runner_filter.filtered_policy_ids)
+                             filtered_policy_ids=runner_filter.filtered_policy_ids,
+                             ckv_to_bc_cloned_check_ids=runner_filter.ckv_to_bc_cloned_check_ids)
                 return None
 
             baseline = None

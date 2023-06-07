@@ -28,6 +28,7 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
         super().__init__(bc_integration=bc_integration, order=1)  # must be after policy metadata and before suppression integration
         self.platform_policy_parser = GraphCheckParser()
         self.bc_cloned_checks: dict[str, list[dict[str, Any]]] = defaultdict(list)
+        self.ckv_to_bc_cloned_check_ids: dict[str, str] = defaultdict(str)
         self.policy_level_suppression: List[str] = []
 
     @property
@@ -57,6 +58,7 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
                     if source_incident_id:
                         policy['severity'] = Severities[policy['severity']]
                         self.bc_cloned_checks[source_incident_id].append(policy)
+                        self.ckv_to_bc_cloned_check_ids[policy.get('id')] = source_incident_id
                         continue
                     resource_types = Registry._get_resource_types(converted_check['metadata'])
                     check = self.platform_policy_parser.parse_raw_check(converted_check, resources_types=resource_types)
