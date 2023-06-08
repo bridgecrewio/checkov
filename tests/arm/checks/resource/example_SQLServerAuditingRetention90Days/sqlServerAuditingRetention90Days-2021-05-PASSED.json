@@ -1,0 +1,81 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.Sql/servers",
+      "apiVersion": "2021-05-01-preview",
+      "name": "[parameters('sqlServerName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "administratorLogin": "[parameters('administratorLogin')]",
+        "administratorLoginPassword": "[parameters('administratorLoginPassword')]"
+      },
+      "resources": [
+        {
+          "type": "databases",
+          "apiVersion": "2021-05-01-preview",
+          "name": "[parameters('databaseName')]",
+          "location": "[resourceGroup().location]",
+          "dependsOn": [
+            "[concat('Microsoft.Sql/servers/', parameters('sqlServerName'))]"
+          ],
+          "properties": {
+            "collation": "SQL_Latin1_General_CP1_CI_AS",
+            "maxSizeBytes": "268435456000",
+            "createMode": "Default"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Sql/servers/databases/auditingPolicies",
+              "apiVersion": "2020-02-02-preview",
+              "name": "[concat(parameters('sqlServerName'), '/', parameters('databaseName'), '/Default')]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/databases', parameters('sqlServerName'), parameters('databaseName'))]"
+              ],
+              "properties": {
+                "state": "Enabled",
+                "auditActionsAndGroups": [
+                  "SUCCESSFUL_DATABASE_AUTHENTICATION_GROUP",
+                  "FAILED_DATABASE_AUTHENTICATION_GROUP",
+                  "BATCH_COMPLETED_GROUP"
+                ],
+                "retentionDays": 91
+              }
+            }
+          ]
+        }
+      ],
+      "sku": {
+        "name": "GP_Gen5_2",
+        "tier": "GeneralPurpose"
+      }
+    }
+  ],
+  "parameters": {
+    "sqlServerName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the SQL Server."
+      }
+    },
+    "administratorLogin": {
+      "type": "string",
+      "metadata": {
+        "description": "Administrator username for the SQL Server."
+      }
+    },
+    "administratorLoginPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Administrator password for the SQL Server."
+      }
+    },
+    "databaseName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the SQL database to create."
+      }
+    }
+  }
+}

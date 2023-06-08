@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 from typing import List, Dict, Any, Tuple
 
@@ -11,9 +13,9 @@ from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlo
 
 def convert_graph_vertices_to_tf_definitions(
     vertices: List[TerraformBlock], root_folder: str
-) -> Tuple[Dict[str, Dict[str, Any]], Dict[str, Dict[str, Any]]]:
+) -> Tuple[Dict[str | TFDefinitionKey, Dict[str, Any]], Dict[str, Dict[str, Any]]]:
     use_new_tf_parser = strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'True'))
-    tf_definitions: Dict[str, Dict[str, Any]] = {}
+    tf_definitions: Dict[str | TFDefinitionKey, Dict[str, Any]] = {}
     breadcrumbs: Dict[str, Dict[str, Any]] = {}
     for vertex in vertices:
         block_path = vertex.path
@@ -24,7 +26,7 @@ def convert_graph_vertices_to_tf_definitions(
         if block_type == BlockType.TF_VARIABLE:
             continue
 
-        tf_path = TFDefinitionKey(file_path=block_path) if use_new_tf_parser else block_path
+        tf_path: str | TFDefinitionKey = TFDefinitionKey(file_path=block_path) if use_new_tf_parser else block_path
         if vertex.module_dependency or hasattr(vertex, "source_module_object") and vertex.source_module_object:
             if use_new_tf_parser:
                 tf_path = TFDefinitionKey(file_path=block_path, tf_source_modules=vertex.source_module_object)

@@ -27,7 +27,7 @@ class ForeachModuleHandler(ForeachAbstractHandler):
         """
         if not modules_blocks:
             return
-        current_level = [None]
+        current_level: list[TFModule | None] = [None]
         # We use `[:]` instead of deepcopy as it's much faster and the list has only primitive types (int indexes)
         main_module_modules = self.local_graph.vertices_by_module_dependency.get(None)[BlockType.MODULE][:]
         modules_to_render = main_module_modules
@@ -36,7 +36,7 @@ class ForeachModuleHandler(ForeachAbstractHandler):
             modules_to_render = self._render_foreach_modules_by_levels(modules_blocks, modules_to_render, current_level)
 
     def _render_foreach_modules_by_levels(self, modules_blocks: list[int], modules_to_render: list[int],
-                                          current_level: list[int | None]) -> list[int]:
+                                          current_level: list[TFModule | None]) -> list[int]:
         """
         modules_blocks: The module blocks with for_each/count statement in the graph.
         modules_to_render: The list of modules indexes to render at this iteration.
@@ -229,7 +229,7 @@ class ForeachModuleHandler(ForeachAbstractHandler):
         self.local_graph.vertices_by_module_dependency.update({new_resource_module_key: new_vertices_module_value})
         self.local_graph.vertices_by_module_dependency_by_name.update({new_resource_module_key: {new_resource_name: new_vertices_module_value}})
 
-    def _add_new_vertices_for_module(self, new_module_key: TFModule, new_module_value: dict[str, list[int]],
+    def _add_new_vertices_for_module(self, new_module_key: TFModule | None, new_module_value: dict[str, list[int]],
                                      new_resource_vertex_idx: int) -> dict[str, list[int]]:
         new_vertices_module_value: dict[str, list[int]] = defaultdict(list)
         for vertex_type, vertices_idx in new_module_value.items():
@@ -263,9 +263,12 @@ class ForeachModuleHandler(ForeachAbstractHandler):
             config = child.config[child_name][child_type]
         else:
             config = child.config.get(child.name)
-        if isinstance(config, dict) and config.get(RESOLVED_MODULE_ENTRY_NAME) is not None and \
-                len(config.get(RESOLVED_MODULE_ENTRY_NAME)) > 0:
-            tf_moudle: TFModule = config[RESOLVED_MODULE_ENTRY_NAME][0].tf_source_modules
-            ForeachAbstractHandler._update_nested_tf_module_foreach_idx(original_foreach_or_count_key,
-                                                                        original_module_key,
-                                                                        tf_moudle)
+        if isinstance(config, dict):
+            resolved_module_name = config.get(RESOLVED_MODULE_ENTRY_NAME)
+            if resolved_module_name is not None and len(resolved_module_name) > 0:
+                tf_moudle: TFModule = resolved_module_name[0].tf_source_modules
+                ForeachAbstractHandler._update_nested_tf_module_foreach_idx(
+                    original_foreach_or_count_key,
+                    original_module_key,
+                    tf_moudle,
+                )

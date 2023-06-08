@@ -1,6 +1,34 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.276...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.283...HEAD)
+
+## [2.3.283](https://github.com/bridgecrewio/checkov/compare/2.3.281...2.3.283) - 2023-06-07
+
+### Feature
+
+- **arm:** Handle arm db servers 2021 05 01 - [#5187](https://github.com/bridgecrewio/checkov/pull/5187)
+- **terraform:** Mark unresolved tf function calls as unresolved - [#5186](https://github.com/bridgecrewio/checkov/pull/5186)
+
+### Documentation
+
+- **general:** Add Enforcement CLI Command - [#5185](https://github.com/bridgecrewio/checkov/pull/5185)
+
+## [2.3.281](https://github.com/bridgecrewio/checkov/compare/2.3.278...2.3.281) - 2023-06-06
+
+### Feature
+
+- **terraform_plan:** Expose field changes to python checks - [#5112](https://github.com/bridgecrewio/checkov/pull/5112)
+
+### Bug Fix
+
+- **general:** Check that the result is not None before extracting vars in cli multiprocess runs - [#5183](https://github.com/bridgecrewio/checkov/pull/5183)
+- **general:** Correctly handle cli graphs in case we run with multiprocessing - [#5177](https://github.com/bridgecrewio/checkov/pull/5177)
+
+## [2.3.278](https://github.com/bridgecrewio/checkov/compare/2.3.276...2.3.278) - 2023-06-05
+
+### Bug Fix
+
+- **kubernetes:** dont' fail if spec is missing and default value is set to the fix value. - [#5167](https://github.com/bridgecrewio/checkov/pull/5167)
 
 ## [2.3.276](https://github.com/bridgecrewio/checkov/compare/2.3.273...2.3.276) - 2023-06-04
 

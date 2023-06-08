@@ -1,17 +1,19 @@
 from __future__ import annotations
 
 import os
-from typing import Union, Dict, Any, List, Optional, Set
+from typing import Union, Dict, Any, List, Optional, Set, TYPE_CHECKING
 import dpath
 import re
 
 from checkov.common.runners.base_runner import strtobool
-from checkov.terraform import TFModule
 from checkov.terraform.graph_builder.utils import INTERPOLATION_EXPR
 from checkov.common.graph.graph_builder.graph_components.blocks import Block
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.utils import remove_module_dependency_in_path
+
+if TYPE_CHECKING:
+    from checkov.terraform import TFModule, TFDefinitionKey
 
 
 class TerraformBlock(Block):
@@ -27,8 +29,18 @@ class TerraformBlock(Block):
         "for_each_index"
     )
 
-    def __init__(self, name: str, config: Dict[str, Any], path: str, block_type: BlockType, attributes: Dict[str, Any],
-                 id: str = "", source: str = "", has_dynamic_block: bool = False, dynamic_attributes: dict[str, Any] | None = None) -> None:
+    def __init__(
+        self,
+        name: str,
+        config: Dict[str, Any],
+        path: str | TFDefinitionKey,
+        block_type: str,
+        attributes: Dict[str, Any],
+        id: str = "",
+        source: str = "",
+        has_dynamic_block: bool = False,
+        dynamic_attributes: dict[str, Any] | None = None,
+    ) -> None:
         """
             :param name: unique name given to the terraform block, for example: 'aws_vpc.example_name'
             :param config: the section in tf_definitions that belong to this block
@@ -36,14 +48,24 @@ class TerraformBlock(Block):
             :param block_type: BlockType
             :param attributes: dictionary of the block's original attributes in the terraform file
         """
-        super(TerraformBlock, self).__init__(name, config, path, str(block_type), attributes, id, source, has_dynamic_block, dynamic_attributes)
-        self.module_dependency = ""
-        self.module_dependency_num = ""
+        super().__init__(
+            name=name,
+            config=config,
+            path=path,  # type:ignore[arg-type]  # Block class would need to be a Generic type to make this pass
+            block_type=str(block_type),
+            attributes=attributes,
+            id=id,
+            source=source,
+            has_dynamic_block=has_dynamic_block,
+            dynamic_attributes=dynamic_attributes,
+        )
+        self.module_dependency: str | None = ""
+        self.module_dependency_num: str | None = ""
         if path:
             if strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'True')):
-                self.path = path
+                self.path = path  # type:ignore[assignment]  # Block class would need to be a Generic type to make this pass
             else:
-                self.path, module_dependency, num = remove_module_dependency_in_path(path)
+                self.path, module_dependency, num = remove_module_dependency_in_path(path)  # type:ignore[arg-type]
                 self.path = os.path.realpath(self.path)
                 if module_dependency:
                     self.module_dependency = module_dependency
@@ -57,6 +79,7 @@ class TerraformBlock(Block):
         if strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'True')):
             self.source_module_object: Optional[TFModule] = None
             self.for_each_index: Optional[Any] = None
+            self.foreach_attrs: list[str] | None = None
 
     def add_module_connection(self, attribute_key: str, vertex_id: int) -> None:
         self.module_connections.setdefault(attribute_key, []).append(vertex_id)
@@ -69,8 +92,8 @@ class TerraformBlock(Block):
             return self._extract_dynamic_changed_attributes(attribute_key)
         return super().extract_additional_changed_attributes(attribute_key)
 
-    def _extract_dynamic_changed_attributes(self, dynamic_attribute_key: str, nesting_prefix='') -> List[str]:
-        dynamic_changed_attributes = []
+    def _extract_dynamic_changed_attributes(self, dynamic_attribute_key: str, nesting_prefix: str = '') -> List[str]:
+        dynamic_changed_attributes: list[str] = []
         dynamic_attribute_key_parts = dynamic_attribute_key.split('.')
         try:
             remainder_key_parts = ['start_extract_dynamic_changed_attributes']  # For 1st iteration
@@ -90,7 +113,7 @@ class TerraformBlock(Block):
         except ValueError:
             return dynamic_changed_attributes
 
-    def _collect_dynamic_dependent_keys(self, dynamic_block_name: str, value: Union[str, List], key_path: str,
+    def _collect_dynamic_dependent_keys(self, dynamic_block_name: str, value: str | list[str] | dict[str, Any], key_path: str,
                                         dynamic_content_path: List[str], dynamic_changed_attributes: List[str]) -> None:
         if isinstance(value, str):
             dynamic_ref = f'{dynamic_block_name}.value'
@@ -164,7 +187,7 @@ class TerraformBlock(Block):
             attribute_value=attribute_value,
         )
 
-    def to_dict(self):
+    def to_dict(self) -> dict[str, Any]:
         return {
             'attributes': self.attributes,
             'block_type': self.block_type,
