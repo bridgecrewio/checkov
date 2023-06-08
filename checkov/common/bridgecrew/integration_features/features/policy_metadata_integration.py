@@ -169,15 +169,17 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
     def _add_ckv_id_for_filtered_cloned_checks(self) -> None:
         """
         Filtered checks are the policies that are returned by --policy-metadata-filter.
-        Cloned checks are policies with modified metadata in prisma (severity, title etc)
-        This method adds the ckv id for the source check to the list of filtered policies.
+        Cloned checks are policies that have modified metadata in Prisma (severity, title etc).
+        Filtered checks do not have a definition if they are cloned, instead they have a sourceIncidentId
+        which corresponds to the BC ID of the original source check.
+        This method adds the CKV ID for that source check to the list of filtered policies to ensure it is run.
         Example:
-            filtered_policy_ids = [ "org_AWS_1609123441" ]
-            ckv_id_to_source_incident_id_mapping =  { "org_AWS_1609123441": "BC__AWS_GENERAL_123" }
-            bc_id_to_ckv_id_mapping = { "BC__AWS_GENERAL_123": "CKV_AWS_123" }
-
-        Since org_AWS_1609123441 is originally cloned from CKV_AWS_123, that check id is added
-        to the filtered_policy_ids list to ensure it is run.
+            Input:
+                filtered_policy_ids = [ "org_AWS_1609123441" ]
+                ckv_id_to_source_incident_id_mapping =  { "org_AWS_1609123441": "BC__AWS_GENERAL_123" }
+                bc_id_to_ckv_id_mapping = { "BC__AWS_GENERAL_123": "CKV_AWS_123" }
+            Output:
+                filtered_policy_ids = [ "org_AWS_1609123441", "CKV_AWS_123" ]
         """
         ckv_ids = []
         for policy_id in self.filtered_policy_ids:
