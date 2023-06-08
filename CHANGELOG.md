@@ -1,6 +1,17 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.283...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.285...HEAD)
+
+## [2.3.285](https://github.com/bridgecrewio/checkov/compare/2.3.283...2.3.285) - 2023-06-08
+
+### Feature
+
+- **arm:** and bicep: Ensure that Azure Front Door uses WAF in "Detection" or "Prevention" modes CKV_AZURE_123 - [#5049](https://github.com/bridgecrewio/checkov/pull/5049)
+
+### Bug Fix
+
+- **general:** handle cloned checks filtered via labels - [#5188](https://github.com/bridgecrewio/checkov/pull/5188)
+- **terraform:** adjust CKV_AZURE_6 to comply with new provider version - [#5189](https://github.com/bridgecrewio/checkov/pull/5189)
 
 ## [2.3.283](https://github.com/bridgecrewio/checkov/compare/2.3.281...2.3.283) - 2023-06-07
 
