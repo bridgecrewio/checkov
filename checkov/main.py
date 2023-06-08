@@ -421,16 +421,6 @@ class Checkov:
                 # only run image referencer, when sca_image framework is enabled
                 runner_filter.run_image_referencer = licensing_integration.should_run_image_referencer()
 
-            # ckv_to_bc_cloned_check_ids mapping is essential for correlating cloned "filtered_policy_ids" returned by --policy-metadata-filter with the
-            # original bc check denoted by sourceIncidentId. example: { "org_AWS_1609871234": "BC_ABC_134"}
-            ckv_to_bc_cloned_check_ids = custom_policies_integration.ckv_to_bc_cloned_check_ids
-            for filtered_policy_id in policy_metadata_integration.filtered_policy_ids:
-                bc_id = ckv_to_bc_cloned_check_ids.get(filtered_policy_id)
-                if bc_id:
-                    ckv_id = policy_metadata_integration.get_ckv_id_from_bc_id(bc_id)
-                    if ckv_id:
-                        policy_metadata_integration.filtered_policy_ids.append(ckv_id)
-
             runner_filter.filtered_policy_ids = policy_metadata_integration.filtered_policy_ids
             logger.debug(f"Filtered list of policies: {runner_filter.filtered_policy_ids}")
 
