@@ -184,10 +184,12 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
         ckv_ids = []
         for policy_id in self.filtered_policy_ids:
             source_bc_id = self.get_source_incident_id_from_ckv_id(policy_id)
-            if source_bc_id:
-                ckv_id = self.get_ckv_id_from_bc_id(source_bc_id)
-                if ckv_id:
-                    ckv_ids.append(ckv_id)
+            if not source_bc_id:
+                continue
+            ckv_id = self.get_ckv_id_from_bc_id(source_bc_id)
+            if not ckv_id:
+                continue
+            ckv_ids.append(ckv_id)
         self.filtered_policy_ids += ckv_ids
 
     def pre_runner(self, runner: _BaseRunner) -> None:
