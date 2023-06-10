@@ -46,10 +46,10 @@ class GoogleComputeDefaultServiceAccountFullAccess(BaseResourceCheck):
                     self.evaluated_keys.append('service_account/[0]/email')
                     if re.match(DEFAULT_SERVICE_ACCOUNT, service_account_conf['email'][0]):
                         if len(service_account_conf['scopes']) > 0 and (FULL_ACCESS_API in service_account_conf['scopes'][0]
-                                or FULL_ACCESS_API2 in service_account_conf['scopes'][0]):
+                                                                        or FULL_ACCESS_API2 in service_account_conf['scopes'][0]):
                             return CheckResult.FAILED
                 elif len(service_account_conf['scopes']) > 0 and (FULL_ACCESS_API in service_account_conf['scopes'][0] or
-                        FULL_ACCESS_API2 in service_account_conf['scopes'][0]):
+                                                                  FULL_ACCESS_API2 in service_account_conf['scopes'][0]):
                     return CheckResult.FAILED
         return CheckResult.PASSED
 
