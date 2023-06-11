@@ -6,7 +6,8 @@ on:
     - cron: "0 23 * * *"
   workflow_dispatch:
 
-permissions: read-all
+permissions:
+  contents: read
 
 jobs:
   github-release:

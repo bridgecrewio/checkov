@@ -21,7 +21,8 @@ on:
     - cron: '17 4 * * 2'
   workflow_dispatch:
 
-permissions: read-all
+permissions:
+  contents: read
 
 jobs:
   analyze:

@@ -28,6 +28,9 @@ on:
       - '.swm/**'
       - '.pre-commit-config.yaml'
 
+permissions:
+  contents: read
+
 concurrency:
   group: 'build'
   cancel-in-progress: true
