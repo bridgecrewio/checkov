@@ -24,7 +24,7 @@ class KMSKeyWildCardPrincipal(BaseResourceValueCheck):
             if policy_block and isinstance(policy_block, dict):
                 statements = policy_block.get("Statement")
                 if statements and isinstance(statements, list):
-                    for idx, statement in enumerate(statements):
+                    for statement in statements:
                         principal = statement.get("Principal")
                         if not principal:
                             continue

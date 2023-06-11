@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from abc import abstractmethod
 from collections.abc import Iterable
-from typing import List, Any, Dict
+from typing import List, Any
 
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.cloudformation.context_parser import ContextParser
