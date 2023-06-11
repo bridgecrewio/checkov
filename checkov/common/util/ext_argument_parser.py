@@ -140,6 +140,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
                  'to filter the runners based on the file type. For example, if you specify a ".tf" file, only the '
                  "terraform and secrets frameworks will be included. You can further limit this (e.g., skip secrets) "
                  "by using the --skip-framework argument.",
+            nargs="+",
         )
         self.add(
             "--skip-path",
