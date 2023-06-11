@@ -70,9 +70,33 @@ repos:
         entry: checkov -d . --skip-check CKV_AWS_123
 ```
 
+## Diff scanning pre-commit hook
+
+To let `checkov` only scan the changed files choose the `checkov_diff` hook, which scans against all frameworks:
+
+```yaml
+repos:
+  - repo: https://github.com/bridgecrewio/checkov.git
+    rev: '' # change to tag or sha
+    hooks:
+      - id: checkov_diff
+```
+
+if you want to customize this hook, you need to override the `entry` field, because the file flag `-f` has to be at the end:
+
+```yaml
+repos:
+  - repo: https://github.com/bridgecrewio/checkov.git
+    rev: '' # change to tag or sha
+    hooks:
+      - id: checkov_diff
+        entry: checkov --framework terraform -f
+```
+
 ## Secrets scanning pre-commit hook
 
 Checkov also natively has a secrets only pre-commit hook that scans all files just for secrets:
+
 ```yaml
 repos:
   - repo: https://github.com/bridgecrewio/checkov.git
