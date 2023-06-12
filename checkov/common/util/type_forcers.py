@@ -45,12 +45,14 @@ def force_float(var: Any) -> float | None:
 
 
 def convert_str_to_bool(bool_str: bool | str) -> bool | str:
-    if bool_str in ["true", '"true"', "True", '"True"']:
-        return True
-    elif bool_str in ["false", '"false"', "False", '"False"']:
-        return False
-    else:
-        return bool_str
+    if isinstance(bool_str, str):
+        bool_str_lower = bool_str.lower()
+        if bool_str_lower in ("true", '"true"'):
+            return True
+        elif bool_str_lower in ("false", '"false"'):
+            return False
+
+    return bool_str
 
 
 def force_dict(obj: Any) -> dict[str, Any] | None:
