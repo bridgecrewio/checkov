@@ -30,6 +30,7 @@ class RawStore(TypedDict):
 class GitHistorySecretStore:
     def __init__(self) -> None:
         self.secrets_by_file_value_type: Dict[str, List[EnrichedPotentialSecret]] = {}
+        self.check_id_counters: Dict[str, int] = defaultdict(lambda: 0)
 
     def set_secret_map(self, file_results: List[PotentialSecret], file_name: str, commit: Commit) -> None:
         # First find if secret was moved in the file
@@ -73,6 +74,12 @@ class GitHistorySecretStore:
             'added_date': commit.metadata.committed_datetime
         }
         self.secrets_by_file_value_type[secret_key].append(enriched_potential_secret)
+        self.check_id_counters[secret.check_id] += 1
+
+    def check_limit(self, check_id: str):
+        if self.check_id_counters[check_id] > 75:  # todo: move to const
+            # remove the check id from the policies some how
+            pass
 
     def _update_removed_secret(self, secret_key: str, secret: PotentialSecret, file_name: str, commit: Commit) -> None:
         # Try to find the corresponding added secret in the git history secret map
