@@ -16,6 +16,8 @@ from checkov.common.resource_code_logger_filter import add_resource_code_filter_
 logger = logging.getLogger(__name__)
 add_resource_code_filter_to_logger(logger)
 
+from zipfile import ZipFile
+
 
 def convert_to_unix_path(path: str) -> str:
     return path.replace('\\', '/')
