@@ -2,6 +2,7 @@ import itertools
 import os
 import unittest
 from collections import defaultdict
+from copy import deepcopy
 from pathlib import Path
 
 
@@ -27,10 +28,10 @@ from checkov.terraform.plan_runner import Runner, resource_registry
    {"db_connector": IgraphConnector}
 ])
 class TestRunnerValid(unittest.TestCase):
-
-    def setUp(self) -> None:
-        self.orig_checks = resource_registry.checks
-        self.db_connector = self.db_connector
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.orig_checks = deepcopy(resource_registry.checks)
+        cls.db_connector = cls.db_connector
 
     def test_runner_two_checks_only(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -695,7 +696,7 @@ class TestRunnerValid(unittest.TestCase):
         summary = report.get_summary()
 
         self.assertEqual(summary["passed"], 2)  # "aws_iam_policy.policy_pass" passes both checks
-        self.assertEqual(summary["failed"], 3)
+        self.assertEqual(summary["failed"], 6)  # the rest fails both checks
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
@@ -834,8 +835,44 @@ class TestRunnerValid(unittest.TestCase):
         assert file_path == 'test'
         assert scanned_file == '/.'
 
+    def test_plan_change_keys(self):
+        # given
+        current_dir = Path(__file__).parent
+        tf_plan_path = current_dir / "resources/plan_change_keys/tfplan.json"
+        external_checks_dir = current_dir / "extra_tf_plan_checks"
+
+        # when
+        report = Runner().run(
+            root_folder=None,
+            files=[str(tf_plan_path)],
+            external_checks_dir=[str(external_checks_dir)],
+            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=["CUSTOM_CHANGE_1"]),
+        )
+
+        # then
+        summary = report.get_summary()
+
+        passing_resources = {
+            'aws_security_group_rule.foo'
+        }
+        failing_resources = {
+            'aws_security_group_rule.bar',
+        }
+
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
+
+        self.assertEqual(summary["failed"], 1)
+        self.assertEqual(summary["passed"], 1)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+        self.assertEqual(summary["resource_count"], 2)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
+
     def tearDown(self) -> None:
-        resource_registry.checks = self.orig_checks
+        resource_registry.checks = deepcopy(self.orig_checks)
 
 
 if __name__ == "__main__":

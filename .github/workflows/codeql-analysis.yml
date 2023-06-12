@@ -21,12 +21,13 @@ on:
     - cron: '17 4 * * 2'
   workflow_dispatch:
 
-permissions: read-all
+permissions:
+  contents: read
 
 jobs:
   analyze:
     name: Analyze
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, public, linux, x64]
     permissions:
       actions: read
       contents: read
@@ -53,12 +54,12 @@ jobs:
           pipenv lock -r > requirements.txt
           pip install -r requirements.txt
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@0225834cc549ee0ca93cb085b92954821a145866  # v2
+        uses: github/codeql-action/init@83f0fe6c4988d98a455712a27f0255212bba9bd4  # v2
         with:
           languages: python
           setup-python-dependencies: false
           config-file: ./.github/codeql-config.yml
       - name: Autobuild
-        uses: github/codeql-action/autobuild@0225834cc549ee0ca93cb085b92954821a145866  # v2
+        uses: github/codeql-action/autobuild@83f0fe6c4988d98a455712a27f0255212bba9bd4  # v2
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@0225834cc549ee0ca93cb085b92954821a145866  # v2
+        uses: github/codeql-action/analyze@83f0fe6c4988d98a455712a27f0255212bba9bd4  # v2

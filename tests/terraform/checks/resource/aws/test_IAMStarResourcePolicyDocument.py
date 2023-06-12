@@ -3,10 +3,18 @@ from pathlib import Path
 
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.aws.IAMStarResourcePolicyDocument import check
+from checkov.terraform.checks.utils.base_cloudsplaining_iam_scanner import BaseTerraformCloudsplainingIAMScanner
 from checkov.terraform.runner import Runner
 
 
 class TestIAMStarResourcePolicyDocument(unittest.TestCase):
+    def setUp(self) -> None:
+        # make sure nothing is in the cache
+        BaseTerraformCloudsplainingIAMScanner.policy_document_cache = {}
+
+    def tearDown(self) -> None:
+        BaseTerraformCloudsplainingIAMScanner.policy_document_cache = {}
+
     def test(self):
         # given
         test_files_dir = Path(__file__).parent / "example_IAMStarResourcePolicyDocument"
@@ -19,6 +27,7 @@ class TestIAMStarResourcePolicyDocument(unittest.TestCase):
 
         passing_resources = {
             "aws_iam_policy.pass",
+            "aws_iam_policy.pass_unrestrictable",
             "aws_iam_role_policy.pass",
             "aws_iam_user_policy.pass",
             "aws_iam_group_policy.pass",

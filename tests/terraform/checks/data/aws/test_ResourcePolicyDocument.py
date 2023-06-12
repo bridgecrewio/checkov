@@ -10,19 +10,21 @@ class TestResourcePolicyDocument(unittest.TestCase):
     def test(self):
         test_files_dir = Path(__file__).parent / "example_ResourcePolicyDocument"
 
-        report = Runner().run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
+        report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
 
         passing_resources = {
             "aws_iam_policy_document.pass",
-            "aws_iam_policy_document.pass2"
+            "aws_iam_policy_document.pass2",
+            "aws_iam_policy_document.pass_unrestrictable",
+            "aws_iam_policy_document.pass_condition",
         }
         failing_resources = {
             "aws_iam_policy_document.fail",
         }
 
-        passed_check_resources = set([c.resource for c in report.passed_checks])
-        failed_check_resources = set([c.resource for c in report.failed_checks])
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
 
         self.assertEqual(summary["passed"], len(passing_resources))
         self.assertEqual(summary["failed"], len(failing_resources))

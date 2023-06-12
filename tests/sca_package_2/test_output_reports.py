@@ -350,7 +350,7 @@ def test_sarif_output(sca_package_report_2_with_skip_scope_function):
                                     "text": "SCA package scan\nResource: requirements.txt.django\nStatus: fixed in 3.0.1, 2.2.9, 1.11.27"
                                 },
                                 "defaultConfiguration": {"level": "error"},
-                                "properties": {"security-severity": 9.8},
+                                "properties": {"security-severity": "9.8"},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2019-19844",
                             },
                             {
@@ -364,7 +364,7 @@ def test_sarif_output(sca_package_report_2_with_skip_scope_function):
                                     "text": "SCA package scan\nResource: requirements.txt.django\nStatus: fixed in 1.9.10, 1.8.15"
                                 },
                                 "defaultConfiguration": {"level": "error"},
-                                "properties": {"security-severity": 7.5},
+                                "properties": {"security-severity": "7.5"},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2016-7401",
                             },
                             {
@@ -378,7 +378,7 @@ def test_sarif_output(sca_package_report_2_with_skip_scope_function):
                                     "text": "SCA package scan\nResource: requirements.txt.django\nStatus: fixed in 3.2.4, 3.1.12, 2.2.24"
                                 },
                                 "defaultConfiguration": {"level": "error"},
-                                "properties": {"security-severity": 4.9},
+                                "properties": {"security-severity": "4.9"},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2021-33203",
                             },
                             {
@@ -392,7 +392,7 @@ def test_sarif_output(sca_package_report_2_with_skip_scope_function):
                                     "text": "SCA package scan\nResource: requirements.txt.flask\nStatus: fixed in 1.0"
                                 },
                                 "defaultConfiguration": {"level": "error"},
-                                "properties": {"security-severity": 7.5},
+                                "properties": {"security-severity": "7.5"},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2019-1010083",
                             },
                             {
@@ -406,7 +406,7 @@ def test_sarif_output(sca_package_report_2_with_skip_scope_function):
                                     "text": "SCA package scan\nResource: requirements.txt.flask\nStatus: fixed in 0.12.3"
                                 },
                                 "defaultConfiguration": {"level": "error"},
-                                "properties": {"security-severity": 7.5},
+                                "properties": {"security-severity": "7.5"},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2018-1000656",
                             },
                             {
@@ -420,7 +420,7 @@ def test_sarif_output(sca_package_report_2_with_skip_scope_function):
                                     "text": "SCA package scan\nResource: path/to/go.sum.github.com/dgrijalva/jwt-go\nStatus: fixed in v4.0.0-preview1"
                                 },
                                 "defaultConfiguration": {"level": "error"},
-                                "properties": {"security-severity": 7.7},
+                                "properties": {"security-severity": "7.7"},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2020-26160",
                             },
                             {
@@ -434,7 +434,7 @@ def test_sarif_output(sca_package_report_2_with_skip_scope_function):
                                     "text": "SCA package scan\nResource: requirements.txt.django\nStatus: fixed in 1.9.8, 1.8.14"
                                 },
                                 "defaultConfiguration": {"level": "error"},
-                                "properties": {"security-severity": 6.1},
+                                "properties": {"security-severity": "6.1"},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2016-6186",
                             },
                             {
@@ -448,7 +448,7 @@ def test_sarif_output(sca_package_report_2_with_skip_scope_function):
                                     "text": "SCA package scan\nResource: path/to/go.sum.golang.org/x/crypto\nStatus: fixed in v0.0.2"
                                 },
                                 "defaultConfiguration": {"level": "error"},
-                                "properties": {"security-severity": 7.5},
+                                "properties": {"security-severity": "7.5"},
                                 "helpUri": "https://nvd.nist.gov/vuln/detail/CVE-2020-29652",
                             },
                         ],

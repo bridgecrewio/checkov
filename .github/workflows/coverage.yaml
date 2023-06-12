@@ -5,7 +5,8 @@ on:
     - cron: '0 0 * * 0'
   workflow_dispatch:
 
-permissions: read-all
+permissions:
+  contents: read
 
 jobs:
   update-coverage:
@@ -38,6 +39,8 @@ jobs:
           python -m pip install --no-cache-dir --upgrade pipenv
       - name: Install dependencies
         run: |
+          # remove venv, if exists
+          pipenv --rm || true
           pipenv --python 3.7
           pipenv install --dev
           pipenv run pip install pytest

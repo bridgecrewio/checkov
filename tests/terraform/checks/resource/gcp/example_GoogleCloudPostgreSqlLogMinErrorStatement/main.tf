@@ -1,5 +1,5 @@
 resource "google_sql_database_instance" "fail" {
-  database_version = "POSTGRES_14"
+  database_version = "POSTGRES_15"
   name             = "general-pos121"
   project          = "gcp-bridgecrew-deployment"
   region           = "us-central1"
@@ -20,7 +20,7 @@ resource "google_sql_database_instance" "fail" {
 }
 
 resource "google_sql_database_instance" "fail2" {
-  database_version = "POSTGRES_14"
+  database_version = "POSTGRES_15"
   name             = "general-pos121"
   project          = "gcp-bridgecrew-deployment"
   region           = "us-central1"
@@ -41,7 +41,7 @@ resource "google_sql_database_instance" "fail2" {
 }
 
 resource "google_sql_database_instance" "fail3" {
-  database_version = "POSTGRES_14"
+  database_version = "POSTGRES_15"
   name             = "general-pos121"
   project          = "gcp-bridgecrew-deployment"
   region           = "us-central1"
@@ -62,7 +62,7 @@ resource "google_sql_database_instance" "fail3" {
 }
 
 resource "google_sql_database_instance" "pass" {
-  database_version = "POSTGRES_14"
+  database_version = "POSTGRES_15"
   name             = "general-pos121"
   project          = "gcp-bridgecrew-deployment"
   region           = "us-central1"

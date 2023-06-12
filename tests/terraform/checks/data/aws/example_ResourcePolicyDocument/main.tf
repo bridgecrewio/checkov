@@ -72,3 +72,37 @@ data "aws_iam_policy_document" "pass" {
     ]
   }
 }
+
+data "aws_iam_policy_document" "pass_unrestrictable" {
+  version = "2012-10-17"
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:ListAllMyBuckets",
+    ]
+    resources = [
+      "*",
+    ]
+  }
+}
+
+data "aws_iam_policy_document" "pass_condition" {
+  statement {
+    actions = [
+      "kms:GenerateDataKey",
+      "kms:Decrypt"
+    ]
+    resources = [
+      "*"
+    ]
+
+    condition {
+      test     = "ArnEquals"
+      variable = "aws:SourceArn"
+      values   = [
+        "arn"
+      ]
+    }
+  }
+}

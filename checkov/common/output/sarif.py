@@ -147,7 +147,7 @@ class Sarif:
         if cvss:
             # use CVSS, if exists
             rule["properties"] = {
-                "security-severity": cvss,
+                "security-severity": str(cvss),
             }
         elif record.severity:
             # otherwise severity, if exists

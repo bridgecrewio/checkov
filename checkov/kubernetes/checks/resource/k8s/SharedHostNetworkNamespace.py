@@ -52,10 +52,9 @@ class SharedHostNetworkNamespace(BaseK8Check):
             if "hostNetwork" in spec:
                 if spec["hostNetwork"]:
                     return CheckResult.FAILED
-                else:
-                    return CheckResult.PASSED
-            return CheckResult.PASSED
-        return CheckResult.FAILED
+
+        # This value is by default set to false
+        return CheckResult.PASSED
 
 
 check = SharedHostNetworkNamespace()

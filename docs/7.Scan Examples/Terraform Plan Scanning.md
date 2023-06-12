@@ -77,6 +77,22 @@ Ex. YAML
   value: delete
 ```
 
+### Changed resource fields
+
+To write a check conditional on whether or not a specific field has changed, one can access the changed fields via the attribute `TF_PLAN_RESOURCE_CHANGE_KEYS` (a list of changed keys).
+
+Ex Python
+```python
+from checkov.terraform.plan_parser import TF_PLAN_RESOURCE_CHANGE_ACTIONS, TF_PLAN_RESOURCE_CHANGE_KEYS
+
+def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
+        actions = conf.get(TF_PLAN_RESOURCE_CHANGE_ACTIONS)
+        if isinstance(actions, list) and "update" in actions:
+            if "protocol" in conf.get(TF_PLAN_RESOURCE_CHANGE_KEYS):
+                return CheckResult.FAILED
+        return CheckResult.PASSED
+```
+
 ## Combining Plan and Terraform scans
 Plan file scans can be enriched with the Terraform files to improve outputs, add skip comments and expand coverage. Note that these will increase scan times.
 
