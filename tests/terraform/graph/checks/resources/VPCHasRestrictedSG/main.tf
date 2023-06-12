@@ -47,3 +47,22 @@ resource "aws_security_group_rule" "default_sg_rule" {
   type              = "-1"
   security_group_id = aws_default_security_group.default_3.id
 }
+
+resource "aws_vpc_security_group_ingress_rule" "pike" {
+  security_group_id = aws_default_security_group.default_3.id
+
+  cidr_ipv4   = "10.0.0.0/8"
+  from_port   = 80
+  ip_protocol = "tcp"
+  to_port     = 8080
+}
+
+
+resource "aws_vpc_security_group_egress_rule" "pike" {
+  security_group_id = aws_default_security_group.default_3.id
+
+  cidr_ipv4   = "10.0.0.0/8"
+  from_port   = 80
+  ip_protocol = "tcp"
+  to_port     = 8080
+}
