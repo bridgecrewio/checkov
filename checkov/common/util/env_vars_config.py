@@ -9,7 +9,7 @@ from checkov.common.util.type_forcers import convert_str_to_bool, force_int
 from checkov.version import version
 
 
-class FeatureFlag:
+class EnvVarsConfig:
     def __init__(self) -> None:
         self.BC_API_URL = normalize_bc_url(os.getenv("BC_API_URL", "https://www.bridgecrew.cloud"))
         self.BC_ENABLE_PERSIST_GRAPHS = convert_str_to_bool(os.getenv("BC_ENABLE_PERSIST_GRAPHS", True))
@@ -82,4 +82,4 @@ class FeatureFlag:
         self.GITHUB_CONF_DIR_PATH = os.getenv("CKV_GITHUB_CONF_DIR_PATH")
 
 
-feature_flag = FeatureFlag()
+env_vars_config = EnvVarsConfig()
