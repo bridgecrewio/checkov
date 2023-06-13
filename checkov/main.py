@@ -453,7 +453,7 @@ class Checkov:
             external_checks_dir = self.get_external_checks_dir()
             created_baseline_path = None
 
-            default_github_dir_path = os.getcwd() + '/' + os.getenv('CKV_GITLAB_CONF_DIR_NAME', 'github_conf')
+            default_github_dir_path = os.getcwd() + '/' + os.getenv('CKV_GITHUB_CONF_DIR_NAME', 'github_conf')
             git_configuration_folders = [os.getenv("CKV_GITHUB_CONF_DIR_PATH", default_github_dir_path),
                                          os.getcwd() + '/' + os.getenv('CKV_GITLAB_CONF_DIR_NAME', 'gitlab_conf')]
 
