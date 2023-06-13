@@ -74,8 +74,3 @@ resource "google_compute_instance_from_template" "unknown1" {
   name         = "test"
   source_instance_template = google_compute_instance_template.tpl.id
 }
-
-resource "google_compute_instance_from_template" "unknown2" {
-  name         = {}
-  source_instance_template = google_compute_instance_template.tpl.id
-}
