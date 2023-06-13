@@ -18,7 +18,7 @@ class EnvVarsConfig:
         self.BC_SKIP_MAPPING = convert_str_to_bool(os.getenv("BC_SKIP_MAPPING", False))
         self.BC_SOURCE = os.getenv("BC_SOURCE", "cli")
         self.BC_SOURCE_VERSION = os.getenv("BC_SOURCE_VERSION", version)
-        self.CACHE_DIR = convert_str_to_bool(os.getenv("CKV_CACHE_DIR", str(Path(tempfile.gettempdir()) / "cache")))
+        self.CACHE_DIR = os.getenv("CKV_CACHE_DIR", str(Path(tempfile.gettempdir()) / "cache"))
         self.CHECK_FAIL_LEVEL = os.getenv("CHECKOV_CHECK_FAIL_LEVEL", CheckFailLevel.ERROR)
         self.CREATE_COMPLEX_VERTICES = convert_str_to_bool(os.getenv("CREATE_COMPLEX_VERTICES", True))
         self.CREATE_EDGES = convert_str_to_bool(os.getenv("CREATE_EDGES", True))

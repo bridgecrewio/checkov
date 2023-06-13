@@ -33,6 +33,7 @@ from checkov.common.bridgecrew.platform_key import read_key, persist_key, bridge
 from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_checks_results, \
     enrich_and_persist_checks_metadata, checkov_results_prefix, persist_run_metadata, _put_json_object, \
     persist_logs_stream, persist_graphs
+from checkov.common.cache.cache import ttl_cached
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILES, SCANNABLE_PACKAGE_FILES
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import filter_ignored_paths
@@ -659,10 +660,11 @@ class BcPlatformIntegration:
     def get_run_config_url_backoff(self) -> str:
         return f'{self.platform_run_config_url_backoff}?{self._get_run_config_query_params()}'
 
-    def get_customer_run_config(self) -> None:
+    @ttl_cached(seconds=3600, key="get_customer_run_config")  # 1 hour
+    def get_customer_run_config(self) -> dict[str, Any] | None:
         if self.skip_download is True:
             logging.debug("Skipping customer run config API call")
-            return
+            return None
 
         if not self.bc_api_key or not self.is_integration_configured():
             raise Exception(
@@ -670,7 +672,7 @@ class BcPlatformIntegration:
 
         if not self.bc_source:
             logging.error("Source was not set")
-            return
+            return None
 
         try:
             token = self.get_auth_token()
@@ -680,7 +682,7 @@ class BcPlatformIntegration:
             self.setup_http_manager()
             if not self.http:
                 logging.error("HTTP manager was not correctly created")
-                return
+                return None
 
             platform_type = PRISMA_PLATFORM if self.is_prisma_integration() else BRIDGECREW_PLATFORM
 
@@ -696,8 +698,9 @@ class BcPlatformIntegration:
                     logging.error(error_message)
                     raise BridgecrewAuthError(error_message)
             self.customer_run_config_response = json.loads(request.data.decode("utf8"))
-
             logging.debug(f"Got customer run config from {platform_type} platform")
+
+            return self.customer_run_config_response
         except Exception:
             logging.warning(f"Failed to get the customer run config from {self.platform_run_config_url}", exc_info=True)
             raise
@@ -789,17 +792,18 @@ class BcPlatformIntegration:
         logging.debug("--policy-metadata-filter is valid")
         return True
 
-    def get_public_run_config(self) -> None:
+    @ttl_cached(seconds=86400, key="get_public_run_config")  # 1 day
+    def get_public_run_config(self) -> dict[str, Any] | None:
         if self.skip_download is True:
             logging.debug("Skipping checkov mapping and guidelines API call")
-            return
+            return None
         try:
             headers: dict[str, Any] = {}
 
             self.setup_http_manager()
             if not self.http:
                 logging.error("HTTP manager was not correctly created")
-                return
+                return None
 
             request = self.http.request("GET", self.guidelines_api_url, headers=headers)  # type:ignore[no-untyped-call]
             if request.status >= 300:
@@ -808,9 +812,13 @@ class BcPlatformIntegration:
             self.public_metadata_response = json.loads(request.data.decode("utf8"))
             platform_type = PRISMA_PLATFORM if self.is_prisma_integration() else BRIDGECREW_PLATFORM
             logging.debug(f"Got checkov mappings and guidelines from {platform_type} platform")
+
+            return self.public_metadata_response
         except Exception:
             logging.warning(f"Failed to get the checkov mappings and guidelines from {self.guidelines_api_url}. Skips using BC_* IDs will not work.",
                             exc_info=True)
+
+        return None
 
     def onboarding(self) -> None:
         if not self.bc_api_key:

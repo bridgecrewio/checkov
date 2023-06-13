@@ -40,6 +40,7 @@ from checkov.common.bridgecrew.integration_features.integration_feature_registry
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.integration_features.features.licensing_integration import integration as licensing_integration
 from checkov.common.bridgecrew.severities import BcSeverities
+from checkov.common.cache.cache import file_cache
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.output.baseline import Baseline
 from checkov.common.bridgecrew.check_type import checkov_runners, CheckType
@@ -223,6 +224,11 @@ class Checkov:
                 check = prompt.Check(resp.responses)
                 check.action()
                 return None
+
+            if self.config.cache is True:
+                # initialize cache, if not explicitly disabled
+                file_cache.enabled = True
+                file_cache.init_cache()
 
             # Check if --output value is None. If so, replace with ['cli'] for default cli output.
             if self.config.output is None:
