@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.287...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.289...HEAD)
+
+## [2.3.289](https://github.com/bridgecrewio/checkov/compare/2.3.287...2.3.289) - 2023-06-13
+
+### Feature
+
+- **sca:** removing the using of the constant CHECKOV_DISPLAY_REGISTRY_URL - [#5204](https://github.com/bridgecrewio/checkov/pull/5204)
 
 ## [2.3.287](https://github.com/bridgecrewio/checkov/compare/2.3.285...2.3.287) - 2023-06-11
 
