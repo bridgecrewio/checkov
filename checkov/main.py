@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import atexit
+import itertools
 import json
 import logging
 import os
@@ -198,6 +199,10 @@ class Checkov:
 
         # Parse mask into json with default dict. If self.config.mask is empty list, default dict will be assigned
         self._parse_mask_to_resource_attributes_to_omit()
+
+        if self.config.file:
+            # it is passed as a list of lists
+            self.config.file = list(itertools.chain.from_iterable(self.config.file))
 
     def run(self, banner: str = checkov_banner, tool: str = checkov_tool, source_type: SourceType | None = None) -> int | None:
         self.run_metadata = {
@@ -448,7 +453,7 @@ class Checkov:
             external_checks_dir = self.get_external_checks_dir()
             created_baseline_path = None
 
-            default_github_dir_path = os.getcwd() + '/' + os.getenv('CKV_GITLAB_CONF_DIR_NAME', 'github_conf')
+            default_github_dir_path = os.getcwd() + '/' + os.getenv('CKV_GITHUB_CONF_DIR_NAME', 'github_conf')
             git_configuration_folders = [os.getenv("CKV_GITHUB_CONF_DIR_PATH", default_github_dir_path),
                                          os.getcwd() + '/' + os.getenv('CKV_GITLAB_CONF_DIR_NAME', 'gitlab_conf')]
 

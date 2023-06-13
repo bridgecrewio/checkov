@@ -261,10 +261,6 @@ def test_get_cyclonedx_json_report_with_licenses_with_comma(tmp_path: Path,
     ], key=itemgetter("purl"))
 
 
-@mock.patch("checkov.common.output.csv.HEADER_OSS_PACKAGES", [
-    "Package", "Version", "Path", "Line(s)", "Git Org", "Git Repository", "Vulnerability", "Severity", "Description", "Licenses",
-    "Fix Version", "Registry URL"])
-@mock.patch("checkov.common.output.csv.CHECKOV_DISPLAY_REGISTRY_URL", True)
 def test_get_csv_report(sca_package_2_report, tmp_path: Path):
     csv_sbom_report = CSVSBOM()
     csv_sbom_report.add_report(report=sca_package_2_report, git_org="acme", git_repository="bridgecrewio/example")
