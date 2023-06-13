@@ -46,6 +46,7 @@ class FileCache:
 
     def init_cache(self) -> None:
         # needs to be done separately, if someone decides not use caching
+        os.makedirs(env_vars_config.CACHE_DIR, exist_ok=True)
         self._ttl_shelf = shelve.open(self._ttl_shelf_filename, protocol=pickle.HIGHEST_PROTOCOL, flag="c")
 
     def get_ttl_item(self, key: str) -> Any:
