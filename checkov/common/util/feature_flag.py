@@ -11,13 +11,13 @@ from checkov.version import version
 
 class FeatureFlag:
     def __init__(self) -> None:
-        self.BC_API_URL = normalize_bc_url(os.getenv('BC_API_URL', "https://www.bridgecrew.cloud"))
-        self.BC_ENABLE_PERSIST_GRAPHS = convert_str_to_bool(os.getenv('BC_ENABLE_PERSIST_GRAPHS', True))
-        self.BC_PERSIST_GRAPHS_TIMEOUT = force_int(os.getenv('BC_PERSIST_GRAPHS_TIMEOUT', 60))
+        self.BC_API_URL = normalize_bc_url(os.getenv("BC_API_URL", "https://www.bridgecrew.cloud"))
+        self.BC_ENABLE_PERSIST_GRAPHS = convert_str_to_bool(os.getenv("BC_ENABLE_PERSIST_GRAPHS", True))
+        self.BC_PERSIST_GRAPHS_TIMEOUT = force_int(os.getenv("BC_PERSIST_GRAPHS_TIMEOUT", 60))
         self.BC_ROOT_DIR = os.getenv("BC_ROOT_DIR", "")
         self.BC_SKIP_MAPPING = convert_str_to_bool(os.getenv("BC_SKIP_MAPPING", False))
-        self.BC_SOURCE = os.getenv('BC_SOURCE', 'cli')
-        self.BC_SOURCE_VERSION = os.getenv('BC_SOURCE_VERSION', version)
+        self.BC_SOURCE = os.getenv("BC_SOURCE", "cli")
+        self.BC_SOURCE_VERSION = os.getenv("BC_SOURCE_VERSION", version)
         self.CACHE_DIR = convert_str_to_bool(os.getenv("CKV_CACHE_DIR", str(Path(tempfile.gettempdir()) / "cache")))
         self.CHECK_FAIL_LEVEL = os.getenv("CHECKOV_CHECK_FAIL_LEVEL", CheckFailLevel.ERROR)
         self.CREATE_COMPLEX_VERTICES = convert_str_to_bool(os.getenv("CREATE_COMPLEX_VERTICES", True))
@@ -39,9 +39,9 @@ class FeatureFlag:
             os.getenv("CHECKOV_EXPERIMENTAL_CROSS_VARIABLE_EDGES", True)
         )
         self.EXPIRATION_TIME_IN_SEC = force_int(os.getenv("CHECKOV_EXPIRATION_TIME_IN_SEC", 604800))
-        self.GITHUB_CONF_DIR_NAME = os.getenv('CKV_GITHUB_CONF_DIR_NAME', 'github_conf')
+        self.GITHUB_CONF_DIR_NAME = os.getenv("CKV_GITHUB_CONF_DIR_NAME", "github_conf")
         self.GITHUB_CONFIG_FETCH_DATA = convert_str_to_bool(os.getenv("CKV_GITHUB_CONFIG_FETCH_DATA", True))
-        self.GITLAB_CONF_DIR_NAME = os.getenv('CKV_GITLAB_CONF_DIR_NAME', 'gitlab_conf')
+        self.GITLAB_CONF_DIR_NAME = os.getenv("CKV_GITLAB_CONF_DIR_NAME", "gitlab_conf")
         self.GITLAB_CONFIG_FETCH_DATA = convert_str_to_bool(os.getenv("CKV_GITLAB_CONFIG_FETCH_DATA", True))
         self.GRAPH_FRAMEWORK = os.getenv("CHECKOV_GRAPH_FRAMEWORK", "IGRAPH")
         self.IGNORED_DIRECTORIES = os.getenv("CKV_IGNORED_DIRECTORIES", "node_modules,.terraform,.serverless")
@@ -70,18 +70,16 @@ class FeatureFlag:
         self.VALIDATE_SECRETS = convert_str_to_bool(os.getenv("CKV_VALIDATE_SECRETS", False))
         self.WORKDIR = os.getenv("WORKDIR", "")
 
-
         # possibly not used anymore 'checkov/terraform/graph_builder/utils.generate_possible_strings_from_wildcards()'
         self.MAX_WILDCARD_ARR_SIZE = force_int(os.getenv("MAX_WILDCARD_ARR_SIZE", 10))
         # is also defined as a flag, need to remove env var references in code
         self.EXTERNAL_MODULES_DIR = os.getenv("EXTERNAL_MODULES_DIR", DEFAULT_EXTERNAL_MODULES_DIR)
         # is also defined as a flag, need to remove env var references in code
-        self.BC_CA_BUNDLE = os.getenv('BC_CA_BUNDLE')
+        self.BC_CA_BUNDLE = os.getenv("BC_CA_BUNDLE")
         # is also defined as a flag, need to remove env var references in code
-        self.PRISMA_API_URL = os.getenv('PRISMA_API_URL')
+        self.PRISMA_API_URL = os.getenv("PRISMA_API_URL")
         # need to fix usage, because the env var value is set inside the code
         self.GITHUB_CONF_DIR_PATH = os.getenv("CKV_GITHUB_CONF_DIR_PATH")
-
 
 
 feature_flag = FeatureFlag()
