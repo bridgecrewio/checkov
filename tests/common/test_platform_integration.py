@@ -9,10 +9,15 @@ from checkov.common.bridgecrew.integration_features.features.policy_metadata_int
     PolicyMetadataIntegration
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
+from checkov.common.cache.cache import file_cache
 from checkov.terraform.checks.resource.registry import resource_registry as tf_registry
 
 
 class TestBCApiUrl(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        # make sure cache is really disabled
+        file_cache.enabled = False
 
     @mock.patch.dict(os.environ, {'BC_API_URL': 'foo'})
     def test_overriding_bc_api_url(self):

@@ -3,6 +3,7 @@ import unittest
 
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration, bc_integration
+from checkov.common.cache.cache import file_cache
 from checkov.terraform.context_parsers.registry import parser_registry
 from tests.terraform.context_parsers.mock_context_parser import MockContextParser
 
@@ -11,6 +12,11 @@ mock_definition = (mock_tf_file, {"mock": [{"mock_type": {"mock_name": {"value":
 
 
 class TestBaseParser(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        # make sure cache is really disabled
+        file_cache.enabled = False
+
     def test_enrich_definition_block(self):
         this_integration = BcPlatformIntegration()
         this_integration.get_public_run_config()

@@ -4,10 +4,12 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+import pytest
 from _pytest.logging import LogCaptureFixture
 from typing_extensions import Literal
 
 from checkov import main
+from checkov.common.cache.cache import file_cache
 from checkov.common.runners.base_runner import BaseRunner
 from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.main import DEFAULT_RUNNERS, Checkov
@@ -17,6 +19,15 @@ if TYPE_CHECKING:
     import argparse
     from checkov.common.output.baseline import Baseline
     from checkov.common.output.report import Report
+
+
+@pytest.fixture
+def enable_cache():
+    file_cache.enabled = True
+
+    yield
+
+    file_cache.enabled = False
 
 
 class CustomRunnerRegistry(RunnerRegistry):
