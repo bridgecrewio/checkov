@@ -35,7 +35,7 @@ class BaseCheck(metaclass=MultiSignatureMeta):
         self.entity_path = ""
         self.entity_type = ""
         self.guideline = guideline
-        self.benchmarks: dict[str, list[str]] = {}
+        self.benchmarks: dict[str, list[str]] | None = {}
         self.severity = None
         self.bc_category = None
         if self.guideline:

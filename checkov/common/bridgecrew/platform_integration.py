@@ -110,9 +110,9 @@ class BcPlatformIntegration:
         self.prisma_policies_url: str | None = None
         self.prisma_policy_filters_url: str | None = None
         self.setup_api_urls()
-        self.customer_run_config_response = None
+        self.customer_run_config_response: dict[str, Any] | None = None
         self.prisma_policies_response = None
-        self.public_metadata_response = None
+        self.public_metadata_response: dict[str, Any] | None = None
         self.use_s3_integration = False
         self.platform_integration_configured = False
         self.http: urllib3.PoolManager | urllib3.ProxyManager | None = None
@@ -660,15 +660,20 @@ class BcPlatformIntegration:
     def get_run_config_url_backoff(self) -> str:
         return f'{self.platform_run_config_url_backoff}?{self._get_run_config_query_params()}'
 
-    @ttl_cached(seconds=3600, key="get_customer_run_config")  # 1 hour
-    def get_customer_run_config(self) -> dict[str, Any] | None:
+    def get_customer_run_config(self) -> None:
         if self.skip_download is True:
             logging.debug("Skipping customer run config API call")
-            return None
+            return
 
         if not self.bc_api_key or not self.is_integration_configured():
             raise Exception(
                 "Tried to get customer run config, but the API key was missing or the integration was not set up")
+
+        self.customer_run_config_response = self._get_customer_run_config()
+
+    @ttl_cached(seconds=900, key="get_customer_run_config")  # 15 min
+    def _get_customer_run_config(self) -> dict[str, Any] | None:
+        """Sub-method of self.get_customer_run_config() to properly cache the result"""
 
         if not self.bc_source:
             logging.error("Source was not set")
@@ -697,10 +702,10 @@ class BcPlatformIntegration:
                     error_message = get_auth_error_message(request.status, self.is_prisma_integration(), False)
                     logging.error(error_message)
                     raise BridgecrewAuthError(error_message)
-            self.customer_run_config_response = json.loads(request.data.decode("utf8"))
+            customer_run_config: dict[str, Any] = json.loads(request.data.decode("utf8"))
             logging.debug(f"Got customer run config from {platform_type} platform")
 
-            return self.customer_run_config_response
+            return customer_run_config
         except Exception:
             logging.warning(f"Failed to get the customer run config from {self.platform_run_config_url}", exc_info=True)
             raise
@@ -792,11 +797,17 @@ class BcPlatformIntegration:
         logging.debug("--policy-metadata-filter is valid")
         return True
 
-    @ttl_cached(seconds=86400, key="get_public_run_config")  # 1 day
-    def get_public_run_config(self) -> dict[str, Any] | None:
+    def get_public_run_config(self) -> None:
         if self.skip_download is True:
             logging.debug("Skipping checkov mapping and guidelines API call")
-            return None
+            return
+
+        self.public_metadata_response = self._get_public_run_config()
+
+    @ttl_cached(seconds=86400, key="get_public_run_config")  # 1 day
+    def _get_public_run_config(self) -> dict[str, Any] | None:
+        """Sub-method of self.get_public_run_config() to properly cache the result"""
+
         try:
             headers: dict[str, Any] = {}
 
@@ -809,14 +820,16 @@ class BcPlatformIntegration:
             if request.status >= 300:
                 request = self.http.request("GET", self.guidelines_api_url_backoff, headers=headers)  # type:ignore[no-untyped-call]
 
-            self.public_metadata_response = json.loads(request.data.decode("utf8"))
+            public_run_config: dict[str, Any] = json.loads(request.data.decode("utf8"))
             platform_type = PRISMA_PLATFORM if self.is_prisma_integration() else BRIDGECREW_PLATFORM
             logging.debug(f"Got checkov mappings and guidelines from {platform_type} platform")
 
-            return self.public_metadata_response
+            return public_run_config
         except Exception:
-            logging.warning(f"Failed to get the checkov mappings and guidelines from {self.guidelines_api_url}. Skips using BC_* IDs will not work.",
-                            exc_info=True)
+            logging.warning(
+                f"Failed to get the checkov mappings and guidelines from {self.guidelines_api_url}. Skips using BC_* IDs will not work.",
+                exc_info=True,
+            )
 
         return None
 

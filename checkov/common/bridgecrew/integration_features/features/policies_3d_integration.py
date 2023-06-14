@@ -64,10 +64,11 @@ class Policies3DIntegration(BaseIntegrationFeature):
                 self.integration_feature_failures = True
                 return None
 
-            policies = self.bc_integration.customer_run_config_response.get('Policies3D')
-            logging.debug(f'Got {len(policies)} 3d policies from the platform.')
+            policies: list[dict[str, Any]] | None = self.bc_integration.customer_run_config_response.get('Policies3D')
             if not policies:
                 return None
+
+            logging.debug(f'Got {len(policies)} 3d policies from the platform.')
 
             runner = Policy3dRunner()
             report = runner.run_v2(raw_checks=policies, scan_reports=scan_reports)

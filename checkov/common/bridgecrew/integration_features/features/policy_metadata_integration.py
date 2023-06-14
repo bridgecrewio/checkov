@@ -13,6 +13,8 @@ from checkov.common.checks.base_check_registry import BaseCheckRegistry
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
     from checkov.common.bridgecrew.severities import Severity
+    from checkov.common.checks.base_check import BaseCheck
+    from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
     from checkov.common.output.report import Report
     from checkov.common.typing import _BaseRunner
 
@@ -46,7 +48,7 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
                 self.integration_feature_failures = True
                 return
 
-            all_checks = BaseCheckRegistry.get_all_registered_checks()
+            all_checks: list[BaseCheck | BaseGraphCheck] = BaseCheckRegistry.get_all_registered_checks()  # type:ignore[assignment]
 
             if self.config and self.config.framework and "all" not in self.config.framework:
                 registries = self.config.framework
@@ -155,7 +157,7 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
                 if source_incident_id:
                     self.ckv_id_to_source_incident_id_mapping[custom_policy['id']] = source_incident_id
 
-    def _handle_customer_prisma_policy_metadata(self, prisma_policy_metadata: list[dict[str, Any]]) -> None:
+    def _handle_customer_prisma_policy_metadata(self, prisma_policy_metadata: list[dict[str, Any]] | None) -> None:
         if isinstance(prisma_policy_metadata, list):
             for metadata in prisma_policy_metadata:
                 logging.debug(f"Parsing filtered_policy_ids from metadata: {json.dumps(metadata)}")

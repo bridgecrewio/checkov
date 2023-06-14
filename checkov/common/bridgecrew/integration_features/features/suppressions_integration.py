@@ -49,11 +49,11 @@ class SuppressionsIntegration(BaseIntegrationFeature):
                 self.integration_feature_failures = True
                 return
 
-            suppressions = self.bc_integration.customer_run_config_response.get('suppressions')
+            suppressions: list[dict[str, str]] = self.bc_integration.customer_run_config_response['suppressions']
 
             for suppression in suppressions:
                 if suppression['policyId'] in metadata_integration.bc_to_ckv_id_mapping:
-                    suppression['checkovPolicyId'] = metadata_integration.get_ckv_id_from_bc_id(suppression['policyId'])
+                    suppression['checkovPolicyId'] = metadata_integration.get_ckv_id_from_bc_id(suppression['policyId'])  # type:ignore[assignment]  # existence check is done the line above
                 else:
                     suppression['checkovPolicyId'] = suppression['policyId']  # custom policy
 

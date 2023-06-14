@@ -551,11 +551,11 @@ class ExtArgumentParser(configargparse.ArgumentParser):
                  "Set your number of findings that will receive enhanced guidelines using CKV_OPENAI_MAX_FINDINGS",
         )
         self.add(
-            "--cache",
+            "--no-cache",
             action="store_true",
             # default needs to be extract from the env var to properly work
-            default=convert_str_to_bool(os.getenv("CKV_CACHE", True)),
-            env_var="CKV_CACHE",
-            help="Enables caching of data to speedup scan time, default is set to True."
+            default=convert_str_to_bool(os.getenv("CKV_NO_CACHE", False)),
+            env_var="CKV_NO_CACHE",
+            help="Disables caching of data to speedup scan time, default is set to False."
                  "The cache location can be set via the env var CKV_CACHE_DIR=/tmp",
         )

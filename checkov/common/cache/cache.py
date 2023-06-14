@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import os
 import pickle  # nosec  # only own data is pickled
 import shelve  # nosec  # only own data is pickled
@@ -13,6 +14,8 @@ from checkov.common.util.env_vars_config import env_vars_config
 
 T = TypeVar("T")
 P = ParamSpec("P")
+
+logger = logging.getLogger(__name__)
 
 
 def ttl_cached(seconds: int, key: str) -> Callable[[Callable[P, T]], Callable[P, T]]:
@@ -49,8 +52,12 @@ class FileCache:
     def init_cache(self) -> None:
         # needs to be done separately, if someone decides not to use caching
         if self._ttl_shelf is None:
-            os.makedirs(env_vars_config.CACHE_DIR, exist_ok=True)
-            self._ttl_shelf = shelve.open(self._ttl_shelf_filename, protocol=pickle.HIGHEST_PROTOCOL, flag="c")  # nosec  # only own data is pickled
+            try:
+                os.makedirs(env_vars_config.CACHE_DIR, exist_ok=True)
+                self._ttl_shelf = shelve.open(self._ttl_shelf_filename, protocol=pickle.HIGHEST_PROTOCOL, flag="c")  # nosec  # only own data is pickled
+            except Exception:
+                logger.info(f"Cache couldn't be created in folder {self._ttl_shelf_filename}", exc_info=True)
+                self.enabled = False
 
     def get_ttl_item(self, key: str) -> Any:
         if not self.enabled or self._ttl_shelf is None:

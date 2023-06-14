@@ -225,7 +225,7 @@ class Checkov:
                 check.action()
                 return None
 
-            if self.config.cache is True:
+            if self.config.no_cache is False:
                 # initialize cache, if not explicitly disabled
                 file_cache.enabled = True
                 file_cache.init_cache()
