@@ -38,19 +38,22 @@ def ttl_cached(seconds: int, key: str) -> Callable[[Callable[P, T]], Callable[P,
 
 
 class FileCache:
+    """Singleton to create and interact with a local file cache"""
+
     def __init__(self) -> None:
         self.enabled = False  # can be disabled anytime
 
-        self._ttl_shelf: shelve.Shelf[Any]
+        self._ttl_shelf: shelve.Shelf[Any] | None = None
         self._ttl_shelf_filename = os.path.join(env_vars_config.CACHE_DIR, "ttl_cache")
 
     def init_cache(self) -> None:
         # needs to be done separately, if someone decides not use caching
-        os.makedirs(env_vars_config.CACHE_DIR, exist_ok=True)
-        self._ttl_shelf = shelve.open(self._ttl_shelf_filename, protocol=pickle.HIGHEST_PROTOCOL, flag="c")
+        if self._ttl_shelf is None:
+            os.makedirs(env_vars_config.CACHE_DIR, exist_ok=True)
+            self._ttl_shelf = shelve.open(self._ttl_shelf_filename, protocol=pickle.HIGHEST_PROTOCOL, flag="c")
 
     def get_ttl_item(self, key: str) -> Any:
-        if not self.enabled:
+        if not self.enabled or self._ttl_shelf is None:
             return None
 
         ttl_value = self._ttl_shelf.get(key)
@@ -64,7 +67,7 @@ class FileCache:
         return None
 
     def set_ttl_item(self, ttl: int, key: str, value: Any) -> None:
-        if not self.enabled:
+        if not self.enabled or self._ttl_shelf is None:
             return
 
         expires = int(time.time()) + ttl
