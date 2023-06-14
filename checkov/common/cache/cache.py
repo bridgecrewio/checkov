@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import os
-import pickle
-import shelve
+import pickle  # nosec  # only own data is pickled
+import shelve  # nosec  # only own data is pickled
 import time
 from functools import wraps
 from typing import TypeVar, Callable, Any, cast
@@ -41,16 +41,16 @@ class FileCache:
     """Singleton to create and interact with a local file cache"""
 
     def __init__(self) -> None:
-        self.enabled = False  # can be disabled anytime
+        self.enabled = False  # can be enabled anytime
 
         self._ttl_shelf: shelve.Shelf[Any] | None = None
         self._ttl_shelf_filename = os.path.join(env_vars_config.CACHE_DIR, "ttl_cache")
 
     def init_cache(self) -> None:
-        # needs to be done separately, if someone decides not use caching
+        # needs to be done separately, if someone decides not to use caching
         if self._ttl_shelf is None:
             os.makedirs(env_vars_config.CACHE_DIR, exist_ok=True)
-            self._ttl_shelf = shelve.open(self._ttl_shelf_filename, protocol=pickle.HIGHEST_PROTOCOL, flag="c")
+            self._ttl_shelf = shelve.open(self._ttl_shelf_filename, protocol=pickle.HIGHEST_PROTOCOL, flag="c")  # nosec  # only own data is pickled
 
     def get_ttl_item(self, key: str) -> Any:
         if not self.enabled or self._ttl_shelf is None:
