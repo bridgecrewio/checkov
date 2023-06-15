@@ -582,14 +582,19 @@ class RunnerRegistry:
     # Define the function that will get the relay state from the Prisma Cloud Platform.
     def get_sso_prismacloud_url(self, report_url: str, prisma_api_url: str, token: str) -> str:
         url_saml_config = f"{prisma_api_url}/saml/config"
-        headers = {'x-redlock-auth': token}
+        headers = {'x-redlock-auth': token}        
         try:
-            response = requests.get(url_saml_config, headers=headers)
+            response = requests.get(url_saml_config, headers=headers, timeout=10)
             response.raise_for_status()  # Raises an HTTPError if the response status is 4xx, 5xx
             data = response.json()
+        except requests.exceptions.Timeout:
+            print("The request timed out")
+        except requests.exceptions.TooManyRedirects:
+            print("Too many redirects")
         except requests.exceptions.RequestException as e:
             print(f"Error while calling Prisma Cloud API: {e}")
             return report_url
+
 
         relay_state_param_name = data.get("relayStateParamName")
         access_saml_url = data.get("redLockAccessSamlUrl")
