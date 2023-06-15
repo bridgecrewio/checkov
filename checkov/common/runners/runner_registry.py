@@ -6,10 +6,12 @@ import json
 import logging
 import os
 import re
+import requests
 
 from collections import defaultdict
 from collections.abc import Iterable
 from pathlib import Path
+from urllib.parse import urlparse
 from typing import List, Dict, Any, Optional, cast, TYPE_CHECKING, Type
 
 from typing_extensions import Literal
@@ -576,19 +578,54 @@ class RunnerRegistry:
                         )
         exit_code = 1 if 1 in exit_codes else 0
         return cast(Literal[0, 1], exit_code)
+    
+    # Define the function that will get the relay state from the Prisma Cloud Platform.
+    def get_sso_prismacloud_url(self, report_url, prisma_api_url, token):
+        url_saml_config = f"{prisma_api_url}/saml/config"
+        headers = {'x-redlock-auth': token}
+        try:
+            response = requests.get(url_saml_config, headers=headers)
+            response.raise_for_status()  # Raises an HTTPError if the response status is 4xx, 5xx
+            data = response.json()
+        except requests.exceptions.RequestException as e:
+            print(f"Error while calling Prisma Cloud API: {e}")
+            return report_url
+
+        relay_state_param_name = data.get("relayStateParamName")
+        access_saml_url = data.get("redLockAccessSamlUrl")
+
+        if relay_state_param_name and access_saml_url:
+            parsed_url = urlparse(report_url)
+            uri = parsed_url.path
+            # If there are any query parameters, append them to the URI
+            if parsed_url.query:
+                uri = f"{uri}?{parsed_url.query}"
+            # Check if the URL already contains GET parameters.
+            if "?" in access_saml_url:
+                report_url = f"{access_saml_url}&{relay_state_param_name}={uri}"
+            else:
+                report_url = f"{access_saml_url}?{relay_state_param_name}={uri}"
+
+        return report_url
+    
 
     def _print_to_console(self, output_formats: dict[str, str], output_format: str, output: str, url: str | None = None) -> None:
         """Prints the output to console, if needed"""
-
         output_dest = output_formats[output_format]
         if output_dest == CONSOLE_OUTPUT:
             del output_formats[output_format]
 
             print(output)
+
             if url:
+                url = self.get_sso_prismacloud_url(report_url=url,
+                                                prisma_api_url=bc_integration.prisma_api_url,
+                                                token=bc_integration.get_auth_token())
                 print(f"More details: {url}")
+
             if CONSOLE_OUTPUT in output_formats.values():
                 print(OUTPUT_DELIMITER)
+
 
     def print_iac_bom_reports(self, output_path: str,
                               scan_reports: list[Report],
