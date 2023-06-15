@@ -56,5 +56,5 @@ class RuleMatch(BaseModel):
 
 class PrismaReport(BaseModel):
     rule_match: Dict[SastLanguages, Dict[str, RuleMatch]]  # noqa: CCE003
-    errors: List[str]  # noqa: CCE003
+    errors: Dict[str, List[str]]  # noqa: CCE003
     profiler: Dict[str, Profiler]  # noqa: CCE003
