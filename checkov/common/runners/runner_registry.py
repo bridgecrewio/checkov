@@ -580,7 +580,7 @@ class RunnerRegistry:
         return cast(Literal[0, 1], exit_code)
 
     # Define the function that will get the relay state from the Prisma Cloud Platform.
-    def get_sso_prismacloud_url(self, report_url, prisma_api_url, token):
+    def get_sso_prismacloud_url(self, report_url: str, prisma_api_url: str, token: str) -> str:
         url_saml_config = f"{prisma_api_url}/saml/config"
         headers = {'x-redlock-auth': token}
         try:
