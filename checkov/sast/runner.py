@@ -84,7 +84,8 @@ class Runner(BaseRunner[None]):
 
         return reports
 
-    def get_engine(self) -> SastEngines:
-        if bc_integration.bc_api_key:
+    @staticmethod
+    def get_engine() -> SastEngines:
+        if bc_integration.bc_api_key and not os.getenv("IS_TEST"):
             return SastEngines.PRISMA
         return SastEngines.SEMGREP

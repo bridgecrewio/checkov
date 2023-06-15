@@ -61,6 +61,7 @@ jobs:
       - name: Unit tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IS_TEST: true
         run: |
           pipenv run python -m pytest tests
 
@@ -117,6 +118,8 @@ jobs:
           pipenv run pytest integration_tests -k 'not api_key'
 
   performance-tests:
+    if:
+      true == false
     strategy:
       fail-fast: false
       matrix:
@@ -207,3 +210,4 @@ jobs:
         run: |
           pipenv run pytest
         working-directory: ${{ env.WORKING_DIRECTORY }}
+

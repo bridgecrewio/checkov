@@ -70,7 +70,7 @@ jobs:
           pipenv --python ${{ matrix.python }}
           pipenv run pip install pytest pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
-          bash -c 'pipenv run pip install dist/checkov-*.whl'
+          bash -c 'pipenv run pip install dist/checkov3-*.whl'
       - name: Clone Terragoat - vulnerable terraform
         run: git clone https://github.com/bridgecrewio/terragoat
       - name: Clone Cfngoat - vulnerable cloudformation
@@ -110,7 +110,7 @@ jobs:
           pipenv --python 3.7
           pipenv run pip install pytest pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
-          pipenv run pip install dist/checkov-*.whl
+          pipenv run pip install dist/checkov3-*.whl
       - name: Run checkov with Prisma creds
         env:
           PRISMA_KEY: ${{ secrets.PRISMA_KEY }}
