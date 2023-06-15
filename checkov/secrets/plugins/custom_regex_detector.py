@@ -23,6 +23,7 @@ class CustomRegexDetector(RegexBasedDetector):
     secret_type = "Regex Detector"  # noqa: CCE003 # nosec
     denylist: Set[Pattern[str]] = set()  # noqa: CCE003
     MAX_FILE_SIZE: int = 4 * 1024
+    MAX_LINE_LENGTH: int = 10_000
 
     def __init__(self) -> None:
         self.regex_to_metadata: dict[str, dict[str, Any]] = dict()
@@ -60,6 +61,11 @@ class CustomRegexDetector(RegexBasedDetector):
     ) -> Set[PotentialSecret]:
         """This examines a line and finds all possible secret values in it"""
         output: Set[PotentialSecret] = set()
+
+        line_length = len(line)
+        if line_length > CustomRegexDetector.MAX_LINE_LENGTH:
+            logging.info(f"File {filename} Line {line_number} has a length of {line_length}, which is higher than the max {CustomRegexDetector.MAX_LINE_LENGTH}")
+            return output
 
         self._find_potential_secret(
             filename=filename,

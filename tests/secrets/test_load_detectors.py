@@ -1,5 +1,6 @@
 import os
 import unittest
+from pathlib import Path
 from typing import Any, Dict, List
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
@@ -393,6 +394,51 @@ class TestLoadDetectors(unittest.TestCase):
         report = runner.run(root_folder=valid_dir_path,
                             runner_filter=RunnerFilter(framework=['secrets'],
                                                        enable_secret_scan_all_files=True))
+        self.assertEqual(len(report.failed_checks), 0)
+
+    def test_custom_regex_detector_skip_long_line(self):
+        #  given
+        valid_dir_path = Path(__file__).parent / "long_line_custom_regex_detector"
+        bc_integration.customer_run_config_response = {"secretsPolicies": [
+            {
+                "incidentId": "test2",
+                "category": "Secrets",
+                "severity": "MEDIUM",
+                "incidentType": "Violation",
+                "title": "test2",
+                "guideline": "test2",
+                "laceworkViolationId": None,
+                "prowlerCheckId": None,
+                "checkovCheckId": None,
+                "conditionQuery": {
+                    "value": ["\w{20}"],  # this would definitely get a result, but should not, because of the line length
+                    "cond_type": "secrets"
+                },
+                "resourceTypes": [],
+                "provider": "AWS",
+                "remediationIds": [],
+                "customerName": "test2",
+                "isCustom": True,
+                "code": "",
+                "descriptiveTitle": None,
+                "constructiveTitle": None,
+                "pcPolicyId": None,
+                "additionalPcPolicyIds": None,
+                "pcSeverity": None,
+                "sourceIncidentId": None
+            }
+        ]}
+
+        # when
+        report = Runner().run(
+            root_folder=str(valid_dir_path),
+            runner_filter=RunnerFilter(
+                framework=["secrets"],
+                enable_secret_scan_all_files=True
+            )
+        )
+
+        # then
         self.assertEqual(len(report.failed_checks), 0)
 
     def test_modify_secrets_policy_to_multiline_detectors(self) -> None:
