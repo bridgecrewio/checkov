@@ -21,6 +21,7 @@ class TestIAMRoleAllowAssumeFromAccount(unittest.TestCase):
             "aws_iam_role.pass",
             "aws_iam_role.pass2",
             "aws_iam_role.pass3",
+            "aws_iam_role.pass4"
         }
         failing_resources = {
             "aws_iam_role.fail",

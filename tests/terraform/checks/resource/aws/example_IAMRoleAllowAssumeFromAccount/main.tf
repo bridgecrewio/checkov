@@ -127,3 +127,26 @@ resource "aws_iam_role" "pass3" {
     ]
   })
 }
+
+resource "aws_iam_role" "pass4" {
+  name               = "pass4-default"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action = "sts:AssumeRole",
+        Principal = {
+          AWS = [
+            "arn:aws:iam::123456789012:root"
+          ]
+        },
+        Effect = "Allow",
+        Condition = {
+          StringEquals = {
+            "sts:ExternalId" = "external_id"
+          }
+        }
+      }
+    ]
+  })
+}
