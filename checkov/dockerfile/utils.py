@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Callable, Any
 from dockerfile_parse.constants import COMMENT_INSTRUCTION
 
 from checkov.common.runners.base_runner import filter_ignored_paths
-from checkov.common.util.dockerfile import is_docker_file
+from checkov.common.util.dockerfile import is_dockerfile
 from checkov.common.util.suppression import collect_suppressions_for_context
 from checkov.dockerfile.parser import parse
 
@@ -35,7 +35,7 @@ def get_scannable_file_paths(
         filter_ignored_paths(root, d_names, excluded_paths)
         filter_ignored_paths(root, f_names, excluded_paths)
         for file in f_names:
-            if is_docker_file(file):
+            if is_dockerfile(file):
                 file_path = os.path.join(root, file)
                 file_paths.add(file_path)
 

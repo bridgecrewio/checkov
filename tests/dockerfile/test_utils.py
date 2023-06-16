@@ -1,7 +1,7 @@
 from operator import itemgetter
 from pathlib import Path
 
-from checkov.common.util.dockerfile import is_docker_file
+from checkov.common.util.dockerfile import is_dockerfile
 from checkov.dockerfile.graph_builder.graph_components.resource_types import ResourceType
 from checkov.dockerfile.utils import get_files_definitions, build_definitions_context
 
@@ -25,9 +25,9 @@ INVALID_DOCKER_FILE_NAMES = [
 ]
 
 
-def test_is_docker_file():
-    assert all(is_docker_file(curr_name) for curr_name in VALID_DOCKER_FILE_NAMES)
-    assert all(not is_docker_file(curr_name) for curr_name in INVALID_DOCKER_FILE_NAMES)
+def test_is_dockerfile():
+    assert all(is_dockerfile(curr_name) for curr_name in VALID_DOCKER_FILE_NAMES)
+    assert all(not is_dockerfile(curr_name) for curr_name in INVALID_DOCKER_FILE_NAMES)
 
 
 def test_build_definitions_context():
