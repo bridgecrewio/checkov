@@ -23,6 +23,7 @@ INVALID_DOCKER_FILE_NAMES = [
     "docker-file",
     "dockerfile1",
     "Dockerfile.env.dockerignore",
+    "Dockerfile.env.Dockerignore",
     "dockerfile.dockerignore",
 ]
 
