@@ -1,6 +1,6 @@
 import re
 
-DOCKER_FILE_MASK = re.compile(r"^(?:.+\.)?[Dd]ockerfile(?:\..+)?$")
+DOCKER_FILE_MASK = re.compile(r"^(?:.+\.)?[Dd]ockerfile(?:\..+)?$(?<!\.dockerignore)")
 
 
 def is_docker_file(file: str) -> bool:
