@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.292...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.294...HEAD)
+
+## [2.3.294](https://github.com/bridgecrewio/checkov/compare/2.3.292...2.3.294) - 2023-06-15
+
+### Feature
+
+- **gha:** add skip_path flag to GHA and allow multiple values in var_file - [#5213](https://github.com/bridgecrewio/checkov/pull/5213)
+- **sca:** add root package name and version to csv sbom - [#5211](https://github.com/bridgecrewio/checkov/pull/5211)
 
 ## [2.3.292](https://github.com/bridgecrewio/checkov/compare/2.3.289...2.3.292) - 2023-06-14
 
