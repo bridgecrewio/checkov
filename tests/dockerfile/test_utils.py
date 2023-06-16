@@ -5,7 +5,7 @@ from checkov.common.util.dockerfile import is_dockerfile
 from checkov.dockerfile.graph_builder.graph_components.resource_types import ResourceType
 from checkov.dockerfile.utils import get_files_definitions, build_definitions_context
 
-VALID_DOCKER_FILE_NAMES = [
+VALID_DOCKERFILE_NAMES = [
     "Dockerfile",
     "dockerfile",
     "Dockerfile.prod",
@@ -13,7 +13,7 @@ VALID_DOCKER_FILE_NAMES = [
     "dev.Dockerfile",
     "team1.product.dockerfile",
 ]
-INVALID_DOCKER_FILE_NAMES = [
+INVALID_DOCKERFILE_NAMES = [
     "package.json",
     "dockerfil",
     "dockerfilee",
@@ -29,8 +29,8 @@ INVALID_DOCKER_FILE_NAMES = [
 
 
 def test_is_dockerfile():
-    assert all(is_dockerfile(curr_name) for curr_name in VALID_DOCKER_FILE_NAMES)
-    assert all(not is_dockerfile(curr_name) for curr_name in INVALID_DOCKER_FILE_NAMES)
+    assert all(is_dockerfile(curr_name) for curr_name in VALID_DOCKERFILE_NAMES)
+    assert all(not is_dockerfile(curr_name) for curr_name in INVALID_DOCKERFILE_NAMES)
 
 
 def test_build_definitions_context():

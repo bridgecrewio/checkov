@@ -70,7 +70,7 @@ def get_abs_path(root_folder: str | None, file_path: str) -> str:
     There are a few cases here. If -f was used, there could be a leading / because it's an absolute path,
     or there will be no leading slash; root_folder will always be none.
     If -d is used, root_folder will be the value given, and -f will start with a / (hardcoded above).
-    The goal here is simply to get a valid path to the file (which docker_file_path does not always give).
+    The goal here is simply to get a valid path to the file (which dockerfile_path does not always give).
     """
 
     if root_folder and file_path.startswith("/"):
