@@ -621,9 +621,10 @@ class RunnerRegistry:
             print(output)
 
             if url:
-                url = self.get_sso_prismacloud_url(report_url=url,
-                                                   prisma_api_url=bc_integration.prisma_api_url,
-                                                   token=bc_integration.get_auth_token())
+                if bc_integration.prisma_api_url is not None and bc_integration.get_auth_token() is not None:
+                    url = self.get_sso_prismacloud_url(report_url=url,
+                                                       prisma_api_url=bc_integration.prisma_api_url,
+                                                       token=bc_integration.get_auth_token())
                 print(f"More details: {url}")
 
             if CONSOLE_OUTPUT in output_formats.values():
