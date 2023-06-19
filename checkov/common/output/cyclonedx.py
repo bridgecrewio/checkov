@@ -47,7 +47,6 @@ from checkov.common.output.cyclonedx_consts import (
 )
 from checkov.common.output.record import SCA_PACKAGE_SCAN_CHECK_NAME
 from checkov.common.sca.commons import UNFIXABLE_VERSION, get_fix_version
-from checkov.common.util.consts import CHECKOV_DISPLAY_REGISTRY_URL
 
 if sys.version_info >= (3, 8):
     from importlib.metadata import version as meta_version
@@ -217,7 +216,7 @@ class CycloneDX:
             namespace = f"{self.repo_id}/{resource.file_path}"
             registry_url = resource.vulnerability_details.get("package_registry")
             is_private_registry = resource.vulnerability_details.get("is_private_registry", False)
-            if CHECKOV_DISPLAY_REGISTRY_URL and registry_url and is_private_registry:
+            if registry_url and is_private_registry:
                 qualifiers = f'registry_url={registry_url}'
         package_group = None
         package_name = resource.vulnerability_details["package_name"]

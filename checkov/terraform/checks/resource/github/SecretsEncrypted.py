@@ -25,6 +25,10 @@ class SecretsEncrypted(BaseResourceNegativeValueCheck):
         if plaintext and self._is_variable_dependant(plaintext[0]):
             return CheckResult.UNKNOWN
 
+        if isinstance(plaintext, list) and not plaintext[0]:
+            # this happens mainly in TF plan files, because the value is just an empty string
+            return CheckResult.PASSED
+
         return super().scan_resource_conf(conf)
 
     def get_inspected_key(self) -> str:
