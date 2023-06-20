@@ -207,7 +207,7 @@ def evaluate_conditional_expression(input_str: str) -> str:
     return input_str
 
 
-def evaluate_compare(input_str: str) -> Union[str, bool]:
+def evaluate_compare(input_str: str) -> str | bool | int:
     """
     :param input_str: string like "a && b" (supported operators: ==, != , <, <=, >, >=, && , ||)
     :return: evaluation of the expression
@@ -319,7 +319,7 @@ def _handle_for_loop_in_list(object_to_run_on: str, statement: str, start_expres
         )
 
     rendered_result = []
-    for obj in object_to_run_on:
+    for obj in evaluated_object_to_run_on:
         val_to_assign = obj if statement.startswith(f'{renderer.LEFT_BRACKET}{renderer.FOR_LOOP} {expression}') else evaluate_terraform(expression)
         rendered_result.append(val_to_assign)
     return json.dumps(rendered_result)
@@ -360,17 +360,17 @@ def evaluate_json_types(input_str: Any) -> Any:
     return input_str
 
 
-def apply_binary_op(a: Optional[Union[str, int, bool]], b: Optional[Union[str, int, bool]], operator: str) -> bool:
+def apply_binary_op(a: Optional[Union[str, int, bool]], b: Optional[Union[str, int, bool]], operator: str) -> bool | int | str:
     # apply the operator after verifying that a and b have the same type.
-    operators: Dict[str, Callable[[T, T], bool]] = {
+    operators: Dict[str, Callable[[T, T], bool | int | str]] = {
         "==": lambda a, b: a == b,
         "!=": lambda a, b: a != b,
         ">": lambda a, b: a > b,
         ">=": lambda a, b: a >= b,
         "<": lambda a, b: a < b,
         "<=": lambda a, b: a <= b,
-        "&&": lambda a, b: bool(a and b),
-        "||": lambda a, b: bool(a or b),
+        "&&": lambda a, b: a and b,
+        "||": lambda a, b: a or b,
     }
     type_a = type(a)
     type_b = type(b)
