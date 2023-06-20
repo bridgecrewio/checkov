@@ -5,7 +5,7 @@ import json
 import logging
 import os
 import re
-from typing import Any, Union, Optional, List, Dict, Callable, TypeVar, Tuple, cast
+from typing import Any, Union, Optional, List, Dict, Callable, TypeVar, Tuple
 
 from checkov.common.util.type_forcers import force_int
 from checkov.common.util.parser_utils import find_var_blocks
