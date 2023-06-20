@@ -7,6 +7,7 @@ import re
 import uuid
 import webbrowser
 from collections import namedtuple
+from urllib.parse import urlparse
 from concurrent import futures
 from io import StringIO
 from json import JSONDecodeError
@@ -1040,6 +1041,42 @@ class BcPlatformIntegration:
 
         logging.info(f"Unsupported request {request_type}")
         return {}
+
+    # Define the function that will get the relay state from the Prisma Cloud Platform.
+    def get_sso_prismacloud_url(self, report_url: str) -> str:
+        if not bc_integration.prisma_api_url:
+            return report_url
+        url_saml_config = f"{bc_integration.prisma_api_url}/saml/config"
+        token = self.get_auth_token()
+        headers = merge_dicts(get_auth_header(token),
+                              get_default_get_headers(self.bc_source, self.bc_source_version))
+
+        request = self.http.request("GET", url_saml_config, headers=headers, timeout=10)
+        if request.status == 401:
+            logging.error(f'Received 401 response from Prisma /login endpoint: {request.data.decode("utf8")}')
+            raise BridgecrewAuthError()
+        elif request.status == 403:
+            logging.error('Received 403 (Forbidden) response from Prisma /login endpoint')
+            raise BridgecrewAuthError()
+
+        data = json.loads(request.data.decode("utf8"))
+
+        relay_state_param_name = data.get("relayStateParamName")
+        access_saml_url = data.get("redLockAccessSamlUrl")
+
+        if relay_state_param_name and access_saml_url:
+            parsed_url = urlparse(report_url)
+            uri = parsed_url.path
+            # If there are any query parameters, append them to the URI
+            if parsed_url.query:
+                uri = f"{uri}?{parsed_url.query}"
+            # Check if the URL already contains GET parameters.
+            if "?" in access_saml_url:
+                report_url = f"{access_saml_url}&{relay_state_param_name}={uri}"
+            else:
+                report_url = f"{access_saml_url}?{relay_state_param_name}={uri}"
+
+        return report_url
 
 
 bc_integration = BcPlatformIntegration()
