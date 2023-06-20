@@ -22,6 +22,9 @@ class TestYamlPolicies(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
+    def test_KmsKeyPolicyIsDefined(self):
+        self.go("KmsKeyPolicyIsDefined")
+
     def test_NetworkFirewallHasLogging(self):
         self.go("NetworkFirewallHasLogging")
 
