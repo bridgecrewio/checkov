@@ -46,3 +46,5 @@ resource "aws_kms_key" "fail" {
   enable_key_rotation = true
 }
 
+
+resource "aws_s3_bucket" "ignore" {}
