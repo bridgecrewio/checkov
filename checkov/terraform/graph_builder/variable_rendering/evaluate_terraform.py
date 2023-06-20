@@ -228,11 +228,11 @@ def evaluate_compare(input_str: str) -> str | bool | int:
     return input_str
 
 
-def _handle_literal(input_str: str) -> str:
+def _handle_literal(input_str: str) -> Any:
     try:
         e = ast.literal_eval(input_str)
         if isinstance(e, list) and len(e) == 1:
-            return cast("str", e[0])
+            return e[0]
     except (ValueError, SyntaxError):
         pass
 
