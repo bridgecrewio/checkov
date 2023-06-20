@@ -47,5 +47,3 @@ resource "aws_security_group_rule" "default_sg_rule" {
   type              = "-1"
   security_group_id = aws_default_security_group.default_3.id
 }
-
-resource "aws_s3_bucket" "ignore" {}
