@@ -585,7 +585,6 @@ class RunnerRegistry:
 
             print(output)
             if url:
-                url = bc_integration.get_sso_prismacloud_url(report_url=url)
                 print(f"More details: {url}")
 
             if CONSOLE_OUTPUT in output_formats.values():
