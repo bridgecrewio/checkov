@@ -1051,7 +1051,7 @@ class BcPlatformIntegration:
         headers = merge_dicts(get_auth_header(token),
                               get_default_get_headers(self.bc_source, self.bc_source_version))
 
-        request = self.http.request("GET", url_saml_config, headers=headers, timeout=10). # type:ignore[no-untyped-call]
+        request = self.http.request("GET", url_saml_config, headers=headers, timeout=10)  # type:ignore[no-untyped-call]
         if request.status == 401:
             logging.error(f'Received 401 response from Prisma /login endpoint: {request.data.decode("utf8")}')
             raise BridgecrewAuthError()
