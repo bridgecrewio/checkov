@@ -215,7 +215,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
 
     def _build_edges_for_vertex(self, origin_node_index: int, vertex: TerraformBlock, aliases: Dict[str, Dict[str, BlockType]],
                                 resources_types: List[str], cross_variable_edges: bool = False,
-                                referenced_modules: Optional[List[Dict[str, Any]]] = None):
+                                referenced_modules: Optional[List[Dict[str, Any]]] = None) -> None:
 
         attribute_is_leaf = get_attribute_is_leaf(vertex)
         for attribute_key, attribute_value in vertex.attributes.items():
@@ -273,7 +273,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                         break
 
         if vertex.block_type == BlockType.MODULE and vertex.attributes.get('source') \
-                and isinstance(vertex.attributes.get('source')[0], str):
+                and isinstance(vertex.attributes['source'][0], str):
             dest_module_path = self._get_dest_module_path(
                 curr_module_dir=self.get_dirname(vertex.path),
                 dest_module_source=vertex.attributes["source"][0],
@@ -333,7 +333,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 if self.get_dirname(self.vertices[index].path) == dest_module_path
             ]
 
-    def _build_cross_variable_edges(self):
+    def _build_cross_variable_edges(self) -> None:
         aliases = self._get_aliases()
         resources_types = self.get_resources_types_in_graph()
         for origin_node_index, referenced_vertices in self.out_edges.items():
@@ -629,7 +629,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             )
 
 
-def to_list(data):
+def to_list(data: Any) -> list[Any] | dict[str, Any]:
     if isinstance(data, list) and len(data) == 1 and (isinstance(data[0], str) or isinstance(data[0], int)):
         return data
     elif isinstance(data, list):
