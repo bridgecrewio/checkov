@@ -12,8 +12,8 @@ class DeepAnalysisGraphManager:
     def __init__(self, tf_graph: TerraformLocalGraph, tf_plan_graph: TerraformLocalGraph) -> None:
         self.tf_graph: TerraformLocalGraph = tf_graph
         self.tf_plan_graph: TerraformLocalGraph = tf_plan_graph
-        self._address_to_tf_idx_and_vertex_map: Dict[str, Tuple[TerraformBlock, int]] = {}
-        self._address_to_tf_plan_idx_and_vertex_map: Dict[str, Tuple[TerraformBlock, int]] = {}
+        self._address_to_tf_idx_and_vertex_map: Dict[str, Tuple[int, TerraformBlock]] = {}
+        self._address_to_tf_plan_idx_and_vertex_map: Dict[str, Tuple[int, TerraformBlock]] = {}
         self._apply_address_mapping()
 
     def _apply_address_mapping(self) -> None:
