@@ -167,13 +167,13 @@ class Runner(PackageRunner):
                 self.iterate_image_files(file, report, runner_filter)
                 self.pbar.update()
             self.pbar.close()
-        if root_folder:
-            for root, d_names, f_names in os.walk(root_folder):
+        if self._code_repo_path:
+            for root, d_names, f_names in os.walk(self._code_repo_path):
                 filter_ignored_paths(root, d_names, runner_filter.excluded_paths, included_paths=self.included_paths())
                 filter_ignored_paths(root, f_names, runner_filter.excluded_paths, included_paths=self.included_paths())
                 for file in f_names:
                     abs_fname = os.path.join(root, file)
-                    self.iterate_image_files(abs_fname, report, runner_filter, root_folder)
+                    self.iterate_image_files(abs_fname, report, runner_filter, self._code_repo_path)
         return report
 
     def iterate_image_files(self, abs_fname: str, report: Report, runner_filter: RunnerFilter,
