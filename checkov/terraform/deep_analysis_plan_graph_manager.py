@@ -28,25 +28,25 @@ class DeepAnalysisGraphManager:
             if vertex.block_type == BlockType.RESOURCE
         }
 
+    def _get_tf_vertex_idx_from_tf_plan_vertex(self, v):
+        v = self._address_to_tf_idx_and_vertex_map.get(v.attributes.get('__address__'))
+        if not v:
+            return None
+        return v[1]
+
     def append_vertex_to_terraform_graph(self, tf_plan_vertex, tf_plan_vertex_index, address):
         new_vertex_idx = len(self.tf_graph.vertices)
         self.tf_graph.vertices.append(tf_plan_vertex)
         self._address_to_tf_idx_and_vertex_map[address] = (new_vertex_idx, tf_plan_vertex)
 
-        def __get_tf_vertex_idx_from_tf_plan_vertex(v):
-            v = self._address_to_tf_idx_and_vertex_map.get(v.attributes.get('__address__'))
-            if not v:
-                return None
-            return v[1]
-
         for edge in self.tf_plan_graph.out_edges[tf_plan_vertex_index]:
             dest = self.tf_plan_graph.vertices[edge.dest]
-            dest_index = __get_tf_vertex_idx_from_tf_plan_vertex(dest)
+            dest_index = self._get_tf_vertex_idx_from_tf_plan_vertex(dest)
             if dest_index:
                 self.tf_graph.create_edge(new_vertex_idx, dest_index, edge.label)
         for edge in self.tf_plan_graph.in_edges[tf_plan_vertex_index]:
             origin = self.tf_plan_graph.vertices[edge.origin]
-            origin_index = __get_tf_vertex_idx_from_tf_plan_vertex(origin)
+            origin_index = self._get_tf_vertex_idx_from_tf_plan_vertex(origin)
             if origin_index:
                 self.tf_graph.create_edge(origin_index, new_vertex_idx, edge.label)
 
