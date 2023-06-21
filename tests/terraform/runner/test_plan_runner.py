@@ -763,6 +763,38 @@ class TestRunnerValid(unittest.TestCase):
         assert report.passed_checks[0].file_path.endswith('.json')
         assert report.passed_checks[1].file_path.endswith('.json')
 
+    def test_plan_and_tf_combine_graph_with_missing_resources(self):
+        tf_file_path = Path(__file__).parent / "resources/plan_and_tf_combine_graph_with_missing_resources/tfplan.json"
+        repo_path = Path(__file__).parent / "resources/plan_and_tf_combine_graph_with_missing_resources"
+
+        # deep_analysis disabled
+        report = Runner().run(
+            root_folder=None,
+            files=[str(tf_file_path)],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=["CKV2_AWS_61"], deep_analysis=False,
+                                       repo_root_for_plan_enrichment=[repo_path])
+        )
+
+        self.assertEqual(len(report.passed_checks), 0)
+        self.assertEqual(len(report.failed_checks), 2)
+
+        # deep_analysis enabled
+        report = Runner().run(
+            root_folder=None,
+            files=[str(tf_file_path)],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=["CKV2_AWS_61"], deep_analysis=True,
+                                       repo_root_for_plan_enrichment=[repo_path])
+        )
+
+        self.assertEqual(len(report.passed_checks), 0)
+        self.assertEqual(len(report.failed_checks), 2)
+
+        expected_addresses = ['aws_s3_bucket.example', 'aws_s3_bucket.example_2']
+        report_addresses = [report.failed_checks[0].resource_address, report.failed_checks[1].resource_address]
+        assert sorted(expected_addresses) == sorted(report_addresses)
+
     @mock.patch.dict(os.environ, {'CHECKOV_ENABLE_NESTED_MODULES': 'False'})
     @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_plan_resources_ids(self):
