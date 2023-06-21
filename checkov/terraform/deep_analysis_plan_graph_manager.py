@@ -1,5 +1,6 @@
 import logging
 
+from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
@@ -29,10 +30,10 @@ class DeepAnalysisGraphManager:
         }
 
     def _get_tf_vertex_idx_from_tf_plan_vertex(self, v: TerraformBlock) -> Optional[int]:
-        v = self._address_to_tf_idx_and_vertex_map.get(v.attributes.get('__address__'))
-        if not v:
+        vertex = self._address_to_tf_idx_and_vertex_map.get(v.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS, ''))
+        if vertex is None:
             return None
-        return v[0]
+        return vertex[0]
 
     def append_vertex_to_terraform_graph(self, tf_plan_vertex: TerraformBlock, tf_plan_vertex_index: int, address: str) -> None:
         new_vertex_idx = len(self.tf_graph.vertices)
