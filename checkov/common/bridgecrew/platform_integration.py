@@ -1026,7 +1026,7 @@ class BcPlatformIntegration:
 
     def repo_matches(self, repo_name: str) -> bool:
         # matches xyz_org/repo or org/repo (where xyz is the BC org name and the CLI repo prefix from the platform)
-        return re.match(re.compile(f'^(\\w+_)?{self.repo_id }$'), repo_name) is not None
+        return re.match(re.compile(f'^(\\w+_)?{self.repo_id}$'), repo_name) is not None
 
     def get_default_headers(self, request_type: str) -> dict[str, Any]:
         if not self.bc_source:
