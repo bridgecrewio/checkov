@@ -940,7 +940,9 @@ class BcPlatformIntegration:
     def get_repository(self, args: argparse.Namespace) -> str:
         if CI_METADATA_EXTRACTOR.from_branch:
             return CI_METADATA_EXTRACTOR.from_branch
-        basename = 'unnamed_repo' if path.basename(args.directory[0]) == '.' else path.basename(args.directory[0])
+        arg_dir = args.directory[0]
+        arg_dir.rstrip(os.path.sep)  # If directory ends with /, remove it. Does not remove any other character!!
+        basename = 'unnamed_repo' if path.basename(arg_dir) == '.' else path.basename(arg_dir)
         repo_id = f"cli_repo/{basename}"
         return repo_id
 
@@ -1024,7 +1026,7 @@ class BcPlatformIntegration:
 
     def repo_matches(self, repo_name: str) -> bool:
         # matches xyz_org/repo or org/repo (where xyz is the BC org name and the CLI repo prefix from the platform)
-        return re.match(re.compile(f'^(\\w+_)?{self.repo_id}$'), repo_name) is not None
+        return re.match(re.compile(f'^(\\w+_)?{self.repo_id }$'), repo_name) is not None
 
     def get_default_headers(self, request_type: str) -> dict[str, Any]:
         if not self.bc_source:
