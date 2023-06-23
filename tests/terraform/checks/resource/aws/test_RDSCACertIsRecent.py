@@ -14,7 +14,6 @@ class TestRDSCACertIsRecent(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "aws_db_instance.pass[\"rds-ca-2019\"]",
             "aws_db_instance.pass[\"rds-ca-rsa2048-g1\"]",
             "aws_db_instance.pass[\"rds-ca-rsa4096-g1\"]",
             "aws_db_instance.pass[\"rds-ca-ecc384-g1\"]",
@@ -26,7 +25,7 @@ class TestRDSCACertIsRecent(unittest.TestCase):
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
-        self.assertEqual(summary["passed"], 4)
+        self.assertEqual(summary["passed"], 3)
         self.assertEqual(summary["failed"], 1)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)

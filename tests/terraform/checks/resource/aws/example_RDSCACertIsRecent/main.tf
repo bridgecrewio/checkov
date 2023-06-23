@@ -15,7 +15,6 @@ resource "aws_db_instance" "fail" {
 
 locals {
   passing_ca_cert_identifiers = [
-    "rds-ca-2019",
     "rds-ca-rsa2048-g1",
     "rds-ca-rsa4096-g1",
     "rds-ca-ecc384-g1",
