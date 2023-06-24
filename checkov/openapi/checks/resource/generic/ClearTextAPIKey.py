@@ -23,7 +23,6 @@ class ClearTestAPIKey(BaseOpenapiCheck):
         elif conf.get("securityDefinitions"):
             security_schemes = conf.get("securityDefinitions", {}) or {}
 
-
         paths = conf.get('paths', {}) or {}
 
         filtered_dict = {}
@@ -33,7 +32,6 @@ class ClearTestAPIKey(BaseOpenapiCheck):
         if not filtered_dict:
             return CheckResult.PASSED, security_schemes
 
-
         if not isinstance(paths, dict):
             return CheckResult.PASSED, security_schemes
         for key, path in paths.items():
@@ -41,16 +39,13 @@ class ClearTestAPIKey(BaseOpenapiCheck):
                 continue
             if key in self.irrelevant_keys:
                 continue
-            for operation, value in path.items():
+            for _operation, value in path.items():
                 if not isinstance(value, dict):
                     continue
                 if value.get('security'):
                     for sec in value['security'][0]:
                         if sec in filtered_dict:
                             return CheckResult.FAILED, security_schemes
-
-
         return CheckResult.PASSED, conf
-
 
 check = ClearTestAPIKey()
