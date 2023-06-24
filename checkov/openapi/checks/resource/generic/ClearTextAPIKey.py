@@ -22,13 +22,17 @@ class ClearTestAPIKey(BaseOpenapiCheck):
             security_schemes = components.get("securitySchemes", {}) or {}
         elif conf.get("securityDefinitions"):
             security_schemes = conf.get("securityDefinitions", {}) or {}
+        else:
+            return CheckResult.PASSED
 
         paths = conf.get('paths', {}) or {}
 
         filtered_dict = {}
-        for name, scheme in security_schemes.items():
-            if isinstance(scheme, dict) and "type" in scheme and scheme['type'] == "apiKey":
-                filtered_dict[name] = scheme
+        if isinstance(security_schemes, dict):
+            for name, scheme in security_schemes.items():
+                if isinstance(scheme, dict) and "type" in scheme and scheme['type'] == "apiKey":
+                    filtered_dict[name] = scheme
+
         if not filtered_dict:
             return CheckResult.PASSED, security_schemes
 
