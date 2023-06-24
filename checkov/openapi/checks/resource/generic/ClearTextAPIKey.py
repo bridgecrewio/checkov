@@ -11,7 +11,7 @@ class ClearTestAPIKey(BaseOpenapiCheck):
         id = "CKV_OPENAPI_20"
         name = "Ensure that API keys are not sent over cleartext"
         categories = [CheckCategories.API_SECURITY]
-        supported_resources = ["paths"]
+        supported_resources = ['paths']
         self.irrelevant_keys = ['__startline__', '__endline__']
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_resources,
                          block_type=BlockType.DOCUMENT)
@@ -47,5 +47,6 @@ class ClearTestAPIKey(BaseOpenapiCheck):
                         if sec in filtered_dict:
                             return CheckResult.FAILED, security_schemes
         return CheckResult.PASSED, conf
+
 
 check = ClearTestAPIKey()
