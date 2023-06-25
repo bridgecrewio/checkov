@@ -21,7 +21,7 @@ class RDSCACertIsRecent(BaseResourceValueCheck):
         return "ca_cert_identifier"
 
     def get_expected_values(self) -> List[Any]:
-        return ["rds-ca-2019"]
+        return ["rds-ca-rsa2048-g1", "rds-ca-rsa4096-g1", "rds-ca-ecc384-g1"]
 
 
 check = RDSCACertIsRecent()
