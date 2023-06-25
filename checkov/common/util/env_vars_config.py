@@ -35,9 +35,7 @@ class EnvVarsConfig:
             os.getenv("CHECKOV_ENABLE_MODULES_FOREACH_HANDLING", True)
         )
         self.ENABLE_NESTED_MODULES = convert_str_to_bool(os.getenv("CHECKOV_ENABLE_NESTED_MODULES", True))
-        self.EXPERIMENTAL_CROSS_VARIABLE_EDGES = convert_str_to_bool(
-            os.getenv("CHECKOV_EXPERIMENTAL_CROSS_VARIABLE_EDGES", True)
-        )
+        self.EXPERIMENTAL_GRAPH_DEBUG = convert_str_to_bool(os.getenv("CHECKOV_EXPERIMENTAL_GRAPH_DEBUG", False))
         self.EXPIRATION_TIME_IN_SEC = force_int(os.getenv("CHECKOV_EXPIRATION_TIME_IN_SEC", 604800))
         self.GITHUB_CONF_DIR_NAME = os.getenv("CKV_GITHUB_CONF_DIR_NAME", "github_conf")
         self.GITHUB_CONFIG_FETCH_DATA = convert_str_to_bool(os.getenv("CKV_GITHUB_CONFIG_FETCH_DATA", True))
@@ -56,7 +54,6 @@ class EnvVarsConfig:
         self.OUTPUT_CODE_LINE_LIMIT = force_int(os.getenv("CHECKOV_OUTPUT_CODE_LINE_LIMIT", 50))
         self.PARSE_ERROR_FAIL = convert_str_to_bool(os.getenv("CKV_PARSE_ERROR_FAIL", False))
         self.RENDER_ASYNC_MAX_WORKERS = force_int(os.getenv("RENDER_ASYNC_MAX_WORKERS", 50))
-        self.RENDER_DYNAMIC_MODULES = convert_str_to_bool(os.getenv("CHECKOV_RENDER_DYNAMIC_MODULES", True))
         self.RENDER_EDGES_DUPLICATE_ITER_COUNT = force_int(os.getenv("RENDER_EDGES_DUPLICATE_ITER_COUNT", 4))
         self.RENDER_EDGES_DUPLICATE_PERCENT = force_int(os.getenv("RENDER_EDGES_DUPLICATE_PERCENT", 90))
         self.RENDER_MAX_LEN = force_int(os.getenv("CHECKOV_RENDER_MAX_LEN", 10000))
