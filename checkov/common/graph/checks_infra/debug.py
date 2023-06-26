@@ -50,9 +50,9 @@ def attribute_block(
     )
     color = "green" if status == "passed" else "red"
 
-    print(f"\nEvaluated block:\n")
+    print("\nEvaluated block:\n")
     print(colored(yaml.dump([attribute_block_conf], sort_keys=False), "blue"))
-    print(f"and got:")
+    print("and got:")
     print(colored(f'\nResource "{resource[CustomAttributes.ID]}" {status}:', color))
     print(colored(json.dumps(resource[CustomAttributes.CONFIG], indent=2), "yellow"))
 
@@ -76,9 +76,9 @@ def connection_block(
     passed_resources_str = '", "'.join(resource[CustomAttributes.ID] for resource in passed_resources)
     failed_resources_str = '", "'.join(resource[CustomAttributes.ID] for resource in failed_resources)
 
-    print(f"\nEvaluated blocks:\n")
+    print("\nEvaluated blocks:\n")
     print(colored(yaml.dump([connection_block_conf], sort_keys=False), "blue"))
-    print(f"and got:\n")
+    print("and got:\n")
     print(colored(f'Passed resources: "{passed_resources_str}"', "green"))
     print(colored(f'Failed resources: "{failed_resources_str}"', "red"))
 
@@ -131,9 +131,9 @@ def complex_connection_block(
     passed_resources_str = '", "'.join(resource[CustomAttributes.ID] for resource in passed_resources)
     failed_resources_str = '", "'.join(resource[CustomAttributes.ID] for resource in failed_resources)
 
-    print(f"\nEvaluated blocks:\n")
+    print("\nEvaluated blocks:\n")
     print(colored(yaml.dump([{operator: complex_connection_block}], sort_keys=False), "blue"))
-    print(f"and got:\n")
+    print("and got:\n")
     print(colored(f'Passed resources: "{passed_resources_str}"', "green"))
     print(colored(f'Failed resources: "{failed_resources_str}"', "red"))
 
