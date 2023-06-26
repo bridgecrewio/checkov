@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from abc import abstractmethod
+from collections.abc import Iterable
 from typing import List, Optional, Dict, Any
 
 from checkov.common.checks.base_check import BaseCheck
@@ -8,8 +11,13 @@ from checkov.terraform.checks.module.registry import module_registry
 
 class BaseModuleCheck(BaseCheck):
     def __init__(
-        self, name: str, id: str, categories: List[CheckCategories], supported_resources: Optional[List[str]] = None,
-            guideline=None) -> None:
+        self,
+        name: str,
+        id: str,
+        categories: Iterable[CheckCategories],
+        supported_resources: Iterable[str] | None = None,
+        guideline: str | None = None
+    ) -> None:
         """
         Base class for terraform module call related checks.
 
