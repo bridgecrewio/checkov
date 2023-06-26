@@ -16,7 +16,7 @@ class ClearTestAPIKey(BaseOpenapiCheck):
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_resources,
                          block_type=BlockType.DOCUMENT)
 
-    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:
+    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:  # type:ignore[override]  # return type is different than the base class
         if conf.get("components"):
             components = conf.get("components", {}) or {}
             security_schemes = components.get("securitySchemes", {}) or {}
