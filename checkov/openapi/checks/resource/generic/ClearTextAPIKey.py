@@ -23,7 +23,7 @@ class ClearTestAPIKey(BaseOpenapiCheck):
         elif conf.get("securityDefinitions"):
             security_schemes = conf.get("securityDefinitions", {}) or {}
         else:
-            return CheckResult.PASSED
+            return CheckResult.PASSED, conf
 
         paths = conf.get('paths', {}) or {}
 
