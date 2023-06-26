@@ -16,6 +16,7 @@ except ImportError as e:
 COMMIT_ID_PATTERN = re.compile(r"\?(ref=)(?P<commit_id>([0-9a-f]{40}))")
 TAG_PATTERN = re.compile(r'\?(ref=)(?P<tag>(.*))')
 
+
 class GitGetter(BaseGetter):
     def __init__(self, url: str, create_clone_and_result_dirs: bool = True) -> None:
         self.logger = logging.getLogger(__name__)

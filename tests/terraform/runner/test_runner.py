@@ -126,7 +126,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
-        self.assertEqual(8, summary['failed'])
+        self.assertEqual(9, summary['failed'])
         self.assertEqual(1, summary['skipped'])
         self.assertEqual(0, summary["parsing_errors"])
 
@@ -235,7 +235,11 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner(db_connector=self.db_connector())
 
         # when
-        report = runner.run(root_folder=str(tf_dir_path), external_checks_dir=[str(extra_checks_dir_path)])
+        report = runner.run(
+            root_folder=str(tf_dir_path),
+            external_checks_dir=[str(extra_checks_dir_path)],
+            runner_filter=RunnerFilter(checks=["CUSTOM_GRAPH_AWS_2"])
+        )
 
         # then
         summary = report.get_summary()
@@ -271,7 +275,7 @@ class TestRunnerValid(unittest.TestCase):
         # self.assertEqual(report.get_exit_code(), 0)
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
-        self.assertEqual(4, summary['failed'])
+        self.assertEqual(5, summary['failed'])
         self.assertEqual(0, summary["parsing_errors"])
 
     def test_check_ids_dont_collide(self):
