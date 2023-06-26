@@ -45,7 +45,12 @@ class BaseResourceCheck(BaseCheck):
             self.api_version = conf["api_version"]
             conf["config"]["apiVersion"] = conf["api_version"]  # set for better reusability of existing ARM checks
 
-            return self.scan_resource_conf(conf["config"], entity_type)  # type:ignore[no-any-return]  # issue with multi_signature annotation
+            resource_conf = conf["config"]
+            if "loop_type" in resource_conf:
+                # this means the whole resource block is surrounded by a for loop
+                resource_conf = resource_conf["config"]
+
+            return self.scan_resource_conf(resource_conf, entity_type)  # type:ignore[no-any-return]  # issue with multi_signature annotation
 
         self.api_version = None
 
