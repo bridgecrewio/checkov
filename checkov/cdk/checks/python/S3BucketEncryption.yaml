@@ -1,4 +1,5 @@
 metadata:
+  version: 0.1
   id: CKV_AWS_19
   name: Ensure all data stored in the S3 bucket is securely encrypted at rest
   category: ENCRYPTION

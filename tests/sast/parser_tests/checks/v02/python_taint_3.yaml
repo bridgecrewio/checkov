@@ -1,0 +1,34 @@
+mode: taint
+metadata:
+  version: '0.2'
+  id: CKV_SAST_1
+  name: check name
+  severity: LOW
+  category: sast
+  guidelines: some guidelines
+scope:
+  languages:
+    - python
+definition:
+  sources:
+    - pattern: $VAR
+      conditions:
+        - within: |
+            @javax.ws.rs.Path("<ANY>")
+            $TYPE $FUNC(<ANY>, $VAR, <ANY>) {
+              <ANY>
+            }
+  sanitizers:
+    - pattern: org.apache.commons.text.StringEscapeUtils.unescapeJava(<ANY>);
+    - pattern: $STR
+      conditions:
+        - within: |
+            $STR.replaceAll("$REPLACE_CHAR", "$REPLACER");
+            ...
+        - metavariable: $REPLACER
+          regex: .*^(CRLF).*
+        - metavariable: $REPLACE_CHAR
+          regex: (*CRLF)
+  propagators:
+    - pattern: $SET.add(<ANY>)
+  sink: return <ANY>;

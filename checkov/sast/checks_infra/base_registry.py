@@ -11,8 +11,9 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.sast.checks_infra.base_check import BaseSastCheck
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.runner_filter import RunnerFilter
-from checkov.sast.checks_infra.checks_parser import SastCheckParser
-from checkov.sast.consts import SastLanguages
+from checkov.sast.checks_infra.check_parser.parser_v01 import SastCheckParserV01
+from checkov.sast.checks_infra.check_parser.parser_v02 import SastCheckParserV02
+from checkov.sast.consts import SastLanguages, BqlVersion, get_bql_version_from_string
 from checkov.common.checks_infra.registry import CHECKS_POSSIBLE_ENDING
 
 logger = logging.getLogger(__name__)
@@ -24,7 +25,10 @@ class Registry(BaseCheckRegistry):
         self.rules: List[Dict[str, Any]] = []
         self.checks_dir = checks_dir
         self.logger = logging.getLogger(__name__)
-        self.parser = SastCheckParser()
+        self.parsers = {
+            BqlVersion.V0_1.value: SastCheckParserV01(),
+            BqlVersion.V0_2.value: SastCheckParserV02()
+        }
         self.runner_filter: Optional[RunnerFilter] = None
         self.checks_dirs_path: List[str] = [checks_dir]
         self.temp_semgrep_rules_path = temp_semgrep_rules_path if temp_semgrep_rules_path else \
@@ -77,7 +81,9 @@ class Registry(BaseCheckRegistry):
                 with open(os.path.join(root, file), "r") as f:
                     try:
                         raw_check = yaml.safe_load(f)
-                        parsed_rule = self.parser.parse_raw_check_to_semgrep(raw_check, str(file))
+                        check_version = get_check_version(raw_check)
+                        parser = self.parsers[check_version]
+                        parsed_rule = parser.parse_raw_check_to_semgrep(raw_check, str(file))
                         if dir not in self.checks_dir:
                             RunnerFilter.notify_external_check(parsed_rule["id"])
                     except Exception as e:
@@ -131,3 +137,13 @@ class Registry(BaseCheckRegistry):
             logging.debug('deleted semgrep temporary rules file')
         except FileNotFoundError as e:
             logging.error(f'Tried to delete the semgrep temporary rules file but no such file was found.\n{e}')
+
+
+def get_check_version(raw_check: Dict[str, Dict[str, Any]]) -> str:
+    version = str(raw_check.get('metadata', {}).get('version', 0))
+    if not version:
+        raise AttributeError('BQL policy is missing the version field')
+    bql_version = get_bql_version_from_string(version)
+    if not bql_version:
+        raise AttributeError('BQL policy version not supported')
+    return bql_version

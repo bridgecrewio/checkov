@@ -1,0 +1,21 @@
+mode: taint
+metadata:
+  version: '0.2'
+  id: CKV_SAST_1
+  name: check name
+  severity: LOW
+  category: sast
+  guidelines: some guidelines
+scope:
+  languages:
+    - python
+definition:
+  sources:
+    - pattern: $VAR
+      conditions:
+        - within: |
+            @javax.ws.rs.Path("<ANY>")
+            $TYPE $FUNC(<ANY>, $VAR, <ANY>) {
+              <ANY>
+            }
+  sink: return <ANY>;
