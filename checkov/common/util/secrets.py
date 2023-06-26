@@ -4,8 +4,6 @@ import itertools
 import json
 import logging
 import re
-
-# secret categories for use as constants
 from typing import Any, TYPE_CHECKING
 
 from checkov.common.models.enums import CheckCategories, CheckResult
@@ -17,7 +15,7 @@ if TYPE_CHECKING:
     from checkov.common.typing import _CheckResult, ResourceAttributesToOmit
     from pycep.typing import ParameterAttributes, ResourceAttributes
 
-
+# secret categories for use as constants
 AWS = 'aws'
 AZURE = 'azure'
 GCP = 'gcp'
@@ -163,6 +161,10 @@ def omit_secret_value_from_checks(
             if key not in resource_masks:
                 continue
             if isinstance(secret, list) and secret:
+                if not isinstance(secret[0], str):
+                    logging.debug(f"Secret value can't be masked, has type {type(secret)}")
+                    continue
+
                 secrets.add(secret[0])
 
     if not secrets:
@@ -207,6 +209,10 @@ def omit_secret_value_from_graph_checks(
             for attribute, secret in entity_config.items():
                 if attribute in resource_masks:
                     if isinstance(secret, list) and secret:
+                        if not isinstance(secret[0], str):
+                            logging.debug(f"Secret value can't be masked, has type {type(secret)}")
+                            continue
+
                         secrets.add(secret[0])
 
     if not secrets:
