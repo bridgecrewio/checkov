@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.302...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.303...HEAD)
+
+## [2.3.303](https://github.com/bridgecrewio/checkov/compare/2.3.302...2.3.303) - 2023-06-26
+
+### Bug Fix
+
+- **arm:** consider encryption property in CKV_AZURE_2 - [#5254](https://github.com/bridgecrewio/checkov/pull/5254)
 
 ## [2.3.302](https://github.com/bridgecrewio/checkov/compare/2.3.301...2.3.302) - 2023-06-25
 
