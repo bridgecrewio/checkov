@@ -34,7 +34,7 @@ class TestClearTextAPIKey(unittest.TestCase):
         passed_check_resources = {c.file_path for c in report.passed_checks}
         failed_check_resources = {c.file_path for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["passed"], len(passing_resources), f"passed resources: {passed_check_resources}, failed resources: {failed_check_resources}")
         self.assertEqual(summary["failed"], len(failing_resources))
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
