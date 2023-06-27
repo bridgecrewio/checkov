@@ -11,7 +11,7 @@ COMMIT_ID_PATTERN = re.compile(r"\?(ref=)(?P<commit_id>([0-9a-f]{5,40}))")
 
 class RevisionHash(BaseModuleCheck):
     def __init__(self) -> None:
-        name = "Ensure module source uses a commit hash"
+        name = "Ensure Terraform module sources use a commit hash"
         id = "CKV_TF_1"
         categories = [CheckCategories.SUPPLY_CHAIN]
         super().__init__(name=name, id=id, categories=categories)
