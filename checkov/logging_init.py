@@ -2,7 +2,7 @@ import logging
 import os
 from io import StringIO
 
-LOG_LEVEL = os.environ.get('LOG_LEVEL', 'WARNING').upper()
+LOG_LEVEL = os.getenv('LOG_LEVEL', 'WARNING').upper()
 logging.basicConfig(level=LOG_LEVEL)
 log_formatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
 root_logger = logging.getLogger()

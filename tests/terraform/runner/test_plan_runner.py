@@ -2,6 +2,7 @@ import itertools
 import os
 import unittest
 from collections import defaultdict
+from copy import deepcopy
 from pathlib import Path
 
 
@@ -27,10 +28,10 @@ from checkov.terraform.plan_runner import Runner, resource_registry
    {"db_connector": IgraphConnector}
 ])
 class TestRunnerValid(unittest.TestCase):
-
-    def setUp(self) -> None:
-        self.orig_checks = resource_registry.checks
-        self.db_connector = self.db_connector
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.orig_checks = deepcopy(resource_registry.checks)
+        cls.db_connector = cls.db_connector
 
     def test_runner_two_checks_only(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -762,6 +763,38 @@ class TestRunnerValid(unittest.TestCase):
         assert report.passed_checks[0].file_path.endswith('.json')
         assert report.passed_checks[1].file_path.endswith('.json')
 
+    def test_plan_and_tf_combine_graph_with_missing_resources(self):
+        tf_file_path = Path(__file__).parent / "resources/plan_and_tf_combine_graph_with_missing_resources/tfplan.json"
+        repo_path = Path(__file__).parent / "resources/plan_and_tf_combine_graph_with_missing_resources"
+
+        # deep_analysis disabled
+        report = Runner().run(
+            root_folder=None,
+            files=[str(tf_file_path)],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=["CKV2_AWS_61"], deep_analysis=False,
+                                       repo_root_for_plan_enrichment=[repo_path])
+        )
+
+        self.assertEqual(len(report.passed_checks), 0)
+        self.assertEqual(len(report.failed_checks), 2)
+
+        # deep_analysis enabled
+        report = Runner().run(
+            root_folder=None,
+            files=[str(tf_file_path)],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=["CKV2_AWS_61"], deep_analysis=True,
+                                       repo_root_for_plan_enrichment=[repo_path])
+        )
+
+        self.assertEqual(len(report.passed_checks), 0)
+        self.assertEqual(len(report.failed_checks), 2)
+
+        expected_addresses = ['aws_s3_bucket.example', 'aws_s3_bucket.example_2']
+        report_addresses = [report.failed_checks[0].resource_address, report.failed_checks[1].resource_address]
+        assert sorted(expected_addresses) == sorted(report_addresses)
+
     @mock.patch.dict(os.environ, {'CHECKOV_ENABLE_NESTED_MODULES': 'False'})
     @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_plan_resources_ids(self):
@@ -834,8 +867,44 @@ class TestRunnerValid(unittest.TestCase):
         assert file_path == 'test'
         assert scanned_file == '/.'
 
+    def test_plan_change_keys(self):
+        # given
+        current_dir = Path(__file__).parent
+        tf_plan_path = current_dir / "resources/plan_change_keys/tfplan.json"
+        external_checks_dir = current_dir / "extra_tf_plan_checks"
+
+        # when
+        report = Runner().run(
+            root_folder=None,
+            files=[str(tf_plan_path)],
+            external_checks_dir=[str(external_checks_dir)],
+            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=["CUSTOM_CHANGE_1"]),
+        )
+
+        # then
+        summary = report.get_summary()
+
+        passing_resources = {
+            'aws_security_group_rule.foo'
+        }
+        failing_resources = {
+            'aws_security_group_rule.bar',
+        }
+
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
+
+        self.assertEqual(summary["failed"], 1)
+        self.assertEqual(summary["passed"], 1)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+        self.assertEqual(summary["resource_count"], 2)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
+
     def tearDown(self) -> None:
-        resource_registry.checks = self.orig_checks
+        resource_registry.checks = deepcopy(self.orig_checks)
 
 
 if __name__ == "__main__":

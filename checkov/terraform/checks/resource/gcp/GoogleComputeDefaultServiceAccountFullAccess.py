@@ -4,6 +4,7 @@ import re
 
 DEFAULT_SERVICE_ACCOUNT = re.compile(r'\d+-compute@developer\.gserviceaccount\.com')
 FULL_ACCESS_API = 'https://www.googleapis.com/auth/cloud-platform'
+FULL_ACCESS_API2 = 'cloud-platform'
 
 
 class GoogleComputeDefaultServiceAccountFullAccess(BaseResourceCheck):
@@ -44,9 +45,11 @@ class GoogleComputeDefaultServiceAccountFullAccess(BaseResourceCheck):
                 if 'email' in service_account_conf:
                     self.evaluated_keys.append('service_account/[0]/email')
                     if re.match(DEFAULT_SERVICE_ACCOUNT, service_account_conf['email'][0]):
-                        if len(service_account_conf['scopes']) > 0 and FULL_ACCESS_API in service_account_conf['scopes'][0]:
+                        if len(service_account_conf['scopes']) > 0 and (FULL_ACCESS_API in service_account_conf['scopes'][0]
+                                                                        or FULL_ACCESS_API2 in service_account_conf['scopes'][0]):
                             return CheckResult.FAILED
-                elif len(service_account_conf['scopes']) > 0 and FULL_ACCESS_API in service_account_conf['scopes'][0]:
+                elif len(service_account_conf['scopes']) > 0 and (FULL_ACCESS_API in service_account_conf['scopes'][0] or
+                                                                  FULL_ACCESS_API2 in service_account_conf['scopes'][0]):
                     return CheckResult.FAILED
         return CheckResult.PASSED
 

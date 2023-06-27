@@ -1,0 +1,17 @@
+swagger: "2.0"
+info:
+  title: Simple API Overview
+  version: 1.0.0
+paths:
+  /:
+    get:
+      operationId: listVersionsv2
+      summary: List API versions
+      security:
+        - some_auth: []
+      responses:
+        "200":
+          description: Success
+securityDefinitions:
+  some_auth:
+    type: apiKey

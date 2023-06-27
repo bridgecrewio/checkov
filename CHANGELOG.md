@@ -1,6 +1,127 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.276...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.303...HEAD)
+
+## [2.3.303](https://github.com/bridgecrewio/checkov/compare/2.3.302...2.3.303) - 2023-06-26
+
+### Bug Fix
+
+- **arm:** consider encryption property in CKV_AZURE_2 - [#5254](https://github.com/bridgecrewio/checkov/pull/5254)
+
+## [2.3.302](https://github.com/bridgecrewio/checkov/compare/2.3.301...2.3.302) - 2023-06-25
+
+### Bug Fix
+
+- **terraform:** add missing AWS RDS CA certificate identifiers for aws_db_instance resource - [#5247](https://github.com/bridgecrewio/checkov/pull/5247)
+
+## [2.3.301](https://github.com/bridgecrewio/checkov/compare/2.3.299...2.3.301) - 2023-06-22
+
+### Feature
+
+- **general:** remove log from parallel common - [#5244](https://github.com/bridgecrewio/checkov/pull/5244)
+
+### Platform
+
+- **general:** Fix local repo generated name if ends with / - [#5243](https://github.com/bridgecrewio/checkov/pull/5243)
+
+## [2.3.299](https://github.com/bridgecrewio/checkov/compare/2.3.296...2.3.299) - 2023-06-21
+
+### Feature
+
+- **terraform:** ensure kms key policy is defined - [#5235](https://github.com/bridgecrewio/checkov/pull/5235)
+
+### Bug Fix
+
+- **sca:** fix wrongly invoked Image Referencer scanning when scanning a single file - [#5237](https://github.com/bridgecrewio/checkov/pull/5237)
+- **terraform_plan:** add terraform plan vertices to terraform graph if not exist - [#5230](https://github.com/bridgecrewio/checkov/pull/5230)
+
+## [2.3.296](https://github.com/bridgecrewio/checkov/compare/2.3.294...2.3.296) - 2023-06-19
+
+### Bug Fix
+
+- **dockerfile:** negative `is_dockerfile()` lookup on `.dockerignore` suffix - [#5219](https://github.com/bridgecrewio/checkov/pull/5219)
+- **terraform:** fix empty value issue for CKV_GIT_4 - [#5222](https://github.com/bridgecrewio/checkov/pull/5222)
+
+### Documentation
+
+- **graph:** add jsonpath custom policy example - [#5221](https://github.com/bridgecrewio/checkov/pull/5221)
+
+## [2.3.294](https://github.com/bridgecrewio/checkov/compare/2.3.292...2.3.294) - 2023-06-15
+
+### Feature
+
+- **gha:** add skip_path flag to GHA and allow multiple values in var_file - [#5213](https://github.com/bridgecrewio/checkov/pull/5213)
+- **sca:** add root package name and version to csv sbom - [#5211](https://github.com/bridgecrewio/checkov/pull/5211)
+
+## [2.3.292](https://github.com/bridgecrewio/checkov/compare/2.3.289...2.3.292) - 2023-06-14
+
+### Feature
+
+- **arm:** Handle another structure for SQL retention policy - [#5210](https://github.com/bridgecrewio/checkov/pull/5210)
+
+### Bug Fix
+
+- **secrets:** limit line length for custom secrets - [#5208](https://github.com/bridgecrewio/checkov/pull/5208)
+- **terraform:** Update GCP checks for plan files - [#5197](https://github.com/bridgecrewio/checkov/pull/5197)
+
+## [2.3.289](https://github.com/bridgecrewio/checkov/compare/2.3.287...2.3.289) - 2023-06-13
+
+### Feature
+
+- **sca:** removing the using of the constant CHECKOV_DISPLAY_REGISTRY_URL - [#5204](https://github.com/bridgecrewio/checkov/pull/5204)
+
+## [2.3.287](https://github.com/bridgecrewio/checkov/compare/2.3.285...2.3.287) - 2023-06-11
+
+### Feature
+
+- **general:** add checkov_diff pre-commit hook for scanning all changed files - [#5192](https://github.com/bridgecrewio/checkov/pull/5192)
+
+### Bug Fix
+
+- **cloudformation:** fix CKV_AWS_33 to consider deny statements - [#5193](https://github.com/bridgecrewio/checkov/pull/5193)
+
+### Documentation
+
+- **general:** Update pre-commit.md - [#5190](https://github.com/bridgecrewio/checkov/pull/5190)
+
+## [2.3.285](https://github.com/bridgecrewio/checkov/compare/2.3.283...2.3.285) - 2023-06-08
+
+### Feature
+
+- **arm:** and bicep: Ensure that Azure Front Door uses WAF in "Detection" or "Prevention" modes CKV_AZURE_123 - [#5049](https://github.com/bridgecrewio/checkov/pull/5049)
+
+### Bug Fix
+
+- **general:** handle cloned checks filtered via labels - [#5188](https://github.com/bridgecrewio/checkov/pull/5188)
+- **terraform:** adjust CKV_AZURE_6 to comply with new provider version - [#5189](https://github.com/bridgecrewio/checkov/pull/5189)
+
+## [2.3.283](https://github.com/bridgecrewio/checkov/compare/2.3.281...2.3.283) - 2023-06-07
+
+### Feature
+
+- **arm:** Handle arm db servers 2021 05 01 - [#5187](https://github.com/bridgecrewio/checkov/pull/5187)
+- **terraform:** Mark unresolved tf function calls as unresolved - [#5186](https://github.com/bridgecrewio/checkov/pull/5186)
+
+### Documentation
+
+- **general:** Add Enforcement CLI Command - [#5185](https://github.com/bridgecrewio/checkov/pull/5185)
+
+## [2.3.281](https://github.com/bridgecrewio/checkov/compare/2.3.278...2.3.281) - 2023-06-06
+
+### Feature
+
+- **terraform_plan:** Expose field changes to python checks - [#5112](https://github.com/bridgecrewio/checkov/pull/5112)
+
+### Bug Fix
+
+- **general:** Check that the result is not None before extracting vars in cli multiprocess runs - [#5183](https://github.com/bridgecrewio/checkov/pull/5183)
+- **general:** Correctly handle cli graphs in case we run with multiprocessing - [#5177](https://github.com/bridgecrewio/checkov/pull/5177)
+
+## [2.3.278](https://github.com/bridgecrewio/checkov/compare/2.3.276...2.3.278) - 2023-06-05
+
+### Bug Fix
+
+- **kubernetes:** dont' fail if spec is missing and default value is set to the fix value. - [#5167](https://github.com/bridgecrewio/checkov/pull/5167)
 
 ## [2.3.276](https://github.com/bridgecrewio/checkov/compare/2.3.273...2.3.276) - 2023-06-04
 

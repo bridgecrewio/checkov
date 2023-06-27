@@ -69,7 +69,7 @@ class ForeachAbstractHandler:
 
     @staticmethod
     def _update_nested_tf_module_foreach_idx(original_foreach_or_count_key: int | str, original_module_key: TFModule,
-                                             tf_moudle: TFModule) -> None:
+                                             tf_moudle: TFModule | None) -> None:
         original_module_key.foreach_idx = None  # Make sure it is always None even if we didn't override it previously
         while tf_moudle is not None:
             if tf_moudle == original_module_key:
@@ -210,7 +210,7 @@ class ForeachAbstractHandler:
             return evaluated_statement
         return None
 
-    def _is_static_foreach_statement(self, statement: list[str] | dict[str, Any]) -> bool:
+    def _is_static_foreach_statement(self, statement: str | list[str] | dict[str, Any]) -> bool:
         if isinstance(statement, list):
             if len(statement) == 1 and not statement[0]:
                 return True
@@ -251,7 +251,7 @@ class ForeachAbstractHandler:
         return val[0] if len(val) == 1 and isinstance(val[0], (str, int, list)) else val
 
     @staticmethod
-    def need_to_add_quotes(code, key) -> bool:
+    def need_to_add_quotes(code: str, key: str) -> bool:
         patterns = [r'lower\(' + key + r'\)', r'upper\(' + key + r'\)']
         for pattern in patterns:
             if re.search(pattern, code):

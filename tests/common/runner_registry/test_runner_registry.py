@@ -161,7 +161,7 @@ class TestRunnerRegistry(unittest.TestCase):
         with open(oss_file_path) as file:
             content = file.readlines()
             header = content[:1][0]
-            self.assertEqual('Package,Version,Path,Line(s),Git Org,Git Repository,Vulnerability,Severity,Description,Licenses,Fix Version\n', header)
+            self.assertEqual('Package,Version,Path,Line(s),Git Org,Git Repository,Vulnerability,Severity,Description,Licenses,Fix Version,Registry URL,Root Package,Root Version\n', header)
             row = content[1:][0]
             self.assertIn('bridgecrew.cloud', row)
 
@@ -212,8 +212,8 @@ class TestRunnerRegistry(unittest.TestCase):
 
         oss_packages_csv = open(f'{results_path_dir}/{oss_packages_csv_file_name}')
         results = oss_packages_csv.read()
-        expected_results = 'Package,Version,Path,Line(s),Git Org,Git Repository,Vulnerability,Severity,Description,Licenses,Fix Version' \
-                           '\nbabel-jest,,/package.json,,,,,,,Unknown,N/A\n'
+        expected_results = 'Package,Version,Path,Line(s),Git Org,Git Repository,Vulnerability,Severity,Description,Licenses,Fix Version,Registry URL,Root Package,Root Version' \
+                           '\nbabel-jest,,/package.json,,,,,,,Unknown,N/A,,,\n'
 
         assert results == expected_results
 

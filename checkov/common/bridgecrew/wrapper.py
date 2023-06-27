@@ -11,8 +11,13 @@ from collections import defaultdict
 
 import dpath
 from igraph import Graph
-from networkx import DiGraph
-from networkx.readwrite import json_graph
+
+try:
+    from networkx import DiGraph, node_link_data
+except ImportError:
+    logging.info("Not able to import networkx")
+    DiGraph = str
+    node_link_data = lambda G : {}
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
@@ -145,7 +150,7 @@ def persist_graphs(graphs: dict[str, DiGraph | Graph], s3_client: S3Client, buck
                    timeout: int, absolute_root_folder: str = '') -> None:
     def _upload_graph(check_type: str, graph: DiGraph | Graph, _absolute_root_folder: str = '') -> None:
         if isinstance(graph, DiGraph):
-            json_obj = json_graph.node_link_data(graph)
+            json_obj = node_link_data(graph)
             graph_file_name = 'graph_networkx.json'
         elif isinstance(graph, Graph):
             json_obj = serialize_to_json(graph, _absolute_root_folder)
