@@ -57,3 +57,10 @@ module "tag" {
 
 # unknown
 
+module "relative" {
+  source = "./example"
+}
+
+module "backtrack" {
+  source = "../example"
+}

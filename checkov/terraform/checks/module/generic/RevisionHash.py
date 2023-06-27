@@ -18,9 +18,14 @@ class RevisionHash(BaseModuleCheck):
 
     def scan_module_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
         source = conf.get("source")
-        if source and isinstance(source, list) and "?ref" in source[0] and re.search(COMMIT_ID_PATTERN, source[0]):
-            # do first a quick lookup, if '?ref' exists in the string before actually searching for the commit hash
-            return CheckResult.PASSED
+        if source and isinstance(source, list):
+            source_url = source[0]
+            if source_url.startswith(("./", "../")):
+                # local modules can't be pinned to a commit hash
+                return CheckResult.UNKNOWN
+            if "?ref" in source_url and re.search(COMMIT_ID_PATTERN, source_url):
+                # do first a quick lookup, if '?ref' exists in the string before actually searching for the commit hash
+                return CheckResult.PASSED
 
         return CheckResult.FAILED
 
