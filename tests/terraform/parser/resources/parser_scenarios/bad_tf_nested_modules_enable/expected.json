@@ -8,7 +8,7 @@
           "__start_line__": 11,
           "__end_line__": 14,
           "__resolved__": [],
-          "__address__": "bar"
+          "__address__": "module.bar"
         }
       },
       {
@@ -17,7 +17,7 @@
           "__start_line__": 16,
           "__end_line__": 19,
           "__resolved__": [],
-          "__address__": "okay"
+          "__address__": "module.okay"
         }
       }
     ],

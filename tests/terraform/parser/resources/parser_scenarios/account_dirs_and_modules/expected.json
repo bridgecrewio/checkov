@@ -13,7 +13,7 @@
           ],
           "__start_line__": 1,
           "__end_line__": 6,
-          "__address__": "mydb"
+          "__address__": "module.mydb"
         }
       }
     ]
@@ -112,7 +112,7 @@
           ],
           "__start_line__": 1,
           "__end_line__": 6,
-          "__address__": "mydb"
+          "__address__": "module.mydb"
         }
       }
     ]

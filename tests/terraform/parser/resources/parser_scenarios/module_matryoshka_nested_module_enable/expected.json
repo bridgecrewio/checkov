@@ -9,7 +9,7 @@
                     ],
                     "__start_line__": 1,
                     "__end_line__": 3,
-                    "__address__": "bucket1"
+                    "__address__": "module.bucket1"
                 }
             }
         ],
@@ -36,7 +36,7 @@
                     ],
                     "__start_line__": 1,
                     "__end_line__": 3,
-                    "__address__": "module.bucket1.bucket2"
+                    "__address__": "module.bucket1.module.bucket2"
                 }
             }
         ],
@@ -63,7 +63,7 @@
                     ],
                     "__start_line__": 1,
                     "__end_line__": 3,
-                    "__address__": "module.bucket1.module.bucket2.bucket3"
+                    "__address__": "module.bucket1.module.bucket2.module.bucket3"
                 }
             }
         ],

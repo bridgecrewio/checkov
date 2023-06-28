@@ -316,9 +316,9 @@ class TestGraphBuilder(TestCase):
         graph_manager = TerraformGraphManager(NetworkxConnector())
         local_graph, _ = graph_manager.build_graph_from_source_directory(resources_dir, render_variables=True)
         module_1 = self.get_vertex_by_name_and_type(local_graph, BlockType.MODULE, 'inner_s3_module')
-        assert module_1.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS) == 'module.s3_module.inner_s3_module'
+        assert module_1.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS) == 'module.s3_module.module.inner_s3_module'
         module_2 = self.get_vertex_by_name_and_type(local_graph, BlockType.MODULE, 's3_module')
-        assert module_2.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS) == 's3_module'
+        assert module_2.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS) == 'module.s3_module'
         resource_1 = self.get_vertex_by_name_and_type(local_graph, BlockType.RESOURCE, 'aws_s3_bucket_public_access_block.var_bucket')
         assert resource_1.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS) == 'module.s3_module.module.inner_s3_module.aws_s3_bucket_public_access_block.var_bucket'
         resource_2 = self.get_vertex_by_name_and_type(local_graph, BlockType.RESOURCE, 'aws_s3_bucket.example')

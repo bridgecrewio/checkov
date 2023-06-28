@@ -244,8 +244,8 @@ class TestRunnerValid(unittest.TestCase):
         # then
         summary = report.get_summary()
 
-        passing_resources = {"pass"}
-        failing_resources = {"fail"}
+        passing_resources = {"module.pass"}
+        failing_resources = {"module.fail"}
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
@@ -465,7 +465,7 @@ class TestRunnerValid(unittest.TestCase):
             module_registry.checks[resource].remove(check)
 
         self.assertEqual(len(result.passed_checks), 1)
-        self.assertIn('some-module', map(lambda record: record.resource, result.passed_checks))
+        self.assertIn('module.some-module', map(lambda record: record.resource, result.passed_checks))
 
     def test_terraform_module_checks_are_performed_even_if_supported_resources_is_omitted(self):
         check_name = "TF_M_2"
@@ -498,7 +498,7 @@ class TestRunnerValid(unittest.TestCase):
             module_registry.checks[resource].remove(check)
 
         self.assertEqual(len(result.passed_checks), 1)
-        self.assertIn('some-module', map(lambda record: record.resource, result.passed_checks))
+        self.assertIn('module.some-module', map(lambda record: record.resource, result.passed_checks))
 
     @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "False"})
@@ -511,7 +511,7 @@ class TestRunnerValid(unittest.TestCase):
             root_folder=str(root_dir),
             runner_filter=RunnerFilter(
                 checks=["CKV_AWS_88"],
-                framework="terraform",
+                framework=["terraform"],
                 download_external_modules=True
             )
         )

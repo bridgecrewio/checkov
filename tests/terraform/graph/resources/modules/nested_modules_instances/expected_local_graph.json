@@ -10,7 +10,7 @@
         "source": [
           "../module3"
         ],
-        "__address__": "another_s3_module"
+        "__address__": "module.another_s3_module"
       },
       "block_type": "module",
       "breadcrumbs": {},
@@ -28,7 +28,7 @@
           "source": [
             "../module3"
           ],
-          "__address__": "another_s3_module"
+          "__address__": "module.another_s3_module"
         }
       },
       "id": "",
@@ -154,7 +154,7 @@
         "source": [
           "./module"
         ],
-        "__address__": "s3_module"
+        "__address__": "module.s3_module"
       },
       "block_type": "module",
       "breadcrumbs": {},
@@ -172,7 +172,7 @@
           "source": [
             "./module"
           ],
-          "__address__": "s3_module"
+          "__address__": "module.s3_module"
         }
       },
       "id": "",
@@ -194,7 +194,7 @@
         "source": [
           "./module"
         ],
-        "__address__": "s3_module2"
+        "__address__": "module.s3_module2"
       },
       "block_type": "module",
       "breadcrumbs": {},
@@ -212,7 +212,7 @@
           "source": [
             "./module"
           ],
-          "__address__": "s3_module2"
+          "__address__": "module.s3_module2"
         }
       },
       "id": "",
@@ -338,7 +338,7 @@
         "source": [
           "../module2"
         ],
-        "__address__": "module.s3_module.inner_s3_module"
+        "__address__": "module.s3_module.module.inner_s3_module"
       },
       "block_type": "module",
       "breadcrumbs": {
@@ -379,7 +379,7 @@
           "source": [
             "../module2"
           ],
-          "__address__": "module.s3_module.inner_s3_module"
+          "__address__": "module.s3_module.module.inner_s3_module"
         }
       },
       "id": "",
@@ -403,7 +403,7 @@
         "source": [
           "../module2"
         ],
-        "__address__": "module.s3_module.inner_s3_module_2"
+        "__address__": "module.s3_module.module.inner_s3_module_2"
       },
       "block_type": "module",
       "breadcrumbs": {
@@ -444,7 +444,7 @@
           "source": [
             "../module2"
           ],
-          "__address__": "module.s3_module.inner_s3_module_2"
+          "__address__": "module.s3_module.module.inner_s3_module_2"
         }
       },
       "id": "",
@@ -468,7 +468,7 @@
         "source": [
           "../module2"
         ],
-        "__address__": "module.s3_module2.inner_s3_module"
+        "__address__": "module.s3_module2.module.inner_s3_module"
       },
       "block_type": "module",
       "breadcrumbs": {
@@ -509,7 +509,7 @@
           "source": [
             "../module2"
           ],
-          "__address__": "module.s3_module2.inner_s3_module"
+          "__address__": "module.s3_module2.module.inner_s3_module"
         }
       },
       "id": "",
@@ -533,7 +533,7 @@
         "source": [
           "../module2"
         ],
-        "__address__": "module.s3_module2.inner_s3_module_2"
+        "__address__": "module.s3_module2.module.inner_s3_module_2"
       },
       "block_type": "module",
       "breadcrumbs": {
@@ -574,7 +574,7 @@
           "source": [
             "../module2"
           ],
-          "__address__": "module.s3_module2.inner_s3_module_2"
+          "__address__": "module.s3_module2.module.inner_s3_module_2"
         }
       },
       "id": "",
@@ -714,7 +714,7 @@
         "source": [
           "../module3"
         ],
-        "__address__": "module.s3_module.module.inner_s3_module.inner_s3_module2"
+        "__address__": "module.s3_module.module.inner_s3_module.module.inner_s3_module2"
       },
       "block_type": "module",
       "breadcrumbs": {
@@ -761,7 +761,7 @@
           "source": [
             "../module3"
           ],
-          "__address__": "module.s3_module.module.inner_s3_module.inner_s3_module2"
+          "__address__": "module.s3_module.module.inner_s3_module.module.inner_s3_module2"
         }
       },
       "id": "",
@@ -785,7 +785,7 @@
         "source": [
           "../module3"
         ],
-        "__address__": "module.s3_module2.module.inner_s3_module.inner_s3_module2"
+        "__address__": "module.s3_module2.module.inner_s3_module.module.inner_s3_module2"
       },
       "block_type": "module",
       "breadcrumbs": {
@@ -832,7 +832,7 @@
           "source": [
             "../module3"
           ],
-          "__address__": "module.s3_module2.module.inner_s3_module.inner_s3_module2"
+          "__address__": "module.s3_module2.module.inner_s3_module.module.inner_s3_module2"
         }
       },
       "id": "",
@@ -856,7 +856,7 @@
         "source": [
           "../module3"
         ],
-        "__address__": "module.s3_module.module.inner_s3_module_2.inner_s3_module2"
+        "__address__": "module.s3_module.module.inner_s3_module_2.module.inner_s3_module2"
       },
       "block_type": "module",
       "breadcrumbs": {
@@ -903,7 +903,7 @@
           "source": [
             "../module3"
           ],
-          "__address__": "module.s3_module.module.inner_s3_module_2.inner_s3_module2"
+          "__address__": "module.s3_module.module.inner_s3_module_2.module.inner_s3_module2"
         }
       },
       "id": "",
@@ -927,7 +927,7 @@
         "source": [
           "../module3"
         ],
-        "__address__": "module.s3_module2.module.inner_s3_module_2.inner_s3_module2"
+        "__address__": "module.s3_module2.module.inner_s3_module_2.module.inner_s3_module2"
       },
       "block_type": "module",
       "breadcrumbs": {
@@ -974,7 +974,7 @@
           "source": [
             "../module3"
           ],
-          "__address__": "module.s3_module2.module.inner_s3_module_2.inner_s3_module2"
+          "__address__": "module.s3_module2.module.inner_s3_module_2.module.inner_s3_module2"
         }
       },
       "id": "",

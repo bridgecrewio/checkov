@@ -18,12 +18,12 @@ class TestRevisionHash(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "hash",
-            "sub_dir_hash",
+            "module.hash",
+            "module.sub_dir_hash",
         }
         failing_resources = {
-            "tag",
-            "tf_registry",
+            "module.tag",
+            "module.tf_registry",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}

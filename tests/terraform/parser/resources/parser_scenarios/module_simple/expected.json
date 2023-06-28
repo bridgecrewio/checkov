@@ -7,7 +7,7 @@
           "__resolved__": ["{\"file_path\": \"bucket/bucket.tf\", \"tf_source_modules\": {\"path\": \"main.tf\", \"name\": \"bucket\", \"foreach_idx\": null, \"nested_tf_module\": null}}"],
           "__start_line__": 1,
           "__end_line__": 3,
-          "__address__": "bucket"
+          "__address__": "module.bucket"
         }
       }
     ]

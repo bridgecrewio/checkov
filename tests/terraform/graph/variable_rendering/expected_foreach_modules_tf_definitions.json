@@ -17,7 +17,7 @@
           "source": [
             "./module"
           ],
-          "__address__": "s3_module[\"a\"]"
+          "__address__": "module.s3_module[\"a\"]"
         }
       },
       {
@@ -36,7 +36,7 @@
           "source": [
             "./module"
           ],
-          "__address__": "s3_module2[0]"
+          "__address__": "module.s3_module2[0]"
         }
       },
       {
@@ -55,7 +55,7 @@
           "source": [
             "./module"
           ],
-          "__address__": "s3_module[\"b\"]"
+          "__address__": "module.s3_module[\"b\"]"
         }
       },
       {
@@ -74,7 +74,7 @@
           "source": [
             "./module"
           ],
-          "__address__": "s3_module2[1]"
+          "__address__": "module.s3_module2[1]"
         }
       }
     ],
@@ -112,7 +112,7 @@
           "source": [
             "./module2"
           ],
-          "__address__": "module.s3_module[\"a\"].inner_s3_module"
+          "__address__": "module.s3_module[\"a\"].module.inner_s3_module"
         }
       },
       {
@@ -128,7 +128,7 @@
           "source": [
             "./module2"
           ],
-          "__address__": "module.s3_module[\"a\"].inner_s3_module2"
+          "__address__": "module.s3_module[\"a\"].module.inner_s3_module2"
         }
       }
     ],
@@ -170,7 +170,7 @@
           "source": [
             "./module2"
           ],
-          "__address__": "module.s3_module2[0].inner_s3_module"
+          "__address__": "module.s3_module2[0].module.inner_s3_module"
         }
       },
       {
@@ -186,7 +186,7 @@
           "source": [
             "./module2"
           ],
-          "__address__": "module.s3_module2[0].inner_s3_module2"
+          "__address__": "module.s3_module2[0].module.inner_s3_module2"
         }
       }
     ],
@@ -447,7 +447,7 @@
           "source": [
             "./module2"
           ],
-          "__address__": "module.s3_module[\"b\"].inner_s3_module"
+          "__address__": "module.s3_module[\"b\"].module.inner_s3_module"
         }
       },
       {
@@ -463,7 +463,7 @@
           "source": [
             "./module2"
           ],
-          "__address__": "module.s3_module[\"b\"].inner_s3_module2"
+          "__address__": "module.s3_module[\"b\"].module.inner_s3_module2"
         }
       }
     ],
@@ -601,7 +601,7 @@
           "source": [
             "./module2"
           ],
-          "__address__": "module.s3_module2[1].inner_s3_module"
+          "__address__": "module.s3_module2[1].module.inner_s3_module"
         }
       },
       {
@@ -617,7 +617,7 @@
           "source": [
             "./module2"
           ],
-          "__address__": "module.s3_module2[1].inner_s3_module2"
+          "__address__": "module.s3_module2[1].module.inner_s3_module2"
         }
       }
     ],
