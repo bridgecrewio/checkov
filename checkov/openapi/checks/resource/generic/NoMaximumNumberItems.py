@@ -25,7 +25,7 @@ class NoMaximumNumberItems(BaseOpenapiCheck):
                 if key in current_dict:
                     if current_dict['type'] == 'array' and current_dict.get('maxItems') is None:
                         return CheckResult.FAILED, current_dict
-                for k, v in current_dict.items():
+                for _k, v in current_dict.items():
                     if isinstance(v, dict):
                         queue.append(v)
                     if isinstance(v, list):
