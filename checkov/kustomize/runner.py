@@ -413,8 +413,16 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
             template_render_command_options = "kustomize"
         if template_renderer_command == "kustomize":
             template_render_command_options = "build"
-        proc = subprocess.Popen([template_renderer_command, template_render_command_options, filePath], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
+            
+        add_origin_annotations_command = 'kustomize edit add buildmetadata originAnnotations'
+        return_code = subprocess.Popen(add_origin_annotations_command.split(' '), cwd=filePath).wait()
+        remove_origin_annotaions = 'kustomize edit remove buildmetadata originAnnotations'
+
+        full_command = f'{template_renderer_command} {template_render_command_options}'
+        proc = subprocess.Popen(full_command.split(' '), cwd=filePath, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
         output, _ = proc.communicate()
+
+        subprocess.Popen(remove_origin_annotaions.split(' '), cwd=filePath).wait()
         logging.info(
             f"Ran kubectl to build Kustomize output. DIR: {filePath}. TYPE: {source_type}.")
         return output
@@ -523,10 +531,11 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
             self.kustomizeFileMappings = shared_kustomize_file_mappings
             return
 
-        manager = multiprocessing.Manager()
+        # manager = multiprocessing.Manager()
         # make sure we have new dict
-        shared_kustomize_file_mappings = pickle_deepcopy(manager.dict())  # type:ignore[arg-type]  # works with DictProxy
-        shared_kustomize_file_mappings.clear()
+        # shared_kustomize_file_mappings = pickle_deepcopy(manager.dict())  # type:ignore[arg-type]  # works with DictProxy
+        # shared_kustomize_file_mappings.clear()
+        shared_kustomize_file_mappings = {}
         jobs = []
         for filePath in self.kustomizeProcessedFolderAndMeta:
             p = multiprocessing.Process(
