@@ -118,7 +118,11 @@ class K8sKustomizeRunner(K8sRunner):
                 # Fix file path to repo relative path
                 if self.original_root_dir:
                     repo_dir = str(pathlib.Path(self.original_root_dir).resolve())
-                    if realKustomizeEnvMetadata['filePath'].startswith(repo_dir):
+                    if 'origin_path' in entity_context:
+                        origin_path = entity_context['origin_path']
+                        repo_path = pathlib.Path(repo_dir) / origin_path
+                        file_path = str(repo_path.resolve())
+                    elif realKustomizeEnvMetadata['filePath'].startswith(repo_dir):
                         file_path = realKustomizeEnvMetadata['filePath'][len(repo_dir):]
 
             code_lines = entity_context.get("code_lines")
@@ -534,11 +538,11 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
             self.kustomizeFileMappings = shared_kustomize_file_mappings
             return
 
-        # manager = multiprocessing.Manager()
+        manager = multiprocessing.Manager()
         # make sure we have new dict
-        # shared_kustomize_file_mappings = pickle_deepcopy(manager.dict())  # type:ignore[arg-type]  # works with DictProxy
-        # shared_kustomize_file_mappings.clear()
-        shared_kustomize_file_mappings = {}
+        shared_kustomize_file_mappings = pickle_deepcopy(manager.dict())  # type:ignore[arg-type]  # works with DictProxy
+        shared_kustomize_file_mappings.clear()
+        # shared_kustomize_file_mappings = {}
         jobs = []
         for filePath in self.kustomizeProcessedFolderAndMeta:
             p = multiprocessing.Process(

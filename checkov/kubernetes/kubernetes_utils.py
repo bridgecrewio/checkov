@@ -147,10 +147,6 @@ def build_definitions_context(
                     metadata_path = metadata['annotations']['config.kubernetes.io/origin']
                     if 'path:' in metadata_path:
                         relative_resource_path = metadata_path.split('path:')[1].strip()
-                        newFullPathFilename = pathlib.Path(file_path).parent / relative_resource_path
-                        newResolvedFullPathFilename = str(newFullPathFilename.resolve()).replace('/private', '')
-                        # os.rename(file_path, newResolvedFullPathFilename)
-                        # shared_kustomize_file_mappings[newFullPathFilename] = file_path
 
             start_line = resource[START_LINE]
             end_line = min(resource[END_LINE], len(definitions_raw[file_path]))
@@ -178,14 +174,15 @@ def build_definitions_context(
             code_lines = definitions_raw[file_path][start_line - 1: end_line]
             dpath.new(
                 definitions_context,
-                [newResolvedFullPathFilename or file_path, resource_id],
-                {"start_line": start_line, "end_line": end_line, "code_lines": code_lines},
+                [file_path, resource_id],
+                {"start_line": start_line, "end_line": end_line, "code_lines": code_lines,
+                 "origin_path": relative_resource_path},
             )
 
             skipped_checks = get_skipped_checks(resource)
             dpath.new(
                 definitions_context,
-                [newResolvedFullPathFilename or file_path, resource_id, "skipped_checks"],
+                [file_path, resource_id, "skipped_checks"],
                 skipped_checks,
             )
     return definitions_context
