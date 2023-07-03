@@ -616,6 +616,18 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
             with open(currentFileName) as f:
                 currentYamlObject = yaml.safe_load(f)
                 # Validate we have a K8S manifest
+                # if 'metadata' in currentYamlObject:
+                #     metadata = currentYamlObject['metadata']
+                #     if 'annotations' in metadata and 'config.kubernetes.io/origin' in metadata['annotations']:
+                #         metadata_path = metadata['annotations']['config.kubernetes.io/origin']
+                #         if 'path:' in metadata_path:
+                #             relative_resource_path = metadata_path.split('path:')[1].strip()
+                #             newFullPathFilename = pathlib.Path(currentFileName).parent / relative_resource_path
+                #             newResolvedFullPathFilename = str(newFullPathFilename.resolve()).replace('/private', '')
+                #             os.rename(currentFileName, newResolvedFullPathFilename)
+                #             shared_kustomize_file_mappings[newFullPathFilename] = file_path
+                #             return
+
                 if "apiVersion" in currentYamlObject:
                     itemName = []
                     itemName.append(currentYamlObject['kind'])

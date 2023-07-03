@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
+import pathlib
 from typing import Dict, Any, TYPE_CHECKING
 
 import dpath
@@ -138,6 +139,18 @@ def build_definitions_context(
             resource_id = get_resource_id(resource)
             if not resource_id:
                 continue
+            #
+            # if 'metadata' in resource:
+            #     metadata = resource['metadata']
+            #     if 'annotations' in metadata and 'config.kubernetes.io/origin' in metadata['annotations']:
+            #         metadata_path = metadata['annotations']['config.kubernetes.io/origin']
+            #         if 'path:' in metadata_path:
+            #             relative_resource_path = metadata_path.split('path:')[1].strip()
+            #             newFullPathFilename = pathlib.Path(file_path).parent / relative_resource_path
+            #             newResolvedFullPathFilename = str(newFullPathFilename.resolve()).replace('/private', '')
+            #             # os.rename(file_path, newResolvedFullPathFilename)
+            #             # shared_kustomize_file_mappings[newFullPathFilename] = file_path
+
             start_line = resource[START_LINE]
             end_line = min(resource[END_LINE], len(definitions_raw[file_path]))
             first_line_index = 0
