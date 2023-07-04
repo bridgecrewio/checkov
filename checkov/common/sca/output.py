@@ -286,7 +286,7 @@ def get_inline_suppressions_map(inline_suppressions: _ScaSuppressions | None = N
         if inline_suppressions["cves"].get("byCve"):
             for suppression in inline_suppressions["cves"]["byCve"]:
                 if suppression.get("cveId"):
-                    cve_by_cve_map[suppression.get("cveId")] = suppression
+                    cve_by_cve_map[suppression["cveId"]] = suppression
 
 
     # fill licenses suppressions map
@@ -294,8 +294,9 @@ def get_inline_suppressions_map(inline_suppressions: _ScaSuppressions | None = N
     if inline_suppressions.get("licenses"):
         if inline_suppressions["licenses"].get("byPackage"):
             for suppression in inline_suppressions["licenses"]["byPackage"]:
-                key = get_license_policy_and_package_alias(str(suppression.get("licensePolicy", "")), str(suppression.get("packageName", "")))
-                licenses_by_policy_and_package_map[key] = suppression
+                if suppression.get("licensePolicy") and suppression.get("packageName"):
+                    key = get_license_policy_and_package_alias(suppression["licensePolicy"], suppression["packageName", ""])
+                    licenses_by_policy_and_package_map[key] = suppression
 
     suppressions_map['cve_by_cve_map'] = cve_by_cve_map
     suppressions_map['licenses_by_policy_and_package_map'] = licenses_by_policy_and_package_map
