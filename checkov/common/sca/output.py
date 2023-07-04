@@ -33,7 +33,7 @@ if TYPE_CHECKING:
     from checkov.common.output.common import SCADetails
     from checkov.common.output.report import Report
     from checkov.common.typing import _LicenseStatus, _CheckResult, _ScaSuppressions, _ScaSuppressionsMaps, \
-    _SuppressedCves, _SuppressedLicenses
+        _SuppressedCves, _SuppressedLicenses
 
 
 def create_report_license_record(
@@ -252,7 +252,8 @@ def _add_to_report_licenses_statuses(
 
         # apply inline suppressions
         suppressed = apply_licenses_inline_suppressions(
-            record=license_record, vulnerability_details=vulnerability_details, inline_suppressions_maps=inline_suppressions_maps
+            record=license_record, vulnerability_details=vulnerability_details,
+            inline_suppressions_maps=inline_suppressions_maps
         )
 
         if not suppressed and not runner_filter.should_run_check(
@@ -288,14 +289,14 @@ def get_inline_suppressions_map(inline_suppressions: _ScaSuppressions | None = N
                 if cve_suppression.get("cveId"):
                     cve_by_cve_map[cve_suppression["cveId"]] = cve_suppression
 
-
     # fill licenses suppressions map
     licenses_by_policy_and_package_map: dict[str, _SuppressedLicenses] = {}
     if inline_suppressions.get("licenses"):
         if inline_suppressions["licenses"].get("byPackage"):
             for license_suppression in inline_suppressions["licenses"]["byPackage"]:
                 if license_suppression.get("licensePolicy") and license_suppression.get("packageName"):
-                    key = get_license_policy_and_package_alias(license_suppression["licensePolicy"], license_suppression["packageName"])
+                    key = get_license_policy_and_package_alias(license_suppression["licensePolicy"],
+                                                               license_suppression["packageName"])
                     licenses_by_policy_and_package_map[key] = license_suppression
 
     suppressions_map['cve_by_cve_map'] = cve_by_cve_map
@@ -408,7 +409,8 @@ def add_to_reports_dependency_tree_cves(check_class: str | None, packages_map: d
                                          check_class=check_class, licenses_per_package_map=licenses_per_package_map,
                                          runner_filter=runner_filter, sca_details=sca_details,
                                          scan_data_format=scan_data_format, report_type=report_type, report=report,
-                                         root_package=root_package, root_package_fixed_version=root_package_fixed_version,
+                                         root_package=root_package,
+                                         root_package_fixed_version=root_package_fixed_version,
                                          inline_suppressions_maps=inline_suppressions_maps,
                                          used_private_registry=used_private_registry)
 
@@ -480,7 +482,8 @@ def apply_cves_inline_suppressions(
 
 
 def apply_licenses_inline_suppressions(
-        record: Record, vulnerability_details: dict[str, Any], inline_suppressions_maps: _ScaSuppressionsMaps | None = None
+        record: Record, vulnerability_details: dict[str, Any],
+        inline_suppressions_maps: _ScaSuppressionsMaps | None = None
 ) -> bool:
     """Applies the inline suppression and returns an accomplish status"""
 

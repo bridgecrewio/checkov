@@ -25,8 +25,10 @@ def get_resource_for_record(rootless_file_path: str, package_name: str) -> str:
 def get_package_alias(package_name: str, package_version: str) -> str:
     return f"{package_name}@{package_version}"
 
+
 def get_license_policy_and_package_alias(policy: str, package_name: str) -> str:
     return f'{policy}_{package_name}'
+
 
 def get_package_type(package_name: str, package_version: str, sca_details: SCADetails | None = None) -> str:
     if sca_details:
@@ -62,12 +64,15 @@ def get_record_file_line_range(package: dict[str, Any], file_line_range: list[in
     """
     package_line_range = get_package_lines(package)
     if package_line_range and file_line_range:
-        logging.error('[get_record_file_line_range] Both \'package_line_range\' and \'file_line_range\' are not None. Conflict.')
+        logging.error(
+            '[get_record_file_line_range] Both \'package_line_range\' and \'file_line_range\' are not None. Conflict.')
     return package_line_range or file_line_range or [0, 0]
 
 
 def should_run_scan(runner_filter_checks: Optional[List[str]]) -> bool:
-    return not (runner_filter_checks and all(not (check.startswith("CKV_CVE") or check.startswith("BC_CVE") or check.startswith("BC_LIC")) for check in runner_filter_checks))
+    return not (runner_filter_checks and all(
+        not (check.startswith("CKV_CVE") or check.startswith("BC_CVE") or check.startswith("BC_LIC")) for check in
+        runner_filter_checks))
 
 
 def get_fix_version(vulnerability_details: dict[str, Any]) -> str:
