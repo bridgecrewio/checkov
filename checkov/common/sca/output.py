@@ -436,7 +436,7 @@ def add_cve_record_to_report(vulnerability_details: dict[str, Any], package_name
         used_private_registry=used_private_registry
     )
     suppressed = apply_cves_inline_suppressions(
-        record=cve_record, vulnerability_details=vulnerability_details, inline_suppressions_maps=inline_suppressions_maps
+        record=cve_record, inline_suppressions_maps=inline_suppressions_maps
     )
 
     if not suppressed and not runner_filter.should_run_check(
@@ -458,13 +458,13 @@ def add_cve_record_to_report(vulnerability_details: dict[str, Any], package_name
 
 
 def apply_cves_inline_suppressions(
-        record: Record, vulnerability_details: dict[str, Any], inline_suppressions_maps: _ScaSuppressionsMaps | None = None
+        record: Record, inline_suppressions_maps: _ScaSuppressionsMaps | None = None
 ) -> bool:
     """Applies the inline suppression and returns an accomplish status"""
 
     if inline_suppressions_maps:
         if inline_suppressions_maps.get("cve_by_cve_map"):
-            cve_suppression = inline_suppressions_maps["cve_by_cve_map"].get(vulnerability_details.get("cveId", ""))
+            cve_suppression = inline_suppressions_maps["cve_by_cve_map"].get(record.vulnerability_details.get("id", ""))
             if cve_suppression:
                 record.check_result = {
                     "result": CheckResult.SKIPPED,
