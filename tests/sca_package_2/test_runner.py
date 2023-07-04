@@ -124,8 +124,9 @@ def test_run(sca_package_2_report):
         "requirements.txt.requests",
         "path/to/sub/requirements.txt.requests",
     }
-    assert len(report.passed_checks) == 4
-    assert len(report.failed_checks) == 8
+
+    assert len(report.passed_checks) == 3
+    assert len(report.failed_checks) == 9
     assert len(report.skipped_checks) == 1
     assert len(report.parsing_errors) == 0
 
