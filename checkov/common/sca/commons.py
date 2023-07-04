@@ -25,7 +25,7 @@ def get_resource_for_record(rootless_file_path: str, package_name: str) -> str:
 def get_package_alias(package_name: str, package_version: str) -> str:
     return f"{package_name}@{package_version}"
 
-def get_license_policy_and_package_alias(policy: str, package_name: str):
+def get_license_policy_and_package_alias(policy: str, package_name: str) -> str:
     return f'{policy}_{package_name}'
 
 def get_package_type(package_name: str, package_version: str, sca_details: SCADetails | None = None) -> str:

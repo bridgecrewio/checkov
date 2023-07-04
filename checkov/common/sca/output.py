@@ -248,7 +248,7 @@ def _add_to_report_licenses_statuses(
             severity=severity
         )
 
-        vulnerability_details = license_record.vulnerability_details
+        vulnerability_details = license_record.vulnerability_details or {}
 
         # apply inline suppressions
         suppressed = apply_licenses_inline_suppressions(
@@ -278,21 +278,23 @@ def _add_to_report_licenses_statuses(
 def get_inline_suppressions_map(inline_suppressions: _ScaSuppressions | None = None) -> _ScaSuppressionsMaps | None:
     if not inline_suppressions:
         return None
-    suppressions_map: _ScaSuppressionsMaps = defaultdict()
+    suppressions_map: _ScaSuppressionsMaps = {}
 
     # fill cves suppressions map
-    cve_by_cve_map: dict[str, _SuppressedCves] = defaultdict()
+    cve_by_cve_map: dict[str, _SuppressedCves] = {}
     if inline_suppressions.get("cves"):
         if inline_suppressions["cves"].get("byCve"):
             for suppression in inline_suppressions["cves"]["byCve"]:
-                cve_by_cve_map[suppression.get("cveId")] = suppression
+                if suppression.get("cveId"):
+                    cve_by_cve_map[suppression.get("cveId")] = suppression
+
 
     # fill licenses suppressions map
-    licenses_by_policy_and_package_map: dict[str, _SuppressedLicenses] = defaultdict()
+    licenses_by_policy_and_package_map: dict[str, _SuppressedLicenses] = {}
     if inline_suppressions.get("licenses"):
         if inline_suppressions["licenses"].get("byPackage"):
             for suppression in inline_suppressions["licenses"]["byPackage"]:
-                key = get_license_policy_and_package_alias(suppression.get("licensePolicy", ""), suppression.get("packageName", ""))
+                key = get_license_policy_and_package_alias(str(suppression.get("licensePolicy", "")), str(suppression.get("packageName", "")))
                 licenses_by_policy_and_package_map[key] = suppression
 
     suppressions_map['cve_by_cve_map'] = cve_by_cve_map
