@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 import os
-import pathlib
 from typing import Dict, Any, TYPE_CHECKING
 
 import dpath
@@ -134,13 +133,13 @@ def build_definitions_context(
 
         # iterate on the resources
         for resource in resources:
-            newResolvedFullPathFilename = None
             if is_invalid_k8_definition(resource):
                 continue
             resource_id = get_resource_id(resource)
             if not resource_id:
                 continue
 
+            relative_resource_path = None
             if 'metadata' in resource:
                 metadata = resource['metadata']
                 if 'annotations' in metadata and 'config.kubernetes.io/origin' in metadata['annotations']:
@@ -148,35 +147,15 @@ def build_definitions_context(
                     if 'path:' in metadata_path:
                         relative_resource_path = metadata_path.split('path:')[1].strip()
 
-            start_line = resource[START_LINE]
-            end_line = min(resource[END_LINE], len(definitions_raw[file_path]))
-            first_line_index = 0
-            # skip empty lines
-            while not str.strip(definitions_raw[file_path][first_line_index][1]):
-                first_line_index += 1
-            # check if the file is a json file
-            if str.strip(definitions_raw[file_path][first_line_index][1])[0] == "{":
-                start_line += 1
-                end_line += 1
-            else:
-                # add resource comments to definition lines
-                current_line = str.strip(definitions_raw[file_path][start_line - 1][1])
-                while not current_line or current_line[0] == YAML_COMMENT_MARK:
-                    start_line -= 1
-                    current_line = str.strip(definitions_raw[file_path][start_line - 1][1])
-
-                # remove next resource comments from definition lines
-                current_line = str.strip(definitions_raw[file_path][end_line - 1][1])
-                while not current_line or current_line[0] == YAML_COMMENT_MARK:
-                    end_line -= 1
-                    current_line = str.strip(definitions_raw[file_path][end_line - 1][1])
-
-            code_lines = definitions_raw[file_path][start_line - 1: end_line]
+            resource_start_line = resource[START_LINE]
+            resource_end_line = min(resource[END_LINE], len(definitions_raw[file_path]))
+            raw_code = definitions_raw[file_path]
+            code_lines, start_line, end_line = calculate_code_lines(raw_code, resource_start_line, resource_end_line)
             dpath.new(
                 definitions_context,
                 [file_path, resource_id],
                 {"start_line": start_line, "end_line": end_line, "code_lines": code_lines,
-                 "origin_path": relative_resource_path},
+                 "origin_relative_path": relative_resource_path},
             )
 
             skipped_checks = get_skipped_checks(resource)
@@ -186,6 +165,32 @@ def build_definitions_context(
                 skipped_checks,
             )
     return definitions_context
+
+
+def calculate_code_lines(raw_code: list[tuple[int, str]], start_line: int, end_line: int) \
+        -> tuple[list[tuple[int, str]], int, int]:
+    first_line_index = 0
+    # skip empty lines
+    while not str.strip(raw_code[first_line_index][1]):
+        first_line_index += 1
+    # check if the file is a json file
+    if str.strip(raw_code[first_line_index][1])[0] == "{":
+        start_line += 1
+        end_line += 1
+    else:
+        # add resource comments to definition lines
+        current_line = str.strip(raw_code[start_line - 1][1])
+        while not current_line or current_line[0] == YAML_COMMENT_MARK:
+            start_line -= 1
+            current_line = str.strip(raw_code[start_line - 1][1])
+
+        # remove next resource comments from definition lines
+        current_line = str.strip(raw_code[end_line - 1][1])
+        while not current_line or current_line[0] == YAML_COMMENT_MARK:
+            end_line -= 1
+            current_line = str.strip(raw_code[end_line - 1][1])
+    code_lines = raw_code[start_line - 1: end_line]
+    return code_lines, start_line, end_line
 
 
 def is_invalid_k8_definition(definition: Dict[str, Any]) -> bool:
