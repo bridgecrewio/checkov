@@ -263,31 +263,6 @@
 				</target>
 			</affects>
 		</vulnerability>
-		<vulnerability bom-ref="ee466789-4a82-43f8-8fdc-46b698f88d8d">
-			<id>CVE-2019-1010083</id>
-			<source>
-				<url>https://nvd.nist.gov/vuln/detail/CVE-2019-1010083</url>
-			</source>
-			<ratings>
-				<rating>
-					<source>
-						<url>https://nvd.nist.gov/vuln/detail/CVE-2019-1010083</url>
-					</source>
-					<score>7.5</score>
-					<severity>high</severity>
-					<method>CVSSv3</method>
-					<vector>AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H</vector>
-				</rating>
-			</ratings>
-			<description>The Pallets Project Flask before 1.0 is affected by: unexpected memory usage. The impact is: denial of service. The attack vector is: crafted encoded JSON data. The fixed version is: 1. NOTE: this may overlap CVE-2018-1000656.</description>
-			<recommendation>Fixed in 1.0</recommendation>
-			<published>2019-07-17T16:15:00+02:00</published>
-			<affects>
-				<target>
-					<ref>pkg:pypi/bridgecrewio/example/requirements.txt/flask@0.6</ref>
-				</target>
-			</affects>
-		</vulnerability>
 		<vulnerability bom-ref="269f2e3c-bbe5-4277-bb23-0bbe8a5d5ce4">
 			<id>CVE-2020-26160</id>
 			<source>
