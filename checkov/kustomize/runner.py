@@ -160,7 +160,7 @@ class K8sKustomizeRunner(K8sRunner):
         return directory_prefix
 
     def _get_caller_line_range(self, root_folder: str, k8_file: str, origin_relative_path: str,
-                               resource_id: str) -> tuple[int, int]:
+                               resource_id: str) -> tuple[int, int] | None:
         raw_caller_directory = (pathlib.PurePath(k8_file.lstrip(os.path.sep)).parent /
                                 pathlib.PurePath(origin_relative_path.lstrip(os.path.sep)).parent)
         caller_directory = str(pathlib.Path(f'{os.path.sep}{raw_caller_directory}').resolve())
@@ -173,6 +173,8 @@ class K8sKustomizeRunner(K8sRunner):
         file_ending = pathlib.Path(origin_relative_path).suffix
         caller_file_path = f'{str(pathlib.PurePath(caller_directory) / resource_id.replace(".", "-"))}{file_ending}'
 
+        if caller_file_path not in self.definitions:
+            return None
         caller_resource = self.definitions[caller_file_path][0]
         raw_caller_resource = self.definitions_raw[caller_file_path]
 
