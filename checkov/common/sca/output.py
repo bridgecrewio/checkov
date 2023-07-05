@@ -467,16 +467,15 @@ def apply_cves_inline_suppressions(
 ) -> bool:
     """Applies the inline suppression and returns an accomplish status"""
 
-    if inline_suppressions_maps:
-        if record.vulnerability_details and inline_suppressions_maps.get("cve_suppresion_by_cve_map"):
-            cve_id = record.vulnerability_details.get("id", "")
-            cve_suppression = inline_suppressions_maps["cve_suppresion_by_cve_map"].get(cve_id)
-            if cve_suppression:
-                record.check_result = {
-                    "result": CheckResult.SKIPPED,
-                    "suppress_comment": cve_suppression.get('reason', ''),
-                }
-                return True
+    if inline_suppressions_maps and record.vulnerability_details and inline_suppressions_maps.get("cve_suppresion_by_cve_map"):
+        cve_id = record.vulnerability_details.get("id", "")
+        cve_suppression = inline_suppressions_maps["cve_suppresion_by_cve_map"].get(cve_id)
+        if cve_suppression:
+            record.check_result = {
+                "result": CheckResult.SKIPPED,
+                "suppress_comment": cve_suppression.get('reason', ''),
+            }
+            return True
 
     return False
 
@@ -487,17 +486,16 @@ def apply_licenses_inline_suppressions(
 ) -> bool:
     """Applies the inline suppression and returns an accomplish status"""
 
-    if inline_suppressions_maps:
-        if inline_suppressions_maps.get("licenses_suppressions_by_policy_and_package_map"):
-            key = get_license_policy_and_package_alias(vulnerability_details.get("policy", ""),
-                                                       vulnerability_details.get("package_name", ""))
-            license_suppression = inline_suppressions_maps["licenses_suppressions_by_policy_and_package_map"].get(key)
-            if license_suppression:
-                record.check_result = {
-                    "result": CheckResult.SKIPPED,
-                    "suppress_comment": license_suppression.get('reason', ''),
-                }
-                return True
+    if inline_suppressions_maps and inline_suppressions_maps.get("licenses_suppressions_by_policy_and_package_map"):
+        key = get_license_policy_and_package_alias(vulnerability_details.get("policy", ""),
+                                                    vulnerability_details.get("package_name", ""))
+        license_suppression = inline_suppressions_maps["licenses_suppressions_by_policy_and_package_map"].get(key)
+        if license_suppression:
+            record.check_result = {
+                "result": CheckResult.SKIPPED,
+                "suppress_comment": license_suppression.get('reason', ''),
+            }
+            return True
 
     return False
 
