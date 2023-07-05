@@ -164,15 +164,14 @@ class K8sKustomizeRunner(K8sRunner):
             caller_directory = root_folder.join(splitted_dir)
         file_ending = pathlib.Path(origin_file_path).suffix
         caller_file_path = f'{str(pathlib.PurePath(caller_directory) / resource_id.replace(".", "-"))}{file_ending}'
-        caller_resource = self.definitions[caller_file_path][0]
 
-        '/var/folders/7p/v_m3x2zx3mj0vbqrnqtkhrd40000gp/T/tmpsc9nk2ve/resources/example/base/Deployment-default-sl-demo-app.yaml'
-        '/var/folders/7p/v_m3x2zx3mj0vbqrnqtkhrd40000gp/T/tmpsc9nk2ve/example/base/Deployment-default-sl-demo-app.yaml'
-        '/var/folders/7p/v_m3x2zx3mj0vbqrnqtkhrd40000gp/T/tmpsc9nk2ve/resources/example/base/Deployment-default-sl-demo-app.yaml'
+        caller_resource = self.definitions[caller_file_path][0]
+        raw_caller_resource = self.definitions_raw[caller_file_path]
 
         caller_raw_start_line = caller_resource[START_LINE]
-        caller_raw_end_line = caller_resource[END_LINE]
-        _, caller_start_line, caller_end_line = calculate_code_lines(caller_resource, caller_raw_start_line,
+        caller_raw_end_line = min(caller_resource[END_LINE], len(raw_caller_resource))
+
+        _, caller_start_line, caller_end_line = calculate_code_lines(raw_caller_resource, caller_raw_start_line,
                                                                      caller_raw_end_line)
         return (caller_start_line, caller_end_line)
 
