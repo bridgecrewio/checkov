@@ -127,12 +127,9 @@ class K8sKustomizeRunner(K8sRunner):
                     repo_dir = str(pathlib.Path(self.original_root_dir).resolve())
 
                     origin_relative_path = entity_context['origin_relative_path']
-                    k8s_file_dir = pathlib.Path(k8_file_path.lstrip(os.path.sep)).parent
+                    k8s_file_dir = pathlib.Path(k8_file_path).parent
                     raw_file_path = k8s_file_dir / origin_relative_path
-                    caller_file_path = str(raw_file_path.resolve())[len(repo_dir):]
-                    '/Users/bfatal/Documents/code/checkov/tests/kustomize/runner/resources/example'
-                    '/Users/bfatal/Documents/code/checkov/tests/kustomize/runner/resources/example'
-                    '/Users/bfatal/Documents/code/checkov/tests/kustomize/runner/resources/resources/example/base/deployment.yaml'
+                    caller_file_path = str(raw_file_path.resolve())[len(str(k8s_file_dir.parent)):]
                     caller_file_line_range = self._get_caller_line_range(root_folder, k8_file, origin_relative_path,
                                                                          resource_id)
 
