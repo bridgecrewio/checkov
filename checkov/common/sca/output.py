@@ -291,8 +291,8 @@ def get_inline_suppressions_map(inline_suppressions: _ScaSuppressions | None = N
 
     # fill licenses suppressions map
     licenses_suppressions_by_policy_and_package_map: dict[str, _SuppressedCves] = {}
-    licenses_suppressions_by_policy_and_package_map = inline_suppressions.get("licenses", {}).get("byPackage", {})
-    for license_suppression in licenses_suppressions_by_policy_and_package_map:
+    inline_suppressions_by_license = inline_suppressions.get("licenses", {}).get("byPackage", {})
+    for license_suppression in inline_suppressions_by_license:
         if license_suppression.get("licensePolicy") and license_suppression.get("packageName"):
             key = get_license_policy_and_package_alias(license_suppression["licensePolicy"],
                                                         license_suppression["packageName"])
