@@ -290,7 +290,7 @@ def get_inline_suppressions_map(inline_suppressions: _ScaSuppressions | None = N
             cve_suppresion_by_cve_map[cve_id] = cve_suppression
 
     # fill licenses suppressions map
-    licenses_suppressions_by_policy_and_package_map: dict[str, _SuppressedCves] = {}
+    licenses_suppressions_by_policy_and_package_map: dict[str, _SuppressedLicenses] = {}
     inline_suppressions_by_license = inline_suppressions.get("licenses", {}).get("byPackage", {})
     for license_suppression in inline_suppressions_by_license:
         if license_suppression.get("licensePolicy") and license_suppression.get("packageName"):
