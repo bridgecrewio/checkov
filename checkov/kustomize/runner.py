@@ -482,7 +482,7 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
                 env_or_base_path_prefix = ""
             else:
                 base_path_parts = pathlib.Path(kustomize_processed_folder_and_meta[file_path]['calculated_bases']).parts
-                most_significant_base_path = f"/{base_path_parts[-3]}/{base_path_parts[-2]}/{base_path_parts[-1]}"
+                most_significant_base_path = f"/{base_path_parts[-3]}/{base_path_parts[-2]}"
                 env_or_base_path_prefix = f"{most_significant_base_path}/{kustomize_processed_folder_and_meta[file_path]['overlay_name']}"
 
         elif kustomize_processed_folder_and_meta[file_path].get('type') == "base":
