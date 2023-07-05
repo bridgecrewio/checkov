@@ -468,7 +468,7 @@ def apply_cves_inline_suppressions(
     """Applies the inline suppression and returns an accomplish status"""
 
     if inline_suppressions_maps:
-        if inline_suppressions_maps.get("cve_by_cve_map") and record.vulnerability_details:
+        if record.vulnerability_details and inline_suppressions_maps.get("cve_by_cve_map"):
             cve_id = record.vulnerability_details.get("id", "")
             cve_suppression = inline_suppressions_maps["cve_by_cve_map"].get(cve_id)
             if cve_suppression:
