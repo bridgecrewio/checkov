@@ -128,10 +128,9 @@ class K8sKustomizeRunner(K8sRunner):
 
                     origin_relative_path = entity_context['origin_relative_path']
                     k8s_file_dir = pathlib.Path(k8_file_path.lstrip(os.path.sep)).parent
-                    raw_file_path = pathlib.Path(repo_dir).parent / k8s_file_dir / origin_relative_path
-                    caller_file_path = str(raw_file_path.resolve())[len(repo_dir):]
-                    caller_file_line_range = self._get_caller_line_range(root_folder, k8_file, origin_relative_path,
-                                                                         caller_file_path, resource_id)
+                    raw_file_path = k8s_file_dir / origin_relative_path
+                    caller_file_path = str(raw_file_path.resolve())
+                    caller_file_line_range = self._get_caller_line_range(root_folder, caller_file_path, resource_id)
 
                     if realKustomizeEnvMetadata['filePath'].startswith(repo_dir):
                         file_path = realKustomizeEnvMetadata['filePath'][len(repo_dir):]
@@ -151,19 +150,18 @@ class K8sKustomizeRunner(K8sRunner):
 
         return report
 
-    def _get_caller_line_range(self, root_folder: str, k8_file: str, origin_relative_path: str, origin_file_path: str,
-                               resource_id: str) -> tuple[int, int]:
-        raw_caller_directory = (pathlib.PurePath(k8_file.lstrip(os.path.sep)).parent /
-                                pathlib.PurePath(origin_relative_path.lstrip(os.path.sep)).parent)
-        caller_directory = str(pathlib.Path(f'{os.path.sep}{raw_caller_directory}').resolve())
-        splitted_dir = caller_directory.split(root_folder)
-        if len(splitted_dir) > 1:
-            # Removes any unnecessary additions by `Path.resolve`
-            caller_directory = root_folder + ''.join(splitted_dir[1:])
-        else:
-            caller_directory = root_folder.join(splitted_dir)
+    def _get_caller_line_range(self, root_folder: str, origin_file_path: str, resource_id: str) -> tuple[int, int]:
+        # raw_caller_directory = (pathlib.PurePath(k8_file.lstrip(os.path.sep)).parent /
+        #                         pathlib.PurePath(origin_relative_path.lstrip(os.path.sep)).parent)
+        # caller_directory = str(pathlib.Path(f'{os.path.sep}{raw_caller_directory}').resolve())
+        # splitted_dir = caller_directory.split(root_folder)
+        # if len(splitted_dir) > 1:
+        #     # Removes any unnecessary additions by `Path.resolve`
+        #     caller_directory = root_folder + ''.join(splitted_dir[1:])
+        # else:
+        #     caller_directory = root_folder.join(splitted_dir)
         file_ending = pathlib.Path(origin_file_path).suffix
-        caller_file_path = f'{str(pathlib.PurePath(caller_directory) / resource_id.replace(".", "-"))}{file_ending}'
+        caller_file_path = f'{str(pathlib.PurePath(root_folder) / origin_file_path / resource_id.replace(".", "-"))}{file_ending}'
 
         caller_resource = self.definitions[caller_file_path][0]
         raw_caller_resource = self.definitions_raw[caller_file_path]
