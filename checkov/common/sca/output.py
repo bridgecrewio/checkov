@@ -282,25 +282,25 @@ def get_inline_suppressions_map(inline_suppressions: _ScaSuppressions | None = N
     suppressions_map: _ScaSuppressionsMaps = {}
 
     # fill cves suppressions map
-    cve_by_cve_map: dict[str, _SuppressedCves] = {}
+    cve_suppresion_by_cve_map: dict[str, _SuppressedCves] = {}
     inline_suppressions_by_cve = inline_suppressions.get("cves", {}).get("byCve", {})
     for cve_suppression in inline_suppressions_by_cve:
         cve_id = cve_suppression.get("cveId")
         if cve_id:
-            cve_by_cve_map[cve_id] = cve_suppression
+            cve_suppresion_by_cve_map[cve_id] = cve_suppression
 
     # fill licenses suppressions map
-    licenses_by_policy_and_package_map: dict[str, _SuppressedLicenses] = {}
-    if inline_suppressions.get("licenses"):
-        if inline_suppressions["licenses"].get("byPackage"):
-            for license_suppression in inline_suppressions["licenses"]["byPackage"]:
-                if license_suppression.get("licensePolicy") and license_suppression.get("packageName"):
-                    key = get_license_policy_and_package_alias(license_suppression["licensePolicy"],
-                                                               license_suppression["packageName"])
-                    licenses_by_policy_and_package_map[key] = license_suppression
+    licenses_suppressions_by_policy_and_package_map: dict[str, _SuppressedCves] = {}
+    licenses_suppressions_by_policy_and_package_map = inline_suppressions.get("licenses", {}).get("byPackage", {})
+    for license_suppression in licenses_suppressions_by_policy_and_package_map:
+        if license_suppression.get("licensePolicy") and license_suppression.get("packageName"):
+            key = get_license_policy_and_package_alias(license_suppression["licensePolicy"],
+                                                        license_suppression["packageName"])
+            licenses_suppressions_by_policy_and_package_map[key] = license_suppression
 
-    suppressions_map['cve_by_cve_map'] = cve_by_cve_map
-    suppressions_map['licenses_by_policy_and_package_map'] = licenses_by_policy_and_package_map
+
+    suppressions_map['cve_suppresion_by_cve_map'] = cve_suppresion_by_cve_map
+    suppressions_map['licenses_suppressions_by_policy_and_package_map'] = licenses_suppressions_by_policy_and_package_map
 
     return suppressions_map
 
@@ -468,9 +468,9 @@ def apply_cves_inline_suppressions(
     """Applies the inline suppression and returns an accomplish status"""
 
     if inline_suppressions_maps:
-        if record.vulnerability_details and inline_suppressions_maps.get("cve_by_cve_map"):
+        if record.vulnerability_details and inline_suppressions_maps.get("cve_suppresion_by_cve_map"):
             cve_id = record.vulnerability_details.get("id", "")
-            cve_suppression = inline_suppressions_maps["cve_by_cve_map"].get(cve_id)
+            cve_suppression = inline_suppressions_maps["cve_suppresion_by_cve_map"].get(cve_id)
             if cve_suppression:
                 record.check_result = {
                     "result": CheckResult.SKIPPED,
@@ -488,10 +488,10 @@ def apply_licenses_inline_suppressions(
     """Applies the inline suppression and returns an accomplish status"""
 
     if inline_suppressions_maps:
-        if inline_suppressions_maps.get("licenses_by_policy_and_package_map"):
+        if inline_suppressions_maps.get("licenses_suppressions_by_policy_and_package_map"):
             key = get_license_policy_and_package_alias(vulnerability_details.get("policy", ""),
                                                        vulnerability_details.get("package_name", ""))
-            license_suppression = inline_suppressions_maps["licenses_by_policy_and_package_map"].get(key)
+            license_suppression = inline_suppressions_maps["licenses_suppressions_by_policy_and_package_map"].get(key)
             if license_suppression:
                 record.check_result = {
                     "result": CheckResult.SKIPPED,

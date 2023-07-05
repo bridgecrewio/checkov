@@ -44,8 +44,8 @@ class _SkippedCheck(TypedDict, total=False):
 
 
 class _ScaSuppressionsMaps(TypedDict, total=False):
-    cve_by_cve_map: dict[str, _SuppressedCves]
-    licenses_by_policy_and_package_map: dict[str, _SuppressedLicenses]
+    cve_suppresion_by_cve_map: dict[str, _SuppressedCves]
+    licenses_suppressions_by_policy_and_package_map: dict[str, _SuppressedLicenses]
 
 
 # _ScaSuppressions fields are in camel case because this is the output of the server report
