@@ -128,10 +128,13 @@ class K8sKustomizeRunner(K8sRunner):
 
                     origin_relative_path = entity_context['origin_relative_path']
                     k8s_file_dir = pathlib.Path(k8_file_path.lstrip(os.path.sep)).parent
-                    raw_file_path = pathlib.Path(repo_dir).parent / k8s_file_dir / origin_relative_path
+                    raw_file_path = k8s_file_dir / origin_relative_path
                     caller_file_path = str(raw_file_path.resolve())[len(repo_dir):]
+                    '/Users/bfatal/Documents/code/checkov/tests/kustomize/runner/resources/example'
+                    '/Users/bfatal/Documents/code/checkov/tests/kustomize/runner/resources/example'
+                    '/Users/bfatal/Documents/code/checkov/tests/kustomize/runner/resources/resources/example/base/deployment.yaml'
                     caller_file_line_range = self._get_caller_line_range(root_folder, k8_file, origin_relative_path,
-                                                                         caller_file_path, resource_id)
+                                                                         resource_id)
 
                     if realKustomizeEnvMetadata['filePath'].startswith(repo_dir):
                         file_path = realKustomizeEnvMetadata['filePath'][len(repo_dir):]
@@ -151,7 +154,7 @@ class K8sKustomizeRunner(K8sRunner):
 
         return report
 
-    def _get_caller_line_range(self, root_folder: str, k8_file: str, origin_relative_path: str, origin_file_path: str,
+    def _get_caller_line_range(self, root_folder: str, k8_file: str, origin_relative_path: str,
                                resource_id: str) -> tuple[int, int]:
         raw_caller_directory = (pathlib.PurePath(k8_file.lstrip(os.path.sep)).parent /
                                 pathlib.PurePath(origin_relative_path.lstrip(os.path.sep)).parent)
@@ -162,7 +165,7 @@ class K8sKustomizeRunner(K8sRunner):
             caller_directory = root_folder + ''.join(splitted_dir[1:])
         else:
             caller_directory = root_folder.join(splitted_dir)
-        file_ending = pathlib.Path(origin_file_path).suffix
+        file_ending = pathlib.Path(origin_relative_path).suffix
         caller_file_path = f'{str(pathlib.PurePath(caller_directory) / resource_id.replace(".", "-"))}{file_ending}'
 
         caller_resource = self.definitions[caller_file_path][0]
