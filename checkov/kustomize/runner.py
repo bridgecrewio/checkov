@@ -129,7 +129,8 @@ class K8sKustomizeRunner(K8sRunner):
                     origin_relative_path = entity_context['origin_relative_path']
                     k8s_file_dir = pathlib.Path(k8_file_path).parent
                     raw_file_path = k8s_file_dir / origin_relative_path
-                    caller_file_path = str(raw_file_path.resolve())[len(str(k8s_file_dir.parent)):]
+                    directory_prefix = self._get_relative_directory(k8s_file_dir, origin_relative_path)
+                    caller_file_path = str(raw_file_path.resolve())[len(str(directory_prefix)):]
                     caller_file_line_range = self._get_caller_line_range(root_folder, k8_file, origin_relative_path,
                                                                          resource_id)
 
@@ -150,6 +151,13 @@ class K8sKustomizeRunner(K8sRunner):
             report.add_record(record=record)
 
         return report
+
+    def _get_relative_directory(self, k8s_file_dir: pathlib.Path, origin_relative_path: str) -> pathlib.Path:
+        amount_of_parents = str.count(origin_relative_path, '..')
+        directory_prefix = k8s_file_dir
+        for i in range(amount_of_parents):
+            directory_prefix = directory_prefix.parent
+        return directory_prefix
 
     def _get_caller_line_range(self, root_folder: str, k8_file: str, origin_relative_path: str,
                                resource_id: str) -> tuple[int, int]:
