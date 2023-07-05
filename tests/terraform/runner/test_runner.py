@@ -418,7 +418,10 @@ class TestRunnerValid(unittest.TestCase):
         for i in range(1, len(gcp_checks) + 1):
             self.assertIn(f'CKV2_GCP_{i}', gcp_checks,
                           msg=f'The new GCP violation should have the ID "CKV2_GCP_{i}"')
-        for i in range(1, len(azure_checks) + 1):
+        for i in range(1, len(azure_checks) + 2):
+            if f'CKV2_AZURE_{i}' == 'CKV2_AZURE_18':
+                # duplicate of CKV2_AZURE_1
+                continue
             self.assertIn(f'CKV2_AZURE_{i}', azure_checks,
                           msg=f'The new Azure violation should have the ID "CKV2_AZURE_{i}"')
 

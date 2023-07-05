@@ -232,9 +232,6 @@ class TestYamlPolicies(unittest.TestCase):
     def test_GKEClustersAreNotUsingDefaultServiceAccount(self):
         self.go("GKEClustersAreNotUsingDefaultServiceAccount")
 
-    def test_AzureStorageAccountsUseCustomerManagedKeyForEncryption(self):
-        self.go("AzureStorageAccountsUseCustomerManagedKeyForEncryption")
-
     def test_AzureMSSQLServerHasSecurityAlertPolicy(self):
         self.go("AzureMSSQLServerHasSecurityAlertPolicy")
 
