@@ -291,16 +291,17 @@ def get_inline_suppressions_map(inline_suppressions: _ScaSuppressions | None = N
 
     # fill licenses suppressions map
     licenses_suppressions_by_policy_and_package_map: dict[str, _SuppressedLicenses] = {}
-    inline_suppressions_by_license: list[_SuppressedLicenses] = inline_suppressions.get("licenses", {}).get("byPackage", {})
+    inline_suppressions_by_license: list[_SuppressedLicenses] = inline_suppressions.get("licenses", {}).get("byPackage",
+                                                                                                            {})
     for license_suppression in inline_suppressions_by_license:
         if license_suppression.get("licensePolicy") and license_suppression.get("packageName"):
             key = get_license_policy_and_package_alias(license_suppression["licensePolicy"],
-                                                        license_suppression["packageName"])
+                                                       license_suppression["packageName"])
             licenses_suppressions_by_policy_and_package_map[key] = license_suppression
 
-
     suppressions_map['cve_suppresion_by_cve_map'] = cve_suppresion_by_cve_map
-    suppressions_map['licenses_suppressions_by_policy_and_package_map'] = licenses_suppressions_by_policy_and_package_map
+    suppressions_map[
+        'licenses_suppressions_by_policy_and_package_map'] = licenses_suppressions_by_policy_and_package_map
 
     return suppressions_map
 
@@ -467,7 +468,8 @@ def apply_cves_inline_suppressions(
 ) -> bool:
     """Applies the inline suppression and returns an accomplish status"""
 
-    if inline_suppressions_maps and record.vulnerability_details and inline_suppressions_maps.get("cve_suppresion_by_cve_map"):
+    if inline_suppressions_maps and record.vulnerability_details and inline_suppressions_maps.get(
+            "cve_suppresion_by_cve_map"):
         cve_id = record.vulnerability_details.get("id", "")
         cve_suppression = inline_suppressions_maps["cve_suppresion_by_cve_map"].get(cve_id)
         if cve_suppression:
@@ -488,7 +490,7 @@ def apply_licenses_inline_suppressions(
 
     if inline_suppressions_maps and inline_suppressions_maps.get("licenses_suppressions_by_policy_and_package_map"):
         key = get_license_policy_and_package_alias(vulnerability_details.get("policy", ""),
-                                                    vulnerability_details.get("package_name", ""))
+                                                   vulnerability_details.get("package_name", ""))
         license_suppression = inline_suppressions_maps["licenses_suppressions_by_policy_and_package_map"].get(key)
         if license_suppression:
             record.check_result = {
