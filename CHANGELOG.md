@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.311...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.312...HEAD)
+
+## [2.3.312](https://github.com/bridgecrewio/checkov/compare/2.3.311...2.3.312) - 2023-07-05
+
+### Platform
+
+- **general:** use sca inline suppressions - [#5285](https://github.com/bridgecrewio/checkov/pull/5285)
 
 ## [2.3.311](https://github.com/bridgecrewio/checkov/compare/2.3.310...2.3.311) - 2023-07-04
 
