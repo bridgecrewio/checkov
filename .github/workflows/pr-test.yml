@@ -230,7 +230,7 @@ jobs:
       - name: Build artifact
         run: |
           pyinstaller checkov.spec
-          zip checkov.zip checkov
+          zip checkov.zip dist/checkov
       - uses: actions/upload-artifact@v3
         with:
           name: checkov_${{ matrix.name }}.zip
