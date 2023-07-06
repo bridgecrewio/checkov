@@ -1,4 +1,5 @@
 pass:
   - "azurerm_storage_account.ok_storage_account"
+  - "azurerm_storage_account.ok_inline"
 fail:
   - "azurerm_storage_account.not_ok_storage_account"
