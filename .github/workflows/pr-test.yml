@@ -234,4 +234,4 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: checkov_${{ matrix.name }}.zip
-          path: dist/checkov.zip
+          path: checkov.zip
