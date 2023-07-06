@@ -160,8 +160,9 @@ class K8sKustomizeRunner(K8sRunner):
                                                              resource_id)
         return caller_file_line_range, caller_file_path
 
-    def _get_caller_file_path(self, k8s_file_dir: pathlib.Path, origin_relative_path: str, raw_file_path: pathlib.Path,
-                              root_folder: str) -> str:
+    @staticmethod
+    def _get_caller_file_path(k8s_file_dir: pathlib.Path, origin_relative_path: str, raw_file_path: pathlib.Path)\
+            -> str:
         amount_of_parents = str.count(origin_relative_path, '..')
         directory_prefix = k8s_file_dir
         for i in range(amount_of_parents):
