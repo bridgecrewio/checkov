@@ -213,7 +213,6 @@ jobs:
             suffix: '.exe'
     #    needs: [github-release]
     runs-on: ${{ matrix.os }}
-    environment: release
     permissions:
       contents: write
     steps:
