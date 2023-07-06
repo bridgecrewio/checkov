@@ -142,7 +142,8 @@ def build_definitions_context(
             relative_resource_path = None
             if 'metadata' in resource:
                 metadata = resource['metadata']
-                if 'annotations' in metadata and 'config.kubernetes.io/origin' in metadata['annotations']:
+                if 'annotations' in metadata and metadata['annotations'] is not None\
+                        and 'config.kubernetes.io/origin' in metadata['annotations']:
                     metadata_path = metadata['annotations']['config.kubernetes.io/origin']
                     if 'path:' in metadata_path:
                         relative_resource_path = metadata_path.split('path:')[1].strip()
