@@ -226,12 +226,18 @@ jobs:
       - name: Install deps
         run: |
           pipenv sync
-          pip install pyinstaller
+          pipenv run pip install pyinstaller
       - name: Build artifact
         run: |
-          pyinstaller checkov.spec
-          zip checkov.zip dist/checkov
+          pipenv run pyinstaller checkov.spec
+          if [[ "$OSTYPE" == "msys" ]]
+          then
+            tar.exe -a -c -f checkov.zip dist/checkov
+          else
+            zip checkov.zip dist/checkov
+          fi
       - uses: actions/upload-artifact@v3
         with:
           name: checkov_${{ matrix.name }}.zip
           path: checkov.zip
+          if-no-files-found: error
