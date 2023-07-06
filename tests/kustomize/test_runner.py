@@ -1,4 +1,5 @@
 import os
+import mock
 import unittest
 from pathlib import Path
 
@@ -7,6 +8,18 @@ from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.runner_filter import RunnerFilter
 from checkov.kustomize.runner import Runner
 from tests.kustomize.utils import kustomize_exists
+
+
+def _setup_test_under_example():
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    scan_dir_path = os.path.join(current_dir, "runner", "resources", "example")
+    # this is the relative path to the directory to scan (what would actually get passed to the -d arg)
+    dir_rel_path = os.path.relpath(scan_dir_path).replace('\\', '/')
+    runner = Runner()
+    runner.templateRendererCommand = "kustomize"
+    runner.templateRendererCommandOptions = "build"
+    checks_allowlist = ['CKV_K8S_37']
+    return checks_allowlist, dir_rel_path, runner
 
 
 class TestRunnerValid(unittest.TestCase):
@@ -38,17 +51,25 @@ class TestRunnerValid(unittest.TestCase):
         # test whether the record's repo_file_path is correct, relative to the CWD (with a / at the start).
 
         # this is just constructing the scan dir as normal
-        current_dir = os.path.dirname(os.path.realpath(__file__))
-        scan_dir_path = os.path.join(current_dir, "runner", "resources", "example")
-
-        # this is the relative path to the directory to scan (what would actually get passed to the -d arg)
-        dir_rel_path = os.path.relpath(scan_dir_path).replace('\\', '/')
-
-        runner = Runner()
-        runner.templateRendererCommand = "kustomize"
-        runner.templateRendererCommandOptions = "build"
-        checks_allowlist = ['CKV_K8S_37']
+        checks_allowlist, dir_rel_path, runner = _setup_test_under_example()
         report = runner.run(root_folder=dir_rel_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework=['kustomize'], checks=checks_allowlist))
+
+        all_checks = report.failed_checks + report.passed_checks
+        self.assertGreater(len(all_checks), 0)  # ensure that the assertions below are going to do something
+        for record in all_checks:
+            self.assertIn(record.file_path, record.file_abs_path)
+            self.assertEqual(record.repo_file_path, f'/{dir_rel_path}{record.file_path}')
+            assert record.file_path.startswith(('/base', '/overlays'))
+
+    @unittest.skipIf(os.name == "nt" or not kustomize_exists(), "kustomize not installed or Windows OS")
+    def test_record_relative_path_with_relative_dir_with_origin_annotations(self):
+        # test whether the record's repo_file_path is correct, relative to the CWD (with a / at the start).
+
+        # this is just constructing the scan dir as normal
+        checks_allowlist, dir_rel_path, runner = _setup_test_under_example()
+        with mock.patch("checkov.common.util.env_vars_config.env_vars_config.ALLOW_KUSTOMIZE_FILE_EDITS", "True"):
+            report = runner.run(root_folder=dir_rel_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework=['kustomize'], checks=checks_allowlist))
 
         all_checks = report.failed_checks + report.passed_checks
@@ -109,7 +130,6 @@ class TestRunnerValid(unittest.TestCase):
             self.assertNotEqual(record.file_path, record.file_abs_path)
             self.assertIn(record.file_path, record.file_abs_path)
             self.assertEqual(record.repo_file_path, f'/{dir_rel_path}{record.file_path}')
-            self.assertNotEqual(record.caller_file_path, None)
 
     
     @unittest.skipIf(os.name == "nt" or not kustomize_exists(), "kustomize not installed or Windows OS")

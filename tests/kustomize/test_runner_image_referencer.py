@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+import mock
 import pytest
 from pytest_mock import MockerFixture
 
@@ -20,7 +21,11 @@ RESOURCES_PATH = Path(__file__).parent / "runner/resources"
 
 
 @pytest.mark.skipif(os.name == "nt" or not kustomize_exists(), reason="kustomize not installed or Windows OS")
-def test_deployment_resources(mocker: MockerFixture):
+@pytest.mark.parametrize("allow_kustomize_file_edits", [
+    (True,),
+    (False,)
+])
+def test_deployment_resources(mocker: MockerFixture, allow_kustomize_file_edits: bool):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
     # given
@@ -42,7 +47,10 @@ def test_deployment_resources(mocker: MockerFixture):
     runner = Runner()
     runner.templateRendererCommand = "kustomize"
     runner.templateRendererCommandOptions = "build"
-    reports = runner.run(root_folder=str(test_folder), runner_filter=runner_filter)
+
+    with mock.patch("checkov.common.util.env_vars_config.env_vars_config.ALLOW_KUSTOMIZE_FILE_EDITS",
+                    allow_kustomize_file_edits):
+        reports = runner.run(root_folder=str(test_folder), runner_filter=runner_filter)
 
     # then
     assert len(reports) == 2
@@ -56,9 +64,10 @@ def test_deployment_resources(mocker: MockerFixture):
     assert len(kustomize_report.skipped_checks) == 0
     assert len(kustomize_report.parsing_errors) == 0
 
-    for record in kustomize_report.failed_checks:
-        assert record.caller_file_path in ['/base/deployment.yaml', '/base/service.yaml', '/deployment.yaml',
-                                           '/service.yaml']
+    if allow_kustomize_file_edits:
+        for record in kustomize_report.failed_checks:
+            assert record.caller_file_path in ['/base/deployment.yaml', '/base/service.yaml', '/deployment.yaml',
+                                               '/service.yaml']
 
     assert len(sca_image_report.resources) == 2
     assert sca_image_report.resources == {

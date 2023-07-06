@@ -24,6 +24,7 @@ from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.common.typing import _CheckResult
 from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.common.util.data_structures_utils import pickle_deepcopy
+from checkov.common.util.env_vars_config import env_vars_config
 from checkov.kubernetes.kubernetes_utils import create_check_result, get_resource_id, calculate_code_lines
 from checkov.kubernetes.parser import k8_yaml
 from checkov.kubernetes.runner import Runner as K8sRunner
@@ -126,7 +127,8 @@ class K8sKustomizeRunner(K8sRunner):
                 if self.original_root_dir:
                     repo_dir = str(pathlib.Path(self.original_root_dir).resolve())
 
-                    caller_file_line_range, caller_file_path = self._get_caller_file_info(entity_context, k8_file,
+                    if env_vars_config.ALLOW_KUSTOMIZE_FILE_EDITS:
+                        caller_file_line_range, caller_file_path = self._get_caller_file_info(entity_context, k8_file,
                                                                                           k8_file_path, resource_id,
                                                                                           root_folder)
 
@@ -245,9 +247,13 @@ class K8sKustomizeRunner(K8sRunner):
                     logging.warning(f"couldn't find {entity_file_abs_path} path in kustomizeFileMappings")
                     continue
 
-                caller_file_line_range, caller_file_path = self._get_caller_file_info(entity_context, entity_file_path,
-                                                                                      entity_file_path, entity_id,
-                                                                                      root_folder)
+                caller_file_path = None
+                caller_file_line_range = None
+                if env_vars_config.ALLOW_KUSTOMIZE_FILE_EDITS:
+                    caller_file_line_range, caller_file_path = self._get_caller_file_info(entity_context,
+                                                                                          entity_file_path,
+                                                                                          entity_file_path, entity_id,
+                                                                                          root_folder)
                 code_lines = entity_context["code_lines"]
                 file_line_range = self.line_range(code_lines)
 
@@ -502,14 +508,18 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
         if template_renderer_command == "kustomize":
             template_render_command_options = "build"
 
-        add_origin_annotations_command = 'kustomize edit add buildmetadata originAnnotations'
-        add_origin_annotations_return_code = subprocess.Popen(add_origin_annotations_command.split(' '), cwd=filePath).wait()
+        add_origin_annotations_return_code = None
+
+        if env_vars_config.ALLOW_KUSTOMIZE_FILE_EDITS:
+            add_origin_annotations_command = 'kustomize edit add buildmetadata originAnnotations'
+            add_origin_annotations_return_code = subprocess.Popen(add_origin_annotations_command.split(' '),
+                                                                  cwd=filePath).wait()
 
         full_command = f'{template_renderer_command} {template_render_command_options}'
         proc = subprocess.Popen(full_command.split(' '), cwd=filePath, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
         output, _ = proc.communicate()
 
-        if add_origin_annotations_return_code == 0:
+        if env_vars_config.ALLOW_KUSTOMIZE_FILE_EDITS and add_origin_annotations_return_code == 0:
             # If the return code is not 0, we didn't add the new buildmetadata field, so we shouldn't remove it
             remove_origin_annotaions = 'kustomize edit remove buildmetadata originAnnotations'
             subprocess.Popen(remove_origin_annotaions.split(' '), cwd=filePath).wait()
