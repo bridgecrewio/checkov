@@ -514,7 +514,7 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
 
         if env_vars_config.ALLOW_KUSTOMIZE_FILE_EDITS:
             add_origin_annotations_command = 'kustomize edit add buildmetadata originAnnotations'
-            add_origin_annotations_return_code = subprocess.Popen(add_origin_annotations_command.split(' '),
+            add_origin_annotations_return_code = subprocess.Popen(add_origin_annotations_command.split(' '),  # nosec
                                                                   cwd=filePath).wait()
 
         full_command = f'{template_renderer_command} {template_render_command_options}'
@@ -524,7 +524,7 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
         if env_vars_config.ALLOW_KUSTOMIZE_FILE_EDITS and add_origin_annotations_return_code == 0:
             # If the return code is not 0, we didn't add the new buildmetadata field, so we shouldn't remove it
             remove_origin_annotaions = 'kustomize edit remove buildmetadata originAnnotations'
-            subprocess.Popen(remove_origin_annotaions.split(' '), cwd=filePath).wait()
+            subprocess.Popen(remove_origin_annotaions.split(' '), cwd=filePath).wait()  # nosec
 
         logging.info(
             f"Ran kubectl to build Kustomize output. DIR: {filePath}. TYPE: {source_type}.")
