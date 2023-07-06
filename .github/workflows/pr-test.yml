@@ -230,10 +230,10 @@ jobs:
       - name: Build executable
         run: pipenv run pyinstaller checkov.spec
       - name: Windows - zip artifact
-        if: ${{ matrix.os }} == 'windows-latest'
+        if: matrix.os == 'windows-latest'
         run: tar.exe -a -c -f checkov.zip dist/checkov
       - name: Linux/Mac - zip artifact
-        if: ${{ matrix.os }} != 'windows-latest'
+        if: matrix.os != 'windows-latest'
         run: zip checkov.zip dist/checkov
       - uses: actions/upload-artifact@v3
         with:
