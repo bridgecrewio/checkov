@@ -204,13 +204,10 @@ jobs:
         include:
           - os: macos-latest
             name: darwin
-            suffix: ''
           - os: ubuntu-latest
             name: linux
-            suffix: '.so'
           - os: windows-latest
             name: windows
-            suffix: '.exe'
     #    needs: [github-release]
     runs-on: ${{ matrix.os }}
     permissions:
@@ -233,8 +230,8 @@ jobs:
       - name: Build artifact
         run: |
           pyinstaller checkov.spec
-          ls -la dist/
-#      - uses: actions/upload-artifact@v3
-#        with:
-#          name: my-artifact
-#          path: path/to/artifact/world.txt
+          zip checkov.zip checkov
+      - uses: actions/upload-artifact@v3
+        with:
+          name: checkov_${{ matrix.name }}.zip
+          path: dist/checkov.zip
