@@ -146,7 +146,7 @@ jobs:
           # remove venv, if exists
           pipenv --rm || true
           pipenv --python ${{ matrix.python }}
-          # 'py' package is used in 'pytest-benchmark', but 'pytest' removed it in their latest version
+          # 'py' package is used in 'pytest-benchmark', but 'pytest' removed it in their latest version         
           pipenv run pip install pytest pytest-benchmark py
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
@@ -190,7 +190,7 @@ jobs:
         run: |
           # remove venv, if exists
           pipenv --rm || true
-          pipenv --python ${{ env.PYTHON_VERSION }}
+          pipenv --python ${{ env.PYTHON_VERSION }}     
           pipenv run pip install pytest pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
