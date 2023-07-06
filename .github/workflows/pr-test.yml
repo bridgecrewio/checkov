@@ -235,7 +235,7 @@ jobs:
           cd dist
           dir
           cd ..
-          tar.exe -a -c -f checkov.zip dist\\checkov
+          tar.exe -a -c -f checkov.zip dist\\checkov.exe
       - name: Linux/Mac - zip artifact
         if: matrix.os != 'windows-latest'
         run: zip checkov.zip dist/checkov
