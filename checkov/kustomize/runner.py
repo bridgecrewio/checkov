@@ -636,7 +636,7 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
         # make sure we have new dict
         shared_kustomize_file_mappings = pickle_deepcopy(manager.dict())  # type:ignore[arg-type]  # works with DictProxy
         shared_kustomize_file_mappings.clear()
-        # shared_kustomize_file_mappings = {}
+
         jobs = []
         for filePath in self.kustomizeProcessedFolderAndMeta:
             p = multiprocessing.Process(
