@@ -21,12 +21,11 @@ from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
-from checkov.common.typing import _CheckResult
+from checkov.common.typing import _CheckResult, _EntityContext
 from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.env_vars_config import env_vars_config
 from checkov.kubernetes.kubernetes_utils import create_check_result, get_resource_id, calculate_code_lines
-from checkov.kubernetes.parser import k8_yaml
 from checkov.kubernetes.runner import Runner as K8sRunner
 from checkov.kubernetes.runner import _get_entity_abs_path
 from checkov.kustomize.image_referencer.manager import KustomizeImageReferencerManager
@@ -129,8 +128,8 @@ class K8sKustomizeRunner(K8sRunner):
 
                     if env_vars_config.ALLOW_KUSTOMIZE_FILE_EDITS:
                         caller_file_line_range, caller_file_path = self._get_caller_file_info(entity_context, k8_file,
-                                                                                          k8_file_path, resource_id,
-                                                                                          root_folder)
+                                                                                              k8_file_path, resource_id,
+                                                                                              root_folder)
 
                     if realKustomizeEnvMetadata['filePath'].startswith(repo_dir):
                         file_path = realKustomizeEnvMetadata['filePath'][len(repo_dir):]
@@ -150,12 +149,14 @@ class K8sKustomizeRunner(K8sRunner):
 
         return report
 
-    def _get_caller_file_info(self, entity_context: dict[str, Any], k8_file: str, k8_file_path: str, resource_id: str,
-                              root_folder: str) -> tuple[tuple[int, int], str]:
+    def _get_caller_file_info(self, entity_context: _EntityContext, k8_file: str, k8_file_path: str, resource_id: str,
+                              root_folder: str | None) -> tuple[tuple[int, int] | None, str]:
         origin_relative_path = entity_context['origin_relative_path']
         k8s_file_dir = pathlib.Path(k8_file_path).parent
         raw_file_path = k8s_file_dir / origin_relative_path
-        caller_file_path = self._get_caller_file_path(k8s_file_dir, origin_relative_path, raw_file_path, root_folder)
+        caller_file_path = self._get_caller_file_path(k8s_file_dir, origin_relative_path, raw_file_path)
+        if root_folder is None:
+            return None, caller_file_path
         caller_file_line_range = self._get_caller_line_range(root_folder, k8_file, origin_relative_path,
                                                              resource_id)
         return caller_file_line_range, caller_file_path
@@ -164,11 +165,11 @@ class K8sKustomizeRunner(K8sRunner):
     def _get_caller_file_path(k8s_file_dir: pathlib.Path, origin_relative_path: str, raw_file_path: pathlib.Path)\
             -> str:
         amount_of_parents = str.count(origin_relative_path, '..')
-        directory_prefix = k8s_file_dir
-        for i in range(amount_of_parents):
-            directory_prefix = directory_prefix.parent
+        directory_prefix_path = k8s_file_dir
+        for _ in range(amount_of_parents):
+            directory_prefix_path = directory_prefix_path.parent
 
-        directory_prefix = str(directory_prefix)
+        directory_prefix = str(directory_prefix_path)
         resolved_path = str(raw_file_path.resolve())
         # Make sure the resolved path starts with the root folder, as pathlib.Path.resolve() might change it
         if directory_prefix in resolved_path and not resolved_path.startswith(directory_prefix):
