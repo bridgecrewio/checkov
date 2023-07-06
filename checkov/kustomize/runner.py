@@ -126,13 +126,9 @@ class K8sKustomizeRunner(K8sRunner):
                 if self.original_root_dir:
                     repo_dir = str(pathlib.Path(self.original_root_dir).resolve())
 
-                    origin_relative_path = entity_context['origin_relative_path']
-                    k8s_file_dir = pathlib.Path(k8_file_path).parent
-                    raw_file_path = k8s_file_dir / origin_relative_path
-                    directory_prefix = self._get_relative_directory(k8s_file_dir, origin_relative_path)
-                    caller_file_path = str(raw_file_path.resolve())[len(str(directory_prefix)):]
-                    caller_file_line_range = self._get_caller_line_range(root_folder, k8_file, origin_relative_path,
-                                                                         resource_id)
+                    caller_file_line_range, caller_file_path = self._get_caller_file_info(entity_context, k8_file,
+                                                                                          k8_file_path, resource_id,
+                                                                                          root_folder)
 
                     if realKustomizeEnvMetadata['filePath'].startswith(repo_dir):
                         file_path = realKustomizeEnvMetadata['filePath'][len(repo_dir):]
@@ -152,12 +148,34 @@ class K8sKustomizeRunner(K8sRunner):
 
         return report
 
-    def _get_relative_directory(self, k8s_file_dir: pathlib.Path, origin_relative_path: str) -> pathlib.Path:
+    def _get_caller_file_info(self, entity_context: dict[str, Any], k8_file: str, k8_file_path: str, resource_id: str,
+                              root_folder: str) -> tuple[tuple[int, int], str]:
+        origin_relative_path = entity_context['origin_relative_path']
+        k8s_file_dir = pathlib.Path(k8_file_path).parent
+        raw_file_path = k8s_file_dir / origin_relative_path
+        caller_file_path = self._get_caller_file_path(k8s_file_dir, origin_relative_path, raw_file_path, root_folder)
+        caller_file_line_range = self._get_caller_line_range(root_folder, k8_file, origin_relative_path,
+                                                             resource_id)
+        return caller_file_line_range, caller_file_path
+
+    def _get_caller_file_path(self, k8s_file_dir: pathlib.Path, origin_relative_path: str, raw_file_path: pathlib.Path,
+                              root_folder: str) -> str:
         amount_of_parents = str.count(origin_relative_path, '..')
         directory_prefix = k8s_file_dir
         for i in range(amount_of_parents):
             directory_prefix = directory_prefix.parent
-        return directory_prefix
+
+        directory_prefix = str(directory_prefix)
+        resolved_path = str(raw_file_path.resolve())
+        # Make sure the resolved path starts with the root folder, as pathlib.Path.resolve() might change it
+        if directory_prefix in resolved_path and not resolved_path.startswith(directory_prefix):
+            resolved_path_parts = resolved_path.split(directory_prefix)
+            if len(resolved_path_parts) > 1:
+                resolved_path = f'{directory_prefix}{"".join(resolved_path_parts[1:])}'
+            else:
+                resolved_path = f'{directory_prefix}{"".join(resolved_path_parts)}'
+
+        return resolved_path[len(str(directory_prefix)):]
 
     def _get_caller_line_range(self, root_folder: str, k8_file: str, origin_relative_path: str,
                                resource_id: str) -> tuple[int, int] | None:
@@ -226,6 +244,10 @@ class K8sKustomizeRunner(K8sRunner):
                 else:
                     logging.warning(f"couldn't find {entity_file_abs_path} path in kustomizeFileMappings")
                     continue
+
+                caller_file_line_range, caller_file_path = self._get_caller_file_info(entity_context, entity_file_path,
+                                                                                      entity_file_path, entity_id,
+                                                                                      root_folder)
                 code_lines = entity_context["code_lines"]
                 file_line_range = self.line_range(code_lines)
 
@@ -238,6 +260,8 @@ class K8sKustomizeRunner(K8sRunner):
                     code_block=code_lines,
                     file_path=realKustomizeEnvMetadata['filePath'],
                     file_line_range=file_line_range,
+                    caller_file_path=caller_file_path,
+                    caller_file_line_range=caller_file_line_range,
                     resource=kustomizeResourceID,  # entity.get(CustomAttributes.ID),
                     evaluations={},
                     check_class=check.__class__.__module__,

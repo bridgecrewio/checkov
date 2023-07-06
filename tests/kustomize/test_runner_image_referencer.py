@@ -58,6 +58,9 @@ def test_deployment_resources(mocker: MockerFixture):
     assert len(kustomize_report.skipped_checks) == 0
     assert len(kustomize_report.parsing_errors) == 0
 
+    for record in kustomize_report.failed_checks:
+        assert record.caller_file_path in ['/base/deployment.yaml', '/base/service.yaml']
+
     assert len(sca_image_report.resources) == 1
     assert sca_image_report.resources == {
         f"{file_name} ({image_name} lines:{code_lines} (sha256:2460522297)).go",
