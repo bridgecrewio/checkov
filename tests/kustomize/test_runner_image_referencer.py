@@ -26,7 +26,7 @@ def test_deployment_resources(mocker: MockerFixture):
     # given
     file_name = "kustomization.yaml"
     image_name = "wordpress:4.8-apache"
-    code_lines = "15-31"
+    code_lines = "18-34"
     test_folder = RESOURCES_PATH / "image_referencer/overlays/prod"
     runner_filter = RunnerFilter(run_image_referencer=True)
     bc_integration.bc_source = get_source_type("disabled")
