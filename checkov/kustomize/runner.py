@@ -350,8 +350,21 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
                 return {}
 
             if 'resources' in file_content:
-                logging.debug(f"Kustomization contains resources: section. Likley a base. {kustomization_path}")
-                metadata['type'] = "base"
+                resources = file_content['resources']
+
+                # We can differentiate between "overlays" and "bases" based on if the `resources` refers to a directory,
+                # which represents an "overlay", or only files which represents a "base"
+                resources_representing_directories = [r for r in resources if pathlib.Path(r).suffix == '']
+                if len(resources_representing_directories) > 0:
+                    logging.debug(
+                        f"Kustomization contains resources: section with directories. Likely an overlay/env."
+                        f" {kustomization_path}")
+                    metadata['type'] = "overlay"
+                    metadata['referenced_bases'] = resources_representing_directories
+                else:
+                    logging.debug(f"Kustomization contains resources: section with only files (no dirs). Likley a base."
+                                  f" {kustomization_path}")
+                    metadata['type'] = "base"
 
             elif 'patchesStrategicMerge' in file_content:
                 logging.debug(f"Kustomization contains patchesStrategicMerge: section. Likley an overlay/env. {kustomization_path}")

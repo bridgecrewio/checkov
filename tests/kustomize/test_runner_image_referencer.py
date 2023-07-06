@@ -24,10 +24,8 @@ def test_deployment_resources(mocker: MockerFixture):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
     # given
-    file_name = "kustomization.yaml"
     image_name = "wordpress:4.8-apache"
-    code_lines = "18-34"
-    test_folder = RESOURCES_PATH / "image_referencer/overlays/prod"
+    test_folder = RESOURCES_PATH / "image_referencer"
     runner_filter = RunnerFilter(run_image_referencer=True)
     bc_integration.bc_source = get_source_type("disabled")
 
@@ -52,24 +50,26 @@ def test_deployment_resources(mocker: MockerFixture):
     kustomize_report = next(report for report in reports if report.check_type == CheckType.KUSTOMIZE)
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
-    assert len(kustomize_report.resources) == 3
-    assert len(kustomize_report.passed_checks) == 68
-    assert len(kustomize_report.failed_checks) == 21
+    assert len(kustomize_report.resources) == 6
+    assert len(kustomize_report.passed_checks) == 136
+    assert len(kustomize_report.failed_checks) == 42
     assert len(kustomize_report.skipped_checks) == 0
     assert len(kustomize_report.parsing_errors) == 0
 
     for record in kustomize_report.failed_checks:
-        assert record.caller_file_path in ['/base/deployment.yaml', '/base/service.yaml']
+        assert record.caller_file_path in ['/base/deployment.yaml', '/base/service.yaml', '/deployment.yaml',
+                                           '/service.yaml']
 
-    assert len(sca_image_report.resources) == 1
+    assert len(sca_image_report.resources) == 2
     assert sca_image_report.resources == {
-        f"{file_name} ({image_name} lines:{code_lines} (sha256:2460522297)).go",
+        'base/kustomization.yaml (wordpress:4.8-apache lines:18-34 (sha256:2460522297)).go',
+        'overlays/prod/kustomization.yaml (wordpress:4.8-apache lines:18-34 (sha256:2460522297)).go'
     }
     assert len(sca_image_report.passed_checks) == 0
-    assert len(sca_image_report.failed_checks) == 3
+    assert len(sca_image_report.failed_checks) == 6
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
-    assert len(sca_image_report.image_cached_results) == 1
+    assert len(sca_image_report.image_cached_results) == 2
 
     assert sca_image_report.image_cached_results[0]["dockerImageName"] == image_name
     assert (

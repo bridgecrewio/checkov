@@ -58,6 +58,7 @@ class TestRunnerValid(unittest.TestCase):
             self.assertEqual(record.repo_file_path, f'/{dir_rel_path}{record.file_path}')
             assert record.file_path.startswith(('/base', '/overlays'))
             assert record.caller_file_path == '/base/deployment.yaml' or record.caller_file_path == '/deployment.yaml'
+            assert record.caller_file_line_range == (2, 24)
 
     @unittest.skipIf(os.name == "nt" or not kustomize_exists(), "kustomize not installed or Windows OS")
     def test_record_relative_path_with_direct_oberlay(self):
@@ -83,7 +84,6 @@ class TestRunnerValid(unittest.TestCase):
             self.assertNotEqual(record.file_path, record.file_abs_path)
             self.assertIn(record.file_path, record.file_abs_path)
             self.assertEqual(record.repo_file_path, f'/{dir_rel_path}{record.file_path}')
-            self.assertEqual(record.caller_file_path, '/base/deployment.yaml')
 
     @unittest.skipIf(os.name == "nt" or not kustomize_exists(), "kustomize not installed or Windows OS")
     def test_record_relative_path_with_direct_prod2_oberlay(self):
@@ -109,7 +109,7 @@ class TestRunnerValid(unittest.TestCase):
             self.assertNotEqual(record.file_path, record.file_abs_path)
             self.assertIn(record.file_path, record.file_abs_path)
             self.assertEqual(record.repo_file_path, f'/{dir_rel_path}{record.file_path}')
-            self.assertEqual(record.caller_file_path, '/base/deployment.yaml')
+            self.assertNotEqual(record.caller_file_path, None)
 
     
     @unittest.skipIf(os.name == "nt" or not kustomize_exists(), "kustomize not installed or Windows OS")
