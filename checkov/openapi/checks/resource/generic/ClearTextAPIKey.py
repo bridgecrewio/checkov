@@ -17,6 +17,16 @@ class ClearTestAPIKey(BaseOpenapiCheck):
                          block_type=BlockType.DOCUMENT)
 
     def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:  # type:ignore[override]  # return type is different than the base class
+        schemes = conf.get("schemes")
+        if schemes and isinstance(schemes, list):
+            if "http" not in schemes and "wp" not in schemes:
+                return CheckResult.PASSED, conf
+
+        servers = conf.get("servers")
+        if servers and isinstance(servers, list):
+            if not any(server['url'].startswith('http://') for server in servers):
+                return CheckResult.PASSED, conf
+
         components = conf.get("components")
         security_def = conf.get("securityDefinitions")
         if components and isinstance(components, dict):
