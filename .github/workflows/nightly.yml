@@ -62,6 +62,9 @@ jobs:
       - name: Commit updated CHANGELOG.md
         if: steps.build_github_release.outputs.changelog != ''
         uses: stefanzweifel/git-auto-commit-action@3ea6ae190baf489ba007f7c92608f33ce20ef04a  # v4
+        with:
+          commit_message: "chore: update release notes"
+          file_pattern: CHANGELOG.md
     outputs:
       upload_url: ${{ steps.create_github_release.outputs.upload_url }}
       version: ${{ steps.prepare_release.outputs.version }}
