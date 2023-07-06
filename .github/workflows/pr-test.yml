@@ -231,7 +231,7 @@ jobs:
         run: pipenv run pyinstaller checkov.spec
       - name: Windows - zip artifact
         if: matrix.os == 'windows-latest'
-        run: tar.exe -a -c -f checkov.zip dist/checkov
+        run: tar.exe -a -c -f checkov.zip dist\\checkov
       - name: Linux/Mac - zip artifact
         if: matrix.os != 'windows-latest'
         run: zip checkov.zip dist/checkov
