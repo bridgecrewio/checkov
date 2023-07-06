@@ -223,19 +223,18 @@ jobs:
       - name: Install pipenv
         run: |
           python -m pip install --no-cache-dir --upgrade pipenv
-      - name: Install deps
+      - name: Install deps and run pyinstaller
         run: |
           pipenv sync
           pipenv run pip install pyinstaller
-      - name: Build artifact
-        run: |
-          pipenv run pyinstaller checkov.spec
-          if [[ "$OSTYPE" == "msys" ]]
-          then
-            tar.exe -a -c -f checkov.zip dist/checkov
-          else
-            zip checkov.zip dist/checkov
-          fi
+      - name: Build executable
+        run: pipenv run pyinstaller checkov.spec
+      - name: Windows - zip artifact
+        if: ${{ matrix.os }} == 'windows-latest'
+        run: tar.exe -a -c -f checkov.zip dist/checkov
+      - name: Linux/Mac - zip artifact
+        if: ${{ matrix.os }} != 'windows-latest'
+        run: zip checkov.zip dist/checkov
       - uses: actions/upload-artifact@v3
         with:
           name: checkov_${{ matrix.name }}.zip
