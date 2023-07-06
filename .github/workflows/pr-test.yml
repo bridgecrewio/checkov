@@ -234,6 +234,6 @@ jobs:
         run: pipenv run pyinstaller checkov.spec
       - uses: actions/upload-artifact@v3
         with:
-          name: checkov_${{ matrix.name }}.zip
+          name: checkov_${{ matrix.name }}
           path: dist/checkov${{ matrix.suffix }}
           if-no-files-found: error
