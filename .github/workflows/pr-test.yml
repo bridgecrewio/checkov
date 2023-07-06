@@ -204,10 +204,13 @@ jobs:
         include:
           - os: macos-latest
             name: darwin
+            suffix: ''
           - os: ubuntu-latest
             name: linux
+            suffix: ''
           - os: windows-latest
             name: windows
+            suffix: '.exe'
     #    needs: [github-release]
     runs-on: ${{ matrix.os }}
     permissions:
@@ -229,18 +232,8 @@ jobs:
           pipenv run pip install pyinstaller
       - name: Build executable
         run: pipenv run pyinstaller checkov.spec
-      - name: Windows - zip artifact
-        if: matrix.os == 'windows-latest'
-        run: |
-          cd dist
-          dir
-          cd ..
-          tar.exe -a -c -f checkov.zip D:\a\checkov\checkov\dist\checkov.exe
-      - name: Linux/Mac - zip artifact
-        if: matrix.os != 'windows-latest'
-        run: zip checkov.zip dist/checkov
       - uses: actions/upload-artifact@v3
         with:
           name: checkov_${{ matrix.name }}.zip
-          path: checkov.zip
+          path: dist/checkov${{ matrix.suffix }}
           if-no-files-found: error
