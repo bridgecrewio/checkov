@@ -210,6 +210,30 @@ def scan_result_2() -> Dict[str, Dict[str, Any]]:
                     "policy": "BC_LIC_1"
                 }
             ],
+            "inlineSuppressions": {
+                "cves": {
+                    "byCve": [
+                        {
+                            "cveId": "CVE-2019-1010083",
+                            "reason": "Test CVE suppression 1"
+                        },
+                        {
+                            "cveId": "CVE-2016-6186",
+                            "reason": "Test CVE suppression 2"
+                        }
+                    ]
+                },
+                "licenses": {
+                    "byPackage": [
+                        {
+                            "licenses": [],
+                            "licensePolicy": "BC_LIC_1",
+                            "packageName": "django",
+                            "reason": "Test License suppression 1"
+                        }
+                    ]
+                }
+            }
         },
         "/path/to/sub/requirements.txt": {
             "repository": "/path/to/sub/requirements.txt",

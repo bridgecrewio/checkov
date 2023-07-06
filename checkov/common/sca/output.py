@@ -22,7 +22,7 @@ from checkov.common.sca.commons import (
     get_package_type,
     normalize_twistcli_language,
     get_registry_url, get_package_lines,
-    get_record_file_line_range
+    get_record_file_line_range, get_license_policy_and_package_alias
 )
 from checkov.common.util.http_utils import request_wrapper
 from checkov.runner_filter import RunnerFilter
@@ -32,7 +32,8 @@ if TYPE_CHECKING:
     from aiohttp import ClientSession
     from checkov.common.output.common import SCADetails
     from checkov.common.output.report import Report
-    from checkov.common.typing import _LicenseStatus, _CheckResult, _ScaSuppressions
+    from checkov.common.typing import _LicenseStatus, _CheckResult, _ScaSuppressions, _ScaSuppressionsMaps, \
+        _SuppressedCves, _SuppressedLicenses
 
 
 def create_report_license_record(
@@ -219,6 +220,7 @@ def _add_to_report_licenses_statuses(
         license_statuses: list[_LicenseStatus],
         sca_details: SCADetails | None = None,
         report_type: str | None = None,
+        inline_suppressions_maps: _ScaSuppressionsMaps | None = None,
 ) -> dict[str, list[str]]:
     licenses_per_package_map: dict[str, list[str]] = defaultdict(list)
 
@@ -246,7 +248,15 @@ def _add_to_report_licenses_statuses(
             severity=severity
         )
 
-        if not runner_filter.should_run_check(
+        vulnerability_details = license_record.vulnerability_details or {}
+
+        # apply inline suppressions
+        suppressed = apply_licenses_inline_suppressions(
+            record=license_record, vulnerability_details=vulnerability_details,
+            inline_suppressions_maps=inline_suppressions_maps
+        )
+
+        if not suppressed and not runner_filter.should_run_check(
                 check_id=policy,
                 bc_check_id=policy,
                 severity=severity,
@@ -266,6 +276,36 @@ def _add_to_report_licenses_statuses(
     return licenses_per_package_map
 
 
+def get_inline_suppressions_map(inline_suppressions: _ScaSuppressions | None = None) -> _ScaSuppressionsMaps | None:
+    if not inline_suppressions:
+        return None
+    suppressions_map: _ScaSuppressionsMaps = {}
+
+    # fill cves suppressions map
+    cve_suppresion_by_cve_map: dict[str, _SuppressedCves] = {}
+    inline_suppressions_by_cve: list[_SuppressedCves] = inline_suppressions.get("cves", {}).get("byCve", [])
+    for cve_suppression in inline_suppressions_by_cve:
+        cve_id = cve_suppression.get("cveId")
+        if cve_id:
+            cve_suppresion_by_cve_map[cve_id] = cve_suppression
+
+    # fill licenses suppressions map
+    licenses_suppressions_by_policy_and_package_map: dict[str, _SuppressedLicenses] = {}
+    inline_suppressions_by_license: list[_SuppressedLicenses] = inline_suppressions.get("licenses", {}).get("byPackage",
+                                                                                                            [])
+    for license_suppression in inline_suppressions_by_license:
+        if license_suppression.get("licensePolicy") and license_suppression.get("packageName"):
+            key = get_license_policy_and_package_alias(license_suppression["licensePolicy"],
+                                                       license_suppression["packageName"])
+            licenses_suppressions_by_policy_and_package_map[key] = license_suppression
+
+    suppressions_map['cve_suppresion_by_cve_map'] = cve_suppresion_by_cve_map
+    suppressions_map[
+        'licenses_suppressions_by_policy_and_package_map'] = licenses_suppressions_by_policy_and_package_map
+
+    return suppressions_map
+
+
 def add_to_reports_cves_and_packages(
         report: Report,
         check_class: str | None,
@@ -280,7 +320,7 @@ def add_to_reports_cves_and_packages(
         dependencies: dict[str, List[int]] | None = None,
         sca_details: SCADetails | None = None,
         report_type: str | None = None,
-        inline_suppressions: _ScaSuppressions | None = None,
+        inline_suppressions_maps: _ScaSuppressionsMaps | None = None,
         scan_data_format: ScanDataFormat = ScanDataFormat.TWISTCLI,
         file_line_range: list[int] | None = None
 ) -> None:
@@ -304,7 +344,7 @@ def add_to_reports_cves_and_packages(
         add_to_reports_dependency_tree_cves(check_class, packages_map, licenses_per_package_map, packages, report,
                                             root_packages_list, rootless_file_path, runner_filter,
                                             scanned_file_path, used_private_registry, scan_data_format, sca_details,
-                                            report_type)
+                                            report_type, inline_suppressions_maps)
     else:  # twistlock scan results.
         for vulnerability in vulnerabilities:
             package_name, package_version = vulnerability["packageName"], vulnerability["packageVersion"]
@@ -321,7 +361,7 @@ def add_to_reports_cves_and_packages(
                                      scan_data_format=scan_data_format,
                                      report_type=report_type,
                                      report=report,
-                                     inline_suppressions=inline_suppressions,
+                                     inline_suppressions_maps=inline_suppressions_maps,
                                      file_line_range=file_line_range,
                                      used_private_registry=used_private_registry)
 
@@ -333,7 +373,7 @@ def add_to_reports_dependency_tree_cves(check_class: str | None, packages_map: d
                                         used_private_registry: bool = False,
                                         scan_data_format: ScanDataFormat = ScanDataFormat.TWISTCLI,
                                         sca_details: SCADetails | None = None, report_type: str | None = None,
-                                        inline_suppressions: _ScaSuppressions | None = None) -> None:
+                                        inline_suppressions_maps: _ScaSuppressionsMaps | None = None) -> None:
     for root_package_index in root_packages_list:
         vulnerable_dependencies = find_vulnerable_dependencies(root_package_index, packages)
 
@@ -354,7 +394,7 @@ def add_to_reports_dependency_tree_cves(check_class: str | None, packages_map: d
                                      check_class=check_class, licenses_per_package_map=licenses_per_package_map,
                                      runner_filter=runner_filter, sca_details=sca_details,
                                      scan_data_format=scan_data_format, report_type=report_type, report=report,
-                                     root_package=root_package, inline_suppressions=inline_suppressions,
+                                     root_package=root_package, inline_suppressions_maps=inline_suppressions_maps,
                                      used_private_registry=used_private_registry)
 
         for dep in root_package.get("vulnerable_dependencies", []):
@@ -370,8 +410,9 @@ def add_to_reports_dependency_tree_cves(check_class: str | None, packages_map: d
                                          check_class=check_class, licenses_per_package_map=licenses_per_package_map,
                                          runner_filter=runner_filter, sca_details=sca_details,
                                          scan_data_format=scan_data_format, report_type=report_type, report=report,
-                                         root_package=root_package, root_package_fixed_version=root_package_fixed_version,
-                                         inline_suppressions=inline_suppressions,
+                                         root_package=root_package,
+                                         root_package_fixed_version=root_package_fixed_version,
+                                         inline_suppressions_maps=inline_suppressions_maps,
                                          used_private_registry=used_private_registry)
 
 
@@ -382,7 +423,7 @@ def add_cve_record_to_report(vulnerability_details: dict[str, Any], package_name
                              sca_details: Optional[SCADetails], scan_data_format: ScanDataFormat,
                              report_type: Optional[str], report: Report, used_private_registry: bool = False,
                              root_package: dict[str, Any] | None = None, root_package_fixed_version: str | None = None,
-                             inline_suppressions: _ScaSuppressions | None = None,
+                             inline_suppressions_maps: _ScaSuppressionsMaps | None = None,
                              file_line_range: list[int] | None = None) -> None:
     package_alias = get_package_alias(package_name, package_version)
     cve_record = create_report_cve_record(
@@ -400,8 +441,8 @@ def add_cve_record_to_report(vulnerability_details: dict[str, Any], package_name
         file_line_range=file_line_range,
         used_private_registry=used_private_registry
     )
-    suppressed = apply_inline_suppressions(
-        record=cve_record, vulnerability_details=vulnerability_details, inline_suppressions=inline_suppressions
+    suppressed = apply_cves_inline_suppressions(
+        record=cve_record, inline_suppressions_maps=inline_suppressions_maps
     )
 
     if not suppressed and not runner_filter.should_run_check(
@@ -422,39 +463,41 @@ def add_cve_record_to_report(vulnerability_details: dict[str, Any], package_name
     report.add_record(cve_record)
 
 
-def apply_inline_suppressions(
-        record: Record, vulnerability_details: dict[str, Any], inline_suppressions: _ScaSuppressions | None = None
+def apply_cves_inline_suppressions(
+        record: Record, inline_suppressions_maps: _ScaSuppressionsMaps | None = None
 ) -> bool:
     """Applies the inline suppression and returns an accomplish status"""
 
-    if inline_suppressions:
-        if "package" in inline_suppressions:
-            package_suppression = inline_suppressions["package"].get(vulnerability_details.get("packageName", ""))
-            if package_suppression:
-                if "suppress_comment" in package_suppression:
-                    record.check_result = {
-                        "result": CheckResult.SKIPPED,
-                        "suppress_comment": package_suppression["suppress_comment"],  # type:ignore[typeddict-item]
-                    }
-                    return True
-                else:
-                    # CVE suppression for specific package
-                    cve_suppression = package_suppression.get(vulnerability_details.get("cveId", ""))
-                    if cve_suppression:
-                        record.check_result = {
-                            "result": CheckResult.SKIPPED,
-                            "suppress_comment": cve_suppression["suppress_comment"],  # type:ignore[index]
-                        }
-                        return True
-        if "cve" in inline_suppressions:
-            cve_suppression = inline_suppressions["cve"].get(
-                vulnerability_details.get("cveId", vulnerability_details.get("id", "")))
-            if cve_suppression:
-                record.check_result = {
-                    "result": CheckResult.SKIPPED,
-                    "suppress_comment": cve_suppression["suppress_comment"],
-                }
-                return True
+    if inline_suppressions_maps and record.vulnerability_details and inline_suppressions_maps.get(
+            "cve_suppresion_by_cve_map"):
+        cve_id = record.vulnerability_details.get("id", "")
+        cve_suppression = inline_suppressions_maps["cve_suppresion_by_cve_map"].get(cve_id)
+        if cve_suppression:
+            record.check_result = {
+                "result": CheckResult.SKIPPED,
+                "suppress_comment": cve_suppression.get('reason', ''),
+            }
+            return True
+
+    return False
+
+
+def apply_licenses_inline_suppressions(
+        record: Record, vulnerability_details: dict[str, Any],
+        inline_suppressions_maps: _ScaSuppressionsMaps | None = None
+) -> bool:
+    """Applies the inline suppression and returns an accomplish status"""
+
+    if inline_suppressions_maps and inline_suppressions_maps.get("licenses_suppressions_by_policy_and_package_map"):
+        key = get_license_policy_and_package_alias(vulnerability_details.get("policy", ""),
+                                                   vulnerability_details.get("package_name", ""))
+        license_suppression = inline_suppressions_maps["licenses_suppressions_by_policy_and_package_map"].get(key)
+        if license_suppression:
+            record.check_result = {
+                "result": CheckResult.SKIPPED,
+                "suppress_comment": license_suppression.get('reason', ''),
+            }
+            return True
 
     return False
 
@@ -536,10 +579,12 @@ def add_to_report_sca_data(
         inline_suppressions: _ScaSuppressions | None = None,
         file_line_range: list[int] | None = None
 ) -> None:
+    inline_suppressions_maps: _ScaSuppressionsMaps | None = get_inline_suppressions_map(inline_suppressions)
     packages_map: dict[str, dict[str, Any]] = {get_package_alias(p["name"], p["version"]): p for p in packages}
     licenses_per_package_map: dict[str, list[str]] = \
         _add_to_report_licenses_statuses(report, check_class, scanned_file_path, rootless_file_path, runner_filter,
-                                         packages_map, license_statuses, sca_details, report_type)
+                                         packages_map, license_statuses, sca_details, report_type,
+                                         inline_suppressions_maps)
     # if dependencies is empty list it means we got results via DependencyTree scan but no dependencies have found.
     add_to_reports_cves_and_packages(report=report, check_class=check_class,
                                      scanned_file_path=scanned_file_path,
@@ -553,7 +598,7 @@ def add_to_report_sca_data(
                                      report_type=report_type,
                                      scan_data_format=ScanDataFormat.DEPENDENCY_TREE,
                                      dependencies=dependencies,
-                                     inline_suppressions=inline_suppressions,
+                                     inline_suppressions_maps=inline_suppressions_maps,
                                      file_line_range=file_line_range,
                                      used_private_registry=used_private_registry)
 
