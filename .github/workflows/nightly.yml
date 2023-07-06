@@ -82,7 +82,7 @@ jobs:
           - os: windows-latest
             name: windows
             suffix: '.exe'
-        needs: [github-release]
+    needs: [github-release]
     runs-on: ${{ matrix.os }}
     permissions:
       contents: write
