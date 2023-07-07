@@ -103,17 +103,17 @@ jobs:
           pipenv run pip install pyinstaller
       - name: Build executable
         run: pipenv run pyinstaller checkov.spec
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce  # v3
         with:
           name: checkov_${{ matrix.name }}
           path: dist/checkov${{ matrix.suffix }}
           if-no-files-found: error
       - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
+        uses: actions/upload-release-asset@e8f9f06c4b078e705bd2ea027f0926603fc9b4d5  # v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.github-release.outputs.upload_url }}
-          asset_path: ./checkov_${{ matrix.name }}${{ matrix.suffix }}
+          asset_path: ./dist/checkov${{ matrix.suffix }}
           asset_name: checkov_${{ matrix.name }}_${{ needs.github-release.outputs.version }}
           asset_content_type: application/zip
