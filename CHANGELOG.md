@@ -1,6 +1,17 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.312...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.314...HEAD)
+
+## [2.3.314](https://github.com/bridgecrewio/checkov/compare/2.3.312...2.3.314) - 2023-07-06
+
+### Feature
+
+- **dockerfile:** add ARM build for K8s container image - [#5293](https://github.com/bridgecrewio/checkov/pull/5293)
+- **general:** Add checkov.spec to enable PyInstaller - [#5281](https://github.com/bridgecrewio/checkov/pull/5281)
+
+### Bug Fix
+
+- **terraform:** remove CKV2_AZURE_18 check and improve CKV2_AZURE_1 - [#5294](https://github.com/bridgecrewio/checkov/pull/5294)
 
 ## [2.3.312](https://github.com/bridgecrewio/checkov/compare/2.3.311...2.3.312) - 2023-07-05
 
