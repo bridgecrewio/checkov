@@ -9,6 +9,8 @@ import yaml
 from charset_normalizer import from_path
 from yaml.loader import SafeLoader
 
+from checkov.common.util.file_utils import read_file_with_any_encoding
+
 if TYPE_CHECKING:
     from yaml import MappingNode
 
@@ -38,13 +40,7 @@ def load(filename: Path) -> Tuple[List[Dict[str, Any]], List[Tuple[int, str]]]:
     Load the given JSON file
     """
 
-    file_path = filename if isinstance(filename, Path) else Path(filename)
-
-    try:
-        content = file_path.read_text()
-    except UnicodeDecodeError:
-        logger.debug(f"Encoding for file {file_path} is not UTF-8, trying to detect it")
-        content = str(from_path(file_path).best())
+    content = read_file_with_any_encoding(file_path=filename)
 
     if not all(key in content for key in ("apiVersion", "kind")):
         return [{}], []

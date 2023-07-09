@@ -13,6 +13,7 @@ from jsonschema import validate, ValidationError
 
 from checkov.common.parsers.yaml.loader import SafeLineLoaderGhaSchema
 from checkov.common.parsers.yaml.parser import parse
+from checkov.common.util.file_utils import read_file_with_any_encoding
 from checkov.common.util.type_forcers import force_dict
 from checkov.github_actions.graph_builder.graph_components.resource_types import ResourceType
 from checkov.github_actions.schemas import gha_schema, gha_workflow
@@ -41,7 +42,7 @@ def parse_file(
 
     if is_workflow_file(file_path):
         if not file_content:
-            file_content = file_path.read_text()
+            file_content = read_file_with_any_encoding(file_path=file_path)
 
         entity_schema = parse(filename=str(f), file_content=file_content)
 
