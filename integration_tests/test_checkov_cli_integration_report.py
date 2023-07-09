@@ -12,17 +12,21 @@ class TestCheckovJsonReport(unittest.TestCase):
         report_path = os.path.join(current_dir, '..', 'checkov_report_azuredir_api_key_terragoat.txt')
         self.validate_report(os.path.abspath(report_path))
 
+    def test_terragoat_report_dir_no_upload_api_key(self):
+        report_path = os.path.join(current_dir, '..', 'checkov_report_azuredir_api_key_terragoat_no_upload.txt')
+        self.validate_report(os.path.abspath(report_path), False)
+
     def test_terragoat_report_file_api_key(self):
         report_path = os.path.join(current_dir, '..', 'checkov_report_s3_singlefile_api_key_terragoat.txt')
         self.validate_report(os.path.abspath(report_path))
 
-    def validate_report(self, report_path):
+    def validate_report(self, report_path, url_should_exist=True):
         if sys.version_info[1] == 7 and platform.system() == 'Linux':
             platform_url_found = False
             with open(report_path) as f:
                 if 'More details: https://www.bridgecrew.cloud/projects?' in f.read():
                     platform_url_found = True
-            self.assertTrue(platform_url_found, "when using api key, platform code review url should exist")
+            self.assertEqual(platform_url_found, url_should_exist, "when using api key and not --skip-results-upload, platform code review url should exist")
 
     def test_workflow_report_api_key(self):
         report_path = os.path.join(current_dir, '..', 'checkov_report_workflow_cve.json')

@@ -1,0 +1,123 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "azureFirewalls_fail_name": {
+      "type": "String"
+    },
+    "publicIPAddresses_testpip_name": {
+      "type": "String"
+    },
+    "virtualNetworks_testvnet_name": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "apiVersion": "2022-09-01",
+      "location": "westeurope",
+      "name": "[parameters('publicIPAddresses_testpip_name')]",
+      "properties": {
+        "ddosSettings": {
+          "protectionMode": "VirtualNetworkInherited"
+        },
+        "idleTimeoutInMinutes": 4,
+        "ipAddress": "20.234.231.26",
+        "ipTags": [],
+        "publicIPAddressVersion": "IPv4",
+        "publicIPAllocationMethod": "Static"
+      },
+      "sku": {
+        "name": "Standard",
+        "tier": "Regional"
+      },
+      "type": "Microsoft.Network/publicIPAddresses"
+    },
+    {
+      "apiVersion": "2022-09-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_testvnet_name'), 'AzureFirewallSubnet')]"
+      ],
+      "location": "westeurope",
+      "name": "[parameters('virtualNetworks_testvnet_name')]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "10.0.0.0/16"
+          ]
+        },
+        "dhcpOptions": {
+          "dnsServers": []
+        },
+        "enableDdosProtection": false,
+        "subnets": [
+          {
+            "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_testvnet_name'), 'AzureFirewallSubnet')]",
+            "name": "AzureFirewallSubnet",
+            "properties": {
+              "addressPrefix": "10.0.1.0/24",
+              "delegations": [],
+              "privateEndpointNetworkPolicies": "Enabled",
+              "privateLinkServiceNetworkPolicies": "Enabled",
+              "serviceEndpoints": []
+            },
+            "type": "Microsoft.Network/virtualNetworks/subnets"
+          }
+        ],
+        "virtualNetworkPeerings": []
+      },
+      "type": "Microsoft.Network/virtualNetworks"
+    },
+    {
+      "apiVersion": "2022-09-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_testvnet_name'))]"
+      ],
+      "name": "[concat(parameters('virtualNetworks_testvnet_name'), '/AzureFirewallSubnet')]",
+      "properties": {
+        "addressPrefix": "10.0.1.0/24",
+        "delegations": [],
+        "privateEndpointNetworkPolicies": "Enabled",
+        "privateLinkServiceNetworkPolicies": "Enabled",
+        "serviceEndpoints": []
+      },
+      "type": "Microsoft.Network/virtualNetworks/subnets"
+    },
+    {
+      "apiVersion": "2022-09-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_testpip_name'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_testvnet_name'), 'AzureFirewallSubnet')]"
+      ],
+      "location": "westeurope",
+      "name": "fail2",
+      "properties": {
+        "additionalProperties": {},
+        "applicationRuleCollections": [],
+        "ipConfigurations": [
+          {
+            "id": "[concat(resourceId('Microsoft.Network/azureFirewalls', parameters('azureFirewalls_fail_name')), '/azureFirewallIpConfigurations/configuration')]",
+            "name": "configuration",
+            "properties": {
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_testpip_name'))]"
+              },
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_testvnet_name'), 'AzureFirewallSubnet')]"
+              }
+            }
+          }
+        ],
+        "natRuleCollections": [],
+        "networkRuleCollections": [],
+        "sku": {
+          "name": "AZFW_VNet",
+          "tier": "Standard"
+        },
+        "threatIntelMode": "Off"
+      },
+      "type": "Microsoft.Network/azureFirewalls"
+    }
+  ],
+  "variables": {}
+}

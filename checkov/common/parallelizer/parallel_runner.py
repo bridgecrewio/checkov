@@ -63,7 +63,6 @@ class ParallelRunner:
                     pass
 
     def _run_function_multithreaded(self, func: Callable[[Any], _T], items: List[Any]) -> Iterator[_T]:
-        logging.info(f"[_run_function_multithreaded] starting with {self.workers_number} workers")
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.workers_number) as executor:
             return executor.map(func, items)
 

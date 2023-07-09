@@ -27,16 +27,29 @@ class SQLServerAuditingRetention90Days(BaseResourceCheck):
             ]
             if resource.get("type") in (
                 "Microsoft.Sql/servers/databases/auditingSettings",
+                'Microsoft.Sql/servers/auditingSettings',
                 "auditingSettings",
             ):
-                properties = resource.get("properties")
-                if isinstance(properties, dict):
-                    state = properties.get("state")
-                    if isinstance(state, str) and state.lower() == "enabled":
-                        retention = properties.get("retentionDays")
-                        if isinstance(retention, int) and retention >= 90:
-                            return CheckResult.PASSED
+                return self.check_resource(resource)
+            elif resource.get("type") in (
+                "databases"
+            ):
+                sub_resources = resource.get("resources") or []
+                for sr in sub_resources:
+                    if sr.get("type") == "Microsoft.Sql/servers/databases/auditingPolicies":
+                        return self.check_resource(sr)
 
+        return CheckResult.FAILED
+
+    @staticmethod
+    def check_resource(resource: Dict[str, Any]) -> CheckResult:
+        properties = resource.get("properties")
+        if isinstance(properties, dict):
+            state = properties.get("state")
+            if isinstance(state, str) and state.lower() == "enabled":
+                retention = properties.get("retentionDays")
+                if isinstance(retention, int) and retention >= 90:
+                    return CheckResult.PASSED
         return CheckResult.FAILED
 
 

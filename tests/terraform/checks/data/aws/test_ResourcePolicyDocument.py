@@ -17,6 +17,7 @@ class TestResourcePolicyDocument(unittest.TestCase):
             "aws_iam_policy_document.pass",
             "aws_iam_policy_document.pass2",
             "aws_iam_policy_document.pass_unrestrictable",
+            "aws_iam_policy_document.pass_condition",
         }
         failing_resources = {
             "aws_iam_policy_document.fail",

@@ -7,12 +7,14 @@ from typing import Optional, Tuple, Dict, List, Any, cast
 
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.parsers.node import ListNode
+from checkov.common.util.consts import LINE_FIELD_NAMES
 from checkov.common.util.type_forcers import force_list
 from checkov.terraform.context_parsers.tf_plan import parse
 
 SIMPLE_TYPES = (str, int, float, bool)
 TF_PLAN_RESOURCE_ADDRESS = "__address__"
 TF_PLAN_RESOURCE_CHANGE_ACTIONS = "__change_actions__"
+TF_PLAN_RESOURCE_CHANGE_KEYS = "__change_keys__"
 
 RESOURCE_TYPES_JSONIFY = {
     "aws_batch_job_definition": "container_properties",
@@ -129,7 +131,6 @@ def _prepare_resource_block(
     :param resource: tf planned_values resource block
     :param conf: tf configuration resource block
     :param resource_changes: tf resource_changes block
-
     :returns:
         - resource_block: a list of strings representing the header columns
         - prepared: whether conditions met to prepare data
@@ -161,6 +162,7 @@ def _prepare_resource_block(
         changes = resource_changes.get(resource_address)  # type:ignore[arg-type]  # becaus eit can be None
         if changes:
             resource_conf[TF_PLAN_RESOURCE_CHANGE_ACTIONS] = changes.get("change", {}).get("actions") or []
+            resource_conf[TF_PLAN_RESOURCE_CHANGE_KEYS] = changes.get(TF_PLAN_RESOURCE_CHANGE_KEYS) or []
 
         resource_block[resource_type][resource.get("name", "default")] = resource_conf
         prepared = True
@@ -186,7 +188,7 @@ def _find_child_modules(
             nested_blocks = _find_child_modules(
                 child_modules=nested_child_modules,
                 resource_changes=resource_changes,
-                root_module_conf=root_module_conf
+                root_module_conf=root_module_conf,
             )
             for block_type, resource_blocks in nested_blocks.items():
                 blocks[block_type].extend(resource_blocks)
@@ -238,13 +240,24 @@ def _get_resource_changes(template: dict[str, Any]) -> dict[str, dict[str, Any]]
     """Returns a resource address to resource changes dict"""
 
     resource_changes_map = {}
-
     resource_changes = template.get("resource_changes")
+
     if resource_changes and isinstance(resource_changes, list):
-        resource_changes_map = {
-            change.get("address", ""): change
-            for change in resource_changes
-        }
+        for resource in resource_changes:
+            resource_changes_map[resource["address"]] = resource
+            changes = []
+
+            # before + after are None when resources are created/destroyed, so make them safe
+            change_before = resource["change"]["before"] or {}
+            change_after = resource["change"]["after"] or {}
+
+            for field, value in change_before.items():
+                if field in LINE_FIELD_NAMES:
+                    continue  # don't care about line #s
+                if value != change_after.get(field):
+                    changes.append(field)
+
+            resource_changes_map[resource["address"]][TF_PLAN_RESOURCE_CHANGE_KEYS] = changes
 
     return resource_changes_map
 

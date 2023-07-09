@@ -2,6 +2,8 @@ from __future__ import annotations
 import concurrent.futures
 import logging
 from typing import Any, TYPE_CHECKING
+
+from checkov.common.graph.checks_infra import debug
 from checkov.common.models.enums import CheckResult
 from checkov.runner_filter import RunnerFilter
 
@@ -37,6 +39,8 @@ class BaseRegistry:
             graph_connector: LibraryGraph
     ) -> None:
         logging.debug(f'Running graph check: {check.id}')
+        debug.graph_check(check_id=check.id, check_name=check.name)
+
         passed, failed, unknown = check.run(graph_connector)
         evaluated_keys = check.get_evaluated_keys()
         check_result = self._process_check_result(passed, [], CheckResult.PASSED, evaluated_keys)

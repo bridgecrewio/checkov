@@ -1,0 +1,23 @@
+metadata:
+  id: "CKV2_AWS_64"
+  name: "Ensure KMS key Policy is defined"
+  category: "IAM"
+definition:
+  or:
+    - cond_type: "attribute"
+      resource_types:
+        - "aws_kms_key"
+      attribute: "policy"
+      operator: "exists"
+    - and:
+      - cond_type: filter
+        attribute: resource_type
+        operator: within
+        value:
+          - aws_kms_key
+      - cond_type: connection
+        resource_types:
+          - aws_kms_key
+        connected_resource_types:
+          - aws_kms_key_policy
+        operator: exists

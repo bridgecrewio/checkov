@@ -86,3 +86,23 @@ data "aws_iam_policy_document" "pass_unrestrictable" {
     ]
   }
 }
+
+data "aws_iam_policy_document" "pass_condition" {
+  statement {
+    actions = [
+      "kms:GenerateDataKey",
+      "kms:Decrypt"
+    ]
+    resources = [
+      "*"
+    ]
+
+    condition {
+      test     = "ArnEquals"
+      variable = "aws:SourceArn"
+      values   = [
+        "arn"
+      ]
+    }
+  }
+}

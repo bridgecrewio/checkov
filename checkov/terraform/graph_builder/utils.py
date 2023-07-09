@@ -46,14 +46,14 @@ def remove_module_dependency_in_path(path: str) -> Tuple[str, str, str]:
     return path, module_and_num[0], module_and_num[1]
 
 
-def extract_module_dependency_path(module_dependency: List[str]) -> List[str]:
+def extract_module_dependency_path(module_dependency: str | List[str]) -> List[str]:
     """
     :param: module_dependency: a list looking like ['[path_to_module.tf#0]']
     :return: the path without enclosing array and index: 'path_to_module.tf'
     """
     if not module_dependency:
         return ["", ""]
-    if isinstance(module_dependency, list) and len(module_dependency) > 0:
+    if isinstance(module_dependency, list):
         module_dependency = module_dependency[0]
     return [
         module_dependency[3:module_dependency.index(f'.tf{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}') + len('.tf')],
@@ -70,7 +70,7 @@ MAP_ATTRIBUTE_PATTERN = re.compile(r"\[\"([^\d\W]\w*)\"\]")
 
 
 def get_vertices_references(
-        str_value: str, aliases: Dict[str, Dict[str, BlockType]], resources_types: List[str]
+        str_value: str, aliases: Dict[str, Dict[str, str]], resources_types: List[str]
 ) -> List[TerraformVertexReference]:
     vertices_references = []
     words_in_str_value = str_value.split()
@@ -119,7 +119,7 @@ def get_vertices_references(
 
 
 def get_vertex_reference_from_alias(
-        block_type_str: str, aliases: Dict[str, Dict[str, BlockType]], val: List[str]
+        block_type_str: str, aliases: Dict[str, Dict[str, str]], val: List[str]
 ) -> Optional[TerraformVertexReference]:
     block_type = ""
     if block_type_str in aliases:
@@ -173,7 +173,7 @@ DEFAULT_CLEANUP_FUNCTIONS: List[Callable[[str], str]] = [
 
 def get_referenced_vertices_in_value(
         value: Union[str, List[str], Dict[str, str]],
-        aliases: Dict[str, Dict[str, BlockType]],
+        aliases: Dict[str, Dict[str, str]],
         resources_types: List[str],
         cleanup_functions: Optional[List[Callable[[str], str]]] = None,
 ) -> List[TerraformVertexReference]:
@@ -280,7 +280,7 @@ def attribute_has_dup_with_dynamic_attributes(attribute_key: str, attributes: di
         return False
 
 
-def get_related_resource_id(resource: dict[str, Any], file_path_to_referred_id: dict[str, str]) -> str:
+def get_related_resource_id(resource: dict[str, Any], file_path_to_referred_id: dict[str, str]) -> str | None:
     resource_id = resource.get(CustomAttributes.ID)
     # for external modules resources the id should start with the prefix module.[module_name]
     if resource.get(CustomAttributes.MODULE_DEPENDENCY):

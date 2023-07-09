@@ -1,0 +1,44 @@
+# !!! Important !!!
+# This a reusable workflow and is used in the PR and push to main branch flow separately
+# to be able to protect it behind a manual approval in the PR flow
+
+name: security-shared
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  bandit:
+    runs-on: [self-hosted, public, linux, x64]
+    steps:
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: security test
+        uses: jpetrucciani/bandit-check@a3625769b94d074865d7c410b9ba4019b4c80681  # v1
+        with:
+          path: 'checkov'
+  trufflehog-secrets:
+    runs-on: [self-hosted, public, linux, x64]
+    steps:
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: detect secrets
+        uses: edplato/trufflehog-actions-scan@0af17d9dd1410283f740eb76b0b8f6b696cadefc  # v0.9
+        with:
+          scanArguments: "--regex --entropy=False --exclude_paths .github/exclude-patterns.txt --max_depth=1"
+  checkov-secrets:
+    runs-on: [self-hosted, public, linux, x64]
+    steps:
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Scan for secrets
+        uses: bridgecrewio/checkov-action@master  # use latest and greatest
+        with:
+          api-key: ${{ secrets.BC_API_KEY }}
+          config_file: .github/checkov.yaml

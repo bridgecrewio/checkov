@@ -22,7 +22,7 @@ from checkov.common.runners.base_runner import filter_ignored_paths, strtobool
 from checkov.common.sca.commons import should_run_scan
 from checkov.common.sca.output import add_to_report_sca_data, get_license_statuses
 from checkov.common.util.file_utils import compress_file_gzip_base64
-from checkov.common.util.dockerfile import is_docker_file
+from checkov.common.util.dockerfile import is_dockerfile
 from checkov.common.util.http_utils import request_wrapper
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.runner import Runner as PackageRunner
@@ -41,7 +41,7 @@ class Runner(PackageRunner):
         self.image_referencers: set[ImageReferencer] | None = None
 
     def should_scan_file(self, filename: str) -> bool:
-        return is_docker_file(os.path.basename(filename))
+        return is_dockerfile(os.path.basename(filename))
 
     def scan(
             self,
@@ -167,13 +167,13 @@ class Runner(PackageRunner):
                 self.iterate_image_files(file, report, runner_filter)
                 self.pbar.update()
             self.pbar.close()
-        if root_folder:
-            for root, d_names, f_names in os.walk(root_folder):
+        if self._code_repo_path:
+            for root, d_names, f_names in os.walk(self._code_repo_path):
                 filter_ignored_paths(root, d_names, runner_filter.excluded_paths, included_paths=self.included_paths())
                 filter_ignored_paths(root, f_names, runner_filter.excluded_paths, included_paths=self.included_paths())
                 for file in f_names:
                     abs_fname = os.path.join(root, file)
-                    self.iterate_image_files(abs_fname, report, runner_filter, root_folder)
+                    self.iterate_image_files(abs_fname, report, runner_filter, self._code_repo_path)
         return report
 
     def iterate_image_files(self, abs_fname: str, report: Report, runner_filter: RunnerFilter,
