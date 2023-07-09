@@ -9,15 +9,16 @@ def a():
 
     "MDEyOk9yZ2FuaXphdGlvbjE\u003d"
 
-    'JSON Web Token': 'CKV_SECRET_9'
-
     IAM_ROLE_STATEMENTS_TOKEN = 'iamRoleStatements'
 
-    'NPM tokens': 'CKV_SECRET_12'
-    'Slack Token': 'CKV_SECRET_14'
-    'SoftLayer Credentials': 'CKV_SECRET_15'
-    'Square OAuth Secret': 'CKV_SECRET_16'
+    a = {
+        'JSON Web Token': 'CKV_SECRET_9',
+        'NPM tokens': 'CKV_SECRET_12',
+        'Slack Token': 'CKV_SECRET_14',
+        'SoftLayer Credentials': 'CKV_SECRET_15',
+        'Square OAuth Secret': 'CKV_SECRET_16'
+    }
 
     self.go("GCPMySQLdbInstancePoint_In_TimeRecoveryBackupIsEnabled")
 
-    's3_origin_config': [{'origin_access_identity': ['origin-access-identity/cloudfront/ABCDEFG1234567']}]
+    a = {'s3_origin_config': [{'origin_access_identity': ['origin-access-identity/cloudfront/ABCDEFG1234567']}]}
