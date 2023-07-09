@@ -363,7 +363,7 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
                 # We can differentiate between "overlays" and "bases" based on if the `resources` refers to a directory,
                 # which represents an "overlay", or only files which represents a "base"
                 resources_representing_directories = [r for r in resources if pathlib.Path(r).suffix == '']
-                if len(resources_representing_directories) > 0:
+                if resources_representing_directories:
                     logging.debug(
                         f"Kustomization contains resources: section with directories. Likely an overlay/env."
                         f" {kustomization_path}")
