@@ -23,12 +23,20 @@ class TestClearTextAPIKey(unittest.TestCase):
             "/pass.json",
             "/pass2.yaml",
             "/pass2.json",
+            "/pass3.yaml",
+            "/pass3.json",
+            "/pass4.yaml",
+            "/pass4.json",
         }
         failing_resources = {
             "/fail.yaml",
             "/fail.json",
             "/fail2.yaml",
             "/fail2.json",
+            "/fail3.yaml",
+            "/fail3.json",
+            "/fail4.yaml",
+            "/fail4.json",
         }
 
         passed_check_resources = {c.file_path for c in report.passed_checks}
