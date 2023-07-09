@@ -48,7 +48,7 @@ def test_deployment_resources(mocker: MockerFixture, allow_kustomize_file_edits:
     runner.templateRendererCommand = "kustomize"
     runner.templateRendererCommandOptions = "build"
 
-    with mock.patch("checkov.common.util.env_vars_config.env_vars_config.ALLOW_KUSTOMIZE_FILE_EDITS",
+    with mock.patch("checkov.common.util.env_vars_config.env_vars_config.CHECKOV_ALLOW_KUSTOMIZE_FILE_EDITS",
                     allow_kustomize_file_edits):
         reports = runner.run(root_folder=str(test_folder), runner_filter=runner_filter)
 
