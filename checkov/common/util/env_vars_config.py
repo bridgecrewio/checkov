@@ -78,8 +78,5 @@ class EnvVarsConfig:
         # need to fix usage, because the env var value is set inside the code
         self.GITHUB_CONF_DIR_PATH = os.getenv("CKV_GITHUB_CONF_DIR_PATH")
 
-        # Allows using kustomize commands to directly edit the user's kustomization.yaml configurations
-        self.CHECKOV_ALLOW_KUSTOMIZE_FILE_EDITS = convert_str_to_bool(os.getenv("ALLOW_KUSTOMIZE_FILE_EDITS", False))
-
 
 env_vars_config = EnvVarsConfig()

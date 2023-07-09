@@ -24,7 +24,7 @@ from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.common.typing import _CheckResult, _EntityContext
 from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.common.util.data_structures_utils import pickle_deepcopy
-from checkov.common.util.env_vars_config import env_vars_config
+from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.kubernetes.kubernetes_utils import create_check_result, get_resource_id, calculate_code_lines
 from checkov.kubernetes.runner import Runner as K8sRunner
 from checkov.kubernetes.runner import _get_entity_abs_path
@@ -57,6 +57,10 @@ class K8sKustomizeRunner(K8sRunner):
         self.report_mutator_data: "dict[str, dict[str, Any]]" = {}
         self.original_root_dir: str = ''
         self.pbar.turn_off_progress_bar()
+
+        # Allows using kustomize commands to directly edit the user's kustomization.yaml configurations
+        self.checkov_allow_kustomize_file_edits = convert_str_to_bool(os.getenv("CHECKOV_ALLOW_KUSTOMIZE_FILE_EDITS",
+                                                                                False))
 
     def set_external_data(
         self,
@@ -126,14 +130,13 @@ class K8sKustomizeRunner(K8sRunner):
                 if self.original_root_dir:
                     repo_dir = str(pathlib.Path(self.original_root_dir).resolve())
 
-                    if env_vars_config.CHECKOV_ALLOW_KUSTOMIZE_FILE_EDITS:
-                        caller_file_line_range, caller_file_path = self._get_caller_file_info(entity_context, k8_file,
-                                                                                              k8_file_path, resource_id,
-                                                                                              root_folder)
-
                     if realKustomizeEnvMetadata['filePath'].startswith(repo_dir):
                         file_path = realKustomizeEnvMetadata['filePath'][len(repo_dir):]
 
+            if self.checkov_allow_kustomize_file_edits:
+                caller_file_line_range, caller_file_path = self._get_caller_file_info(entity_context, k8_file,
+                                                                                              k8_file_path, resource_id,
+                                                                                              root_folder)
             code_lines = entity_context.get("code_lines")
             file_line_range = self.line_range(code_lines)
 
@@ -251,7 +254,7 @@ class K8sKustomizeRunner(K8sRunner):
 
                 caller_file_path = None
                 caller_file_line_range = None
-                if env_vars_config.CHECKOV_ALLOW_KUSTOMIZE_FILE_EDITS:
+                if self.checkov_allow_kustomize_file_edits:
                     caller_file_line_range, caller_file_path = self._get_caller_file_info(entity_context,
                                                                                           entity_file_path,
                                                                                           entity_file_path, entity_id,
@@ -321,6 +324,9 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
         self.kustomizeFileMappings: "dict[str, str]" = {}
         self.templateRendererCommand: str | None = None
         self.target_folder_path = ''
+
+        self.checkov_allow_kustomize_file_edits = convert_str_to_bool(os.getenv("CHECKOV_ALLOW_KUSTOMIZE_FILE_EDITS",
+                                                                                False))
 
     def get_k8s_target_folder_path(self) -> str:
         return self.target_folder_path
@@ -502,8 +508,7 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
             line_num += 1
         return cur_writer
 
-    @staticmethod
-    def _get_kubectl_output(filePath: str, template_renderer_command: str, source_type: str | None) -> bytes:
+    def _get_kubectl_output(self, filePath: str, template_renderer_command: str, source_type: str | None) -> bytes:
         # Template out the Kustomizations to Kubernetes YAML
         if template_renderer_command == "kubectl":
             template_render_command_options = "kustomize"
@@ -512,7 +517,7 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
 
         add_origin_annotations_return_code = None
 
-        if env_vars_config.CHECKOV_ALLOW_KUSTOMIZE_FILE_EDITS:
+        if self.checkov_allow_kustomize_file_edits:
             add_origin_annotations_command = 'kustomize edit add buildmetadata originAnnotations'
             add_origin_annotations_return_code = subprocess.run(add_origin_annotations_command.split(' '),  # nosec
                                                                   cwd=filePath).returncode
@@ -521,7 +526,7 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
         proc = subprocess.Popen(full_command.split(' '), cwd=filePath, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
         output, _ = proc.communicate()
 
-        if env_vars_config.CHECKOV_ALLOW_KUSTOMIZE_FILE_EDITS and add_origin_annotations_return_code == 0:
+        if self.checkov_allow_kustomize_file_edits and add_origin_annotations_return_code == 0:
             # If the return code is not 0, we didn't add the new buildmetadata field, so we shouldn't remove it
             remove_origin_annotaions = 'kustomize edit remove buildmetadata originAnnotations'
             subprocess.run(remove_origin_annotaions.split(' '), cwd=filePath)  # nosec
