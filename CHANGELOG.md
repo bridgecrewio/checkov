@@ -1,6 +1,18 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.314...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.316...HEAD)
+
+## [2.3.316](https://github.com/bridgecrewio/checkov/compare/2.3.314...2.3.316) - 2023-07-09
+
+### Feature
+
+- **secrets:** Improve the entropy keyword combinator secret scanner - [#5307](https://github.com/bridgecrewio/checkov/pull/5307)
+
+### Bug Fix
+
+- **openapi:** Fix CKV_OpenAPI_20 - [#5302](https://github.com/bridgecrewio/checkov/pull/5302)
+- **terraform:** fix invalid value in CKV_AWS_304 - [#5301](https://github.com/bridgecrewio/checkov/pull/5301)
+- **terraform:** support new field in CKV2_AWS_3 - [#5304](https://github.com/bridgecrewio/checkov/pull/5304)
 
 ## [2.3.314](https://github.com/bridgecrewio/checkov/compare/2.3.312...2.3.314) - 2023-07-06
 
