@@ -38,6 +38,30 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.skipped_checks, [])
         report.print_console()
 
+    def test_fp_sanity_check_secrets_non_iac(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/sanity/iac_fp"
+        runner = Runner()
+        report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework=['secrets'], checks=['CKV_SECRET_6'], enable_secret_scan_all_files=True))
+        self.assertEqual(len(report.failed_checks), 0)
+        self.assertEqual(report.parsing_errors, [])
+        self.assertEqual(report.passed_checks, [])
+        self.assertEqual(report.skipped_checks, [])
+        report.print_console()
+
+    def test_fp_sanity_check_secrets_iac(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/sanity/non_iac_fp"
+        runner = Runner()
+        report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework=['secrets'], checks=['CKV_SECRET_6'], enable_secret_scan_all_files=True))
+        self.assertEqual(len(report.failed_checks), 0)
+        self.assertEqual(report.parsing_errors, [])
+        self.assertEqual(report.passed_checks, [])
+        self.assertEqual(report.skipped_checks, [])
+        report.print_console()
+
     def test_sanity_check_non_secrets(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/sanity/non_secrets"
