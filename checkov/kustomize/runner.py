@@ -126,7 +126,7 @@ class K8sKustomizeRunner(K8sRunner):
                 if self.original_root_dir:
                     repo_dir = str(pathlib.Path(self.original_root_dir).resolve())
 
-                    if env_vars_config.ALLOW_KUSTOMIZE_FILE_EDITS:
+                    if env_vars_config.CHECKOV_ALLOW_KUSTOMIZE_FILE_EDITS:
                         caller_file_line_range, caller_file_path = self._get_caller_file_info(entity_context, k8_file,
                                                                                               k8_file_path, resource_id,
                                                                                               root_folder)
@@ -183,8 +183,8 @@ class K8sKustomizeRunner(K8sRunner):
 
     def _get_caller_line_range(self, root_folder: str, k8_file: str, origin_relative_path: str,
                                resource_id: str) -> tuple[int, int] | None:
-        raw_caller_directory = (pathlib.PurePath(k8_file.lstrip(os.path.sep)).parent /
-                                pathlib.PurePath(origin_relative_path.lstrip(os.path.sep)).parent)
+        raw_caller_directory = (pathlib.Path(k8_file.lstrip(os.path.sep)).parent /
+                                pathlib.Path(origin_relative_path.lstrip(os.path.sep)).parent)
         caller_directory = str(pathlib.Path(f'{os.path.sep}{raw_caller_directory}').resolve())
         splitted_dir = caller_directory.split(root_folder)
         if len(splitted_dir) > 1:
@@ -193,7 +193,7 @@ class K8sKustomizeRunner(K8sRunner):
         else:
             caller_directory = root_folder.join(splitted_dir)
         file_ending = pathlib.Path(origin_relative_path).suffix
-        caller_file_path = f'{str(pathlib.PurePath(caller_directory) / resource_id.replace(".", "-"))}{file_ending}'
+        caller_file_path = f'{str(pathlib.Path(caller_directory) / resource_id.replace(".", "-"))}{file_ending}'
 
         if caller_file_path not in self.definitions:
             return None
@@ -251,7 +251,7 @@ class K8sKustomizeRunner(K8sRunner):
 
                 caller_file_path = None
                 caller_file_line_range = None
-                if env_vars_config.ALLOW_KUSTOMIZE_FILE_EDITS:
+                if env_vars_config.CHECKOV_ALLOW_KUSTOMIZE_FILE_EDITS:
                     caller_file_line_range, caller_file_path = self._get_caller_file_info(entity_context,
                                                                                           entity_file_path,
                                                                                           entity_file_path, entity_id,
@@ -512,7 +512,7 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
 
         add_origin_annotations_return_code = None
 
-        if env_vars_config.ALLOW_KUSTOMIZE_FILE_EDITS:
+        if env_vars_config.CHECKOV_ALLOW_KUSTOMIZE_FILE_EDITS:
             add_origin_annotations_command = 'kustomize edit add buildmetadata originAnnotations'
             add_origin_annotations_return_code = subprocess.Popen(add_origin_annotations_command.split(' '),  # nosec
                                                                   cwd=filePath).wait()
@@ -521,7 +521,7 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
         proc = subprocess.Popen(full_command.split(' '), cwd=filePath, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
         output, _ = proc.communicate()
 
-        if env_vars_config.ALLOW_KUSTOMIZE_FILE_EDITS and add_origin_annotations_return_code == 0:
+        if env_vars_config.CHECKOV_ALLOW_KUSTOMIZE_FILE_EDITS and add_origin_annotations_return_code == 0:
             # If the return code is not 0, we didn't add the new buildmetadata field, so we shouldn't remove it
             remove_origin_annotaions = 'kustomize edit remove buildmetadata originAnnotations'
             subprocess.Popen(remove_origin_annotaions.split(' '), cwd=filePath).wait()  # nosec
