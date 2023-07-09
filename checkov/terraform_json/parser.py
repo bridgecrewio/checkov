@@ -5,7 +5,6 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from charset_normalizer import from_path
 from yaml.scanner import ScannerError
 from yaml import YAMLError
 

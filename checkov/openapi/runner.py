@@ -4,8 +4,6 @@ import logging
 from collections.abc import Iterable
 from typing import Any, Callable, TYPE_CHECKING  # noqa: F401  # Callable is used in the TypeAlias
 
-from charset_normalizer import from_path
-
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.util.file_utils import read_file_with_any_encoding

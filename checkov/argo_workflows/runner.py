@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import re
-from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from checkov.common.images.image_referencer import ImageReferencer, Image

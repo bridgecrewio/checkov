@@ -9,8 +9,6 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from charset_normalizer import from_path
-
 from checkov.common.parsers.json.decoder import Decoder
 from checkov.common.parsers.json.errors import DecodeError
 from checkov.common.util.file_utils import read_file_with_any_encoding

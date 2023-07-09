@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import List, Dict, Any, Tuple, TYPE_CHECKING
 
 import yaml
-from charset_normalizer import from_path
 from yaml.loader import SafeLoader
 
 from checkov.common.util.file_utils import read_file_with_any_encoding
