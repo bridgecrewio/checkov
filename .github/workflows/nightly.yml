@@ -83,6 +83,7 @@ jobs:
             name: windows
             suffix: '.exe'
     needs: [github-release]
+    if: needs.github-release.outputs.upload_url != ''
     runs-on: ${{ matrix.os }}
     permissions:
       contents: write
@@ -103,17 +104,12 @@ jobs:
           pipenv run pip install pyinstaller
       - name: Build executable
         run: pipenv run pyinstaller checkov.spec
-      - uses: actions/upload-artifact@v3
-        with:
-          name: checkov_${{ matrix.name }}
-          path: dist/checkov${{ matrix.suffix }}
-          if-no-files-found: error
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.github-release.outputs.upload_url }}
-          asset_path: ./checkov_${{ matrix.name }}${{ matrix.suffix }}
+          asset_path: dist/checkov${{ matrix.suffix }}
           asset_name: checkov_${{ matrix.name }}_${{ needs.github-release.outputs.version }}
           asset_content_type: application/zip
