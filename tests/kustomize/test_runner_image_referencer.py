@@ -21,11 +21,11 @@ RESOURCES_PATH = Path(__file__).parent / "runner/resources"
 
 
 @pytest.mark.skipif(os.name == "nt" or not kustomize_exists(), reason="kustomize not installed or Windows OS")
-@pytest.mark.parametrize("allow_kustomize_file_edits", [
-    (True,),
-    (False,)
+@pytest.mark.parametrize("allow_kustomize_file_edits, code_lines", [
+    (True, "18-34"),
+    (False, "15-31")
 ])
-def test_deployment_resources(mocker: MockerFixture, allow_kustomize_file_edits: bool):
+def test_deployment_resources(mocker: MockerFixture, allow_kustomize_file_edits: bool, code_lines: str):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
     # given
@@ -44,12 +44,11 @@ def test_deployment_resources(mocker: MockerFixture, allow_kustomize_file_edits:
     )
 
     # when
-    runner = Runner()
-    runner.templateRendererCommand = "kustomize"
-    runner.templateRendererCommandOptions = "build"
 
-    with mock.patch("checkov.common.util.env_vars_config.env_vars_config.CHECKOV_ALLOW_KUSTOMIZE_FILE_EDITS",
-                    allow_kustomize_file_edits):
+    with mock.patch.dict(os.environ, {"CHECKOV_ALLOW_KUSTOMIZE_FILE_EDITS": str(allow_kustomize_file_edits)}):
+        runner = Runner()
+        runner.templateRendererCommand = "kustomize"
+        runner.templateRendererCommandOptions = "build"
         reports = runner.run(root_folder=str(test_folder), runner_filter=runner_filter)
 
     # then
@@ -71,8 +70,8 @@ def test_deployment_resources(mocker: MockerFixture, allow_kustomize_file_edits:
 
     assert len(sca_image_report.resources) == 2
     assert sca_image_report.resources == {
-        'base/kustomization.yaml (wordpress:4.8-apache lines:18-34 (sha256:2460522297)).go',
-        'overlays/prod/kustomization.yaml (wordpress:4.8-apache lines:18-34 (sha256:2460522297)).go'
+        f'base/kustomization.yaml (wordpress:4.8-apache lines:{code_lines} (sha256:2460522297)).go',
+        f'overlays/prod/kustomization.yaml (wordpress:4.8-apache lines:{code_lines} (sha256:2460522297)).go'
     }
     assert len(sca_image_report.passed_checks) == 0
     assert len(sca_image_report.failed_checks) == 6

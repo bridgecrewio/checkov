@@ -67,8 +67,8 @@ class TestRunnerValid(unittest.TestCase):
         # test whether the record's repo_file_path is correct, relative to the CWD (with a / at the start).
 
         # this is just constructing the scan dir as normal
-        checks_allowlist, dir_rel_path, runner = _setup_test_under_example()
-        with mock.patch("checkov.common.util.env_vars_config.env_vars_config.CHECKOV_ALLOW_KUSTOMIZE_FILE_EDITS", "True"):
+        with mock.patch.dict(os.environ, {"CHECKOV_ALLOW_KUSTOMIZE_FILE_EDITS": "True"}):
+            checks_allowlist, dir_rel_path, runner = _setup_test_under_example()
             report = runner.run(root_folder=dir_rel_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework=['kustomize'], checks=checks_allowlist))
 

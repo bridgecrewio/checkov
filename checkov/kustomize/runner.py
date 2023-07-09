@@ -135,8 +135,8 @@ class K8sKustomizeRunner(K8sRunner):
 
             if self.checkov_allow_kustomize_file_edits:
                 caller_file_line_range, caller_file_path = self._get_caller_file_info(entity_context, k8_file,
-                                                                                              k8_file_path, resource_id,
-                                                                                              root_folder)
+                                                                                      k8_file_path, resource_id,
+                                                                                      root_folder)
             code_lines = entity_context.get("code_lines")
             file_line_range = self.line_range(code_lines)
 
@@ -520,7 +520,7 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
         if self.checkov_allow_kustomize_file_edits:
             add_origin_annotations_command = 'kustomize edit add buildmetadata originAnnotations'
             add_origin_annotations_return_code = subprocess.run(add_origin_annotations_command.split(' '),  # nosec
-                                                                  cwd=filePath).returncode
+                                                                cwd=filePath).returncode
 
         full_command = f'{template_renderer_command} {template_render_command_options}'
         proc = subprocess.Popen(full_command.split(' '), cwd=filePath, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
@@ -557,8 +557,8 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
 
         return env_or_base_path_prefix
 
-    @staticmethod
     def get_binary_output(
+        self,
         file_path: str,
         kustomize_processed_folder_and_meta: dict[str, dict[str, Any]],
         template_renderer_command: str,
@@ -566,7 +566,7 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
         source_type = kustomize_processed_folder_and_meta[file_path].get('type')
         logging.debug(f"Kustomization at {file_path} likley a {source_type}")
         try:
-            output = Runner._get_kubectl_output(file_path, template_renderer_command, source_type)
+            output = self._get_kubectl_output(file_path, template_renderer_command, source_type)
             return output, file_path
         except Exception:
             logging.warning(f"Error building Kustomize output at dir: {file_path}.", exc_info=True)
@@ -594,15 +594,15 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
         if cur_writer:
             Runner._curWriterValidateStoreMapAndClose(cur_writer, file_path, shared_kustomize_file_mappings)
 
-    @staticmethod
     def _run_kustomize_parser(
+        self,
         file_path: str,
         shared_kustomize_file_mappings: dict[str, str],
         kustomize_processed_folder_and_meta: dict[str, dict[str, Any]],
         template_renderer_command: str,
         target_folder_path: str,
     ) -> None:
-        output, _ = Runner.get_binary_output(file_path, kustomize_processed_folder_and_meta, template_renderer_command)
+        output, _ = self.get_binary_output(file_path, kustomize_processed_folder_and_meta, template_renderer_command)
         if not output:
             return
         Runner._parse_output(output, file_path, kustomize_processed_folder_and_meta, target_folder_path, shared_kustomize_file_mappings)
@@ -629,7 +629,7 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
 
             shared_kustomize_file_mappings: dict[str, str] = {}
             for file_path in self.kustomizeProcessedFolderAndMeta:
-                Runner._run_kustomize_parser(
+                self._run_kustomize_parser(
                     file_path=file_path,
                     shared_kustomize_file_mappings=shared_kustomize_file_mappings,
                     kustomize_processed_folder_and_meta=self.kustomizeProcessedFolderAndMeta,
@@ -647,7 +647,7 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
         jobs = []
         for filePath in self.kustomizeProcessedFolderAndMeta:
             p = multiprocessing.Process(
-                target=Runner._run_kustomize_parser,
+                target=self._run_kustomize_parser,
                 args=(
                     filePath,
                     shared_kustomize_file_mappings,
