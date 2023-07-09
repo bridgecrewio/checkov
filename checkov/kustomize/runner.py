@@ -166,8 +166,8 @@ class K8sKustomizeRunner(K8sRunner):
             -> str:
         amount_of_parents = str.count(origin_relative_path, '..')
         directory_prefix_path = k8s_file_dir
-        for _ in range(amount_of_parents):
-            directory_prefix_path = directory_prefix_path.parent
+        if amount_of_parents:
+            directory_prefix_path = k8s_file_dir.parents[amount_of_parents - 1]
 
         directory_prefix = str(directory_prefix_path)
         resolved_path = str(raw_file_path.resolve())
