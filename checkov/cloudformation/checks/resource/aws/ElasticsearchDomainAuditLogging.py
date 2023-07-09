@@ -11,7 +11,7 @@ class ElasticsearchDomainAuditLogging(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self) -> str:
-        return "Properties/LogPublishingOptions/AUDIT_LOGS/Enabled"  # checkov:skip=CKV_SECRET_6 false positive
+        return "Properties/LogPublishingOptions/AUDIT_LOGS/Enabled"
 
 
 check = ElasticsearchDomainAuditLogging()

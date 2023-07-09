@@ -1,7 +1,7 @@
 
 resource "github_actions_environment_secret" "fail" {
   environment       = "example_environment"
-  secret_name       = "example_secret_name"  # checkov:skip=CKV_SECRET_6 false positive
+  secret_name       = "example_secret_name"
   plaintext_value   = "INTHECLEAR"
 }
 

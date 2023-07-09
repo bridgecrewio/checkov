@@ -20,7 +20,7 @@ from checkov.common.parsers.node import DictNode, StrNode
 
 logger = logging.getLogger(__name__)
 
-IAM_ROLE_STATEMENTS_TOKEN = 'iamRoleStatements'  # nosec  # checkov:skip=CKV_SECRET_6 false positive
+IAM_ROLE_STATEMENTS_TOKEN = 'iamRoleStatements'  # nosec
 CFN_RESOURCES_TOKEN = 'resources'  # nosec
 PROVIDER_TOKEN = 'provider'  # nosec
 FUNCTIONS_TOKEN = 'functions'  # nosec

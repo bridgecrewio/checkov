@@ -22,7 +22,7 @@ class IMDSv1Disabled(BaseResourceCheck):
                     if metadata_options['HttpEndpoint'] == "disabled":
                         return CheckResult.PASSED
                 if 'HttpTokens' in metadata_options.keys():
-                    if metadata_options['HttpTokens'] == "required":  # checkov:skip=CKV_SECRET_6 false positive
+                    if metadata_options['HttpTokens'] == "required":
                         return CheckResult.PASSED
         return CheckResult.FAILED
 
