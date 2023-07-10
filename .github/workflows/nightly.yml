@@ -75,13 +75,10 @@ jobs:
         include:
           - os: macos-latest
             name: darwin
-            suffix: ''
           - os: ubuntu-latest
             name: linux
-            suffix: ''
           - os: windows-latest
             name: windows
-            suffix: '.exe'
     needs: [github-release]
     if: needs.github-release.outputs.upload_url != ''
     runs-on: ${{ matrix.os }}
@@ -104,12 +101,75 @@ jobs:
           pipenv run pip install pyinstaller
       - name: Build executable
         run: pipenv run pyinstaller checkov.spec
+      - name: Windows - zip artifact
+        if: matrix.os == 'windows-latest'
+        run: |
+          cd dist
+          dir
+          cd ..
+          tar.exe -a -c -f checkov.zip dist\\checkov.exe
+      - name: Linux/Mac - zip artifact
+        if: matrix.os != 'windows-latest'
+        run: zip checkov.zip dist/checkov
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.github-release.outputs.upload_url }}
-          asset_path: dist/checkov${{ matrix.suffix }}
-          asset_name: checkov_${{ matrix.name }}_${{ needs.github-release.outputs.version }}
+          asset_path: checkov.zip
+          asset_name: checkov_${{ matrix.name }}_X86_64_${{ needs.github-release.outputs.version }}.zip
           asset_content_type: application/zip
+  build-release-artifacts-arm:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            name: linux
+            distro: ubuntu_latest
+            arch: aarch64
+            suffix: ''
+          - os: windows-latest
+            name: windows
+            distro: ubuntu18.04
+            suffix: '.exe'
+    needs: [ github-release ]
+    if: needs.github-release.outputs.upload_url != ''
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - uses: actions/setup-python@bd6b4b6205c4dbad673328db7b31b7fab9e241c0  # v4
+        with:
+          python-version: 3.7
+      - name: Install pipenv
+        run: |
+          python -m pip install --no-cache-dir --upgrade pipenv
+      - name: Install deps and run pyinstaller
+        run: |
+          pipenv sync
+          pipenv run pip install pyinstaller
+      - name: Build executable
+        run: pipenv run pyinstaller checkov.spec
+      - name: Windows - zip artifact
+        if: matrix.os == 'windows-latest'
+        run: |
+          cd dist
+          dir
+          cd ..
+          tar.exe -a -c -f checkov.zip dist\\checkov.exe
+      - name: Linux/Mac - zip artifact
+        if: matrix.os != 'windows-latest'
+        run: zip checkov.zip dist/checkov
+#      - name: Upload Release Asset
+#        uses: actions/upload-release-asset@v1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          upload_url: ${{ needs.github-release.outputs.upload_url }}
+#          asset_path: checkov.zip
+#          asset_name: checkov_${{ matrix.name }}_ARM64_${{ needs.github-release.outputs.version }}.zip
+#          asset_content_type: application/zip
