@@ -154,7 +154,7 @@ class K8sKustomizeRunner(K8sRunner):
 
     def _get_caller_file_info(self, entity_context: _EntityContext, k8_file: str, k8_file_path: str, resource_id: str,
                               root_folder: str | None) -> tuple[tuple[int, int] | None, str | None]:
-        origin_relative_path = entity_context['origin_relative_path']
+        origin_relative_path = entity_context.get('origin_relative_path')
         if origin_relative_path is None:
             return None, None
         k8s_file_dir = pathlib.Path(k8_file_path).parent
@@ -169,6 +169,14 @@ class K8sKustomizeRunner(K8sRunner):
     @staticmethod
     def _get_caller_file_path(k8s_file_dir: pathlib.Path, origin_relative_path: str, raw_file_path: pathlib.Path)\
             -> str:
+        """
+        Creates the correct file path based on the collection of metadata locations we have.
+
+        Example for expected input:
+            - k8s_fil_dir - Path('/resources/image_referencer/overlays/prod')
+            - origin_relative_path - '../../base/deployment.yaml'
+            - raw_file_path - Path('/resources/image_referencer/overlays/prod/../../base/deployment.yaml')
+        """
         amount_of_parents = str.count(origin_relative_path, '..')
         directory_prefix_path = k8s_file_dir
         if amount_of_parents:
@@ -178,25 +186,30 @@ class K8sKustomizeRunner(K8sRunner):
         resolved_path = str(raw_file_path.resolve())
         # Make sure the resolved path starts with the root folder, as pathlib.Path.resolve() might change it
         if directory_prefix in resolved_path and not resolved_path.startswith(directory_prefix):
-            resolved_path_parts = resolved_path.split(directory_prefix)
-            if len(resolved_path_parts) > 1:
-                resolved_path = f'{directory_prefix}{"".join(resolved_path_parts[1:])}'
-            else:
-                resolved_path = f'{directory_prefix}{"".join(resolved_path_parts)}'
+            resolved_path = K8sKustomizeRunner._remove_extra_path_parts(resolved_path, directory_prefix)
 
         return resolved_path[len(str(directory_prefix)):]
+
+    @staticmethod
+    def _remove_extra_path_parts(resolved_path: str, prefix: str) -> str:
+        """
+        Some pathlib paths can "add" extra arguments at the beginning after running `Path.resolve()`.
+        For example, running `Path('/var/example.txt').resolve` might result in `/<not-existent-dir>/var/example.txt`.
+        The purpose of this function is to remove any unintentional additions like this one.
+        """
+        resolved_path_parts = resolved_path.split(prefix)
+        if len(resolved_path_parts) > 1:
+            resolved_path = f'{prefix}{"".join(resolved_path_parts[1:])}'
+        else:
+            resolved_path = f'{prefix}{"".join(resolved_path_parts)}'
+        return resolved_path
 
     def _get_caller_line_range(self, root_folder: str, k8_file: str, origin_relative_path: str,
                                resource_id: str) -> tuple[int, int] | None:
         raw_caller_directory = (pathlib.Path(k8_file.lstrip(os.path.sep)).parent /
                                 pathlib.Path(origin_relative_path.lstrip(os.path.sep)).parent)
         caller_directory = str(pathlib.Path(f'{os.path.sep}{raw_caller_directory}').resolve())
-        splitted_dir = caller_directory.split(root_folder)
-        if len(splitted_dir) > 1:
-            # Removes any unnecessary additions by `Path.resolve`
-            caller_directory = root_folder + ''.join(splitted_dir[1:])
-        else:
-            caller_directory = root_folder.join(splitted_dir)
+        caller_directory = K8sKustomizeRunner._remove_extra_path_parts(caller_directory, root_folder)
         file_ending = pathlib.Path(origin_relative_path).suffix
         caller_file_path = f'{str(pathlib.Path(caller_directory) / resource_id.replace(".", "-"))}{file_ending}'
 
