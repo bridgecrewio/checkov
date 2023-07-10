@@ -1,11 +1,17 @@
+from __future__ import annotations
+
 import os.path
 import tarfile
 import base64
 import gzip
 import io
 import logging
-
+from pathlib import Path
 from zipfile import ZipFile
+
+from charset_normalizer import from_path
+
+logger = logging.getLogger(__name__)
 
 
 def convert_to_unix_path(path: str) -> str:
@@ -89,3 +95,17 @@ def get_file_size_safe(file_path: str) -> int:
             extra={"file_path": file_path}
         )
         return -1
+
+
+def read_file_with_any_encoding(file_path: str | Path) -> str:
+    """Read the file with the system encoding and then try to detect it"""
+
+    file_path = file_path if isinstance(file_path, Path) else Path(file_path)
+
+    try:
+        content = file_path.read_text()
+    except UnicodeDecodeError:
+        logger.info(f"Encoding for file {file_path} is not UTF-8, trying to detect it")
+        content = str(from_path(file_path).best())
+
+    return content
