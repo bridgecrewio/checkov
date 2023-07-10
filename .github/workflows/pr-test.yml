@@ -12,11 +12,10 @@ jobs:
         include:
           - os: ubuntu-latest
             name: linux
-            distro: ubuntu_latest
           - os: windows-latest
             name: windows
-            distro: ubuntu18.04
-            suffix: '.exe'
+          - os: macos-latest
+            name: darwin
 #    needs: [ github-release ]
 #    if: needs.github-release.outputs.upload_url != ''
     runs-on: ${{ matrix.os }}
@@ -24,20 +23,24 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-      - uses: actions/setup-python@bd6b4b6205c4dbad673328db7b31b7fab9e241c0  # v4
+      - uses: pguyot/arm-runner-action@v2
+        id: build_image
         with:
-          python-version: 3.7
-      - name: Test arch
-        run: |
-          cat << EOF > arch.py
-          import platform
-          
-          print(platform.uname()[4])
-          EOF
-          
-          python -m arch.py
+          base_image: raspios_lite_arm64:latest
+      - uses: pguyot/arm-runner-action@v2
+        id: build_image
+        with:
+          base_image: raspios_lite_arm64:latest
+          command: |
+            sudo apt update
+            sudo apt install python3 idle3
+            cat << EOF > arch.py
+            import platform
+            
+            print(platform.uname()[4])
+            EOF
+            
+            python -m arch.py
 #      - name: Install pipenv
 #        run: |
 #          python -m pip install --no-cache-dir --upgrade pipenv
