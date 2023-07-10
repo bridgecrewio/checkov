@@ -153,8 +153,10 @@ class K8sKustomizeRunner(K8sRunner):
         return report
 
     def _get_caller_file_info(self, entity_context: _EntityContext, k8_file: str, k8_file_path: str, resource_id: str,
-                              root_folder: str | None) -> tuple[tuple[int, int] | None, str]:
+                              root_folder: str | None) -> tuple[tuple[int, int] | None, str | None]:
         origin_relative_path = entity_context['origin_relative_path']
+        if origin_relative_path is None:
+            return None, None
         k8s_file_dir = pathlib.Path(k8_file_path).parent
         raw_file_path = k8s_file_dir / origin_relative_path
         caller_file_path = self._get_caller_file_path(k8s_file_dir, origin_relative_path, raw_file_path)
