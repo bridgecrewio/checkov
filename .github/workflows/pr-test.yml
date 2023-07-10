@@ -32,10 +32,10 @@ jobs:
       - name: Test arch
         run: |
           cat << EOF > arch.py
-import platform
-
-print(platform.uname()[4])
-EOF
+          import platform
+          
+          print(platform.uname()[4])
+          EOF
           
           python -m arch.py
 #      - name: Install pipenv
