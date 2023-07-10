@@ -27,10 +27,6 @@ jobs:
         id: build_image
         with:
           base_image: raspios_lite_arm64:latest
-      - uses: pguyot/arm-runner-action@v2
-        id: build_image
-        with:
-          base_image: raspios_lite_arm64:latest
           command: |
             sudo apt update
             sudo apt install python3 idle3
