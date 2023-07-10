@@ -133,4 +133,3 @@ class _EntityContext(TypedDict, total=False):
     policy: str
     code_lines: list[tuple[int, str]]
     skipped_checks: list[_SkippedCheck]
-    origin_relative_path: str
