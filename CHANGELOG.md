@@ -1,6 +1,14 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.316...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.318...HEAD)
+
+## [2.3.318](https://github.com/bridgecrewio/checkov/compare/2.3.316...2.3.318) - 2023-07-10
+
+### Feature
+
+- **general:** support UTF-16 and other encodings in multiple frameworks - [#5308](https://github.com/bridgecrewio/checkov/pull/5308)
+- **kustomize:** add back reverted kustomize annotations and update build github action to use github runners - [#5316](https://github.com/bridgecrewio/checkov/pull/5316)
+- **kustomize:** Add origin annotations to calculate bases of kustomize checks - [#5298](https://github.com/bridgecrewio/checkov/pull/5298)
 
 ## [2.3.316](https://github.com/bridgecrewio/checkov/compare/2.3.314...2.3.316) - 2023-07-09
 
