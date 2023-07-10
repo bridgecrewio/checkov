@@ -174,7 +174,8 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
                 # TODO? - Variable Eval Message!
                 variable_evaluations: "dict[str, Any]" = {}
 
-                report = self.mutate_kubernetes_results(results, report, k8_file, k8_file_path, file_abs_path, entity_conf, variable_evaluations)
+                report = self.mutate_kubernetes_results(results, report, k8_file, k8_file_path, file_abs_path,
+                                                        entity_conf, variable_evaluations, root_folder)
             self.pbar.update()
         self.pbar.close()
         return report
@@ -194,6 +195,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
         file_abs_path: str,
         entity_conf: dict[str, Any],
         variable_evaluations: dict[str, Any],
+        root_folder: str | None = None
     ) -> Report:
         # Moves report generation logic out of run() method in Runner class.
         # Allows function overriding of a much smaller function than run() for other "child" frameworks such as Kustomize, Helm
