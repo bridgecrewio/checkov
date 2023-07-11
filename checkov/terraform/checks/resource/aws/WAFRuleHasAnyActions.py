@@ -15,7 +15,7 @@ class WAFRuleHasAnyActions(BaseResourceCheck):
         rules = None
         if conf.get("rule") and isinstance(conf["rule"], list):
             rules = conf["rule"]
-        # dont blame me i didn't name one rule and the other rules and the other activated_rule
+        # don't blame me I didn't name one rule and the other rules and the other activated_rule
         elif conf.get("rules") and isinstance(conf["rules"], list):
             rules = conf["rules"]
         elif conf.get("activated_rule") and isinstance(conf["activated_rule"], list):
@@ -23,9 +23,18 @@ class WAFRuleHasAnyActions(BaseResourceCheck):
 
         if isinstance(rules, list):
             for rule in rules:
+                passing = False
                 if "action" in rule and rule['action'] != [{}]:
-                    continue
+                    passing = True
                 if "override_action" in rule and rule['override_action'] != [{}]:
+                    passing = True
+
+                if rule.get('statement') and isinstance(rule['statement'], list):
+                    statements = rule['statement']
+                    for statement in statements:
+                        if statement.get('managed_rule_group_statement'):
+                            passing = True
+                if passing:
                     continue
                 return CheckResult.FAILED
             return CheckResult.PASSED

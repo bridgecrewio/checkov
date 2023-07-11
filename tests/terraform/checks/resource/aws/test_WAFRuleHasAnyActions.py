@@ -25,7 +25,8 @@ class TestWAFRuleHasAnyActions(unittest.TestCase):
             'aws_wafregional_web_acl.pass3',
             'aws_wafv2_rule_group.pass',
             'aws_wafregional_rule_group.pass',
-            'aws_waf_rule_group.pass'
+            'aws_waf_rule_group.pass',
+            'aws_wafv2_web_acl.pass_managed'
         }
 
         failing_resources = {
