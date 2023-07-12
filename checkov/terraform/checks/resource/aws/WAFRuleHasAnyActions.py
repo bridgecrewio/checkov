@@ -29,8 +29,8 @@ class WAFRuleHasAnyActions(BaseResourceCheck):
                 if "override_action" in rule and rule['override_action'] != [{}]:
                     passing = True
 
-                if rule.get('statement') and isinstance(rule['statement'], list):
-                    statements = rule['statement']
+                statements = rule.get('statement')
+                if statements and isinstance(statements, list):
                     for statement in statements:
                         if statement.get('managed_rule_group_statement'):
                             passing = True
