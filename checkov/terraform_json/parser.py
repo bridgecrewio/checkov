@@ -5,13 +5,13 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from charset_normalizer import from_path
 from yaml.scanner import ScannerError
 from yaml import YAMLError
 
 from checkov.common.parsers.json import parse as json_parse
 from checkov.common.parsers.yaml import loader
 from checkov.common.util.consts import LINE_FIELD_NAMES
+from checkov.common.util.file_utils import read_file_with_any_encoding
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 
 COMMENT_FIELD_NAME = "//"
@@ -61,11 +61,7 @@ def parse(file_path: Path) -> tuple[dict[str, Any], list[tuple[int, str]]] | tup
 def loads(file_path: Path) -> tuple[dict[str, Any], list[tuple[int, str]]]:
     """Loads the given JSON file with line numbers"""
 
-    try:
-        content = file_path.read_text()
-    except UnicodeDecodeError:
-        logging.debug(f"Encoding for file {file_path} is not UTF-8, trying to detect it")
-        content = str(from_path(file_path).best())
+    content = read_file_with_any_encoding(file_path=file_path)
 
     if not all(key in content for key in ("resource", "provider")):
         return {}, []

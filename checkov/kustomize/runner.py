@@ -21,9 +21,11 @@ from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
-from checkov.common.typing import _CheckResult
+from checkov.common.typing import _CheckResult, _EntityContext
+from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.common.util.data_structures_utils import pickle_deepcopy
-from checkov.kubernetes.kubernetes_utils import create_check_result, get_resource_id
+from checkov.common.util.type_forcers import convert_str_to_bool
+from checkov.kubernetes.kubernetes_utils import create_check_result, get_resource_id, calculate_code_lines
 from checkov.kubernetes.runner import Runner as K8sRunner
 from checkov.kubernetes.runner import _get_entity_abs_path
 from checkov.kustomize.image_referencer.manager import KustomizeImageReferencerManager
@@ -56,6 +58,10 @@ class K8sKustomizeRunner(K8sRunner):
         self.original_root_dir: str = ''
         self.pbar.turn_off_progress_bar()
 
+        # Allows using kustomize commands to directly edit the user's kustomization.yaml configurations
+        self.checkov_allow_kustomize_file_edits = convert_str_to_bool(os.getenv("CHECKOV_ALLOW_KUSTOMIZE_FILE_EDITS",
+                                                                                False))
+
     def set_external_data(
         self,
         definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None,
@@ -79,6 +85,7 @@ class K8sKustomizeRunner(K8sRunner):
         file_abs_path: str,
         entity_conf: dict[str, Any],
         variable_evaluations: dict[str, Any],
+        root_folder: str | None = None
     ) -> Report:
         # Moves report generation logic out of checkov.kubernetes.runner.run() def.
         # Allows us to overriding report file information for "child" frameworks such as Kustomize, Helm
@@ -110,6 +117,10 @@ class K8sKustomizeRunner(K8sRunner):
 
             external_run_indicator = "Bc"
             file_path = realKustomizeEnvMetadata['filePath']
+
+            caller_file_path = None
+            caller_file_line_range = None
+
             # means this scan originated in the platform
             if type(self.graph_manager).__name__.startswith(external_run_indicator):
                 absolute_file_path = file_abs_path
@@ -118,21 +129,107 @@ class K8sKustomizeRunner(K8sRunner):
                 # Fix file path to repo relative path
                 if self.original_root_dir:
                     repo_dir = str(pathlib.Path(self.original_root_dir).resolve())
+
                     if realKustomizeEnvMetadata['filePath'].startswith(repo_dir):
                         file_path = realKustomizeEnvMetadata['filePath'][len(repo_dir):]
 
+            if self.checkov_allow_kustomize_file_edits:
+                caller_file_line_range, caller_file_path = self._get_caller_file_info(entity_context, k8_file,
+                                                                                      k8_file_path, resource_id,
+                                                                                      root_folder)
             code_lines = entity_context.get("code_lines")
             file_line_range = self.line_range(code_lines)
+
             record = Record(
                 check_id=check.id, bc_check_id=check.bc_id, check_name=check.name,
-                check_result=check_result, code_block=code_lines, file_path=file_path,
-                file_line_range=file_line_range,
+                check_result=check_result, code_block=code_lines,
+                file_path=file_path, file_line_range=file_line_range,
+                caller_file_path=caller_file_path, caller_file_line_range=caller_file_line_range,
                 resource=kustomizeResourceID, evaluations=variable_evaluations,
                 check_class=check.__class__.__module__, file_abs_path=absolute_file_path, severity=check.severity)
             record.set_guideline(check.guideline)
             report.add_record(record=record)
 
         return report
+
+    def _get_caller_file_info(self, entity_context: _EntityContext, k8_file: str, k8_file_path: str, resource_id: str,
+                              root_folder: str | None) -> tuple[tuple[int, int] | None, str | None]:
+        origin_relative_path = entity_context.get('origin_relative_path')
+        if origin_relative_path is None:
+            return None, None
+        k8s_file_dir = pathlib.Path(k8_file_path).parent
+        raw_file_path = k8s_file_dir / origin_relative_path
+        caller_file_path = self._get_caller_file_path(k8s_file_dir, origin_relative_path, raw_file_path)
+        if root_folder is None:
+            return None, caller_file_path
+        caller_file_line_range = self._get_caller_line_range(root_folder, k8_file, origin_relative_path,
+                                                             resource_id)
+        return caller_file_line_range, caller_file_path
+
+    @staticmethod
+    def _get_caller_file_path(k8s_file_dir: pathlib.Path, origin_relative_path: str, raw_file_path: pathlib.Path)\
+            -> str:
+        """
+        Creates the correct file path based on the collection of metadata locations we have.
+
+        Example for expected input:
+            - k8s_fil_dir - Path('/resources/image_referencer/overlays/prod')
+            - origin_relative_path - '../../base/deployment.yaml'
+            - raw_file_path - Path('/resources/image_referencer/overlays/prod/../../base/deployment.yaml')
+        """
+        amount_of_parents = str.count(origin_relative_path, '..')
+        directory_prefix_path = k8s_file_dir
+        if amount_of_parents:
+            directory_prefix_path = k8s_file_dir.parents[amount_of_parents - 1]
+
+        directory_prefix = str(directory_prefix_path)
+        resolved_path = str(raw_file_path.resolve())
+        # Make sure the resolved path starts with the root folder, as pathlib.Path.resolve() might change it
+        if directory_prefix in resolved_path and not resolved_path.startswith(directory_prefix):
+            resolved_path = K8sKustomizeRunner._remove_extra_path_parts(resolved_path, directory_prefix)
+
+        return resolved_path[len(str(directory_prefix)):]
+
+    @staticmethod
+    def _remove_extra_path_parts(resolved_path: str, prefix: str) -> str:
+        """
+        Some pathlib paths can "add" extra arguments at the beginning after running `Path.resolve()`.
+        For example, running `Path('/var/example.txt').resolve` might result in `/<not-existent-dir>/var/example.txt`.
+        The purpose of this function is to remove any unintentional additions like this one.
+        """
+        resolved_path_parts = resolved_path.split(prefix)
+        if len(resolved_path_parts) > 1:
+            resolved_path = f'{prefix}{"".join(resolved_path_parts[1:])}'
+        else:
+            resolved_path = f'{prefix}{"".join(resolved_path_parts)}'
+        return resolved_path
+
+    def _get_caller_line_range(self, root_folder: str, k8_file: str, origin_relative_path: str,
+                               resource_id: str) -> tuple[int, int] | None:
+        raw_caller_directory = (pathlib.Path(k8_file.lstrip(os.path.sep)).parent /
+                                pathlib.Path(origin_relative_path.lstrip(os.path.sep)).parent)
+        caller_directory = str(pathlib.Path(f'{os.path.sep}{raw_caller_directory}').resolve())
+        caller_directory = K8sKustomizeRunner._remove_extra_path_parts(caller_directory, root_folder)
+        file_ending = pathlib.Path(origin_relative_path).suffix
+        caller_file_path = f'{str(pathlib.Path(caller_directory) / resource_id.replace(".", "-"))}{file_ending}'
+
+        if caller_file_path not in self.definitions:
+            return None
+        caller_resource = self.definitions[caller_file_path][0]
+
+        if caller_file_path not in self.definitions_raw:
+            # As we cannot calculate better lines with the `calculate_code_lines` without the raw code,
+            # we can use the existing info in the resource
+            return caller_resource[START_LINE], caller_resource[END_LINE]
+
+        raw_caller_resource = self.definitions_raw[caller_file_path]
+
+        caller_raw_start_line = caller_resource[START_LINE]
+        caller_raw_end_line = min(caller_resource[END_LINE], len(raw_caller_resource))
+
+        _, caller_start_line, caller_end_line = calculate_code_lines(raw_caller_resource, caller_raw_start_line,
+                                                                     caller_raw_end_line)
+        return caller_start_line, caller_end_line
 
     def line_range(self, code_lines: list[tuple[int, str]]) -> list[int]:
         num_of_lines = len(code_lines)
@@ -175,6 +272,14 @@ class K8sKustomizeRunner(K8sRunner):
                 else:
                     logging.warning(f"couldn't find {entity_file_abs_path} path in kustomizeFileMappings")
                     continue
+
+                caller_file_path = None
+                caller_file_line_range = None
+                if self.checkov_allow_kustomize_file_edits:
+                    caller_file_line_range, caller_file_path = self._get_caller_file_info(entity_context,
+                                                                                          entity_file_path,
+                                                                                          entity_file_path, entity_id,
+                                                                                          root_folder)
                 code_lines = entity_context["code_lines"]
                 file_line_range = self.line_range(code_lines)
 
@@ -187,6 +292,8 @@ class K8sKustomizeRunner(K8sRunner):
                     code_block=code_lines,
                     file_path=realKustomizeEnvMetadata['filePath'],
                     file_line_range=file_line_range,
+                    caller_file_path=caller_file_path,
+                    caller_file_line_range=caller_file_line_range,
                     resource=kustomizeResourceID,  # entity.get(CustomAttributes.ID),
                     evaluations={},
                     check_class=check.__class__.__module__,
@@ -239,6 +346,9 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
         self.templateRendererCommand: str | None = None
         self.target_folder_path = ''
 
+        self.checkov_allow_kustomize_file_edits = convert_str_to_bool(os.getenv("CHECKOV_ALLOW_KUSTOMIZE_FILE_EDITS",
+                                                                                False))
+
     def get_k8s_target_folder_path(self) -> str:
         return self.target_folder_path
 
@@ -275,8 +385,21 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
                 return {}
 
             if 'resources' in file_content:
-                logging.debug(f"Kustomization contains resources: section. Likley a base. {kustomization_path}")
-                metadata['type'] = "base"
+                resources = file_content['resources']
+
+                # We can differentiate between "overlays" and "bases" based on if the `resources` refers to a directory,
+                # which represents an "overlay", or only files which represents a "base"
+                resources_representing_directories = [r for r in resources if pathlib.Path(r).suffix == '']
+                if resources_representing_directories:
+                    logging.debug(
+                        f"Kustomization contains resources: section with directories. Likely an overlay/env."
+                        f" {kustomization_path}")
+                    metadata['type'] = "overlay"
+                    metadata['referenced_bases'] = resources_representing_directories
+                else:
+                    logging.debug(f"Kustomization contains resources: section with only files (no dirs). Likley a base."
+                                  f" {kustomization_path}")
+                    metadata['type'] = "base"
 
             elif 'patchesStrategicMerge' in file_content:
                 logging.debug(f"Kustomization contains patchesStrategicMerge: section. Likley an overlay/env. {kustomization_path}")
@@ -406,15 +529,29 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
             line_num += 1
         return cur_writer
 
-    @staticmethod
-    def _get_kubectl_output(filePath: str, template_renderer_command: str, source_type: str | None) -> bytes:
+    def _get_kubectl_output(self, filePath: str, template_renderer_command: str, source_type: str | None) -> bytes:
         # Template out the Kustomizations to Kubernetes YAML
         if template_renderer_command == "kubectl":
             template_render_command_options = "kustomize"
         if template_renderer_command == "kustomize":
             template_render_command_options = "build"
-        proc = subprocess.Popen([template_renderer_command, template_render_command_options, filePath], stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
+
+        add_origin_annotations_return_code = None
+
+        if self.checkov_allow_kustomize_file_edits:
+            add_origin_annotations_command = 'kustomize edit add buildmetadata originAnnotations'
+            add_origin_annotations_return_code = subprocess.run(add_origin_annotations_command.split(' '),  # nosec
+                                                                cwd=filePath).returncode
+
+        full_command = f'{template_renderer_command} {template_render_command_options}'
+        proc = subprocess.Popen(full_command.split(' '), cwd=filePath, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
         output, _ = proc.communicate()
+
+        if self.checkov_allow_kustomize_file_edits and add_origin_annotations_return_code == 0:
+            # If the return code is not 0, we didn't add the new buildmetadata field, so we shouldn't remove it
+            remove_origin_annotaions = 'kustomize edit remove buildmetadata originAnnotations'
+            subprocess.run(remove_origin_annotaions.split(' '), cwd=filePath)  # nosec
+
         logging.info(
             f"Ran kubectl to build Kustomize output. DIR: {filePath}. TYPE: {source_type}.")
         return output
@@ -430,7 +567,7 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
                 env_or_base_path_prefix = ""
             else:
                 base_path_parts = pathlib.Path(kustomize_processed_folder_and_meta[file_path]['calculated_bases']).parts
-                most_significant_base_path = f"/{base_path_parts[-3]}/{base_path_parts[-2]}/{base_path_parts[-1]}"
+                most_significant_base_path = f"/{base_path_parts[-3]}/{base_path_parts[-2]}"
                 env_or_base_path_prefix = f"{most_significant_base_path}/{kustomize_processed_folder_and_meta[file_path]['overlay_name']}"
 
         elif kustomize_processed_folder_and_meta[file_path].get('type') == "base":
@@ -441,8 +578,8 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
 
         return env_or_base_path_prefix
 
-    @staticmethod
     def get_binary_output(
+        self,
         file_path: str,
         kustomize_processed_folder_and_meta: dict[str, dict[str, Any]],
         template_renderer_command: str,
@@ -450,7 +587,7 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
         source_type = kustomize_processed_folder_and_meta[file_path].get('type')
         logging.debug(f"Kustomization at {file_path} likley a {source_type}")
         try:
-            output = Runner._get_kubectl_output(file_path, template_renderer_command, source_type)
+            output = self._get_kubectl_output(file_path, template_renderer_command, source_type)
             return output, file_path
         except Exception:
             logging.warning(f"Error building Kustomize output at dir: {file_path}.", exc_info=True)
@@ -478,15 +615,15 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
         if cur_writer:
             Runner._curWriterValidateStoreMapAndClose(cur_writer, file_path, shared_kustomize_file_mappings)
 
-    @staticmethod
     def _run_kustomize_parser(
+        self,
         file_path: str,
         shared_kustomize_file_mappings: dict[str, str],
         kustomize_processed_folder_and_meta: dict[str, dict[str, Any]],
         template_renderer_command: str,
         target_folder_path: str,
     ) -> None:
-        output, _ = Runner.get_binary_output(file_path, kustomize_processed_folder_and_meta, template_renderer_command)
+        output, _ = self.get_binary_output(file_path, kustomize_processed_folder_and_meta, template_renderer_command)
         if not output:
             return
         Runner._parse_output(output, file_path, kustomize_processed_folder_and_meta, target_folder_path, shared_kustomize_file_mappings)
@@ -513,7 +650,7 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
 
             shared_kustomize_file_mappings: dict[str, str] = {}
             for file_path in self.kustomizeProcessedFolderAndMeta:
-                Runner._run_kustomize_parser(
+                self._run_kustomize_parser(
                     file_path=file_path,
                     shared_kustomize_file_mappings=shared_kustomize_file_mappings,
                     kustomize_processed_folder_and_meta=self.kustomizeProcessedFolderAndMeta,
@@ -527,10 +664,11 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
         # make sure we have new dict
         shared_kustomize_file_mappings = pickle_deepcopy(manager.dict())  # type:ignore[arg-type]  # works with DictProxy
         shared_kustomize_file_mappings.clear()
+
         jobs = []
         for filePath in self.kustomizeProcessedFolderAndMeta:
             p = multiprocessing.Process(
-                target=Runner._run_kustomize_parser,
+                target=self._run_kustomize_parser,
                 args=(
                     filePath,
                     shared_kustomize_file_mappings,
@@ -604,6 +742,7 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
             with open(currentFileName) as f:
                 currentYamlObject = yaml.safe_load(f)
                 # Validate we have a K8S manifest
+
                 if "apiVersion" in currentYamlObject:
                     itemName = []
                     itemName.append(currentYamlObject['kind'])

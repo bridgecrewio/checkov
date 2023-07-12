@@ -1,6 +1,73 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.306...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.318...HEAD)
+
+## [2.3.318](https://github.com/bridgecrewio/checkov/compare/2.3.316...2.3.318) - 2023-07-10
+
+### Feature
+
+- **general:** support UTF-16 and other encodings in multiple frameworks - [#5308](https://github.com/bridgecrewio/checkov/pull/5308)
+- **kustomize:** add back reverted kustomize annotations and update build github action to use github runners - [#5316](https://github.com/bridgecrewio/checkov/pull/5316)
+- **kustomize:** Add origin annotations to calculate bases of kustomize checks - [#5298](https://github.com/bridgecrewio/checkov/pull/5298)
+
+## [2.3.316](https://github.com/bridgecrewio/checkov/compare/2.3.314...2.3.316) - 2023-07-09
+
+### Feature
+
+- **secrets:** Improve the entropy keyword combinator secret scanner - [#5307](https://github.com/bridgecrewio/checkov/pull/5307)
+
+### Bug Fix
+
+- **openapi:** Fix CKV_OpenAPI_20 - [#5302](https://github.com/bridgecrewio/checkov/pull/5302)
+- **terraform:** fix invalid value in CKV_AWS_304 - [#5301](https://github.com/bridgecrewio/checkov/pull/5301)
+- **terraform:** support new field in CKV2_AWS_3 - [#5304](https://github.com/bridgecrewio/checkov/pull/5304)
+
+## [2.3.314](https://github.com/bridgecrewio/checkov/compare/2.3.312...2.3.314) - 2023-07-06
+
+### Feature
+
+- **dockerfile:** add ARM build for K8s container image - [#5293](https://github.com/bridgecrewio/checkov/pull/5293)
+- **general:** Add checkov.spec to enable PyInstaller - [#5281](https://github.com/bridgecrewio/checkov/pull/5281)
+
+### Bug Fix
+
+- **terraform:** remove CKV2_AZURE_18 check and improve CKV2_AZURE_1 - [#5294](https://github.com/bridgecrewio/checkov/pull/5294)
+
+## [2.3.312](https://github.com/bridgecrewio/checkov/compare/2.3.311...2.3.312) - 2023-07-05
+
+### Platform
+
+- **general:** use sca inline suppressions - [#5285](https://github.com/bridgecrewio/checkov/pull/5285)
+
+## [2.3.311](https://github.com/bridgecrewio/checkov/compare/2.3.310...2.3.311) - 2023-07-04
+
+### Feature
+
+- **openapi:** New OpenAPI check CKV_OPENAPI_20 - [#5253](https://github.com/bridgecrewio/checkov/pull/5253)
+
+## [2.3.310](https://github.com/bridgecrewio/checkov/compare/2.3.309...2.3.310) - 2023-07-02
+
+### Bug Fix
+
+- **terraform:** remove deprecated check CKV_GCP_67 - [#5275](https://github.com/bridgecrewio/checkov/pull/5275)
+
+### Documentation
+
+- **general:** Add csv to output - [#5273](https://github.com/bridgecrewio/checkov/pull/5273)
+
+## [2.3.309](https://github.com/bridgecrewio/checkov/compare/2.3.306...2.3.309) - 2023-06-29
+
+### Feature
+
+- **graph:** add experimental debug output for graph check evaluation - [#5257](https://github.com/bridgecrewio/checkov/pull/5257)
+
+### Bug Fix
+
+- **general:** revert add composer files to supported package files - [#5269](https://github.com/bridgecrewio/checkov/pull/5269)
+
+### Platform
+
+- **general:** add composer files to supported package files - [#5263](https://github.com/bridgecrewio/checkov/pull/5263)
 
 ## [2.3.306](https://github.com/bridgecrewio/checkov/compare/2.3.303...2.3.306) - 2023-06-27
 

@@ -49,13 +49,14 @@ jobs:
       - name: Create GitHub Release
         if: steps.build_github_release.outputs.changelog != ''
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844  # v1
+        id: create_github_release
         with:
           tag_name: ${{ steps.prepare_release.outputs.version }}
           name: ${{ steps.prepare_release.outputs.version }}
           body: ${{ steps.build_github_release.outputs.changelog }}
       - name: Update CHANGELOG.md
         if: steps.build_github_release.outputs.changelog != ''
-        uses: stefanzweifel/changelog-updater-action@3b54ec66922355614bf0b80b290d6634a315acf5  # v1
+        uses: stefanzweifel/changelog-updater-action@fbed2c00a9444d54ab4b1a4a81dea3559e7a2d7c  # v1
         with:
           latest-version: ${{ steps.prepare_release.outputs.version }}
           release-notes: ${{ steps.build_github_release.outputs.changelog }}
@@ -65,3 +66,50 @@ jobs:
         with:
           commit_message: "chore: update release notes"
           file_pattern: CHANGELOG.md
+    outputs:
+      upload_url: ${{ steps.create_github_release.outputs.upload_url }}
+      version: ${{ steps.prepare_release.outputs.version }}
+  build-release-artifacts:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            name: darwin
+            suffix: ''
+          - os: ubuntu-latest
+            name: linux
+            suffix: ''
+          - os: windows-latest
+            name: windows
+            suffix: '.exe'
+    needs: [github-release]
+    if: needs.github-release.outputs.upload_url != ''
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-python@bd6b4b6205c4dbad673328db7b31b7fab9e241c0  # v4
+        with:
+          python-version: 3.7
+      - name: Install pipenv
+        run: |
+          python -m pip install --no-cache-dir --upgrade pipenv
+      - name: Install deps and run pyinstaller
+        run: |
+          pipenv sync
+          pipenv run pip install pyinstaller
+      - name: Build executable
+        run: pipenv run pyinstaller checkov.spec
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.github-release.outputs.upload_url }}
+          asset_path: dist/checkov${{ matrix.suffix }}
+          asset_name: checkov_${{ matrix.name }}_${{ needs.github-release.outputs.version }}
+          asset_content_type: application/zip

@@ -8,6 +8,8 @@ from typing import TYPE_CHECKING
 
 from pycep import BicepParser
 
+from checkov.common.util.file_utils import read_file_with_any_encoding
+
 if TYPE_CHECKING:
     from pycep.typing import BicepJson
 
@@ -18,7 +20,7 @@ class Parser:
 
     def parse(self, file_path: Path) -> tuple[BicepJson, list[tuple[int, str]]] | tuple[None, None]:
         try:
-            content = file_path.read_text()
+            content = read_file_with_any_encoding(file_path=file_path)
             template = self.bicep_parser.parse(text=content)
         except Exception:
             logging.debug(f"[bicep] Couldn't parse {file_path}", exc_info=True)
