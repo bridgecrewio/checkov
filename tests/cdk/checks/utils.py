@@ -5,10 +5,15 @@ from pathlib import Path
 
 from checkov.cdk.runner import CdkRunner
 from checkov.runner_filter import RunnerFilter
+from checkov.sast.consts import SastLanguages
 from tests.cdk.checks.conftest import CHECK_ID_MAP
 
 
 def run_check(check_name: str, lang: str) -> None:
+    # check language is supported
+    if lang not in SastLanguages.list():
+        return
+
     # setup sast runner
     runner = CdkRunner()
     runner.registry.temp_semgrep_rules_path = str(

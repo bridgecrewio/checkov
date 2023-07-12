@@ -31,6 +31,7 @@ def test_runner_honors_enforcement_rules():
     assert summary["parsing_errors"] == 0
 
 
+@pytest.mark.xfail(reason="TypeScript is not supported", strict=True)
 def test_runner_passing_check():
     # given
     test_file = EXAMPLES_DIR / "s3.ts"
@@ -47,6 +48,7 @@ def test_runner_passing_check():
     assert summary["parsing_errors"] == 0
 
 
+@pytest.mark.xfail(reason="TypeScript is not supported", strict=True)
 def test_runner_failing_check():
     # given
     test_file = EXAMPLES_DIR / "s3.ts"
@@ -72,7 +74,7 @@ def test_runner_multiple_languages():
     reports = CdkRunner().run(root_folder=str(test_dir), runner_filter=RunnerFilter(checks=["CKV_AWS_21"], framework=[CheckType.SAST]))
 
     # then
-    assert len(reports) == 2
+    assert len(reports) == 1
 
     report_python = next(iter(report for report in reports if report.check_type == "sast_python"))
     summary_python = report_python.get_summary()
@@ -84,12 +86,14 @@ def test_runner_multiple_languages():
 
     assert report_python.failed_checks[0].check_id == "CKV_AWS_21"
 
-    report_typescript = next(iter(report for report in reports if report.check_type == "sast_typescript"))
-    summary_typescript = report_typescript.get_summary()
+    # TODO: Restore when TypeScript is supported
 
-    assert summary_typescript["passed"] == 0
-    assert summary_typescript["failed"] == 1
-    assert summary_typescript["skipped"] == 0
-    assert summary_typescript["parsing_errors"] == 0
-
-    assert report_typescript.failed_checks[0].check_id == "CKV_AWS_21"
+    # report_typescript = next(iter(report for report in reports if report.check_type == "sast_typescript"))
+    # summary_typescript = report_typescript.get_summary()
+    #
+    # assert summary_typescript["passed"] == 0
+    # assert summary_typescript["failed"] == 1
+    # assert summary_typescript["skipped"] == 0
+    # assert summary_typescript["parsing_errors"] == 0
+    #
+    # assert report_typescript.failed_checks[0].check_id == "CKV_AWS_21"
