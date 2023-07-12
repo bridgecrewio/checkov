@@ -1,4 +1,4 @@
-from typing import List, Dict, Any, Tuple, Optional
+from typing import List, Dict, Any, Tuple, Optional, Union
 
 from termcolor import colored
 
@@ -22,8 +22,8 @@ class SastRecord(Record):
                  file_abs_path: str,
                  severity: Optional[Severity],
                  bc_check_id: Optional[str] = None,
-                 cwe: Optional[str] = None,
-                 owasp: Optional[str] = None,
+                 cwe: Optional[Union[List[str], str]] = None,
+                 owasp: Optional[Union[List[str], str]] = None,
                  show_severity: Optional[bool] = False  # should be false in case the severities are just a default value, as we deafult the semgrep result to warning severity
                  ) -> None:
         super().__init__(

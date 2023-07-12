@@ -11,10 +11,11 @@ from checkov.sast.checks_infra.base_registry import Registry
 from checkov.sast.common import get_code_block
 from checkov.common.output.report import Report
 from checkov.common.bridgecrew.severities import get_severity
-from checkov.sast.consts import SEMGREP_SEVERITY_TO_CHECKOV_SEVERITY, SastLanguages, FILE_EXT_TO_SAST_LANG
+from checkov.sast.consts import SEMGREP_SEVERITY_TO_CHECKOV_SEVERITY, SastLanguages, FILE_EXT_TO_SAST_LANG, SastEngines
 from checkov.common.typing import _CheckResult
 from checkov.common.models.enums import CheckResult
 from checkov.sast.engines.base_engine import SastEngine
+from checkov.sast.report import SastReport
 
 if not sys.platform.startswith('win'):
     # TODO: Enable SAST for windows runners
@@ -78,7 +79,9 @@ class SemgrepEngine(SastEngine):
         for matches in semgrep_output.matches.values():
             for rule_match in matches:
                 match_lang = FILE_EXT_TO_SAST_LANG.get(rule_match.path.suffix.lstrip('.'), '')
-                if not match_lang or not isinstance(match_lang, SastLanguages):  # 2nd condition for typing
+                if not match_lang:
+                    continue
+                if not isinstance(match_lang, SastLanguages):  # 2nd condition for typing
                     raise TypeError(f'file type {rule_match.path.suffix} is not supported by sast framework')
                 semgrep_results_by_language.setdefault(match_lang.value, []).append(rule_match)
 
@@ -134,7 +137,7 @@ class SemgrepEngine(SastEngine):
         return semgrep_output
 
     def create_report(self, check_type: str, lang: str, semgrep_matches: List[RuleMatch]) -> Report:
-        report = Report(f'{check_type}_{lang}')
+        report = SastReport(f'{check_type}_{lang}', {}, SastEngines.SEMGREP)
         for match in semgrep_matches:
             check_id = match.rule_id.split('.')[-1]
             check_id = check_id.rsplit("_", maxsplit=1)[0]  # remove the added language suffix, ex. CKV_AWS_21_python

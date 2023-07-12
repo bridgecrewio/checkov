@@ -301,6 +301,10 @@ class Report:
                 output_data += create_3d_policy_cli_output(self.failed_checks, self.skipped_checks)  # type:ignore[arg-type]
 
         else:
+            if self.check_type.lower().startswith("sast"):
+                output_data += colored(f"SAST engine: {str(summary.get('engine_name', '')).title()}, "
+                                       f"Source code files scanned: {summary.get('source_files_count', '?')}, "
+                                       f"Policies found: {summary.get('policy_count', '?')}\n\n", "cyan")
             if not is_quiet:
                 for record in self.passed_checks:
                     output_data += record.to_string(compact=is_compact, use_bc_ids=use_bc_ids)

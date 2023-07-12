@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Optional, List, Set
 
 from cachetools import cached, TTLCache
+from pydantic import ValidationError
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.platform_integration import bc_integration
@@ -20,12 +21,15 @@ from checkov.common.typing import _CheckResult
 from checkov.common.util.http_utils import request_wrapper
 from checkov.sast.checks_infra.base_registry import Registry
 from checkov.sast.common import get_code_block
-from checkov.sast.consts import SastLanguages
+from checkov.sast.consts import SastLanguages, SastEngines
 from checkov.sast.engines.base_engine import SastEngine
-from checkov.sast.prisma_models.report import PrismaReport
+from checkov.sast.prisma_models.report import PrismaReport, create_empty_report
 from checkov.sast.record import SastRecord
+from checkov.sast.report import SastReport
 
 logger = logging.getLogger(__name__)
+
+REPORT_PARSING_ERRORS = "report_parsing_errors"
 
 
 class PrismaEngine(SastEngine):
@@ -164,8 +168,11 @@ class PrismaEngine(SastEngine):
         # convert our byte array to a string
         analyze_code_string = analyze_code_bytes.decode('utf-8')
         d = json.loads(analyze_code_string)
-        result = PrismaReport(**d)
-        # result: Dict[str, Any] = json.loads(analyze_code_string)
+        try:
+            result = PrismaReport(**d)
+        except ValidationError as e:
+            result = create_empty_report(list(languages))
+            result.errors = {REPORT_PARSING_ERRORS: [str(err) for err in e.errors()]}
         return self.create_report(result)
 
     def create_report(self, prisma_report: PrismaReport) -> List[Report]:
@@ -173,7 +180,7 @@ class PrismaEngine(SastEngine):
         logging.debug(prisma_report.profiler)
         reports: List[Report] = []
         for lang, checks in prisma_report.rule_match.items():
-            report = Report(f'{self.check_type.upper()} - {lang.value.title()}')
+            report = SastReport(f'{self.check_type.upper()} - {lang.value.title()}', prisma_report.run_metadata, SastEngines.PRISMA)
             for check_id, match_rule in checks.items():
                 check_name = match_rule.check_name
                 check_cwe = match_rule.check_cwe
@@ -194,7 +201,9 @@ class PrismaEngine(SastEngine):
                                         file_abs_path=file_abs_path, severity=severity, cwe=check_cwe,
                                         owasp=check_owasp, show_severity=True)
                     report.add_record(record)
-
+            report_parsing_errors = prisma_report.errors.get(REPORT_PARSING_ERRORS)
+            if report_parsing_errors:
+                report.add_parsing_errors(report_parsing_errors)
             reports.append(report)
 
         return reports

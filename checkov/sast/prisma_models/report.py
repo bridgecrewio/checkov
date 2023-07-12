@@ -1,4 +1,4 @@
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Union
 from pydantic import BaseModel
 
 from checkov.sast.consts import SastLanguages
@@ -48,8 +48,8 @@ class Match(BaseModel):
 class RuleMatch(BaseModel):
     check_id: str  # noqa: CCE003
     check_name: str  # noqa: CCE003
-    check_cwe: str  # noqa: CCE003
-    check_owasp: str  # noqa: CCE003
+    check_cwe: Optional[Union[List[str], str]]  # noqa: CCE003
+    check_owasp: Optional[Union[List[str], str]]  # noqa: CCE003
     severity: str  # noqa: CCE003
     matches: List[Match]  # noqa: CCE003
 
@@ -58,3 +58,12 @@ class PrismaReport(BaseModel):
     rule_match: Dict[SastLanguages, Dict[str, RuleMatch]]  # noqa: CCE003
     errors: Dict[str, List[str]]  # noqa: CCE003
     profiler: Dict[str, Profiler]  # noqa: CCE003
+    run_metadata: Dict[str, Union[str, int]]  # noqa: CCE003
+
+
+def create_empty_report(languages: List[SastLanguages]) -> PrismaReport:
+    matches: Dict[SastLanguages, Dict[str, RuleMatch]] = {}
+    for lang in languages:
+        matches[lang] = {}
+
+    return PrismaReport(rule_match=matches, errors={}, profiler={}, run_metadata={})
