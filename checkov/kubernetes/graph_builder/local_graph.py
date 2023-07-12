@@ -162,11 +162,20 @@ class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
                 # resource does not contain all required fields and can not be associated with the pod
                 all_resources.append(conf)
                 return
-            template[PARENT_RESOURCE_KEY_NAME] = metadata.get('name', "")
+
+            parent_name = metadata.get('name', "")
+            template[PARENT_RESOURCE_KEY_NAME] = parent_name
             if not template.get('kind'):
                 template['kind'] = DEFAULT_NESTED_RESOURCE_TYPE
             if not template.get('apiVersion'):
                 template['apiVersion'] = conf.get('apiVersion')
+
+            template_metadata = template.get('metadata')
+            template_metadata[PARENT_RESOURCE_ID_KEY_NAME] = parent_name
+            annotations = metadata.get('annotations')
+            if annotations is not None and template_metadata is not None and 'annotations' not in template_metadata:
+                # Updates annotations to template as well to handle metadata added to the parent resource
+                template_metadata['annotations'] = annotations
             spec.pop('template', None)
         else:
             template = {}
