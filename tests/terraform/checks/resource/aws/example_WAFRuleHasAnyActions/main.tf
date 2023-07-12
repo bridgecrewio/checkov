@@ -25,7 +25,7 @@ resource "aws_wafv2_web_acl" "pass_managed" {
     }
   }
   visibility_config {
-          cloudwatch_metrics_enabled = false
+      cloudwatch_metrics_enabled = false
       metric_name                = "friendly-rule-metric-name"
       sampled_requests_enabled   = false
   }
