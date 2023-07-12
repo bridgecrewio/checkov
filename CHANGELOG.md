@@ -1,6 +1,14 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.318...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.320...HEAD)
+
+## [2.3.320](https://github.com/bridgecrewio/checkov/compare/2.3.318...2.3.320) - 2023-07-12
+
+### Bug Fix
+
+- **kustomize:** Checked for existence of caller_file_path in definitions_raw  - [#5324](https://github.com/bridgecrewio/checkov/pull/5324)
+- **openapi:** Fix ws for CKV_OPENAPI_20 - [#5317](https://github.com/bridgecrewio/checkov/pull/5317)
+- **terraform:** CKV_AWS_342 - managed rules have predefined actions - [#5322](https://github.com/bridgecrewio/checkov/pull/5322)
 
 ## [2.3.318](https://github.com/bridgecrewio/checkov/compare/2.3.316...2.3.318) - 2023-07-10
 
