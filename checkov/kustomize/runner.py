@@ -216,6 +216,12 @@ class K8sKustomizeRunner(K8sRunner):
         if caller_file_path not in self.definitions:
             return None
         caller_resource = self.definitions[caller_file_path][0]
+
+        if caller_file_path not in self.definitions_raw:
+            # As we cannot calculate better lines with the `calculate_code_lines` without the raw code,
+            # we can use the existing info in the resource
+            return caller_resource[START_LINE], caller_resource[END_LINE]
+
         raw_caller_resource = self.definitions_raw[caller_file_path]
 
         caller_raw_start_line = caller_resource[START_LINE]
@@ -223,7 +229,7 @@ class K8sKustomizeRunner(K8sRunner):
 
         _, caller_start_line, caller_end_line = calculate_code_lines(raw_caller_resource, caller_raw_start_line,
                                                                      caller_raw_end_line)
-        return (caller_start_line, caller_end_line)
+        return caller_start_line, caller_end_line
 
     def line_range(self, code_lines: list[tuple[int, str]]) -> list[int]:
         num_of_lines = len(code_lines)
