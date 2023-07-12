@@ -171,11 +171,11 @@ class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
                 template['apiVersion'] = conf.get('apiVersion')
 
             template_metadata = template.get('metadata')
-            template_metadata[PARENT_RESOURCE_ID_KEY_NAME] = parent_name
             annotations = metadata.get('annotations')
             if annotations is not None and template_metadata is not None and 'annotations' not in template_metadata:
                 # Updates annotations to template as well to handle metadata added to the parent resource
                 template_metadata['annotations'] = annotations
+                template_metadata[PARENT_RESOURCE_ID_KEY_NAME] = parent_name
             spec.pop('template', None)
         else:
             template = {}
