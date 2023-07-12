@@ -27,6 +27,10 @@ class TestClearTextAPIKey(unittest.TestCase):
             "/pass3.json",
             "/pass4.yaml",
             "/pass4.json",
+            "/pass5.yaml",
+            "/pass5.json",
+            "/pass6.yaml",
+            "/pass6.json",
         }
         failing_resources = {
             "/fail.yaml",
