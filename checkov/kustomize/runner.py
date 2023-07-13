@@ -185,7 +185,11 @@ class K8sKustomizeRunner(K8sRunner):
         """
         amount_of_parents = str.count(origin_relative_path, '..')
         directory_prefix_path = k8s_file_dir
-        if amount_of_parents:
+        if amount_of_parents == 0:
+            # In case we don't have any relative paths, we need to remove the first directory parent
+            # (as the first directory is the same one of the kustomization.yaml file)
+            directory_prefix_path = k8s_file_dir.parent
+        elif amount_of_parents:
             directory_prefix_path = k8s_file_dir.parents[amount_of_parents - 1]
 
         directory_prefix = str(directory_prefix_path)
