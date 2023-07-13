@@ -24,7 +24,7 @@ class SastEngines(str, Enum):
         return self.value
 
     SEMGREP = 'semgrep'
-    PRISMA = 'prisma'
+    PRISMA = 'prisma cloud'
 
 
 class SemgrepAttribute(str, Enum):
@@ -197,3 +197,9 @@ CHECKOV_SEVERITY_TO_SEMGREP_SEVERITY = {
     'MEDIUM': RuleSeverity.WARNING.value,
     'LOW': RuleSeverity.INFO.value,
 }
+
+POLICIES_ERRORS = 'policies_errors'
+POLICIES_ERRORS_COUNT = 'policies_errors_count'
+ENGINE_NAME = "engine_name"
+SOURCE_FILES_COUNT = "source_files_count"
+POLICY_COUNT = "policy_count"

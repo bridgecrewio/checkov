@@ -148,7 +148,7 @@ class PrismaEngine(SastEngine):
                 "languages": [a.value for a in languages],
             },
             "auth": {
-                "api_key": bc_integration.bc_api_key,
+                "api_key": bc_integration.get_auth_token(),
                 "platform_url": bc_integration.api_url,
                 "client_name": name,
                 "version": bc_integration.bc_source_version
