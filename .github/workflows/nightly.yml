@@ -123,7 +123,8 @@ jobs:
     needs: [ github-release ]
     if: needs.github-release.outputs.upload_url != ''
     runs-on: [self-hosted, public, linux, arm64]
-    image: arm64v8/python:3.7
+    container:
+      image: arm64v8/python:3.7
     permissions:
       contents: write
     steps:
