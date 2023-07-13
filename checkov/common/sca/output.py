@@ -119,7 +119,7 @@ def _update_details_by_scan_data_format(
         details.update({"status": status, "fix_version": fix_version})
 
 
-def get_code_block(package: dict[str, Any], package_name: str, package_version:str) -> list[tuple[int, str]]:
+def get_code_block(package: dict[str, Any], package_name: str, package_version: str) -> list[tuple[int, str]]:
     lines_number = package.get("lines")
     code_block = package.get("code_block")
 
