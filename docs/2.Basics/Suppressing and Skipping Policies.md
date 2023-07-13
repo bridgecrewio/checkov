@@ -214,17 +214,17 @@ jinja2==3.1.0
 ```
 
 #### JavaScript (package.json and bower.json)
-The skip comment can be anywhere in the metadata. Add these skip comments to the non-lock file and ensure you scan the non-lock file with any lock file scan. For example, package.json and yarn.lock must be scanned together for the suppression from the package.json to apply tot he yarn.lock violations.
+The skip comment can be anywhere in the metadata. Add these skip comments to the non-lock file and ensure you scan the non-lock file with any lock file scan. For example, package.json and yarn.lock must be scanned together for the suppression from the package.json to apply to the yarn.lock violations.
 
-The example below is for package.json
+The example below is for multiple skip comments for package.json
 
 ```package.json
 {
   "name": "my-package",
   "version": "1.0.0",
   "description": "A sample package.json file",
-  "//": "checkov:skip=CVE-2023-123: ignore this CVE for this file",
-  "//": "checkov:skip=express[BC_LIC_2]: ignore unknown license violations for express in this file",
+  "//": ["checkov:skip=express[BC_LIC_2]: ignore unknown license violations for express in this file",
+         "checkov:skip=CVE-2023-123: ignore this CVE for this file"]
   "dependencies": {
     "express": "4.17.1",
     "lodash": "4.17.21"
@@ -234,6 +234,12 @@ The example below is for package.json
     "test": "jest"
   }
 }
+```
+
+Alternatively, you can add a single skip comment
+
+```
+"//": "checkov:skip=CVE-2023-123: ignore this CVE for this file"
 ```
 
 ### Java (pom.xml), .NET (*.csproj)
