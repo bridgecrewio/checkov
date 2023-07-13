@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.321...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.324...HEAD)
+
+## [2.3.324](https://github.com/bridgecrewio/checkov/compare/2.3.321...2.3.324) - 2023-07-13
+
+### Bug Fix
+
+- **kustomize:** Added support for case where no parents are found for the relative fie path - [#5332](https://github.com/bridgecrewio/checkov/pull/5332)
+- **terraform:** Update CKV2_AWS_12 for the new defaults - [#5203](https://github.com/bridgecrewio/checkov/pull/5203)
 
 ## [2.3.321](https://github.com/bridgecrewio/checkov/compare/2.3.320...2.3.321) - 2023-07-13
 
