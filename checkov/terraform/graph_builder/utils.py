@@ -4,7 +4,7 @@ import logging
 import os
 import re
 from typing import Tuple
-from typing import Union, List, Any, Dict, Optional, Callable, TYPE_CHECKING
+from typing import Union, List, Any, Dict, Optional, TYPE_CHECKING
 
 import igraph
 
@@ -61,7 +61,7 @@ def extract_module_dependency_path(module_dependency: str | List[str]) -> List[s
     ]
 
 
-BLOCK_TYPES_STRINGS = ["var", "local", "module", "data"]
+BLOCK_TYPES_STRINGS = ("var", "local", "module", "data")
 FUNC_CALL_PREFIX_PATTERN = re.compile(r"([.a-zA-Z]+)\(")
 INTERPOLATION_PATTERN = re.compile(r"[${}]")
 INTERPOLATION_EXPR = re.compile(r"\$\{([^\}]*)\}")
@@ -72,55 +72,81 @@ MAP_ATTRIBUTE_PATTERN = re.compile(r"\[\"([^\d\W]\w*)\"\]")
 def get_vertices_references(
         str_value: str, aliases: Dict[str, Dict[str, str]], resources_types: List[str]
 ) -> List[TerraformVertexReference]:
-    vertices_references = []
+    has_interpolation = True if "${" in str_value else False
+    vertices_references: "list[TerraformVertexReference]" = []
     words_in_str_value = str_value.split()
 
     for word in words_in_str_value:
-        if word.startswith(".") or word.startswith(r"/."):
+        if word.startswith((".", r"/.")):
             # check if word is a relative path
             continue
 
-        interpolations = re.split(INTERPOLATION_EXPR, word)
-        for interpolation_content in interpolations:
-            for w in interpolation_content.split(","):
-                word_sub_parts = w.split(".")
-                if len(word_sub_parts) <= 1 or word_sub_parts[0].isnumeric():
-                    # if the word doesn't contain a '.' char, or if the first part before the dot is a number
-                    continue
-
-                suspected_block_type = word_sub_parts[0]
-                if suspected_block_type in BLOCK_TYPES_STRINGS:
-                    # matching cases like 'var.x'
-                    vertex_reference = TerraformVertexReference(
-                        block_type=suspected_block_type, sub_parts=word_sub_parts[1:], origin_value=w
-                    )
-                    if vertex_reference not in vertices_references:
-                        vertices_references.append(vertex_reference)
-                    continue
-
-                vertex_reference_alias = get_vertex_reference_from_alias(suspected_block_type, aliases, word_sub_parts)
-                if vertex_reference_alias and vertex_reference_alias not in vertices_references:
-                    vertex_reference_alias.origin_value = w
-                    # matching cases where the word is referring an alias
-                    vertices_references.append(vertex_reference_alias)
-                    continue
-
-                # matching cases like 'aws_vpc.main'
-                if word_sub_parts[0] in resources_types:
-                    block_name = word_sub_parts[0] + "." + word_sub_parts[1]
-                    word_sub_parts = [block_name] + word_sub_parts[2:]
-                    vertex_reference = TerraformVertexReference(
-                        block_type=BlockType.RESOURCE, sub_parts=word_sub_parts, origin_value=w
-                    )
-                    if vertex_reference not in vertices_references:
-                        vertices_references.append(vertex_reference)
+        if has_interpolation:
+            interpolations = re.split(INTERPOLATION_EXPR, word)
+            for interpolation_content in interpolations:
+                add_vertices_references_from_word(
+                    vertices_references=vertices_references,
+                    word=interpolation_content,
+                    aliases=aliases,
+                    resources_types=resources_types,
+                )
+        else:
+            add_vertices_references_from_word(
+                vertices_references=vertices_references,
+                word=word,
+                aliases=aliases,
+                resources_types=resources_types,
+            )
 
     return vertices_references
+
+
+def add_vertices_references_from_word(
+    vertices_references: list[TerraformVertexReference],
+    word: str,
+    aliases: dict[str, dict[str, str]],
+    resources_types: list[str],
+) -> None:
+    for w in word.split(","):
+        word_sub_parts = w.split(".")
+        if len(word_sub_parts) <= 1 or word_sub_parts[0].isnumeric():
+            # if the word doesn't contain a '.' char, or if the first part before the dot is a number
+            continue
+
+        suspected_block_type = word_sub_parts[0]
+        if suspected_block_type in BLOCK_TYPES_STRINGS:
+            # matching cases like 'var.x'
+            vertex_reference = TerraformVertexReference(
+                block_type=suspected_block_type, sub_parts=word_sub_parts[1:], origin_value=w
+            )
+            if vertex_reference not in vertices_references:
+                vertices_references.append(vertex_reference)
+            continue
+
+        vertex_reference_alias = get_vertex_reference_from_alias(suspected_block_type, aliases, word_sub_parts)
+        if vertex_reference_alias and vertex_reference_alias not in vertices_references:
+            vertex_reference_alias.origin_value = w
+            # matching cases where the word is referring an alias
+            vertices_references.append(vertex_reference_alias)
+            continue
+
+        # matching cases like 'aws_vpc.main'
+        if word_sub_parts[0] in resources_types:
+            block_name = word_sub_parts[0] + "." + word_sub_parts[1]
+            word_sub_parts = [block_name] + word_sub_parts[2:]
+            vertex_reference = TerraformVertexReference(
+                block_type=BlockType.RESOURCE, sub_parts=word_sub_parts, origin_value=w
+            )
+            if vertex_reference not in vertices_references:
+                vertices_references.append(vertex_reference)
 
 
 def get_vertex_reference_from_alias(
         block_type_str: str, aliases: Dict[str, Dict[str, str]], val: List[str]
 ) -> Optional[TerraformVertexReference]:
+    if not aliases:
+        return None
+
     block_type = ""
     if block_type_str in aliases:
         block_type = aliases[block_type_str][CustomAttributes.BLOCK_TYPE]
@@ -133,6 +159,10 @@ def get_vertex_reference_from_alias(
 
 
 def remove_function_calls_from_str(str_value: str) -> str:
+    if "(" not in str_value:
+        # otherwise it can't be a function call
+        return str_value
+
     # remove start of function calls:: 'length(aws_vpc.main) > 0 ? aws_vpc.main[0].cidr_block : ${var.x}' --> 'aws_vpc.main) > 0 ? aws_vpc.main[0].cidr_block : ${var.x}'
     str_value = re.sub(FUNC_CALL_PREFIX_PATTERN, "", str_value)
     # remove ')'
@@ -140,6 +170,10 @@ def remove_function_calls_from_str(str_value: str) -> str:
 
 
 def remove_index_pattern_from_str(str_value: str) -> str:
+    if "[" not in str_value:
+        # otherwise it can't be accessed via index
+        return str_value
+
     str_value = re.sub(INDEX_PATTERN, "", str_value)
     str_value = str_value.replace('["', CHECKOV_LOREM_IPSUM_VAL).replace("[", " [ ").replace(CHECKOV_LOREM_IPSUM_VAL, '["')
     str_value = str_value.replace('"]', CHECKOV_LOREM_IPSUM_VAL).replace("]", " ] ").replace(CHECKOV_LOREM_IPSUM_VAL, '"]')
@@ -147,10 +181,18 @@ def remove_index_pattern_from_str(str_value: str) -> str:
 
 
 def remove_interpolation(str_value: str, replace_str: str = " ") -> str:
+    if "${" not in str_value:
+        # otherwise it can't be a string interpolation
+        return str_value
+
     return re.sub(INTERPOLATION_PATTERN, replace_str, str_value)
 
 
 def replace_map_attribute_access_with_dot(str_value: str) -> str:
+    if "[\"" not in str_value:
+        # otherwise it can't be accessed via named index
+        return str_value
+
     split_by_identifiers = re.split(MAP_ATTRIBUTE_PATTERN, str_value)
     new_split = []
     for split_part in split_by_identifiers:
@@ -163,19 +205,10 @@ def replace_map_attribute_access_with_dot(str_value: str) -> str:
     return ".".join(new_split)
 
 
-DEFAULT_CLEANUP_FUNCTIONS: List[Callable[[str], str]] = [
-    remove_function_calls_from_str,
-    remove_index_pattern_from_str,
-    replace_map_attribute_access_with_dot,
-    remove_interpolation,
-]
-
-
 def get_referenced_vertices_in_value(
         value: Union[str, List[str], Dict[str, str]],
         aliases: Dict[str, Dict[str, str]],
         resources_types: List[str],
-        cleanup_functions: Optional[List[Callable[[str], str]]] = None,
 ) -> List[TerraformVertexReference]:
     references_vertices: "list[TerraformVertexReference]" = []
 
@@ -183,36 +216,53 @@ def get_referenced_vertices_in_value(
         # bool/int values can't have a references to other vertices
         return references_vertices
 
-    if cleanup_functions is None:
-        cleanup_functions = DEFAULT_CLEANUP_FUNCTIONS
-
     if isinstance(value, list):
         for sub_value in value:
             references_vertices += get_referenced_vertices_in_value(
-                sub_value, aliases, resources_types, cleanup_functions
+                sub_value, aliases, resources_types
             )
 
     if isinstance(value, dict):
         for sub_value in value.values():
             references_vertices += get_referenced_vertices_in_value(
-                sub_value, aliases, resources_types, cleanup_functions
+                sub_value, aliases, resources_types
             )
 
     if isinstance(value, str):
-        value_len = len(value)
-        if CHECKOV_RENDER_MAX_LEN and 0 < CHECKOV_RENDER_MAX_LEN < value_len:
-            logging.debug(f'Rendering was skipped for a {value_len}-character-long string. If you wish to have it '
-                          f'evaluated, please set the environment variable CHECKOV_RENDER_MAX_LEN '
-                          f'to {str(value_len + 1)} or to 0 to allow rendering of any length')
-        else:
-            if value_len < 5 or "." not in value:
-                # the shortest reference is 'var.a' and references are done via dot notation
-                return references_vertices
+        references_vertices = get_referenced_vertices_in_str_value(
+            str_value=value,
+            aliases=aliases,
+            resources_types=resources_types,
+        )
 
-            if cleanup_functions:
-                for func in cleanup_functions:
-                    value = func(value)
-            references_vertices = get_vertices_references(value, aliases, resources_types)
+    return references_vertices
+
+
+def get_referenced_vertices_in_str_value(
+    str_value: str,
+    aliases: dict[str, dict[str, str]],
+    resources_types: list[str],
+) -> list[TerraformVertexReference]:
+    references_vertices: "list[TerraformVertexReference]" = []
+
+    value_len = len(str_value)
+    if CHECKOV_RENDER_MAX_LEN and 0 < CHECKOV_RENDER_MAX_LEN < value_len:
+        logging.debug(
+            f'Rendering was skipped for a {value_len}-character-long string. If you wish to have it '
+            f'evaluated, please set the environment variable CHECKOV_RENDER_MAX_LEN '
+            f'to {str(value_len + 1)} or to 0 to allow rendering of any length'
+        )
+    else:
+        if value_len < 5 or "." not in str_value:
+            # the shortest reference is 'var.a' and references are done via dot notation
+            return references_vertices
+
+        str_value = remove_function_calls_from_str(str_value=str_value)
+        str_value = remove_index_pattern_from_str(str_value=str_value)
+        str_value = replace_map_attribute_access_with_dot(str_value=str_value)
+        str_value = remove_interpolation(str_value=str_value)
+
+        references_vertices = get_vertices_references(str_value, aliases, resources_types)
 
     return references_vertices
 
@@ -292,9 +342,7 @@ def get_related_resource_id(resource: dict[str, Any], file_path_to_referred_id: 
 
 def get_file_path_to_referred_id_networkx(graph_object: DiGraph) -> dict[str, str]:
     file_path_to_module_id = {}
-    for node in graph_object.nodes.values():
-        if node.get(CustomAttributes.BLOCK_TYPE) == BlockType.MODULE:
-            modules = node
+
     modules = [node for node in graph_object.nodes.values() if
                node.get(CustomAttributes.BLOCK_TYPE) == BlockType.MODULE]
     for modules_data in modules:
