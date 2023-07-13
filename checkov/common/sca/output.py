@@ -59,7 +59,7 @@ def create_report_license_record(
     if status == "COMPLIANT":
         check_result["result"] = CheckResult.PASSED
 
-    code_block = [(0, f"{package_name}: {package_version}")]
+    code_block = get_code_block(package, package_name, package_version)
 
     details = {
         "package_name": package_name,
@@ -119,6 +119,16 @@ def _update_details_by_scan_data_format(
         details.update({"status": status, "fix_version": fix_version})
 
 
+def get_code_block(package: dict[str, Any], package_name: str, package_version:str) -> list[tuple[int, str]]:
+    lines_number = package.get("lines")
+    code_block = package.get("code_block")
+
+    if lines_number and code_block:
+        return [lines_number[0], code_block]
+
+    return [(0, f"{package_name}: {package_version}")]
+
+
 def create_report_cve_record(
         rootless_file_path: str,
         file_abs_path: str,
@@ -159,8 +169,7 @@ def create_report_cve_record(
             "result": CheckResult.SKIPPED,
             "suppress_comment": "Filtered by severity",
         }
-
-    code_block = [(0, f"{package_name}: {package_version}")]
+    code_block = get_code_block(package, package_name, package_version)
 
     details = {
         "id": cve_id,
