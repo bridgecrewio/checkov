@@ -142,7 +142,10 @@ jobs:
       - name: Build executable
         run: pipenv run pyinstaller checkov.spec
       - name: zip artifact
-        run: zip checkov.zip dist/checkov
+        run: |
+          apt-get update
+          apt install zip
+          zip checkov.zip dist/checkov
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         env:
