@@ -18,11 +18,12 @@ TAG_PATTERN = re.compile(r'\?(ref=)(?P<tag>(.*))')
 
 
 class GitGetter(BaseGetter):
-    def __init__(self, url: str, create_clone_and_result_dirs: bool = True) -> None:
+    def __init__(self, url: str, create_clone_and_result_dirs: bool = True, branch: str = '') -> None:
         self.logger = logging.getLogger(__name__)
         self.create_clone_and_res_dirs = create_clone_and_result_dirs
         self.tag = ''
         self.commit_id: str | None = None
+        self.branch = branch
 
         if "?ref" in url:
             url = self.extract_git_ref(url=url)
@@ -71,7 +72,9 @@ class GitGetter(BaseGetter):
     def _clone(self, git_url: str, clone_dir: str) -> None:
         self.logger.debug(f"cloning {self.url if '@' not in self.url else self.url.split('@')[1]} to {clone_dir}")
         with temp_environ(GIT_TERMINAL_PROMPT="0"):  # disables user prompts originating from GIT
-            if self.commit_id:
+            if self.branch:
+                Repo.clone_from(git_url, clone_dir, branch=self.branch)
+            elif self.commit_id:  # no commit id support for branch
                 repo = Repo.clone_from(git_url, clone_dir, no_checkout=True)  # need to be a full git clone
                 repo.git.checkout(self.commit_id)
             elif self.tag:
