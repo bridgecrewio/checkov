@@ -197,7 +197,7 @@ Check: CKV_AWS_18: "Ensure the S3 bucket has access logging enabled"
 ```
 
 ### Software Composition Analysis (SCA)
-Suppressing SCA findings can be done a veriety of ways to fit your needs. CVEs can be suppressed using `--skip-check CKV_CVE_2022_1234` to suppress a specific CVE for that run or `--skip-cve-package package_name` to skip all CVEs for a specific package.
+Suppressing SCA findings can be done in a variety of ways to fit your needs. CVEs can be suppressed using `--skip-check CKV_CVE_2022_1234` to suppress a specific CVE for that run or `--skip-cve-package package_name` to skip all CVEs for a specific package.
 
 For inline SCA suppressions, depending on the package manager, there are different ways to suppress CVEs and License violations. Adding a skip comment to any package manager file will suppress all findings for that CVE or package and License combination for that file.
 
