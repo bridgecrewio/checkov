@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.320...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.321...HEAD)
+
+## [2.3.321](https://github.com/bridgecrewio/checkov/compare/2.3.320...2.3.321) - 2023-07-13
+
+### Feature
+
+- **kustomize:** Support child k8s resources inside kustomize origin annotations - [#5328](https://github.com/bridgecrewio/checkov/pull/5328)
 
 ## [2.3.320](https://github.com/bridgecrewio/checkov/compare/2.3.318...2.3.320) - 2023-07-12
 
