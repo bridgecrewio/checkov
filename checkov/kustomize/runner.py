@@ -25,7 +25,8 @@ from checkov.common.typing import _CheckResult, _EntityContext
 from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.type_forcers import convert_str_to_bool
-from checkov.kubernetes.kubernetes_utils import create_check_result, get_resource_id, calculate_code_lines
+from checkov.kubernetes.kubernetes_utils import create_check_result, get_resource_id, calculate_code_lines, \
+    PARENT_RESOURCE_ID_KEY_NAME
 from checkov.kubernetes.runner import Runner as K8sRunner
 from checkov.kubernetes.runner import _get_entity_abs_path
 from checkov.kustomize.image_referencer.manager import KustomizeImageReferencerManager
@@ -134,8 +135,13 @@ class K8sKustomizeRunner(K8sRunner):
                         file_path = realKustomizeEnvMetadata['filePath'][len(repo_dir):]
 
             if self.checkov_allow_kustomize_file_edits:
+                caller_resource_id = resource_id
+                if PARENT_RESOURCE_ID_KEY_NAME in entity_conf:
+                    caller_resource_id = entity_conf[PARENT_RESOURCE_ID_KEY_NAME]
                 caller_file_line_range, caller_file_path = self._get_caller_file_info(entity_context, k8_file,
-                                                                                      k8_file_path, resource_id,
+                                                                                      k8_file_path,
+                                                                                      resource_id,
+                                                                                      caller_resource_id,
                                                                                       root_folder)
             code_lines = entity_context.get("code_lines")
             file_line_range = self.line_range(code_lines)
@@ -153,7 +159,7 @@ class K8sKustomizeRunner(K8sRunner):
         return report
 
     def _get_caller_file_info(self, entity_context: _EntityContext, k8_file: str, k8_file_path: str, resource_id: str,
-                              root_folder: str | None) -> tuple[tuple[int, int] | None, str | None]:
+                              caller_resource_id: str, root_folder: str | None) -> tuple[tuple[int, int] | None, str | None]:
         origin_relative_path = entity_context.get('origin_relative_path')
         if origin_relative_path is None:
             return None, None
@@ -163,7 +169,7 @@ class K8sKustomizeRunner(K8sRunner):
         if root_folder is None:
             return None, caller_file_path
         caller_file_line_range = self._get_caller_line_range(root_folder, k8_file, origin_relative_path,
-                                                             resource_id)
+                                                             resource_id, caller_resource_id)
         return caller_file_line_range, caller_file_path
 
     @staticmethod
@@ -205,17 +211,26 @@ class K8sKustomizeRunner(K8sRunner):
         return resolved_path
 
     def _get_caller_line_range(self, root_folder: str, k8_file: str, origin_relative_path: str,
-                               resource_id: str) -> tuple[int, int] | None:
+                               resource_id: str, caller_resource_id: str) -> tuple[int, int] | None:
         raw_caller_directory = (pathlib.Path(k8_file.lstrip(os.path.sep)).parent /
                                 pathlib.Path(origin_relative_path.lstrip(os.path.sep)).parent)
         caller_directory = str(pathlib.Path(f'{os.path.sep}{raw_caller_directory}').resolve())
         caller_directory = K8sKustomizeRunner._remove_extra_path_parts(caller_directory, root_folder)
         file_ending = pathlib.Path(origin_relative_path).suffix
-        caller_file_path = f'{str(pathlib.Path(caller_directory) / resource_id.replace(".", "-"))}{file_ending}'
+        caller_file_path = f'{str(pathlib.Path(caller_directory) / caller_resource_id.replace(".", "-"))}{file_ending}'
 
         if caller_file_path not in self.definitions:
             return None
-        caller_resource = self.definitions[caller_file_path][0]
+
+        caller_resource = None
+        for resource in self.definitions[caller_file_path]:
+            _resource_id = get_resource_id(resource)
+            if _resource_id == resource_id:
+                caller_resource = resource
+                break
+
+        if caller_resource is None:
+            return None
 
         if caller_file_path not in self.definitions_raw:
             # As we cannot calculate better lines with the `calculate_code_lines` without the raw code,
@@ -276,9 +291,14 @@ class K8sKustomizeRunner(K8sRunner):
                 caller_file_path = None
                 caller_file_line_range = None
                 if self.checkov_allow_kustomize_file_edits:
+                    caller_resource_id = entity_id
+                    if PARENT_RESOURCE_ID_KEY_NAME in entity:
+                        caller_resource_id = entity[PARENT_RESOURCE_ID_KEY_NAME]
                     caller_file_line_range, caller_file_path = self._get_caller_file_info(entity_context,
                                                                                           entity_file_path,
-                                                                                          entity_file_path, entity_id,
+                                                                                          entity_file_path,
+                                                                                          entity_id,
+                                                                                          caller_resource_id,
                                                                                           root_folder)
                 code_lines = entity_context["code_lines"]
                 file_line_range = self.line_range(code_lines)
