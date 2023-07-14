@@ -63,7 +63,6 @@ def extract_module_dependency_path(module_dependency: str | List[str]) -> List[s
 
 BLOCK_TYPES_STRINGS = ("var", "local", "module", "data")
 FUNC_CALL_PREFIX_PATTERN = re.compile(r"([.a-zA-Z]+)\(")
-INTERPOLATION_PATTERN = re.compile(r"[${}]")
 INTERPOLATION_EXPR = re.compile(r"\$\{([^\}]*)\}")
 INDEX_PATTERN = re.compile(r"\[([0-9]+)\]")
 MAP_ATTRIBUTE_PATTERN = re.compile(r"\[\"([^\d\W]\w*)\"\]")
@@ -186,7 +185,7 @@ def remove_interpolation(str_value: str, replace_str: str = " ") -> str:
         # otherwise it can't be a string interpolation
         return str_value
 
-    return re.sub(INTERPOLATION_PATTERN, replace_str, str_value)
+    return str_value.replace("${", " ").replace("}", " ")
 
 
 def replace_map_attribute_access_with_dot(str_value: str) -> str:
