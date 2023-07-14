@@ -67,6 +67,7 @@ INTERPOLATION_PATTERN = re.compile(r"[${}]")
 INTERPOLATION_EXPR = re.compile(r"\$\{([^\}]*)\}")
 INDEX_PATTERN = re.compile(r"\[([0-9]+)\]")
 MAP_ATTRIBUTE_PATTERN = re.compile(r"\[\"([^\d\W]\w*)\"\]")
+NESTED_ATTRIBUTE_PATTERN = re.compile(r"\.\d+")
 
 
 def get_vertices_references(
@@ -166,7 +167,7 @@ def remove_function_calls_from_str(str_value: str) -> str:
     # remove start of function calls:: 'length(aws_vpc.main) > 0 ? aws_vpc.main[0].cidr_block : ${var.x}' --> 'aws_vpc.main) > 0 ? aws_vpc.main[0].cidr_block : ${var.x}'
     str_value = re.sub(FUNC_CALL_PREFIX_PATTERN, "", str_value)
     # remove ')'
-    return re.sub(re.compile(r"[)]+"), "", str_value)
+    return str_value.replace(")", "")
 
 
 def remove_index_pattern_from_str(str_value: str) -> str:
@@ -309,7 +310,7 @@ def attribute_has_nested_attributes(attribute_key: str, attributes: Dict[str, An
         prefixes_with_attribute_key = []
     else:
         prefixes_with_attribute_key = [a for a in attributes if a.startswith(attribute_key) and a != attribute_key]
-    if not any(re.findall(re.compile(r"\.\d+"), a) for a in prefixes_with_attribute_key):
+    if not any(re.findall(NESTED_ATTRIBUTE_PATTERN, a) for a in prefixes_with_attribute_key):
         # if there aro no numeric parts in the key such as key1.0.key2
         return isinstance(attributes[attribute_key], dict)
     return isinstance(attributes[attribute_key], list) or isinstance(attributes[attribute_key], dict)
