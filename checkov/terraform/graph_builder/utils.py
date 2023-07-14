@@ -180,7 +180,7 @@ def remove_index_pattern_from_str(str_value: str) -> str:
     return str_value
 
 
-def remove_interpolation(str_value: str, replace_str: str = " ") -> str:
+def remove_interpolation(str_value: str) -> str:
     if "${" not in str_value:
         # otherwise it can't be a string interpolation
         return str_value
