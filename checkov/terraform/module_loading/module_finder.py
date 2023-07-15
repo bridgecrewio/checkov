@@ -8,6 +8,9 @@ from typing import List, Callable
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.terraform.module_loading.registry import module_loader_registry
 
+MODULE_SOURCE_PATTERN = re.compile(r'[^#]*\bsource\s*=\s*"(?P<link>.*)"')
+MODULE_VERSION_PATTERN = re.compile(r'[^#]*\bversion\s*=\s*"(?P<operator>=|!=|>=|>|<=|<|~>)?\s*(?P<version>[\d.]+-?\w*)"')
+
 
 class ModuleDownload:
     def __init__(self, source_dir: str) -> None:
@@ -24,26 +27,27 @@ class ModuleDownload:
 
 
 def find_modules(path: str) -> List[ModuleDownload]:
-    modules_found = []
+    modules_found: list[ModuleDownload] = []
+
     for root, _, full_file_names in os.walk(path):
         for file_name in full_file_names:
             if not file_name.endswith('.tf'):
                 continue
             with open(os.path.join(path, root, file_name)) as f:
+                content = f.read()
+                if not "module " in content:
+                    # if there is no "module " ref in the whole file, then no need to search line by line
+                    continue
+
                 try:
-                    in_module = False
                     curr_md = None
-                    for line in f:
-                        if line.strip().startswith('#'):
-                            continue
-                        if not in_module:
+                    for line in content.splitlines():
+                        if not curr_md:
                             if line.startswith('module'):
-                                in_module = True
                                 curr_md = ModuleDownload(os.path.dirname(os.path.join(root, file_name)))
                                 continue
-                        if in_module and curr_md:
+                        else:
                             if line.startswith('}'):
-                                in_module = False
                                 if curr_md.module_link is None:
                                     logging.warning(f'A module at {curr_md.source_dir} had no source, skipping')
                                 else:
@@ -51,14 +55,16 @@ def find_modules(path: str) -> List[ModuleDownload]:
                                 curr_md = None
                                 continue
 
-                            match = re.match(re.compile('.*\\bsource\\s*=\\s*"(?P<LINK>.*)"'), line)
-                            if match:
-                                curr_md.module_link = match.group('LINK')
-                                continue
+                            if "source" in line:
+                                match = re.match(MODULE_SOURCE_PATTERN, line)
+                                if match:
+                                    curr_md.module_link = match.group('link')
+                                    continue
 
-                            match = re.match(re.compile('.*\\bversion\\s*=\\s*"(?P<operator>=|!=|>=|>|<=|<|~>)?\\s*(?P<version>[\\d.]+-?\\w*)"'), line)
-                            if match:
-                                curr_md.version = f"{match.group('operator')}{match.group('version')}" if match.group('operator') else match.group('version')
+                            if "version" in line:
+                                match = re.match(MODULE_VERSION_PATTERN, line)
+                                if match:
+                                    curr_md.version = f"{match.group('operator')}{match.group('version')}" if match.group('operator') else match.group('version')
                 except (UnicodeDecodeError, FileNotFoundError) as e:
                     logging.warning(f"Skipping {os.path.join(path, root, file_name)} because of {e}")
                     continue
