@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 DEFAULT_MODULE_SOURCE_PREFIX = "git::https://"
 GIT_USER_PATTERN = re.compile(r"^(.*?@).*")
 
+
 @dataclass(frozen=True)
 class ModuleSource:
     protocol: str

@@ -35,7 +35,7 @@ def find_modules(path: str) -> List[ModuleDownload]:
                 continue
             with open(os.path.join(path, root, file_name)) as f:
                 content = f.read()
-                if not "module " in content:
+                if "module " not in content:
                     # if there is no "module " ref in the whole file, then no need to search line by line
                     continue
 
