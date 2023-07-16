@@ -39,33 +39,33 @@ def extract_images_from_template(resource: dict[str, Any]) -> list[str]:
     return _extract_images_from_spec(spec)
 
 
-def extract_images_from_containers(containers: Any) -> list[str]:
+def extract_images_from_containers(containers: Any) -> set[str]:
     """Helper function to extract image names from containers block"""
 
-    image_names: list[str] = []
+    image_names: set[str] = set()
 
     if isinstance(containers, list):
         for container in containers:
             if isinstance(container, dict):
                 image = container.get("image")
                 if image and isinstance(image, str):
-                    image_names.append(image)
+                    image_names.add(image)
 
     return image_names
 
 
 def _extract_images_from_spec(spec: dict[str, Any] | None) -> list[str]:
-    image_names: list[str] = []
+    image_names: set[str] = set()
 
     if isinstance(spec, dict):
         containers = spec.get("containers")
-        image_names.extend(extract_images_from_containers(containers=containers))
+        image_names.update(extract_images_from_containers(containers=containers))
 
         containers = spec.get("initContainers")
-        image_names.extend(extract_images_from_containers(containers=containers))
+        image_names.update(extract_images_from_containers(containers=containers))
 
     # Makes sure we return no duplications
-    return list(set(image_names))
+    return list(image_names)
 
 
 # needs to be at the bottom to add the defined functions
