@@ -54,7 +54,7 @@ def extract_images_from_containers(containers: Any) -> list[str]:
     return image_names
 
 
-def _extract_images_from_spec(spec):
+def _extract_images_from_spec(spec: dict[str, Any] | None) -> list[str]:
     image_names: list[str] = []
 
     if isinstance(spec, dict):
@@ -63,7 +63,9 @@ def _extract_images_from_spec(spec):
 
         containers = spec.get("initContainers")
         image_names.extend(extract_images_from_containers(containers=containers))
-    return image_names
+
+    # Makes sure we return no duplications
+    return list(set(image_names))
 
 
 # needs to be at the bottom to add the defined functions
