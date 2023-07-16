@@ -160,6 +160,12 @@ class ExtArgumentParser(configargparse.ArgumentParser):
                  "double-slash //. \n cannot be used together with --external-checks-dir",
         )
         self.add(
+            "--external-checks-git-branch",
+            action="append",
+            help="Git branch to pull external checks dir from git. "
+                 "\n must be used together with --external-checks-git",
+        )
+        self.add(
             "-l",
             "--list",
             help="List checks",
