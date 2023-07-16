@@ -62,7 +62,7 @@ def test_create_report_cve_record():
     assert record.check_class == check_class
     assert record.check_name == "SCA package scan"
     assert record.check_result == {"result": CheckResult.FAILED}
-    assert record.code_block == [5, 'django==1.12']
+    assert record.code_block == [(5, 'django==1.12')]
     assert (
             record.description
             == "Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover. ..."
