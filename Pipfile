@@ -62,7 +62,7 @@ semantic-version = "*"
 packaging = "*"
 cloudsplaining = ">=0.4.3"
 networkx = "<2.7"
-igraph = "*"
+igraph = "<=0.10.5"  # temporarly upper bounding till the aarch64 wheels are available
 dockerfile-parse ="*"
 docker = "*"
 configargparse = "*"
