@@ -73,7 +73,7 @@ class GitGetter(BaseGetter):
         self.logger.debug(f"cloning {self.url if '@' not in self.url else self.url.split('@')[1]} to {clone_dir}")
         with temp_environ(GIT_TERMINAL_PROMPT="0"):  # disables user prompts originating from GIT
             if self.branch:
-                Repo.clone_from(git_url, clone_dir, branch=self.branch)
+                Repo.clone_from(git_url, clone_dir, branch=self.branch, depth=1)  # depth=1 for shallow clone
             elif self.commit_id:  # no commit id support for branch
                 repo = Repo.clone_from(git_url, clone_dir, no_checkout=True)  # need to be a full git clone
                 repo.git.checkout(self.commit_id)
