@@ -59,7 +59,7 @@ def create_report_license_record(
     if status == "COMPLIANT":
         check_result["result"] = CheckResult.PASSED
 
-    code_block = [(0, f"{package_name}: {package_version}")]
+    code_block = get_code_block(package, package_name, package_version)
 
     details = {
         "package_name": package_name,
@@ -119,6 +119,16 @@ def _update_details_by_scan_data_format(
         details.update({"status": status, "fix_version": fix_version})
 
 
+def get_code_block(package: dict[str, Any], package_name: str, package_version: str) -> list[tuple[int, str]]:
+    lines_number = package.get("lines")
+    code_block = package.get("code_block")
+
+    if lines_number and code_block:
+        return [lines_number[0], code_block]
+
+    return [(0, f"{package_name}: {package_version}")]
+
+
 def create_report_cve_record(
         rootless_file_path: str,
         file_abs_path: str,
@@ -159,8 +169,7 @@ def create_report_cve_record(
             "result": CheckResult.SKIPPED,
             "suppress_comment": "Filtered by severity",
         }
-
-    code_block = [(0, f"{package_name}: {package_version}")]
+    code_block = get_code_block(package, package_name, package_version)
 
     details = {
         "id": cve_id,
@@ -189,7 +198,7 @@ def create_report_cve_record(
         details['root_package_fix_version'] = root_package_fixed_version
 
     _update_details_by_scan_data_format(details, vulnerability_details, sca_details, scan_data_format)
-
+    add_fix_command_to_record(vulnerability=vulnerability_details, vulnerability_details=details)
     record = Record(
         check_id=f"CKV_{cve_id.replace('-', '_')}",
         bc_check_id=f"BC_{cve_id.replace('-', '_')}",
@@ -207,7 +216,20 @@ def create_report_cve_record(
         short_description=f"{cve_id} - {package_name}: {package_version}",
         vulnerability_details=details,
     )
+    add_fix_code_to_record(record, vulnerability_details)
     return record
+
+
+def add_fix_code_to_record(record: Record, vulnerability: dict[str, Any]) -> None:
+    fix_code = vulnerability.get('fixCode')
+    if fix_code:
+        record.fixed_definition = fix_code
+
+
+def add_fix_command_to_record(vulnerability: dict[str, Any], vulnerability_details: dict[str, Any]) -> None:
+    fix_command = vulnerability.get('fixCommand')
+    if fix_command:
+        vulnerability_details['fix_command'] = fix_command
 
 
 def _add_to_report_licenses_statuses(
