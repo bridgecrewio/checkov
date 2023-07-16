@@ -19,60 +19,24 @@ class KubernetesProvider(BaseKubernetesProvider):
 
 
 def extract_images_from_cron_job(resource: dict[str, Any]) -> list[str]:
-    image_names: list[str] = []
-
     spec = find_in_dict(input_dict=resource, key_path="spec/jobTemplate/spec/template/spec")
-    if isinstance(spec, dict):
-        containers = spec.get("containers")
-        image_names.extend(extract_images_from_containers(containers=containers))
-
-        containers = spec.get("initContainers")
-        image_names.extend(extract_images_from_containers(containers=containers))
-
-    return image_names
+    return _extract_images_from_spec(spec)
 
 
 def extract_images_from_pod(resource: dict[str, Any]) -> list[str]:
-    image_names: list[str] = []
-
     spec = resource.get("spec")
-    if isinstance(spec, dict):
-        containers = spec.get("containers")
-        image_names.extend(extract_images_from_containers(containers=containers))
-
-        containers = spec.get("initContainers")
-        image_names.extend(extract_images_from_containers(containers=containers))
-
-    return image_names
+    return _extract_images_from_spec(spec)
 
 
 def extract_images_from_pod_template(resource: dict[str, Any]) -> list[str]:
     # the 'PodTemplate' object is usually not defined by the user, but rather used by Kubernetes internally
-    image_names: list[str] = []
-
     spec = find_in_dict(input_dict=resource, key_path="template/spec")
-    if isinstance(spec, dict):
-        containers = spec.get("containers")
-        image_names.extend(extract_images_from_containers(containers=containers))
-
-        containers = spec.get("initContainers")
-        image_names.extend(extract_images_from_containers(containers=containers))
-
-    return image_names
+    return _extract_images_from_spec(spec)
 
 
 def extract_images_from_template(resource: dict[str, Any]) -> list[str]:
-    image_names: list[str] = []
-
     spec = find_in_dict(input_dict=resource, key_path="spec/template/spec")
-    if isinstance(spec, dict):
-        containers = spec.get("containers")
-        image_names.extend(extract_images_from_containers(containers=containers))
-
-        containers = spec.get("initContainers")
-        image_names.extend(extract_images_from_containers(containers=containers))
-
-    return image_names
+    return _extract_images_from_spec(spec)
 
 
 def extract_images_from_containers(containers: Any) -> list[str]:
@@ -87,6 +51,18 @@ def extract_images_from_containers(containers: Any) -> list[str]:
                 if image and isinstance(image, str):
                     image_names.append(image)
 
+    return image_names
+
+
+def _extract_images_from_spec(spec):
+    image_names: list[str] = []
+
+    if isinstance(spec, dict):
+        containers = spec.get("containers")
+        image_names.extend(extract_images_from_containers(containers=containers))
+
+        containers = spec.get("initContainers")
+        image_names.extend(extract_images_from_containers(containers=containers))
     return image_names
 
 
