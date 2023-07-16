@@ -14,16 +14,17 @@ except ImportError as e:
     git_import_error = e
 
 COMMIT_ID_PATTERN = re.compile(r"\?(ref=)(?P<commit_id>([0-9a-f]{40}))")
-TAG_PATTERN = re.compile(r'\?(ref=)(?P<tag>(.*))')
+TAG_PATTERN = re.compile(r'\?(ref=)(?P<tag>(.*))')  # technically should be with ?ref=tags/ but this catches both
+BRANCH_PATTERN = re.compile(r'\?(ref=heads/)(?P<branch>(.*))')
 
 
 class GitGetter(BaseGetter):
-    def __init__(self, url: str, create_clone_and_result_dirs: bool = True, branch: str = '') -> None:
+    def __init__(self, url: str, create_clone_and_result_dirs: bool = True) -> None:
         self.logger = logging.getLogger(__name__)
         self.create_clone_and_res_dirs = create_clone_and_result_dirs
         self.tag = ''
         self.commit_id: str | None = None
-        self.branch = branch
+        self.branch = ''
 
         if "?ref" in url:
             url = self.extract_git_ref(url=url)
@@ -31,6 +32,14 @@ class GitGetter(BaseGetter):
         super().__init__(url)
 
     def extract_git_ref(self, url: str) -> str:
+        search_branch = re.search(BRANCH_PATTERN, url)
+        if search_branch:
+            self.branch = search_branch.group("branch")
+            # remove heads/ from ref= to get actual branch name
+            # self.branch = re.sub('heads.*/', '', url)
+            url = re.sub(BRANCH_PATTERN, '', url)
+            return url
+
         search_commit_id = re.search(COMMIT_ID_PATTERN, url)
         if search_commit_id:
             self.commit_id = search_commit_id.group("commit_id")
