@@ -124,7 +124,7 @@ def get_code_block(package: dict[str, Any], package_name: str, package_version: 
     code_block = package.get("code_block")
 
     if lines_number and code_block:
-        return [lines_number[0], code_block]
+        return [(int(lines_number[0]), code_block)]
 
     return [(0, f"{package_name}: {package_version}")]
 
