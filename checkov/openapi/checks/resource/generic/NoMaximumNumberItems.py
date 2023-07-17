@@ -10,29 +10,35 @@ class NoMaximumNumberItems(BaseOpenapiCheck):
     def __init__(self) -> None:
         id = "CKV_OPENAPI_21"
         name = "Ensure that arrays have a maximum number of items"
-        categories = [CheckCategories.API_SECURITY]
-        supported_resources = ['paths']
+        categories = (CheckCategories.API_SECURITY,)
+        supported_resources = ('paths',)
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_resources,
                          block_type=BlockType.DOCUMENT)
 
     def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:  # type:ignore[override]  # return type is different than the base class
-        queue = [conf]
-        key = 'type'
-
-        while queue:
-            current_dict = queue.pop(0)
-            if isinstance(current_dict, dict):
-                if key in current_dict:
-                    if current_dict['type'] == 'array' and current_dict.get('maxItems') is None:
-                        return CheckResult.FAILED, current_dict
-                for _k, v in current_dict.items():
-                    if isinstance(v, dict):
-                        queue.append(v)
-                    if isinstance(v, list):
-                        for dict2 in v:
-                            queue.append(dict2)
+        result = self.check_array_max_items(inner_conf=conf)
+        if result:
+            return result
 
         return CheckResult.PASSED, conf
+
+    def check_array_max_items(self, inner_conf: Any) -> tuple[CheckResult, dict[str, Any]] | None:
+        if isinstance(inner_conf, dict):
+            if "type" in inner_conf:
+                if inner_conf["type"] == "array" and inner_conf.get("maxItems") is None:
+                    return CheckResult.FAILED, inner_conf
+            for value in inner_conf.values():
+                if isinstance(value, dict):
+                    result = self.check_array_max_items(inner_conf=value)
+                    if result:
+                        return result
+                if isinstance(value, list):
+                    for inner_conf_2 in value:
+                        result = self.check_array_max_items(inner_conf=inner_conf_2)
+                        if result:
+                            return result
+
+        return None
 
 
 check = NoMaximumNumberItems()
