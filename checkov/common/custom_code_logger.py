@@ -17,10 +17,8 @@ class RemoveCodeInstancesLoggerAdapter(LoggerAdapter):
     CODE_TEMPLATES: list[str] = []
     CODE_MSG_REPLACEMENT = '<resource-code>'
 
-    def __init__(self, logger: Logger, allow_code_logging: bool | None = None):
-        super().__init__(logger)
-        if allow_code_logging is None:
-            allow_code_logging = convert_str_to_bool(os.environ.get("CHECKOV_ALLOW_CODE_LOGGING", True))
+    def __init__(self, logger: Logger, extra: Any = None, allow_code_logging: bool = True):
+        super().__init__(logger, extra=extra)
         self._allow_code_logging = allow_code_logging
 
     def process(self, msg: Any, kwargs: MutableMapping[str, Any]) -> tuple[Any, MutableMapping[str, Any]]:
@@ -30,5 +28,7 @@ class RemoveCodeInstancesLoggerAdapter(LoggerAdapter):
         return msg, kwargs
 
 
-def get_logger_with_code_adapter(logger: Logger, allow_code_logging: bool) -> RemoveCodeInstancesLoggerAdapter:
+def get_logger_with_code_adapter(logger: Logger, allow_code_logging: bool = None) -> RemoveCodeInstancesLoggerAdapter:
+    if allow_code_logging is None:
+        allow_code_logging = convert_str_to_bool(os.environ.get("CHECKOV_ALLOW_CODE_LOGGING", True))
     return RemoveCodeInstancesLoggerAdapter(logger, allow_code_logging=allow_code_logging)
