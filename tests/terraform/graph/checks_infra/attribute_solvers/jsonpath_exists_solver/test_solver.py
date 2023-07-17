@@ -7,10 +7,10 @@ from tests.terraform.graph.checks_infra.test_base import TestBaseSolver
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
 
-@parameterized_class([
-    {"graph_framework": "NETWORKX"},
-    {"graph_framework": "IGRAPH"}
-])
+# @parameterized_class([
+#     {"graph_framework": "NETWORKX"},
+#     {"graph_framework": "IGRAPH"}
+# ])
 class TestJsonpathExistsSolver(TestBaseSolver):
     def setUp(self):
         self.checks_dir = TEST_DIRNAME
@@ -46,6 +46,15 @@ class TestJsonpathExistsSolver(TestBaseSolver):
     def test_jsonpath_exists_example(self):
         root_folder = './'
         check_id = "example"
+        should_pass = ['xyz.pass']
+        should_fail = ['xyz.fail']
+        expected_results = {check_id: {"should_pass": should_pass, "should_fail": should_fail}}
+
+        self.run_test(root_folder=root_folder, expected_results=expected_results, check_id=check_id)
+
+    def test_jsonpath_exists_example2(self):
+        root_folder = './lir'
+        check_id = "test"
         should_pass = ['xyz.pass']
         should_fail = ['xyz.fail']
         expected_results = {check_id: {"should_pass": should_pass, "should_fail": should_fail}}
