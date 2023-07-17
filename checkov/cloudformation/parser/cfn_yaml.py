@@ -44,8 +44,7 @@ if TYPE_CHECKING:
 UNCONVERTED_SUFFIXES = ['Ref', 'Condition']
 FN_PREFIX = 'Fn::'
 
-LOGGER = logging.getLogger(__name__)
-LOGGER = get_logger_with_template_adapter(LOGGER)
+LOGGER = get_logger_with_template_adapter(logging.getLogger(__name__))
 
 
 class ContentType(str, Enum):

@@ -23,4 +23,4 @@ stream_handler.setFormatter(log_formatter)
 stream_handler.setLevel(logging.DEBUG)
 root_logger.addHandler(stream_handler)
 
-root_logger = get_logger_with_template_adapter(root_logger)
+root_logger = get_logger_with_template_adapter(root_logger)  # type: ignore[assignment]

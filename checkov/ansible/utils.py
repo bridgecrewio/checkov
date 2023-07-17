@@ -59,8 +59,7 @@ TASK_RESERVED_KEYWORDS = {
     "when",
 }
 
-logger = logging.getLogger(__name__)
-logger = get_logger_with_template_adapter(logger)
+logger = get_logger_with_template_adapter(logging.getLogger(__name__))
 
 
 def get_scannable_file_paths(root_folder: str | Path) -> set[Path]:

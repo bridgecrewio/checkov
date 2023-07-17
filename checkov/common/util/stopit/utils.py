@@ -27,7 +27,7 @@ P = ParamSpec("P")
 # Custom logger
 LOG = logging.getLogger(name='stopit')
 LOG.addHandler(NullHandler())
-LOG = get_logger_with_template_adapter(LOG)
+LOG = get_logger_with_template_adapter(LOG)  # type: ignore[assignment]
 
 
 class TimeoutException(Exception):
