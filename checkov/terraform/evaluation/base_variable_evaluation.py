@@ -32,11 +32,6 @@ class BaseVariableEvaluation(ABC):
         raise NotImplementedError()
 
     @staticmethod
-    def _is_variable_only_expression(assignment_regex: str, entry_expression: str) -> bool:
-        exact_assignment_regex = re.compile(r"^" + assignment_regex + r"$")
-        return len(re.findall(exact_assignment_regex, entry_expression)) > 0
-
-    @staticmethod
     def extract_context_path(definition_path: str) -> Tuple[str, str]:
         """
         Converts a JSONPath (dpath library standard) definition entry path into valid context parser path
