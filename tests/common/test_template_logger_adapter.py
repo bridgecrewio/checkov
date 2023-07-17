@@ -3,7 +3,7 @@ import logging
 import mock
 import pytest
 
-from checkov.common.custom_code_logger import get_logger_with_template_adapter, TemplatesLoggerAdapter
+from checkov.common.template_logger_adapter import get_logger_with_template_adapter, TemplatesLoggerAdapter
 
 
 TEST_CODE_TEMPLATES_TO_REPLACE = "THIS-SHOULD-BE-REPLACED!"

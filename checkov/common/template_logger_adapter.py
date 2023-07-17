@@ -2,12 +2,19 @@ from __future__ import annotations
 
 import os
 from logging import Logger, LoggerAdapter
-from typing import Any, MutableMapping
+from typing import Any, MutableMapping, TYPE_CHECKING
 
 from checkov.common.util.type_forcers import convert_str_to_bool
 
 
-class TemplatesLoggerAdapter(LoggerAdapter[Logger]):
+# Based on this issue - https://github.com/python/typeshed/issues/7855
+if TYPE_CHECKING:
+    _LoggerAdapter = LoggerAdapter[Logger]
+else:
+    _LoggerAdapter = LoggerAdapter
+
+
+class TemplatesLoggerAdapter(_LoggerAdapter):
     """
     A custom logger adapter designed to decide if we want to reduce some logs from the default logger.
     Could be used to reduce logs size.
