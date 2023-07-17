@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     from checkov.terraform.module_loading.module_params import ModuleParams
 
 DEFAULT_MODULE_SOURCE_PREFIX = "git::https://"
+GIT_USER_PATTERN = re.compile(r"^(.*?@).*")
 
 
 @dataclass(frozen=True)
@@ -112,9 +113,11 @@ class GenericGitLoader(ModuleLoader):
         else:
             raise Exception("invalid git url")
 
-        username = re.match(re.compile(r"^(.*?@).*"), root_module)
-        if username and username[1] != "git@":
-            root_module = root_module.replace(username[1], "")
+        username = None
+        if "@" in root_module:
+            username = re.match(GIT_USER_PATTERN, root_module)
+            if username and username[1] != "git@":
+                root_module = root_module.replace(username[1], "")
 
         if root_module.endswith(".git"):
             root_module = root_module[:-4]

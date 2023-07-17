@@ -672,8 +672,8 @@ def test_create_cli_table_for_sca_package_with_dependencies():
             licenses='Unknown',
             package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
             root_package={'name': details["root_package_name"], 'version': details["root_package_version"]},
-            root_package_fixed_version=details.get('root_package_fix_version', None),
-            used_private_registry=False
+            used_private_registry=False,
+            root_package_cve={'fixVersion': details.get('root_package_fix_version')}
         )
         for details in get_vulnerabilities_details_package_json()
     ]
@@ -785,8 +785,8 @@ def test_create_cli_table_for_package_with_diff_CVEs():
             licenses='Unknown',
             package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
             root_package={'name': details["root_package_name"], 'version': details["root_package_version"]},
-            root_package_fixed_version=details.get('root_package_fix_version', None),
-            used_private_registry=False
+            used_private_registry=False,
+            root_package_cve={'fixVersion': details.get('root_package_fix_version')}
         )
         for details in get_vulnerabilities_details_package_lock_json()
     ]

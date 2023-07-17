@@ -644,7 +644,7 @@ class Checkov:
     def get_external_checks_dir(self) -> list[str]:
         external_checks_dir: "list[str]" = self.config.external_checks_dir
         if self.config.external_checks_git:
-            git_getter = GitGetter(self.config.external_checks_git[0])
+            git_getter = GitGetter(url=self.config.external_checks_git[0])
             external_checks_dir = [git_getter.get()]
             atexit.register(shutil.rmtree, str(Path(external_checks_dir[0]).parent))
         return external_checks_dir
