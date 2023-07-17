@@ -13,6 +13,7 @@ import dpath
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.comment.enum import COMMENT_REGEX
 from checkov.common.models.enums import ContextCategories
+from checkov.common.template_logger_adapter import get_logger_with_template_adapter
 from checkov.common.util.parser_utils import get_abs_path
 from checkov.terraform.context_parsers.registry import parser_registry
 
@@ -23,7 +24,7 @@ CLOSE_CURLY = "}"
 class BaseContextParser(ABC):
     def __init__(self, definition_type: str) -> None:
         # bc_integration.setup_http_manager()
-        self.logger = logging.getLogger("{}".format(self.__module__))
+        self.logger = get_logger_with_template_adapter(logging.getLogger("{}".format(self.__module__)))
         if definition_type.upper() not in ContextCategories.__members__:
             self.logger.error("Terraform context parser type not supported yet")
             raise Exception()

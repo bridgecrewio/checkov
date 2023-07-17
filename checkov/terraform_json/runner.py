@@ -12,6 +12,7 @@ from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import CHECKOV_CREATE_GRAPH
+from checkov.common.template_logger_adapter import get_logger_with_template_adapter
 from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.common.util.secrets import omit_secret_value_from_checks
 from checkov.runner_filter import RunnerFilter
@@ -25,7 +26,7 @@ if TYPE_CHECKING:
     from checkov.terraform.graph_manager import TerraformGraphManager
     from checkov.common.typing import LibraryGraphConnector, _CheckResult
 
-logger = logging.getLogger(__name__)
+logger = get_logger_with_template_adapter(logging.getLogger(__name__))
 
 
 class TerraformJsonRunner(TerraformRunner):

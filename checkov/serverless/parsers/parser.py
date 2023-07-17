@@ -17,8 +17,9 @@ from checkov.cloudformation.context_parser import ContextParser
 from checkov.cloudformation.parser.cfn_yaml import CfnParseError
 from checkov.common.models.consts import SLS_DEFAULT_VAR_PATTERN
 from checkov.common.parsers.node import DictNode, StrNode
+from checkov.common.template_logger_adapter import get_logger_with_template_adapter
 
-logger = logging.getLogger(__name__)
+logger = get_logger_with_template_adapter(logging.getLogger(__name__))
 
 IAM_ROLE_STATEMENTS_TOKEN = 'iamRoleStatements'  # nosec
 CFN_RESOURCES_TOKEN = 'resources'  # nosec

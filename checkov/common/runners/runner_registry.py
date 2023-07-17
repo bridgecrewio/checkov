@@ -34,6 +34,7 @@ from checkov.common.output.report import Report, merge_reports
 from checkov.common.output.sarif import Sarif
 from checkov.common.output.spdx import SPDX
 from checkov.common.parallelizer.parallel_runner import parallel_runner
+from checkov.common.template_logger_adapter import get_logger_with_template_adapter
 from checkov.common.typing import _ExitCodeThresholds, _BaseRunner, _ScaExitCodeThresholds
 from checkov.common.util import data_structures_utils
 from checkov.common.util.banner import tool as tool_name
@@ -81,7 +82,7 @@ class RunnerRegistry:
         tool: str = tool_name,
         secrets_omitter_class: Type[SecretsOmitter] = SecretsOmitter,
     ) -> None:
-        self.logger = logging.getLogger(__name__)
+        self.logger = get_logger_with_template_adapter(logging.getLogger(__name__))
         self.runner_filter = runner_filter
         self.runners = list(runners)
         self.banner = banner

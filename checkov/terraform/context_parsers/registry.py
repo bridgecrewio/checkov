@@ -3,6 +3,7 @@ from typing import Dict, TYPE_CHECKING, Tuple, List, Any
 
 import dpath
 
+from checkov.common.template_logger_adapter import get_logger_with_template_adapter
 from checkov.terraform.modules.module_objects import TFDefinitionKey
 
 if TYPE_CHECKING:
@@ -14,7 +15,7 @@ class ParserRegistry:
     definitions_context: Dict[str, Dict[str, Dict[str, Any]]] = {}  # noqa: CCE003
 
     def __init__(self) -> None:
-        self.logger = logging.getLogger(__name__)
+        self.logger = get_logger_with_template_adapter(logging.getLogger(__name__))
 
     def register(self, parser: "BaseContextParser") -> None:
         self.context_parsers[parser.definition_type] = parser

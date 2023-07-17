@@ -11,6 +11,7 @@ import yaml
 from checkov.common.checks_infra.checks_parser import GraphCheckParser
 from checkov.common.graph.checks_infra.base_parser import BaseGraphCheckParser
 from checkov.common.graph.checks_infra.registry import BaseRegistry
+from checkov.common.template_logger_adapter import get_logger_with_template_adapter
 from checkov.runner_filter import RunnerFilter
 from checkov.common.checks_infra.resources_types import resources_types
 
@@ -27,7 +28,7 @@ class Registry(BaseRegistry):
         super().__init__(parser)
         self.checks: list[BaseGraphCheck] = []
         self.checks_dir = checks_dir
-        self.logger = logging.getLogger(__name__)
+        self.logger = get_logger_with_template_adapter(logging.getLogger(__name__))
 
     def load_checks(self) -> None:
         if self.checks:

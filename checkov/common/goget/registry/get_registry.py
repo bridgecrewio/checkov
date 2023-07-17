@@ -3,6 +3,7 @@ import requests
 import os
 
 from checkov.common.goget.base_getter import BaseGetter
+from checkov.common.template_logger_adapter import get_logger_with_template_adapter
 from checkov.common.util.file_utils import extract_tar_archive
 from checkov.common.util.file_utils import extract_zip_archive
 from checkov.common.util.http_utils import DEFAULT_TIMEOUT
@@ -10,7 +11,7 @@ from checkov.common.util.http_utils import DEFAULT_TIMEOUT
 
 class RegistryGetter(BaseGetter):
     def __init__(self, url: str, extension: str, create_clone_and_result_dirs: bool = False) -> None:
-        self.logger = logging.getLogger(__name__)
+        self.logger = get_logger_with_template_adapter(logging.getLogger(__name__))
         self.extension = extension
         self.create_clone_and_res_dirs = create_clone_and_result_dirs
         super().__init__(url)

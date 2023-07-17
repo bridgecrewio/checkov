@@ -6,6 +6,7 @@ from typing import Any, Callable, TYPE_CHECKING  # noqa: F401  # Callable is use
 
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.bridgecrew.check_type import CheckType
+from checkov.common.template_logger_adapter import get_logger_with_template_adapter
 from checkov.common.util.file_utils import read_file_with_any_encoding
 from checkov.yaml_doc.runner import Runner as YamlRunner
 from checkov.json_doc.runner import Runner as JsonRunner
@@ -17,7 +18,7 @@ if TYPE_CHECKING:
 _ParseFormatJsonCallable: TypeAlias = "Callable[[JsonRunner, str, str | None], tuple[dict[str, Any] | list[dict[str, Any]] | None, list[tuple[int, str]] | None] | None]"
 _ParseFormatYamlCallable: TypeAlias = "Callable[[YamlRunner, str, str | None], tuple[dict[str, Any] | list[dict[str, Any]] | None, list[tuple[int, str]] | None] | None]"
 
-logger = logging.getLogger(__name__)
+logger = get_logger_with_template_adapter(logging.getLogger(__name__))
 
 
 class Runner(YamlRunner, JsonRunner):

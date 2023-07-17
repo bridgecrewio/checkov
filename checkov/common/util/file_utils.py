@@ -11,7 +11,9 @@ from zipfile import ZipFile
 
 from charset_normalizer import from_path
 
-logger = logging.getLogger(__name__)
+from checkov.common.template_logger_adapter import get_logger_with_template_adapter
+
+logger = get_logger_with_template_adapter(logging.getLogger(__name__))
 
 
 def convert_to_unix_path(path: str) -> str:

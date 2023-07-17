@@ -9,12 +9,13 @@ import yaml
 from termcolor import colored
 
 from checkov.common.graph.graph_builder import CustomAttributes
+from checkov.common.template_logger_adapter import get_logger_with_template_adapter
 from checkov.common.util.env_vars_config import env_vars_config
 
 if TYPE_CHECKING:
     from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
 
-logger = logging.getLogger(__name__)
+logger = get_logger_with_template_adapter(logging.getLogger(__name__))
 
 
 def graph_check(check_id: str, check_name: str) -> None:

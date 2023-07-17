@@ -9,7 +9,10 @@ from checkov.cloudformation.parser.cfn_keywords import TemplateSections
 from yaml.scanner import ScannerError
 from yaml import YAMLError
 
+from checkov.common.template_logger_adapter import get_logger_with_template_adapter
+
 LOGGER = logging.getLogger(__name__)
+LOGGER = get_logger_with_template_adapter(LOGGER)
 
 
 def parse(

@@ -6,10 +6,11 @@ from typing import Any
 
 from yaml import YAMLError
 
+from checkov.common.template_logger_adapter import get_logger_with_template_adapter
 from checkov.kubernetes.parser import k8_yaml, k8_json
 from checkov.kubernetes.parser.validatior import K8sValidator
 
-logger = logging.getLogger(__name__)
+logger = get_logger_with_template_adapter(logging.getLogger(__name__))
 
 
 def parse(filename: str) -> tuple[list[dict[str, Any]], list[tuple[int, str]]] | None:

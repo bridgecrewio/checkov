@@ -25,6 +25,7 @@ from charset_normalizer import from_path
 
 from checkov.common.parsers.json.decoder import SimpleDecoder
 from checkov.common.parsers.node import StrNode, DictNode, ListNode
+from checkov.common.template_logger_adapter import get_logger_with_template_adapter
 from checkov.common.util.consts import MAX_IAC_FILE_SIZE
 from checkov.common.util.file_utils import read_file_with_any_encoding
 
@@ -44,6 +45,7 @@ UNCONVERTED_SUFFIXES = ['Ref', 'Condition']
 FN_PREFIX = 'Fn::'
 
 LOGGER = logging.getLogger(__name__)
+LOGGER = get_logger_with_template_adapter(LOGGER)
 
 
 class ContentType(str, Enum):

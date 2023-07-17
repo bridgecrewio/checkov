@@ -5,6 +5,7 @@ import os
 import hashlib
 from typing import Optional, List, TYPE_CHECKING, Set, Dict
 
+from checkov.common.template_logger_adapter import get_logger_with_template_adapter
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.terraform.module_loading.content import ModuleContent
 from checkov.terraform.module_loading.module_params import ModuleParams
@@ -20,7 +21,7 @@ class ModuleLoaderRegistry:
     def __init__(
         self, download_external_modules: bool = False, external_modules_folder_name: str = DEFAULT_EXTERNAL_MODULES_DIR
     ) -> None:
-        self.logger = logging.getLogger(__name__)
+        self.logger = get_logger_with_template_adapter(logging.getLogger(__name__))
         self.download_external_modules = download_external_modules
         self.external_modules_folder_name = external_modules_folder_name
         self.failed_urls_cache: Set[str] = set()

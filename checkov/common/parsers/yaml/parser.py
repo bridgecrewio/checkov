@@ -6,8 +6,9 @@ from typing import Any
 from yaml import YAMLError
 
 import checkov.common.parsers.yaml.loader as loader
+from checkov.common.template_logger_adapter import get_logger_with_template_adapter
 
-logger = logging.getLogger(__name__)
+logger = get_logger_with_template_adapter(logging.getLogger(__name__))
 
 
 def parse(

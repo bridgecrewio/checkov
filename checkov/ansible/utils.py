@@ -7,6 +7,7 @@ from typing import Any
 
 from checkov.ansible.graph_builder.graph_components.resource_types import ResourceType
 from checkov.common.parsers.yaml.parser import parse
+from checkov.common.template_logger_adapter import get_logger_with_template_adapter
 from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.common.util.file_utils import read_file_with_any_encoding
 from checkov.common.util.suppression import collect_suppressions_for_context
@@ -59,6 +60,7 @@ TASK_RESERVED_KEYWORDS = {
 }
 
 logger = logging.getLogger(__name__)
+logger = get_logger_with_template_adapter(logger)
 
 
 def get_scannable_file_paths(root_folder: str | Path) -> set[Path]:

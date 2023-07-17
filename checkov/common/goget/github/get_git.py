@@ -5,6 +5,7 @@ import re
 import shutil
 
 from checkov.common.goget.base_getter import BaseGetter
+from checkov.common.template_logger_adapter import get_logger_with_template_adapter
 from checkov.common.util.contextmanagers import temp_environ
 
 try:
@@ -19,7 +20,7 @@ TAG_PATTERN = re.compile(r'\?(ref=)(?P<tag>(.*))')
 
 class GitGetter(BaseGetter):
     def __init__(self, url: str, create_clone_and_result_dirs: bool = True) -> None:
-        self.logger = logging.getLogger(__name__)
+        self.logger = get_logger_with_template_adapter(logging.getLogger(__name__))
         self.create_clone_and_res_dirs = create_clone_and_result_dirs
         self.tag = ''
         self.commit_id: str | None = None

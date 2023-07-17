@@ -10,6 +10,7 @@ from yaml import YAMLError
 
 from checkov.common.parsers.json import parse as json_parse
 from checkov.common.parsers.yaml import loader
+from checkov.common.template_logger_adapter import get_logger_with_template_adapter
 from checkov.common.util.consts import LINE_FIELD_NAMES
 from checkov.common.util.file_utils import read_file_with_any_encoding
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
@@ -18,7 +19,7 @@ COMMENT_FIELD_NAME = "//"
 IGNORE_FILED_NAMES = {COMMENT_FIELD_NAME} | LINE_FIELD_NAMES
 SIMPLE_TYPES = (str, int, float, bool)
 
-logger = logging.getLogger(__name__)
+logger = get_logger_with_template_adapter(logging.getLogger(__name__))
 
 
 def parse(file_path: Path) -> tuple[dict[str, Any], list[tuple[int, str]]] | tuple[None, None]:

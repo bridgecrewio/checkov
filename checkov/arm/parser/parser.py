@@ -9,10 +9,11 @@ from yaml import YAMLError
 
 from checkov.common.parsers.json import parse as json_parse
 from checkov.common.parsers.yaml import loader
+from checkov.common.template_logger_adapter import get_logger_with_template_adapter
 from checkov.common.util.file_utils import read_file_with_any_encoding
 
 LOGGER = logging.getLogger(__name__)
-
+LOGGER = get_logger_with_template_adapter(LOGGER)
 
 def parse(filename: str) -> tuple[dict[str, Any], list[tuple[int, str]]] | tuple[None, None]:
     """Decode filename into an object"""

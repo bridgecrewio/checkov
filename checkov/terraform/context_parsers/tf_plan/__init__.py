@@ -5,8 +5,9 @@ from typing import Any
 
 from checkov.cloudformation.parser.cfn_yaml import ContentType
 from checkov.cloudformation.parser import cfn_yaml
+from checkov.common.template_logger_adapter import get_logger_with_template_adapter
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = get_logger_with_template_adapter(logging.getLogger(__name__))
 
 
 def parse(
