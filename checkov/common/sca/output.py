@@ -232,7 +232,7 @@ def create_report_cve_record(
         vulnerability_details=details,
     )
 
-    record.fixed_definition = fix_code
+    record.fixed_definition = fix_code  # type: ignore
     return record
 
 
