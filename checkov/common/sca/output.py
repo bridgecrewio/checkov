@@ -119,7 +119,14 @@ def _update_details_by_scan_data_format(
         details.update({"status": status, "fix_version": fix_version})
 
 
-def get_code_block(package: dict[str, Any], package_name: str, package_version: str) -> list[tuple[int, str]]:
+def get_code_block(package: dict[str, Any], package_name: str, package_version: str,
+                   root_package: Optional[dict[str, Any]] = None) -> list[tuple[int, str]]:
+    if root_package:
+        root_lines_number = root_package.get("lines")
+        root_code_block = root_package.get("code_block")
+        if root_lines_number and root_code_block:
+            return [(int(root_lines_number[0]), root_code_block)]
+
     lines_number = package.get("lines")
     code_block = package.get("code_block")
 
@@ -127,6 +134,13 @@ def get_code_block(package: dict[str, Any], package_name: str, package_version: 
         return [(int(lines_number[0]), code_block)]
 
     return [(0, f"{package_name}: {package_version}")]
+
+
+def get_fix_command_and_code(vulnerability_details: dict[str, Any],
+                             root_package_cve: dict[str, Any] | None = None) -> tuple[dict[str, Any] | None, str | None]:
+    if root_package_cve:
+        return root_package_cve.get('fixCommand'), root_package_cve.get('fixCode')
+    return vulnerability_details.get('fixCommand'), vulnerability_details.get('fixCode')
 
 
 def create_report_cve_record(
@@ -138,11 +152,11 @@ def create_report_cve_record(
         package: dict[str, Any],
         used_private_registry: bool = False,
         root_package: dict[str, Any] | None = None,
-        root_package_fixed_version: str | None = None,
         runner_filter: RunnerFilter | None = None,
         sca_details: SCADetails | None = None,
         scan_data_format: ScanDataFormat = ScanDataFormat.TWISTCLI,
         file_line_range: list[int] | None = None,
+        root_package_cve: dict[str, Any] | None = None
 ) -> Record:
     runner_filter = runner_filter or RunnerFilter()
     package_name = vulnerability_details["packageName"]
@@ -169,8 +183,8 @@ def create_report_cve_record(
             "result": CheckResult.SKIPPED,
             "suppress_comment": "Filtered by severity",
         }
-    code_block = get_code_block(package, package_name, package_version)
-
+    code_block = get_code_block(package, package_name, package_version, root_package)
+    fix_command, fix_code = get_fix_command_and_code(vulnerability_details, root_package_cve)
     details = {
         "id": cve_id,
         "severity": severity,
@@ -190,13 +204,14 @@ def create_report_cve_record(
         "root_package_name": root_package.get("name") if root_package else None,
         "root_package_version": root_package.get("version") if root_package else None,
         "root_package_file_line_range": get_package_lines(root_package) if root_package else None or [0, 0],
-        "fix_command": vulnerability_details.get('fixCommand')
+        "fix_command": fix_command
     }
+
     if used_private_registry:
         details["is_private_fix"] = vulnerability_details.get("isPrivateRegFix", False)
 
-    if root_package_fixed_version:
-        details['root_package_fix_version'] = root_package_fixed_version
+    if root_package_cve and root_package_cve.get('fixVersion'):
+        details['root_package_fix_version'] = root_package_cve.get('fixVersion')
 
     _update_details_by_scan_data_format(details, vulnerability_details, sca_details, scan_data_format)
     record = Record(
@@ -217,7 +232,7 @@ def create_report_cve_record(
         vulnerability_details=details,
     )
 
-    record.fixed_definition = vulnerability_details.get('fixCode')
+    record.fixed_definition = fix_code  # type: ignore
     return record
 
 
@@ -411,9 +426,9 @@ def add_to_reports_dependency_tree_cves(check_class: str | None, packages_map: d
         for dep in root_package.get("vulnerable_dependencies", []):
             for dep_cve in dep.get("cves", []):
                 cve_alias = f'{dep_cve["cveId"]}@{dep_cve["packageName"]}@{dep_cve["packageVersion"]}'
-                root_package_fixed_version = None
+                root_package_cve = None
                 if cve_alias in indirect_packages:
-                    root_package_fixed_version = indirect_packages[cve_alias]['fixVersion']
+                    root_package_cve = indirect_packages[cve_alias]
 
                 add_cve_record_to_report(vulnerability_details=dep_cve, package_name=dep['name'],
                                          package_version=dep['version'], packages_map=packages_map,
@@ -422,9 +437,8 @@ def add_to_reports_dependency_tree_cves(check_class: str | None, packages_map: d
                                          runner_filter=runner_filter, sca_details=sca_details,
                                          scan_data_format=scan_data_format, report_type=report_type, report=report,
                                          root_package=root_package,
-                                         root_package_fixed_version=root_package_fixed_version,
                                          inline_suppressions_maps=inline_suppressions_maps,
-                                         used_private_registry=used_private_registry)
+                                         used_private_registry=used_private_registry, root_package_cve=root_package_cve)
 
 
 def add_cve_record_to_report(vulnerability_details: dict[str, Any], package_name: str, package_version: str,
@@ -433,9 +447,10 @@ def add_cve_record_to_report(vulnerability_details: dict[str, Any], package_name
                              licenses_per_package_map: dict[str, list[str]], runner_filter: RunnerFilter,
                              sca_details: Optional[SCADetails], scan_data_format: ScanDataFormat,
                              report_type: Optional[str], report: Report, used_private_registry: bool = False,
-                             root_package: dict[str, Any] | None = None, root_package_fixed_version: str | None = None,
+                             root_package: dict[str, Any] | None = None,
                              inline_suppressions_maps: _ScaSuppressionsMaps | None = None,
-                             file_line_range: list[int] | None = None) -> None:
+                             file_line_range: list[int] | None = None,
+                             root_package_cve: dict[str, Any] | None = None) -> None:
     package_alias = get_package_alias(package_name, package_version)
     cve_record = create_report_cve_record(
         rootless_file_path=rootless_file_path,
@@ -448,7 +463,7 @@ def add_cve_record_to_report(vulnerability_details: dict[str, Any], package_name
         sca_details=sca_details,
         scan_data_format=scan_data_format,
         root_package=root_package,
-        root_package_fixed_version=root_package_fixed_version,
+        root_package_cve=root_package_cve,
         file_line_range=file_line_range,
         used_private_registry=used_private_registry
     )
