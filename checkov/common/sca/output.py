@@ -136,8 +136,8 @@ def get_code_block(package: dict[str, Any], package_name: str, package_version: 
     return [(0, f"{package_name}: {package_version}")]
 
 
-def get_root_fix_command_and_code(vulnerability_details: dict[str, Any],
-                         root_package_cve: dict[str, Any] | None = None) -> Optional[dict[str, Any], str]:
+def get_fix_command_and_code(vulnerability_details: dict[str, Any],
+                             root_package_cve: dict[str, Any] | None = None) -> Optional[dict[str, Any], str]:
     if root_package_cve:
         return root_package_cve.get('fixCommand'), root_package_cve.get('fixCode')
     return vulnerability_details.get('fixCommand'),vulnerability_details.get('fixCode')
@@ -183,7 +183,7 @@ def create_report_cve_record(
             "suppress_comment": "Filtered by severity",
         }
     code_block = get_code_block(package, package_name, package_version, root_package)
-    root_fix_command, root_fix_code = get_root_fix_command_and_code(vulnerability_details, root_package_cve)
+    fix_command, fix_code = get_fix_command_and_code(vulnerability_details, root_package_cve)
     details = {
         "id": cve_id,
         "severity": severity,
@@ -203,7 +203,7 @@ def create_report_cve_record(
         "root_package_name": root_package.get("name") if root_package else None,
         "root_package_version": root_package.get("version") if root_package else None,
         "root_package_file_line_range": get_package_lines(root_package) if root_package else None or [0, 0],
-        "root_fix_command": root_fix_command
+        "fix_command": fix_command
     }
     if used_private_registry:
         details["is_private_fix"] = vulnerability_details.get("isPrivateRegFix", False)
@@ -232,7 +232,7 @@ def create_report_cve_record(
         vulnerability_details=details,
     )
 
-    record.fixed_definition = root_fix_code
+    record.fixed_definition = fix_code
     return record
 
 
