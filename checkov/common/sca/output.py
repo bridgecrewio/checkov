@@ -122,8 +122,8 @@ def _update_details_by_scan_data_format(
 def get_code_block(package: dict[str, Any], package_name: str, package_version: str,
                    root_package: Optional[dict[str, Any]] = None) -> list[tuple[int, str]]:
     if root_package:
-        root_lines_number = package.get("lines")
-        root_code_block = package.get("code_block")
+        root_lines_number = root_package.get("lines")
+        root_code_block = root_package.get("code_block")
         if root_lines_number and root_code_block:
             return [(int(root_lines_number[0]), root_code_block)]
 
