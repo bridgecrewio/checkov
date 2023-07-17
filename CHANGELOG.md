@@ -1,6 +1,21 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.324...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.326...HEAD)
+
+## [2.3.326](https://github.com/bridgecrewio/checkov/compare/2.3.324...2.3.326) - 2023-07-16
+
+### Feature
+
+- **sca:** add fix code and command to cve report - [#5333](https://github.com/bridgecrewio/checkov/pull/5333)
+- **sca:** fix code block array structure  - [#5338](https://github.com/bridgecrewio/checkov/pull/5338)
+
+### Bug Fix
+
+- **general:** properly encode non supported chars in SARIF uri field - [#5336](https://github.com/bridgecrewio/checkov/pull/5336)
+
+### Documentation
+
+- **sca:** Add SCA skip comments to docs - [#5330](https://github.com/bridgecrewio/checkov/pull/5330)
 
 ## [2.3.324](https://github.com/bridgecrewio/checkov/compare/2.3.321...2.3.324) - 2023-07-13
 

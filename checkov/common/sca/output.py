@@ -59,7 +59,7 @@ def create_report_license_record(
     if status == "COMPLIANT":
         check_result["result"] = CheckResult.PASSED
 
-    code_block = [(0, f"{package_name}: {package_version}")]
+    code_block = get_code_block(package, package_name, package_version)
 
     details = {
         "package_name": package_name,
@@ -119,6 +119,16 @@ def _update_details_by_scan_data_format(
         details.update({"status": status, "fix_version": fix_version})
 
 
+def get_code_block(package: dict[str, Any], package_name: str, package_version: str) -> list[tuple[int, str]]:
+    lines_number = package.get("lines")
+    code_block = package.get("code_block")
+
+    if lines_number and code_block:
+        return [(int(lines_number[0]), code_block)]
+
+    return [(0, f"{package_name}: {package_version}")]
+
+
 def create_report_cve_record(
         rootless_file_path: str,
         file_abs_path: str,
@@ -159,8 +169,7 @@ def create_report_cve_record(
             "result": CheckResult.SKIPPED,
             "suppress_comment": "Filtered by severity",
         }
-
-    code_block = [(0, f"{package_name}: {package_version}")]
+    code_block = get_code_block(package, package_name, package_version)
 
     details = {
         "id": cve_id,
@@ -180,7 +189,8 @@ def create_report_cve_record(
         "licenses": licenses,
         "root_package_name": root_package.get("name") if root_package else None,
         "root_package_version": root_package.get("version") if root_package else None,
-        "root_package_file_line_range": get_package_lines(root_package) if root_package else None or [0, 0]
+        "root_package_file_line_range": get_package_lines(root_package) if root_package else None or [0, 0],
+        "fix_command": vulnerability_details.get('fixCommand')
     }
     if used_private_registry:
         details["is_private_fix"] = vulnerability_details.get("isPrivateRegFix", False)
@@ -189,7 +199,6 @@ def create_report_cve_record(
         details['root_package_fix_version'] = root_package_fixed_version
 
     _update_details_by_scan_data_format(details, vulnerability_details, sca_details, scan_data_format)
-
     record = Record(
         check_id=f"CKV_{cve_id.replace('-', '_')}",
         bc_check_id=f"BC_{cve_id.replace('-', '_')}",
@@ -207,6 +216,8 @@ def create_report_cve_record(
         short_description=f"{cve_id} - {package_name}: {package_version}",
         vulnerability_details=details,
     )
+
+    record.fixed_definition = vulnerability_details.get('fixCode')
     return record
 
 
