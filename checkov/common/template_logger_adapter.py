@@ -22,7 +22,6 @@ class TemplatesLoggerAdapter(_LoggerAdapter):
     The default is to log everything in order to keep api the same.
     """
     CODE_TEMPLATES: list[str] = []
-    CODE_MSG_REPLACEMENT = '<resource-code>'
 
     def __init__(self, logger: Logger, extra: Any = None, allow_code_logging: bool = True):
         super().__init__(logger, extra=extra)
@@ -31,7 +30,9 @@ class TemplatesLoggerAdapter(_LoggerAdapter):
     def process(self, msg: Any, kwargs: MutableMapping[str, Any]) -> tuple[Any, MutableMapping[str, Any]]:
         if isinstance(msg, str) and not self._allow_code_logging:
             for code_template in TemplatesLoggerAdapter.CODE_TEMPLATES:
-                msg = msg.replace(code_template, TemplatesLoggerAdapter.CODE_MSG_REPLACEMENT)
+                if code_template in msg:
+                    # Log empty message instead of original
+                    return '', kwargs
         return msg, kwargs
 
 
