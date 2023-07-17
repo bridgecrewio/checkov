@@ -140,7 +140,8 @@ def get_fix_command_and_code(vulnerability_details: dict[str, Any],
                              root_package_cve: dict[str, Any] | None = None) -> Optional[dict[str, Any], str]:
     if root_package_cve:
         return root_package_cve.get('fixCommand'), root_package_cve.get('fixCode')
-    return vulnerability_details.get('fixCommand'),vulnerability_details.get('fixCode')
+    return vulnerability_details.get('fixCommand'), vulnerability_details.get('fixCode')
+
 
 def create_report_cve_record(
         rootless_file_path: str,
@@ -208,10 +209,8 @@ def create_report_cve_record(
     if used_private_registry:
         details["is_private_fix"] = vulnerability_details.get("isPrivateRegFix", False)
 
-    if root_package_cve:
-        root_package_fix_version = root_package_cve.get('fixVersion')
-        if root_package_fix_version:
-            details['root_package_fix_version'] = root_package_fix_version
+    if root_package_cve and root_package_cve.get('fixVersion'):
+        details['root_package_fix_version'] = root_package_cve.get('fixVersion')
 
     _update_details_by_scan_data_format(details, vulnerability_details, sca_details, scan_data_format)
     record = Record(
