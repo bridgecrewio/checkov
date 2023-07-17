@@ -206,6 +206,7 @@ def create_report_cve_record(
         "root_package_file_line_range": get_package_lines(root_package) if root_package else None or [0, 0],
         "fix_command": fix_command
     }
+
     if used_private_registry:
         details["is_private_fix"] = vulnerability_details.get("isPrivateRegFix", False)
 
