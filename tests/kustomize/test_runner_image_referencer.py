@@ -69,10 +69,10 @@ def test_deployment_resources(mocker: MockerFixture, allow_kustomize_file_edits:
                                                '/service.yaml']
 
     assert len(sca_image_report.resources) == 2
-    assert sca_image_report.resources == {
-        f'base/kustomization.yaml (wordpress:4.8-apache lines:{code_lines} (sha256:2460522297)).go',
-        f'overlays/prod/kustomization.yaml (wordpress:4.8-apache lines:{code_lines} (sha256:2460522297)).go'
-    }
+    assert f'base/kustomization.yaml (wordpress:4.8-apache lines:{code_lines} (sha256:2460522297)).go' in \
+           sca_image_report.resources
+    assert f'overlays/prod/kustomization.yaml (wordpress:4.8-apache lines:{code_lines} (sha256:2460522297)).go' in \
+           sca_image_report.resources
     assert len(sca_image_report.passed_checks) == 0
     assert len(sca_image_report.failed_checks) == 6
     assert len(sca_image_report.skipped_checks) == 0
