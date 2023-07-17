@@ -19,6 +19,8 @@ DIRECTIVE_EXPR = re.compile(r"\%\{([^\}]*)\}")
 
 # exclude "']" one the right side of the compare via (?!']), this can happen with a base64 encoded string
 COMPARE_REGEX = re.compile(r"^(?P<a>.+?)\s*(?P<operator>==|!=|>=|>|<=|<|&&|\|\|)\s*(?P<b>(?!']).+)$")
+COMPARE_OPERATORS = (" == ", " != ", " < ", " <= ", " > ", " >= ", " && ", " || ")
+
 CHECKOV_RENDER_MAX_LEN = force_int(os.getenv("CHECKOV_RENDER_MAX_LEN", "10000"))
 
 
@@ -181,9 +183,9 @@ def strip_double_quotes(input_str: str) -> str:
 
 
 def evaluate_conditional_expression(input_str: str) -> str:
-    variable_ref = re.match(re.compile(r"^\${(.*)}$"), input_str)
-    if variable_ref:
-        input_str = variable_ref.groups()[0]
+    if input_str.startswith("${") and input_str.endswith("}"):
+        # just remove the needed char length of the interpolation marks
+        input_str = input_str[2:-1]
 
     condition = find_conditional_expression_groups(input_str)
     while condition:
@@ -213,6 +215,10 @@ def evaluate_compare(input_str: str) -> str | bool | int:
     :return: evaluation of the expression
     """
     if isinstance(input_str, str) and "for" not in input_str:
+        if not any(operator in input_str for operator in COMPARE_OPERATORS):
+            # if an operator doesn't exist in the string, no need to proceed
+            return input_str
+
         match = re.search(COMPARE_REGEX, input_str)
         if match:
             compare_parts = match.groupdict()
@@ -391,6 +397,10 @@ def apply_binary_op(a: Optional[Union[str, int, bool]], b: Optional[Union[str, i
 
 
 def evaluate_directives(input_str: str) -> str:
+    if "%{" not in input_str:
+        # no need to proceed further
+        return input_str
+
     if re.search(DIRECTIVE_EXPR, input_str) is None:
         return input_str
 
