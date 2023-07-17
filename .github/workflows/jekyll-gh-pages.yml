@@ -36,7 +36,7 @@ jobs:
           source: ./docs
           destination: ./_site
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@a753861a5debcf57bf8b404356158c8e1e33150c  # v1
+        uses: actions/upload-pages-artifact@a753861a5debcf57bf8b404356158c8e1e33150c  # v2
 
   # Deployment job
   deploy:
