@@ -7,7 +7,7 @@ from typing import Any, MutableMapping
 from checkov.common.util.type_forcers import convert_str_to_bool
 
 
-class RemoveCodeInstancesLoggerAdapter(LoggerAdapter):
+class RemoveCodeInstancesLoggerAdapter(LoggerAdapter[Logger]):
     """
         A custom logger adapter designed to decide if we want to reduce some logs from the default logger.
         Could be used to reduce logs size.
@@ -28,7 +28,7 @@ class RemoveCodeInstancesLoggerAdapter(LoggerAdapter):
         return msg, kwargs
 
 
-def get_logger_with_code_adapter(logger: Logger, allow_code_logging: bool = None) -> RemoveCodeInstancesLoggerAdapter:
+def get_logger_with_code_adapter(logger: Logger, allow_code_logging: bool | None = None) -> RemoveCodeInstancesLoggerAdapter:
     if allow_code_logging is None:
         allow_code_logging = convert_str_to_bool(os.environ.get("CHECKOV_ALLOW_CODE_LOGGING", True))
     return RemoveCodeInstancesLoggerAdapter(logger, allow_code_logging=allow_code_logging)
