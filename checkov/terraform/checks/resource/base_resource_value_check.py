@@ -5,12 +5,15 @@ from typing import List, Dict, Any
 
 import dpath
 import re
+
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.models.consts import ANY_VALUE
 from checkov.common.util.type_forcers import force_list
 from checkov.terraform.graph_builder.utils import get_referenced_vertices_in_value
 from checkov.terraform.parser_functions import handle_dynamic_values
+
+ARRAY_INDEX_PATTERN = re.compile(r"^\[?\d+]?$")
 
 
 class BaseResourceValueCheck(BaseResourceCheck):
@@ -32,7 +35,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
         :param path: valid JSONPath of an attribute
         :return: List of named attributes with respect to the input JSONPath order
         """
-        return [x for x in path.split("/") if not re.search(re.compile(r"^\[?\d+]?$"), x)]
+        return [x for x in path.split("/") if not re.search(ARRAY_INDEX_PATTERN, x)]
 
     @staticmethod
     def _is_nesting_key(inspected_attributes: List[str], key: List[str]) -> bool:
