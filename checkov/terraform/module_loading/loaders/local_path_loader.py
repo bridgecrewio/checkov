@@ -12,6 +12,8 @@ from checkov.terraform.module_loading.loader import ModuleLoader
 if TYPE_CHECKING:
     from checkov.terraform.module_loading.module_params import ModuleParams
 
+WINDOWS_MODULE_SOURCE_PATH_PATTERN = re.compile("[a-zA-Z]:\\\\")
+
 
 class LocalPathLoader(ModuleLoader):
     def __init__(self) -> None:
@@ -22,17 +24,12 @@ class LocalPathLoader(ModuleLoader):
         pass
 
     def _is_matching_loader(self, module_params: ModuleParams) -> bool:
-        if (
-            module_params.module_source.startswith("./")
-            or module_params.module_source.startswith("../")
-            or module_params.module_source.startswith(module_params.current_dir)
-            or module_params.module_source.startswith("/")
-        ):
+        if module_params.module_source.startswith(("./", "../", module_params.current_dir, "/")):
             return True
 
         if platform.system() == "Windows":
             logging.debug("Platform: Windows")
-            if re.match(re.compile("[a-zA-Z]:\\\\"), module_params.module_source):
+            if re.match(WINDOWS_MODULE_SOURCE_PATH_PATTERN, module_params.module_source):
                 return True
 
         return False

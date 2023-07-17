@@ -117,10 +117,11 @@ class TerraformBlock(Block):
                                         dynamic_content_path: List[str], dynamic_changed_attributes: List[str]) -> None:
         if isinstance(value, str):
             dynamic_ref = f'{dynamic_block_name}.value'
-            interpolation_matches = re.findall(INTERPOLATION_EXPR, value)
-            for match in interpolation_matches:
-                if dynamic_ref in match:
-                    dynamic_changed_attributes.append(key_path)
+            if "${" in value:
+                interpolation_matches = re.findall(INTERPOLATION_EXPR, value)
+                for match in interpolation_matches:
+                    if dynamic_ref in match:
+                        dynamic_changed_attributes.append(key_path)
         elif isinstance(value, list):
             for idx, sub_value in enumerate(value):
                 self._collect_dynamic_dependent_keys(

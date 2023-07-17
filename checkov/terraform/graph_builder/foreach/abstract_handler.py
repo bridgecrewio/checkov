@@ -252,10 +252,13 @@ class ForeachAbstractHandler:
 
     @staticmethod
     def need_to_add_quotes(code: str, key: str) -> bool:
-        patterns = [r'lower\(' + key + r'\)', r'upper\(' + key + r'\)']
-        for pattern in patterns:
-            if re.search(pattern, code):
-                return True
+        if "lower" in code or "upper" in code:
+            patterns = (r'lower\(' + key + r'\)', r'upper\(' + key + r'\)')
+            for pattern in patterns:
+                if re.search(pattern, code):
+                    return True
+
         if f'[{key}]' in code:
             return True
+
         return False
