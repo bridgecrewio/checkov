@@ -44,6 +44,7 @@ from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.output.baseline import Baseline
 from checkov.common.bridgecrew.check_type import checkov_runners, CheckType
 from checkov.common.runners.runner_registry import RunnerRegistry
+from checkov.common.template_logger_adapter import get_logger_with_template_adapter
 from checkov.common.util import prompt
 from checkov.common.util.banner import banner as checkov_banner, tool as checkov_tool
 from checkov.common.util.config_utils import get_default_config_paths
@@ -89,7 +90,7 @@ signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
 outer_registry = None
 
-logger = logging.getLogger(__name__)
+logger = get_logger_with_template_adapter(logging.getLogger(__name__))
 
 # sca package runner added during the run method
 DEFAULT_RUNNERS = [
