@@ -36,7 +36,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3
       - name: Set up Python
-        uses: actions/setup-python@bd6b4b6205c4dbad673328db7b31b7fab9e241c0  # v4
+        uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1  # v4
         with:
           python-version: '3.10'
       - name: Setup python for CodeQL
@@ -54,12 +54,12 @@ jobs:
           pipenv lock -r > requirements.txt
           pip install -r requirements.txt
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@46ed16ded91731b2df79a2893d3aea8e9f03b5c4  # v2
+        uses: github/codeql-action/init@489225d82a57396c6f426a40e66d461b16b3461d  # v2
         with:
           languages: python
           setup-python-dependencies: false
           config-file: ./.github/codeql-config.yml
       - name: Autobuild
-        uses: github/codeql-action/autobuild@46ed16ded91731b2df79a2893d3aea8e9f03b5c4  # v2
+        uses: github/codeql-action/autobuild@489225d82a57396c6f426a40e66d461b16b3461d  # v2
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@46ed16ded91731b2df79a2893d3aea8e9f03b5c4  # v2
+        uses: github/codeql-action/analyze@489225d82a57396c6f426a40e66d461b16b3461d  # v2
