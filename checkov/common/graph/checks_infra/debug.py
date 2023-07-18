@@ -18,6 +18,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 add_resource_code_filter_to_logger(logger)
 
+
 def graph_check(check_id: str, check_name: str) -> None:
     if not env_vars_config.EXPERIMENTAL_GRAPH_DEBUG:
         return
