@@ -31,6 +31,12 @@ class ResourceCodeFilter(Filter):
 
 def add_resource_code_filter_to_logger(logger: Logger, allow_code_logging: bool | None = None) -> None:
     if allow_code_logging is None:
-        allow_code_logging = convert_str_to_bool(os.environ.get("CHECKOV_ALLOW_CODE_LOGGING", True))
+        allow_code_logging_res = convert_str_to_bool(os.environ.get("CHECKOV_ALLOW_CODE_LOGGING", True))
+        if isinstance(allow_code_logging_res, bool):
+            allow_code_logging = allow_code_logging_res
+        else:
+            raise Exception(f"Failed to get correct result for env variable - `CHECKOV_ALLOW_CODE_LOGGING`. "
+                            f"Got {allow_code_logging_res}")
+
     resource_code_filter = ResourceCodeFilter(allow_code_logging=allow_code_logging)
     logger.addFilter(resource_code_filter)
