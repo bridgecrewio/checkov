@@ -76,7 +76,7 @@ To install pip follow the official [docs](https://pip.pypa.io/en/stable/cli/pip_
 pip3 install checkov
 ```
 
-or using [homebrew](https://formulae.brew.sh/formula/checkov) (macOS or Linux)
+or with [Homebrew](https://formulae.brew.sh/formula/checkov) (macOS or Linux)
 
 ```sh
 brew install checkov
