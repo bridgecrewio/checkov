@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 class ParserRegistry:
     context_parsers: Dict[str, "BaseContextParser"] = {}  # noqa: CCE003
-    definitions_context: Dict[str, Dict[str, Dict[str, Any]]] = {}  # noqa: CCE003
+    definitions_context: Dict[TFDefinitionKey, Dict[str, Dict[str, Any]]] = {}  # noqa: CCE003
 
     def __init__(self) -> None:
         self.logger = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ class ParserRegistry:
 
     def enrich_definitions_context(
         self, definitions: Tuple[str, Dict[str, List[Dict[str, Any]]]], collect_skip_comments: bool = True
-    ) -> Dict[str, Dict[str, Dict[str, Any]]]:
+    ) -> Dict[TFDefinitionKey, Dict[str, Dict[str, Any]]]:
         supported_definitions = [parser_type for parser_type in self.context_parsers.keys()]
         (tf_definition_key, definition_blocks_types) = definitions
         if isinstance(tf_definition_key, TFDefinitionKey):
