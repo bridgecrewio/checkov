@@ -12,7 +12,7 @@ Installing Checkov is quick and straightforward—just install, configure input,
 pip install checkov
 ```
 
-### Install on Python
+or
 
 ```shell
 pip3 install checkov
@@ -28,26 +28,10 @@ pip3 install --upgrade pip && pip3 install --upgrade setuptools
 pip3 install checkov
 ```
 
-### Install on Ubuntu 18.04 LTS
-
-Ubuntu 18.04 ships with Python 3.6. Before you can install Checkov, you need to install python 3.7 (from the PPA repository):
-
-```shell
-sudo apt update
-sudo apt install software-properties-common
-sudo add-apt-repository ppa:deadsnakes/ppa
-sudo apt install python3.7
-sudo apt install python3-pip
-sudo python3.7 -m pip install -U checkov #to install or upgrade checkov)
-```
-
-or using homebrew (MacOS only)
+### Install with Homebrew
 
 ```shell
 brew install checkov
-or
-
-brew upgrade checkov
 ```
 
 ## Upgrading Checkov
@@ -56,6 +40,12 @@ If you installed Checkov with pip3, use the following command to upgrade:
 
 ```shell
 pip3 install -U checkov
+```
+
+or with Homebrew
+
+```sh
+brew upgrade checkov
 ```
 
 ## Configure an input folder or file
