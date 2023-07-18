@@ -4,11 +4,14 @@ import datetime
 import logging
 import json
 import subprocess  # nosec
+
+from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.util.http_utils import request_wrapper
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
 from typing import Any
 
 logger = logging.getLogger(__name__)
+add_resource_code_filter_to_logger(logger)
 
 
 def report_contributor_metrics(repository: str, source: str,
