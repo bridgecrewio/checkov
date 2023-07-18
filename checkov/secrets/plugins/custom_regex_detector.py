@@ -35,12 +35,18 @@ class CustomRegexDetector(RegexBasedDetector):
         detectors = load_detectors()
 
         for detector in detectors:
-            if detector.get("isMultiline"):
-                self.multiline_deny_list.add(re.compile('{}'.format(detector["Regex"])))
-                self.multiline_regex_to_metadata[detector["Regex"]] = detector
-                continue
-            self.denylist.add(re.compile('{}'.format(detector["Regex"])))
-            self.regex_to_metadata[detector["Regex"]] = detector
+            try:
+                if detector.get("isMultiline"):
+                    self.multiline_deny_list.add(re.compile('{}'.format(detector["Regex"])))
+                    self.multiline_regex_to_metadata[detector["Regex"]] = detector
+                    continue
+                self.denylist.add(re.compile('{}'.format(detector["Regex"])))
+                self.regex_to_metadata[detector["Regex"]] = detector
+            except Exception:
+                logging.error(
+                    f"Failed to load detector {detector.get('Name')} with regex {detector.get('Regex')}",
+                    exc_info=True,
+                )
 
     @property
     def multiline_regex_supported_file_types(self) -> Set[str]:
