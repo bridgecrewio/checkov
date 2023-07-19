@@ -7,6 +7,7 @@ import os
 from typing import Dict, List, Tuple, Any
 from charset_normalizer import from_fp
 
+from checkov.terraform import TFDefinitionKey
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.plan_parser import parse_tf_plan, TF_PLAN_RESOURCE_ADDRESS
 from checkov.common.runners.base_runner import filter_ignored_paths
@@ -64,7 +65,7 @@ def build_definitions_context(
     definitions: dict[str, dict[str, list[dict[str, Any]]]],
     definitions_raw: Dict[str, List[Tuple[int, str]]]
 ) -> Dict[str, Dict[str, Any]]:
-    definitions_context: dict[str, dict[str, Any]] = defaultdict(dict)
+    definitions_context: dict[str | TFDefinitionKey, dict[str, Any]] = defaultdict(dict)
     supported_block_types = ("data", "resource")
     for full_file_path, definition in definitions.items():
         for block_type in supported_block_types:

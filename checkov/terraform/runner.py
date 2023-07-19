@@ -61,6 +61,7 @@ if TYPE_CHECKING:
 dpath.options.ALLOW_EMPTY_STRING_KEYS = True
 
 CHECK_BLOCK_TYPES = frozenset(['resource', 'data', 'provider', 'module'])
+ENABLE_DEFINITION_KEY = os.getenv('ENABLE_DEFINITION_KEY', False)
 
 
 class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
@@ -416,10 +417,10 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
             else:
                 entity_context_path = entity_context_path_header + block_type + definition_path
             # Entity can exist only once per dir, for file as well
-            if isinstance(full_file_path, TFDefinitionKey):
-                context_path = full_file_path
+            if not ENABLE_DEFINITION_KEY:
+                context_path = full_file_path.file_path if isinstance(full_file_path, TFDefinitionKey) else full_file_path
             else:
-                context_path = TFDefinitionKey(file_path=full_file_path, tf_source_modules=None)
+                context_path = full_file_path if isinstance(full_file_path, TFDefinitionKey) else TFDefinitionKey(file_path=full_file_path, tf_source_modules=None)
             try:
                 entity_context = data_structures_utils.get_inner_dict(
                     definition_context[context_path],
@@ -569,10 +570,13 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
     def push_skipped_checks_down_from_modules(self, definition_context):
         module_context_parser = parser_registry.context_parsers[BlockType.MODULE]
         for tf_definition_key, definition in self.definitions.items():
-            if isinstance(tf_definition_key, TFDefinitionKey):
-                full_file_path = tf_definition_key
+            if not ENABLE_DEFINITION_KEY:
+                full_file_path = tf_definition_key.file_path if isinstance(tf_definition_key, TFDefinitionKey) \
+                    else tf_definition_key
             else:
-                full_file_path = TFDefinitionKey(file_path=tf_definition_key, tf_source_modules=None)
+                full_file_path = tf_definition_key if isinstance(tf_definition_key, TFDefinitionKey)\
+                    else TFDefinitionKey(file_path=tf_definition_key, tf_source_modules=None)
+                
             definition_modules_context = definition_context.get(full_file_path, {}).get(BlockType.MODULE, {})
             for entity in definition.get(BlockType.MODULE, []):
                 module_name = module_context_parser.get_entity_context_path(entity)[0]
