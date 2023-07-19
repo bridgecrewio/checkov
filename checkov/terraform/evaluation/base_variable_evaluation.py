@@ -6,6 +6,8 @@ from typing import Tuple, Dict, Any, List
 
 import dpath
 
+from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
+
 TF_DEFINITIONS_STRIP_WORDS = re.compile(r"\b(?!\d)([^\/]+)")
 NON_PATH_WORDS_REGEX = re.compile(r"\b(?!output)[^ .]+")
 DEFINITION_TYPES_REGEX_MAPPING = {"variable": "var", "locals": "local"}
@@ -19,6 +21,7 @@ class BaseVariableEvaluation(ABC):
         definitions_context: Dict[str, Dict[str, Any]],
     ) -> None:
         self.logger = logging.getLogger("{}".format(self.__module__))
+        add_resource_code_filter_to_logger(self.logger)
         self.root_folder = root_folder
         self.tf_definitions = tf_definitions
         self.definitions_context = definitions_context
