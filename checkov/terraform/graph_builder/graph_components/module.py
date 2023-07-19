@@ -61,7 +61,7 @@ class Module:
                     block.source_module_object = block.path.tf_source_modules
                     block.path = block.path.file_path
             else:
-                block.module_dependency, block.module_dependency_num = get_module_from_full_path(block.path)
+                block.module_dependency, block.module_dependency_num, _ = get_module_from_full_path(block.path)
                 block.path = get_abs_path(block.path)
             self.blocks.append(block)
             return

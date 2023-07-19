@@ -388,7 +388,7 @@ def get_tf_definition_key_from_module_dependency(
     return f"{path}{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{module_dependency[:module_index]}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}{module_dependency_num}{module_dependency[module_index:]}{TERRAFORM_NESTED_MODULE_PATH_ENDING}"
 
 
-def get_module_from_full_path(file_path: TFDefinitionKeyType | None) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+def get_module_from_full_path(file_path: TFDefinitionKeyType | None) -> Tuple[Optional[str | TFDefinitionKeyType], Optional[str], Optional[str]]:
     from checkov.terraform.modules.module_objects import TFDefinitionKey
     if not file_path or not is_nested(file_path):
         return None, None, None
@@ -402,7 +402,7 @@ def get_module_from_full_path(file_path: TFDefinitionKeyType | None) -> Tuple[Op
         module_name = file_path.tf_source_modules.name
         if file_path.tf_source_modules.foreach_idx:
             module_name = f'{module_name}[\"{file_path.tf_source_modules.foreach_idx}\"]'
-        return modules_full_key, module_name,  None
+        return modules_full_key, None, module_name
     tmp_path = file_path[file_path.index(TERRAFORM_NESTED_MODULE_PATH_PREFIX) + TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH: -TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH]
     if is_nested(tmp_path):
         module = get_abs_path(tmp_path) + tmp_path[tmp_path.index(TERRAFORM_NESTED_MODULE_PATH_PREFIX):]
@@ -410,7 +410,7 @@ def get_module_from_full_path(file_path: TFDefinitionKeyType | None) -> Tuple[Op
     else:
         module = get_abs_path(tmp_path)
         index = tmp_path[tmp_path.index(TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR) + TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH:]
-    return module, None, index
+    return module, index, None
 
 
 def get_abs_path(file_path: TFDefinitionKeyType) -> str:

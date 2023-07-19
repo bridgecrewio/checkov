@@ -375,7 +375,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
 
             if self.enable_nested_modules:
                 entity_id = entity_config.get(CustomAttributes.TF_RESOURCE_ADDRESS)
-                module_full_path, module_name, _ = get_module_from_full_path(full_file_path)
+                module_full_path, _, module_name = get_module_from_full_path(full_file_path)
                 if module_full_path:
                     if not module_name:
                         full_definition_path = entity_id.split('.')
@@ -577,7 +577,6 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
             else:
                 full_file_path = tf_definition_key if isinstance(tf_definition_key, TFDefinitionKey)\
                     else TFDefinitionKey(file_path=tf_definition_key, tf_source_modules=None)
-                
             definition_modules_context = definition_context.get(full_file_path, {}).get(BlockType.MODULE, {})
             for entity in definition.get(BlockType.MODULE, []):
                 module_name = module_context_parser.get_entity_context_path(entity)[0]
