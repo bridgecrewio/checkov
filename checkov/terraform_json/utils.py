@@ -6,11 +6,13 @@ from collections.abc import Collection
 from pathlib import Path
 from typing import Any
 
+from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.terraform_json.parser import parse
 
 TF_JSON_POSSIBLE_FILE_ENDINGS = (".tf.json",)
 
 logger = logging.getLogger(__name__)
+add_resource_code_filter_to_logger(logger)
 
 
 def get_scannable_file_paths(

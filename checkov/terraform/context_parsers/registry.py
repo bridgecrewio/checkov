@@ -4,6 +4,7 @@ from typing import Dict, TYPE_CHECKING, Tuple, List, Any
 
 import dpath
 
+from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.terraform.modules.module_objects import TFDefinitionKey
 
 if TYPE_CHECKING:
@@ -16,6 +17,7 @@ class ParserRegistry:
 
     def __init__(self) -> None:
         self.logger = logging.getLogger(__name__)
+        add_resource_code_filter_to_logger(self.logger)
 
     def register(self, parser: "BaseContextParser") -> None:
         self.context_parsers[parser.definition_type] = parser

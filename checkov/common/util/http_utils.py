@@ -14,6 +14,7 @@ from typing import Any, TYPE_CHECKING, cast, Optional, overload
 from urllib3.response import HTTPResponse
 from urllib3.util import parse_url
 
+from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.util.consts import DEV_API_GET_HEADERS, DEV_API_POST_HEADERS, PRISMA_API_GET_HEADERS, \
     PRISMA_PLATFORM, BRIDGECREW_PLATFORM
 from checkov.common.util.data_structures_utils import merge_dicts
@@ -27,6 +28,7 @@ if TYPE_CHECKING:
 DEFAULT_TIMEOUT = (3.1, 30)
 
 logger = logging.getLogger(__name__)
+add_resource_code_filter_to_logger(logger)
 
 
 @overload
