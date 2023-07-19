@@ -26,7 +26,7 @@ class ResourceCodeFilter(Filter):
             # Allows filtering using `logging.info("<msg>", extra={"mask": True})`
             mask = record.mask
             if not isinstance(mask, bool):
-                raise Exception(f"Expected to get `mask` as boolean for logging function, instead got: {mask}")
+                raise Exception(f"Expected to get `mask` as boolean for logging function, instead got: {mask} of type {type(mask)}")
             return not record.mask
 
         msg = record.msg
