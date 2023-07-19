@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import os
 from typing import Dict, TYPE_CHECKING, Tuple, List, Any
@@ -30,7 +32,7 @@ class ParserRegistry:
 
     def enrich_definitions_context(
         self, definitions: Tuple[str, Dict[str, List[Dict[str, Any]]]], collect_skip_comments: bool = True
-    ) -> Dict[TFDefinitionKey, Dict[str, Dict[str, Any]]]:
+    ) -> Dict[str | TFDefinitionKey, Dict[str, Dict[str, Any]]]:
         supported_definitions = [parser_type for parser_type in self.context_parsers.keys()]
         (tf_definition_key, definition_blocks_types) = definitions
         if isinstance(tf_definition_key, TFDefinitionKey):
