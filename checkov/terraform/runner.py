@@ -348,7 +348,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
             return
         block_types = set(definition.keys())
         for block_type in block_types & CHECK_BLOCK_TYPES:
-            self.run_block(definition[block_type], definitions_context,
+            self.run_block(definition.get(block_type, {}), definitions_context,
                            full_file_path, root_folder, report,
                            scanned_file, block_type, runner_filter, None, module_referrer)
 
@@ -417,9 +417,9 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                 entity_context_path = entity_context_path_header + block_type + definition_path
             # Entity can exist only once per dir, for file as well
             if isinstance(full_file_path, TFDefinitionKey):
-                context_path = full_file_path.file_path
-            else:
                 context_path = full_file_path
+            else:
+                context_path = TFDefinitionKey(file_path=full_file_path, tf_source_modules=None)
             try:
                 entity_context = data_structures_utils.get_inner_dict(
                     definition_context[context_path],
@@ -570,9 +570,9 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         module_context_parser = parser_registry.context_parsers[BlockType.MODULE]
         for tf_definition_key, definition in self.definitions.items():
             if isinstance(tf_definition_key, TFDefinitionKey):
-                full_file_path = tf_definition_key.file_path
-            else:
                 full_file_path = tf_definition_key
+            else:
+                full_file_path = TFDefinitionKey(file_path=tf_definition_key, tf_source_modules=None)
             definition_modules_context = definition_context.get(full_file_path, {}).get(BlockType.MODULE, {})
             for entity in definition.get(BlockType.MODULE, []):
                 module_name = module_context_parser.get_entity_context_path(entity)[0]
