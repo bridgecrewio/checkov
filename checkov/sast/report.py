@@ -1,4 +1,4 @@
-from typing import Dict, Union, List
+from typing import Dict, Union, List, Optional
 
 from checkov.common.output.report import Report
 from checkov.sast.consts import POLICIES_ERRORS, POLICIES_ERRORS_COUNT, ENGINE_NAME, SOURCE_FILES_COUNT, POLICY_COUNT
@@ -6,7 +6,7 @@ from checkov.sast.consts import POLICIES_ERRORS, POLICIES_ERRORS_COUNT, ENGINE_N
 
 class SastReport(Report):
 
-    def __init__(self, check_type: str, metadata: Dict[str, Union[str, int, List[str]]], engine_name: str):
+    def __init__(self, check_type: str, metadata: Dict[str, Optional[Union[str, int, List[str]]]], engine_name: str):
         super().__init__(check_type)
         self.metadata = metadata
         self.engine_name = engine_name
