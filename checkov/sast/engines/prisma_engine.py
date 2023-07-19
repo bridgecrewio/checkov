@@ -1,4 +1,5 @@
 import ctypes
+from datetime import datetime
 import json
 import logging
 import os
@@ -66,11 +67,17 @@ class PrismaEngine(SastEngine):
             is_file_exists = [f for f in os.listdir(self.prisma_sast_dir_path) if
                               (self.prisma_sast_dir_path / f).is_file() and "library" in f]
             if len(is_file_exists) > 0:
-                match = re.match(r"(\d+_\d+_\d+)_library\.(so|dll|dylib)", is_file_exists[0])
-                if match:
-                    current_version = match.groups()[0]
+                latest_file = os.path.join(self.prisma_sast_dir_path, is_file_exists[0])
+                creation_time = os.path.getmtime(latest_file)
+                now = datetime.now().timestamp()
+                diff = datetime.fromtimestamp(now) - datetime.fromtimestamp(creation_time)
+                if diff.days < 1:
+                    match = re.match(r"(\d+_\d+_\d+)_library\.(so|dll|dylib)", latest_file)
+                    if match:
+                        current_version = match.groups()[0]
 
         if os.getenv("SAST_ARTIFACT_PATH"):
+            logging.debug(f'using local artifact in path {os.getenv("SAST_ARTIFACT_PATH")}')
             return True
         status: bool = self.download_sast_artifacts(current_version)
 
@@ -92,7 +99,7 @@ class PrismaEngine(SastEngine):
             if response.status_code == 304:
                 return True
 
-            match = re.match(r'.*\/(?P<name>\d+_\d+_\d+_library\.(so|dll|dylib))\?.*', response.url)
+            match = re.match(r'.*\/(?P<name>v?\d+_\d+_\d+_library\.(so|dll|dylib))\?.*', response.url)
             if match:
                 new_name = match.group('name')
                 cli_file_name_path = self.prisma_sast_dir_path / new_name
