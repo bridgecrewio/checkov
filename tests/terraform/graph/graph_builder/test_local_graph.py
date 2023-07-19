@@ -108,6 +108,25 @@ class TestLocalGraph(TestCase):
             else:
                 self.assertEqual(var_value, default_val)
 
+    def test_compare_multi_graph_defs(self):
+        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME,
+                                                      '../resources/variable_rendering/render_module_postgresql'))
+        hcl_config_parser = TFParser()
+        module, defs = hcl_config_parser.parse_hcl_module(resources_dir, source=self.source)
+        modules = hcl_config_parser.parse_multi_graph_hcl_module(resources_dir, source=self.source)
+        for idx, module_to_definitions in enumerate(modules):
+            assert module_to_definitions[0] == module
+            for att, content in defs.items():
+                found = False
+                for content_dict in module_to_definitions[1]:
+                    for key, value in content_dict.items():
+                        if value == content:
+                            found = True
+                            break
+                    if found:
+                        break
+                assert found
+
     def test_set_variables_values_from_modules_with_new_tf_parser(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME,
                                                       '../resources/variable_rendering/render_from_module_vpc'))

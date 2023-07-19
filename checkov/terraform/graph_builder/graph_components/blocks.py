@@ -81,6 +81,19 @@ class TerraformBlock(Block):
             self.for_each_index: Optional[Any] = None
             self.foreach_attrs: list[str] | None = None
 
+    def __eq__(self, other):
+        if not isinstance(other, TerraformBlock):
+            return False
+
+        return  self.name == other.name and \
+                self.config == other.config and \
+                self.path == other.path and \
+                self.block_type == other.block_type and \
+                self.attributes == other.attributes and \
+                self.id == other.id and \
+                self.has_dynamic_block == other.has_dynamic_block and \
+                self.source == other.source
+
     def add_module_connection(self, attribute_key: str, vertex_id: int) -> None:
         self.module_connections.setdefault(attribute_key, []).append(vertex_id)
 
