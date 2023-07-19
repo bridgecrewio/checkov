@@ -1,4 +1,5 @@
 import logging
+import os
 from typing import Dict, TYPE_CHECKING, Tuple, List, Any
 
 import dpath
@@ -27,10 +28,12 @@ class ParserRegistry:
     ) -> Dict[TFDefinitionKey, Dict[str, Dict[str, Any]]]:
         supported_definitions = [parser_type for parser_type in self.context_parsers.keys()]
         (tf_definition_key, definition_blocks_types) = definitions
-        if isinstance(tf_definition_key, TFDefinitionKey):
-            tf_file = tf_definition_key
+        enable_definitions_key = os.getenv('ENABLE_DEFINITION_KEY', False)
+        if not enable_definitions_key:
+            tf_file = tf_definition_key.file_path if isinstance(tf_definition_key, TFDefinitionKey) else tf_definition_key
         else:
-            tf_file = TFDefinitionKey(file_path=tf_definition_key, tf_source_modules=None)
+            tf_file = tf_definition_key if isinstance(tf_definition_key, TFDefinitionKey) else TFDefinitionKey(file_path=tf_definition_key, tf_source_modules=None)
+
         if definition_blocks_types:
             definition_blocks_types = {x: definition_blocks_types[x] for x in definition_blocks_types.keys()}
             for definition_type in definition_blocks_types.keys():

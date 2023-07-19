@@ -348,7 +348,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
             return
         block_types = set(definition.keys())
         for block_type in block_types & CHECK_BLOCK_TYPES:
-            self.run_block(definition.get(block_type, {}), definitions_context,
+            self.run_block(definition[block_type], definitions_context,
                            full_file_path, root_folder, report,
                            scanned_file, block_type, runner_filter, None, module_referrer)
 
