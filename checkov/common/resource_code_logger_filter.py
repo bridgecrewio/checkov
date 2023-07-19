@@ -22,7 +22,17 @@ class ResourceCodeFilter(Filter):
     def filter(self, record: LogRecord) -> bool:
         if self.allow_code_logging:
             return True
+        if hasattr(record, "mask"):
+            # Allows filtering using `logging.info("<msg>", extra={"mask": True})`
+            mask = record.mask
+            if not isinstance(mask, bool):
+                raise Exception(f"Expected to get `mask` as boolean for logging function, instead got: {mask}")
+            return not record.mask
+
         msg = record.msg
+        return self._filter_based_on_msg(msg)
+
+    def _filter_based_on_msg(self, msg: str) -> bool:
         for code_template in ResourceCodeFilter.CODE_TEMPLATES:
             if code_template in msg:
                 return False
