@@ -5,11 +5,13 @@ from typing import Dict, TYPE_CHECKING, Tuple, List, Any
 import dpath
 
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
+from checkov.common.runners.base_runner import strtobool
 from checkov.terraform.modules.module_objects import TFDefinitionKey
 
 if TYPE_CHECKING:
     from checkov.terraform.context_parsers.base_parser import BaseContextParser
 
+ENABLE_DEFINITION_KEY = strtobool(os.getenv('ENABLE_DEFINITION_KEY', 'False'))
 
 class ParserRegistry:
     context_parsers: Dict[str, "BaseContextParser"] = {}  # noqa: CCE003
@@ -30,8 +32,8 @@ class ParserRegistry:
     ) -> Dict[TFDefinitionKey, Dict[str, Dict[str, Any]]]:
         supported_definitions = [parser_type for parser_type in self.context_parsers.keys()]
         (tf_definition_key, definition_blocks_types) = definitions
-        enable_definitions_key = os.getenv('ENABLE_DEFINITION_KEY', False)
-        if not enable_definitions_key:
+
+        if not ENABLE_DEFINITION_KEY:
             tf_file = tf_definition_key.file_path if isinstance(tf_definition_key, TFDefinitionKey) else tf_definition_key
         else:
             tf_file = tf_definition_key if isinstance(tf_definition_key, TFDefinitionKey) \
