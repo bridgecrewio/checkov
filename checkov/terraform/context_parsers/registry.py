@@ -34,7 +34,8 @@ class ParserRegistry:
         if not enable_definitions_key:
             tf_file = tf_definition_key.file_path if isinstance(tf_definition_key, TFDefinitionKey) else tf_definition_key
         else:
-            tf_file = tf_definition_key if isinstance(tf_definition_key, TFDefinitionKey) else TFDefinitionKey(file_path=tf_definition_key, tf_source_modules=None)
+            tf_file = tf_definition_key if isinstance(tf_definition_key, TFDefinitionKey) \
+                else TFDefinitionKey(file_path=tf_definition_key, tf_source_modules=None)
 
         if definition_blocks_types:
             definition_blocks_types = {x: definition_blocks_types[x] for x in definition_blocks_types.keys()}

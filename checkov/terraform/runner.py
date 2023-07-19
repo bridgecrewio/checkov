@@ -61,7 +61,7 @@ if TYPE_CHECKING:
 dpath.options.ALLOW_EMPTY_STRING_KEYS = True
 
 CHECK_BLOCK_TYPES = frozenset(['resource', 'data', 'provider', 'module'])
-ENABLE_DEFINITION_KEY = os.getenv('ENABLE_DEFINITION_KEY', False)
+enable_definitions_key = os.getenv('ENABLE_DEFINITION_KEY', False)
 
 
 class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
@@ -417,7 +417,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
             else:
                 entity_context_path = entity_context_path_header + block_type + definition_path
             # Entity can exist only once per dir, for file as well
-            if not ENABLE_DEFINITION_KEY:
+            if not enable_definitions_key:
                 context_path = full_file_path.file_path if isinstance(full_file_path, TFDefinitionKey) else full_file_path
             else:
                 context_path = full_file_path if isinstance(full_file_path, TFDefinitionKey) else TFDefinitionKey(file_path=full_file_path, tf_source_modules=None)
@@ -570,7 +570,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
     def push_skipped_checks_down_from_modules(self, definition_context):
         module_context_parser = parser_registry.context_parsers[BlockType.MODULE]
         for tf_definition_key, definition in self.definitions.items():
-            if not ENABLE_DEFINITION_KEY:
+            if not enable_definitions_key:
                 full_file_path = tf_definition_key.file_path if isinstance(tf_definition_key, TFDefinitionKey) \
                     else tf_definition_key
             else:

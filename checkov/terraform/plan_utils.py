@@ -7,7 +7,6 @@ import os
 from typing import Dict, List, Tuple, Any
 from charset_normalizer import from_fp
 
-from checkov.terraform import TFDefinitionKey
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.plan_parser import parse_tf_plan, TF_PLAN_RESOURCE_ADDRESS
 from checkov.common.runners.base_runner import filter_ignored_paths
