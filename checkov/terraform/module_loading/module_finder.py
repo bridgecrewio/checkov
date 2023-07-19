@@ -6,6 +6,7 @@ import re
 from typing import List, Callable
 
 from checkov.common.parallelizer.parallel_runner import parallel_runner
+from checkov.common.util.file_utils import read_file_with_any_encoding
 from checkov.terraform.module_loading.registry import module_loader_registry
 
 MODULE_SOURCE_PATTERN = re.compile(r'[^#]*\bsource\s*=\s*"(?P<link>.*)"')
@@ -33,41 +34,41 @@ def find_modules(path: str) -> List[ModuleDownload]:
         for file_name in full_file_names:
             if not file_name.endswith('.tf'):
                 continue
-            with open(os.path.join(path, root, file_name)) as f:
-                content = f.read()
+
+            try:
+                content = read_file_with_any_encoding(file_path=os.path.join(path, root, file_name))
                 if "module " not in content:
                     # if there is no "module " ref in the whole file, then no need to search line by line
                     continue
 
-                try:
-                    curr_md = None
-                    for line in content.splitlines():
-                        if not curr_md:
-                            if line.startswith('module'):
-                                curr_md = ModuleDownload(os.path.dirname(os.path.join(root, file_name)))
-                                continue
-                        else:
-                            if line.startswith('}'):
-                                if curr_md.module_link is None:
-                                    logging.warning(f'A module at {curr_md.source_dir} had no source, skipping')
-                                else:
-                                    modules_found.append(curr_md)
-                                curr_md = None
+                curr_md = None
+                for line in content.splitlines():
+                    if not curr_md:
+                        if line.startswith('module'):
+                            curr_md = ModuleDownload(os.path.dirname(os.path.join(root, file_name)))
+                            continue
+                    else:
+                        if line.startswith('}'):
+                            if curr_md.module_link is None:
+                                logging.warning(f'A module at {curr_md.source_dir} had no source, skipping')
+                            else:
+                                modules_found.append(curr_md)
+                            curr_md = None
+                            continue
+
+                        if "source" in line:
+                            match = re.match(MODULE_SOURCE_PATTERN, line)
+                            if match:
+                                curr_md.module_link = match.group('link')
                                 continue
 
-                            if "source" in line:
-                                match = re.match(MODULE_SOURCE_PATTERN, line)
-                                if match:
-                                    curr_md.module_link = match.group('link')
-                                    continue
-
-                            if "version" in line:
-                                match = re.match(MODULE_VERSION_PATTERN, line)
-                                if match:
-                                    curr_md.version = f"{match.group('operator')}{match.group('version')}" if match.group('operator') else match.group('version')
-                except (UnicodeDecodeError, FileNotFoundError) as e:
-                    logging.warning(f"Skipping {os.path.join(path, root, file_name)} because of {e}")
-                    continue
+                        if "version" in line:
+                            match = re.match(MODULE_VERSION_PATTERN, line)
+                            if match:
+                                curr_md.version = f"{match.group('operator')}{match.group('version')}" if match.group('operator') else match.group('version')
+            except (UnicodeDecodeError, FileNotFoundError) as e:
+                logging.warning(f"Skipping {os.path.join(path, root, file_name)} because of {e}")
+                continue
 
     return modules_found
 
