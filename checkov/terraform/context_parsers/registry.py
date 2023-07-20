@@ -13,8 +13,6 @@ from checkov.terraform.modules.module_objects import TFDefinitionKey
 if TYPE_CHECKING:
     from checkov.terraform.context_parsers.base_parser import BaseContextParser
 
-ENABLE_DEFINITION_KEY = strtobool(os.getenv('ENABLE_DEFINITION_KEY', 'False'))
-
 
 class ParserRegistry:
     context_parsers: Dict[str, "BaseContextParser"] = {}  # noqa: CCE003
@@ -35,10 +33,11 @@ class ParserRegistry:
     ) -> Dict[str | TFDefinitionKey, Dict[str, Dict[str, Any]]]:
         supported_definitions = [parser_type for parser_type in self.context_parsers.keys()]
         (tf_definition_key, definition_blocks_types) = definitions
+        enable_definition_key = strtobool(os.getenv('ENABLE_DEFINITION_KEY', 'False'))
         if isinstance(tf_definition_key, TFDefinitionKey):
-            tf_file = tf_definition_key.file_path if not ENABLE_DEFINITION_KEY else tf_definition_key
+            tf_file = tf_definition_key.file_path if not enable_definition_key else tf_definition_key
         else:
-            tf_file = tf_definition_key if not ENABLE_DEFINITION_KEY \
+            tf_file = tf_definition_key if not enable_definition_key \
                 else TFDefinitionKey(file_path=tf_definition_key, tf_source_modules=None)
 
         if definition_blocks_types:

@@ -20,7 +20,6 @@ TERRAFORM_NESTED_MODULE_PATH_PREFIX = '([{'
 TERRAFORM_NESTED_MODULE_PATH_ENDING = '}])'
 TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR = '#*#'
 TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH = 3
-ENABLE_DEFINITION_KEY = strtobool(os.getenv('ENABLE_DEFINITION_KEY', 'False'))
 
 
 @dataclass
@@ -395,7 +394,7 @@ def get_module_from_full_path(file_path: TFDefinitionKeyType | None) -> Tuple[Op
     if isinstance(file_path, TFDefinitionKey):
         if file_path.tf_source_modules is None:
             return None, None, None
-        if ENABLE_DEFINITION_KEY:
+        if strtobool(os.getenv('ENABLE_DEFINITION_KEY', 'False')):
             modules_full_key = TFDefinitionKey(file_path=file_path.tf_source_modules.path, tf_source_modules=file_path.tf_source_modules.nested_tf_module)
         else:
             modules_full_key = file_path.tf_source_modules.path
