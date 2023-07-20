@@ -49,16 +49,15 @@ class Module:
             return False
 
         return self.dep_index_mapping == other.dep_index_mapping and \
-               self.module_dependency_map == other.module_dependency_map and \
-               self.module_address_map == other.module_address_map and \
-               self.external_modules_source_map == other.external_modules_source_map and \
-               self.path == other.path and \
-               self.customer_name == other.customer_name and \
-               self.account_id == other.account_id and \
-               self.source == other.source and \
-               self.resources_types == other.resources_types and \
-               self.source_dir == other.source_dir and \
-               self.blocks == other.blocks
+            self.module_dependency_map == other.module_dependency_map and self.module_address_map == other.module_address_map and \
+            self.external_modules_source_map == other.external_modules_source_map and \
+            self.path == other.path and \
+            self.customer_name == other.customer_name and \
+            self.account_id == other.account_id and \
+            self.source == other.source and \
+            self.resources_types == other.resources_types and \
+            self.source_dir == other.source_dir and \
+            self.blocks == other.blocks
 
     def add_blocks(
             self, block_type: str, blocks: List[Dict[str, Dict[str, Any]]], path: str | TFDefinitionKey, source: str
