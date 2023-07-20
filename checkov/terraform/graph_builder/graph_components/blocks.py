@@ -30,16 +30,16 @@ class TerraformBlock(Block):
     )
 
     def __init__(
-        self,
-        name: str,
-        config: Dict[str, Any],
-        path: str | TFDefinitionKey,
-        block_type: str,
-        attributes: Dict[str, Any],
-        id: str = "",
-        source: str = "",
-        has_dynamic_block: bool = False,
-        dynamic_attributes: dict[str, Any] | None = None,
+            self,
+            name: str,
+            config: Dict[str, Any],
+            path: str | TFDefinitionKey,
+            block_type: str,
+            attributes: Dict[str, Any],
+            id: str = "",
+            source: str = "",
+            has_dynamic_block: bool = False,
+            dynamic_attributes: dict[str, Any] | None = None,
     ) -> None:
         """
             :param name: unique name given to the terraform block, for example: 'aws_vpc.example_name'
@@ -85,14 +85,14 @@ class TerraformBlock(Block):
         if not isinstance(other, TerraformBlock):
             return False
 
-        return  self.name == other.name and \
-                self.config == other.config and \
-                self.path == other.path and \
-                self.block_type == other.block_type and \
-                self.attributes == other.attributes and \
-                self.id == other.id and \
-                self.has_dynamic_block == other.has_dynamic_block and \
-                self.source == other.source
+        return self.name == other.name and \
+               self.config == other.config and \
+               self.path == other.path and \
+               self.block_type == other.block_type and \
+               self.attributes == other.attributes and \
+               self.id == other.id and \
+               self.has_dynamic_block == other.has_dynamic_block and \
+               self.source == other.source
 
     def add_module_connection(self, attribute_key: str, vertex_id: int) -> None:
         self.module_connections.setdefault(attribute_key, []).append(vertex_id)
@@ -112,21 +112,24 @@ class TerraformBlock(Block):
             remainder_key_parts = ['start_extract_dynamic_changed_attributes']  # For 1st iteration
             while remainder_key_parts:
                 dynamic_for_each_index = dynamic_attribute_key_parts.index('for_each')
-                dynamic_content_key_parts, remainder_key_parts = dynamic_attribute_key_parts[:dynamic_for_each_index],\
-                    dynamic_attribute_key_parts[dynamic_for_each_index + 1:]
+                dynamic_content_key_parts, remainder_key_parts = dynamic_attribute_key_parts[:dynamic_for_each_index], \
+                                                                 dynamic_attribute_key_parts[
+                                                                 dynamic_for_each_index + 1:]
                 dynamic_block_name = dynamic_content_key_parts[-1]
                 dynamic_content_path = dynamic_content_key_parts + ['content']
                 if dpath.search(self.attributes, dynamic_content_path):
                     dynamic_block_content = dpath.get(self.attributes, dynamic_content_path)
                     for key, value in dynamic_block_content.items():
                         key_path = ".".join(filter(None, [nesting_prefix, dynamic_block_name, key]))
-                        self._collect_dynamic_dependent_keys(dynamic_block_name, value, key_path, dynamic_content_path, dynamic_changed_attributes)
+                        self._collect_dynamic_dependent_keys(dynamic_block_name, value, key_path, dynamic_content_path,
+                                                             dynamic_changed_attributes)
                 dynamic_attribute_key_parts = remainder_key_parts
             return dynamic_changed_attributes
         except ValueError:
             return dynamic_changed_attributes
 
-    def _collect_dynamic_dependent_keys(self, dynamic_block_name: str, value: str | list[str] | dict[str, Any], key_path: str,
+    def _collect_dynamic_dependent_keys(self, dynamic_block_name: str, value: str | list[str] | dict[str, Any],
+                                        key_path: str,
                                         dynamic_content_path: List[str], dynamic_changed_attributes: List[str]) -> None:
         if isinstance(value, str):
             dynamic_ref = f'{dynamic_block_name}.value'
@@ -138,15 +141,19 @@ class TerraformBlock(Block):
         elif isinstance(value, list):
             for idx, sub_value in enumerate(value):
                 self._collect_dynamic_dependent_keys(
-                    dynamic_block_name, sub_value, f'{key_path}.{idx}', dynamic_content_path, dynamic_changed_attributes)
+                    dynamic_block_name, sub_value, f'{key_path}.{idx}', dynamic_content_path,
+                    dynamic_changed_attributes)
         elif isinstance(value, dict):
             for sub_key, sub_value in value.items():
                 if isinstance(sub_value, dict) and 'content' in sub_value.keys() and 'for_each' in sub_value.keys():
                     nested_dynamic_block_key_path = f'{".".join(dynamic_content_path)}.dynamic.{sub_key}.for_each'
-                    dynamic_changed_attributes.extend(self._extract_dynamic_changed_attributes(nested_dynamic_block_key_path, nesting_prefix=dynamic_block_name))
+                    dynamic_changed_attributes.extend(
+                        self._extract_dynamic_changed_attributes(nested_dynamic_block_key_path,
+                                                                 nesting_prefix=dynamic_block_name))
                 else:
                     self._collect_dynamic_dependent_keys(
-                        dynamic_block_name, sub_value, f'{key_path}.{sub_key}', dynamic_content_path, dynamic_changed_attributes)
+                        dynamic_block_name, sub_value, f'{key_path}.{sub_key}', dynamic_content_path,
+                        dynamic_changed_attributes)
 
     def find_attribute(self, attribute: Optional[Union[str, List[str]]]) -> Optional[str]:
         """
@@ -188,10 +195,10 @@ class TerraformBlock(Block):
 
     @classmethod
     def get_inner_attributes(
-        cls,
-        attribute_key: str,
-        attribute_value: Union[str, List[str], Dict[str, Any]],
-        strip_list: bool = True
+            cls,
+            attribute_key: str,
+            attribute_value: Union[str, List[str], Dict[str, Any]],
+            strip_list: bool = True
     ) -> Dict[str, Any]:
         if strip_list and isinstance(attribute_value, list) and len(attribute_value) == 1:
             attribute_value = attribute_value[0]
