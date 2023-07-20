@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 class ParserRegistry:
     context_parsers: Dict[str, "BaseContextParser"] = {}  # noqa: CCE003
-    definitions_context: Dict[TFDefinitionKey, Dict[str, Dict[str, Any]]] = {}  # noqa: CCE003
+    definitions_context: Dict[TFDefinitionKey | str, Dict[str, Dict[str, Any]]] = {}  # noqa: CCE003
 
     def __init__(self) -> None:
         self.logger = logging.getLogger(__name__)
