@@ -375,8 +375,8 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
             if self.enable_nested_modules:
                 entity_id = entity_config.get(CustomAttributes.TF_RESOURCE_ADDRESS)
                 module_full_path, _ = get_module_from_full_path(full_file_path)
-                module_name = get_module_name(full_file_path)
                 if module_full_path:
+                    module_name = get_module_name(full_file_path)
                     if not module_name:
                         full_definition_path = entity_id.split('.')
                         try:
