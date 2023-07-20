@@ -330,6 +330,11 @@ class TFParser:
 
         return module, tf_definitions
 
+    '''
+    This function is similar to parse_hcl_module, except that it creates a list of tuples instead of a single tuple.
+    The objective is to create a collection of TF definitions based on directory, instead of a single big structure.
+    This will allow us to boost performance by running on several smaller objects rather than one.
+    '''
     def parse_multi_graph_hcl_module(
         self,
         source_dir: str,
@@ -341,7 +346,7 @@ class TFParser:
         vars_files: list[str] | None = None,
         external_modules_content_cache: dict[str, ModuleContent | None] | None = None,
         create_graph: bool = True,
-    ) -> list[Tuple[Module, Dict[TFDefinitionKey, Dict[str, Any]]]]:
+    ) -> list[tuple[Module, dict[TFDefinitionKey, dict[str, Any]]]]:
         tf_definitions = self.parse_directory(
             directory=source_dir, out_evaluations_context={},
             out_parsing_errors=parsing_errors if parsing_errors is not None else {},
@@ -352,6 +357,19 @@ class TFParser:
         tf_definitions = clean_parser_types(tf_definitions)
         tf_definitions = serialize_definitions(tf_definitions)
 
+        dirs_to_definitions = self.create_definition_by_dirs(tf_definitions)
+
+        modules: list[tuple[Module, dict[TFDefinitionKey, dict[str, Any]]]] = []
+        if create_graph:
+            modules = []
+            for source_path, definitions in dirs_to_definitions.items():
+                module, tf_definitions = self.parse_hcl_module_from_multi_tf_definitions(definitions, source_path, source)
+                modules.append((module, tf_definitions))
+
+        return modules
+
+    def create_definition_by_dirs(self, tf_definitions: dict[TFDefinitionKey, dict[str, list[dict[str, Any]]]]
+                                  ) -> dict[str, list[dict[TFDefinitionKey, dict[str, Any]]]]:
         dirs_to_definitions: dict[str, list[dict[TFDefinitionKey, dict[str, Any]]]] = {}
         for tf_definition_key, tf_value in tf_definitions.items():
             source_module = tf_definition_key.tf_source_modules
@@ -372,15 +390,7 @@ class TFParser:
                         else:
                             dirs_to_definitions[dir_path] = [{tf_definition_key: tf_value}]
                     source_module = source_module.nested_tf_module
-
-        modules: list[Tuple[Module, Dict[TFDefinitionKey, Dict[str, Any]]]] = []
-        if create_graph:
-            modules = []
-            for source_path, definitions in dirs_to_definitions.items():
-                module, tf_definitions = self.parse_hcl_module_from_multi_tf_definitions(definitions, source_path, source)
-                modules.append((module, tf_definitions))
-
-        return modules
+        return dirs_to_definitions
 
     def _remove_unused_path_recursive(self, path: TFDefinitionKey) -> None:
         self.out_definitions.pop(path, None)
@@ -446,10 +456,10 @@ class TFParser:
 
     def parse_hcl_module_from_multi_tf_definitions(
         self,
-        tf_definitions: list[Dict[TFDefinitionKey, Dict[str, Any]]],
+        tf_definitions: list[dict[TFDefinitionKey, dict[str, Any]]],
         source_dir: str,
         source: str,
-    ) -> Tuple[Module, Dict[TFDefinitionKey, Dict[str, Any]]]:
+    ) -> tuple[Module, dict[TFDefinitionKey, dict[str, Any]]]:
         module = self.get_new_module(
             source_dir=source_dir,
             module_address_map=self.module_address_map,
