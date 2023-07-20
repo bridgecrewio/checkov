@@ -14,7 +14,6 @@ from checkov.common.bridgecrew.integration_features.features.policy_metadata_int
 from checkov.common.comment.enum import COMMENT_REGEX
 from checkov.common.models.enums import ContextCategories
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
-from checkov.common.typing import TFDefinitionKeyType
 from checkov.common.util.parser_utils import get_abs_path
 from checkov.terraform import TFDefinitionKey
 from checkov.terraform.context_parsers.registry import parser_registry

@@ -62,7 +62,7 @@ class Module:
                     block.path = block.path.file_path
             else:
                 module_dependency, block.module_dependency_num = get_module_from_full_path(block.path)
-                block.module_dependency = str(module_dependency)
+                block.module_dependency = str(module_dependency) if module_dependency else module_dependency
                 block.path = get_abs_path(block.path)
             self.blocks.append(block)
             return
