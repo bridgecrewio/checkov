@@ -8,6 +8,7 @@ import dpath
 
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.runners.base_runner import strtobool
+from checkov.common.typing import TFDefinitionKeyType
 from checkov.terraform.modules.module_objects import TFDefinitionKey
 
 if TYPE_CHECKING:
@@ -16,7 +17,7 @@ if TYPE_CHECKING:
 
 class ParserRegistry:
     context_parsers: Dict[str, "BaseContextParser"] = {}  # noqa: CCE003
-    definitions_context: Dict[str | TFDefinitionKey, Dict[str, Dict[str, Any]]] = {}  # noqa: CCE003
+    definitions_context: Dict[TFDefinitionKeyType, Dict[str, Dict[str, Any]]] = {}  # noqa: CCE003
 
     def __init__(self) -> None:
         self.logger = logging.getLogger(__name__)
@@ -48,9 +49,7 @@ class ParserRegistry:
                     context_parser = self.context_parsers[definition_type]
                     definition_blocks = definition_blocks_types[definition_type]
                     self.definitions_context[tf_file][definition_type] = context_parser.run(
-                        tf_file, definition_blocks, collect_skip_comments
-                    )
-
+                        tf_file, definition_blocks, collect_skip_comments)
         return self.definitions_context
 
 
