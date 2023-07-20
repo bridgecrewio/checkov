@@ -155,7 +155,7 @@ class BaseContextParser(ABC):
         return end_line_num
 
     def run(
-            self, tf_file: str | TFDefinitionKeyType, definition_blocks: List[Dict[str, Any]], collect_skip_comments: bool = True
+            self, tf_file: TFDefinitionKeyType, definition_blocks: List[Dict[str, Any]], collect_skip_comments: bool = True
     ) -> Dict[str, Any]:
         # TF files for loaded modules have this formation:  <file>[<referrer>#<index>]
         # Chop off everything after the file name for our purposes here
