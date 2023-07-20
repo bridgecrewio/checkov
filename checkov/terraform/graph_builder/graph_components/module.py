@@ -44,7 +44,7 @@ class Module:
         self.enable_nested_modules = strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'True'))
         self.use_new_tf_parser = strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'True'))
 
-    def __eq__(self, other: Module) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, Module):
             return False
 

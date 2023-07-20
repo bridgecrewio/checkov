@@ -346,7 +346,7 @@ class TFParser:
         vars_files: list[str] | None = None,
         external_modules_content_cache: dict[str, ModuleContent | None] | None = None,
         create_graph: bool = True,
-    ) -> list[tuple[Module, dict[TFDefinitionKey, dict[str, Any]]]]:
+    ) -> list[tuple[Module, list[dict[TFDefinitionKey, dict[str, Any]]]]]:
         tf_definitions = self.parse_directory(
             directory=source_dir, out_evaluations_context={},
             out_parsing_errors=parsing_errors if parsing_errors is not None else {},
@@ -359,11 +359,11 @@ class TFParser:
 
         dirs_to_definitions = self.create_definition_by_dirs(tf_definitions)
 
-        modules_and_definitions_tuple: list[tuple[Module, dict[TFDefinitionKey, dict[str, Any]]]] = []
+        modules_and_definitions_tuple: list[tuple[Module, list[dict[TFDefinitionKey, dict[str, Any]]]]] = []
         if create_graph:
             for source_path, definitions in dirs_to_definitions.items():
-                module, tf_definitions = self.parse_hcl_module_from_multi_tf_definitions(definitions, source_path, source)
-                modules_and_definitions_tuple.append((module, tf_definitions))
+                module, parsed_tf_definitions = self.parse_hcl_module_from_multi_tf_definitions(definitions, source_path, source)
+                modules_and_definitions_tuple.append((module, parsed_tf_definitions))
 
         return modules_and_definitions_tuple
 
