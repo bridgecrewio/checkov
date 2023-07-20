@@ -414,7 +414,7 @@ def get_module_name(file_path: TFDefinitionKeyType) -> str | None:
     if isinstance(file_path, TFDefinitionKey):
         if not file_path.tf_source_modules:
             return None
-        module_name: str = file_path.tf_source_modules.name
+        module_name = file_path.tf_source_modules.name
         if file_path.tf_source_modules.foreach_idx:
             module_name = f'{module_name}[\"{file_path.tf_source_modules.foreach_idx}\"]'
         return module_name

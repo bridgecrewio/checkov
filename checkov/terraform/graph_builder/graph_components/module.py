@@ -11,10 +11,10 @@ from checkov.terraform.checks.utils.dependency_path_handler import unify_depende
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.parser_functions import handle_dynamic_values
+from checkov.terraform.modules import TFDefinitionKey
 from hcl2 import START_LINE, END_LINE
 
 if TYPE_CHECKING:
-    from checkov.terraform.modules import TFDefinitionKey
     from typing_extensions import TypeAlias
 
 _AddBlockTypeCallable: TypeAlias = "Callable[[Module, list[dict[str, dict[str, Any]]], str | TFDefinitionKey], None]"
