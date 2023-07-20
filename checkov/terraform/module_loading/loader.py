@@ -3,6 +3,7 @@ import os
 from abc import ABC, abstractmethod
 from typing import Optional
 
+from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.terraform.module_loading.content import ModuleContent
 from checkov.terraform.module_loading.module_params import ModuleParams
 from checkov.terraform.module_loading.registry import module_loader_registry
@@ -17,6 +18,7 @@ class ModuleLoader(ABC):
     def __init__(self) -> None:
         module_loader_registry.register(self)
         self.logger = logging.getLogger(__name__)
+        add_resource_code_filter_to_logger(self.logger)
         self.module_source: str = ""
         self.current_dir: str = ""
         self.dest_dir: str = ""
