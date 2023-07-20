@@ -9,9 +9,11 @@ from yaml import YAMLError
 
 from checkov.common.parsers.json import parse as json_parse
 from checkov.common.parsers.yaml import loader
+from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.util.file_utils import read_file_with_any_encoding
 
 LOGGER = logging.getLogger(__name__)
+add_resource_code_filter_to_logger(LOGGER)
 
 
 def parse(filename: str) -> tuple[dict[str, Any], list[tuple[int, str]]] | tuple[None, None]:

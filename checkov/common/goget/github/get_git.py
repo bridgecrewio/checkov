@@ -5,6 +5,7 @@ import re
 import shutil
 
 from checkov.common.goget.base_getter import BaseGetter
+from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.util.contextmanagers import temp_environ
 
 try:
@@ -21,6 +22,7 @@ BRANCH_PATTERN = re.compile(r'\?(ref=heads/)(?P<branch>(.*))')
 class GitGetter(BaseGetter):
     def __init__(self, url: str, create_clone_and_result_dirs: bool = True) -> None:
         self.logger = logging.getLogger(__name__)
+        add_resource_code_filter_to_logger(self.logger)
         self.create_clone_and_res_dirs = create_clone_and_result_dirs
         self.tag = ''
         self.commit_id: str | None = None

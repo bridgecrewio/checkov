@@ -11,9 +11,11 @@ from typing import Any
 
 from checkov.common.parsers.json.decoder import Decoder
 from checkov.common.parsers.json.errors import DecodeError
+from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.util.file_utils import read_file_with_any_encoding
 
 LOGGER = logging.getLogger(__name__)
+add_resource_code_filter_to_logger(LOGGER)
 
 
 def load(

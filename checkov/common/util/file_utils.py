@@ -11,7 +11,10 @@ from zipfile import ZipFile
 
 from charset_normalizer import from_path
 
+from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
+
 logger = logging.getLogger(__name__)
+add_resource_code_filter_to_logger(logger)
 
 
 def convert_to_unix_path(path: str) -> str:
