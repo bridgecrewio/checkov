@@ -48,8 +48,8 @@ class ParserRegistry:
                     dpath.new(self.definitions_context, [tf_file, definition_type], {})
                     context_parser = self.context_parsers[definition_type]
                     definition_blocks = definition_blocks_types[definition_type]
-                    self.definitions_context[tf_file][definition_type] = context_parser.run(
-                        tf_file, definition_blocks, collect_skip_comments)
+                    definitions_context_data = context_parser.run(tf_file, definition_blocks, collect_skip_comments)
+                    self.definitions_context[tf_file][definition_type] = definitions_context_data
         return self.definitions_context
 
 
