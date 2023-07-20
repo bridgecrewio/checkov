@@ -377,7 +377,7 @@ def get_tf_definition_key(nested_module: str, module_name: str, module_index: An
 
 
 def get_tf_definition_key_from_module_dependency(
-    path: str, module_dependency: str | None, module_dependency_num: str | None
+    path: str, module_dependency: TFDefinitionKeyType | None, module_dependency_num: str | None
 ) -> str:
     if not module_dependency:
         return path
