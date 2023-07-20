@@ -36,7 +36,7 @@ class ParserRegistry:
         (tf_definition_key, definition_blocks_types) = definitions
         enable_definition_key = strtobool(os.getenv('ENABLE_DEFINITION_KEY', 'False'))
         if isinstance(tf_definition_key, TFDefinitionKey):
-            tf_file = tf_definition_key.file_path if not enable_definition_key else tf_definition_key
+            tf_file: TFDefinitionKeyType = tf_definition_key.file_path if not enable_definition_key else tf_definition_key
         else:
             tf_file = tf_definition_key if not enable_definition_key \
                 else TFDefinitionKey(file_path=tf_definition_key, tf_source_modules=None)
