@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
+from collections import defaultdict
 from pathlib import Path
 from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, cast, TYPE_CHECKING
 
@@ -369,25 +370,19 @@ class TFParser:
 
     def create_definition_by_dirs(self, tf_definitions: dict[TFDefinitionKey, dict[str, list[dict[str, Any]]]]
                                   ) -> dict[str, list[dict[TFDefinitionKey, dict[str, Any]]]]:
-        dirs_to_definitions: dict[str, list[dict[TFDefinitionKey, dict[str, Any]]]] = {}
+        dirs_to_definitions: dict[str, list[dict[TFDefinitionKey, dict[str, Any]]]] = defaultdict(list)
         for tf_definition_key, tf_value in tf_definitions.items():
             source_module = tf_definition_key.tf_source_modules
             if source_module is None:
                 # No module - add new entry to dirs_to_definitions with the path as key
                 dir_path = os.path.dirname(tf_definition_key.file_path)
-                if dir_path in dirs_to_definitions:
-                    dirs_to_definitions[dir_path].append({tf_definition_key: tf_value})
-                else:
-                    dirs_to_definitions[dir_path] = [{tf_definition_key: tf_value}]
+                dirs_to_definitions[dir_path].append({tf_definition_key: tf_value})
             else:
                 # iterate over nested modules while adding directories on the way
                 while source_module is not None:
                     if source_module.nested_tf_module is None:
                         dir_path = os.path.dirname(source_module.path)
-                        if dir_path in dirs_to_definitions:
-                            dirs_to_definitions[dir_path].append({tf_definition_key: tf_value})
-                        else:
-                            dirs_to_definitions[dir_path] = [{tf_definition_key: tf_value}]
+                        dirs_to_definitions[dir_path].append({tf_definition_key: tf_value})
                     source_module = source_module.nested_tf_module
         return dirs_to_definitions
 
@@ -508,7 +503,7 @@ class TFParser:
     def add_tfvars_with_source_dir(self, module: Module, source: str, source_dir: str) -> None:
         if not self.external_variables_data:
             return
-        for (var_name, default, path) in self.external_variables_data:
+        for var_name, default, path in self.external_variables_data:
             if Path(source_dir) in Path(path).parents and ".tfvars" in path:
                 block = [{var_name: {"default": default}}]
                 module.add_blocks(BlockType.TF_VARIABLE, block, path, source)
