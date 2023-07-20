@@ -232,7 +232,8 @@ def get_nested_modules_data_as_list(file_path: str) -> tuple[list[tuple[str | No
 
     while is_nested(module_path):
         module, index = get_module_from_full_path(module_path)
-        module = get_abs_path(module)
+        if module:
+            module = get_abs_path(module)
         modules_list.append((module, index))
         module_path = module
     modules_list.reverse()
