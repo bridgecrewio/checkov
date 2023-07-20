@@ -81,7 +81,7 @@ class TerraformBlock(Block):
             self.for_each_index: Optional[Any] = None
             self.foreach_attrs: list[str] | None = None
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         if not isinstance(other, TerraformBlock):
             return False
 
