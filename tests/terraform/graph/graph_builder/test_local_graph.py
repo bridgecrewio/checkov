@@ -19,7 +19,7 @@ from checkov.terraform.parser import Parser
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.graph_manager import TerraformGraphManager
 from checkov.terraform.tf_parser import TFParser
-from terraform import clean_parser_types, serialize_definitions
+from checkov.terraform.modules.module_utils import clean_parser_types, serialize_definitions
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
