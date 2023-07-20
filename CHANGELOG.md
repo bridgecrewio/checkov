@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.334...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.335...HEAD)
+
+## [2.3.335](https://github.com/bridgecrewio/checkov/compare/2.3.334...2.3.335) - 2023-07-20
+
+### Bug Fix
+
+- **terraform:** leverage read_file_with_any_encoding to safely look for modules - [#5360](https://github.com/bridgecrewio/checkov/pull/5360)
 
 ## [2.3.334](https://github.com/bridgecrewio/checkov/compare/2.3.331...2.3.334) - 2023-07-19
 
