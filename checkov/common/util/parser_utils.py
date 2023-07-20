@@ -10,7 +10,7 @@ from typing import Any, List, Optional, Tuple
 import hcl2
 
 from checkov.common.runners.base_runner import strtobool
-from checkov.common.typing import TFDefinitionKeyType
+from checkov.common.typing import TFDefinitionKeyType, TFModuleType
 
 _FUNCTION_NAME_CHARS = frozenset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 
@@ -387,7 +387,7 @@ def get_tf_definition_key_from_module_dependency(
     return f"{path}{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{module_dependency[:module_index]}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}{module_dependency_num}{module_dependency[module_index:]}{TERRAFORM_NESTED_MODULE_PATH_ENDING}"
 
 
-def get_module_from_full_path(file_path: TFDefinitionKeyType | None) -> Tuple[Optional[str | TFDefinitionKeyType], Optional[str], Optional[str]]:
+def get_module_from_full_path(file_path: TFDefinitionKeyType | None) -> Tuple[str | TFDefinitionKeyType | None, str | None, str | None]:
     from checkov.terraform.modules.module_objects import TFDefinitionKey
     if not file_path or not is_nested(file_path):
         return None, None, None
@@ -398,9 +398,7 @@ def get_module_from_full_path(file_path: TFDefinitionKeyType | None) -> Tuple[Op
             modules_full_key = TFDefinitionKey(file_path=file_path.tf_source_modules.path, tf_source_modules=file_path.tf_source_modules.nested_tf_module)
         else:
             modules_full_key = file_path.tf_source_modules.path
-        module_name = file_path.tf_source_modules.name
-        if file_path.tf_source_modules.foreach_idx:
-            module_name = f'{module_name}[\"{file_path.tf_source_modules.foreach_idx}\"]'
+        module_name = _get_module_name(file_path.tf_source_modules)
         return modules_full_key, None, module_name
     tmp_path = file_path[file_path.index(TERRAFORM_NESTED_MODULE_PATH_PREFIX) + TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH: -TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH]
     if is_nested(tmp_path):
@@ -410,6 +408,13 @@ def get_module_from_full_path(file_path: TFDefinitionKeyType | None) -> Tuple[Op
         module = get_abs_path(tmp_path)
         index = tmp_path[tmp_path.index(TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR) + TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH:]
     return module, index, None
+
+
+def _get_module_name(tf_source_modules: TFModuleType) -> str:
+    module_name: str = tf_source_modules.name
+    if tf_source_modules.foreach_idx:
+        module_name = f'{module_name}[\"{tf_source_modules.foreach_idx}\"]'
+    return module_name
 
 
 def get_abs_path(file_path: TFDefinitionKeyType) -> str:
