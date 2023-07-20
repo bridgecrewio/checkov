@@ -59,7 +59,7 @@ class TerraformBlock(Block):
             has_dynamic_block=has_dynamic_block,
             dynamic_attributes=dynamic_attributes,
         )
-        self.module_dependency: str | None = ""
+        self.module_dependency: str | None | TFDefinitionKey = ""
         self.module_dependency_num: str | None = ""
         if path:
             if strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'True')):
