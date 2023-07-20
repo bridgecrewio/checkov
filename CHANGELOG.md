@@ -1,6 +1,17 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.331...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.334...HEAD)
+
+## [2.3.334](https://github.com/bridgecrewio/checkov/compare/2.3.331...2.3.334) - 2023-07-19
+
+### Feature
+
+- **general:** Add resource code filter to all checkov loggers - [#5356](https://github.com/bridgecrewio/checkov/pull/5356)
+- **general:** Infrastructure for custom code logger filter - [#5346](https://github.com/bridgecrewio/checkov/pull/5346)
+
+### Bug Fix
+
+- **kustomize:** Avoid index error when calculating file path - [#5357](https://github.com/bridgecrewio/checkov/pull/5357)
 
 ## [2.3.331](https://github.com/bridgecrewio/checkov/compare/2.3.329...2.3.331) - 2023-07-18
 
