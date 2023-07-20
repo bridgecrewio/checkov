@@ -62,8 +62,6 @@ class Module:
                     block.path = block.path.file_path
             else:
                 block.module_dependency, block.module_dependency_num = get_module_from_full_path(block.path)
-                if isinstance(block.module_dependency, TFDefinitionKey):
-                    block.module_dependency = block.module_dependency.file_path
                 block.path = get_abs_path(block.path)
             self.blocks.append(block)
             return

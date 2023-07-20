@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from checkov.common.runners.base_runner import BaseRunner  # noqa
     from networkx import DiGraph
     from igraph import Graph
-    from checkov.terraform.modules.module_objects import TFDefinitionKey, TFModule
+    from checkov.terraform.modules.module_objects import TFDefinitionKey
 
 _BaseRunner = TypeVar("_BaseRunner", bound="BaseRunner[Any]")
 
@@ -25,7 +25,6 @@ ResourceAttributesToOmit: TypeAlias = Dict[_Resource, _Attributes]
 LibraryGraph: TypeAlias = "Union[DiGraph, Graph]"
 LibraryGraphConnector: TypeAlias = "Union[DBConnector[DiGraph], DBConnector[Graph]]"
 TFDefinitionKeyType: TypeAlias = "Union[str, TFDefinitionKey]"
-TFModuleType: TypeAlias = "Union[str, TFModule]"
 
 
 class _CheckResult(TypedDict, total=False):

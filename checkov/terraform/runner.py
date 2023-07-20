@@ -572,8 +572,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         module_context_parser = parser_registry.context_parsers[BlockType.MODULE]
         for tf_definition_key, definition in self.definitions.items():
             if not strtobool(os.getenv('ENABLE_DEFINITION_KEY', 'False')):
-                full_file_path = tf_definition_key.file_path if isinstance(tf_definition_key, TFDefinitionKey) \
-                    else tf_definition_key
+                full_file_path = tf_definition_key.file_path if isinstance(tf_definition_key, TFDefinitionKey) else tf_definition_key
             else:
                 full_file_path = tf_definition_key if isinstance(tf_definition_key, TFDefinitionKey)\
                     else TFDefinitionKey(file_path=tf_definition_key, tf_source_modules=None)
