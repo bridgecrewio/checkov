@@ -359,14 +359,13 @@ class TFParser:
 
         dirs_to_definitions = self.create_definition_by_dirs(tf_definitions)
 
-        modules: list[tuple[Module, dict[TFDefinitionKey, dict[str, Any]]]] = []
+        modules_and_definitions_tuple: list[tuple[Module, dict[TFDefinitionKey, dict[str, Any]]]] = []
         if create_graph:
-            modules = []
             for source_path, definitions in dirs_to_definitions.items():
                 module, tf_definitions = self.parse_hcl_module_from_multi_tf_definitions(definitions, source_path, source)
-                modules.append((module, tf_definitions))
+                modules_and_definitions_tuple.append((module, tf_definitions))
 
-        return modules
+        return modules_and_definitions_tuple
 
     def create_definition_by_dirs(self, tf_definitions: dict[TFDefinitionKey, dict[str, list[dict[str, Any]]]]
                                   ) -> dict[str, list[dict[TFDefinitionKey, dict[str, Any]]]]:
