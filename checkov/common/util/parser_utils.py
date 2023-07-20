@@ -387,7 +387,7 @@ def get_tf_definition_key_from_module_dependency(
     return f"{path}{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{module_dependency[:module_index]}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}{module_dependency_num}{module_dependency[module_index:]}{TERRAFORM_NESTED_MODULE_PATH_ENDING}"
 
 
-def get_module_from_full_path(file_path: TFDefinitionKeyType | None) -> Tuple[str | TFDefinitionKeyType | None, str | None]:
+def get_module_from_full_path(file_path: TFDefinitionKeyType | None) -> Tuple[TFDefinitionKeyType | None, str | None]:
     from checkov.terraform.modules.module_objects import TFDefinitionKey
     if not file_path or not is_nested(file_path):
         return None, None
@@ -409,7 +409,7 @@ def get_module_from_full_path(file_path: TFDefinitionKeyType | None) -> Tuple[st
     return module, index
 
 
-def get_module_name(file_path: TFDefinitionKeyType) -> Optional[str]:
+def get_module_name(file_path: TFDefinitionKeyType) -> str | None:
     from checkov.terraform.modules.module_objects import TFDefinitionKey
     if isinstance(file_path, TFDefinitionKey):
         if not file_path.tf_source_modules:
