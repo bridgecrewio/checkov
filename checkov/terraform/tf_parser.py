@@ -330,11 +330,6 @@ class TFParser:
 
         return module, tf_definitions
 
-    '''
-    This function is similar to parse_hcl_module, except that it creates a list of tuples instead of a single tuple.
-    The objective is to create a collection of TF definitions based on directory, instead of a single big structure.
-    This will allow us to boost performance by running on several smaller objects rather than one.
-    '''
     def parse_multi_graph_hcl_module(
         self,
         source_dir: str,
@@ -347,6 +342,11 @@ class TFParser:
         external_modules_content_cache: dict[str, ModuleContent | None] | None = None,
         create_graph: bool = True,
     ) -> list[tuple[Module, list[dict[TFDefinitionKey, dict[str, Any]]]]]:
+        """
+        This function is similar to parse_hcl_module, except that it creates a list of tuples instead of a single tuple.
+        The objective is to create a collection of TF definitions based on directory, instead of a single big structure.
+        This will allow us to boost performance by running on several smaller objects rather than a single one.
+        """
         tf_definitions = self.parse_directory(
             directory=source_dir, out_evaluations_context={},
             out_parsing_errors=parsing_errors if parsing_errors is not None else {},

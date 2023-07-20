@@ -29,6 +29,7 @@ class Module:
             module_dependency_map: Optional[Dict[str, List[List[str]]]] = None,
             dep_index_mapping: Optional[Dict[Tuple[str, str], List[str]]] = None,
     ) -> None:
+        # when adding a new field be sure to add it to the equality function below
         self.dep_index_mapping = dep_index_mapping
         self.module_dependency_map = module_dependency_map
         self.module_address_map = module_address_map

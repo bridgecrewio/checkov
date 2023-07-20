@@ -42,6 +42,7 @@ class TerraformBlock(Block):
             dynamic_attributes: dict[str, Any] | None = None,
     ) -> None:
         """
+            when adding a new field be sure to add it to the equality function below
             :param name: unique name given to the terraform block, for example: 'aws_vpc.example_name'
             :param config: the section in tf_definitions that belong to this block
             :param path: the file location of the block

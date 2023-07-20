@@ -19,6 +19,7 @@ from checkov.terraform.parser import Parser
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.graph_manager import TerraformGraphManager
 from checkov.terraform.tf_parser import TFParser
+from terraform import clean_parser_types, serialize_definitions
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
@@ -107,6 +108,20 @@ class TestLocalGraph(TestCase):
                 self.assertEqual(var_value, default_val[0])
             else:
                 self.assertEqual(var_value, default_val)
+
+    def test_definition_creation_by_dirs(self):
+        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME,
+                                                      '../resources/variable_rendering/render_local_from_variable'))
+        hcl_config_parser = TFParser()
+        tf_definitions = hcl_config_parser.parse_directory(directory=resources_dir)
+        tf_definitions = clean_parser_types(tf_definitions)
+        tf_definitions = serialize_definitions(tf_definitions)
+
+        dirs_to_definitions = hcl_config_parser.create_definition_by_dirs(tf_definitions)
+        assert len(dirs_to_definitions) == 1
+        single_dir_element = list(dirs_to_definitions.values())[0]
+        assert list(single_dir_element[0].values()) == [{'locals': [{'__end_line__': 3, '__start_line__': 1, 'bucket_name': ['${var.var_bucket_name}']}]}]
+        assert list(single_dir_element[1].values()) == [{'variable': [{'var_bucket_name': {'__end_line__': 3, '__start_line__': 1, 'default': ['test_bucket_name']}}]}]
 
     def test_compare_multi_graph_defs(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME,
