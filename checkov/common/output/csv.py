@@ -30,7 +30,9 @@ HEADER_OSS_PACKAGES = [
     "Description",
     "Licenses",
     "Fix Version",
-    "Registry URL"
+    "Registry URL",
+    "Root Package",
+    "Root Version"
 ]
 
 HEADER_CONTAINER_IMAGE = HEADER_OSS_PACKAGES
@@ -99,7 +101,9 @@ class CSVSBOM:
                 "Description": resource.vulnerability_details.get("description"),
                 "Licenses": resource.vulnerability_details.get("licenses"),
                 "Fix Version": fix_version,
-                "Registry URL": resource.vulnerability_details.get("package_registry")
+                "Registry URL": resource.vulnerability_details.get("package_registry"),
+                "Root Package": resource.vulnerability_details.get("root_package_name"),
+                "Root Version": resource.vulnerability_details.get("root_package_version")
             }
         )
 

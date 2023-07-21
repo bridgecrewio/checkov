@@ -6,6 +6,7 @@ from abc import abstractmethod
 from collections.abc import Iterable
 from typing import List, Dict, Any, Callable, Optional
 
+from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.typing import _SkippedCheck, _CheckResult
 from checkov.common.util.type_forcers import force_list
 from checkov.common.models.enums import CheckResult, CheckCategories, CheckFailLevel
@@ -31,6 +32,7 @@ class BaseCheck(metaclass=MultiSignatureMeta):
         self.path: str | None = None
         self.supported_entities = supported_entities
         self.logger = logging.getLogger("{}".format(self.__module__))
+        add_resource_code_filter_to_logger(self.logger)
         self.evaluated_keys: List[str] = []
         self.entity_path = ""
         self.entity_type = ""

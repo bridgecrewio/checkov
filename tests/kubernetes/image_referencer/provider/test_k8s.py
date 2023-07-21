@@ -50,16 +50,18 @@ def test_extract_images_from_resources(graph_framework):
         images = provider.extract_images_from_resources()
 
     # then
-    assert images == [
-        Image(
+    assert len(images) == 2
+    nginx_image = Image(
             file_path="/pod.yaml",
             name="nginx",
             start_line=1,
             end_line=16,
             related_resource_id="/pod.yaml:None",
-        ),
-        Image(file_path="/pod.yaml", name="busybox", start_line=1, end_line=16, related_resource_id="/pod.yaml:None"),
-    ]
+        )
+    busybox_image = Image(file_path="/pod.yaml", name="busybox", start_line=1, end_line=16,
+                          related_resource_id="/pod.yaml:None")
+    assert nginx_image in images
+    assert busybox_image in images
 
 
 @pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])

@@ -15,7 +15,7 @@ jobs:
       contents: write
     environment: release
     steps:
-      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3
         with:
           token: ${{ secrets.GH_PAT_SECRET }}
       - name: Import GPG key
@@ -25,7 +25,7 @@ jobs:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
       - name: Set up Python 3.7
-        uses: actions/setup-python@bd6b4b6205c4dbad673328db7b31b7fab9e241c0  # v4
+        uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1  # v4
         with:
           python-version: 3.7
       - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3

@@ -114,6 +114,70 @@ def test_omit_secret_value_from_graph_checks_by_attribute(
     assert result == tfplan_resource_lines_without_secrets
 
 
+def test_omit_secret_value_from_graph_checks_by_attribute_skip_non_string():
+    # given
+    check = BaseGraphCheck()
+    check.resource_types = ['aws_ssm_parameter']
+    check_result = {'result': CheckResult.FAILED}
+    entity_code_lines = [
+        (22, 'resource "aws_ssm_parameter" "aws_ssm_parameter_foo" {\n'),
+        (23, '  name        = "foo"\n'),
+        (24, '  description = "Parameter foo"\n'),
+        (25, '  type        = "String"\n'),
+        (26, '  tier        = "Advanced"\n'),
+        (27, "  value = jsonencode({\n"),
+        (28, '    "foo" : {\n'),
+        (29, '      "hello" : "world",\n'),
+        (30, '      "answer " : 42\n'),
+        (31, "     }\n"),
+        (32, "  })\n"),
+        (33, "}\n"),
+    ]
+    entity_config = {
+        "__address__": "aws_ssm_parameter.aws_ssm_parameter_foo",
+        "__end_line__": 33,
+        "__start_line__": 22,
+        "description": ["Parameter foo"],
+        "name": ["foo"],
+        "tier": ["Advanced"],
+        "type": ["String"],
+        "value": [
+            {
+                "foo": {
+                    "answer ": 42,
+                    "hello": "world",
+                }
+            }
+        ],
+    }
+    resource_attributes_to_omit = {'aws_ssm_parameter': {'value'}}
+
+    # when
+    result = omit_secret_value_from_graph_checks(
+        check=check,
+        check_result=check_result,
+        entity_code_lines=entity_code_lines,
+        entity_config=entity_config,
+        resource_attributes_to_omit=resource_attributes_to_omit
+    )
+
+    # then
+    assert result == [
+        (22, 'resource "aws_ssm_parameter" "aws_ssm_parameter_foo" {\n'),
+        (23, '  name        = "foo"\n'),
+        (24, '  description = "Parameter foo"\n'),
+        (25, '  type        = "String"\n'),
+        (26, '  tier        = "Advanced"\n'),
+        (27, "  value = jsonencode({\n"),
+        (28, '    "foo" : {\n'),
+        (29, '      "hello" : "world",\n'),
+        (30, '      "answer " : 42\n'),
+        (31, "     }\n"),
+        (32, "  })\n"),
+        (33, "}\n"),
+    ]
+
+
 def test_omit_secret_value_from_checks_by_attribute_runner_filter_resource_config(
         tfplan_resource_lines_with_secrets,
         tfplan_resource_config_with_secrets,

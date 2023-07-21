@@ -62,7 +62,7 @@ semantic-version = "*"
 packaging = "*"
 cloudsplaining = ">=0.4.3"
 networkx = "<2.7"
-igraph = "*"
+igraph = "<=0.10.5"  # temporarly upper bounding till the aarch64 wheels are available
 dockerfile-parse ="*"
 docker = "*"
 configargparse = "*"
@@ -79,7 +79,7 @@ aiodns = "*"
 aiomultiprocess = "*"
 jsonschema = ">=4.6.0,<5.0.0"
 prettytable = ">=3.0.0"
-pycep-parser = "==0.4.0"
+pycep-parser = "==0.4.1"
 charset-normalizer = "*"
 pyston-autoload = {version = "==2.3.5", markers="python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64' and implementation_name == 'cpython'", index="pypi"}
 pyston = {version = "==2.3.5", markers="python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64' and implementation_name == 'cpython'", index="pypi"}

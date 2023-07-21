@@ -1,3 +1,36 @@
+resource "aws_wafv2_web_acl" "pass_managed" {
+  name          = var.name
+  description   = "Managed by Terraform, do not edit in the console"
+  scope         = "REGIONAL"
+  token_domains = [var.dns.fqdn, aws_lb.this.dns_name]
+
+  default_action {
+    allow {}
+  }
+
+  rule {
+    name     = "aws-managed-rules-common"
+    priority = 1
+
+    statement {
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesCommonRuleSet"
+        vendor_name = "AWS"
+      }
+    }
+    visibility_config {
+      cloudwatch_metrics_enabled = false
+      metric_name                = "friendly-rule-metric-name"
+      sampled_requests_enabled   = false
+    }
+  }
+  visibility_config {
+      cloudwatch_metrics_enabled = false
+      metric_name                = "friendly-rule-metric-name"
+      sampled_requests_enabled   = false
+  }
+}
+
 resource "aws_wafregional_web_acl" "pass" {
   name        = "example"
   metric_name = "example"

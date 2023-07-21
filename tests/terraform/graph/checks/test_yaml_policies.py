@@ -22,6 +22,9 @@ class TestYamlPolicies(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
+    def test_KmsKeyPolicyIsDefined(self):
+        self.go("KmsKeyPolicyIsDefined")
+
     def test_NetworkFirewallHasLogging(self):
         self.go("NetworkFirewallHasLogging")
 
@@ -229,9 +232,6 @@ class TestYamlPolicies(unittest.TestCase):
     def test_GKEClustersAreNotUsingDefaultServiceAccount(self):
         self.go("GKEClustersAreNotUsingDefaultServiceAccount")
 
-    def test_AzureStorageAccountsUseCustomerManagedKeyForEncryption(self):
-        self.go("AzureStorageAccountsUseCustomerManagedKeyForEncryption")
-
     def test_AzureMSSQLServerHasSecurityAlertPolicy(self):
         self.go("AzureMSSQLServerHasSecurityAlertPolicy")
 
@@ -359,7 +359,7 @@ class TestYamlPolicies(unittest.TestCase):
         self.go("AzurePostgreSQLFlexServerNotOverlyPermissive")
 
     def test_GCPMySQLdbInstancePoint_In_TimeRecoveryBackupIsEnabled(self):
-        self.go("GCPMySQLdbInstancePoint_In_TimeRecoveryBackupIsEnabled")  # checkov:skip=CKV_SECRET_6 false positive
+        self.go("GCPMySQLdbInstancePoint_In_TimeRecoveryBackupIsEnabled")
 
     def test_GCPdisableAlphaClusterFeatureInKubernetesEngineClusters(self):
         self.go("GCPdisableAlphaClusterFeatureInKubernetesEngineClusters")

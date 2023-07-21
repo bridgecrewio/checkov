@@ -128,7 +128,7 @@ class Runner(TerraformRunner):
                             report.add_resource(f'{vertex.path}:{resource_id}')
                 self.graph_manager.save_graph(self.tf_plan_local_graph)
                 if self._should_run_deep_analysis:
-                    tf_local_graph = self._create_terraform_graph()
+                    tf_local_graph = self._create_terraform_graph(runner_filter)
 
         if external_checks_dir:
             for directory in external_checks_dir:
@@ -181,11 +181,12 @@ class Runner(TerraformRunner):
             return graph_report
         return self.get_graph_checks_report(root_folder, runner_filter)
 
-    def _create_terraform_graph(self) -> TerraformLocalGraph:
+    def _create_terraform_graph(self, runner_filter) -> TerraformLocalGraph:
         graph_manager = TerraformGraphManager(db_connector=self.db_connector)
         tf_local_graph, _ = graph_manager.build_graph_from_source_directory(
             self.repo_root_for_plan_enrichment,
-            render_variables=True
+            render_variables=True,
+            download_external_modules=runner_filter.download_external_modules
         )
         self.graph_manager = graph_manager
         return tf_local_graph

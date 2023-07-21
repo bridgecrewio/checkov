@@ -1,0 +1,25 @@
+swagger: "2.0"
+info:
+  title: Simple API overview
+  version: 1.0.0
+paths:
+  /pets:
+    post:
+      description: Creates a new pet in the store
+      responses:
+        "200":
+          description: 200 response
+      operationId: addPet
+      security:
+        - OAuth2:
+            - write
+            - read
+securityDefinitions:
+  OAuth2:
+    type: oauth2
+    flow: accessCode
+    authorizationUrl: https://example.com/oauth/authorize
+    tokenUrl: https://example.com/oauth/token
+    scopes:
+      read: Grants read access
+      write: Grants write access

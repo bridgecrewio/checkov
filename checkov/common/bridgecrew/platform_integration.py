@@ -40,7 +40,7 @@ from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.typing import _CicdDetails
 from checkov.common.util.consts import PRISMA_PLATFORM, BRIDGECREW_PLATFORM, CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
 from checkov.common.util.data_structures_utils import merge_dicts
-from checkov.common.util.dockerfile import is_docker_file
+from checkov.common.util.dockerfile import is_dockerfile
 from checkov.common.util.http_utils import normalize_prisma_url, get_auth_header, get_default_get_headers, \
     get_user_agent_header, get_default_post_headers, get_prisma_get_headers, get_prisma_auth_header, \
     get_auth_error_message, normalize_bc_url
@@ -407,7 +407,7 @@ class BcPlatformIntegration:
                     _, file_extension = os.path.splitext(file_path)
                     if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 and file_extension in SCANNABLE_PACKAGE_FILES:
                         continue
-                    if file_extension in SUPPORTED_FILE_EXTENSIONS or file_path in SUPPORTED_FILES or is_docker_file(file_path):
+                    if file_extension in SUPPORTED_FILE_EXTENSIONS or file_path in SUPPORTED_FILES or is_dockerfile(file_path):
                         full_file_path = os.path.join(root_path, file_path)
                         relative_file_path = os.path.relpath(full_file_path, root_dir)
                         files_to_persist.append(FileToPersist(full_file_path, relative_file_path))
@@ -961,7 +961,9 @@ class BcPlatformIntegration:
     def get_repository(self, args: argparse.Namespace) -> str:
         if CI_METADATA_EXTRACTOR.from_branch:
             return CI_METADATA_EXTRACTOR.from_branch
-        basename = 'unnamed_repo' if path.basename(args.directory[0]) == '.' else path.basename(args.directory[0])
+        arg_dir = args.directory[0]
+        arg_dir.rstrip(os.path.sep)  # If directory ends with /, remove it. Does not remove any other character!!
+        basename = 'unnamed_repo' if path.basename(arg_dir) == '.' else path.basename(arg_dir)
         repo_id = f"cli_repo/{basename}"
         return repo_id
 

@@ -14,7 +14,7 @@ from checkov.sca_package_2.output import (
     CveCount,
 )
 from tests.sca_package_2.conftest import get_vulnerabilities_details_package_json, get_vulnerabilities_details, \
-    get_vulnerabilities_details_no_deps, get_vulnerabilities_details_package_lock_json,\
+    get_vulnerabilities_details_no_deps, get_vulnerabilities_details_package_lock_json, \
     create_cli_license_violations_table_wrapper, create_cli_output_wrapper
 
 
@@ -37,7 +37,10 @@ def test_create_report_cve_record():
         "impactedVersions": ["<1.11.27"],
         "publishedDate": "2019-12-18T20:15:00+01:00",
         "discoveredDate": "2019-12-18T19:15:00Z",
-        "fixDate": "2019-12-18T20:15:00+01:00"
+        "fixDate": "2019-12-18T20:15:00+01:00",
+        "fixCode": "django==2.2.9",
+        "fixCommand": {"msg": "After updating package version manually, run:",
+                       "cmds": ["pip install -r requirements.txt"], "manualCodeFix": True}
     }
 
     # when
@@ -47,7 +50,8 @@ def test_create_report_cve_record():
         check_class=check_class,
         vulnerability_details=vulnerability_details,
         licenses='OSI_BDS',
-        package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False, "lines": [5, 10]},
+        package={'name': "django", 'version': "1.12", 'package_registry': "https://registry.npmjs.org/",
+                 'is_private_registry': False, "lines": [5, 5], "code_block": 'django==1.12'},
         root_package={'name': "django", 'version': "1.12"},
         used_private_registry=False
     )
@@ -58,13 +62,13 @@ def test_create_report_cve_record():
     assert record.check_class == check_class
     assert record.check_name == "SCA package scan"
     assert record.check_result == {"result": CheckResult.FAILED}
-    assert record.code_block == [(0, "django: 1.12")]
+    assert record.code_block == [(5, 'django==1.12')]
     assert (
             record.description
             == "Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover. ..."
     )
     assert record.file_abs_path == file_abs_path
-    assert record.file_line_range == [5, 10]
+    assert record.file_line_range == [5, 5]
     assert record.file_path == f"/{rootless_file_path}"
     assert record.repo_file_path == file_abs_path
     assert record.resource == "requirements.txt.django"
@@ -79,6 +83,10 @@ def test_create_report_cve_record():
     assert record.vulnerability_details["licenses"] == 'OSI_BDS'
     assert record.vulnerability_details["root_package_version"] == "1.12"
     assert record.vulnerability_details["root_package_name"] == "django"
+    assert record.fixed_definition == 'django==2.2.9'
+    assert record.vulnerability_details["fix_command"] == {'msg': 'After updating package version manually, run:',
+                                                           'cmds': ['pip install -r requirements.txt'],
+                                                           'manualCodeFix': True}
 
 
 def test_create_report_cve_record_results_from_platform():
@@ -136,7 +144,8 @@ def test_create_report_cve_record_results_from_platform():
         check_class=check_class,
         vulnerability_details=vulnerability_details,
         licenses='OSI_BDS',
-        package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
+        package={'name': "django", 'version': "1.12", 'package_registry': "https://registry.npmjs.org/",
+                 'is_private_registry': False, "lines": [6, 6], "code_block": 'django==1.12'},
         scan_data_format=ScanDataFormat.PLATFORM,
         root_package={'name': "django", 'version': "1.2"},
         used_private_registry=False
@@ -280,7 +289,10 @@ def test_create_report_cve_record_package_filter():
         "fixDate": "2019-12-18T20:15:00+01:00",
         "root_package_alias": 'django@1.2',
         "root_package_version": '1.2',
-        "root_package_name": 'django'
+        "root_package_name": 'django',
+        "fixCode": 'django==1.11.27',
+        "fixCommand": {"msg": "After updating package version manually, run:",
+                       "cmds": ["pip install -r requirements.txt"], "manualCodeFix": True}
     }
 
     # when
@@ -418,11 +430,7 @@ def test_create_cli_cves_table():
     )
 
 
-
-
-
 def test_create_cli_license_violations_table_no_line_numbers():
-
     # when
     table = create_cli_license_violations_table_wrapper(with_line_numbers=False)
 
@@ -445,7 +453,6 @@ def test_create_cli_license_violations_table_no_line_numbers():
 
 
 def test_create_cli_license_violations_table_with_line_numbers():
-
     # when
     table = create_cli_license_violations_table_wrapper(with_line_numbers=True)
 
@@ -665,8 +672,8 @@ def test_create_cli_table_for_sca_package_with_dependencies():
             licenses='Unknown',
             package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
             root_package={'name': details["root_package_name"], 'version': details["root_package_version"]},
-            root_package_fixed_version=details.get('root_package_fix_version', None),
-            used_private_registry=False
+            used_private_registry=False,
+            root_package_cve={'fixVersion': details.get('root_package_fix_version')}
         )
         for details in get_vulnerabilities_details_package_json()
     ]
@@ -761,6 +768,7 @@ def test_create_cli_output_without_dependencies():
          ]
     )
 
+
 def test_create_cli_table_for_package_with_diff_CVEs():
     # given
     rootless_file_path = "package-lock.json"
@@ -777,8 +785,8 @@ def test_create_cli_table_for_package_with_diff_CVEs():
             licenses='Unknown',
             package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
             root_package={'name': details["root_package_name"], 'version': details["root_package_version"]},
-            root_package_fixed_version=details.get('root_package_fix_version', None),
-            used_private_registry=False
+            used_private_registry=False,
+            root_package_cve={'fixVersion': details.get('root_package_fix_version')}
         )
         for details in get_vulnerabilities_details_package_lock_json()
     ]

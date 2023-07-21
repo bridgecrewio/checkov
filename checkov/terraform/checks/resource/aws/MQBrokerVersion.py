@@ -3,8 +3,10 @@ import re
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
-minimumActiveMQ = 5.16
-minimumRabbitMQ = 3.8
+ENGINE_VERSION_PATTERN = re.compile(r"(\d+\.\d+.\d+)")
+ENGINE_VERSION_SHORT_PATTERN = re.compile(r"(\d+\.\d+)")
+MINIMUM_ACTIVEMQ_VERSION = 5.16
+MINIMUM_RABBITMQ_VERSION = 3.8
 
 
 class MQBrokerVersion(BaseResourceCheck):
@@ -19,15 +21,15 @@ class MQBrokerVersion(BaseResourceCheck):
         if conf.get("engine_type"):
             mq_type = conf.get("engine_type")[0]
             semantic = conf.get("engine_version", [''])[0]
-            if not re.search(r'(\d+\.\d+.\d+)', semantic):
+            if not re.search(ENGINE_VERSION_PATTERN, semantic):
                 return CheckResult.UNKNOWN
-            version = float(re.search(r'(\d+\.\d+)', semantic).group())
+            version = float(re.search(ENGINE_VERSION_SHORT_PATTERN, semantic).group())
             if mq_type in 'ActiveMQ':
-                if version >= minimumActiveMQ:
+                if version >= MINIMUM_ACTIVEMQ_VERSION:
                     return CheckResult.PASSED
 
             if mq_type in 'RabbitMQ':
-                if version >= minimumRabbitMQ:
+                if version >= MINIMUM_RABBITMQ_VERSION:
                     return CheckResult.PASSED
 
         return CheckResult.FAILED

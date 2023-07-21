@@ -392,3 +392,19 @@ def test_get_resource_without_name(graph_connector):
 
     # then
     assert new_key == "tasks.amazon.aws.ec2_instance.unknown"
+
+
+def test_runner_process_utf16_file():
+    # given
+    test_file = EXAMPLES_DIR / "k8s_utf16.yaml"
+
+    # when
+    report = Runner().run(root_folder="", files=[str(test_file)])
+
+    # then
+    summary = report.get_summary()
+
+    assert summary["passed"] == 0
+    assert summary["failed"] == 0
+    assert summary["skipped"] == 0
+    assert summary["parsing_errors"] == 0

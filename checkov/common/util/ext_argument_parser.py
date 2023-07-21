@@ -157,8 +157,9 @@ class ExtArgumentParser(configargparse.ArgumentParser):
         self.add(
             "--external-checks-git",
             action="append",
-            help="Github url of external checks to be added. \n you can specify a subdirectory after a "
-                 "double-slash //. \n cannot be used together with --external-checks-dir",
+            help="Github url of external checks to be added.\n you can specify a subdirectory after a double-slash //."
+                 "\n possible to use ?ref=tags/tagName or ?ref=heads/branchName or ?ref=commit_id"
+                 "\n cannot be used together with --external-checks-dir",
         )
         self.add(
             "-l",

@@ -44,6 +44,7 @@ from checkov.common.cache.cache import file_cache
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.output.baseline import Baseline
 from checkov.common.bridgecrew.check_type import checkov_runners, CheckType
+from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.common.util import prompt
 from checkov.common.util.banner import banner as checkov_banner, tool as checkov_tool
@@ -91,6 +92,7 @@ signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 outer_registry = None
 
 logger = logging.getLogger(__name__)
+add_resource_code_filter_to_logger(logger)
 
 # sca package runner added during the run method
 DEFAULT_RUNNERS = [
@@ -650,7 +652,7 @@ class Checkov:
     def get_external_checks_dir(self) -> list[str]:
         external_checks_dir: "list[str]" = self.config.external_checks_dir
         if self.config.external_checks_git:
-            git_getter = GitGetter(self.config.external_checks_git[0])
+            git_getter = GitGetter(url=self.config.external_checks_git[0])
             external_checks_dir = [git_getter.get()]
             atexit.register(shutil.rmtree, str(Path(external_checks_dir[0]).parent))
         return external_checks_dir

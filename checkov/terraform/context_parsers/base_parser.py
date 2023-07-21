@@ -13,6 +13,7 @@ import dpath
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.comment.enum import COMMENT_REGEX
 from checkov.common.models.enums import ContextCategories
+from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.util.parser_utils import get_abs_path
 from checkov.terraform.context_parsers.registry import parser_registry
 
@@ -24,6 +25,7 @@ class BaseContextParser(ABC):
     def __init__(self, definition_type: str) -> None:
         # bc_integration.setup_http_manager()
         self.logger = logging.getLogger("{}".format(self.__module__))
+        add_resource_code_filter_to_logger(self.logger)
         if definition_type.upper() not in ContextCategories.__members__:
             self.logger.error("Terraform context parser type not supported yet")
             raise Exception()
@@ -83,8 +85,7 @@ class BaseContextParser(ABC):
 
     @staticmethod
     def is_optional_comment_line(line: str) -> bool:
-        line_without_whitespace = line.replace(" ", "")
-        return "checkov:skip=" in line_without_whitespace or "bridgecrew:skip=" in line_without_whitespace
+        return "checkov:skip=" in line or "bridgecrew:skip=" in line
 
     def _collect_skip_comments(self, definition_blocks: List[Dict[str, Any]]) -> Dict[str, Any]:
         """

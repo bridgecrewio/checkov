@@ -43,9 +43,35 @@ class _SkippedCheck(TypedDict, total=False):
     line_number: int | None
 
 
+class _ScaSuppressionsMaps(TypedDict, total=False):
+    cve_suppresion_by_cve_map: dict[str, _SuppressedCves]
+    licenses_suppressions_by_policy_and_package_map: dict[str, _SuppressedLicenses]
+
+
+# _ScaSuppressions fields are in camel case because this is the output of the server report
 class _ScaSuppressions(TypedDict, total=False):
-    cve: dict[str, _SkippedCheck]
-    package: dict[str, _SkippedCheck | dict[str, _SkippedCheck]]
+    cves: _CvesSuppressions
+    licenses: _LicensesSuppressions
+
+
+class _CvesSuppressions(TypedDict):
+    byCve: list[_SuppressedCves]
+
+
+class _LicensesSuppressions(TypedDict):
+    byPackage: list[_SuppressedLicenses]
+
+
+class _SuppressedCves(TypedDict):
+    reason: str
+    cveId: str
+
+
+class _SuppressedLicenses(TypedDict):
+    reason: str
+    packageName: str
+    licensePolicy: str
+    licenses: list[str]
 
 
 class _BaselineFinding(TypedDict):
@@ -107,3 +133,4 @@ class _EntityContext(TypedDict, total=False):
     policy: str
     code_lines: list[tuple[int, str]]
     skipped_checks: list[_SkippedCheck]
+    origin_relative_path: str

@@ -5,6 +5,7 @@ from typing import List, Any, Tuple, Dict, TYPE_CHECKING, Optional
 
 from igraph import Graph
 
+from checkov.common.graph.checks_infra import debug
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
 
@@ -49,6 +50,14 @@ class BaseComplexSolver(BaseSolver):
                     passed_vertices.append(data)
                 else:
                     failed_vertices.append(data)
+
+            debug.complex_connection_block(
+                solvers=self.solvers,
+                operator=self.operator,
+                passed_resources=passed_vertices,
+                failed_resources=failed_vertices,
+            )
+
             return passed_vertices, failed_vertices, unknown_vertices
 
         for _, data in graph_connector.nodes(data=True):

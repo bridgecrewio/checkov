@@ -30,7 +30,7 @@ if TYPE_CHECKING:
 MAX_LINE_LENGTH = 10000
 MAX_KEYWORD_LIMIT = 500
 ENTROPY_KEYWORD_COMBINATOR_LIMIT = 3
-ENTROPY_KEYWORD_LIMIT = 4.5
+ENTROPY_KEYWORD_LIMIT = 4.8
 
 DENY_LIST_REGEX = r'|'.join(DENYLIST)
 # Support for suffix after keyword i.e. password_secure = "value"
@@ -121,6 +121,7 @@ class EntropyKeywordCombinator(BasePlugin):
     def __init__(self, limit: float = ENTROPY_KEYWORD_LIMIT, max_line_length: int = MAX_LINE_LENGTH) -> None:
         iac_limit = ENTROPY_KEYWORD_COMBINATOR_LIMIT
         self.high_entropy_scanners_iac = (Base64HighEntropyString(limit=iac_limit), HexHighEntropyString(limit=iac_limit))
+        self.entropy_scanners_non_iac_with_keyword = (Base64HighEntropyString(limit=iac_limit + 0.3), HexHighEntropyString(limit=iac_limit + 0.3))
         self.high_entropy_scanners = (Base64HighEntropyString(limit=limit), HexHighEntropyString(limit=limit))
         self.keyword_scanner = KeywordDetector()
         self.max_line_length = max_line_length
@@ -153,8 +154,9 @@ class EntropyKeywordCombinator(BasePlugin):
                 if single_line_parser:
                     # Getting last detected one as only 1 violation available for line
                     secret_value, quoted_secret = EntropyKeywordCombinator.receive_last_secret_detected(keyword_on_key)
+                    old_line = line
                     line = quoted_secret if quoted_secret else line
-                    return single_line_parser.detect_secret(
+                    detected_secrets = single_line_parser.detect_secret(
                         scanners=self.high_entropy_scanners_iac,
                         filename=filename,
                         raw_context=raw_context,
@@ -162,6 +164,8 @@ class EntropyKeywordCombinator(BasePlugin):
                         line_number=line_number,
                         kwargs=kwargs
                     )
+                    remove_fp_secrets_in_keys(detected_secrets, old_line)
+                    return detected_secrets
                 else:
                     # preprocess line before detecting secrets - add quotes on potential secrets to allow triggering
                     # entropy detector
@@ -207,7 +211,7 @@ class EntropyKeywordCombinator(BasePlugin):
         else:
             return detect_secret(
                 # If we found a keyword (i.e. db_pass = ), lower the threshold to the iac threshold
-                scanners=self.high_entropy_scanners if not keyword_on_key else self.high_entropy_scanners_iac,
+                scanners=self.high_entropy_scanners if not keyword_on_key else self.entropy_scanners_non_iac_with_keyword,
                 filename=filename,
                 line=line,
                 line_number=line_number,
