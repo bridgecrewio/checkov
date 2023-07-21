@@ -43,6 +43,7 @@ from checkov.common.bridgecrew.severities import BcSeverities
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.output.baseline import Baseline
 from checkov.common.bridgecrew.check_type import checkov_runners, CheckType
+from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.common.util import prompt
 from checkov.common.util.banner import banner as checkov_banner, tool as checkov_tool
@@ -90,6 +91,7 @@ signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 outer_registry = None
 
 logger = logging.getLogger(__name__)
+add_resource_code_filter_to_logger(logger)
 
 # sca package runner added during the run method
 DEFAULT_RUNNERS = [

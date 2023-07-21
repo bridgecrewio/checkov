@@ -6,8 +6,10 @@ from typing import Any
 from yaml import YAMLError
 
 import checkov.common.parsers.yaml.loader as loader
+from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 
 logger = logging.getLogger(__name__)
+add_resource_code_filter_to_logger(logger)
 
 
 def parse(

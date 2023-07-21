@@ -28,6 +28,7 @@ nav_order: 1
 | 17 | CKV_OPENAPI_18 | resource | schemes             | Ensure that global schemes use 'https' protocol instead of 'http'- version 2.0 files                                                         | OpenAPI | [GlobalSchemeDefineHTTP.py](https://github.com/bridgecrewio/checkov/blob/main/checkov/openapi/checks/resource/v2/GlobalSchemeDefineHTTP.py)                               |
 | 18 | CKV_OPENAPI_19 | resource | security            | Ensure that global security scope is defined in securityDefinitions - version 2.0 files                                                      | OpenAPI | [GlobalSecurityScopeUndefined.py](https://github.com/bridgecrewio/checkov/blob/main/checkov/openapi/checks/resource/v2/GlobalSecurityScopeUndefined.py)                   |
 | 19 | CKV_OPENAPI_20 | resource | paths               | Ensure that API keys are not sent over cleartext                                                                                             | OpenAPI | [ClearTextAPIKey.py](https://github.com/bridgecrewio/checkov/blob/main/checkov/openapi/checks/resource/generic/ClearTextAPIKey.py)                                        |
+| 20 | CKV_OPENAPI_21 | resource | paths               | Ensure that arrays have a maximum number of items                                                                                            | OpenAPI | [NoMaximumNumberItems.py](https://github.com/bridgecrewio/checkov/blob/main/checkov/openapi/checks/resource/generic/NoMaximumNumberItems.py)                              |
 
 
 ---
