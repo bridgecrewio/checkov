@@ -80,6 +80,10 @@ def get_relevant_file_content(file_path: str | Path) -> str | None:
         return None
 
     content = read_file_with_any_encoding(file_path=file_path)
+    if "name:" not in content:
+        # the following regex will search more precisely, but no need to further process
+        return None
+
     match_task_name = re.search(TASK_NAME_PATTERN, content)
     if match_task_name:
         # there are more files, which belong to an ansible playbook,

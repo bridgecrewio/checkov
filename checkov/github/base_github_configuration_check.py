@@ -10,7 +10,7 @@ from checkov.github.dal import CKV_METADATA
 from checkov.github.registry import registry
 
 
-HTTP = re.compile("^http://")
+HTTP = "http://"
 
 
 class BaseGithubCheck(BaseCheck):

@@ -45,6 +45,10 @@ class Runner(YamlRunner, ImageReferencer):
             return None
 
         content = read_file_with_any_encoding(file_path=file_path)
+        if "argoproj.io" not in content:
+            # the following regex will search more precisely, but no need to further process
+            return None
+
         match_api = re.search(API_VERSION_PATTERN, content)
         if match_api:
             match_kind = re.search(KIND_PATTERN, content)
