@@ -4,7 +4,7 @@ import itertools
 from typing import Optional, Tuple, List, Dict, Any, TYPE_CHECKING
 
 
-from checkov.common.graph.checks_infra.enums import SolverType
+from checkov.common.graph.checks_infra.enums import SolverType, Approach
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
 
 if TYPE_CHECKING:
@@ -33,6 +33,7 @@ class BaseGraphCheck:
         self.frameworks: List[str] = []
         self.is_jsonpath_check: bool = False
         self.check_path: str = ""
+        self.approach = Approach.PASS
 
     def set_solver(self, solver: BaseSolver) -> None:
         self.solver = solver
@@ -41,7 +42,12 @@ class BaseGraphCheck:
         if not self.solver:
             raise AttributeError("solver attribute was not set")
 
-        return self.solver.run(graph_connector=graph_connector)
+        passed, failed, unknown = self.solver.run(graph_connector=graph_connector)
+
+        if self.approach == Approach.FAIL:
+            failed, passed = passed, failed
+
+        return passed, failed, unknown
 
     def get_output_id(self, use_bc_ids: bool) -> str:
         return self.bc_id if self.bc_id and use_bc_ids else self.id

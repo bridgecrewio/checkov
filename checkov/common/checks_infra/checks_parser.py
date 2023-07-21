@@ -60,7 +60,7 @@ from checkov.common.checks_infra.solvers.connections_solvers.connection_one_exis
     ConnectionOneExistsSolver
 from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 from checkov.common.graph.checks_infra.base_parser import BaseGraphCheckParser
-from checkov.common.graph.checks_infra.enums import SolverType
+from checkov.common.graph.checks_infra.enums import SolverType, Approach
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
 from checkov.common.util.type_forcers import force_list
 
@@ -194,6 +194,7 @@ class GraphCheckParser(BaseGraphCheckParser):
         check.frameworks = raw_check.get("metadata", {}).get("frameworks", [])
         check.guideline = raw_check.get("metadata", {}).get("guideline")
         check.check_path = kwargs.get("check_path", "")
+        check.approach = raw_check.get("metadata", {}).get("approach", "").lower() or Approach.PASS
         solver = self.get_check_solver(check)
         check.set_solver(solver)
 

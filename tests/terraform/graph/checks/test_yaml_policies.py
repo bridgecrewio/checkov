@@ -208,6 +208,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_IAMPolicyNotAllowFullIAMAccess(self):
         self.go("IAMPolicyNotAllowFullIAMAccess")
 
+    def test_IAMManagedIAMFullAccessPolicy(self):
+        self.go("IAMManagedIAMFullAccessPolicy")
+
     def test_DataExplorerEncryptionUsesCustomKey(self):
         self.go("DataExplorerEncryptionUsesCustomKey")
 
