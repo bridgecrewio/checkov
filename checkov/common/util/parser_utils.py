@@ -377,10 +377,9 @@ def get_tf_definition_key(nested_module: str, module_name: str, module_index: An
 
 
 def get_tf_definition_key_from_module_dependency(
-    path: str, module_dependency: TFDefinitionKeyType | None, module_dependency_num: str | None
+    path: str, module_dependency: str | None, module_dependency_num: str | None
 ) -> str:
-    from checkov.terraform.modules.module_objects import TFDefinitionKey
-    if not module_dependency or isinstance(module_dependency, TFDefinitionKey):
+    if not module_dependency:
         return path
     if not is_nested(module_dependency):
         return f"{path}{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{module_dependency}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}{module_dependency_num}{TERRAFORM_NESTED_MODULE_PATH_ENDING}"
