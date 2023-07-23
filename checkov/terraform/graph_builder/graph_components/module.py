@@ -22,13 +22,14 @@ _AddBlockTypeCallable: TypeAlias = "Callable[[Module, list[dict[str, dict[str, A
 
 class Module:
     def __init__(
-        self,
-        source_dir: str,
-        module_address_map: Dict[Tuple[str, str], str],
-        external_modules_source_map: Dict[Tuple[str, str], str],
-        module_dependency_map: Optional[Dict[str, List[List[str]]]] = None,
-        dep_index_mapping: Optional[Dict[Tuple[str, str], List[str]]] = None,
+            self,
+            source_dir: str,
+            module_address_map: Dict[Tuple[str, str], str],
+            external_modules_source_map: Dict[Tuple[str, str], str],
+            module_dependency_map: Optional[Dict[str, List[List[str]]]] = None,
+            dep_index_mapping: Optional[Dict[Tuple[str, str], List[str]]] = None,
     ) -> None:
+        # when adding a new field be sure to add it to the equality function below
         self.dep_index_mapping = dep_index_mapping
         self.module_dependency_map = module_dependency_map
         self.module_address_map = module_address_map
@@ -44,8 +45,23 @@ class Module:
         self.enable_nested_modules = strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'True'))
         self.use_new_tf_parser = strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'True'))
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Module):
+            return False
+
+        return self.dep_index_mapping == other.dep_index_mapping and \
+            self.module_dependency_map == other.module_dependency_map and self.module_address_map == other.module_address_map and \
+            self.external_modules_source_map == other.external_modules_source_map and \
+            self.path == other.path and \
+            self.customer_name == other.customer_name and \
+            self.account_id == other.account_id and \
+            self.source == other.source and \
+            self.resources_types == other.resources_types and \
+            self.source_dir == other.source_dir and \
+            self.blocks == other.blocks
+
     def add_blocks(
-        self, block_type: str, blocks: List[Dict[str, Dict[str, Any]]], path: str | TFDefinitionKey, source: str
+            self, block_type: str, blocks: List[Dict[str, Dict[str, Any]]], path: str | TFDefinitionKey, source: str
     ) -> None:
         self.source = source
         if block_type in self._block_type_to_func:
@@ -66,7 +82,8 @@ class Module:
             self.blocks.append(block)
             return
 
-        dependencies = self.module_dependency_map.get(os.path.dirname(block.path), []) if self.module_dependency_map else []
+        dependencies = self.module_dependency_map.get(os.path.dirname(block.path),
+                                                      []) if self.module_dependency_map else []
         module_dependency_num = ""
         if not dependencies:
             dependencies = [[]]
@@ -76,7 +93,8 @@ class Module:
             block.module_dependency = unify_dependency_path(dep_trail)
 
             if block.module_dependency:
-                module_dependency_numbers = self.dep_index_mapping.get((block.path, dep_trail[-1]), []) if self.dep_index_mapping else []
+                module_dependency_numbers = self.dep_index_mapping.get((block.path, dep_trail[-1]),
+                                                                       []) if self.dep_index_mapping else []
                 for mod_idx, module_dep_num in enumerate(module_dependency_numbers):
                     if mod_idx > 0:
                         block = pickle_deepcopy(block)

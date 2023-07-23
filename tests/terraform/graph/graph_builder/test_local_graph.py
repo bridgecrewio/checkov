@@ -19,6 +19,7 @@ from checkov.terraform.parser import Parser
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.graph_manager import TerraformGraphManager
 from checkov.terraform.tf_parser import TFParser
+from checkov.terraform.modules.module_utils import clean_parser_types, serialize_definitions
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
@@ -107,6 +108,58 @@ class TestLocalGraph(TestCase):
                 self.assertEqual(var_value, default_val[0])
             else:
                 self.assertEqual(var_value, default_val)
+
+    def test_definition_creation_by_dirs(self):
+        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME,
+                                                      '../resources/variable_rendering/render_local_from_variable'))
+        hcl_config_parser = TFParser()
+        tf_definitions = hcl_config_parser.parse_directory(directory=resources_dir)
+        tf_definitions = clean_parser_types(tf_definitions)
+        tf_definitions = serialize_definitions(tf_definitions)
+
+        dirs_to_definitions = hcl_config_parser.create_definition_by_dirs(tf_definitions)
+        assert len(dirs_to_definitions) == 1
+        single_dir_element = list(dirs_to_definitions.values())[0]
+        assert list(single_dir_element[0].values()) == [{'locals': [{'__end_line__': 3, '__start_line__': 1, 'bucket_name': ['${var.var_bucket_name}']}]}]
+        assert list(single_dir_element[1].values()) == [{'variable': [{'var_bucket_name': {'__end_line__': 3, '__start_line__': 1, 'default': ['test_bucket_name']}}]}]
+
+    def test_definition_creation_by_dirs_multi_nodule(self):
+        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME,
+                                                      '../resources/modules/linked_modules'))
+        hcl_config_parser = TFParser()
+        tf_definitions = hcl_config_parser.parse_directory(directory=resources_dir)
+        tf_definitions = clean_parser_types(tf_definitions)
+        tf_definitions = serialize_definitions(tf_definitions)
+
+        dirs_to_definitions = hcl_config_parser.create_definition_by_dirs(tf_definitions)
+        assert len(dirs_to_definitions) == 2
+        lambda_element = list(dirs_to_definitions.values())[0]
+        s3_bucket_element = list(dirs_to_definitions.values())[1]
+        assert len(lambda_element) + len(s3_bucket_element) == len(tf_definitions)
+        modules = hcl_config_parser.parse_multi_graph_hcl_module(resources_dir, source=self.source)
+        assert len(modules) == 2
+        assert 'lambda' in modules[0][0].source_dir
+        assert 's3-bucket' in modules[1][0].source_dir
+
+
+    def test_compare_multi_graph_defs(self):
+        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME,
+                                                      '../resources/variable_rendering/render_module_postgresql'))
+        hcl_config_parser = TFParser()
+        module, defs = hcl_config_parser.parse_hcl_module(resources_dir, source=self.source)
+        modules = hcl_config_parser.parse_multi_graph_hcl_module(resources_dir, source=self.source)
+        for idx, module_to_definitions in enumerate(modules):
+            assert module_to_definitions[0] == module
+            for att, content in defs.items():
+                found = False
+                for content_dict in module_to_definitions[1]:
+                    for key, value in content_dict.items():
+                        if value == content:
+                            found = True
+                            break
+                    if found:
+                        break
+                assert found
 
     def test_set_variables_values_from_modules_with_new_tf_parser(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME,
