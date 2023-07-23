@@ -12,6 +12,7 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.common.util.type_forcers import force_list
 from checkov.common.util.var_utils import is_cloudformation_variable_dependent
 
+ARRAY_INDEX_PATTERN = re.compile(r"^\[?\d+\]?$")
 VARIABLE_DEPENDANT_REGEX = re.compile(r"(?:Ref)\.[^\s]+")
 
 
@@ -34,8 +35,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
         :param path: valid JSONPath of an attribute
         :return: List of named attributes with respect to the input JSONPath order
         """
-        regex = re.compile(r"^\[?\d+\]?$")
-        return [x for x in path.split("/") if not re.search(regex, x)]
+        return [x for x in path.split("/") if not re.search(ARRAY_INDEX_PATTERN, x)]
 
     @staticmethod
     def _is_variable_dependant(value: Any) -> bool:

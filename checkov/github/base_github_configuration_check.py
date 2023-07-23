@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import re
 from typing import Iterable
 from typing import Any
 
@@ -10,7 +9,7 @@ from checkov.github.dal import CKV_METADATA
 from checkov.github.registry import registry
 
 
-HTTP = re.compile("^http://")
+HTTP = "http://"
 
 
 class BaseGithubCheck(BaseCheck):
