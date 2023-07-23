@@ -31,7 +31,7 @@ class ParserRegistry:
 
     def enrich_definitions_context(
         self, definitions: Tuple[str, Dict[str, List[Dict[str, Any]]]], collect_skip_comments: bool = True
-    ) -> Dict[str | TFDefinitionKey, Dict[str, Dict[str, Any]]]:
+    ) -> Dict[TFDefinitionKeyType, Dict[str, Dict[str, Any]]]:
         supported_definitions = [parser_type for parser_type in self.context_parsers.keys()]
         (tf_definition_key, definition_blocks_types) = definitions
         enable_definition_key = strtobool(os.getenv('ENABLE_DEFINITION_KEY', 'False'))

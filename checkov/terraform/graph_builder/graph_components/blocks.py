@@ -6,6 +6,7 @@ import dpath
 import re
 
 from checkov.common.runners.base_runner import strtobool
+from checkov.common.typing import TFDefinitionKeyType
 from checkov.terraform.graph_builder.utils import INTERPOLATION_EXPR
 from checkov.common.graph.graph_builder.graph_components.blocks import Block
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
@@ -13,7 +14,7 @@ from checkov.terraform.graph_builder.graph_components.block_types import BlockTy
 from checkov.terraform.graph_builder.utils import remove_module_dependency_in_path
 
 if TYPE_CHECKING:
-    from checkov.terraform import TFModule, TFDefinitionKey
+    from checkov.terraform import TFModule
 
 
 class TerraformBlock(Block):
@@ -33,7 +34,7 @@ class TerraformBlock(Block):
         self,
         name: str,
         config: Dict[str, Any],
-        path: str | TFDefinitionKey,
+        path: TFDefinitionKeyType,
         block_type: str,
         attributes: Dict[str, Any],
         id: str = "",
@@ -59,7 +60,7 @@ class TerraformBlock(Block):
             has_dynamic_block=has_dynamic_block,
             dynamic_attributes=dynamic_attributes,
         )
-        self.module_dependency: str | None | TFDefinitionKey = ""
+        self.module_dependency: TFDefinitionKeyType | None = ""
         self.module_dependency_num: str | None = ""
         if path:
             if strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'True')):

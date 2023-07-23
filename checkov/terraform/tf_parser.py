@@ -7,6 +7,7 @@ from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, cas
 import deep_merge
 
 from checkov.common.runners.base_runner import filter_ignored_paths, IGNORE_HIDDEN_DIRECTORY_ENV
+from checkov.common.typing import TFDefinitionKeyType
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.type_forcers import force_list
@@ -420,7 +421,7 @@ class TFParser:
                 block = [{var_name: {"default": default}}]
                 module.add_blocks(BlockType.TF_VARIABLE, block, path, source)
 
-    def get_dirname(self, path: str | TFDefinitionKey) -> str:
+    def get_dirname(self, path: TFDefinitionKeyType) -> str:
         if isinstance(path, TFDefinitionKey):
             path = path.file_path
         dirname_path = self.dirname_cache.get(path)
@@ -433,7 +434,7 @@ class TFParser:
         return not self.get_dirname(file) != root_dir
 
     def get_module_source(
-        self, module_call_data: dict[str, Any], module_call_name: str, file: str | TFDefinitionKey
+        self, module_call_data: dict[str, Any], module_call_name: str, file: TFDefinitionKeyType
     ) -> Optional[str]:
         source = module_call_data.get("source")
         if not source or not isinstance(source, list):
