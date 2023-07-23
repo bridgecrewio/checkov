@@ -200,7 +200,8 @@ class PrismaEngine(SastEngine):
                     file_abs_path = location.path
                     file_path = file_abs_path.split('/')[-1]
                     file_line_range = [location.start.row, location.end.row]
-                    code_block = get_code_block(location.code_block.split('\n'), location.start.row)
+                    split_code_block = [line + '\n' for line in location.code_block.split('\n')]
+                    code_block = get_code_block(split_code_block, location.start.row)
 
                     record = SastRecord(check_id=check_id, check_name=check_name, resource="", evaluations={},
                                         check_class="", check_result=check_result, code_block=code_block,
