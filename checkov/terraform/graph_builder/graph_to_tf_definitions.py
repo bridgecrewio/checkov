@@ -32,7 +32,8 @@ def convert_graph_vertices_to_tf_definitions(
             if use_new_tf_parser:
                 tf_path = TFDefinitionKey(file_path=block_path, tf_source_modules=vertex.source_module_object)
             else:
-                tf_path = get_tf_definition_key_from_module_dependency(block_path, vertex.module_dependency, vertex.module_dependency_num)
+                if isinstance(vertex.module_dependency, str):
+                    tf_path = get_tf_definition_key_from_module_dependency(block_path, vertex.module_dependency, vertex.module_dependency_num)
         tf_definitions.setdefault(tf_path, {}).setdefault(block_type, []).append(vertex.config)
         relative_block_path = f"/{os.path.relpath(block_path, root_folder)}"
         add_breadcrumbs(vertex, breadcrumbs, relative_block_path)
