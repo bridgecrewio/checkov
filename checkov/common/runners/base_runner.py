@@ -8,6 +8,8 @@ from abc import ABC, abstractmethod
 from collections.abc import Iterable
 from typing import List, Any, TYPE_CHECKING, TypeVar, Generic, Dict
 
+from igraph import Graph
+
 from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.util.tqdm_utils import ProgressBar
@@ -125,16 +127,19 @@ class BaseRunner(ABC, Generic[_GraphManager]):
     def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter) -> Report:
         return Report(check_type="not_defined")
 
-    def run_graph_checks_results(self, runner_filter: RunnerFilter, report_type: str) -> dict[BaseGraphCheck, list[_CheckResult]]:
+    def run_graph_checks_results(self, runner_filter: RunnerFilter, report_type: str, graph: Graph | None = None
+                                 ) -> dict[BaseGraphCheck, list[_CheckResult]]:
         checks_results: "dict[BaseGraphCheck, list[_CheckResult]]" = {}
-        if not self.graph_manager or not self.graph_registry:
+        if graph is None and (not self.graph_manager or not self.graph_registry):
             # should not happen
             logging.warning("Graph components were not initialized")
             return checks_results
 
+        if graph is None:
+            graph = self.graph_manager.get_reader_endpoint()
         for r in itertools.chain(self.external_registries or [], [self.graph_registry]):
             r.load_checks()
-            registry_results = r.run_checks(self.graph_manager.get_reader_endpoint(), runner_filter, report_type)  # type:ignore[union-attr]
+            registry_results = r.run_checks(graph, runner_filter, report_type)  # type:ignore[union-attr]
             checks_results = {**checks_results, **registry_results}
         # Filtering the checks now
         filtered_result: Dict[BaseGraphCheck, List[_CheckResult]] = {}
