@@ -302,7 +302,8 @@ class BcPlatformIntegration:
             if support_path:
                 self.support_bucket, self.support_repo_path = support_path.split("/", 1)
             elif self.support_flag_enabled:
-                logging.debug('--support was used, but we did not get a support file upload path in the platform response. Using the old location.')
+                logging.debug(
+                    '--support was used, but we did not get a support file upload path in the platform response. Using the old location.')
                 self.support_bucket = self.bucket
                 self.support_repo_path = self.repo_path
 
@@ -346,7 +347,8 @@ class BcPlatformIntegration:
                     tries += 1
                     response = self._get_s3_creds(repo_id, token)
                 else:
-                    raise BridgecrewAuthError("Checkov got an unexpected error that may be due to backend issues. Please contact support.")
+                    raise BridgecrewAuthError(
+                        "Checkov got an unexpected error that may be due to backend issues. Please contact support.")
         repo_full_path = response["path"]
         support_path = response.get("supportPath")
         return repo_full_path, support_path, response
@@ -515,7 +517,8 @@ class BcPlatformIntegration:
         if not self.use_s3_integration or not self.s3_client:
             return
         if not self.support_bucket or not self.support_repo_path:
-            logging.error(f"Something went wrong with the log upload location: bucket {self.support_bucket}, repo path {self.support_repo_path}")
+            logging.error(
+                f"Something went wrong with the log upload location: bucket {self.support_bucket}, repo path {self.support_repo_path}")
             return
         # use checkov_results if we fall back to using the same location
         log_path = f'{self.support_repo_path}/checkov_results' if self.support_repo_path == self.repo_path else self.support_repo_path
@@ -580,7 +583,8 @@ class BcPlatformIntegration:
                 raise
             except JSONDecodeError:
                 if request:
-                    logging.warning(f"Response (status: {request.status}) of {self.integrations_api_url}: {request.data.decode('utf8')}")
+                    logging.warning(
+                        f"Response (status: {request.status}) of {self.integrations_api_url}: {request.data.decode('utf8')}")
                 logging.error(f"Response of {self.integrations_api_url} is not a valid JSON", exc_info=True)
                 raise
             finally:
@@ -736,13 +740,15 @@ class BcPlatformIntegration:
                 # If enabled and subtype are not explicitly set, use the only acceptable values.
                 query_params['policy.enabled'] = True
                 query_params['policy.subtype'] = 'build'
-                request = self.http.request("GET", self.prisma_policies_url, headers=headers, fields=query_params)  # type:ignore[no-untyped-call]
+                request = self.http.request("GET", self.prisma_policies_url, headers=headers,
+                                            fields=query_params)  # type:ignore[no-untyped-call]
                 self.prisma_policies_response = json.loads(request.data.decode("utf8"))
                 logging.debug("Got Prisma build policy metadata")
             else:
                 logging.warning("Skipping get prisma build policies. --policy-metadata-filter will not be applied.")
         except Exception:
-            logging.warning(f"Failed to get prisma build policy metadata from {self.platform_run_config_url}", exc_info=True)
+            logging.warning(
+                f"Failed to get prisma build policy metadata from {self.platform_run_config_url}", exc_info=True)
 
     def get_prisma_policy_filters(self) -> Dict[str, Dict[str, Any]]:
         try:
@@ -755,12 +761,14 @@ class BcPlatformIntegration:
                 return {}
 
             logging.debug(f'Prisma filter URL: {self.prisma_policy_filters_url}')
-            request = self.http.request("GET", self.prisma_policy_filters_url, headers=headers)  # type:ignore[no-untyped-call]
+            request = self.http.request("GET", self.prisma_policy_filters_url,
+                                        headers=headers)  # type:ignore[no-untyped-call]
             policy_filters: dict[str, dict[str, Any]] = json.loads(request.data.decode("utf8"))
             logging.debug(f'Prisma filter suggestion response: {policy_filters}')
             return policy_filters
         except Exception:
-            logging.warning(f"Failed to get prisma build policy metadata from {self.platform_run_config_url}", exc_info=True)
+            logging.warning(
+                f"Failed to get prisma build policy metadata from {self.platform_run_config_url}", exc_info=True)
             return {}
 
     @staticmethod
@@ -804,7 +812,8 @@ class BcPlatformIntegration:
 
             request = self.http.request("GET", self.guidelines_api_url, headers=headers)  # type:ignore[no-untyped-call]
             if request.status >= 300:
-                request = self.http.request("GET", self.guidelines_api_url_backoff, headers=headers)  # type:ignore[no-untyped-call]
+                request = self.http.request("GET", self.guidelines_api_url_backoff,
+                                            headers=headers)  # type:ignore[no-untyped-call]
 
             self.public_metadata_response = json.loads(request.data.decode("utf8"))
             platform_type = PRISMA_PLATFORM if self.is_prisma_integration() else BRIDGECREW_PLATFORM
@@ -1052,12 +1061,8 @@ class BcPlatformIntegration:
                               get_default_get_headers(self.bc_source, self.bc_source_version))
 
         request = self.http.request("GET", url_saml_config, headers=headers, timeout=10)  # type:ignore[no-untyped-call]
-        if request.status == 401:
-            logging.error(f'Received 401 response from Prisma /login endpoint: {request.data.decode("utf8")}')
-            raise BridgecrewAuthError()
-        elif request.status == 403:
-            logging.error('Received 403 (Forbidden) response from Prisma /login endpoint')
-            raise BridgecrewAuthError()
+        if request.status >= 300:
+            return report_url
 
         data = json.loads(request.data.decode("utf8"))
 
