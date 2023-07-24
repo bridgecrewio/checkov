@@ -9,7 +9,7 @@ from typing import Type, Optional
 import pathlib
 
 from checkov.common.graph.checks_infra.registry import BaseRegistry
-from checkov.common.typing import LibraryGraphConnector
+from checkov.common.typing import LibraryGraphConnector, TFDefinitionKeyType
 from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.terraform.modules.module_objects import TFDefinitionKey
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
@@ -201,7 +201,7 @@ class Runner(TerraformRunner):
                                    block_type, runner_filter)
 
     @staticmethod
-    def _get_file_path(full_file_path: str | TFDefinitionKey, root_folder: str | pathlib.Path) -> tuple[str, str]:
+    def _get_file_path(full_file_path: TFDefinitionKeyType, root_folder: str | pathlib.Path) -> tuple[str, str]:
         if isinstance(full_file_path, TFDefinitionKey):
             full_file_path = full_file_path.file_path
         if platform.system() == "Windows":
