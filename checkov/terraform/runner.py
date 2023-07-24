@@ -26,7 +26,7 @@ from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.parser_utils import get_module_from_full_path, get_abs_path, \
     get_tf_definition_key_from_module_dependency, TERRAFORM_NESTED_MODULE_PATH_PREFIX, \
     TERRAFORM_NESTED_MODULE_PATH_ENDING, TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH, \
-    TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR
+    TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR, get_module_name
 from checkov.common.util.secrets import omit_secret_value_from_checks, omit_secret_value_from_graph_checks
 from checkov.common.variables.context import EvaluationContext
 from checkov.runner_filter import RunnerFilter
@@ -391,21 +391,23 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
 
             if self.enable_nested_modules:
                 entity_id = entity_config.get(CustomAttributes.TF_RESOURCE_ADDRESS)
-                module, _ = get_module_from_full_path(full_file_path)
-                if module:
-                    full_definition_path = entity_id.split('.')
-                    try:
-                        module_name_index = len(full_definition_path) - full_definition_path[::-1][1:].index(BlockType.MODULE) - 1  # the next item after the last 'module' prefix is the module name
-                    except ValueError as e:
-                        # TODO handle multiple modules with the same name in repo
-                        logging.warning(f'Failed to get module name for resource {entity_id}. {str(e)}')
-                        continue
-                    module_name = full_definition_path[module_name_index]
-                    caller_context = definition_context[module].get(BlockType.MODULE, {}).get(module_name)
+                module_full_path, _ = get_module_from_full_path(full_file_path)
+                if module_full_path:
+                    module_name = get_module_name(full_file_path)
+                    if not module_name:
+                        full_definition_path = entity_id.split('.')
+                        try:
+                            module_name_index = len(full_definition_path) - full_definition_path[::-1][1:].index(BlockType.MODULE) - 1  # the next item after the last 'module' prefix is the module name
+                        except ValueError as e:
+                            # TODO handle multiple modules with the same name in repo
+                            logging.warning(f'Failed to get module name for resource {entity_id}. {str(e)}')
+                            continue
+                        module_name = full_definition_path[module_name_index]
+                    caller_context = definition_context[module_full_path].get(BlockType.MODULE, {}).get(module_name)
                     if not caller_context:
                         continue
                     caller_file_line_range = [caller_context.get('start_line'), caller_context.get('end_line')]
-                    abs_caller_file = get_abs_path(module)
+                    abs_caller_file = get_abs_path(module_full_path)
                     caller_file_path = f"/{os.path.relpath(abs_caller_file, root_folder)}"
             elif module_referrer is not None:
                 referrer_id = self._find_id_for_referrer(full_file_path)
@@ -433,10 +435,10 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
             else:
                 entity_context_path = entity_context_path_header + block_type + definition_path
             # Entity can exist only once per dir, for file as well
-            if isinstance(full_file_path, TFDefinitionKey):
-                context_path = full_file_path.file_path
+            if not strtobool(os.getenv('ENABLE_DEFINITION_KEY', 'False')):
+                context_path = full_file_path.file_path if isinstance(full_file_path, TFDefinitionKey) else full_file_path
             else:
-                context_path = full_file_path
+                context_path = full_file_path if isinstance(full_file_path, TFDefinitionKey) else TFDefinitionKey(file_path=full_file_path, tf_source_modules=None)
             try:
                 entity_context = data_structures_utils.get_inner_dict(
                     definition_context[context_path],
@@ -588,10 +590,11 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
     def push_skipped_checks_down_from_modules(self, definition_context: dict[str, dict[str, Any]]) -> None:
         module_context_parser = parser_registry.context_parsers[BlockType.MODULE]
         for tf_definition_key, definition in self.definitions.items():
-            if isinstance(tf_definition_key, TFDefinitionKey):
-                full_file_path = tf_definition_key.file_path
+            if not strtobool(os.getenv('ENABLE_DEFINITION_KEY', 'False')):
+                full_file_path = tf_definition_key.file_path if isinstance(tf_definition_key, TFDefinitionKey) else tf_definition_key
             else:
-                full_file_path = tf_definition_key
+                full_file_path = tf_definition_key if isinstance(tf_definition_key, TFDefinitionKey)\
+                    else TFDefinitionKey(file_path=tf_definition_key, tf_source_modules=None)
             definition_modules_context = definition_context.get(full_file_path, {}).get(BlockType.MODULE, {})
             for entity in definition.get(BlockType.MODULE, []):
                 module_name = module_context_parser.get_entity_context_path(entity)[0]
