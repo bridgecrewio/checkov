@@ -421,7 +421,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
             if not strtobool(os.getenv('ENABLE_DEFINITION_KEY', 'False')):
                 context_path = full_file_path.file_path if isinstance(full_file_path, TFDefinitionKey) else full_file_path
             else:
-                context_path = full_file_path if isinstance(full_file_path, TFDefinitionKey) else TFDefinitionKey(file_path=full_file_path, tf_source_modules=None)
+                context_path = f'{full_file_path if isinstance(full_file_path, TFDefinitionKey) else TFDefinitionKey(file_path=full_file_path, tf_source_modules=None)}'
             try:
                 entity_context = data_structures_utils.get_inner_dict(
                     definition_context[context_path],
