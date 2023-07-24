@@ -289,7 +289,6 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         return report
 
     def get_entity_context_and_evaluations(self, entity: dict[str, Any]) -> dict[str, Any] | None:
-        entity_evaluations = None
         block_type = entity[CustomAttributes.BLOCK_TYPE]
         full_file_path = entity[CustomAttributes.FILE_PATH]
         if entity.get(CustomAttributes.MODULE_DEPENDENCY):

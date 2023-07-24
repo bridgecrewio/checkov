@@ -5,7 +5,7 @@ import os
 from collections import defaultdict
 from functools import partial
 from pathlib import Path
-from typing import List, Optional, Union, Any, Dict, Set, Tuple, overload
+from typing import List, Optional, Union, Any, Dict, Set, Tuple, overload, TYPE_CHECKING
 
 from typing_extensions import TypedDict
 
@@ -36,6 +36,8 @@ from checkov.terraform.graph_builder.utils import (
 from checkov.terraform.graph_builder.utils import is_local_path
 from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
 
+if TYPE_CHECKING:
+    from checkov.common.typing import TFDefinitionKeyType
 
 MODULE_RESERVED_ATTRIBUTES = ("source", "version")
 CROSS_VARIABLE_EDGE_PREFIX = '[cross-variable] '
@@ -204,7 +206,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
 
         for vertex in self.vertices:
             # match the right module vertex according to the vertex path directory
-            module_dependency_nums = block_dirs_to_modules.get((self.get_dirname(vertex.path), vertex.module_dependency))
+            module_dependency_nums = block_dirs_to_modules.get((self.get_dirname(vertex.path), vertex.module_dependency))  # type:ignore[arg-type]  # will be fixed when removing terraform/checks from mypy exclusion
             if module_dependency_nums:
                 module_indices = module_dependency_nums.get(vertex.module_dependency_num)  # type:ignore[arg-type]  # vertex.module_dependency_num can be None, which is ok
                 if module_indices:
@@ -428,7 +430,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         block_type: str,
         name: str,
         block_path: str,
-        module_path: str | None,
+        module_path: TFDefinitionKeyType | None,
         module_num: str | None,
         relative_module_idx: Optional[int] = None,
         source_module_object: Optional[TFModule] = None,
@@ -654,7 +656,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 vertex.module_dependency == module_node.module_dependency  # The vertex is in the same file
                 or (
                     vertex.module_dependency is not None
-                    and self.get_abspath(vertex.module_dependency) == self.get_abspath(module_node.path)
+                    and self.get_abspath(vertex.module_dependency) == self.get_abspath(module_node.path)  # type:ignore[arg-type]  # old flow, will be removed
                 )  # The vertex is in the correct dependency path
             )
 
@@ -750,7 +752,7 @@ def get_path_with_nested_modules(block: TerraformBlock) -> str:
         return block.path
     if not strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'True')):
         return unify_dependency_path([block.module_dependency, block.path])  # type:ignore[no-any-return]  # will be fixed when removing terraform/checks from mypy exclusion
-    return get_tf_definition_key_from_module_dependency(block.path, block.module_dependency, block.module_dependency_num)
+    return get_tf_definition_key_from_module_dependency(block.path, block.module_dependency, block.module_dependency_num)  # type:ignore[arg-type]  # will be fixed when removing terraform/checks from mypy exclusion
 
 
 def get_vertex_as_tf_module(block: TerraformBlock) -> TFModule:
