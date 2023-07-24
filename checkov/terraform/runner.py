@@ -192,9 +192,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         connected_entity = entity.get('connected_node')
         if not connected_entity:
             return None
-        connected_entity_context, connected_entity_evaluations = self.get_entity_context_and_evaluations(
-            connected_entity
-        )
+        connected_entity_context = self.get_entity_context_and_evaluations(connected_entity)
         if not connected_entity_context:
             return None
         full_file_path = connected_entity[CustomAttributes.FILE_PATH]
@@ -205,7 +203,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                                                   connected_entity_context.get('end_line')]
         connected_node_data['resource'] = ".".join(connected_entity_context['definition_path'])
         connected_node_data['entity_tags'] = connected_entity.get('tags', {})
-        connected_node_data['evaluations'] = connected_entity_evaluations
+        connected_node_data['evaluations'] = None
         connected_node_data['file_abs_path'] = os.path.abspath(full_file_path)
         connected_node_data['resource_address'] = connected_entity_context.get('address')
         return connected_node_data
@@ -217,7 +215,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         for check, check_results in checks_results.items():
             for check_result in check_results:
                 entity = check_result['entity']
-                entity_context, entity_evaluations = self.get_entity_context_and_evaluations(entity)
+                entity_context = self.get_entity_context_and_evaluations(entity)
                 if entity_context:
                     full_file_path = entity[CustomAttributes.FILE_PATH]
                     copy_of_check_result = pickle_deepcopy(check_result)
@@ -269,7 +267,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                                          entity_context.get('end_line')],
                         resource=resource,
                         entity_tags=entity.get('tags', {}),
-                        evaluations=entity_evaluations,
+                        evaluations=None,
                         check_class=check.__class__.__module__,
                         file_abs_path=os.path.abspath(full_file_path),
                         resource_address=entity_context.get('address'),
@@ -290,7 +288,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                     report.add_record(record=record)
         return report
 
-    def get_entity_context_and_evaluations(self, entity: dict[str, Any]) -> tuple[dict[str, Any] | None, None]:
+    def get_entity_context_and_evaluations(self, entity: dict[str, Any]) -> dict[str, Any] | None:
         entity_evaluations = None
         block_type = entity[CustomAttributes.BLOCK_TYPE]
         full_file_path = entity[CustomAttributes.FILE_PATH]
@@ -305,11 +303,11 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                     entity_context = entity_context[k]
                 else:
                     logging.warning(f'Failed to find context for {".".join(entity_context_path)}')
-                    return None, None
+                    return None
             entity_context['definition_path'] = definition_path
         except StopIteration:
             logging.debug(f"Did not find context for key {full_file_path}")
-        return entity_context, entity_evaluations
+        return entity_context
 
     def check_tf_definition(
         self,

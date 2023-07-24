@@ -4,7 +4,7 @@ import logging
 import os
 import platform
 
-from typing import Type, Optional
+from typing import Type, Optional, Any
 
 import pathlib
 
@@ -260,12 +260,12 @@ class Runner(TerraformRunner):
                     record.set_guideline(check.guideline)
                     report.add_record(record=record)
 
-    def get_entity_context_and_evaluations(self, entity):
+    def get_entity_context_and_evaluations(self, entity: dict[str, Any]) -> dict[str, Any] | None:
         entity_id = entity[TF_PLAN_RESOURCE_ADDRESS]
         raw_context = self.context.get(entity[CustomAttributes.FILE_PATH], {}).get(entity_id)
         if raw_context:
             raw_context['definition_path'] = entity[CustomAttributes.BLOCK_NAME].split('.')
-        return raw_context, None
+        return raw_context
 
     def get_entity_context(self, definition_path, full_file_path, entity):
         if len(definition_path) > 1:

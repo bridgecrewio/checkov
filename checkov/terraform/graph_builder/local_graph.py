@@ -524,7 +524,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             return
 
         vertex_name = vertex.name
-        updated_config: Any = pickle_deepcopy(vertex.config)
+        updated_config = pickle_deepcopy(vertex.config)
         if vertex.block_type == BlockType.PROVIDER:
             # provider blocks set the alias as a suffix to the name, ex. name: "aws.prod"
             vertex_name = vertex_name.split(".")[0]
@@ -548,7 +548,10 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
 
         if len(changed_attributes) > 0:
             if vertex.block_type == BlockType.LOCALS:
-                updated_config = updated_config.get(vertex_name)
+                updated_local_config = updated_config.get(vertex_name)
+                update_dictionary_attribute(vertex.config, vertex_name, updated_local_config, dynamic_blocks)
+                return
+
             update_dictionary_attribute(vertex.config, vertex_name, updated_config, dynamic_blocks)
 
     def get_resources_types_in_graph(self) -> List[str]:
