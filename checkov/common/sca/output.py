@@ -148,7 +148,7 @@ def get_fix_command_and_code(vulnerability_details: dict[str, Any], root_package
     return vulnerability_details.get('fixCommand'), vulnerability_details.get('fixCode')
 
 
-def get_package_lines(package: dict[str, Any], root_package: dict[str, Any] | None = None, file_line_range: list[int] | None = None) -> list[int]:
+def get_package_lines_numbers(package: dict[str, Any], root_package: dict[str, Any] | None = None, file_line_range: list[int] | None = None) -> list[int]:
     if root_package:
         return get_record_file_line_range(root_package, file_line_range)
     return get_record_file_line_range(package, file_line_range)
@@ -232,7 +232,7 @@ def create_report_cve_record(
         check_result=check_result,
         code_block=code_block,
         file_path=get_file_path_for_record(rootless_file_path),
-        file_line_range=get_package_lines(package, root_package, file_line_range),
+        file_line_range=get_package_lines_numbers(package, root_package, file_line_range),
         resource=get_resource_for_record(rootless_file_path, package_name),
         check_class=check_class,
         evaluations=None,
