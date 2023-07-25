@@ -15,12 +15,12 @@ from checkov.common.util.tqdm_utils import ProgressBar
 from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 from checkov.common.output.report import Report
 from checkov.runner_filter import RunnerFilter
+from checkov.common.graph.graph_manager import GraphManager  # noqa
 
 if TYPE_CHECKING:
     from igraph import Graph
     from checkov.common.checks_infra.registry import Registry
     from checkov.common.graph.checks_infra.registry import BaseRegistry
-    from checkov.common.graph.graph_manager import GraphManager  # noqa
     from checkov.common.typing import _CheckResult, LibraryGraphConnector
 
 _GraphManager = TypeVar("_GraphManager", bound="GraphManager[Any, Any]|None")
