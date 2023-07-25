@@ -41,19 +41,23 @@ EXTERNAL_MODULES_DOWNLOAD_PATH = os.environ.get('EXTERNAL_MODULES_DIR', DEFAULT_
 
 
 @parameterized_class([
-    {"db_connector": NetworkxConnector, "use_new_tf_parser": "True"},
-    {"db_connector": NetworkxConnector, "use_new_tf_parser": "False"},
-    {"db_connector": IgraphConnector, "use_new_tf_parser": "True"},
-    {"db_connector": IgraphConnector, "use_new_tf_parser": "False"}
+    {"db_connector": NetworkxConnector, "use_new_tf_parser": "True", "tf_split_graph": "True"},
+    {"db_connector": NetworkxConnector, "use_new_tf_parser": "True", "tf_split_graph": "False"},
+    {"db_connector": NetworkxConnector, "use_new_tf_parser": "False", "tf_split_graph": "False"},
+    {"db_connector": IgraphConnector, "use_new_tf_parser": "True", "tf_split_graph": "True"},
+    {"db_connector": IgraphConnector, "use_new_tf_parser": "True", "tf_split_graph": "False"},
+    {"db_connector": IgraphConnector, "use_new_tf_parser": "False", "tf_split_graph": "False"}
 ])
 class TestRunnerValid(unittest.TestCase):
     def setUp(self) -> None:
         self.orig_checks = resource_registry.checks
         self.db_connector = self.db_connector
         os.environ["CHECKOV_NEW_TF_PARSER"] = self.use_new_tf_parser
+        os.environ["TF_SPLIT_GRAPH"] = self.tf_split_graph
 
     def tearDown(self):
         del os.environ["CHECKOV_NEW_TF_PARSER"]
+        del os.environ["TF_SPLIT_GRAPH"]
 
     def test_registry_has_type(self):
         self.assertEqual(resource_registry.report_type, CheckType.TERRAFORM)
@@ -507,6 +511,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertIn('some-module', map(lambda record: record.resource, result.passed_checks))
 
     @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
+    @mock.patch.dict(os.environ, {"TF_SPLIT_GRAPH": "False"})
     @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "False"})
     def test_terraform_multiple_module_versions(self):
         # given
