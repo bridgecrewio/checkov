@@ -186,11 +186,14 @@ class BaseAttributeSolver(BaseSolver):
                         vertex[full_path] = match.value
 
                     attribute_matches.append(full_path)
-
             elif isinstance(self.attribute, str):
                 attribute_patterns = self.get_attribute_patterns(self.attribute)
+                attribute_parts = [attr for attr in self.attribute.split(".") if attr != "*"]
                 for attr in vertex:
-                    if any(re.match(re.compile(attribute_pattern), attr) for attribute_pattern in attribute_patterns):
+                    if any(part not in attr for part in attribute_parts):
+                        # if even one attribute part doesn't exist in the vertex attribute, then no need to further proceed
+                        continue
+                    if any(re.match(attribute_pattern, attr) for attribute_pattern in attribute_patterns):
                         attribute_matches.append(attr)
 
             return attribute_matches

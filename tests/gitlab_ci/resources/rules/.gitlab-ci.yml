@@ -14,3 +14,12 @@ planOnlySubset:
     - if: $CI_PIPELINE_SOURCE != "merge_request_event" && $CI_PIPELINE_SOURCE != "schedule"
       when: manual
       allow_failure: true
+
+jobSkip:
+  script: echo "This job creates double pipelines!"
+  rules:
+    - changes:
+        - $DOCKERFILES_DIR/*
+      # checkov:skip=CKV_GITLABCI_2: Ignore
+    - if: $CI_PIPELINE_SOURCE == "push"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
