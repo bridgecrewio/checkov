@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Dict, Optional, Tuple, Any, Set, TYPE_CHECKING
 
 import dpath
+import igraph
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.checks_infra.registry import BaseRegistry

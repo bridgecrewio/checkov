@@ -8,8 +8,6 @@ from abc import ABC, abstractmethod
 from collections.abc import Iterable
 from typing import List, Any, TYPE_CHECKING, TypeVar, Generic, Dict
 
-from igraph import Graph
-
 from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.util.tqdm_utils import ProgressBar
@@ -19,6 +17,7 @@ from checkov.common.output.report import Report
 from checkov.runner_filter import RunnerFilter
 
 if TYPE_CHECKING:
+    from igraph import Graph
     from checkov.common.checks_infra.registry import Registry
     from checkov.common.graph.checks_infra.registry import BaseRegistry
     from checkov.common.graph.graph_manager import GraphManager  # noqa
@@ -135,10 +134,10 @@ class BaseRunner(ABC, Generic[_GraphManager]):
             logging.warning("Graph components were not initialized")
             return checks_results
 
-        if graph is None:
+        if graph is None and self.graph_manager is not None:
             graph = self.graph_manager.get_reader_endpoint()
         for r in itertools.chain(self.external_registries or [], [self.graph_registry]):
-            r.load_checks()
+            r.load_checks()  # type:ignore[union-attr]
             registry_results = r.run_checks(graph, runner_filter, report_type)  # type:ignore[union-attr]
             checks_results = {**checks_results, **registry_results}
         # Filtering the checks now

@@ -41,17 +41,18 @@ EXTERNAL_MODULES_DOWNLOAD_PATH = os.environ.get('EXTERNAL_MODULES_DIR', DEFAULT_
 
 
 @parameterized_class([
-    {"db_connector": NetworkxConnector, "use_new_tf_parser": "True", "tf_split_graph": "True"},
-    {"db_connector": NetworkxConnector, "use_new_tf_parser": "True", "tf_split_graph": "False"},
-    {"db_connector": NetworkxConnector, "use_new_tf_parser": "False", "tf_split_graph": "False"},
-    {"db_connector": IgraphConnector, "use_new_tf_parser": "True", "tf_split_graph": "True"},
-    {"db_connector": IgraphConnector, "use_new_tf_parser": "True", "tf_split_graph": "False"},
-    {"db_connector": IgraphConnector, "use_new_tf_parser": "False", "tf_split_graph": "False"}
+    {"db_connector": NetworkxConnector, "use_new_tf_parser": "True", "tf_split_graph": "True", "graph": "NETWORKX"},
+    {"db_connector": NetworkxConnector, "use_new_tf_parser": "True", "tf_split_graph": "False", "graph": "NETWORKX"},
+    {"db_connector": NetworkxConnector, "use_new_tf_parser": "False", "tf_split_graph": "False", "graph": "NETWORKX"},
+    {"db_connector": IgraphConnector, "use_new_tf_parser": "True", "tf_split_graph": "True", "graph": "IGRAPH"},
+    {"db_connector": IgraphConnector, "use_new_tf_parser": "True", "tf_split_graph": "False", "graph": "IGRAPH"},
+    {"db_connector": IgraphConnector, "use_new_tf_parser": "False", "tf_split_graph": "False", "graph": "IGRAPH"}
 ])
 class TestRunnerValid(unittest.TestCase):
     def setUp(self) -> None:
         self.orig_checks = resource_registry.checks
         self.db_connector = self.db_connector
+        os.environ["CHECKOV_GRAPH_FRAMEWORK"] = self.graph
         os.environ["CHECKOV_NEW_TF_PARSER"] = self.use_new_tf_parser
         os.environ["TF_SPLIT_GRAPH"] = self.tf_split_graph
 
@@ -442,6 +443,15 @@ class TestRunnerValid(unittest.TestCase):
         provider = next(check for check in result.passed_checks if check.resource == "aws.one-line")
         self.assertIsNotNone(provider.file_line_range)
 
+    def test_entire_resources_folder(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/resources/"
+        runner = Runner(db_connector=self.db_connector())
+        if isinstance(runner.db_connector, IgraphConnector):
+            result = runner.run(root_folder=valid_dir_path, external_checks_dir=None, runner_filter=RunnerFilter())
+            self.assertEqual(len(result.passed_checks), 701)
+            self.assertEqual(len(result.failed_checks), 896)
+            self.assertEqual(len(result.skipped_checks), 7)
 
     def test_terraform_module_checks_are_performed(self):
         check_name = "TF_M_1"
