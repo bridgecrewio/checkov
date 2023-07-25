@@ -117,7 +117,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         parsing_errors: dict[str, Exception] = {}
         self.load_external_checks(external_checks_dir)
         local_graph = None
-
+        all_graphs = []
         if self.context is None or self.definitions is None or self.breadcrumbs is None:
             self.definitions = {}
             logging.info("Scanning root folder and producing fresh tf_definitions and context")
@@ -165,7 +165,6 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
             else:
                 raise Exception("Root directory was not specified, files were not specified")
 
-            all_graphs = []
             if CHECKOV_CREATE_GRAPH and local_graph:
                 self.definitions = {}
                 self.breadcrumbs = {}
