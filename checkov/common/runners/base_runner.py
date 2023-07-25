@@ -134,7 +134,7 @@ class BaseRunner(ABC, Generic[_GraphManager]):
             logging.warning("Graph components were not initialized")
             return checks_results
 
-        if self.graph_manager is not None and isinstance(self.graph_manager, GraphManager):
+        if graph is None and self.graph_manager is not None and isinstance(self.graph_manager, GraphManager):
             graph = self.graph_manager.get_reader_endpoint()
         for r in itertools.chain(self.external_registries or [], [self.graph_registry]):
             r.load_checks()  # type:ignore[union-attr]
