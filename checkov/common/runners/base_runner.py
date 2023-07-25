@@ -134,11 +134,11 @@ class BaseRunner(ABC, Generic[_GraphManager]):
             logging.warning("Graph components were not initialized")
             return checks_results
 
-        if graph is None and self.graph_manager is not None and isinstance(self.graph_manager, GraphManager):
+        if self.graph_manager is not None and isinstance(self.graph_manager, GraphManager):
             graph = self.graph_manager.get_reader_endpoint()
         for r in itertools.chain(self.external_registries or [], [self.graph_registry]):
-            r.load_checks()
-            registry_results = r.run_checks(graph, runner_filter, report_type)
+            r.load_checks()  # type:ignore[union-attr]
+            registry_results = r.run_checks(graph, runner_filter, report_type)  # type:ignore[union-attr]
             checks_results = {**checks_results, **registry_results}
         # Filtering the checks now
         filtered_result: Dict[BaseGraphCheck, List[_CheckResult]] = {}
