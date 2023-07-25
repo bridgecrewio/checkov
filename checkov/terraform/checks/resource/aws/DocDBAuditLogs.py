@@ -12,11 +12,17 @@ class DocDBAuditLogs(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         self.evaluated_keys = ['parameter']
+        accepted_values = [
+            "enabled",  # Legacy value, but still valid
+            "ddl",  # Equivalent to the legacy value enabled
+            "all",
+        ]
         if 'parameter' in conf:
             for idx, elem in enumerate(conf["parameter"]):
-                if isinstance(elem, dict) and elem["name"][0] == "audit_logs" and elem["value"][0] == "enabled":
-                    self.evaluated_keys = [f'parameter/[{idx}]/name', f'parameter/[{idx}]/value']
-                    return CheckResult.PASSED
+                if isinstance(elem, dict) and elem["name"][0] == "audit_logs":
+                    if any([v for v in accepted_values if elem["value"][0] in v]):
+                        self.evaluated_keys = [f'parameter/[{idx}]/name', f'parameter/[{idx}]/value']
+                        return CheckResult.PASSED
         return CheckResult.FAILED
 
 
