@@ -57,6 +57,7 @@ class TestRunnerValid(unittest.TestCase):
         os.environ["TF_SPLIT_GRAPH"] = self.tf_split_graph
 
     def tearDown(self):
+        del os.environ["CHECKOV_GRAPH_FRAMEWORK"]
         del os.environ["CHECKOV_NEW_TF_PARSER"]
         del os.environ["TF_SPLIT_GRAPH"]
 
