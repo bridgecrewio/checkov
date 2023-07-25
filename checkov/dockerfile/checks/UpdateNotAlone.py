@@ -38,9 +38,11 @@ class UpdateNotAlone(BaseDockerfileCheck):
             content = instruction["content"]
             if instruction["instruction"] in self.supported_instructions:
 
-                if re.search(UPDATE_COMMANDS_PATTERN, content):
-                    update_cnt = update_cnt + 1
-                    update_instructions.append(i)
+                if "update" in content:
+                    # do an initial lookup before using the regex
+                    if re.search(UPDATE_COMMANDS_PATTERN, content):
+                        update_cnt = update_cnt + 1
+                        update_instructions.append(i)
                 if any(x in content for x in install_commands):
                     update_cnt = update_cnt - 1
             i = i + 1

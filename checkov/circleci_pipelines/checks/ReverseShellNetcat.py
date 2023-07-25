@@ -6,6 +6,8 @@ from checkov.common.models.enums import CheckResult
 from checkov.yaml_doc.enums import BlockType
 import re
 
+NETCAT_PATTERN = re.compile(r"(nc|netcat) (\d{1,3}).(\d{1,3}).(\d{1,3}).(\d{1,3})")
+
 
 class ReverseShellNetcat(BaseCircleCIPipelinesCheck):
     def __init__(self) -> None:
@@ -26,10 +28,10 @@ class ReverseShellNetcat(BaseCircleCIPipelinesCheck):
         run = conf.get("run", "")
         if isinstance(run, dict):
             command = run.get("command", "")
-            if re.search(r'(nc|netcat) (\d{1,3}).(\d{1,3}).(\d{1,3}).(\d{1,3})', command):
+            if re.search(NETCAT_PATTERN, command):
                 return CheckResult.FAILED, conf
         else:
-            if re.search(r'(nc|netcat) (\d{1,3}).(\d{1,3}).(\d{1,3}).(\d{1,3})', run):
+            if re.search(NETCAT_PATTERN, run):
                 return CheckResult.FAILED, conf
 
         return CheckResult.PASSED, conf
