@@ -136,11 +136,22 @@ def get_code_block(package: dict[str, Any], package_name: str, package_version: 
     return [(0, f"{package_name}: {package_version}")]
 
 
-def get_fix_command_and_code(vulnerability_details: dict[str, Any],
+def get_fix_command_and_code(vulnerability_details: dict[str, Any], root_package: dict[str, Any] | None = None,
                              root_package_cve: dict[str, Any] | None = None) -> tuple[dict[str, Any] | None, str | None]:
     if root_package_cve:
         return root_package_cve.get('fixCommand'), root_package_cve.get('fixCode')
+
+    if root_package and (
+            root_package['name'] != vulnerability_details["packageName"] or root_package['version'] !=
+            vulnerability_details["packageVersion"]):
+        return None, None
     return vulnerability_details.get('fixCommand'), vulnerability_details.get('fixCode')
+
+
+def get_package_lines(package: dict[str, Any], root_package: dict[str, Any] | None = None, file_line_range: list[int] | None = None) -> list[int]:
+    if root_package:
+        return get_record_file_line_range(root_package, file_line_range)
+    return get_record_file_line_range(package, file_line_range)
 
 
 def create_report_cve_record(
@@ -184,7 +195,7 @@ def create_report_cve_record(
             "suppress_comment": "Filtered by severity",
         }
     code_block = get_code_block(package, package_name, package_version, root_package)
-    fix_command, fix_code = get_fix_command_and_code(vulnerability_details, root_package_cve)
+    fix_command, fix_code = get_fix_command_and_code(vulnerability_details, root_package, root_package_cve)
     details = {
         "id": cve_id,
         "severity": severity,
@@ -221,7 +232,7 @@ def create_report_cve_record(
         check_result=check_result,
         code_block=code_block,
         file_path=get_file_path_for_record(rootless_file_path),
-        file_line_range=get_record_file_line_range(package, file_line_range),
+        file_line_range=get_package_lines(package, root_package, file_line_range),
         resource=get_resource_for_record(rootless_file_path, package_name),
         check_class=check_class,
         evaluations=None,
