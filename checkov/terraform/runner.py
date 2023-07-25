@@ -193,8 +193,12 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         report.add_parsing_errors(parsing_errors.keys())
 
         if CHECKOV_CREATE_GRAPH:
-            for igraph_graph in all_graphs:
-                graph_report = self.get_graph_checks_report(root_folder, runner_filter, graph=igraph_graph)
+            if all_graphs:
+                for igraph_graph in all_graphs:
+                    graph_report = self.get_graph_checks_report(root_folder, runner_filter, graph=igraph_graph)
+                    merge_reports(report, graph_report)
+            else:
+                graph_report = self.get_graph_checks_report(root_folder, runner_filter)
                 merge_reports(report, graph_report)
 
         report = remove_duplicate_results(report)
