@@ -160,16 +160,16 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                 self._parse_files(files, parsing_errors)
 
                 if CHECKOV_CREATE_GRAPH:
-                    # local_graph needs to be a list to allow supporting multi graph
                     if tf_split_graph:
                         local_graph = self.graph_manager.build_multi_graph_from_definitions(self.definitions)
                     else:
+                        # local_graph needs to be a list to allow supporting multi graph
                         local_graph = [self.graph_manager.build_graph_from_definitions(self.definitions)]
             else:
                 raise Exception("Root directory was not specified, files were not specified")
 
             if CHECKOV_CREATE_GRAPH and local_graph:
-                self.update_definitions_and_breadcrumbs(all_graphs, local_graph, report, root_folder)
+                self._update_definitions_and_breadcrumbs(all_graphs, local_graph, report, root_folder)
         else:
             logging.info("Scanning root folder using existing tf_definitions")
 
@@ -202,7 +202,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
 
         return report
 
-    def update_definitions_and_breadcrumbs(self, all_graphs, local_graph, report, root_folder):
+    def _update_definitions_and_breadcrumbs(self, all_graphs, local_graph, report, root_folder):
         self.definitions = {}
         self.breadcrumbs = {}
         for graph in local_graph:
