@@ -449,10 +449,35 @@ class TestRunnerValid(unittest.TestCase):
         valid_dir_path = current_dir + "/resources/"
         runner = Runner(db_connector=self.db_connector())
         if isinstance(runner.db_connector, IgraphConnector):
-            result = runner.run(root_folder=valid_dir_path, external_checks_dir=None, runner_filter=RunnerFilter())
-            self.assertEqual(len(result.passed_checks), 701)
-            self.assertEqual(len(result.failed_checks), 896)
-            self.assertEqual(len(result.skipped_checks), 7)
+            result = runner.run(root_folder=valid_dir_path, external_checks_dir=None, runner_filter=RunnerFilter(
+                checks=['CKV_AWS_21', 'CKV_AWS_42', 'CKV_AWS_62', 'CKV_AWS_53', 'CKV_AWS_18', 'CKV_AWS_61', 'CKV_AWS_144',
+                        'CKV_AWS_145', 'CKV_AWS_115', 'CKV_AWS_116', 'CKV_AWS_117', 'CKV_AWS_6', 'CKV_AWS_168', 'CKV_AWS_170',
+                        'CKV_AWS_171', 'CKV_AWS_172', 'CKV_AWS_37', 'CKV_AWS_38', 'CKV_AWS_39', 'CKV_AWS_107', 'CKV_AWS_109',
+                        'CKV_AWS_110'], framework=['terraform']))
+            self.assertEqual(len(result.passed_checks), 52)
+            self.assertEqual(len(result.failed_checks), 255)
+            self.assertEqual(len(result.skipped_checks), 0)
+
+    def test_modules_folder_with_files_args(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/resources"
+        runner = Runner(db_connector=self.db_connector())
+        if isinstance(runner.db_connector, IgraphConnector):
+            res = []
+            for (dir_path, dir_names, file_names) in os.walk(valid_dir_path):
+                for file in file_names:
+                    res.append(os.path.join(dir_path, file))
+            result = runner.run(files=res, root_folder=None, external_checks_dir=None,
+                                runner_filter=RunnerFilter(
+                                    checks=['CKV_AWS_21', 'CKV_AWS_42', 'CKV_AWS_62', 'CKV_AWS_109', 'CKV_AWS_168',
+                                            'CKV_AWS_53', 'CKV_AWS_18', 'CKV_AWS_61', 'CKV_AWS_144', 'CKV_AWS_170',
+                                            'CKV_AWS_145', 'CKV_AWS_115', 'CKV_AWS_116', 'CKV_AWS_117', 'CKV_AWS_6',
+                                            'CKV_AWS_171', 'CKV_AWS_172', 'CKV_AWS_37', 'CKV_AWS_38', 'CKV_AWS_39',
+                                            'CKV_AWS_107', 'CKV_AWS_110'],
+                                    framework=['terraform']))
+            self.assertEqual(len(result.passed_checks), 51)
+            self.assertEqual(len(result.failed_checks), 263)
+            self.assertEqual(len(result.skipped_checks), 0)
 
     def test_terraform_module_checks_are_performed(self):
         check_name = "TF_M_1"

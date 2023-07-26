@@ -121,9 +121,9 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         if self.context is None or self.definitions is None or self.breadcrumbs is None:
             self.definitions = {}
             logging.info("Scanning root folder and producing fresh tf_definitions and context")
+            tf_split_graph = strtobool(os.getenv('TF_SPLIT_GRAPH', 'False'))
             if root_folder:
                 root_folder = os.path.abspath(root_folder)
-                tf_split_graph = strtobool(os.getenv('TF_SPLIT_GRAPH', 'False'))
                 if tf_split_graph:
                     graphs_with_definitions = self.graph_manager.build_multi_graph_from_source_directory(
                         source_dir=root_folder,
@@ -161,29 +161,15 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
 
                 if CHECKOV_CREATE_GRAPH:
                     # local_graph needs to be a list to allow supporting multi graph
-                    local_graph = [self.graph_manager.build_graph_from_definitions(self.definitions)]
+                    if tf_split_graph:
+                        local_graph = self.graph_manager.build_multi_graph_from_definitions(self.definitions)
+                    else:
+                        local_graph = [self.graph_manager.build_graph_from_definitions(self.definitions)]
             else:
                 raise Exception("Root directory was not specified, files were not specified")
 
             if CHECKOV_CREATE_GRAPH and local_graph:
-                self.definitions = {}
-                self.breadcrumbs = {}
-                for graph in local_graph:
-                    for vertex in graph.vertices:
-                        if vertex.block_type == BlockType.RESOURCE:
-                            if self.enable_nested_modules:
-                                vertex_id = vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS)
-                            else:
-                                vertex_id = vertex.id
-                            report.add_resource(f'{vertex.path}:{vertex_id}')
-                    igraph_graph = self.graph_manager.save_graph(graph)
-                    all_graphs.append(igraph_graph)
-                    current_definitions, current_breadcrumbs = convert_graph_vertices_to_tf_definitions(
-                        graph.vertices,
-                        root_folder,
-                    )
-                    self.definitions.update(current_definitions)
-                    self.breadcrumbs.update(current_breadcrumbs)
+                self.update_definitions_and_breadcrumbs(all_graphs, local_graph, report, root_folder)
         else:
             logging.info("Scanning root folder using existing tf_definitions")
 
@@ -215,6 +201,26 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                 return [report, image_report]
 
         return report
+
+    def update_definitions_and_breadcrumbs(self, all_graphs, local_graph, report, root_folder):
+        self.definitions = {}
+        self.breadcrumbs = {}
+        for graph in local_graph:
+            for vertex in graph.vertices:
+                if vertex.block_type == BlockType.RESOURCE:
+                    if self.enable_nested_modules:
+                        vertex_id = vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS)
+                    else:
+                        vertex_id = vertex.id
+                    report.add_resource(f'{vertex.path}:{vertex_id}')
+            igraph_graph = self.graph_manager.save_graph(graph)
+            all_graphs.append(igraph_graph)
+            current_definitions, current_breadcrumbs = convert_graph_vertices_to_tf_definitions(
+                graph.vertices,
+                root_folder,
+            )
+            self.definitions.update(current_definitions)
+            self.breadcrumbs.update(current_breadcrumbs)
 
     def load_external_checks(self, external_checks_dir: list[str] | None) -> None:
         if external_checks_dir:
