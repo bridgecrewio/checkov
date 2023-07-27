@@ -1,6 +1,16 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.338...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.343...HEAD)
+
+## [2.3.343](https://github.com/bridgecrewio/checkov/compare/2.3.338...2.3.343) - 2023-07-26
+
+### Feature
+
+- **sca:** fix package line numbers - [#5376](https://github.com/bridgecrewio/checkov/pull/5376)
+
+### Bug Fix
+
+- **terraform:** Fix CKV_AWS_104 to support new values - [#5377](https://github.com/bridgecrewio/checkov/pull/5377)
 
 ## [2.3.338](https://github.com/bridgecrewio/checkov/compare/2.3.335...2.3.338) - 2023-07-23
 
