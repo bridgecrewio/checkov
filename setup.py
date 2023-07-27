@@ -84,7 +84,7 @@ setup(
         "packaging",
         "cloudsplaining>=0.4.3",
         "networkx<2.7",
-        "igraph<=0.10.5",
+        "igraph<0.11.0",
         "dockerfile-parse",
         "docker",
         "configargparse",

@@ -7,6 +7,7 @@ import platform
 from typing import Dict, Optional, Tuple, Any, Set, TYPE_CHECKING
 
 import dpath
+import igraph
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.checks_infra.registry import BaseRegistry
@@ -114,23 +115,42 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         parsing_errors: dict[str, Exception] = {}
         self.load_external_checks(external_checks_dir)
         local_graph = None
-
+        all_graphs = []
         if self.context is None or self.definitions is None or self.breadcrumbs is None:
             self.definitions = {}
             logging.info("Scanning root folder and producing fresh tf_definitions and context")
+            tf_split_graph = strtobool(os.getenv('TF_SPLIT_GRAPH', 'False'))
             if root_folder:
                 root_folder = os.path.abspath(root_folder)
-
-                local_graph, self.definitions = self.graph_manager.build_graph_from_source_directory(
-                    source_dir=root_folder,
-                    local_graph_class=self.graph_class,
-                    download_external_modules=runner_filter.download_external_modules,
-                    external_modules_download_path=runner_filter.external_modules_download_path,
-                    parsing_errors=parsing_errors,
-                    excluded_paths=runner_filter.excluded_paths,
-                    vars_files=runner_filter.var_files,
-                    create_graph=CHECKOV_CREATE_GRAPH,
-                )
+                if tf_split_graph:
+                    graphs_with_definitions = self.graph_manager.build_multi_graph_from_source_directory(
+                        source_dir=root_folder,
+                        local_graph_class=self.graph_class,
+                        download_external_modules=runner_filter.download_external_modules,
+                        external_modules_download_path=runner_filter.external_modules_download_path,
+                        parsing_errors=parsing_errors,
+                        excluded_paths=runner_filter.excluded_paths,
+                        vars_files=runner_filter.var_files,
+                        create_graph=CHECKOV_CREATE_GRAPH,
+                    )
+                    local_graph = []
+                    for graph, definitions in graphs_with_definitions:
+                        for definition in definitions:
+                            self.definitions.update(definition)
+                        local_graph.append(graph)
+                else:
+                    single_graph, self.definitions = self.graph_manager.build_graph_from_source_directory(
+                        source_dir=root_folder,
+                        local_graph_class=self.graph_class,
+                        download_external_modules=runner_filter.download_external_modules,
+                        external_modules_download_path=runner_filter.external_modules_download_path,
+                        parsing_errors=parsing_errors,
+                        excluded_paths=runner_filter.excluded_paths,
+                        vars_files=runner_filter.var_files,
+                        create_graph=CHECKOV_CREATE_GRAPH,
+                    )
+                    # Make graph a list to allow single processing method for all cases
+                    local_graph = [single_graph]
             elif files:
                 files = [os.path.abspath(file) for file in files]
                 root_folder = os.path.split(os.path.commonprefix(files))[0]
@@ -138,23 +158,16 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                 self._parse_files(files, parsing_errors)
 
                 if CHECKOV_CREATE_GRAPH:
-                    local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
+                    if tf_split_graph:
+                        local_graph = self.graph_manager.build_multi_graph_from_definitions(self.definitions)
+                    else:
+                        # local_graph needs to be a list to allow supporting multi graph
+                        local_graph = [self.graph_manager.build_graph_from_definitions(self.definitions)]
             else:
                 raise Exception("Root directory was not specified, files were not specified")
 
             if CHECKOV_CREATE_GRAPH and local_graph:
-                for vertex in local_graph.vertices:
-                    if vertex.block_type == BlockType.RESOURCE:
-                        if self.enable_nested_modules:
-                            vertex_id = vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS)
-                        else:
-                            vertex_id = vertex.id
-                        report.add_resource(f'{vertex.path}:{vertex_id}')
-                self.graph_manager.save_graph(local_graph)
-                self.definitions, self.breadcrumbs = convert_graph_vertices_to_tf_definitions(
-                    local_graph.vertices,
-                    root_folder,
-                )
+                self._update_definitions_and_breadcrumbs(all_graphs, local_graph, report, root_folder)
         else:
             logging.info("Scanning root folder using existing tf_definitions")
 
@@ -164,8 +177,13 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         report.add_parsing_errors(parsing_errors.keys())
 
         if CHECKOV_CREATE_GRAPH:
-            graph_report = self.get_graph_checks_report(root_folder, runner_filter)
-            merge_reports(report, graph_report)
+            if all_graphs:
+                for igraph_graph in all_graphs:
+                    graph_report = self.get_graph_checks_report(root_folder, runner_filter, graph=igraph_graph)
+                    merge_reports(report, graph_report)
+            else:
+                graph_report = self.get_graph_checks_report(root_folder, runner_filter)
+                merge_reports(report, graph_report)
 
         report = remove_duplicate_results(report)
 
@@ -181,6 +199,26 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                 return [report, image_report]
 
         return report
+
+    def _update_definitions_and_breadcrumbs(self, all_graphs, local_graph, report, root_folder):
+        self.definitions = {}
+        self.breadcrumbs = {}
+        for graph in local_graph:
+            for vertex in graph.vertices:
+                if vertex.block_type == BlockType.RESOURCE:
+                    if self.enable_nested_modules:
+                        vertex_id = vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS)
+                    else:
+                        vertex_id = vertex.id
+                    report.add_resource(f'{vertex.path}:{vertex_id}')
+            igraph_graph = self.graph_manager.save_graph(graph)
+            all_graphs.append(igraph_graph)
+            current_definitions, current_breadcrumbs = convert_graph_vertices_to_tf_definitions(
+                graph.vertices,
+                root_folder,
+            )
+            self.definitions.update(current_definitions)
+            self.breadcrumbs.update(current_breadcrumbs)
 
     def load_external_checks(self, external_checks_dir: list[str] | None) -> None:
         if external_checks_dir:
@@ -208,9 +246,9 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         connected_node_data['resource_address'] = connected_entity_context.get('address')
         return connected_node_data
 
-    def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter) -> Report:
+    def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter, graph: igraph.Graph | None = None) -> Report:
         report = Report(self.check_type)
-        checks_results = self.run_graph_checks_results(runner_filter, self.check_type)
+        checks_results = self.run_graph_checks_results(runner_filter, self.check_type, graph)
 
         for check, check_results in checks_results.items():
             for check_result in check_results:

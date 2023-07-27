@@ -1667,7 +1667,7 @@ def create_cli_output_wrapper(with_line_numbers: bool) -> str:
             vulnerability_details=details,
             licenses='Unknown',
             package=packages.get(get_package_alias(details["packageName"], details["packageVersion"]), dummy_package),
-            root_package={'name': "django", 'version': "1.2"},
+            root_package={'name': "django", 'version': "1.2", 'lines': [1, 2] if with_line_numbers else [0, 0]},
             used_private_registry=False
         )
         for details in get_vulnerabilities_details()

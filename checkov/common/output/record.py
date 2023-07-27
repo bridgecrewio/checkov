@@ -228,7 +228,7 @@ class Record:
         return self.bc_check_id if self.bc_check_id and use_bc_ids else self.check_id
 
     def get_unique_string(self) -> str:
-        return f"{self.check_id}.{self.check_result}.{self.file_abs_path}.{self.file_line_range}.{self.resource}"
+        return f"{self.check_id}.{self.file_abs_path}.{self.file_line_range}.{self.resource}"
 
     @classmethod
     def from_reduced_json(cls, record_json: dict[str, Any]) -> Record:
