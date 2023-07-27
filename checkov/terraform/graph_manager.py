@@ -47,7 +47,7 @@ class TerraformGraphManager(GraphManager[TerraformLocalGraph, "dict[str, dict[st
             create_graph=create_graph,
         )
 
-        graphs = []
+        graphs: list[tuple[TerraformLocalGraph | None, dict[str, dict[str, Any]]]] = []
         for module, tf_definitions in modules_with_definitions:
             if create_graph and module:
                 logging.info("Building graph from parsed module")

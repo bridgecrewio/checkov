@@ -4,7 +4,6 @@ import dataclasses
 import logging
 import os
 import platform
-from pathlib import Path
 from typing import Dict, Optional, Tuple, Any, Set, TYPE_CHECKING
 
 import dpath
@@ -12,7 +11,6 @@ import igraph
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.checks_infra.registry import BaseRegistry
-from checkov.common.typing import LibraryGraphConnector
 from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.images.image_referencer import ImageReferencerMixin
 from checkov.common.output.extra_resource import ExtraResource
@@ -56,7 +54,7 @@ from checkov.common.runners.base_runner import strtobool
 if TYPE_CHECKING:
     from networkx import DiGraph
     from checkov.common.images.image_referencer import Image
-    from checkov.common.typing import TFDefinitionKeyType
+    from checkov.common.typing import TFDefinitionKeyType, LibraryGraphConnector, _SkippedCheck
 
 # Allow the evaluation of empty variables
 dpath.options.ALLOW_EMPTY_STRING_KEYS = True
@@ -228,13 +226,11 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                 resource_registry.load_external_checks(directory)
                 self.graph_registry.load_external_checks(directory)
 
-    def get_connected_node(self, entity, root_folder) -> Optional[Dict[str, Any]]:
+    def get_connected_node(self, entity: dict[str, Any], root_folder: str) -> Optional[Dict[str, Any]]:
         connected_entity = entity.get('connected_node')
         if not connected_entity:
             return None
-        connected_entity_context, connected_entity_evaluations = self.get_entity_context_and_evaluations(
-            connected_entity
-        )
+        connected_entity_context = self.get_entity_context_and_evaluations(connected_entity)
         if not connected_entity_context:
             return None
         full_file_path = connected_entity[CustomAttributes.FILE_PATH]
@@ -245,7 +241,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                                                   connected_entity_context.get('end_line')]
         connected_node_data['resource'] = ".".join(connected_entity_context['definition_path'])
         connected_node_data['entity_tags'] = connected_entity.get('tags', {})
-        connected_node_data['evaluations'] = connected_entity_evaluations
+        connected_node_data['evaluations'] = None
         connected_node_data['file_abs_path'] = os.path.abspath(full_file_path)
         connected_node_data['resource_address'] = connected_entity_context.get('address')
         return connected_node_data
@@ -257,7 +253,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         for check, check_results in checks_results.items():
             for check_result in check_results:
                 entity = check_result['entity']
-                entity_context, entity_evaluations = self.get_entity_context_and_evaluations(entity)
+                entity_context = self.get_entity_context_and_evaluations(entity)
                 if entity_context:
                     full_file_path = entity[CustomAttributes.FILE_PATH]
                     copy_of_check_result = pickle_deepcopy(check_result)
@@ -309,7 +305,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                                          entity_context.get('end_line')],
                         resource=resource,
                         entity_tags=entity.get('tags', {}),
-                        evaluations=entity_evaluations,
+                        evaluations=None,
                         check_class=check.__class__.__module__,
                         file_abs_path=os.path.abspath(full_file_path),
                         resource_address=entity_context.get('address'),
@@ -330,8 +326,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                     report.add_record(record=record)
         return report
 
-    def get_entity_context_and_evaluations(self, entity):
-        entity_evaluations = None
+    def get_entity_context_and_evaluations(self, entity: dict[str, Any]) -> dict[str, Any] | None:
         block_type = entity[CustomAttributes.BLOCK_TYPE]
         full_file_path = entity[CustomAttributes.FILE_PATH]
         if entity.get(CustomAttributes.MODULE_DEPENDENCY):
@@ -345,14 +340,19 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                     entity_context = entity_context[k]
                 else:
                     logging.warning(f'Failed to find context for {".".join(entity_context_path)}')
-                    return None, None
+                    return None
             entity_context['definition_path'] = definition_path
         except StopIteration:
             logging.debug(f"Did not find context for key {full_file_path}")
-        return entity_context, entity_evaluations
+        return entity_context
 
-    def check_tf_definition(self, report: Report, root_folder: Path, runner_filter: RunnerFilter,
-                            collect_skip_comments=True) -> None:
+    def check_tf_definition(
+        self,
+        report: Report,
+        root_folder: str,
+        runner_filter: RunnerFilter,
+        collect_skip_comments: bool = True,
+    ) -> None:
         parser_registry.reset_definitions_context()
         if not self.context:
             definitions_context = {}
@@ -379,10 +379,19 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
             self.pbar.update()
         self.pbar.close()
 
-    def run_all_blocks(self, definition, definitions_context, full_file_path, root_folder, report,
-                       scanned_file, runner_filter, module_referrer: Optional[str]):
+    def run_all_blocks(
+        self,
+        definition: dict[str, list[dict[str, Any]]],
+        definitions_context: dict[str, dict[str, Any]],
+        full_file_path: TFDefinitionKeyType,
+        root_folder: str,
+        report: Report,
+        scanned_file: str,
+        runner_filter: RunnerFilter,
+        module_referrer: str | None,
+    ) -> None:
         if not definition:
-            logging.debug("Empty definition, skipping run (root_folder=%s)", root_folder)
+            logging.debug(f"Empty definition, skipping run (root_folder={root_folder})")
             return
         block_types = set(definition.keys())
         for block_type in block_types & CHECK_BLOCK_TYPES:
@@ -390,12 +399,19 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                            full_file_path, root_folder, report,
                            scanned_file, block_type, runner_filter, None, module_referrer)
 
-    def run_block(self, entities,
-                  definition_context,
-                  full_file_path, root_folder, report, scanned_file,
-                  block_type, runner_filter=None, entity_context_path_header=None,
-                  module_referrer: Optional[str] = None):
-
+    def run_block(
+        self,
+        entities: list[dict[str, Any]],
+        definition_context: dict[str, dict[str, Any]],
+        full_file_path: TFDefinitionKeyType,
+        root_folder: str,
+        report: Report,
+        scanned_file: str,
+        block_type: str,
+        runner_filter: RunnerFilter | None = None,
+        entity_context_path_header: str | None = None,
+        module_referrer: str | None = None,
+    ) -> None:
         registry = self.block_type_registries[block_type]
         if not registry:
             return
@@ -543,11 +559,11 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                         )
                     )
 
-    def _parse_files(self, files, parsing_errors):
-        def parse_file(file):
+    def _parse_files(self, files: list[str], parsing_errors: dict[str, Exception]) -> None:
+        def parse_file(file: str) -> tuple[str, dict[str, Any], dict[str, Exception]] | None:
             if not (file.endswith(".tf") or file.endswith(".hcl")):
-                return
-            file_parsing_errors = {}
+                return None
+            file_parsing_errors: dict[str, Exception] = {}
             parse_result = self.parser.parse_file(file=file, parsing_errors=file_parsing_errors)
             # the exceptions type can un-pickleable so we need to cast them to Exception
             for path, e in file_parsing_errors.items():
@@ -567,7 +583,9 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                     parsing_errors.update(file_parsing_errors)
 
     @staticmethod
-    def push_skipped_checks_down_old(definition_context, module_path, skipped_checks):
+    def push_skipped_checks_down_old(
+        definition_context: dict[str, dict[str, Any]], module_path: str, skipped_checks: list[_SkippedCheck]
+    ) -> None:
         # this method pushes the skipped_checks down the 1 level to all resource types.
 
         if skipped_checks is None:
@@ -606,7 +624,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                             # append the skipped checks from the module to the other resources.
                             resource_config["skipped_checks"] += skipped_checks
 
-    def push_skipped_checks_down_from_modules(self, definition_context):
+    def push_skipped_checks_down_from_modules(self, definition_context: dict[str, dict[str, Any]]) -> None:
         module_context_parser = parser_registry.context_parsers[BlockType.MODULE]
         for tf_definition_key, definition in self.definitions.items():
             if not strtobool(os.getenv('ENABLE_DEFINITION_KEY', 'False')):
@@ -621,7 +639,12 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                 resolved_paths = entity.get(module_name).get(RESOLVED_MODULE_ENTRY_NAME)
                 self.push_skipped_checks_down(definition_context, skipped_checks, resolved_paths)
 
-    def push_skipped_checks_down(self, definition_context, skipped_checks, resolved_paths):
+    def push_skipped_checks_down(
+        self,
+        definition_context: dict[str, dict[str, Any]],
+        skipped_checks: list[_SkippedCheck],
+        resolved_paths: list[TFDefinitionKeyType],
+    ) -> None:
         # this method pushes the skipped_checks down the 1 level to all resource types.
         if not skipped_checks or not resolved_paths:
             return
@@ -661,7 +684,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         else:
             return file_path, None
 
-    def _find_id_for_referrer(self, full_file_path) -> Optional[str]:
+    def _find_id_for_referrer(self, full_file_path: str) -> Optional[str]:
         cached_referrer = self.referrer_cache.get(full_file_path)
         if cached_referrer:
             return cached_referrer
@@ -712,9 +735,9 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         return images
 
     @staticmethod
-    def get_graph_resource_entity_config(entity):
+    def get_graph_resource_entity_config(entity: dict[str, Any]) -> dict[str, Any]:
         context_parser = parser_registry.context_parsers[entity[CustomAttributes.BLOCK_TYPE]]
-        entity_config = entity[CustomAttributes.CONFIG]
+        entity_config: dict[str, Any] = entity[CustomAttributes.CONFIG]
         definition_path = context_parser.get_entity_definition_path(entity_config)
         for path in definition_path:
             entity_config = entity_config[path]

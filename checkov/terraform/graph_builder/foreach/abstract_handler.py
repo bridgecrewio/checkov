@@ -55,7 +55,7 @@ class ForeachAbstractHandler:
         from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 
         sub_graph = TerraformLocalGraph(self.local_graph.module)
-        sub_graph.vertices = [{}] * len(self.local_graph.vertices)
+        sub_graph.vertices = [{}] * len(self.local_graph.vertices)  # type:ignore[list-item]  # are correctly set in the next lines
         for i, block in enumerate(self.local_graph.vertices):
             if not (block.block_type == BlockType.RESOURCE and i not in blocks_to_render):
                 sub_graph.vertices[i] = pickle_deepcopy(block)
