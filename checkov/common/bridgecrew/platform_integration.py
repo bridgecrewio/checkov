@@ -740,8 +740,12 @@ class BcPlatformIntegration:
                 # If enabled and subtype are not explicitly set, use the only acceptable values.
                 query_params['policy.enabled'] = True
                 query_params['policy.subtype'] = 'build'
-                request = self.http.request("GET", self.prisma_policies_url, headers=headers,
-                                            fields=query_params)  # type:ignore[no-untyped-call]
+                request = self.http.request(  # type:ignore[no-untyped-call]
+                    "GET",
+                    self.prisma_policies_url,
+                    headers=headers,
+                    fields=query_params,
+                )
                 self.prisma_policies_response = json.loads(request.data.decode("utf8"))
                 logging.debug("Got Prisma build policy metadata")
             else:
@@ -761,8 +765,11 @@ class BcPlatformIntegration:
                 return {}
 
             logging.debug(f'Prisma filter URL: {self.prisma_policy_filters_url}')
-            request = self.http.request("GET", self.prisma_policy_filters_url,
-                                        headers=headers)  # type:ignore[no-untyped-call]
+            request = self.http.request(  # type:ignore[no-untyped-call]
+                "GET",
+                self.prisma_policy_filters_url,
+                headers=headers,
+            )
             policy_filters: dict[str, dict[str, Any]] = json.loads(request.data.decode("utf8"))
             logging.debug(f'Prisma filter suggestion response: {policy_filters}')
             return policy_filters
@@ -812,8 +819,11 @@ class BcPlatformIntegration:
 
             request = self.http.request("GET", self.guidelines_api_url, headers=headers)  # type:ignore[no-untyped-call]
             if request.status >= 300:
-                request = self.http.request("GET", self.guidelines_api_url_backoff,
-                                            headers=headers)  # type:ignore[no-untyped-call]
+                request = self.http.request(  # type:ignore[no-untyped-call]
+                    "GET",
+                    self.guidelines_api_url_backoff,
+                    headers=headers,
+                )
 
             self.public_metadata_response = json.loads(request.data.decode("utf8"))
             platform_type = PRISMA_PLATFORM if self.is_prisma_integration() else BRIDGECREW_PLATFORM
