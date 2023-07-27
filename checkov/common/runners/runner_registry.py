@@ -581,7 +581,6 @@ class RunnerRegistry:
 
     def _print_to_console(self, output_formats: dict[str, str], output_format: str, output: str, url: str | None = None) -> None:
         """Prints the output to console, if needed"""
-
         output_dest = output_formats[output_format]
         if output_dest == CONSOLE_OUTPUT:
             del output_formats[output_format]
@@ -589,6 +588,7 @@ class RunnerRegistry:
             print(output)
             if url:
                 print(f"More details: {url}")
+
             if CONSOLE_OUTPUT in output_formats.values():
                 print(OUTPUT_DELIMITER)
 
