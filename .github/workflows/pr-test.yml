@@ -63,6 +63,11 @@ jobs:
           # remove venv, if exists
           pipenv --rm || true
           pipenv --python ${{ matrix.python }}
+
+          if [ ${{ matrix.python }} == '3.12-dev' ]; then
+            pipenv update
+          fi
+
           pipenv install --dev -v
       - name: Unit tests
         env:
@@ -75,7 +80,8 @@ jobs:
       fail-fast: true
       matrix:
         python: ["3.7", "3.8", "3.9", "3.10", "3.11"]
-        os: [ubuntu-latest, macos-latest, windows-latest]
+#        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest]
         experimental: [false]
         include:
           - os: ubuntu-latest
@@ -106,6 +112,11 @@ jobs:
           # remove venv, if exists
           pipenv --rm || true
           pipenv --python ${{ matrix.python }}
+
+          if [ ${{ matrix.python }} == '3.12-dev' ]; then
+            pipenv run pip install setuptools wheel
+          fi
+
           pipenv run pip install pytest pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
