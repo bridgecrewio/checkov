@@ -33,8 +33,14 @@ jobs:
       fail-fast: true
       matrix:
         python: ["3.7", "3.8", "3.9", "3.10", "3.11"]
+        experimental: [false]
+        include:
+          - os: ubuntu-latest
+            python: "3.12-dev"
+            experimental: true
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    continue-on-error: ${{ matrix.experimental }}
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3
       - name: Set up Python ${{ matrix.python }}
@@ -70,7 +76,13 @@ jobs:
       matrix:
         python: ["3.7", "3.8", "3.9", "3.10", "3.11"]
         os: [ubuntu-latest, macos-latest, windows-latest]
+        experimental: [false]
+        include:
+          - os: ubuntu-latest
+            python: "3.12-dev"
+            experimental: true
     runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3
       - uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1  # v4
