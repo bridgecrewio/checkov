@@ -39,13 +39,13 @@ from checkov.common.typing import _ExitCodeThresholds, _BaseRunner, _ScaExitCode
 from checkov.common.util import data_structures_utils
 from checkov.common.util.banner import tool as tool_name
 from checkov.common.util.json_utils import CustomJSONEncoder
+from checkov.common.util.parser_utils import strip_terraform_module_referrer
 from checkov.common.util.secrets_omitter import SecretsOmitter
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list, force_list
 from checkov.sca_image.runner import Runner as image_runner
-from checkov.secrets.consts import SECRET_VALIDATION_STATUSES
+from checkov.common.secrets.consts import SECRET_VALIDATION_STATUSES
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.parser import Parser
-from checkov.terraform.runner import Runner as tf_runner
 
 if TYPE_CHECKING:
     from checkov.common.output.baseline import Baseline
@@ -672,7 +672,7 @@ class RunnerRegistry:
         for repo_root, parse_results in repo_definitions.items():
             for full_file_path, definition in parse_results['tf_definitions'].items():
                 definitions_context = parser_registry.enrich_definitions_context((full_file_path, definition))
-                abs_scanned_file, _ = tf_runner._strip_module_referrer(full_file_path)
+                abs_scanned_file, _ = strip_terraform_module_referrer(file_path=full_file_path)
                 scanned_file = os.path.relpath(abs_scanned_file, repo_root)
                 for block_type, block_value in definition.items():
                     if block_type in CHECK_BLOCK_TYPES:

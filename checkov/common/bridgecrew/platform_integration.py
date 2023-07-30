@@ -45,13 +45,13 @@ from checkov.common.util.http_utils import normalize_prisma_url, get_auth_header
     get_user_agent_header, get_default_post_headers, get_prisma_get_headers, get_prisma_auth_header, \
     get_auth_error_message, normalize_bc_url
 from checkov.common.util.type_forcers import convert_prisma_policy_filter_to_dict, convert_str_to_bool
-from checkov.secrets.coordinator import EnrichedSecret
 from checkov.version import version as checkov_version
 
 if TYPE_CHECKING:
     import argparse
     from checkov.common.bridgecrew.bc_source import SourceType
     from checkov.common.output.report import Report
+    from checkov.secrets.coordinator import EnrichedSecret
     from mypy_boto3_s3.client import S3Client
     from requests import Response
     from typing_extensions import TypeGuard
