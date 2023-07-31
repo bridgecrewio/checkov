@@ -214,8 +214,24 @@ class TerraformBlock(Block):
             'module_connections': self.module_connections,
             'module_dependency': self.module_dependency,
             'module_dependency_num': self.module_dependency_num,
+            'has_dynamic_block': self.has_dynamic_block,
             'name': self.name,
             'path': self.path,
             'source': self.source,
             'source_module': list(self.source_module)
         }
+
+    @staticmethod
+    def from_dict(data: dict[str, Any]) -> TerraformBlock:
+        tf_block = TerraformBlock(name=data.get('name', ''), block_type=data.get('block_type', ''),
+                                  config=data.get('config', {}), id=data.get('id', ''),
+                                  path=data.get('path', ''), source=data.get('source', ''),
+                                  attributes=data.get('attributes', {}), has_dynamic_block=data.get('has_dynamic_block', False)
+                                  )
+
+        tf_block.breadcrumbs = data.get('breadcrumbs', {})
+        tf_block.module_connections = data.get('module_connections', {})
+        tf_block.module_dependency = data.get('module_dependency', '')
+        tf_block.source_module = data.get('source_module', set())
+        tf_block.module_dependency_num = data.get('module_dependency_num', '')
+        return tf_block
