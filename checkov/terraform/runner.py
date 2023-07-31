@@ -338,8 +338,8 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
 
         definition_path = entity[CustomAttributes.BLOCK_NAME].split('.')
         entity_context_path = [block_type] + definition_path
-        entity_context = self.context.get(full_file_path, {})
         try:
+            entity_context = self.context[full_file_path]
             for k in entity_context_path:
                 if k in entity_context:
                     entity_context = entity_context[k]
@@ -348,7 +348,8 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                     return None
             entity_context['definition_path'] = definition_path
         except StopIteration:
-            logging.debug(f"Did not find context for key {full_file_path}")
+            logging.error(f"Did not find context for key {full_file_path}")
+            return {}
         return entity_context
 
     def check_tf_definition(
