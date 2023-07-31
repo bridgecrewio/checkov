@@ -93,8 +93,8 @@ class Module:
         module.resources_types = module_dict.get('resources_types', set())
         module.source_dir = module_dict.get('source_dir', '')
         module.render_dynamic_blocks_env_var = module_dict.get('render_dynamic_blocks_env_var', '')
-        module.enable_nested_modules = module_dict.get('enable_nested_modules')
-        module.use_new_tf_parser = module_dict.get('use_new_tf_parser')
+        module.enable_nested_modules = module_dict.get('enable_nested_modules', False)
+        module.use_new_tf_parser = module_dict.get('use_new_tf_parser', False)
         return module
 
     def add_blocks(
