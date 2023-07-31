@@ -85,7 +85,7 @@ class Module:
                         external_modules_source_map=module_dict.get('external_modules_source_map', {}),
                         module_dependency_map=module_dict.get('module_dependency_map'),
                         dep_index_mapping=module_dict.get('dep_index_mapping'))
-        module.blocks = module_dict.get('blocks', [])
+        module.blocks = [TerraformBlock.from_dict(block) for block in module_dict.get('blocks', [])]
         module.path = module_dict.get('path', '')
         module.customer_name = module_dict.get('customer_name', '')
         module.account_id = module_dict.get('account_id', '')
@@ -93,8 +93,8 @@ class Module:
         module.resources_types = module_dict.get('resources_types', set())
         module.source_dir = module_dict.get('source_dir', '')
         module.render_dynamic_blocks_env_var = module_dict.get('render_dynamic_blocks_env_var', '')
-        module.enable_nested_modules = module_dict.get('enable_nested_modules', True)
-        module.use_new_tf_parser = module_dict.get('use_new_tf_parser', True)
+        module.enable_nested_modules = module_dict.get('enable_nested_modules')
+        module.use_new_tf_parser = module_dict.get('use_new_tf_parser')
         return module
 
     def add_blocks(
