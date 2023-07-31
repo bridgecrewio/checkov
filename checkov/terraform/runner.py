@@ -329,12 +329,17 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
     def get_entity_context_and_evaluations(self, entity: dict[str, Any]) -> dict[str, Any] | None:
         block_type = entity[CustomAttributes.BLOCK_TYPE]
         full_file_path = entity[CustomAttributes.FILE_PATH]
+        # TODO Barak delete MODULE_DEPENDENCY, MODULE_DEPENDENCY_NUM
         if entity.get(CustomAttributes.MODULE_DEPENDENCY):
             full_file_path = get_tf_definition_key_from_module_dependency(full_file_path, entity[CustomAttributes.MODULE_DEPENDENCY], entity[CustomAttributes.MODULE_DEPENDENCY_NUM])
+
+        if strtobool(os.getenv('ENABLE_DEFINITION_KEY', 'False')):
+            full_file_path = TFDefinitionKey(file_path=entity.get(CustomAttributes.FILE_PATH), tf_source_modules=entity.get(CustomAttributes.SOURCE_MODULE_OBJECT))
+
         definition_path = entity[CustomAttributes.BLOCK_NAME].split('.')
         entity_context_path = [block_type] + definition_path
-        entity_context = self.context.get(full_file_path, {})
         try:
+            entity_context = self.context[full_file_path]  # type: ignore
             for k in entity_context_path:
                 if k in entity_context:
                     entity_context = entity_context[k]
@@ -343,7 +348,8 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                     return None
             entity_context['definition_path'] = definition_path
         except StopIteration:
-            logging.debug(f"Did not find context for key {full_file_path}")
+            logging.error(f"Did not find context for key {full_file_path}")
+            return {}
         return entity_context
 
     def check_tf_definition(

@@ -26,6 +26,7 @@ from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_PREFIX, TERRAFORM_NESTED_MODULE_PATH_ENDING, \
     TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR
 from checkov.runner_filter import RunnerFilter
+from checkov.terraform import TFDefinitionKey
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.graph_manager import TerraformGraphManager
@@ -1756,7 +1757,16 @@ class TestRunnerValid(unittest.TestCase):
                 config = Runner.get_graph_resource_entity_config(data)
                 self.assertIn(CustomAttributes.TF_RESOURCE_ADDRESS, config)
 
+    @mock.patch.dict(os.environ, {"ENABLE_DEFINITION_KEY": "True"})
+    def test_entity_context_fetching_with_TFDefinitionKey(self):
+        runner = Runner(db_connector=self.db_connector())
+        full_file_path = TFDefinitionKey(file_path='/tmp/checkov/1069803756901857280/prisma-new-user/TestAutomationRepo_7-30-2023-1-38-24-PM/pr/4/58a43cb0e5daee00398b6c892c9287438c7c74ea/diff/src/file1.tf', tf_source_modules=None)
+        runner.context = {full_file_path: {'resource': {'aws_lb_listener': {'https1': {'start_line': 1, 'end_line': 7, 'code_lines': [[1, 'resource "aws_lb_listener" "https1" {\n'], [2, '  load_balancer_arn = ""\n'], [3, '  protocol          = "HTTPS"\n'], [4, '  default_action {\n'], [5, '    type = ""\n'], [6, '  }\n'], [7, '}']], 'skipped_checks': []}}}}}
+        entity_with_found_path = {'block_name_': 'aws_lb_listener.https1', 'block_type_': 'resource', 'file_path_': '/tmp/checkov/1069803756901857280/prisma-new-user/TestAutomationRepo_7-30-2023-1-38-24-PM/pr/4/58a43cb0e5daee00398b6c892c9287438c7c74ea/diff/src/file1.tf', 'config_': {'aws_lb_listener': {'https1': {'__end_line__': 7, '__start_line__': 1, 'default_action': [{'type': ['']}], 'load_balancer_arn': [''], 'protocol': ['HTTPS'], '__address__': 'aws_lb_listener.https1'}}}, 'attributes_': {'__end_line__': 7, '__start_line__': 1, 'default_action': {'type': ''}, 'load_balancer_arn': [''], 'protocol': ['HTTPS'], 'resource_type': ['aws_lb_listener'], 'default_action.type': '', '__address__': 'aws_lb_listener.https1'}, 'label_': 'resource: aws_lb_listener.https1', 'id_': 'aws_lb_listener.https1', 'customer_name_': '1069803756901857280', 'account_id_': 'prisma-new-user/TestAutomationRepo_7-30-2023-1-38-24-PM/CICD/243676', 'unique_tag_': 'prod', 'source_': 'terraform', 'violations_count_': 0, 'region_': '', '__end_line__': 7, '__start_line__': 1, 'default_action': {'type': ''}, 'default_action.type': '', 'load_balancer_arn': '', 'protocol': 'HTTPS', 'resource_type': 'aws_lb_listener', '__address__': 'aws_lb_listener.https1', 'module_dependency_': '', 'module_dependency_num_': '', 'hash': 'd61bc3a35537776896f83679a51e63d3a6074f66b368bc4fea07871d282875e9'}
+        entity_context = runner.get_entity_context_and_evaluations(entity_with_found_path)
 
+        assert entity_context is not None
+        assert entity_context['start_line'] == 1 and entity_context['end_line'] == 7
 
 
 if __name__ == '__main__':
