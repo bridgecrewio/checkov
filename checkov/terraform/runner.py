@@ -339,7 +339,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         definition_path = entity[CustomAttributes.BLOCK_NAME].split('.')
         entity_context_path = [block_type] + definition_path
         try:
-            entity_context = self.context[full_file_path]
+            entity_context = self.context[full_file_path]  # type: ignore
             for k in entity_context_path:
                 if k in entity_context:
                     entity_context = entity_context[k]
