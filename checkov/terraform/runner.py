@@ -334,7 +334,8 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
             full_file_path = get_tf_definition_key_from_module_dependency(full_file_path, entity[CustomAttributes.MODULE_DEPENDENCY], entity[CustomAttributes.MODULE_DEPENDENCY_NUM])
 
         if strtobool(os.getenv('ENABLE_DEFINITION_KEY', 'False')):
-            full_file_path = TFDefinitionKey(file_path=entity[CustomAttributes.FILE_PATH], tf_source_modules=entity.get(CustomAttributes.SOURCE_MODULE_OBJECT))
+            full_file_path = TFDefinitionKey(file_path=entity.get(CustomAttributes.FILE_PATH), tf_source_modules=entity.get(CustomAttributes.SOURCE_MODULE_OBJECT))
+
         definition_path = entity[CustomAttributes.BLOCK_NAME].split('.')
         entity_context_path = [block_type] + definition_path
         entity_context = self.context.get(full_file_path, {})
