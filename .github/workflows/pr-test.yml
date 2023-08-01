@@ -23,6 +23,8 @@ jobs:
           node-version: '14.x'
 
       - name: Install and run DangerJS
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           npm install -g danger
           danger ci
