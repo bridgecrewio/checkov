@@ -219,3 +219,18 @@ class TerraformBlock(Block):
             'source': self.source,
             'source_module': list(self.source_module)
         }
+
+    @staticmethod
+    def from_dict(data: dict[str, Any]) -> TerraformBlock:
+        tf_block = TerraformBlock(name=data.get('name', ''), block_type=data.get('block_type', ''),
+                                  config=data.get('config', {}), id=data.get('id', ''),
+                                  path=data.get('path', ''), source=data.get('source', ''),
+                                  attributes=data.get('attributes', {})
+                                  )
+
+        tf_block.breadcrumbs = data.get('breadcrumbs', {})
+        tf_block.module_connections = data.get('module_connections', {})
+        tf_block.module_dependency = data.get('module_dependency', '')
+        tf_block.source_module = data.get('source_module', set())
+        tf_block.module_dependency_num = data.get('module_dependency_num', '')
+        return tf_block
