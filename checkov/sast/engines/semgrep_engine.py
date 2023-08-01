@@ -8,7 +8,7 @@ from typing import List, TYPE_CHECKING, Set, Collection, Dict, Any
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.sast.checks_infra.base_registry import Registry
-from checkov.sast.common import get_code_block
+from checkov.sast.common import get_code_block_from_start
 from checkov.common.output.report import Report
 from checkov.common.bridgecrew.severities import get_severity
 from checkov.sast.consts import SEMGREP_SEVERITY_TO_CHECKOV_SEVERITY, SastLanguages, FILE_EXT_TO_SAST_LANG, SastEngines
@@ -144,7 +144,7 @@ class SemgrepEngine(SastEngine):
             check_name = match.metadata.get('name', '')
             check_cwe = match.metadata.get('cwe')
             check_owasp = match.metadata.get('owasp')
-            code_block = get_code_block(match.lines, match.start.line)
+            code_block = get_code_block_from_start(match.lines, match.start.line)
             file_abs_path = match.match.location.path
             file_path = file_abs_path.split('/')[-1]
             severity = get_severity(SEMGREP_SEVERITY_TO_CHECKOV_SEVERITY.get(match.severity))

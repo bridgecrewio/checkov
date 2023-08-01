@@ -21,7 +21,7 @@ from checkov.common.output.report import Report
 from checkov.common.typing import _CheckResult
 from checkov.common.util.http_utils import request_wrapper
 from checkov.sast.checks_infra.base_registry import Registry
-from checkov.sast.common import get_code_block
+from checkov.sast.common import get_code_block_from_start, get_data_flow_code_block
 from checkov.sast.consts import SastLanguages, SastEngines
 from checkov.sast.engines.base_engine import SastEngine
 from checkov.sast.prisma_models.report import PrismaReport, create_empty_report
@@ -201,7 +201,11 @@ class PrismaEngine(SastEngine):
                     file_path = file_abs_path.split('/')[-1]
                     file_line_range = [location.start.row, location.end.row]
                     split_code_block = [line + '\n' for line in location.code_block.split('\n')]
-                    code_block = get_code_block(split_code_block, location.start.row)
+
+                    if match.metadata.taint_mode is not None:
+                        code_block = get_data_flow_code_block(match.metadata.taint_mode.data_flow, split_code_block)
+                    else:
+                        code_block = get_code_block_from_start(split_code_block, location.start.row)
 
                     record = SastRecord(check_id=check_id, check_name=check_name, resource="", evaluations={},
                                         check_class="", check_result=check_result, code_block=code_block,
