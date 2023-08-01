@@ -1,10 +1,18 @@
-const { danger, fail } = require('danger');
+import { danger, warn } from 'danger';
 
-module.exports = async () => {
-  // Add your Danger rules and checks here
-  // For example, you can fail the build if the PR title is too short
-  console.log('Running Danger...');
-  if (danger.github?.pr.title.length < 1000) {
-    fail('PR title is too short. Please provide a descriptive title.');
-  }
-};
+const DEFAULT_MR_LENGTH_THRESHOLD = 10;
+
+/**
+ * warns when the MR contains too many files
+ * @param threshold
+ */
+export function warnThatMRIsTooBig(threshold: number = DEFAULT_MR_LENGTH_THRESHOLD) {
+    if (parseInt(danger.gitlab.mr.changes_count, 10) < threshold) {
+        warn(
+            ':exclamation: Merge Request size seems relatively large.'
+            + ' If Merge Request contains multiple changes, split each into separate PR will helps faster, easier review'
+        );
+    }
+}
+
+warnThatMRIsTooBig();
