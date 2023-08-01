@@ -1,6 +1,3 @@
 resources:
-- ../../base
-
-images:
-- name: wordpress:4.8-apache
-  newTag: 5.9-apache
+-   ../../base
+namePrefix: prod-
