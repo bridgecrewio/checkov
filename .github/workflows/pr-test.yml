@@ -20,7 +20,6 @@ jobs:
       issues: write
       pull-requests: write
       statuses: write
-#    environment: release
     steps:
       - name: Checkout code
         uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3
@@ -30,7 +29,7 @@ jobs:
           node-version: "16"
       - name: Install and run DangerJS
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT_SECRET }}
+          GITHUB_TOKEN: ${{ secrets.DANGER_GITHUB_TOKEN }}
         run: |
           npm install -g danger
           danger ci --failOnErrors
