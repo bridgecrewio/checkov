@@ -11,10 +11,10 @@ from checkov.terraform.checks.utils.dependency_path_handler import unify_depende
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.parser_functions import handle_dynamic_values
+from checkov.terraform.modules import TFDefinitionKey
 from hcl2 import START_LINE, END_LINE
 
 if TYPE_CHECKING:
-    from checkov.terraform.modules import TFDefinitionKey
     from typing_extensions import TypeAlias
 
 _AddBlockTypeCallable: TypeAlias = "Callable[[Module, list[dict[str, dict[str, Any]]], str | TFDefinitionKey], None]"
@@ -22,13 +22,14 @@ _AddBlockTypeCallable: TypeAlias = "Callable[[Module, list[dict[str, dict[str, A
 
 class Module:
     def __init__(
-        self,
-        source_dir: str,
-        module_address_map: Dict[Tuple[str, str], str],
-        external_modules_source_map: Dict[Tuple[str, str], str],
-        module_dependency_map: Optional[Dict[str, List[List[str]]]] = None,
-        dep_index_mapping: Optional[Dict[Tuple[str, str], List[str]]] = None,
+            self,
+            source_dir: str,
+            module_address_map: Dict[Tuple[str, str], str],
+            external_modules_source_map: Dict[Tuple[str, str], str],
+            module_dependency_map: Optional[Dict[str, List[List[str]]]] = None,
+            dep_index_mapping: Optional[Dict[Tuple[str, str], List[str]]] = None,
     ) -> None:
+        # when adding a new field be sure to add it to the equality function below
         self.dep_index_mapping = dep_index_mapping
         self.module_dependency_map = module_dependency_map
         self.module_address_map = module_address_map
@@ -44,8 +45,60 @@ class Module:
         self.enable_nested_modules = strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'True'))
         self.use_new_tf_parser = strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'True'))
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Module):
+            return False
+
+        return self.dep_index_mapping == other.dep_index_mapping and \
+            self.module_dependency_map == other.module_dependency_map and self.module_address_map == other.module_address_map and \
+            self.external_modules_source_map == other.external_modules_source_map and \
+            self.path == other.path and \
+            self.customer_name == other.customer_name and \
+            self.account_id == other.account_id and \
+            self.source == other.source and \
+            self.resources_types == other.resources_types and \
+            self.source_dir == other.source_dir and \
+            self.blocks == other.blocks
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            'dep_index_mapping': self.dep_index_mapping,
+            'module_dependency_map': self.module_dependency_map,
+            'module_address_map': self.module_address_map,
+            'external_modules_source_map': self.external_modules_source_map,
+            'path': self.path,
+            'customer_name': self.customer_name,
+            'account_id': self.account_id,
+            'source': self.source,
+            'resources_types': self.resources_types,
+            'source_dir': self.source_dir,
+            'render_dynamic_blocks_env_var': self.render_dynamic_blocks_env_var,
+            'enable_nested_modules': self.enable_nested_modules,
+            'use_new_tf_parser': self.use_new_tf_parser,
+            'blocks': [block.to_dict() for block in self.blocks]
+        }
+
+    @staticmethod
+    def from_dict(module_dict: dict[str, Any]) -> Module:
+        module = Module(source_dir=module_dict.get('source_dir', ''),
+                        module_address_map=module_dict.get('module_address_map', {}),
+                        external_modules_source_map=module_dict.get('external_modules_source_map', {}),
+                        module_dependency_map=module_dict.get('module_dependency_map'),
+                        dep_index_mapping=module_dict.get('dep_index_mapping'))
+        module.blocks = [TerraformBlock.from_dict(block) for block in module_dict.get('blocks', [])]
+        module.path = module_dict.get('path', '')
+        module.customer_name = module_dict.get('customer_name', '')
+        module.account_id = module_dict.get('account_id', '')
+        module.source = module_dict.get('source', '')
+        module.resources_types = module_dict.get('resources_types', set())
+        module.source_dir = module_dict.get('source_dir', '')
+        module.render_dynamic_blocks_env_var = module_dict.get('render_dynamic_blocks_env_var', '')
+        module.enable_nested_modules = module_dict.get('enable_nested_modules', False)
+        module.use_new_tf_parser = module_dict.get('use_new_tf_parser', False)
+        return module
+
     def add_blocks(
-        self, block_type: str, blocks: List[Dict[str, Dict[str, Any]]], path: str | TFDefinitionKey, source: str
+            self, block_type: str, blocks: List[Dict[str, Dict[str, Any]]], path: str | TFDefinitionKey, source: str
     ) -> None:
         self.source = source
         if block_type in self._block_type_to_func:
@@ -66,7 +119,8 @@ class Module:
             self.blocks.append(block)
             return
 
-        dependencies = self.module_dependency_map.get(os.path.dirname(block.path), []) if self.module_dependency_map else []
+        dependencies = self.module_dependency_map.get(os.path.dirname(block.path),
+                                                      []) if self.module_dependency_map else []
         module_dependency_num = ""
         if not dependencies:
             dependencies = [[]]
@@ -76,7 +130,8 @@ class Module:
             block.module_dependency = unify_dependency_path(dep_trail)
 
             if block.module_dependency:
-                module_dependency_numbers = self.dep_index_mapping.get((block.path, dep_trail[-1]), []) if self.dep_index_mapping else []
+                module_dependency_numbers = self.dep_index_mapping.get((block.path, dep_trail[-1]),
+                                                                       []) if self.dep_index_mapping else []
                 for mod_idx, module_dep_num in enumerate(module_dependency_numbers):
                     if mod_idx > 0:
                         block = pickle_deepcopy(block)

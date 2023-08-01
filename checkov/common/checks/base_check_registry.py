@@ -12,6 +12,7 @@ from itertools import chain
 from typing import Generator, Tuple, Dict, List, Optional, Any, TYPE_CHECKING
 
 from checkov.common.models.enums import CheckResult
+from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.typing import _SkippedCheck, _CheckResult
 from checkov.runner_filter import RunnerFilter
 
@@ -27,6 +28,7 @@ class BaseCheckRegistry:
 
     def __init__(self, report_type: str) -> None:
         self.logger = logging.getLogger(__name__)
+        add_resource_code_filter_to_logger(self.logger)
         # IMPLEMENTATION NOTE: Checks is used to directly access checks based on an specific entity
         self.checks: Dict[str, List[BaseCheck]] = defaultdict(list)
         # IMPLEMENTATION NOTE: When using a wildcard, every pattern needs to be checked. To reduce the

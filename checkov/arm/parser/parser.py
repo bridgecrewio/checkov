@@ -4,15 +4,16 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from charset_normalizer import from_path
 from yaml.scanner import ScannerError
 from yaml import YAMLError
 
 from checkov.common.parsers.json import parse as json_parse
 from checkov.common.parsers.yaml import loader
-
+from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
+from checkov.common.util.file_utils import read_file_with_any_encoding
 
 LOGGER = logging.getLogger(__name__)
+add_resource_code_filter_to_logger(LOGGER)
 
 
 def parse(filename: str) -> tuple[dict[str, Any], list[tuple[int, str]]] | tuple[None, None]:
@@ -57,13 +58,7 @@ def load(filename: Path | str) -> tuple[dict[str, Any], list[tuple[int, str]]]:
     Load the given JSON/YAML file
     """
 
-    file_path = filename if isinstance(filename, Path) else Path(filename)
-
-    try:
-        content = file_path.read_text()
-    except UnicodeDecodeError:
-        logging.debug(f"Encoding for file {file_path} is not UTF-8, trying to detect it")
-        content = str(from_path(file_path).best())
+    content = read_file_with_any_encoding(file_path=filename)
 
     if not all(key in content for key in ("$schema", "contentVersion")):
         return {}, []

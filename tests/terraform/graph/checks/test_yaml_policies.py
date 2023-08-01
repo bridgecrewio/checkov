@@ -359,7 +359,7 @@ class TestYamlPolicies(unittest.TestCase):
         self.go("AzurePostgreSQLFlexServerNotOverlyPermissive")
 
     def test_GCPMySQLdbInstancePoint_In_TimeRecoveryBackupIsEnabled(self):
-        self.go("GCPMySQLdbInstancePoint_In_TimeRecoveryBackupIsEnabled")  # checkov:skip=CKV_SECRET_6 false positive
+        self.go("GCPMySQLdbInstancePoint_In_TimeRecoveryBackupIsEnabled")
 
     def test_GCPdisableAlphaClusterFeatureInKubernetesEngineClusters(self):
         self.go("GCPdisableAlphaClusterFeatureInKubernetesEngineClusters")

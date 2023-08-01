@@ -107,7 +107,7 @@ def remove_module_dependency_from_path(path: str) -> str:
     :param path: path that looks like "dir/main.tf[other_dir/x.tf#0]
     :return: only the outer path: dir/main.tf
     """
-    if re.findall(RESOLVED_MODULE_PATTERN, path):
+    if "#" in path:
         path = re.sub(RESOLVED_MODULE_PATTERN, '', path)
     return path
 
@@ -226,12 +226,15 @@ def get_module_dependency_map_support_nested_modules(
 
 
 def get_nested_modules_data_as_list(file_path: str) -> tuple[list[tuple[str | None, str | None]], str]:
+    from checkov.terraform.modules.module_objects import TFDefinitionKey
     path = get_abs_path(file_path)
     module_path: str | None = file_path
     modules_list = []
 
     while is_nested(module_path):
         module, index = get_module_from_full_path(module_path)
+        if isinstance(module, TFDefinitionKey):
+            module = module.file_path
         modules_list.append((module, index))
         module_path = module
     modules_list.reverse()

@@ -92,7 +92,7 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/setup-python@bd6b4b6205c4dbad673328db7b31b7fab9e241c0  # v4
+      - uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1  # v4
         with:
           python-version: 3.7
       - name: Install pipenv
@@ -104,12 +104,54 @@ jobs:
           pipenv run pip install pyinstaller
       - name: Build executable
         run: pipenv run pyinstaller checkov.spec
+      - name: Windows - zip artifact
+        if: matrix.os == 'windows-latest'
+        run: tar.exe -a -c -f checkov.zip dist\\checkov.exe
+      - name: Linux/Mac - zip artifact
+        if: matrix.os != 'windows-latest'
+        run: zip checkov.zip dist/checkov
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.github-release.outputs.upload_url }}
-          asset_path: dist/checkov${{ matrix.suffix }}
-          asset_name: checkov_${{ matrix.name }}_${{ needs.github-release.outputs.version }}
+          asset_path: checkov.zip
+          asset_name: checkov_${{ matrix.name }}_X86_64_${{ needs.github-release.outputs.version }}.zip
+          asset_content_type: application/zip
+  build-release-artifact-linux-arm:
+    needs: [ github-release ]
+    if: needs.github-release.outputs.upload_url != ''
+    runs-on: [self-hosted, public, linux, arm64]
+    container:
+      image: arm64v8/python:3.7
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install pipenv
+        run: |
+          python -m pip install --no-cache-dir --upgrade pipenv
+      - name: Install deps and run pyinstaller
+        run: |
+          pipenv sync
+          pipenv run pip install pyinstaller
+      - name: Build executable
+        run: pipenv run pyinstaller checkov.spec
+      - name: zip artifact
+        run: |
+          apt-get update
+          apt install zip
+          zip checkov.zip dist/checkov
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.github-release.outputs.upload_url }}
+          asset_path: checkov.zip
+          asset_name: checkov_linux_arm64_${{ needs.github-release.outputs.version }}.zip
           asset_content_type: application/zip

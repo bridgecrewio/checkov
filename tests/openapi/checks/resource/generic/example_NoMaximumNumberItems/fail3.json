@@ -1,0 +1,47 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Simple API Overview",
+    "version": "1.0.0",
+    "contact": {
+      "name": "contact",
+      "url": "https://www.google.com/",
+      "email": "user@gmail.com"
+    }
+  },
+  "paths": {
+    "/": {
+      "get": {
+        "operationId": "listVersionsv2",
+        "summary": "List API versions",
+        "responses": {
+          "200": {
+            "description": "200 response"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "schema": {
+            "properties": {
+              "code": {
+                "type": "string",
+                "format": "int32"
+              },
+              "message": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "name": "id",
+          "in": "body",
+          "description": "ID of pet to use",
+          "required": true
+        }
+      ]
+    }
+  }
+}

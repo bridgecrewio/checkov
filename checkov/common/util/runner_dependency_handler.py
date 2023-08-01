@@ -3,10 +3,13 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
+from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
+
 if TYPE_CHECKING:
     from checkov.common.runners.runner_registry import RunnerRegistry
 
 logger = logging.getLogger(__name__)
+add_resource_code_filter_to_logger(logger)
 
 
 class RunnerDependencyHandler():

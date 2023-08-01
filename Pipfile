@@ -62,7 +62,7 @@ semantic-version = "*"
 packaging = "*"
 cloudsplaining = ">=0.4.3"
 networkx = "<2.7"
-igraph = "*"
+igraph = "<0.11.0"  # there will be some breaking changes, but not sure yet, if we will be affected
 dockerfile-parse ="*"
 docker = "*"
 configargparse = "*"

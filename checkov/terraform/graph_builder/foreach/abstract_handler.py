@@ -55,7 +55,7 @@ class ForeachAbstractHandler:
         from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 
         sub_graph = TerraformLocalGraph(self.local_graph.module)
-        sub_graph.vertices = [{}] * len(self.local_graph.vertices)
+        sub_graph.vertices = [{}] * len(self.local_graph.vertices)  # type:ignore[list-item]  # are correctly set in the next lines
         for i, block in enumerate(self.local_graph.vertices):
             if not (block.block_type == BlockType.RESOURCE and i not in blocks_to_render):
                 sub_graph.vertices[i] = pickle_deepcopy(block)
@@ -252,10 +252,13 @@ class ForeachAbstractHandler:
 
     @staticmethod
     def need_to_add_quotes(code: str, key: str) -> bool:
-        patterns = [r'lower\(' + key + r'\)', r'upper\(' + key + r'\)']
-        for pattern in patterns:
-            if re.search(pattern, code):
-                return True
+        if "lower" in code or "upper" in code:
+            patterns = (r'lower\(' + key + r'\)', r'upper\(' + key + r'\)')
+            for pattern in patterns:
+                if re.search(pattern, code):
+                    return True
+
         if f'[{key}]' in code:
             return True
+
         return False

@@ -3,5 +3,7 @@ pass:
   - "aws_eip.ok_eip_assoc"
   - "aws_eip.ok_eip_nat"
   - "aws_eip.eip_ok_transer_server"
+  - "aws_eip.ok_eip_domain"
+  - "aws_eip.ok_eip_domain_assoc"
 fail:
   - "aws_eip.not_ok_eip"

@@ -5,6 +5,8 @@ from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
 from checkov.common.util.type_forcers import force_list
 import re
 
+BAD_INJECTION_PATTERN = re.compile(r"\blua_|_lua\b|_lua_|\bkubernetes\.io\b")
+
 
 class NginxIngressCVE202125742Lua(BaseK8Check):
     def __init__(self) -> None:
@@ -15,13 +17,11 @@ class NginxIngressCVE202125742Lua(BaseK8Check):
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_kind)
 
     def scan_spec_conf(self, conf: Dict[str, Any]) -> CheckResult:
-        badInjectionPatterns = "\\blua_|_lua\\b|_lua_|\\bkubernetes\\.io\\b"
-
         if conf["metadata"]:
             if conf["metadata"].get("annotations"):
                 for annotation in force_list(conf["metadata"]["annotations"]):
                     for key, value in annotation.items():
-                        if "snippet" in key and re.search(badInjectionPatterns, value):
+                        if "snippet" in key and re.search(BAD_INJECTION_PATTERN, value):
                             return CheckResult.FAILED
         return CheckResult.PASSED
 

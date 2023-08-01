@@ -4,12 +4,12 @@ import logging
 import os
 import platform
 
-from typing import Type, Optional
+from typing import Type, Optional, Any
 
 import pathlib
 
 from checkov.common.graph.checks_infra.registry import BaseRegistry
-from checkov.common.typing import LibraryGraphConnector
+from checkov.common.typing import LibraryGraphConnector, TFDefinitionKeyType
 from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.terraform.modules.module_objects import TFDefinitionKey
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
@@ -201,7 +201,7 @@ class Runner(TerraformRunner):
                                    block_type, runner_filter)
 
     @staticmethod
-    def _get_file_path(full_file_path: str | TFDefinitionKey, root_folder: str | pathlib.Path) -> tuple[str, str]:
+    def _get_file_path(full_file_path: TFDefinitionKeyType, root_folder: str | pathlib.Path) -> tuple[str, str]:
         if isinstance(full_file_path, TFDefinitionKey):
             full_file_path = full_file_path.file_path
         if platform.system() == "Windows":
@@ -260,12 +260,12 @@ class Runner(TerraformRunner):
                     record.set_guideline(check.guideline)
                     report.add_record(record=record)
 
-    def get_entity_context_and_evaluations(self, entity):
+    def get_entity_context_and_evaluations(self, entity: dict[str, Any]) -> dict[str, Any] | None:
         entity_id = entity[TF_PLAN_RESOURCE_ADDRESS]
         raw_context = self.context.get(entity[CustomAttributes.FILE_PATH], {}).get(entity_id)
         if raw_context:
             raw_context['definition_path'] = entity[CustomAttributes.BLOCK_NAME].split('.')
-        return raw_context, None
+        return raw_context
 
     def get_entity_context(self, definition_path, full_file_path, entity):
         if len(definition_path) > 1:

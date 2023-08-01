@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+import mock
 import pytest
 from pytest_mock import MockerFixture
 
@@ -20,14 +21,16 @@ RESOURCES_PATH = Path(__file__).parent / "runner/resources"
 
 
 @pytest.mark.skipif(os.name == "nt" or not kustomize_exists(), reason="kustomize not installed or Windows OS")
-def test_deployment_resources(mocker: MockerFixture):
+@pytest.mark.parametrize("allow_kustomize_file_edits, code_lines", [
+    (True, "18-34"),
+    (False, "15-31")
+])
+def test_deployment_resources(mocker: MockerFixture, allow_kustomize_file_edits: bool, code_lines: str):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
     # given
-    file_name = "kustomization.yaml"
     image_name = "wordpress:4.8-apache"
-    code_lines = "15-31"
-    test_folder = RESOURCES_PATH / "image_referencer/overlays/prod"
+    test_folder = RESOURCES_PATH / "image_referencer"
     runner_filter = RunnerFilter(run_image_referencer=True)
     bc_integration.bc_source = get_source_type("disabled")
 
@@ -41,10 +44,12 @@ def test_deployment_resources(mocker: MockerFixture):
     )
 
     # when
-    runner = Runner()
-    runner.templateRendererCommand = "kustomize"
-    runner.templateRendererCommandOptions = "build"
-    reports = runner.run(root_folder=str(test_folder), runner_filter=runner_filter)
+
+    with mock.patch.dict(os.environ, {"CHECKOV_ALLOW_KUSTOMIZE_FILE_EDITS": str(allow_kustomize_file_edits)}):
+        runner = Runner()
+        runner.templateRendererCommand = "kustomize"
+        runner.templateRendererCommandOptions = "build"
+        reports = runner.run(root_folder=str(test_folder), runner_filter=runner_filter)
 
     # then
     assert len(reports) == 2
@@ -52,21 +57,27 @@ def test_deployment_resources(mocker: MockerFixture):
     kustomize_report = next(report for report in reports if report.check_type == CheckType.KUSTOMIZE)
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
-    assert len(kustomize_report.resources) == 3
-    assert len(kustomize_report.passed_checks) == 68
-    assert len(kustomize_report.failed_checks) == 21
+    assert len(kustomize_report.resources) == 6
+    assert len(kustomize_report.passed_checks) == 136
+    assert len(kustomize_report.failed_checks) == 42
     assert len(kustomize_report.skipped_checks) == 0
     assert len(kustomize_report.parsing_errors) == 0
 
-    assert len(sca_image_report.resources) == 1
-    assert sca_image_report.resources == {
-        f"{file_name} ({image_name} lines:{code_lines} (sha256:2460522297)).go",
-    }
+    if allow_kustomize_file_edits:
+        for record in kustomize_report.failed_checks:
+            assert record.caller_file_path in ['/base/deployment.yaml', '/base/service.yaml', '/deployment.yaml',
+                                               '/service.yaml']
+
+    assert len(sca_image_report.resources) == 2
+    assert f'base/kustomization.yaml (wordpress:4.8-apache lines:{code_lines} (sha256:2460522297)).go' in \
+           sca_image_report.resources
+    assert f'overlays/prod/kustomization.yaml (wordpress:4.8-apache lines:{code_lines} (sha256:2460522297)).go' in \
+           sca_image_report.resources
     assert len(sca_image_report.passed_checks) == 0
-    assert len(sca_image_report.failed_checks) == 3
+    assert len(sca_image_report.failed_checks) == 6
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
-    assert len(sca_image_report.image_cached_results) == 1
+    assert len(sca_image_report.image_cached_results) == 2
 
     assert sca_image_report.image_cached_results[0]["dockerImageName"] == image_name
     assert (

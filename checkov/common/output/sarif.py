@@ -3,6 +3,7 @@ from __future__ import annotations
 import itertools
 import json
 from typing import TYPE_CHECKING, Any
+from urllib.parse import quote
 
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.cyclonedx_consts import SCA_CHECKTYPES
@@ -221,7 +222,7 @@ class Sarif:
                     "locations": [
                         {
                             "physicalLocation": {
-                                "artifactLocation": {"uri": record.repo_file_path.lstrip("/")},
+                                "artifactLocation": {"uri": quote(record.repo_file_path.lstrip("/"))},
                                 "region": {
                                     "startLine": int(record.file_line_range[0]) or 1,
                                     "endLine": int(record.file_line_range[1]) or 1,

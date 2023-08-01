@@ -34,6 +34,7 @@ from checkov.common.output.report import Report, merge_reports
 from checkov.common.output.sarif import Sarif
 from checkov.common.output.spdx import SPDX
 from checkov.common.parallelizer.parallel_runner import parallel_runner
+from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.typing import _ExitCodeThresholds, _BaseRunner, _ScaExitCodeThresholds
 from checkov.common.util import data_structures_utils
 from checkov.common.util.banner import tool as tool_name
@@ -82,6 +83,7 @@ class RunnerRegistry:
         secrets_omitter_class: Type[SecretsOmitter] = SecretsOmitter,
     ) -> None:
         self.logger = logging.getLogger(__name__)
+        add_resource_code_filter_to_logger(self.logger)
         self.runner_filter = runner_filter
         self.runners = list(runners)
         self.banner = banner
@@ -579,7 +581,6 @@ class RunnerRegistry:
 
     def _print_to_console(self, output_formats: dict[str, str], output_format: str, output: str, url: str | None = None) -> None:
         """Prints the output to console, if needed"""
-
         output_dest = output_formats[output_format]
         if output_dest == CONSOLE_OUTPUT:
             del output_formats[output_format]
@@ -587,6 +588,7 @@ class RunnerRegistry:
             print(output)
             if url:
                 print(f"More details: {url}")
+
             if CONSOLE_OUTPUT in output_formats.values():
                 print(OUTPUT_DELIMITER)
 

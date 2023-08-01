@@ -111,7 +111,7 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
                 and destination_vertex.block_type == BlockType.TF_VARIABLE
             ):
                 # evaluate the last specified variable based on .tfvars precedence
-                destination_vertex = list(filter(lambda v: v.block_type == BlockType.TF_VARIABLE, map(lambda e: self.local_graph.vertices[e.dest], edge_list)))[-1]  # type:ignore[no-any-return]  # will be fixed with adding type hints to local_graph
+                destination_vertex = list(filter(lambda v: v.block_type == BlockType.TF_VARIABLE, map(lambda e: self.local_graph.vertices[e.dest], edge_list)))[-1]
                 self.update_evaluated_value(
                     changed_attribute_key=edge.label,
                     changed_attribute_value=destination_vertex.attributes["default"],
