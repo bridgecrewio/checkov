@@ -65,7 +65,7 @@ class SastRecord(Record):
 
         severity_message = f'\tSeverity: {self.severity.name}\n' if self.severity and self.show_severity else ''
 
-        file_details = f'{self.file_path}:{"-".join([str(x) for x in self.file_line_range])}'
+        file_details = f'{self.file_path}:{" -> ".join([str(x) for x in self.file_line_range])}'
         code_lines = self.get_code_lines_string(self.code_block)
         detail = self.get_details_string(self.details)
         caller_file_details = self.get_caller_file_details_string(self.caller_file_path,
@@ -77,9 +77,9 @@ class SastRecord(Record):
         cwe_message = colored(f'\t{self.cwe}\n') if self.cwe else ''
 
         if self.check_result["result"] == CheckResult.FAILED and code_lines and not compact:
-            return f"{check_message}{status_message}{severity_message}{cwe_message}{detail}{caller_file_details}{guideline_message}{code_lines}{evaluation_message}\n"
+            return f"{check_message}{severity_message}{status_message}{cwe_message}{detail}{caller_file_details}{guideline_message}{code_lines}{evaluation_message}\n"
 
         if self.check_result["result"] == CheckResult.SKIPPED:
-            return f"{check_message}{status_message}{severity_message}{cwe_message}{suppress_comment}{detail}{caller_file_details}{guideline_message}\n"
+            return f"{check_message}{severity_message}{status_message}{cwe_message}{suppress_comment}{detail}{caller_file_details}{guideline_message}\n"
         else:
-            return f"{check_message}{status_message}{severity_message}{cwe_message}{detail}{caller_file_details}{evaluation_message}{guideline_message}\n"
+            return f"{check_message}{severity_message}{status_message}{cwe_message}{detail}{caller_file_details}{evaluation_message}{guideline_message}\n"
