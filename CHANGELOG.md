@@ -1,6 +1,16 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.349...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.351...HEAD)
+
+## [2.3.351](https://github.com/bridgecrewio/checkov/compare/2.3.349...2.3.351) - 2023-08-01
+
+### Feature
+
+- **terraform:** new serialization methods for module and block - [#5391](https://github.com/bridgecrewio/checkov/pull/5391)
+
+### Bug Fix
+
+- **terraform:** pr for upgrade-checkov - [#5400](https://github.com/bridgecrewio/checkov/pull/5400)
 
 ## [2.3.349](https://github.com/bridgecrewio/checkov/compare/2.3.347...2.3.349) - 2023-07-31
 
