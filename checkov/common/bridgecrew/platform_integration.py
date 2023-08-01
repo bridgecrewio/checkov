@@ -145,7 +145,6 @@ class BcPlatformIntegration:
         self.integrations_api_url = f"{self.api_url}/api/v1/integrations/types/checkov"
         self.onboarding_url = f"{self.api_url}/api/v1/signup/checkov"
         self.platform_run_config_url = f"{self.api_url}/api/v2/checkov/runConfiguration"
-        self.platform_run_config_url_backoff = f"{self.api_url}/api/v1/checkov/runConfiguration"
 
     def is_prisma_integration(self) -> bool:
         if self.bc_api_key and not self.is_bc_token(self.bc_api_key):
@@ -661,9 +660,6 @@ class BcPlatformIntegration:
     def get_run_config_url(self) -> str:
         return f'{self.platform_run_config_url}?{self._get_run_config_query_params()}'
 
-    def get_run_config_url_backoff(self) -> str:
-        return f'{self.platform_run_config_url_backoff}?{self._get_run_config_query_params()}'
-
     def get_customer_run_config(self) -> None:
         if self.skip_download is True:
             logging.debug("Skipping customer run config API call")
@@ -693,13 +689,9 @@ class BcPlatformIntegration:
             logging.debug(f'Platform run config URL: {url}')
             request = self.http.request("GET", url, headers=headers)  # type:ignore[no-untyped-call]
             if request.status != 200:
-                url = self.get_run_config_url_backoff()
-                logging.debug(f'Platform run config URL: {url}')
-                request = self.http.request("GET", url, headers=headers)  # type:ignore[no-untyped-call]
-                if request.status != 200:
-                    error_message = get_auth_error_message(request.status, self.is_prisma_integration(), False)
-                    logging.error(error_message)
-                    raise BridgecrewAuthError(error_message)
+                error_message = get_auth_error_message(request.status, self.is_prisma_integration(), False)
+                logging.error(error_message)
+                raise BridgecrewAuthError(error_message)
             self.customer_run_config_response = json.loads(request.data.decode("utf8"))
 
             logging.debug(f"Got customer run config from {platform_type} platform")
