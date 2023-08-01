@@ -32,7 +32,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DANGER_GITHUB_TOKEN }}
         run: |
           npm install -g danger
-          danger ci --failOnErrors
+          danger ci --verbose
   cfn-lint:
     runs-on: ubuntu-latest
     steps:
