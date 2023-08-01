@@ -1,0 +1,8 @@
+{
+  "name": "checkov",
+  "version": "1.0.0",
+  "devDependencies": {
+    "danger": "^11.2.0",
+    "danger-plugin-yarn": "^1.6.0"
+  }
+}
