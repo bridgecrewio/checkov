@@ -27,8 +27,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          yarn danger ci --failOnErrors
-
+          npm install -g danger
+          danger ci --failOnErrors
   cfn-lint:
     runs-on: ubuntu-latest
     steps:
