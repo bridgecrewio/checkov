@@ -1,7 +1,0 @@
-{
-  "name": "checkov",
-  "version": "1.0.0",
-  "devDependencies": {
-    "danger": "^11.2.0",
-  }
-}
