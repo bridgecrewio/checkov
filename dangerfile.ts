@@ -64,7 +64,6 @@ async function failIfLoggingLineContainsSensitiveData() {
       const allLines = [...addedLinesLength, ...removedLinesLength];
       console.log(`allLines: ${allLines}`)
       for (let line of allLines) {
-        const line = lines[lineNum];
         if (FIND_LOGGING_LEVEL_PY.test(line) && FSTRING_PATTERN.test(line) && !line.includes(PY_MASK_STR)) {
           console.log(`line: ${line}`)
           if (FIND_CODE_INSIDE_BRACES_OR_AFTER_COMMA.test(line)) {
