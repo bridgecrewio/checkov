@@ -58,7 +58,7 @@ async function failIfLoggingLineContainsSensitiveData() {
     console.log(`filePath: ${filePath}`)
     if (!shouldProcessFile(filePath)) return;
     try {
-      const fileContent = await fs.promises.readFile(filePath, 'utf-8');
+      const fileContent = await danger.fs.readFile(filePath, 'utf-8');
       const lines = fileContent.split('\n');
       for (let lineNum = 0; lineNum < lines.length; lineNum++) {
         const line = lines[lineNum];
