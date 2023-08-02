@@ -66,6 +66,8 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self.foreach_blocks: Dict[str, List[int]] = {BlockType.RESOURCE: [], BlockType.MODULE: []}
 
     def build_graph(self, render_variables: bool) -> None:
+        resource_code = ''
+        logging.warning(f"resource code {resource_code}")
         self._create_vertices()
         logging.info(f"[TerraformLocalGraph] created {len(self.vertices)} vertices")
         self._build_edges()
