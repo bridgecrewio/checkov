@@ -28,7 +28,7 @@ const FSTRING_PATTERN = /f(["'])(.*?{.*?}.*?)(\1)/;
 const SUPPORTED_EXTENSIONS = ['.py'];
 const EXCLUDED_FILES = ['__init__.py', 'dangerfile.ts'];
 
-function varMayContainData(varString: string): boolean {
+function varMayContainData(varString) {
   if (IGNORE_VAR.includes(varString)) return false;
   if (START_END_IGNORE.some((ignore) => varString.trim().startsWith(ignore) || varString.trim().endsWith(ignore))) return false;
   if (varString.includes('json.dump')) {
@@ -41,10 +41,10 @@ function varMayContainData(varString: string): boolean {
 }
 
 async function failIfLoggingLineContainsSensitiveData() {
-  const dangerousFiles: string[] = [];
-  const changedFiles: string[] = danger.git.modified_files.concat(danger.git.created_files);
+  const dangerousFiles = [];
+  const changedFiles = danger.git.modified_files.concat(danger.git.created_files);
 
-  const shouldProcessFile = (filePath: string): boolean => {
+  const shouldProcessFile = (filePath) => {
     const fileExtension = filePath.substring(filePath.lastIndexOf('.'));
     if (SUPPORTED_EXTENSIONS.includes(fileExtension)) {
       const fileName = filePath.substring(filePath.lastIndexOf('/') + 1);
@@ -53,7 +53,7 @@ async function failIfLoggingLineContainsSensitiveData() {
     return false;
   };
 
-  const processFile = async (filePath: string) => {
+  const processFile = async (filePath) => {
     if (!shouldProcessFile(filePath)) return;
     try {
       const fileContent = await fs.promises.readFile(filePath, 'utf-8');
