@@ -1,5 +1,4 @@
 const { danger, fail, schedule } = require('danger');
-const { readFileSync } = require('danger-plugin-fs');
 
 const IGNORE_VAR = [
   'key', 's3_key', 's3_file_key', 'local_file_path', 'self.s3_bucket', 'e', 'error', 'str(e)', 'path', 'customer_name',
