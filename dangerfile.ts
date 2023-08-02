@@ -58,9 +58,10 @@ async function failIfLoggingLineContainsSensitiveData() {
     console.log(`filePath: ${filePath}`)
     if (!shouldProcessFile(filePath)) return;
     try {
-      const modifiedLines = danger.git.modified_lines[filePath] || [];
-      const addedLines = danger.git.added_lines[filePath] || [];
-      const allLines = [...modifiedLines, ...addedLines];
+      const fileDiff = await danger.git.diffForFile(filePath);
+      const addedLinesLength = fileDiff.added.split('\n');
+      const removedLinesLength = fileDiff.removed.split('\n');
+      const allLines = [...addedLinesLength, ...removedLinesLength];
       console.log(`allLines: ${allLines}`)
       for (let line of allLines) {
         const line = lines[lineNum];
