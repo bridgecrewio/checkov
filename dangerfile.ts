@@ -1,6 +1,6 @@
 const { danger, fail, schedule } = require('danger');
 
-const IGNORE_VAR: string[] = [
+const IGNORE_VAR = [
   'key', 's3_key', 's3_file_key', 'local_file_path', 'self.s3_bucket', 'e', 'error', 'str(e)', 'path', 'customer_name',
   'name', 'self.framework', 'framework', 'self.graph_framework', 'file_path', 'zip_path', 'object_path',
   'definitions_context_object_path', 'root_folder', 'bucket', 'source_id', 'num_vertices',
@@ -9,22 +9,22 @@ const IGNORE_VAR: string[] = [
   'start_time', 'datetime.now()', 'framework.name', 'str(framework)'
 ];
 
-const START_END_IGNORE: string[] = [
+const START_END_IGNORE = [
   'path', 'len(', 'enable_', 'datetime', 'key', 'id', '_ids',
 ];
 
-const LOGGING_LEVEL_PY: string[] = [
+const LOGGING_LEVEL_PY = [
   'logging.warning', 'logging.debug', 'logging.info', 'logging.error', 'logging.warn', 'logger.info',
   'logger.warning', 'logger.debug', 'logger.error', 'logger.warn', 'self.logger.info',
   'self.logger.warning', 'self.logger.debug', 'self.logger.error', 'self.logger.warn',
 ];
 
-const FIND_LOGGING_LEVEL_PY: RegExp = new RegExp(`(?:${LOGGING_LEVEL_PY.join('|')})`, 'g');
-const VAR_IN_LOG: string = '\\{([^}]*)\\}';
-const VAR_IN_FUNC: string = '\\((.*?)\\)';
-const PY_MASK_STR: string = 'extra={"mask": True}'
-const FIND_CODE_INSIDE_BRACES_OR_AFTER_COMMA: RegExp = /^.*\{[^}]*code[^}]*\}.*|.*,.*code.*/;
-const FSTRING_PATTERN: RegExp = /f(["'])(.*?{.*?}.*?)(\1)/;
+const FIND_LOGGING_LEVEL_PY = new RegExp(`(?:${LOGGING_LEVEL_PY.join('|')})`, 'g');
+const VAR_IN_LOG: '\\{([^}]*)\\}';
+const VAR_IN_FUNC: '\\((.*?)\\)';
+const PY_MASK_STR: 'extra={"mask": True}'
+const FIND_CODE_INSIDE_BRACES_OR_AFTER_COMMA = /^.*\{[^}]*code[^}]*\}.*|.*,.*code.*/;
+const FSTRING_PATTERN = /f(["'])(.*?{.*?}.*?)(\1)/;
 const SUPPORTED_EXTENSIONS = ['.py'];
 const EXCLUDED_FILES = ['__init__.py', 'dangerfile.ts'];
 
