@@ -58,21 +58,23 @@ async function failIfLoggingLineContainsSensitiveData() {
     console.log(`filePath: ${filePath}`)
     if (!shouldProcessFile(filePath)) return;
     try {
-      const fileContent = await danger.utils.readFile(filePath, 'utf-8');
-      const lines = fileContent.split('\n');
-      for (let lineNum = 0; lineNum < lines.length; lineNum++) {
+      const modifiedLines = danger.git.modified_lines[filePath] || [];
+      const addedLines = danger.git.added_lines[filePath] || [];
+      const allLines = [...modifiedLines, ...addedLines];
+      console.log(`allLines: ${allLines}`)
+      for (let line of allLines) {
         const line = lines[lineNum];
         if (FIND_LOGGING_LEVEL_PY.test(line) && FSTRING_PATTERN.test(line) && !line.includes(PY_MASK_STR)) {
           console.log(`line: ${line}`)
           if (FIND_CODE_INSIDE_BRACES_OR_AFTER_COMMA.test(line)) {
-            dangerousFiles.push(`file path:${filePath}, lineNum: ${lineNum}, line: ${line}`);
+            dangerousFiles.push(`file path:${filePath}, line: ${line}`);
             break;
           }
           const varsInLog = line.match(VAR_IN_LOG) || line.match(VAR_IN_FUNC)?.[1].split(',').slice(1) || [];
           console.log(`varsInLog: ${varsInLog}`)
           for (const varString of varsInLog) {
             if (varMayContainData(varString)) {
-              dangerousFiles.push(`file path:${filePath}, lineNum: ${lineNum}, line: ${line}`);
+              dangerousFiles.push(`file path:${filePath}, line: ${line}`);
               break;
             }
           }
