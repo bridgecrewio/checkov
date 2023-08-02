@@ -62,7 +62,7 @@ async function failIfLoggingLineContainsSensitiveData() {
       const lines = fileContent.split('\n');
       for (let lineNum = 0; lineNum < lines.length; lineNum++) {
         const line = lines[lineNum];
-        if ((FIND_LOGGING_LEVEL_PY.test(line) && FSTRING_PATTERN.test(line)) && !(line.includes(PY_MASK_STR))) {
+        if (FIND_LOGGING_LEVEL_PY.test(line) && FSTRING_PATTERN.test(line) && !line.includes(PY_MASK_STR)) {
           console.log(`line: ${line}`)
           if (FIND_CODE_INSIDE_BRACES_OR_AFTER_COMMA.test(line)) {
             dangerousFiles.push(`file path:${filePath}, lineNum: ${lineNum}, line: ${line}`);
