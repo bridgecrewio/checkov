@@ -43,6 +43,7 @@ function varMayContainData(varString) {
 async function failIfLoggingLineContainsSensitiveData() {
   const dangerousFiles = [];
   const changedFiles = danger.git.modified_files.concat(danger.git.created_files);
+  console.log(`changedFiles: ${changedFiles}`)
 
   const shouldProcessFile = (filePath) => {
     const fileExtension = filePath.substring(filePath.lastIndexOf('.'));
@@ -54,6 +55,7 @@ async function failIfLoggingLineContainsSensitiveData() {
   };
 
   const processFile = async (filePath) => {
+    console.log(`filePath: ${filePath}`)
     if (!shouldProcessFile(filePath)) return;
     try {
       const fileContent = await fs.promises.readFile(filePath, 'utf-8');
@@ -61,11 +63,13 @@ async function failIfLoggingLineContainsSensitiveData() {
       for (let lineNum = 0; lineNum < lines.length; lineNum++) {
         const line = lines[lineNum];
         if ((FIND_LOGGING_LEVEL_PY.test(line) && FSTRING_PATTERN.test(line)) && !(line.includes(PY_MASK_STR))) {
+          console.log(`line: ${line}`)
           if (FIND_CODE_INSIDE_BRACES_OR_AFTER_COMMA.test(line)) {
             dangerousFiles.push(`file path:${filePath}, lineNum: ${lineNum}, line: ${line}`);
             break;
           }
           const varsInLog = line.match(VAR_IN_LOG) || line.match(VAR_IN_FUNC)?.[1].split(',').slice(1) || [];
+          console.log(`varsInLog: ${varsInLog}`)
           for (const varString of varsInLog) {
             if (varMayContainData(varString)) {
               dangerousFiles.push(`file path:${filePath}, lineNum: ${lineNum}, line: ${line}`);
