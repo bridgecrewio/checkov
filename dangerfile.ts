@@ -20,9 +20,9 @@ const LOGGING_LEVEL_PY = [
 ];
 
 const FIND_LOGGING_LEVEL_PY = new RegExp(`(?:${LOGGING_LEVEL_PY.join('|')})`, 'g');
-const VAR_IN_LOG: '\\{([^}]*)\\}';
-const VAR_IN_FUNC: '\\((.*?)\\)';
-const PY_MASK_STR: 'extra={"mask": True}'
+const VAR_IN_LOG = '\\{([^}]*)\\}';
+const VAR_IN_FUNC = '\\((.*?)\\)';
+const PY_MASK_STR = 'extra={"mask": True}'
 const FIND_CODE_INSIDE_BRACES_OR_AFTER_COMMA = /^.*\{[^}]*code[^}]*\}.*|.*,.*code.*/;
 const FSTRING_PATTERN = /f(["'])(.*?{.*?}.*?)(\1)/;
 const SUPPORTED_EXTENSIONS = ['.py'];
