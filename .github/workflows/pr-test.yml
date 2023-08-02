@@ -24,6 +24,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DANGER_GITHUB_TOKEN }}
         run: |
+          npm install danger-plugin-fs --save-dev
           npm install -g danger
           danger ci --verbose --failOnErrors
   cfn-lint:

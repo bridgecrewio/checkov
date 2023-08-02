@@ -1,4 +1,5 @@
 const { danger, fail, schedule } = require('danger');
+const { readFileSync } = require('danger-plugin-fs');
 
 const IGNORE_VAR = [
   'key', 's3_key', 's3_file_key', 'local_file_path', 'self.s3_bucket', 'e', 'error', 'str(e)', 'path', 'customer_name',
@@ -58,7 +59,7 @@ async function failIfLoggingLineContainsSensitiveData() {
     console.log(`filePath: ${filePath}`)
     if (!shouldProcessFile(filePath)) return;
     try {
-      const fileContent = await danger.fs.readFile(filePath, 'utf-8');
+      const fileContent = await readFileSync(filePath, 'utf-8');
       const lines = fileContent.split('\n');
       for (let lineNum = 0; lineNum < lines.length; lineNum++) {
         const line = lines[lineNum];
