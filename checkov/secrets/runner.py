@@ -236,7 +236,6 @@ class Runner(BaseRunner[None]):
                     continue
                 if secret_key in secret_records.keys() and secret_records[secret_key].check_id in ENTROPY_CHECK_IDS and check_id not in ENTROPY_CHECK_IDS:
                     secret_records.pop(secret_key)
-                    logging.debug(f'Entropy secret was filtered due to duplication - line_number {secret.line_number}, check_id {check_id}')
                 bc_check_id = metadata_integration.get_bc_id(check_id)
                 if bc_check_id in secret_suppressions_id:
                     logging.debug(f'Secret was filtered - check {check_id} was suppressed')
