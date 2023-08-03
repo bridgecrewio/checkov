@@ -10,7 +10,7 @@ gh_repo_regex = re.compile(r'repo:[^/]+/[^/]+')
 class GithubActionsOIDCTrustPolicy(BaseDataCheck):
     def __init__(self):
         name = 'Ensure GitHub Actions OIDC trust policies only allows actions from a specific known organization'
-        id = "CKV_AWS_357"
+        id = "CKV_AWS_358"
         supported_data = ("aws_iam_policy_document",)
         categories = [CheckCategories.IAM]
         super().__init__(name=name, id=id, categories=categories, supported_data=supported_data)
