@@ -73,7 +73,7 @@ SECRET_TYPE_TO_ID = {
     'Hex High Entropy String': 'CKV_SECRET_19'
 }
 
-ENTROPY_CHECK_IDS = ('CKV_SECRET_6', 'CKV_SECRET_19')
+ENTROPY_CHECK_IDS = ('CKV_SECRET_6', 'CKV_SECRET_19', 'CKV_SECRET_80')
 
 CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 
@@ -231,11 +231,13 @@ class Runner(BaseRunner[None]):
                     continue
                 secret_key = f'{key}_{secret.line_number}_{secret.secret_hash}'
                 if secret.secret_value and is_potential_uuid(secret.secret_value):
-                    logging.info(
-                        f"Removing secret due to UUID filtering: {hashlib.sha256(secret.secret_value.encode('utf-8')).hexdigest()}")
+                    logging.info(f"Removing secret due to UUID filtering: {hashlib.sha256(secret.secret_value.encode('utf-8')).hexdigest()}")
                     continue
-                if secret_key in secret_records.keys() and secret_records[secret_key].check_id in ENTROPY_CHECK_IDS and check_id not in ENTROPY_CHECK_IDS:
-                    secret_records.pop(secret_key)
+                if secret_key in secret_records.keys():
+                    if secret_records[secret_key].check_id in ENTROPY_CHECK_IDS and check_id not in ENTROPY_CHECK_IDS:
+                        secret_records.pop(secret_key)
+                    else:
+                        continue
                 bc_check_id = metadata_integration.get_bc_id(check_id)
                 if bc_check_id in secret_suppressions_id:
                     logging.debug(f'Secret was filtered - check {check_id} was suppressed')
@@ -243,8 +245,7 @@ class Runner(BaseRunner[None]):
                 severity = metadata_integration.get_severity(check_id)
                 if not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id, severity=severity,
                                                       report_type=CheckType.SECRETS):
-                    logging.debug(
-                        f'Check was suppress - should_run_check. check_id {check_id}')
+                    logging.debug(f'Check was suppress - should_run_check. check_id {check_id}')
                     continue
                 result: _CheckResult = {'result': CheckResult.FAILED}
                 try:
