@@ -325,7 +325,7 @@ class TestRunnerValid(unittest.TestCase):
             reverse=True,
             key=lambda s: int(s.split('_')[-1])
         )
-        for i in range(1, len(aws_checks) + 7):
+        for i in range(1, len(aws_checks) + 8):
             if f'CKV_AWS_{i}' == 'CKV_AWS_4':
                 # CKV_AWS_4 was deleted due to https://github.com/bridgecrewio/checkov/issues/371
                 continue
@@ -337,6 +337,10 @@ class TestRunnerValid(unittest.TestCase):
                 continue
             if f'CKV_AWS_{i}' == 'CKV_AWS_52':
                 # CKV_AWS_52 was deleted since it cannot be toggled in terraform.
+                continue
+            if f'CKV_AWS_{i}' == 'CKV_AWS_299':
+                # CKV_AWS_299 was deleted because AWS doesn't support it and seems to be a bug in Terraform.
+                # https://github.com/hashicorp/terraform-provider-aws/issues/31821
                 continue
             self.assertIn(f'CKV_AWS_{i}', aws_checks, msg=f'The new AWS violation should have the ID "CKV_AWS_{i}"')
 
