@@ -11,7 +11,6 @@ from checkov.terraform.graph_builder.utils import INTERPOLATION_EXPR
 from checkov.common.graph.graph_builder.graph_components.blocks import Block
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
-from checkov.terraform.graph_builder.utils import remove_module_dependency_in_path
 
 if TYPE_CHECKING:
     from checkov.terraform import TFModule

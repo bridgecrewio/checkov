@@ -25,7 +25,7 @@ from checkov.common.util import data_structures_utils
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.parser_utils import get_module_from_full_path, get_abs_path, \
-    get_tf_definition_key_from_module_dependency, TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR, get_module_name, \
+    get_tf_definition_key_from_module_dependency, get_module_name, \
     strip_terraform_module_referrer
 from checkov.common.util.secrets import omit_secret_value_from_checks, omit_secret_value_from_graph_checks
 from checkov.common.variables.context import EvaluationContext
@@ -35,7 +35,6 @@ from checkov.terraform.checks.data.registry import data_registry
 from checkov.terraform.checks.module.registry import module_registry
 from checkov.terraform.checks.provider.registry import provider_registry
 from checkov.terraform.checks.resource.registry import resource_registry
-from checkov.terraform.checks.utils.dependency_path_handler import PATH_SEPARATOR
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.evaluation.base_variable_evaluation import BaseVariableEvaluation
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
@@ -46,7 +45,6 @@ from checkov.terraform.graph_manager import TerraformGraphManager
 from checkov.terraform.image_referencer.manager import TerraformImageReferencerManager
 from checkov.terraform.parser import Parser
 from checkov.terraform.tf_parser import TFParser
-from checkov.terraform.plan_utils import get_resource_id_without_nested_modules
 from checkov.terraform.tag_providers import get_resource_tags
 from checkov.common.runners.base_runner import strtobool
 
