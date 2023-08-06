@@ -29,7 +29,7 @@ class ForeachModuleHandler(ForeachAbstractHandler):
             return
         current_level: list[TFModule | None] = [None]
         # We use `[:]` instead of deepcopy as it's much faster and the list has only primitive types (int indexes)
-        main_module_modules = self.local_graph.vertices_by_module_dependency.get(None)[BlockType.MODULE][:]
+        main_module_modules = self.local_graph.vertices_by_module_dependency[None][BlockType.MODULE][:]
         modules_to_render = main_module_modules
 
         while modules_to_render:
@@ -149,7 +149,7 @@ class ForeachModuleHandler(ForeachAbstractHandler):
 
                 # Important to copy to avoid changing the object by reference
                 child_source_module_object_copy = pickle_deepcopy(child.source_module_object)
-                if should_override_foreach_key:
+                if should_override_foreach_key and child_source_module_object_copy is not None:
                     child_source_module_object_copy.foreach_idx = None
 
                 child_module_key = TFModule(path=child.path, name=child.name,

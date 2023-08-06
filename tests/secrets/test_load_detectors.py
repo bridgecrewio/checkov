@@ -239,6 +239,53 @@ class TestLoadDetectors(unittest.TestCase):
                                                        enable_secret_scan_all_files=True))
         self.assertEqual(len(report.failed_checks), 3)
 
+    def test_non_entropy_take_precedence_over_entropy(self):
+        # given: File with entropy secret and custom secret
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/custom_and_entropy"
+        check_id = 'test1'
+        bc_integration.customer_run_config_response = {"secretsPolicies": [
+            {
+                "incidentId": check_id,
+                "category": "Secrets",
+                "severity": "MEDIUM",
+                "incidentType": "Violation",
+                "title": check_id,
+                "guideline": "test",
+                "laceworkViolationId": None,
+                "prowlerCheckId": None,
+                "checkovCheckId": None,
+                "conditionQuery": {
+                    "value": ['test_pass =\s*"(.*?)"'],
+                    "cond_type": "secrets"
+                },
+                "resourceTypes":
+                    [
+                        "aws_instance"
+                    ],
+                "provider": "AWS",
+                "remediationIds":
+                    [],
+                "customerName": "test1",
+                "isCustom": True,
+                "code": None,
+                "descriptiveTitle": None,
+                "constructiveTitle": None,
+                "pcPolicyId": None,
+                "additionalPcPolicyIds": None,
+                "pcSeverity": None,
+                "sourceIncidentId": None
+            }
+        ]}
+        runner = Runner()
+
+        # when: Running the secrets runner on the file
+        report = runner.run(root_folder=valid_dir_path, runner_filter=RunnerFilter(framework=['secrets'], enable_secret_scan_all_files=True))
+
+        # then: Validating that the non-entropy is the one.
+        self.assertEqual(len(report.failed_checks), 1)
+        self.assertEqual(report.failed_checks[0].check_id, check_id)
+
     def test_custom_regex_detector_value_str(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/custom_regex_detector"

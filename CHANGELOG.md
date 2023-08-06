@@ -1,6 +1,65 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.338...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.356...HEAD)
+
+## [2.3.356](https://github.com/bridgecrewio/checkov/compare/2.3.354...2.3.356) - 2023-08-03
+
+### Feature
+
+- **terraform:** Github Actions OIDC trust policy check - [#5402](https://github.com/bridgecrewio/checkov/pull/5402)
+
+## [2.3.354](https://github.com/bridgecrewio/checkov/compare/2.3.351...2.3.354) - 2023-08-02
+
+### Feature
+
+- **general:** allow `--var-file` to be passed as environment variable - [#5406](https://github.com/bridgecrewio/checkov/pull/5406)
+- **terraform:** Add new policy to ensure AWS Transfer server only allows secure protocols - [#5409](https://github.com/bridgecrewio/checkov/pull/5409)
+
+### Platform
+
+- **general:** remove obsolete run config fallback API call - [#5404](https://github.com/bridgecrewio/checkov/pull/5404)
+
+### Documentation
+
+- **gha:** Update setup-python version in GitHub Actions.md - [#5393](https://github.com/bridgecrewio/checkov/pull/5393)
+
+## [2.3.351](https://github.com/bridgecrewio/checkov/compare/2.3.349...2.3.351) - 2023-08-01
+
+### Feature
+
+- **terraform:** new serialization methods for module and block - [#5391](https://github.com/bridgecrewio/checkov/pull/5391)
+
+### Bug Fix
+
+- **terraform:** pr for upgrade-checkov - [#5400](https://github.com/bridgecrewio/checkov/pull/5400)
+
+## [2.3.349](https://github.com/bridgecrewio/checkov/compare/2.3.347...2.3.349) - 2023-07-31
+
+### Bug Fix
+
+- **terraform:** add TFDefinitionKey to get_entity_context_and_evaluations - [#5392](https://github.com/bridgecrewio/checkov/pull/5392)
+- **terraform:** consider new domain attribute in CKV2_AWS_19 - [#5383](https://github.com/bridgecrewio/checkov/pull/5383)
+
+## [2.3.347](https://github.com/bridgecrewio/checkov/compare/2.3.343...2.3.347) - 2023-07-27
+
+### Feature
+
+- **sca:** support composer.json - [#5382](https://github.com/bridgecrewio/checkov/pull/5382)
+- **terraform:** Use new function to create multi graph instead of single graph - [#5375](https://github.com/bridgecrewio/checkov/pull/5375)
+
+### Platform
+
+- **general:** Implement SSO Relay State Parameter in Checkov Output Links - [#5217](https://github.com/bridgecrewio/checkov/pull/5217)
+
+## [2.3.343](https://github.com/bridgecrewio/checkov/compare/2.3.338...2.3.343) - 2023-07-26
+
+### Feature
+
+- **sca:** fix package line numbers - [#5376](https://github.com/bridgecrewio/checkov/pull/5376)
+
+### Bug Fix
+
+- **terraform:** Fix CKV_AWS_104 to support new values - [#5377](https://github.com/bridgecrewio/checkov/pull/5377)
 
 ## [2.3.338](https://github.com/bridgecrewio/checkov/compare/2.3.335...2.3.338) - 2023-07-23
 

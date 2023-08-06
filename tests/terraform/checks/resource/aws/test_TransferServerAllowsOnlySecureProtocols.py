@@ -2,32 +2,32 @@ import os
 import unittest
 
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.resource.aws.DMSS3DefinesIntransitEncryption import check
+from checkov.terraform.checks.resource.aws.TransferServerAllowsOnlySecureProtocols import check
 from checkov.terraform.runner import Runner
 
 
-class TestDMSS3DefinesIntransitEncryption(unittest.TestCase):
+class TestTransferServerAllowsOnlySecureProtocols(unittest.TestCase):
     def test(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
-        test_files_dir = current_dir + "/example_DMSS3DefinesIntransitEncryption"
+        test_files_dir = current_dir + "/example_TransferServerAllowsOnlySecureProtocols"
         report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
 
         passing_resources = {
-            "aws_dms_s3_endpoint.pass",
+            "aws_transfer_server.stfp",
+            "aws_transfer_server.default",
         }
         failing_resources = {
-            "aws_dms_s3_endpoint.fail",
-            "aws_dms_s3_endpoint.fail2",
+            "aws_transfer_server.ftp",
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
-        self.assertEqual(summary["passed"], len(passing_resources))
-        self.assertEqual(summary["failed"], len(failing_resources))
+        self.assertEqual(summary["passed"], 2)
+        self.assertEqual(summary["failed"], 1)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
