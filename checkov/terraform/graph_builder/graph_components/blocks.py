@@ -64,14 +64,7 @@ class TerraformBlock(Block):
         self.module_dependency: TFDefinitionKeyType | None = ""
         self.module_dependency_num: str | None = ""
         if path:
-            if strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'True')):
-                self.path = path  # type:ignore[assignment]  # Block class would need to be a Generic type to make this pass
-            else:
-                self.path, module_dependency, num = remove_module_dependency_in_path(path)  # type:ignore[arg-type]
-                self.path = os.path.realpath(self.path)
-                if module_dependency:
-                    self.module_dependency = module_dependency
-                    self.module_dependency_num = num
+            self.path = path  # type:ignore[assignment]  # Block class would need to be a Generic type to make this pass
         if attributes.get(RESOLVED_MODULE_ENTRY_NAME):
             del attributes[RESOLVED_MODULE_ENTRY_NAME]
         self.attributes = attributes

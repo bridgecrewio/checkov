@@ -89,7 +89,6 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         self.definitions_with_modules: dict[str, dict[str, Any]] = {}
         self.referrer_cache: Dict[str, str] = {}
         self.non_referred_cache: Set[str] = set()
-        self.enable_nested_modules = strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'True'))
 
     block_type_registries = {  # noqa: CCE003  # a static attribute
         'resource': resource_registry,
@@ -205,10 +204,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         for graph in local_graph:
             for vertex in graph.vertices:
                 if vertex.block_type == BlockType.RESOURCE:
-                    if self.enable_nested_modules:
-                        vertex_id = vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS)
-                    else:
-                        vertex_id = vertex.id
+                    vertex_id = vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS)
                     report.add_resource(f'{vertex.path}:{vertex_id}')
             igraph_graph = self.graph_manager.save_graph(graph)
             all_graphs.append(igraph_graph)
@@ -271,20 +267,11 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                     module_dependency_num = entity.get(CustomAttributes.MODULE_DEPENDENCY_NUM)
                     definition_context_file_path = full_file_path
                     if module_dependency and module_dependency_num:
-                        if self.enable_nested_modules:
-                            resource = entity.get(CustomAttributes.TF_RESOURCE_ADDRESS, resource_id)
-                        else:
-                            module_dependency_path = module_dependency.split(PATH_SEPARATOR)[-1]
-                            tf_path = get_tf_definition_key_from_module_dependency(full_file_path, module_dependency_path, module_dependency_num)
-                            referrer_id = self._find_id_for_referrer(tf_path)
-                            if referrer_id:
-                                resource = f'{referrer_id}.{resource_id}'
+                        resource = entity.get(CustomAttributes.TF_RESOURCE_ADDRESS, resource_id)
                         definition_context_file_path = get_tf_definition_key_from_module_dependency(full_file_path, module_dependency, module_dependency_num)
                     elif entity.get(CustomAttributes.TF_RESOURCE_ADDRESS) and entity.get(CustomAttributes.TF_RESOURCE_ADDRESS) != resource_id:
                         # for plan resources
                         resource = entity[CustomAttributes.TF_RESOURCE_ADDRESS]
-                        if not self.enable_nested_modules:
-                            resource = get_resource_id_without_nested_modules(resource)
                     entity_config = self.get_graph_resource_entity_config(entity)
                     censored_code_lines = omit_secret_value_from_graph_checks(
                         check=check,
@@ -315,10 +302,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                         definition_context_file_path=definition_context_file_path
                     )
                     if self.breadcrumbs:
-                        if self.enable_nested_modules:
-                            breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(resource)
-                        else:
-                            breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(resource_id)
+                        breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(resource)
                         if breadcrumb:
                             record = GraphRecord(record, breadcrumb)
                     record.set_guideline(check.guideline)
@@ -366,17 +350,13 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
             self.context = definitions_context
             logging.debug('Created definitions context')
 
-        if self.enable_nested_modules:
-            self.push_skipped_checks_down_from_modules(self.context)
+        self.push_skipped_checks_down_from_modules(self.context)
         for full_file_path, definition in self.definitions.items():
             self.pbar.set_additional_data({'Current File Scanned': os.path.relpath(
                 full_file_path.file_path if isinstance(full_file_path, TFDefinitionKey) else full_file_path,
                 root_folder)})
-            if self.enable_nested_modules:
-                abs_scanned_file = get_abs_path(full_file_path)
-                abs_referrer = None
-            else:
-                abs_scanned_file, abs_referrer = strip_terraform_module_referrer(file_path=full_file_path)
+            abs_scanned_file = get_abs_path(full_file_path)
+            abs_referrer = None
             scanned_file = f"/{os.path.relpath(abs_scanned_file, root_folder)}"
             logging.debug(f"Scanning file: {scanned_file}")
             self.run_all_blocks(definition, self.context, full_file_path, root_folder, report,
@@ -426,51 +406,29 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
             context_parser = parser_registry.context_parsers[block_type]
             definition_path = context_parser.get_entity_context_path(entity)
             (entity_type, entity_name, entity_config) = registry.extract_entity_details(entity)
-            entity_id = ".".join(definition_path)  # example: aws_s3_bucket.my_bucket
 
             caller_file_path = None
             caller_file_line_range = None
 
-            if self.enable_nested_modules:
-                entity_id = entity_config.get(CustomAttributes.TF_RESOURCE_ADDRESS)
-                module_full_path, _ = get_module_from_full_path(full_file_path)
-                if module_full_path:
-                    module_name = get_module_name(full_file_path)
-                    if not module_name:
-                        full_definition_path = entity_id.split('.')
-                        try:
-                            module_name_index = len(full_definition_path) - full_definition_path[::-1][1:].index(BlockType.MODULE) - 1  # the next item after the last 'module' prefix is the module name
-                        except ValueError as e:
-                            # TODO handle multiple modules with the same name in repo
-                            logging.warning(f'Failed to get module name for resource {entity_id}. {str(e)}')
-                            continue
-                        module_name = full_definition_path[module_name_index]
-                    caller_context = definition_context[module_full_path].get(BlockType.MODULE, {}).get(module_name)
-                    if not caller_context:
-                        continue
-                    caller_file_line_range = [caller_context.get('start_line'), caller_context.get('end_line')]
-                    abs_caller_file = get_abs_path(module_full_path)
-                    caller_file_path = f"/{os.path.relpath(abs_caller_file, root_folder)}"
-            elif module_referrer is not None:
-                referrer_id = self._find_id_for_referrer(full_file_path)
-
-                if referrer_id:
-                    entity_id = f"{referrer_id}.{entity_id}"  # ex: module.my_module.aws_s3_bucket.my_bucket
-                    abs_caller_file = module_referrer[:module_referrer.rindex(TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR)]
-                    caller_file_path = f"/{os.path.relpath(abs_caller_file, root_folder)}"
-
+            entity_id = entity_config.get(CustomAttributes.TF_RESOURCE_ADDRESS)
+            module_full_path, _ = get_module_from_full_path(full_file_path)
+            if module_full_path:
+                module_name = get_module_name(full_file_path)
+                if not module_name:
+                    full_definition_path = entity_id.split('.')
                     try:
-                        caller_context = definition_context[abs_caller_file]
-                        for part in referrer_id.split("."):
-                            caller_context = caller_context[part]
-                    except KeyError:
-                        logging.debug("Unable to find caller context for: %s", abs_caller_file)
-                        caller_context = None
-
-                    if caller_context:
-                        caller_file_line_range = [caller_context.get('start_line'), caller_context.get('end_line')]
-                else:
-                    logging.debug(f"Unable to find referrer ID for full path: {full_file_path}")
+                        module_name_index = len(full_definition_path) - full_definition_path[::-1][1:].index(BlockType.MODULE) - 1  # the next item after the last 'module' prefix is the module name
+                    except ValueError as e:
+                        # TODO handle multiple modules with the same name in repo
+                        logging.warning(f'Failed to get module name for resource {entity_id}. {str(e)}')
+                        continue
+                    module_name = full_definition_path[module_name_index]
+                caller_context = definition_context[module_full_path].get(BlockType.MODULE, {}).get(module_name)
+                if not caller_context:
+                    continue
+                caller_file_line_range = [caller_context.get('start_line'), caller_context.get('end_line')]
+                abs_caller_file = get_abs_path(module_full_path)
+                caller_file_path = f"/{os.path.relpath(abs_caller_file, root_folder)}"
 
             if entity_context_path_header is None:
                 entity_context_path = [block_type] + definition_path
@@ -494,9 +452,6 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                 entity_lines_range = None
                 entity_code_lines = None
                 skipped_checks = None
-
-            if not self.enable_nested_modules and block_type == "module":
-                self.push_skipped_checks_down_old(definition_context, context_path, skipped_checks)
 
             if full_file_path in self.evaluations_context:
                 variables_evaluations = {}
@@ -543,10 +498,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                         definition_context_file_path=full_file_path
                     )
                     if CHECKOV_CREATE_GRAPH:
-                        if self.enable_nested_modules:
-                            entity_key = entity_id
-                        else:
-                            entity_key = f"{entity_type}.{entity_name}"
+                        entity_key = entity_id
                         breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(entity_key)
                         if breadcrumb:
                             record = GraphRecord(record, breadcrumb)

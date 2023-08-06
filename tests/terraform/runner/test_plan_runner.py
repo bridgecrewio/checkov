@@ -795,30 +795,7 @@ class TestRunnerValid(unittest.TestCase):
         report_addresses = [report.failed_checks[0].resource_address, report.failed_checks[1].resource_address]
         assert sorted(expected_addresses) == sorted(report_addresses)
 
-    @mock.patch.dict(os.environ, {'CHECKOV_ENABLE_NESTED_MODULES': 'False'})
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_plan_resources_ids(self):
-        current_dir = os.path.dirname(os.path.realpath(__file__))
-        valid_plan_path = current_dir + "/resources/plan_resources_ids/tfplan.json"
-        valid_resources_ids = ["module.child_1_c.aws_eks_cluster.cluster", "module.child_1_b.aws_eks_cluster.cluster",
-                               "module.child_1_a.aws_eks_cluster.cluster"]
-        runner = Runner()
-        runner.graph_registry.checks = []
-        report = runner.run(
-            root_folder=None,
-            files=[valid_plan_path],
-            external_checks_dir=[current_dir + "/extra_yaml_checks"],
-            runner_filter=RunnerFilter(framework=["terraform_plan"]),
-        )
-        self.assertGreater(report.get_summary()["failed"] + report.get_summary()["passed"], 0)
-
-        for check in itertools.chain(report.failed_checks, report.passed_checks):
-            self.assertIn(check.resource, valid_resources_ids)
-
-        self.assertEqual(len(report.resources), 3)
-
-    @mock.patch.dict(os.environ, {'CHECKOV_ENABLE_NESTED_MODULES': 'True'})
-    def test_plan_resources_ids_with_nested_modules(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_plan_path = current_dir + "/resources/plan_resources_ids_with_nested_modules/tfplan.json"
         valid_resources_ids = ["module.child_0.module.child_1_c.aws_eks_cluster.cluster",

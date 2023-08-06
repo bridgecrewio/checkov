@@ -42,7 +42,6 @@ class Module:
         self.resources_types: Set[str] = set()
         self.source_dir = source_dir
         self.render_dynamic_blocks_env_var = os.getenv('CHECKOV_RENDER_DYNAMIC_MODULES', 'True')
-        self.enable_nested_modules = strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'True'))
         self.use_new_tf_parser = strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'True'))
 
     def __eq__(self, other: object) -> bool:
@@ -73,7 +72,6 @@ class Module:
             'resources_types': self.resources_types,
             'source_dir': self.source_dir,
             'render_dynamic_blocks_env_var': self.render_dynamic_blocks_env_var,
-            'enable_nested_modules': self.enable_nested_modules,
             'use_new_tf_parser': self.use_new_tf_parser,
             'blocks': [block.to_dict() for block in self.blocks]
         }
@@ -93,7 +91,6 @@ class Module:
         module.resources_types = module_dict.get('resources_types', set())
         module.source_dir = module_dict.get('source_dir', '')
         module.render_dynamic_blocks_env_var = module_dict.get('render_dynamic_blocks_env_var', '')
-        module.enable_nested_modules = module_dict.get('enable_nested_modules', False)
         module.use_new_tf_parser = module_dict.get('use_new_tf_parser', False)
         return module
 
@@ -105,41 +102,18 @@ class Module:
             self._block_type_to_func[block_type](self, blocks, path)
 
     def _add_to_blocks(self, block: TerraformBlock) -> None:
-        if self.enable_nested_modules:
-            if self.use_new_tf_parser:
-                if isinstance(block.path, str):
-                    block.source_module_object = None
-                    block.path = block.path
-                else:
-                    block.source_module_object = block.path.tf_source_modules
-                    block.path = block.path.file_path
+        if self.use_new_tf_parser:
+            if isinstance(block.path, str):
+                block.source_module_object = None
+                block.path = block.path
             else:
-                block.module_dependency, block.module_dependency_num = get_module_from_full_path(block.path)
-                block.path = get_abs_path(block.path)
-            self.blocks.append(block)
-            return
-
-        dependencies = self.module_dependency_map.get(os.path.dirname(block.path),
-                                                      []) if self.module_dependency_map else []
-        module_dependency_num = ""
-        if not dependencies:
-            dependencies = [[]]
-        for dep_idx, dep_trail in enumerate(dependencies):
-            if dep_idx > 0:
-                block = pickle_deepcopy(block)
-            block.module_dependency = unify_dependency_path(dep_trail)
-
-            if block.module_dependency:
-                module_dependency_numbers = self.dep_index_mapping.get((block.path, dep_trail[-1]),
-                                                                       []) if self.dep_index_mapping else []
-                for mod_idx, module_dep_num in enumerate(module_dependency_numbers):
-                    if mod_idx > 0:
-                        block = pickle_deepcopy(block)
-                    block.module_dependency_num = module_dep_num
-                    self.blocks.append(block)
-            else:
-                block.module_dependency_num = module_dependency_num
-                self.blocks.append(block)
+                block.source_module_object = block.path.tf_source_modules
+                block.path = block.path.file_path
+        else:
+            block.module_dependency, block.module_dependency_num = get_module_from_full_path(block.path)
+            block.path = get_abs_path(block.path)
+        self.blocks.append(block)
+        return
 
     def _add_provider(self, blocks: List[Dict[str, Dict[str, Any]]], path: str | TFDefinitionKey) -> None:
         for provider_dict in blocks:

@@ -8,6 +8,4 @@ PATH_SEPARATOR = "->"
 def unify_dependency_path(dependency_path: List[str]) -> str:
     if not dependency_path:
         return ''
-    if strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'True')):
-        return dependency_path[-1]
-    return PATH_SEPARATOR.join(dependency_path)
+    return dependency_path[-1]

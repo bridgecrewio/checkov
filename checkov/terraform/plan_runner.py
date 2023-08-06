@@ -121,11 +121,7 @@ class Runner(TerraformRunner):
                 for vertex in self.tf_plan_local_graph.vertices:
                     if vertex.block_type == BlockType.RESOURCE:
                         address = vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS)
-                        if self.enable_nested_modules:
-                            report.add_resource(f'{vertex.path}:{address}')
-                        else:
-                            resource_id = get_resource_id_without_nested_modules(address)
-                            report.add_resource(f'{vertex.path}:{resource_id}')
+                        report.add_resource(f'{vertex.path}:{address}')
                 self.graph_manager.save_graph(self.tf_plan_local_graph)
                 if self._should_run_deep_analysis:
                     tf_local_graph = self._create_terraform_graph(runner_filter)
@@ -226,7 +222,6 @@ class Runner(TerraformRunner):
                 entity_lines_range = [entity_context.get('start_line'), entity_context.get('end_line')]
                 entity_code_lines = entity_context.get('code_lines')
                 entity_address = entity_context.get('address')
-                entity_id = entity_address if self.enable_nested_modules else get_resource_id_without_nested_modules(entity_address)
                 _, _, entity_config = registry.extract_entity_details(entity)
 
                 results = registry.scan(scanned_file, entity, [], runner_filter, report_type=CheckType.TERRAFORM_PLAN)
@@ -249,7 +244,7 @@ class Runner(TerraformRunner):
                         code_block=censored_code_lines,
                         file_path=scanned_file,
                         file_line_range=entity_lines_range,
-                        resource=entity_id,
+                        resource=entity_address,
                         resource_address=entity_address,
                         evaluations=None,
                         check_class=check.__class__.__module__,

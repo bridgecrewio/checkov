@@ -978,7 +978,7 @@ class TestRunnerValid(unittest.TestCase):
 
     def test_failure_in_resolved_module(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
-        valid_dir_path = os.path.join(current_dir, "../parser/resources/parser_scenarios/module_matryoshka")
+        valid_dir_path = os.path.join(current_dir, "../parser/resources/parser_scenarios/module_matryoshka_nested_module_enable")
         valid_dir_path = os.path.normpath(valid_dir_path)
         runner = Runner(db_connector=self.db_connector())
         checks_allowlist = ['CKV_AWS_20']
@@ -1111,29 +1111,7 @@ class TestRunnerValid(unittest.TestCase):
             # no need to join with a '/' because the TF runner adds it to the start of the file path
             self.assertEqual(record.repo_file_path, f'/{file_rel_path}')
 
-    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "False"})
     def test_record_definition_context_path(self):
-        if self.use_new_tf_parser == "True":
-            # We assume CHECKOV_ENABLE_NESTED_MODULES is True for the case of the new TF parser
-            return
-        resources_path = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), "resources", "definition_context_path_nested_modules")
-        checks_allow_list = ['CKV_AWS_20']
-        main_path = os.path.join(resources_path, 'main.tf')
-        expected_definition_context_paths = [main_path,
-                                             f'{os.path.join(resources_path, "module/main.tf")}{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{main_path}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_ENDING}',
-                                             f'{os.path.join(resources_path, "module/module2/main.tf")}{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{main_path}->{os.path.join(resources_path, "module/main.tf")}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_ENDING}']
-        expected_definition_context_paths.sort()
-
-        runner = Runner(db_connector=self.db_connector())
-        report = runner.run(root_folder=resources_path, external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allow_list))
-        definition_context_paths = [f.definition_context_file_path for f in report.failed_checks]
-        definition_context_paths.sort()
-        self.assertEqual(expected_definition_context_paths, definition_context_paths)
-
-    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "True"})
-    def test_record_definition_context_path_with_nested_module(self):
         resources_path = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), "resources", "definition_context_path_nested_modules")
         checks_allow_list = ['CKV_AWS_20']
