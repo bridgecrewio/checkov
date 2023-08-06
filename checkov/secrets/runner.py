@@ -37,7 +37,7 @@ from checkov.common.typing import _CheckResult
 from checkov.common.util.dockerfile import is_dockerfile
 from checkov.common.util.secrets import omit_secret_value_from_line
 from checkov.runner_filter import RunnerFilter
-from checkov.secrets.consts import ValidationStatus, VerifySecretsResult
+from checkov.common.secrets.consts import ValidationStatus, VerifySecretsResult
 from checkov.secrets.coordinator import EnrichedSecret, SecretsCoordinator
 from checkov.secrets.plugins.load_detectors import get_runnable_plugins
 from checkov.secrets.git_history_store import GitHistorySecretStore

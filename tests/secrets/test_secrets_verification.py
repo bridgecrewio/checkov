@@ -6,7 +6,7 @@ import pytest
 import responses
 
 from checkov.common.bridgecrew.check_type import CheckType
-from checkov.secrets.consts import VerifySecretsResult
+from checkov.common.secrets.consts import VerifySecretsResult
 
 
 @mock.patch.dict(os.environ, {"CKV_VALIDATE_SECRETS": "true"})

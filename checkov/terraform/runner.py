@@ -4,7 +4,7 @@ import dataclasses
 import logging
 import os
 import platform
-from typing import Dict, Optional, Tuple, Any, Set, TYPE_CHECKING
+from typing import Dict, Optional, Any, Set, TYPE_CHECKING
 
 import dpath
 import igraph
@@ -25,9 +25,8 @@ from checkov.common.util import data_structures_utils
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.parser_utils import get_module_from_full_path, get_abs_path, \
-    get_tf_definition_key_from_module_dependency, TERRAFORM_NESTED_MODULE_PATH_PREFIX, \
-    TERRAFORM_NESTED_MODULE_PATH_ENDING, TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH, \
-    TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR, get_module_name
+    get_tf_definition_key_from_module_dependency, TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR, get_module_name, \
+    strip_terraform_module_referrer
 from checkov.common.util.secrets import omit_secret_value_from_checks, omit_secret_value_from_graph_checks
 from checkov.common.variables.context import EvaluationContext
 from checkov.runner_filter import RunnerFilter
@@ -377,7 +376,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                 abs_scanned_file = get_abs_path(full_file_path)
                 abs_referrer = None
             else:
-                abs_scanned_file, abs_referrer = self._strip_module_referrer(full_file_path)
+                abs_scanned_file, abs_referrer = strip_terraform_module_referrer(file_path=full_file_path)
             scanned_file = f"/{os.path.relpath(abs_scanned_file, root_folder)}"
             logging.debug(f"Scanning file: {scanned_file}")
             self.run_all_blocks(definition, self.context, full_file_path, root_folder, report,
@@ -507,7 +506,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                                                                                       entity_context_path)
             results = registry.scan(scanned_file, entity, skipped_checks, runner_filter)
             if isinstance(full_file_path, str):
-                absolute_scanned_file_path, _ = self._strip_module_referrer(file_path=full_file_path)
+                absolute_scanned_file_path, _ = strip_terraform_module_referrer(file_path=full_file_path)
             if isinstance(full_file_path, TFDefinitionKey):
                 absolute_scanned_file_path = get_abs_path(full_file_path)
             # This duplicates a call at the start of scan, but adding this here seems better than kludging with some tuple return type
@@ -605,7 +604,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         # where referrer could be a path, or path1->path2, etc
 
         for definition in definition_context:
-            _, mod_ref = Runner._strip_module_referrer(definition)
+            _, mod_ref = strip_terraform_module_referrer(file_path=definition)
             if mod_ref is None:
                 continue
 
@@ -676,19 +675,6 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                         for resource_config in resource_configs.values():
                             # append the skipped checks from the module to the other resources.
                             resource_config["skipped_checks"] += skipped_checks
-
-    @staticmethod
-    def _strip_module_referrer(file_path: str) -> Tuple[str, Optional[str]]:
-        """
-        For file paths containing module referrer information (e.g.: "module/module.tf[main.tf#0]"), this
-        returns a tuple containing the file path (e.g., "module/module.tf") and referrer (e.g., "main.tf#0").
-        If the file path does not contain a referred, the tuple will contain the original file path and None.
-        """
-        if file_path.endswith(TERRAFORM_NESTED_MODULE_PATH_ENDING) and TERRAFORM_NESTED_MODULE_PATH_PREFIX in file_path:
-            return file_path[:file_path.index(TERRAFORM_NESTED_MODULE_PATH_PREFIX)], \
-                file_path[file_path.index(TERRAFORM_NESTED_MODULE_PATH_PREFIX) + TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH: -TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH]
-        else:
-            return file_path, None
 
     def _find_id_for_referrer(self, full_file_path: str) -> Optional[str]:
         cached_referrer = self.referrer_cache.get(full_file_path)
