@@ -249,45 +249,6 @@ class TestLocalGraph(TestCase):
         self.assertIsNotNone(tf_definitions)
         self.assertIsNotNone(breadcrumbs)
 
-    def test_module_dependencies(self):
-        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/stacks'))
-        hcl_config_parser = TFParser()
-        module, _ = hcl_config_parser.parse_hcl_module(resources_dir, self.source)
-        self.assertEqual(module.module_dependency_map[f'{resources_dir}/prod'], [[]])
-        self.assertEqual(module.module_dependency_map[f'{resources_dir}/stage'], [[]])
-        self.assertEqual(module.module_dependency_map[f'{resources_dir}/test'], [[]])
-        self.assertEqual(module.module_dependency_map[f'{resources_dir}/prod/sub-prod'], [[f'{resources_dir}/prod/main.tf']])
-        expected_inner_modules = [
-            [
-                f'{resources_dir}/prod/main.tf',
-                f'{resources_dir}/prod/sub-prod/main.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{resources_dir}/prod/main.tf{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_ENDING}',
-            ],
-            [
-                f'{resources_dir}/stage/main.tf'
-            ],
-            [
-                f'{resources_dir}/test/main.tf'
-            ],
-        ]
-        self.assertEqual(module.module_dependency_map[f'{os.path.dirname(resources_dir)}/s3_inner_modules'], expected_inner_modules)
-        resources_dir_no_stacks = resources_dir.replace('/stacks', '')
-        expected_inner_modules = [
-            [
-                f'{resources_dir}/prod/main.tf',
-                f'{resources_dir}/prod/sub-prod/main.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{resources_dir}/prod/main.tf{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_ENDING}',
-                f'{resources_dir_no_stacks}/s3_inner_modules/main.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{resources_dir}/prod/sub-prod/main.tf{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{resources_dir}/prod/main.tf{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_ENDING}{TERRAFORM_NESTED_MODULE_PATH_ENDING}',
-            ],
-            [
-                f'{resources_dir}/stage/main.tf',
-                f'{resources_dir_no_stacks}/s3_inner_modules/main.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{resources_dir}/stage/main.tf{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_ENDING}',
-            ],
-            [
-                f'{resources_dir}/test/main.tf',
-                f'{resources_dir_no_stacks}/s3_inner_modules/main.tf{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{resources_dir}/test/main.tf{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}0{TERRAFORM_NESTED_MODULE_PATH_ENDING}',
-            ],
-        ]
-        self.assertEqual(module.module_dependency_map[f'{os.path.dirname(resources_dir)}/s3_inner_modules/inner'], expected_inner_modules)
-
     def test_blocks_from_local_graph_module(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/stacks'))
         hcl_config_parser = TFParser()
@@ -297,7 +258,6 @@ class TestLocalGraph(TestCase):
         self.assertEqual(len(list(filter(lambda block: block.block_type == BlockType.MODULE and block.name == 's3', module.blocks))), 3)
         self.assertEqual(len(list(filter(lambda block: block.block_type == BlockType.MODULE and block.name == 'sub-module', module.blocks))), 1)
 
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_vertices_from_local_graph_module(self):
         parent_dir = Path(TEST_DIRNAME).parent
         resources_dir = str(parent_dir / "resources/modules/stacks")

@@ -438,7 +438,6 @@ class TFParser:
     ) -> Tuple[Module, Dict[TFDefinitionKey, Dict[str, Any]]]:
         module = self.get_new_module(
             source_dir=source_dir,
-            module_address_map=self.module_address_map,
             external_modules_source_map=self.external_modules_source_map,
         )
         self.add_tfvars(module, source)
@@ -460,7 +459,6 @@ class TFParser:
     ) -> tuple[Module, list[dict[TFDefinitionKey, dict[str, Any]]]]:
         module = self.get_new_module(
             source_dir=source_dir,
-            module_address_map=self.module_address_map,
             external_modules_source_map=self.external_modules_source_map,
         )
         self.add_tfvars_with_source_dir(module, source, source_dir)
@@ -656,12 +654,10 @@ class TFParser:
     @staticmethod
     def get_new_module(
             source_dir: str,
-            module_address_map: dict[tuple[str, str], str],
             external_modules_source_map: dict[tuple[str, str], str],
     ) -> Module:
         return Module(
             source_dir=source_dir,
-            module_address_map=module_address_map,
             external_modules_source_map=external_modules_source_map,
         )
 

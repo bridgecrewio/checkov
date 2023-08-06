@@ -23,15 +23,9 @@ class Module:
     def __init__(
             self,
             source_dir: str,
-            module_address_map: Dict[Tuple[str, str], str],
             external_modules_source_map: Dict[Tuple[str, str], str],
-            module_dependency_map: Optional[Dict[str, List[List[str]]]] = None,
-            dep_index_mapping: Optional[Dict[Tuple[str, str], List[str]]] = None,
     ) -> None:
         # when adding a new field be sure to add it to the equality function below
-        self.dep_index_mapping = dep_index_mapping
-        self.module_dependency_map = module_dependency_map
-        self.module_address_map = module_address_map
         self.external_modules_source_map = external_modules_source_map
         self.path = ""
         self.blocks: List[TerraformBlock] = []
@@ -46,9 +40,7 @@ class Module:
         if not isinstance(other, Module):
             return False
 
-        return self.dep_index_mapping == other.dep_index_mapping and \
-            self.module_dependency_map == other.module_dependency_map and self.module_address_map == other.module_address_map and \
-            self.external_modules_source_map == other.external_modules_source_map and \
+        return self.external_modules_source_map == other.external_modules_source_map and \
             self.path == other.path and \
             self.customer_name == other.customer_name and \
             self.account_id == other.account_id and \
@@ -59,9 +51,6 @@ class Module:
 
     def to_dict(self) -> dict[str, Any]:
         return {
-            'dep_index_mapping': self.dep_index_mapping,
-            'module_dependency_map': self.module_dependency_map,
-            'module_address_map': self.module_address_map,
             'external_modules_source_map': self.external_modules_source_map,
             'path': self.path,
             'customer_name': self.customer_name,
