@@ -1182,7 +1182,6 @@ class TestRunnerValid(unittest.TestCase):
         self.assertFalse(found_inside)
         self.assertFalse(found_outside)
 
-    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "True"})
     def test_nested_modules_caller_file(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         report = Runner(db_connector=self.db_connector()).run(
@@ -1335,7 +1334,6 @@ class TestRunnerValid(unittest.TestCase):
         assert entity_context is not None
         assert entity_context['start_line'] == 1 and entity_context['end_line'] == 7
 
-    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "True"})
     def test_resource_ids_nested_modules(self):
         resources_path = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), "resources", "resource_ids_nested_modules")

@@ -728,7 +728,7 @@ class TestRunnerValid(unittest.TestCase):
         failed_check_resources = {c.resource for c in report.failed_checks}
         self.assertEqual(failing_resources, failed_check_resources)
 
-    @mock.patch.dict(os.environ, {'CHECKOV_ENABLE_NESTED_MODULES': 'True', 'CHECKOV_EXPERIMENTAL_CROSS_VARIABLE_EDGES': 'True'})
+    @mock.patch.dict(os.environ, {'CHECKOV_EXPERIMENTAL_CROSS_VARIABLE_EDGES': 'True'})
     def test_plan_and_tf_combine_graph(self):
         tf_file_path = Path(__file__).parent / "resources/plan_and_tf_combine_graph/tfplan.json"
 
@@ -816,7 +816,6 @@ class TestRunnerValid(unittest.TestCase):
 
         self.assertEqual(len(report.resources), 3)
         
-    @mock.patch.dict(os.environ, {'CHECKOV_ENABLE_NESTED_MODULES': 'True'})
     def test_plan_resources_created_by_modules(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_plan_path = current_dir + "/extra_tf_plan_checks/modules.json"

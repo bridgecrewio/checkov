@@ -527,7 +527,7 @@ class TestLocalGraph(TestCase):
         self.assertEqual(2, len(module_variable_edges))
         self.assertNotEqual(local_graph.vertices[module_variable_edges[0].origin], local_graph.vertices[module_variable_edges[1].origin])
 
-    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "True", "CHECKOV_NEW_TF_PARSER": "False"})
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_nested_modules_instances(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/nested_modules_instances'))
         hcl_config_parser = Parser()
