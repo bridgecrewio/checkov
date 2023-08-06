@@ -17,12 +17,10 @@ from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimmed_strings, filter_sub_keys
 from checkov.common.runners.base_runner import strtobool
 from checkov.common.util.data_structures_utils import pickle_deepcopy
-from checkov.common.util.parser_utils import get_abs_path, get_tf_definition_key_from_module_dependency
 from checkov.common.util.type_forcers import force_int
 from checkov.terraform.graph_builder.foreach.builder import ForeachBuilder
 from checkov.terraform.graph_builder.variable_rendering.vertex_reference import TerraformVertexReference
 from checkov.terraform.modules.module_objects import TFModule
-from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
@@ -212,26 +210,25 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                             else:
                                 dest_node_index = self._find_vertex_index_relative_to_path(
                                     vertex_reference.block_type, reference_name, referenced_module_path,
-                                    vertex.module_dependency,
-                                    vertex.module_dependency_num, referenced_module_idx,
+                                    referenced_module_idx,
                                     source_module_object=source_module_object
                                 )
                             self._create_edge_from_reference(attribute_key, origin_node_index, dest_node_index,
                                                              sub_values, vertex_reference, cross_variable_edges)
-                    if vertex.module_dependency or hasattr(vertex, "source_module_object"):
+                    if vertex.source_module_object:
                         dest_node_index = self._find_vertex_index_relative_to_path(
-                            vertex_reference.block_type, reference_name, vertex.path, vertex.module_dependency,
-                            vertex.module_dependency_num, source_module_object=source_module_object
+                            vertex_reference.block_type, reference_name, vertex.path,
+                            source_module_object=source_module_object
                         )
                         if dest_node_index == -1:
                             dest_node_index = self._find_vertex_index_relative_to_path(
-                                vertex_reference.block_type, reference_name, vertex.path, vertex.path,
-                                vertex.module_dependency_num, source_module_object=source_module_object
+                                vertex_reference.block_type, reference_name, vertex.path,
+                                source_module_object=source_module_object
                             )
                     else:
                         dest_node_index = self._find_vertex_index_relative_to_path(
-                            vertex_reference.block_type, reference_name, vertex.path, vertex.module_dependency,
-                            vertex.module_dependency_num, source_module_object=source_module_object
+                            vertex_reference.block_type, reference_name, vertex.path,
+                            source_module_object=source_module_object
                         )
                     if dest_node_index > -1 and origin_node_index > -1:
                         self._create_edge_from_reference(attribute_key, origin_node_index, dest_node_index, sub_values,
@@ -376,8 +373,6 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         block_type: str,
         name: str,
         block_path: str,
-        module_path: TFDefinitionKeyType | None,
-        module_num: str | None,
         relative_module_idx: Optional[int] = None,
         source_module_object: Optional[TFModule] = None,
     ) -> int:
@@ -677,12 +672,6 @@ def update_list_attribute(
             config[i] = update_dictionary_attribute(config=config_value, key_to_update=".".join(key_parts[1:]), new_value=new_value, dynamic_blocks=dynamic_blocks)
 
     return config
-
-
-def get_path_with_nested_modules(block: TerraformBlock) -> str:
-    if not block.module_dependency:
-        return block.path
-    return get_tf_definition_key_from_module_dependency(block.path, block.module_dependency, block.module_dependency_num)  # type:ignore[arg-type]  # will be fixed when removing terraform/checks from mypy exclusion
 
 
 def get_vertex_as_tf_module(block: TerraformBlock) -> TFModule:

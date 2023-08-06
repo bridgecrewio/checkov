@@ -6,7 +6,6 @@ from typing import List, Dict, Any, Tuple
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.runners.base_runner import strtobool
 from checkov.common.typing import TFDefinitionKeyType
-from checkov.common.util.parser_utils import get_tf_definition_key_from_module_dependency
 from checkov.terraform.modules.module_objects import TFDefinitionKey
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
@@ -28,12 +27,8 @@ def convert_graph_vertices_to_tf_definitions(
             continue
 
         tf_path: TFDefinitionKeyType = TFDefinitionKey(file_path=block_path) if use_new_tf_parser else block_path
-        if vertex.module_dependency or hasattr(vertex, "source_module_object") and vertex.source_module_object:
-            if use_new_tf_parser:
-                tf_path = TFDefinitionKey(file_path=block_path, tf_source_modules=vertex.source_module_object)
-            else:
-                module_dependency = str(vertex.module_dependency) if vertex.module_dependency else None
-                tf_path = get_tf_definition_key_from_module_dependency(block_path, module_dependency, vertex.module_dependency_num)
+        if vertex.source_module_object:
+            tf_path = TFDefinitionKey(file_path=block_path, tf_source_modules=vertex.source_module_object)
         tf_definitions.setdefault(tf_path, {}).setdefault(block_type, []).append(vertex.config)
         relative_block_path = f"/{os.path.relpath(block_path, root_folder)}"
         add_breadcrumbs(vertex, breadcrumbs, relative_block_path)
