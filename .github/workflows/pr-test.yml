@@ -58,10 +58,15 @@ jobs:
           pipenv --rm || true
           pipenv --python ${{ matrix.python }}
           pipenv install --dev -v
+          pipenv run pip install redefine --index-url https://redefine.dev/pip/
       - name: Unit tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REDEFINE_AUTH: ${{ secrets.REDEFINE_AUTH }}
         run: |
+          pipenv run redefine config set stable_branch=main matrix_value=${{ matrix.python }}
+          pipenv run redefine verify --pytest
+          pipenv run redefine start --pytest --discover
           pipenv run python -m pytest tests
 
   integration-tests:
