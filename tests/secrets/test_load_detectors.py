@@ -256,7 +256,7 @@ class TestLoadDetectors(unittest.TestCase):
                 "prowlerCheckId": None,
                 "checkovCheckId": None,
                 "conditionQuery": {
-                    "value": ['test_pass:\s*"(.*?)"'],
+                    "value": ['test_pass =\s*"(.*?)"'],
                     "cond_type": "secrets"
                 },
                 "resourceTypes":
