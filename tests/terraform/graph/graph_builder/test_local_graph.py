@@ -15,7 +15,6 @@ from checkov.terraform.graph_builder.graph_components.block_types import BlockTy
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
 from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
-from checkov.terraform.parser import Parser
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.graph_manager import TerraformGraphManager
 from checkov.terraform.tf_parser import TFParser
@@ -60,7 +59,7 @@ class TestLocalGraph(TestCase):
     def test_set_variables_values_from_modules(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME,
                                                       '../resources/variable_rendering/render_from_module_vpc'))
-        hcl_config_parser = Parser()
+        hcl_config_parser = TFParser()
         module, _ = hcl_config_parser.parse_hcl_module(resources_dir, source=self.source)
         local_graph = TerraformLocalGraph(module)
         local_graph._create_vertices()
@@ -215,7 +214,7 @@ class TestLocalGraph(TestCase):
 
     def test_encryption_aws(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/encryption'))
-        hcl_config_parser = Parser()
+        hcl_config_parser = TFParser()
         module, _ = hcl_config_parser.parse_hcl_module(resources_dir, self.source)
         local_graph = TerraformLocalGraph(module)
         local_graph._create_vertices()
@@ -242,7 +241,7 @@ class TestLocalGraph(TestCase):
     def test_vertices_from_local_graph(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME,
                                                       '../resources/variable_rendering/render_from_module_vpc'))
-        hcl_config_parser = Parser()
+        hcl_config_parser = TFParser()
         module, _ = hcl_config_parser.parse_hcl_module(resources_dir, self.source)
         local_graph = TerraformLocalGraph(module)
         local_graph._create_vertices()
@@ -252,7 +251,7 @@ class TestLocalGraph(TestCase):
 
     def test_module_dependencies(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/stacks'))
-        hcl_config_parser = Parser()
+        hcl_config_parser = TFParser()
         module, _ = hcl_config_parser.parse_hcl_module(resources_dir, self.source)
         self.assertEqual(module.module_dependency_map[f'{resources_dir}/prod'], [[]])
         self.assertEqual(module.module_dependency_map[f'{resources_dir}/stage'], [[]])
@@ -291,7 +290,7 @@ class TestLocalGraph(TestCase):
 
     def test_blocks_from_local_graph_module(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/stacks'))
-        hcl_config_parser = Parser()
+        hcl_config_parser = TFParser()
         module, _ = hcl_config_parser.parse_hcl_module(resources_dir, self.source)
         self.assertEqual(len(list(filter(lambda block: block.block_type == BlockType.RESOURCE and block.name == 'aws_s3_bucket.inner_s3', module.blocks))), 3)
         self.assertEqual(len(list(filter(lambda block: block.block_type == BlockType.MODULE and block.name == 'inner_module_call', module.blocks))), 3)
@@ -302,7 +301,7 @@ class TestLocalGraph(TestCase):
     def test_vertices_from_local_graph_module(self):
         parent_dir = Path(TEST_DIRNAME).parent
         resources_dir = str(parent_dir / "resources/modules/stacks")
-        hcl_config_parser = Parser()
+        hcl_config_parser = TFParser()
         module, _ = hcl_config_parser.parse_hcl_module(resources_dir, self.source)
         local_graph = TerraformLocalGraph(module)
         local_graph.build_graph(render_variables=True)
@@ -433,40 +432,8 @@ class TestLocalGraph(TestCase):
             bucket_vertex_3.breadcrumbs,
         )
 
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_variables_same_name_different_modules(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/same_var_names'))
-        hcl_config_parser = Parser()
-        module, _ = hcl_config_parser.parse_hcl_module(resources_dir, self.source)
-        local_graph = TerraformLocalGraph(module)
-        local_graph.build_graph(render_variables=True)
-        print(local_graph.edges)
-        self.assertEqual(12, len(local_graph.edges))
-        self.assertEqual(13, len(local_graph.vertices))
-
-        module_variable_edges = [
-            e for e in local_graph.edges
-            if local_graph.vertices[e.dest].block_type == "module" and local_graph.vertices[e.dest].path.endswith(
-                'same_var_names/module2/main.tf')
-        ]
-
-        # Check they point to 2 different modules
-        self.assertEqual(2, len(module_variable_edges))
-        self.assertNotEqual(local_graph.vertices[module_variable_edges[0].origin],
-                            local_graph.vertices[module_variable_edges[1].origin])
-
-
-        module_variable_edges = [
-            e for e in local_graph.edges
-            if local_graph.vertices[e.dest].block_type == "module" and local_graph.vertices[e.dest].path.endswith('same_var_names/module1/main.tf')
-        ]
-
-        # Check they point to 2 different modules
-        self.assertEqual(2, len(module_variable_edges))
-        self.assertNotEqual(local_graph.vertices[module_variable_edges[0].origin], local_graph.vertices[module_variable_edges[1].origin])
-
-    def test_variables_same_name_different_modules_with_new_tf_parser(self):
-        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/same_var_names'))
         hcl_config_parser = TFParser()
         module, _ = hcl_config_parser.parse_hcl_module(resources_dir, self.source)
         local_graph = TerraformLocalGraph(module)
@@ -496,54 +463,3 @@ class TestLocalGraph(TestCase):
         self.assertEqual(2, len(module_variable_edges))
         self.assertNotEqual(local_graph.vertices[module_variable_edges[0].origin], local_graph.vertices[module_variable_edges[1].origin])
 
-    def test_variables_same_name_different_modules_with_new_tf_parser(self):
-        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/same_var_names'))
-        hcl_config_parser = TFParser()
-        module, _ = hcl_config_parser.parse_hcl_module(resources_dir, self.source)
-        local_graph = TerraformLocalGraph(module)
-        local_graph.build_graph(render_variables=True)
-        print(local_graph.edges)
-        self.assertEqual(12, len(local_graph.edges))
-        self.assertEqual(13, len(local_graph.vertices))
-
-        module_variable_edges = [
-            e for e in local_graph.edges
-            if local_graph.vertices[e.dest].block_type == "module" and local_graph.vertices[e.dest].path.endswith(
-                'same_var_names/module2/main.tf')
-        ]
-
-        # Check they point to 2 different modules
-        self.assertEqual(2, len(module_variable_edges))
-        self.assertNotEqual(local_graph.vertices[module_variable_edges[0].origin],
-                            local_graph.vertices[module_variable_edges[1].origin])
-
-
-        module_variable_edges = [
-            e for e in local_graph.edges
-            if local_graph.vertices[e.dest].block_type == "module" and local_graph.vertices[e.dest].path.endswith('same_var_names/module1/main.tf')
-        ]
-
-        # Check they point to 2 different modules
-        self.assertEqual(2, len(module_variable_edges))
-        self.assertNotEqual(local_graph.vertices[module_variable_edges[0].origin], local_graph.vertices[module_variable_edges[1].origin])
-
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
-    def test_nested_modules_instances(self):
-        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/nested_modules_instances'))
-        hcl_config_parser = Parser()
-        module, _ = hcl_config_parser.parse_hcl_module(resources_dir, self.source)
-        local_graph = TerraformLocalGraph(module)
-        local_graph.build_graph(render_variables=True)
-
-        vertices = [vertex.to_dict() for vertex in local_graph.vertices]
-        edges = [edge.to_dict() for edge in local_graph.edges]
-
-        with open(os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/nested_modules_instances/expected_local_graph.json')), 'r') as f:
-            expected = json.load(f)
-
-        self.assertCountEqual(
-            json.loads(json.dumps(vertices).replace(resources_dir, '')),
-            json.loads(json.dumps(expected.get('vertices')).replace(resources_dir, '')),
-
-        )
-        self.assertCountEqual(edges, expected.get('edges'))

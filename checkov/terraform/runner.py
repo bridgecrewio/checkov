@@ -43,7 +43,6 @@ from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_grap
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.graph_manager import TerraformGraphManager
 from checkov.terraform.image_referencer.manager import TerraformImageReferencerManager
-from checkov.terraform.parser import Parser
 from checkov.terraform.tf_parser import TFParser
 from checkov.terraform.tag_providers import get_resource_tags
 from checkov.common.runners.base_runner import strtobool
@@ -64,7 +63,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
 
     def __init__(
         self,
-        parser: Parser | TFParser | None = None,
+        parser: TFParser | None = None,
         db_connector: LibraryGraphConnector | None = None,
         external_registries: list[BaseRegistry] | None = None,
         source: str = GraphSource.TERRAFORM,
@@ -74,7 +73,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         super().__init__(file_extensions=['.tf', '.hcl'])
         self.external_registries = [] if external_registries is None else external_registries
         self.graph_class = graph_class
-        self.parser = parser or TFParser() if strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'True')) else Parser()
+        self.parser = parser or TFParser()
         self.definitions: dict[TFDefinitionKeyType, dict[str, Any]] | None = None
         self.context = None
         self.breadcrumbs = None
@@ -530,8 +529,6 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
             if result:
                 file, parse_result, file_parsing_errors = result
                 if parse_result is not None:
-                    if isinstance(self.parser, Parser):
-                        self.definitions[file] = parse_result
                     if isinstance(self.parser, TFParser):
                         self.definitions[TFDefinitionKey(file_path=file)] = parse_result
                 if file_parsing_errors:

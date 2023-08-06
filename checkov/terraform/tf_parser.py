@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import logging
 import os
 from collections import defaultdict
@@ -7,6 +8,7 @@ from pathlib import Path
 from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, cast, TYPE_CHECKING
 
 import deep_merge
+import hcl2
 
 from checkov.common.runners.base_runner import filter_ignored_paths, IGNORE_HIDDEN_DIRECTORY_ENV
 from checkov.common.typing import TFDefinitionKeyType
@@ -14,6 +16,7 @@ from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MO
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.type_forcers import force_list
 from checkov.common.variables.context import EvaluationContext
+from checkov.terraform import validate_malformed_definitions, clean_bad_definitions
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.module import Module
 from checkov.terraform.module_loading.content import ModuleContent
@@ -21,9 +24,9 @@ from checkov.terraform.module_loading.module_finder import load_tf_modules
 from checkov.terraform.module_loading.registry import module_loader_registry as default_ml_registry, \
     ModuleLoaderRegistry
 from checkov.common.util.parser_utils import is_acceptable_module_param
-from checkov.terraform.modules.module_utils import load_or_die_quietly, safe_index, \
+from checkov.terraform.modules.module_utils import safe_index, \
     remove_module_dependency_from_path, \
-    clean_parser_types, serialize_definitions
+    clean_parser_types, serialize_definitions, _Hcl2Payload
 from checkov.terraform.modules.module_objects import TFModule, TFDefinitionKey
 
 if TYPE_CHECKING:
@@ -675,3 +678,33 @@ def get_tf_definition_object_from_module_dependency(
     if not is_nested_object(module_dependency):
         return TFDefinitionKey(path.file_path, TFModule(path=module_dependency.file_path, name=module_dependency_name))
     return TFDefinitionKey(path.file_path, TFModule(path=module_dependency.file_path, name=module_dependency_name, nested_tf_module=module_dependency.tf_source_modules))
+
+
+def load_or_die_quietly(
+    file: str | Path | os.DirEntry[str], parsing_errors: dict[str, Exception], clean_definitions: bool = True
+) -> Optional[_Hcl2Payload]:
+    """
+Load JSON or HCL, depending on filename.
+    :return: None if the file can't be loaded
+    """
+
+    file_path = os.fspath(file)
+    file_name = os.path.basename(file_path)
+
+    try:
+        logging.debug(f"Parsing {file_path}")
+
+        with open(file_path, "r", encoding="utf-8-sig") as f:
+            if file_name.endswith(".json"):
+                return cast("_Hcl2Payload", json.load(f))
+            else:
+                raw_data = hcl2.load(f)
+                non_malformed_definitions = validate_malformed_definitions(raw_data)
+                if clean_definitions:
+                    return clean_bad_definitions(non_malformed_definitions)
+                else:
+                    return non_malformed_definitions
+    except Exception as e:
+        logging.debug(f'failed while parsing file {file_path}', exc_info=True)
+        parsing_errors[file_path] = e
+        return None

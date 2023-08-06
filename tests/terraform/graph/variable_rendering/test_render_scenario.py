@@ -6,7 +6,7 @@ from unittest import mock
 
 import jmespath
 
-from checkov.common.util.json_utils import object_hook
+from checkov.common.util.json_utils import object_hook, CustomJSONEncoder
 from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_PREFIX, TERRAFORM_NESTED_MODULE_PATH_ENDING, \
     TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR, TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH
 from checkov.terraform.modules.module_objects import TFDefinitionKey
@@ -85,14 +85,14 @@ class TestRendererScenarios(TestCase):
         dir_name = 'nested_modules_instances_enable'
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../../parser/resources/parser_scenarios', dir_name))
 
-        from checkov.terraform.parser import Parser
-        parser = Parser()
-        tf_definitions = {}
-        parser.parse_directory(directory=resources_dir, out_definitions=tf_definitions)
+        from checkov.terraform.tf_parser import TFParser
+        parser = TFParser()
+        tf_definitions = parser.parse_directory(directory=resources_dir)
 
         with open(f'{resources_dir}/expected.json') as fp:
             expected = json.load(fp)
-        result, expected = json.dumps(tf_definitions, sort_keys=True), json.dumps(expected, sort_keys=True)
+        result, expected = json.dumps(tf_definitions, sort_keys=True, cls=CustomJSONEncoder), \
+            json.dumps(expected, sort_keys=True, cls=CustomJSONEncoder)
         result = result.replace(resources_dir, '')
         expected = expected.replace(resources_dir, '')
         assert result == expected

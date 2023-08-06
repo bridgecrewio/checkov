@@ -6,10 +6,8 @@ import logging
 import os
 from collections import defaultdict
 from collections.abc import Sequence
-from pathlib import Path
-from typing import Any, Optional, TYPE_CHECKING, TypeVar, cast
+from typing import Any, TYPE_CHECKING, TypeVar, cast
 
-import hcl2
 from lark import Tree
 import re
 
@@ -51,36 +49,6 @@ def validate_malformed_definitions(raw_data: _Hcl2Payload) -> _Hcl2Payload:
         block_type: [block for block in blocks if is_valid_block(block)]
         for block_type, blocks in raw_data.items()
     }
-
-
-def load_or_die_quietly(
-    file: str | Path | os.DirEntry[str], parsing_errors: dict[str, Exception], clean_definitions: bool = True
-) -> Optional[_Hcl2Payload]:
-    """
-Load JSON or HCL, depending on filename.
-    :return: None if the file can't be loaded
-    """
-
-    file_path = os.fspath(file)
-    file_name = os.path.basename(file_path)
-
-    try:
-        logging.debug(f"Parsing {file_path}")
-
-        with open(file_path, "r", encoding="utf-8-sig") as f:
-            if file_name.endswith(".json"):
-                return cast("_Hcl2Payload", json.load(f))
-            else:
-                raw_data = hcl2.load(f)
-                non_malformed_definitions = validate_malformed_definitions(raw_data)
-                if clean_definitions:
-                    return clean_bad_definitions(non_malformed_definitions)
-                else:
-                    return non_malformed_definitions
-    except Exception as e:
-        logging.debug(f'failed while parsing file {file_path}', exc_info=True)
-        parsing_errors[file_path] = e
-        return None
 
 
 def clean_bad_definitions(tf_definition_list: _Hcl2Payload) -> _Hcl2Payload:

@@ -45,7 +45,7 @@ from checkov.common.util.type_forcers import convert_csv_string_arg_to_list, for
 from checkov.sca_image.runner import Runner as image_runner
 from checkov.common.secrets.consts import SECRET_VALIDATION_STATUSES
 from checkov.terraform.context_parsers.registry import parser_registry
-from checkov.terraform.parser import Parser
+from checkov.terraform.tf_parser import TFParser
 
 if TYPE_CHECKING:
     from checkov.common.output.baseline import Baseline
@@ -660,7 +660,7 @@ class RunnerRegistry:
             tf_definitions: dict[str, Any] = {}
             parsing_errors: dict[str, Exception] = {}
             repo_root = os.path.abspath(repo_root)
-            Parser().parse_directory(
+            TFParser().parse_directory(
                 directory=repo_root,  # assume plan file is in the repo-root
                 out_definitions=tf_definitions,
                 out_parsing_errors=parsing_errors,

@@ -30,7 +30,7 @@ from checkov.terraform import TFDefinitionKey
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.graph_manager import TerraformGraphManager
-from checkov.terraform.parser import Parser
+from checkov.terraform.tf_parser import TFParser
 from checkov.terraform.runner import Runner
 from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.checks.module.registry import module_registry
@@ -42,24 +42,20 @@ EXTERNAL_MODULES_DOWNLOAD_PATH = os.environ.get('EXTERNAL_MODULES_DIR', DEFAULT_
 
 
 @parameterized_class([
-    {"db_connector": NetworkxConnector, "use_new_tf_parser": "True", "tf_split_graph": "True", "graph": "NETWORKX"},
-    {"db_connector": NetworkxConnector, "use_new_tf_parser": "True", "tf_split_graph": "False", "graph": "NETWORKX"},
-    {"db_connector": NetworkxConnector, "use_new_tf_parser": "False", "tf_split_graph": "False", "graph": "NETWORKX"},
-    {"db_connector": IgraphConnector, "use_new_tf_parser": "True", "tf_split_graph": "True", "graph": "IGRAPH"},
-    {"db_connector": IgraphConnector, "use_new_tf_parser": "True", "tf_split_graph": "False", "graph": "IGRAPH"},
-    {"db_connector": IgraphConnector, "use_new_tf_parser": "False", "tf_split_graph": "False", "graph": "IGRAPH"}
+    {"db_connector": NetworkxConnector, "tf_split_graph": "True", "graph": "NETWORKX"},
+    {"db_connector": NetworkxConnector, "tf_split_graph": "False", "graph": "NETWORKX"},
+    {"db_connector": IgraphConnector, "tf_split_graph": "True", "graph": "IGRAPH"},
+    {"db_connector": IgraphConnector, "tf_split_graph": "False", "graph": "IGRAPH"},
 ])
 class TestRunnerValid(unittest.TestCase):
     def setUp(self) -> None:
         self.orig_checks = resource_registry.checks
         self.db_connector = self.db_connector
         os.environ["CHECKOV_GRAPH_FRAMEWORK"] = self.graph
-        os.environ["CHECKOV_NEW_TF_PARSER"] = self.use_new_tf_parser
         os.environ["TF_SPLIT_GRAPH"] = self.tf_split_graph
 
     def tearDown(self):
         del os.environ["CHECKOV_GRAPH_FRAMEWORK"]
-        del os.environ["CHECKOV_NEW_TF_PARSER"]
         del os.environ["TF_SPLIT_GRAPH"]
 
     def test_registry_has_type(self):
@@ -551,7 +547,6 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(len(result.passed_checks), 1)
         self.assertIn('some-module', map(lambda record: record.resource, result.passed_checks))
 
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     @mock.patch.dict(os.environ, {"TF_SPLIT_GRAPH": "False"})
     @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "False"})
     def test_terraform_multiple_module_versions(self):
@@ -968,7 +963,7 @@ class TestRunnerValid(unittest.TestCase):
             },
         }
         runner = Runner(db_connector=self.db_connector())
-        parser = Parser()
+        parser = TFParser()
         runner.definitions = tf_definitions
         runner.set_external_data(tf_definitions, external_definitions_context, breadcrumbs={})
         parser.parse_directory(tf_dir_path, tf_definitions)

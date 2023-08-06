@@ -41,7 +41,6 @@ class Module:
         self.resources_types: Set[str] = set()
         self.source_dir = source_dir
         self.render_dynamic_blocks_env_var = os.getenv('CHECKOV_RENDER_DYNAMIC_MODULES', 'True')
-        self.use_new_tf_parser = strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'True'))
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Module):
@@ -71,7 +70,6 @@ class Module:
             'resources_types': self.resources_types,
             'source_dir': self.source_dir,
             'render_dynamic_blocks_env_var': self.render_dynamic_blocks_env_var,
-            'use_new_tf_parser': self.use_new_tf_parser,
             'blocks': [block.to_dict() for block in self.blocks]
         }
 
@@ -90,7 +88,6 @@ class Module:
         module.resources_types = module_dict.get('resources_types', set())
         module.source_dir = module_dict.get('source_dir', '')
         module.render_dynamic_blocks_env_var = module_dict.get('render_dynamic_blocks_env_var', '')
-        module.use_new_tf_parser = module_dict.get('use_new_tf_parser', False)
         return module
 
     def add_blocks(
@@ -101,16 +98,12 @@ class Module:
             self._block_type_to_func[block_type](self, blocks, path)
 
     def _add_to_blocks(self, block: TerraformBlock) -> None:
-        if self.use_new_tf_parser:
-            if isinstance(block.path, str):
-                block.source_module_object = None
-                block.path = block.path
-            else:
-                block.source_module_object = block.path.tf_source_modules
-                block.path = block.path.file_path
+        if isinstance(block.path, str):
+            block.source_module_object = None
+            block.path = block.path
         else:
-            block.module_dependency, block.module_dependency_num = get_module_from_full_path(block.path)
-            block.path = get_abs_path(block.path)
+            block.source_module_object = block.path.tf_source_modules
+            block.path = block.path.file_path
         self.blocks.append(block)
         return
 

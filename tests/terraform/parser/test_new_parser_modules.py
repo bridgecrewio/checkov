@@ -10,7 +10,6 @@ from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.terraform.modules.module_objects import TFDefinitionKey, TFModule
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.tf_parser import TFParser
-from checkov.terraform.parser import Parser
 
 
 @pytest.fixture
@@ -182,25 +181,8 @@ class TestParserInternals(unittest.TestCase):
         assert module2_key0_nest0 in o_definitions
         assert module2_key1_nest0 in o_definitions
 
-    def test_new_tf_parser(self):
+    def test_tf_parser(self):
         parser = TFParser()
-        directory = os.path.join(self.resources_dir, "parser_dup_nested")
-        module, tf_definitions = parser.parse_hcl_module(source_dir=directory, source='terraform')
-
-        local_graph = TerraformLocalGraph(module)
-        local_graph.build_graph(render_variables=True)
-
-        for i, vertex in enumerate(local_graph.vertices):
-            assert vertex.source_module == self.expected_source_modules[i]
-
-        assert len(local_graph.edges) == 20
-
-        assert module
-        assert tf_definitions
-
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
-    def test_old_parser(self):
-        parser = Parser()
         directory = os.path.join(self.resources_dir, "parser_dup_nested")
         module, tf_definitions = parser.parse_hcl_module(source_dir=directory, source='terraform')
 

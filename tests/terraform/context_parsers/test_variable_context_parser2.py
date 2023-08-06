@@ -1,5 +1,5 @@
 import unittest
-from checkov.terraform.parser import Parser
+from checkov.terraform.tf_parser import TFParser
 from checkov.terraform.context_parsers.registry import parser_registry
 import os
 
@@ -7,10 +7,8 @@ import os
 class TestVariableContextParser(unittest.TestCase):
     def setUp(self):
         test_root_dir = os.path.dirname(os.path.realpath(__file__)) + '/../evaluation/resources/default_evaluation/'
-        tf_definitions = {}
         parsing_errors = {}
-        Parser().parse_directory(directory=test_root_dir,
-                                 out_definitions=tf_definitions,
+        tf_definitions = TFParser().parse_directory(directory=test_root_dir,
                                  out_evaluations_context={},
                                  out_parsing_errors=parsing_errors)
         for definition in tf_definitions.items():

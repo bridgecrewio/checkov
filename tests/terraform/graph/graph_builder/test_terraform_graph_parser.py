@@ -2,9 +2,10 @@ import os
 
 from lark import Tree
 
+from checkov.terraform import TFDefinitionKey
 from checkov.terraform.modules.module_utils import clean_parser_types
-from checkov.terraform.parser import Parser
-from unittest import TestCase, mock
+from checkov.terraform.tf_parser import TFParser
+from unittest import TestCase
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
@@ -44,14 +45,16 @@ class TestParser(TestCase):
         cur_dir = os.path.dirname(os.path.realpath(__file__))
         tf_dir = f'{cur_dir}/../resources/tf_parsing_comparison/tf_regular'
         old_tf_dir = f'{cur_dir}/../resources/tf_parsing_comparison/tf_old'
-        _, tf_definitions = Parser().parse_hcl_module(tf_dir, 'AWS')
-        _, old_tf_definitions = Parser().parse_hcl_module(old_tf_dir, 'AWS')
-        self.assertDictEqual(tf_definitions[f'{tf_dir}/main.tf'], old_tf_definitions[f'{old_tf_dir}/main.tf'])
+        _, tf_definitions = TFParser().parse_hcl_module(tf_dir, 'AWS')
+        _, old_tf_definitions = TFParser().parse_hcl_module(old_tf_dir, 'AWS')
+        definition_value = list(tf_definitions.values())[0]
+        old_definition_value = list(tf_definitions.values())[0]
+        self.assertDictEqual(definition_value, old_definition_value)
 
     def test_hcl_parsing_old_booleans_correctness(self):
         cur_dir = os.path.dirname(os.path.realpath(__file__))
         tf_dir = f'{cur_dir}/../resources/tf_parsing_comparison/tf_regular'
-        _, tf_definitions = Parser().parse_hcl_module(tf_dir, 'AWS')
+        _, tf_definitions = TFParser().parse_hcl_module(tf_dir, 'AWS')
         expected = [
             {
                 "aws_cloudtrail": {
@@ -155,7 +158,9 @@ class TestParser(TestCase):
                 }
             },
         ]
-        tf_definitions_resources = tf_definitions[f'{tf_dir}/main.tf']['resource']
+        definition_key = TFDefinitionKey(file_path="/Users/bfatal/Documents/code/checkov/tests/terraform/graph/graph_builder/../resources/tf_parsing_comparison/tf_regular/main.tf",
+                                         tf_source_modules=None)
+        tf_definitions_resources = tf_definitions[definition_key]['resource']
         for index in range(len(tf_definitions_resources)):
             self.assertDictEqual(
                 tf_definitions_resources[index],
@@ -165,21 +170,22 @@ class TestParser(TestCase):
     def test_hcl_parsing_sorting(self):
         source_dir = os.path.realpath(os.path.join(TEST_DIRNAME,
                                                    '../resources/tf_parsing_comparison/modifications_diff'))
-        config_parser = Parser()
+        config_parser = TFParser()
         _, tf_definitions = config_parser.parse_hcl_module(source_dir, 'AWS')
         expected = ['https://www.googleapis.com/auth/devstorage.read_only', 'https://www.googleapis.com/auth/logging.write',
                     'https://www.googleapis.com/auth/monitoring.write', 'https://www.googleapis.com/auth/service.management.readonly',
                     'https://www.googleapis.com/auth/servicecontrol', 'https://www.googleapis.com/auth/trace.append']
-        result_resource = tf_definitions[source_dir + '/main.tf']['resource'][0]['google_compute_instance']['tfer--test3']['service_account'][0]['scopes'][0]
+        defintion_key = TFDefinitionKey(file_path="/Users/bfatal/Documents/code/checkov/tests/terraform/graph/resources/tf_parsing_comparison/modifications_diff/main.tf",
+                              tf_source_modules=None)
+        result_resource = tf_definitions[defintion_key]['resource'][0]['google_compute_instance']['tfer--test3']['service_account'][0]['scopes'][0]
         self.assertListEqual(result_resource, expected)
 
     def test_build_graph_with_linked_modules(self):
         source_dir = os.path.realpath(os.path.join(TEST_DIRNAME,
                                                    '../resources/nested_modules_double_call'))
-        config_parser = Parser()
-        definitions = {}
+        config_parser = TFParser()
 
-        config_parser.parse_directory(source_dir, definitions)
+        definitions = config_parser.parse_directory(source_dir)
         assert len(definitions.keys()) == 13
         assert '/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/nested_modules_double_call/main.tf' not in definitions
         assert '/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/nested_modules_double_call/third/main.tf[/Users/arosenfeld/Desktop/dev/checkov/tests/terraform/graph/resources/nested_modules_double_call/main.tf#0]' not in definitions
