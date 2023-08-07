@@ -205,11 +205,11 @@ class PrismaEngine(SastEngine):
                     file_abs_path = location.path
                     file_path = file_abs_path.split('/')[-1]
                     file_line_range = [location.start.row, location.end.row]
-                    split_code_block = [line + '\n' for line in location.code_block.split('\n')]
 
                     if match.metadata.taint_mode is not None:
-                        code_block = get_data_flow_code_block(match.metadata.taint_mode.data_flow, split_code_block)
+                        code_block = get_data_flow_code_block(match.metadata.taint_mode.data_flow)
                     else:
+                        split_code_block = [line + '\n' for line in location.code_block.split('\n')]
                         code_block = get_code_block_from_start(split_code_block, location.start.row)
 
                     record = SastRecord(check_id=check_id, check_name=check_name, resource="", evaluations={},
