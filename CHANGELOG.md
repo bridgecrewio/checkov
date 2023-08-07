@@ -1,6 +1,16 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.356...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.358...HEAD)
+
+## [2.3.358](https://github.com/bridgecrewio/checkov/compare/2.3.356...2.3.358) - 2023-08-06
+
+### Feature
+
+- **secrets:** Make non-entropy signatures take precedence over entropy signatures - [#5412](https://github.com/bridgecrewio/checkov/pull/5412)
+
+### Bug Fix
+
+- **terraform:** Remove DMS S3 check CKV_AWS_299 - [#5413](https://github.com/bridgecrewio/checkov/pull/5413)
 
 ## [2.3.356](https://github.com/bridgecrewio/checkov/compare/2.3.354...2.3.356) - 2023-08-03
 
