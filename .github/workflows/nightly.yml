@@ -56,7 +56,7 @@ jobs:
           body: ${{ steps.build_github_release.outputs.changelog }}
       - name: Update CHANGELOG.md
         if: steps.build_github_release.outputs.changelog != ''
-        uses: stefanzweifel/changelog-updater-action@fbed2c00a9444d54ab4b1a4a81dea3559e7a2d7c  # v1
+        uses: stefanzweifel/changelog-updater-action@ab89eeba5adfbb4ebdaabf7f1a17d76eec6c59c9  # v1
         with:
           latest-version: ${{ steps.prepare_release.outputs.version }}
           release-notes: ${{ steps.build_github_release.outputs.changelog }}
