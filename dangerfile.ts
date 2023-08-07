@@ -62,14 +62,12 @@ async function failIfLoggingLineContainsSensitiveData() {
       for (let line of allLines) {
         if (FIND_LOGGING_LEVEL_PY.test(line) && FSTRING_PATTERN.test(line) && !line.includes(PY_MASK_STR)) {
           if (FIND_CODE_INSIDE_BRACES_OR_AFTER_COMMA.test(line)) {
-            dangerousFiles.push(`file path:${filePath}, line: ${line}`);
-            break;
-          }
-          const varsInLog = line.match(VAR_IN_LOG) || line.match(VAR_IN_FUNC)?.[1].split(',').slice(1) || [];
-          for (const varString of varsInLog) {
-            if (varMayContainData(varString)) {
-              dangerousFiles.push(`file path:${filePath}, line: ${line}`);
-              break;
+            const varsInLog = line.match(VAR_IN_LOG) || line.match(VAR_IN_FUNC)?.[1].split(',').slice(1) || [];
+            for (const varString of varsInLog) {
+              if (varMayContainData(varString)) {
+                dangerousFiles.push(`file path:${filePath}, line: ${line}`);
+                break;
+              }
             }
           }
         }
