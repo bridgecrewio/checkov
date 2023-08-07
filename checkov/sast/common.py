@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import logging
 # temporary code common to semgrep and go runner
 from typing import List, Tuple
 
@@ -8,14 +7,16 @@ from checkov.common.output.record import PLACEHOLDER_LINE
 from checkov.sast.prisma_models.report import Flow
 
 
-def get_data_flow_code_block(data_flow: List[Flow], split_code_block: List[str]) -> List[Tuple[int, str]]:
-    code_block: List[Tuple[int, str]] = [(data_flow[0].start.row, split_code_block[0])]
+def get_data_flow_code_block(data_flow: List[Flow]) -> List[Tuple[int, str]]:
+    code_block: List[Tuple[int, str]] = []
 
-    if len(split_code_block) == 3:
-        code_block.append((-1, PLACEHOLDER_LINE))
-        code_block.append((data_flow[-1].end.row, split_code_block[-1]))
-    elif len(split_code_block) != 1:
-        logging.warning(f"got illegal code block for taint mode: {split_code_block}")
+    prev_end = -1
+    for flow in data_flow:
+        if prev_end >= 0 and abs(prev_end - flow.start.row) > 1:
+            code_block.append((-1, PLACEHOLDER_LINE))
+        code_block.append((flow.start.row, flow.code_block + "\n"))
+        prev_end = flow.end.row
+
     return cut_code_block_ident(code_block)
 
 

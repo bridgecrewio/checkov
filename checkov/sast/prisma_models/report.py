@@ -18,6 +18,7 @@ class Flow(BaseModel):
     path: str  # noqa: CCE003
     start: Point  # noqa: CCE003
     end: Point  # noqa: CCE003
+    code_block: str  # noqa: CCE003
 
 
 class MatchLocation(BaseModel):
