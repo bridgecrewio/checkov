@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.358...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.360...HEAD)
+
+## [2.3.360](https://github.com/bridgecrewio/checkov/compare/2.3.358...2.3.360) - 2023-08-08
+
+### Bug Fix
+
+- **general:** Fix empty credentials file issue - [#5421](https://github.com/bridgecrewio/checkov/pull/5421)
 
 ## [2.3.358](https://github.com/bridgecrewio/checkov/compare/2.3.356...2.3.358) - 2023-08-06
 
