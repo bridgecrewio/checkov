@@ -288,3 +288,15 @@ resource "aws_lightsail_instance" "example" {
   blueprint_id      = "ubuntu_20_04"
   bundle_id         = "medium_2_0"
 }
+
+resource "aws_route53_record" "pass_lightsail2" {
+  zone_id = aws_route53_zone.primary.zone_id
+  name = "mydomian.com"
+  type = "A"
+  ttl = "30"
+  records = [aws_lightsail_static_ip.example.ip_address]
+}
+
+resource "aws_lightsail_static_ip" "example" {
+  name = "pike"
+}
