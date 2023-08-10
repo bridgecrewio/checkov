@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.360...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.361...HEAD)
+
+## [2.3.361](https://github.com/bridgecrewio/checkov/compare/2.3.360...2.3.361) - 2023-08-10
+
+### Bug Fix
+
+- **arm:** improve CKV_AZURE_24 check - [#5427](https://github.com/bridgecrewio/checkov/pull/5427)
 
 ## [2.3.360](https://github.com/bridgecrewio/checkov/compare/2.3.358...2.3.360) - 2023-08-08
 
