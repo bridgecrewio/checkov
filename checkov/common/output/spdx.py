@@ -1,19 +1,19 @@
 from __future__ import annotations
+
 import itertools
 import logging
+from datetime import datetime, timezone
+from io import StringIO
+
+from license_expression import get_spdx_licensing
+from spdx_tools.spdx.model.actor import Actor, ActorType
+from spdx_tools.spdx.model.document import Document, CreationInfo
+from spdx_tools.spdx.model.package import Package
+from spdx_tools.spdx.model.spdx_none import SpdxNone
+from spdx_tools.spdx.writer.tagvalue.tagvalue_writer import write_document
 
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.record import SCA_PACKAGE_SCAN_CHECK_NAME, Record
-from license_expression import get_spdx_licensing
-
-from io import StringIO
-
-from spdx.creationinfo import Tool, Organization
-from spdx.document import Document
-from spdx.license import License
-from spdx.package import Package
-from spdx.writers.tagvalue import write_document
-
 from checkov.common.output.cyclonedx_consts import SCA_CHECKTYPES
 from checkov.common.output.report import Report
 
@@ -28,25 +28,28 @@ class SPDX:
 
         self.document = self.create_document()
 
-    def create_document(self) -> Document:
-        document = Document(
-            version="SPDX2.3",
-            data_license=License.from_identifier(identifier="CC0-1.0"),
-            name=DOCUMENT_NAME,
-            spdx_id="SPDXRef-DOCUMENT",
-            namespace=f"{self.repo_id}{DOCUMENT_NAME}",
-        )
-        document.creation_info.set_created_now()
-        document.creation_info.add_creator(Tool(name="checkov"))
-        document.creation_info.add_creator(Organization(name="bridgecrew"))
+        self._added_packages_cache: set[str] = set()  # each entry looks like '{file_name}#{package_name}#{package_version}'
 
-        return document
+    def create_document(self) -> Document:
+        creation_info = CreationInfo(
+            spdx_version="SPDX-2.3",
+            spdx_id="SPDXRef-DOCUMENT",
+            name=DOCUMENT_NAME,
+            data_license="CC0-1.0",
+            document_namespace="https://some.namespace",
+            creators=[
+                Actor(ActorType.TOOL, "checkov"),
+                Actor(ActorType.ORGANIZATION, "bridgecrew", "meet@bridgecrew.io"),
+            ],
+            created=datetime.now(timezone.utc),
+        )
+        return Document(creation_info=creation_info)
 
     def get_tag_value_output(self) -> str:
         output = StringIO()
 
         self.add_packages_to_doc()
-        write_document(document=self.document, out=output, validate=True)  # later set to True
+        write_document(document=self.document, text_output=output)
 
         return output.getvalue()
 
@@ -58,25 +61,24 @@ class SPDX:
             for lic in split_licenses:
                 lic = lic.strip('"')
                 try:
-                    is_spdx_license = License(get_spdx_licensing().parse(lic), lic)
-                    licenses.append(is_spdx_license)
+                    licenses.append(get_spdx_licensing().parse(lic))
                 except Exception as e:
                     logging.info(f"error occured when trying to parse the license:{split_licenses} due to error {e}")
-            package.licenses_from_files = licenses
+            package.license_info_from_files = licenses
 
     def create_package(self, check: Record | ExtraResource) -> Package:
         package_data = check.vulnerability_details
         if not package_data:
             # this shouldn't happen
             logging.error(f"Check {check.resource} doesn't have 'vulnerability_details' set")
-            return Package(name="unknown")
+            return Package(name="unknown", spdx_id=f"{SPDXREF}unknown", download_location=SpdxNone())
 
         package_name = package_data.get('package_name')
         package = Package(
             name=package_name,
             spdx_id=f"{SPDXREF}{package_name}",
             version=package_data['package_version'],
-            download_location='N/A',
+            download_location=SpdxNone(),
             file_name=check.file_path
         )
         license_ = package_data.get('licenses', "")
@@ -85,26 +87,32 @@ class SPDX:
         return package
 
     def add_packages_to_doc(self) -> None:
-        packages_set = set()
+        packages = []
         for report in self.reports:
             for check in itertools.chain(report.passed_checks, report.skipped_checks):
                 if report.check_type in SCA_CHECKTYPES and check.check_name != SCA_PACKAGE_SCAN_CHECK_NAME:
                     continue
                 package = self.create_package(check)
-                if package not in packages_set:
-                    packages_set.add(package)
+                package_cache_entry = f"{package.file_name}#{package.name}#{package.version}"
+                if package_cache_entry not in self._added_packages_cache:
+                    packages.append(package)
+                    self._added_packages_cache.add(package_cache_entry)
 
             for check in report.failed_checks:
                 if report.check_type in SCA_CHECKTYPES and check.check_name != SCA_PACKAGE_SCAN_CHECK_NAME:
                     continue
                 package = self.create_package(check)
-                if package not in packages_set:
-                    packages_set.add(package)
+                package_cache_entry = f"{package.file_name}#{package.name}#{package.version}"
+                if package_cache_entry not in self._added_packages_cache:
+                    packages.append(package)
+                    self._added_packages_cache.add(package_cache_entry)
 
             for resource in sorted(report.extra_resources):
                 package = self.create_package(resource)
-                if package not in packages_set:
-                    packages_set.add(package)
+                package_cache_entry = f"{package.file_name}#{package.name}#{package.version}"
+                if package_cache_entry not in self._added_packages_cache:
+                    packages.append(package)
+                    self._added_packages_cache.add(package_cache_entry)
 
-        if packages_set:
-            self.document.packages = list(packages_set)
+        if packages:
+            self.document.packages = packages
