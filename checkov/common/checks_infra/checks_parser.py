@@ -63,6 +63,7 @@ from checkov.common.graph.checks_infra.base_parser import BaseGraphCheckParser
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
 from checkov.common.util.type_forcers import force_list
+from checkov.common.bridgecrew.severities import get_severity
 
 if TYPE_CHECKING:
     from checkov.common.checks_infra.solvers.attribute_solvers.base_attribute_solver import BaseAttributeSolver
@@ -193,6 +194,7 @@ class GraphCheckParser(BaseGraphCheckParser):
         check.category = raw_check.get("metadata", {}).get("category", "")
         check.frameworks = raw_check.get("metadata", {}).get("frameworks", [])
         check.guideline = raw_check.get("metadata", {}).get("guideline")
+        check.severity = get_severity(raw_check.get("metadata", {}).get("severity"))
         check.check_path = kwargs.get("check_path", "")
         solver = self.get_check_solver(check)
         check.set_solver(solver)
