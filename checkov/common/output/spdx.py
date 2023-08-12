@@ -4,6 +4,7 @@ import itertools
 import logging
 from datetime import datetime, timezone
 from io import StringIO
+from uuid import uuid4
 
 from license_expression import get_spdx_licensing
 from spdx_tools.spdx.model.actor import Actor, ActorType
@@ -16,6 +17,7 @@ from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.record import SCA_PACKAGE_SCAN_CHECK_NAME, Record
 from checkov.common.output.cyclonedx_consts import SCA_CHECKTYPES
 from checkov.common.output.report import Report
+from checkov.version import version
 
 DOCUMENT_NAME = "checkov-sbom"
 SPDXREF = "SPDXRef-"
@@ -27,8 +29,10 @@ class SPDX:
         self.reports = reports
 
         self.document = self.create_document()
+        self.packages: list[Package] = []
 
-        self._added_packages_cache: set[str] = set()  # each entry looks like '{file_name}#{package_name}#{package_version}'
+        # each entry looks like '{file_name}#{package_name}#{package_version}'
+        self._added_packages_cache: set[str] = set()
 
     def create_document(self) -> Document:
         creation_info = CreationInfo(
@@ -36,7 +40,7 @@ class SPDX:
             spdx_id="SPDXRef-DOCUMENT",
             name=DOCUMENT_NAME,
             data_license="CC0-1.0",
-            document_namespace="https://some.namespace",
+            document_namespace=f"https://spdx.org/spdxdocs/{DOCUMENT_NAME}-{version}-{uuid4()}",
             creators=[
                 Actor(ActorType.TOOL, "checkov"),
                 Actor(ActorType.ORGANIZATION, "bridgecrew", "meet@bridgecrew.io"),
@@ -54,7 +58,7 @@ class SPDX:
         return output.getvalue()
 
     def validate_licenses(self, package: Package, license_: str) -> None:
-        if license_ and license_ not in ['Unknown license', 'NOT_FOUND', 'Unknown']:
+        if license_ and license_ not in ["Unknown license", "NOT_FOUND", "Unknown"]:
             split_licenses = license_.split(",")
             licenses = []
 
@@ -73,46 +77,49 @@ class SPDX:
             logging.error(f"Check {check.resource} doesn't have 'vulnerability_details' set")
             return Package(name="unknown", spdx_id=f"{SPDXREF}unknown", download_location=SpdxNone())
 
-        package_name = package_data.get('package_name')
+        package_name = package_data.get("package_name")
+        if not package_name:
+            # this shouldn't happen
+            logging.error(f"Package {package_data} doesn't have 'package_name' set")
+            return Package(name="unknown", spdx_id=f"{SPDXREF}unknown", download_location=SpdxNone())
+
         package = Package(
             name=package_name,
             spdx_id=f"{SPDXREF}{package_name}",
-            version=package_data['package_version'],
+            version=package_data["package_version"],
             download_location=SpdxNone(),
-            file_name=check.file_path
+            file_name=check.file_path,
         )
-        license_ = package_data.get('licenses', "")
+        license_ = package_data.get("licenses", "")
         self.validate_licenses(package=package, license_=license_)
 
         return package
 
     def add_packages_to_doc(self) -> None:
-        packages = []
         for report in self.reports:
             for check in itertools.chain(report.passed_checks, report.skipped_checks):
                 if report.check_type in SCA_CHECKTYPES and check.check_name != SCA_PACKAGE_SCAN_CHECK_NAME:
                     continue
                 package = self.create_package(check)
-                package_cache_entry = f"{package.file_name}#{package.name}#{package.version}"
-                if package_cache_entry not in self._added_packages_cache:
-                    packages.append(package)
-                    self._added_packages_cache.add(package_cache_entry)
+                self.add_new_package_to_list(package)
 
             for check in report.failed_checks:
                 if report.check_type in SCA_CHECKTYPES and check.check_name != SCA_PACKAGE_SCAN_CHECK_NAME:
                     continue
                 package = self.create_package(check)
-                package_cache_entry = f"{package.file_name}#{package.name}#{package.version}"
-                if package_cache_entry not in self._added_packages_cache:
-                    packages.append(package)
-                    self._added_packages_cache.add(package_cache_entry)
+                self.add_new_package_to_list(package)
 
             for resource in sorted(report.extra_resources):
                 package = self.create_package(resource)
-                package_cache_entry = f"{package.file_name}#{package.name}#{package.version}"
-                if package_cache_entry not in self._added_packages_cache:
-                    packages.append(package)
-                    self._added_packages_cache.add(package_cache_entry)
+                self.add_new_package_to_list(package)
 
-        if packages:
-            self.document.packages = packages
+        if self.packages:
+            self.document.packages = self.packages
+
+    def add_new_package_to_list(self, package: Package) -> None:
+        """Adds a package to the list, if it not exists"""
+
+        package_cache_entry = f"{package.file_name}#{package.name}#{package.version}"
+        if package_cache_entry not in self._added_packages_cache:
+            self.packages.append(package)
+            self._added_packages_cache.add(package_cache_entry)
