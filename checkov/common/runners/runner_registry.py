@@ -46,10 +46,11 @@ from checkov.sca_image.runner import Runner as image_runner
 from checkov.common.secrets.consts import SECRET_VALIDATION_STATUSES
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.parser import Parser
+from checkov.common.runners.base_runner import strtobool
 
 if TYPE_CHECKING:
     from checkov.common.output.baseline import Baseline
-    from checkov.common.runners.base_runner import BaseRunner, strtobool  # noqa
+    from checkov.common.runners.base_runner import BaseRunner  # noqa
     from checkov.runner_filter import RunnerFilter
     from igraph import Graph
     from networkx import DiGraph
