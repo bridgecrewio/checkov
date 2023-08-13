@@ -109,6 +109,7 @@ setup(
         "requests>=2.27.0",
         "yarl",
         "openai",
+        "litellm",
         "spdx-tools<0.8.0",
         "license-expression==30.1.0",
     ],

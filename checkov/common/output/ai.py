@@ -6,6 +6,7 @@ import os
 from typing import TYPE_CHECKING
 
 import openai
+import litellm
 from termcolor import colored
 
 from checkov.common.bridgecrew.check_type import CheckType
@@ -70,7 +71,7 @@ class OpenAi:
             return
 
         try:
-            completion = await openai.ChatCompletion.acreate(  # type:ignore[no-untyped-call]
+            completion = await litellm.acompletion(  # type:ignore[no-untyped-call]
                 model=OPENAI_MODEL,
                 messages=[
                     {"role": "system", "content": "You are a security tool"},
