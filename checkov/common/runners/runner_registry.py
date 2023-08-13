@@ -180,7 +180,7 @@ class RunnerRegistry:
 
         merged_reports = self._merge_reports(reports)
 
-        if not strtobool(os.getenv('CHECKOV_ALLOW_CODE_LOGGING', 'False')):
+        if not strtobool(os.getenv('CHECKOV_ALLOW_CODE_LOGGING', 'True')):
             for report in merged_reports:
                 for record in list(itertools.chain(report.passed_checks, report.failed_checks, report.skipped_checks)):
                     record.code_block = []
