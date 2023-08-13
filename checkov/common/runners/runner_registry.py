@@ -49,7 +49,7 @@ from checkov.terraform.parser import Parser
 
 if TYPE_CHECKING:
     from checkov.common.output.baseline import Baseline
-    from checkov.common.runners.base_runner import BaseRunner  # noqa
+    from checkov.common.runners.base_runner import BaseRunner, strtobool  # noqa
     from checkov.runner_filter import RunnerFilter
     from igraph import Graph
     from networkx import DiGraph
@@ -178,6 +178,12 @@ class RunnerRegistry:
             self.check_type_to_graph = full_check_type_to_graph
 
         merged_reports = self._merge_reports(reports)
+
+        if not strtobool(os.getenv('CHECKOV_ALLOW_CODE_LOGGING', 'False')):
+            for report in merged_reports:
+                for record in list(itertools.chain(report.passed_checks, report.failed_checks, report.skipped_checks)):
+                    record.code_block = []
+
         if bc_integration.bc_api_key:
             self.secrets_omitter_class(merged_reports).omit()
 
