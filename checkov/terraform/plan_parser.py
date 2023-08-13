@@ -12,7 +12,7 @@ from checkov.common.util.type_forcers import force_list
 from checkov.terraform.context_parsers.tf_plan import parse
 
 SIMPLE_TYPES = (str, int, float, bool)
-TF_PLAN_RESOURCE_ADDRESS = "__address__"
+TF_PLAN_RESOURCE_ADDRESS = CustomAttributes.TF_RESOURCE_ADDRESS
 TF_PLAN_RESOURCE_CHANGE_ACTIONS = "__change_actions__"
 TF_PLAN_RESOURCE_CHANGE_KEYS = "__change_keys__"
 
