@@ -52,11 +52,6 @@ ignore_imports = [
     "checkov.common.bridgecrew.integration_features.features.policies_3d_integration -> checkov.policies_3d.*", # considering what to do
     "checkov.common.runners.base_post_runner -> checkov.policies_3d.checks_infra.base_check", # considering what to do
 
-    "checkov.common.util.docs_generator -> checkov.*.registry", # move to a different place
-    "checkov.common.util.docs_generator -> checkov.*.checks.registry", # move to a different place
-    "checkov.common.util.docs_generator -> checkov.*.checks.*.registry", # move to a different place
-    "checkov.common.util.docs_generator -> checkov.secrets.runner", # move to a different place
-
     "checkov.common.runners.runner_registry -> checkov.terraform.context_parsers.registry", # move runner_registry to a different place
     "checkov.common.runners.runner_registry -> checkov.terraform.parser", # move runner_registry to a different place
 
@@ -69,7 +64,6 @@ ignore_imports = [
     "checkov.common.checks_infra.solvers.connections_solvers.base_connection_solver -> checkov.terraform.graph_builder.graph_components.block_types", # move to checkov.common.graph.graph_builder.graph_components?
 
     "checkov.common.runners.runner_registry -> checkov.sca_image.runner", # old IR, needs to be removed (argo_workflows, bitbucket_pipelines)
-    "checkov.common.graph.graph_builder.graph_components.blocks -> checkov.terraform.graph_builder.graph_components.block_types", # override get_attribute_dict() inside TerraformBlock
 ]
 
 [[tool.importlinter.contracts]]
