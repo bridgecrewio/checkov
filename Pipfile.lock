@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "4ab776514b842c2d5af55d5ca92bf086a3f77716604f559438a550a5eb0cb69a"
+            "sha256": "e3292c84a8a0aeda530b01306a096696fc3ced355d8ce8b952aae80d3ef60895"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -722,11 +722,11 @@
         },
         "license-expression": {
             "hashes": [
-                "sha256:02c48c802b8f001c8b7bc8f3b9cf6a40e88ef95a897b0ff2c05f74c69855a492",
-                "sha256:943b1d2cde251bd30a166b509f78990fdd060be9750f3f1a324571e804857a53"
+                "sha256:42375df653ad85e6f5b4b0385138b2dbea1f5d66360783d8625c3e4f97f11f0c",
+                "sha256:8d7e5e2de0d04fc104a4f952c440e8f08a5ba63480a0dad015b294770b7e58ec"
             ],
             "index": "pypi",
-            "version": "==30.1.0"
+            "version": "==30.1.1"
         },
         "markdown": {
             "hashes": [
@@ -929,11 +929,11 @@
         },
         "policyuniverse": {
             "hashes": [
-                "sha256:2b496b2ed13fd362b1dd4b77fe2084575399356cdf136c282b3cd2a94e6b7681",
-                "sha256:374c90495812631d83e70a62c4132bc4fabc75d29c1abfef7e7b069fe4a6ada7"
+                "sha256:3bab28817e5874fffe1bb593d8aa5057b4720958edee25bb2f13ad6bc19aa6f6",
+                "sha256:5ca6fc9804b9f47f4878dc968a5b587fc40f0f2cd99e2e4900b580e04e7c8b6b"
             ],
             "index": "pypi",
-            "version": "==1.5.1.20230725"
+            "version": "==1.5.1.20230813"
         },
         "prettytable": {
             "hashes": [
@@ -2550,11 +2550,11 @@
         },
         "types-awscrt": {
             "hashes": [
-                "sha256:278c1a913098e226769cd28dc37643a2f360907353a7e8918e1bcdf93d4e34f2",
-                "sha256:4214783a747af900a5f98ec020d52ecae5910b470fd636813637a45b82a97516"
+                "sha256:c0293b1d149df839930d37bd50e304e8fab29ff92a252a02ebea49cd6e300f99",
+                "sha256:e46cd40a6a2314ced06b955663f1d58cd1eb6e1a9a7cc7e51025b9761ab21ab4"
             ],
             "markers": "python_version >= '3.7' and python_version < '4.0'",
-            "version": "==0.17.0"
+            "version": "==0.18.0"
         },
         "types-cachetools": {
             "hashes": [
