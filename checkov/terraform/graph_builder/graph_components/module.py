@@ -60,6 +60,43 @@ class Module:
             self.source_dir == other.source_dir and \
             self.blocks == other.blocks
 
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            'dep_index_mapping': self.dep_index_mapping,
+            'module_dependency_map': self.module_dependency_map,
+            'module_address_map': self.module_address_map,
+            'external_modules_source_map': self.external_modules_source_map,
+            'path': self.path,
+            'customer_name': self.customer_name,
+            'account_id': self.account_id,
+            'source': self.source,
+            'resources_types': self.resources_types,
+            'source_dir': self.source_dir,
+            'render_dynamic_blocks_env_var': self.render_dynamic_blocks_env_var,
+            'enable_nested_modules': self.enable_nested_modules,
+            'use_new_tf_parser': self.use_new_tf_parser,
+            'blocks': [block.to_dict() for block in self.blocks]
+        }
+
+    @staticmethod
+    def from_dict(module_dict: dict[str, Any]) -> Module:
+        module = Module(source_dir=module_dict.get('source_dir', ''),
+                        module_address_map=module_dict.get('module_address_map', {}),
+                        external_modules_source_map=module_dict.get('external_modules_source_map', {}),
+                        module_dependency_map=module_dict.get('module_dependency_map'),
+                        dep_index_mapping=module_dict.get('dep_index_mapping'))
+        module.blocks = [TerraformBlock.from_dict(block) for block in module_dict.get('blocks', [])]
+        module.path = module_dict.get('path', '')
+        module.customer_name = module_dict.get('customer_name', '')
+        module.account_id = module_dict.get('account_id', '')
+        module.source = module_dict.get('source', '')
+        module.resources_types = module_dict.get('resources_types', set())
+        module.source_dir = module_dict.get('source_dir', '')
+        module.render_dynamic_blocks_env_var = module_dict.get('render_dynamic_blocks_env_var', '')
+        module.enable_nested_modules = module_dict.get('enable_nested_modules', False)
+        module.use_new_tf_parser = module_dict.get('use_new_tf_parser', False)
+        return module
+
     def add_blocks(
             self, block_type: str, blocks: List[Dict[str, Dict[str, Any]]], path: str | TFDefinitionKey, source: str
     ) -> None:

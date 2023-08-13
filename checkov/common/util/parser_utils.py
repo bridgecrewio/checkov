@@ -422,3 +422,21 @@ def get_module_name(file_path: TFDefinitionKeyType) -> str | None:
 
 def get_abs_path(file_path: TFDefinitionKeyType) -> str:
     return file_path[:get_current_module_index(file_path)] if isinstance(file_path, str) else str(file_path.file_path)
+
+
+def strip_terraform_module_referrer(file_path: str) -> tuple[str, str | None]:
+    """
+    For file paths containing module referrer information (e.g.: "module/module.tf[main.tf#0]"), this
+    returns a tuple containing the file path (e.g., "module/module.tf") and referrer (e.g., "main.tf#0").
+    If the file path does not contain a referred, the tuple will contain the original file path and None.
+    """
+    if file_path.endswith(TERRAFORM_NESTED_MODULE_PATH_ENDING) and TERRAFORM_NESTED_MODULE_PATH_PREFIX in file_path:
+        return (
+            file_path[: file_path.index(TERRAFORM_NESTED_MODULE_PATH_PREFIX)],
+            file_path[
+                file_path.index(TERRAFORM_NESTED_MODULE_PATH_PREFIX)
+                + TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH : -TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH
+            ],
+        )
+    else:
+        return file_path, None

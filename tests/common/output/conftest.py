@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Any
 
 import pytest
-from checkov.secrets.consts import ValidationStatus
+from checkov.common.secrets.consts import ValidationStatus
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.enums import CheckResult

@@ -32,3 +32,9 @@ repos:
         args: []
         additional_dependencies:
           - vistir<0.7.0  # can be removed, when v4.0.0 of pipenv-setup comes out
+  - repo: https://github.com/seddonym/import-linter  # checks the import dependencies between each other
+    rev: v1.10.0
+    hooks:
+      - id: import-linter
+        language_version: python3.9
+        args: ["--show-timings"]

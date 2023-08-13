@@ -50,6 +50,12 @@ class SQLServerAuditingRetention90Days(BaseResourceCheck):
                 retention = properties.get("retentionDays")
                 if isinstance(retention, int) and retention >= 90:
                     return CheckResult.PASSED
+                if isinstance(retention, str):
+                    try:
+                        if int(retention) >= 90:
+                            return CheckResult.PASSED
+                    except ValueError:  # not a valid number
+                        return CheckResult.FAILED
         return CheckResult.FAILED
 
 
