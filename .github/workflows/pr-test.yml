@@ -13,6 +13,13 @@ jobs:
 
   danger-check:
     runs-on: [ self-hosted, public, linux, x64 ]
+    permissions:
+      actions: write
+      checks: write
+      contents: write
+      issues: write
+      pull-requests: write
+      statuses: write
     steps:
       - name: Checkout code
         uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3
@@ -22,7 +29,7 @@ jobs:
           node-version: "16"
       - name: Install and run DangerJS
         env:
-          GITHUB_TOKEN: ${{ secrets.DANGER_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           npm install -g danger
           danger ci --verbose --failOnErrors
