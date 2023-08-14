@@ -657,12 +657,10 @@ class RunnerRegistry:
     ) -> dict[str, dict[str, Any]]:
         repo_definitions = {}
         for repo_root in repo_roots:
-            tf_definitions: dict[str, Any] = {}
             parsing_errors: dict[str, Exception] = {}
             repo_root = os.path.abspath(repo_root)
-            TFParser().parse_directory(
+            tf_definitions = TFParser().parse_directory(
                 directory=repo_root,  # assume plan file is in the repo-root
-                out_definitions=tf_definitions,
                 out_parsing_errors=parsing_errors,
                 download_external_modules=download_external_modules,
             )

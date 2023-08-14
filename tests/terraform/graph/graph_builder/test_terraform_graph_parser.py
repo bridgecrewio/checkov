@@ -158,8 +158,7 @@ class TestParser(TestCase):
                 }
             },
         ]
-        definition_key = TFDefinitionKey(file_path="/Users/bfatal/Documents/code/checkov/tests/terraform/graph/graph_builder/../resources/tf_parsing_comparison/tf_regular/main.tf",
-                                         tf_source_modules=None)
+        definition_key = TFDefinitionKey(file_path=os.path.join(tf_dir, "main.tf"), tf_source_modules=None)
         tf_definitions_resources = tf_definitions[definition_key]['resource']
         for index in range(len(tf_definitions_resources)):
             self.assertDictEqual(
@@ -175,8 +174,7 @@ class TestParser(TestCase):
         expected = ['https://www.googleapis.com/auth/devstorage.read_only', 'https://www.googleapis.com/auth/logging.write',
                     'https://www.googleapis.com/auth/monitoring.write', 'https://www.googleapis.com/auth/service.management.readonly',
                     'https://www.googleapis.com/auth/servicecontrol', 'https://www.googleapis.com/auth/trace.append']
-        defintion_key = TFDefinitionKey(file_path="/Users/bfatal/Documents/code/checkov/tests/terraform/graph/resources/tf_parsing_comparison/modifications_diff/main.tf",
-                              tf_source_modules=None)
+        defintion_key = TFDefinitionKey(file_path=os.path.join(source_dir, "main.tf"), tf_source_modules=None)
         result_resource = tf_definitions[defintion_key]['resource'][0]['google_compute_instance']['tfer--test3']['service_account'][0]['scopes'][0]
         self.assertListEqual(result_resource, expected)
 
