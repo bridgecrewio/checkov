@@ -24,6 +24,7 @@ from checkov.sast.checks_infra.base_registry import Registry
 from checkov.sast.common import get_code_block_from_start, get_data_flow_code_block
 from checkov.sast.consts import SastLanguages, SastEngines
 from checkov.sast.engines.base_engine import SastEngine
+from checkov.sast.prisma_models.library_input import LibraryInput
 from checkov.sast.prisma_models.report import PrismaReport, create_empty_report
 from checkov.sast.record import SastRecord
 from checkov.sast.report import SastReport
@@ -52,10 +53,14 @@ class PrismaEngine(SastEngine):
 
         self.lib_path = str(prisma_lib_path)
 
-        prisma_result = self.run_go_library(languages,
-                                            source_codes=targets,
-                                            policies=registry.checks_dirs_path,
-                                            checks=registry.runner_filter.checks if registry.runner_filter else [])
+        library_input: LibraryInput = {
+            'languages': languages,
+            'source_codes': targets,
+            'policies': registry.checks_dirs_path,
+            'checks': registry.runner_filter.checks if registry.runner_filter else [],
+            'skip_checks': registry.runner_filter.skip_checks if registry.runner_filter else []
+        }
+        prisma_result = self.run_go_library(**library_input)
 
         return prisma_result
 
@@ -143,7 +148,8 @@ class PrismaEngine(SastEngine):
     def run_go_library(self, languages: Set[SastLanguages],
                        source_codes: List[str],
                        policies: List[str],
-                       checks: List[str]) -> List[Report]:
+                       checks: List[str],
+                       skip_checks: List[str]) -> List[Report]:
 
         validate_params(languages, source_codes, policies)
 
@@ -157,7 +163,8 @@ class PrismaEngine(SastEngine):
                 "source_codes": source_codes,
                 "policies": policies,
                 "languages": [a.value for a in languages],
-                "checks": checks
+                "checks": checks,
+                "skip_checks": skip_checks
             },
             "auth": {
                 "api_key": bc_integration.get_auth_token(),
