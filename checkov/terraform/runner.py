@@ -525,48 +525,6 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
                 if file_parsing_errors:
                     parsing_errors.update(file_parsing_errors)
 
-    @staticmethod
-    def push_skipped_checks_down_old(
-        definition_context: dict[str, dict[str, Any]], module_path: str, skipped_checks: list[_SkippedCheck]
-    ) -> None:
-        # this method pushes the skipped_checks down the 1 level to all resource types.
-
-        if skipped_checks is None:
-            return
-
-        if len(skipped_checks) == 0:
-            return
-
-        # iterate over definitions to find those that reference the module path
-        # definition is in the format <file>[<referrer>#<index>]
-        # where referrer could be a path, or path1->path2, etc
-
-        for definition in definition_context:
-            _, mod_ref = strip_terraform_module_referrer(file_path=definition)
-            if mod_ref is None:
-                continue
-
-            if module_path not in mod_ref:
-                continue
-
-            for block_type, block_configs in definition_context[definition].items():
-                # skip if type is not a Terraform resource
-                if block_type not in CHECK_BLOCK_TYPES:
-                    continue
-
-                if block_type == "module":
-                    # modules don't have a type, just a name
-                    for resource_config in block_configs.values():
-                        # append the skipped checks also from a module to another module
-                        resource_config["skipped_checks"] += skipped_checks
-                else:
-                    # there may be multiple resource types - aws_bucket, etc
-                    for resource_configs in block_configs.values():
-                        # there may be multiple names for each resource type
-                        for resource_config in resource_configs.values():
-                            # append the skipped checks from the module to the other resources.
-                            resource_config["skipped_checks"] += skipped_checks
-
     def push_skipped_checks_down_from_modules(self, definition_context: dict[str, dict[str, Any]]) -> None:
         module_context_parser = parser_registry.context_parsers[BlockType.MODULE]
         for tf_definition_key, definition in self.definitions.items():

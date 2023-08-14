@@ -670,7 +670,7 @@ class RunnerRegistry:
         for repo_root, parse_results in repo_definitions.items():
             for full_file_path, definition in parse_results['tf_definitions'].items():
                 definitions_context = parser_registry.enrich_definitions_context((full_file_path, definition))
-                abs_scanned_file, _ = strip_terraform_module_referrer(file_path=full_file_path)
+                abs_scanned_file = full_file_path.file_path
                 scanned_file = os.path.relpath(abs_scanned_file, repo_root)
                 for block_type, block_value in definition.items():
                     if block_type in CHECK_BLOCK_TYPES:
@@ -680,7 +680,7 @@ class RunnerRegistry:
                             entity_id = ".".join(definition_path)
                             entity_context_path = [block_type] + definition_path
                             entity_context = data_structures_utils.get_inner_dict(
-                                definitions_context[full_file_path], entity_context_path
+                                definitions_context[full_file_path.file_path], entity_context_path
                             )
                             entity_lines_range = [
                                 entity_context.get("start_line"),
