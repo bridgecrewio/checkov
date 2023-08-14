@@ -173,7 +173,6 @@ class TestParser(TestCase):
         result_resource = tf_definitions[source_dir + '/main.tf']['resource'][0]['google_compute_instance']['tfer--test3']['service_account'][0]['scopes'][0]
         self.assertListEqual(result_resource, expected)
 
-    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "True"})
     def test_build_graph_with_linked_modules(self):
         source_dir = os.path.realpath(os.path.join(TEST_DIRNAME,
                                                    '../resources/nested_modules_double_call'))

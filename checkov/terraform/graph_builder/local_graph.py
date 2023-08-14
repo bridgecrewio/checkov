@@ -87,14 +87,20 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             logging.info(f"Rendering variables, graph has {len(self.vertices)} vertices and {len(self.edges)} edges")
             renderer = TerraformVariableRenderer(self)
             renderer.render_variables_from_local_graph()
-            self.update_vertices_breadcrumbs_and_module_connections()
-            self.update_nested_modules_address()
+            self.update_vertices_fields()
             if strtobool(os.getenv("CHECKOV_EXPERIMENTAL_CROSS_VARIABLE_EDGES", "True")):
                 # experimental flag on building cross variable edges for terraform graph
                 logging.info("Building cross variable edges")
                 edges_count = len(self.edges)
                 self._build_cross_variable_edges()
                 logging.info(f"Found {len(self.edges) - edges_count} cross variable edges")
+        else:
+            self.update_vertices_fields()
+
+    def update_vertices_fields(self) -> None:
+        # Important to keep those 2 functions together, as the first affects the calculation of the second
+        self._update_vertices_breadcrumbs_and_module_connections()
+        self._update_nested_modules_address()
 
     def _create_vertices(self) -> None:
         logging.info("Creating vertices")
@@ -559,7 +565,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
     def get_resources_types_in_graph(self) -> List[str]:
         return self.module.get_resources_types()
 
-    def update_vertices_breadcrumbs_and_module_connections(self) -> None:
+    def _update_vertices_breadcrumbs_and_module_connections(self) -> None:
         """
         The function processes each vertex's breadcrumbs:
         1. Get more data to each vertex in breadcrumb (name, path, hash and type)
@@ -617,8 +623,11 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             self.abspath_cache[path] = dir_name
         return dir_name
 
-    def update_nested_modules_address(self) -> None:
+    def _update_nested_modules_address(self) -> None:
         for vertex in self.vertices:
+            if vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS) is not None:
+                # Can happen for example in `tf_plan` files as the address already exists
+                continue
             if vertex.block_type not in parser_registry.context_parsers:
                 continue
             source_module = vertex.breadcrumbs.get(CustomAttributes.SOURCE_MODULE)
@@ -750,8 +759,6 @@ def update_list_attribute(
 def get_path_with_nested_modules(block: TerraformBlock) -> str:
     if not block.module_dependency:
         return block.path
-    if not strtobool(os.getenv('CHECKOV_ENABLE_NESTED_MODULES', 'True')):
-        return unify_dependency_path([block.module_dependency, block.path])  # type:ignore[no-any-return]  # will be fixed when removing terraform/checks from mypy exclusion
     return get_tf_definition_key_from_module_dependency(block.path, block.module_dependency, block.module_dependency_num)  # type:ignore[arg-type]  # will be fixed when removing terraform/checks from mypy exclusion
 
 

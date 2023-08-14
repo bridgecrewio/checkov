@@ -1,6 +1,18 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.361...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.364...HEAD)
+
+## [2.3.364](https://github.com/bridgecrewio/checkov/compare/2.3.361...2.3.364) - 2023-08-13
+
+### Feature
+
+- **sca:** update spdx-tools dep to version 0.8.0 and lower bound it - [#5431](https://github.com/bridgecrewio/checkov/pull/5431)
+- **terraform:** Add **address** field on vertices even if render_variables is set to False - [#5434](https://github.com/bridgecrewio/checkov/pull/5434)
+
+### Bug Fix
+
+- **terraform:** add new attached resource possibility to CKV2_AWS_23 #5424 - [#5429](https://github.com/bridgecrewio/checkov/pull/5429)
+- **terraform:** fix ordering issue in CKV_AWS_358 - [#5425](https://github.com/bridgecrewio/checkov/pull/5425)
 
 ## [2.3.361](https://github.com/bridgecrewio/checkov/compare/2.3.360...2.3.361) - 2023-08-10
 
