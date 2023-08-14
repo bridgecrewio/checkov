@@ -11,6 +11,7 @@ from checkov.common.graph.graph_builder.utils import calculate_hash
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_PREFIX, TERRAFORM_NESTED_MODULE_PATH_ENDING, \
     TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR
+from checkov.terraform import TFModule
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.graph_builder.graph_components.generic_resource_encryption import ENCRYPTION_BY_RESOURCE_TYPE
@@ -284,48 +285,8 @@ class TestLocalGraph(TestCase):
             for vertex in local_graph.vertices
             if vertex.name == "aws_s3_bucket.inner_s3" and vertex.source_module == {8}
         )
-        self.assertDictEqual(
-            {
-                "versioning.enabled": [
-                    {
-                        "type": "module",
-                        "name": "inner_module_call",
-                        "path": str(parent_dir / "resources/modules/s3_inner_modules/main.tf"),
-                        "module_connection": False,
-                    },
-                    {
-                        "type": "variable",
-                        "name": "versioning",
-                        "path": str(parent_dir / "resources/modules/s3_inner_modules/inner/variables.tf"),
-                        "module_connection": False,
-                    },
-                ],
-                "source_module_": [
-                    {
-                        "type": "module",
-                        "name": "sub-module",
-                        "path": str(parent_dir / "resources/modules/stacks/prod/main.tf"),
-                        "idx": 12
-                    },
-                    {
-                        "type": "module",
-                        "name": "s3",
-                        "path": str(parent_dir / "resources/modules/stacks/prod/sub-prod/main.tf"),
-                        "idx": 13
-                    },
-                    {
-                        "type": "module",
-                        "name": "inner_module_call",
-                        "path": str(parent_dir / "resources/modules/s3_inner_modules/main.tf"),
-                        "idx": 6
-                    },
-                ],
-            },
-            bucket_vertex_1.breadcrumbs,
-        )
 
-        self.assertDictEqual(
-            {
+        expected_vertex_1_breadcrumbs = {
                 "versioning.enabled": [
                     {
                         "type": "module",
@@ -342,24 +303,40 @@ class TestLocalGraph(TestCase):
                 ],
                 "source_module_": [
                     {
-                        "type": "module",
-                        "name": "s3",
-                        "path": str(parent_dir / "resources/modules/stacks/stage/main.tf"),
-                        "idx": 14
-                    },
+                        'type': 'module',
+                        'name': 'sub-module',
+                        'path': str(parent_dir / 'resources/modules/stacks/prod/main.tf'),
+                        'idx': 12,
+                        'source_module_object': None
+                    }
+                    ,
                     {
-                        "type": "module",
-                        "name": "inner_module_call",
-                        "path": str(parent_dir / "resources/modules/s3_inner_modules/main.tf"),
-                        "idx": 7
-                    },
+                        'type': 'module',
+                        'name': 's3',
+                        'path': str(parent_dir / 'resources/modules/stacks/prod/sub-prod/main.tf'),
+                        'idx': 13,
+                        'source_module_object': TFModule(path=str(parent_dir / 'resources/modules/stacks/prod/main.tf'),
+                                                         name='sub-module', foreach_idx=None, nested_tf_module=None)
+                    }
+                    ,
+                    {
+                        'type': 'module',
+                        'name': 'inner_module_call',
+                        'path': str(parent_dir / 'resources/modules/s3_inner_modules/main.tf'),
+                        'idx': 6,
+                        'source_module_object': TFModule(path=str(parent_dir / 'resources/modules/stacks/prod/sub-prod/main.tf'),
+                                                         name='s3', foreach_idx=None,
+                                                         nested_tf_module=TFModule(path=str(parent_dir / 'resources/modules/stacks/prod/main.tf'),
+                                                                                   name='sub-module', foreach_idx=None,
+                                                                                   nested_tf_module=None)
+                                                         )
+                    }
                 ],
-            },
-            bucket_vertex_2.breadcrumbs,
-        )
+            }
 
-        self.assertDictEqual(
-            {
+        self.assertDictEqual(expected_vertex_1_breadcrumbs, bucket_vertex_1.breadcrumbs)
+
+        expected_vertex_2_breadcrumbs = {
                 "versioning.enabled": [
                     {
                         "type": "module",
@@ -376,21 +353,58 @@ class TestLocalGraph(TestCase):
                 ],
                 "source_module_": [
                     {
-                        "type": "module",
-                        "name": "s3",
-                        "path": str(parent_dir / "resources/modules/stacks/test/main.tf"),
-                        "idx": 15
+                        'type': 'module',
+                        'name': 's3',
+                        'path': str(parent_dir / 'resources/modules/stacks/stage/main.tf'),
+                        'idx': 14,
+                        'source_module_object': None
                     },
+                    {
+                        'type': 'module',
+                        'name': 'inner_module_call',
+                        'path': str(parent_dir / 'resources/modules/s3_inner_modules/main.tf'),
+                        'idx': 7,
+                        'source_module_object': TFModule(path=str(parent_dir / 'resources/modules/stacks/stage/main.tf'),
+                                                         name='s3', foreach_idx=None, nested_tf_module=None)
+                    }
+                ],
+            }
+        self.assertDictEqual(expected_vertex_2_breadcrumbs, bucket_vertex_2.breadcrumbs)
+
+        expected_vertex_3_breadcrumbs = {
+                "versioning.enabled": [
                     {
                         "type": "module",
                         "name": "inner_module_call",
                         "path": str(parent_dir / "resources/modules/s3_inner_modules/main.tf"),
-                        "idx": 8
+                        "module_connection": False,
+                    },
+                    {
+                        "type": "variable",
+                        "name": "versioning",
+                        "path": str(parent_dir / "resources/modules/s3_inner_modules/inner/variables.tf"),
+                        "module_connection": False,
                     },
                 ],
-            },
-            bucket_vertex_3.breadcrumbs,
-        )
+                "source_module_": [
+                    {
+                        'type': 'module',
+                        'name': 's3',
+                        'path': str(parent_dir / 'resources/modules/stacks/test/main.tf'),
+                        'idx': 15,
+                        'source_module_object': None
+                    },
+                    {
+                        'type': 'module',
+                        'name': 'inner_module_call',
+                        'path': str(parent_dir / 'resources/modules/s3_inner_modules/main.tf'),
+                        'idx': 8,
+                        'source_module_object': TFModule(path=str(parent_dir / 'resources/modules/stacks/test/main.tf'),
+                                                         name='s3', foreach_idx=None, nested_tf_module=None)
+                    }
+                ],
+        }
+        self.assertDictEqual(expected_vertex_3_breadcrumbs, bucket_vertex_3.breadcrumbs)
 
     def test_variables_same_name_different_modules(self):
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules/same_var_names'))
