@@ -6,7 +6,7 @@ const IGNORE_VAR = [
   'definitions_context_object_path', 'root_folder', 'bucket', 'source_id', 'num_vertices',
   'num_edges', 'file_name', 'tmp_folder', 'self.bucket_name', 'repository_zip_path', 'file_size_in_mb',
   'repository_zip_path', 'event', 'block_type', 'block_name', 'graph_framework', 'custom_policies', 'checkov_check_id',
-  'start_time', 'datetime.now()', 'framework.name', 'str(framework)'
+  'start_time', 'datetime.now()', 'framework.name', 'str(framework)', 'entity_id', 'full_file_path'
 ];
 
 const START_END_IGNORE = [
