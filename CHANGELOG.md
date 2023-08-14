@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.364...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.3.365...HEAD)
+
+## [2.3.365](https://github.com/bridgecrewio/checkov/compare/2.3.364...2.3.365) - 2023-08-14
+
+### Feature
+
+- **terraform:** Removed most usages of enable_nested_modules - [#5415](https://github.com/bridgecrewio/checkov/pull/5415)
 
 ## [2.3.364](https://github.com/bridgecrewio/checkov/compare/2.3.361...2.3.364) - 2023-08-13
 
