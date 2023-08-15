@@ -32,7 +32,6 @@ class ParserRegistry:
     ) -> Dict[TFDefinitionKey, Dict[str, Dict[str, Any]]]:
         supported_definitions = [parser_type for parser_type in self.context_parsers.keys()]
         (tf_definition_key, definition_blocks_types) = definitions
-        tf_file = tf_definition_key.file_path
 
         if definition_blocks_types:
             definition_blocks_types = {x: definition_blocks_types[x] for x in definition_blocks_types.keys()}
