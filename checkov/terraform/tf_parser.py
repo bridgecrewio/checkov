@@ -50,7 +50,7 @@ class TFParser:
         self.external_variables_data: list[tuple[str, Any, str]] = []
 
     def _init(self, directory: str,
-              out_evaluations_context: Dict[str, Dict[str, EvaluationContext]] | None,
+              out_evaluations_context: Dict[TFDefinitionKey, Dict[str, EvaluationContext]] | None,
               out_parsing_errors: Dict[str, Exception] | None,
               env_vars: Mapping[str, str] | None,
               download_external_modules: bool,
@@ -83,7 +83,7 @@ class TFParser:
     def parse_directory(
         self,
         directory: str,
-        out_evaluations_context: Dict[str, Dict[str, EvaluationContext]] | None = None,
+        out_evaluations_context: Dict[TFDefinitionKey, Dict[str, EvaluationContext]] | None = None,
         out_parsing_errors: Dict[str, Exception] | None = None,
         env_vars: Mapping[str, str] | None = None,
         download_external_modules: bool = False,

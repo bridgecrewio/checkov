@@ -74,7 +74,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         self.graph_class = graph_class
         self.parser = parser or TFParser()
         self.definitions: dict[TFDefinitionKey, dict[str, Any]] | None = None
-        self.context = None
+        self.context: dict[TFDefinitionKey, dict[str, Any]] | None = None
         self.breadcrumbs = None
         self.evaluations_context: Dict[str, Dict[str, EvaluationContext]] = {}
         self.graph_manager: TerraformGraphManager = graph_manager if graph_manager is not None else TerraformGraphManager(
