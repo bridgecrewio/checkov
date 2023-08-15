@@ -49,12 +49,12 @@ from checkov.common.util import prompt
 from checkov.common.util.banner import banner as checkov_banner, tool as checkov_tool
 from checkov.common.util.config_utils import get_default_config_paths
 from checkov.common.util.consts import CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
-from checkov.common.util.docs_generator import print_checks
 from checkov.common.util.ext_argument_parser import ExtArgumentParser
 from checkov.common.util.runner_dependency_handler import RunnerDependencyHandler
 from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.contributor_metrics import report_contributor_metrics
 from checkov.dockerfile.runner import Runner as dockerfile_runner
+from checkov.docs_generator import print_checks
 from checkov.github.runner import Runner as github_configuration_runner
 from checkov.github_actions.runner import Runner as github_actions_runner
 from checkov.gitlab.runner import Runner as gitlab_configuration_runner
