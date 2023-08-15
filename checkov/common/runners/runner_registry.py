@@ -669,7 +669,7 @@ class RunnerRegistry:
 
         enriched_resources = {}
         for repo_root, parse_results in repo_definitions.items():
-            definitions = cast(dict[TFDefinitionKey, dict[str, list[dict[str, Any]]]], parse_results['tf_definitions'])
+            definitions = cast("dict[TFDefinitionKey, dict[str, list[dict[str, Any]]]]", parse_results['tf_definitions'])
             for full_file_path, definition in definitions.items():
                 definitions_context = parser_registry.enrich_definitions_context((full_file_path, definition))
                 abs_scanned_file = full_file_path.file_path
