@@ -39,7 +39,6 @@ from checkov.common.typing import _ExitCodeThresholds, _BaseRunner, _ScaExitCode
 from checkov.common.util import data_structures_utils
 from checkov.common.util.banner import tool as tool_name
 from checkov.common.util.json_utils import CustomJSONEncoder
-from checkov.common.util.parser_utils import strip_terraform_module_referrer
 from checkov.common.util.secrets_omitter import SecretsOmitter
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list, force_list
 from checkov.sca_image.runner import Runner as image_runner
@@ -668,7 +667,8 @@ class RunnerRegistry:
 
         enriched_resources = {}
         for repo_root, parse_results in repo_definitions.items():
-            for full_file_path, definition in parse_results['tf_definitions'].items():
+            definitions = parse_results['tf_definitions']
+            for full_file_path, definition in definitions.items():
                 definitions_context = parser_registry.enrich_definitions_context((full_file_path, definition))
                 abs_scanned_file = full_file_path.file_path
                 scanned_file = os.path.relpath(abs_scanned_file, repo_root)

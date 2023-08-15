@@ -4,6 +4,7 @@ import logging
 from typing import Type, Any, TYPE_CHECKING
 
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
+from checkov.terraform import TFDefinitionKey
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 
 from checkov.common.graph.graph_manager import GraphManager
@@ -13,7 +14,7 @@ if TYPE_CHECKING:
     from checkov.common.typing import LibraryGraphConnector
 
 
-class TerraformGraphManager(GraphManager[TerraformLocalGraph, "dict[str, dict[str, Any]]"]):
+class TerraformGraphManager(GraphManager[TerraformLocalGraph, "dict[TFDefinitionKey, dict[str, Any]]"]):
     def __init__(self, db_connector: LibraryGraphConnector, source: str = "") -> None:
         self.parser: TFParser  # just to make sure it won't be None
 
@@ -31,7 +32,7 @@ class TerraformGraphManager(GraphManager[TerraformLocalGraph, "dict[str, dict[st
         external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR,
         vars_files: list[str] | None = None,
         create_graph: bool = True,
-    ) -> list[tuple[TerraformLocalGraph | None, dict[str, dict[str, Any]]]]:
+    ) -> list[tuple[TerraformLocalGraph | None, list[dict[TFDefinitionKey, dict[str, Any]]]]]:
         logging.info("Parsing HCL files in source dir to multi graph")
         modules_with_definitions = self.parser.parse_multi_graph_hcl_module(
             source_dir=source_dir,
@@ -44,7 +45,7 @@ class TerraformGraphManager(GraphManager[TerraformLocalGraph, "dict[str, dict[st
             create_graph=create_graph,
         )
 
-        graphs: list[tuple[TerraformLocalGraph | None, dict[str, dict[str, Any]]]] = []
+        graphs: list[tuple[TerraformLocalGraph | None, list[dict[TFDefinitionKey, dict[str, Any]]]]] = []
         for module, tf_definitions in modules_with_definitions:
             if create_graph and module:
                 logging.info("Building graph from parsed module")
@@ -65,7 +66,7 @@ class TerraformGraphManager(GraphManager[TerraformLocalGraph, "dict[str, dict[st
         external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR,
         vars_files: list[str] | None = None,
         create_graph: bool = True,
-    ) -> tuple[TerraformLocalGraph | None, dict[str, dict[str, Any]]]:
+    ) -> tuple[TerraformLocalGraph | None, dict[TFDefinitionKey, dict[str, Any]]]:
         logging.info("Parsing HCL files in source dir to graph")
         module, tf_definitions = self.parser.parse_hcl_module(
             source_dir=source_dir,
@@ -86,20 +87,22 @@ class TerraformGraphManager(GraphManager[TerraformLocalGraph, "dict[str, dict[st
 
         return local_graph, tf_definitions
 
-    def build_graph_from_definitions(self, definitions: dict[str, dict[str, Any]], render_variables: bool = True) -> TerraformLocalGraph:
+    def build_graph_from_definitions(self, definitions: dict[TFDefinitionKey, dict[str, Any]],
+                                     render_variables: bool = True) -> TerraformLocalGraph:
         module, _ = self.parser.parse_hcl_module_from_tf_definitions(definitions, "", self.source)
         local_graph = TerraformLocalGraph(module)
         local_graph.build_graph(render_variables=render_variables)
 
         return local_graph
 
-    def build_multi_graph_from_definitions(self, definitions: dict[str, dict[str, Any]], render_variables: bool = True) -> list[TerraformLocalGraph]:
+    def build_multi_graph_from_definitions(self, definitions: dict[TFDefinitionKey, dict[str, Any]],
+                                           render_variables: bool = True) -> list[TerraformLocalGraph]:
         module, tf_definitions = self.parser.parse_hcl_module_from_tf_definitions(definitions, "", self.source)
         dirs_to_definitions = self.parser.create_definition_by_dirs(tf_definitions)
 
         graphs: list[TerraformLocalGraph] = []
-        for source_path, definitions in dirs_to_definitions.items():
-            module, parsed_tf_definitions = self.parser.parse_hcl_module_from_multi_tf_definitions(definitions, source_path, self.source)
+        for source_path, dir_definitions in dirs_to_definitions.items():
+            module, parsed_tf_definitions = self.parser.parse_hcl_module_from_multi_tf_definitions(dir_definitions, source_path, self.source)
             local_graph = TerraformLocalGraph(module)
             local_graph.build_graph(render_variables=render_variables)
             graphs.append(local_graph)
