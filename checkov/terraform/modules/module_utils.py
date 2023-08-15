@@ -4,20 +4,21 @@ import itertools
 import json
 import logging
 import os
-from collections import defaultdict
 from collections.abc import Sequence
-from typing import Any, TYPE_CHECKING, TypeVar, cast
+from typing import Any, TYPE_CHECKING, TypeVar, cast, Tuple
 
 from lark import Tree
 import re
 
+from checkov.common.typing import TFDefinitionKeyType
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.json_utils import CustomJSONEncoder, object_hook
+from checkov.terraform.modules.module_objects import TFDefinitionKey
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
 from checkov.terraform.graph_builder.utils import remove_module_dependency_in_path
 from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_PREFIX, TERRAFORM_NESTED_MODULE_PATH_ENDING, \
-    is_nested, get_abs_path, get_module_from_full_path
+    is_nested
 
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
@@ -171,44 +172,6 @@ def get_next_vertices(evaluated_files: list[str], unevaluated_files: list[str]) 
         unevaluated.append(k)
     return next_level, unevaluated
 
-
-def get_module_dependency_map_support_nested_modules(
-    tf_definitions: dict[str, Any]
-) -> tuple[dict[str, list[list[str]]], dict[str, Any], dict[tuple[str, str | None], Any]]:
-    module_dependency_map: dict[str, list[list[str]]] = defaultdict(list)
-    dep_index_mapping = defaultdict(list)
-    for tf_definition_key in tf_definitions.keys():
-        if not is_nested(tf_definition_key):
-            dir_name = os.path.dirname(tf_definition_key)
-            module_dependency_map[dir_name].append([])
-            continue
-        modules_list, path = get_nested_modules_data_as_list(tf_definition_key)
-        dir_name = os.path.dirname(path)
-        module_dependency_map[dir_name].append([m for m, i in modules_list if m])
-        dep_index_mapping[(path, modules_list[-1][0])].append(modules_list[-1][1])
-
-    for key, dir_list in module_dependency_map.items():
-        dir_list.sort()
-        module_dependency_map[key] = list(dir_list for dir_list, _ in itertools.groupby(dir_list))
-    return module_dependency_map, tf_definitions, dep_index_mapping
-
-
-def get_nested_modules_data_as_list(file_path: str) -> tuple[list[tuple[str | None, str | None]], str]:
-    from checkov.terraform.modules.module_objects import TFDefinitionKey
-    path = get_abs_path(file_path)
-    module_path: str | None = file_path
-    modules_list = []
-
-    while is_nested(module_path):
-        module, index = get_module_from_full_path(module_path)
-        if isinstance(module, TFDefinitionKey):
-            module = module.file_path
-        modules_list.append((module, index))
-        module_path = module
-    modules_list.reverse()
-    return modules_list, path
-
-
 def clean_parser_types(conf: _Conf) -> _Conf:
     if not conf:
         return conf
@@ -266,3 +229,24 @@ def clean_parser_types_lst(values: list[Any]) -> list[Any]:
 
 def serialize_definitions(tf_definitions: _Conf) -> _Conf:
     return cast("_Conf", json.loads(json.dumps(tf_definitions, cls=CustomJSONEncoder), object_hook=object_hook))
+
+
+def get_module_from_full_path(file_path: TFDefinitionKey | None) -> Tuple[TFDefinitionKeyType | None, str | None]:
+    if not file_path or not is_nested(file_path):
+        return None, None
+    if file_path.tf_source_modules is None:
+        return None, None
+    return TFDefinitionKey(file_path=file_path.tf_source_modules.path, tf_source_modules=file_path.tf_source_modules.nested_tf_module), None
+
+
+def get_module_name(file_path: TFDefinitionKeyType) -> str | None:
+    from checkov.terraform.modules.module_objects import TFDefinitionKey
+    if isinstance(file_path, TFDefinitionKey):
+        if not file_path.tf_source_modules:
+            return None
+        module_name = file_path.tf_source_modules.name
+        if file_path.tf_source_modules.foreach_idx:
+            foreach_or_count = '"' if isinstance(file_path.tf_source_modules.foreach_idx, str) else ''
+            module_name = f'{module_name}[{foreach_or_count}{file_path.tf_source_modules.foreach_idx}{foreach_or_count}]'
+        return module_name
+    return None

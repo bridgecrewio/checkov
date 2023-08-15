@@ -23,7 +23,7 @@ class TestGraphBuilder(TestCase):
         tf_definitions = runner.definitions
         self.assertEqual(5, len(report.failed_checks))
         for file, definitions in tf_definitions.items():
-            if file.endswith('pass_s3.tf'):
+            if file.file_path.endswith('pass_s3.tf'):
                 s3_bucket_config = definitions['resource'][0]['aws_s3_bucket']['bucket_with_versioning']
                 # Evaluation succeeded for included vars
                 self.assertTrue(s3_bucket_config['versioning'][0]['enabled'][0])

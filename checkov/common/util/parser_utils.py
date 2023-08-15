@@ -1,15 +1,13 @@
 from __future__ import annotations
 
 import json
-import os
 import re
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, List, Optional, Tuple
+from typing import Any, List, Optional
 
 import hcl2
 
-from checkov.common.runners.base_runner import strtobool
 from checkov.common.typing import TFDefinitionKeyType
 
 _FUNCTION_NAME_CHARS = frozenset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
@@ -374,39 +372,6 @@ def is_nested(full_path: TFDefinitionKeyType | None) -> bool:
 
 def get_tf_definition_key(nested_module: str, module_name: str, module_index: Any, nested_key: str = '') -> str:
     return f"{nested_module}{TERRAFORM_NESTED_MODULE_PATH_PREFIX}{module_name}{TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR}{module_index}{nested_key}{TERRAFORM_NESTED_MODULE_PATH_ENDING}"
-
-
-def get_module_from_full_path(file_path: TFDefinitionKeyType | None) -> Tuple[TFDefinitionKeyType | None, str | None]:
-    from checkov.terraform.modules.module_objects import TFDefinitionKey
-    if not file_path or not is_nested(file_path):
-        return None, None
-    if isinstance(file_path, TFDefinitionKey):
-        if file_path.tf_source_modules is None:
-            return None, None
-        if strtobool(os.getenv('ENABLE_DEFINITION_KEY', 'False')):
-            return TFDefinitionKey(file_path=file_path.tf_source_modules.path, tf_source_modules=file_path.tf_source_modules.nested_tf_module), None
-        return file_path.tf_source_modules.path, None
-    tmp_path = file_path[file_path.index(TERRAFORM_NESTED_MODULE_PATH_PREFIX) + TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH: -TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH]
-    if is_nested(tmp_path):
-        module = get_abs_path(tmp_path) + tmp_path[tmp_path.index(TERRAFORM_NESTED_MODULE_PATH_PREFIX):]
-        index = tmp_path[tmp_path.index(TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR) + TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH:tmp_path.index(TERRAFORM_NESTED_MODULE_PATH_PREFIX)]
-    else:
-        module = get_abs_path(tmp_path)
-        index = tmp_path[tmp_path.index(TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR) + TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH:]
-    return module, index
-
-
-def get_module_name(file_path: TFDefinitionKeyType) -> str | None:
-    from checkov.terraform.modules.module_objects import TFDefinitionKey
-    if isinstance(file_path, TFDefinitionKey):
-        if not file_path.tf_source_modules:
-            return None
-        module_name = file_path.tf_source_modules.name
-        if file_path.tf_source_modules.foreach_idx:
-            foreach_or_count = '"' if isinstance(file_path.tf_source_modules.foreach_idx, str) else ''
-            module_name = f'{module_name}[{foreach_or_count}{file_path.tf_source_modules.foreach_idx}{foreach_or_count}]'
-        return module_name
-    return None
 
 
 def get_abs_path(file_path: TFDefinitionKeyType) -> str:

@@ -14,7 +14,6 @@ from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlo
 def convert_graph_vertices_to_tf_definitions(
     vertices: List[TerraformBlock], root_folder: str
 ) -> Tuple[Dict[TFDefinitionKeyType, Dict[str, Any]], Dict[str, Dict[str, Any]]]:
-    use_new_tf_parser = strtobool(os.getenv('CHECKOV_NEW_TF_PARSER', 'True'))
     tf_definitions: Dict[TFDefinitionKeyType, Dict[str, Any]] = {}
     breadcrumbs: Dict[str, Dict[str, Any]] = {}
     for vertex in vertices:
@@ -26,7 +25,7 @@ def convert_graph_vertices_to_tf_definitions(
         if block_type == BlockType.TF_VARIABLE:
             continue
 
-        tf_path: TFDefinitionKeyType = TFDefinitionKey(file_path=block_path) if use_new_tf_parser else block_path
+        tf_path: TFDefinitionKeyType = TFDefinitionKey(file_path=block_path)
         if vertex.source_module_object:
             tf_path = TFDefinitionKey(file_path=block_path, tf_source_modules=vertex.source_module_object)
         tf_definitions.setdefault(tf_path, {}).setdefault(block_type, []).append(vertex.config)
