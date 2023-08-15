@@ -43,7 +43,6 @@ from checkov.common.util.secrets_omitter import SecretsOmitter
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list, force_list
 from checkov.sca_image.runner import Runner as image_runner
 from checkov.common.secrets.consts import SECRET_VALIDATION_STATUSES
-from checkov.terraform import TFDefinitionKey
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.tf_parser import TFParser
 
@@ -655,6 +654,8 @@ class RunnerRegistry:
     def get_enriched_resources(
         repo_roots: list[str | Path], download_external_modules: bool
     ) -> dict[str, dict[str, Any]]:
+        from checkov.terraform.modules.module_objects import TFDefinitionKey
+
         repo_definitions = {}
         for repo_root in repo_roots:
             parsing_errors: dict[str, Exception] = {}

@@ -4,13 +4,13 @@ import logging
 from typing import Type, Any, TYPE_CHECKING
 
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
-from checkov.terraform import TFDefinitionKey
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 
 from checkov.common.graph.graph_manager import GraphManager
 from checkov.terraform.tf_parser import TFParser
 
 if TYPE_CHECKING:
+    from checkov.terraform.modules.module_objects import TFDefinitionKey
     from checkov.common.typing import LibraryGraphConnector
 
 
