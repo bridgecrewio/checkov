@@ -9,3 +9,4 @@ class LibraryInput(TypedDict):
     policies: List[str]
     checks: List[str]
     skip_checks: List[str]
+    skip_path: List[str]
