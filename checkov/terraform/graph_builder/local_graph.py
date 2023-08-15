@@ -5,7 +5,7 @@ import os
 from collections import defaultdict
 from functools import partial
 from pathlib import Path
-from typing import List, Optional, Union, Any, Dict, Set, Tuple, overload, TYPE_CHECKING
+from typing import List, Optional, Union, Any, Dict, overload
 
 from typing_extensions import TypedDict
 
@@ -202,7 +202,6 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                         for module in referenced_modules:
                             referenced_module_idx = module.get("idx")
                             referenced_module_path = module.get("path")
-                            referenced_module_object = module.get("source_module_object")
                             if referenced_module_path is None:
                                 dest_node_index = -1
                             else:

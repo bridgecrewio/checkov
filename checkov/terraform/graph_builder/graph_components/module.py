@@ -9,7 +9,6 @@ from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.parser_functions import handle_dynamic_values
-from checkov.terraform.modules import TFDefinitionKey
 from hcl2 import START_LINE, END_LINE
 
 if TYPE_CHECKING:

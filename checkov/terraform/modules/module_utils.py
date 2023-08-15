@@ -170,6 +170,7 @@ def get_next_vertices(evaluated_files: list[str], unevaluated_files: list[str]) 
         unevaluated.append(k)
     return next_level, unevaluated
 
+
 def clean_parser_types(conf: _Conf) -> _Conf:
     if not conf:
         return conf
