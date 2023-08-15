@@ -58,7 +58,8 @@ class PrismaEngine(SastEngine):
             'source_codes': targets,
             'policies': registry.checks_dirs_path,
             'checks': registry.runner_filter.checks if registry.runner_filter else [],
-            'skip_checks': registry.runner_filter.skip_checks if registry.runner_filter else []
+            'skip_checks': registry.runner_filter.skip_checks if registry.runner_filter else [],
+            'skip_path': registry.runner_filter.excluded_paths if registry.runner_filter else []
         }
         prisma_result = self.run_go_library(**library_input)
 
@@ -149,7 +150,8 @@ class PrismaEngine(SastEngine):
                        source_codes: List[str],
                        policies: List[str],
                        checks: List[str],
-                       skip_checks: List[str]) -> List[Report]:
+                       skip_checks: List[str],
+                       skip_path: List[str]) -> List[Report]:
 
         validate_params(languages, source_codes, policies)
 
@@ -164,7 +166,8 @@ class PrismaEngine(SastEngine):
                 "policies": policies,
                 "languages": [a.value for a in languages],
                 "checks": checks,
-                "skip_checks": skip_checks
+                "skip_checks": skip_checks,
+                "skip_path": skip_path
             },
             "auth": {
                 "api_key": bc_integration.get_auth_token(),
