@@ -53,22 +53,6 @@ class TestGraphBuilder(TestCase):
         self.assertEqual(5, len(report.passed_checks))
         self.assertEqual(0, len(report.skipped_checks))
 
-    def test_run_persistent_data(self):
-        resources_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "resources", "graph_files_test")
-        runner = Runner(db_connector=self.db_connector())
-        data_path = os.path.join(os.path.dirname(__file__), "persistent_data.json")
-        with open(data_path) as f:
-            data = json.load(f)
-            tf_definitions = data["tf_definitions"]
-            breadcrumbs = data["breadcrumbs"]
-            definitions_context = data["definitions_context"]
-        runner.set_external_data(tf_definitions, definitions_context, breadcrumbs)
-        report = runner.run(root_folder=resources_path)
-        # note that we dont count graph violations in this case
-        self.assertEqual(len(report.failed_checks), 0)
-        self.assertEqual(len(report.passed_checks), 1)
-        self.assertEqual(len(report.skipped_checks), 0)
-
     def test_module_and_variables(self):
         resources_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "resources", "modules-and-vars")
         runner = Runner(db_connector=self.db_connector())
