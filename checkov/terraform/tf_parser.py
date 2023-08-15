@@ -11,7 +11,6 @@ import deep_merge
 import hcl2
 
 from checkov.common.runners.base_runner import filter_ignored_paths, IGNORE_HIDDEN_DIRECTORY_ENV
-from checkov.common.typing import TFDefinitionKeyType
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.type_forcers import force_list
@@ -510,20 +509,19 @@ class TFParser:
                 block = [{var_name: {"default": default}}]
                 module.add_blocks(BlockType.TF_VARIABLE, block, path, source)
 
-    def get_dirname(self, path: TFDefinitionKeyType) -> str:
-        if isinstance(path, TFDefinitionKey):
-            path = path.file_path
-        dirname_path = self.dirname_cache.get(path)
+    def get_dirname(self, path: TFDefinitionKey) -> str:
+        file_path = path.file_path
+        dirname_path = self.dirname_cache.get(file_path)
         if not dirname_path:
-            dirname_path = os.path.dirname(path)
-            self.dirname_cache[path] = dirname_path
+            dirname_path = os.path.dirname(file_path)
+            self.dirname_cache[file_path] = dirname_path
         return dirname_path
 
     def should_loaded_file(self, file: TFDefinitionKey, root_dir: str) -> bool:
         return not self.get_dirname(file) != root_dir
 
     def get_module_source(
-        self, module_call_data: dict[str, Any], module_call_name: str, file: TFDefinitionKeyType
+        self, module_call_data: dict[str, Any], module_call_name: str, file: TFDefinitionKey
     ) -> Optional[str]:
         source = module_call_data.get("source")
         if not source or not isinstance(source, list):
@@ -533,7 +531,7 @@ class TFParser:
             return None
 
         if source.startswith("./") or source.startswith("../"):
-            file_to_load = file.file_path if isinstance(file, TFDefinitionKey) else file
+            file_to_load = file.file_path
             source = os.path.normpath(os.path.join(os.path.dirname(remove_module_dependency_from_path(file_to_load)), source))
         return source
 

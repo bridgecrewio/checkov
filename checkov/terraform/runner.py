@@ -24,8 +24,7 @@ from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
 from checkov.common.util import data_structures_utils
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
 from checkov.common.util.data_structures_utils import pickle_deepcopy
-from checkov.common.util.parser_utils import get_abs_path, strip_terraform_module_referrer
-from checkov.terraform import get_module_from_full_path, get_module_name
+from checkov.terraform import get_module_from_full_path, get_module_name, get_abs_path
 from checkov.common.util.secrets import omit_secret_value_from_checks, omit_secret_value_from_graph_checks
 from checkov.common.variables.context import EvaluationContext
 from checkov.runner_filter import RunnerFilter

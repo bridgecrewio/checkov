@@ -2,12 +2,10 @@ from __future__ import annotations
 
 import json
 import os
-from typing import List, Dict, Any, Set, Callable, Tuple, TYPE_CHECKING, Optional, cast
+from typing import List, Dict, Any, Set, Callable, Tuple, TYPE_CHECKING, cast
 
-from checkov.common.runners.base_runner import strtobool
+from checkov.common.typing import TFDefinitionKeyType
 from checkov.common.util.data_structures_utils import pickle_deepcopy
-from checkov.common.util.parser_utils import get_abs_path
-from checkov.terraform import get_module_from_full_path
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.parser_functions import handle_dynamic_values
@@ -17,7 +15,7 @@ from hcl2 import START_LINE, END_LINE
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
 
-_AddBlockTypeCallable: TypeAlias = "Callable[[Module, list[dict[str, dict[str, Any]]], str | TFDefinitionKey], None]"
+_AddBlockTypeCallable: TypeAlias = "Callable[[Module, list[dict[str, dict[str, Any]]], TFDefinitionKeyType], None]"
 
 
 class Module:
@@ -79,7 +77,7 @@ class Module:
         return module
 
     def add_blocks(
-            self, block_type: str, blocks: List[Dict[str, Dict[str, Any]]], path: str | TFDefinitionKey, source: str
+            self, block_type: str, blocks: List[Dict[str, Dict[str, Any]]], path: TFDefinitionKeyType, source: str
     ) -> None:
         self.source = source
         if block_type in self._block_type_to_func:
@@ -95,7 +93,7 @@ class Module:
         self.blocks.append(block)
         return
 
-    def _add_provider(self, blocks: List[Dict[str, Dict[str, Any]]], path: str | TFDefinitionKey) -> None:
+    def _add_provider(self, blocks: List[Dict[str, Dict[str, Any]]], path: TFDefinitionKeyType) -> None:
         for provider_dict in blocks:
             for name in provider_dict:
                 attributes = provider_dict[name]
@@ -116,7 +114,7 @@ class Module:
                 )
                 self._add_to_blocks(provider_block)
 
-    def _add_variable(self, blocks: List[Dict[str, Dict[str, Any]]], path: str | TFDefinitionKey) -> None:
+    def _add_variable(self, blocks: List[Dict[str, Dict[str, Any]]], path: TFDefinitionKeyType) -> None:
         for variable_dict in blocks:
             for name in variable_dict:
                 attributes = variable_dict[name]
@@ -130,7 +128,7 @@ class Module:
                 )
                 self._add_to_blocks(variable_block)
 
-    def _add_locals(self, blocks: List[Dict[str, Dict[str, Any]]], path: str | TFDefinitionKey) -> None:
+    def _add_locals(self, blocks: List[Dict[str, Dict[str, Any]]], path: TFDefinitionKeyType) -> None:
         for blocks_section in blocks:
             for name in blocks_section:
                 if name in (START_LINE, END_LINE):
@@ -147,7 +145,7 @@ class Module:
                 )
                 self._add_to_blocks(local_block)
 
-    def _add_output(self, blocks: List[Dict[str, Dict[str, Any]]], path: str | TFDefinitionKey) -> None:
+    def _add_output(self, blocks: List[Dict[str, Dict[str, Any]]], path: TFDefinitionKeyType) -> None:
         for output_dict in blocks:
             for name, attributes in output_dict.items():
                 if isinstance(attributes, dict):
@@ -161,7 +159,7 @@ class Module:
                     )
                     self._add_to_blocks(output_block)
 
-    def _add_module(self, blocks: List[Dict[str, Dict[str, Any]]], path: str | TFDefinitionKey) -> None:
+    def _add_module(self, blocks: List[Dict[str, Dict[str, Any]]], path: TFDefinitionKeyType) -> None:
         for module_dict in blocks:
             for name, attributes in module_dict.items():
                 if isinstance(attributes, dict):
@@ -175,7 +173,7 @@ class Module:
                     )
                     self._add_to_blocks(module_block)
 
-    def _add_resource(self, blocks: List[Dict[str, Dict[str, Any]]], path: str | TFDefinitionKey) -> None:
+    def _add_resource(self, blocks: List[Dict[str, Dict[str, Any]]], path: TFDefinitionKeyType) -> None:
         for resource_dict in blocks:
             for resource_type, resources in resource_dict.items():
                 self.resources_types.add(resource_type)
@@ -215,7 +213,7 @@ class Module:
         except json.JSONDecodeError:
             return resource_conf
 
-    def _add_data(self, blocks: List[Dict[str, Dict[str, Any]]], path: str | TFDefinitionKey) -> None:
+    def _add_data(self, blocks: List[Dict[str, Dict[str, Any]]], path: TFDefinitionKeyType) -> None:
         for data_dict in blocks:
             for data_type in data_dict:
                 for name in data_dict[data_type]:
@@ -231,7 +229,7 @@ class Module:
                     )
                     self._add_to_blocks(data_block)
 
-    def _add_terraform_block(self, blocks: List[Dict[str, Dict[str, Any]]], path: str | TFDefinitionKey) -> None:
+    def _add_terraform_block(self, blocks: List[Dict[str, Dict[str, Any]]], path: TFDefinitionKeyType) -> None:
         for terraform_dict in blocks:
             terraform_block = TerraformBlock(
                 block_type=BlockType.TERRAFORM,
@@ -243,7 +241,7 @@ class Module:
             )
             self._add_to_blocks(terraform_block)
 
-    def _add_tf_var(self, blocks: list[Dict[str, Dict[str, Any]]], path: str | TFDefinitionKey) -> None:
+    def _add_tf_var(self, blocks: list[Dict[str, Dict[str, Any]]], path: TFDefinitionKeyType) -> None:
         for block in blocks:
             for tf_var_name, attributes in block.items():
                 tfvar_block = TerraformBlock(

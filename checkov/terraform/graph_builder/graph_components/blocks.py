@@ -11,7 +11,7 @@ from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 
 if TYPE_CHECKING:
-    from checkov.terraform import TFModule
+    from checkov.terraform import TFModule, TFDefinitionKey
 
 
 class TerraformBlock(Block):

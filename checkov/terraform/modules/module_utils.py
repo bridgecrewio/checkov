@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import itertools
 import json
 import logging
 import os
@@ -17,8 +16,7 @@ from checkov.common.util.json_utils import CustomJSONEncoder, object_hook
 from checkov.terraform.modules.module_objects import TFDefinitionKey
 from checkov.terraform.checks.utils.dependency_path_handler import unify_dependency_path
 from checkov.terraform.graph_builder.utils import remove_module_dependency_in_path
-from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_PREFIX, TERRAFORM_NESTED_MODULE_PATH_ENDING, \
-    is_nested
+from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_PREFIX, TERRAFORM_NESTED_MODULE_PATH_ENDING
 
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias
@@ -231,7 +229,7 @@ def serialize_definitions(tf_definitions: _Conf) -> _Conf:
     return cast("_Conf", json.loads(json.dumps(tf_definitions, cls=CustomJSONEncoder), object_hook=object_hook))
 
 
-def get_module_from_full_path(file_path: TFDefinitionKey | None) -> Tuple[TFDefinitionKeyType | None, str | None]:
+def get_module_from_full_path(file_path: TFDefinitionKey | None) -> Tuple[TFDefinitionKey | None, None]:
     if not file_path or not is_nested(file_path):
         return None, None
     if file_path.tf_source_modules is None:
@@ -239,14 +237,20 @@ def get_module_from_full_path(file_path: TFDefinitionKey | None) -> Tuple[TFDefi
     return TFDefinitionKey(file_path=file_path.tf_source_modules.path, tf_source_modules=file_path.tf_source_modules.nested_tf_module), None
 
 
-def get_module_name(file_path: TFDefinitionKeyType) -> str | None:
-    from checkov.terraform.modules.module_objects import TFDefinitionKey
-    if isinstance(file_path, TFDefinitionKey):
-        if not file_path.tf_source_modules:
-            return None
-        module_name = file_path.tf_source_modules.name
-        if file_path.tf_source_modules.foreach_idx:
-            foreach_or_count = '"' if isinstance(file_path.tf_source_modules.foreach_idx, str) else ''
-            module_name = f'{module_name}[{foreach_or_count}{file_path.tf_source_modules.foreach_idx}{foreach_or_count}]'
-        return module_name
-    return None
+def get_module_name(file_path: TFDefinitionKey) -> str | None:
+    if not file_path.tf_source_modules:
+        return None
+    module_name = file_path.tf_source_modules.name
+    if file_path.tf_source_modules.foreach_idx:
+        foreach_or_count = '"' if isinstance(file_path.tf_source_modules.foreach_idx, str) else ''
+        module_name = f'{module_name}[{foreach_or_count}{file_path.tf_source_modules.foreach_idx}{foreach_or_count}]'
+    return module_name
+
+
+def is_nested(full_path: TFDefinitionKey | None) -> bool:
+    return full_path.tf_source_modules is not None if full_path is not None else False
+
+
+def get_abs_path(file_path: TFDefinitionKeyType) -> str:
+    # file_path might be str for terraform-plan
+    return file_path if isinstance(file_path, str) else str(file_path.file_path)

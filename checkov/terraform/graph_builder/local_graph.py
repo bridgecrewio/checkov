@@ -34,8 +34,6 @@ from checkov.terraform.graph_builder.utils import (
 from checkov.terraform.graph_builder.utils import is_local_path
 from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
 
-if TYPE_CHECKING:
-    from checkov.common.typing import TFDefinitionKeyType
 
 MODULE_RESERVED_ATTRIBUTES = ("source", "version")
 CROSS_VARIABLE_EDGE_PREFIX = '[cross-variable] '
