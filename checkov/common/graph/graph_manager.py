@@ -5,7 +5,7 @@ from typing import Type, TYPE_CHECKING, TypeVar, Generic, Any
 
 if TYPE_CHECKING:
     from checkov.common.graph.graph_builder.local_graph import LocalGraph  # noqa
-    from checkov.terraform.parser import Parser
+    from checkov.terraform.tf_parser import TFParser
     from checkov.common.typing import LibraryGraph, LibraryGraphConnector
 
 _LocalGraph = TypeVar("_LocalGraph", bound="LocalGraph[Any]")
@@ -13,7 +13,7 @@ _Definitions = TypeVar("_Definitions")
 
 
 class GraphManager(Generic[_LocalGraph, _Definitions]):
-    def __init__(self, db_connector: LibraryGraphConnector, parser: Parser | None, source: str = "") -> None:
+    def __init__(self, db_connector: LibraryGraphConnector, parser: TFParser | None, source: str = "") -> None:
         self.db_connector = db_connector
         self.source = source
         self.parser = parser
