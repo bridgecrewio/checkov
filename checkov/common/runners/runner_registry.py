@@ -87,6 +87,7 @@ class RunnerRegistry:
         self.runner_filter = runner_filter
         self.runners = list(runners)
         self.banner = banner
+        self.sca_supported_ir_report: Optional[Report] = None
         self.scan_reports: list[Report] = []
         self.image_referencing_runners = self._get_image_referencing_runners()
         self.filter_runner_framework()
@@ -210,6 +211,13 @@ class RunnerRegistry:
                 else:
                     self._check_type_to_report_map[sub_report.check_type] = sub_report
                     merged_reports.append(sub_report)
+
+                if sub_report.check_type == 'sca_image':
+                    if len(sub_reports) == 1 or (len(sub_reports) == 2 and sub_reports[0].check_type in bc_integration.customer_run_config_response.get('supportedIrFw', [])):
+                        if self.sca_supported_ir_report:
+                            merge_reports(self.sca_supported_ir_report, sub_report)
+                        else:
+                            self.sca_supported_ir_report = sub_report
 
         return merged_reports
 
