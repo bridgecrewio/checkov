@@ -28,7 +28,7 @@ from checkov.terraform import get_module_from_full_path, get_module_name, get_ab
 from checkov.common.util.secrets import omit_secret_value_from_checks, omit_secret_value_from_graph_checks
 from checkov.common.variables.context import EvaluationContext
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.modules.module_objects import TFDefinitionKey
+from checkov.terraform.modules.module_objects import TFDefinitionKey, TFModule
 from checkov.terraform.checks.data.registry import data_registry
 from checkov.terraform.checks.module.registry import module_registry
 from checkov.terraform.checks.provider.registry import provider_registry
@@ -301,9 +301,11 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
 
     def get_entity_context_and_evaluations(self, entity: dict[str, Any]) -> dict[str, Any] | None:
         block_type = entity[CustomAttributes.BLOCK_TYPE]
-        full_file_path = entity[CustomAttributes.FILE_PATH]
-
-        full_file_path = TFDefinitionKey(file_path=entity.get(CustomAttributes.FILE_PATH), tf_source_modules=entity.get(CustomAttributes.SOURCE_MODULE_OBJECT))
+        tf_source_module_obj = entity.get(CustomAttributes.SOURCE_MODULE_OBJECT)
+        if isinstance(tf_source_module_obj, dict):
+            tf_source_module_obj = TFModule.from_json(tf_source_module_obj)
+        full_file_path = TFDefinitionKey(file_path=entity.get(CustomAttributes.FILE_PATH),
+                                         tf_source_modules=tf_source_module_obj)
 
         definition_path = entity[CustomAttributes.BLOCK_NAME].split('.')
         entity_context_path = [block_type] + definition_path
