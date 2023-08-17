@@ -180,7 +180,7 @@ def test_enrichment_of_plan_report_with_external_modules(mocker: MockerFixture):
             )
         }
 
-    mocker.patch("checkov.terraform.parser.load_tf_modules", side_effect=_load_tf_modules)
+    mocker.patch("checkov.terraform.tf_parser.load_tf_modules", side_effect=_load_tf_modules)
 
     # when
     report = runner_registry.run(repo_root_for_plan_enrichment=[repo_root], files=[str(valid_plan_path)])[0]

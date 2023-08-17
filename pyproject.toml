@@ -45,15 +45,15 @@ ignore_imports = [
     "checkov.common.util.json_utils -> checkov.terraform.modules.module_objects", # needed for JSON serialization
 
     "checkov.common.bridgecrew.platform_integration -> checkov.secrets.coordinator", # type hint
-    "checkov.common.graph.graph_manager -> checkov.terraform.parser", # type hint
-    "checkov.common.util.parser_utils -> checkov.terraform.modules.module_objects", # type hint
+    "checkov.common.graph.graph_manager -> checkov.terraform.tf_parser", # type hint
     "checkov.common.typing -> checkov.terraform.modules.module_objects", # type hint
 
     "checkov.common.bridgecrew.integration_features.features.policies_3d_integration -> checkov.policies_3d.*", # considering what to do
     "checkov.common.runners.base_post_runner -> checkov.policies_3d.checks_infra.base_check", # considering what to do
 
     "checkov.common.runners.runner_registry -> checkov.terraform.context_parsers.registry", # move runner_registry to a different place
-    "checkov.common.runners.runner_registry -> checkov.terraform.parser", # move runner_registry to a different place
+    "checkov.common.runners.runner_registry -> checkov.terraform.tf_parser", # move runner_registry to a different place
+    "checkov.common.runners.runner_registry -> checkov.terraform.modules.module_objects", # Should fix usage of get_enriched_resources
 
     "checkov.common.output.report -> checkov.policies_3d.output", # move to checkov.common.output
     "checkov.common.output.report -> checkov.sca_package.output", # move to checkov.common.output

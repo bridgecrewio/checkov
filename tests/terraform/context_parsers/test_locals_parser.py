@@ -1,5 +1,7 @@
 import unittest
-from checkov.terraform.parser import Parser
+
+from checkov.terraform import TFDefinitionKey
+from checkov.terraform.tf_parser import TFParser
 from checkov.terraform.context_parsers.registry import parser_registry
 import os
 
@@ -8,11 +10,9 @@ class TestLocalsContextParser(unittest.TestCase):
 
     def setup_dir(self, rel_path):
         test_root_dir = os.path.dirname(os.path.realpath(__file__)) + rel_path
-        tf_definitions = {}
         parsing_errors = {}
         definitions_context = {}
-        Parser().parse_directory(directory=test_root_dir,
-                                 out_definitions=tf_definitions,
+        tf_definitions = TFParser().parse_directory(directory=test_root_dir,
                                  out_parsing_errors=parsing_errors)
         for definition in tf_definitions.items():
             definitions_context = parser_registry.enrich_definitions_context(definition)
@@ -20,7 +20,9 @@ class TestLocalsContextParser(unittest.TestCase):
 
     def test_assignments_exists(self):
         definitions_context = self.setup_dir('/../evaluation/resources/default_evaluation/')
-        assignments = definitions_context[os.path.dirname(os.path.realpath(__file__)) + '/../evaluation/resources/default_evaluation/main.tf']['locals']['assignments']
+        file_path = os.path.dirname(os.path.realpath(__file__)) + '/../evaluation/resources/default_evaluation/main.tf'
+        key = TFDefinitionKey(file_path=file_path, tf_source_modules=None)
+        assignments = definitions_context[key]['locals']['assignments']
         self.assertIsNotNone(assignments)
 
         expected_assignments = {'dummy_with_dash': '${format("-%s",var.dummy_1)}', 'dummy_with_comma': '${format(":%s",var.dummy_1)}', 'bucket_name': '${var.bucket_name}'}
@@ -30,9 +32,9 @@ class TestLocalsContextParser(unittest.TestCase):
 
     def test_assignment_value(self):
         definitions_context = self.setup_dir('/../evaluation/resources/locals_evaluation/')
-        assignments = definitions_context[
-            os.path.dirname(os.path.realpath(__file__)) + '/../evaluation/resources/locals_evaluation/main.tf'][
-            'locals'].get('assignments')
+        file_path = os.path.dirname(os.path.realpath(__file__)) + '/../evaluation/resources/locals_evaluation/main.tf'
+        key = TFDefinitionKey(file_path=file_path, tf_source_modules=None)
+        assignments = definitions_context[key]['locals'].get('assignments')
         self.assertIsNotNone(assignments)
         self.assertEqual(1, len(assignments.items()))
         for k, v in assignments.items():

@@ -198,6 +198,7 @@ class Runner(TerraformRunner):
     @staticmethod
     def _get_file_path(full_file_path: TFDefinitionKeyType, root_folder: str | pathlib.Path) -> tuple[str, str]:
         if isinstance(full_file_path, TFDefinitionKey):
+            # It might be str for terraform-plan files
             full_file_path = full_file_path.file_path
         if platform.system() == "Windows":
             temp = os.path.split(full_file_path)[0]
