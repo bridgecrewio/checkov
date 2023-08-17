@@ -45,7 +45,6 @@ class EnvVarsConfig:
         self.IGNORE_HIDDEN_DIRECTORIES = convert_str_to_bool(os.getenv("CKV_IGNORE_HIDDEN_DIRECTORIES", True))
         self.MAX_FILE_SIZE = force_int(os.getenv("CHECKOV_MAX_FILE_SIZE", 5_000_000))  # 5 MB is default limit
         self.MAX_IAC_FILE_SIZE = force_int(os.getenv("CHECKOV_MAX_IAC_FILE_SIZE", 50_000_000))  # 50 MB is default limit
-        self.NEW_TF_PARSER = convert_str_to_bool(os.getenv("CHECKOV_NEW_TF_PARSER", True))
         self.NO_OUTPUT = convert_str_to_bool(os.getenv("CHECKOV_NO_OUTPUT", False))
         self.OPENAI_MAX_FINDINGS = force_int(os.getenv("CKV_OPENAI_MAX_FINDINGS", 5))
         self.OPENAI_MAX_TOKENS = force_int(os.getenv("CKV_OPENAI_MAX_TOKENS", 512))
