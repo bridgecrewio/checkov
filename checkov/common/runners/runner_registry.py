@@ -213,15 +213,15 @@ class RunnerRegistry:
                     merged_reports.append(sub_report)
 
                 if self.should_add_sca_results_to_sca_supported_ir_report(sub_report, sub_reports):
-                        if self.sca_supported_ir_report:
-                            merge_reports(self.sca_supported_ir_report, sub_report)
-                        else:
-                            self.sca_supported_ir_report = pickle_deepcopy(sub_report)
+                    if self.sca_supported_ir_report:
+                        merge_reports(self.sca_supported_ir_report, sub_report)
+                    else:
+                        self.sca_supported_ir_report = pickle_deepcopy(sub_report)
 
         return merged_reports
 
     @staticmethod
-    def should_add_sca_results_to_sca_supported_ir_report(sub_report: Report, sub_reports: list[Report]):
+    def should_add_sca_results_to_sca_supported_ir_report(sub_report: Report, sub_reports: list[Report]) -> bool:
         if sub_report.check_type == 'sca_image' and bc_integration.customer_run_config_response:
             # The regular sca report
             if len(sub_reports) == 1:
