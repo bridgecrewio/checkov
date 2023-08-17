@@ -91,6 +91,9 @@ class TestYamlPolicies(TestYamlPoliciesBase):
     def test_EnvPipTrustedHost(self):
         self.go("EnvPipTrustedHost")
 
+    def test_RunChpasswd(self):
+        self.go("RunChpasswd")
+
     def test_registry_load(self):
         registry = self.get_checks_registry()
         self.assertGreater(len(registry.checks), 0)
