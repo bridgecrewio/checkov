@@ -38,6 +38,7 @@ from checkov.common.resource_code_logger_filter import add_resource_code_filter_
 from checkov.common.typing import _ExitCodeThresholds, _BaseRunner, _ScaExitCodeThresholds
 from checkov.common.util import data_structures_utils
 from checkov.common.util.banner import tool as tool_name
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.json_utils import CustomJSONEncoder
 from checkov.common.util.parser_utils import strip_terraform_module_referrer
 from checkov.common.util.secrets_omitter import SecretsOmitter
@@ -212,12 +213,12 @@ class RunnerRegistry:
                     self._check_type_to_report_map[sub_report.check_type] = sub_report
                     merged_reports.append(sub_report)
 
-                if sub_report.check_type == 'sca_image':
+                if sub_report.check_type == 'sca_image' and bc_integration.customer_run_config_response:
                     if len(sub_reports) == 1 or (len(sub_reports) == 2 and sub_reports[0].check_type in bc_integration.customer_run_config_response.get('supportedIrFw', [])):
                         if self.sca_supported_ir_report:
                             merge_reports(self.sca_supported_ir_report, sub_report)
                         else:
-                            self.sca_supported_ir_report = sub_report
+                            self.sca_supported_ir_report = pickle_deepcopy(sub_report)
 
         return merged_reports
 
