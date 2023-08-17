@@ -213,14 +213,24 @@ class RunnerRegistry:
                     self._check_type_to_report_map[sub_report.check_type] = sub_report
                     merged_reports.append(sub_report)
 
-                if sub_report.check_type == 'sca_image' and bc_integration.customer_run_config_response:
-                    if len(sub_reports) == 1 or (len(sub_reports) == 2 and sub_reports[0].check_type in bc_integration.customer_run_config_response.get('supportedIrFw', [])):
+                if self.should_add_sca_results_to_sca_supported_ir_report(sub_report, sub_reports):
                         if self.sca_supported_ir_report:
                             merge_reports(self.sca_supported_ir_report, sub_report)
                         else:
                             self.sca_supported_ir_report = pickle_deepcopy(sub_report)
 
         return merged_reports
+
+    @staticmethod
+    def should_add_sca_results_to_sca_supported_ir_report(sub_report: Report, sub_reports: list[Report]):
+        if sub_report.check_type == 'sca_image' and bc_integration.customer_run_config_response:
+            # The regular sca report
+            if len(sub_reports) == 1:
+                return True
+            # Dup report: first - regular iac, second - IR. we are checking that report fw is in the IR supported list.
+            if len(sub_reports) == 2 and sub_reports[0].check_type in bc_integration.customer_run_config_response.get('supportedIrFw', []):
+                return True
+        return False
 
     def _handle_report(self, scan_report: Report, repo_root_for_plan_enrichment: list[str | Path] | None) -> None:
         integration_feature_registry.run_post_runner(scan_report)
