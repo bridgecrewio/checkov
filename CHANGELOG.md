@@ -1,6 +1,16 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.4.1...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.4.2...HEAD)
+
+## [2.4.2](https://github.com/bridgecrewio/checkov/compare/2.4.1...2.4.2) - 2023-08-17
+
+### Feature
+
+- **dockerfile:** Add CKV2_DOCKER_17 for chpasswd - [#5441](https://github.com/bridgecrewio/checkov/pull/5441)
+
+### Bug Fix
+
+- **kustomize:** Fix kustomize ignoring external policy dir command line options - [#5436](https://github.com/bridgecrewio/checkov/pull/5436)
 
 ## [2.4.1](https://github.com/bridgecrewio/checkov/compare/2.3.365...2.4.1) - 2023-08-16
 
