@@ -38,7 +38,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
         inspected_key = self.get_inspected_key()
         expected_values = self.get_expected_values()
         value = find_in_dict(conf, inspected_key)
-        if value:
+        if value is not None:
             if ANY_VALUE in expected_values:
                 # Key is found in the configuration - if it accepts any value, the check is PASSED
                 return CheckResult.PASSED
