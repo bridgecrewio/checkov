@@ -30,7 +30,7 @@
     name: Checkov Diff
     description: This hook runs checkov against all changed files.
     entry: checkov --enable-secret-scan-all-files
-    args: ["-f"]
+    args: ["-f"] # required and must come last
     language: python
     require_serial: true
 
@@ -38,7 +38,7 @@
     name: Checkov Diff
     description: This hook runs checkov against all changed files.
     entry: bridgecrew/checkov:latest --enable-secret-scan-all-files
-    args: ["-f"]
+    args: ["-f"] # required and must come last
     language: docker_image
     require_serial: true
 
@@ -46,7 +46,7 @@
     name: Checkov Secrets
     description: This hook looks for secrets with checkov.
     entry: checkov --framework secrets --enable-secret-scan-all-files
-    args: ["-f"]
+    args: ["-f"] # required and must come last
     language: python
     always_run: true
     require_serial: true
@@ -55,7 +55,7 @@
     name: Checkov Secrets
     description: This hook looks for secrets with checkov.
     entry: bridgecrew/checkov:latest --framework secrets --enable-secret-scan-all-files
-    args: ["-f"]
+    args: ["-f"] # required and must come last
     language: docker_image
     always_run: true
     require_serial: true
