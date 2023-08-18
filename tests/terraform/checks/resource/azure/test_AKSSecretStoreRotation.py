@@ -20,9 +20,9 @@ class TestAKSSecretStoreRotation(unittest.TestCase):
         passing_resources = {
             'azurerm_kubernetes_cluster.pass',
         }
+
         failing_resources = {
             'azurerm_kubernetes_cluster.fail',
-            'azurerm_kubernetes_cluster.fail2',
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}

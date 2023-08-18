@@ -26,18 +26,20 @@ resource "azurerm_kubernetes_cluster" "pass" {
   private_cluster_enabled = var.private_cluster
 }
 
-resource "azurerm_kubernetes_cluster" "fail" {
+//secret provide not enabled
+resource "azurerm_kubernetes_cluster" "unknown" {
   name                = "example-aks1"
   location            = azurerm_resource_group.example.location
   resource_group_name = azurerm_resource_group.example.name
   dns_prefix          = "exampleaks1"
-  sku_tier            = "Free"
+  sku_tier            = "Paid"
+
   default_node_pool {
     name       = var.default_node_pool.name
     node_count = var.default_node_pool.node_count
     vm_size    = var.default_node_pool.vm_size
-    max_pods   = 28
-    type       = "AvailabilitySet"
+    max_pods   = 51
+    type       = "VirtualMachineScaleSets"
   }
 
   identity {
@@ -50,7 +52,9 @@ resource "azurerm_kubernetes_cluster" "fail" {
   private_cluster_enabled = var.private_cluster
 }
 
-resource "azurerm_kubernetes_cluster" "fail2" {
+
+
+resource "azurerm_kubernetes_cluster" "fail" {
   name                = "example-aks1"
   location            = azurerm_resource_group.example.location
   resource_group_name = azurerm_resource_group.example.name
