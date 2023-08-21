@@ -52,7 +52,7 @@ jobs:
       - uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1  # v4
         with:
           python-version: ${{ matrix.python }}
-      - uses: actions/setup-node@e33196f7422957bea03ed53f6fbb155025ffc7b8  # v3
+      - uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d  # v3
       - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
