@@ -161,7 +161,7 @@
                 "elasticWebAppScaleLimit": 0,
                 "healthCheckPath": "/health",
                 "functionsRuntimeScaleMonitoringEnabled": false,
-                "minimumElasticInstanceCount": 0,
+                "minimumElasticInstanceCount": 0
             }
         },
         {
