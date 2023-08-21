@@ -7,7 +7,7 @@ import platform
 import re
 import stat
 from pathlib import Path
-from typing import Optional, List, Set
+from typing import Optional, List, Set, Union, Dict, Any
 
 from cachetools import cached, TTLCache
 from pydantic import ValidationError
@@ -25,6 +25,7 @@ from checkov.sast.common import get_code_block_from_start, get_data_flow_code_bl
 from checkov.sast.consts import SastLanguages, SastEngines
 from checkov.sast.engines.base_engine import SastEngine
 from checkov.sast.prisma_models.library_input import LibraryInput
+from checkov.sast.prisma_models.policies_list import SastPolicies
 from checkov.sast.prisma_models.report import PrismaReport, create_empty_report
 from checkov.sast.record import SastRecord
 from checkov.sast.report import SastReport
@@ -151,9 +152,10 @@ class PrismaEngine(SastEngine):
                        policies: List[str],
                        checks: List[str],
                        skip_checks: List[str],
-                       skip_path: List[str]) -> List[Report]:
+                       skip_path: List[str],
+                       list_policies: bool = False) -> Union[List[Report], SastPolicies]:
 
-        validate_params(languages, source_codes, policies)
+        validate_params(languages, source_codes, policies, list_policies)
 
         if bc_integration.bc_source:
             name = bc_integration.bc_source.name
@@ -167,7 +169,8 @@ class PrismaEngine(SastEngine):
                 "languages": [a.value for a in languages],
                 "checks": checks,
                 "skip_checks": skip_checks,
-                "skip_path": skip_path
+                "skip_path": skip_path,
+                "list_policies": list_policies
             },
             "auth": {
                 "api_key": bc_integration.get_auth_token(),
@@ -176,6 +179,9 @@ class PrismaEngine(SastEngine):
                 "version": bc_integration.bc_source_version
             }
         }
+
+        if list_policies:
+            return self.run_go_library_list_policies(document)
 
         library = ctypes.cdll.LoadLibrary(self.lib_path)
         analyze_code = library.analyzeCode
@@ -190,12 +196,39 @@ class PrismaEngine(SastEngine):
         # convert our byte array to a string
         analyze_code_string = analyze_code_bytes.decode('utf-8')
         d = json.loads(analyze_code_string)
+
         try:
             result = PrismaReport(**d)
         except ValidationError as e:
             result = create_empty_report(list(languages))
             result.errors = {REPORT_PARSING_ERRORS: [str(err) for err in e.errors()]}
         return self.create_report(result)
+
+    def run_go_library_list_policies(self, document: Dict[str, Any]) -> SastPolicies:
+        try:
+            library = ctypes.cdll.LoadLibrary(self.lib_path)
+            list_policies = library.listPolicies
+            list_policies.restype = ctypes.c_void_p
+
+            # send the document as a byte array of json format
+            list_policies_output = list_policies(json.dumps(document).encode('utf-8'))
+
+            # we dereference the pointer to a byte array
+            list_policies_bytes = ctypes.string_at(list_policies_output)
+
+            # convert our byte array to a string
+            list_policies_string = list_policies_bytes.decode('utf-8')
+            d = json.loads(list_policies_string)
+        except Exception as e:
+            logging.error(e)
+            return {}
+
+        try:
+            return SastPolicies(**d)
+        except ValidationError:
+            if d.get('errors'):
+                logging.error(d.get('errors'))
+            return {}
 
     def create_report(self, prisma_report: PrismaReport) -> List[Report]:
         logging.debug("Printing Prisma-SAST profiling data")
@@ -235,10 +268,39 @@ class PrismaEngine(SastEngine):
 
         return reports
 
+    def get_policies(self, languages: Set[SastLanguages]) -> SastPolicies:
+        if not bc_integration.bc_api_key:
+            logging.info("The --bc-api-key flag needs to be set to run Sast prisma scanning")
+            return []
+
+        self.setup_sast_artifact()
+        prisma_lib_path = self.get_sast_artifact()
+        if not prisma_lib_path:
+            return []
+
+        self.lib_path = str(prisma_lib_path)
+
+        library_input: LibraryInput = {
+            'languages': languages,
+            'list_policies': True,
+            'source_codes': [],
+            'policies': [],
+            'checks': [],
+            'skip_checks': [],
+            'skip_path': []
+        }
+        prisma_result = self.run_go_library(**library_input)
+
+        return prisma_result
+
 
 def validate_params(languages: Set[SastLanguages],
                     source_codes: List[str],
-                    policies: List[str]) -> None:
+                    policies: List[str],
+                    list_policies: bool) -> None:
+    if list_policies:
+        return
+
     if len(source_codes) == 0:
         raise Exception('must provide source code file or dir for sast runner')
 

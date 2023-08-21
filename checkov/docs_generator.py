@@ -28,6 +28,9 @@ from checkov.github_actions.checks.registry import registry as github_actions_jo
 from checkov.gitlab.registry import registry as gitlab_configuration_registry
 from checkov.gitlab_ci.checks.registry import registry as gitlab_ci_jobs_registry
 from checkov.kubernetes.checks.resource.registry import registry as k8_registry
+from checkov.sast.consts import SastLanguages
+from checkov.sast.engines.prisma_engine import PrismaEngine
+from checkov.sast.prisma_models.policies_list import SastPolicies
 from checkov.secrets.runner import CHECK_ID_TO_SECRET_TYPE
 from checkov.serverless.registry import sls_registry
 from checkov.terraform.checks.data.registry import data_registry
@@ -64,7 +67,7 @@ def print_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = Fals
                                        include_all_checkov_policies=include_all_checkov_policies,
                                        filtered_policy_ids=filtered_policy_ids or [])
     print(
-        tabulate(printable_checks_list, headers=["Id", "Type", "Entity", "Policy", "IaC", "Resource Link"], tablefmt="github",
+        tabulate(printable_checks_list, headers=["Id", "Type", "Entity", "Policy", "Technology", "Resource Link"], tablefmt="github",
                  showindex=True))
     print("\n\n---\n\n")
 
@@ -186,6 +189,22 @@ def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
                     check_id = metadata_integration.get_bc_id(check_id)
                 check_link = get_check_link(inspect.getfile(metadata_integration.__class__))
                 printable_checks_list.append((check_id, check_type, "secrets", check_type, "secrets", check_link))
+
+    if any(x in framework_list for x in ("all", "sast", *set((f"sast_{lang.value}" for lang in SastLanguages.set())))):
+        langs = {lang for lang in SastLanguages.set() if f"sast_{lang.value}" in framework_list}
+        if not langs:
+            langs = SastLanguages.set()
+        sast_policies: SastPolicies = PrismaEngine().get_policies(languages=langs)
+
+        for _, policies_list in sast_policies:
+            for policy in policies_list:
+                policy_metadata = policy.Metadata
+                if not policy_metadata:
+                    continue
+
+                printable_checks_list.append(
+                    (policy_metadata.ID, "code block", "sast", policy_metadata.Name, policy.Language.value.capitalize(), "Available in the platform")
+                )
     return sorted(printable_checks_list, key=get_compare_key)  # type:ignore[arg-type]
 
 
