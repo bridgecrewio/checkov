@@ -1058,7 +1058,7 @@ class TestRunnerValid(unittest.TestCase):
                 assert record.caller_file_path == "/main.tf"
                 # ATTENTION!! If this breaks, see the "HACK ALERT" comment in runner.run_block.
                 #             A bug might have been fixed.
-                self.assertEqual(record.caller_file_line_range, [6, 8])
+                self.assertEqual(record.caller_file_line_range, (6, 8))
 
             if "outside" in record.resource:
                 found_outside = True
@@ -1112,7 +1112,7 @@ class TestRunnerValid(unittest.TestCase):
                 assert record.file_path == "/module/module.tf"
                 self.assertEqual(record.file_line_range, [7, 13])
                 assert record.caller_file_path == "/main.tf"
-                self.assertEqual(record.caller_file_line_range, [6, 8])
+                self.assertEqual(record.caller_file_line_range, (6, 8))
 
         self.assertTrue(found_inside)
         self.assertTrue(found_outside)
