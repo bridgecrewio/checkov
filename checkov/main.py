@@ -491,6 +491,7 @@ class Checkov:
                             excluded_paths=runner_filter.excluded_paths,
                             included_paths=included_paths,
                             git_configuration_folders=git_configuration_folders,
+                            sca_supported_ir_report=runner_registry.sca_supported_ir_report,
                         )
 
                     if self.config.create_baseline:
@@ -659,6 +660,7 @@ class Checkov:
             excluded_paths: list[str] | None = None,
             included_paths: list[str] | None = None,
             git_configuration_folders: list[str] | None = None,
+            sca_supported_ir_report: Report | None = None,
     ) -> None:
         """Upload scan results and other relevant files"""
 
@@ -670,7 +672,12 @@ class Checkov:
         )
         if git_configuration_folders:
             bc_integration.persist_git_configuration(os.getcwd(), git_configuration_folders)
-        bc_integration.persist_scan_results(self.scan_reports)
+        if sca_supported_ir_report:
+            scan_reports_to_upload = [report for report in self.scan_reports if report.check_type != 'sca_image']
+            scan_reports_to_upload.append(sca_supported_ir_report)
+        else:
+            scan_reports_to_upload = self.scan_reports
+        bc_integration.persist_scan_results(scan_reports_to_upload)
         bc_integration.persist_run_metadata(self.run_metadata)
         if bc_integration.enable_persist_graphs:
             bc_integration.persist_graphs(self.graphs, absolute_root_folder=absolute_root_folder)
