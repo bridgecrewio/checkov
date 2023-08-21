@@ -12,7 +12,6 @@ class AppServiceEnableFailedRequest(BaseResourceValueCheck):
 
         name = "Ensure that App service enables failed request tracing"
         id = "CKV_AZURE_66"
-        '''supported_resources = [Microsoft.Web/sites/config']'''
         supported_resources = ["Microsoft.Web/sites/config"]
         categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
