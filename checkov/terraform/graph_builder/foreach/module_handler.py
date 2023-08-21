@@ -150,7 +150,7 @@ class ForeachModuleHandler(ForeachAbstractHandler):
                 # Important to copy to avoid changing the object by reference
                 child_source_module_object_copy = pickle_deepcopy(child.source_module_object)
                 if should_override_foreach_key and child_source_module_object_copy is not None:
-                    tf_module = child_source_module_object_copy
+                    tf_module: TFModule | None = child_source_module_object_copy
                     while tf_module is not None:
                         tf_module.foreach_idx = None
                         tf_module = tf_module.nested_tf_module
