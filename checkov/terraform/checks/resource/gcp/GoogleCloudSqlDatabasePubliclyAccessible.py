@@ -22,12 +22,12 @@ class GoogleCloudSqlDatabasePubliclyAccessible(BaseResourceCheck):
             self.evaluated_keys = ['settings/[0]/ip_configuration']
             if 'authorized_networks' in ip_config:
                 auth_networks = ip_config['authorized_networks']
-                if type(auth_networks) != list:  # handle possible legacy case
+                if not isinstance(auth_networks, list):  # handle possible legacy case
                     auth_networks = [auth_networks]
                 for network in auth_networks:
                     if 'value' in network:
                         val = network['value']
-                        if type(val) == list:  # handle possible parsing discrepancies
+                        if isinstance(val, list):  # handle possible parsing discrepancies
                             val = val[0]
                         if val.endswith('/0'):
                             self.evaluated_keys = ['settings/[0]/ip_configuration/authorized_networks/[0]/value',
