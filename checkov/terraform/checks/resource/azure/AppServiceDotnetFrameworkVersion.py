@@ -27,7 +27,6 @@ class AppServiceDotnetFrameworkVersion(BaseResourceCheck):
 
         return CheckResult.UNKNOWN
 
-
     def get_expected_values(self) -> List[str]:
         return ["v6.0", "v7.0"]
 
