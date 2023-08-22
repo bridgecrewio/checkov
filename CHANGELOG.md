@@ -1,6 +1,18 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.4.2...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.4.5...HEAD)
+
+## [2.4.5](https://github.com/bridgecrewio/checkov/compare/2.4.4...2.4.5) - 2023-08-21
+
+### Bug Fix
+
+- **terraform:** Fix for-each/count updating inner for each index for every child resource - [#5463](https://github.com/bridgecrewio/checkov/pull/5463)
+
+## [2.4.4](https://github.com/bridgecrewio/checkov/compare/2.4.2...2.4.4) - 2023-08-20
+
+### Platform
+
+- **sca:** Filter IR FW upload results by supportedIrFw list - [#5448](https://github.com/bridgecrewio/checkov/pull/5448)
 
 ## [2.4.2](https://github.com/bridgecrewio/checkov/compare/2.4.1...2.4.2) - 2023-08-17
 

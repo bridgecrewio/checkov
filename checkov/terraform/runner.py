@@ -235,7 +235,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_TerraformDefinitions, _Terr
         full_file_path = connected_entity[CustomAttributes.FILE_PATH]
         connected_node_data = {}
         connected_node_data['code_block'] = connected_entity_context.get('code_lines')
-        connected_node_data['file_path'] = f"/{os.path.relpath(full_file_path, root_folder)}"
+        connected_node_data['file_path'] = f"{os.sep}{os.path.relpath(full_file_path, root_folder)}"
         connected_node_data['file_line_range'] = [connected_entity_context.get('start_line'),
                                                   connected_entity_context.get('end_line')]
         connected_node_data['resource'] = ".".join(connected_entity_context['definition_path'])
@@ -285,7 +285,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_TerraformDefinitions, _Terr
                         check_name=check.name,
                         check_result=copy_of_check_result,
                         code_block=censored_code_lines,
-                        file_path=f"/{os.path.relpath(full_file_path, root_folder)}",
+                        file_path=f"{os.sep}{os.path.relpath(full_file_path, root_folder)}",
                         file_line_range=[
                             entity_context.get('start_line', 1),
                             entity_context.get('end_line', 1),
@@ -363,7 +363,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_TerraformDefinitions, _Terr
                 full_file_path.file_path)})
             abs_scanned_file = get_abs_path(full_file_path)
             abs_referrer = None
-            scanned_file = f"/{os.path.relpath(abs_scanned_file, root_folder)}"
+            scanned_file = f"{os.sep}{os.path.relpath(abs_scanned_file, root_folder)}"
             logging.debug(f"Scanning file: {scanned_file}")
             self.run_all_blocks(definition, self.context, full_file_path, root_folder, report,
                                 scanned_file, runner_filter, abs_referrer)
@@ -434,7 +434,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_TerraformDefinitions, _Terr
                     continue
                 caller_file_line_range = (caller_context.get('start_line', 1), caller_context.get('end_line', 1))
                 abs_caller_file = get_abs_path(module_full_path)
-                caller_file_path = f"/{os.path.relpath(abs_caller_file, root_folder)}"
+                caller_file_path = f"{os.sep}{os.path.relpath(abs_caller_file, root_folder)}"
 
             if entity_context_path_header is None:
                 entity_context_path = [block_type] + definition_path
