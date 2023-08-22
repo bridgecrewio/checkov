@@ -1,6 +1,16 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.4.5...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.4.6...HEAD)
+
+## [2.4.6](https://github.com/bridgecrewio/checkov/compare/2.4.5...2.4.6) - 2023-08-22
+
+### Bug Fix
+
+- **terraform:** Replaced / with os.pathsep to support windows better in terraform runner - [#5473](https://github.com/bridgecrewio/checkov/pull/5473)
+
+### Documentation
+
+- **terraform:** make jq default - [#5462](https://github.com/bridgecrewio/checkov/pull/5462)
 
 ## [2.4.5](https://github.com/bridgecrewio/checkov/compare/2.4.4...2.4.5) - 2023-08-21
 
