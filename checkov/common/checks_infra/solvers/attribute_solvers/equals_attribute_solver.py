@@ -9,7 +9,7 @@ class EqualsAttributeSolver(BaseAttributeSolver):
 
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
         attr_val = vertex.get(attribute)  # type:ignore[arg-type]  # due to attribute can be None
-        if type(attr_val) is bool or type(self.value) is bool:
+        if isinstance(attr_val, bool) or isinstance(self.value, bool):
             # handle cases like str(False) == "false"
             # generally self.value will be a string, but could be a bool if the policy was created straight from json
             return str(attr_val).lower() == str(self.value).lower()

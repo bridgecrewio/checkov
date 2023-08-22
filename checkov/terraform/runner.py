@@ -8,6 +8,7 @@ from typing import Dict, Optional, Any, Set, TYPE_CHECKING
 
 import dpath
 import igraph
+from typing_extensions import TypeAlias  # noqa[TC002]
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.checks_infra.registry import BaseRegistry
@@ -51,13 +52,16 @@ if TYPE_CHECKING:
     from checkov.common.images.image_referencer import Image
     from checkov.common.typing import LibraryGraphConnector, _SkippedCheck, LibraryGraph
 
+_TerraformContext: TypeAlias = "dict[TFDefinitionKey, dict[str, Any]]"
+_TerraformDefinitions: TypeAlias = "dict[TFDefinitionKey, dict[str, Any]]"
+
 # Allow the evaluation of empty variables
 dpath.options.ALLOW_EMPTY_STRING_KEYS = True
 
 CHECK_BLOCK_TYPES = frozenset(['resource', 'data', 'provider', 'module'])
 
 
-class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
+class Runner(ImageReferencerMixin[None], BaseRunner[_TerraformDefinitions, _TerraformContext, TerraformGraphManager]):
     check_type = CheckType.TERRAFORM  # noqa: CCE003  # a static attribute
 
     def __init__(
@@ -73,8 +77,8 @@ class Runner(ImageReferencerMixin[None], BaseRunner[TerraformGraphManager]):
         self.external_registries = [] if external_registries is None else external_registries
         self.graph_class = graph_class
         self.parser = parser or TFParser()
-        self.definitions: dict[TFDefinitionKey, dict[str, Any]] | None = None  # type:ignore[assignment]  # need to check, how to support subclass differences
-        self.context: dict[TFDefinitionKey, dict[str, Any]] | None = None  # type:ignore[assignment]
+        self.definitions: _TerraformDefinitions | None = None
+        self.context: _TerraformContext | None = None
         self.breadcrumbs = None
         self.evaluations_context: Dict[TFDefinitionKey, Dict[str, EvaluationContext]] = {}
         self.graph_manager: TerraformGraphManager = graph_manager if graph_manager is not None else TerraformGraphManager(
