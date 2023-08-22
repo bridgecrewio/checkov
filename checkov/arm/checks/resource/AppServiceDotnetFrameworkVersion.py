@@ -13,7 +13,7 @@ class AppServiceDotnetFrameworkVersion(BaseResourceValueCheck):
     def get_inspected_key(self) -> str:
         return "properties/netFrameworkVersion"
 
-    def get_expected_value(self):
+    def get_expected_value(self) -> str:
         return "v7.0"
 
 
