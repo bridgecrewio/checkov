@@ -174,7 +174,7 @@ MULTILINE_PARSERS = {
 }
 
 
-def remove_fp_secrets_in_keys(detected_secrets: set[PotentialSecret], line: str) -> None:
+def remove_fp_secrets_in_keys(detected_secrets: set[PotentialSecret], line: str, is_code_file: bool = False) -> None:
     formatted_line = line.replace('"', '').replace("'", '')
     secrets_to_remove = set()
     for detected_secret in detected_secrets:
@@ -184,6 +184,11 @@ def remove_fp_secrets_in_keys(detected_secrets: set[PotentialSecret], line: str)
         # found a function name at the end of the line
         if detected_secret.secret_value and formatted_line and FUNCTION_CALL_AFTER_KEYWORD_REGEX.search(formatted_line):
             secrets_to_remove.add(detected_secret)
+        # secret value is substring of keywork
+        if is_code_file and FOLLOWED_BY_EQUAL_VALUE_KEYWORD_REGEX.search(formatted_line):
+            key, value = line.split("=", 1)
+            if detected_secret.secret_value in key and detected_secret.secret_value in value:
+                secrets_to_remove.add(detected_secret)
     detected_secrets -= secrets_to_remove
 
 
