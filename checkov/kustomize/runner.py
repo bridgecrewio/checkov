@@ -484,28 +484,33 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
 
         return None
 
-    def _handle_overlay_case(self, file_path: str) -> None:
+    def _handle_overlay_case(self,
+                             file_path: str,
+                             kustomizeProcessedFolderAndMeta: dict[str, dict[str, Any]] | None = None) \
+            -> None:
+        if kustomizeProcessedFolderAndMeta is None:
+            kustomizeProcessedFolderAndMeta = self.kustomizeProcessedFolderAndMeta
         for parent in pathlib.Path(file_path).parents:
             for potentialBase in self.potentialBases:
                 pathlib_base_object = pathlib.Path(potentialBase)
                 potential_base_path = pathlib_base_object.parents[1]
                 if parent == potential_base_path.resolve():
-                    self.kustomizeProcessedFolderAndMeta[file_path]['calculated_bases'] = str(pathlib_base_object.parent)
+                    kustomizeProcessedFolderAndMeta[file_path]['calculated_bases'] = str(pathlib_base_object.parent)
         try:
-            relativeToFullPath = f"{file_path}/{self.kustomizeProcessedFolderAndMeta[file_path]['referenced_bases'][0]}"
+            relativeToFullPath = f"{file_path}/{kustomizeProcessedFolderAndMeta[file_path]['referenced_bases'][0]}"
             if pathlib.Path(self.kustomizeProcessedFolderAndMeta[file_path]['calculated_bases']) == pathlib.Path(relativeToFullPath).resolve():
-                self.kustomizeProcessedFolderAndMeta[file_path]['validated_base'] = str(pathlib.Path(self.kustomizeProcessedFolderAndMeta[file_path]['calculated_bases']))
-                checkov_kustomize_env_name_by_path = str(pathlib.Path(file_path).relative_to(pathlib.Path(self.kustomizeProcessedFolderAndMeta[file_path]['calculated_bases']).parent))
-                self.kustomizeProcessedFolderAndMeta[file_path]['overlay_name'] = checkov_kustomize_env_name_by_path
-                logging.debug(f"Overlay based on {self.kustomizeProcessedFolderAndMeta[file_path]['validated_base']}, naming overlay {checkov_kustomize_env_name_by_path} for Checkov Results.")
+                kustomizeProcessedFolderAndMeta[file_path]['validated_base'] = str(pathlib.Path(kustomizeProcessedFolderAndMeta[file_path]['calculated_bases']))
+                checkov_kustomize_env_name_by_path = str(pathlib.Path(file_path).relative_to(pathlib.Path(kustomizeProcessedFolderAndMeta[file_path]['calculated_bases']).parent))
+                kustomizeProcessedFolderAndMeta[file_path]['overlay_name'] = checkov_kustomize_env_name_by_path
+                logging.debug(f"Overlay based on {kustomizeProcessedFolderAndMeta[file_path]['validated_base']}, naming overlay {checkov_kustomize_env_name_by_path} for Checkov Results.")
             else:
                 checkov_kustomize_env_name_by_path = pathlib.Path(file_path).stem
-                self.kustomizeProcessedFolderAndMeta[file_path]['overlay_name'] = checkov_kustomize_env_name_by_path
+                kustomizeProcessedFolderAndMeta[file_path]['overlay_name'] = checkov_kustomize_env_name_by_path
                 logging.debug(f"Could not confirm base dir for Kustomize overlay/env. Using {checkov_kustomize_env_name_by_path} for Checkov Results.")
 
         except KeyError:
             checkov_kustomize_env_name_by_path = pathlib.Path(file_path).stem
-            self.kustomizeProcessedFolderAndMeta[file_path]['overlay_name'] = checkov_kustomize_env_name_by_path
+            kustomizeProcessedFolderAndMeta[file_path]['overlay_name'] = checkov_kustomize_env_name_by_path
             logging.debug(f"Could not confirm base dir for Kustomize overlay/env. Using {checkov_kustomize_env_name_by_path} for Checkov Results.")
 
     @staticmethod
@@ -601,6 +606,16 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
             env_or_base_path_prefix = most_significant_base_path
 
         return env_or_base_path_prefix
+
+    def get_binary_output_from_directory(
+            self,
+            file_path: str,
+            template_renderer_command: str,
+    ) -> tuple[bytes, str] | tuple[None, None]:
+        kustomizeProcessedFolderAndMeta = {file_path: self._parseKustomization(file_path)}
+        if kustomizeProcessedFolderAndMeta[file_path].get('type') == 'overlay':
+            self._handle_overlay_case(file_path, kustomizeProcessedFolderAndMeta)
+        return self.get_binary_output(file_path, kustomizeProcessedFolderAndMeta, template_renderer_command)
 
     def get_binary_output(
         self,
