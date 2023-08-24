@@ -1,6 +1,19 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.4.7...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.4.10...HEAD)
+
+## [2.4.10](https://github.com/bridgecrewio/checkov/compare/2.4.7...2.4.10) - 2023-08-24
+
+### Feature
+
+- **arm:** migrate check CKV_AZURE_50 to arm - [#5453](https://github.com/bridgecrewio/checkov/pull/5453)
+- **arm:** translate tf CKV_AZURE_93 check to arm - [#5450](https://github.com/bridgecrewio/checkov/pull/5450)
+- **kubernetes:** Added new endpoint for both helm and kustomize  - [#5481](https://github.com/bridgecrewio/checkov/pull/5481)
+
+### Bug Fix
+
+- **dockerfile:** consider platform flag in CKV_DOCKER_7 - [#5468](https://github.com/bridgecrewio/checkov/pull/5468)
+- **kustomize:** support kubectl 1.28+ - [#5480](https://github.com/bridgecrewio/checkov/pull/5480)
 
 ## [2.4.7](https://github.com/bridgecrewio/checkov/compare/2.4.6...2.4.7) - 2023-08-23
 
