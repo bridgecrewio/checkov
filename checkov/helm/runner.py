@@ -238,7 +238,7 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
                                          runner_filter: RunnerFilter, timeout: int = 3600) \
             -> tuple[bytes, tuple[str, dict[str, Any]]] | tuple[None, None]:
         chart_meta = Runner.parse_helm_chart_details(chart_dir)
-        chart_item = (chart_dir, chart_meta)
+        chart_item = (chart_dir, chart_meta or {})
         return Runner.get_binary_output(chart_item, target_dir, helm_command, runner_filter, timeout)
 
     @staticmethod
