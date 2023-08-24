@@ -20,7 +20,8 @@ class TestReferenceLatestTag(unittest.TestCase):
             "/success_multi_stage/Dockerfile.FROM",
             "/success_multi_stage_capital/Dockerfile.FROM",
             "/success_scratch/Dockerfile.FROM",
-            "/success_multi_stage_scratch/Dockerfile.FROM"
+            "/success_multi_stage_scratch/Dockerfile.FROM",
+            "/success_multi_stage_platform/Dockerfile.FROM",
         }
         
         failing_resources = {
@@ -31,8 +32,8 @@ class TestReferenceLatestTag(unittest.TestCase):
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
-        self.assertEqual(summary["passed"], 5)
-        self.assertEqual(summary["failed"], 2)
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
