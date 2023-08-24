@@ -27,8 +27,7 @@ from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.kubernetes.kubernetes_utils import create_check_result, get_resource_id, calculate_code_lines, \
     PARENT_RESOURCE_ID_KEY_NAME
-from checkov.kubernetes.runner import Runner as K8sRunner
-from checkov.kubernetes.runner import _get_entity_abs_path
+from checkov.kubernetes.runner import Runner as K8sRunner, _get_entity_abs_path, _KubernetesContext, _KubernetesDefinitions
 from checkov.kustomize.image_referencer.manager import KustomizeImageReferencerManager
 from checkov.kustomize.utils import get_kustomize_version, get_kubectl_version
 from checkov.runner_filter import RunnerFilter
@@ -65,7 +64,7 @@ class K8sKustomizeRunner(K8sRunner):
 
     def set_external_data(
         self,
-        definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None,
+        definitions: _KubernetesDefinitions | None,
         context: dict[str, dict[str, Any]] | None,
         breadcrumbs: dict[str, dict[str, Any]] | None,
         report_mutator_data: dict[str, dict[str, Any]] | None = None,
@@ -354,7 +353,7 @@ class K8sKustomizeRunner(K8sRunner):
         return images
 
 
-class Runner(BaseRunner["KubernetesGraphManager"]):
+class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesGraphManager"]):
     kustomize_command = 'kustomize'  # noqa: CCE003  # a static attribute
     kubectl_command = 'kubectl'  # noqa: CCE003  # a static attribute
     check_type = CheckType.KUSTOMIZE  # noqa: CCE003  # a static attribute

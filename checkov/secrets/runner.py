@@ -81,7 +81,7 @@ CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is default limit
 
 
-class Runner(BaseRunner[None]):
+class Runner(BaseRunner[None, None, None]):
     check_type = CheckType.SECRETS  # noqa: CCE003  # a static attribute
 
     def __init__(self, file_extensions: Iterable[str] | None = None, file_names: Iterable[str] | None = None):

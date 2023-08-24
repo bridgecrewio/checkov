@@ -5,6 +5,8 @@ import os
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any, cast
 
+from typing_extensions import TypeAlias  # noqa[TC002]
+
 from checkov.arm.graph_builder.local_graph import ArmLocalGraph
 from checkov.arm.graph_manager import ArmGraphManager
 from checkov.arm.registry import arm_resource_registry, arm_parameter_registry
@@ -28,8 +30,11 @@ if TYPE_CHECKING:
     from checkov.common.graph.checks_infra.registry import BaseRegistry
     from checkov.common.typing import LibraryGraphConnector, _CheckResult
 
+_ArmContext: TypeAlias = "dict[str, dict[str, Any]]"
+_ArmDefinitions: TypeAlias = "dict[str, dict[str, Any]]"
 
-class Runner(BaseRunner[ArmGraphManager]):
+
+class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
     check_type = CheckType.ARM  # noqa: CCE003  # a static attribute
 
     def __init__(
@@ -51,8 +56,9 @@ class Runner(BaseRunner[ArmGraphManager]):
         self.graph_registry = get_graph_checks_registry(self.check_type)
 
         # need to check, how to support subclass differences
-        self.definitions: "dict[str, dict[str, Any]]" = {}  # type:ignore[assignment]
+        self.definitions: _ArmDefinitions = {}
         self.definitions_raw: "dict[str, list[tuple[int, str]]]" = {}
+        self.context: _ArmContext | None = None
         self.root_folder: "str | None" = None
 
     def run(
