@@ -30,7 +30,7 @@ from checkov.kubernetes.kubernetes_utils import create_check_result, get_resourc
 from checkov.kubernetes.runner import Runner as K8sRunner
 from checkov.kubernetes.runner import _get_entity_abs_path
 from checkov.kustomize.image_referencer.manager import KustomizeImageReferencerManager
-from checkov.kustomize.utils import get_kustomize_version
+from checkov.kustomize.utils import get_kustomize_version, get_kubectl_version
 from checkov.runner_filter import RunnerFilter
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.typing import LibraryGraphConnector
@@ -452,22 +452,13 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
         logging.info(f"Checking necessary system dependancies for {self.check_type} checks.")
 
         if shutil.which(self.kubectl_command) is not None:
-            try:
-                proc = subprocess.run([self.kubectl_command, 'version', '--client=true'], capture_output=True)  # nosec
-                version_output = proc.stdout.decode("utf-8")
-
-                if "Client Version:" in version_output:
-                    kubectl_version_major = version_output.split('\n')[0].split('Major:\"')[1].split('"')[0]
-                    kubectl_version_minor = version_output.split('\n')[0].split('Minor:\"')[1].split('"')[0]
-                    kubectl_version = float(f"{kubectl_version_major}.{kubectl_version_minor}")
-                    if kubectl_version >= 1.14:
-                        logging.info(f"Found working version of {self.check_type} dependancy {self.kubectl_command}: {kubectl_version}")
-                        self.templateRendererCommand = self.kubectl_command
-                        return None
-
-            except Exception:
-                logging.debug(f"An error occured testing the {self.kubectl_command} command:", exc_info=True)
-
+            kubectl_version = get_kubectl_version(kubectl_command=self.kubectl_command)
+            if kubectl_version and kubectl_version >= 1.14:
+                logging.info(f"Found working version of {self.check_type} dependancy {self.kubectl_command}: {kubectl_version}")
+                self.templateRendererCommand = self.kubectl_command
+                return None
+            else:
+                return self.check_type
         elif shutil.which(self.kustomize_command) is not None:
             kustomize_version = get_kustomize_version(kustomize_command=self.kustomize_command)
             if kustomize_version:
@@ -481,8 +472,6 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
         else:
             logging.info(f"Could not find usable tools locally to process {self.check_type} checks. Framework will be disabled for this run.")
             return self.check_type
-
-        return None
 
     def _handle_overlay_case(self, file_path: str) -> None:
         for parent in pathlib.Path(file_path).parents:
@@ -553,12 +542,15 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
             line_num += 1
         return cur_writer
 
-    def _get_kubectl_output(self, filePath: str, template_renderer_command: str, source_type: str | None) -> bytes:
+    def _get_kubectl_output(self, filePath: str, template_renderer_command: str, source_type: str | None) -> bytes | None:
         # Template out the Kustomizations to Kubernetes YAML
         if template_renderer_command == "kubectl":
             template_render_command_options = "kustomize"
-        if template_renderer_command == "kustomize":
+        elif template_renderer_command == "kustomize":
             template_render_command_options = "build"
+        else:
+            logging.error(f"Template renderer command has an invalid value: {template_renderer_command}")
+            return None
 
         add_origin_annotations_return_code = None
 
@@ -612,6 +604,9 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
         logging.debug(f"Kustomization at {file_path} likley a {source_type}")
         try:
             output = self._get_kubectl_output(file_path, template_renderer_command, source_type)
+            if output is None:
+                return None, None
+
             return output, file_path
         except Exception:
             logging.warning(f"Error building Kustomize output at dir: {file_path}.", exc_info=True)
