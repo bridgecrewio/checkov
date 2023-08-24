@@ -457,57 +457,6 @@ Defaults:
   --evaluate-variables:True
 ```
 
-### Pre-commit hook
-
-If you want to automatically run `checkov` tasks when files in your git repo change, [install the pre-commit binary](https://pre-commit.com/#install), and add a [.pre-commit-config.yaml file](./.pre-commit-config.yaml) to your project with content similar to the example below.
-
-Note that depending on the hook id you select for pre-commit hooks, you may need to provide the following:
-
-* For the `python` hooks, pre-commit 3.x is able to provide [python](https://pre-commit.com/#python) without additional dependencies.
-* For the `container` hooks, the [Docker](https://docs.docker.com/get-docker/) CLI and a container runtime must be available.
-
-```yaml
-  - repo: https://github.com/bridgecrewio/checkov.git
-    rev: '2.4.2'
-    hooks:
-      - id: checkov
-      # - id: checkov_container
-      # - id: checkov_diff
-      # - id: checkov_diff_container
-      # - id: checkov_secrets
-      # - id: checkov_secrets_container
-```
-
-To pass arguments to `checkov` use the following examples as a guide:
-
-```yaml
-      - id: checkov
-        args:
-          - '--quiet'
-```
-
-When using the `diff` or `secrets` hooks, the last argument _must_ be `-f` due to how `checkov` and `pre-commit` interact:
-
-```yaml
-      - id: checkov_secrets_container
-        args:
-          - '--quiet'
-          - '-f' # required and must come last
-```
-
-After adding the hooks to `.pre-commit-config.yaml` run the following command(s):
-
-```bash
-pre-commit install --install-hooks
-```
-
-or
-
-```bash
-pre-commit install
-pre-commit install-hooks
-```
-
 ## Contributing
 
 Contribution is welcomed!
