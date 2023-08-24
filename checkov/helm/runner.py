@@ -21,7 +21,7 @@ from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.helm.image_referencer.manager import HelmImageReferencerManager
 from checkov.helm.registry import registry
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
-from checkov.kubernetes.runner import Runner as k8_runner, handle_timeout
+from checkov.kubernetes.runner import Runner as k8_runner, handle_timeout, _KubernetesContext, _KubernetesDefinitions
 from checkov.runner_filter import RunnerFilter
 import signal
 
@@ -122,7 +122,7 @@ class K8sHelmRunner(k8_runner):
         return images
 
 
-class Runner(BaseRunner["KubernetesGraphManager"]):
+class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesGraphManager"]):
     check_type: str = CheckType.HELM  # noqa: CCE003  # a static attribute
     helm_command = 'helm'  # noqa: CCE003  # a static attribute
     system_deps = True  # noqa: CCE003  # a static attribute

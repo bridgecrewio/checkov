@@ -5,7 +5,7 @@ import logging
 import os
 from collections import defaultdict
 from pathlib import Path
-from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, cast, TYPE_CHECKING
+from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, cast, TYPE_CHECKING, overload
 
 import deep_merge
 import hcl2
@@ -429,12 +429,30 @@ class TFParser:
 
         return None
 
+    @overload
     def parse_hcl_module_from_tf_definitions(
         self,
-        tf_definitions: Dict[TFDefinitionKey, Dict[str, Any]],
+        tf_definitions: dict[str, dict[str, Any]],
         source_dir: str,
         source: str,
-    ) -> Tuple[Module, Dict[TFDefinitionKey, Dict[str, Any]]]:
+    ) -> tuple[Module, dict[str, dict[str, Any]]]:
+        ...
+
+    @overload
+    def parse_hcl_module_from_tf_definitions(
+        self,
+        tf_definitions: dict[TFDefinitionKey, dict[str, Any]],
+        source_dir: str,
+        source: str,
+    ) -> tuple[Module, dict[TFDefinitionKey, dict[str, Any]]]:
+        ...
+
+    def parse_hcl_module_from_tf_definitions(
+        self,
+        tf_definitions: dict[str, dict[str, Any]] | dict[TFDefinitionKey, dict[str, Any]],
+        source_dir: str,
+        source: str,
+    ) -> tuple[Module, dict[str, dict[str, Any]] | dict[TFDefinitionKey, dict[str, Any]]]:
         module = self.get_new_module(
             source_dir=source_dir,
             external_modules_source_map=self.external_modules_source_map,

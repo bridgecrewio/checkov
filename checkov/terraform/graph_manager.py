@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Type, Any, TYPE_CHECKING
+from typing import Type, Any, TYPE_CHECKING, overload
 
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
@@ -87,8 +87,23 @@ class TerraformGraphManager(GraphManager[TerraformLocalGraph, "dict[TFDefinition
 
         return local_graph, tf_definitions
 
-    def build_graph_from_definitions(self, definitions: dict[TFDefinitionKey, dict[str, Any]],
-                                     render_variables: bool = True) -> TerraformLocalGraph:
+    @overload
+    def build_graph_from_definitions(
+        self, definitions: dict[str, dict[str, Any]], render_variables: bool = True,
+    ) -> TerraformLocalGraph:
+        ...
+
+    @overload
+    def build_graph_from_definitions(
+        self, definitions: dict[TFDefinitionKey, dict[str, Any]], render_variables: bool = True,
+    ) -> TerraformLocalGraph:
+        ...
+
+    def build_graph_from_definitions(
+        self,
+        definitions: dict[str, dict[str, Any]] | dict[TFDefinitionKey, dict[str, Any]],
+        render_variables: bool = True,
+    ) -> TerraformLocalGraph:
         module, _ = self.parser.parse_hcl_module_from_tf_definitions(definitions, "", self.source)
         local_graph = TerraformLocalGraph(module)
         local_graph.build_graph(render_variables=render_variables)

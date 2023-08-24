@@ -1,3 +1,8 @@
+[tool.bandit]
+exclude_dirs = [
+    "tests"
+]
+
 [tool.black]
 line-length = 120
 
@@ -119,3 +124,6 @@ source_modules = [
 forbidden_modules = [
     "checkov.arm",
 ]
+
+[tool.pytest.ini_options]
+addopts = "-n 2 --dist loadfile"
