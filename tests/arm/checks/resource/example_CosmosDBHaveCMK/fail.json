@@ -53,7 +53,7 @@
                 "enableFreeTier": true,
                 "capacity": {
                     "totalThroughputLimit": 1000
-                },
+                }
             },
             "tags": {
                 "defaultExperience": "[parameters('defaultExperience')]",
