@@ -20,6 +20,9 @@ class SolverType(str, Enum):
     FILTER = "FILTER"
     # Filters results according to specific value / type, i.e. resource type is aws_s3_bucket
 
+    RESOURCE = "RESOURCE"
+    # Used to define allow/deny lists of resource types
+
 
 class Operators:
     ANY = 'any'

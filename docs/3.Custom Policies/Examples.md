@@ -479,3 +479,16 @@ definition:
     - prod
     - prod-eu
 ```
+
+## Creating an allow list of resource types
+
+The following policy only allows resources of type `aws_instance` and `aws_db_instance` to be provisioned. 
+
+```yaml
+definition:
+  cond_type: "resource"
+  resource_types:
+    - "aws_instance"
+    - "aws_db_instance"
+  operator: "exists"
+```
