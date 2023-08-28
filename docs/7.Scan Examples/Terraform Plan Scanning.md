@@ -12,22 +12,16 @@ Checkov supports the evaluation of policies on resources declared in `.tf` files
 
 ### Example
 
+The example below creates a Terraform Plan JSON file and scans it using Checkov. It uses `jq` which must be installed beforehand and leads to better formatted outputs and results. It is not explicitly required for plan scanning.
+
 ```json
 terraform init
 terraform plan --out tfplan.binary
-terraform show -json tfplan.binary > tfplan.json
+terraform show -json tfplan.binary | jq > tfplan.json
 
 checkov -f tfplan.json
 ```
 
-Note: The Terraform show output file `tf.json` will be a single line. For that reason Checkov will report all findings as line number 0.
-If you have installed jq, you can convert a JSON file into multiple lines making it easier to read the scan result.
-
-```json
-terraform show -json tfplan.binary | jq '.' > tfplan.json
-
-checkov -f tfplan.json
-```
 
 The output would look like:
 ```

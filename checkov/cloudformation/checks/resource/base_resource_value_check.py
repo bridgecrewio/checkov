@@ -63,7 +63,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
                 # those, allowing inspected_keys in checks to use the same syntax.
                 # The last value shouldn't be changed, because it could be indeed a valid number
                 for i in range(0, len(match) - 1):
-                    if type(match[i]) == int:
+                    if type(match[i]) is int:
                         match[i] = f"[{match[i]}]"
 
                 if match[:-1] == path_elements:

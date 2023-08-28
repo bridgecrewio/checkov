@@ -41,7 +41,7 @@ class Record:
         file_abs_path: str,
         entity_tags: Optional[Dict[str, str]] = None,
         caller_file_path: Optional[str] = None,
-        caller_file_line_range: Optional[Tuple[int, int]] = None,
+        caller_file_line_range: tuple[int, int] | None = None,
         bc_check_id: Optional[str] = None,
         resource_address: Optional[str] = None,
         severity: Optional[Severity] = None,

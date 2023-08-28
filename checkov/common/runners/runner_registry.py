@@ -38,6 +38,7 @@ from checkov.common.resource_code_logger_filter import add_resource_code_filter_
 from checkov.common.typing import _ExitCodeThresholds, _BaseRunner, _ScaExitCodeThresholds
 from checkov.common.util import data_structures_utils
 from checkov.common.util.banner import tool as tool_name
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.json_utils import CustomJSONEncoder
 from checkov.common.util.secrets_omitter import SecretsOmitter
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list, force_list
@@ -86,6 +87,7 @@ class RunnerRegistry:
         self.runner_filter = runner_filter
         self.runners = list(runners)
         self.banner = banner
+        self.sca_supported_ir_report: Optional[Report] = None
         self.scan_reports: list[Report] = []
         self.image_referencing_runners = self._get_image_referencing_runners()
         self.filter_runner_framework()
@@ -210,7 +212,24 @@ class RunnerRegistry:
                     self._check_type_to_report_map[sub_report.check_type] = sub_report
                     merged_reports.append(sub_report)
 
+                if self.should_add_sca_results_to_sca_supported_ir_report(sub_report, sub_reports):
+                    if self.sca_supported_ir_report:
+                        merge_reports(self.sca_supported_ir_report, sub_report)
+                    else:
+                        self.sca_supported_ir_report = pickle_deepcopy(sub_report)
+
         return merged_reports
+
+    @staticmethod
+    def should_add_sca_results_to_sca_supported_ir_report(sub_report: Report, sub_reports: list[Report]) -> bool:
+        if sub_report.check_type == 'sca_image' and bc_integration.customer_run_config_response:
+            # The regular sca report
+            if len(sub_reports) == 1:
+                return True
+            # Dup report: first - regular iac, second - IR. we are checking that report fw is in the IR supported list.
+            if len(sub_reports) == 2 and sub_reports[0].check_type in bc_integration.customer_run_config_response.get('supportedIrFw', []):
+                return True
+        return False
 
     def _handle_report(self, scan_report: Report, repo_root_for_plan_enrichment: list[str | Path] | None) -> None:
         integration_feature_registry.run_post_runner(scan_report)

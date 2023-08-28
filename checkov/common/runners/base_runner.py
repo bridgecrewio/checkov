@@ -24,6 +24,8 @@ if TYPE_CHECKING:
     from checkov.common.graph.checks_infra.registry import BaseRegistry
     from checkov.common.typing import _CheckResult, LibraryGraphConnector
 
+_Context = TypeVar("_Context", bound="dict[Any, Any]|None")
+_Definitions = TypeVar("_Definitions", bound="dict[Any, Any]|None")
 _GraphManager = TypeVar("_GraphManager", bound="GraphManager[Any, Any]|None")
 
 
@@ -50,11 +52,11 @@ IGNORE_HIDDEN_DIRECTORY_ENV = strtobool(os.getenv("CKV_IGNORE_HIDDEN_DIRECTORIES
 ignored_directories = IGNORED_DIRECTORIES_ENV.split(",")
 
 
-class BaseRunner(ABC, Generic[_GraphManager]):
+class BaseRunner(ABC, Generic[_Definitions, _Context, _GraphManager]):
     check_type = ""
-    definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None = None
+    definitions: _Definitions | None = None
     raw_definitions: dict[str, list[tuple[int, str]]] | None = None
-    context: dict[str, dict[str, Any]] | None = None
+    context: _Context | None = None
     breadcrumbs = None
     external_registries: list[BaseRegistry] | None = None
     graph_manager: _GraphManager | None = None
@@ -106,8 +108,8 @@ class BaseRunner(ABC, Generic[_GraphManager]):
 
     def set_external_data(
             self,
-            definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None,
-            context: dict[str, dict[str, Any]] | None,
+            definitions: _Definitions | None,
+            context: _Context | None,
             breadcrumbs: dict[str, dict[str, Any]] | None,
             **kwargs: Any,
     ) -> None:

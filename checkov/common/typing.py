@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from igraph import Graph
     from checkov.terraform.modules.module_objects import TFDefinitionKey
 
-_BaseRunner = TypeVar("_BaseRunner", bound="BaseRunner[Any]")
+_BaseRunner = TypeVar("_BaseRunner", bound="BaseRunner[Any, Any, Any]")
 
 _ScannerCallableAlias: TypeAlias = Callable[
     [str, "BaseCheck", "list[_SkippedCheck]", "dict[str, Any]", str, str, "dict[str, Any]"], None

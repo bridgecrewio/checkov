@@ -5,6 +5,8 @@ import os
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any
 
+from typing_extensions import TypeAlias  # noqa[TC002]
+
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.models.enums import CheckResult
 from checkov.common.typing import LibraryGraphConnector
@@ -41,8 +43,11 @@ if TYPE_CHECKING:
     from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
     from checkov.common.images.image_referencer import Image
 
+_DockerfileContext: TypeAlias = "dict[str, dict[str, Any]]"
+_DockerfileDefinitions: TypeAlias = "dict[str, dict[str, list[_Instruction]]]"
 
-class Runner(ImageReferencerMixin["dict[str, dict[str, list[_Instruction]]]"], BaseRunner[DockerfileGraphManager]):
+
+class Runner(ImageReferencerMixin[_DockerfileDefinitions], BaseRunner[_DockerfileDefinitions, _DockerfileContext, DockerfileGraphManager]):
     check_type = CheckType.DOCKERFILE  # noqa: CCE003  # a static attribute
 
     def __init__(
@@ -61,8 +66,8 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, list[_Instruction]]]"], B
         )
         self.graph_registry = get_graph_checks_registry(self.check_type)
 
-        self.context: dict[str, dict[str, Any]] = {}
-        self.definitions: "dict[str, dict[str, list[_Instruction]]]" = {}  # type:ignore[assignment]  # need to check, how to support subclass differences
+        self.context: _DockerfileContext = {}
+        self.definitions: _DockerfileDefinitions = {}
         self.definitions_raw: "dict[str, list[str]]" = {}       # type:ignore[assignment]
         self.root_folder: str | None = None
 
