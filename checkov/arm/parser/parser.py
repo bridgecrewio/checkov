@@ -46,7 +46,7 @@ def parse(filename: str) -> tuple[dict[str, Any], list[tuple[int, str]]] | tuple
                 LOGGER.error(f"Tried to parse {filename} as JSON", exc_info=True)
     except YAMLError:
         LOGGER.info(f"Failed to parse {filename}")
-        LOGGER.debug(f"With Exception", exc_info=True)
+        LOGGER.debug("With Exception", exc_info=True)
 
     if template is None or template_lines is None:
         return None, None
