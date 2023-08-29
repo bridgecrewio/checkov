@@ -52,7 +52,7 @@ def get_files_definitions(
         result = parse(file)
 
         definition, definition_raw = result
-        if definition and definition_raw:
+        if definition is not None and definition_raw is not None:  # this has to be a 'None' check
             path = filepath_fn(file) if filepath_fn else file
             definitions[path] = definition
             definitions_raw[path] = definition_raw
