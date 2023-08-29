@@ -12,7 +12,7 @@ class VMDisablePasswordAuthentication(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf) -> CheckResult:
-
+        osprofile = None
         if conf.get('properties') and isinstance(conf.get('properties'), dict):
             properties = conf.get('properties')
             if properties.get("virtualMachineProfile") and isinstance(properties.get("virtualMachineProfile"), dict):
