@@ -11,6 +11,8 @@ from collections import defaultdict
 
 import dpath
 from igraph import Graph
+from rustworkx import PyDiGraph
+from networkx.readwrite import json_graph
 
 try:
     from networkx import DiGraph, node_link_data
@@ -18,6 +20,7 @@ except ImportError:
     logging.info("Not able to import networkx")
     DiGraph = str
     node_link_data = lambda G : {}
+
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
@@ -146,7 +149,7 @@ def enrich_and_persist_checks_metadata(
     return checks_metadata_paths
 
 
-def persist_graphs(graphs: dict[str, DiGraph | Graph], s3_client: S3Client, bucket: str, full_repo_object_key: str,
+def persist_graphs(graphs: dict[str, DiGraph | Graph | PyDiGraph], s3_client: S3Client, bucket: str, full_repo_object_key: str,
                    timeout: int, absolute_root_folder: str = '') -> None:
     def _upload_graph(check_type: str, graph: DiGraph | Graph, _absolute_root_folder: str = '') -> None:
         if isinstance(graph, DiGraph):
@@ -155,6 +158,9 @@ def persist_graphs(graphs: dict[str, DiGraph | Graph], s3_client: S3Client, buck
         elif isinstance(graph, Graph):
             json_obj = serialize_to_json(graph, _absolute_root_folder)
             graph_file_name = 'graph_igraph.json'
+        elif isinstance(graph, PyDiGraph):
+            json_obj = json_graph.tree_data(graph, root=1)
+            graph_file_name = 'rustworkx_igraph.json'
         else:
             logging.error(f"unsupported graph type '{graph.__class__.__name__}'")
             return
