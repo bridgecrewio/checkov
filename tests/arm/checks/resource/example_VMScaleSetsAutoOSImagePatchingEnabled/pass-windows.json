@@ -101,7 +101,7 @@
             }
         },
         {
-            "name": "[parameters('virtualMachineScaleSetName')]",
+            "name": "pass-windows",
             "type": "Microsoft.Compute/virtualMachineScaleSets",
             "apiVersion": "[variables('virtualMachineScaleSetApiVersion')]",
             "location": "[parameters('location')]",

@@ -14,7 +14,7 @@ class VMScaleSetsAutoOSImagePatchingEnabled(BaseResourceValueCheck):
         return True
 
     def get_inspected_key(self) -> str:
-        return "properties/extensionsProfile/extensions/properties/enableAutomaticUpgrade"
+        return "properties/virtualMachineProfile/extensionProfile/extensions/[0]/properties/enableAutomaticUpgrade"
 
 
 check = VMScaleSetsAutoOSImagePatchingEnabled()
