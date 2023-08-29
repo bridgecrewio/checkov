@@ -53,10 +53,10 @@
             "type": "string",
             "defaultValue": "RSA",
             "allowedValues": [
-                "EC",     // Elliptic Curve.
-                "EC-HSM", // Elliptic Curve with a private key which is not exportable from the HSM.
-                "RSA",    // RSA (https://tools.ietf.org/html/rfc3447)
-                "RSA-HSM" // RSA with a private key which is not exportable from the HSM.
+                "EC",
+                "EC-HSM",
+                "RSA",
+                "RSA-HSM"
             ],
             "metadata": {
                 "description": "The type of key to create"
