@@ -11,8 +11,7 @@ from collections import defaultdict
 
 import dpath
 from igraph import Graph
-from rustworkx import PyDiGraph
-from networkx.readwrite import json_graph
+from rustworkx import PyDiGraph, digraph_node_link_json, node_link_json  # type: ignore
 
 try:
     from networkx import DiGraph, node_link_data
@@ -159,7 +158,7 @@ def persist_graphs(graphs: dict[str, DiGraph | Graph | PyDiGraph], s3_client: S3
             json_obj = serialize_to_json(graph, _absolute_root_folder)
             graph_file_name = 'graph_igraph.json'
         elif isinstance(graph, PyDiGraph):
-            json_obj = json_graph.tree_data(graph, root=1)
+            json_obj = digraph_node_link_json(graph)
             graph_file_name = 'rustworkx_igraph.json'
         else:
             logging.error(f"unsupported graph type '{graph.__class__.__name__}'")

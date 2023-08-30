@@ -1,6 +1,7 @@
 from __future__ import annotations
 import concurrent.futures
 import logging
+from datetime import datetime
 from typing import Any, TYPE_CHECKING
 
 from checkov.common.graph.checks_infra import debug
@@ -26,12 +27,15 @@ class BaseRegistry:
     ) -> dict[BaseGraphCheck, list[_CheckResult]]:
 
         check_results: "dict[BaseGraphCheck, list[_CheckResult]]" = {}
+
         checks_to_run = [c for c in self.checks if runner_filter.should_run_check(c, report_type=report_type)]
+        start = datetime.now()
         with concurrent.futures.ThreadPoolExecutor() as executor:
             concurrent.futures.wait(
                 [executor.submit(self.run_check_parallel, check, check_results, graph_connector)
                  for check in checks_to_run]
             )
+        print(datetime.now() - start)
         return check_results
 
     def run_check_parallel(

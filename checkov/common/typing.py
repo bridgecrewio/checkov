@@ -23,7 +23,7 @@ _ScannerCallableAlias: TypeAlias = Callable[
 _Resource: TypeAlias = str
 _Attributes: TypeAlias = Set[str]
 ResourceAttributesToOmit: TypeAlias = Dict[_Resource, _Attributes]
-LibraryGraph: TypeAlias = "Union[DiGraph, Graph]"
+LibraryGraph: TypeAlias = "Union[DiGraph, Graph, PyDiGraph]"
 LibraryGraphConnector: TypeAlias = "Union[DBConnector[DiGraph], DBConnector[Graph], DBConnector[PyDiGraph]]"
 # TODO Remove this type and only use TFDefinitionKey
 TFDefinitionKeyType: TypeAlias = "Union[str, TFDefinitionKey]"
