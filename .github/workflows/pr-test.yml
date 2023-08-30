@@ -73,7 +73,7 @@ jobs:
           pipenv --rm || true
           pipenv --python ${{ matrix.python }}
           pipenv install --dev -v
-          pipenv run pip install redefine --index-url https://redefine.dev/pip/
+          pipenv run pip install redefine --index-url https://pip.redefine.dev
       - name: Unit tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
