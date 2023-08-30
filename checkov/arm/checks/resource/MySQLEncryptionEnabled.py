@@ -25,7 +25,7 @@ class MySQLEncryptionEnabled(BaseResourceCheck):
                     if dataencryption.get('primaryKeyURI') != "":
                         return CheckResult.PASSED
             # unparsed
-            if isinstance(properties.get('dataencryption'), str):
+            if properties.get('dataencryption') and isinstance(properties.get('dataencryption'), str):
                 return CheckResult.UNKNOWN
             return CheckResult.FAILED
         return CheckResult.UNKNOWN
