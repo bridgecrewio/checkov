@@ -168,7 +168,7 @@
                                     "type": "GuestAttestation",
                                     "typeHandlerVersion": "1.0",
                                     "autoUpgradeMinorVersion": true,
-                                    "enableAutomaticUpgrade": true,
+                                    "enableAutomaticUpgrade": false,
                                     "settings": {
                                         "AttestationConfig": {
                                             "MaaSettings": {
