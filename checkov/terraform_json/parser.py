@@ -94,8 +94,8 @@ def prepare_definition(definition: dict[str, Any]) -> dict[str, Any]:
             if block_name == COMMENT_FIELD_NAME or block_name in LINE_FIELD_NAMES:
                 continue
 
-            if block_type == BlockType.RESOURCE:
-                # resource have an extra nested level resource_type -> resource_name -> resource_config
+            if block_type in (BlockType.RESOURCE, BlockType.DATA):
+                # data/resource have an extra nested level resource_type -> resource_name -> resource_config
                 for resource_name, resource_config in config.items():
                     if resource_name in IGNORE_FILED_NAMES:
                         continue

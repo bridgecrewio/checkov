@@ -48,7 +48,7 @@ class TerraformJsonRunner(TerraformRunner):
             external_registries=external_registries,
             source=source,
         )
-        self.file_extensions = TF_JSON_POSSIBLE_FILE_ENDINGS  # override what gets set from the TF runner
+        self.file_extensions = (".json",)  # just '.json' not 'tf.json' otherwise it will be filtered out
         self.graph_registry = get_graph_checks_registry(super().check_type)
 
         self.definitions: dict[str, dict[str, Any]] = {}  # type:ignore[assignment]  # need to check, how to support subclass differences
