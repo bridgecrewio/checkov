@@ -21,8 +21,9 @@ class MySQLEncryptionEnabled(BaseResourceCheck):
                 self.evaluated_keys = ['properties/dataencryption']
                 if dataencryption is None:
                     return CheckResult.FAILED
-                if dataencryption.get('type') == "AzureKeyVault" and isinstance(dataencryption.get('type'), str):
-                    return CheckResult.PASSED
+                if dataencryption.get('type') and isinstance(dataencryption.get('type'), str):
+                    if dataencryption.get('type') == "AzureKeyVault":
+                        return CheckResult.PASSED
             # unparsed
             if isinstance(properties.get('dataencryption'), str):
                 return CheckResult.UNKNOWN
