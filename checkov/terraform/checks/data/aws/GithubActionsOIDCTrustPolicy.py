@@ -56,8 +56,9 @@ class GithubActionsOIDCTrustPolicy(BaseDataCheck):
                                 break
                         if found_sub_condition_value and found_sub_condition_variable:
                             return CheckResult.PASSED
-                        else:
-                            return CheckResult.FAILED
+
+                # Found a federated GitHub user, but no restirctions
+                return CheckResult.FAILED
 
         return CheckResult.PASSED
 

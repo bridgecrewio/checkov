@@ -49,12 +49,12 @@ from checkov.common.util import prompt
 from checkov.common.util.banner import banner as checkov_banner, tool as checkov_tool
 from checkov.common.util.config_utils import get_default_config_paths
 from checkov.common.util.consts import CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
-from checkov.common.util.docs_generator import print_checks
 from checkov.common.util.ext_argument_parser import ExtArgumentParser
 from checkov.common.util.runner_dependency_handler import RunnerDependencyHandler
 from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.contributor_metrics import report_contributor_metrics
 from checkov.dockerfile.runner import Runner as dockerfile_runner
+from checkov.docs_generator import print_checks
 from checkov.github.runner import Runner as github_configuration_runner
 from checkov.github_actions.runner import Runner as github_actions_runner
 from checkov.gitlab.runner import Runner as gitlab_configuration_runner
@@ -491,6 +491,7 @@ class Checkov:
                             excluded_paths=runner_filter.excluded_paths,
                             included_paths=included_paths,
                             git_configuration_folders=git_configuration_folders,
+                            sca_supported_ir_report=runner_registry.sca_supported_ir_report,
                         )
 
                     if self.config.create_baseline:
@@ -659,6 +660,7 @@ class Checkov:
             excluded_paths: list[str] | None = None,
             included_paths: list[str] | None = None,
             git_configuration_folders: list[str] | None = None,
+            sca_supported_ir_report: Report | None = None,
     ) -> None:
         """Upload scan results and other relevant files"""
 
@@ -670,7 +672,12 @@ class Checkov:
         )
         if git_configuration_folders:
             bc_integration.persist_git_configuration(os.getcwd(), git_configuration_folders)
-        bc_integration.persist_scan_results(self.scan_reports)
+        if sca_supported_ir_report:
+            scan_reports_to_upload = [report for report in self.scan_reports if report.check_type != 'sca_image']
+            scan_reports_to_upload.append(sca_supported_ir_report)
+        else:
+            scan_reports_to_upload = self.scan_reports
+        bc_integration.persist_scan_results(scan_reports_to_upload)
         bc_integration.persist_run_metadata(self.run_metadata)
         if bc_integration.enable_persist_graphs:
             bc_integration.persist_graphs(self.graphs, absolute_root_folder=absolute_root_folder)
