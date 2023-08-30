@@ -1,17 +1,19 @@
+from __future__ import annotations
+
+from typing import Any
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.arm.base_resource_check import BaseResourceCheck
-from typing import Any
 
 
 class MySQLEncryptionEnabled(BaseResourceCheck):
-    def __init__(self) -> None:
+    def __init__(self):
         name = "Ensure that MySQL server enables infrastructure encryption"
         id = "CKV_AZURE_96"
         supported_resources = ['Microsoft.DBforMySQL/flexibleServers']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
+    def scan_resource_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult:
         if conf.get("properties") and isinstance(conf.get("properties"), dict):
             properties = conf.get("properties")
             self.evaluated_keys = ['properties']
