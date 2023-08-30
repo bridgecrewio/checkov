@@ -19,7 +19,7 @@ from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.runner import Runner as TerraformRunner
-from checkov.terraform_json.utils import get_scannable_file_paths, TF_JSON_POSSIBLE_FILE_ENDINGS, create_definitions
+from checkov.terraform_json.utils import get_scannable_file_paths, create_definitions
 
 if TYPE_CHECKING:
     from checkov.common.graph.checks_infra.registry import BaseRegistry
