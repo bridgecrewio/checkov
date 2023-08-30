@@ -1,0 +1,91 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "virtualMachines_myfirstwinvm_name": {
+            "defaultValue": "myfirstwinvm",
+            "type": "String"
+        },
+        "disks_myfirstwinvm_OsDisk_1_a34571d1b39545d19f340fc8b37e9c4c_externalid": {
+            "defaultValue": "/subscriptions/037ce662-dfc1-4b8b-a8a7-6c414b540ed6/resourceGroups/example-resources/providers/Microsoft.Compute/disks/myfirstwinvm_OsDisk_1_a34571d1b39545d19f340fc8b37e9c4c",
+            "type": "String"
+        },
+        "networkInterfaces_myfirstwinvm_externalid": {
+            "defaultValue": "/subscriptions/037ce662-dfc1-4b8b-a8a7-6c414b540ed6/resourceGroups/example-resources/providers/Microsoft.Network/networkInterfaces/myfirstwinvm",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2023-03-01",
+            "name": "fail",
+            "location": "westeurope",
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_F2"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "MicrosoftWindowsServer",
+                        "offer": "WindowsServer",
+                        "sku": "2016-Datacenter",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "osType": "Windows",
+                        "name": "[concat(parameters('virtualMachines_myfirstwinvm_name'), '_OsDisk_1_a34571d1b39545d19f340fc8b37e9c4c')]",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "writeAcceleratorEnabled": false,
+                        "managedDisk": {
+                            "storageAccountType": "Standard_LRS",
+                            "id": "[parameters('disks_myfirstwinvm_OsDisk_1_a34571d1b39545d19f340fc8b37e9c4c_externalid')]"
+                        },
+                        "deleteOption": "Detach",
+                        "diskSizeGB": 127
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "[parameters('virtualMachines_myfirstwinvm_name')]",
+                    "adminUsername": "adminuser",
+                    "windowsConfiguration": {
+                        "provisionVMAgent": true,
+                        "enableAutomaticUpdates": true,
+                        "patchSettings": {
+                            "patchMode": "AutomaticByOS",
+                            "assessmentMode": "ImageDefault",
+                            "enableHotpatching": false
+                        },
+                        "winRM": {
+                            "listeners": []
+                        },
+                        "enableVMAgentPlatformUpdates": false
+                    },
+                    "secrets": [],
+                    "allowExtensionOperations": false,
+                    "requireGuestProvisionSignal": true
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[parameters('networkInterfaces_myfirstwinvm_externalid')]",
+                            "properties": {
+                                "primary": true
+                            }
+                        }
+                    ]
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": false
+                    }
+                },
+                "priority": "Regular",
+                "extensionsTimeBudget": "PT1H30M"
+            }
+        }
+    ]
+}
