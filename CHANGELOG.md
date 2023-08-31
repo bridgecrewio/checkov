@@ -1,6 +1,22 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.4.18...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.4.22...HEAD)
+
+## [2.4.22](https://github.com/bridgecrewio/checkov/compare/2.4.18...2.4.22) - 2023-08-31
+
+### Feature
+
+- **arm:** implement CKV_AZURE_112 for arm - [#5507](https://github.com/bridgecrewio/checkov/pull/5507)
+- **arm:** implement CKV_AZURE_40 for ARM - [#5499](https://github.com/bridgecrewio/checkov/pull/5499)
+- **arm:** implement CKV_AZURE_58 for ARM - [#5497](https://github.com/bridgecrewio/checkov/pull/5497)
+- **arm:** implement CKV_AZURE_94 for arm - [#5508](https://github.com/bridgecrewio/checkov/pull/5508)
+
+### Bug Fix
+
+- **helm:** Changed error message to failure to better differentiate problems - [#5517](https://github.com/bridgecrewio/checkov/pull/5517)
+- **terraform_json:** correctly parse data blocks in Terraform JSON - [#5509](https://github.com/bridgecrewio/checkov/pull/5509)
+- **terraform:** continue processing of TF modules in the same file - [#5503](https://github.com/bridgecrewio/checkov/pull/5503)
+- **terraform:** fix error type - [#5513](https://github.com/bridgecrewio/checkov/pull/5513)
 
 ## [2.4.18](https://github.com/bridgecrewio/checkov/compare/2.4.14...2.4.18) - 2023-08-30
 
