@@ -17,7 +17,8 @@ from tests.common.graph.checks.test_yaml_policies_base import TestYamlPoliciesBa
 
 @parameterized_class([
    {"graph_framework": "NETWORKX"},
-   {"graph_framework": "IGRAPH"}
+   {"graph_framework": "IGRAPH"},
+   {"graph_framework": "RUSTWORKX"}
 ])
 class TestYamlPolicies(TestYamlPoliciesBase):
     def __init__(self, args):

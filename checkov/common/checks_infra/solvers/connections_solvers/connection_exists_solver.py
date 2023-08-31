@@ -7,7 +7,7 @@ from igraph import Graph
 from checkov.common.graph.checks_infra import debug
 
 try:
-    from networkx import edge_dfs
+    from networkx import edge_dfs, DiGraph
 except ImportError:
     logging.info("Not able to import networkx")
     edge_dfs = lambda G : []
@@ -63,7 +63,6 @@ class ConnectionExistsSolver(BaseConnectionSolver):
             return passed, failed, unknown
 
         if isinstance(graph_connector, Graph):
-
             for root_vertex in graph_connector.vs:
                 inverted = False
                 origin_attributes = None
@@ -92,7 +91,8 @@ class ConnectionExistsSolver(BaseConnectionSolver):
                             failed=failed,
                             unknown=unknown,
                         )
-        else:
+
+        elif isinstance(graph_connector, DiGraph):
             for u, v in edge_dfs(graph_connector):
                 origin_attributes = graph_connector.nodes(data=True)[u]
                 opposite_vertices = None
@@ -114,13 +114,53 @@ class ConnectionExistsSolver(BaseConnectionSolver):
                     )
                     destination_attributes["connected_node"] = origin_attributes
                     continue
-
+                if origin_attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.OUTPUT:
+                    print(1)
                 destination_block_type = destination_attributes.get(CustomAttributes.BLOCK_TYPE)
                 if destination_block_type == BlockType.OUTPUT:
                     try:
                         output_edges = graph_connector.edges(v, data=True)
                         _, output_destination, _ = next(iter(output_edges))
                         output_destination = graph_connector.nodes(data=True)[output_destination]
+                        output_destination_type = output_destination.get(CustomAttributes.RESOURCE_TYPE)
+                        if self.is_associated_edge(
+                            origin_attributes.get(CustomAttributes.RESOURCE_TYPE), output_destination_type
+                        ):
+                            passed.extend([origin_attributes, output_destination])
+                    except StopIteration:
+                        continue
+
+        # isinstance(graph_connector, PyDiGraph):
+        else:
+            for edge in iter(graph_connector.edge_list()):
+                u, v = edge
+                origin_attributes = graph_connector.nodes()[u][1]
+                opposite_vertices = None
+                if origin_attributes in self.vertices_under_resource_types:
+                    opposite_vertices = self.vertices_under_connected_resources_types
+                elif origin_attributes in self.vertices_under_connected_resources_types:
+                    opposite_vertices = self.vertices_under_resource_types
+                if not opposite_vertices:
+                    continue
+
+                destination_attributes = graph_connector.nodes()[v][1]
+                if destination_attributes in opposite_vertices:
+                    self.populate_checks_results(
+                        origin_attributes=origin_attributes,
+                        destination_attributes=destination_attributes,
+                        passed=passed,
+                        failed=failed,
+                        unknown=unknown,
+                    )
+                    destination_attributes["connected_node"] = origin_attributes
+                    continue
+
+                destination_block_type = destination_attributes.get(CustomAttributes.BLOCK_TYPE)
+                if destination_block_type == BlockType.OUTPUT:
+                    try:
+                        output_edges = graph_connector.adj_direction(v, True)  # True means inbound edges and False means outbound edges
+                        output_destination_index = next(iter(output_edges))
+                        output_destination = graph_connector.nodes()[output_destination_index][1]
                         output_destination_type = output_destination.get(CustomAttributes.RESOURCE_TYPE)
                         if self.is_associated_edge(
                             origin_attributes.get(CustomAttributes.RESOURCE_TYPE), output_destination_type
