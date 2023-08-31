@@ -158,7 +158,7 @@ class ConnectionExistsSolver(BaseConnectionSolver):
                 destination_block_type = destination_attributes.get(CustomAttributes.BLOCK_TYPE)
                 if destination_block_type == BlockType.OUTPUT:
                     try:
-                        output_edges = graph_connector.adj_direction(v, True)  # True means inbound edges and False means outbound edges
+                        output_edges = graph_connector.adj_direction(v, False)  # True means inbound edges and False means outbound edges
                         output_destination_index = next(iter(output_edges))
                         output_destination = graph_connector.nodes()[output_destination_index][1]
                         output_destination_type = output_destination.get(CustomAttributes.RESOURCE_TYPE)
