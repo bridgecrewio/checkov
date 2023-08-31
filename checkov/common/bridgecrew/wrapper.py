@@ -11,7 +11,7 @@ from collections import defaultdict
 
 import dpath
 from igraph import Graph
-from rustworkx import PyDiGraph, digraph_node_link_json, node_link_json  # type: ignore
+from rustworkx import PyDiGraph, digraph_node_link_json  # type: ignore
 
 try:
     from networkx import DiGraph, node_link_data
