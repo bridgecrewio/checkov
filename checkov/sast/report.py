@@ -1,15 +1,16 @@
-from typing import Dict, Union, List, Optional
+from typing import Any, Dict, Union, List, Optional
 
 from checkov.common.output.report import Report
-from checkov.sast.consts import POLICIES_ERRORS, POLICIES_ERRORS_COUNT, ENGINE_NAME, SOURCE_FILES_COUNT, POLICY_COUNT
+from checkov.sast.consts import POLICIES_ERRORS, POLICIES_ERRORS_COUNT, ENGINE_NAME, SOURCE_FILES_COUNT, POLICY_COUNT, SastLanguages
 
 
 class SastReport(Report):
-
-    def __init__(self, check_type: str, metadata: Dict[str, Optional[Union[str, int, List[str]]]], engine_name: str):
+    def __init__(self, check_type: str, metadata: Dict[str, Optional[Union[str, int, List[str]]]], engine_name: str, language: SastLanguages):
         super().__init__(check_type)
         self.metadata = metadata
         self.engine_name = engine_name
+        self.language: SastLanguages = language
+        self.sast_imports: Dict[str, Any] = {}
 
     def get_summary(self) -> Dict[str, Union[int, str]]:
         base_summary: Dict[str, Union[int, str]] = super().get_summary()
@@ -33,3 +34,22 @@ class SastReport(Report):
             base_summary[POLICY_COUNT] = policy_count
 
         return base_summary
+
+
+class SastData:
+    def __init__(self) -> None:
+        self.imports_data: Optional[Dict[str, Any]] = None
+
+    def set_imports_data(self, imports_data: Dict[str, Any]) -> None:
+        self.imports_data = imports_data
+
+    @staticmethod
+    def get_sast_import_report(scan_reports: List[SastReport]) -> Dict[str, Any]:
+        sast_imports_report: Dict[SastLanguages, Any] = {}
+        for report in scan_reports:
+            sast_imports_report[report.language] = {}
+        for report in scan_reports:
+            for data in report.sast_imports.values():
+                for file_name, all_data in data.items():
+                    sast_imports_report[report.language][file_name] = {'all': all_data.get('All', [])}
+        return {"imports": sast_imports_report}

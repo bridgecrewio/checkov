@@ -75,7 +75,7 @@ class SemgrepEngine(SastEngine):
         output_handler = OutputHandler(output_settings)
 
         semgrep_output = self.get_semgrep_output(targets=targets, config=config, output_handler=output_handler)
-        semgrep_results_by_language: Dict[str, List[RuleMatch]] = {}
+        semgrep_results_by_language: Dict[SastLanguages, List[RuleMatch]] = {}
         for matches in semgrep_output.matches.values():
             for rule_match in matches:
                 match_lang = FILE_EXT_TO_SAST_LANG.get(rule_match.path.suffix.lstrip('.'), '')
@@ -83,15 +83,15 @@ class SemgrepEngine(SastEngine):
                     continue
                 if not isinstance(match_lang, SastLanguages):  # 2nd condition for typing
                     raise TypeError(f'file type {rule_match.path.suffix} is not supported by sast framework')
-                semgrep_results_by_language.setdefault(match_lang.value, []).append(rule_match)
+                semgrep_results_by_language.setdefault(match_lang, []).append(rule_match)
 
         # add empty reports for checked languages without findings
         for target in targets:
             suffix = target.rsplit(".", maxsplit=1)
             if len(suffix) == 2:
                 match_lang_extra = FILE_EXT_TO_SAST_LANG.get(suffix[1])
-                if match_lang_extra and match_lang_extra.value not in semgrep_results_by_language:
-                    semgrep_results_by_language[match_lang_extra.value] = []
+                if match_lang_extra and match_lang_extra not in semgrep_results_by_language:
+                    semgrep_results_by_language[match_lang_extra] = []
 
         registry.delete_temp_rules_file()
 
@@ -136,8 +136,8 @@ class SemgrepEngine(SastEngine):
                                        output_extra, shown_severities, target_manager_lockfile_scan_info)
         return semgrep_output
 
-    def create_report(self, check_type: str, lang: str, semgrep_matches: List[RuleMatch]) -> Report:
-        report = SastReport(f'{check_type}_{lang}', {}, SastEngines.SEMGREP)
+    def create_report(self, check_type: str, lang: SastLanguages, semgrep_matches: List[RuleMatch]) -> Report:
+        report = SastReport(f'{check_type}_{lang.value}', {}, SastEngines.SEMGREP, lang)
         for match in semgrep_matches:
             check_id = match.rule_id.split('.')[-1]
             check_id = check_id.rsplit("_", maxsplit=1)[0]  # remove the added language suffix, ex. CKV_AWS_21_python

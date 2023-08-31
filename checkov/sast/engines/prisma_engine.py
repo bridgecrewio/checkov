@@ -60,7 +60,8 @@ class PrismaEngine(SastEngine):
             'policies': registry.checks_dirs_path,
             'checks': registry.runner_filter.checks if registry.runner_filter else [],
             'skip_checks': registry.runner_filter.skip_checks if registry.runner_filter else [],
-            'skip_path': registry.runner_filter.excluded_paths if registry.runner_filter else []
+            'skip_path': registry.runner_filter.excluded_paths if registry.runner_filter else [],
+            'report_imports': registry.runner_filter.report_sast_imports if registry.runner_filter else False
         }
         prisma_result = self.run_go_library(**library_input)
 
@@ -153,7 +154,8 @@ class PrismaEngine(SastEngine):
                        checks: List[str],
                        skip_checks: List[str],
                        skip_path: List[str],
-                       list_policies: bool = False) -> Union[List[Report], SastPolicies]:
+                       list_policies: bool = False,
+                       report_imports: bool = True) -> Union[List[Report], SastPolicies]:
 
         validate_params(languages, source_codes, policies, list_policies)
 
@@ -170,7 +172,8 @@ class PrismaEngine(SastEngine):
                 "checks": checks,
                 "skip_checks": skip_checks,
                 "skip_path": skip_path,
-                "list_policies": list_policies
+                "list_policies": list_policies,
+                "report_imports": report_imports
             },
             "auth": {
                 "api_key": bc_integration.get_auth_token(),
@@ -198,11 +201,16 @@ class PrismaEngine(SastEngine):
         d = json.loads(analyze_code_string)
 
         try:
-            result = PrismaReport(**d)
+            result = self.create_prisma_report(d)
         except ValidationError as e:
             result = create_empty_report(list(languages))
             result.errors = {REPORT_PARSING_ERRORS: [str(err) for err in e.errors()]}
         return self.create_report(result)
+
+    def create_prisma_report(self, data: Dict[str, Any]) -> PrismaReport:
+        if not data.get("imports"):
+            data["imports"] = {}
+        return PrismaReport(**data)
 
     def run_go_library_list_policies(self, document: Dict[str, Any]) -> SastPolicies:
         try:
@@ -230,12 +238,12 @@ class PrismaEngine(SastEngine):
                 logging.error(d.get('errors'))
             return {}
 
-    def create_report(self, prisma_report: PrismaReport) -> List[Report]:
+    def create_report(self, prisma_report: PrismaReport) -> List[SastReport]:
         logging.debug("Printing Prisma-SAST profiling data")
         logging.debug(prisma_report.profiler)
-        reports: List[Report] = []
+        reports: List[SastReport] = []
         for lang, checks in prisma_report.rule_match.items():
-            report = SastReport(f'{self.check_type.upper()} - {lang.value.title()}', prisma_report.run_metadata, SastEngines.PRISMA)
+            report = SastReport(f'{self.check_type.lower()}_{lang.value}', prisma_report.run_metadata, SastEngines.PRISMA, lang)
             for check_id, match_rule in checks.items():
                 check_name = match_rule.check_name
                 check_cwe = match_rule.check_cwe
@@ -266,6 +274,15 @@ class PrismaEngine(SastEngine):
                 report.add_parsing_errors(report_parsing_errors)
             reports.append(report)
 
+        for lang in prisma_report.imports:
+            for report in reports:
+                if report.language == lang:
+                    report.sast_imports = prisma_report.imports[lang]
+                    break
+            else:
+                report = SastReport(f'{self.check_type.lower()}_{lang.value}', prisma_report.run_metadata, SastEngines.PRISMA, lang)
+                report.sast_imports = prisma_report.imports[lang]
+                reports.append(report)
         return reports
 
     def get_policies(self, languages: Set[SastLanguages]) -> SastPolicies:
@@ -287,10 +304,10 @@ class PrismaEngine(SastEngine):
             'policies': [],
             'checks': [],
             'skip_checks': [],
-            'skip_path': []
+            'skip_path': [],
+            'report_imports': False
         }
         prisma_result = self.run_go_library(**library_input)
-
         return prisma_result
 
 

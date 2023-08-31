@@ -65,11 +65,11 @@ class PrismaReport(BaseModel):
     errors: Dict[str, List[str]]  # noqa: CCE003
     profiler: Dict[str, Profiler]  # noqa: CCE003
     run_metadata: Dict[str, Optional[Union[str, int, List[str]]]]  # noqa: CCE003
+    imports: Dict[SastLanguages, Dict[str, Dict[str, Dict[str, List[str]]]]]  # noqa: CCE003
 
 
 def create_empty_report(languages: List[SastLanguages]) -> PrismaReport:
     matches: Dict[SastLanguages, Dict[str, RuleMatch]] = {}
     for lang in languages:
         matches[lang] = {}
-
-    return PrismaReport(rule_match=matches, errors={}, profiler={}, run_metadata={})
+    return PrismaReport(rule_match=matches, errors={}, profiler={}, run_metadata={}, imports={})
