@@ -18,12 +18,12 @@ class TestCosmosDBDisablesPublicNetwork(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "Microsoft.DocumentDb/databaseAccounts.pass",
+            "Microsoft.DocumentDB/databaseAccounts.pass",
         }
         failing_resources = {
-            "Microsoft.DocumentDb/databaseAccounts.fail",
-            "Microsoft.DocumentDb/databaseAccounts.fail2",
-            "Microsoft.DocumentDb/databaseAccounts.fail3",
+            "Microsoft.DocumentDB/databaseAccounts.fail",
+            "Microsoft.DocumentDB/databaseAccounts.fail2",
+            "Microsoft.DocumentDB/databaseAccounts.fail3",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
