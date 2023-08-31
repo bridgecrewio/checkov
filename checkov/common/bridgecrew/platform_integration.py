@@ -13,7 +13,7 @@ from json import JSONDecodeError
 from os import path
 from pathlib import Path
 from time import sleep
-from typing import List, Dict, TYPE_CHECKING, Any, cast
+from typing import List, Dict, TYPE_CHECKING, Any, Optional, cast
 
 import boto3
 import dpath
@@ -30,7 +30,7 @@ from urllib3.exceptions import HTTPError, MaxRetryError
 from checkov.common.bridgecrew.run_metadata.registry import registry
 from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.bridgecrew.platform_key import read_key, persist_key, bridgecrew_file
-from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_checks_results, \
+from checkov.common.bridgecrew.wrapper import persist_assets_results, reduce_scan_reports, persist_checks_results, \
     enrich_and_persist_checks_metadata, checkov_results_prefix, persist_run_metadata, _put_json_object, \
     persist_logs_stream, persist_graphs
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILES, SCANNABLE_PACKAGE_FILES
@@ -453,6 +453,13 @@ class BcPlatformIntegration:
                                                                    self.repo_path)
         dpath.merge(reduced_scan_reports, checks_metadata_paths)
         persist_checks_results(reduced_scan_reports, self.s3_client, self.bucket, self.repo_path)
+
+    def persist_assets_scan_results(self, assets_report: Optional[Dict[str, Any]]) -> None:
+        if not assets_report:
+            return
+        for lang, assets in assets_report['imports'].items():
+            new_report = {'imports': {lang.value: assets}}
+            persist_assets_results(f'sast_{lang.value}', new_report, self.s3_client, self.bucket, self.repo_path)
 
     def persist_image_scan_results(self, report: dict[str, Any] | None, file_path: str, image_name: str, branch: str) -> None:
         if not self.s3_client:

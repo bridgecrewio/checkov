@@ -12,7 +12,7 @@ import sys
 import platform
 from collections import defaultdict
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 
 import argcomplete
 import configargparse
@@ -64,6 +64,7 @@ from checkov.json_doc.runner import Runner as json_runner
 from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.kustomize.runner import Runner as kustomize_runner
 from checkov.runner_filter import RunnerFilter
+from checkov.sast.report import SastData, SastReport
 from checkov.sca_image.runner import Runner as sca_image_runner
 from checkov.sca_package.runner import Runner as sca_package_runner
 from checkov.sca_package_2.runner import Runner as sca_package_runner_2
@@ -135,6 +136,7 @@ class Checkov:
         self.run_metadata: dict[str, str | list[str]] = {}
         self.graphs: dict[str, DiGraph | Graph] = {}
         self.url: str | None = None
+        self.sast_data: SastData = SastData()
 
         self.parse_config(argv=argv)
 
@@ -299,7 +301,8 @@ class Checkov:
                 repo_root_for_plan_enrichment=self.config.repo_root_for_plan_enrichment,
                 resource_attr_to_omit=self.config.mask,
                 enable_git_history_secret_scan=self.config.scan_secrets_history,
-                git_history_timeout=self.config.secrets_history_timeout
+                git_history_timeout=self.config.secrets_history_timeout,
+                report_sast_imports=bool(convert_str_to_bool(os.getenv('CKV_ENABLE_UPLOAD_SAST_IMPORTS', False)))
             )
 
             source_env_val = os.getenv('BC_SOURCE', 'cli')
@@ -487,6 +490,7 @@ class Checkov:
                         included_paths = [self.config.external_modules_download_path]
                         for r in runner_registry.runners:
                             included_paths.extend(r.included_paths())
+                        self.save_sast_assets_data(self.scan_reports)
                         self.upload_results(
                             root_folder=root_folder,
                             absolute_root_folder=absolute_root_folder,
@@ -598,6 +602,7 @@ class Checkov:
                     root_folder = os.path.split(os.path.commonprefix(files))[0]
                     absolute_root_folder = os.path.abspath(root_folder)
 
+                    self.save_sast_assets_data(self.scan_reports)
                     self.upload_results(
                         root_folder=root_folder,
                         absolute_root_folder=absolute_root_folder,
@@ -673,10 +678,18 @@ class Checkov:
         if git_configuration_folders:
             bc_integration.persist_git_configuration(os.getcwd(), git_configuration_folders)
         bc_integration.persist_scan_results(self.scan_reports)
+        bc_integration.persist_assets_scan_results(self.sast_data.imports_data)
         bc_integration.persist_run_metadata(self.run_metadata)
         if bc_integration.enable_persist_graphs:
             bc_integration.persist_graphs(self.graphs, absolute_root_folder=absolute_root_folder)
         self.url = self.commit_repository()
+
+    def save_sast_assets_data(self, scan_reports: List[Report]) -> None:
+        if not bool(convert_str_to_bool(os.getenv('CKV_ENABLE_UPLOAD_SAST_IMPORTS', False))):
+            return
+        sast_report = [scan_report for scan_report in scan_reports if type(scan_report) == SastReport]
+        sast_imports_report = self.sast_data.get_sast_import_report(sast_report)
+        self.sast_data.set_imports_data(sast_imports_report)
 
     def print_results(
             self,

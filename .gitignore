@@ -177,3 +177,5 @@ tests/console
 
 # sast go mod
 checkov/sast_core/vendor
+
+*.prof

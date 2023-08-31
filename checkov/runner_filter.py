@@ -55,7 +55,8 @@ class RunnerFilter(object):
             resource_attr_to_omit: Optional[Dict[str, Set[str]]] = None,
             enable_git_history_secret_scan: bool = False,
             git_history_timeout: str = '12h',
-            git_history_last_commit_scanned: Optional[str] = None  # currently not exposed by a CLI flag
+            git_history_last_commit_scanned: Optional[str] = None,  # currently not exposed by a CLI flag
+            report_sast_imports: bool = False
     ) -> None:
 
         checks = convert_csv_string_arg_to_list(checks)
@@ -145,6 +146,8 @@ class RunnerFilter(object):
             self.framework = [CheckType.SECRETS]
             logging.debug("Scan secrets history was enabled ignoring other frameworks")
             self.git_history_last_commit_scanned = git_history_last_commit_scanned
+
+        self.report_sast_imports = report_sast_imports
 
     @staticmethod
     def _load_resource_attr_to_omit(resource_attr_to_omit_input: Optional[Dict[str, Set[str]]]) -> DefaultDict[str, Set[str]]:

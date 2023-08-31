@@ -6,7 +6,7 @@ import json
 import itertools
 from concurrent import futures
 from io import StringIO
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, Dict, Optional
 from collections import defaultdict
 
 import dpath
@@ -107,9 +107,17 @@ def persist_checks_results(
     return checks_results_paths
 
 
-def persist_run_metadata(
-        run_metadata: dict[str, str | list[str]], s3_client: S3Client, bucket: str, full_repo_object_key: str, use_checkov_results: bool = True
-) -> None:
+def persist_assets_results(check_type: str, assets_report: Dict[str, Any], s3_client: Optional[S3Client],
+                           bucket: Optional[str], full_repo_object_key: Optional[str]) -> str:
+    if not s3_client or not bucket or not full_repo_object_key:
+        return ''
+    check_result_object_path = f'{full_repo_object_key}/{checkov_results_prefix}/{check_type}/assets.json'
+    _put_json_object(s3_client, assets_report, bucket, check_result_object_path)
+    return check_result_object_path
+
+
+def persist_run_metadata(run_metadata: dict[str, str | list[str]], s3_client: S3Client,
+                         bucket: str, full_repo_object_key: str, use_checkov_results: bool = True) -> None:
     object_path = f'{full_repo_object_key}/{checkov_results_prefix}/run_metadata.json' if use_checkov_results else f'{full_repo_object_key}/run_metadata.json'
     try:
         s3_client.put_object(Bucket=bucket, Key=object_path, Body=json.dumps(run_metadata, indent=2))
