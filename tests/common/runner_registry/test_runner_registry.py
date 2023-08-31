@@ -3,6 +3,8 @@ import json
 import shutil
 import unittest
 
+import logging
+import sys
 import os
 import io
 from pathlib import Path
@@ -28,6 +30,9 @@ from checkov.terraform.runner import Runner as tf_runner
 from checkov.bicep.runner import Runner as bicep_runner
 import re
 
+
+logger = logging.getLogger()
+logger.level = logging.INFO
 
 class TestRunnerRegistry(unittest.TestCase):
     def test_multi_iac(self):
@@ -145,7 +150,13 @@ class TestRunnerRegistry(unittest.TestCase):
         )
 
         with patch('sys.stdout', new=io.StringIO()) as captured_output:
-            runner_registry.print_reports(scan_reports=reports, config=config)
+            try:
+                stream_handler = logging.StreamHandler(sys.stdout)
+                logger.addHandler(stream_handler)
+
+                runner_registry.print_reports(scan_reports=reports, config=config)
+            finally:
+                logger.removeHandler(stream_handler)
 
         output = captured_output.getvalue()
 

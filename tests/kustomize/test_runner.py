@@ -152,6 +152,24 @@ class TestRunnerValid(unittest.TestCase):
         all_checks = report.failed_checks + report.passed_checks
         self.assertEqual(len(all_checks), 0)  # we should no get any results
 
+    @unittest.skipIf(os.name == "nt" or not kustomize_exists(), "kustomize not installed or Windows OS")
+    def test_get_binary_output_from_directory_equals_to_get_binary_result(self):
+        scan_dir_path = Path(__file__).parent / "runner/resources/example/no_type"
+        dir_rel_path = os.path.relpath(scan_dir_path).replace('\\', '/')
+        runner = Runner()
+        runner.templateRendererCommand = "kustomize"
+        runner.templateRendererCommandOptions = "build"
+
+        # Runs the runner fully just to build `runner.kustomizeProcessedFolderAndMeta`
+        _ = runner.run(root_folder=dir_rel_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework=['kustomize']))
+        regular_result = runner.get_binary_output(str(scan_dir_path), runner.kustomizeProcessedFolderAndMeta,
+                                                  runner.templateRendererCommand)
+        result_from_directory = runner.get_binary_output_from_directory(str(scan_dir_path),
+                                                                        runner.templateRendererCommand)
+        assert regular_result == result_from_directory
+
+
 
 if __name__ == '__main__':
     unittest.main()
