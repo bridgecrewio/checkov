@@ -80,7 +80,7 @@
       "sku": "[parameters('windowsOSVersion')]",
       "version": "latest"
     },
-    "imageReference": "[variables('osType')]",
+    "imageReference": "[variables('osType')]"
   },
   "resources": [
     {
