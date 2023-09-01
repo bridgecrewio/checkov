@@ -664,12 +664,12 @@ class Checkov:
     ) -> None:
         """Upload scan results and other relevant files"""
 
-        bc_integration.persist_repository(
-            root_dir=root_folder,
-            files=files,
-            excluded_paths=excluded_paths,
-            included_paths=included_paths,
-        )
+        # bc_integration.persist_repository(
+        #     root_dir=root_folder,
+        #     files=files,
+        #     excluded_paths=excluded_paths,
+        #     included_paths=included_paths,
+        # )
         if git_configuration_folders:
             bc_integration.persist_git_configuration(os.getcwd(), git_configuration_folders)
         if sca_supported_ir_report:

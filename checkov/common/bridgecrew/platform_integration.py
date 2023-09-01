@@ -450,7 +450,12 @@ class BcPlatformIntegration:
         # just process reports with actual results in it
         self.scan_reports = [scan_report for scan_report in scan_reports if not scan_report.is_empty(full=True)]
 
+        # TODO also need to remove the resource attributes from the `entity` item in each check result (but keep line numbers and address)
+        for c in self.scan_reports[0].failed_checks + self.scan_reports[0].passed_checks:
+            c.code_block = []
+
         reduced_scan_reports = reduce_scan_reports(self.scan_reports)
+
         checks_metadata_paths = enrich_and_persist_checks_metadata(self.scan_reports, self.s3_client, self.bucket,
                                                                    self.repo_path)
         dpath.merge(reduced_scan_reports, checks_metadata_paths)
@@ -966,7 +971,7 @@ class BcPlatformIntegration:
     def _upload_run(self, args: argparse.Namespace, scan_reports: list[Report]) -> None:
         print(Style.BRIGHT + colored("Connecting to Bridgecrew.cloud...", 'green',
                                      attrs=['bold']) + Style.RESET_ALL)
-        self.persist_repository(args.directory[0])
+        # self.persist_repository(args.directory[0])
         print(Style.BRIGHT + colored("Metadata upload complete", 'green',
                                      attrs=['bold']) + Style.RESET_ALL)
         self.persist_scan_results(scan_reports)
