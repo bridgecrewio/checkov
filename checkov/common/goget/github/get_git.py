@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import multiprocessing
 import re
 import shutil
 
@@ -83,6 +84,11 @@ class GitGetter(BaseGetter):
     def _clone(self, git_url: str, clone_dir: str) -> None:
         self.logger.debug(f"cloning {self.url if '@' not in self.url else self.url.split('@')[1]} to {clone_dir}")
         with temp_environ(GIT_TERMINAL_PROMPT="0"):  # disables user prompts originating from GIT
+            p = multiprocessing.Process(target=self._repo_clone_helper, args=(clone_dir, git_url))
+            p.start()
+
+    def _repo_clone_helper(self, clone_dir, git_url):
+        try:
             if self.branch:
                 Repo.clone_from(git_url, clone_dir, branch=self.branch, depth=1)  # depth=1 for shallow clone
             elif self.commit_id:  # no commit id support for branch
@@ -92,6 +98,13 @@ class GitGetter(BaseGetter):
                 Repo.clone_from(git_url, clone_dir, depth=1, b=self.tag)
             else:
                 Repo.clone_from(git_url, clone_dir, depth=1)
+        except Exception as e:
+            logging.warning(f"Repo cloning process stopped unexpectedly due to: {e}")
+            # force exit of spawned child processes
+            for child in multiprocessing.active_children():
+                logging.info(f"Child {child}")
+                child.kill()
+            raise e
 
     # Split source url into Git url and subdirectory path e.g. test.com/repo//repo/subpath becomes 'test.com/repo', '/repo/subpath')
     # Also see reference implementation @ go-getter https://github.com/hashicorp/go-getter/blob/main/source.go
