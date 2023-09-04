@@ -1,14 +1,11 @@
 from __future__ import annotations
 
-import multiprocessing
 import os
 import re
-import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-import psutil
 
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.terraform.module_loading.content import ModuleContent
@@ -78,19 +75,6 @@ class GenericGitLoader(ModuleLoader):
                 return ModuleContent(dir=None, failed_url=module_params.module_source)
             if 'File exists' not in str_e and 'already exists and is not an empty directory' not in str_e:
                 self.logger.warning(f"failed to get {module_params.module_source} because of {e}")
-                self.logger.info(f"After exception Process amount: {len(list(psutil.process_iter()))}")
-                self.logger.info("Listing processes:")
-                for proc in list(psutil.process_iter()):
-                    self.logger.info(f"The process {proc.pid} - {proc.name()} - {proc.cmdline()} - {proc.as_dict()}")
-                time.sleep(1)
-                proc = psutil.Process()
-                self.logger.info(f"The current process: {proc.pid} - {proc.name()} - {proc.cmdline()} - {proc.as_dict()}")
-                children = proc.children(recursive=True)
-                self.logger.info(f"We have {len(children)} processes")
-                self.logger.info(f"After waiting Process amount: {len(list(psutil.process_iter()))}")
-                self.logger.info("Listing processes:")
-                for proc in list(psutil.process_iter()):
-                    self.logger.info(f"The process {proc.pid} - {proc.name()} - {proc.cmdline()}")
                 return ModuleContent(dir=None, failed_url=module_params.module_source)
         return_dir = module_params.dest_dir
         if module_params.inner_module:

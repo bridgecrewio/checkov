@@ -1,12 +1,8 @@
 from __future__ import annotations
 
 import logging
-import multiprocessing
-import os
 import re
 import shutil
-
-import psutil
 
 from checkov.common.goget.base_getter import BaseGetter
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
