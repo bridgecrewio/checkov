@@ -108,5 +108,9 @@ def load_tf_modules(
     if run_parallel:
         list(parallel_runner.run_function(_download_module, distinct_modules))
     else:
+        logging.info(f"Starting download of modules of length {len(distinct_modules)}")
+        import psutil
         for m in distinct_modules:
             _download_module(m)
+            logging.info(f"Memory usage: {psutil.Process().memory_info().rss / (1024 * 1024)} MB")
+            logging.info(f"Process amount: {len(list(psutil.process_iter()))}")
