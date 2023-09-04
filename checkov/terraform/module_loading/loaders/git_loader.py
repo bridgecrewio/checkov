@@ -81,10 +81,10 @@ class GenericGitLoader(ModuleLoader):
                 self.logger.info(f"After exception Process amount: {len(list(psutil.process_iter()))}")
                 self.logger.info("Listing processes:")
                 for proc in list(psutil.process_iter()):
-                    self.logger.info(f"The process {proc.pid} - {proc.name()} - {proc.cmdline()}")
+                    self.logger.info(f"The process {proc.pid} - {proc.name()} - {proc.cmdline()} - {proc.as_dict()}")
                 time.sleep(1)
                 proc = psutil.Process()
-                self.logger.info(f"The current process: {proc.pid} - {proc.name()} - {proc.cmdline()}")
+                self.logger.info(f"The current process: {proc.pid} - {proc.name()} - {proc.cmdline()} - {proc.as_dict()}")
                 children = proc.children(recursive=True)
                 self.logger.info(f"We have {len(children)} processes")
                 self.logger.info(f"After waiting Process amount: {len(list(psutil.process_iter()))}")
