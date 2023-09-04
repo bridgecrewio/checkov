@@ -87,7 +87,7 @@ class Runner(BaseTerraformRunner[_TerraformPlanDefinitions, _TerraformPlanContex
         self.file_extensions = ['.json']  # override what gets set from the TF runner
         self.definitions: _TerraformPlanDefinitions | None = None
         self.context: _TerraformPlanContext | None = None
-        self.graph_registry = get_graph_checks_registry(super().check_type)
+        self.graph_registry = get_graph_checks_registry(check_type=CheckType.TERRAFORM)
         self.deep_analysis = False
         self.repo_root_for_plan_enrichment: str | None = None
         self.tf_plan_local_graph: TerraformLocalGraph | None = None

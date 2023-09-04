@@ -54,7 +54,7 @@ class TerraformJsonRunner(BaseTerraformRunner[_TerraformJsonDefinitions, _Terraf
             source=source,
         )
         self.file_extensions = (".json",)  # just '.json' not 'tf.json' otherwise it will be filtered out
-        self.graph_registry = get_graph_checks_registry(super().check_type)
+        self.graph_registry = get_graph_checks_registry(check_type=CheckType.TERRAFORM)
 
         self.definitions: _TerraformJsonDefinitions = {}
         self.definitions_raw: "dict[str, list[tuple[int, str]]]" = {}
