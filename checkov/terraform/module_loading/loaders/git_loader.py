@@ -69,9 +69,7 @@ class GenericGitLoader(ModuleLoader):
             module_source = module_params.module_source.replace("git::", "")
             git_getter = GitGetter(module_source, create_clone_and_result_dirs=False)
             git_getter.temp_dir = module_params.dest_dir
-            p = multiprocessing.Process(target=git_getter.do_get)
-            p.start()
-            p.join()
+            git_getter.do_get()
         except Exception as e:
             str_e = str(e)
             if os.getenv("GITHUB_PAT") and not module_params.token and "could not read Username for" in str_e:
@@ -80,10 +78,12 @@ class GenericGitLoader(ModuleLoader):
                 return ModuleContent(dir=None, failed_url=module_params.module_source)
             if 'File exists' not in str_e and 'already exists and is not an empty directory' not in str_e:
                 self.logger.warning(f"failed to get {module_params.module_source} because of {e}")
-                print(f"After exception Process amount: {len(list(psutil.process_iter()))}")
+                self.logger.info(f"After exception Process amount: {len(list(psutil.process_iter()))}")
                 time.sleep(1)
-                os.wait()
-                print(f"After waiting Process amount: {len(list(psutil.process_iter()))}")
+                proc = psutil.Process()
+                children = proc.children(recursive=True)
+                self.logger.info(f"We have {len(children)} processes")
+                self.logger.info(f"After waiting Process amount: {len(list(psutil.process_iter()))}")
                 return ModuleContent(dir=None, failed_url=module_params.module_source)
         return_dir = module_params.dest_dir
         if module_params.inner_module:
