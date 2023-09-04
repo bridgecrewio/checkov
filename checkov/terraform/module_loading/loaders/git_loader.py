@@ -6,6 +6,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+import psutil
+
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.terraform.module_loading.content import ModuleContent
 
@@ -74,6 +76,11 @@ class GenericGitLoader(ModuleLoader):
                 return ModuleContent(dir=None, failed_url=module_params.module_source)
             if 'File exists' not in str_e and 'already exists and is not an empty directory' not in str_e:
                 self.logger.warning(f"failed to get {module_params.module_source} because of {e}")
+                curr_pid = os.getpid()
+                parent = psutil.Process(curr_pid)
+                for child in parent.children(recursive=True):  # or parent.children() for recursive=False
+                    child.kill()
+                    print(f"This is the Child {child}")
                 return ModuleContent(dir=None, failed_url=module_params.module_source)
         return_dir = module_params.dest_dir
         if module_params.inner_module:

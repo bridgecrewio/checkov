@@ -2,8 +2,11 @@ from __future__ import annotations
 
 import logging
 import multiprocessing
+import os
 import re
 import shutil
+
+import psutil
 
 from checkov.common.goget.base_getter import BaseGetter
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
@@ -99,11 +102,13 @@ class GitGetter(BaseGetter):
             else:
                 Repo.clone_from(git_url, clone_dir, depth=1)
         except Exception as e:
-            logging.warning(f"Repo cloning process stopped unexpectedly due to: {e}")
+            logging.warning(f"Repo cloning process stopped unexpectedly. Cleaning up processes")
             # force exit of spawned child processes
-            for child in multiprocessing.active_children():
-                logging.info(f"Child {child}")
+            curr_pid = os.getpid()
+            parent = psutil.Process(curr_pid)
+            for child in parent.children(recursive=True):  # or parent.children() for recursive=False
                 child.kill()
+                logging.info(f"Child {child}")
             raise e
 
     # Split source url into Git url and subdirectory path e.g. test.com/repo//repo/subpath becomes 'test.com/repo', '/repo/subpath')
