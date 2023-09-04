@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import multiprocessing
 import os
 import re
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -67,7 +69,9 @@ class GenericGitLoader(ModuleLoader):
             module_source = module_params.module_source.replace("git::", "")
             git_getter = GitGetter(module_source, create_clone_and_result_dirs=False)
             git_getter.temp_dir = module_params.dest_dir
-            git_getter.do_get()
+            p = multiprocessing.Process(target=git_getter.do_get)
+            p.start()
+            p.join()
         except Exception as e:
             str_e = str(e)
             if os.getenv("GITHUB_PAT") and not module_params.token and "could not read Username for" in str_e:
@@ -76,11 +80,10 @@ class GenericGitLoader(ModuleLoader):
                 return ModuleContent(dir=None, failed_url=module_params.module_source)
             if 'File exists' not in str_e and 'already exists and is not an empty directory' not in str_e:
                 self.logger.warning(f"failed to get {module_params.module_source} because of {e}")
-                curr_pid = os.getpid()
-                parent = psutil.Process(curr_pid)
-                for child in parent.children(recursive=True):  # or parent.children() for recursive=False
-                    child.kill()
-                    print(f"This is the Child {child}")
+                print(f"After exception Process amount: {len(list(psutil.process_iter()))}")
+                time.sleep(1)
+                os.wait()
+                print(f"After waiting Process amount: {len(list(psutil.process_iter()))}")
                 return ModuleContent(dir=None, failed_url=module_params.module_source)
         return_dir = module_params.dest_dir
         if module_params.inner_module:
