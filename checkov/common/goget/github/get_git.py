@@ -89,6 +89,7 @@ class GitGetter(BaseGetter):
         with temp_environ(GIT_TERMINAL_PROMPT="0"):  # disables user prompts originating from GIT
             p = multiprocessing.Process(target=self._repo_clone_helper, args=(clone_dir, git_url))
             p.start()
+            p.join()
 
     def _repo_clone_helper(self, clone_dir, git_url):
         try:
