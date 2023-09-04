@@ -6,7 +6,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.terraform.module_loading.content import ModuleContent
 
