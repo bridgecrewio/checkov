@@ -114,6 +114,7 @@ def load_tf_modules(
     else:
         logging.info(f"Starting download of modules of length {len(distinct_modules)}")
         for m in distinct_modules:
-            if stop_on_failure and not _download_module(m):
+            success = _download_module(m)
+            if not success and stop_on_failure:
                 logging.info(f"Stopping downloading of modules due to failed attempt on {m.address}")
                 break
