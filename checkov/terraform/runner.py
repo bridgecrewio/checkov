@@ -329,7 +329,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_TerraformDefinitions, _Terr
                     logging.warning(f'Failed to find context for {".".join(entity_context_path)}')
                     return None
             entity_context['definition_path'] = definition_path
-        except StopIteration:
+        except KeyError:
             logging.error(f"Did not find context for key {full_file_path}")
             return {}
         return entity_context
