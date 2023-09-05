@@ -6,6 +6,8 @@ ENGINE_VERSION_PATTERN = re.compile(r"(\d+\.\d+.\d+)")
 ENGINE_VERSION_SHORT_PATTERN = re.compile(r"(\d+\.\d+)")
 MINIMUM_ACTIVEMQ_VERSION = 5.16
 MINIMUM_RABBITMQ_VERSION = 3.8
+
+
 class MQBrokerVersion(BaseResourceCheck):
     def __init__(self) -> None:
         name = "Ensure MQBroker version is current"
@@ -25,7 +27,6 @@ class MQBrokerVersion(BaseResourceCheck):
             if not re.search(ENGINE_VERSION_PATTERN, semantic):
                 return CheckResult.UNKNOWN
             version_tuple = self.version_string_to_tuple(re.search(ENGINE_VERSION_SHORT_PATTERN, semantic).group())
-            
             if mq_type in 'ActiveMQ':
                 if version_tuple >= self.version_string_to_tuple(MINIMUM_ACTIVEMQ_VERSION):
                     return CheckResult.PASSED
@@ -35,5 +36,6 @@ class MQBrokerVersion(BaseResourceCheck):
                     return CheckResult.PASSED
 
         return CheckResult.FAILED
+    
 
 check = MQBrokerVersion()
