@@ -82,13 +82,14 @@ def load_tf_modules(
     path: str,
     should_download_module: Callable[[str | None], bool] = should_download,
     run_parallel: bool = False,
-    modules_to_load: List[ModuleDownload] | None = None
+    modules_to_load: List[ModuleDownload] | None = None,
+    stop_on_failure: bool = False
 ) -> None:
     module_loader_registry.root_dir = path
     if not modules_to_load:
         modules_to_load = find_modules(path)
 
-    def _download_module(m: ModuleDownload) -> None:
+    def _download_module(m: ModuleDownload) -> bool:
         if should_download_module(m.module_link):
             logging.info(f'Downloading module {m.address}')
             try:
@@ -99,8 +100,11 @@ def load_tf_modules(
                     if not module_loader_registry.download_external_modules:
                         log_message += ' (for external modules, the --download-external-modules flag is required)'
                     logging.warning(log_message)
+                    return False
             except Exception as e:
                 logging.warning(f"Unable to load module ({m.address}): {e}")
+                return False
+        return True
 
     # To avoid duplicate work, we need to get the distinct module sources
     distinct_modules = list({m.address: m for m in modules_to_load}.values())
@@ -108,5 +112,8 @@ def load_tf_modules(
     if run_parallel:
         list(parallel_runner.run_function(_download_module, distinct_modules))
     else:
+        logging.info(f"Starting download of modules of length {len(distinct_modules)}")
         for m in distinct_modules:
-            _download_module(m)
+            if stop_on_failure and not _download_module(m):
+                logging.info(f"Stopping downloading of modules due to failed attempt on {m.address}")
+                break
