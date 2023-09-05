@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.4.25...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.4.27...HEAD)
+
+## [2.4.27](https://github.com/bridgecrewio/checkov/compare/2.4.25...2.4.27) - 2023-09-05
+
+### Feature
+
+- **general:** Check module download - [#5525](https://github.com/bridgecrewio/checkov/pull/5525)
+- **general:** Check module download and quit on failure - [#5523](https://github.com/bridgecrewio/checkov/pull/5523)
 
 ## [2.4.25](https://github.com/bridgecrewio/checkov/compare/2.4.22...2.4.25) - 2023-09-03
 
