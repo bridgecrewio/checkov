@@ -12,14 +12,16 @@ class ScaPackageFile(Enum):
     PIPFILE = 'Pipfile'
     PIPFILE_LOCK = 'Pipfile.lock'
 
+
 sca_package_to_sast_lang_map: Dict[ScaPackageFile, SastLanguages] = {
-    ScaPackageFile.PACKAGE_JSON : SastLanguages.JAVASCRIPT,
+    ScaPackageFile.PACKAGE_JSON: SastLanguages.JAVASCRIPT,
     ScaPackageFile.PACKAGE_JSON_LOCK: SastLanguages.JAVASCRIPT,
     ScaPackageFile.POM_XML: SastLanguages.JAVA,
     ScaPackageFile.BUILD_GRADLE: SastLanguages.JAVA,
     ScaPackageFile.PIPFILE: SastLanguages.PYTHON,
     ScaPackageFile.PIPFILE_LOCK: SastLanguages.PYTHON
 }
+
 
 def get_package_by_str(package_name: str) -> Optional[ScaPackageFile]:
     for enum_member in ScaPackageFile:

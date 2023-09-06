@@ -96,6 +96,7 @@ class VulnerabilitiesIntegration(BaseIntegrationFeature):
     '''
     Each SCA report check has file_path, we want to getter same file_path so we won't have to calculate SAST language more then once
     '''
+
     def group_cves_checks_by_files(self, cves_checks: List[Record]):
         # Create a dictionary to store the grouped records
         grouped_records = {}
@@ -112,6 +113,7 @@ class VulnerabilitiesIntegration(BaseIntegrationFeature):
     '''
     convert SAST report structure to a sturcture grouped by package_name, for better performance in the enrich step
     '''
+
     def create_file_by_package_map(self, filtered_entries) -> DefaultDict:
         sast_files_by_packages_map = defaultdict()
         for code_file_path, sast_data in filtered_entries:
@@ -133,6 +135,7 @@ class VulnerabilitiesIntegration(BaseIntegrationFeature):
     '''
     enrich each CVE with the risk factor of IsUsed - which means there is a file the use the package of that CVE
     '''
+
     def enrich_cves_with_sast_data(self, current_cves: List[Record], sast_files_by_packages_map: DefaultDict):
         for cve_check in current_cves:
             if cve_check.vulnerability_details:
@@ -146,6 +149,7 @@ class VulnerabilitiesIntegration(BaseIntegrationFeature):
     '''
     we want to consider sast info only on files that are on the same level of the SCA file or deeper.
     '''
+
     def is_deeper_or_equal_level(self, main_file_path: str, other_file_path: str) -> bool:
         relative_path = os.path.relpath(os.path.dirname(other_file_path), os.path.dirname(main_file_path))
         return not other_file_path.startswith('.') and not relative_path.startswith('..') and not os.path.isabs(
@@ -155,6 +159,7 @@ class VulnerabilitiesIntegration(BaseIntegrationFeature):
     getting file_path of SCA file, like package.json and need to convert it to SAST language like Javascript
     first we are converting the sca file to package file like, and then converting it to SAST language
     '''
+
     def get_sast_lang_by_file_path(self, file_path: str) -> Optional[SastLanguages]:
         suffix = file_path.split('/').pop() or ''
         sca_package: Optional[ScaPackageFile] = get_package_by_str(suffix)
@@ -167,6 +172,7 @@ class VulnerabilitiesIntegration(BaseIntegrationFeature):
     normalizze the package name because there can be different between the package name as it present in the SCA file and 
     in the way it used in the code, so we are removing special chars for better comperation
     '''
+
     def normalize_package_name(self, package_name: str) -> str:
         normalize_package = package_name.replace('-', '').replace('_', '')
 
