@@ -36,6 +36,6 @@ class MQBrokerVersion(BaseResourceCheck):
                     return CheckResult.PASSED
 
         return CheckResult.FAILED
-    
+
 
 check = MQBrokerVersion()
