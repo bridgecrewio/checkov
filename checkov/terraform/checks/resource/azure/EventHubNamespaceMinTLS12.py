@@ -9,7 +9,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 class EventHubNamespaceMinTLS12(BaseResourceValueCheck):
     def __init__(self) -> None:
         name = "Ensure Event Hub Namespace uses at least TLS 1.2"
-        id = "CKV_AZURE_221"
+        id = "CKV_AZURE_223"
         supported_resources = ("azurerm_eventhub_namespace",)
         categories = (CheckCategories.ENCRYPTION,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,
