@@ -7,7 +7,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 class FunctionAppPublicAccessDisabled(BaseResourceValueCheck):
     def __init__(self) -> None:
         name = "Ensure that Azure Function App public network access is disabled"
-        id = "CKV_AZURE_223"
+        id = "CKV_AZURE_221"
         supported_resources = (
             "azurerm_linux_function_app",
             "azurerm_linux_function_app_slot",
