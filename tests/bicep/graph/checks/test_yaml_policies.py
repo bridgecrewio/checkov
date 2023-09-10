@@ -6,7 +6,7 @@ from checkov.bicep.graph_manager import BicepGraphManager
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from parameterized import parameterized_class
 from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
-
+from checkov.common.graph.db_connectors.rustworkx.rustworkx_db_connector import RustworkxConnector
 
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.models.enums import CheckResult
@@ -27,6 +27,8 @@ class TestYamlPolicies(TestYamlPoliciesBase):
             db_connector = NetworkxConnector()
         elif self.graph_framework == 'IGRAPH':
             db_connector = IgraphConnector()
+        elif self.graph_framework == 'RUSTWORKX':
+            db_connector = RustworkxConnector()
         graph_manager = BicepGraphManager(db_connector=db_connector)
         super().__init__(
             graph_manager=graph_manager,

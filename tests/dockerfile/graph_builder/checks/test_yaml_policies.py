@@ -6,6 +6,7 @@ from parameterized import parameterized_class
 
 from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.graph.db_connectors.rustworkx.rustworkx_db_connector import RustworkxConnector
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
@@ -17,7 +18,8 @@ from tests.common.graph.checks.test_yaml_policies_base import TestYamlPoliciesBa
 
 @parameterized_class([
    {"graph_framework": "NETWORKX"},
-   {"graph_framework": "IGRAPH"}
+   {"graph_framework": "IGRAPH"},
+   {"graph_framework": "RUSTWORKX"}
 ])
 class TestYamlPolicies(TestYamlPoliciesBase):
     def __init__(self, args):
@@ -26,6 +28,8 @@ class TestYamlPolicies(TestYamlPoliciesBase):
             db_connector = NetworkxConnector
         elif self.graph_framework == 'IGRAPH':
             db_connector = IgraphConnector
+        elif self.graph_framework == 'RUSTWORKX':
+            db_connector = RustworkxConnector
 
         graph_manager = DockerfileGraphManager(db_connector=db_connector())
         super().__init__(
