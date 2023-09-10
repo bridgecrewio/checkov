@@ -12,13 +12,6 @@ class NeptuneDBClustersIAMDatabaseAuthenticationEnabled(BaseResourceValueCheck):
 
     def get_inspected_key(self):
         return "iam_database_authentication_enabled"
-    #
-    # def scan_resource_conf(self, conf):
-    #     # Replace this with the custom logic for your check
-    #     if 'policy' in conf.keys():
-    #         return CheckResult.FAILED
-    #
-    #     return CheckResult.PASSED
 
 
 check = NeptuneDBClustersIAMDatabaseAuthenticationEnabled()
