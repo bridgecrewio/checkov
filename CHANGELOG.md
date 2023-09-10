@@ -1,6 +1,32 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.4.25...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.4.30...HEAD)
+
+## [2.4.30](https://github.com/bridgecrewio/checkov/compare/2.4.29...2.4.30) - 2023-09-07
+
+### Feature
+
+- **terraform:** add public network checks for Azure Function and Web Apps - [#5533](https://github.com/bridgecrewio/checkov/pull/5533)
+
+## [2.4.29](https://github.com/bridgecrewio/checkov/compare/2.4.27...2.4.29) - 2023-09-06
+
+### Feature
+
+- **arm:** Implement CKV_AZURE_111 in ARM - [#5528](https://github.com/bridgecrewio/checkov/pull/5528)
+- **arm:** implement CKV_AZURE_134 for ARM - [#5518](https://github.com/bridgecrewio/checkov/pull/5518)
+- **arm:** implement CKV_AZURE_160 for arm - [#5526](https://github.com/bridgecrewio/checkov/pull/5526)
+- **arm:** implement CKV_AZURE_89 for ARM - [#5529](https://github.com/bridgecrewio/checkov/pull/5529)
+
+### Bug Fix
+
+- **terraform:** CKV_AWS_208 bug fix - [#5512](https://github.com/bridgecrewio/checkov/pull/5512)
+
+## [2.4.27](https://github.com/bridgecrewio/checkov/compare/2.4.25...2.4.27) - 2023-09-05
+
+### Feature
+
+- **general:** Check module download - [#5525](https://github.com/bridgecrewio/checkov/pull/5525)
+- **general:** Check module download and quit on failure - [#5523](https://github.com/bridgecrewio/checkov/pull/5523)
 
 ## [2.4.25](https://github.com/bridgecrewio/checkov/compare/2.4.22...2.4.25) - 2023-09-03
 

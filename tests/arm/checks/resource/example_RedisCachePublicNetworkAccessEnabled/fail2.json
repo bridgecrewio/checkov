@@ -1,0 +1,25 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {},
+    "resources": [
+        {
+            "name": "fail2",
+            "type": "Microsoft.Cache/redis",
+            "apiVersion": "2023-04-01",
+            "location": "uksouth",
+            "dependsOn": [],
+            "properties": {
+                "sku": {
+                    "name": "Standard",
+                    "family": "C",
+                    "capacity": 1
+                },
+                "redisConfiguration": {},
+                "enableNonSslPort": false,
+                "redisVersion": "6"
+            },
+            "tags": {}
+        }
+    ]
+}
