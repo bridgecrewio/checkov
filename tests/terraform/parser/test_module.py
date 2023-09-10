@@ -6,7 +6,6 @@ import hcl2
 
 from checkov.terraform.modules.module_utils import validate_malformed_definitions, clean_bad_definitions, \
     clean_parser_types, serialize_definitions
-from checkov.terraform.parser import Parser
 from checkov.terraform.tf_parser import TFParser
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 
@@ -33,7 +32,7 @@ class ModuleTest(unittest.TestCase):
         definitions = {
             '/mock/path/to.tf': clean_bad_definitions(non_malformed_definitions)
         }
-        module, _ = Parser().parse_hcl_module_from_tf_definitions(definitions, '', 'terraform')
+        module, _ = TFParser().parse_hcl_module_from_tf_definitions(definitions, '', 'terraform')
         print(module)
         self.assertEqual(1, len(module.blocks))
         self.assertEqual('ingress.annotations.kubernetes\\.io/ingress\\.class', module.blocks[0].attributes['set.name'])
@@ -55,7 +54,7 @@ resource "helm_release" "test" {
         definitions = {
             '/mock/path/to.tf': clean_bad_definitions(non_malformed_definitions)
         }
-        module, _ = Parser().parse_hcl_module_from_tf_definitions(definitions, '', 'terraform')
+        module, _ = TFParser().parse_hcl_module_from_tf_definitions(definitions, '', 'terraform')
         print(module)
         self.assertEqual(1, len(module.blocks))
         self.assertEqual('ingress.annotations.kubernetes\\.io/ingress\\.class', module.blocks[0].attributes['set.name'])

@@ -41,19 +41,22 @@ def get_scannable_file_paths(root_folder: str | None = None, excluded_paths: lis
 
 def get_files_definitions(
     files: Iterable[str], filepath_fn: Callable[[str], str] | None = None
-) -> tuple[dict[str, dict[str, Any]], dict[str, list[tuple[int, str]]]]:
+) -> tuple[dict[str, dict[str, Any]], dict[str, list[tuple[int, str]]], list[str]]:
     """Parses ARM files into its definitions and raw data"""
 
     definitions = {}
     definitions_raw = {}
+    parsing_errors = []
 
     for file in files:
         result = parse(file)
 
         definition, definition_raw = result
-        if definition and definition_raw:
+        if definition is not None and definition_raw is not None:  # this has to be a 'None' check
             path = filepath_fn(file) if filepath_fn else file
             definitions[path] = definition
             definitions_raw[path] = definition_raw
+        else:
+            parsing_errors.append(os.path.normpath(file))
 
-    return definitions, definitions_raw
+    return definitions, definitions_raw, parsing_errors

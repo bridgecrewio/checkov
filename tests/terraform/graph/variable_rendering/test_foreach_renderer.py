@@ -185,7 +185,7 @@ def test_tf_definitions_and_breadcrumbs():
     expected_data = load_expected_data('expected_data_foreach.json')
     tf_definitions_to_check = {}
     for path, res in tf_definitions.items():
-        path_list = path.split('/')[-2:]
+        path_list = path.file_path.split('/')[-2:]
         real_path = os.path.join(path_list[0], path_list[1])
         tf_definitions_to_check[real_path] = tf_definitions[path]
     assert_object_equal(tf_definitions_to_check, expected_data['tf_definitions'])

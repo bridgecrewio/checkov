@@ -309,11 +309,11 @@ def test_scan_git_history_multiline_keyword_terraform() -> None:
                         runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
     #  then
     failing_resources = {
-        "dcbf46de362e1b6942054b89ee293984e9a8a40a",
-        "ac236b0474a9a702f99dbe244a14548783ace5c5",
-        "9ed4f1457a9c27dd868c1f21276c6d7098d2bacf",
-        "06af723e58378574456be0b4c41a89194aaed0c3",
-        "5db2fafebcfed9b4c9ffc570c46ef2ca94a3881a",
+        "6bee3eb2f69e06095395ae1d54c810c3a2a99841:9ed4f1457a9c27dd868c1f21276c6d7098d2bacf",
+        "6bee3eb2f69e06095395ae1d54c810c3a2a99841:5db2fafebcfed9b4c9ffc570c46ef2ca94a3881a",
+        "6bee3eb2f69e06095395ae1d54c810c3a2a99841:ac236b0474a9a702f99dbe244a14548783ace5c5",
+        "6bee3eb2f69e06095395ae1d54c810c3a2a99841:06af723e58378574456be0b4c41a89194aaed0c3",
+        "6bee3eb2f69e06095395ae1d54c810c3a2a99841:dcbf46de362e1b6942054b89ee293984e9a8a40a",
     }
 
     failed_check_resources = {c.resource for c in report.failed_checks}

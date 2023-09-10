@@ -8,7 +8,7 @@ from abc import abstractmethod
 from collections.abc import Iterable
 from pathlib import Path
 from typing import Any, TYPE_CHECKING, Callable
-from typing_extensions import TypedDict
+from typing_extensions import TypedDict, TypeAlias
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.models.enums import CheckResult
@@ -30,6 +30,9 @@ if TYPE_CHECKING:
     from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
     from checkov.common.runners.graph_builder.local_graph import ObjectLocalGraph
 
+_ObjectContext: TypeAlias = "dict[str, dict[str, Any]]"
+_ObjectDefinitions: TypeAlias = "dict[str, dict[str, Any] | list[dict[str, Any]]]"
+
 
 class GhaMetadata(TypedDict):
     triggers: set[str]
@@ -37,7 +40,7 @@ class GhaMetadata(TypedDict):
     jobs: dict[int, str]
 
 
-class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs to replaced
+class Runner(BaseRunner[_ObjectDefinitions, _ObjectContext, ObjectGraphManager]):
     def __init__(
         self,
         db_connector: LibraryGraphConnector | None = None,
@@ -46,8 +49,9 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
         graph_manager: ObjectGraphManager | None = None,
     ) -> None:
         super().__init__()
-        self.definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] = {}
+        self.definitions: _ObjectDefinitions = {}
         self.definitions_raw: dict[str, list[tuple[int, str]]] = {}
+        self.context: _ObjectContext | None = None
         self.map_file_path_to_gha_metadata_dict: dict[str, GhaMetadata] = {}
         self.root_folder: str | None = None
 

@@ -199,7 +199,7 @@ class CSVSBOM:
         CSVSBOM.arrange_rows(rows)
 
         with open(file, "w", newline="") as f:
-            print(f"Persisting SBOM to {os.path.abspath(file)}")
+            logging.info(f"Persisting SBOM to {os.path.abspath(file)}")
             if is_api_key:
                 dict_writer = csv.DictWriter(f, fieldnames=header)
                 dict_writer.writeheader()

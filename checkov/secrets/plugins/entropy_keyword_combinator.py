@@ -209,7 +209,7 @@ class EntropyKeywordCombinator(BasePlugin):
                         # return a possible secret, otherwise check with next parser
                         return potential_secrets
         else:
-            return detect_secret(
+            detected_secrets = detect_secret(
                 # If we found a keyword (i.e. db_pass = ), lower the threshold to the iac threshold
                 scanners=self.high_entropy_scanners if not keyword_on_key else self.entropy_scanners_non_iac_with_keyword,
                 filename=filename,
@@ -217,6 +217,9 @@ class EntropyKeywordCombinator(BasePlugin):
                 line_number=line_number,
                 kwargs=kwargs
             )
+            if detected_secrets:
+                remove_fp_secrets_in_keys(detected_secrets, line, True)
+            return detected_secrets
 
         return set()
 
