@@ -5,7 +5,7 @@ from checkov.cloudformation.checks.resource.base_resource_value_check import Bas
 class DocDBBackupRetention(BaseResourceValueCheck):
     def __init__(self) -> None:
         name = "Ensure DocDB has an adequate backup retention period"
-        id = "CKV_AWS_356"
+        id = "CKV_AWS_360"
         supported_resources = ("AWS::DocDB::DBCluster",)
         categories = (CheckCategories.BACKUP_AND_RECOVERY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
@@ -14,7 +14,6 @@ class DocDBBackupRetention(BaseResourceValueCheck):
         return "Properties/BackupRetentionPeriod"
 
     def scan_resource_conf(self, conf) -> CheckResult:
-        print(conf)
         properties = conf.get("Properties")
         if properties:
             backup_retention_period = properties.get("BackupRetentionPeriod", 1)
