@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import os
 import hashlib
-from typing import Optional, TYPE_CHECKING, Set, Dict
+from typing import Optional, List, TYPE_CHECKING, Set, Dict
 
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 
 class ModuleLoaderRegistry:
-    loaders: Set["ModuleLoader"] = set()  # noqa: CCE003
+    loaders: List["ModuleLoader"] = []  # noqa: CCE003
     module_content_cache: Dict[str, Optional[ModuleContent]] = {}  # noqa: CCE003
 
     def __init__(
@@ -101,7 +101,8 @@ information, see `loader.ModuleLoader.load`.
         return content
 
     def register(self, loader: "ModuleLoader") -> None:
-        self.loaders.add(loader)
+        if loader not in self.loaders:
+            self.loaders.append(loader)
 
     def reset_module_content_cache(self) -> None:
         self.module_content_cache = {}
