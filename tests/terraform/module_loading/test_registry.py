@@ -12,7 +12,6 @@ from checkov.terraform.module_loading.loaders.github_loader import GithubLoader 
 from checkov.terraform.module_loading.registry import ModuleLoaderRegistry # noqa
 from checkov.terraform.module_loading.loaders.github_access_token_loader import GithubAccessTokenLoader # noqa
 from checkov.terraform.module_loading.loaders.bitbucket_access_token_loader import BitbucketAccessTokenLoader # noqa
-from terraform.module_loading.loader import ModuleLoader
 
 
 @pytest.mark.parametrize(
