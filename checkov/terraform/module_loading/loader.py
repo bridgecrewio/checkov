@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import os
 from abc import ABC, abstractmethod
@@ -28,7 +30,7 @@ class ModuleLoader(ABC):
         self.inner_module: Optional[str] = None
         self.root_dir = ""  # root dir for storing external modules
 
-    def __eq__(self, loader) -> bool:
+    def __eq__(self, loader: ModuleLoader) -> bool:
         return type(loader) is type(self)
 
     @abstractmethod
