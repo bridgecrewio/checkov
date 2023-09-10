@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 class NeptuneDBClustersIAMDatabaseAuthenticationEnabled(BaseResourceValueCheck):
     def __init__(self):
         description = "Neptune DB clusters should have IAM database authentication enabled"
-        id = "CKV_AWS_338"
+        id = "CKV_AWS_359"
         supported_resources = ['aws_neptune_cluster']
         categories = [CheckCategories.IAM]
         super().__init__(name=description, id=id, categories=categories, supported_resources=supported_resources)
