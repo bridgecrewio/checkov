@@ -22,6 +22,7 @@ class TestNeptuneDBClustersIAMDatabaseAuthenticationEnabled(unittest.TestCase):
         }
         failing_resources = {
             'aws_neptune_cluster.ckv_unittest_fail',
+            'aws_neptune_cluster.ckv_unittest2_fail',
         }
         skipped_resources = {}
 
