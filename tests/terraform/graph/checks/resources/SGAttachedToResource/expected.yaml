@@ -1,6 +1,7 @@
 pass:
   - "aws_security_group.pass_alb"
   - "aws_security_group.pass_app_runner"
+  - "aws_security_group.pass_appstream_fleet"
   - "aws_security_group.pass_batch"
   - "aws_security_group.pass_cloudwatch_event"
   - "aws_security_group.pass_codebuild"

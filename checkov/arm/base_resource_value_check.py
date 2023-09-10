@@ -38,7 +38,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
         inspected_key = self.get_inspected_key()
         expected_values = self.get_expected_values()
         value = find_in_dict(conf, inspected_key)
-        if value:
+        if value is not None:
             if ANY_VALUE in expected_values:
                 # Key is found in the configuration - if it accepts any value, the check is PASSED
                 return CheckResult.PASSED
@@ -49,7 +49,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
             if self._is_variable_dependant(value):
                 # If the tested attribute is variable-dependant, then result is PASSED
                 return CheckResult.PASSED
-
+            return CheckResult.FAILED
         return self.missing_block_result
 
     @abstractmethod

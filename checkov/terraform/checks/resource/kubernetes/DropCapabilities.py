@@ -38,7 +38,7 @@ class DropCapabilities(BaseResourceCheck):
             containers = spec.get("container")
 
             for idx, container in enumerate(containers):
-                if type(container) != dict:
+                if not isinstance(container, dict):
                     return CheckResult.UNKNOWN
                 dropped = False
                 if container.get("security_context") and isinstance(container.get("security_context"), list):

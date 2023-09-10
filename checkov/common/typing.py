@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from igraph import Graph
     from checkov.terraform.modules.module_objects import TFDefinitionKey
 
-_BaseRunner = TypeVar("_BaseRunner", bound="BaseRunner[Any]")
+_BaseRunner = TypeVar("_BaseRunner", bound="BaseRunner[Any, Any, Any]")
 
 _ScannerCallableAlias: TypeAlias = Callable[
     [str, "BaseCheck", "list[_SkippedCheck]", "dict[str, Any]", str, str, "dict[str, Any]"], None
@@ -24,6 +24,7 @@ _Attributes: TypeAlias = Set[str]
 ResourceAttributesToOmit: TypeAlias = Dict[_Resource, _Attributes]
 LibraryGraph: TypeAlias = "Union[DiGraph, Graph]"
 LibraryGraphConnector: TypeAlias = "Union[DBConnector[DiGraph], DBConnector[Graph]]"
+# TODO Remove this type and only use TFDefinitionKey
 TFDefinitionKeyType: TypeAlias = "Union[str, TFDefinitionKey]"
 
 

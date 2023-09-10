@@ -19,7 +19,7 @@ from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.runner import Runner as TerraformRunner
-from checkov.terraform_json.utils import get_scannable_file_paths, TF_JSON_POSSIBLE_FILE_ENDINGS, create_definitions
+from checkov.terraform_json.utils import get_scannable_file_paths, create_definitions
 
 if TYPE_CHECKING:
     from checkov.common.graph.checks_infra.registry import BaseRegistry
@@ -48,11 +48,12 @@ class TerraformJsonRunner(TerraformRunner):
             external_registries=external_registries,
             source=source,
         )
-        self.file_extensions = TF_JSON_POSSIBLE_FILE_ENDINGS  # override what gets set from the TF runner
+        self.file_extensions = (".json",)  # just '.json' not 'tf.json' otherwise it will be filtered out
         self.graph_registry = get_graph_checks_registry(super().check_type)
 
-        self.definitions: dict[str, dict[str, Any]] = {}
-        self.context: dict[str, dict[str, Any]] = {}
+        self.definitions: dict[str, dict[str, Any]] = {}  # type:ignore[assignment]  # need to check, how to support subclass differences
+        self.definitions_raw: "dict[str, list[tuple[int, str]]]" = {}
+        self.context: dict[str, dict[str, Any]] = {}  # type:ignore[assignment]
         self.root_folder: str | None = None
 
     def run(
@@ -177,7 +178,7 @@ class TerraformJsonRunner(TerraformRunner):
                 record.set_guideline(guideline=check.guideline)
                 report.add_record(record=record)
 
-    def run_block(
+    def run_block(  # type:ignore[override]  # would probably need to make 'TerraformRunner' generic
         self,
         entities: list[dict[str, Any]],
         definition_context: dict[str, Any],

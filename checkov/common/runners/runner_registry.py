@@ -38,14 +38,14 @@ from checkov.common.resource_code_logger_filter import add_resource_code_filter_
 from checkov.common.typing import _ExitCodeThresholds, _BaseRunner, _ScaExitCodeThresholds
 from checkov.common.util import data_structures_utils
 from checkov.common.util.banner import tool as tool_name
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.json_utils import CustomJSONEncoder
-from checkov.common.util.parser_utils import strip_terraform_module_referrer
 from checkov.common.util.secrets_omitter import SecretsOmitter
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list, force_list
 from checkov.sca_image.runner import Runner as image_runner
 from checkov.common.secrets.consts import SECRET_VALIDATION_STATUSES
 from checkov.terraform.context_parsers.registry import parser_registry
-from checkov.terraform.parser import Parser
+from checkov.terraform.tf_parser import TFParser
 
 if TYPE_CHECKING:
     from checkov.common.output.baseline import Baseline
@@ -87,6 +87,7 @@ class RunnerRegistry:
         self.runner_filter = runner_filter
         self.runners = list(runners)
         self.banner = banner
+        self.sca_supported_ir_report: Optional[Report] = None
         self.scan_reports: list[Report] = []
         self.image_referencing_runners = self._get_image_referencing_runners()
         self.filter_runner_framework()
@@ -211,7 +212,24 @@ class RunnerRegistry:
                     self._check_type_to_report_map[sub_report.check_type] = sub_report
                     merged_reports.append(sub_report)
 
+                if self.should_add_sca_results_to_sca_supported_ir_report(sub_report, sub_reports):
+                    if self.sca_supported_ir_report:
+                        merge_reports(self.sca_supported_ir_report, sub_report)
+                    else:
+                        self.sca_supported_ir_report = pickle_deepcopy(sub_report)
+
         return merged_reports
+
+    @staticmethod
+    def should_add_sca_results_to_sca_supported_ir_report(sub_report: Report, sub_reports: list[Report]) -> bool:
+        if sub_report.check_type == 'sca_image' and bc_integration.customer_run_config_response:
+            # The regular sca report
+            if len(sub_reports) == 1:
+                return True
+            # Dup report: first - regular iac, second - IR. we are checking that report fw is in the IR supported list.
+            if len(sub_reports) == 2 and sub_reports[0].check_type in bc_integration.customer_run_config_response.get('supportedIrFw', []):
+                return True
+        return False
 
     def _handle_report(self, scan_report: Report, repo_root_for_plan_enrichment: list[str | Path] | None) -> None:
         integration_feature_registry.run_post_runner(scan_report)
@@ -655,14 +673,14 @@ class RunnerRegistry:
     def get_enriched_resources(
         repo_roots: list[str | Path], download_external_modules: bool
     ) -> dict[str, dict[str, Any]]:
+        from checkov.terraform.modules.module_objects import TFDefinitionKey
+
         repo_definitions = {}
         for repo_root in repo_roots:
-            tf_definitions: dict[str, Any] = {}
             parsing_errors: dict[str, Exception] = {}
             repo_root = os.path.abspath(repo_root)
-            Parser().parse_directory(
+            tf_definitions: dict[TFDefinitionKey, dict[str, list[dict[str, Any]]]] = TFParser().parse_directory(
                 directory=repo_root,  # assume plan file is in the repo-root
-                out_definitions=tf_definitions,
                 out_parsing_errors=parsing_errors,
                 download_external_modules=download_external_modules,
             )
@@ -670,9 +688,10 @@ class RunnerRegistry:
 
         enriched_resources = {}
         for repo_root, parse_results in repo_definitions.items():
-            for full_file_path, definition in parse_results['tf_definitions'].items():
+            definitions = cast("dict[TFDefinitionKey, dict[str, list[dict[str, Any]]]]", parse_results['tf_definitions'])
+            for full_file_path, definition in definitions.items():
                 definitions_context = parser_registry.enrich_definitions_context((full_file_path, definition))
-                abs_scanned_file, _ = strip_terraform_module_referrer(file_path=full_file_path)
+                abs_scanned_file = full_file_path.file_path
                 scanned_file = os.path.relpath(abs_scanned_file, repo_root)
                 for block_type, block_value in definition.items():
                     if block_type in CHECK_BLOCK_TYPES:
