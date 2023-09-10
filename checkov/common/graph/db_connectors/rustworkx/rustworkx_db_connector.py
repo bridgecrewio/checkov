@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, TypeVar
 
-from rustworkx import PyDiGraph
+import rustworkx as rx
 
 from checkov.common.graph.db_connectors.db_connector import DBConnector
 
@@ -13,21 +13,21 @@ if TYPE_CHECKING:
 _Block = TypeVar("_Block", bound="Block")
 
 
-class RustworkxConnector(DBConnector[PyDiGraph]):
+class RustworkxConnector(DBConnector[rx.PyDiGraph]):
     def __init__(self) -> None:
-        self.graph = PyDiGraph()  # type: ignore
+        self.graph = rx.PyDiGraph()  # type: ignore
 
-    def save_graph(self, local_graph: LocalGraph[_Block], add_bulk_edges: bool = False) -> PyDiGraph:  # type: ignore
+    def save_graph(self, local_graph: LocalGraph[_Block], add_bulk_edges: bool = False) -> rx.PyDiGraph:  # type: ignore
         return self.rustworkx_from_local_graph(local_graph)
 
-    def get_reader_endpoint(self) -> PyDiGraph:  # type: ignore
+    def get_reader_endpoint(self) -> rx.PyDiGraph:  # type: ignore
         return self.graph
 
-    def get_writer_endpoint(self) -> PyDiGraph:  # type: ignore
+    def get_writer_endpoint(self) -> rx.PyDiGraph:  # type: ignore
         return self.graph
 
-    def rustworkx_from_local_graph(self, local_graph: LocalGraph[_Block]) -> PyDiGraph:  # type: ignore
-        self.graph = PyDiGraph()
+    def rustworkx_from_local_graph(self, local_graph: LocalGraph[_Block]) -> rx.PyDiGraph:  # type: ignore
+        self.graph = rx.PyDiGraph()
         vertices_to_add = []
         for index, vertex in enumerate(local_graph.vertices):
             attr = vertex.get_attribute_dict()
