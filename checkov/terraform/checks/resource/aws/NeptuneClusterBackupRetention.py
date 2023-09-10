@@ -16,5 +16,8 @@ class NeptuneClusterBackupRetention(BaseResourceCheck):
 
         return CheckResult.FAILED
 
+    def get_evaluated_keys(self):
+        return 'backup_retention_period'
+
 
 check = NeptuneClusterBackupRetention()
