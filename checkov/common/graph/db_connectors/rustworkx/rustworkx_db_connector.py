@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING, TypeVar, Any
 
 import rustworkx as rx
 
@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 _Block = TypeVar("_Block", bound="Block")
 
 
-class RustworkxConnector(DBConnector[rx.PyDiGraph]):
+class RustworkxConnector(DBConnector[rx.PyDiGraph[Any, Any]]):
     def __init__(self) -> None:
         self.graph = rx.PyDiGraph()  # type: ignore
 

@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 import itertools
 import logging
 from typing import List, Optional, Dict, Any, Tuple
 
 from igraph import Graph
+from rustworkx import PyDiGraph
 
 from checkov.common.graph.checks_infra import debug
 
@@ -54,111 +57,6 @@ class ConnectionExistsSolver(BaseConnectionSolver):
     def _get_operation(
         self, graph_connector: LibraryGraph
     ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
-        def get_igraph_operation():
-            for root_vertex in graph_connector.vs:
-                inverted = False
-                origin_attributes = None
-                destination_attributes_list = []
-                for vertex in graph_connector.dfsiter(root_vertex.index):
-                    resource_type = vertex[CustomAttributes.RESOURCE_TYPE]
-                    attributes = vertex["attr"]
-                    if resource_type in self.resource_types and attributes in self.vertices_under_resource_types:
-                        if not origin_attributes:
-                            origin_attributes = attributes
-                        elif inverted:
-                            destination_attributes_list.append(attributes)
-                    elif resource_type in self.connected_resources_types and attributes in self.vertices_under_connected_resources_types:
-                        if not origin_attributes:
-                            origin_attributes = attributes
-                            inverted = True
-                        else:
-                            destination_attributes_list.append(attributes)
-
-                if origin_attributes and destination_attributes_list:
-                    for destination_attributes in destination_attributes_list:
-                        self.populate_checks_results(
-                            origin_attributes=origin_attributes,
-                            destination_attributes=destination_attributes,
-                            passed=passed,
-                            failed=failed,
-                            unknown=unknown,
-                        )
-
-        def get_networkx_operation():
-            for u, v in edge_dfs(graph_connector):
-                origin_attributes = graph_connector.nodes(data=True)[u]
-                opposite_vertices = None
-                if origin_attributes in self.vertices_under_resource_types:
-                    opposite_vertices = self.vertices_under_connected_resources_types
-                elif origin_attributes in self.vertices_under_connected_resources_types:
-                    opposite_vertices = self.vertices_under_resource_types
-                if not opposite_vertices:
-                    continue
-
-                destination_attributes = graph_connector.nodes(data=True)[v]
-                if destination_attributes in opposite_vertices:
-                    self.populate_checks_results(
-                        origin_attributes=origin_attributes,
-                        destination_attributes=destination_attributes,
-                        passed=passed,
-                        failed=failed,
-                        unknown=unknown,
-                    )
-                    destination_attributes["connected_node"] = origin_attributes
-                    continue
-                if origin_attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.OUTPUT:
-                    print(1)
-                destination_block_type = destination_attributes.get(CustomAttributes.BLOCK_TYPE)
-                if destination_block_type == BlockType.OUTPUT:
-                    try:
-                        output_edges = graph_connector.edges(v, data=True)
-                        _, output_destination, _ = next(iter(output_edges))
-                        output_destination = graph_connector.nodes(data=True)[output_destination]
-                        output_destination_type = output_destination.get(CustomAttributes.RESOURCE_TYPE)
-                        if self.is_associated_edge(
-                            origin_attributes.get(CustomAttributes.RESOURCE_TYPE), output_destination_type
-                        ):
-                            passed.extend([origin_attributes, output_destination])
-                    except StopIteration:
-                        continue
-
-        def get_rustworkx_operation():
-            for edge in iter(graph_connector.edge_list()):
-                u, v = edge
-                origin_attributes = graph_connector.nodes()[u][1]
-                opposite_vertices = None
-                if origin_attributes in self.vertices_under_resource_types:
-                    opposite_vertices = self.vertices_under_connected_resources_types
-                elif origin_attributes in self.vertices_under_connected_resources_types:
-                    opposite_vertices = self.vertices_under_resource_types
-                if not opposite_vertices:
-                    continue
-
-                destination_attributes = graph_connector.nodes()[v][1]
-                if destination_attributes in opposite_vertices:
-                    self.populate_checks_results(
-                        origin_attributes=origin_attributes,
-                        destination_attributes=destination_attributes,
-                        passed=passed,
-                        failed=failed,
-                        unknown=unknown,
-                    )
-                    destination_attributes["connected_node"] = origin_attributes
-                    continue
-
-                destination_block_type = destination_attributes.get(CustomAttributes.BLOCK_TYPE)
-                if destination_block_type == BlockType.OUTPUT:
-                    try:
-                        output_edges = graph_connector.adj_direction(v, False)  # True means inbound edges and False means outbound edges
-                        output_destination_index = next(iter(output_edges))
-                        output_destination = graph_connector.nodes()[output_destination_index][1]
-                        output_destination_type = output_destination.get(CustomAttributes.RESOURCE_TYPE)
-                        if self.is_associated_edge(
-                            origin_attributes.get(CustomAttributes.RESOURCE_TYPE), output_destination_type
-                        ):
-                            passed.extend([origin_attributes, output_destination])
-                    except StopIteration:
-                        continue
         passed: List[Dict[str, Any]] = []
         failed: List[Dict[str, Any]] = []
         unknown: List[Dict[str, Any]] = []
@@ -168,13 +66,13 @@ class ConnectionExistsSolver(BaseConnectionSolver):
             return passed, failed, unknown
 
         if isinstance(graph_connector, Graph):
-            get_igraph_operation()
-
+            self.get_igraph_operation(graph_connector=graph_connector, passed=passed, failed=failed, unknown=unknown)
         elif isinstance(graph_connector, DiGraph):
-            get_networkx_operation()
-
+            self.get_networkx_operation(graph_connector=graph_connector, passed=passed, failed=failed, unknown=unknown)
+        elif isinstance(graph_connector, PyDiGraph):
+            self.get_rustworkx_operation(graph_connector=graph_connector, passed=passed, failed=failed, unknown=unknown)
         else:
-            get_rustworkx_operation()
+            raise Exception(f"Graph type {type(graph_connector)} not supported")
 
         failed.extend(
             [
@@ -187,3 +85,134 @@ class ConnectionExistsSolver(BaseConnectionSolver):
         )
 
         return passed, failed, unknown
+
+    def get_igraph_operation(
+        self,
+        graph_connector: Graph,
+        passed: list[dict[str, Any]],
+        failed: list[dict[str, Any]],
+        unknown: list[dict[str, Any]],
+    ) -> None:
+        for root_vertex in graph_connector.vs:
+            inverted = False
+            origin_attributes = None
+            destination_attributes_list = []
+            for vertex in graph_connector.dfsiter(root_vertex.index):
+                resource_type = vertex[CustomAttributes.RESOURCE_TYPE]
+                attributes = vertex["attr"]
+                if resource_type in self.resource_types and attributes in self.vertices_under_resource_types:
+                    if not origin_attributes:
+                        origin_attributes = attributes
+                    elif inverted:
+                        destination_attributes_list.append(attributes)
+                elif (
+                    resource_type in self.connected_resources_types
+                    and attributes in self.vertices_under_connected_resources_types
+                ):
+                    if not origin_attributes:
+                        origin_attributes = attributes
+                        inverted = True
+                    else:
+                        destination_attributes_list.append(attributes)
+    
+            if origin_attributes and destination_attributes_list:
+                for destination_attributes in destination_attributes_list:
+                    self.populate_checks_results(
+                        origin_attributes=origin_attributes,
+                        destination_attributes=destination_attributes,
+                        passed=passed,
+                        failed=failed,
+                        unknown=unknown,
+                    )
+    
+    
+    def get_networkx_operation(
+        self,
+        graph_connector: DiGraph,
+        passed: list[dict[str, Any]],
+        failed: list[dict[str, Any]],
+        unknown: list[dict[str, Any]],
+    ) -> None:
+        for u, v in edge_dfs(graph_connector):
+            origin_attributes = graph_connector.nodes(data=True)[u]
+            opposite_vertices = None
+            if origin_attributes in self.vertices_under_resource_types:
+                opposite_vertices = self.vertices_under_connected_resources_types
+            elif origin_attributes in self.vertices_under_connected_resources_types:
+                opposite_vertices = self.vertices_under_resource_types
+            if not opposite_vertices:
+                continue
+    
+            destination_attributes = graph_connector.nodes(data=True)[v]
+            if destination_attributes in opposite_vertices:
+                self.populate_checks_results(
+                    origin_attributes=origin_attributes,
+                    destination_attributes=destination_attributes,
+                    passed=passed,
+                    failed=failed,
+                    unknown=unknown,
+                )
+                destination_attributes["connected_node"] = origin_attributes
+                continue
+            if origin_attributes.get(CustomAttributes.BLOCK_TYPE) == BlockType.OUTPUT:
+                print(1)
+            destination_block_type = destination_attributes.get(CustomAttributes.BLOCK_TYPE)
+            if destination_block_type == BlockType.OUTPUT:
+                try:
+                    output_edges = graph_connector.edges(v, data=True)
+                    _, output_destination, _ = next(iter(output_edges))
+                    output_destination = graph_connector.nodes(data=True)[output_destination]
+                    output_destination_type = output_destination.get(CustomAttributes.RESOURCE_TYPE)
+                    if self.is_associated_edge(
+                        origin_attributes.get(CustomAttributes.RESOURCE_TYPE), output_destination_type
+                    ):
+                        passed.extend([origin_attributes, output_destination])
+                except StopIteration:
+                    continue
+    
+    
+    def get_rustworkx_operation(
+        self,
+        graph_connector: PyDiGraph[Any, Any],
+        passed: list[dict[str, Any]],
+        failed: list[dict[str, Any]],
+        unknown: list[dict[str, Any]],
+    ) -> None:
+        for edge in graph_connector.edge_list():
+            u, v = edge
+            origin_attributes = graph_connector.nodes()[u][1]
+            opposite_vertices = None
+            if origin_attributes in self.vertices_under_resource_types:
+                opposite_vertices = self.vertices_under_connected_resources_types
+            elif origin_attributes in self.vertices_under_connected_resources_types:
+                opposite_vertices = self.vertices_under_resource_types
+            if not opposite_vertices:
+                continue
+    
+            destination_attributes = graph_connector.nodes()[v][1]
+            if destination_attributes in opposite_vertices:
+                self.populate_checks_results(
+                    origin_attributes=origin_attributes,
+                    destination_attributes=destination_attributes,
+                    passed=passed,
+                    failed=failed,
+                    unknown=unknown,
+                )
+                destination_attributes["connected_node"] = origin_attributes
+                continue
+    
+            destination_block_type = destination_attributes.get(CustomAttributes.BLOCK_TYPE)
+            if destination_block_type == BlockType.OUTPUT:
+                try:
+                    output_edges = graph_connector.adj_direction(
+                        v, False
+                    )  # True means inbound edges and False means outbound edges
+                    output_destination_index = next(iter(output_edges))
+                    output_destination = graph_connector.nodes()[output_destination_index][1]
+                    output_destination_type = output_destination.get(CustomAttributes.RESOURCE_TYPE)
+                    if self.is_associated_edge(
+                        origin_attributes.get(CustomAttributes.RESOURCE_TYPE), output_destination_type
+                    ):
+                        passed.extend([origin_attributes, output_destination])
+                except StopIteration:
+                    continue

@@ -152,8 +152,14 @@ def enrich_and_persist_checks_metadata(
     return checks_metadata_paths
 
 
-def persist_graphs(graphs: dict[str, DiGraph | Graph | PyDiGraph], s3_client: S3Client, bucket: str, full_repo_object_key: str,
-                   timeout: int, absolute_root_folder: str = '') -> None:
+def persist_graphs(
+    graphs: dict[str, DiGraph | Graph | PyDiGraph[Any, Any]],
+    s3_client: S3Client,
+    bucket: str,
+    full_repo_object_key: str,
+    timeout: int,
+    absolute_root_folder: str = '',
+) -> None:
     def _upload_graph(check_type: str, graph: DiGraph | Graph, _absolute_root_folder: str = '') -> None:
         if isinstance(graph, DiGraph):
             json_obj = node_link_data(graph)
