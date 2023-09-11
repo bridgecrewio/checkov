@@ -54,15 +54,7 @@ class ConnectionExistsSolver(BaseConnectionSolver):
     def _get_operation(
         self, graph_connector: LibraryGraph
     ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
-        passed: List[Dict[str, Any]] = []
-        failed: List[Dict[str, Any]] = []
-        unknown: List[Dict[str, Any]] = []
-        if not self.vertices_under_resource_types or not self.vertices_under_connected_resources_types:
-            failed.extend(self.vertices_under_resource_types)
-            failed.extend(self.vertices_under_connected_resources_types)
-            return passed, failed, unknown
-
-        if isinstance(graph_connector, Graph):
+        def get_igraph_operation():
             for root_vertex in graph_connector.vs:
                 inverted = False
                 origin_attributes = None
@@ -92,7 +84,7 @@ class ConnectionExistsSolver(BaseConnectionSolver):
                             unknown=unknown,
                         )
 
-        elif isinstance(graph_connector, DiGraph):
+        def get_networkx_operation():
             for u, v in edge_dfs(graph_connector):
                 origin_attributes = graph_connector.nodes(data=True)[u]
                 opposite_vertices = None
@@ -130,8 +122,7 @@ class ConnectionExistsSolver(BaseConnectionSolver):
                     except StopIteration:
                         continue
 
-        # isinstance(graph_connector, PyDiGraph):
-        else:
+        def get_rustworkx_operation():
             for edge in iter(graph_connector.edge_list()):
                 u, v = edge
                 origin_attributes = graph_connector.nodes()[u][1]
@@ -168,6 +159,22 @@ class ConnectionExistsSolver(BaseConnectionSolver):
                             passed.extend([origin_attributes, output_destination])
                     except StopIteration:
                         continue
+        passed: List[Dict[str, Any]] = []
+        failed: List[Dict[str, Any]] = []
+        unknown: List[Dict[str, Any]] = []
+        if not self.vertices_under_resource_types or not self.vertices_under_connected_resources_types:
+            failed.extend(self.vertices_under_resource_types)
+            failed.extend(self.vertices_under_connected_resources_types)
+            return passed, failed, unknown
+
+        if isinstance(graph_connector, Graph):
+            get_igraph_operation()
+
+        elif isinstance(graph_connector, DiGraph):
+            get_networkx_operation()
+
+        else:
+            get_rustworkx_operation()
 
         failed.extend(
             [
