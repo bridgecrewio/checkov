@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.4.30...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.4.32...HEAD)
+
+## [2.4.32](https://github.com/bridgecrewio/checkov/compare/2.4.30...2.4.32) - 2023-09-10
+
+### Feature
+
+- **terraform:** add check for Neptune DB clusters  IAM database auth enabled - [#5545](https://github.com/bridgecrewio/checkov/pull/5545)
+- **terraform:** add CKV_AWS_360 to ensure backup retention period on AWS Document DB - [#5547](https://github.com/bridgecrewio/checkov/pull/5547)
 
 ## [2.4.30](https://github.com/bridgecrewio/checkov/compare/2.4.29...2.4.30) - 2023-09-07
 
