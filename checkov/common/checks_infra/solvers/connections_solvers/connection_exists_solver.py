@@ -114,7 +114,7 @@ class ConnectionExistsSolver(BaseConnectionSolver):
                         inverted = True
                     else:
                         destination_attributes_list.append(attributes)
-    
+
             if origin_attributes and destination_attributes_list:
                 for destination_attributes in destination_attributes_list:
                     self.populate_checks_results(
@@ -124,8 +124,7 @@ class ConnectionExistsSolver(BaseConnectionSolver):
                         failed=failed,
                         unknown=unknown,
                     )
-    
-    
+
     def get_networkx_operation(
         self,
         graph_connector: DiGraph,
@@ -142,7 +141,7 @@ class ConnectionExistsSolver(BaseConnectionSolver):
                 opposite_vertices = self.vertices_under_resource_types
             if not opposite_vertices:
                 continue
-    
+
             destination_attributes = graph_connector.nodes(data=True)[v]
             if destination_attributes in opposite_vertices:
                 self.populate_checks_results(
@@ -169,8 +168,7 @@ class ConnectionExistsSolver(BaseConnectionSolver):
                         passed.extend([origin_attributes, output_destination])
                 except StopIteration:
                     continue
-    
-    
+
     def get_rustworkx_operation(
         self,
         graph_connector: PyDiGraph[Any, Any],
@@ -188,7 +186,7 @@ class ConnectionExistsSolver(BaseConnectionSolver):
                 opposite_vertices = self.vertices_under_resource_types
             if not opposite_vertices:
                 continue
-    
+
             destination_attributes = graph_connector.nodes()[v][1]
             if destination_attributes in opposite_vertices:
                 self.populate_checks_results(
@@ -200,7 +198,7 @@ class ConnectionExistsSolver(BaseConnectionSolver):
                 )
                 destination_attributes["connected_node"] = origin_attributes
                 continue
-    
+
             destination_block_type = destination_attributes.get(CustomAttributes.BLOCK_TYPE)
             if destination_block_type == BlockType.OUTPUT:
                 try:
