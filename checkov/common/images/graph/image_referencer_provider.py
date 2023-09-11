@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Callable, Any, Mapping, Union, Generator
 
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.images.image_referencer import Image
+from checkov.common.typing import LibraryGraph
 
 if TYPE_CHECKING:
     import networkx
@@ -19,7 +20,7 @@ _ExtractImagesCallableAlias: TypeAlias = Callable[["dict[str, Any]"], "list[str]
 class GraphImageReferencerProvider:
     __slots__ = ("graph_connector", "supported_resource_types", "graph_framework")
 
-    def __init__(self, graph_connector: Union[igraph.Graph, networkx.DiGraph],
+    def __init__(self, graph_connector: LibraryGraph,
                  supported_resource_types: dict[str, _ExtractImagesCallableAlias] | Mapping[
                      str, _ExtractImagesCallableAlias]):
         self.graph_connector = graph_connector
@@ -30,10 +31,10 @@ class GraphImageReferencerProvider:
     def extract_images_from_resources(self) -> list[Image]:
         pass
 
-    def extract_nodes(self) -> networkx.Graph | igraph.Graph | None:
+    def extract_nodes(self) -> LibraryGraph | None:
         if self.graph_framework == 'IGRAPH':
             return self.extract_nodes_igraph()
-        else:  # the default value of the graph framework is 'NETWORKX'
+        else:
             return self.extract_nodes_networkx()
 
     def extract_nodes_networkx(self) -> networkx.Graph:
@@ -43,6 +44,10 @@ class GraphImageReferencerProvider:
             if resource_type and resource_type in self.supported_resource_types
         ]
 
+        return self.graph_connector.subgraph(resource_nodes)
+
+    def extract_nodes_rustworkx(self) -> networkx.Graph:
+        # TODO 
         return self.graph_connector.subgraph(resource_nodes)
 
     def extract_nodes_igraph(self) -> igraph.Graph:
@@ -70,10 +75,17 @@ class GraphImageReferencerProvider:
                 resource.update(v['attr'])
                 yield resource
 
+        def extract_resource_rustworkx(graph: igraph.Graph) -> Generator[dict[str, Any], None, None]:
+
+
+                yield resource
+
         graph_resource = None
         if self.graph_framework == 'NETWORKX':
             graph_resource = extract_resource_networkx(supported_resources_graph)
         elif self.graph_framework == 'IGRAPH':
             graph_resource = extract_resource_igraph(supported_resources_graph)
+        elif self.graph_framework == 'RUSTWORKX':
+            graph_resource = extract_resource_rustworkx(supported_resources_graph)
 
         return graph_resource  # type: ignore
