@@ -6,6 +6,12 @@ Resources:
 
   Fail2:
     Type: 'AWS::Serverless::Function'
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E2531
+            - E1019
     Properties:
       Handler: 'index.handler'
       Runtime: 'python3.6'
@@ -24,6 +30,12 @@ Resources:
       Role: arn:aws:iam::123456789012:role/lambda_execution_role
   Pass2:
     Type: 'AWS::Serverless::Function'
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E2531
+            - E1019
     Properties:
       Handler: 'index.handler'
       Runtime: 'python3.11'
