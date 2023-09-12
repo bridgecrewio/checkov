@@ -59,6 +59,7 @@ information, see `loader.ModuleLoader.load`.
             next_url = ""
             if source in self.failed_urls_cache:
                 break
+            logging.info(f"Iterating over {len(self.loaders)} loaders")
             for loader in self.loaders:
                 if not self.download_external_modules and loader.is_external:
                     continue
@@ -70,6 +71,7 @@ information, see `loader.ModuleLoader.load`.
                                                  dest_dir=local_dir,
                                                  external_modules_folder_name=self.external_modules_folder_name,
                                                  inner_module=inner_module)
+                    logging.info(f"Attempting loading via {loader.__class__} loader")
                     content = loader.load(module_params)
                 except Exception as e:
                     logging.warning(f'Module {module_address} failed to load via {loader.__class__}')
@@ -99,7 +101,8 @@ information, see `loader.ModuleLoader.load`.
         return content
 
     def register(self, loader: "ModuleLoader") -> None:
-        self.loaders.append(loader)
+        if loader not in self.loaders:
+            self.loaders.append(loader)
 
     def reset_module_content_cache(self) -> None:
         self.module_content_cache = {}
