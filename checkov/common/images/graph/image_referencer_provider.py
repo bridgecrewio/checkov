@@ -49,18 +49,14 @@ class GraphImageReferencerProvider:
 
         return self.graph_connector.subgraph(resource_nodes)
 
-    def extract_nodes_rustworkx(self) -> rustworkx.PyDiGraph:
-        resource_nodes = []
-        for index, node in self.graph_connector.nodes():
-            if self.resource_type_pred(node, list(self.supported_resource_types)):
-                resource_nodes.append(index)
-        # resource_nodes = {
-        #     index
-        #     for index, node in self.graph_connector.nodes()
-        #     if self.resource_type_pred(node, list(self.supported_resource_types))
-        # }
+    def extract_nodes_rustworkx(self) -> rustworkx.PyDiGraph[Any, Any]:
+        resource_nodes = [
+            index
+            for index, node in self.graph_connector.nodes()
+            if self.resource_type_pred(node, list(self.supported_resource_types))
+        ]
 
-        return self.graph_connector.subgraph(list(resource_nodes))  # type: ignore
+        return self.graph_connector.subgraph(resource_nodes)  # type: ignore
 
     def extract_nodes_igraph(self) -> igraph.Graph:
         resource_nodes = [
@@ -71,7 +67,7 @@ class GraphImageReferencerProvider:
         ]
         return self.graph_connector.subgraph(resource_nodes)
 
-    def extract_resource(self, supported_resources_graph: networkx.Graph | igraph.Graph) -> \
+    def extract_resource(self, supported_resources_graph: LibraryGraph) -> \
             Generator[dict[str, Any], dict[str, Any], dict[str, Any]]:
         def extract_resource_networkx(graph: networkx.Graph) -> Generator[dict[str, Any], None, None]:
             for _, resource in graph.nodes(data=True):

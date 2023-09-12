@@ -58,7 +58,7 @@ def extract_images_from_resources(graph_framework):
     ]
 
 
-@pytest.mark.parametrize('graph_framework', ["RUSTWORKX"])
+@pytest.mark.parametrize('graph_framework', ["NETWORKX", "IGRAPH", "RUSTWORKX"])
 def test_extract_images_from_resources_with_no_image(graph_framework):
     # given
     resource = {
