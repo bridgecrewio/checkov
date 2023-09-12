@@ -44,11 +44,11 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.7", "3.8", "3.9", "3.10", "3.11"]
+        python: ["3.8", "3.9", "3.10", "3.11"]
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744  # v3
+      - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac  # v3
       - uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1  # v4
         with:
           python-version: ${{ matrix.python }}
@@ -94,7 +94,7 @@ jobs:
   prisma-tests:
     runs-on: [ self-hosted, public, linux, x64 ]
     steps:
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744  # v3
+      - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac  # v3
       - uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1  # v4
         with:
           python-version: 3.7
@@ -123,7 +123,7 @@ jobs:
     timeout-minutes: 30
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744  # v3
+      - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac  # v3
       - name: Set up Python 3.7
         uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1  # v4
         with:
@@ -158,12 +158,12 @@ jobs:
       id-token: write
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744  # v3
+      - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac  # v3
         with:
           token: ${{ secrets.GH_PAT_SECRET }}
       - name: Import GPG key
         id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@d6f3f49f3345e29369fe57596a3ca8f94c4d2ca7  # v5
+        uses: crazy-max/ghaction-import-gpg@82a020f1f7f605c65dd2449b392a52c3fcfef7ef  # v5
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
@@ -305,7 +305,7 @@ jobs:
     needs: bump-version
     environment: release
     steps:
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744  # v3
+      - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac  # v3
       - name: Get release version
         id: versions
         run: |
@@ -327,7 +327,7 @@ jobs:
     runs-on: [self-hosted, public, linux, x64]
     environment: release
     steps:
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744  # v3
+      - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac  # v3
       - name: update checkov release
         run: |
           curl -X POST "https://jenkins-webhook.bridgecrew.cloud/buildByToken/build?job=Open-Source/upgrade-checkov&token=${{ secrets.BC_JENKINS_TOKEN }}"
