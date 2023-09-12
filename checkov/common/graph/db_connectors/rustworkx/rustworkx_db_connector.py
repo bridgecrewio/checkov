@@ -27,6 +27,7 @@ class RustworkxConnector(DBConnector["rx.PyDiGraph[Any, Any]"]):
         return self.graph
 
     def rustworkx_from_local_graph(self, local_graph: LocalGraph[_Block]) -> rx.PyDiGraph:  # type: ignore
+        self.graph = rx.PyDiGraph()
         vertices_to_add = []
         for index, vertex in enumerate(local_graph.vertices):
             attr = vertex.get_attribute_dict()
