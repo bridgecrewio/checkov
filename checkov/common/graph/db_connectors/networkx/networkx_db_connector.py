@@ -28,7 +28,6 @@ class NetworkxConnector(DBConnector[nx.DiGraph]):
         return self.graph
 
     def networkx_from_local_graph(self, local_graph: LocalGraph[_Block]) -> nx.DiGraph:
-        self.graph = nx.DiGraph()
         vertices_attributes = [v.get_attribute_dict() for v in local_graph.vertices]
         vertices_to_add = [(attr[CustomAttributes.HASH], attr) for attr in vertices_attributes]
         edges_to_add = [
