@@ -11,7 +11,6 @@ Resources:
         config:
           ignore_checks:
             - E2531
-            - E1019
     Properties:
       Handler: 'index.handler'
       Runtime: 'python3.6'
@@ -30,12 +29,6 @@ Resources:
       Role: arn:aws:iam::123456789012:role/lambda_execution_role
   Pass2:
     Type: 'AWS::Serverless::Function'
-    Metadata:
-      cfn-lint:
-        config:
-          ignore_checks:
-            - E2531
-            - E1019
     Properties:
       Handler: 'index.handler'
       Runtime: 'python3.11'
@@ -56,4 +49,4 @@ Resources:
 Outputs:
   MyServerlessFunctionApi:
     Description: "API Gateway endpoint URL for Prod environment"
-    Value: !Sub "https://${Fail2.MyApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello1/"
+    Value: !Sub "https://${AWS::AccountId}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello1/"
