@@ -12,6 +12,7 @@ from checkov.common.typing import LibraryGraph
 if TYPE_CHECKING:
     import networkx
     import igraph
+    import rustworkx
     from typing_extensions import TypeAlias
 
 _ExtractImagesCallableAlias: TypeAlias = Callable[["dict[str, Any]"], "list[str]"]
@@ -34,8 +35,10 @@ class GraphImageReferencerProvider:
     def extract_nodes(self) -> LibraryGraph | None:
         if self.graph_framework == 'IGRAPH':
             return self.extract_nodes_igraph()
-        else:
+        elif self.graph_framework == 'NETWORKX':
             return self.extract_nodes_networkx()
+        else:
+            return self.extract_nodes_rustworkx()
 
     def extract_nodes_networkx(self) -> networkx.Graph:
         resource_nodes = [
@@ -46,9 +49,14 @@ class GraphImageReferencerProvider:
 
         return self.graph_connector.subgraph(resource_nodes)
 
-    def extract_nodes_rustworkx(self) -> networkx.Graph:
-        # TODO 
-        return self.graph_connector.subgraph(resource_nodes)
+    def extract_nodes_rustworkx(self) -> rustworkx.PyDiGraph:
+        resource_nodes = {
+            index
+            for index, node in self.graph_connector.nodes()
+            if self.resource_type_pred(node, list(self.supported_resource_types))
+        }
+
+        return self.graph_connector.subgraph(list(resource_nodes))  # type: ignore
 
     def extract_nodes_igraph(self) -> igraph.Graph:
         resource_nodes = [
@@ -65,6 +73,10 @@ class GraphImageReferencerProvider:
             for _, resource in graph.nodes(data=True):
                 yield resource
 
+        def extract_resource_rustworkx(graph: igraph.Graph) -> Generator[dict[str, Any], None, None]:
+            for _, resource in graph.nodes():
+                yield resource
+
         def extract_resource_igraph(graph: igraph.Graph) -> Generator[dict[str, Any], None, None]:
             for v in graph.vs:
                 resource = {
@@ -73,11 +85,6 @@ class GraphImageReferencerProvider:
                     'resource_type': v[CustomAttributes.RESOURCE_TYPE]
                 }
                 resource.update(v['attr'])
-                yield resource
-
-        def extract_resource_rustworkx(graph: igraph.Graph) -> Generator[dict[str, Any], None, None]:
-
-
                 yield resource
 
         graph_resource = None
@@ -89,3 +96,7 @@ class GraphImageReferencerProvider:
             graph_resource = extract_resource_rustworkx(supported_resources_graph)
 
         return graph_resource  # type: ignore
+
+    @staticmethod
+    def resource_type_pred(v: dict[str, Any], resource_types: list[str]) -> bool:
+        return not resource_types or ("resource_type" in v and v["resource_type"] in resource_types)

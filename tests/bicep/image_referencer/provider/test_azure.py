@@ -5,13 +5,14 @@ from unittest import mock
 import igraph
 import pytest
 from networkx import DiGraph
+from rustworkx import PyDiGraph
 
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.images.image_referencer import Image
 from checkov.terraform.image_referencer.provider.azure import AzureTerraformProvider
 
 
-@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+@pytest.mark.parametrize("graph_framework", ["NETWORKX", "IGRAPH",'RUSTWORKX'])
 def extract_images_from_resources(graph_framework):
     # given
     resource = {
@@ -42,7 +43,7 @@ def extract_images_from_resources(graph_framework):
                 CustomAttributes.RESOURCE_TYPE] if CustomAttributes.RESOURCE_TYPE in resource else None,
             attr=resource,
         )
-    else:
+    elif graph_framework == 'NETWORKX':
         graph = DiGraph()
         graph.add_node(1, **resource)
 
@@ -57,7 +58,7 @@ def extract_images_from_resources(graph_framework):
     ]
 
 
-@pytest.mark.parametrize('graph_framework', ["NETWORKX", "IGRAPH"])
+@pytest.mark.parametrize('graph_framework', ["NETWORKX", "IGRAPH", "RUSTWORKX"])
 def test_extract_images_from_resources_with_no_image(graph_framework):
     # given
     resource = {
@@ -88,9 +89,13 @@ def test_extract_images_from_resources_with_no_image(graph_framework):
                 CustomAttributes.RESOURCE_TYPE] if CustomAttributes.RESOURCE_TYPE in resource else None,
             attr=resource,
         )
-    else:
+    elif graph_framework == 'NETWORKX':
         graph = DiGraph()
         graph.add_node(1, **resource)
+
+    else:
+        graph = PyDiGraph()
+        graph.add_node((1, resource))
 
     # when
     with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': graph_framework}):
