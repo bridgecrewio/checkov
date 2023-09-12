@@ -7,11 +7,9 @@ from checkov.common.graph.db_connectors.rustworkx.rustworkx_db_connector import 
 
 def set_db_connector_by_graph_framework(graph_framework: str) -> Any:
     if graph_framework == 'NETWORKX':
-        db_connector = NetworkxConnector()
+        return NetworkxConnector()
     elif graph_framework == 'IGRAPH':
-        db_connector = IgraphConnector()
+        return IgraphConnector()
     elif graph_framework == 'RUSTWORKX':
-        db_connector = RustworkxConnector()
-    else:
-        return None
-    return db_connector
+        return RustworkxConnector()
+    return None
