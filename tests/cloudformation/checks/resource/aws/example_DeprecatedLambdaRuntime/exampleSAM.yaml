@@ -14,7 +14,7 @@ Resources:
         MyApi:
           Type: Api
           Properties:
-            Path: /hello
+            Path: /hello1
             Method: get
       Environment:
         Variables:
@@ -32,7 +32,7 @@ Resources:
         MyApi:
           Type: Api
           Properties:
-            Path: /hello
+            Path: /hello2
             Method: get
       Environment:
         Variables:
