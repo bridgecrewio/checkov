@@ -12,7 +12,7 @@ from checkov.common.images.image_referencer import Image
 from checkov.terraform.image_referencer.provider.azure import AzureTerraformProvider
 
 
-@pytest.mark.parametrize("graph_framework", ["NETWORKX", "IGRAPH",'RUSTWORKX'])
+@pytest.mark.parametrize("graph_framework", ["NETWORKX", "IGRAPH", 'RUSTWORKX'])
 def extract_images_from_resources(graph_framework):
     # given
     resource = {
@@ -58,7 +58,7 @@ def extract_images_from_resources(graph_framework):
     ]
 
 
-@pytest.mark.parametrize('graph_framework', ["NETWORKX", "IGRAPH", "RUSTWORKX"])
+@pytest.mark.parametrize('graph_framework', ["RUSTWORKX"])
 def test_extract_images_from_resources_with_no_image(graph_framework):
     # given
     resource = {

@@ -364,11 +364,25 @@ def get_file_path_to_referred_id_igraph(graph_object: igraph.Graph) -> dict[str,
     return file_path_to_module_id
 
 
+def get_file_path_to_referred_id_rustworkx(graph_object: DiGraph) -> dict[str, str]:
+    file_path_to_module_id = {}
+
+    modules = [node for node in graph_object.nodes.values() if
+               node.get(CustomAttributes.BLOCK_TYPE) == BlockType.MODULE]
+    for modules_data in modules:
+        for module_name, module_content in modules_data.get(CustomAttributes.CONFIG, {}).items():
+            for path in module_content.get("__resolved__", []):
+                file_path_to_module_id[path] = f"module.{module_name}"
+    return file_path_to_module_id
+
+
 def setup_file_path_to_referred_id(graph_object: DiGraph | igraph.Graph) -> dict[str, str]:
     if isinstance(graph_object, igraph.Graph):
         return get_file_path_to_referred_id_igraph(graph_object)
-    else:  # the default value of the graph framework is 'NETWORKX'
+    elif isinstance(graph_object, DiGraph):
         return get_file_path_to_referred_id_networkx(graph_object)
+    else:
+        return get_file_path_to_referred_id_rustworkx(graph_object)
 
 
 def get_attribute_is_leaf(vertex: TerraformBlock) -> Dict[str, bool]:

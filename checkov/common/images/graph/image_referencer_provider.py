@@ -50,11 +50,15 @@ class GraphImageReferencerProvider:
         return self.graph_connector.subgraph(resource_nodes)
 
     def extract_nodes_rustworkx(self) -> rustworkx.PyDiGraph:
-        resource_nodes = {
-            index
-            for index, node in self.graph_connector.nodes()
-            if self.resource_type_pred(node, list(self.supported_resource_types))
-        }
+        resource_nodes = []
+        for index, node in self.graph_connector.nodes():
+            if self.resource_type_pred(node, list(self.supported_resource_types)):
+                resource_nodes.append(index)
+        # resource_nodes = {
+        #     index
+        #     for index, node in self.graph_connector.nodes()
+        #     if self.resource_type_pred(node, list(self.supported_resource_types))
+        # }
 
         return self.graph_connector.subgraph(list(resource_nodes))  # type: ignore
 
