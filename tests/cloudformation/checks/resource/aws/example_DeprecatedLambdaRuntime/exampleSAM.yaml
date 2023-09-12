@@ -44,4 +44,4 @@ Resources:
 Outputs:
   MyServerlessFunctionApi:
     Description: "API Gateway endpoint URL for Prod environment"
-    Value: !Sub "https://${MyServerlessFunction.MyApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
+    Value: !Sub "https://${Fail2.MyApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello1/"
