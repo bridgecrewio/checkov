@@ -6,8 +6,6 @@ from parameterized import parameterized_class
 
 from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
-from checkov.common.graph.db_connectors.rustworkx.rustworkx_db_connector import RustworkxConnector
-from checkov.common.graph.db_connectors.utils import set_db_connector_by_graph_framework
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
@@ -20,12 +18,15 @@ from tests.common.graph.checks.test_yaml_policies_base import TestYamlPoliciesBa
 
 @parameterized_class([
    {"graph_framework": "NETWORKX"},
-   {"graph_framework": "IGRAPH"},
-   {"graph_framework": "RUSTWORKX"}
+   {"graph_framework": "IGRAPH"}
 ])
 class TestYamlPolicies(TestYamlPoliciesBase):
     def __init__(self, args):
-        db_connector = set_db_connector_by_graph_framework(self.graph_framework)
+        db_connector = None
+        if self.graph_framework == 'NETWORKX':
+            db_connector = NetworkxConnector()
+        elif self.graph_framework == 'IGRAPH':
+            db_connector = IgraphConnector()
 
         graph_manager = ObjectGraphManager(db_connector=db_connector, source="GitHubActions")
         super().__init__(

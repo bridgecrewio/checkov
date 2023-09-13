@@ -26,7 +26,6 @@ class BaseRegistry:
     ) -> dict[BaseGraphCheck, list[_CheckResult]]:
 
         check_results: "dict[BaseGraphCheck, list[_CheckResult]]" = {}
-
         checks_to_run = [c for c in self.checks if runner_filter.should_run_check(c, report_type=report_type)]
         with concurrent.futures.ThreadPoolExecutor() as executor:
             concurrent.futures.wait(
