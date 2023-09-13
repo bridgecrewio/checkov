@@ -1,6 +1,16 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.4.33...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.4.36...HEAD)
+
+## [2.4.36](https://github.com/bridgecrewio/checkov/compare/2.4.33...2.4.36) - 2023-09-13
+
+### Feature
+
+- **general:** add rustworkx - [#5511](https://github.com/bridgecrewio/checkov/pull/5511)
+
+### Bug Fix
+
+- **terraform:** Module from_dict func to static func - [#5562](https://github.com/bridgecrewio/checkov/pull/5562)
 
 ## [2.4.33](https://github.com/bridgecrewio/checkov/compare/2.4.32...2.4.33) - 2023-09-12
 
