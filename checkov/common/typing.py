@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from checkov.common.runners.base_runner import BaseRunner  # noqa
     from networkx import DiGraph
     from igraph import Graph
-    from rustworkx import PyDiGraph, PyGraph
+    from rustworkx import PyDiGraph
     from checkov.terraform.modules.module_objects import TFDefinitionKey
 
 _BaseRunner = TypeVar("_BaseRunner", bound="BaseRunner[Any, Any, Any]")
