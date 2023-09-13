@@ -49,7 +49,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
             if self._is_variable_dependant(value):
                 # If the tested attribute is variable-dependant, then result is PASSED
                 return CheckResult.PASSED
-
+            return CheckResult.FAILED
         return self.missing_block_result
 
     @abstractmethod
