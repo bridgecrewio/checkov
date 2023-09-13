@@ -306,28 +306,6 @@ jobs:
       BC_API_KEY: ${{ secrets.BC_API_KEY }}
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
-  publish-checkov-pyston-dockerhub:
-    runs-on: [self-hosted, public, linux, x64]
-    needs: bump-version
-    environment: release
-    steps:
-      - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac  # v3
-      - name: Get release version
-        id: versions
-        run: |
-          checkov_version=${{ needs.bump-version.outputs.version }}
-          checkov_major_version=$(echo "${checkov_version}" | head -c1)
-          echo "version=$checkov_version" >> "$GITHUB_OUTPUT"
-          echo "major_version=$checkov_major_version" >> "$GITHUB_OUTPUT"
-      - name: Publish to Registry
-        uses: elgohr/Publish-Docker-Github-Action@43dc228e327224b2eda11c8883232afd5b34943b  # v5
-        with:
-          name: bridgecrew/checkov
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
-          tags: "pyston,${{ steps.versions.outputs.version }}-pyston,${{ steps.versions.outputs.major_version }}-pyston"
-          dockerfile: Dockerfile.pyston
-          buildoptions: "--no-cache"
   update-bridgecrew-projects:
     needs: publish-checkov-dockerhub
     runs-on: [self-hosted, public, linux, x64]
