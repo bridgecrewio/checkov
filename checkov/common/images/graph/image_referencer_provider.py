@@ -3,7 +3,7 @@ from __future__ import annotations
 import itertools
 import os
 from abc import abstractmethod
-from typing import TYPE_CHECKING, Callable, Any, Mapping, Union, Generator
+from typing import TYPE_CHECKING, Callable, Any, Mapping, Generator
 
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.images.image_referencer import Image
@@ -73,7 +73,7 @@ class GraphImageReferencerProvider:
             for _, resource in graph.nodes(data=True):
                 yield resource
 
-        def extract_resource_rustworkx(graph: igraph.Graph) -> Generator[dict[str, Any], None, None]:
+        def extract_resource_rustworkx(graph: rustworkx.PyDiGraph[Any, Any]) -> Generator[dict[str, Any], None, None]:
             for _, resource in graph.nodes():
                 yield resource
 
