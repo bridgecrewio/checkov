@@ -19,7 +19,7 @@ from typing import List, Dict, TYPE_CHECKING, Any, cast
 import boto3
 import dpath
 import requests
-from urllib3.connection import HTTPConnection
+import urllib3
 from botocore.exceptions import ClientError
 from botocore.config import Config
 from cachetools import cached, TTLCache
