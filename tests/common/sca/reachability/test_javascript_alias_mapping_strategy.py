@@ -1,107 +1,67 @@
+import os
 from checkov.common.sca.reachability.javascript.javascript_alias_mapping_strategy import JavascriptAliasMappingStrategy
 
+current_dir = os.path.dirname(os.path.realpath(__file__))
 
-def test_parse_webpack_file():
+
+def test_create_alias_mapping_from_webpack_file():
     strategy_object = JavascriptAliasMappingStrategy()
-    alias_mapping: dict[str, list[str]] = dict()
-    file_content = \
-        "module.exports = {" \
-        "  resolve: {" \
-        "    alias: {" \
-        "      ax: 'axios'" \
-        "    }" \
-        "  }" \
-        "};"
-    strategy_object.parse_webpack_file(alias_mapping, file_content, {'axios'})
+    root_dir = os.path.join(current_dir, "examples", "webpack")
+    alias_mapping = strategy_object.create_alias_mapping(root_dir, {'axios'})
     assert alias_mapping == {"axios": ["ax"]}
 
 
-def test_parse_babel_file():
+def test_create_alias_mapping_from_babelrc_file():
     strategy_object = JavascriptAliasMappingStrategy()
-    alias_mapping: dict[str, list[str]] = dict()
-    file_content = \
-        '{' \
-        '  "plugins": [' \
-        '    ["module-resolver", {' \
-        '      "alias": {' \
-        '        "ax": "axios"' \
-        '      }' \
-        '    }]' \
-        '  ]' \
-        '}'
-    strategy_object.parse_babel_file(alias_mapping, file_content, {'axios'})
+    root_dir = os.path.join(current_dir, "examples", "babel", "babelrc")
+    alias_mapping = strategy_object.create_alias_mapping(root_dir, {'axios'})
     assert alias_mapping == {"axios": ["ax"]}
 
 
-def test_parse_rollup_file():
+def test_create_alias_mapping_from_babel_config_file():
     strategy_object = JavascriptAliasMappingStrategy()
-    alias_mapping: dict[str, list[str]] = dict()
-    file_content = \
-        "import alias from '@rollup/plugin-alias';" \
-        "export default {" \
-        "  plugins: [" \
-        "    alias({" \
-        "      entries: [" \
-        "        { find: 'ax', replacement: 'axios' }" \
-        "      ]" \
-        "    })" \
-        "  ]" \
-        "};"
-    strategy_object.parse_rollup_file(alias_mapping, file_content, {'axios'})
+    root_dir = os.path.join(current_dir, "examples", "babel", "babel_config")
+    alias_mapping = strategy_object.create_alias_mapping(root_dir, {'axios'})
     assert alias_mapping == {"axios": ["ax"]}
 
 
-def test_parse_package_json_alias():
+def test_create_alias_mapping_from_rollup_file():
     strategy_object = JavascriptAliasMappingStrategy()
-    alias_mapping: dict[str, list[str]] = dict()
-    file_content = \
-        '{' \
-        '  "alias": {' \
-        '    "ax": "axios"' \
-        '  }' \
-        '}'
-    strategy_object.parse_package_json_file(alias_mapping, file_content, {'axios'})
+    root_dir = os.path.join(current_dir, "examples", "rollup")
+    alias_mapping = strategy_object.create_alias_mapping(root_dir, {'axios'})
     assert alias_mapping == {"axios": ["ax"]}
 
 
-def test_parse_package_json_aliasify():
+def test_create_alias_mapping_from_package_json_alias():
     strategy_object = JavascriptAliasMappingStrategy()
-    alias_mapping: dict[str, list[str]] = dict()
-    file_content = \
-        '{' \
-        '  "aliasify": {' \
-        '    "aliases": {' \
-        '      "ax": "axios"' \
-        '    }' \
-        '  }' \
-        '}'
-    strategy_object.parse_package_json_file(alias_mapping, file_content, {'axios'})
+    root_dir = os.path.join(current_dir, "examples", "package_json", "package_json_with_alias")
+    alias_mapping = strategy_object.create_alias_mapping(root_dir, {'axios'})
     assert alias_mapping == {"axios": ["ax"]}
 
 
-def test_parse_snowpack():
+def test_create_alias_mapping_from_package_json_aliasify():
     strategy_object = JavascriptAliasMappingStrategy()
-    alias_mapping: dict[str, list[str]] = dict()
-    file_content = \
-        'module.exports = {' \
-        '  alias: {' \
-        '    "ax": "axios"' \
-        '  }' \
-        '};'
-    strategy_object.parse_snowpack_file(alias_mapping, file_content, {'axios'})
+    root_dir = os.path.join(current_dir, "examples", "package_json", "package_json_with_aliasify")
+    alias_mapping = strategy_object.create_alias_mapping(root_dir, {'axios'})
     assert alias_mapping == {"axios": ["ax"]}
 
 
-def test_parse_vite():
+def test_create_alias_mapping_from_snowpack():
     strategy_object = JavascriptAliasMappingStrategy()
-    alias_mapping: dict[str, list[str]] = dict()
-    file_content = \
-        'export default {' \
-        '  resolve: {' \
-        '    alias: {' \
-        '      "ax": "axios"' \
-        '    }' \
-        '  }' \
-        '};'
-    strategy_object.parse_vite_file(alias_mapping, file_content, {'axios'})
+    root_dir = os.path.join(current_dir, "examples", "snowpack")
+    alias_mapping = strategy_object.create_alias_mapping(root_dir, {'axios'})
     assert alias_mapping == {"axios": ["ax"]}
+
+
+def test_create_alias_mapping_from_vite():
+    strategy_object = JavascriptAliasMappingStrategy()
+    root_dir = os.path.join(current_dir, "examples", "vite")
+    alias_mapping = strategy_object.create_alias_mapping(root_dir, {'axios'})
+    assert alias_mapping == {"axios": ["ax"]}
+
+
+def test_create_alias_mapping_from_fake():
+    strategy_object = JavascriptAliasMappingStrategy()
+    root_dir = os.path.join(current_dir, "examples", "fake_file")
+    alias_mapping = strategy_object.create_alias_mapping(root_dir, {'axios'})
+    assert alias_mapping == {}
