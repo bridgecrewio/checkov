@@ -1,18 +1,19 @@
-from __future__ import  annotations
+from __future__ import annotations
 
 import logging
 import os.path
-from abc import ABC
 from typing import List, Dict, Set, Any, Callable
 import re
 import json
 import os
 
+from checkov.common.sca.reachability.alias_mapping_strategy import AliasMappingStrategy
+
 MODULE_EXPORTS_PATTERN = r'module\.exports\s*=\s*({.*?});'
 EXPORT_DEFAULT_PATTERN = r'export\s*default\s*({.*?});'
 
 
-class JavascriptAliasMappingStrategy(ABC):
+class JavascriptAliasMappingStrategy(AliasMappingStrategy):
 
     @staticmethod
     def __parse_export(file_content: str, pattern: str) -> Dict[str, Any] | None:
@@ -24,7 +25,7 @@ class JavascriptAliasMappingStrategy(ABC):
             module_exports_str = re.sub(r'\s+', '', re.sub(r'([{\s,])(\w+):', r'\1"\2":', module_exports_str)
                                         .replace("'", "\""))
             print(module_exports_str)
-            module_exports: Dict[str, Any]= json.loads(module_exports_str)
+            module_exports: Dict[str, Any] = json.loads(module_exports_str)
             return module_exports
         return None
 
@@ -81,7 +82,7 @@ class JavascriptAliasMappingStrategy(ABC):
             matches = re.findall(pattern, export_default_str)
 
             for alias_object_str in matches:
-                alias_object = json.loads(alias_object_str[6:-1]) # removing 'alias(' and ')'
+                alias_object = json.loads(alias_object_str[6:-1])  # removing 'alias(' and ')'
                 print(alias_object)
                 for entry in alias_object.get("entries", []):
                     if entry["replacement"] in relevant_packages:
@@ -136,7 +137,7 @@ class JavascriptAliasMappingStrategy(ABC):
             "package.json": JavascriptAliasMappingStrategy._parse_package_json_file,
             "snowpack.config.js": JavascriptAliasMappingStrategy._parse_snowpack_file,
             "vite.config.js": JavascriptAliasMappingStrategy._parse_vite_file
-    }
+        }
 
     def create_alias_mapping(self, root_dir: str, relevant_packages: Set[str]) -> Dict[str, List[str]]:
         logging.debug("[JavascriptAliasMappingStrategy](create_alias_mapping) - starting")
@@ -152,7 +153,7 @@ class JavascriptAliasMappingStrategy(ABC):
                             file_name_to_function_map[file_name](alias_mapping, file_content, relevant_packages)
                             logging.debug(
                                 f"[JavascriptAliasMappingStrategy](create_alias_mapping) - done parsing for ${file_name}")
-                        except:
+                        except Exception:
                             logging.error(f"[JavascriptAliasMappingStrategy](create_alias_mapping) - failure when "
                                           f"parsing the file '${file_name}'. file content:\n{file_content}.\n",
                                           exc_info=True)
