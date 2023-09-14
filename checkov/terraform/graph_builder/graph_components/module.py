@@ -61,9 +61,10 @@ class Module:
             'blocks': [block.to_dict() for block in self.blocks]
         }
 
-    def from_dict(self, module_dict: dict[str, Any]) -> Module:
+    @staticmethod
+    def from_dict(module_dict: dict[str, Any]) -> Module:
         module = Module(source_dir=module_dict.get('source_dir', ''),
-                        external_modules_source_map=self._from_dict_external_modules_source_map(module_dict)
+                        external_modules_source_map=Module._from_dict_external_modules_source_map(module_dict)
                         )
         module.blocks = [TerraformBlock.from_dict(block) for block in module_dict.get('blocks', [])]
         module.path = module_dict.get('path', '')
