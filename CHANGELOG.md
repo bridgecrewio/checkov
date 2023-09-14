@@ -1,6 +1,30 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.4.32...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.4.36...HEAD)
+
+## [2.4.36](https://github.com/bridgecrewio/checkov/compare/2.4.33...2.4.36) - 2023-09-13
+
+### Feature
+
+- **general:** add rustworkx - [#5511](https://github.com/bridgecrewio/checkov/pull/5511)
+
+### Bug Fix
+
+- **terraform:** Module from_dict func to static func - [#5562](https://github.com/bridgecrewio/checkov/pull/5562)
+
+## [2.4.33](https://github.com/bridgecrewio/checkov/compare/2.4.32...2.4.33) - 2023-09-12
+
+### Feature
+
+- **general:** attempt to fix overload in loaders and add tests - [#5549](https://github.com/bridgecrewio/checkov/pull/5549)
+- **general:** remove 3.7 integ. test - [#5556](https://github.com/bridgecrewio/checkov/pull/5556)
+- **general:** remove line to force code change - [#5558](https://github.com/bridgecrewio/checkov/pull/5558)
+- **terraform:** add check Neptune DB clusters should be configured to copy tags to snapshots - [#5552](https://github.com/bridgecrewio/checkov/pull/5552)
+- **terraform:** add CKV_AWS_361 to ensure Neptune DB cluster has adequate backup retention - [#5548](https://github.com/bridgecrewio/checkov/pull/5548)
+
+### Bug Fix
+
+- **terraform:** Fix external_modules_source_map serialization - [#5546](https://github.com/bridgecrewio/checkov/pull/5546)
 
 ## [2.4.32](https://github.com/bridgecrewio/checkov/compare/2.4.30...2.4.32) - 2023-09-10
 
