@@ -24,7 +24,6 @@ class JavascriptAliasMappingStrategy(AliasMappingStrategy):
             # for having for all the keys and values doube quotes and removing spaces
             module_exports_str = re.sub(r'\s+', '', re.sub(r'([{\s,])(\w+):', r'\1"\2":', module_exports_str)
                                         .replace("'", "\""))
-            print(module_exports_str)
             module_exports: Dict[str, Any] = json.loads(module_exports_str)
             return module_exports
         return None
@@ -83,7 +82,6 @@ class JavascriptAliasMappingStrategy(AliasMappingStrategy):
 
             for alias_object_str in matches:
                 alias_object = json.loads(alias_object_str[6:-1])  # removing 'alias(' and ')'
-                print(alias_object)
                 for entry in alias_object.get("entries", []):
                     if entry["replacement"] in relevant_packages:
                         alias_mapping.setdefault(entry["replacement"], []).append(entry["find"])
