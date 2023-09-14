@@ -94,6 +94,10 @@ Check: CKV_AWS_16: "Ensure all data stored in the RDS is securely encrypted at r
 Passed checks: 1, Failed checks: 1, Skipped checks: 0
 ```
 
+## OpenAI type 
+
+With `--openai-api-type` flag, you are able to choose OpenAI source. Possible values here are `default` and `azure`. Default valuie is obvoiusly `default`, and this flag will redirect your requests to public-generally available OpenAI service. By switching this flag to `--openai-api-type azure` you can query **Azure OpenAI** resource using Azure OpenAI Key. Please see below [Azure OpenAI] section for more configuration details.
+
 ## Settings
 
 Following environment variables can be used to fine tune the amount of AI generated guidelines.
@@ -104,3 +108,19 @@ Following environment variables can be used to fine tune the amount of AI genera
 | CKV_OPENAI_MAX_FINDINGS | 5             | Amount of findings per framework to add enhanced guidelines. |
 | CKV_OPENAI_MAX_TOKENS   | 512           | Maximum number of tokens to generate in the chat completion. |
 | CKV_OPENAI_MODEL        | gpt-3.5-turbo | ID of the chat completion model to use.                      |
+
+
+## Azure OpenAI
+
+Azure OpenAI re-use following environment variables from 'default' OpenAI configuration:
+- CKV_OPENAI_API_KEY
+- CKV_OPENAI_MAX_FINDINGS
+- CKV_OPENAI_MAX_TOKENS
+
+To use Azure OpenAI you have to define following environment variables:
+
+| Environment variable               | Default       | Info                                                         |
+|------------------------------------|---------------|--------------------------------------------------------------|
+| CKV_AZURE_OPENAI_API_ENDPOINT      |               | Azure OpenAI Endpoint format. Eg.: 'https://eastus.api.cognitive.microsoft.com/'|
+| CKV_AZURE_OPENAI_API_VERSION       | 2023-05-15    | Azure OpenAI API version to use.                             |
+| CKV_AZURE_OPENAI_DEPLOYMENT_NAME   |               | Deployment Name of the chat completion model to use. Note that, deployment must be already deployed in https://oai.azure.com portal.  |

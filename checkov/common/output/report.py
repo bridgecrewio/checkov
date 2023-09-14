@@ -272,6 +272,7 @@ class Report:
             use_bc_ids: bool = False,
             summary_position: str = 'top',
             openai_api_key: str | None = None,
+            openai_api_type: str | None = None,
     ) -> str:
         summary = self.get_summary()
         output_data = colored(f"{self.check_type} scan results:\n", "blue")
@@ -305,7 +306,7 @@ class Report:
                 for record in self.passed_checks:
                     output_data += record.to_string(compact=is_compact, use_bc_ids=use_bc_ids)
             if self.failed_checks:
-                OpenAi(api_key=openai_api_key).enhance_records(runner_type=self.check_type, records=self.failed_checks)
+                OpenAi(api_key=openai_api_key, api_type=openai_api_type).enhance_records(runner_type=self.check_type, records=self.failed_checks)
             for record in self.failed_checks:
                 output_data += record.to_string(compact=is_compact, use_bc_ids=use_bc_ids)
             if not is_quiet:

@@ -549,3 +549,15 @@ class ExtArgumentParser(configargparse.ArgumentParser):
                  "resource code to OpenAI to request remediation guidance. This will use your OpenAI credits. "
                  "Set your number of findings that will receive enhanced guidelines using CKV_OPENAI_MAX_FINDINGS",
         )
+        self.add(
+            "--openai-api-type",
+            env_var="CKV_OPENAI_API_TYPE",
+            choices=['azure','default'],
+            default='default',
+            help="By switching this flag to 'azure', you are able to send violated policies to Azure OpenAI service. "
+                "You have to provide Key, either with --openai-api-key or CKV_OPENAI_API_KEY. "
+                "Before you switch to 'azure' you also have to define CKV_AZURE_OPENAI_API_ENDPOINT and CKV_AZURE_OPENAI_DEPLOYMENT_ID environment variables. "
+                "CKV_AZURE_OPENAI_API_ENDPOINT - is the Azure OpenAI service endpoint, eg: 'https://eastus.api.cognitive.microsoft.com/'. "
+                "CKV_AZURE_OPENAI_DEPLOYMENT_ID - this is your Deployment Name from https://oai.portal.com portal you wish to use. "
+                "With CKV_AZURE_OPENAI_DEPLOYMENT_ID environment variable you are also able to control API version - this defaults to '2023-05-15'. ",
+        )
