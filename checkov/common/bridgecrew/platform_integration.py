@@ -20,6 +20,8 @@ import boto3
 import dpath
 import requests
 import urllib3
+import socket
+from urllib3.connection import HTTPConnection
 from botocore.exceptions import ClientError
 from botocore.config import Config
 from cachetools import cached, TTLCache
@@ -58,6 +60,17 @@ if TYPE_CHECKING:
     from igraph import Graph
     from networkx import DiGraph
 
+
+# Set default_socket_options for requests that failing with - urllib3.exceptions.ProtocolError:
+# ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+HTTPConnection.default_socket_options = (
+    HTTPConnection.default_socket_options + [
+        (socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1),
+        (socket.SOL_TCP, socket.TCP_KEEPIDLE, 45),
+        (socket.SOL_TCP, socket.TCP_KEEPINTVL, 10),
+        (socket.SOL_TCP, socket.TCP_KEEPCNT, 6)
+    ]
+)
 
 SLEEP_SECONDS = 1
 
