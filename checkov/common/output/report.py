@@ -272,7 +272,7 @@ class Report:
             use_bc_ids: bool = False,
             summary_position: str = 'top',
             openai_api_key: str | None = None,
-            openai_api_type: str | None = None,
+            openai_api_type: str = "default",
     ) -> str:
         summary = self.get_summary()
         output_data = colored(f"{self.check_type} scan results:\n", "blue")

@@ -35,28 +35,27 @@ RUNNER_DENY_LIST = {
 class OpenAi:
     _instance = None  # noqa: CCE003  # singleton
 
-    _api_type = None
-
-    def _validate_azure_env(value,environment_variable_name):
-        if (value==None):
+    def _validate_azure_env(self, value: str | None = None, environment_variable_name: str | None = None) -> None:
+        if (value is None):
             print(
                 colored(
-                    f"ERROR: Azure OpenAI will not work! Please specify {environment_variable_name} environment variable for --openai-api-type 'azure' type.",
+                    f"ERROR: Configuration for Azure OpenAI is missing: Please specify {environment_variable_name} environment variable for --openai-api-type '{self._api_type}' type.",
                     "red",
                 )
             )
+        return
 
-    def __new__(cls, api_key: str | None = None, api_type: str | None = None) -> Self:
+    def __new__(cls, api_key: str | None = None, api_type: str = "default") -> Self:
         if cls._instance is None:
             cls._instance = super().__new__(cls)
             cls._should_run = True if api_key else False
-            cls._api_type = api_type
+            cls._api_type = api_type.lower()
             if (cls._api_type == 'azure'):
-                cls._validate_azure_env(AZURE_OPENAI_API_ENDPOINT,'CKV_AZURE_OPENAI_API_ENDPOINT')
-                cls._validate_azure_env(AZURE_OPENAI_API_VERSION,'CKV_AZURE_OPENAI_API_VERSION')
-                cls._validate_azure_env(AZURE_OPENAI_DEPLOYMENT_NAME,'CKV_AZURE_OPENAI_DEPLOYMENT_NAME')
+                cls._validate_azure_env(cls._instance, AZURE_OPENAI_API_ENDPOINT, 'CKV_AZURE_OPENAI_API_ENDPOINT')
+                cls._validate_azure_env(cls._instance, AZURE_OPENAI_API_VERSION, 'CKV_AZURE_OPENAI_API_VERSION')
+                cls._validate_azure_env(cls._instance, AZURE_OPENAI_DEPLOYMENT_NAME, 'CKV_AZURE_OPENAI_DEPLOYMENT_NAME')
                 openai.api_type = cls._api_type
-                openai.api_base = AZURE_OPENAI_API_ENDPOINT
+                openai.api_base = AZURE_OPENAI_API_ENDPOINT if AZURE_OPENAI_API_ENDPOINT is not None else ""
                 openai.api_version = AZURE_OPENAI_API_VERSION
             openai.api_key = api_key
 
@@ -98,7 +97,7 @@ class OpenAi:
 
         try:
             # define common messages array
-            messages=[
+            messages = [
                 {"role": "system", "content": "You are a security tool"},
                 {
                     "role": "user",
@@ -112,15 +111,15 @@ class OpenAi:
                 {"role": "user", "content": "Explain"},
             ],
             # depends on api_type, call ChatCompletion differently
-            logging.info(f"[_chat_complete]: self._instance._api_type: {self._instance._api_type}")
-            if (self._instance._api_type  == 'azure'):
-                completion = await openai.ChatCompletion.acreate (
-                    engine = AZURE_OPENAI_DEPLOYMENT_NAME,
+            logging.info(f"[_chat_complete]: self._api_type: {self._api_type}")
+            if (self._api_type == 'azure'):
+                completion = await openai.ChatCompletion.acreate(  # type:ignore[no-untyped-call]
+                    engine=AZURE_OPENAI_DEPLOYMENT_NAME,
                     messages=messages[0],
                     temperature=0,
                     max_tokens=OPENAI_MAX_TOKENS,
                 )
-            else: 
+            else:
                 completion = await openai.ChatCompletion.acreate(  # type:ignore[no-untyped-call]
                     model=OPENAI_MODEL,
                     messages=messages[0],

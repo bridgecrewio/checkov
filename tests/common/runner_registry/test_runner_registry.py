@@ -725,6 +725,7 @@ def test_output_file_path_with_output_mapping(tmp_path: Path, capsys: CaptureFix
         output_bc_ids=False,
         summary_position="top",
         openai_api_key=None,
+        openai_api_type="default",
     )
 
     # when
