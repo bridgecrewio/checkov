@@ -35,7 +35,7 @@ RUNNER_DENY_LIST = {
 class OpenAi:
     _instance = None  # noqa: CCE003  # singleton
 
-    def _validate_azure_env(self, value: str | None = None, environment_variable_name: str | None = None) -> None:
+    def _validate_azure_env(self, value: str | None = None, environment_variable_name: str | None = None) -> bool:
         if (value is None):
             print(
                 colored(
@@ -43,7 +43,8 @@ class OpenAi:
                     "red",
                 )
             )
-        return
+            return False
+        return True
 
     def __new__(cls, api_key: str | None = None, api_type: str = "default") -> Self:
         if cls._instance is None:
@@ -51,9 +52,9 @@ class OpenAi:
             cls._should_run = True if api_key else False
             cls._api_type = api_type.lower()
             if (cls._api_type == 'azure'):
-                cls._validate_azure_env(cls._instance, AZURE_OPENAI_API_ENDPOINT, 'CKV_AZURE_OPENAI_API_ENDPOINT')
-                cls._validate_azure_env(cls._instance, AZURE_OPENAI_API_VERSION, 'CKV_AZURE_OPENAI_API_VERSION')
-                cls._validate_azure_env(cls._instance, AZURE_OPENAI_DEPLOYMENT_NAME, 'CKV_AZURE_OPENAI_DEPLOYMENT_NAME')
+                cls._should_run = cls._should_run & cls._validate_azure_env(cls._instance, AZURE_OPENAI_API_ENDPOINT, 'CKV_AZURE_OPENAI_API_ENDPOINT')
+                cls._should_run = cls._should_run & cls._validate_azure_env(cls._instance, AZURE_OPENAI_API_VERSION, 'CKV_AZURE_OPENAI_API_VERSION')
+                cls._should_run = cls._should_run & cls._validate_azure_env(cls._instance, AZURE_OPENAI_DEPLOYMENT_NAME, 'CKV_AZURE_OPENAI_DEPLOYMENT_NAME')
                 openai.api_type = cls._api_type
                 openai.api_base = AZURE_OPENAI_API_ENDPOINT if AZURE_OPENAI_API_ENDPOINT is not None else ""
                 openai.api_version = AZURE_OPENAI_API_VERSION
