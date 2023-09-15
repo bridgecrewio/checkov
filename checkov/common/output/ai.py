@@ -18,11 +18,6 @@ if TYPE_CHECKING:
 OPENAI_MAX_FINDINGS = int(os.getenv("CKV_OPENAI_MAX_FINDINGS", 5))
 OPENAI_MAX_TOKENS = int(os.getenv("CKV_OPENAI_MAX_TOKENS", 512))
 OPENAI_MODEL = os.getenv("CKV_OPENAI_MODEL", "gpt-3.5-turbo")
-# Azure OpenAI specific envrionment variables
-AZURE_OPENAI_API_ENDPOINT = os.getenv("CKV_AZURE_OPENAI_API_ENDPOINT", None)
-AZURE_OPENAI_API_VERSION = os.getenv("CKV_AZURE_OPENAI_API_VERSION", '2023-05-15')
-AZURE_OPENAI_DEPLOYMENT_NAME = os.getenv("CKV_AZURE_OPENAI_DEPLOYMENT_NAME", None)
-
 
 RUNNER_DENY_LIST = {
     CheckType.POLICY_3D,
@@ -52,15 +47,16 @@ class OpenAi:
             cls._should_run = True if api_key else False
             cls._api_type = api_type.lower()
             if (cls._api_type == 'azure'):
-                cls._should_run = cls._should_run & cls._validate_azure_env(cls._instance, AZURE_OPENAI_API_ENDPOINT, 'CKV_AZURE_OPENAI_API_ENDPOINT')
-                cls._should_run = cls._should_run & cls._validate_azure_env(cls._instance, AZURE_OPENAI_API_VERSION, 'CKV_AZURE_OPENAI_API_VERSION')
-                cls._should_run = cls._should_run & cls._validate_azure_env(cls._instance, AZURE_OPENAI_DEPLOYMENT_NAME, 'CKV_AZURE_OPENAI_DEPLOYMENT_NAME')
+                cls.AZURE_OPENAI_API_ENDPOINT = os.getenv("CKV_AZURE_OPENAI_API_ENDPOINT", None)
+                cls.AZURE_OPENAI_API_VERSION = os.getenv("CKV_AZURE_OPENAI_API_VERSION", '2023-05-15')
+                cls.AZURE_OPENAI_DEPLOYMENT_NAME = os.getenv("CKV_AZURE_OPENAI_DEPLOYMENT_NAME", None)
+                cls._should_run = cls._should_run & cls._validate_azure_env(cls._instance, cls.AZURE_OPENAI_API_ENDPOINT, 'CKV_AZURE_OPENAI_API_ENDPOINT')
+                cls._should_run = cls._should_run & cls._validate_azure_env(cls._instance, cls.AZURE_OPENAI_API_VERSION, 'CKV_AZURE_OPENAI_API_VERSION')
+                cls._should_run = cls._should_run & cls._validate_azure_env(cls._instance, cls.AZURE_OPENAI_DEPLOYMENT_NAME, 'CKV_AZURE_OPENAI_DEPLOYMENT_NAME')
                 openai.api_type = cls._api_type
-                openai.api_base = AZURE_OPENAI_API_ENDPOINT if AZURE_OPENAI_API_ENDPOINT is not None else ""
-                openai.api_version = AZURE_OPENAI_API_VERSION
+                openai.api_base = cls.AZURE_OPENAI_API_ENDPOINT if cls.AZURE_OPENAI_API_ENDPOINT is not None else ""
+                openai.api_version = cls.AZURE_OPENAI_API_VERSION
             openai.api_key = api_key
-
-        logging.info(f"[OpenAI constructor]: cls._api_type: {cls._api_type}, AZURE_OPENAI_API_ENDPOINT: {AZURE_OPENAI_API_ENDPOINT}, AZURE_OPENAI_API_VERSION: {AZURE_OPENAI_API_VERSION}, AZURE_OPENAI_DEPLOYMENT_NAME: {AZURE_OPENAI_DEPLOYMENT_NAME}, ")
 
         return cls._instance
 
@@ -115,7 +111,7 @@ class OpenAi:
             logging.info(f"[_chat_complete]: self._api_type: {self._api_type}")
             if (self._api_type == 'azure'):
                 completion = await openai.ChatCompletion.acreate(  # type:ignore[no-untyped-call]
-                    engine=AZURE_OPENAI_DEPLOYMENT_NAME,
+                    engine=self.AZURE_OPENAI_DEPLOYMENT_NAME,
                     messages=messages[0],
                     temperature=0,
                     max_tokens=OPENAI_MAX_TOKENS,
