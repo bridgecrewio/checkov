@@ -2,6 +2,7 @@ from textwrap import dedent
 
 from checkov.common.output.ai import OpenAi
 
+
 def test_parse_completion_response():
     # given
     content = dedent(
