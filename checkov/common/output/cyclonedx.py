@@ -71,7 +71,7 @@ class CycloneDX:
         bom = Bom()
 
         try:
-            version = meta_version("checkov")
+            version = meta_version("checkov")  # type:ignore[no-untyped-call]
         except Exception:
             # Unable to determine current version of 'checkov'
             version = "UNKNOWN"
