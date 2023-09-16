@@ -77,7 +77,13 @@ jobs:
           # remove venv, if exists
           pipenv --rm || true
           pipenv --python ${{ matrix.python }}
-          pipenv install --dev -v
+
+          # TODO: remove 3.7 end of September
+          if [ ${{ matrix.python }} == '3.7' ]; then
+            pipenv install --skip-lock --dev -v
+          else
+            pipenv install --dev -v
+          fi
       - name: Unit tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
