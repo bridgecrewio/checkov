@@ -47,6 +47,8 @@ jobs:
 
   mypy:
     uses: bridgecrewio/gha-reusable-workflows/.github/workflows/mypy.yaml@main
+    with:
+      python-version: "3.8"
 
   unit-tests:
     strategy:
