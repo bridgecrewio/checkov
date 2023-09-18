@@ -10,7 +10,7 @@ import re
 from collections import defaultdict
 from collections.abc import Iterable
 from pathlib import Path
-from typing import List, Dict, Any, Optional, cast, TYPE_CHECKING, Type
+from typing import List, Dict, Any, Optional, cast, TYPE_CHECKING, Type, Tuple
 
 from typing_extensions import Literal
 
@@ -95,7 +95,7 @@ class RunnerRegistry:
         self._check_type_to_report_map: dict[str, Report] = {}  # used for finding reports with the same check type
         self.licensing_integration = licensing_integration  # can be maniuplated by unit tests
         self.secrets_omitter_class = secrets_omitter_class
-        self.check_type_to_graph: dict[str, Graph | DiGraph] = {}
+        self.check_type_to_graph: dict[str, list[Tuple[Graph | DiGraph], Optional[str]]] = {}
         for runner in runners:
             if isinstance(runner, image_runner):
                 runner.image_referencers = self.image_referencing_runners
@@ -124,7 +124,7 @@ class RunnerRegistry:
                 # This is the only runner, so raise a clear indication of failure
                 raise ModuleNotEnabledError(f'The framework "{runner_check_type}" is part of the "{self.licensing_integration.get_subscription_for_runner(runner_check_type).name}" module, which is not enabled in the platform')
         else:
-            def _parallel_run(runner: _BaseRunner) -> tuple[Report | list[Report], str | None, DiGraph | Graph | None]:
+            def _parallel_run(runner: _BaseRunner) -> tuple[Report | list[Report], str | None, Optional[list[Tuple[DiGraph | Graph, Optional[str]]]]]:
                 report = runner.run(
                     root_folder=root_folder,
                     external_checks_dir=external_checks_dir,
@@ -138,7 +138,7 @@ class RunnerRegistry:
                     report = Report(check_type=runner.check_type)
 
                 if runner.graph_manager:
-                    return report, runner.check_type, runner.graph_manager.get_reader_endpoint()
+                    return report, runner.check_type, self.extract_graphs_from_runner(runner)
                 return report, None, None
 
             valid_runners = []
@@ -172,10 +172,10 @@ class RunnerRegistry:
             full_check_type_to_graph = {}
             for result in parallel_runner_results:
                 if result is not None:
-                    report, check_type, graph = result
+                    report, check_type, graphs = result
                     reports.append(report)
-                    if check_type is not None and graph is not None:
-                        full_check_type_to_graph[check_type] = graph
+                    if check_type is not None and graphs is not None:
+                        full_check_type_to_graph[check_type] = graphs
             self.check_type_to_graph = full_check_type_to_graph
 
         merged_reports = self._merge_reports(reports)
@@ -190,7 +190,7 @@ class RunnerRegistry:
             self._handle_report(scan_report, repo_root_for_plan_enrichment)
 
         if not self.check_type_to_graph:
-            self.check_type_to_graph = {runner.check_type: runner.graph_manager.get_reader_endpoint() for runner
+            self.check_type_to_graph = {runner.check_type: self.extract_graphs_from_runner(runner) for runner
                                         in self.runners if runner.graph_manager}
         return self.scan_reports
 
@@ -745,3 +745,13 @@ class RunnerRegistry:
             git_org, git_repository = "", ""
 
         return git_org, git_repository
+
+    @staticmethod
+    def extract_graphs_from_runner(runner: BaseRunner) -> List[Tuple[Graph | DiGraph, Optional[str]]]:
+        # exist only for terraform
+        all_graphs = getattr(runner, 'all_graphs', None)
+        if all_graphs:
+            return all_graphs
+        elif runner.graph_manager:
+            return [(graph, None) for graph in runner.graph_manager.get_reader_endpoint()]
+        return []

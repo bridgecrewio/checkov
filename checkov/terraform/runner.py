@@ -89,6 +89,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_TerraformDefinitions, _Terr
         self.definitions_with_modules: dict[str, dict[str, Any]] = {}
         self.referrer_cache: Dict[str, str] = {}
         self.non_referred_cache: Set[str] = set()
+        self.all_graphs: list[tuple[LibraryGraph, str]] = []
 
     block_type_registries = {  # noqa: CCE003  # a static attribute
         'resource': resource_registry,
@@ -112,8 +113,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_TerraformDefinitions, _Terr
         report = Report(self.check_type)
         parsing_errors: dict[str, Exception] = {}
         self.load_external_checks(external_checks_dir)
-        local_graph = None
-        all_graphs: list[LibraryGraph] = []
+        local_graphs = None
         if self.context is None or self.definitions is None or self.breadcrumbs is None:
             self.definitions = {}
             logging.info("Scanning root folder and producing fresh tf_definitions and context")
@@ -131,11 +131,11 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_TerraformDefinitions, _Terr
                         vars_files=runner_filter.var_files,
                         create_graph=CHECKOV_CREATE_GRAPH,
                     )
-                    local_graph = []
-                    for graph, definitions in graphs_with_definitions:
+                    local_graphs = []
+                    for graph, definitions, subgraph_path in graphs_with_definitions:
                         for definition in definitions:
                             self.definitions.update(definition)
-                        local_graph.append(graph)
+                        local_graphs.append((subgraph_path, graph))
                 else:
                     single_graph, self.definitions = self.graph_manager.build_graph_from_source_directory(
                         source_dir=root_folder,
@@ -148,7 +148,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_TerraformDefinitions, _Terr
                         create_graph=CHECKOV_CREATE_GRAPH,
                     )
                     # Make graph a list to allow single processing method for all cases
-                    local_graph = [single_graph]
+                    local_graphs = [('', single_graph)]
             elif files:
                 files = [os.path.abspath(file) for file in files]
                 root_folder = os.path.split(os.path.commonprefix(files))[0]
@@ -156,15 +156,15 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_TerraformDefinitions, _Terr
 
                 if CHECKOV_CREATE_GRAPH:
                     if tf_split_graph:
-                        local_graph = self.graph_manager.build_multi_graph_from_definitions(self.definitions)  # type:ignore[assignment]  # will be fixed after removing 'CHECKOV_CREATE_GRAPH'
+                        local_graphs = self.graph_manager.build_multi_graph_from_definitions(self.definitions)  # type:ignore[assignment]  # will be fixed after removing 'CHECKOV_CREATE_GRAPH'
                     else:
                         # local_graph needs to be a list to allow supporting multi graph
-                        local_graph = [self.graph_manager.build_graph_from_definitions(self.definitions)]
+                        local_graphs = [('', self.graph_manager.build_graph_from_definitions(self.definitions))]
             else:
                 raise Exception("Root directory was not specified, files were not specified")
 
-            if CHECKOV_CREATE_GRAPH and local_graph:
-                self._update_definitions_and_breadcrumbs(all_graphs, local_graph, report, root_folder)  # type:ignore[arg-type]  # will be fixed after removing 'CHECKOV_CREATE_GRAPH'
+            if CHECKOV_CREATE_GRAPH and local_graphs:
+                self._update_definitions_and_breadcrumbs(local_graphs, report, root_folder)  # type:ignore[arg-type]  # will be fixed after removing 'CHECKOV_CREATE_GRAPH'
         else:
             logging.info("Scanning root folder using existing tf_definitions")
             if root_folder is None:
@@ -177,8 +177,8 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_TerraformDefinitions, _Terr
         report.add_parsing_errors(parsing_errors.keys())
 
         if CHECKOV_CREATE_GRAPH:
-            if all_graphs:
-                for igraph_graph in all_graphs:
+            if self.all_graphs:
+                for igraph_graph, _ in self.all_graphs:
                     graph_report = self.get_graph_checks_report(root_folder, runner_filter, graph=igraph_graph)
                     merge_reports(report, graph_report)
             else:
@@ -201,17 +201,18 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_TerraformDefinitions, _Terr
         return report
 
     def _update_definitions_and_breadcrumbs(
-        self, all_graphs: list[LibraryGraph], local_graph: list[TerraformLocalGraph], report: Report, root_folder: str
+        self, local_graphs: list[tuple[str, TerraformLocalGraph]], report: Report, root_folder: str
     ) -> None:
         self.definitions = {}
         self.breadcrumbs = {}
-        for graph in local_graph:
+        self.all_graphs = []
+        for subgraph_path, graph in local_graphs:
             for vertex in graph.vertices:
                 if vertex.block_type == BlockType.RESOURCE:
                     vertex_id = vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS)
                     report.add_resource(f'{vertex.path}:{vertex_id}')
             igraph_graph = self.graph_manager.save_graph(graph)
-            all_graphs.append(igraph_graph)
+            self.all_graphs.append((igraph_graph, subgraph_path))
             current_definitions, current_breadcrumbs = convert_graph_vertices_to_tf_definitions(
                 graph.vertices,
                 root_folder,

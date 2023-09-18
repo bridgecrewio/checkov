@@ -6,7 +6,7 @@ import json
 import itertools
 from concurrent import futures
 from io import StringIO
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, Tuple, Optional
 from collections import defaultdict
 
 import dpath
@@ -146,9 +146,9 @@ def enrich_and_persist_checks_metadata(
     return checks_metadata_paths
 
 
-def persist_graphs(graphs: dict[str, DiGraph | Graph], s3_client: S3Client, bucket: str, full_repo_object_key: str,
+def persist_graphs(graphs: dict[str, list[Tuple[DiGraph | Graph, Optional[str]]]], s3_client: S3Client, bucket: str, full_repo_object_key: str,
                    timeout: int, absolute_root_folder: str = '') -> None:
-    def _upload_graph(check_type: str, graph: DiGraph | Graph, _absolute_root_folder: str = '') -> None:
+    def _upload_graph(check_type: str, graph: DiGraph | Graph, _absolute_root_folder: str = '', subgraph_path: Optional[str] = None) -> None:
         if isinstance(graph, DiGraph):
             json_obj = node_link_data(graph)
             graph_file_name = 'graph_networkx.json'
@@ -158,7 +158,8 @@ def persist_graphs(graphs: dict[str, DiGraph | Graph], s3_client: S3Client, buck
         else:
             logging.error(f"unsupported graph type '{graph.__class__.__name__}'")
             return
-        s3_key = f'{graphs_repo_object_key}/{check_type}/{graph_file_name}'
+        multi_graph_addition = (f"multi-graph/{subgraph_path}" if subgraph_path is not None else '').rstrip("/")
+        s3_key = os.path.join(graphs_repo_object_key, check_type, multi_graph_addition, graph_file_name)
         try:
             _put_json_object(s3_client, json_obj, bucket, s3_key)
         except Exception:
@@ -168,8 +169,8 @@ def persist_graphs(graphs: dict[str, DiGraph | Graph], s3_client: S3Client, buck
 
     with futures.ThreadPoolExecutor() as executor:
         futures.wait(
-            [executor.submit(_upload_graph, check_type, graph, absolute_root_folder) for
-             check_type, graph in graphs.items()],
+            [executor.submit(_upload_graph, check_type, graph, absolute_root_folder, subgraph_path) for
+             check_type, graphs in graphs.items() for graph, subgraph_path in graphs],
             return_when=futures.FIRST_EXCEPTION,
             timeout=timeout
         )
