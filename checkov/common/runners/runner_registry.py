@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import re
+import platform
 
 from collections import defaultdict
 from collections.abc import Iterable
@@ -603,7 +604,10 @@ class RunnerRegistry:
         if output_dest == CONSOLE_OUTPUT:
             del output_formats[output_format]
 
-            print(output.encode("utf-8"))
+            if platform.system() == 'Windows':
+                print(output.encode("utf-8"))
+            else:
+                print(output)
             if url:
                 print(f"More details: {url}")
 
