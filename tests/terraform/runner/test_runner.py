@@ -12,7 +12,6 @@ from unittest import mock
 from igraph import Graph
 from networkx import DiGraph
 from parameterized import parameterized, parameterized_class
-from rustworkx import PyDiGraph
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
@@ -20,7 +19,6 @@ from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
-from checkov.common.graph.db_connectors.rustworkx.rustworkx_db_connector import RustworkxConnector
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.common.output.report import Report
@@ -48,8 +46,6 @@ EXTERNAL_MODULES_DOWNLOAD_PATH = os.environ.get('EXTERNAL_MODULES_DIR', DEFAULT_
     {"db_connector": NetworkxConnector, "tf_split_graph": "False", "graph": "NETWORKX"},
     {"db_connector": IgraphConnector, "tf_split_graph": "True", "graph": "IGRAPH"},
     {"db_connector": IgraphConnector, "tf_split_graph": "False", "graph": "IGRAPH"},
-    {"db_connector": RustworkxConnector, "tf_split_graph": "True", "graph": "RUSTWORKX"},
-    {"db_connector": RustworkxConnector, "tf_split_graph": "False", "graph": "RUSTWORKX"},
 ])
 class TestRunnerValid(unittest.TestCase):
     def setUp(self) -> None:
@@ -1597,8 +1593,7 @@ class TestRunnerValid(unittest.TestCase):
 
     @parameterized.expand([
         (NetworkxConnector,),
-        (IgraphConnector,),
-        (RustworkxConnector,)
+        (IgraphConnector,)
     ])
     def test_get_graph_resource_entity_config(self, graph_connector):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -1613,10 +1608,6 @@ class TestRunnerValid(unittest.TestCase):
                 self.assertIn(CustomAttributes.TF_RESOURCE_ADDRESS, config)
         if isinstance(graph_connector, Graph):
             for data in graph_connector.vs.select()["attr"]:
-                config = Runner.get_graph_resource_entity_config(data)
-                self.assertIn(CustomAttributes.TF_RESOURCE_ADDRESS, config)
-        if isinstance(graph_connector, PyDiGraph):
-            for _, data in graph_connector.nodes():
                 config = Runner.get_graph_resource_entity_config(data)
                 self.assertIn(CustomAttributes.TF_RESOURCE_ADDRESS, config)
 

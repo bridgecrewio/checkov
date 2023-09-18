@@ -11,7 +11,6 @@ from collections import defaultdict
 
 import dpath
 from igraph import Graph
-from rustworkx import PyDiGraph, digraph_node_link_json  # type: ignore
 
 try:
     from networkx import DiGraph, node_link_data
@@ -19,7 +18,6 @@ except ImportError:
     logging.info("Not able to import networkx")
     DiGraph = str
     node_link_data = lambda G : {}
-
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
@@ -39,10 +37,6 @@ check_reduced_keys = (
     'file_line_range', 'code_block', 'caller_file_path', 'caller_file_line_range')
 secrets_check_reduced_keys = check_reduced_keys + ('validation_status',)
 check_metadata_keys = ('evaluations', 'code_block', 'workflow_name', 'triggers', 'job')
-
-FILE_NAME_NETWORKX = 'graph_networkx.json'
-FILE_NAME_IGRAPH = 'graph_igraph.json'
-FILE_NAME_RUSTWORKX = 'graph_rustworkx.json'
 
 
 def _is_scanned_file(file: str) -> bool:
@@ -152,24 +146,15 @@ def enrich_and_persist_checks_metadata(
     return checks_metadata_paths
 
 
-def persist_graphs(
-    graphs: dict[str, DiGraph | Graph | PyDiGraph[Any, Any]],
-    s3_client: S3Client,
-    bucket: str,
-    full_repo_object_key: str,
-    timeout: int,
-    absolute_root_folder: str = '',
-) -> None:
+def persist_graphs(graphs: dict[str, DiGraph | Graph], s3_client: S3Client, bucket: str, full_repo_object_key: str,
+                   timeout: int, absolute_root_folder: str = '') -> None:
     def _upload_graph(check_type: str, graph: DiGraph | Graph, _absolute_root_folder: str = '') -> None:
         if isinstance(graph, DiGraph):
             json_obj = node_link_data(graph)
-            graph_file_name = FILE_NAME_NETWORKX
+            graph_file_name = 'graph_networkx.json'
         elif isinstance(graph, Graph):
             json_obj = serialize_to_json(graph, _absolute_root_folder)
-            graph_file_name = FILE_NAME_IGRAPH
-        elif isinstance(graph, PyDiGraph):
-            json_obj = digraph_node_link_json(graph)
-            graph_file_name = FILE_NAME_RUSTWORKX
+            graph_file_name = 'graph_igraph.json'
         else:
             logging.error(f"unsupported graph type '{graph.__class__.__name__}'")
             return

@@ -111,13 +111,12 @@ setup(
         "openai",
         "spdx-tools>=0.8.0,<0.9.0",
         "license-expression",
-        "rustworkx",
     ],
     dependency_links=[],  # keep it empty, needed for pipenv-setup
     license="Apache License 2.0",
     name="checkov",
     version=version,
-    python_requires=">=3.7",
+    python_requires=">=3.7",  # TODO: change to 3.8 end of September
     description="Infrastructure as code static analysis",
     author="bridgecrew",
     author_email="meet@bridgecrew.io",
