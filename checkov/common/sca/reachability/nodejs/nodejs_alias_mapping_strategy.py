@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import  Dict, Set, Callable
+from typing import Dict, Set, Callable
 
 from checkov.common.sca.reachability.typing import FileParserOutput
 from checkov.common.sca.reachability.abstract_alias_mapping_strategy import AbstractAliasMappingStrategy
