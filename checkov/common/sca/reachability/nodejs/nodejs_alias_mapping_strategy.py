@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import os.path
-from typing import List, Dict, Set, Callable
+from typing import List, Dict, Set, Callable, Any
 import os
 
 from checkov.common.sca.reachability.typing import FileParserOutput
@@ -23,20 +23,23 @@ file_name_to_parser_map: Dict[str, Callable[[str, Set[str]], FileParserOutput]] 
     "vite.config.js": parse_vite_file
 }
 
+
 class NodejsAliasMappingStrategy(AbstractAliasMappingStrategy):
-    def create_alias_mapping(self, root_dir: str, relevant_packages: Set[str]) -> Dict[str, List[str]]:
+    def create_alias_mapping(self, repository_name: str, root_dir: str, relevant_packages: Set[str]) -> Dict[str, List[str]]:
         logging.debug("[NodejsAliasMappingStrategy](create_alias_mapping) - starting")
-        alias_mapping: dict[str, list[str]] = dict()
+        alias_mapping: Dict[str, Any] = dict()
         for curr_root, _, f_names in os.walk(root_dir):
             for file_name in f_names:
                 if file_name in file_name_to_parser_map:
                     logging.debug(f"[NodejsAliasMappingStrategy](create_alias_mapping) - starting parsing ${file_name}")
-                    with open(os.path.join(curr_root, file_name)) as f:
+                    file_absolute_path = os.path.join(curr_root, file_name)
+                    file_relative_path = os.path.relpath(file_absolute_path, root_dir)
+                    with open(file_absolute_path) as f:
                         file_content = f.read()
                         try:
                             output = file_name_to_parser_map[file_name](file_content, relevant_packages)
                             for package_name in output:
-                                alias_mapping[package_name] = output[package_name]["packageAliases"]
+                                add_package_aliases(alias_mapping, "nodejs", repository_name, file_relative_path, package_name, output[package_name]["packageAliases"])
                             logging.debug(
                                 f"[NodejsAliasMappingStrategy](create_alias_mapping) - done parsing for ${file_name}")
                         except Exception:
