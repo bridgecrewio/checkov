@@ -603,7 +603,7 @@ class RunnerRegistry:
         if output_dest == CONSOLE_OUTPUT:
             del output_formats[output_format]
 
-            print(output)
+            print(output.encode("utf-8"))
             if url:
                 print(f"More details: {url}")
 
