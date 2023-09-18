@@ -2,6 +2,8 @@ from textwrap import dedent
 
 from checkov.common.output.ai import OpenAi
 
+import os
+from unittest import mock
 
 def test_parse_completion_response():
     # given
@@ -89,3 +91,24 @@ def test_parse_completion_response():
         "",
         "With this change, the RDS instance will be encrypted at rest, and will comply with the checkov policy.",
     ]
+
+@mock.patch.dict(os.environ, {}) 
+def test_azure_openai_missing_configuration():
+    api_type_selected = 'azure'
+    OpenAi._instance = None
+    openai = OpenAi(api_key='not_a_real_key', api_type=api_type_selected)
+    assert openai._should_run == False
+
+@mock.patch.dict(os.environ, {'CKV_AZURE_OPENAI_API_ENDPOINT': "https://eastus.api.cognitive.microsoft.com/", "CKV_AZURE_OPENAI_API_VERSION": "2023-05-15", "CKV_AZURE_OPENAI_DEPLOYMENT_NAME": "gpt-4"})
+def test_azure_openai_type_is_set_correctly():
+    api_type_selected = 'azure'
+    OpenAi._instance = None
+    openai = OpenAi(api_key='not_a_real_key', api_type=api_type_selected)
+    assert openai._api_type == api_type_selected
+
+@mock.patch.dict(os.environ, {'CKV_AZURE_OPENAI_API_ENDPOINT': "https://eastus.api.cognitive.microsoft.com/", "CKV_AZURE_OPENAI_API_VERSION": "2023-05-15", "CKV_AZURE_OPENAI_DEPLOYMENT_NAME": "gpt-4"})
+def test_azure_openai_correct_configuration():
+    api_type_selected = 'azure'
+    OpenAi._instance = None
+    openai = OpenAi(api_key='not_a_real_key', api_type=api_type_selected)
+    assert openai._should_run == True
