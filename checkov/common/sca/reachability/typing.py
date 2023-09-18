@@ -1,8 +1,4 @@
-from typing import List, Dict, TypedDict
+from typing import List, Dict
 
-
-class PackageAliasesObject(TypedDict):
-    packageAliases: List[str]
-
-
-FileParserOutput = Dict[str, PackageAliasesObject]  # key is the package name
+# {<package_name>: {"packageAliases": [<alias_1> ,..... , <alias_n>]}}
+FileParserOutput = Dict[str, Dict[str, List[str]]]

@@ -6,7 +6,7 @@ import re
 import json
 import os
 
-from checkov.common.sca.reachability.typing import FileParserOutput, PackageAliasesObject
+from checkov.common.sca.reachability.typing import FileParserOutput
 
 
 MODULE_EXPORTS_PATTERN = r'module\.exports\s*=\s*({.*?});'
@@ -34,7 +34,7 @@ def parse_webpack_file(file_content: str, relevant_packages: Set[str]) -> FilePa
         for imported_name in aliases:
             package_name = aliases[imported_name]
             if package_name in relevant_packages:
-                output.setdefault(package_name, PackageAliasesObject(packageAliases=[]))["packageAliases"].append(imported_name)
+                output.setdefault(package_name, {"packageAliases": []})["packageAliases"].append(imported_name)
     return output
 
 
@@ -46,8 +46,7 @@ def parse_tsconfig_file(file_content: str, relevant_packages: Set[str]) -> FileP
         for package_relative_path in paths[imported_name]:
             package_name = os.path.basename(package_relative_path)
             if package_name in relevant_packages:
-                output.setdefault(package_name, PackageAliasesObject(packageAliases=[]))["packageAliases"].append(
-                    imported_name)
+                output.setdefault(package_name, {"packageAliases": []})["packageAliases"].append(imported_name)
     return output
 
 
@@ -62,8 +61,7 @@ def parse_babel_file(file_content: str, relevant_packages: Set[str]) -> FilePars
             for imported_name in aliases:
                 package_name = aliases[imported_name]
                 if package_name in relevant_packages:
-                    output.setdefault(package_name, PackageAliasesObject(packageAliases=[]))["packageAliases"].append(
-                        imported_name)
+                    output.setdefault(package_name, {"packageAliases": []})["packageAliases"].append(imported_name)
     return output
 
 
@@ -84,7 +82,7 @@ def parse_rollup_file(file_content: str, relevant_packages: Set[str]) -> FilePar
             alias_object = json.loads(alias_object_str[6:-1])  # removing 'alias(' and ')'
             for entry in alias_object.get("entries", []):
                 if entry["replacement"] in relevant_packages:
-                    output.setdefault(entry["replacement"], PackageAliasesObject(packageAliases=[]))["packageAliases"].append(
+                    output.setdefault(entry["replacement"], {"packageAliases": []})["packageAliases"].append(
                         entry["find"])
     return output
 
@@ -99,8 +97,7 @@ def parse_package_json_file(file_content: str, relevant_packages: Set[str]) -> F
         aliases.update(package_json["aliasify"]["aliases"])
     for imported_name in aliases:
         if aliases[imported_name] in relevant_packages:
-            output.setdefault(aliases[imported_name], PackageAliasesObject(packageAliases=[]))["packageAliases"].append(
-                imported_name)
+            output.setdefault(aliases[imported_name], {"packageAliases": []})["packageAliases"].append(imported_name)
     return output
 
 
@@ -113,7 +110,7 @@ def parse_snowpack_file(file_content: str, relevant_packages: Set[str]) -> FileP
             package_name = aliases[imported_name]
             if package_name in relevant_packages:
                 if package_name in relevant_packages:
-                    output.setdefault(package_name, PackageAliasesObject(packageAliases=[]))["packageAliases"].append(imported_name)
+                    output.setdefault(package_name, {"packageAliases": []})["packageAliases"].append(imported_name)
     return output
 
 
@@ -125,5 +122,5 @@ def parse_vite_file(file_content: str, relevant_packages: Set[str]) -> FileParse
         for imported_name in aliases:
             package_name = aliases[imported_name]
             if package_name in relevant_packages:
-                output.setdefault(package_name, PackageAliasesObject(packageAliases=[]))["packageAliases"].append(imported_name)
+                output.setdefault(package_name, {"packageAliases": []})["packageAliases"].append(imported_name)
     return output
