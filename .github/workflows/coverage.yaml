@@ -14,6 +14,8 @@ jobs:
     permissions:
       contents: write
     environment: release
+    env:
+      PYTHON_VERSION: "3.8"
     steps:
       - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac  # v3
         with:
@@ -24,10 +26,10 @@ jobs:
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
-      - name: Set up Python 3.7
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
         uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1  # v4
         with:
-          python-version: 3.7
+          python-version: ${{ env.PYTHON_VERSION }}
       - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -41,7 +43,7 @@ jobs:
         run: |
           # remove venv, if exists
           pipenv --rm || true
-          pipenv --python 3.7
+          pipenv --python ${{ env.PYTHON_VERSION }}
           pipenv install --dev
           pipenv run pip install pytest
       - name: Test with pytest

@@ -1,0 +1,26 @@
+Resources:
+  Pass:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Handler: 'index.handler'
+      Role: 'arn:aws:iam::123456789012:role/execution_role'
+      FunctionName: 'MyFunction'
+      Code:
+        S3Bucket: 'myBucket'
+        S3Key: 'code/myLambda.zip'
+      Runtime: 'nodejs18.x'
+  Fail:
+    Type: 'AWS::Lambda::Function'
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E2531
+    Properties:
+      Handler: 'index.handler'
+      Role: 'arn:aws:iam::123456789012:role/execution_role'
+      FunctionName: 'MyFunction'
+      Code:
+        S3Bucket: 'myBucket'
+        S3Key: 'code/myLambda.zip'
+      Runtime: 'dotnetcore3.1'
