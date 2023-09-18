@@ -11,8 +11,7 @@ language_to_strategy: Dict[str, AbstractAliasMappingStrategy] = {
 
 
 class AliasMappingCreator:
-    def __init__(self, repository_name: str):
-        self._repository_name = repository_name
+    def __init__(self) -> None:
         self._alias_mapping: Dict[str, Any] = {}
 
     def update_alias_mapping_for_repository(
@@ -21,4 +20,8 @@ class AliasMappingCreator:
             repository_root_dir: str,
             relevant_packages: Set[str]
     ) -> None:
-        pass
+        for lang in language_to_strategy:
+            language_to_strategy[lang].update_alias_mapping(self._alias_mapping, repository_name, repository_root_dir, relevant_packages)
+
+    def get_alias_mapping(self) -> Dict[str, Any]:
+        return self._alias_mapping
