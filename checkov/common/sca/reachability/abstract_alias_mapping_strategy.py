@@ -16,8 +16,8 @@ class AbstractAliasMappingStrategy(ABC):
     def get_file_name_to_parser_map(self) -> Dict[str, Callable[[str, Set[str]], FileParserOutput]]:
         pass
 
-    def update_alias_mapping(self, alias_mapping: Dict[str, Any], repository_name: str, root_dir: str, relevant_packages: Set[str]) -> Dict[
-        str, List[str]]:
+    def update_alias_mapping(self, alias_mapping: Dict[str, Any], repository_name: str, root_dir: str, relevant_packages: Set[str])\
+            -> Dict[str, List[str]]:
         logging.debug("[AbstractAliasMappingStrategy](create_alias_mapping) - starting")
         file_name_to_parser_map = self.get_file_name_to_parser_map()
         for curr_root, _, f_names in os.walk(root_dir):

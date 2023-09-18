@@ -1,12 +1,8 @@
 from __future__ import annotations
 
-import logging
-import os.path
-from typing import List, Dict, Set, Callable, Any
-import os
+from typing import  Dict, Set, Callable
 
 from checkov.common.sca.reachability.typing import FileParserOutput
-from checkov.common.sca.reachability.commons import add_package_aliases
 from checkov.common.sca.reachability.abstract_alias_mapping_strategy import AbstractAliasMappingStrategy
 from checkov.common.sca.reachability.nodejs.utils import parse_webpack_file, parse_tsconfig_file, parse_babel_file, \
     parse_rollup_file, parse_package_json_file, parse_snowpack_file, parse_vite_file

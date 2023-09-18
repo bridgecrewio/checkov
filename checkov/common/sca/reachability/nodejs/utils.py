@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os.path
-from typing import List, Dict, Set, Any
+from typing import Dict, Set, Any
 import re
 import json
 import os
@@ -38,7 +38,7 @@ def parse_webpack_file(file_content: str, relevant_packages: Set[str]) -> FilePa
     return output
 
 
-def parse_tsconfig_file(file_content: str, relevant_packages: Set[str])  -> FileParserOutput:
+def parse_tsconfig_file(file_content: str, relevant_packages: Set[str]) -> FileParserOutput:
     output: FileParserOutput = dict()
     tsconfig_json = json.loads(file_content)
     paths = tsconfig_json.get("compilerOptions", {}).get("paths", {})
@@ -51,7 +51,7 @@ def parse_tsconfig_file(file_content: str, relevant_packages: Set[str])  -> File
     return output
 
 
-def parse_babel_file(file_content: str, relevant_packages: Set[str])  -> FileParserOutput:
+def parse_babel_file(file_content: str, relevant_packages: Set[str]) -> FileParserOutput:
     output: FileParserOutput = dict()
     babelrc_json = json.loads(file_content)
     plugins = babelrc_json.get("plugins", {})

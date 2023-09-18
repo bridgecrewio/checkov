@@ -1,10 +1,13 @@
 import os
+import pytest
+import sys
 from typing import Dict, Any
 from checkov.common.sca.reachability.nodejs.nodejs_alias_mapping_strategy import NodejsAliasMappingStrategy
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
 
+@pytest.mark.skipif(sys.version_info < (3, 8), reason="Python 3.7 isn't supporting TypedDict")
 def test_create_alias_mapping_from_webpack_file():
     strategy_object = NodejsAliasMappingStrategy()
     root_dir = os.path.join(current_dir, "examples", "webpack")
@@ -13,6 +16,7 @@ def test_create_alias_mapping_from_webpack_file():
     assert alias_mapping == {'nodejs': {'repositories': {'supplygoat': {'files': {'webpack.config.js': {'packageAliases': {'axios': {'packageAliases': ['ax']}}}}}}}}
 
 
+@pytest.mark.skipif(sys.version_info < (3, 8), reason="Python 3.7 isn't supporting TypedDict")
 def test_create_alias_mapping_from_babelrc_file():
     strategy_object = NodejsAliasMappingStrategy()
     root_dir = os.path.join(current_dir, "examples", "babel", "babelrc")
@@ -21,6 +25,7 @@ def test_create_alias_mapping_from_babelrc_file():
     assert alias_mapping == {'nodejs': {'repositories': {'supplygoat': {'files': {'.babelrc': {'packageAliases': {'axios': {'packageAliases': ['ax']}}}}}}}}
 
 
+@pytest.mark.skipif(sys.version_info < (3, 8), reason="Python 3.7 isn't supporting TypedDict")
 def test_create_alias_mapping_from_babel_config_file():
     strategy_object = NodejsAliasMappingStrategy()
     root_dir = os.path.join(current_dir, "examples", "babel", "babel_config")
@@ -29,6 +34,7 @@ def test_create_alias_mapping_from_babel_config_file():
     assert alias_mapping == {'nodejs': {'repositories': {'supplygoat': {'files': {'babel.config.js': {'packageAliases': {'axios': {'packageAliases': ['ax']}}}}}}}}
 
 
+@pytest.mark.skipif(sys.version_info < (3, 8), reason="Python 3.7 isn't supporting TypedDict")
 def test_create_alias_mapping_from_rollup_file():
     strategy_object = NodejsAliasMappingStrategy()
     root_dir = os.path.join(current_dir, "examples", "rollup")
@@ -37,6 +43,7 @@ def test_create_alias_mapping_from_rollup_file():
     assert alias_mapping == {'nodejs': {'repositories': {'supplygoat': {'files': {'rollup.config.js': {'packageAliases': {'axios': {'packageAliases': ['ax']}}}}}}}}
 
 
+@pytest.mark.skipif(sys.version_info < (3, 8), reason="Python 3.7 isn't supporting TypedDict")
 def test_create_alias_mapping_from_package_json_alias():
     strategy_object = NodejsAliasMappingStrategy()
     root_dir = os.path.join(current_dir, "examples", "package_json", "package_json_with_alias")
@@ -45,6 +52,7 @@ def test_create_alias_mapping_from_package_json_alias():
     assert alias_mapping == {'nodejs': {'repositories': {'supplygoat': {'files': {'package.json': {'packageAliases': {'axios': {'packageAliases': ['ax']}}}}}}}}
 
 
+@pytest.mark.skipif(sys.version_info < (3, 8), reason="Python 3.7 isn't supporting TypedDict")
 def test_create_alias_mapping_from_package_json_aliasify():
     strategy_object = NodejsAliasMappingStrategy()
     root_dir = os.path.join(current_dir, "examples", "package_json", "package_json_with_aliasify")
@@ -53,6 +61,7 @@ def test_create_alias_mapping_from_package_json_aliasify():
     assert alias_mapping == {'nodejs': {'repositories': {'supplygoat': {'files': {'package.json': {'packageAliases': {'axios': {'packageAliases': ['ax']}}}}}}}}
 
 
+@pytest.mark.skipif(sys.version_info < (3, 8), reason="Python 3.7 isn't supporting TypedDict")
 def test_create_alias_mapping_from_snowpack():
     strategy_object = NodejsAliasMappingStrategy()
     root_dir = os.path.join(current_dir, "examples", "snowpack")
@@ -61,6 +70,7 @@ def test_create_alias_mapping_from_snowpack():
     assert alias_mapping == {'nodejs': {'repositories': {'supplygoat': {'files': {'snowpack.config.js': {'packageAliases': {'axios': {'packageAliases': ['ax']}}}}}}}}
 
 
+@pytest.mark.skipif(sys.version_info < (3, 8), reason="Python 3.7 isn't supporting TypedDict")
 def test_create_alias_mapping_from_vite():
     strategy_object = NodejsAliasMappingStrategy()
     root_dir = os.path.join(current_dir, "examples", "vite")
@@ -69,6 +79,7 @@ def test_create_alias_mapping_from_vite():
     assert alias_mapping == {'nodejs': {'repositories': {'supplygoat': {'files': {'vite.config.js': {'packageAliases': {'axios': {'packageAliases': ['ax']}}}}}}}}
 
 
+@pytest.mark.skipif(sys.version_info < (3, 8), reason="Python 3.7 isn't supporting TypedDict")
 def test_create_alias_mapping_mix():
     strategy_object = NodejsAliasMappingStrategy()
     root_dir = os.path.join(current_dir, "examples", "mix")
@@ -77,6 +88,7 @@ def test_create_alias_mapping_mix():
     assert alias_mapping == {'nodejs': {'repositories': {'supplygoat': {'files': {'vite.config.js': {'packageAliases': {'axios': {'packageAliases': ['ax']}}}, 'package_json_with_alias/package.json': {'packageAliases': {'axios': {'packageAliases': ['ax']}}}}}}}}
 
 
+@pytest.mark.skipif(sys.version_info < (3, 8), reason="Python 3.7 isn't supporting TypedDict")
 def test_create_alias_mapping_from_fake():
     strategy_object = NodejsAliasMappingStrategy()
     root_dir = os.path.join(current_dir, "examples", "fake_file")
