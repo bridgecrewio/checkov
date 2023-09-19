@@ -148,11 +148,8 @@ class ForeachModuleHandler(ForeachAbstractHandler):
                 # Important to copy to avoid changing the object by reference
                 child_source_module_object_copy = pickle_deepcopy(child.source_module_object)
                 if should_override_foreach_key and child_source_module_object_copy is not None:
-                    tf_module: TFModule | None = child_source_module_object_copy
-                    while tf_module is not None:
-                        # TODO update to be immutable
-                        tf_module.foreach_idx = None
-                        tf_module = tf_module.nested_tf_module
+                    child_source_module_object_copy = self._get_tf_module_with_no_foreach(
+                        child_source_module_object_copy)
 
                 child_module_key = TFModule(path=child.path, name=child.name,
                                             nested_tf_module=child_source_module_object_copy,
@@ -160,6 +157,14 @@ class ForeachModuleHandler(ForeachAbstractHandler):
                 del child_source_module_object_copy
                 self._update_children_foreach_index(original_foreach_or_count_key, original_module_key,
                                                     child_module_key)
+
+    @staticmethod
+    def _get_tf_module_with_no_foreach(original_module: TFModule | None) -> TFModule | None:
+        if original_module is None:
+            return original_module
+        return TFModule(name=original_module.name, path=original_module.path, foreach_idx=None,
+                        nested_tf_module=ForeachModuleHandler._get_tf_module_with_no_foreach(
+                            original_module.nested_tf_module))
 
     def _create_new_module(
             self,

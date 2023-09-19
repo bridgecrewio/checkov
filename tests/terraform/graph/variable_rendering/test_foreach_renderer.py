@@ -5,8 +5,10 @@ from unittest import mock
 import pytest
 
 from checkov.common.util.json_utils import object_hook, CustomJSONEncoder
+from checkov.terraform import TFModule
 from checkov.terraform.graph_builder.foreach.abstract_handler import ForeachAbstractHandler
 from checkov.terraform.graph_builder.foreach.builder import ForeachBuilder
+from checkov.terraform.graph_builder.foreach.module_handler import ForeachModuleHandler
 from checkov.terraform.graph_builder.foreach.resource_handler import ForeachResourceHandler
 from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
 
@@ -390,3 +392,11 @@ def test_foreach_with_lookup():
     graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
     assert graph.vertices[0].attributes.get('uniform_bucket_level_access') == [True]
     assert graph.vertices[1].attributes.get('uniform_bucket_level_access') == [True]
+
+
+def test__get_tf_module_with_no_foreach():
+    module = TFModule(name='1', path='1', foreach_idx='1',
+                      nested_tf_module=TFModule(name='2', path='2', foreach_idx='2', nested_tf_module=None))
+    result = ForeachModuleHandler._get_tf_module_with_no_foreach(module)
+    assert result == TFModule(name='1', path='1', foreach_idx=None,
+                      nested_tf_module=TFModule(name='2', path='2', foreach_idx=None, nested_tf_module=None))
