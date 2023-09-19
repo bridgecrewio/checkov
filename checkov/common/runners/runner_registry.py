@@ -7,6 +7,7 @@ import logging
 import os
 import re
 import platform
+import sys
 
 from collections import defaultdict
 from collections.abc import Iterable
@@ -605,7 +606,7 @@ class RunnerRegistry:
             del output_formats[output_format]
 
             if platform.system() == 'Windows':
-                print(output.encode("utf-8"))
+                sys.stdout.write(output)  # print(output.encode("utf-8"))
             else:
                 print(output)
             if url:
