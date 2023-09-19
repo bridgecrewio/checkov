@@ -121,6 +121,8 @@ class BcPlatformIntegration:
         self.support_flag_enabled = False
         self.enable_persist_graphs = convert_str_to_bool(os.getenv('BC_ENABLE_PERSIST_GRAPHS', 'True'))
         self.persist_graphs_timeout = int(os.getenv('BC_PERSIST_GRAPHS_TIMEOUT', 60))
+        self.ca_certificate: str | None = None
+        self.no_cert_verify: bool = False
 
     def set_bc_api_url(self, new_url: str) -> None:
         self.bc_api_url = normalize_bc_url(new_url)
@@ -206,6 +208,9 @@ class BcPlatformIntegration:
         :param ca_certificate: an optional CA bundle to be used by both libraries.
         :param no_cert_verify: whether to skip SSL cert verification
         """
+        self.ca_certificate = ca_certificate
+        self.no_cert_verify = no_cert_verify
+
         ca_certificate = ca_certificate or os.getenv('BC_CA_BUNDLE')
         cert_reqs: str | None
 
