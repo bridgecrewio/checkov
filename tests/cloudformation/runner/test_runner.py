@@ -400,7 +400,7 @@ class TestRunnerValid(unittest.TestCase):
         report = runner.run(root_folder=None, external_checks_dir=None, files=[scan_file_path],
                             runner_filter=RunnerFilter(framework='cloudformation'))
         self.assertEqual(len(report.failed_checks), 3)
-        self.assertEqual(len(report.passed_checks), 2)
+        self.assertEqual(len(report.passed_checks), 3)
 
     def test_runner_honors_enforcement_rules(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -423,7 +423,7 @@ class TestRunnerValid(unittest.TestCase):
         report = runner.run(root_folder=None, external_checks_dir=None, files=[scan_file_path],
                             runner_filter=RunnerFilter(framework='cloudformation'))
         self.assertEqual(len(report.failed_checks), 3)
-        self.assertEqual(len(report.passed_checks), 2)
+        self.assertEqual(len(report.passed_checks), 3)
 
     def test_parsing_error_yaml(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))

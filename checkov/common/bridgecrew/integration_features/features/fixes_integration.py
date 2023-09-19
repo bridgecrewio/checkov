@@ -105,6 +105,7 @@ class FixesIntegration(BaseIntegrationFeature):
             'framework': check_type,
             'errors': errors
         }
+        logging.debug(f'Payload for fixes API: file_path: {filename}, fileContent: {file_contents}, framework: {check_type}, errors: {errors}')
 
         headers = merge_dicts(
             get_default_post_headers(self.bc_integration.bc_source, self.bc_integration.bc_source_version),
@@ -115,6 +116,7 @@ class FixesIntegration(BaseIntegrationFeature):
             raise AttributeError("HTTP manager was not correctly created")
 
         try:
+            logging.debug(f'Calling fixes API with payload: {json.dumps(payload)}, headers: {headers}, url: {self.fixes_url}')
             request = self.bc_integration.http.request("POST", self.fixes_url, headers=headers, body=json.dumps(payload))  # type:ignore[no-untyped-call]
         except ProtocolError as e:
             logging.error(f'Get fixes request for file {filename} failed with response code error: {e}')
