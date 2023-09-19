@@ -48,8 +48,9 @@ class TestVulnerabilitiesIntegration(unittest.TestCase):
                       check_class=None, file_abs_path='')
         failed_checks: list[Record] = [cve1, cve2, cve3]
         sast_imports = {
-            'Imports': {'/innerFiles/code.js': {'All': ["'bson'", "'decode-uri-component'", "'parse-path'"]},
-                        '/main.js': {'All': ["'bson'", "'decode-uri-component'", "'parse-path'"]}}}
+                        '/innerFiles/code.js': {'all': ["bson", "decode-uri-component", "parse-path"]},
+                        '/main.js': {'all': ["bson", "decode-uri-component", "parse-path"]}
+                        }
 
         sca_report: Report = Report(check_type=CheckType.SCA_PACKAGE)
         sca_report.failed_checks = failed_checks
