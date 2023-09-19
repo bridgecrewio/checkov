@@ -40,17 +40,10 @@ class TFModule:
                             'nested_tf_module') else None) if json_dct else None
 
 
+@dataclass(frozen=True)
 class TFDefinitionKey:
-    __slots__ = ("tf_source_modules", "file_path")
-
-    def __init__(self, file_path: str, tf_source_modules: Optional[TFModule] = None) -> None:
-        self.tf_source_modules = tf_source_modules
-        self.file_path = file_path
-
-    def __eq__(self, other: Any) -> bool:
-        if not isinstance(other, TFDefinitionKey):
-            return False
-        return self.tf_source_modules == other.tf_source_modules and self.file_path == other.file_path
+    file_path: str
+    tf_source_modules: TFModule | None = None
 
     def __lt__(self, other: Any) -> bool:
         if not isinstance(other, TFDefinitionKey):
@@ -59,9 +52,6 @@ class TFDefinitionKey:
 
     def __repr__(self) -> str:
         return f'tf_source_modules:{self.tf_source_modules}, file_path:{self.file_path}'
-
-    def __hash__(self) -> int:
-        return hash((self.file_path, self.tf_source_modules))
 
     def __iter__(self) -> Iterator[tuple[str, Any]]:
         yield from {

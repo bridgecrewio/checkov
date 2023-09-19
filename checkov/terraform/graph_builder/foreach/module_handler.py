@@ -7,7 +7,7 @@ from typing import Any
 
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
 from checkov.common.util.data_structures_utils import pickle_deepcopy
-from checkov.terraform import TFModule
+from checkov.terraform import TFModule, TFDefinitionKey
 from checkov.terraform.graph_builder.foreach.abstract_handler import ForeachAbstractHandler
 from checkov.terraform.graph_builder.foreach.consts import FOREACH_STRING, COUNT_STRING
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
@@ -276,8 +276,11 @@ class ForeachModuleHandler(ForeachAbstractHandler):
         if isinstance(config, dict):
             resolved_module_name = config.get(RESOLVED_MODULE_ENTRY_NAME)
             if resolved_module_name is not None and len(resolved_module_name) > 0:
-                config[RESOLVED_MODULE_ENTRY_NAME][0].tf_source_modules = ForeachAbstractHandler._get_module_with_only_relevant_foreach_idx(
+                original_definition_key = config[RESOLVED_MODULE_ENTRY_NAME][0]
+                tf_source_modules = ForeachAbstractHandler._get_module_with_only_relevant_foreach_idx(
                     original_foreach_or_count_key,
                     original_module_key,
                     resolved_module_name[0].tf_source_modules,
                 )
+                config[RESOLVED_MODULE_ENTRY_NAME][0] = TFDefinitionKey(file_path=original_definition_key.file_path,
+                                                                        tf_source_modules=tf_source_modules)
