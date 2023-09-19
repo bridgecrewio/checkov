@@ -6,6 +6,9 @@ from collections.abc import Iterable
 from itertools import groupby
 from typing import TYPE_CHECKING, Any
 
+from urllib3 import PoolManager
+from urllib3.exceptions import ProtocolError
+
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.bridgecrew.platform_integration import bc_integration
@@ -111,7 +114,19 @@ class FixesIntegration(BaseIntegrationFeature):
         if not self.bc_integration.http:
             raise AttributeError("HTTP manager was not correctly created")
 
-        request = self.bc_integration.http.request("POST", self.fixes_url, headers=headers, body=json.dumps(payload))  # type:ignore[no-untyped-call]
+        try:
+            request = self.bc_integration.http.request("POST", self.fixes_url, headers=headers, body=json.dumps(payload))  # type:ignore[no-untyped-call]
+        except ProtocolError as e:
+            logging.error(f'Get fixes request for file {filename} failed with response code error: {e}')
+            if isinstance(self.bc_integration.http, PoolManager):
+                self.bc_integration.http.clear()
+                self.bc_integration.setup_http_manager(
+                    self.bc_integration.ca_certificate,
+                    self.bc_integration.no_cert_verify
+                )
+                request = self.bc_integration.http.request("POST", self.fixes_url, headers=headers, body=json.dumps(payload))  # type:ignore[no-untyped-call]
+            else:
+                return None
 
         if request.status != 200:
             error_message = extract_error_message(request)
