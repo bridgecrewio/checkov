@@ -337,10 +337,12 @@ def test_foreach_module_in_both_levels_module(checkov_source_path):
     graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
     tf_definitions, _ = convert_graph_vertices_to_tf_definitions(vertices=graph.vertices, root_folder=dir_name)
 
+    resources = [block for block in graph.vertices if block.block_type == 'resource']
     assert len([block for block in graph.vertices if block.block_type == 'module']) == 20
-    assert len([block for block in graph.vertices if block.block_type == 'resource']) == 16
+    assert len(resources) == 16
     assert len(tf_definitions.keys()) == 22
-    assert graph.vertices[15].source_module_object.foreach_idx is not None
+    for resource in resources:
+        assert resource.source_module_object.foreach_idx is not None
 
 
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})

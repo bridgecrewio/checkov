@@ -82,7 +82,7 @@ class ForeachAbstractHandler:
             original_foreach_or_count_key, original_module_key, nested_module)
         return TFModule(name=tf_moudle.name, path=tf_moudle.path,
                         nested_tf_module=updated_module,
-                        foreach_idx=tf_moudle.foreach_idx)
+                        foreach_idx=original_foreach_or_count_key)
 
     @staticmethod
     def _pop_foreach_attrs(attrs: dict[str, Any]) -> None:

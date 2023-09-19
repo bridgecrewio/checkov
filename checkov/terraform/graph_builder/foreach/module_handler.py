@@ -112,7 +112,9 @@ class ForeachModuleHandler(ForeachAbstractHandler):
         foreach_idx = original_foreach_or_count_key if not should_override_foreach_key else None
         original_module_key = TFModule(path=main_resource.path, name=main_resource.name,
                                        nested_tf_module=main_resource.source_module_object, foreach_idx=foreach_idx)
-
+        if should_override_foreach_key:
+            # Important to handle the first batch of vertices which already existed in the graph
+            original_module_key = self._get_tf_module_with_no_foreach(original_module_key)
         self._update_children_foreach_index(original_foreach_or_count_key, original_module_key,
                                             should_override_foreach_key=should_override_foreach_key)
 
