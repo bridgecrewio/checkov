@@ -126,7 +126,7 @@ class FixesIntegration(BaseIntegrationFeature):
                     self.bc_integration.ca_certificate,
                     self.bc_integration.no_cert_verify
                 )
-                request = self.bc_integration.http.request("POST", self.fixes_url, headers=headers, body=json.dumps(payload))  # type:ignore[no-untyped-call]
+                request = self.bc_integration.http.request("POST", self.fixes_url, headers=headers, body=json.dumps(payload))  # type:ignore
             else:
                 return None
 
