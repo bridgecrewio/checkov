@@ -606,7 +606,7 @@ class RunnerRegistry:
             del output_formats[output_format]
 
             if platform.system() == 'Windows':
-                sys.stdout.write(output)  # print(output.encode("utf-8"))
+                sys.stdout.buffer.write(output.encode("utf-8"))
             else:
                 print(output)
             if url:
