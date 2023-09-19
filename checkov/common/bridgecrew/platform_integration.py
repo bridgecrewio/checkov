@@ -122,7 +122,7 @@ class BcPlatformIntegration:
         self.enable_persist_graphs = convert_str_to_bool(os.getenv('BC_ENABLE_PERSIST_GRAPHS', 'True'))
         self.persist_graphs_timeout = int(os.getenv('BC_PERSIST_GRAPHS_TIMEOUT', 60))
         self.ca_certificate: str | None = None
-        self.no_cert_verify: bool = False
+        self.no_cert_verify: str | None = None
 
     def set_bc_api_url(self, new_url: str) -> None:
         self.bc_api_url = normalize_bc_url(new_url)
