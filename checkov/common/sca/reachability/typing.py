@@ -5,20 +5,20 @@ from pydantic import BaseModel
 
 
 class PackageAliasesObject(BaseModel):
-    packageAliases: List[str] = list()  # noqa: CCE003  # a static attribute
+    packageAliases: List[str] = list()  # noqa: CCE003  # a default value for initialization
 
 
 class FileObject(BaseModel):
-    packageAliases: Dict[str, PackageAliasesObject] = dict()  # noqa: CCE003  # a static attribute
+    packageAliases: Dict[str, PackageAliasesObject] = dict()  # noqa: CCE003  # a default value for initialization
 
 
 class RepositoryObject(BaseModel):
-    files: Dict[str, FileObject] = dict()  # noqa: CCE003  # a static attribute
+    files: Dict[str, FileObject] = dict()  # noqa: CCE003  # a default value for initialization
 
 
 class LanguageObject(BaseModel):
-    repositories: Dict[str, RepositoryObject] = dict()  # noqa: CCE003  # a static attribute
+    repositories: Dict[str, RepositoryObject] = dict()  # noqa: CCE003  # a default value for initialization
 
 
 class AliasMappingObject(BaseModel):
-    languages: Dict[str, LanguageObject] = dict()  # noqa: CCE003  # a static attribute
+    languages: Dict[str, LanguageObject] = dict()  # noqa: CCE003  # a default value for initialization
