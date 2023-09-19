@@ -121,7 +121,7 @@ class FixesIntegration(BaseIntegrationFeature):
         except ProtocolError as e:
             logging.error(f'Get fixes request for file {filename} failed with response code error: {e}')
             if isinstance(self.bc_integration.http, PoolManager):
-                self.bc_integration.http.clear()  # type:ignore[no-untyped-call]
+                self.bc_integration.http = None
                 self.bc_integration.setup_http_manager(
                     self.bc_integration.ca_certificate,
                     self.bc_integration.no_cert_verify

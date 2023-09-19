@@ -122,7 +122,7 @@ class BcPlatformIntegration:
         self.enable_persist_graphs = convert_str_to_bool(os.getenv('BC_ENABLE_PERSIST_GRAPHS', 'True'))
         self.persist_graphs_timeout = int(os.getenv('BC_PERSIST_GRAPHS_TIMEOUT', 60))
         self.ca_certificate: str | None = None
-        self.no_cert_verify: str | None = None
+        self.no_cert_verify: bool = False
 
     def set_bc_api_url(self, new_url: str) -> None:
         self.bc_api_url = normalize_bc_url(new_url)
@@ -208,6 +208,9 @@ class BcPlatformIntegration:
         :param ca_certificate: an optional CA bundle to be used by both libraries.
         :param no_cert_verify: whether to skip SSL cert verification
         """
+        self.ca_certificate = ca_certificate
+        self.no_cert_verify = no_cert_verify
+
         ca_certificate = ca_certificate or os.getenv('BC_CA_BUNDLE')
         cert_reqs: str | None
 
@@ -217,8 +220,6 @@ class BcPlatformIntegration:
             os.environ['REQUESTS_CA_BUNDLE'] = ca_certificate
             cert_reqs = 'CERT_NONE' if no_cert_verify else 'REQUIRED'
             logging.debug(f'Using CA cert {ca_certificate} and cert_reqs {cert_reqs}')
-            self.ca_certificate = ca_certificate
-            self.no_cert_verify = cert_reqs
             try:
                 parsed_url = urllib3.util.parse_url(os.environ['https_proxy'])
                 self.http = urllib3.ProxyManager(os.environ['https_proxy'],
@@ -230,7 +231,6 @@ class BcPlatformIntegration:
         else:
             cert_reqs = 'CERT_NONE' if no_cert_verify else None
             logging.debug(f'Using cert_reqs {cert_reqs}')
-            self.no_cert_verify = cert_reqs
             try:
                 parsed_url = urllib3.util.parse_url(os.environ['https_proxy'])
                 self.http = urllib3.ProxyManager(os.environ['https_proxy'],
