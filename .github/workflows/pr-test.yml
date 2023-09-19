@@ -79,17 +79,20 @@ jobs:
           # remove venv, if exists
           pipenv --rm || true
           pipenv --python ${{ matrix.python }}
-
           # TODO: remove 3.7 end of September
           if [ ${{ matrix.python }} == '3.7' ]; then
             pipenv install --skip-lock --dev -v
           else
             pipenv install --dev -v
           fi
+          pipenv run pip install redefine --index-url https://pip.redefine.dev
       - name: Unit tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REDEFINE_AUTH: ${{ secrets.REDEFINE_AUTH }}
         run: |
+          pipenv run redefine config set stable_branch=main matrix_value=${{ matrix.python }}
+          pipenv run redefine start --pytest --discover
           pipenv run python -m pytest tests
 
   integration-tests:
