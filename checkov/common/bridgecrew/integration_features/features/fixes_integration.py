@@ -118,6 +118,8 @@ class FixesIntegration(BaseIntegrationFeature):
         try:
             logging.debug(f'Calling fixes API with payload: {json.dumps(payload)}, headers: {headers}, url: {self.fixes_url}')
             request = self.bc_integration.http.request("POST", self.fixes_url, headers=headers, body=json.dumps(payload))  # type:ignore[no-untyped-call]
+
+        # When running via IDE we can fail here in case of running with -d when the poolManager is broken
         except ProtocolError as e:
             logging.error(f'Get fixes request for file {filename} failed with response code error: {e}')
             if isinstance(self.bc_integration.http, PoolManager):
