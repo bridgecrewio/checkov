@@ -141,8 +141,9 @@ class ForeachModuleHandler(ForeachAbstractHandler):
             for child_index in child_indexes:
                 child = self.local_graph.vertices[child_index]
 
-                self._update_nested_tf_module_foreach_idx(original_foreach_or_count_key, original_module_key,
-                                                          child.source_module_object)
+                child.source_module_object = self._get_module_with_only_relevant_foreach_idx(original_foreach_or_count_key,
+                                                                                      original_module_key,
+                                                                                      child.source_module_object)
                 self._update_resolved_entry_for_tf_definition(child, original_foreach_or_count_key, original_module_key)
 
                 # Important to copy to avoid changing the object by reference
@@ -184,7 +185,7 @@ class ForeachModuleHandler(ForeachAbstractHandler):
         main_resource_module_key = TFModule(
             path=new_resource.path,
             name=main_resource.name,
-            nested_tf_module=new_resource.source_module_object,
+            nested_tf_module=self._get_tf_module_with_no_foreach(new_resource.source_module_object)
         )
 
         # Without making this copy the test don't pass, as we might access the data structure in the middle of an update
@@ -275,9 +276,8 @@ class ForeachModuleHandler(ForeachAbstractHandler):
         if isinstance(config, dict):
             resolved_module_name = config.get(RESOLVED_MODULE_ENTRY_NAME)
             if resolved_module_name is not None and len(resolved_module_name) > 0:
-                tf_moudle: TFModule = resolved_module_name[0].tf_source_modules
-                ForeachAbstractHandler._update_nested_tf_module_foreach_idx(
+                config[RESOLVED_MODULE_ENTRY_NAME][0].tf_source_modules = ForeachAbstractHandler._get_module_with_only_relevant_foreach_idx(
                     original_foreach_or_count_key,
                     original_module_key,
-                    tf_moudle,
+                    resolved_module_name[0].tf_source_modules,
                 )

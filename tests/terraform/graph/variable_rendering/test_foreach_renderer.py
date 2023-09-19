@@ -400,3 +400,21 @@ def test__get_tf_module_with_no_foreach():
     result = ForeachModuleHandler._get_tf_module_with_no_foreach(module)
     assert result == TFModule(name='1', path='1', foreach_idx=None,
                       nested_tf_module=TFModule(name='2', path='2', foreach_idx=None, nested_tf_module=None))
+
+
+def test__get_module_with_only_relevant_foreach_idx():
+    module = TFModule(name='1', path='1', foreach_idx='1',
+                      nested_tf_module=TFModule(name='2', path='2', foreach_idx='2',
+                                                nested_tf_module=TFModule(name='3', path='3', foreach_idx='3',
+                                                                          nested_tf_module=None)
+                                                )
+                      )
+    original_key = TFModule(name='2', path='2', foreach_idx='2',
+                            nested_tf_module=TFModule(name='3', path='3', foreach_idx='3', nested_tf_module=None))
+    result = ForeachAbstractHandler._get_module_with_only_relevant_foreach_idx('test', original_key, module)
+    assert result == TFModule(name='1', path='1', foreach_idx='1',
+                      nested_tf_module=TFModule(name='2', path='2', foreach_idx='test',
+                                                nested_tf_module=TFModule(name='3', path='3', foreach_idx='3',
+                                                                          nested_tf_module=None)
+                                                )
+                      )

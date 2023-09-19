@@ -68,15 +68,21 @@ class ForeachAbstractHandler:
         return sub_graph
 
     @staticmethod
-    def _update_nested_tf_module_foreach_idx(original_foreach_or_count_key: int | str, original_module_key: TFModule,
-                                             tf_moudle: TFModule | None) -> None:
-        # TODO update this usage to be immutable
-        original_module_key.foreach_idx = None  # Make sure it is always None even if we didn't override it previously
-        while tf_moudle is not None:
-            if tf_moudle == original_module_key:
-                tf_moudle.foreach_idx = original_foreach_or_count_key
-                break
-            tf_moudle = tf_moudle.nested_tf_module
+    def _get_module_with_only_relevant_foreach_idx(original_foreach_or_count_key: int | str,
+                                                   original_module_key: TFModule,
+                                                   tf_moudle: TFModule | None) -> TFModule | None:
+        if tf_moudle is None:
+            return None
+        if tf_moudle == original_module_key:
+            return TFModule(name=tf_moudle.name, path=tf_moudle.path,
+                            nested_tf_module=tf_moudle.nested_tf_module,
+                            foreach_idx=original_foreach_or_count_key)
+        nested_module = tf_moudle.nested_tf_module
+        updated_module = ForeachAbstractHandler._get_module_with_only_relevant_foreach_idx(
+            original_foreach_or_count_key, original_module_key, nested_module)
+        return TFModule(name=tf_moudle.name, path=tf_moudle.path,
+                        nested_tf_module=updated_module,
+                        foreach_idx=tf_moudle.foreach_idx)
 
     @staticmethod
     def _pop_foreach_attrs(attrs: dict[str, Any]) -> None:
