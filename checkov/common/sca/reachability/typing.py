@@ -3,25 +3,22 @@ from __future__ import annotations
 from typing import List, Dict
 from pydantic import BaseModel
 
-# {<package_name>: {"packageAliases": [<alias_1> ,..... , <alias_n>]}}
-FileParserOutput = Dict[str, Dict[str, List[str]]]
-
 
 class PackageAliasesObject(BaseModel):
-    packageAliases: List[str] = list()
+    packageAliases: List[str] = list()  # noqa: CCE003  # a static attribute
 
 
 class FileObject(BaseModel):
-    packageAliases: Dict[str, PackageAliasesObject] = dict()
+    packageAliases: Dict[str, PackageAliasesObject] = dict()  # noqa: CCE003  # a static attribute
 
 
 class RepositoryObject(BaseModel):
-    files: Dict[str, FileObject] = dict()
+    files: Dict[str, FileObject] = dict()  # noqa: CCE003  # a static attribute
 
 
 class LanguageObject(BaseModel):
-    repositories: Dict[str, RepositoryObject] = dict()
+    repositories: Dict[str, RepositoryObject] = dict()  # noqa: CCE003  # a static attribute
 
 
 class AliasMappingObject(BaseModel):
-    languages: Dict[str, LanguageObject] = dict()
+    languages: Dict[str, LanguageObject] = dict()  # noqa: CCE003  # a static attribute
