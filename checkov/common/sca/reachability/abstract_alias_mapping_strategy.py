@@ -3,7 +3,7 @@ from typing import List, Dict, Set, Callable
 import logging
 import os
 
-from checkov.common.sca.reachability.typing import FileParserOutput, AliasMappingObject, LanguageObject, \
+from checkov.common.sca.reachability.typing import AliasMappingObject, LanguageObject, \
     RepositoryObject, FileObject, PackageAliasesObject
 
 
@@ -13,7 +13,7 @@ class AbstractAliasMappingStrategy(ABC):
         pass
 
     @abstractmethod
-    def get_file_name_to_parser_map(self) -> Dict[str, Callable[[str, Set[str]], FileParserOutput]]:
+    def get_file_name_to_parser_map(self) -> Dict[str, Callable[[str, Set[str]], FileObject]]:
         pass
 
     @staticmethod
@@ -41,9 +41,10 @@ class AbstractAliasMappingStrategy(ABC):
                         file_content = f.read()
                         try:
                             output = file_name_to_parser_map[file_name](file_content, relevant_packages)
-                            for package_name in output:
+                            for package_name in output.packageAliases:
                                 self._add_package_aliases(alias_mapping, self.get_language(), repository_name,
-                                                          file_relative_path, package_name, output[package_name]["packageAliases"])
+                                                          file_relative_path, package_name,
+                                                          output.packageAliases[package_name].packageAliases)
                             logging.debug(
                                 f"[AbstractAliasMappingStrategy](create_alias_mapping) - done parsing for ${file_name}")
                         except Exception:

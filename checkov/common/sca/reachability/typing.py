@@ -8,7 +8,7 @@ FileParserOutput = Dict[str, Dict[str, List[str]]]
 
 
 class PackageAliasesObject(BaseModel):
-    packageAliases: List[str]
+    packageAliases: List[str] = list()
 
 
 class FileObject(BaseModel):
