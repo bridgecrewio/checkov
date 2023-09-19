@@ -109,11 +109,9 @@ class ForeachModuleHandler(ForeachAbstractHandler):
     def _update_module_children(self, main_resource: TerraformBlock,
                                 original_foreach_or_count_key: int | str,
                                 should_override_foreach_key: bool = True) -> None:
+        foreach_idx = original_foreach_or_count_key if not should_override_foreach_key else None
         original_module_key = TFModule(path=main_resource.path, name=main_resource.name,
-                                       nested_tf_module=main_resource.source_module_object)
-
-        if not should_override_foreach_key:
-            original_module_key.foreach_idx = original_foreach_or_count_key
+                                       nested_tf_module=main_resource.source_module_object, foreach_idx=foreach_idx)
 
         self._update_children_foreach_index(original_foreach_or_count_key, original_module_key,
                                             should_override_foreach_key=should_override_foreach_key)
@@ -152,6 +150,7 @@ class ForeachModuleHandler(ForeachAbstractHandler):
                 if should_override_foreach_key and child_source_module_object_copy is not None:
                     tf_module: TFModule | None = child_source_module_object_copy
                     while tf_module is not None:
+                        # TODO update to be immutable
                         tf_module.foreach_idx = None
                         tf_module = tf_module.nested_tf_module
 
@@ -198,8 +197,10 @@ class ForeachModuleHandler(ForeachAbstractHandler):
         else:
             self.local_graph.vertices[resource_idx] = new_resource
 
-            key_with_foreach_index = main_resource_module_key
-            key_with_foreach_index.foreach_idx = idx_to_change
+            key_with_foreach_index = TFModule(name=main_resource_module_key.name,
+                                              path=main_resource_module_key.path,
+                                              nested_tf_module=main_resource_module_key.nested_tf_module,
+                                              foreach_idx=idx_to_change)
             self.local_graph.vertices_by_module_dependency[key_with_foreach_index] = main_resource_module_value
             self.local_graph.vertices_by_module_dependency_by_name[key_with_foreach_index][new_resource.name] = main_resource_module_value
 
