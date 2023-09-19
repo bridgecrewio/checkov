@@ -604,7 +604,7 @@ class RunnerRegistry:
         if output_dest == CONSOLE_OUTPUT:
             del output_formats[output_format]
 
-            if platform.system() == 'Windows':
+            if platform.system() == 'Windows' and False:
                 print(output.encode("utf-8"))
             else:
                 print(output)
