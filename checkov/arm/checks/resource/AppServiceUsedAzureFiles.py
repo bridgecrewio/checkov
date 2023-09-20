@@ -19,7 +19,7 @@ class AppServiceUsedAzureFiles(BaseResourceCheck):
         if properties and isinstance(properties, dict):
             azureStorageAccounts = properties.get("azureStorageAccounts")
             if azureStorageAccounts and isinstance(azureStorageAccounts, dict):
-                for account_name, account_data in azureStorageAccounts.items():
+                for account_data in azureStorageAccounts.values():
                     if isinstance(account_data, dict) and account_data.get('type') == "AzureFiles":
                         return CheckResult.PASSED
         return CheckResult.FAILED
