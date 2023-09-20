@@ -88,7 +88,7 @@ class ForeachModuleHandler(ForeachAbstractHandler):
         return TFModule(m.path, m_name, m.source_module_object, m.for_each_index)
 
     def _create_new_resources_foreach(self, statement: list[str] | dict[str, Any], block_idx: int) -> None:
-        # Important it will be before the super call to avoid changes occuring from super
+        # Important it will be before the super call to avoid changes occurring from super
         main_resource = self.local_graph.vertices[block_idx]
         super()._create_new_resources_foreach(statement, block_idx)
 
@@ -112,9 +112,6 @@ class ForeachModuleHandler(ForeachAbstractHandler):
         foreach_idx = original_foreach_or_count_key if not should_override_foreach_key else None
         original_module_key = TFModule(path=main_resource.path, name=main_resource.name,
                                        nested_tf_module=main_resource.source_module_object, foreach_idx=foreach_idx)
-        # if should_override_foreach_key:
-        #     # Important to handle the first batch of vertices which already existed in the graph
-        #     original_module_key = self._get_tf_module_with_no_foreach(original_module_key)
         self._update_children_foreach_index(original_foreach_or_count_key, original_module_key,
                                             should_override_foreach_key=should_override_foreach_key)
 
@@ -135,22 +132,22 @@ class ForeachModuleHandler(ForeachAbstractHandler):
         Go through all child vertices and update source_module_object with foreach_idx
         """
         if current_module_key is None:
-            if should_override_foreach_key and original_module_key.foreach_idx is not None:
-                # Important to handle the first batch of vertices which already existed in the graph
-                current_module_key = self._get_tf_module_with_no_foreach(original_module_key)
-                # current_module_key = original_module_key
-            else:
-                current_module_key = original_module_key
+            current_module_key = original_module_key
         if current_module_key not in self.local_graph.vertices_by_module_dependency:
-            return
+            # Make sure we check both the intended key (with foreach key) and the one without the foreach key.
+            # This is important as we have some iterations in which we try to access with the intended key before
+            # we actually updated the dict itself
+            nullified_key = self._get_tf_module_with_no_foreach(current_module_key)
+            if nullified_key not in self.local_graph.vertices_by_module_dependency:
+                return
+            current_module_key = nullified_key
         values = self.local_graph.vertices_by_module_dependency[current_module_key].values()
         for child_indexes in values:
             for child_index in child_indexes:
                 child = self.local_graph.vertices[child_index]
 
-                child.source_module_object = self._get_module_with_only_relevant_foreach_idx(original_foreach_or_count_key,
-                                                                                      original_module_key,
-                                                                                      child.source_module_object)
+                child.source_module_object = self._get_module_with_only_relevant_foreach_idx(
+                    original_foreach_or_count_key, original_module_key, child.source_module_object)
                 self._update_resolved_entry_for_tf_definition(child, original_foreach_or_count_key, original_module_key)
 
                 # Important to copy to avoid changing the object by reference
