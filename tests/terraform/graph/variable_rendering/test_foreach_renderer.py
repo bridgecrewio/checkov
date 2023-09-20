@@ -306,18 +306,22 @@ def test_new_tf_parser_with_foreach_modules(checkov_source_path):
 
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
 def test_tf_definitions_for_foreach_on_modules(checkov_source_path):
-    dir_name = 'parser_dup_nested'
-    local_graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
-    tf_definitions, _ = convert_graph_vertices_to_tf_definitions(vertices=local_graph.vertices, root_folder=dir_name)
+    dir_name_and_definitions_path = [
+        ('parser_dup_nested', 'expected_foreach_modules_tf_definitions.json'),
+        ('foreach_module_dup_foreach', 'expected_foreach_module_dup_foreach.json')
+    ]
+    for dir_name, definitions_path in dir_name_and_definitions_path:
+        local_graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
+        tf_definitions, _ = convert_graph_vertices_to_tf_definitions(vertices=local_graph.vertices, root_folder=dir_name)
 
-    file_path = os.path.join(os.path.dirname(__file__), 'expected_foreach_modules_tf_definitions.json')
-    with open(file_path, 'r') as f:
-        expected_data = json.load(f, object_hook=object_hook)
+        file_path = os.path.join(os.path.dirname(__file__), definitions_path)
+        with open(file_path, 'r') as f:
+            expected_data = json.load(f, object_hook=object_hook)
 
-    tf_definitions_json = json.dumps(tf_definitions, cls=CustomJSONEncoder)
-    tf_definitions_json = tf_definitions_json.replace(checkov_source_path, '...')
-    tf_definitions_after_handling_checkov_source = json.loads(tf_definitions_json, object_hook=object_hook)
-    assert tf_definitions_after_handling_checkov_source == expected_data
+        tf_definitions_json = json.dumps(tf_definitions, cls=CustomJSONEncoder)
+        tf_definitions_json = tf_definitions_json.replace(checkov_source_path, '...')
+        tf_definitions_after_handling_checkov_source = json.loads(tf_definitions_json, object_hook=object_hook)
+        assert tf_definitions_after_handling_checkov_source == expected_data
 
 
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
