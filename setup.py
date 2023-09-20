@@ -111,7 +111,6 @@ setup(
         "openai",
         "spdx-tools>=0.8.0,<0.9.0",
         "license-expression",
-        "pydantic",
     ],
     dependency_links=[],  # keep it empty, needed for pipenv-setup
     license="Apache License 2.0",

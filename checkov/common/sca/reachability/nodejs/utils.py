@@ -6,8 +6,6 @@ import re
 import json
 import os
 
-from checkov.common.sca.reachability.typing import FileObject, PackageAliasesObject
-
 
 MODULE_EXPORTS_PATTERN = r'module\.exports\s*=\s*({.*?});'
 EXPORT_DEFAULT_PATTERN = r'export\s*default\s*({.*?});'
@@ -26,32 +24,32 @@ def _parse_export(file_content: str, pattern: str) -> Dict[str, Any] | None:
     return None
 
 
-def parse_webpack_file(file_content: str, relevant_packages: Set[str]) -> FileObject:
-    output: FileObject = FileObject()
+def parse_webpack_file(file_content: str, relevant_packages: Set[str]) -> Dict[str, Any]:
+    output: Dict[str, Any] = {"packageAliases": {}}
     module_exports_json = _parse_export(file_content, MODULE_EXPORTS_PATTERN)
     if module_exports_json:
         aliases = module_exports_json.get("resolve", {}).get("alias", {})
         for imported_name in aliases:
             package_name = aliases[imported_name]
             if package_name in relevant_packages:
-                output.packageAliases.setdefault(package_name, PackageAliasesObject()).packageAliases.append(imported_name)
+                output["packageAliases"].setdefault(package_name, {"packageAliases": []})["packageAliases"].append(imported_name)
     return output
 
 
-def parse_tsconfig_file(file_content: str, relevant_packages: Set[str]) -> FileObject:
-    output: FileObject = FileObject()
+def parse_tsconfig_file(file_content: str, relevant_packages: Set[str]) -> Dict[str, Any]:
+    output: Dict[str, Any] = {"packageAliases": {}}
     tsconfig_json = json.loads(file_content)
     paths = tsconfig_json.get("compilerOptions", {}).get("paths", {})
     for imported_name in paths:
         for package_relative_path in paths[imported_name]:
             package_name = os.path.basename(package_relative_path)
             if package_name in relevant_packages:
-                output.packageAliases.setdefault(package_name, PackageAliasesObject()).packageAliases.append(imported_name)
+                output["packageAliases"].setdefault(package_name, {"packageAliases": []})["packageAliases"].append(imported_name)
     return output
 
 
-def parse_babel_file(file_content: str, relevant_packages: Set[str]) -> FileObject:
-    output: FileObject = FileObject()
+def parse_babel_file(file_content: str, relevant_packages: Set[str]) -> Dict[str, Any]:
+    output: Dict[str, Any] = {"packageAliases": {}}
     babelrc_json = json.loads(file_content)
     plugins = babelrc_json.get("plugins", {})
     for plugin in plugins:
@@ -61,12 +59,12 @@ def parse_babel_file(file_content: str, relevant_packages: Set[str]) -> FileObje
             for imported_name in aliases:
                 package_name = aliases[imported_name]
                 if package_name in relevant_packages:
-                    output.packageAliases.setdefault(package_name, PackageAliasesObject()).packageAliases.append(imported_name)
+                    output["packageAliases"].setdefault(package_name, {"packageAliases": []})["packageAliases"].append(imported_name)
     return output
 
 
-def parse_rollup_file(file_content: str, relevant_packages: Set[str]) -> FileObject:
-    output: FileObject = FileObject()
+def parse_rollup_file(file_content: str, relevant_packages: Set[str]) -> Dict[str, Any]:
+    output: Dict[str, Any] = {"packageAliases": {}}
     export_default_match = re.search(EXPORT_DEFAULT_PATTERN, file_content, re.DOTALL)
     if export_default_match:
         export_default_str = export_default_match.group(1)
@@ -81,13 +79,15 @@ def parse_rollup_file(file_content: str, relevant_packages: Set[str]) -> FileObj
         for alias_object_str in matches:
             alias_object = json.loads(alias_object_str[6:-1])  # removing 'alias(' and ')'
             for entry in alias_object.get("entries", []):
+                package_name = entry["replacement"]
                 if entry["replacement"] in relevant_packages:
-                    output.packageAliases.setdefault(entry["replacement"], PackageAliasesObject()).packageAliases.append(entry["find"])
+                    imported_name = entry["find"]
+                    output["packageAliases"].setdefault(package_name, {"packageAliases": []})["packageAliases"].append(imported_name)
     return output
 
 
-def parse_package_json_file(file_content: str, relevant_packages: Set[str]) -> FileObject:
-    output: FileObject = FileObject()
+def parse_package_json_file(file_content: str, relevant_packages: Set[str]) -> Dict[str, Any]:
+    output: Dict[str, Any] = {"packageAliases": {}}
     package_json = json.loads(file_content)
     aliases: Dict[str, str] = dict()
     if "alias" in package_json:
@@ -95,13 +95,14 @@ def parse_package_json_file(file_content: str, relevant_packages: Set[str]) -> F
     if package_json.get("aliasify", {}).get("aliases"):
         aliases.update(package_json["aliasify"]["aliases"])
     for imported_name in aliases:
-        if aliases[imported_name] in relevant_packages:
-            output.packageAliases.setdefault(aliases[imported_name], PackageAliasesObject()).packageAliases.append(imported_name)
+        package_name = aliases[imported_name]
+        if package_name in relevant_packages:
+            output["packageAliases"].setdefault(package_name, {"packageAliases": []})["packageAliases"].append(imported_name)
     return output
 
 
-def parse_snowpack_file(file_content: str, relevant_packages: Set[str]) -> FileObject:
-    output: FileObject = FileObject()
+def parse_snowpack_file(file_content: str, relevant_packages: Set[str]) -> Dict[str, Any]:
+    output: Dict[str, Any] = {"packageAliases": {}}
     module_exports_json = _parse_export(file_content, MODULE_EXPORTS_PATTERN)
     if module_exports_json:
         aliases = module_exports_json.get("alias", {})
@@ -109,17 +110,17 @@ def parse_snowpack_file(file_content: str, relevant_packages: Set[str]) -> FileO
             package_name = aliases[imported_name]
             if package_name in relevant_packages:
                 if package_name in relevant_packages:
-                    output.packageAliases.setdefault(package_name, PackageAliasesObject()).packageAliases.append(imported_name)
+                    output["packageAliases"].setdefault(package_name, {"packageAliases": []})["packageAliases"].append(imported_name)
     return output
 
 
-def parse_vite_file(file_content: str, relevant_packages: Set[str]) -> FileObject:
-    output: FileObject = FileObject()
+def parse_vite_file(file_content: str, relevant_packages: Set[str]) -> Dict[str, Any]:
+    output: Dict[str, Any] = {"packageAliases": {}}
     export_default_match = _parse_export(file_content, EXPORT_DEFAULT_PATTERN)
     if export_default_match:
         aliases = export_default_match.get("resolve", {}).get("alias", {})
         for imported_name in aliases:
             package_name = aliases[imported_name]
             if package_name in relevant_packages:
-                output.packageAliases.setdefault(package_name, PackageAliasesObject()).packageAliases.append(imported_name)
+                output["packageAliases"].setdefault(package_name, {"packageAliases": []})["packageAliases"].append(imported_name)
     return output
