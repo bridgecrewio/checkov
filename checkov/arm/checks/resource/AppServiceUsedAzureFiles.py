@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from typing import Any
 
 from checkov.arm.base_resource_check import BaseResourceCheck
@@ -9,17 +10,17 @@ class AppServiceUsedAzureFiles(BaseResourceCheck):
     def __init__(self) -> None:
         name = "Ensure that app services use Azure Files"
         id = "CKV_AZURE_88"
-        supported_resources = ["Microsoft.Web/sites/config"]
+        supported_resources = ("Microsoft.Web/sites/config",)
         categories = (CheckCategories.GENERAL_SECURITY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
-        if conf.get('properties') and isinstance(conf.get('properties'), dict):
-            properties = conf.get('properties')
-            if properties.get("azureStorageAccounts") and isinstance(properties.get("azureStorageAccounts"), dict):
-                azureStorageAccounts = properties.get("azureStorageAccounts")
-                for account in azureStorageAccounts:
-                    if isinstance(azureStorageAccounts[account], dict) and azureStorageAccounts[account]['type'] == "AzureFiles":
+        properties = conf.get('properties')
+        if properties and isinstance(properties, dict):
+            azureStorageAccounts = properties.get("azureStorageAccounts")
+            if azureStorageAccounts and isinstance(azureStorageAccounts, dict):
+                for account_name, account_data in azureStorageAccounts.items():
+                    if isinstance(account_data, dict) and account_data.get('type') == "AzureFiles":
                         return CheckResult.PASSED
         return CheckResult.FAILED
 
