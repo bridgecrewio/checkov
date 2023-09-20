@@ -3,10 +3,10 @@ import unittest
 
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner
-from checkov.terraform.checks.resource.azure.SQLDatabaseLedgerEnabled import check
+from checkov.terraform.checks.resource.azure.AppServicePlanZoneRedundant import check
 
 
-class SQLDatabaseLedgerEnabled(unittest.TestCase):
+class AppServicePlanZoneRedundant(unittest.TestCase):
 
     def test(self):
         runner = Runner()
