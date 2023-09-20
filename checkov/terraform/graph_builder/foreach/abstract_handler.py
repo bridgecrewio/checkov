@@ -7,7 +7,6 @@ import typing
 from typing import Any
 
 from checkov.common.util.data_structures_utils import pickle_deepcopy
-from checkov.terraform import TFModule
 from checkov.terraform.graph_builder.foreach.consts import COUNT_STRING, FOREACH_STRING, COUNT_KEY, EACH_VALUE, \
     EACH_KEY, REFERENCES_VALUES
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
@@ -66,23 +65,6 @@ class ForeachAbstractHandler:
         sub_graph.in_edges = self.local_graph.in_edges
         sub_graph.out_edges = self.local_graph.out_edges
         return sub_graph
-
-    @staticmethod
-    def _get_module_with_only_relevant_foreach_idx(original_foreach_or_count_key: int | str,
-                                                   original_module_key: TFModule,
-                                                   tf_moudle: TFModule | None) -> TFModule | None:
-        if tf_moudle is None:
-            return None
-        if tf_moudle == original_module_key:
-            return TFModule(name=tf_moudle.name, path=tf_moudle.path,
-                            nested_tf_module=tf_moudle.nested_tf_module,
-                            foreach_idx=original_foreach_or_count_key)
-        nested_module = tf_moudle.nested_tf_module
-        updated_module = ForeachAbstractHandler._get_module_with_only_relevant_foreach_idx(
-            original_foreach_or_count_key, original_module_key, nested_module)
-        return TFModule(name=tf_moudle.name, path=tf_moudle.path,
-                        nested_tf_module=updated_module,
-                        foreach_idx=tf_moudle.foreach_idx)
 
     @staticmethod
     def _pop_foreach_attrs(attrs: dict[str, Any]) -> None:

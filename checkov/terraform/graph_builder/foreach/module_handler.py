@@ -281,10 +281,27 @@ class ForeachModuleHandler(ForeachAbstractHandler):
             resolved_module_name = config.get(RESOLVED_MODULE_ENTRY_NAME)
             if resolved_module_name is not None and len(resolved_module_name) > 0:
                 original_definition_key = config[RESOLVED_MODULE_ENTRY_NAME][0]
-                tf_source_modules = ForeachAbstractHandler._get_module_with_only_relevant_foreach_idx(
+                tf_source_modules = ForeachModuleHandler._get_module_with_only_relevant_foreach_idx(
                     original_foreach_or_count_key,
                     original_module_key,
                     resolved_module_name[0].tf_source_modules,
                 )
                 config[RESOLVED_MODULE_ENTRY_NAME][0] = TFDefinitionKey(file_path=original_definition_key.file_path,
                                                                         tf_source_modules=tf_source_modules)
+
+    @staticmethod
+    def _get_module_with_only_relevant_foreach_idx(original_foreach_or_count_key: int | str,
+                                                   original_module_key: TFModule,
+                                                   tf_moudle: TFModule | None) -> TFModule | None:
+        if tf_moudle is None:
+            return None
+        if tf_moudle == original_module_key:
+            return TFModule(name=tf_moudle.name, path=tf_moudle.path,
+                            nested_tf_module=tf_moudle.nested_tf_module,
+                            foreach_idx=original_foreach_or_count_key)
+        nested_module = tf_moudle.nested_tf_module
+        updated_module = ForeachModuleHandler._get_module_with_only_relevant_foreach_idx(
+            original_foreach_or_count_key, original_module_key, nested_module)
+        return TFModule(name=tf_moudle.name, path=tf_moudle.path,
+                        nested_tf_module=updated_module,
+                        foreach_idx=tf_moudle.foreach_idx)
