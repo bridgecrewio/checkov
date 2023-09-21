@@ -58,7 +58,7 @@ class BaseVCSDAL:
                     cert_reqs='REQUIRED',
                     ca_certs=ca_certificate,
                     proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth),  # type:ignore[no-untyped-call]
-                    timeout = self.http_timeout,
+                    timeout=self.http_timeout,
                     retries=self.http_retry,
                 )
             except KeyError:
@@ -74,7 +74,7 @@ class BaseVCSDAL:
                 self.http = urllib3.ProxyManager(
                     os.environ['https_proxy'],
                     proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth),  # type:ignore[no-untyped-call]
-                    timeout = self.http_timeout,
+                    timeout=self.http_timeout,
                     retries=self.http_retry,
                 )
             except KeyError:
