@@ -66,7 +66,7 @@ To enrich Bridgecrew's context with CI/CD systems data, we strongly recommend th
 | PRISMA_API_URL                  | URL of Prisma app for platform integration                                     | https://app3.prismacloud.io                                                             |
 | SLS_FILE_MASK                   | File names mask for all serverless files                                       | serverless.yaml,serverless.yml                                                          |
 | CHECKOV_REQUEST_CONNECT_TIMEOUT | Number of seconds requests will wait to establish a connection to the platform | 3.1                                                                                     |
-| CHECKOV_REQUEST_READ_TIMEOUT    | Number of seconds requests will wait for the platform to send a response       | 30                                                                                      |
+| CHECKOV_REQUEST_READ_TIMEOUT    | Number of seconds requests will wait for the platform to send a response. This duration matches our timeout settings, so changes are likely unnecessary.      | 30                                                                                      |
 | CHECKOV_REQUEST_RETRIES         | Number of retries requests will do towards the platform                        | 3                                                                                       |
 
 ## Bridgecrew platform view
