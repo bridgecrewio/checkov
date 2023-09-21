@@ -21,7 +21,7 @@ class AppServicePlanZoneRedundant(unittest.TestCase):
             'azurerm_service_plan.pass',
         }
         failing_resources = {
-            'azurerm_service_plan.fail',
+            'azurerm_service_plan.fail1',
             'azurerm_service_plan.fail2',
         }
         skipped_resources = {}
