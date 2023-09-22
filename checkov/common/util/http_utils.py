@@ -18,6 +18,7 @@ from checkov.common.resource_code_logger_filter import add_resource_code_filter_
 from checkov.common.util.consts import DEV_API_GET_HEADERS, DEV_API_POST_HEADERS, PRISMA_API_GET_HEADERS, \
     PRISMA_PLATFORM, BRIDGECREW_PLATFORM
 from checkov.common.util.data_structures_utils import merge_dicts
+from checkov.common.util.type_forcers import force_int, force_float
 from checkov.version import version as checkov_version
 
 if TYPE_CHECKING:
@@ -25,7 +26,12 @@ if TYPE_CHECKING:
     from requests import Response
 
 # https://requests.readthedocs.io/en/latest/user/advanced/#timeouts
-DEFAULT_TIMEOUT = (3.1, 30)
+REQUEST_CONNECT_TIMEOUT = force_float(os.getenv("CHECKOV_REQUEST_CONNECT_TIMEOUT")) or 3.1
+REQUEST_READ_TIMEOUT = force_int(os.getenv("CHECKOV_REQUEST_READ_TIMEOUT")) or 30
+DEFAULT_TIMEOUT = (REQUEST_CONNECT_TIMEOUT, REQUEST_READ_TIMEOUT)
+
+# https://urllib3.readthedocs.io/en/stable/user-guide.html#retrying-requests
+REQUEST_RETRIES = force_int(os.getenv("CHECKOV_REQUEST_RETRIES")) or 3
 
 logger = logging.getLogger(__name__)
 add_resource_code_filter_to_logger(logger)
