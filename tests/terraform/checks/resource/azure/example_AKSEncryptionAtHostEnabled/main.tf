@@ -37,7 +37,6 @@ resource "azurerm_kubernetes_cluster" "fail" {
   location            = azurerm_resource_group.example.location
   resource_group_name = azurerm_resource_group.example.name
   dns_prefix          = "exampleaks1"
-  enable_host_encryption  = true
 
   default_node_pool {
     name       = "default"
@@ -59,8 +58,6 @@ resource "azurerm_kubernetes_cluster_node_pool" "fail" {
   kubernetes_cluster_id = azurerm_kubernetes_cluster.example.id
   vm_size               = "Standard_DS2_v2"
   node_count            = 1
-  enable_host_encryption  = true
-
   tags = {
     Environment = "Production"
   }
@@ -71,7 +68,7 @@ resource "azurerm_kubernetes_cluster" "fail1" {
   location            = azurerm_resource_group.example.location
   resource_group_name = azurerm_resource_group.example.name
   dns_prefix          = "exampleaks1"
-  enable_host_encryption  = true
+  enable_host_encryption  = false
 
   default_node_pool {
     name       = "default"
@@ -93,7 +90,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "fail1" {
   kubernetes_cluster_id = azurerm_kubernetes_cluster.example.id
   vm_size               = "Standard_DS2_v2"
   node_count            = 1
-  enable_host_encryption  = true
+  enable_host_encryption  = false
 
   tags = {
     Environment = "Production"
