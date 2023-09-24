@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, TYPE_CHECKING
 
-from policy_sentry.analysis.expand import expand  # type:ignore[import]  # will be fixed with the next version
+from policy_sentry.analysis.expand import expand
 
 from checkov.common.graph.checks_infra.extensions.base_extension import BaseGraphCheckExtension
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
