@@ -221,9 +221,10 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_CloudformationDefinitions, 
                 entity_file_abs_path = entity[CustomAttributes.FILE_PATH]
                 entity_file_path = f"/{os.path.relpath(entity_file_abs_path, root_folder)}"
                 entity_name = entity[CustomAttributes.BLOCK_NAME].split(".")[-1]
-                entity_context = self.context[entity_file_abs_path][TemplateSections.RESOURCES][
-                    entity_name
-                ]
+                if entity_file_abs_path in self.context:
+                    entity_context = self.context[entity_file_abs_path][TemplateSections.RESOURCES][entity_name]
+                else:
+                    entity_context = {}
 
                 skipped_check = next(
                     (
@@ -243,7 +244,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_CloudformationDefinitions, 
                     check_result=check_result,
                     code_block=entity_context.get("code_lines"),
                     file_path=entity_file_path,
-                    file_line_range=[entity_context.get("start_line"), entity_context.get("end_line")],
+                    file_line_range=[entity_context.get("start_line", 1), entity_context.get("end_line", 1)],
                     resource=entity[CustomAttributes.ID],
                     evaluations={},
                     check_class=check.__class__.__module__,

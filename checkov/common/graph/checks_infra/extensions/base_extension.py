@@ -7,7 +7,7 @@ from checkov.common.models.enums import GraphCheckExtension
 
 
 class BaseGraphCheckExtension(ABC):
-    name: GraphCheckExtension
+    name: GraphCheckExtension  # noqa: CCE003  # a static attribute
 
     @abstractmethod
     def extend(self, vertex_data: dict[str, Any]) -> dict[str, Any]:

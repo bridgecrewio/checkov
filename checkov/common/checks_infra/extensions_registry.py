@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
-
-from typing_extensions import Self
+from typing import Any, TYPE_CHECKING
 
 from checkov.common.checks_infra.extensions.iam_action_expansion import IamActionExpansion
 from checkov.common.models.enums import GraphCheckExtension
+
+if TYPE_CHECKING:
+    from typing_extensions import Self
 
 logger = logging.getLogger(__name__)
 

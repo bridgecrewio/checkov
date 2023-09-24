@@ -1,15 +1,17 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from policy_sentry.analysis.expand import expand  # type:ignore[import]  # will be fixed with the next version
-from typing_extensions import Self
 
 from checkov.common.graph.checks_infra.extensions.base_extension import BaseGraphCheckExtension
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.common.models.enums import GraphCheckExtension
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.type_forcers import force_list
+
+if TYPE_CHECKING:
+    from typing_extensions import Self
 
 SUPPORTED_IAM_BLOCKS = {
     "aws_iam_group_policy",
