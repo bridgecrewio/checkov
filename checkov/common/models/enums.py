@@ -59,3 +59,11 @@ class ErrorStatus(IntEnum):
 class CheckFailLevel:
     WARNING = 'WARNING'
     ERROR = 'ERROR'
+
+
+class GraphCheckExtension(str, Enum):
+    IAM_ACTION_EXPANSION = "IAM_ACTION_EXPANSION"
+
+    def __str__(self) -> str:
+        # needed, because of a Python 3.11 change
+        return self.value

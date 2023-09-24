@@ -55,12 +55,16 @@ class BaseConnectionSolver(BaseSolver):
             if self.resource_types:
                 select_kwargs = {"resource_type_in": self.resource_types}
 
-            self.vertices_under_resource_types = [
-                data for data in graph_connector.vs.select(**select_kwargs)["attr"]
-            ]
-            self.vertices_under_connected_resources_types = [
-                data for data in graph_connector.vs.select(resource_type_in=self.connected_resources_types)["attr"]
-            ]
+            try:
+                self.vertices_under_resource_types = [
+                    data for data in graph_connector.vs.select(**select_kwargs)["attr"]
+                ]
+                self.vertices_under_connected_resources_types = [
+                    data for data in graph_connector.vs.select(resource_type_in=self.connected_resources_types)["attr"]
+                ]
+            except KeyError:
+                # igraph throws a KeyError, when it can't find any related vertices
+                pass
         else:
             self.vertices_under_resource_types = [
                 v for _, v in graph_connector.nodes(data=True) if self.resource_type_pred(v, self.resource_types)
@@ -86,12 +90,16 @@ class BaseConnectionSolver(BaseSolver):
             return graph_connector
 
         if isinstance(graph_connector, Graph):
-            resource_nodes = {
-                vertex for vertex in graph_connector.vs.select(resource_type_in=self.targeted_resources_types)
-            }
-            connection_nodes = {
-                vertex for vertex in graph_connector.vs.select(block_type__in=BaseConnectionSolver.SUPPORTED_CONNECTION_BLOCK_TYPES)
-            }
+            try:
+                resource_nodes = {
+                    vertex for vertex in graph_connector.vs.select(resource_type_in=self.targeted_resources_types)
+                }
+                connection_nodes = {
+                    vertex for vertex in graph_connector.vs.select(block_type__in=BaseConnectionSolver.SUPPORTED_CONNECTION_BLOCK_TYPES)
+                }
+            except KeyError:
+                # igraph throws a KeyError, when it can't find any related vertices
+                return Graph()
         else:
             resource_nodes = {
                 node

@@ -11,6 +11,7 @@ from bc_jsonpath_ng.ext import parse
 
 from checkov.common.graph.checks_infra import debug
 from checkov.common.graph.checks_infra.enums import SolverType
+from checkov.common.checks_infra.extensions_registry import GraphCheckExtensionsRegistry
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
 
 from concurrent.futures import ThreadPoolExecutor
@@ -54,15 +55,19 @@ class BaseAttributeSolver(BaseSolver):
             else:
                 select_kwargs = {"block_type__in": list(SUPPORTED_BLOCK_TYPES)}
 
-            for data in graph_connector.vs.select(**select_kwargs)["attr"]:
-                result = self.get_operation(vertex=data)
-                # A None indicate for UNKNOWN result - the vertex shouldn't be added to the passed or the failed vertices
-                if result is None:
-                    unknown_vertices.append(data)
-                elif result:
-                    passed_vertices.append(data)
-                else:
-                    failed_vertices.append(data)
+            try:
+                for data in graph_connector.vs.select(**select_kwargs)["attr"]:
+                    result = self.get_operation(vertex=data)
+                    # A None indicate for UNKNOWN result - the vertex shouldn't be added to the passed or the failed vertices
+                    if result is None:
+                        unknown_vertices.append(data)
+                    elif result:
+                        passed_vertices.append(data)
+                    else:
+                        failed_vertices.append(data)
+            except KeyError:
+                # igraph throws a KeyError, when it can't find any related vertices
+                pass
 
             return passed_vertices, failed_vertices, unknown_vertices
 
@@ -95,6 +100,8 @@ class BaseAttributeSolver(BaseSolver):
                     and self._is_variable_dependant(value_to_check, vertex['source_']) \
                     and self.value != '':
                 return None
+
+        vertex = GraphCheckExtensionsRegistry().run(extensions=self.extensions, vertex_data=vertex)
 
         if self.attribute and (self.is_jsonpath_check or re.match(WILDCARD_PATTERN, self.attribute)):
             attribute_matches = self.get_attribute_matches(vertex)

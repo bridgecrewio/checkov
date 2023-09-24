@@ -139,10 +139,13 @@ class BaseRunner(ABC, Generic[_Definitions, _Context, _GraphManager]):
 
         if graph is None and isinstance(self.graph_manager, GraphManager):
             graph = self.graph_manager.get_reader_endpoint()
-        for r in itertools.chain(self.external_registries or [], [self.graph_registry]):
-            r.load_checks()  # type:ignore[union-attr]
-            registry_results = r.run_checks(graph, runner_filter, report_type)  # type:ignore[union-attr]
-            checks_results = {**checks_results, **registry_results}
+
+        graph_registries = [self.graph_registry] if self.graph_registry else []
+        for r in itertools.chain(self.external_registries or [], graph_registries):
+            r.load_checks()
+            registry_results = r.run_checks(graph, runner_filter, report_type)
+            checks_results.update(registry_results)
+
         # Filtering the checks now
         filtered_result: Dict[BaseGraphCheck, List[_CheckResult]] = {}
         for check, results in checks_results.items():

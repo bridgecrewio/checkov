@@ -205,6 +205,7 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
         parser_registry.reset_definitions_context()
         if not self.definitions:
             # nothing to do
+            self.context = {}
             self.pbar.update()
             self.pbar.close()
             return

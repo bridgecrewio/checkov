@@ -1,5 +1,4 @@
 from __future__ import annotations
-import concurrent.futures
 import logging
 from typing import Any, TYPE_CHECKING
 
@@ -24,20 +23,12 @@ class BaseRegistry:
     def run_checks(
         self, graph_connector: LibraryGraph, runner_filter: RunnerFilter, report_type: str
     ) -> dict[BaseGraphCheck, list[_CheckResult]]:
+        return {
+            check: self.run_check(check=check, graph_connector=graph_connector)
+            for check in (c for c in self.checks if runner_filter.should_run_check(c, report_type=report_type))
+        }
 
-        check_results: "dict[BaseGraphCheck, list[_CheckResult]]" = {}
-        checks_to_run = [c for c in self.checks if runner_filter.should_run_check(c, report_type=report_type)]
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            concurrent.futures.wait(
-                [executor.submit(self.run_check_parallel, check, check_results, graph_connector)
-                 for check in checks_to_run]
-            )
-        return check_results
-
-    def run_check_parallel(
-            self, check: BaseGraphCheck, check_results: dict[BaseGraphCheck, list[_CheckResult]],
-            graph_connector: LibraryGraph
-    ) -> None:
+    def run_check(self, check: BaseGraphCheck, graph_connector: LibraryGraph) -> list[_CheckResult]:
         logging.debug(f'Running graph check: {check.id}')
         debug.graph_check(check_id=check.id, check_name=check.name)
 
@@ -46,7 +37,7 @@ class BaseRegistry:
         check_result = self._process_check_result(passed, [], CheckResult.PASSED, evaluated_keys)
         check_result = self._process_check_result(failed, check_result, CheckResult.FAILED, evaluated_keys)
         check_result = self._process_check_result(unknown, check_result, CheckResult.UNKNOWN, evaluated_keys)
-        check_results[check] = check_result
+        return check_result
 
     @staticmethod
     def _process_check_result(
@@ -55,6 +46,8 @@ class BaseRegistry:
         result: CheckResult,
         evaluated_keys: list[str],
     ) -> list[_CheckResult]:
-        for vertex in results:
-            processed_results.append({"result": result, "entity": vertex, "evaluated_keys": evaluated_keys})
+        processed_results.extend(
+            {"result": result, "entity": vertex, "evaluated_keys": evaluated_keys}
+            for vertex in results
+        )
         return processed_results

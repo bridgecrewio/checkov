@@ -1352,7 +1352,7 @@ class TestRunnerValid(unittest.TestCase):
             os.path.dirname(os.path.realpath(__file__)), "resources", "unbalanced_eval_brackets")
         runner = Runner(db_connector=self.db_connector())
         report = runner.run(root_folder=resources_path, external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework='terraform'))
+                            runner_filter=RunnerFilter(framework=['terraform']))
         file_path = os.path.join(resources_path, 'main.tf')
         self.assertEqual(report.parsing_errors[0], file_path)
 

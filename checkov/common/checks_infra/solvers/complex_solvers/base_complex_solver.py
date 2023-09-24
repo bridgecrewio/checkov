@@ -42,14 +42,18 @@ class BaseComplexSolver(BaseSolver):
             if self.resource_types:
                 select_kwargs = {"resource_type_in": self.resource_types}
 
-            for data in graph_connector.vs.select(**select_kwargs)["attr"]:
-                result = self.get_operation(data)
-                if result is None:
-                    unknown_vertices.append(data)
-                elif result:
-                    passed_vertices.append(data)
-                else:
-                    failed_vertices.append(data)
+            try:
+                for data in graph_connector.vs.select(**select_kwargs)["attr"]:
+                    result = self.get_operation(data)
+                    if result is None:
+                        unknown_vertices.append(data)
+                    elif result:
+                        passed_vertices.append(data)
+                    else:
+                        failed_vertices.append(data)
+            except KeyError:
+                # igraph throws a KeyError, when it can't find any related vertices
+                pass
 
             debug.complex_connection_block(
                 solvers=self.solvers,

@@ -6,10 +6,11 @@ from typing import Optional, Tuple, List, Dict, Any, TYPE_CHECKING
 
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
+from checkov.common.models.enums import GraphCheckExtension
 
 if TYPE_CHECKING:
+    from checkov.common.typing import LibraryGraph
     from checkov.common.bridgecrew.severities import Severity
-    from networkx import DiGraph
 
 
 class BaseGraphCheck:
@@ -33,11 +34,14 @@ class BaseGraphCheck:
         self.frameworks: List[str] = []
         self.is_jsonpath_check: bool = False
         self.check_path: str = ""
+        self.extensions: list[GraphCheckExtension] = [
+            GraphCheckExtension.IAM_ACTION_EXPANSION,
+        ]
 
     def set_solver(self, solver: BaseSolver) -> None:
         self.solver = solver
 
-    def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
+    def run(self, graph_connector: LibraryGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         if not self.solver:
             raise AttributeError("solver attribute was not set")
 
