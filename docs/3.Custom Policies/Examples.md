@@ -479,3 +479,26 @@ definition:
     - prod
     - prod-eu
 ```
+
+## Using a jsonpath operator with IAM_ACTION_EXPANSION extension
+
+The following policy will fail, when `iam:CreatePolicy` or `iam:CreateRole` is used in `aws_iam_policy_document` data block by exact name or via wildcards.
+
+```yaml
+metadata:
+  name: "Ensure CreateRole and CreatePolicy are not used"
+  id: "CKV2_CUSTOM_1"
+  category: "IAM"
+  extensions:
+    - IAM_ACTION_EXPANSION
+definition:
+  or:
+    - cond_type: "attribute"
+      resource_types:
+        - "data.aws_iam_policy_document"
+      attribute: "statement[?(@.effect == Allow)].actions[*]"
+      operator: "jsonpath_not_within"
+      value:
+       - "iam:CreatePolicy"
+       - "iam:CreateRole"
+```

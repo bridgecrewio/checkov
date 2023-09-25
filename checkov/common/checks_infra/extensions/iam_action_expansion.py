@@ -82,6 +82,5 @@ class IamActionExpansion(BaseGraphCheckExtension):
                 if isinstance(original_actions, list):
                     statement[action_key].extend(expanded_actions)
                 else:
-                    expanded_actions = list(expanded_actions)  # fix in policy_sentry to be a list not a set
                     expanded_actions.append(original_actions)
                     statement[action_key] = expanded_actions
