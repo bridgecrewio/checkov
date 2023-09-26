@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import itertools
 import os
+import typing
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Callable, Any, Mapping, Generator
 
@@ -41,6 +42,8 @@ class GraphImageReferencerProvider:
             return self.extract_nodes_networkx()
 
     def extract_nodes_networkx(self) -> networkx.Graph:
+        if typing.TYPE_CHECKING:
+            self.graph_connector = typing.cast(networkx.Graph, self.graph_connector)
         resource_nodes = [
             node
             for node, resource_type in self.graph_connector.nodes(data=CustomAttributes.RESOURCE_TYPE)
@@ -56,9 +59,11 @@ class GraphImageReferencerProvider:
             if self.resource_type_pred(node, list(self.supported_resource_types))
         ]
 
-        return self.graph_connector.subgraph(resource_nodes)  # type: ignore
+        return self.graph_connector.subgraph(resource_nodes)
 
     def extract_nodes_igraph(self) -> igraph.Graph:
+        if typing.TYPE_CHECKING:
+            self.graph_connector = typing.cast(igraph.Graph, self.graph_connector)
         resource_nodes = [
             node
             for node, resource_type in itertools.zip_longest(self.graph_connector.vs['name'],
