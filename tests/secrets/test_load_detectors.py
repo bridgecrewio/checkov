@@ -1,5 +1,6 @@
 import os
 import unittest
+from pathlib import Path
 from typing import Any, Dict, List
 
 from checkov.common.bridgecrew.platform_integration import bc_integration
@@ -238,6 +239,53 @@ class TestLoadDetectors(unittest.TestCase):
                                                        enable_secret_scan_all_files=True))
         self.assertEqual(len(report.failed_checks), 3)
 
+    def test_non_entropy_take_precedence_over_entropy(self):
+        # given: File with entropy secret and custom secret
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/custom_and_entropy"
+        check_id = 'test1'
+        bc_integration.customer_run_config_response = {"secretsPolicies": [
+            {
+                "incidentId": check_id,
+                "category": "Secrets",
+                "severity": "MEDIUM",
+                "incidentType": "Violation",
+                "title": check_id,
+                "guideline": "test",
+                "laceworkViolationId": None,
+                "prowlerCheckId": None,
+                "checkovCheckId": None,
+                "conditionQuery": {
+                    "value": ['test_pass =\s*"(.*?)"'],
+                    "cond_type": "secrets"
+                },
+                "resourceTypes":
+                    [
+                        "aws_instance"
+                    ],
+                "provider": "AWS",
+                "remediationIds":
+                    [],
+                "customerName": "test1",
+                "isCustom": True,
+                "code": None,
+                "descriptiveTitle": None,
+                "constructiveTitle": None,
+                "pcPolicyId": None,
+                "additionalPcPolicyIds": None,
+                "pcSeverity": None,
+                "sourceIncidentId": None
+            }
+        ]}
+        runner = Runner()
+
+        # when: Running the secrets runner on the file
+        report = runner.run(root_folder=valid_dir_path, runner_filter=RunnerFilter(framework=['secrets'], enable_secret_scan_all_files=True))
+
+        # then: Validating that the non-entropy is the one.
+        self.assertEqual(len(report.failed_checks), 1)
+        self.assertEqual(report.failed_checks[0].check_id, check_id)
+
     def test_custom_regex_detector_value_str(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/custom_regex_detector"
@@ -393,6 +441,51 @@ class TestLoadDetectors(unittest.TestCase):
         report = runner.run(root_folder=valid_dir_path,
                             runner_filter=RunnerFilter(framework=['secrets'],
                                                        enable_secret_scan_all_files=True))
+        self.assertEqual(len(report.failed_checks), 0)
+
+    def test_custom_regex_detector_skip_long_line(self):
+        #  given
+        valid_dir_path = Path(__file__).parent / "long_line_custom_regex_detector"
+        bc_integration.customer_run_config_response = {"secretsPolicies": [
+            {
+                "incidentId": "test2",
+                "category": "Secrets",
+                "severity": "MEDIUM",
+                "incidentType": "Violation",
+                "title": "test2",
+                "guideline": "test2",
+                "laceworkViolationId": None,
+                "prowlerCheckId": None,
+                "checkovCheckId": None,
+                "conditionQuery": {
+                    "value": ["\w{20}"],  # this would definitely get a result, but should not, because of the line length
+                    "cond_type": "secrets"
+                },
+                "resourceTypes": [],
+                "provider": "AWS",
+                "remediationIds": [],
+                "customerName": "test2",
+                "isCustom": True,
+                "code": "",
+                "descriptiveTitle": None,
+                "constructiveTitle": None,
+                "pcPolicyId": None,
+                "additionalPcPolicyIds": None,
+                "pcSeverity": None,
+                "sourceIncidentId": None
+            }
+        ]}
+
+        # when
+        report = Runner().run(
+            root_folder=str(valid_dir_path),
+            runner_filter=RunnerFilter(
+                framework=["secrets"],
+                enable_secret_scan_all_files=True
+            )
+        )
+
+        # then
         self.assertEqual(len(report.failed_checks), 0)
 
     def test_modify_secrets_policy_to_multiline_detectors(self) -> None:

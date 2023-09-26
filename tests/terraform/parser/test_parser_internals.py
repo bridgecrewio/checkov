@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from checkov.common.util.parser_utils import eval_string
-from checkov.terraform.parser import load_or_die_quietly
+from checkov.terraform.tf_parser import load_or_die_quietly
 
 
 def test_eval_string_to_list():

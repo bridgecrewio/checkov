@@ -9,6 +9,7 @@ from typing import List, Tuple, Dict, Any, Optional, Pattern, TYPE_CHECKING
 from igraph import Graph
 from bc_jsonpath_ng.ext import parse
 
+from checkov.common.graph.checks_infra import debug
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
 
@@ -106,20 +107,38 @@ class BaseAttributeSolver(BaseSolver):
                     if not resource_variable_dependant or resource_variable_dependant and policy_variable_dependant:
                         filtered_attribute_matches.append(attribute)
             if attribute_matches:
-                if self.is_jsonpath_check:
-                    if self.resource_type_pred(vertex, self.resource_types) and all(
-                            self._get_operation(vertex=vertex, attribute=attr) for attr in filtered_attribute_matches):
-                        return True if len(attribute_matches) == len(filtered_attribute_matches) else None
-                    return False
+                result = self._evaluate_attribute_matches(
+                    vertex=vertex,
+                    attribute_matches=attribute_matches,
+                    filtered_attribute_matches=filtered_attribute_matches,
+                )
+                if result is not None:
+                    # skip unknown
+                    debug.attribute_block(
+                        resource_types=self.resource_types,
+                        attribute=self.attribute,
+                        operator=self.operator,
+                        value=self.value,
+                        resource=vertex,
+                        status="passed" if result is True else "failed",
+                    )
 
-                if self.resource_type_pred(vertex, self.resource_types) and any(
-                        self._get_operation(vertex=vertex, attribute=attr) for attr in filtered_attribute_matches):
-                    return True
-                return False if len(attribute_matches) == len(filtered_attribute_matches) else None
+                return result
 
-        return self.resource_type_pred(vertex, self.resource_types) and self._get_operation(
+        result = self.resource_type_pred(vertex, self.resource_types) and self._get_operation(
             vertex=vertex, attribute=self.attribute
         )
+
+        debug.attribute_block(
+            resource_types=self.resource_types,
+            attribute=self.attribute,
+            operator=self.operator,
+            value=self.value,
+            resource=vertex,
+            status="passed" if result is True else "failed",
+        )
+
+        return result
 
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
         raise NotImplementedError
@@ -139,6 +158,22 @@ class BaseAttributeSolver(BaseSolver):
         else:
             failed_vertices.append(data)
 
+    def _evaluate_attribute_matches(
+        self, vertex: dict[str, Any], attribute_matches: list[str], filtered_attribute_matches: list[str]
+    ) -> bool | None:
+        if self.is_jsonpath_check:
+            if self.resource_type_pred(vertex, self.resource_types) and all(
+                self._get_operation(vertex=vertex, attribute=attr) for attr in filtered_attribute_matches
+            ):
+                return True if len(attribute_matches) == len(filtered_attribute_matches) else None
+            return False
+
+        if self.resource_type_pred(vertex, self.resource_types) and any(
+            self._get_operation(vertex=vertex, attribute=attr) for attr in filtered_attribute_matches
+        ):
+            return True
+        return False if len(attribute_matches) == len(filtered_attribute_matches) else None
+
     def get_attribute_matches(self, vertex: Dict[str, Any]) -> List[str]:
         try:
             attribute_matches: List[str] = []
@@ -151,11 +186,14 @@ class BaseAttributeSolver(BaseSolver):
                         vertex[full_path] = match.value
 
                     attribute_matches.append(full_path)
-
             elif isinstance(self.attribute, str):
                 attribute_patterns = self.get_attribute_patterns(self.attribute)
+                attribute_parts = [attr for attr in self.attribute.split(".") if attr != "*"]
                 for attr in vertex:
-                    if any(re.match(re.compile(attribute_pattern), attr) for attribute_pattern in attribute_patterns):
+                    if any(part not in attr for part in attribute_parts):
+                        # if even one attribute part doesn't exist in the vertex attribute, then no need to further proceed
+                        continue
+                    if any(re.match(attribute_pattern, attr) for attribute_pattern in attribute_patterns):
                         attribute_matches.append(attr)
 
             return attribute_matches

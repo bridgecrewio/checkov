@@ -6,6 +6,8 @@ from typing import Any, Callable, TYPE_CHECKING  # noqa: F401  # Callable is use
 
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.bridgecrew.check_type import CheckType
+from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
+from checkov.common.util.file_utils import read_file_with_any_encoding
 from checkov.yaml_doc.runner import Runner as YamlRunner
 from checkov.json_doc.runner import Runner as JsonRunner
 from pathlib import Path
@@ -17,6 +19,7 @@ _ParseFormatJsonCallable: TypeAlias = "Callable[[JsonRunner, str, str | None], t
 _ParseFormatYamlCallable: TypeAlias = "Callable[[YamlRunner, str, str | None], tuple[dict[str, Any] | list[dict[str, Any]] | None, list[tuple[int, str]] | None] | None]"
 
 logger = logging.getLogger(__name__)
+add_resource_code_filter_to_logger(logger)
 
 
 class Runner(YamlRunner, JsonRunner):
@@ -96,8 +99,7 @@ class Runner(YamlRunner, JsonRunner):
         return ",".join(supported_entities)
 
     def load_file(self, filename: str | Path) -> str:
-        file_path = filename if isinstance(filename, Path) else Path(filename)
-        content = file_path.read_text()
+        content = read_file_with_any_encoding(file_path=filename)
         return content
 
     def pre_validate_file(self, file_content: str) -> bool:

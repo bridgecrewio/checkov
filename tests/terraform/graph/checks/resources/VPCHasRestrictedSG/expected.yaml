@@ -4,3 +4,5 @@ fail:
   - "aws_vpc.not_ok_vpc"
   - "aws_vpc.not_ok_vpc_2"
   - "aws_vpc.not_ok_vpc_3"
+  - "aws_vpc.not_ok_vpc_4"
+  - "aws_vpc.not_ok_vpc_5"

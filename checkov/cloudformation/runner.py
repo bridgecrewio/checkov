@@ -5,6 +5,8 @@ import logging
 import os
 from typing import Type, Any, TYPE_CHECKING
 
+from typing_extensions import TypeAlias  # noqa[TC002]
+
 from checkov.cloudformation import cfn_utils
 from checkov.cloudformation.cfn_utils import create_definitions, build_definitions_context
 from checkov.cloudformation.checks.resource.registry import cfn_registry
@@ -35,8 +37,11 @@ if TYPE_CHECKING:
     from checkov.common.checks_infra.registry import Registry
     from checkov.common.images.image_referencer import Image
 
+_CloudformationContext: TypeAlias = "dict[str, dict[str, Any]]"
+_CloudformationDefinitions: TypeAlias = "dict[str, dict[str, Any]]"
 
-class Runner(ImageReferencerMixin[None], BaseRunner[CloudformationGraphManager]):
+
+class Runner(ImageReferencerMixin[None], BaseRunner[_CloudformationDefinitions, _CloudformationContext, CloudformationGraphManager]):
     check_type = CheckType.CLOUDFORMATION  # noqa: CCE003  # a static attribute
 
     def __init__(
@@ -56,8 +61,8 @@ class Runner(ImageReferencerMixin[None], BaseRunner[CloudformationGraphManager])
             if graph_manager is not None
             else CloudformationGraphManager(source=source, db_connector=db_connector)
         )
-        self.context: "dict[str, dict[str, Any]]" = {}
-        self.definitions: "dict[str, dict[str, Any]]" = {}  # type:ignore[assignment]  # need to check, how to support subclass differences
+        self.context: _CloudformationContext = {}
+        self.definitions: _CloudformationDefinitions = {}
         self.definitions_raw: "dict[str, list[tuple[int, str]]]" = {}
         self.graph_registry: "Registry" = get_graph_checks_registry(self.check_type)
 

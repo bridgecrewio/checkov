@@ -7,7 +7,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, cast, Any
-from checkov.common.output.common import format_string_to_licenses
+from checkov.common.output.common import format_string_to_licenses, validate_lines
 
 from cyclonedx.model import (
     XsUri,
@@ -17,7 +17,7 @@ from cyclonedx.model import (
     HashAlgorithm,
     HashType,
     LicenseChoice,
-    License,
+    License, Property,
 )
 from cyclonedx.model.bom import Bom, Tool
 from cyclonedx.model.component import Component, ComponentType
@@ -46,8 +46,7 @@ from checkov.common.output.cyclonedx_consts import (
     BC_SEVERITY_TO_CYCLONEDX_LEVEL,
 )
 from checkov.common.output.record import SCA_PACKAGE_SCAN_CHECK_NAME
-from checkov.common.sca.commons import UNFIXABLE_VERSION
-from checkov.common.util.consts import CHECKOV_DISPLAY_REGISTRY_URL
+from checkov.common.sca.commons import UNFIXABLE_VERSION, get_fix_version
 
 if sys.version_info >= (3, 8):
     from importlib.metadata import version as meta_version
@@ -72,7 +71,7 @@ class CycloneDX:
         bom = Bom()
 
         try:
-            version = meta_version("checkov")  # type:ignore[no-untyped-call]
+            version = meta_version("checkov")
         except Exception:
             # Unable to determine current version of 'checkov'
             version = "UNKNOWN"
@@ -188,6 +187,10 @@ class CycloneDX:
           <name>flask</name>
           <version>0.6</version>
           <purl>pkg:pypi/cli_repo/pd/requirements.txt/flask@0.6</purl>
+          <properties>
+            <property name="startLine">5</property>
+            <property name="endLine">6</property>
+          </properties>
         </component>
         """
 
@@ -213,7 +216,7 @@ class CycloneDX:
             namespace = f"{self.repo_id}/{resource.file_path}"
             registry_url = resource.vulnerability_details.get("package_registry")
             is_private_registry = resource.vulnerability_details.get("is_private_registry", False)
-            if CHECKOV_DISPLAY_REGISTRY_URL and registry_url and is_private_registry:
+            if registry_url and is_private_registry:
                 qualifiers = f'registry_url={registry_url}'
         package_group = None
         package_name = resource.vulnerability_details["package_name"]
@@ -230,6 +233,7 @@ class CycloneDX:
         # add licenses, if exists
         license_choices = None
         licenses = resource.vulnerability_details.get("licenses")
+
         if licenses:
             license_choices = [
                 LicenseChoice(license_=License(license_name=license)) for license in format_string_to_licenses(licenses)
@@ -242,6 +246,13 @@ class CycloneDX:
             version=package_version,
             qualifiers=qualifiers,
         )
+
+        lines = resource.file_line_range
+        lines = validate_lines(lines)
+        properties = None
+        if lines:
+            properties = [Property(name="endLine", value=str(lines[1])), Property(name="startLine", value=str(lines[0]))]
+
         component = Component(
             bom_ref=str(purl),
             group=package_group,
@@ -250,7 +261,9 @@ class CycloneDX:
             component_type=ComponentType.LIBRARY,
             licenses=license_choices,
             purl=purl,
+            properties=properties
         )
+
         return component
 
     def create_image_component(self, resource: Record, bom: Bom) -> None:
@@ -381,7 +394,7 @@ class CycloneDX:
             method = VulnerabilityScoreSource.get_from_vector(vector)
             vector = method.get_localised_vector(vector)
 
-        fix_version = self.get_fix_version(resource.vulnerability_details)
+        fix_version = self.get_fix_version_overview(resource.vulnerability_details)
         vulnerability = Vulnerability(
             id=resource.vulnerability_details["id"],
             source=source,
@@ -401,12 +414,11 @@ class CycloneDX:
         )
         return vulnerability
 
-    def get_fix_version(self, vulnerability_details: dict[str, Any]) -> str | None:
+    def get_fix_version_overview(self, vulnerability_details: dict[str, Any]) -> str | None:
         is_private_fix = vulnerability_details.get("is_private_fix")
         public_fix_version_prefix = "No private fix available. " if is_private_fix is False else ""
-        status: str | None = vulnerability_details.get("status")
-        fix_version = public_fix_version_prefix + status.capitalize() if status and status != UNFIXABLE_VERSION else status
-        return fix_version
+        fix_version: str = get_fix_version(vulnerability_details)
+        return f'{public_fix_version_prefix}Fixed in {fix_version}' if fix_version and fix_version != UNFIXABLE_VERSION else fix_version
 
     def get_output(self, output_format: OutputFormat) -> str:
         """Returns the SBOM as a formatted string"""

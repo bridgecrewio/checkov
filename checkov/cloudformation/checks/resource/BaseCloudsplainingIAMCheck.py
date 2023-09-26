@@ -4,6 +4,7 @@ import json
 import logging
 from abc import abstractmethod
 from collections import defaultdict
+from functools import partial
 from typing import Any
 
 from cloudsplaining.scan.policy_document import PolicyDocument
@@ -18,7 +19,7 @@ from checkov.cloudformation.checks.utils.iam_cloudformation_document_to_policy_c
 class BaseCloudsplainingIAMCheck(BaseResourceCheck):
     # creating a PolicyDocument is computational expensive,
     # therefore a cache is defined at class level
-    policy_document_cache: dict[str, dict[str, PolicyDocument]] = defaultdict(lambda: defaultdict(PolicyDocument))  # noqa: CCE003
+    policy_document_cache: dict[str, dict[str, PolicyDocument]] = defaultdict(partial(defaultdict, PolicyDocument))  # noqa: CCE003
 
     def __init__(self, name: str, id: str) -> None:
         super().__init__(

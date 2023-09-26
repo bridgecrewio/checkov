@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import re
 from typing import Any
 
 from checkov.common.models.enums import CheckResult, CheckCategories
@@ -34,7 +33,7 @@ class WebhookHttpsOrg(BaseGithubCheck):
                         url = item_config.get('url', '')
                         insecure_ssl = item_config.get('insecure_ssl', '0')
                         secret = item_config.get('secret', '')
-                        if re.match(HTTP, url):
+                        if url.startswith(HTTP):
                             return CheckResult.FAILED, item_config
                         if insecure_ssl != '0' and secret != '********':  # nosec
                             return CheckResult.FAILED, item_config

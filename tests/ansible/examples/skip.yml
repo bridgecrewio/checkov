@@ -20,3 +20,12 @@
         security_group: sg-04acc4e02a5b71244
         image_id: "{{ ami_latest.image_id }}"
         state: running
+
+    - name: http
+      #checkov:skip=CKV2_ANSIBLE_1
+      uri:
+        url: http://www.example.com
+        return_content: yes
+      register: this
+      failed_when: "'AWESOME' not in this.content"
+

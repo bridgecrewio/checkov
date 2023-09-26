@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
 from checkov.common.output.cyclonedx_consts import SCA_CHECKTYPES
+from checkov.common.util.http_utils import valid_url
 from checkov.version import version
 
 if TYPE_CHECKING:
@@ -99,12 +100,13 @@ class GitLabSast:
             "solution": f"Further info can be found {record.guideline}",
         }
 
-        if record.guideline:
+        link = record.guideline
+        if valid_url(link):
             # url can't be None
-            vulnerability["identifiers"][0]["url"] = record.guideline
+            vulnerability["identifiers"][0]["url"] = link
             vulnerability["links"] = [
                 {
-                    "url": record.guideline,
+                    "url": link,
                 }
             ]
 
@@ -137,7 +139,7 @@ class GitLabSast:
         }
 
         link = details.get("link")
-        if link:
+        if valid_url(link):
             # url can't be None
             vulnerability["identifiers"][0]["url"] = link
             vulnerability["links"] = [

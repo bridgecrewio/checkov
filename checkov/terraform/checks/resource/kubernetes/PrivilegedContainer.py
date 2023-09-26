@@ -34,7 +34,7 @@ class PrivilegedContainers(BaseResourceCheck):
             containers = spec.get("container")
 
             for idx, container in enumerate(containers):
-                if type(container) != dict:
+                if not isinstance(container, dict):
                     return CheckResult.UNKNOWN
                 if container.get("security_context"):
                     context = container.get("security_context")[0]

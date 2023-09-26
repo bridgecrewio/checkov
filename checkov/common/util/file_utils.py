@@ -1,9 +1,20 @@
+from __future__ import annotations
+
 import os.path
 import tarfile
 import base64
 import gzip
 import io
 import logging
+from pathlib import Path
+from zipfile import ZipFile
+
+from charset_normalizer import from_path
+
+from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
+
+logger = logging.getLogger(__name__)
+add_resource_code_filter_to_logger(logger)
 
 
 def convert_to_unix_path(path: str) -> str:
@@ -13,6 +24,11 @@ def convert_to_unix_path(path: str) -> str:
 def extract_tar_archive(source_path: str, dest_path: str) -> None:
     with tarfile.open(source_path) as tar:
         tar.extractall(path=dest_path)  # nosec  # only trusted source
+
+
+def extract_zip_archive(source_path: str, dest_path: str) -> None:
+    with ZipFile(source_path) as zip:
+        zip.extractall(path=dest_path)  # nosec  # only trusted source
 
 
 def compress_file_gzip_base64(input_path: str) -> str:
@@ -82,3 +98,17 @@ def get_file_size_safe(file_path: str) -> int:
             extra={"file_path": file_path}
         )
         return -1
+
+
+def read_file_with_any_encoding(file_path: str | Path) -> str:
+    """Read the file with the system encoding and then try to detect it"""
+
+    file_path = file_path if isinstance(file_path, Path) else Path(file_path)
+
+    try:
+        content = file_path.read_text()
+    except UnicodeDecodeError:
+        logger.info(f"Encoding for file {file_path} is not UTF-8, trying to detect it")
+        content = str(from_path(file_path).best())
+
+    return content

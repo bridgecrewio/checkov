@@ -3,7 +3,9 @@ from typing import Any
 
 from checkov.common.util.parser_utils import find_var_blocks
 
-CFN_VARIABLE_DEPENDANT_REGEX = re.compile(r"(?:Ref)\.[^\s]+")
+TF_OPERATOR_PREFIXES = ("lookup(", "list(", "file(")
+
+CFN_VARIABLE_DEPENDANT_REGEX = re.compile(r"(?:Ref)\.\S+")
 TF_BLOCK_REFS = ("var.", "local.", "module.", "data.")
 TF_PROVIDER_PREFIXES = (
     "aws_",
@@ -28,6 +30,9 @@ def is_terraform_variable_dependent(value: Any) -> bool:
         return True
 
     if value.startswith(TF_PROVIDER_PREFIXES):
+        return True
+
+    if value.startswith(TF_OPERATOR_PREFIXES):
         return True
 
     if "${" not in value:

@@ -44,7 +44,7 @@ boto3-stubs-lite = {extras = ["s3"], version = "*"}
 # REMINDER: Update "install_requires" deps on setup.py when changing
 #
 bc-python-hcl2 = "==0.3.51"
-bc-detect-secrets = "==1.4.16"
+bc-detect-secrets = "==1.4.30"
 bc-jsonpath-ng = "==1.5.9"
 deep-merge = "*"
 tabulate = "*"
@@ -62,7 +62,7 @@ semantic-version = "*"
 packaging = "*"
 cloudsplaining = ">=0.4.3"
 networkx = "<2.7"
-igraph = "*"
+igraph = "<0.11.0"  # there will be some breaking changes, but not sure yet, if we will be affected
 dockerfile-parse ="*"
 docker = "*"
 configargparse = "*"
@@ -79,7 +79,7 @@ aiodns = "*"
 aiomultiprocess = "*"
 jsonschema = ">=4.6.0,<5.0.0"
 prettytable = ">=3.0.0"
-pycep-parser = "==0.3.9"
+pycep-parser = "==0.4.1"
 charset-normalizer = "*"
 pyston-autoload = {version = "==2.3.5", markers="python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64' and implementation_name == 'cpython'", index="pypi"}
 pyston = {version = "==2.3.5", markers="python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64' and implementation_name == 'cpython'", index="pypi"}
@@ -87,6 +87,8 @@ schema = "*"
 requests = ">=2.27.0"
 yarl = "*"
 openai = "*"
+spdx-tools = ">=0.8.0,<0.9.0"
+license-expression = "*"
 
 [requires]
-python_version = "3.7"
+python_version = "3.8"

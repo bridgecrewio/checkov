@@ -4,11 +4,14 @@ import logging
 from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Type, Generator
 
+from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
+
 if TYPE_CHECKING:
     from checkov.common.parsers.json.decoder import Mark
 
 
 LOGGER = logging.getLogger(__name__)
+add_resource_code_filter_to_logger(LOGGER)
 
 
 class TemplateAttributeError(AttributeError):

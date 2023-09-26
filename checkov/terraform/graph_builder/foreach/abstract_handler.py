@@ -4,10 +4,9 @@ import abc
 import json
 import re
 import typing
-from copy import deepcopy
 from typing import Any
 
-from checkov.terraform import TFModule
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.terraform.graph_builder.foreach.consts import COUNT_STRING, FOREACH_STRING, COUNT_KEY, EACH_VALUE, \
     EACH_KEY, REFERENCES_VALUES
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
@@ -54,29 +53,18 @@ class ForeachAbstractHandler:
     def _build_sub_graph(self, blocks_to_render: list[int]) -> TerraformLocalGraph:
         from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 
-        module = deepcopy(self.local_graph.module)
-        sub_graph = TerraformLocalGraph(module)
-        sub_graph.vertices = [{}] * len(self.local_graph.vertices)
+        sub_graph = TerraformLocalGraph(self.local_graph.module)
+        sub_graph.vertices = [{}] * len(self.local_graph.vertices)  # type:ignore[list-item]  # are correctly set in the next lines
         for i, block in enumerate(self.local_graph.vertices):
             if not (block.block_type == BlockType.RESOURCE and i not in blocks_to_render):
-                sub_graph.vertices[i] = deepcopy(block)
+                sub_graph.vertices[i] = pickle_deepcopy(block)
         sub_graph.edges = [
-            deepcopy(edge) for edge in self.local_graph.edges if
+            edge for edge in self.local_graph.edges if
             (sub_graph.vertices[edge.dest] and sub_graph.vertices[edge.origin])
         ]
-        sub_graph.in_edges = deepcopy(self.local_graph.in_edges)
-        sub_graph.out_edges = deepcopy(self.local_graph.out_edges)
+        sub_graph.in_edges = self.local_graph.in_edges
+        sub_graph.out_edges = self.local_graph.out_edges
         return sub_graph
-
-    @staticmethod
-    def _update_nested_tf_module_foreach_idx(original_foreach_or_count_key: int | str, original_module_key: TFModule,
-                                             tf_moudle: TFModule) -> None:
-        original_module_key.foreach_idx = None  # Make sure it is always None even if we didn't override it previously
-        while tf_moudle is not None:
-            if tf_moudle == original_module_key:
-                tf_moudle.foreach_idx = original_foreach_or_count_key
-                break
-            tf_moudle = tf_moudle.nested_tf_module
 
     @staticmethod
     def _pop_foreach_attrs(attrs: dict[str, Any]) -> None:
@@ -141,7 +129,10 @@ class ForeachAbstractHandler:
                         v_changed = True
                     else:
                         attrs[k][0] = attrs[k][0].replace("${" + key_to_change + "}", str(val_to_change))
-                        attrs[k][0] = attrs[k][0].replace(key_to_change, str(val_to_change))
+                        if self.need_to_add_quotes(attrs[k][0], key_to_change):
+                            attrs[k][0] = attrs[k][0].replace(key_to_change, f'"{str(val_to_change)}"')
+                        else:
+                            attrs[k][0] = attrs[k][0].replace(key_to_change, str(val_to_change))
                         v_changed = True
                 elif isinstance(v, list) and len(v) == 1 and isinstance(v[0], list):
                     for i, item in enumerate(v):
@@ -208,7 +199,7 @@ class ForeachAbstractHandler:
             return evaluated_statement
         return None
 
-    def _is_static_foreach_statement(self, statement: list[str] | dict[str, Any]) -> bool:
+    def _is_static_foreach_statement(self, statement: str | list[str] | dict[str, Any]) -> bool:
         if isinstance(statement, list):
             if len(statement) == 1 and not statement[0]:
                 return True
@@ -247,3 +238,16 @@ class ForeachAbstractHandler:
     @staticmethod
     def extract_from_list(val: Any) -> Any:
         return val[0] if len(val) == 1 and isinstance(val[0], (str, int, list)) else val
+
+    @staticmethod
+    def need_to_add_quotes(code: str, key: str) -> bool:
+        if "lower" in code or "upper" in code:
+            patterns = (r'lower\(' + key + r'\)', r'upper\(' + key + r'\)')
+            for pattern in patterns:
+                if re.search(pattern, code):
+                    return True
+
+        if f'[{key}]' in code:
+            return True
+
+        return False

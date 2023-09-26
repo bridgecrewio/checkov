@@ -3,6 +3,7 @@ from __future__ import annotations
 import itertools
 import json
 from typing import TYPE_CHECKING, Any
+from urllib.parse import quote
 
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.cyclonedx_consts import SCA_CHECKTYPES
@@ -19,6 +20,15 @@ SEVERITY_TO_SARIF_LEVEL = {
     "medium": "warning",
     "low": "note",
     "none": "none",
+}
+
+
+SEVERITY_TO_SCORE = {
+    "critical": "10.0",
+    "high": "8.9",
+    "medium": "6.9",
+    "low": "3.9",
+    "none": "0.0",
 }
 
 
@@ -100,6 +110,12 @@ class Sarif:
             "defaultConfiguration": {"level": "error"},
         }
 
+        # Adding 'properties' dictionary only if 'record.severity' exists
+        if record.severity:
+            rule["properties"] = {
+                "security-severity": SEVERITY_TO_SCORE.get(record.severity.name.lower(), "0.0"),
+            }
+
         help_uri = record.guideline
         if valid_url(help_uri):
             rule["helpUri"] = help_uri
@@ -127,6 +143,19 @@ class Sarif:
             "defaultConfiguration": {"level": "error"},
         }
 
+        # Add properties dictionary with security-severity
+        cvss = details.get("cvss")
+        if cvss:
+            # use CVSS, if exists
+            rule["properties"] = {
+                "security-severity": str(cvss),
+            }
+        elif record.severity:
+            # otherwise severity, if exists
+            rule["properties"] = {
+                "security-severity": SEVERITY_TO_SCORE.get(record.severity.name.lower(), "0.0"),
+            }
+
         help_uri = details.get("link")
         if valid_url(help_uri):
             rule["helpUri"] = help_uri
@@ -153,6 +182,12 @@ class Sarif:
             },
             "defaultConfiguration": {"level": "error"},
         }
+
+        # Adding 'properties' dictionary only if 'record.severity' exists
+        if record.severity:
+            rule["properties"] = {
+                "security-severity": SEVERITY_TO_SCORE.get(record.severity.name.lower(), "0.0"),
+            }
 
         help_uri = record.guideline
         if valid_url(help_uri):
@@ -187,7 +222,7 @@ class Sarif:
                     "locations": [
                         {
                             "physicalLocation": {
-                                "artifactLocation": {"uri": record.repo_file_path.lstrip("/")},
+                                "artifactLocation": {"uri": quote(record.repo_file_path.lstrip("/"))},
                                 "region": {
                                     "startLine": int(record.file_line_range[0]) or 1,
                                     "endLine": int(record.file_line_range[1]) or 1,

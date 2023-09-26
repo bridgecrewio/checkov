@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from typing import TYPE_CHECKING
 
 from checkov.common.models.enums import CheckCategories, CheckResult
@@ -8,6 +9,8 @@ from checkov.dockerfile.base_dockerfile_check import BaseDockerfileCheck
 if TYPE_CHECKING:
     from dockerfile_parse.parser import _Instruction
 
+UPDATE_COMMANDS_PATTERN = re.compile(r"\s+(?:--)?update(?!\S)")
+
 install_commands = (
     "install",
     "source-install",
@@ -15,10 +18,7 @@ install_commands = (
     "groupinstall",
     "localinstall",
     "add",
-)
-update_commands = (
-    "update",
-    "--update",
+    "upgrade"
 )
 
 
@@ -38,9 +38,11 @@ class UpdateNotAlone(BaseDockerfileCheck):
             content = instruction["content"]
             if instruction["instruction"] in self.supported_instructions:
 
-                if any(x in content for x in update_commands):
-                    update_cnt = update_cnt + 1
-                    update_instructions.append(i)
+                if "update" in content:
+                    # do an initial lookup before using the regex
+                    if re.search(UPDATE_COMMANDS_PATTERN, content):
+                        update_cnt = update_cnt + 1
+                        update_instructions.append(i)
                 if any(x in content for x in install_commands):
                     update_cnt = update_cnt - 1
             i = i + 1

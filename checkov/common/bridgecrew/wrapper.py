@@ -4,16 +4,26 @@ import logging
 import os
 import json
 import itertools
+from concurrent import futures
 from io import StringIO
 from typing import Any, TYPE_CHECKING
 from collections import defaultdict
 
 import dpath
+from igraph import Graph
+
+try:
+    from networkx import DiGraph, node_link_data
+except ImportError:
+    logging.info("Not able to import networkx")
+    DiGraph = str
+    node_link_data = lambda G : {}
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.typing import _ReducedScanReport
 from checkov.common.util.file_utils import compress_string_io_tar
+from checkov.common.util.igraph_serialization import serialize_to_json
 from checkov.common.util.json_utils import CustomJSONEncoder
 
 if TYPE_CHECKING:
@@ -24,7 +34,7 @@ if TYPE_CHECKING:
 checkov_results_prefix = 'checkov_results'
 check_reduced_keys = (
     'check_id', 'check_result', 'resource', 'file_path',
-    'file_line_range')
+    'file_line_range', 'code_block', 'caller_file_path', 'caller_file_line_range')
 secrets_check_reduced_keys = check_reduced_keys + ('validation_status',)
 check_metadata_keys = ('evaluations', 'code_block', 'workflow_name', 'triggers', 'job')
 
@@ -134,3 +144,33 @@ def enrich_and_persist_checks_metadata(
         dpath.new(checks_metadata_paths, f"{check_type}/checks_metadata_path", checks_metadata_object_path)
         _put_json_object(s3_client, checks_metadata_object, bucket, checks_metadata_object_path)
     return checks_metadata_paths
+
+
+def persist_graphs(graphs: dict[str, DiGraph | Graph], s3_client: S3Client, bucket: str, full_repo_object_key: str,
+                   timeout: int, absolute_root_folder: str = '') -> None:
+    def _upload_graph(check_type: str, graph: DiGraph | Graph, _absolute_root_folder: str = '') -> None:
+        if isinstance(graph, DiGraph):
+            json_obj = node_link_data(graph)
+            graph_file_name = 'graph_networkx.json'
+        elif isinstance(graph, Graph):
+            json_obj = serialize_to_json(graph, _absolute_root_folder)
+            graph_file_name = 'graph_igraph.json'
+        else:
+            logging.error(f"unsupported graph type '{graph.__class__.__name__}'")
+            return
+        s3_key = f'{graphs_repo_object_key}/{check_type}/{graph_file_name}'
+        try:
+            _put_json_object(s3_client, json_obj, bucket, s3_key)
+        except Exception:
+            logging.error(f'failed to upload graph from framework {check_type} to platform', exc_info=True)
+
+    graphs_repo_object_key = full_repo_object_key.replace('checkov', 'graphs')[:-4]
+
+    with futures.ThreadPoolExecutor() as executor:
+        futures.wait(
+            [executor.submit(_upload_graph, check_type, graph, absolute_root_folder) for
+             check_type, graph in graphs.items()],
+            return_when=futures.FIRST_EXCEPTION,
+            timeout=timeout
+        )
+    logging.info(f"Done persisting {len(graphs)} graphs")

@@ -7,13 +7,12 @@ from typing import Optional, List, Tuple, Dict, Any
 from termcolor import colored
 
 from checkov.common.models.enums import CheckResult
-from checkov.secrets.consts import ValidationStatus
+from checkov.common.secrets.consts import ValidationStatus, GIT_HISTORY_NOT_BEEN_REMOVED
 
 from checkov.common.bridgecrew.severities import Severity
 
 from checkov.common.output.record import Record
 from checkov.common.typing import _CheckResult
-from checkov.secrets.git_types import GIT_HISTORY_NOT_BEEN_REMOVED
 
 COMMIT_ADDED_STR = 'Commit Added'
 COMMIT_REMOVED_STR = 'Commit Removed'
@@ -22,7 +21,7 @@ WARNING_SIGN_UNICODE = '\u26a0'
 TEXT_BY_SECRET_VALIDATION_STATUS = {
     ValidationStatus.VALID.value: colored(f'\t{WARNING_SIGN_UNICODE} This secret has been validated'
                                           f' and should be prioritized', "red"),
-    ValidationStatus.INVALID.value: '\tThis is not a valid secret and can be de-prioritized',
+    ValidationStatus.INVALID.value: colored('\tThis is not a valid secret and can be de-prioritized', "white"),
     ValidationStatus.UNKNOWN.value: '\tWe were not able to validate this secret',
     ValidationStatus.UNAVAILABLE.value: ''
 }

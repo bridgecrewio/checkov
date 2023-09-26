@@ -1,11 +1,19 @@
 import itertools
+import logging
 from typing import List, Optional, Dict, Any, Tuple
 
 from igraph import Graph
 
+from checkov.common.graph.checks_infra import debug
+
+try:
+    from networkx import edge_dfs
+except ImportError:
+    logging.info("Not able to import networkx")
+    edge_dfs = lambda G : []
+
 from checkov.common.graph.checks_infra.enums import Operators
 from checkov.common.checks_infra.solvers.connections_solvers.base_connection_solver import BaseConnectionSolver
-from networkx import edge_dfs
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.typing import LibraryGraph
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
@@ -29,6 +37,21 @@ class ConnectionExistsSolver(BaseConnectionSolver):
         )
 
     def get_operation(
+        self, graph_connector: LibraryGraph
+    ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
+        passed, failed, unknown = self._get_operation(graph_connector=graph_connector)
+
+        debug.connection_block(
+            resource_types=self.resource_types,
+            connected_resource_types=self.connected_resources_types,
+            operator=self.operator,
+            passed_resources=passed,
+            failed_resources=failed,
+        )
+
+        return passed, failed, unknown
+
+    def _get_operation(
         self, graph_connector: LibraryGraph
     ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         passed: List[Dict[str, Any]] = []
@@ -62,9 +85,13 @@ class ConnectionExistsSolver(BaseConnectionSolver):
 
                 if origin_attributes and destination_attributes_list:
                     for destination_attributes in destination_attributes_list:
-                        self.populate_checks_results(origin_attributes=origin_attributes,
-                                                     destination_attributes=destination_attributes, passed=passed,
-                                                     failed=failed, unknown=unknown)
+                        self.populate_checks_results(
+                            origin_attributes=origin_attributes,
+                            destination_attributes=destination_attributes,
+                            passed=passed,
+                            failed=failed,
+                            unknown=unknown,
+                        )
         else:
             for u, v in edge_dfs(graph_connector):
                 origin_attributes = graph_connector.nodes(data=True)[u]
@@ -78,9 +105,13 @@ class ConnectionExistsSolver(BaseConnectionSolver):
 
                 destination_attributes = graph_connector.nodes(data=True)[v]
                 if destination_attributes in opposite_vertices:
-                    self.populate_checks_results(origin_attributes=origin_attributes,
-                                                 destination_attributes=destination_attributes, passed=passed,
-                                                 failed=failed, unknown=unknown)
+                    self.populate_checks_results(
+                        origin_attributes=origin_attributes,
+                        destination_attributes=destination_attributes,
+                        passed=passed,
+                        failed=failed,
+                        unknown=unknown,
+                    )
                     destination_attributes["connected_node"] = origin_attributes
                     continue
 
@@ -92,7 +123,7 @@ class ConnectionExistsSolver(BaseConnectionSolver):
                         output_destination = graph_connector.nodes(data=True)[output_destination]
                         output_destination_type = output_destination.get(CustomAttributes.RESOURCE_TYPE)
                         if self.is_associated_edge(
-                                origin_attributes.get(CustomAttributes.RESOURCE_TYPE), output_destination_type
+                            origin_attributes.get(CustomAttributes.RESOURCE_TYPE), output_destination_type
                         ):
                             passed.extend([origin_attributes, output_destination])
                     except StopIteration:
@@ -107,4 +138,5 @@ class ConnectionExistsSolver(BaseConnectionSolver):
                 if v not in itertools.chain(passed, unknown)
             ]
         )
+
         return passed, failed, unknown

@@ -17,10 +17,9 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, ignored_directories
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package_2.scanner import Scanner
-from checkov.sca_package_2.suppression import extract_inline_suppressions
 
 
-class Runner(BaseRunner[None]):
+class Runner(BaseRunner[None, None, None]):
     check_type = CheckType.SCA_PACKAGE  # noqa: CCE003  # a static attribute
 
     def __init__(self, report_type: str = check_type) -> None:
@@ -105,6 +104,7 @@ class Runner(BaseRunner[None]):
         for path, result in scan_results.items():
             if not result:
                 continue
+            bc_integration.source_id = result.get("sourceId")
             package_file_path = Path(path)
             if self._code_repo_path:
                 try:
@@ -121,10 +121,7 @@ class Runner(BaseRunner[None]):
                                 for elm in result.get("license_statuses") or []]
 
             rootless_file_path = str(package_file_path).replace(package_file_path.anchor, "", 1)
-            inline_suppressions = extract_inline_suppressions(
-                uploaded_files=uploaded_files,
-                rootless_file_path=rootless_file_path,
-            )
+            inline_suppressions = result.get("inlineSuppressions")
 
             add_to_report_sca_data(
                 report=report,

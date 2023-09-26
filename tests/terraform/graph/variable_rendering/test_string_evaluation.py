@@ -470,6 +470,10 @@ class TestTerraformEvaluation(TestCase):
         expected = [{'name': 'raw', 'type': 'container'}, {'name': 'masked', 'type': 'blob'}]
         self.assertEqual(expected, evaluate_terraform(input_str))
 
+        input_str = "[for val in [{'a': 123, 'b': True, 'c': None}] : {'a': '${val.a}', 'b': '${val.b}', 'c': '${val.c}'}]"
+        expected = [{'a': 123, 'b': True, 'c': None}]
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
     def test_base64_value(self):
         input_str = "\"['dGVzdA==']\""
         expected = ["dGVzdA=="]

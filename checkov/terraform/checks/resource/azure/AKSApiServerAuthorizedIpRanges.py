@@ -16,7 +16,7 @@ class AKSApiServerAuthorizedIpRanges(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self) -> str:
-        return "api_server_authorized_ip_ranges/[0]"
+        return "api_server_access_profile/[0]/authorized_ip_ranges/[0]"
 
     def get_expected_value(self) -> Any:
         return ANY_VALUE
@@ -26,6 +26,12 @@ class AKSApiServerAuthorizedIpRanges(BaseResourceValueCheck):
         private_cluster_enabled = conf.get("private_cluster_enabled", [False])[0]
         if private_cluster_enabled:
             return CheckResult.PASSED
+
+        # provider version <=3.38.0
+        api_server = conf.get("api_server_authorized_ip_ranges")
+        if api_server and isinstance(api_server, list) and api_server[0]:
+            return CheckResult.PASSED
+
         return super().scan_resource_conf(conf)
 
 

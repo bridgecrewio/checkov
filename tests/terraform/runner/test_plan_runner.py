@@ -2,6 +2,7 @@ import itertools
 import os
 import unittest
 from collections import defaultdict
+from copy import deepcopy
 from pathlib import Path
 
 
@@ -27,10 +28,10 @@ from checkov.terraform.plan_runner import Runner, resource_registry
    {"db_connector": IgraphConnector}
 ])
 class TestRunnerValid(unittest.TestCase):
-
-    def setUp(self) -> None:
-        self.orig_checks = resource_registry.checks
-        self.db_connector = self.db_connector
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.orig_checks = deepcopy(resource_registry.checks)
+        cls.db_connector = cls.db_connector
 
     def test_runner_two_checks_only(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -264,7 +265,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
 
         self.assertEqual(report.get_summary()["failed"], 15)
-        self.assertEqual(report.get_summary()["passed"], 0)
+        self.assertEqual(report.get_summary()["passed"], 3)
 
         failed_check_ids = set([c.check_id for c in report.failed_checks])
         expected_failed_check_ids = {
@@ -276,6 +277,10 @@ class TestRunnerValid(unittest.TestCase):
         }
 
         assert failed_check_ids == expected_failed_check_ids
+
+        # reset graph checks
+        runner.graph_registry.checks = []
+        runner.graph_registry.load_checks()
 
     def test_runner_root_module_resources_no_values(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -299,7 +304,7 @@ class TestRunnerValid(unittest.TestCase):
         # If more eks checks are added then this number will need to increase correspondingly to reflect
         # This reasoning holds for all current pass/fails in these tests
         self.assertEqual(report.get_summary()["failed"], 4)
-        self.assertEqual(report.get_summary()["passed"], 0)
+        self.assertEqual(report.get_summary()["passed"], 1)
 
         failed_check_ids = set([c.check_id for c in report.failed_checks])
         expected_failed_check_ids = {
@@ -310,6 +315,10 @@ class TestRunnerValid(unittest.TestCase):
         }
 
         assert failed_check_ids == expected_failed_check_ids
+
+        # reset graph checks
+        runner.graph_registry.checks = []
+        runner.graph_registry.load_checks()
 
     def test_runner_root_module_resources_no_values_route53(self):
         #given
@@ -363,7 +372,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
 
         self.assertEqual(report.get_summary()["failed"], 4)
-        self.assertEqual(report.get_summary()["passed"], 0)
+        self.assertEqual(report.get_summary()["passed"], 1)
 
         failed_check_ids = set([c.check_id for c in report.failed_checks])
         expected_failed_check_ids = {
@@ -687,7 +696,7 @@ class TestRunnerValid(unittest.TestCase):
         summary = report.get_summary()
 
         self.assertEqual(summary["passed"], 2)  # "aws_iam_policy.policy_pass" passes both checks
-        self.assertEqual(summary["failed"], 3)
+        self.assertEqual(summary["failed"], 6)  # the rest fails both checks
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
@@ -719,7 +728,7 @@ class TestRunnerValid(unittest.TestCase):
         failed_check_resources = {c.resource for c in report.failed_checks}
         self.assertEqual(failing_resources, failed_check_resources)
 
-    @mock.patch.dict(os.environ, {'CHECKOV_ENABLE_NESTED_MODULES': 'True', 'CHECKOV_EXPERIMENTAL_CROSS_VARIABLE_EDGES': 'True'})
+    @mock.patch.dict(os.environ, {'CHECKOV_EXPERIMENTAL_CROSS_VARIABLE_EDGES': 'True'})
     def test_plan_and_tf_combine_graph(self):
         tf_file_path = Path(__file__).parent / "resources/plan_and_tf_combine_graph/tfplan.json"
 
@@ -754,29 +763,39 @@ class TestRunnerValid(unittest.TestCase):
         assert report.passed_checks[0].file_path.endswith('.json')
         assert report.passed_checks[1].file_path.endswith('.json')
 
-    @mock.patch.dict(os.environ, {'CHECKOV_ENABLE_NESTED_MODULES': 'False'})
-    def test_plan_resources_ids(self):
-        current_dir = os.path.dirname(os.path.realpath(__file__))
-        valid_plan_path = current_dir + "/resources/plan_resources_ids/tfplan.json"
-        valid_resources_ids = ["module.child_1_c.aws_eks_cluster.cluster", "module.child_1_b.aws_eks_cluster.cluster",
-                               "module.child_1_a.aws_eks_cluster.cluster"]
-        runner = Runner()
-        runner.graph_registry.checks = []
-        report = runner.run(
+    def test_plan_and_tf_combine_graph_with_missing_resources(self):
+        tf_file_path = Path(__file__).parent / "resources/plan_and_tf_combine_graph_with_missing_resources/tfplan.json"
+        repo_path = Path(__file__).parent / "resources/plan_and_tf_combine_graph_with_missing_resources"
+
+        # deep_analysis disabled
+        report = Runner().run(
             root_folder=None,
-            files=[valid_plan_path],
-            external_checks_dir=[current_dir + "/extra_yaml_checks"],
-            runner_filter=RunnerFilter(framework=["terraform_plan"]),
+            files=[str(tf_file_path)],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=["CKV2_AWS_61"], deep_analysis=False,
+                                       repo_root_for_plan_enrichment=[repo_path])
         )
-        self.assertGreater(report.get_summary()["failed"] + report.get_summary()["passed"], 0)
 
-        for check in itertools.chain(report.failed_checks, report.passed_checks):
-            self.assertIn(check.resource, valid_resources_ids)
+        self.assertEqual(len(report.passed_checks), 0)
+        self.assertEqual(len(report.failed_checks), 2)
 
-        self.assertEqual(len(report.resources), 3)
+        # deep_analysis enabled
+        report = Runner().run(
+            root_folder=None,
+            files=[str(tf_file_path)],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=["CKV2_AWS_61"], deep_analysis=True,
+                                       repo_root_for_plan_enrichment=[repo_path])
+        )
 
-    @mock.patch.dict(os.environ, {'CHECKOV_ENABLE_NESTED_MODULES': 'True'})
-    def test_plan_resources_ids_with_nested_modules(self):
+        self.assertEqual(len(report.passed_checks), 0)
+        self.assertEqual(len(report.failed_checks), 2)
+
+        expected_addresses = ['aws_s3_bucket.example', 'aws_s3_bucket.example_2']
+        report_addresses = [report.failed_checks[0].resource_address, report.failed_checks[1].resource_address]
+        assert sorted(expected_addresses) == sorted(report_addresses)
+
+    def test_plan_resources_ids(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_plan_path = current_dir + "/resources/plan_resources_ids_with_nested_modules/tfplan.json"
         valid_resources_ids = ["module.child_0.module.child_1_c.aws_eks_cluster.cluster",
@@ -797,7 +816,6 @@ class TestRunnerValid(unittest.TestCase):
 
         self.assertEqual(len(report.resources), 3)
         
-    @mock.patch.dict(os.environ, {'CHECKOV_ENABLE_NESTED_MODULES': 'True'})
     def test_plan_resources_created_by_modules(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_plan_path = current_dir + "/extra_tf_plan_checks/modules.json"
@@ -825,8 +843,44 @@ class TestRunnerValid(unittest.TestCase):
         assert file_path == 'test'
         assert scanned_file == '/.'
 
+    def test_plan_change_keys(self):
+        # given
+        current_dir = Path(__file__).parent
+        tf_plan_path = current_dir / "resources/plan_change_keys/tfplan.json"
+        external_checks_dir = current_dir / "extra_tf_plan_checks"
+
+        # when
+        report = Runner().run(
+            root_folder=None,
+            files=[str(tf_plan_path)],
+            external_checks_dir=[str(external_checks_dir)],
+            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=["CUSTOM_CHANGE_1"]),
+        )
+
+        # then
+        summary = report.get_summary()
+
+        passing_resources = {
+            'aws_security_group_rule.foo'
+        }
+        failing_resources = {
+            'aws_security_group_rule.bar',
+        }
+
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
+
+        self.assertEqual(summary["failed"], 1)
+        self.assertEqual(summary["passed"], 1)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+        self.assertEqual(summary["resource_count"], 2)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
+
     def tearDown(self) -> None:
-        resource_registry.checks = self.orig_checks
+        resource_registry.checks = deepcopy(self.orig_checks)
 
 
 if __name__ == "__main__":

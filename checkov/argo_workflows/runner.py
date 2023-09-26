@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import re
-from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from checkov.common.images.image_referencer import ImageReferencer, Image
 from checkov.common.output.report import CheckType
+from checkov.common.util.file_utils import read_file_with_any_encoding
 from checkov.yaml_doc.runner import Runner as YamlRunner
 
 # Import of the checks registry for a specific resource type
@@ -44,7 +44,11 @@ class Runner(YamlRunner, ImageReferencer):
         if not file_path.endswith((".yaml", ".yml")):
             return None
 
-        content = Path(file_path).read_text()
+        content = read_file_with_any_encoding(file_path=file_path)
+        if "argoproj.io" not in content:
+            # the following regex will search more precisely, but no need to further process
+            return None
+
         match_api = re.search(API_VERSION_PATTERN, content)
         if match_api:
             match_kind = re.search(KIND_PATTERN, content)

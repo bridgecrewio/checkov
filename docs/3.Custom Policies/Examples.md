@@ -463,3 +463,19 @@ definition:
     operator: "contains"
     value: "0.0.0.0/0"
 ```
+
+## Using a jsonpath operator to evaluate complex attributes
+
+The following policy looks for a CloudFormation S3 Bucket with a tag name `env` and it should have one of the values `prod` or `prod-eu`.
+
+```yaml
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "AWS::S3::Bucket"
+  attribute: "Tags[?(@.Key == env)].Value"
+  operator: "jsonpath_within"
+  value:
+    - prod
+    - prod-eu
+```

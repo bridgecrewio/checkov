@@ -40,6 +40,13 @@ resource "github_actions_secret" "pass" {
   encrypted_value   = "WOULDBEENCRYPTED"
 }
 
+resource "github_actions_organization_secret" "pass_empty_value" {
+  environment       = "example_environment"
+  secret_name       = "example_secret_name"
+  encrypted_value   = "WOULDBEENCRYPTED"
+  plaintext_value   = ""
+}
+
 # value ref
 
 resource "azuread_service_principal_password" "gh_actions" {

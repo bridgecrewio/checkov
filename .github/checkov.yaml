@@ -1,0 +1,24 @@
+enable-secret-scan-all-files: true
+framework:
+- secrets
+quiet: true
+skip-path:
+- docs
+- tests/arm/checks/resource/example_AzureScaleSetPassword/FAILED.json
+- tests/arm/checks/resource/example_AzureScaleSetPassword/UNKNOWN.json
+- tests/arm/checks/resource/example_StorageAccountAzureServicesAccessEnabled/storageAccountAzureServicesAccessEnabled-FAILED2.json
+- tests/arm/checks/resource/example_StorageAccountDefaultNetworkAccessDeny/storageAccountDefaultNetworkAccessDeny-FAILED2.json
+- tests/common/utils/conftest.py
+- tests/common/utils/test_secrets_utils.py
+- tests/sca_image/conftest.py
+- tests/sca_package/conftest.py
+- tests/sca_package_2/conftest.py
+- tests/secrets
+- tests/terraform/checks/provider
+- tests/terraform/parser/resources/plan_tags/tfplan.json
+- tests/terraform/runner/resources/plan/tfplan.json
+- tests/terraform/runner/tf_plan_skip_check_regex/resource/skip_directory/tfplan2.json
+- tests/terraform/runner/tf_plan_skip_check_regex/resource/tfplan1.json
+- tests/terraform/runner/tfplan2.json
+- tests/unit/test_secrets.py
+summary-position: bottom

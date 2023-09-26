@@ -8,6 +8,8 @@ from typing import Union, Any, Dict, Callable, List, Optional
 
 from checkov.terraform.parser_functions import tonumber, FUNCTION_FAILED, create_map, tobool, tostring
 
+TIME_DELTA_PATTERN = re.compile(r"(\d*\.*\d+)")
+
 """
 This file contains a custom implementation of the builtin `eval` function.
 `eval` is not a safe function, because it can execute *every* command,
@@ -139,7 +141,7 @@ def timeadd(input_str: str, time_delta: str) -> str:
         adding = False
         time_delta = time_delta[1:]
     # Split out into each of the deltas
-    deltas = re.split(r'(\d*\.*\d+)', time_delta)
+    deltas = re.split(TIME_DELTA_PATTERN, time_delta)
     # Needed to strip the leading empty element
     deltas = list(filter(None, deltas))
     while len(deltas) > 0:
@@ -293,7 +295,7 @@ SAFE_EVAL_DICT["upper"] = lambda input_str: input_str.upper()
 SAFE_EVAL_DICT["chunklist"] = lambda lst, chunk_size: [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
 SAFE_EVAL_DICT["coalesce"] = coalesce
 SAFE_EVAL_DICT["coalescelist"] = coalesce_list
-SAFE_EVAL_DICT["compact"] = lambda lst: list(filter(lambda l: l != "", lst))
+SAFE_EVAL_DICT["compact"] = lambda lst: list(filter(lambda value: value != "", lst))
 SAFE_EVAL_DICT["concat"] = lambda *lists: list(itertools.chain(*lists))
 SAFE_EVAL_DICT["contains"] = lambda lst, value: value in lst
 SAFE_EVAL_DICT["distinct"] = lambda lst: list(dict.fromkeys(lst))

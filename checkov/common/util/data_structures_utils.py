@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, TypeVar
+import pickle  # nosec
+from typing import Any, TypeVar, cast
 
 _T = TypeVar("_T")
 
@@ -9,7 +10,13 @@ _T = TypeVar("_T")
 def get_inner_dict(source_dict: dict[str, Any], path_as_list: list[str]) -> dict[str, Any]:
     result = source_dict
     for index in path_as_list:
-        result = result[index]
+        try:
+            result = result[index]
+        except KeyError:
+            # for getting the source context for resources with for_each name - index can be "resource_name[0]"
+            for k in result:
+                if index.startswith(k):
+                    result = result[k]
     return result
 
 
@@ -86,6 +93,12 @@ def find_in_dict(input_dict: dict[str, Any], key_path: str) -> Any:
         return None
 
     return value
+
+
+def pickle_deepcopy(obj: _T) -> _T:
+    """More performant version of the built-in deepcopy"""
+
+    return cast("_T", pickle.loads(pickle.dumps(obj, pickle.HIGHEST_PROTOCOL)))  # nosec
 
 
 def get_empty_list_str() -> list[str]:

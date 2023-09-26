@@ -16,6 +16,8 @@ from typing import TYPE_CHECKING, Any, TypeVar, Callable, cast
 
 from typing_extensions import ParamSpec, Self
 
+from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
+
 if TYPE_CHECKING:
     from types import TracebackType
 
@@ -25,6 +27,7 @@ P = ParamSpec("P")
 # Custom logger
 LOG = logging.getLogger(name='stopit')
 LOG.addHandler(NullHandler())
+add_resource_code_filter_to_logger(LOG)
 
 
 class TimeoutException(Exception):

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from io import StringIO
 from typing import Any, TYPE_CHECKING, cast
 
@@ -140,6 +139,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
                  'to filter the runners based on the file type. For example, if you specify a ".tf" file, only the '
                  "terraform and secrets frameworks will be included. You can further limit this (e.g., skip secrets) "
                  "by using the --skip-framework argument.",
+            nargs="+",
         )
         self.add(
             "--skip-path",
@@ -156,8 +156,9 @@ class ExtArgumentParser(configargparse.ArgumentParser):
         self.add(
             "--external-checks-git",
             action="append",
-            help="Github url of external checks to be added. \n you can specify a subdirectory after a "
-                 "double-slash //. \n cannot be used together with --external-checks-dir",
+            help="Github url of external checks to be added.\n you can specify a subdirectory after a double-slash //."
+                 "\n possible to use ?ref=tags/tagName or ?ref=heads/branchName or ?ref=commit_id"
+                 "\n cannot be used together with --external-checks-dir",
         )
         self.add(
             "-l",
@@ -311,6 +312,12 @@ class ExtArgumentParser(configargparse.ArgumentParser):
                  "Requires --bc-api-key to be a Prisma Cloud Access Key in the following format: <access_key_id>::<secret_key>",
         )
         self.add(
+            "--skip-results-upload",
+            action='store_true',
+            help="Do not upload scan results to the platform to view in the console. Results are only available locally. "
+                 "If you use the --support flag, logs will still get uploaded.",
+        )
+        self.add(
             "--docker-image",
             "--image",
             help="Scan docker images by name or ID. Only works with --bc-api-key flag",
@@ -374,7 +381,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
         self.add(
             "--download-external-modules",
             help="download external terraform modules from public git repositories and terraform registry",
-            default=os.getenv("DOWNLOAD_EXTERNAL_MODULES", False),
+            default=False,
             env_var="DOWNLOAD_EXTERNAL_MODULES",
         )
         self.add(
@@ -384,6 +391,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
                  "https://www.terraform.io/docs/language/values/variables.html#variable-definitions-tfvars-files)."
                  "Currently only supported for source Terraform (.tf file), and Helm chart scans."
                  "Requires using --directory, not --file.",
+            env_var="CKV_VAR_FILE",
         )
         self.add(
             "--external-modules-download-path",
@@ -503,7 +511,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
             "--deep-analysis",
             default=False,
             action="store_true",
-            help="Enable combine tf graph and rf plan graph",
+            help="Combine the TF Plan and TF graphs to make connections not available in either",
         )
         self.add(
             "--no-fail-on-crash",

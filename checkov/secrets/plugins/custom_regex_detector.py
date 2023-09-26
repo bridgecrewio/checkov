@@ -23,6 +23,7 @@ class CustomRegexDetector(RegexBasedDetector):
     secret_type = "Regex Detector"  # noqa: CCE003 # nosec
     denylist: Set[Pattern[str]] = set()  # noqa: CCE003
     MAX_FILE_SIZE: int = 4 * 1024
+    MAX_LINE_LENGTH: int = 10_000
 
     def __init__(self) -> None:
         self.regex_to_metadata: dict[str, dict[str, Any]] = dict()
@@ -34,12 +35,18 @@ class CustomRegexDetector(RegexBasedDetector):
         detectors = load_detectors()
 
         for detector in detectors:
-            if detector.get("isMultiline"):
-                self.multiline_deny_list.add(re.compile('{}'.format(detector["Regex"])))
-                self.multiline_regex_to_metadata[detector["Regex"]] = detector
-                continue
-            self.denylist.add(re.compile('{}'.format(detector["Regex"])))
-            self.regex_to_metadata[detector["Regex"]] = detector
+            try:
+                if detector.get("isMultiline"):
+                    self.multiline_deny_list.add(re.compile('{}'.format(detector["Regex"])))
+                    self.multiline_regex_to_metadata[detector["Regex"]] = detector
+                    continue
+                self.denylist.add(re.compile('{}'.format(detector["Regex"])))
+                self.regex_to_metadata[detector["Regex"]] = detector
+            except Exception:
+                logging.error(
+                    f"Failed to load detector {detector.get('Name')} with regex {detector.get('Regex')}",
+                    exc_info=True,
+                )
 
     @property
     def multiline_regex_supported_file_types(self) -> Set[str]:
@@ -60,6 +67,11 @@ class CustomRegexDetector(RegexBasedDetector):
     ) -> Set[PotentialSecret]:
         """This examines a line and finds all possible secret values in it"""
         output: Set[PotentialSecret] = set()
+
+        line_length = len(line)
+        if line_length > CustomRegexDetector.MAX_LINE_LENGTH:
+            logging.info(f"File {filename} Line {line_number} has a length of {line_length}, which is higher than the max {CustomRegexDetector.MAX_LINE_LENGTH}")
+            return output
 
         self._find_potential_secret(
             filename=filename,
@@ -137,15 +149,16 @@ class CustomRegexDetector(RegexBasedDetector):
                 is_verified=is_verified,
                 is_added=is_added,
                 is_removed=is_removed,
+                is_multiline=is_multiline,
             )
-            ps.check_id = current_regex_to_metadata[regex.pattern]["Check_ID"]  # type:ignore[attr-defined]
+            ps.check_id = current_regex_to_metadata[regex.pattern]["Check_ID"]
             if is_multiline:
                 output.add(ps)
             elif len(cast(str, ps.secret_value)) in range(MIN_CHARACTERS, MAX_CHARACTERS) or not regex_data['isCustom']:
                 output.add(ps)
             else:
                 logging.info(
-                    f'Finding for check {ps.check_id} are not 5-100 characters in length, was ignored')  # type: ignore
+                    f'Finding for check {ps.check_id} are not 5-100 characters in length, was ignored')
 
     def analyze_string(self, string: str, **kwargs: Optional[Dict[str, Any]]) -> Generator[Tuple[str, Pattern[str]], None, None]:  # type:ignore[override]
         regex_denylist: Set[Pattern[str]] = kwargs.get("regex_denylist", self.denylist)  # type: ignore[assignment]
