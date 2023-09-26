@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.4.48...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.4.50...HEAD)
+
+## [2.4.50](https://github.com/bridgecrewio/checkov/compare/2.4.48...2.4.50) - 2023-09-26
+
+### Feature
+
+- **general:** add rustworkx (#5511) - [#5565](https://github.com/bridgecrewio/checkov/pull/5565)
+- **general:** Revert add rustworkx (#5565)" - [#5594](https://github.com/bridgecrewio/checkov/pull/5594)
 
 ## [2.4.48](https://github.com/bridgecrewio/checkov/compare/2.4.47...2.4.48) - 2023-09-21
 
