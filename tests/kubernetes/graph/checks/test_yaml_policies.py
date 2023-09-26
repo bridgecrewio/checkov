@@ -6,6 +6,8 @@ from parameterized import parameterized_class
 
 from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.graph.db_connectors.rustworkx.rustworkx_db_connector import RustworkxConnector
+from checkov.common.graph.db_connectors.utils import set_db_connector_by_graph_framework
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
@@ -16,18 +18,15 @@ from tests.common.graph.checks.test_yaml_policies_base import TestYamlPoliciesBa
 
 @parameterized_class([
    {"graph_framework": "NETWORKX"},
-   {"graph_framework": "IGRAPH"}
+   {"graph_framework": "IGRAPH"},
+   {"graph_framework": "RUSTWORKX"}
 ])
 class TestYamlPolicies(TestYamlPoliciesBase):
     def tearDown(self) -> None:
         self.get_checks_registry().checks = []
 
     def __init__(self, args):
-        db_connector = None
-        if self.graph_framework == 'NETWORKX':
-            db_connector = NetworkxConnector()
-        elif self.graph_framework == 'IGRAPH':
-            db_connector = IgraphConnector()
+        db_connector = set_db_connector_by_graph_framework(self.graph_framework)
         graph_manager = KubernetesGraphManager(db_connector=db_connector)
         real_graph_checks_relative_path = "checkov/kubernetes/checks/graph_checks"
         real_graph_checks_path = os.path.join(os.path.dirname(__file__), '..', '..', '..', '..',
