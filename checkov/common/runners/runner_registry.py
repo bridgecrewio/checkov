@@ -12,7 +12,7 @@ import sys
 from collections import defaultdict
 from collections.abc import Iterable
 from pathlib import Path
-from typing import List, Dict, Any, Optional, cast, TYPE_CHECKING, Type, Tuple
+from typing import List, Dict, Any, Optional, cast, TYPE_CHECKING, Type
 
 from typing_extensions import Literal
 
@@ -95,7 +95,7 @@ class RunnerRegistry:
         self._check_type_to_report_map: dict[str, Report] = {}  # used for finding reports with the same check type
         self.licensing_integration = licensing_integration  # can be maniuplated by unit tests
         self.secrets_omitter_class = secrets_omitter_class
-        self.check_type_to_graph: dict[str, list[Tuple[LibraryGraph, Optional[str]]]] = {}
+        self.check_type_to_graph: dict[str, list[tuple[LibraryGraph, Optional[str]]]] = {}
         for runner in runners:
             if isinstance(runner, image_runner):
                 runner.image_referencers = self.image_referencing_runners
@@ -124,7 +124,7 @@ class RunnerRegistry:
                 # This is the only runner, so raise a clear indication of failure
                 raise ModuleNotEnabledError(f'The framework "{runner_check_type}" is part of the "{self.licensing_integration.get_subscription_for_runner(runner_check_type).name}" module, which is not enabled in the platform')
         else:
-            def _parallel_run(runner: _BaseRunner) -> tuple[Report | list[Report], str | None, Optional[list[Tuple[LibraryGraph, Optional[str]]]]]:
+            def _parallel_run(runner: _BaseRunner) -> tuple[Report | list[Report], str | None, Optional[list[tuple[LibraryGraph, Optional[str]]]]]:
                 report = runner.run(
                     root_folder=root_folder,
                     external_checks_dir=external_checks_dir,
@@ -750,7 +750,7 @@ class RunnerRegistry:
         return git_org, git_repository
 
     @staticmethod
-    def extract_graphs_from_runner(runner: _BaseRunner) -> List[Tuple[LibraryGraph, Optional[str]]]:
+    def extract_graphs_from_runner(runner: _BaseRunner) -> list[tuple[LibraryGraph, Optional[str]]]:
         # exist only for terraform
         all_graphs = getattr(runner, 'all_graphs', None)
         if all_graphs:
