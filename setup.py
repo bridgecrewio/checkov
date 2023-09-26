@@ -116,7 +116,7 @@ setup(
     license="Apache License 2.0",
     name="checkov",
     version=version,
-    python_requires=">=3.7",
+    python_requires=">=3.7",  # TODO: change to 3.8 end of September
     description="Infrastructure as code static analysis",
     author="bridgecrew",
     author_email="meet@bridgecrew.io",

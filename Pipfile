@@ -91,4 +91,4 @@ spdx-tools = ">=0.8.0,<0.9.0"
 license-expression = "*"
 
 [requires]
-python_version = "3.7"
+python_version = "3.8"
