@@ -8,6 +8,8 @@ from typing import Any, TYPE_CHECKING
 from typing_extensions import TypeAlias  # noqa[TC002]
 
 from checkov.common.bridgecrew.check_type import CheckType
+from checkov.common.graph.checks_infra.registry import BaseRegistry
+from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.output.graph_record import GraphRecord
@@ -20,6 +22,7 @@ from checkov.terraform import get_module_from_full_path, get_module_name, get_ab
 from checkov.common.util.secrets import omit_secret_value_from_checks
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.base_runner import BaseTerraformRunner
+from checkov.terraform.graph_manager import TerraformGraphManager
 from checkov.terraform.modules.module_objects import TFDefinitionKey, TFModule
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.evaluation.base_variable_evaluation import BaseVariableEvaluation
@@ -29,9 +32,10 @@ from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_grap
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.tag_providers import get_resource_tags
 from checkov.common.runners.base_runner import strtobool
+from checkov.terraform.tf_parser import TFParser
 
 if TYPE_CHECKING:
-    from checkov.common.typing import _SkippedCheck, LibraryGraph
+    from checkov.common.typing import _SkippedCheck, LibraryGraph, LibraryGraphConnector
 
 _TerraformContext: TypeAlias = "dict[TFDefinitionKey, dict[str, Any]]"
 _TerraformDefinitions: TypeAlias = "dict[TFDefinitionKey, dict[str, Any]]"
@@ -41,6 +45,18 @@ CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
 
 class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDefinitionKey]):
     check_type = CheckType.TERRAFORM  # noqa: CCE003  # a static attribute
+
+    def __init__(
+                self,
+                parser: TFParser | None = None,
+                db_connector: LibraryGraphConnector | None = None,
+                external_registries: list[BaseRegistry] | None = None,
+                source: str = GraphSource.TERRAFORM,
+                graph_class: type[TerraformLocalGraph] = TerraformLocalGraph,
+                graph_manager: TerraformGraphManager | None = None,
+    ) -> None:
+        super().__init__(parser, db_connector, external_registries, source, graph_class, graph_manager)
+        self.all_graphs: list[tuple[LibraryGraph, str]] = []
 
     def run(
         self,
