@@ -41,9 +41,20 @@ from checkov.common.typing import _CicdDetails
 from checkov.common.util.consts import PRISMA_PLATFORM, BRIDGECREW_PLATFORM, CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
 from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.dockerfile import is_dockerfile
-from checkov.common.util.http_utils import normalize_prisma_url, get_auth_header, get_default_get_headers, \
-    get_user_agent_header, get_default_post_headers, get_prisma_get_headers, get_prisma_auth_header, \
-    get_auth_error_message, normalize_bc_url
+from checkov.common.util.http_utils import (
+    normalize_prisma_url,
+    get_auth_header,
+    get_default_get_headers,
+    get_user_agent_header,
+    get_default_post_headers,
+    get_prisma_get_headers,
+    get_prisma_auth_header,
+    get_auth_error_message,
+    normalize_bc_url,
+    REQUEST_CONNECT_TIMEOUT,
+    REQUEST_READ_TIMEOUT,
+    REQUEST_RETRIES,
+)
 from checkov.common.util.type_forcers import convert_prisma_policy_filter_to_dict, convert_str_to_bool
 from checkov.version import version as checkov_version
 
@@ -116,6 +127,8 @@ class BcPlatformIntegration:
         self.use_s3_integration = False
         self.platform_integration_configured = False
         self.http: urllib3.PoolManager | urllib3.ProxyManager | None = None
+        self.http_timeout = urllib3.Timeout(connect=REQUEST_CONNECT_TIMEOUT, read=REQUEST_READ_TIMEOUT)
+        self.http_retry = urllib3.Retry(REQUEST_RETRIES, redirect=3)
         self.bc_skip_mapping = False
         self.cicd_details: _CicdDetails = {}
         self.support_flag_enabled = False
@@ -222,22 +235,39 @@ class BcPlatformIntegration:
             logging.debug(f'Using CA cert {ca_certificate} and cert_reqs {cert_reqs}')
             try:
                 parsed_url = urllib3.util.parse_url(os.environ['https_proxy'])
-                self.http = urllib3.ProxyManager(os.environ['https_proxy'],
-                                                 cert_reqs=cert_reqs,
-                                                 ca_certs=ca_certificate,
-                                                 proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth))  # type:ignore[no-untyped-call]
+                self.http = urllib3.ProxyManager(
+                    os.environ['https_proxy'],
+                    cert_reqs=cert_reqs,
+                    ca_certs=ca_certificate,
+                    proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth),  # type:ignore[no-untyped-call]
+                    timeout=self.http_timeout,
+                    retries=self.http_retry,
+                )
             except KeyError:
-                self.http = urllib3.PoolManager(cert_reqs=cert_reqs, ca_certs=ca_certificate)
+                self.http = urllib3.PoolManager(
+                    cert_reqs=cert_reqs,
+                    ca_certs=ca_certificate,
+                    timeout=self.http_timeout,
+                    retries=self.http_retry,
+                )
         else:
             cert_reqs = 'CERT_NONE' if no_cert_verify else None
             logging.debug(f'Using cert_reqs {cert_reqs}')
             try:
                 parsed_url = urllib3.util.parse_url(os.environ['https_proxy'])
-                self.http = urllib3.ProxyManager(os.environ['https_proxy'],
-                                                 cert_reqs=cert_reqs,
-                                                 proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth))  # type:ignore[no-untyped-call]
+                self.http = urllib3.ProxyManager(
+                    os.environ['https_proxy'],
+                    cert_reqs=cert_reqs,
+                    proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth),  # type:ignore[no-untyped-call]
+                    timeout=self.http_timeout,
+                    retries=self.http_retry,
+                )
             except KeyError:
-                self.http = urllib3.PoolManager(cert_reqs=cert_reqs)
+                self.http = urllib3.PoolManager(
+                    cert_reqs=cert_reqs,
+                    timeout=self.http_timeout,
+                    retries=self.http_retry,
+                )
         logging.debug('Successfully set up HTTP manager')
 
     def setup_bridgecrew_credentials(
