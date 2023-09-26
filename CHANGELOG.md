@@ -1,6 +1,34 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.4.36...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.4.48...HEAD)
+
+## [2.4.48](https://github.com/bridgecrewio/checkov/compare/2.4.47...2.4.48) - 2023-09-21
+
+### Platform
+
+- **general:** expose retry and timeout configuration for interaction with the platform - [#5585](https://github.com/bridgecrewio/checkov/pull/5585)
+
+## [2.4.47](https://github.com/bridgecrewio/checkov/compare/2.4.39...2.4.47) - 2023-09-20
+
+### Feature
+
+- **sca:** creating alias mapping for javascript - [#5567](https://github.com/bridgecrewio/checkov/pull/5567)
+- **sca:** creating alias mapping for javascript - [#5582](https://github.com/bridgecrewio/checkov/pull/5582)
+- **sca:** revert creating alias mapping for javascript - [#5581](https://github.com/bridgecrewio/checkov/pull/5581)
+
+### Bug Fix
+
+- **general:** fix print to encode in windows - [#5572](https://github.com/bridgecrewio/checkov/pull/5572)
+- **terraform:** Nested source_module_objects with missing foreach key - [#5580](https://github.com/bridgecrewio/checkov/pull/5580)
+
+## [2.4.39](https://github.com/bridgecrewio/checkov/compare/2.4.36...2.4.39) - 2023-09-14
+
+### Feature
+
+- **arm:** implement CKV2_AZURE_27 for arm - [#5534](https://github.com/bridgecrewio/checkov/pull/5534)
+- **terraform:** Add new policy for deprecated runtimes - [#5555](https://github.com/bridgecrewio/checkov/pull/5555)
+- **terraform:** Ensure Event Hub Namespace uses at least TLS 1.2 - [#5535](https://github.com/bridgecrewio/checkov/pull/5535)
+- **terraform:** Ensure that the Ledger feature is enabled on database that requires cryptographic proof and nonrepudiation of data integrity - [#5541](https://github.com/bridgecrewio/checkov/pull/5541)
 
 ## [2.4.36](https://github.com/bridgecrewio/checkov/compare/2.4.33...2.4.36) - 2023-09-13
 

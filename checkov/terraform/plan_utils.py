@@ -14,7 +14,7 @@ from checkov.runner_filter import RunnerFilter
 
 
 def create_definitions(
-    root_folder: str,
+    root_folder: str | None,
     files: list[str] | None = None,
     runner_filter: RunnerFilter | None = None,
     out_parsing_errors: dict[str, str] | None = None,
