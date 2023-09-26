@@ -47,13 +47,13 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
     check_type = CheckType.TERRAFORM  # noqa: CCE003  # a static attribute
 
     def __init__(
-                self,
-                parser: TFParser | None = None,
-                db_connector: LibraryGraphConnector | None = None,
-                external_registries: list[BaseRegistry] | None = None,
-                source: str = GraphSource.TERRAFORM,
-                graph_class: type[TerraformLocalGraph] = TerraformLocalGraph,
-                graph_manager: TerraformGraphManager | None = None,
+        self,
+        parser: TFParser | None = None,
+        db_connector: LibraryGraphConnector | None = None,
+        external_registries: list[BaseRegistry] | None = None,
+        source: str = GraphSource.TERRAFORM,
+        graph_class: type[TerraformLocalGraph] = TerraformLocalGraph,
+        graph_manager: TerraformGraphManager | None = None,
     ) -> None:
         super().__init__(parser, db_connector, external_registries, source, graph_class, graph_manager)
         self.all_graphs: list[tuple[LibraryGraph, str]] = []
@@ -116,7 +116,7 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
 
                 if CHECKOV_CREATE_GRAPH:
                     if tf_split_graph:
-                        local_graphs = self.graph_manager.build_multi_graph_from_definitions(  # type:ignore[assignment]  # will be fixed after removing 'CHECKOV_CREATE_GRAPH'
+                        local_graphs = self.graph_manager.build_multi_graph_from_definitions(  # will be fixed after removing 'CHECKOV_CREATE_GRAPH'
                             self.definitions
                         )
                     else:
@@ -126,7 +126,7 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
                 raise Exception("Root directory was not specified, files were not specified")
 
             if CHECKOV_CREATE_GRAPH and local_graphs:
-                self._update_definitions_and_breadcrumbs(local_graphs, report, root_folder)  # type:ignore[arg-type]  # will be fixed after removing 'CHECKOV_CREATE_GRAPH'
+                self._update_definitions_and_breadcrumbs(local_graphs, report, root_folder)  # will be fixed after removing 'CHECKOV_CREATE_GRAPH'
         else:
             logging.info("Scanning root folder using existing tf_definitions")
             if root_folder is None:

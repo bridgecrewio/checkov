@@ -37,7 +37,7 @@ from checkov.common.output.sarif import Sarif
 from checkov.common.output.spdx import SPDX
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
-from checkov.common.typing import _ExitCodeThresholds, _BaseRunner, _ScaExitCodeThresholds
+from checkov.common.typing import _ExitCodeThresholds, _BaseRunner, _ScaExitCodeThresholds, LibraryGraph
 from checkov.common.util import data_structures_utils
 from checkov.common.util.banner import tool as tool_name
 from checkov.common.util.data_structures_utils import pickle_deepcopy
@@ -53,8 +53,6 @@ if TYPE_CHECKING:
     from checkov.common.output.baseline import Baseline
     from checkov.common.runners.base_runner import BaseRunner  # noqa
     from checkov.runner_filter import RunnerFilter
-    from igraph import Graph
-    from networkx import DiGraph
 
 CONSOLE_OUTPUT = "console"
 CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
@@ -97,7 +95,7 @@ class RunnerRegistry:
         self._check_type_to_report_map: dict[str, Report] = {}  # used for finding reports with the same check type
         self.licensing_integration = licensing_integration  # can be maniuplated by unit tests
         self.secrets_omitter_class = secrets_omitter_class
-        self.check_type_to_graph: dict[str, list[Tuple[Graph | DiGraph], Optional[str]]] = {}
+        self.check_type_to_graph: dict[str, list[Tuple[LibraryGraph, Optional[str]]]] = {}
         for runner in runners:
             if isinstance(runner, image_runner):
                 runner.image_referencers = self.image_referencing_runners
@@ -126,7 +124,7 @@ class RunnerRegistry:
                 # This is the only runner, so raise a clear indication of failure
                 raise ModuleNotEnabledError(f'The framework "{runner_check_type}" is part of the "{self.licensing_integration.get_subscription_for_runner(runner_check_type).name}" module, which is not enabled in the platform')
         else:
-            def _parallel_run(runner: _BaseRunner) -> tuple[Report | list[Report], str | None, Optional[list[Tuple[DiGraph | Graph, Optional[str]]]]]:
+            def _parallel_run(runner: _BaseRunner) -> tuple[Report | list[Report], str | None, Optional[list[Tuple[LibraryGraph, Optional[str]]]]]:
                 report = runner.run(
                     root_folder=root_folder,
                     external_checks_dir=external_checks_dir,
@@ -752,11 +750,11 @@ class RunnerRegistry:
         return git_org, git_repository
 
     @staticmethod
-    def extract_graphs_from_runner(runner: BaseRunner) -> List[Tuple[Graph | DiGraph, Optional[str]]]:
+    def extract_graphs_from_runner(runner: _BaseRunner) -> List[Tuple[LibraryGraph, Optional[str]]]:
         # exist only for terraform
         all_graphs = getattr(runner, 'all_graphs', None)
         if all_graphs:
-            return all_graphs
+            return all_graphs   # type:ignore[no-any-return]
         elif runner.graph_manager:
             return [(runner.graph_manager.get_reader_endpoint(), None)]
         return []
