@@ -4,6 +4,7 @@ import itertools
 from typing import Any, List, Dict, Optional, Tuple, TYPE_CHECKING
 
 from igraph import Graph
+from networkx import DiGraph
 
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
@@ -61,12 +62,22 @@ class BaseConnectionSolver(BaseSolver):
             self.vertices_under_connected_resources_types = [
                 data for data in graph_connector.vs.select(resource_type_in=self.connected_resources_types)["attr"]
             ]
-        else:
+        elif isinstance(graph_connector, DiGraph):
             self.vertices_under_resource_types = [
                 v for _, v in graph_connector.nodes(data=True) if self.resource_type_pred(v, self.resource_types)
             ]
             self.vertices_under_connected_resources_types = [
                 v for _, v in graph_connector.nodes(data=True) if self.resource_type_pred(v, self.connected_resources_types)
+            ]
+
+        # isinstance(graph_connector, PyDiGraph):
+        else:
+            self.vertices_under_resource_types = [
+                v for _, v in graph_connector.nodes() if self.resource_type_pred(v, self.resource_types)
+            ]
+            self.vertices_under_connected_resources_types = [
+                v for _, v in graph_connector.nodes() if
+                self.resource_type_pred(v, self.connected_resources_types)
             ]
 
         self.excluded_vertices = [
@@ -92,7 +103,7 @@ class BaseConnectionSolver(BaseSolver):
             connection_nodes = {
                 vertex for vertex in graph_connector.vs.select(block_type__in=BaseConnectionSolver.SUPPORTED_CONNECTION_BLOCK_TYPES)
             }
-        else:
+        elif isinstance(graph_connector, DiGraph):
             resource_nodes = {
                 node
                 for node, resource_type in graph_connector.nodes(data=CustomAttributes.RESOURCE_TYPE)
@@ -106,9 +117,24 @@ class BaseConnectionSolver(BaseSolver):
                 if block_type in BaseConnectionSolver.SUPPORTED_CONNECTION_BLOCK_TYPES
             }
 
+        # isinstance(graph_connector, PyDiGraph):
+        else:
+            resource_nodes = {
+                index
+                for index, node in graph_connector.nodes()
+                if self.resource_type_pred(node, list(self.targeted_resources_types))
+            }
+
+            # tuple needs to be adjusted, if more connection block types are supported
+            connection_nodes = {
+                index
+                for index, node in graph_connector.nodes()
+                if node['block_type_'] in BaseConnectionSolver.SUPPORTED_CONNECTION_BLOCK_TYPES
+            }
+
         resource_nodes.update(connection_nodes)
 
-        return graph_connector.subgraph(resource_nodes)
+        return graph_connector.subgraph(list(resource_nodes))
 
     def populate_checks_results(self, origin_attributes: Dict[str, Any], destination_attributes: Dict[str, Any], passed: List[Dict[str, Any]], failed: List[Dict[str, Any]], unknown: List[Dict[str, Any]]) -> None:
         if origin_attributes in self.excluded_vertices or destination_attributes in self.excluded_vertices:
