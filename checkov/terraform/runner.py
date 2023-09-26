@@ -116,7 +116,7 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
 
                 if CHECKOV_CREATE_GRAPH:
                     if tf_split_graph:
-                        local_graphs = self.graph_manager.build_multi_graph_from_definitions(  # will be fixed after removing 'CHECKOV_CREATE_GRAPH'
+                        local_graphs = self.graph_manager.build_multi_graph_from_definitions(  # type:ignore[assignment]  # will be fixed after removing 'CHECKOV_CREATE_GRAPH'
                             self.definitions
                         )
                     else:
@@ -126,7 +126,10 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
                 raise Exception("Root directory was not specified, files were not specified")
 
             if CHECKOV_CREATE_GRAPH and local_graphs:
-                self._update_definitions_and_breadcrumbs(local_graphs, report, root_folder)  # will be fixed after removing 'CHECKOV_CREATE_GRAPH'
+                self._update_definitions_and_breadcrumbs(
+                    local_graphs,  # type:ignore[arg-type]  # will be fixed after removing 'CHECKOV_CREATE_GRAPH'
+                    report,
+                    root_folder)
         else:
             logging.info("Scanning root folder using existing tf_definitions")
             if root_folder is None:
