@@ -1,0 +1,19 @@
+metadata:
+  id: "CKV2_AWS_67"
+  name: "Ensure MWAA environment is not publicly accessible"
+  category: "GENERAL_SECURITY"
+
+definition:
+
+  or:
+
+    - cond_type: "attribute"
+      resource_types: "aws_mwaa_environment"
+      attribute: "webserver_access_mode"
+      operator: "not_exists"
+
+    - cond_type: "attribute"
+      resource_types: "aws_mwaa_environment"
+      attribute: "webserver_access_mode"
+      operator: "equals"
+      value: "PRIVATE_ONLY"
