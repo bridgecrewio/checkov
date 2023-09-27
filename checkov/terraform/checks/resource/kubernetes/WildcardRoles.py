@@ -19,13 +19,13 @@ class WildcardRoles(BaseResourceCheck):
         if isinstance(rules, list) and rules:
             for rule in rules:
                 if "api_groups" in rule:
-                    if "*" in rule["api_groups"][0]:
+                    if rule["api_groups"] is not None and "*" in rule["api_groups"][0]:
                         return CheckResult.FAILED
                 if "resources" in rule:
-                    if "*" in rule["resources"][0]:
+                    if rule["resources"] is not None and "*" in rule["resources"][0]:
                         return CheckResult.FAILED
                 if "verbs" in rule:
-                    if "*" in rule["verbs"][0]:
+                    if rule["verbs"] is not None and "*" in rule["verbs"][0]:
                         return CheckResult.FAILED
 
         return CheckResult.PASSED

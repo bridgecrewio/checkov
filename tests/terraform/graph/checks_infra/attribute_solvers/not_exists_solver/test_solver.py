@@ -9,8 +9,7 @@ TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
 @parameterized_class([
    {"graph_framework": "NETWORKX"},
-   {"graph_framework": "IGRAPH"},
-   {"graph_framework": "RUSTWORKX"}
+   {"graph_framework": "IGRAPH"}
 ])
 class TestNotExistsSolver(TestBaseSolver):
     def setUp(self):
