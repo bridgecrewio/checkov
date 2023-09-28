@@ -16,8 +16,14 @@ class SecurityOperations(BaseOpenapiCheck):
                          block_type=BlockType.DOCUMENT)
 
     def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:  # type:ignore[override]  # return type is different than the base class
-        self.evaluated_keys = ['paths']
+        self.evaluated_keys = ['security', 'paths']
 
+        # Check if security field is present and not empty at the root level
+        root_security = conf.get('security')
+        if root_security:
+            return CheckResult.PASSED, conf
+
+         # If security field is not present or empty at the root level, check within each operation
         paths = conf.get('paths', {}) or {}
         if isinstance(paths, dict):
             for path, http_method in paths.items():
