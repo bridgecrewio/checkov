@@ -23,7 +23,7 @@ class SecurityOperations(BaseOpenapiCheck):
         if root_security:
             return CheckResult.PASSED, conf
 
-         # If security field is not present or empty at the root level, check within each operation
+        # If security field is not present or empty at the root level, check within each operation
         paths = conf.get('paths', {}) or {}
         if isinstance(paths, dict):
             for path, http_method in paths.items():
