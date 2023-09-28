@@ -1,7 +1,7 @@
 metadata:
-  id: "CKV2_AWS_67"
+  id: "CKV2_AWS_66"
   name: "Ensure MWAA environment is not publicly accessible"
-  category: "GENERAL_SECURITY"
+  category: "NETWORKING"
 
 definition:
 

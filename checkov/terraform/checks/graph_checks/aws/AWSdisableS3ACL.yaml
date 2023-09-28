@@ -1,5 +1,5 @@
 metadata:
-  id: "CKV2_AWS_66"
+  id: "CKV2_AWS_65"
   name: "Ensure access control lists for S3 buckets are disabled"
   category: "GENERAL_SECURITY"
 
