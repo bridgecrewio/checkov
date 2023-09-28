@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from checkov.common.runners.base_runner import BaseRunner  # noqa
     from networkx import DiGraph
     from igraph import Graph
+    from rustworkx import PyDiGraph
     from checkov.terraform.modules.module_objects import TFDefinitionKey
 
 _BaseRunner = TypeVar("_BaseRunner", bound="BaseRunner[Any, Any, Any]")
@@ -22,8 +23,8 @@ _ScannerCallableAlias: TypeAlias = Callable[
 _Resource: TypeAlias = str
 _Attributes: TypeAlias = Set[str]
 ResourceAttributesToOmit: TypeAlias = Dict[_Resource, _Attributes]
-LibraryGraph: TypeAlias = "Union[DiGraph, Graph]"
-LibraryGraphConnector: TypeAlias = "Union[DBConnector[DiGraph], DBConnector[Graph]]"
+LibraryGraph: TypeAlias = "Union[DiGraph, Graph, PyDiGraph]"
+LibraryGraphConnector: TypeAlias = "Union[DBConnector[DiGraph], DBConnector[Graph], DBConnector[PyDiGraph]]"
 # TODO Remove this type and only use TFDefinitionKey
 TFDefinitionKeyType: TypeAlias = "Union[str, TFDefinitionKey]"
 

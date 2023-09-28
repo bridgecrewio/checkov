@@ -1,15 +1,14 @@
 from unittest import mock
 
-import igraph
 import pytest
-from networkx import DiGraph
 
 from checkov.cloudformation.image_referencer.manager import CloudFormationImageReferencerManager
-from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.images.image_referencer import Image
+from tests.graph_utils.utils import set_graph_by_graph_framework, add_vertices_to_graph_by_graph_framework, \
+    GRAPH_FRAMEWORKS
 
 
-@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
 def test_extract_images_from_resources(graph_framework):
     aws_resource = {
         "file_path_": "/ecs.yaml",
@@ -29,18 +28,8 @@ def test_extract_images_from_resources(graph_framework):
         ],
         "resource_type": "AWS::ECS::TaskDefinition",
     }
-    if graph_framework == 'IGRAPH':
-        graph = igraph.Graph()
-        aws_resource = aws_resource
-        graph.add_vertex(
-            name='1',
-            block_type_='resource',
-            resource_type=aws_resource[CustomAttributes.RESOURCE_TYPE] if CustomAttributes.RESOURCE_TYPE in aws_resource else None,
-            attr=aws_resource,
-        )
-    else:
-        graph = DiGraph()
-        graph.add_node(1, **aws_resource)
+    graph = set_graph_by_graph_framework(graph_framework)
+    add_vertices_to_graph_by_graph_framework(graph_framework, aws_resource, graph)
 
     # when
     with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': graph_framework}):
