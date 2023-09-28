@@ -1,6 +1,5 @@
 pass:
-  - "aws_s3_bucket_ownership_controls.pud_bucket_pass"
-  - "aws_s3_bucket_ownership_controls.pud_bucket_pass_1"
+  - "aws_mwaa_environment.pud_mwaa_env_pass"
+  - "aws_mwaa_environment.pud_mwaa_env_pass_1"
 fail:
-  - "aws_s3_bucket_ownership_controls.pud_bucket_fail"
-
+  - "aws_mwaa_environment.pud_mwaa_env_fail"
