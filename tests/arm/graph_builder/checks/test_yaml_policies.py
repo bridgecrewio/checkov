@@ -3,11 +3,8 @@ from pathlib import Path
 from typing import List
 
 from checkov.arm.graph_manager import ArmGraphManager
-from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from parameterized import parameterized_class
-from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
-from checkov.common.graph.db_connectors.rustworkx.rustworkx_db_connector import RustworkxConnector
-from checkov.common.graph.db_connectors.utils import set_db_connector_by_graph_framework
+from tests.graph_utils.utils import set_db_connector_by_graph_framework, PARAMETERIZED_GRAPH_FRAMEWORKS
 
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.models.enums import CheckResult
@@ -18,11 +15,7 @@ from tests.common.graph.checks.test_yaml_policies_base import TestYamlPoliciesBa
 
 
 @parameterized_class(
-    [
-        {"graph_framework": "NETWORKX"},
-        {"graph_framework": "IGRAPH"},
-        {"graph_framework": "RUSTWORKX"},
-    ]
+    PARAMETERIZED_GRAPH_FRAMEWORKS
 )
 class TestYamlPolicies(TestYamlPoliciesBase):
     def __init__(self, args):
