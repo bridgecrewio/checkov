@@ -5,8 +5,10 @@ from unittest import mock
 import pytest
 
 from checkov.common.util.json_utils import object_hook, CustomJSONEncoder
+from checkov.terraform import TFModule
 from checkov.terraform.graph_builder.foreach.abstract_handler import ForeachAbstractHandler
 from checkov.terraform.graph_builder.foreach.builder import ForeachBuilder
+from checkov.terraform.graph_builder.foreach.module_handler import ForeachModuleHandler
 from checkov.terraform.graph_builder.foreach.resource_handler import ForeachResourceHandler
 from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
 
@@ -304,18 +306,22 @@ def test_new_tf_parser_with_foreach_modules(checkov_source_path):
 
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
 def test_tf_definitions_for_foreach_on_modules(checkov_source_path):
-    dir_name = 'parser_dup_nested'
-    local_graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
-    tf_definitions, _ = convert_graph_vertices_to_tf_definitions(vertices=local_graph.vertices, root_folder=dir_name)
+    dir_name_and_definitions_path = [
+        ('parser_dup_nested', 'expected_foreach_modules_tf_definitions.json'),
+        ('foreach_module_dup_foreach', 'expected_foreach_module_dup_foreach.json')
+    ]
+    for dir_name, definitions_path in dir_name_and_definitions_path:
+        local_graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
+        tf_definitions, _ = convert_graph_vertices_to_tf_definitions(vertices=local_graph.vertices, root_folder=dir_name)
 
-    file_path = os.path.join(os.path.dirname(__file__), 'expected_foreach_modules_tf_definitions.json')
-    with open(file_path, 'r') as f:
-        expected_data = json.load(f, object_hook=object_hook)
+        file_path = os.path.join(os.path.dirname(__file__), definitions_path)
+        with open(file_path, 'r') as f:
+            expected_data = json.load(f, object_hook=object_hook)
 
-    tf_definitions_json = json.dumps(tf_definitions, cls=CustomJSONEncoder)
-    tf_definitions_json = tf_definitions_json.replace(checkov_source_path, '...')
-    tf_definitions_after_handling_checkov_source = json.loads(tf_definitions_json, object_hook=object_hook)
-    assert tf_definitions_after_handling_checkov_source == expected_data
+        tf_definitions_json = json.dumps(tf_definitions, cls=CustomJSONEncoder)
+        tf_definitions_json = tf_definitions_json.replace(checkov_source_path, '...')
+        tf_definitions_after_handling_checkov_source = json.loads(tf_definitions_json, object_hook=object_hook)
+        assert tf_definitions_after_handling_checkov_source == expected_data
 
 
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
@@ -335,9 +341,28 @@ def test_foreach_module_in_both_levels_module(checkov_source_path):
     graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
     tf_definitions, _ = convert_graph_vertices_to_tf_definitions(vertices=graph.vertices, root_folder=dir_name)
 
-    assert len([block for block in graph.vertices if block.block_type == 'module']) == 20
-    assert len([block for block in graph.vertices if block.block_type == 'resource']) == 16
+    resources = [block for block in graph.vertices if block.block_type == 'resource']
+    locals = [block for block in graph.vertices if block.block_type == 'locals']
+    vars = [block for block in graph.vertices if block.block_type == 'variable']
+    modules = [block for block in graph.vertices if block.block_type == 'module']
+
+    assert len(modules) == 20
+    assert len(resources) == 16
     assert len(tf_definitions.keys()) == 22
+
+    for resource in resources:
+        assert resource.source_module_object.foreach_idx is not None
+
+    for local in locals:
+        assert local.source_module_object.foreach_idx is not None
+
+    for var in vars:
+        if var.source_module_object:
+            assert var.source_module_object.foreach_idx is not None
+
+    for module in modules:
+        if module.source_module_object:
+            assert module.source_module_object.foreach_idx is not None
 
 
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
@@ -389,3 +414,29 @@ def test_foreach_with_lookup():
     graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
     assert graph.vertices[0].attributes.get('uniform_bucket_level_access') == [True]
     assert graph.vertices[1].attributes.get('uniform_bucket_level_access') == [True]
+
+
+def test__get_tf_module_with_no_foreach():
+    module = TFModule(name='1', path='1', foreach_idx='1',
+                      nested_tf_module=TFModule(name='2', path='2', foreach_idx='2', nested_tf_module=None))
+    result = ForeachModuleHandler._get_tf_module_with_no_foreach(module)
+    assert result == TFModule(name='1', path='1', foreach_idx=None,
+                      nested_tf_module=TFModule(name='2', path='2', foreach_idx=None, nested_tf_module=None))
+
+
+def test__get_module_with_only_relevant_foreach_idx():
+    module = TFModule(name='1', path='1', foreach_idx='1',
+                      nested_tf_module=TFModule(name='2', path='2', foreach_idx='2',
+                                                nested_tf_module=TFModule(name='3', path='3', foreach_idx='3',
+                                                                          nested_tf_module=None)
+                                                )
+                      )
+    original_key = TFModule(name='2', path='2', foreach_idx='2',
+                            nested_tf_module=TFModule(name='3', path='3', foreach_idx='3', nested_tf_module=None))
+    result = ForeachModuleHandler._get_module_with_only_relevant_foreach_idx('test', original_key, module)
+    assert result == TFModule(name='1', path='1', foreach_idx='1',
+                      nested_tf_module=TFModule(name='2', path='2', foreach_idx='test',
+                                                nested_tf_module=TFModule(name='3', path='3', foreach_idx='3',
+                                                                          nested_tf_module=None)
+                                                )
+                      )
