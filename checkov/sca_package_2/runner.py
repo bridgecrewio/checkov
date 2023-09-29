@@ -19,7 +19,7 @@ from checkov.runner_filter import RunnerFilter
 from checkov.sca_package_2.scanner import Scanner
 
 
-class Runner(BaseRunner[None]):
+class Runner(BaseRunner[None, None, None]):
     check_type = CheckType.SCA_PACKAGE  # noqa: CCE003  # a static attribute
 
     def __init__(self, report_type: str = check_type) -> None:

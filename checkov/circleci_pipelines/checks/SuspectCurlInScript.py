@@ -23,7 +23,7 @@ class SuspectCurlInScript(BaseCircleCIPipelinesCheck):
         if "run" not in conf:
             return CheckResult.PASSED, conf
         run = conf.get("run", "")
-        if type(run) == dict:
+        if isinstance(run, dict):
             run = run.get("command", "")
         if "curl" in run:
             badstuff = ['curl', 'POST']

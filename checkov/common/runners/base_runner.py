@@ -24,6 +24,8 @@ if TYPE_CHECKING:
     from checkov.common.graph.checks_infra.registry import BaseRegistry
     from checkov.common.typing import _CheckResult, LibraryGraphConnector
 
+_Context = TypeVar("_Context", bound="dict[Any, Any]|None")
+_Definitions = TypeVar("_Definitions", bound="dict[Any, Any]|None")
 _GraphManager = TypeVar("_GraphManager", bound="GraphManager[Any, Any]|None")
 
 
@@ -50,11 +52,11 @@ IGNORE_HIDDEN_DIRECTORY_ENV = strtobool(os.getenv("CKV_IGNORE_HIDDEN_DIRECTORIES
 ignored_directories = IGNORED_DIRECTORIES_ENV.split(",")
 
 
-class BaseRunner(ABC, Generic[_GraphManager]):
+class BaseRunner(ABC, Generic[_Definitions, _Context, _GraphManager]):
     check_type = ""
-    definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None = None
+    definitions: _Definitions | None = None
     raw_definitions: dict[str, list[tuple[int, str]]] | None = None
-    context: dict[str, dict[str, Any]] | None = None
+    context: _Context | None = None
     breadcrumbs = None
     external_registries: list[BaseRegistry] | None = None
     graph_manager: _GraphManager | None = None
@@ -65,13 +67,16 @@ class BaseRunner(ABC, Generic[_GraphManager]):
         self.file_extensions = file_extensions or []
         self.file_names = file_names or []
         self.pbar = ProgressBar(self.check_type)
-        db_connector_class: "type[NetworkxConnector | IgraphConnector]" = IgraphConnector
+        db_connector_class: "type[NetworkxConnector | IgraphConnector | RustworkxConnector]" = IgraphConnector
         graph_framework = os.getenv("CHECKOV_GRAPH_FRAMEWORK", "IGRAPH")
         if graph_framework == "IGRAPH":
             db_connector_class = IgraphConnector
         elif graph_framework == "NETWORKX":
             from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
             db_connector_class = NetworkxConnector
+        elif graph_framework == "RUSTWORKX":
+            from checkov.common.graph.db_connectors.rustworkx.rustworkx_db_connector import RustworkxConnector
+            db_connector_class = RustworkxConnector
 
         self.db_connector = db_connector_class()
 
@@ -106,8 +111,8 @@ class BaseRunner(ABC, Generic[_GraphManager]):
 
     def set_external_data(
             self,
-            definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None,
-            context: dict[str, dict[str, Any]] | None,
+            definitions: _Definitions | None,
+            context: _Context | None,
             breadcrumbs: dict[str, dict[str, Any]] | None,
             **kwargs: Any,
     ) -> None:

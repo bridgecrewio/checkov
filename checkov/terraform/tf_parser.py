@@ -5,7 +5,7 @@ import logging
 import os
 from collections import defaultdict
 from pathlib import Path
-from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, cast, TYPE_CHECKING
+from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, cast, TYPE_CHECKING, overload
 
 import deep_merge
 import hcl2
@@ -241,10 +241,15 @@ class TFParser:
                         resolved_loc_list = self.module_to_resolved[current_nested_data]
                     self.module_to_resolved[current_nested_data] = resolved_loc_list
 
-                    specified_vars = {k: v[0] if isinstance(v, list) and v else v for k, v in module_call_data.items()
-                                      if k != "source" and k != "version"}
-                    skipped_a_module = self.should_skip_a_module(specified_vars, ignore_unresolved_params)
-                    if skipped_a_module:
+                    specified_vars = {
+                        k: v[0] if isinstance(v, list) and v else v
+                        for k, v in module_call_data.items()
+                        if k != "source" and k != "version"
+                    }
+                    skip_module = self.should_skip_a_module(specified_vars, ignore_unresolved_params)
+                    if skip_module:
+                        # keep module skip info till the end
+                        skipped_a_module = True
                         continue
 
                     version = self.get_module_version(module_call_data)
@@ -429,12 +434,30 @@ class TFParser:
 
         return None
 
+    @overload
     def parse_hcl_module_from_tf_definitions(
         self,
-        tf_definitions: Dict[TFDefinitionKey, Dict[str, Any]],
+        tf_definitions: dict[str, dict[str, Any]],
         source_dir: str,
         source: str,
-    ) -> Tuple[Module, Dict[TFDefinitionKey, Dict[str, Any]]]:
+    ) -> tuple[Module, dict[str, dict[str, Any]]]:
+        ...
+
+    @overload
+    def parse_hcl_module_from_tf_definitions(
+        self,
+        tf_definitions: dict[TFDefinitionKey, dict[str, Any]],
+        source_dir: str,
+        source: str,
+    ) -> tuple[Module, dict[TFDefinitionKey, dict[str, Any]]]:
+        ...
+
+    def parse_hcl_module_from_tf_definitions(
+        self,
+        tf_definitions: dict[str, dict[str, Any]] | dict[TFDefinitionKey, dict[str, Any]],
+        source_dir: str,
+        source: str,
+    ) -> tuple[Module, dict[str, dict[str, Any]] | dict[TFDefinitionKey, dict[str, Any]]]:
         module = self.get_new_module(
             source_dir=source_dir,
             external_modules_source_map=self.external_modules_source_map,

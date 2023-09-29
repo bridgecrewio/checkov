@@ -4,6 +4,8 @@ import logging
 import os
 from typing import TYPE_CHECKING, Any
 
+from typing_extensions import TypeAlias  # noqa[TC002]
+
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.graph_builder import CustomAttributes
@@ -16,21 +18,24 @@ from checkov.common.runners.base_runner import CHECKOV_CREATE_GRAPH
 from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.common.util.secrets import omit_secret_value_from_checks
 from checkov.runner_filter import RunnerFilter
+from checkov.terraform.base_runner import BaseTerraformRunner
 from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
-from checkov.terraform.runner import Runner as TerraformRunner
-from checkov.terraform_json.utils import get_scannable_file_paths, TF_JSON_POSSIBLE_FILE_ENDINGS, create_definitions
+from checkov.terraform_json.utils import get_scannable_file_paths, create_definitions
 
 if TYPE_CHECKING:
     from checkov.common.graph.checks_infra.registry import BaseRegistry
     from checkov.terraform.graph_manager import TerraformGraphManager
     from checkov.common.typing import LibraryGraphConnector, _CheckResult
 
+_TerraformJsonContext: TypeAlias = "dict[str, dict[str, Any]]"
+_TerraformJsonDefinitions: TypeAlias = "dict[str, dict[str, Any]]"
+
 logger = logging.getLogger(__name__)
 add_resource_code_filter_to_logger(logger)
 
 
-class TerraformJsonRunner(TerraformRunner):
+class TerraformJsonRunner(BaseTerraformRunner[_TerraformJsonDefinitions, _TerraformJsonContext, str]):
     check_type = CheckType.TERRAFORM_JSON  # noqa: CCE003  # a static attribute
 
     def __init__(
@@ -48,11 +53,12 @@ class TerraformJsonRunner(TerraformRunner):
             external_registries=external_registries,
             source=source,
         )
-        self.file_extensions = TF_JSON_POSSIBLE_FILE_ENDINGS  # override what gets set from the TF runner
-        self.graph_registry = get_graph_checks_registry(super().check_type)
+        self.file_extensions = (".json",)  # just '.json' not 'tf.json' otherwise it will be filtered out
+        self.graph_registry = get_graph_checks_registry(check_type=CheckType.TERRAFORM)
 
-        self.definitions: dict[str, dict[str, Any]] = {}
-        self.context: dict[str, dict[str, Any]] = {}
+        self.definitions: _TerraformJsonDefinitions = {}
+        self.definitions_raw: "dict[str, list[tuple[int, str]]]" = {}
+        self.context: _TerraformJsonContext = {}
         self.root_folder: str | None = None
 
     def run(
@@ -180,14 +186,14 @@ class TerraformJsonRunner(TerraformRunner):
     def run_block(
         self,
         entities: list[dict[str, Any]],
-        definition_context: dict[str, Any],
+        definition_context: _TerraformJsonContext,
         full_file_path: str,
         root_folder: str | None,
         report: Report,
         scanned_file: str,
         block_type: str,
         runner_filter: RunnerFilter | None = None,
-        entity_context_path_header: list[str] | None = None,
+        entity_context_path_header: str | None = None,
         module_referrer: str | None = None,
     ) -> None:
         """Run block specific checks"""
@@ -230,3 +236,7 @@ class TerraformJsonRunner(TerraformRunner):
                     )
                     record.set_guideline(guideline=check.guideline)
                     report.add_record(record=record)
+
+    def get_entity_context_and_evaluations(self, entity: dict[str, Any]) -> dict[str, Any] | None:
+        # not used
+        pass
