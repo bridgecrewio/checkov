@@ -92,7 +92,9 @@ class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
 
             files_list = get_scannable_file_paths(root_folder=root_folder, excluded_paths=runner_filter.excluded_paths)
 
-        self.definitions, self.definitions_raw = get_files_definitions(files_list, filepath_fn)
+        self.definitions, self.definitions_raw, parsing_errors = get_files_definitions(files_list, filepath_fn)
+
+        report.add_parsing_errors(parsing_errors)
 
         if CHECKOV_CREATE_GRAPH and self.graph_registry and self.graph_manager:
             logging.info("Creating ARM graph")

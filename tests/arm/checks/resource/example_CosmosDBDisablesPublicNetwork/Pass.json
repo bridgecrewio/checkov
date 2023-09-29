@@ -1,0 +1,69 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "databaseAccounts_secondaccountjgw_name": {
+            "defaultValue": "secondaccountjgw",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.DocumentDB/databaseAccounts",
+            "apiVersion": "2023-04-15",
+            "name": "pass",
+            "location": "UK South",
+            "kind": "GlobalDocumentDB",
+            "identity": {
+                "type": "None"
+            },
+            "properties": {
+                "publicNetworkAccess": "Disabled",
+                "enableAutomaticFailover": true,
+                "enableMultipleWriteLocations": false,
+                "isVirtualNetworkFilterEnabled": false,
+                "virtualNetworkRules": [],
+                "disableKeyBasedMetadataWriteAccess": true,
+                "enableFreeTier": false,
+                "enableAnalyticalStorage": false,
+                "analyticalStorageConfiguration": {
+                    "schemaType": "WellDefined"
+                },
+                "databaseAccountOfferType": "Standard",
+                "keyVaultKeyUri": "https://examplekeyvaultjgw.vault.azure.net/keys/temp",
+                "defaultIdentity": "FirstPartyIdentity",
+                "networkAclBypass": "None",
+                "disableLocalAuth": true,
+                "enablePartitionMerge": false,
+                "minimalTlsVersion": "Tls",
+                "consistencyPolicy": {
+                    "defaultConsistencyLevel": "BoundedStaleness",
+                    "maxIntervalInSeconds": 300,
+                    "maxStalenessPrefix": 100000
+                },
+                "locations": [
+                    {
+                        "locationName": "UK South",
+                        "provisioningState": "Failed",
+                        "failoverPriority": 0,
+                        "isZoneRedundant": false
+                    }
+                ],
+                "cors": [],
+                "capabilities": [],
+                "ipRules": [],
+                "backupPolicy": {
+                    "type": "Periodic",
+                    "periodicModeProperties": {
+                        "backupIntervalInMinutes": 240,
+                        "backupRetentionIntervalInHours": 8,
+                        "backupStorageRedundancy": "Invalid"
+                    }
+                },
+                "networkAclBypassResourceIds": [],
+                "keysMetadata": {}
+            }
+        }
+    ]
+}

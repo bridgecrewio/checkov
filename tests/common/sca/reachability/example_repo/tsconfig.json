@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "ax": ["node_modules/axios"]
+    }
+  }
+}
