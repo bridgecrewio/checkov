@@ -13,11 +13,12 @@ from tests.common.image_referencer.test_utils import (
     mock_get_license_statuses_async,
     mock_get_image_cached_result_async,
 )
+from tests.graph_utils.utils import GRAPH_FRAMEWORKS
 
 RESOURCES_PATH = Path(__file__).parent / "resources/aws"
 
 
-@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
 def test_apprunner_resources(mocker: MockerFixture, graph_framework):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
@@ -78,7 +79,8 @@ def test_apprunner_resources(mocker: MockerFixture, graph_framework):
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
 
-@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
 def test_batch_resources(mocker: MockerFixture, graph_framework):
     # given
     file_name = "batch.tf"
@@ -119,7 +121,8 @@ def test_batch_resources(mocker: MockerFixture, graph_framework):
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
 
-@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
 def test_codebuild_resources(mocker: MockerFixture, graph_framework):
     # given
     file_name = "codebuild.tf"
@@ -160,7 +163,8 @@ def test_codebuild_resources(mocker: MockerFixture, graph_framework):
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
 
-@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
 def test_ecs_resources(mocker: MockerFixture, graph_framework):
     # given
     file_name = "ecs.tf"
@@ -206,7 +210,8 @@ def test_ecs_resources(mocker: MockerFixture, graph_framework):
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
 
-@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
 def test_lightsail_resources(mocker: MockerFixture, graph_framework):
     # given
     file_name = "lightsail.tf"
