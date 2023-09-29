@@ -1,0 +1,5 @@
+pass:
+  - "aws_mwaa_environment.pud_mwaa_env_pass"
+  - "aws_mwaa_environment.pud_mwaa_env_pass_1"
+fail:
+  - "aws_mwaa_environment.pud_mwaa_env_fail"
