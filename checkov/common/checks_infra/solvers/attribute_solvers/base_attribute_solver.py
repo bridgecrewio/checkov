@@ -8,6 +8,7 @@ from typing import List, Tuple, Dict, Any, Optional, Pattern, TYPE_CHECKING
 
 from igraph import Graph
 from bc_jsonpath_ng.ext import parse
+from networkx import DiGraph
 
 from checkov.common.graph.checks_infra import debug
 from checkov.common.graph.checks_infra.enums import SolverType
@@ -65,8 +66,17 @@ class BaseAttributeSolver(BaseSolver):
                     failed_vertices.append(data)
 
             return passed_vertices, failed_vertices, unknown_vertices
+        elif isinstance(graph_connector, DiGraph):
+            for _, data in graph_connector.nodes(data=True):
+                if (not self.resource_types or data.get(CustomAttributes.RESOURCE_TYPE) in self.resource_types) \
+                        and data.get(CustomAttributes.BLOCK_TYPE) in SUPPORTED_BLOCK_TYPES:
+                    jobs.append(executer.submit(
+                        self._process_node, data, passed_vertices, failed_vertices, unknown_vertices))
 
-        for _, data in graph_connector.nodes(data=True):
+            concurrent.futures.wait(jobs)
+            return passed_vertices, failed_vertices, unknown_vertices
+
+        for _, data in graph_connector.nodes():
             if (not self.resource_types or data.get(CustomAttributes.RESOURCE_TYPE) in self.resource_types) \
                     and data.get(CustomAttributes.BLOCK_TYPE) in SUPPORTED_BLOCK_TYPES:
                 jobs.append(executer.submit(

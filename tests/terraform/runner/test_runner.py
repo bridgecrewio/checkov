@@ -12,6 +12,7 @@ from unittest import mock
 from igraph import Graph
 from networkx import DiGraph
 from parameterized import parameterized, parameterized_class
+from rustworkx import PyDiGraph
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
@@ -19,6 +20,7 @@ from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.graph.db_connectors.rustworkx.rustworkx_db_connector import RustworkxConnector
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.common.output.report import Report
@@ -41,11 +43,14 @@ CUSTOM_GRAPH_CHECK_ID = 'CKV2_CUSTOM_1'
 EXTERNAL_MODULES_DOWNLOAD_PATH = os.environ.get('EXTERNAL_MODULES_DIR', DEFAULT_EXTERNAL_MODULES_DIR)
 
 
+# TODO delete igraph
 @parameterized_class([
     {"db_connector": NetworkxConnector, "tf_split_graph": "True", "graph": "NETWORKX"},
     {"db_connector": NetworkxConnector, "tf_split_graph": "False", "graph": "NETWORKX"},
     {"db_connector": IgraphConnector, "tf_split_graph": "True", "graph": "IGRAPH"},
     {"db_connector": IgraphConnector, "tf_split_graph": "False", "graph": "IGRAPH"},
+    {"db_connector": RustworkxConnector, "tf_split_graph": "True", "graph": "RUSTWORKX"},
+    {"db_connector": RustworkxConnector, "tf_split_graph": "False", "graph": "RUSTWORKX"},
 ])
 class TestRunnerValid(unittest.TestCase):
     def setUp(self) -> None:
@@ -89,8 +94,12 @@ class TestRunnerValid(unittest.TestCase):
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suite())
-        self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
-        self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
+        self.assertEqual(report.get_exit_code(
+            {'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [],
+             'hard_fail_threshold': None}), 1)
+        self.assertEqual(report.get_exit_code(
+            {'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [],
+             'hard_fail_threshold': None}), 0)
         for record in report.failed_checks:
             self.assertNotIn(record.check_id, checks_denylist)
 
@@ -103,8 +112,12 @@ class TestRunnerValid(unittest.TestCase):
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suite())
-        self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
-        self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
+        self.assertEqual(report.get_exit_code(
+            {'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [],
+             'hard_fail_threshold': None}), 1)
+        self.assertEqual(report.get_exit_code(
+            {'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [],
+             'hard_fail_threshold': None}), 0)
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
         self.assertGreaterEqual(summary['failed'], 1)
@@ -126,7 +139,9 @@ class TestRunnerValid(unittest.TestCase):
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suite())
-        self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
+        self.assertEqual(report.get_exit_code(
+            {'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [],
+             'hard_fail_threshold': None}), 1)
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
         self.assertEqual(9, summary['failed'])
@@ -451,9 +466,12 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner(db_connector=self.db_connector())
         if isinstance(runner.db_connector, IgraphConnector):
             result = runner.run(root_folder=valid_dir_path, external_checks_dir=None, runner_filter=RunnerFilter(
-                checks=['CKV_AWS_21', 'CKV_AWS_42', 'CKV_AWS_62', 'CKV_AWS_53', 'CKV_AWS_18', 'CKV_AWS_61', 'CKV_AWS_144',
-                        'CKV_AWS_145', 'CKV_AWS_115', 'CKV_AWS_116', 'CKV_AWS_117', 'CKV_AWS_6', 'CKV_AWS_168', 'CKV_AWS_170',
-                        'CKV_AWS_171', 'CKV_AWS_172', 'CKV_AWS_37', 'CKV_AWS_38', 'CKV_AWS_39', 'CKV_AWS_107', 'CKV_AWS_109',
+                checks=['CKV_AWS_21', 'CKV_AWS_42', 'CKV_AWS_62', 'CKV_AWS_53', 'CKV_AWS_18', 'CKV_AWS_61',
+                        'CKV_AWS_144',
+                        'CKV_AWS_145', 'CKV_AWS_115', 'CKV_AWS_116', 'CKV_AWS_117', 'CKV_AWS_6', 'CKV_AWS_168',
+                        'CKV_AWS_170',
+                        'CKV_AWS_171', 'CKV_AWS_172', 'CKV_AWS_37', 'CKV_AWS_38', 'CKV_AWS_39', 'CKV_AWS_107',
+                        'CKV_AWS_109',
                         'CKV_AWS_110'], framework=['terraform']))
             self.assertEqual(len(result.passed_checks), 52)
             self.assertEqual(len(result.failed_checks), 255)
@@ -867,7 +885,8 @@ class TestRunnerValid(unittest.TestCase):
 
     def test_failure_in_resolved_module(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
-        valid_dir_path = os.path.join(current_dir, "../parser/resources/parser_scenarios/module_matryoshka_nested_module_enable")
+        valid_dir_path = os.path.join(current_dir,
+                                      "../parser/resources/parser_scenarios/module_matryoshka_nested_module_enable")
         valid_dir_path = os.path.normpath(valid_dir_path)
         runner = Runner(db_connector=self.db_connector())
         checks_allowlist = ['CKV_AWS_20']
@@ -877,8 +896,12 @@ class TestRunnerValid(unittest.TestCase):
         self.assertIsInstance(report_json, str)
         self.assertIsNotNone(report_json)
         self.assertIsNotNone(report.get_test_suite())
-        self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
-        self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
+        self.assertEqual(report.get_exit_code(
+            {'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [],
+             'hard_fail_threshold': None}), 1)
+        self.assertEqual(report.get_exit_code(
+            {'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [],
+             'hard_fail_threshold': None}), 0)
 
         self.assertEqual(checks_allowlist[0], report.failed_checks[0].check_id)
         self.assertEqual("/bucket1/bucket2/bucket3/bucket.tf", report.failed_checks[0].file_path)
@@ -1039,8 +1062,9 @@ class TestRunnerValid(unittest.TestCase):
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
         report = Runner(db_connector=self.db_connector()).run(root_folder=f"{current_dir}/resources/module_skip",
-                              external_checks_dir=None,
-                              runner_filter=RunnerFilter(checks="CKV_AWS_19"))  # bucket encryption
+                                                              external_checks_dir=None,
+                                                              runner_filter=RunnerFilter(
+                                                                  checks="CKV_AWS_19"))  # bucket encryption
 
         self.assertEqual(len(report.skipped_checks), 5)
         self.assertEqual(len(report.failed_checks), 0)
@@ -1086,9 +1110,10 @@ class TestRunnerValid(unittest.TestCase):
     def test_module_failure_reporting_772(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
-        report = Runner(db_connector=self.db_connector()).run(root_folder=f"{current_dir}/resources/module_failure_reporting_772",
-                              external_checks_dir=None,
-                              runner_filter=RunnerFilter(checks="CKV_AWS_143"))  # bucket encryption
+        report = Runner(db_connector=self.db_connector()).run(
+            root_folder=f"{current_dir}/resources/module_failure_reporting_772",
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(checks="CKV_AWS_143"))  # bucket encryption
 
         self.assertEqual(len(report.failed_checks), 2)
         self.assertEqual(len(report.passed_checks), 0)
@@ -1193,7 +1218,9 @@ class TestRunnerValid(unittest.TestCase):
         runner.graph_registry.checks[:] = [check for check in runner.graph_registry.checks if "CUSTOM" not in check.id]
 
     def test_wrong_check_imports(self):
-        wrong_imports = ("checkov.arm", "checkov.cloudformation", "checkov.dockerfile", "checkov.helm", "checkov.kubernetes", "checkov.serverless")
+        wrong_imports = (
+        "checkov.arm", "checkov.cloudformation", "checkov.dockerfile", "checkov.helm", "checkov.kubernetes",
+        "checkov.serverless")
         check_imports = []
 
         checks_path = Path(inspect.getfile(Runner)).parent.joinpath("checks")
@@ -1297,16 +1324,20 @@ class TestRunnerValid(unittest.TestCase):
 
         runner = Runner(db_connector=self.db_connector())
         runner_filter = RunnerFilter(framework=['terraform'], checks=checks)
-        report = runner.run(root_folder=None, files=[file_to_scan], external_checks_dir=[resources_dir], runner_filter=runner_filter)
+        report = runner.run(root_folder=None, files=[file_to_scan], external_checks_dir=[resources_dir],
+                            runner_filter=runner_filter)
 
         # plus 1 unknown
         self.assertEqual(len(report.passed_checks), 3)
         self.assertEqual(len(report.failed_checks), 0)
 
-        self.assertTrue(any(r.check_id == 'BUCKET_EXISTS' and r.resource == 'aws_s3_bucket.known_simple_pass' for r in report.passed_checks))
-        self.assertTrue(any(r.check_id == 'BUCKET_EQUALS' and r.resource == 'aws_s3_bucket.known_simple_pass' for r in report.passed_checks))
+        self.assertTrue(any(r.check_id == 'BUCKET_EXISTS' and r.resource == 'aws_s3_bucket.known_simple_pass' for r in
+                            report.passed_checks))
+        self.assertTrue(any(r.check_id == 'BUCKET_EQUALS' and r.resource == 'aws_s3_bucket.known_simple_pass' for r in
+                            report.passed_checks))
 
-        self.assertTrue(any(r.check_id == 'BUCKET_EXISTS' and r.resource == 'aws_s3_bucket.unknown_simple' for r in report.passed_checks))
+        self.assertTrue(any(r.check_id == 'BUCKET_EXISTS' and r.resource == 'aws_s3_bucket.unknown_simple' for r in
+                            report.passed_checks))
 
     def test_unrendered_nested_var(self):
         resources_dir = os.path.join(
@@ -1316,22 +1347,37 @@ class TestRunnerValid(unittest.TestCase):
 
         runner = Runner(db_connector=self.db_connector())
         runner_filter = RunnerFilter(framework=['terraform'], checks=checks)
-        report = runner.run(root_folder=None, files=[file_to_scan], external_checks_dir=[resources_dir], runner_filter=runner_filter)
+        report = runner.run(root_folder=None, files=[file_to_scan], external_checks_dir=[resources_dir],
+                            runner_filter=runner_filter)
 
         # plus 3 unknown
         self.assertEqual(len(report.passed_checks), 5)
         self.assertEqual(len(report.failed_checks), 2)
 
-        self.assertTrue(any(r.check_id == 'COMPONENT_EXISTS' and r.resource == 'aws_s3_bucket.unknown_nested_2_pass' for r in report.passed_checks))
+        self.assertTrue(any(
+            r.check_id == 'COMPONENT_EXISTS' and r.resource == 'aws_s3_bucket.unknown_nested_2_pass' for r in
+            report.passed_checks))
 
-        self.assertTrue(any(r.check_id == 'COMPONENT_EXISTS' and r.resource == 'aws_s3_bucket.known_nested_pass' for r in report.passed_checks))
-        self.assertTrue(any(r.check_id == 'COMPONENT_EQUALS' and r.resource == 'aws_s3_bucket.known_nested_pass' for r in report.passed_checks))
+        self.assertTrue(any(
+            r.check_id == 'COMPONENT_EXISTS' and r.resource == 'aws_s3_bucket.known_nested_pass' for r in
+            report.passed_checks))
+        self.assertTrue(any(
+            r.check_id == 'COMPONENT_EQUALS' and r.resource == 'aws_s3_bucket.known_nested_pass' for r in
+            report.passed_checks))
 
-        self.assertTrue(any(r.check_id == 'COMPONENT_EXISTS' and r.resource == 'aws_s3_bucket.known_nested_2_pass' for r in report.passed_checks))
-        self.assertTrue(any(r.check_id == 'COMPONENT_EQUALS' and r.resource == 'aws_s3_bucket.known_nested_2_pass' for r in report.passed_checks))
+        self.assertTrue(any(
+            r.check_id == 'COMPONENT_EXISTS' and r.resource == 'aws_s3_bucket.known_nested_2_pass' for r in
+            report.passed_checks))
+        self.assertTrue(any(
+            r.check_id == 'COMPONENT_EQUALS' and r.resource == 'aws_s3_bucket.known_nested_2_pass' for r in
+            report.passed_checks))
 
-        self.assertTrue(any(r.check_id == 'COMPONENT_EXISTS' and r.resource == 'aws_s3_bucket.known_nested_fail' for r in report.failed_checks))
-        self.assertTrue(any(r.check_id == 'COMPONENT_EQUALS' and r.resource == 'aws_s3_bucket.known_nested_fail' for r in report.failed_checks))
+        self.assertTrue(any(
+            r.check_id == 'COMPONENT_EXISTS' and r.resource == 'aws_s3_bucket.known_nested_fail' for r in
+            report.failed_checks))
+        self.assertTrue(any(
+            r.check_id == 'COMPONENT_EQUALS' and r.resource == 'aws_s3_bucket.known_nested_fail' for r in
+            report.failed_checks))
 
     def test_no_duplicate_results(self):
         resources_path = os.path.join(
@@ -1377,14 +1423,16 @@ class TestRunnerValid(unittest.TestCase):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         path_to_scan = os.path.join(current_dir, 'resources', 'nested_dir', 'dir1')
         runner = Runner(db_connector=self.db_connector())
-        report = runner.run(root_folder=path_to_scan, external_checks_dir=None, runner_filter=RunnerFilter(framework=["terraform"], excluded_paths=['example.tf']))
+        report = runner.run(root_folder=path_to_scan, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework=["terraform"], excluded_paths=['example.tf']))
         self.assertEqual(0, len(report.resources))
 
     def test_runner_exclude_dir(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         path_to_scan = os.path.join(current_dir, 'resources', 'nested_dir')
         runner = Runner(db_connector=self.db_connector())
-        report = runner.run(root_folder=path_to_scan, external_checks_dir=None, runner_filter=RunnerFilter(framework=["terraform"], excluded_paths=['dir1']))
+        report = runner.run(root_folder=path_to_scan, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework=["terraform"], excluded_paths=['dir1']))
         self.assertEqual(1, len(report.resources))
 
     def test_runner_merge_operator(self):
@@ -1394,7 +1442,8 @@ class TestRunnerValid(unittest.TestCase):
         extra_checks_dir_path = [current_dir + "/resources/merge_operator/query"]
 
         runner = Runner(db_connector=self.db_connector())
-        report = runner.run(root_folder=tf_dir_path, external_checks_dir=extra_checks_dir_path, runner_filter=RunnerFilter(checks=["CKV2_AWS_200"]))
+        report = runner.run(root_folder=tf_dir_path, external_checks_dir=extra_checks_dir_path,
+                            runner_filter=RunnerFilter(checks=["CKV2_AWS_200"]))
 
         self.assertEqual(1, len(report.passed_checks))
 
@@ -1417,7 +1466,8 @@ class TestRunnerValid(unittest.TestCase):
 
         check = AnyFailingCheck()
         check.severity = Severities[BcSeverities.LOW]
-        scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "valid_tf_only_failed_checks", "example_acl_fail.tf")
+        scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources",
+                                      "valid_tf_only_failed_checks", "example_acl_fail.tf")
 
         report = Runner(db_connector=self.db_connector()).run(
             None,
@@ -1494,7 +1544,6 @@ class TestRunnerValid(unittest.TestCase):
     def test_severity_check_filter(self):
         custom_check_id = "MY_CUSTOM_CHECK"
 
-
         resource_registry.checks = defaultdict(list)
 
         class AnyFailingCheck(BaseResourceCheck):
@@ -1526,7 +1575,6 @@ class TestRunnerValid(unittest.TestCase):
     def test_severity_skip_check_filter_omit(self):
         custom_check_id = "MY_CUSTOM_CHECK"
 
-
         resource_registry.checks = defaultdict(list)
 
         class AnyFailingCheck(BaseResourceCheck):
@@ -1557,7 +1605,6 @@ class TestRunnerValid(unittest.TestCase):
 
     def test_severity_skip_check_filter_include(self):
         custom_check_id = "MY_CUSTOM_CHECK"
-
 
         resource_registry.checks = defaultdict(list)
 
@@ -1593,7 +1640,8 @@ class TestRunnerValid(unittest.TestCase):
 
     @parameterized.expand([
         (NetworkxConnector,),
-        (IgraphConnector,)
+        (IgraphConnector,),
+        (RustworkxConnector,)
     ])
     def test_get_graph_resource_entity_config(self, graph_connector):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -1610,13 +1658,51 @@ class TestRunnerValid(unittest.TestCase):
             for data in graph_connector.vs.select()["attr"]:
                 config = Runner.get_graph_resource_entity_config(data)
                 self.assertIn(CustomAttributes.TF_RESOURCE_ADDRESS, config)
+        if isinstance(graph_connector, PyDiGraph):
+            for _, data in graph_connector.nodes():
+                config = Runner.get_graph_resource_entity_config(data)
+                self.assertIn(CustomAttributes.TF_RESOURCE_ADDRESS, config)
 
     @mock.patch.dict(os.environ, {"ENABLE_DEFINITION_KEY": "True"})
     def test_entity_context_fetching_with_TFDefinitionKey(self):
         runner = Runner(db_connector=self.db_connector())
-        full_file_path = TFDefinitionKey(file_path='/tmp/checkov/1069803756901857280/prisma-new-user/TestAutomationRepo_7-30-2023-1-38-24-PM/pr/4/58a43cb0e5daee00398b6c892c9287438c7c74ea/diff/src/file1.tf', tf_source_modules=None)
-        runner.context = {full_file_path: {'resource': {'aws_lb_listener': {'https1': {'start_line': 1, 'end_line': 7, 'code_lines': [[1, 'resource "aws_lb_listener" "https1" {\n'], [2, '  load_balancer_arn = ""\n'], [3, '  protocol          = "HTTPS"\n'], [4, '  default_action {\n'], [5, '    type = ""\n'], [6, '  }\n'], [7, '}']], 'skipped_checks': []}}}}}
-        entity_with_found_path = {'block_name_': 'aws_lb_listener.https1', 'block_type_': 'resource', 'file_path_': '/tmp/checkov/1069803756901857280/prisma-new-user/TestAutomationRepo_7-30-2023-1-38-24-PM/pr/4/58a43cb0e5daee00398b6c892c9287438c7c74ea/diff/src/file1.tf', 'config_': {'aws_lb_listener': {'https1': {'__end_line__': 7, '__start_line__': 1, 'default_action': [{'type': ['']}], 'load_balancer_arn': [''], 'protocol': ['HTTPS'], '__address__': 'aws_lb_listener.https1'}}}, 'attributes_': {'__end_line__': 7, '__start_line__': 1, 'default_action': {'type': ''}, 'load_balancer_arn': [''], 'protocol': ['HTTPS'], 'resource_type': ['aws_lb_listener'], 'default_action.type': '', '__address__': 'aws_lb_listener.https1'}, 'label_': 'resource: aws_lb_listener.https1', 'id_': 'aws_lb_listener.https1', 'customer_name_': '1069803756901857280', 'account_id_': 'prisma-new-user/TestAutomationRepo_7-30-2023-1-38-24-PM/CICD/243676', 'unique_tag_': 'prod', 'source_': 'terraform', 'violations_count_': 0, 'region_': '', '__end_line__': 7, '__start_line__': 1, 'default_action': {'type': ''}, 'default_action.type': '', 'load_balancer_arn': '', 'protocol': 'HTTPS', 'resource_type': 'aws_lb_listener', '__address__': 'aws_lb_listener.https1', 'module_dependency_': '', 'module_dependency_num_': '', 'hash': 'd61bc3a35537776896f83679a51e63d3a6074f66b368bc4fea07871d282875e9'}
+        full_file_path = TFDefinitionKey(
+            file_path='/tmp/checkov/1069803756901857280/prisma-new-user/TestAutomationRepo_7-30-2023-1-38-24-PM/pr/4/58a43cb0e5daee00398b6c892c9287438c7c74ea/diff/src/file1.tf',
+            tf_source_modules=None)
+        runner.context = {full_file_path: {'resource': {'aws_lb_listener': {'https1': {'start_line': 1, 'end_line': 7,
+                                                                                       'code_lines': [[1,
+                                                                                                       'resource "aws_lb_listener" "https1" {\n'],
+                                                                                                      [2,
+                                                                                                       '  load_balancer_arn = ""\n'],
+                                                                                                      [3,
+                                                                                                       '  protocol          = "HTTPS"\n'],
+                                                                                                      [4,
+                                                                                                       '  default_action {\n'],
+                                                                                                      [5,
+                                                                                                       '    type = ""\n'],
+                                                                                                      [6, '  }\n'],
+                                                                                                      [7, '}']],
+                                                                                       'skipped_checks': []}}}}}
+        entity_with_found_path = {'block_name_': 'aws_lb_listener.https1', 'block_type_': 'resource',
+                                  'file_path_': '/tmp/checkov/1069803756901857280/prisma-new-user/TestAutomationRepo_7-30-2023-1-38-24-PM/pr/4/58a43cb0e5daee00398b6c892c9287438c7c74ea/diff/src/file1.tf',
+                                  'config_': {'aws_lb_listener': {'https1': {'__end_line__': 7, '__start_line__': 1,
+                                                                             'default_action': [{'type': ['']}],
+                                                                             'load_balancer_arn': [''],
+                                                                             'protocol': ['HTTPS'],
+                                                                             '__address__': 'aws_lb_listener.https1'}}},
+                                  'attributes_': {'__end_line__': 7, '__start_line__': 1,
+                                                  'default_action': {'type': ''}, 'load_balancer_arn': [''],
+                                                  'protocol': ['HTTPS'], 'resource_type': ['aws_lb_listener'],
+                                                  'default_action.type': '', '__address__': 'aws_lb_listener.https1'},
+                                  'label_': 'resource: aws_lb_listener.https1', 'id_': 'aws_lb_listener.https1',
+                                  'customer_name_': '1069803756901857280',
+                                  'account_id_': 'prisma-new-user/TestAutomationRepo_7-30-2023-1-38-24-PM/CICD/243676',
+                                  'unique_tag_': 'prod', 'source_': 'terraform', 'violations_count_': 0, 'region_': '',
+                                  '__end_line__': 7, '__start_line__': 1, 'default_action': {'type': ''},
+                                  'default_action.type': '', 'load_balancer_arn': '', 'protocol': 'HTTPS',
+                                  'resource_type': 'aws_lb_listener', '__address__': 'aws_lb_listener.https1',
+                                  'module_dependency_': '', 'module_dependency_num_': '',
+                                  'hash': 'd61bc3a35537776896f83679a51e63d3a6074f66b368bc4fea07871d282875e9'}
         entity_context = runner.get_entity_context_and_evaluations(entity_with_found_path)
         assert entity_context is not None
         assert entity_context['start_line'] == 1 and entity_context['end_line'] == 7
