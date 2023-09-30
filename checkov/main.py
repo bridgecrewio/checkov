@@ -12,7 +12,7 @@ import sys
 import platform
 from collections import defaultdict
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 import argcomplete
 import configargparse
@@ -82,7 +82,6 @@ from checkov.logging_init import log_stream as logs_stream
 if TYPE_CHECKING:
     from checkov.common.output.report import Report
     from configargparse import Namespace
-    from typing_extensions import Literal
     from igraph import Graph
     from networkx import DiGraph
 
