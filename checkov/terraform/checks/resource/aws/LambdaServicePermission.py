@@ -11,10 +11,10 @@ class LambdaServicePermission(BaseResourceCheck):
         id = "CKV_AWS_293"
 
         # These are the terraform objects supported by this check (ex: aws_iam_policy_document)
-        supported_resources = ['aws_lambda_permission']
+        supported_resources = ('aws_lambda_permission',)
 
         # Valid CheckCategories are defined in checkov/common/models/enums.py
-        categories = [CheckCategories.GENERAL_SECURITY]
+        categories = (CheckCategories.GENERAL_SECURITY,)
         super().__init__(name=description, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
