@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 class LambdaServicePermission(BaseResourceCheck):
     def __init__(self):
         # This is the full description of your check
-        description = "Ensure that when a Lambda Function Permission is delegated to a service as principal, that the permission is scoped to either a SourceArn or a SourceAccount."
+        name = "Ensure that AWS Lambda function permissions delegated to AWS services are limited by SourceArn or SourceAccount"
 
         # This is the Unique ID for your check
         id = "CKV_AWS_293"
