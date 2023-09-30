@@ -19,9 +19,9 @@ class LambdaServicePermission(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         # Replace this with the custom logic for your check
-        principal = conf.get("principal", [])
-        self.evaluated_keys = ["principal"]
-        principal_parts = principal[0].split('.')
+        principal = conf.get("principal")
+        if principal and isintsance(principal, list) and isinstance(principal[0], str):
+            principal_parts = principal[0].split('.')
         try:
             if principal_parts[1] == 'amazonaws' and principal_parts[2] == 'com':  # This confirms that the principal is set as a service principal.
                 if 'source_arn' in conf.keys() or 'source_account' in conf.keys():  # If either of these are set, we're good and the check should pass.
