@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any, TYPE_CHECKING, overload, Literal
 
 from pycep.transformer import BicepElement
-from typing_extensions import TypeAlias
+from typing_extensions import TypeAlias  # noqa[TC002]
 
 from checkov.bicep.graph_builder.graph_components.block_types import BlockType
 from checkov.bicep.graph_builder.graph_components.blocks import BicepBlock

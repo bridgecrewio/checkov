@@ -1,10 +1,9 @@
 """Original code: https://github.com/halfak/deep_merge"""
 from __future__ import annotations
 
-from collections.abc import Hashable
 from typing import Any, TypeVar, Callable, Protocol
 
-from typing_extensions import TypeAlias
+from typing_extensions import TypeAlias  # noqa[TC002]
 
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 

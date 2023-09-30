@@ -8,7 +8,7 @@ from abc import abstractmethod
 from collections.abc import Iterable
 from pathlib import Path
 from typing import Any, TYPE_CHECKING, Callable, TypedDict
-from typing_extensions import TypeAlias
+from typing_extensions import TypeAlias  # noqa[TC002]
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.models.enums import CheckResult
