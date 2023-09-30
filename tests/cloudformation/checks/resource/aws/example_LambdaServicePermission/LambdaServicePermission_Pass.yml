@@ -16,7 +16,7 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceAccount: 9012345678
   
-  FunctionNotServicePrincipalPermission:
+  FunctionStringPrincipallPermission:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction

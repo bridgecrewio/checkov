@@ -24,6 +24,10 @@ class TestLambdaServicePermission(unittest.TestCase):
         failing_resources = {
             'aws_lambda_permission.ckv_unittest_fail',
         }
+        unknown_resources = {
+            'aws_lambda_permission.ckv_unittest_pass_principal',
+        }
+
         skipped_resources = {}
 
         passed_check_resources = set([c.resource for c in report.passed_checks])

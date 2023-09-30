@@ -20,7 +20,15 @@ resource "aws_lambda_permission" "ckv_unittest_pass_source_account" {
     source_account = "901234678"
 }
 
-## SHOULD FAIL: <Enter description>
+## SHOULD UNKNOWN: This permission specifies a principal as an account ID.
+resource "aws_lambda_permission" "ckv_unittest_unknown_principal" {
+    statement_id  = "AllowMyDemoAPIInvoke"
+    action        = "lambda:InvokeFunction"
+    function_name = "MyDemoFunction"
+    principal     = "901234678"
+}
+
+## SHOULD FAIL: This allows any serviceprincpal across all accounts to access
 resource "aws_lambda_permission" "ckv_unittest_fail" {
     statement_id  = "AllowMyDemoAPIInvoke"
     action        = "lambda:InvokeFunction"

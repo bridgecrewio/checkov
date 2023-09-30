@@ -24,6 +24,7 @@ class LambdaServicePermission(BaseResourceCheck):
                     else:
                         return CheckResult.FAILED
             except IndexError:
+                print("Not a service principal")
                 # Not a service principal, so pass.
                 return CheckResult.UNKNOWN
         return CheckResult.UNKNOWN
