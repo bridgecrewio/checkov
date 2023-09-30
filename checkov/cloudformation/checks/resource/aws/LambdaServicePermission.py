@@ -14,7 +14,7 @@ class LambdaServicePermission(BaseResourceCheck):
 
     def scan_resource_conf(self, conf):
         properties = conf.get('Properties')
-        if properties is not None:
+        if properties and isinstance(properties, dict):
             principal = properties.get('Principal')
             principal_parts = principal.split('.')
             try:
