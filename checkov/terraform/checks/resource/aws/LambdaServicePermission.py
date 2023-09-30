@@ -31,8 +31,8 @@ class LambdaServicePermission(BaseResourceCheck):
                     self.evaluated_keys = ["principal", "source_account", "source_arn"]
                     return CheckResult.FAILED
         except IndexError:
-            return CheckResult.PASSED
-        return CheckResult.PASSED
+            return CheckResult.UNKNOWN
+        return CheckResult.UNKNOWN
 
 
 check = LambdaServicePermission()
