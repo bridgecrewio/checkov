@@ -9,7 +9,7 @@ from checkov.common.bridgecrew.integration_features.features.policy_metadata_int
     integration as metadata_integration,
 )
 from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.common.bridgecrew.severities import Severities
+from checkov.common.bridgecrew.severities import Severities, Severity
 from checkov.common.models.enums import CheckResult, ScanDataFormat
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.record import Record, DEFAULT_SEVERITY, SCA_PACKAGE_SCAN_CHECK_NAME, SCA_LICENSE_CHECK_NAME
@@ -21,6 +21,8 @@ from checkov.common.sca.commons import (
     UNFIXABLE_VERSION,
     get_package_type,
     normalize_twistcli_language,
+    get_registry_url, get_package_lines,
+    get_record_file_line_range, get_license_policy_and_package_alias
 )
 from checkov.common.util.http_utils import request_wrapper
 from checkov.runner_filter import RunnerFilter
@@ -30,7 +32,8 @@ if TYPE_CHECKING:
     from aiohttp import ClientSession
     from checkov.common.output.common import SCADetails
     from checkov.common.output.report import Report
-    from checkov.common.typing import _LicenseStatus, _CheckResult
+    from checkov.common.typing import _LicenseStatus, _CheckResult, _ScaSuppressions, _ScaSuppressionsMaps, \
+        _SuppressedCves, _SuppressedLicenses
 
 
 def create_report_license_record(
@@ -38,8 +41,9 @@ def create_report_license_record(
         file_abs_path: str,
         check_class: str,
         licenses_status: _LicenseStatus,
-        package_registry: str,
+        package: dict[str, Any],
         sca_details: SCADetails | None = None,
+        severity: Severity | None = None
 ) -> Record:
     package_name = licenses_status["package_name"]
     package_version = licenses_status["package_version"]
@@ -55,12 +59,13 @@ def create_report_license_record(
     if status == "COMPLIANT":
         check_result["result"] = CheckResult.PASSED
 
-    code_block = [(0, f"{package_name}: {package_version}")]
+    code_block = get_code_block(package, package_name, package_version)
 
     details = {
         "package_name": package_name,
         "package_version": package_version,
-        "package_registry": package_registry,
+        "package_registry": get_registry_url(package),
+        "is_private_registry": package.get("isPrivateRegistry", False),
         "license": licenses_status["license"],
         "status": status,
         "policy": policy,
@@ -74,13 +79,14 @@ def create_report_license_record(
         check_result=check_result,
         code_block=code_block,
         file_path=get_file_path_for_record(rootless_file_path),
-        file_line_range=[0, 0],
+        file_line_range=get_package_lines(package) or [0, 0],
         resource=get_resource_for_record(rootless_file_path, package_name),
         check_class=check_class,
         evaluations=None,
         file_abs_path=file_abs_path,
         short_description=f"License {licenses_status['license']} - {package_name}: {package_version}",
         vulnerability_details=details,
+        severity=severity
     )
     return record
 
@@ -113,19 +119,55 @@ def _update_details_by_scan_data_format(
         details.update({"status": status, "fix_version": fix_version})
 
 
+def get_code_block(package: dict[str, Any], package_name: str, package_version: str,
+                   root_package: Optional[dict[str, Any]] = None) -> list[tuple[int, str]]:
+    if root_package:
+        root_lines_number = root_package.get("lines")
+        root_code_block = root_package.get("code_block")
+        if root_lines_number and root_code_block:
+            return [(int(root_lines_number[0]), root_code_block)]
+
+    lines_number = package.get("lines")
+    code_block = package.get("code_block")
+
+    if lines_number and code_block:
+        return [(int(lines_number[0]), code_block)]
+
+    return [(0, f"{package_name}: {package_version}")]
+
+
+def get_fix_command_and_code(vulnerability_details: dict[str, Any], root_package: dict[str, Any] | None = None,
+                             root_package_cve: dict[str, Any] | None = None) -> tuple[dict[str, Any] | None, str | None]:
+    if root_package_cve:
+        return root_package_cve.get('fixCommand'), root_package_cve.get('fixCode')
+
+    if root_package and (
+            root_package['name'] != vulnerability_details["packageName"] or root_package['version'] !=
+            vulnerability_details["packageVersion"]):
+        return None, None
+    return vulnerability_details.get('fixCommand'), vulnerability_details.get('fixCode')
+
+
+def get_package_lines_numbers(package: dict[str, Any], root_package: dict[str, Any] | None = None, file_line_range: list[int] | None = None) -> list[int]:
+    if root_package:
+        return get_record_file_line_range(root_package, file_line_range)
+    return get_record_file_line_range(package, file_line_range)
+
+
 def create_report_cve_record(
         rootless_file_path: str,
         file_abs_path: str,
         check_class: str,
         vulnerability_details: dict[str, Any],
         licenses: str,
-        package_registry: str,
-        root_package_version: str | None = None,
-        root_package_name: str | None = None,
-        root_package_fixed_version: str | None = None,
+        package: dict[str, Any],
+        used_private_registry: bool = False,
+        root_package: dict[str, Any] | None = None,
         runner_filter: RunnerFilter | None = None,
         sca_details: SCADetails | None = None,
         scan_data_format: ScanDataFormat = ScanDataFormat.TWISTCLI,
+        file_line_range: list[int] | None = None,
+        root_package_cve: dict[str, Any] | None = None
 ) -> Record:
     runner_filter = runner_filter or RunnerFilter()
     package_name = vulnerability_details["packageName"]
@@ -152,33 +194,37 @@ def create_report_cve_record(
             "result": CheckResult.SKIPPED,
             "suppress_comment": "Filtered by severity",
         }
-
-    code_block = [(0, f"{package_name}: {package_version}")]
-
+    code_block = get_code_block(package, package_name, package_version, root_package)
+    fix_command, fix_code = get_fix_command_and_code(vulnerability_details, root_package, root_package_cve)
     details = {
         "id": cve_id,
         "severity": severity,
         "package_name": package_name,
         "package_version": package_version,
-        "package_registry": package_registry,
+        "package_registry": get_registry_url(package),
+        "is_private_registry": package.get("isPrivateRegistry", False),
         "package_type": package_type,
         "link": vulnerability_details.get("link"),
         "cvss": vulnerability_details.get("cvss"),
         "vector": vulnerability_details.get("vector"),
         "description": description,
-        "risk_factors": vulnerability_details.get("riskFactors"),
+        "risk_factors": vulnerability_details.get("riskFactorsV2"),
         "published_date": vulnerability_details.get("publishedDate") or (datetime.now() - timedelta(
             days=vulnerability_details.get("publishedDays", 0))).isoformat(),
         "licenses": licenses,
-        "root_package_name": root_package_name,
-        "root_package_version": root_package_version
+        "root_package_name": root_package.get("name") if root_package else None,
+        "root_package_version": root_package.get("version") if root_package else None,
+        "root_package_file_line_range": get_package_lines(root_package) if root_package else None or [0, 0],
+        "fix_command": fix_command
     }
 
-    if root_package_fixed_version:
-        details['root_package_fix_version'] = root_package_fixed_version
+    if used_private_registry:
+        details["is_private_fix"] = vulnerability_details.get("isPrivateRegFix", False)
+
+    if root_package_cve and root_package_cve.get('fixVersion'):
+        details['root_package_fix_version'] = root_package_cve.get('fixVersion')
 
     _update_details_by_scan_data_format(details, vulnerability_details, sca_details, scan_data_format)
-
     record = Record(
         check_id=f"CKV_{cve_id.replace('-', '_')}",
         bc_check_id=f"BC_{cve_id.replace('-', '_')}",
@@ -186,7 +232,7 @@ def create_report_cve_record(
         check_result=check_result,
         code_block=code_block,
         file_path=get_file_path_for_record(rootless_file_path),
-        file_line_range=[0, 0],
+        file_line_range=get_package_lines_numbers(package, root_package, file_line_range),
         resource=get_resource_for_record(rootless_file_path, package_name),
         check_class=check_class,
         evaluations=None,
@@ -196,6 +242,8 @@ def create_report_cve_record(
         short_description=f"{cve_id} - {package_name}: {package_version}",
         vulnerability_details=details,
     )
+
+    record.fixed_definition = fix_code  # type: ignore
     return record
 
 
@@ -209,6 +257,7 @@ def _add_to_report_licenses_statuses(
         license_statuses: list[_LicenseStatus],
         sca_details: SCADetails | None = None,
         report_type: str | None = None,
+        inline_suppressions_maps: _ScaSuppressionsMaps | None = None,
 ) -> dict[str, list[str]]:
     licenses_per_package_map: dict[str, list[str]] = defaultdict(list)
 
@@ -224,20 +273,30 @@ def _add_to_report_licenses_statuses(
         licenses_per_package_map[package_alias].append(license)
 
         policy = license_status["policy"]
+        severity = metadata_integration.get_severity(policy)
 
         license_record = create_report_license_record(
             rootless_file_path=rootless_file_path,
             file_abs_path=scanned_file_path,
             check_class=check_class or "",
             licenses_status=license_status,
-            package_registry=packages_map.get(package_alias, {}).get("registry", ""),
+            package=packages_map.get(package_alias, {}),
             sca_details=sca_details,
+            severity=severity
         )
 
-        if not runner_filter.should_run_check(
+        vulnerability_details = license_record.vulnerability_details or {}
+
+        # apply inline suppressions
+        suppressed = apply_licenses_inline_suppressions(
+            record=license_record, vulnerability_details=vulnerability_details,
+            inline_suppressions_maps=inline_suppressions_maps
+        )
+
+        if not suppressed and not runner_filter.should_run_check(
                 check_id=policy,
                 bc_check_id=policy,
-                severity=metadata_integration.get_severity(policy),
+                severity=severity,
                 report_type=report_type,
         ):
             if runner_filter.checks:
@@ -254,6 +313,36 @@ def _add_to_report_licenses_statuses(
     return licenses_per_package_map
 
 
+def get_inline_suppressions_map(inline_suppressions: _ScaSuppressions | None = None) -> _ScaSuppressionsMaps | None:
+    if not inline_suppressions:
+        return None
+    suppressions_map: _ScaSuppressionsMaps = {}
+
+    # fill cves suppressions map
+    cve_suppresion_by_cve_map: dict[str, _SuppressedCves] = {}
+    inline_suppressions_by_cve: list[_SuppressedCves] = inline_suppressions.get("cves", {}).get("byCve", [])
+    for cve_suppression in inline_suppressions_by_cve:
+        cve_id = cve_suppression.get("cveId")
+        if cve_id:
+            cve_suppresion_by_cve_map[cve_id] = cve_suppression
+
+    # fill licenses suppressions map
+    licenses_suppressions_by_policy_and_package_map: dict[str, _SuppressedLicenses] = {}
+    inline_suppressions_by_license: list[_SuppressedLicenses] = inline_suppressions.get("licenses", {}).get("byPackage",
+                                                                                                            [])
+    for license_suppression in inline_suppressions_by_license:
+        if license_suppression.get("licensePolicy") and license_suppression.get("packageName"):
+            key = get_license_policy_and_package_alias(license_suppression["licensePolicy"],
+                                                       license_suppression["packageName"])
+            licenses_suppressions_by_policy_and_package_map[key] = license_suppression
+
+    suppressions_map['cve_suppresion_by_cve_map'] = cve_suppresion_by_cve_map
+    suppressions_map[
+        'licenses_suppressions_by_policy_and_package_map'] = licenses_suppressions_by_policy_and_package_map
+
+    return suppressions_map
+
+
 def add_to_reports_cves_and_packages(
         report: Report,
         check_class: str | None,
@@ -264,10 +353,13 @@ def add_to_reports_cves_and_packages(
         packages: list[dict[str, Any]],
         packages_map: dict[str, dict[str, Any]],
         licenses_per_package_map: dict[str, list[str]],
+        used_private_registry: bool = False,
         dependencies: dict[str, List[int]] | None = None,
         sca_details: SCADetails | None = None,
         report_type: str | None = None,
+        inline_suppressions_maps: _ScaSuppressionsMaps | None = None,
         scan_data_format: ScanDataFormat = ScanDataFormat.TWISTCLI,
+        file_line_range: list[int] | None = None
 ) -> None:
     is_dependency_tree_flow = bool(dependencies)
 
@@ -288,7 +380,8 @@ def add_to_reports_cves_and_packages(
     if is_dependency_tree_flow:
         add_to_reports_dependency_tree_cves(check_class, packages_map, licenses_per_package_map, packages, report,
                                             root_packages_list, rootless_file_path, runner_filter,
-                                            scanned_file_path, scan_data_format, sca_details, report_type)
+                                            scanned_file_path, used_private_registry, scan_data_format, sca_details,
+                                            report_type, inline_suppressions_maps)
     else:  # twistlock scan results.
         for vulnerability in vulnerabilities:
             package_name, package_version = vulnerability["packageName"], vulnerability["packageVersion"]
@@ -304,15 +397,20 @@ def add_to_reports_cves_and_packages(
                                      sca_details=sca_details,
                                      scan_data_format=scan_data_format,
                                      report_type=report_type,
-                                     report=report)
+                                     report=report,
+                                     inline_suppressions_maps=inline_suppressions_maps,
+                                     file_line_range=file_line_range,
+                                     used_private_registry=used_private_registry)
 
 
 def add_to_reports_dependency_tree_cves(check_class: str | None, packages_map: dict[str, dict[str, Any]],
                                         licenses_per_package_map: dict[str, list[str]], packages: list[dict[str, Any]],
                                         report: Report, root_packages_list: list[int],
                                         rootless_file_path: str, runner_filter: RunnerFilter, scanned_file_path: str,
+                                        used_private_registry: bool = False,
                                         scan_data_format: ScanDataFormat = ScanDataFormat.TWISTCLI,
-                                        sca_details: SCADetails | None = None, report_type: str | None = None) -> None:
+                                        sca_details: SCADetails | None = None, report_type: str | None = None,
+                                        inline_suppressions_maps: _ScaSuppressionsMaps | None = None) -> None:
     for root_package_index in root_packages_list:
         vulnerable_dependencies = find_vulnerable_dependencies(root_package_index, packages)
 
@@ -333,15 +431,15 @@ def add_to_reports_dependency_tree_cves(check_class: str | None, packages_map: d
                                      check_class=check_class, licenses_per_package_map=licenses_per_package_map,
                                      runner_filter=runner_filter, sca_details=sca_details,
                                      scan_data_format=scan_data_format, report_type=report_type, report=report,
-                                     root_package_version=root_package["version"],
-                                     root_package_name=root_package["name"])
+                                     root_package=root_package, inline_suppressions_maps=inline_suppressions_maps,
+                                     used_private_registry=used_private_registry)
 
         for dep in root_package.get("vulnerable_dependencies", []):
             for dep_cve in dep.get("cves", []):
                 cve_alias = f'{dep_cve["cveId"]}@{dep_cve["packageName"]}@{dep_cve["packageVersion"]}'
-                root_package_fixed_version = None
+                root_package_cve = None
                 if cve_alias in indirect_packages:
-                    root_package_fixed_version = indirect_packages[cve_alias]['fixVersion']
+                    root_package_cve = indirect_packages[cve_alias]
 
                 add_cve_record_to_report(vulnerability_details=dep_cve, package_name=dep['name'],
                                          package_version=dep['version'], packages_map=packages_map,
@@ -349,9 +447,9 @@ def add_to_reports_dependency_tree_cves(check_class: str | None, packages_map: d
                                          check_class=check_class, licenses_per_package_map=licenses_per_package_map,
                                          runner_filter=runner_filter, sca_details=sca_details,
                                          scan_data_format=scan_data_format, report_type=report_type, report=report,
-                                         root_package_version=root_package["version"],
-                                         root_package_name=root_package["name"],
-                                         root_package_fixed_version=root_package_fixed_version)
+                                         root_package=root_package,
+                                         inline_suppressions_maps=inline_suppressions_maps,
+                                         used_private_registry=used_private_registry, root_package_cve=root_package_cve)
 
 
 def add_cve_record_to_report(vulnerability_details: dict[str, Any], package_name: str, package_version: str,
@@ -359,9 +457,11 @@ def add_cve_record_to_report(vulnerability_details: dict[str, Any], package_name
                              scanned_file_path: str, check_class: Optional[str],
                              licenses_per_package_map: dict[str, list[str]], runner_filter: RunnerFilter,
                              sca_details: Optional[SCADetails], scan_data_format: ScanDataFormat,
-                             report_type: Optional[str], report: Report,
-                             root_package_version: str | None = None, root_package_name: str | None = None,
-                             root_package_fixed_version: str | None = None) -> None:
+                             report_type: Optional[str], report: Report, used_private_registry: bool = False,
+                             root_package: dict[str, Any] | None = None,
+                             inline_suppressions_maps: _ScaSuppressionsMaps | None = None,
+                             file_line_range: list[int] | None = None,
+                             root_package_cve: dict[str, Any] | None = None) -> None:
     package_alias = get_package_alias(package_name, package_version)
     cve_record = create_report_cve_record(
         rootless_file_path=rootless_file_path,
@@ -369,15 +469,20 @@ def add_cve_record_to_report(vulnerability_details: dict[str, Any], package_name
         check_class=check_class or "",
         vulnerability_details=vulnerability_details,
         licenses=format_licenses_to_string(licenses_per_package_map[package_alias]),
-        package_registry=packages_map.get(package_alias, {}).get("registry", ""),
+        package=packages_map.get(package_alias, {}),
         runner_filter=runner_filter,
         sca_details=sca_details,
         scan_data_format=scan_data_format,
-        root_package_version=root_package_version,
-        root_package_name=root_package_name,
-        root_package_fixed_version=root_package_fixed_version
+        root_package=root_package,
+        root_package_cve=root_package_cve,
+        file_line_range=file_line_range,
+        used_private_registry=used_private_registry
     )
-    if not runner_filter.should_run_check(
+    suppressed = apply_cves_inline_suppressions(
+        record=cve_record, inline_suppressions_maps=inline_suppressions_maps
+    )
+
+    if not suppressed and not runner_filter.should_run_check(
             check_id=cve_record.check_id,
             bc_check_id=cve_record.bc_check_id,
             severity=cve_record.severity,
@@ -393,6 +498,45 @@ def add_cve_record_to_report(vulnerability_details: dict[str, Any], package_name
 
     report.add_resource(cve_record.resource)
     report.add_record(cve_record)
+
+
+def apply_cves_inline_suppressions(
+        record: Record, inline_suppressions_maps: _ScaSuppressionsMaps | None = None
+) -> bool:
+    """Applies the inline suppression and returns an accomplish status"""
+
+    if inline_suppressions_maps and record.vulnerability_details and inline_suppressions_maps.get(
+            "cve_suppresion_by_cve_map"):
+        cve_id = record.vulnerability_details.get("id", "")
+        cve_suppression = inline_suppressions_maps["cve_suppresion_by_cve_map"].get(cve_id)
+        if cve_suppression:
+            record.check_result = {
+                "result": CheckResult.SKIPPED,
+                "suppress_comment": cve_suppression.get('reason', ''),
+            }
+            return True
+
+    return False
+
+
+def apply_licenses_inline_suppressions(
+        record: Record, vulnerability_details: dict[str, Any],
+        inline_suppressions_maps: _ScaSuppressionsMaps | None = None
+) -> bool:
+    """Applies the inline suppression and returns an accomplish status"""
+
+    if inline_suppressions_maps and inline_suppressions_maps.get("licenses_suppressions_by_policy_and_package_map"):
+        key = get_license_policy_and_package_alias(vulnerability_details.get("policy", ""),
+                                                   vulnerability_details.get("package_name", ""))
+        license_suppression = inline_suppressions_maps["licenses_suppressions_by_policy_and_package_map"].get(key)
+        if license_suppression:
+            record.check_result = {
+                "result": CheckResult.SKIPPED,
+                "suppress_comment": license_suppression.get('reason', ''),
+            }
+            return True
+
+    return False
 
 
 def find_vulnerable_dependencies(root_package_index: int, packages: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -436,19 +580,21 @@ def add_extra_resources_to_report(report: Report, scanned_file_path: str, rootle
                                   package: dict[str, Any], package_alias: str,
                                   licenses_per_package_map: dict[str, list[str]],
                                   sca_details: Optional[SCADetails]) -> None:
-    package_name, package_version, package_registry = package["name"], package["version"], package.get("registry", "")
+    package_name, package_version = package["name"], package["version"]
     report.extra_resources.add(
         ExtraResource(
             file_abs_path=scanned_file_path,
             file_path=get_file_path_for_record(rootless_file_path),
             resource=get_resource_for_record(rootless_file_path, package_name),
+            file_line_range=get_package_lines(package),
             vulnerability_details={
                 "package_name": package_name,
                 "package_version": package_version,
-                "package_registry": package_registry,
+                "package_registry": get_registry_url(package),
+                "is_private_registry": package.get("isPrivateRegistry", False),
                 "licenses": format_licenses_to_string(
                     licenses_per_package_map[package_alias]),
-                "package_type": get_package_type(package_name, package_version, sca_details),
+                "package_type": get_package_type(package_name, package_version, sca_details)
             },
         )
     )
@@ -463,14 +609,19 @@ def add_to_report_sca_data(
         vulnerabilities: list[dict[str, Any]],
         packages: list[dict[str, Any]],
         license_statuses: list[_LicenseStatus],
+        used_private_registry: bool = False,
         dependencies: dict[str, list[int]] | None = None,
         sca_details: SCADetails | None = None,
         report_type: str | None = None,
+        inline_suppressions: _ScaSuppressions | None = None,
+        file_line_range: list[int] | None = None
 ) -> None:
+    inline_suppressions_maps: _ScaSuppressionsMaps | None = get_inline_suppressions_map(inline_suppressions)
     packages_map: dict[str, dict[str, Any]] = {get_package_alias(p["name"], p["version"]): p for p in packages}
     licenses_per_package_map: dict[str, list[str]] = \
         _add_to_report_licenses_statuses(report, check_class, scanned_file_path, rootless_file_path, runner_filter,
-                                         packages_map, license_statuses, sca_details, report_type)
+                                         packages_map, license_statuses, sca_details, report_type,
+                                         inline_suppressions_maps)
     # if dependencies is empty list it means we got results via DependencyTree scan but no dependencies have found.
     add_to_reports_cves_and_packages(report=report, check_class=check_class,
                                      scanned_file_path=scanned_file_path,
@@ -483,7 +634,10 @@ def add_to_report_sca_data(
                                      sca_details=sca_details,
                                      report_type=report_type,
                                      scan_data_format=ScanDataFormat.DEPENDENCY_TREE,
-                                     dependencies=dependencies)
+                                     dependencies=dependencies,
+                                     inline_suppressions_maps=inline_suppressions_maps,
+                                     file_line_range=file_line_range,
+                                     used_private_registry=used_private_registry)
 
 
 def _get_request_input(packages: list[dict[str, Any]]) -> list[dict[str, Any]]:

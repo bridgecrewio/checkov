@@ -16,3 +16,15 @@ definition:
       - aws_route53_hosted_zone_dnssec
       - aws_route53_key_signing_key
       operator: exists
+    - or:
+      - cond_type: attribute
+        resource_types:
+          - aws_route53_zone
+        attribute: vpc
+        operator: not_exists
+      - cond_type: connection
+        resource_types:
+        - aws_route53_zone
+        connected_resource_types:
+        - aws_route53_zone_association
+        operator: not_exists

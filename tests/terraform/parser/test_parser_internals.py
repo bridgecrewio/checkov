@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from checkov.common.util.parser_utils import eval_string
-from checkov.terraform.parser import _load_or_die_quietly
+from checkov.terraform.tf_parser import load_or_die_quietly
 
 
 def test_eval_string_to_list():
@@ -20,7 +20,7 @@ def test__load_or_die_quietly_with_bom():
     parsing_errors = {}
 
     # when
-    definition = _load_or_die_quietly(file=test_file, parsing_errors=parsing_errors)
+    definition = load_or_die_quietly(file=test_file, parsing_errors=parsing_errors)
 
     # then
     assert not parsing_errors
@@ -41,7 +41,7 @@ def test__load_or_die_quietly_without_bom():
     parsing_errors = {}
 
     # when
-    definition = _load_or_die_quietly(file=test_file, parsing_errors=parsing_errors)
+    definition = load_or_die_quietly(file=test_file, parsing_errors=parsing_errors)
 
     # then
     assert not parsing_errors

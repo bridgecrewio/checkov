@@ -1,0 +1,11 @@
+metadata:
+  id: "CKV2_DOCKER_13"
+  name: "Ensure that certificate validation isn't disabled for npm or yarn by setting the option strict-ssl to false"
+  category: "APPLICATION_SECURITY"
+definition:
+  cond_type: attribute
+  resource_types:
+    - RUN
+  attribute: value
+  operator: not_regex_match
+  value: ".*(((npm)|(yarn))\\s+(c(onfig)?\\s+)?set\\s+((strict-ssl)|(\"strict-ssl\")|('strict-ssl'))((\\s+)|(=))((false)|(\"false\")|('false'))).*"

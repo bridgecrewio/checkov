@@ -1,414 +1,55 @@
 import unittest
+from pathlib import Path
 
-import hcl2
-
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.azure.NSGRuleUDPAccessRestricted import check
-from checkov.common.models.enums import CheckResult
+from checkov.terraform.runner import Runner
 
 
 class TestNSGRuleUDPAccessRestricted(unittest.TestCase):
+    def test(self):
+        # given
+        test_files_dir = Path(__file__).parent / "example_NSGRuleUDPAccessRestricted"
 
-    def test_failure1(self):
-        hcl_res = hcl2.loads("""
-            resource "azurerm_network_security_group" "example" {
-              name                = "acceptanceTestSecurityGroup1"
-              location            = azurerm_resource_group.example.location
-              resource_group_name = azurerm_resource_group.example.name
-            
-              security_rule {
-                name                       = "test123"
-                priority                   = 100
-                direction                  = "Inbound"
-                access                     = "Allow"
-                protocol                   = "Udp"
-                source_port_range          = "*"
-                destination_port_range     = "*"
-                source_address_prefix      = "*"
-                destination_address_prefix = "*"
-              }
-            
-              tags = {
-                environment = "Production"
-              }
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_network_security_group']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        # when
+        report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
 
-    def test_failure2(self):
-        hcl_res = hcl2.loads("""
-            resource "azurerm_network_security_group" "example" {
-              name                = "acceptanceTestSecurityGroup1"
-              location            = azurerm_resource_group.example.location
-              resource_group_name = azurerm_resource_group.example.name
-            
-              security_rule {
-                name                       = "test123"
-                priority                   = 100
-                direction                  = "Inbound"
-                access                     = "Allow"
-                protocol                   = "Udp"
-                source_port_range          = "*"
-                destination_port_range     = "*"
-                source_address_prefix      = "any"
-                destination_address_prefix = "*"
-              }
-            
-              tags = {
-                environment = "Production"
-              }
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_network_security_group']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        # then
+        summary = report.get_summary()
 
-    def test_failure3(self):
-        hcl_res = hcl2.loads("""
-            resource "azurerm_network_security_group" "example" {
-              name                = "acceptanceTestSecurityGroup1"
-              location            = azurerm_resource_group.example.location
-              resource_group_name = azurerm_resource_group.example.name
-
-              security_rule {
-                name                       = "test123"
-                priority                   = 100
-                direction                  = "Inbound"
-                access                     = "Allow"
-                protocol                   = "Udp"
-                source_port_range          = "*"
-                destination_port_range     = "*"
-                source_address_prefix      = "<nw>/0"
-                destination_address_prefix = "*"
-              }
-
-              tags = {
-                environment = "Production"
-              }
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_network_security_group']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
-
-    def test_failure4(self):
-        hcl_res = hcl2.loads("""
-            resource "azurerm_network_security_group" "example" {
-              name                = "acceptanceTestSecurityGroup1"
-              location            = azurerm_resource_group.example.location
-              resource_group_name = azurerm_resource_group.example.name
-
-              security_rule {
-                name                       = "test123"
-                priority                   = 100
-                direction                  = "Inbound"
-                access                     = "Allow"
-                protocol                   = "Udp"
-                source_port_range          = "*"
-                destination_port_range     = "*"
-                source_address_prefix      = "/0"
-                destination_address_prefix = "*"
-              }
-
-              tags = {
-                environment = "Production"
-              }
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_network_security_group']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
-
-    def test_failure5(self):
-        hcl_res = hcl2.loads("""
-            resource "azurerm_network_security_group" "example" {
-              name                = "acceptanceTestSecurityGroup1"
-              location            = azurerm_resource_group.example.location
-              resource_group_name = azurerm_resource_group.example.name
-
-              security_rule {
-                name                       = "test123"
-                priority                   = 100
-                direction                  = "Inbound"
-                access                     = "Allow"
-                protocol                   = "Udp"
-                source_port_range          = "*"
-                destination_port_range     = "*"
-                source_address_prefix      = "Internet"
-                destination_address_prefix = "*"
-              }
-
-              tags = {
-                environment = "Production"
-              }
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_network_security_group']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
-
-    def test_success1(self):
-        hcl_res = hcl2.loads("""
-            resource "azurerm_network_security_group" "example" {
-              name                = "acceptanceTestSecurityGroup1"
-              location            = azurerm_resource_group.example.location
-              resource_group_name = azurerm_resource_group.example.name
-            
-              security_rule {
-                name                       = "test123"
-                priority                   = 100
-                direction                  = "Inbound"
-                access                     = "Deny"
-                protocol                   = "Udp"
-                source_port_range          = "*"
-                destination_port_range     = "*"
-                source_address_prefix      = "*"
-                destination_address_prefix = "*"
-              }
-            
-              tags = {
-                environment = "Production"
-              }
-            }
-                        """)
-        resource_conf = hcl_res['resource'][0]['azurerm_network_security_group']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
-
-    def test_success2(self):
-        hcl_res = hcl2.loads("""
-        resource "azurerm_network_security_group" "example" {
-  name                = "acceptanceTestSecurityGroup1"
-  location            = azurerm_resource_group.example.location
-  resource_group_name = azurerm_resource_group.example.name
-
-  security_rule {
-    name                       = "test123"
-    priority                   = 100
-    direction                  = "Outbound"
-    access                     = "Allow"
-    protocol                   = "Udp"
-    source_port_range          = "*"
-    destination_port_range     = "*"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
-
-  tags = {
-    environment = "Production"
-  }
-}
-        """)
-        resource_conf = hcl_res['resource'][0]['azurerm_network_security_group']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
-
-    def test_success3(self):
-        hcl_res = hcl2.loads("""
-        resource "azurerm_network_security_group" "example" {
-          name                = "acceptanceTestSecurityGroup1"
-          location            = azurerm_resource_group.example.location
-          resource_group_name = azurerm_resource_group.example.name
-        
-          security_rule {
-            name                       = "test123"
-            priority                   = 100
-            direction                  = "Inbound"
-            access                     = "Allow"
-            protocol                   = "Tcp"
-            source_port_range          = "*"
-            destination_port_range     = "*"
-            source_address_prefix      = "*"
-            destination_address_prefix = "*"
-          }
-        
-          tags = {
-            environment = "Production"
-          }
+        passing_resources = {
+            "azurerm_network_security_rule.pass",
+            "azurerm_network_security_rule.pass2",
+            "azurerm_network_security_rule.pass3",
+            "azurerm_network_security_group.pass",
+            "azurerm_network_security_group.pass2",
+            "azurerm_network_security_group.pass3",
         }
-        """)
-        resource_conf = hcl_res['resource'][0]['azurerm_network_security_group']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        failing_resources = {
+            "azurerm_network_security_rule.fail",
+            "azurerm_network_security_rule.fail2",
+            "azurerm_network_security_rule.fail3",
+            "azurerm_network_security_rule.fail4",
+            "azurerm_network_security_rule.fail5",
 
-    def test_failure_rule_1(self):
-        hcl_res = hcl2.loads("""
-            resource "azurerm_network_security_rule" "example" {
-                name                       = "test123"
-                priority                   = 100
-                direction                  = "Inbound"
-                access                     = "Allow"
-                protocol                   = "Udp"
-                source_port_range          = "*"
-                destination_port_range     = "*"
-                source_address_prefix      = "*"
-                destination_address_prefix = "*"
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_network_security_rule']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
-
-    def test_failure_rule_2(self):
-        hcl_res = hcl2.loads("""
-            resource "azurerm_network_security_rule" "example" {
-                name                       = "test123"
-                priority                   = 100
-                direction                  = "Inbound"
-                access                     = "Allow"
-                protocol                   = "Udp"
-                source_port_range          = "*"
-                destination_port_range     = "*"
-                source_address_prefix      = "any"
-                destination_address_prefix = "*"
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_network_security_rule']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
-
-    def test_failure_rule_3(self):
-        hcl_res = hcl2.loads("""
-            resource "azurerm_network_security_rule" "example" {
-                name                       = "test123"
-                priority                   = 100
-                direction                  = "Inbound"
-                access                     = "Allow"
-                protocol                   = "Udp"
-                source_port_range          = "*"
-                destination_port_range     = "*"
-                source_address_prefix      = "<nw>/0"
-                destination_address_prefix = "*"
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_network_security_rule']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
-
-    def test_failure_rule_4(self):
-        hcl_res = hcl2.loads("""
-            resource "azurerm_network_security_rule" "example" {
-                name                       = "test123"
-                priority                   = 100
-                direction                  = "Inbound"
-                access                     = "Allow"
-                protocol                   = "Udp"
-                source_port_range          = "*"
-                destination_port_range     = "*"
-                source_address_prefix      = "/0"
-                destination_address_prefix = "*"
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_network_security_rule']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
-
-    def test_failure_rule_5(self):
-        hcl_res = hcl2.loads("""
-            resource "azurerm_network_security_rule" "example" {
-                name                       = "test123"
-                priority                   = 100
-                direction                  = "Inbound"
-                access                     = "Allow"
-                protocol                   = "Udp"
-                source_port_range          = "*"
-                destination_port_range     = "*"
-                source_address_prefix      = "Internet"
-                destination_address_prefix = "*"
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_network_security_rule']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
-
-    def test_success_rule_1(self):
-        hcl_res = hcl2.loads("""
-            resource "azurerm_network_security_rule" "example" {
-                name                       = "test123"
-                priority                   = 100
-                direction                  = "Inbound"
-                access                     = "Deny"
-                protocol                   = "Udp"
-                source_port_range          = "*"
-                destination_port_range     = "*"
-                source_address_prefix      = "*"
-                destination_address_prefix = "*"
-            }
-                        """)
-        resource_conf = hcl_res['resource'][0]['azurerm_network_security_rule']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
-
-    def test_success_rule_2(self):
-        hcl_res = hcl2.loads("""
-        resource "azurerm_network_security_rule" "example" {
-            name                       = "test123"
-            priority                   = 100
-            direction                  = "Outbound"
-            access                     = "Allow"
-            protocol                   = "Udp"
-            source_port_range          = "*"
-            destination_port_range     = "*"
-            source_address_prefix      = "*"
-            destination_address_prefix = "*"
+            "azurerm_network_security_group.fail",
+            "azurerm_network_security_group.fail2",
+            "azurerm_network_security_group.fail3",
+            "azurerm_network_security_group.fail4",
+            "azurerm_network_security_group.fail5",
         }
-        """)
-        resource_conf = hcl_res['resource'][0]['azurerm_network_security_rule']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
 
-    def test_success_rule_3(self):
-        hcl_res = hcl2.loads("""
-        resource "azurerm_network_security_rule" "example" {
-            name                       = "test123"
-            priority                   = 100
-            direction                  = "Inbound"
-            access                     = "Allow"
-            protocol                   = "Tcp"
-            source_port_range          = "*"
-            destination_port_range     = "*"
-            source_address_prefix      = "*"
-            destination_address_prefix = "*"
-        }
-        """)
-        resource_conf = hcl_res['resource'][0]['azurerm_network_security_rule']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
 
-    def test_unsupported_syntax(self):
-        hcl_res = hcl2.loads("""
-        resource "azurerm_network_security_group" "example" {
-          name = "${var.autoscaler_prefix}autoscaler-nsg"
-          location = azurerm_resource_group.rg.location
-          resource_group_name = azurerm_resource_group.rg.name
-        
-          security_rule = [for idx, rule in var.autoscaler_ssh_permit: {
-            name = "allow-${rule.name}"
-            priority = 100 + idx
-            direction = "Inbound"
-            access = "Allow"
-            protocol = "TCP"
-            source_address_prefix = rule.ip
-            source_port_range = "*"
-            destination_address_prefix = "*"
-            destination_port_range = "22"
-            description = ""
-            destination_address_prefixes = null
-            destination_application_security_group_ids = null
-            destination_port_ranges = null
-            source_address_prefixes = null
-            source_application_security_group_ids = null
-            source_port_ranges = null
-          }]
-        
-          tags = var.autoscaler_tags_nsg
-        }
-        """)
-        resource_conf = hcl_res['resource'][0]['azurerm_network_security_group']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

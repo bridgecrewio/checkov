@@ -101,6 +101,42 @@ def test_runner_failing_check(graph_connector):
         IgraphConnector,
     ],
 )
+def test_runner_skipping_check(graph_connector):
+    # given
+    test_file = EXAMPLES_DIR / "skip.yml"
+
+    # when
+    report = Runner(db_connector=graph_connector()).run(
+        root_folder="",
+        files=[str(test_file)],
+        runner_filter=RunnerFilter(checks=["CKV2_ANSIBLE_1", "CKV_AWS_88", "CKV_AWS_135"]),
+    )
+
+    # then
+    summary = report.get_summary()
+
+    assert summary["passed"] == 0
+    assert summary["failed"] == 2
+    assert summary["skipped"] == 3
+    assert summary["parsing_errors"] == 0
+
+    assert {check.check_id for check in report.skipped_checks} == {"CKV2_ANSIBLE_1", "CKV_AWS_88", "CKV_AWS_135"}
+
+    ansible_1 = next(check for check in report.skipped_checks if check.check_id == "CKV2_ANSIBLE_1")
+    aws_88 = next(check for check in report.skipped_checks if check.check_id == "CKV_AWS_88")
+    aws_135 = next(check for check in report.skipped_checks if check.check_id == "CKV_AWS_135")
+    assert ansible_1.resource == "tasks.uri.http"
+    assert aws_88.resource == "tasks.amazon.aws.ec2_instance.Launch ec2 instances 2"
+    assert aws_135.resource == "tasks.amazon.aws.ec2_instance.Launch ec2 instances 1"
+
+
+@pytest.mark.parametrize(
+    "graph_connector",
+    [
+        NetworkxConnector,
+        IgraphConnector,
+    ],
+)
 def test_runner_with_flat_tasks(graph_connector):
     # given
     test_file = EXAMPLES_DIR / "tasks.yml"
@@ -356,3 +392,19 @@ def test_get_resource_without_name(graph_connector):
 
     # then
     assert new_key == "tasks.amazon.aws.ec2_instance.unknown"
+
+
+def test_runner_process_utf16_file():
+    # given
+    test_file = EXAMPLES_DIR / "k8s_utf16.yaml"
+
+    # when
+    report = Runner().run(root_folder="", files=[str(test_file)])
+
+    # then
+    summary = report.get_summary()
+
+    assert summary["passed"] == 0
+    assert summary["failed"] == 0
+    assert summary["skipped"] == 0
+    assert summary["parsing_errors"] == 0

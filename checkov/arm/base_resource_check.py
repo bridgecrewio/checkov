@@ -33,7 +33,7 @@ class BaseResourceCheck(BaseCheck):
         # leverage ARM checks to use with bicep runner
         bicep_registry.register(self)
 
-    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult:
+    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult:  # type:ignore[override]  # it's ok
         self.entity_type = entity_type
 
         # the "existing" key indicates a Bicep resource
@@ -45,11 +45,16 @@ class BaseResourceCheck(BaseCheck):
             self.api_version = conf["api_version"]
             conf["config"]["apiVersion"] = conf["api_version"]  # set for better reusability of existing ARM checks
 
-            return self.scan_resource_conf(conf["config"], entity_type)
+            resource_conf = conf["config"]
+            if "loop_type" in resource_conf:
+                # this means the whole resource block is surrounded by a for loop
+                resource_conf = resource_conf["config"]
+
+            return self.scan_resource_conf(resource_conf, entity_type)  # type:ignore[no-any-return]  # issue with multi_signature annotation
 
         self.api_version = None
 
-        return self.scan_resource_conf(conf, entity_type)
+        return self.scan_resource_conf(conf, entity_type)  # type:ignore[no-any-return]  # issue with multi_signature annotation
 
     @multi_signature()
     @abstractmethod

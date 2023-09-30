@@ -1,0 +1,95 @@
+{
+  "//": {
+    "metadata": {
+      "backend": "local",
+      "overrides": {
+        "aws_s3_bucket": [
+          "//"
+        ]
+      },
+      "stackName": "AppStack",
+      "version": "0.15.5"
+    },
+    "outputs": {
+      "AppStack": {
+        "bucket_arn": "bucket_arn"
+      }
+    }
+  },
+  "data": {
+    "aws_caller_identity": {
+      "current": {
+        "//": {
+          "metadata": {
+            "path": "AppStack/current",
+            "uniqueId": "current"
+          }
+        }
+      }
+    }
+  },
+  "output": {
+    "bucket_arn": {
+      "value": "${aws_s3_bucket.bucket.arn}"
+    }
+  },
+  "provider": {
+    "aws": [
+      {
+        "profile": "dev2",
+        "region": "us-west-2"
+      }
+    ]
+  },
+  "resource": {
+    "aws_s3_bucket": {
+      "bucket": {
+        "//": {
+          "checkov": {
+            "skip": [
+              {
+                "comment": "Access logging not needed",
+                "id": "CKV_AWS_18"
+              }
+            ]
+          },
+          "metadata": {
+            "path": "AppStack/bucket",
+            "uniqueId": "bucket"
+          }
+        },
+        "tags": {
+          "Name": "example",
+          "Private": "true"
+        }
+      }
+    },
+    "aws_s3_bucket_versioning": {
+      "bucket_version": {
+        "//": {
+          "metadata": {
+            "path": "AppStack/bucket_version",
+            "uniqueId": "bucket_version"
+          }
+        },
+        "bucket": "${aws_s3_bucket.bucket.bucket}",
+        "versioning_configuration": {
+          "status": "Enabled"
+        }
+      }
+    }
+  },
+  "terraform": {
+    "backend": {
+      "local": {
+        "path": "/Users/agruebel/repos/local/cdk-test/terraform.AppStack.tfstate"
+      }
+    },
+    "required_providers": {
+      "aws": {
+        "source": "aws",
+        "version": "4.56.0"
+      }
+    }
+  }
+}

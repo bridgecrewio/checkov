@@ -94,7 +94,7 @@ def test_create_report_cve_record():
         check_class=check_class,
         vulnerability_details=vulnerability_details,
         licenses='OSI_BDS',
-        package_registry="https://registry.npmjs.org/",
+        package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
     )
 
     # then
@@ -177,7 +177,7 @@ def test_create_report_cve_record_results_from_platform():
         vulnerability_details=vulnerability_details,
         licenses='OSI_BDS',
         scan_data_format=ScanDataFormat.PLATFORM,
-        package_registry="https://registry.npmjs.org/",
+        package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
     )
 
     # then
@@ -219,7 +219,7 @@ def test_create_report_cve_record_moderate_severity():
         check_class=check_class,
         vulnerability_details=vulnerability_details,
         licenses='OSI_BDS',
-        package_registry="https://registry.npmjs.org/",
+        package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
     )
 
     # then
@@ -256,7 +256,7 @@ def test_create_report_cve_record_severity_filter():
         vulnerability_details=vulnerability_details,
         runner_filter=RunnerFilter(checks=['HIGH']),
         licenses='OSI_BDS',
-        package_registry="https://registry.npmjs.org/",
+        package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
     )
 
     # then
@@ -316,7 +316,7 @@ def test_create_report_cve_record_package_filter():
         vulnerability_details=vulnerability_details,
         runner_filter=RunnerFilter(skip_cve_package=['django', 'requests']),
         licenses='OSI_BDS',
-        package_registry="https://registry.npmjs.org/",
+        package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
     )
 
     # then
@@ -534,7 +534,7 @@ def test_create_cli_output(mocker):
             check_class=check_class,
             vulnerability_details=details,
             licenses='Unknown',
-            package_registry="https://registry.npmjs.org/",
+            package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
         )
         for details in get_vulnerabilities_details()
     ]
@@ -544,7 +544,7 @@ def test_create_cli_output(mocker):
                 file_abs_path=file_abs_path,
                 check_class=check_class,
                 licenses_status=license_status,
-                package_registry="https://registry.npmjs.org/",
+                package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
             )
             for license_status in license_statuses
         ]
@@ -591,7 +591,7 @@ def test_create_cli_output_without_license_records(mocker):
             check_class=check_class,
             vulnerability_details=details,
             licenses='Unknown',
-            package_registry="https://registry.npmjs.org/",
+            package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
         )
         for details in get_vulnerabilities_details()
     ]
@@ -644,7 +644,7 @@ def test_create_cli_output_without_cve_records(mocker):
                 file_abs_path=file_abs_path,
                 check_class=check_class,
                 licenses_status=license_status,
-                package_registry="https://registry.npmjs.org/",
+                package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
             )
             for license_status in license_statuses
         ]

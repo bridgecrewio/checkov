@@ -20,18 +20,20 @@ class TestSecurityGroupUnrestrictedIngress3389(unittest.TestCase):
         passing_resources = {
             "aws_security_group.pass",
             "aws_security_group_rule.pass",
+            "aws_vpc_security_group_ingress_rule.pass"
         }
 
         failing_resources = {
             "aws_security_group.fail",
             "aws_security_group_rule.fail",
+            "aws_vpc_security_group_ingress_rule.fail"
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 2)
-        self.assertEqual(summary["failed"], 2)
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 

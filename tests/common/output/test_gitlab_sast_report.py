@@ -2,8 +2,10 @@ from operator import itemgetter
 from pathlib import Path
 
 from checkov.common.bridgecrew.check_type import CheckType
+from checkov.common.models.enums import CheckResult
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.gitlab_sast import GitLabSast
+from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.sca.output import create_report_cve_record, _add_to_report_licenses_statuses
 from checkov.runner_filter import RunnerFilter
@@ -106,7 +108,7 @@ def test_sca_package_output():
         check_class=check_class,
         vulnerability_details=vulnerability_details,
         licenses="OSI_BDS",
-        package_registry="https://registry.npmjs.org/",
+        package={"package_registry": "https://registry.npmjs.org/", "is_private_registry": False},
     )
     # also add a BC_VUL_2 record
     bc_record = create_report_cve_record(
@@ -115,7 +117,7 @@ def test_sca_package_output():
         check_class=check_class,
         vulnerability_details=vulnerability_details,
         licenses="OSI_BDS",
-        package_registry="https://registry.npmjs.org/",
+        package={"package_registry": "https://registry.npmjs.org/", "is_private_registry": False},
     )
     bc_record.check_id = "BC_VUL_2"
 
@@ -231,3 +233,32 @@ def test_sca_license_output():
             "description": "Package docutils@0.15.2 has license GPL",
         }
     ]
+
+
+def test_create_iac_vulnerability_with_non_url_guideline():
+    # given
+    # the report doesn't matter for this test, because we pass the record to method directly
+    gitlab_sast = GitLabSast(reports=[])
+    record = Record(
+        check_id="CKV_AWS_5",
+        check_name="Ensure all data stored in the Elasticsearch is securely encrypted at rest",
+        check_result={"result": CheckResult.FAILED},
+        code_block=[],
+        file_path="./main.tf",
+        file_line_range=[7, 10],
+        resource="aws_elasticsearch_domain.enabled",
+        evaluations=None,
+        check_class="",
+        file_abs_path=".",
+        bc_check_id="BC_AWS_ELASTICSEARCH_3",
+    )
+    record.guideline = "Some guideline text"
+
+    # when
+    vulnerability = gitlab_sast._create_iac_vulnerability(record=record)
+
+    # then
+    # vulnerability["identifiers"][0]["url"] shouldn't exist
+    assert vulnerability["identifiers"] == [{"name": "CKV_AWS_5", "type": "checkov", "value": "CKV_AWS_5"}]
+    # vulnerability["links"] shouldn't exist
+    assert "links" not in vulnerability

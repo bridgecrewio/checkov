@@ -41,6 +41,48 @@ definition:
   value: terraform-aws-modules
 ```
 
+# Basic Query - Provider custom policy check
+
+```yaml
+---
+metadata:
+  name: "Ensure a certain region is not added"
+  id: "CKV2_AWS_3"
+  category: "GENERAL_SECURITY"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "provider.aws"
+  attribute: "region"
+  operator: "not_contains"
+  value: "us-west-1"
+```
+
+## OR -  Multiple Attribute Blocks
+
+```yaml
+---
+metadata:
+  id: "CUSTOM_GRAPH_AWS_3"
+  name: "Ensure a certain region is not added"
+  category: "GENERAL_SECURITY"
+scope:
+  provider: "AWS"
+definition:
+  and:
+  - cond_type: "attribute"
+    resource_types:
+      - "provider"
+    attribute: "default_tags"
+    operator: exists
+  - cond_type: "attribute"
+    resource_types:
+      - "provider"
+    attribute: "region"
+    operator: "not_contains"
+    value: "us-west-1"
+```
+
 ## Basic Query - Terraform plan resource not deleted
 
 ```yaml
@@ -420,4 +462,20 @@ definition:
     attribute: "ingress.*.cidr_blocks"
     operator: "contains"
     value: "0.0.0.0/0"
+```
+
+## Using a jsonpath operator to evaluate complex attributes
+
+The following policy looks for a CloudFormation S3 Bucket with a tag name `env` and it should have one of the values `prod` or `prod-eu`.
+
+```yaml
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "AWS::S3::Bucket"
+  attribute: "Tags[?(@.Key == env)].Value"
+  operator: "jsonpath_within"
+  value:
+    - prod
+    - prod-eu
 ```

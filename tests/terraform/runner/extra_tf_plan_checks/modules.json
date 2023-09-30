@@ -1,0 +1,1799 @@
+{
+    "format_version": "0.1",
+    "terraform_version": "0.13.7",
+    "planned_values": {
+      "root_module": {
+        "resources": [
+          {
+            "address": "google_compute_network.achia_test_nonpeered_network",
+            "mode": "managed",
+            "type": "google_compute_network",
+            "name": "achia_test_nonpeered_network",
+            "provider_name": "registry.terraform.io/hashicorp/google",
+            "schema_version": 0,
+            "values": {
+              "auto_create_subnetworks": true,
+              "delete_default_routes_on_create": false,
+              "description": null,
+              "name": "achia_test-nonpeered-network",
+              "timeouts": null
+            }
+          },
+          {
+            "address": "google_compute_network.achia_test_peered_nonwss_network",
+            "mode": "managed",
+            "type": "google_compute_network",
+            "name": "achia_test_peered_nonwss_network",
+            "provider_name": "registry.terraform.io/hashicorp/google",
+            "schema_version": 0,
+            "values": {
+              "auto_create_subnetworks": true,
+              "delete_default_routes_on_create": false,
+              "description": null,
+              "name": "achia_test-peered-nonwss-network",
+              "timeouts": null
+            }
+          },
+          {
+            "address": "google_compute_network.achia_test_peered_wss_network",
+            "mode": "managed",
+            "type": "google_compute_network",
+            "name": "achia_test_peered_wss_network",
+            "provider_name": "registry.terraform.io/hashicorp/google",
+            "schema_version": 0,
+            "values": {
+              "auto_create_subnetworks": true,
+              "delete_default_routes_on_create": false,
+              "description": null,
+              "name": "achia_test-peered-wss-network",
+              "timeouts": null
+            }
+          },
+          {
+            "address": "google_compute_network_peering.achia_test_network_peering_from_nonwss",
+            "mode": "managed",
+            "type": "google_compute_network_peering",
+            "name": "achia_test_network_peering_from_nonwss",
+            "provider_name": "registry.terraform.io/hashicorp/google",
+            "schema_version": 0,
+            "values": {
+              "export_custom_routes": false,
+              "export_subnet_routes_with_public_ip": true,
+              "import_custom_routes": false,
+              "import_subnet_routes_with_public_ip": null,
+              "name": "fake-network-peering-from-nonwss",
+              "network": "https://www.achia.com11111",
+              "timeouts": null
+            }
+          },
+          {
+            "address": "google_compute_network_peering.achia_test_network_peering_from_wss",
+            "mode": "managed",
+            "type": "google_compute_network_peering",
+            "name": "achia_test_network_peering_from_wss",
+            "provider_name": "registry.terraform.io/hashicorp/google",
+            "schema_version": 0,
+            "values": {
+              "export_custom_routes": false,
+              "export_subnet_routes_with_public_ip": true,
+              "import_custom_routes": false,
+              "import_subnet_routes_with_public_ip": null,
+              "name": "fake-network-peering-from-wss",
+              "network": "https://www.achia.com11111",
+              "timeouts": null
+            }
+          },
+          {
+            "address": "google_compute_network_peering.achia_test_network_peering_to_nonwss",
+            "mode": "managed",
+            "type": "google_compute_network_peering",
+            "name": "achia_test_network_peering_to_nonwss",
+            "provider_name": "registry.terraform.io/hashicorp/google",
+            "schema_version": 0,
+            "values": {
+              "export_custom_routes": false,
+              "export_subnet_routes_with_public_ip": true,
+              "import_custom_routes": false,
+              "import_subnet_routes_with_public_ip": null,
+              "name": "fake-network-peering-to-nonwss",
+              "peer_network": "https://www.achia.com11111",
+              "timeouts": null
+            }
+          },
+          {
+            "address": "google_compute_network_peering.achia_test_network_peering_to_wss",
+            "mode": "managed",
+            "type": "google_compute_network_peering",
+            "name": "achia_test_network_peering_to_wss",
+            "provider_name": "registry.terraform.io/hashicorp/google",
+            "schema_version": 0,
+            "values": {
+              "export_custom_routes": false,
+              "export_subnet_routes_with_public_ip": true,
+              "import_custom_routes": false,
+              "import_subnet_routes_with_public_ip": null,
+              "name": "fake-network-peering-to-wss",
+              "peer_network": "https://www.achia.com11111",
+              "timeouts": null
+            }
+          }
+        ],
+        "child_modules": [
+          {
+            "resources": [
+              {
+                "address": "module.achia_test_valid_443.google_compute_firewall.custom[0]",
+                "mode": "managed",
+                "type": "google_compute_firewall",
+                "name": "custom",
+                "index": 0,
+                "provider_name": "registry.terraform.io/hashicorp/google",
+                "schema_version": 1,
+                "values": {
+                  "allow": [
+                    {
+                      "ports": [
+                        "443"
+                      ],
+                      "protocol": "tcp"
+                    }
+                  ],
+                  "deny": [],
+                  "description": "gcp-wss-tcp-allow",
+                  "destination_ranges": [
+                    "0.0.0.0/0"
+                  ],
+                  "direction": "EGRESS",
+                  "disabled": false,
+                  "log_config": [
+                    {
+                      "metadata": "INCLUDE_ALL_METADATA"
+                    }
+                  ],
+                  "name": "egress-wss-valid-port443-allow",
+                  "network": "achia_test-peered-wss-network",
+                  "priority": 1000,
+                  "project": "fake-id",
+                  "source_service_accounts": null,
+                  "source_tags": null,
+                  "target_service_accounts": null,
+                  "target_tags": null,
+                  "timeouts": null
+                }
+              }
+            ],
+            "address": "module.achia_test_valid_443"
+          },
+          {
+            "resources": [
+              {
+                "address": "module.achia_test_valid_ports.google_compute_firewall.custom[0]",
+                "mode": "managed",
+                "type": "google_compute_firewall",
+                "name": "custom",
+                "index": 0,
+                "provider_name": "registry.terraform.io/hashicorp/google",
+                "schema_version": 1,
+                "values": {
+                  "allow": [
+                    {
+                      "ports": [
+                        "80",
+                        "443"
+                      ],
+                      "protocol": "tcp"
+                    }
+                  ],
+                  "deny": [],
+                  "description": "gcp-wss-tcp-allow",
+                  "destination_ranges": [
+                    "0.0.0.0/0"
+                  ],
+                  "direction": "EGRESS",
+                  "disabled": false,
+                  "log_config": [
+                    {
+                      "metadata": "INCLUDE_ALL_METADATA"
+                    }
+                  ],
+                  "name": "egress-wss-valid-port80and443-allow",
+                  "network": "achia_test-peered-wss-network",
+                  "priority": 1000,
+                  "project": "fake-id",
+                  "source_service_accounts": null,
+                  "source_tags": null,
+                  "target_service_accounts": null,
+                  "target_tags": null,
+                  "timeouts": null
+                }
+              }
+            ],
+            "address": "module.achia_test_valid_ports"
+          },
+          {
+            "resources": [
+              {
+                "address": "module.achia_test_violating_no_ports.google_compute_firewall.custom[0]",
+                "mode": "managed",
+                "type": "google_compute_firewall",
+                "name": "custom",
+                "index": 0,
+                "provider_name": "registry.terraform.io/hashicorp/google",
+                "schema_version": 1,
+                "values": {
+                  "allow": [
+                    {
+                      "ports": [],
+                      "protocol": "tcp"
+                    }
+                  ],
+                  "deny": [],
+                  "description": "gcp-wss-tcp-allow",
+                  "destination_ranges": [
+                    "0.0.0.0/0"
+                  ],
+                  "direction": "EGRESS",
+                  "disabled": false,
+                  "log_config": [
+                    {
+                      "metadata": "INCLUDE_ALL_METADATA"
+                    }
+                  ],
+                  "name": "egress-wss-all-ports-allow",
+                  "network": "achia_test-peered-wss-network",
+                  "priority": 1000,
+                  "project": "fake-id",
+                  "source_service_accounts": null,
+                  "source_tags": null,
+                  "target_service_accounts": null,
+                  "target_tags": null,
+                  "timeouts": null
+                }
+              }
+            ],
+            "address": "module.achia_test_violating_no_ports"
+          },
+          {
+            "resources": [
+              {
+                "address": "module.achia_test_violating_port.google_compute_firewall.custom[0]",
+                "mode": "managed",
+                "type": "google_compute_firewall",
+                "name": "custom",
+                "index": 0,
+                "provider_name": "registry.terraform.io/hashicorp/google",
+                "schema_version": 1,
+                "values": {
+                  "allow": [
+                    {
+                      "ports": [
+                        "80",
+                        "443",
+                        "3600"
+                      ],
+                      "protocol": "tcp"
+                    }
+                  ],
+                  "deny": [],
+                  "description": "gcp-wss-tcp-allow",
+                  "destination_ranges": [
+                    "0.0.0.0/0"
+                  ],
+                  "direction": "EGRESS",
+                  "disabled": false,
+                  "log_config": [
+                    {
+                      "metadata": "INCLUDE_ALL_METADATA"
+                    }
+                  ],
+                  "name": "egress-wss-violating-port3600-allow",
+                  "network": "achia_test-peered-wss-network",
+                  "priority": 1000,
+                  "project": "fake-id",
+                  "source_service_accounts": null,
+                  "source_tags": null,
+                  "target_service_accounts": null,
+                  "target_tags": null,
+                  "timeouts": null
+                }
+              }
+            ],
+            "address": "module.achia_test_violating_port"
+          }
+        ]
+      }
+    },
+    "resource_changes": [
+      {
+        "address": "google_compute_network.achia_test_nonpeered_network",
+        "mode": "managed",
+        "type": "google_compute_network",
+        "name": "achia_test_nonpeered_network",
+        "provider_name": "registry.terraform.io/hashicorp/google",
+        "change": {
+          "actions": [
+            "create"
+          ],
+          "before": null,
+          "after": {
+            "auto_create_subnetworks": true,
+            "delete_default_routes_on_create": false,
+            "description": null,
+            "name": "achia_test-nonpeered-network",
+            "timeouts": null
+          },
+          "after_unknown": {
+            "gateway_ipv4": true,
+            "id": true,
+            "mtu": true,
+            "project": true,
+            "routing_mode": true,
+            "self_link": true
+          }
+        }
+      },
+      {
+        "address": "google_compute_network.achia_test_peered_nonwss_network",
+        "mode": "managed",
+        "type": "google_compute_network",
+        "name": "achia_test_peered_nonwss_network",
+        "provider_name": "registry.terraform.io/hashicorp/google",
+        "change": {
+          "actions": [
+            "create"
+          ],
+          "before": null,
+          "after": {
+            "auto_create_subnetworks": true,
+            "delete_default_routes_on_create": false,
+            "description": null,
+            "name": "achia_test-peered-nonwss-network",
+            "timeouts": null
+          },
+          "after_unknown": {
+            "gateway_ipv4": true,
+            "id": true,
+            "mtu": true,
+            "project": true,
+            "routing_mode": true,
+            "self_link": true
+          }
+        }
+      },
+      {
+        "address": "google_compute_network.achia_test_peered_wss_network",
+        "mode": "managed",
+        "type": "google_compute_network",
+        "name": "achia_test_peered_wss_network",
+        "provider_name": "registry.terraform.io/hashicorp/google",
+        "change": {
+          "actions": [
+            "create"
+          ],
+          "before": null,
+          "after": {
+            "auto_create_subnetworks": true,
+            "delete_default_routes_on_create": false,
+            "description": null,
+            "name": "achia_test-peered-wss-network",
+            "timeouts": null
+          },
+          "after_unknown": {
+            "gateway_ipv4": true,
+            "id": true,
+            "mtu": true,
+            "project": true,
+            "routing_mode": true,
+            "self_link": true
+          }
+        }
+      },
+      {
+        "address": "google_compute_network_peering.achia_test_network_peering_from_nonwss",
+        "mode": "managed",
+        "type": "google_compute_network_peering",
+        "name": "achia_test_network_peering_from_nonwss",
+        "provider_name": "registry.terraform.io/hashicorp/google",
+        "change": {
+          "actions": [
+            "create"
+          ],
+          "before": null,
+          "after": {
+            "export_custom_routes": false,
+            "export_subnet_routes_with_public_ip": true,
+            "import_custom_routes": false,
+            "import_subnet_routes_with_public_ip": null,
+            "name": "fake-network-peering-from-nonwss",
+            "network": "https://www.achia.com11111",
+            "timeouts": null
+          },
+          "after_unknown": {
+            "id": true,
+            "peer_network": true,
+            "state": true,
+            "state_details": true
+          }
+        }
+      },
+      {
+        "address": "google_compute_network_peering.achia_test_network_peering_from_wss",
+        "mode": "managed",
+        "type": "google_compute_network_peering",
+        "name": "achia_test_network_peering_from_wss",
+        "provider_name": "registry.terraform.io/hashicorp/google",
+        "change": {
+          "actions": [
+            "create"
+          ],
+          "before": null,
+          "after": {
+            "export_custom_routes": false,
+            "export_subnet_routes_with_public_ip": true,
+            "import_custom_routes": false,
+            "import_subnet_routes_with_public_ip": null,
+            "name": "fake-network-peering-from-wss",
+            "network": "https://www.achia.com11111",
+            "timeouts": null
+          },
+          "after_unknown": {
+            "id": true,
+            "peer_network": true,
+            "state": true,
+            "state_details": true
+          }
+        }
+      },
+      {
+        "address": "google_compute_network_peering.achia_test_network_peering_to_nonwss",
+        "mode": "managed",
+        "type": "google_compute_network_peering",
+        "name": "achia_test_network_peering_to_nonwss",
+        "provider_name": "registry.terraform.io/hashicorp/google",
+        "change": {
+          "actions": [
+            "create"
+          ],
+          "before": null,
+          "after": {
+            "export_custom_routes": false,
+            "export_subnet_routes_with_public_ip": true,
+            "import_custom_routes": false,
+            "import_subnet_routes_with_public_ip": null,
+            "name": "fake-network-peering-to-nonwss",
+            "peer_network": "https://www.achia.com11111",
+            "timeouts": null
+          },
+          "after_unknown": {
+            "id": true,
+            "network": true,
+            "state": true,
+            "state_details": true
+          }
+        }
+      },
+      {
+        "address": "google_compute_network_peering.achia_test_network_peering_to_wss",
+        "mode": "managed",
+        "type": "google_compute_network_peering",
+        "name": "achia_test_network_peering_to_wss",
+        "provider_name": "registry.terraform.io/hashicorp/google",
+        "change": {
+          "actions": [
+            "create"
+          ],
+          "before": null,
+          "after": {
+            "export_custom_routes": false,
+            "export_subnet_routes_with_public_ip": true,
+            "import_custom_routes": false,
+            "import_subnet_routes_with_public_ip": null,
+            "name": "fake-network-peering-to-wss",
+            "peer_network": "https://www.achia.com11111",
+            "timeouts": null
+          },
+          "after_unknown": {
+            "id": true,
+            "network": true,
+            "state": true,
+            "state_details": true
+          }
+        }
+      },
+      {
+        "address": "module.achia_test_valid_443.google_compute_firewall.custom[0]",
+        "module_address": "module.achia_test_valid_443",
+        "mode": "managed",
+        "type": "google_compute_firewall",
+        "name": "custom",
+        "index": 0,
+        "provider_name": "registry.terraform.io/hashicorp/google",
+        "change": {
+          "actions": [
+            "create"
+          ],
+          "before": null,
+          "after": {
+            "allow": [
+              {
+                "ports": [
+                  "443"
+                ],
+                "protocol": "tcp"
+              }
+            ],
+            "deny": [],
+            "description": "gcp-wss-tcp-allow",
+            "destination_ranges": [
+              "0.0.0.0/0"
+            ],
+            "direction": "EGRESS",
+            "disabled": false,
+            "log_config": [
+              {
+                "metadata": "INCLUDE_ALL_METADATA"
+              }
+            ],
+            "name": "egress-wss-valid-port443-allow",
+            "network": "achia_test-peered-wss-network",
+            "priority": 1000,
+            "project": "fake-id",
+            "source_service_accounts": null,
+            "source_tags": null,
+            "target_service_accounts": null,
+            "target_tags": null,
+            "timeouts": null
+          },
+          "after_unknown": {
+            "allow": [
+              {
+                "ports": [
+                  false
+                ]
+              }
+            ],
+            "creation_timestamp": true,
+            "deny": [],
+            "destination_ranges": [
+              false
+            ],
+            "enable_logging": true,
+            "id": true,
+            "log_config": [
+              {}
+            ],
+            "self_link": true,
+            "source_ranges": true
+          }
+        }
+      },
+      {
+        "address": "module.achia_test_valid_ports.google_compute_firewall.custom[0]",
+        "module_address": "module.achia_test_valid_ports",
+        "mode": "managed",
+        "type": "google_compute_firewall",
+        "name": "custom",
+        "index": 0,
+        "provider_name": "registry.terraform.io/hashicorp/google",
+        "change": {
+          "actions": [
+            "create"
+          ],
+          "before": null,
+          "after": {
+            "allow": [
+              {
+                "ports": [
+                  "80",
+                  "443"
+                ],
+                "protocol": "tcp"
+              }
+            ],
+            "deny": [],
+            "description": "gcp-wss-tcp-allow",
+            "destination_ranges": [
+              "0.0.0.0/0"
+            ],
+            "direction": "EGRESS",
+            "disabled": false,
+            "log_config": [
+              {
+                "metadata": "INCLUDE_ALL_METADATA"
+              }
+            ],
+            "name": "egress-wss-valid-port80and443-allow",
+            "network": "achia_test-peered-wss-network",
+            "priority": 1000,
+            "project": "fake-id",
+            "source_service_accounts": null,
+            "source_tags": null,
+            "target_service_accounts": null,
+            "target_tags": null,
+            "timeouts": null
+          },
+          "after_unknown": {
+            "allow": [
+              {
+                "ports": [
+                  false,
+                  false
+                ]
+              }
+            ],
+            "creation_timestamp": true,
+            "deny": [],
+            "destination_ranges": [
+              false
+            ],
+            "enable_logging": true,
+            "id": true,
+            "log_config": [
+              {}
+            ],
+            "self_link": true,
+            "source_ranges": true
+          }
+        }
+      },
+      {
+        "address": "module.achia_test_violating_no_ports.google_compute_firewall.custom[0]",
+        "module_address": "module.achia_test_violating_no_ports",
+        "mode": "managed",
+        "type": "google_compute_firewall",
+        "name": "custom",
+        "index": 0,
+        "provider_name": "registry.terraform.io/hashicorp/google",
+        "change": {
+          "actions": [
+            "create"
+          ],
+          "before": null,
+          "after": {
+            "allow": [
+              {
+                "ports": [],
+                "protocol": "tcp"
+              }
+            ],
+            "deny": [],
+            "description": "gcp-wss-tcp-allow",
+            "destination_ranges": [
+              "0.0.0.0/0"
+            ],
+            "direction": "EGRESS",
+            "disabled": false,
+            "log_config": [
+              {
+                "metadata": "INCLUDE_ALL_METADATA"
+              }
+            ],
+            "name": "egress-wss-all-ports-allow",
+            "network": "achia_test-peered-wss-network",
+            "priority": 1000,
+            "project": "fake-id",
+            "source_service_accounts": null,
+            "source_tags": null,
+            "target_service_accounts": null,
+            "target_tags": null,
+            "timeouts": null
+          },
+          "after_unknown": {
+            "allow": [
+              {
+                "ports": []
+              }
+            ],
+            "creation_timestamp": true,
+            "deny": [],
+            "destination_ranges": [
+              false
+            ],
+            "enable_logging": true,
+            "id": true,
+            "log_config": [
+              {}
+            ],
+            "self_link": true,
+            "source_ranges": true
+          }
+        }
+      },
+      {
+        "address": "module.achia_test_violating_port.google_compute_firewall.custom[0]",
+        "module_address": "module.achia_test_violating_port",
+        "mode": "managed",
+        "type": "google_compute_firewall",
+        "name": "custom",
+        "index": 0,
+        "provider_name": "registry.terraform.io/hashicorp/google",
+        "change": {
+          "actions": [
+            "create"
+          ],
+          "before": null,
+          "after": {
+            "allow": [
+              {
+                "ports": [
+                  "80",
+                  "443",
+                  "3600"
+                ],
+                "protocol": "tcp"
+              }
+            ],
+            "deny": [],
+            "description": "gcp-wss-tcp-allow",
+            "destination_ranges": [
+              "0.0.0.0/0"
+            ],
+            "direction": "EGRESS",
+            "disabled": false,
+            "log_config": [
+              {
+                "metadata": "INCLUDE_ALL_METADATA"
+              }
+            ],
+            "name": "egress-wss-violating-port3600-allow",
+            "network": "achia_test-peered-wss-network",
+            "priority": 1000,
+            "project": "fake-id",
+            "source_service_accounts": null,
+            "source_tags": null,
+            "target_service_accounts": null,
+            "target_tags": null,
+            "timeouts": null
+          },
+          "after_unknown": {
+            "allow": [
+              {
+                "ports": [
+                  false,
+                  false,
+                  false
+                ]
+              }
+            ],
+            "creation_timestamp": true,
+            "deny": [],
+            "destination_ranges": [
+              false
+            ],
+            "enable_logging": true,
+            "id": true,
+            "log_config": [
+              {}
+            ],
+            "self_link": true,
+            "source_ranges": true
+          }
+        }
+      }
+    ],
+    "configuration": {
+      "root_module": {
+        "resources": [
+          {
+            "address": "google_compute_network.achia_test_nonpeered_network",
+            "mode": "managed",
+            "type": "google_compute_network",
+            "name": "achia_test_nonpeered_network",
+            "provider_config_key": "google",
+            "expressions": {
+              "name": {
+                "constant_value": "achia_test-nonpeered-network"
+              }
+            },
+            "schema_version": 0
+          },
+          {
+            "address": "google_compute_network.achia_test_peered_nonwss_network",
+            "mode": "managed",
+            "type": "google_compute_network",
+            "name": "achia_test_peered_nonwss_network",
+            "provider_config_key": "google",
+            "expressions": {
+              "name": {
+                "constant_value": "achia_test-peered-nonwss-network"
+              }
+            },
+            "schema_version": 0
+          },
+          {
+            "address": "google_compute_network.achia_test_peered_wss_network",
+            "mode": "managed",
+            "type": "google_compute_network",
+            "name": "achia_test_peered_wss_network",
+            "provider_config_key": "google",
+            "expressions": {
+              "name": {
+                "constant_value": "achia_test-peered-wss-network"
+              }
+            },
+            "schema_version": 0
+          },
+          {
+            "address": "google_compute_network_peering.achia_test_network_peering_from_nonwss",
+            "mode": "managed",
+            "type": "google_compute_network_peering",
+            "name": "achia_test_network_peering_from_nonwss",
+            "provider_config_key": "google",
+            "expressions": {
+              "name": {
+                "constant_value": "fake-network-peering-from-nonwss"
+              },
+              "network": {
+                "constant_value": "https://www.achia.com11111"
+              },
+              "peer_network": {
+                "references": [
+                  "google_compute_network.achia_test_peered_nonwss_network"
+                ]
+              }
+            },
+            "schema_version": 0
+          },
+          {
+            "address": "google_compute_network_peering.achia_test_network_peering_from_wss",
+            "mode": "managed",
+            "type": "google_compute_network_peering",
+            "name": "achia_test_network_peering_from_wss",
+            "provider_config_key": "google",
+            "expressions": {
+              "name": {
+                "constant_value": "fake-network-peering-from-wss"
+              },
+              "network": {
+                "constant_value": "https://www.achia.com11111"
+              },
+              "peer_network": {
+                "references": [
+                  "google_compute_network.achia_test_peered_wss_network"
+                ]
+              }
+            },
+            "schema_version": 0
+          },
+          {
+            "address": "google_compute_network_peering.achia_test_network_peering_to_nonwss",
+            "mode": "managed",
+            "type": "google_compute_network_peering",
+            "name": "achia_test_network_peering_to_nonwss",
+            "provider_config_key": "google",
+            "expressions": {
+              "name": {
+                "constant_value": "fake-network-peering-to-nonwss"
+              },
+              "network": {
+                "references": [
+                  "google_compute_network.achia_test_peered_nonwss_network"
+                ]
+              },
+              "peer_network": {
+                "constant_value": "https://www.achia.com11111"
+              }
+            },
+            "schema_version": 0
+          },
+          {
+            "address": "google_compute_network_peering.achia_test_network_peering_to_wss",
+            "mode": "managed",
+            "type": "google_compute_network_peering",
+            "name": "achia_test_network_peering_to_wss",
+            "provider_config_key": "google",
+            "expressions": {
+              "name": {
+                "constant_value": "fake-network-peering-to-wss"
+              },
+              "network": {
+                "references": [
+                  "google_compute_network.achia_test_peered_wss_network"
+                ]
+              },
+              "peer_network": {
+                "constant_value": "https://www.achia.com11111"
+              }
+            },
+            "schema_version": 0
+          }
+        ],
+        "module_calls": {
+          "achia_test_valid_443": {
+            "source": "tfe.mayo.edu/mcc/m-network-firewall/google",
+            "expressions": {
+              "action": {
+                "constant_value": "allow"
+              },
+              "description": {
+                "constant_value": "gcp-wss-tcp-allow"
+              },
+              "direction": {
+                "constant_value": "EGRESS"
+              },
+              "extra_attributes": {
+                "constant_value": {
+                  "enable_logging": true,
+                  "priority": 1000
+                }
+              },
+              "fw_destination": {
+                "constant_value": "wss"
+              },
+              "fw_purpose": {
+                "constant_value": "valid-port443"
+              },
+              "fw_source": {
+                "constant_value": "egress"
+              },
+              "network": {
+                "references": [
+                  "google_compute_network.achia_test_peered_wss_network"
+                ]
+              },
+              "project_id": {
+                "constant_value": "fake-id"
+              },
+              "ranges": {
+                "constant_value": [
+                  "0.0.0.0/0"
+                ]
+              },
+              "rules": {
+                "constant_value": [
+                  {
+                    "ports": [
+                      443
+                    ],
+                    "protocol": "tcp"
+                  }
+                ]
+              },
+              "sources": {
+                "references": [
+                  "local.source_sa"
+                ]
+              },
+              "use_service_accounts": {
+                "constant_value": true
+              }
+            },
+            "module": {
+              "outputs": {
+                "firewall_rules": {
+                  "expression": {
+                    "references": [
+                      "google_compute_firewall.custom"
+                    ]
+                  },
+                  "description": "The  firewall rules created"
+                }
+              },
+              "resources": [
+                {
+                  "address": "google_compute_firewall.custom",
+                  "mode": "managed",
+                  "type": "google_compute_firewall",
+                  "name": "custom",
+                  "provider_config_key": "achia_test_valid_443:google",
+                  "expressions": {
+                    "description": {
+                      "references": [
+                        "var.description"
+                      ]
+                    },
+                    "destination_ranges": {
+                      "references": [
+                        "var.direction",
+                        "var.ranges"
+                      ]
+                    },
+                    "direction": {
+                      "references": [
+                        "var.direction"
+                      ]
+                    },
+                    "disabled": {
+                      "references": [
+                        "var.extra_attributes"
+                      ]
+                    },
+                    "name": {
+                      "references": [
+                        "local.firewall_name"
+                      ]
+                    },
+                    "network": {
+                      "references": [
+                        "var.network"
+                      ]
+                    },
+                    "priority": {
+                      "references": [
+                        "var.extra_attributes"
+                      ]
+                    },
+                    "project": {
+                      "references": [
+                        "var.project_id"
+                      ]
+                    },
+                    "source_ranges": {
+                      "references": [
+                        "var.direction",
+                        "var.ranges"
+                      ]
+                    },
+                    "source_service_accounts": {
+                      "references": [
+                        "var.use_service_accounts",
+                        "var.direction",
+                        "var.sources"
+                      ]
+                    },
+                    "source_tags": {
+                      "references": [
+                        "var.use_service_accounts",
+                        "var.direction",
+                        "var.sources"
+                      ]
+                    },
+                    "target_service_accounts": {
+                      "references": [
+                        "var.use_service_accounts",
+                        "var.targets"
+                      ]
+                    },
+                    "target_tags": {
+                      "references": [
+                        "var.use_service_accounts",
+                        "var.targets"
+                      ]
+                    }
+                  },
+                  "schema_version": 1,
+                  "count_expression": {
+                    "references": [
+                      "var.enabled"
+                    ]
+                  }
+                }
+              ],
+              "variables": {
+                "action": {
+                  "description": "must be one of the following : allow/ deny"
+                },
+                "description": {
+                  "default": null,
+                  "description": "Description for the firewall rule"
+                },
+                "direction": {
+                  "default": null,
+                  "description": "Direction of traffic to which this firewall applies"
+                },
+                "enabled": {
+                  "default": true,
+                  "description": "Whether to enable this module or not."
+                },
+                "extra_attributes": {
+                  "default": null,
+                  "description": "Map(string) that includes extra arguments like disabled, priority and enabled_logging"
+                },
+                "fw_destination": {
+                  "description": "Project id of the project that holds the network."
+                },
+                "fw_purpose": {
+                  "description": "Project id of the project that holds the network."
+                },
+                "fw_source": {
+                  "description": "Project id of the project that holds the network."
+                },
+                "log_config": {
+                  "default": {
+                    "metadata": "INCLUDE_ALL_METADATA"
+                  },
+                  "description": "The key in the map currently supported is metadata. Structure is documented at: https://www.terraform.io/docs/providers/google/r/compute_firewall.html#log_config"
+                },
+                "network": {
+                  "description": "Name of the network this set of firewall rules applies to."
+                },
+                "project_id": {
+                  "description": "Project id of the project that holds the network."
+                },
+                "ranges": {
+                  "default": null,
+                  "description": "Source/ Destination IP range"
+                },
+                "rules": {
+                  "description": "A list of object that includes protocol type and the corresponding ports"
+                },
+                "sources": {
+                  "default": null,
+                  "description": "Source tags/ Service Account"
+                },
+                "targets": {
+                  "default": null,
+                  "description": "Target tags/ Service Account"
+                },
+                "use_service_accounts": {
+                  "default": true,
+                  "description": "Boolean value to indicate if either Service Accounts or Tags are to be used"
+                }
+              }
+            }
+          },
+          "achia_test_valid_ports": {
+            "source": "tfe.mayo.edu/mcc/m-network-firewall/google",
+            "expressions": {
+              "action": {
+                "constant_value": "allow"
+              },
+              "description": {
+                "constant_value": "gcp-wss-tcp-allow"
+              },
+              "direction": {
+                "constant_value": "EGRESS"
+              },
+              "extra_attributes": {
+                "constant_value": {
+                  "enable_logging": true,
+                  "priority": 1000
+                }
+              },
+              "fw_destination": {
+                "constant_value": "wss"
+              },
+              "fw_purpose": {
+                "constant_value": "valid-port80and443"
+              },
+              "fw_source": {
+                "constant_value": "egress"
+              },
+              "network": {
+                "references": [
+                  "google_compute_network.achia_test_peered_wss_network"
+                ]
+              },
+              "project_id": {
+                "constant_value": "fake-id"
+              },
+              "ranges": {
+                "constant_value": [
+                  "0.0.0.0/0"
+                ]
+              },
+              "rules": {
+                "constant_value": [
+                  {
+                    "ports": [
+                      80,
+                      443
+                    ],
+                    "protocol": "tcp"
+                  }
+                ]
+              },
+              "sources": {
+                "references": [
+                  "local.source_sa"
+                ]
+              },
+              "use_service_accounts": {
+                "constant_value": true
+              }
+            },
+            "module": {
+              "outputs": {
+                "firewall_rules": {
+                  "expression": {
+                    "references": [
+                      "google_compute_firewall.custom"
+                    ]
+                  },
+                  "description": "The  firewall rules created"
+                }
+              },
+              "resources": [
+                {
+                  "address": "google_compute_firewall.custom",
+                  "mode": "managed",
+                  "type": "google_compute_firewall",
+                  "name": "custom",
+                  "provider_config_key": "achia_test_valid_ports:google",
+                  "expressions": {
+                    "description": {
+                      "references": [
+                        "var.description"
+                      ]
+                    },
+                    "destination_ranges": {
+                      "references": [
+                        "var.direction",
+                        "var.ranges"
+                      ]
+                    },
+                    "direction": {
+                      "references": [
+                        "var.direction"
+                      ]
+                    },
+                    "disabled": {
+                      "references": [
+                        "var.extra_attributes"
+                      ]
+                    },
+                    "name": {
+                      "references": [
+                        "local.firewall_name"
+                      ]
+                    },
+                    "network": {
+                      "references": [
+                        "var.network"
+                      ]
+                    },
+                    "priority": {
+                      "references": [
+                        "var.extra_attributes"
+                      ]
+                    },
+                    "project": {
+                      "references": [
+                        "var.project_id"
+                      ]
+                    },
+                    "source_ranges": {
+                      "references": [
+                        "var.direction",
+                        "var.ranges"
+                      ]
+                    },
+                    "source_service_accounts": {
+                      "references": [
+                        "var.use_service_accounts",
+                        "var.direction",
+                        "var.sources"
+                      ]
+                    },
+                    "source_tags": {
+                      "references": [
+                        "var.use_service_accounts",
+                        "var.direction",
+                        "var.sources"
+                      ]
+                    },
+                    "target_service_accounts": {
+                      "references": [
+                        "var.use_service_accounts",
+                        "var.targets"
+                      ]
+                    },
+                    "target_tags": {
+                      "references": [
+                        "var.use_service_accounts",
+                        "var.targets"
+                      ]
+                    }
+                  },
+                  "schema_version": 1,
+                  "count_expression": {
+                    "references": [
+                      "var.enabled"
+                    ]
+                  }
+                }
+              ],
+              "variables": {
+                "action": {
+                  "description": "must be one of the following : allow/ deny"
+                },
+                "description": {
+                  "default": null,
+                  "description": "Description for the firewall rule"
+                },
+                "direction": {
+                  "default": null,
+                  "description": "Direction of traffic to which this firewall applies"
+                },
+                "enabled": {
+                  "default": true,
+                  "description": "Whether to enable this module or not."
+                },
+                "extra_attributes": {
+                  "default": null,
+                  "description": "Map(string) that includes extra arguments like disabled, priority and enabled_logging"
+                },
+                "fw_destination": {
+                  "description": "Project id of the project that holds the network."
+                },
+                "fw_purpose": {
+                  "description": "Project id of the project that holds the network."
+                },
+                "fw_source": {
+                  "description": "Project id of the project that holds the network."
+                },
+                "log_config": {
+                  "default": {
+                    "metadata": "INCLUDE_ALL_METADATA"
+                  },
+                  "description": "The key in the map currently supported is metadata. Structure is documented at: https://www.terraform.io/docs/providers/google/r/compute_firewall.html#log_config"
+                },
+                "network": {
+                  "description": "Name of the network this set of firewall rules applies to."
+                },
+                "project_id": {
+                  "description": "Project id of the project that holds the network."
+                },
+                "ranges": {
+                  "default": null,
+                  "description": "Source/ Destination IP range"
+                },
+                "rules": {
+                  "description": "A list of object that includes protocol type and the corresponding ports"
+                },
+                "sources": {
+                  "default": null,
+                  "description": "Source tags/ Service Account"
+                },
+                "targets": {
+                  "default": null,
+                  "description": "Target tags/ Service Account"
+                },
+                "use_service_accounts": {
+                  "default": true,
+                  "description": "Boolean value to indicate if either Service Accounts or Tags are to be used"
+                }
+              }
+            }
+          },
+          "achia_test_violating_no_ports": {
+            "source": "tfe.mayo.edu/mcc/m-network-firewall/google",
+            "expressions": {
+              "action": {
+                "constant_value": "allow"
+              },
+              "description": {
+                "constant_value": "gcp-wss-tcp-allow"
+              },
+              "direction": {
+                "constant_value": "EGRESS"
+              },
+              "extra_attributes": {
+                "constant_value": {
+                  "enable_logging": true,
+                  "priority": 1000
+                }
+              },
+              "fw_destination": {
+                "constant_value": "wss"
+              },
+              "fw_purpose": {
+                "constant_value": "all-ports"
+              },
+              "fw_source": {
+                "constant_value": "egress"
+              },
+              "network": {
+                "references": [
+                  "google_compute_network.achia_test_peered_wss_network"
+                ]
+              },
+              "project_id": {
+                "constant_value": "fake-id"
+              },
+              "ranges": {
+                "constant_value": [
+                  "0.0.0.0/0"
+                ]
+              },
+              "rules": {
+                "constant_value": [
+                  {
+                    "ports": [],
+                    "protocol": "tcp"
+                  }
+                ]
+              },
+              "sources": {
+                "references": [
+                  "local.source_sa"
+                ]
+              },
+              "use_service_accounts": {
+                "constant_value": true
+              }
+            },
+            "module": {
+              "outputs": {
+                "firewall_rules": {
+                  "expression": {
+                    "references": [
+                      "google_compute_firewall.custom"
+                    ]
+                  },
+                  "description": "The  firewall rules created"
+                }
+              },
+              "resources": [
+                {
+                  "address": "google_compute_firewall.custom",
+                  "mode": "managed",
+                  "type": "google_compute_firewall",
+                  "name": "custom",
+                  "provider_config_key": "achia_test_violating_no_ports:google",
+                  "expressions": {
+                    "description": {
+                      "references": [
+                        "var.description"
+                      ]
+                    },
+                    "destination_ranges": {
+                      "references": [
+                        "var.direction",
+                        "var.ranges"
+                      ]
+                    },
+                    "direction": {
+                      "references": [
+                        "var.direction"
+                      ]
+                    },
+                    "disabled": {
+                      "references": [
+                        "var.extra_attributes"
+                      ]
+                    },
+                    "name": {
+                      "references": [
+                        "local.firewall_name"
+                      ]
+                    },
+                    "network": {
+                      "references": [
+                        "var.network"
+                      ]
+                    },
+                    "priority": {
+                      "references": [
+                        "var.extra_attributes"
+                      ]
+                    },
+                    "project": {
+                      "references": [
+                        "var.project_id"
+                      ]
+                    },
+                    "source_ranges": {
+                      "references": [
+                        "var.direction",
+                        "var.ranges"
+                      ]
+                    },
+                    "source_service_accounts": {
+                      "references": [
+                        "var.use_service_accounts",
+                        "var.direction",
+                        "var.sources"
+                      ]
+                    },
+                    "source_tags": {
+                      "references": [
+                        "var.use_service_accounts",
+                        "var.direction",
+                        "var.sources"
+                      ]
+                    },
+                    "target_service_accounts": {
+                      "references": [
+                        "var.use_service_accounts",
+                        "var.targets"
+                      ]
+                    },
+                    "target_tags": {
+                      "references": [
+                        "var.use_service_accounts",
+                        "var.targets"
+                      ]
+                    }
+                  },
+                  "schema_version": 1,
+                  "count_expression": {
+                    "references": [
+                      "var.enabled"
+                    ]
+                  }
+                }
+              ],
+              "variables": {
+                "action": {
+                  "description": "must be one of the following : allow/ deny"
+                },
+                "description": {
+                  "default": null,
+                  "description": "Description for the firewall rule"
+                },
+                "direction": {
+                  "default": null,
+                  "description": "Direction of traffic to which this firewall applies"
+                },
+                "enabled": {
+                  "default": true,
+                  "description": "Whether to enable this module or not."
+                },
+                "extra_attributes": {
+                  "default": null,
+                  "description": "Map(string) that includes extra arguments like disabled, priority and enabled_logging"
+                },
+                "fw_destination": {
+                  "description": "Project id of the project that holds the network."
+                },
+                "fw_purpose": {
+                  "description": "Project id of the project that holds the network."
+                },
+                "fw_source": {
+                  "description": "Project id of the project that holds the network."
+                },
+                "log_config": {
+                  "default": {
+                    "metadata": "INCLUDE_ALL_METADATA"
+                  },
+                  "description": "The key in the map currently supported is metadata. Structure is documented at: https://www.terraform.io/docs/providers/google/r/compute_firewall.html#log_config"
+                },
+                "network": {
+                  "description": "Name of the network this set of firewall rules applies to."
+                },
+                "project_id": {
+                  "description": "Project id of the project that holds the network."
+                },
+                "ranges": {
+                  "default": null,
+                  "description": "Source/ Destination IP range"
+                },
+                "rules": {
+                  "description": "A list of object that includes protocol type and the corresponding ports"
+                },
+                "sources": {
+                  "default": null,
+                  "description": "Source tags/ Service Account"
+                },
+                "targets": {
+                  "default": null,
+                  "description": "Target tags/ Service Account"
+                },
+                "use_service_accounts": {
+                  "default": true,
+                  "description": "Boolean value to indicate if either Service Accounts or Tags are to be used"
+                }
+              }
+            }
+          },
+          "achia_test_violating_port": {
+            "source": "tfe.mayo.edu/mcc/m-network-firewall/google",
+            "expressions": {
+              "action": {
+                "constant_value": "allow"
+              },
+              "description": {
+                "constant_value": "gcp-wss-tcp-allow"
+              },
+              "direction": {
+                "constant_value": "EGRESS"
+              },
+              "extra_attributes": {
+                "constant_value": {
+                  "enable_logging": true,
+                  "priority": 1000
+                }
+              },
+              "fw_destination": {
+                "constant_value": "wss"
+              },
+              "fw_purpose": {
+                "constant_value": "violating-port3600"
+              },
+              "fw_source": {
+                "constant_value": "egress"
+              },
+              "network": {
+                "references": [
+                  "google_compute_network.achia_test_peered_wss_network"
+                ]
+              },
+              "project_id": {
+                "constant_value": "fake-id"
+              },
+              "ranges": {
+                "constant_value": [
+                  "0.0.0.0/0"
+                ]
+              },
+              "rules": {
+                "constant_value": [
+                  {
+                    "ports": [
+                      80,
+                      443,
+                      3600
+                    ],
+                    "protocol": "tcp"
+                  }
+                ]
+              },
+              "sources": {
+                "references": [
+                  "local.source_sa"
+                ]
+              },
+              "use_service_accounts": {
+                "constant_value": true
+              }
+            },
+            "module": {
+              "outputs": {
+                "firewall_rules": {
+                  "expression": {
+                    "references": [
+                      "google_compute_firewall.custom"
+                    ]
+                  },
+                  "description": "The  firewall rules created"
+                }
+              },
+              "resources": [
+                {
+                  "address": "google_compute_firewall.custom",
+                  "mode": "managed",
+                  "type": "google_compute_firewall",
+                  "name": "custom",
+                  "provider_config_key": "achia_test_violating_port:google",
+                  "expressions": {
+                    "description": {
+                      "references": [
+                        "var.description"
+                      ]
+                    },
+                    "destination_ranges": {
+                      "references": [
+                        "var.direction",
+                        "var.ranges"
+                      ]
+                    },
+                    "direction": {
+                      "references": [
+                        "var.direction"
+                      ]
+                    },
+                    "disabled": {
+                      "references": [
+                        "var.extra_attributes"
+                      ]
+                    },
+                    "name": {
+                      "references": [
+                        "local.firewall_name"
+                      ]
+                    },
+                    "network": {
+                      "references": [
+                        "var.network"
+                      ]
+                    },
+                    "priority": {
+                      "references": [
+                        "var.extra_attributes"
+                      ]
+                    },
+                    "project": {
+                      "references": [
+                        "var.project_id"
+                      ]
+                    },
+                    "source_ranges": {
+                      "references": [
+                        "var.direction",
+                        "var.ranges"
+                      ]
+                    },
+                    "source_service_accounts": {
+                      "references": [
+                        "var.use_service_accounts",
+                        "var.direction",
+                        "var.sources"
+                      ]
+                    },
+                    "source_tags": {
+                      "references": [
+                        "var.use_service_accounts",
+                        "var.direction",
+                        "var.sources"
+                      ]
+                    },
+                    "target_service_accounts": {
+                      "references": [
+                        "var.use_service_accounts",
+                        "var.targets"
+                      ]
+                    },
+                    "target_tags": {
+                      "references": [
+                        "var.use_service_accounts",
+                        "var.targets"
+                      ]
+                    }
+                  },
+                  "schema_version": 1,
+                  "count_expression": {
+                    "references": [
+                      "var.enabled"
+                    ]
+                  }
+                }
+              ],
+              "variables": {
+                "action": {
+                  "description": "must be one of the following : allow/ deny"
+                },
+                "description": {
+                  "default": null,
+                  "description": "Description for the firewall rule"
+                },
+                "direction": {
+                  "default": null,
+                  "description": "Direction of traffic to which this firewall applies"
+                },
+                "enabled": {
+                  "default": true,
+                  "description": "Whether to enable this module or not."
+                },
+                "extra_attributes": {
+                  "default": null,
+                  "description": "Map(string) that includes extra arguments like disabled, priority and enabled_logging"
+                },
+                "fw_destination": {
+                  "description": "Project id of the project that holds the network."
+                },
+                "fw_purpose": {
+                  "description": "Project id of the project that holds the network."
+                },
+                "fw_source": {
+                  "description": "Project id of the project that holds the network."
+                },
+                "log_config": {
+                  "default": {
+                    "metadata": "INCLUDE_ALL_METADATA"
+                  },
+                  "description": "The key in the map currently supported is metadata. Structure is documented at: https://www.terraform.io/docs/providers/google/r/compute_firewall.html#log_config"
+                },
+                "network": {
+                  "description": "Name of the network this set of firewall rules applies to."
+                },
+                "project_id": {
+                  "description": "Project id of the project that holds the network."
+                },
+                "ranges": {
+                  "default": null,
+                  "description": "Source/ Destination IP range"
+                },
+                "rules": {
+                  "description": "A list of object that includes protocol type and the corresponding ports"
+                },
+                "sources": {
+                  "default": null,
+                  "description": "Source tags/ Service Account"
+                },
+                "targets": {
+                  "default": null,
+                  "description": "Target tags/ Service Account"
+                },
+                "use_service_accounts": {
+                  "default": true,
+                  "description": "Boolean value to indicate if either Service Accounts or Tags are to be used"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  

@@ -5,6 +5,8 @@ import logging
 import os
 from typing import Type, Any, TYPE_CHECKING
 
+from typing_extensions import TypeAlias  # noqa[TC002]
+
 from checkov.cloudformation import cfn_utils
 from checkov.cloudformation.cfn_utils import create_definitions, build_definitions_context
 from checkov.cloudformation.checks.resource.registry import cfn_registry
@@ -17,6 +19,7 @@ from checkov.cloudformation.image_referencer.manager import CloudFormationImageR
 from checkov.cloudformation.parser.cfn_keywords import TemplateSections
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.checks_infra.registry import BaseRegistry
+from checkov.common.models.enums import CheckResult
 from checkov.common.typing import LibraryGraphConnector
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.graph.graph_builder.consts import GraphSource
@@ -34,8 +37,11 @@ if TYPE_CHECKING:
     from checkov.common.checks_infra.registry import Registry
     from checkov.common.images.image_referencer import Image
 
+_CloudformationContext: TypeAlias = "dict[str, dict[str, Any]]"
+_CloudformationDefinitions: TypeAlias = "dict[str, dict[str, Any]]"
 
-class Runner(ImageReferencerMixin[None], BaseRunner[CloudformationGraphManager]):
+
+class Runner(ImageReferencerMixin[None], BaseRunner[_CloudformationDefinitions, _CloudformationContext, CloudformationGraphManager]):
     check_type = CheckType.CLOUDFORMATION  # noqa: CCE003  # a static attribute
 
     def __init__(
@@ -55,8 +61,8 @@ class Runner(ImageReferencerMixin[None], BaseRunner[CloudformationGraphManager])
             if graph_manager is not None
             else CloudformationGraphManager(source=source, db_connector=db_connector)
         )
-        self.context: "dict[str, dict[str, Any]]" = {}
-        self.definitions: "dict[str, dict[str, Any]]" = {}  # type:ignore[assignment]  # need to check, how to support subclass differences
+        self.context: _CloudformationContext = {}
+        self.definitions: _CloudformationDefinitions = {}
         self.definitions_raw: "dict[str, list[tuple[int, str]]]" = {}
         self.graph_registry: "Registry" = get_graph_checks_registry(self.check_type)
 
@@ -218,6 +224,18 @@ class Runner(ImageReferencerMixin[None], BaseRunner[CloudformationGraphManager])
                 entity_context = self.context[entity_file_abs_path][TemplateSections.RESOURCES][
                     entity_name
                 ]
+
+                skipped_check = next(
+                    (
+                        skipped_check
+                        for skipped_check in entity_context.get("skipped_checks", [])
+                        if skipped_check["id"] in (check.id, check.bc_id)
+                    ),
+                    None,
+                )
+                if skipped_check:
+                    check_result["result"] = CheckResult.SKIPPED
+                    check_result["suppress_comment"] = skipped_check.get("suppress_comment", "")
 
                 record = Record(
                     check_id=check.id,

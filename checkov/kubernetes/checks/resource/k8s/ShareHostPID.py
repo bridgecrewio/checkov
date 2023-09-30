@@ -52,10 +52,9 @@ class ShareHostPID(BaseK8Check):
             if "hostPID" in spec:
                 if spec["hostPID"]:
                     return CheckResult.FAILED
-                else:
-                    return CheckResult.PASSED
-            return CheckResult.PASSED
-        return CheckResult.FAILED
+
+        # This value is by default set to false
+        return CheckResult.PASSED
 
 
 check = ShareHostPID()

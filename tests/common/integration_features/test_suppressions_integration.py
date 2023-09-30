@@ -285,6 +285,7 @@ class TestSuppressionsIntegration(unittest.TestCase):
     def test_suppress_by_cve_accounts_with_repo_id_package_scan(self):
         instance = BcPlatformIntegration()
         instance.repo_id = 'some/repo'
+        instance.source_id = f"customer_{instance.repo_id}"
         suppressions_integration = SuppressionsIntegration(instance)
         suppressions_integration._init_repo_regex()
 
@@ -293,7 +294,7 @@ class TestSuppressionsIntegration(unittest.TestCase):
             'policyId': 'BC_VUL_2',
             'comment': 'suppress by accounts',
             'cves': ['CVE-2021-44420', 'CVE-2021-45452'],
-            'accountIds': ['some/repo'],
+            'accountIds': ['customer_some/repo'],
             'checkovPolicyId': 'BC_VUL_2'
         }
 
@@ -360,6 +361,7 @@ class TestSuppressionsIntegration(unittest.TestCase):
     def test_suppress_by_cve_accounts_with_repo_id_image_scan(self):
         instance = BcPlatformIntegration()
         instance.repo_id = 'some/repo'
+        instance.source_id = f"customer_{instance.repo_id}"
         suppressions_integration = SuppressionsIntegration(instance)
         suppressions_integration._init_repo_regex()
 
@@ -368,7 +370,7 @@ class TestSuppressionsIntegration(unittest.TestCase):
             'policyId': 'BC_VUL_1',
             'comment': 'suppress by accounts',
             'cves': ['CVE-2021-44420', 'CVE-2021-45452'],
-            'accountIds': ['some/repo', 'second/repo'],
+            'accountIds': ['customer_some/repo', 'customer_second/repo'],
             'checkovPolicyId': 'BC_VUL_1'
         }
 
@@ -443,6 +445,7 @@ class TestSuppressionsIntegration(unittest.TestCase):
     def test_supress_by_cve_for_package_scan(self):
         instance = BcPlatformIntegration()
         instance.repo_id = 'some/repo'
+        instance.source_id = f"customer_{instance.repo_id}"
         suppressions_integration = SuppressionsIntegration(instance)
         suppressions_integration._init_repo_regex()
 
@@ -450,7 +453,7 @@ class TestSuppressionsIntegration(unittest.TestCase):
         'suppressionType': 'Cves',
         'policyId': 'BC_VUL_2',
         'comment': 'suppress cve ',
-        'accountIds': ['some/repo'],
+        'accountIds': ['customer_some/repo'],
         'cves': [{'uuid': '90397534-a1a0-41bb-a552-acdd861df618', 'id': '/requirements.txt', 'cve': 'CVE-2022-35920'},
                  {'uuid': '90397534-a1a0-41bb-a552-acdd861df699', 'id': '/requirements.txt', 'cve': 'CVE-2021-23727'}],
         'checkovPolicyId': 'BC_VUL_2'
@@ -489,6 +492,7 @@ class TestSuppressionsIntegration(unittest.TestCase):
     def test_supress_by_cve_for_package_scan_with_different_repo_id(self):
         instance = BcPlatformIntegration()
         instance.repo_id = 'some/repo'
+        instance.source_id = f"customer_{instance.repo_id}"
         suppressions_integration = SuppressionsIntegration(instance)
         suppressions_integration._init_repo_regex()
 
@@ -496,7 +500,7 @@ class TestSuppressionsIntegration(unittest.TestCase):
         'suppressionType': 'Cves',
         'policyId': 'BC_VUL_2',
         'comment': 'suppress cve ',
-        'accountIds': ['other/repo'],
+        'accountIds': ['customer_other/repo'],
         'cves': [{'uuid': '90397534-a1a0-41bb-a552-acdd861df618', 'id': '/requirements.txt', 'cve': 'CVE-2022-35920'},
                  {'uuid': '90397534-a1a0-41bb-a552-acdd861df699', 'id': '/requirements.txt', 'cve': 'CVE-2021-23727'}],
         'checkovPolicyId': 'BC_VUL_2'
@@ -535,6 +539,7 @@ class TestSuppressionsIntegration(unittest.TestCase):
     def test_supress_by_cve_for_image_scan(self):
         instance = BcPlatformIntegration()
         instance.repo_id = 'some/repo'
+        instance.source_id = f"customer_{instance.repo_id}"
         suppressions_integration = SuppressionsIntegration(instance)
         suppressions_integration._init_repo_regex()
 
@@ -542,7 +547,7 @@ class TestSuppressionsIntegration(unittest.TestCase):
             'suppressionType': 'Cves',
             'policyId': 'BC_VUL_1',
             'comment': 'suppress cve ',
-            'accountIds': ['some/repo'],
+            'accountIds': ['customer_some/repo'],
             'cves': [{'uuid': '90397534-a1a0-41bb-a552-acdd861df618', 'id': '/dockerfile/Dockerfile',
                       'cve': 'CVE-2022-35920'},
                      {'uuid': '90397534-a1a0-41bb-a552-acdd861df699', 'id': '/dockerfile/Dockerfile',
@@ -1052,9 +1057,9 @@ class TestSuppressionsIntegration(unittest.TestCase):
                                                       'resourceId': '/src/BC_AWS_LOGGING_7.tf:aws_cloudtrail.cloudtrail8'}],
                  'checkovPolicyId': 'acme_AWS_1668010000289'}]}
 
-        expected_suppressions = ['BC_AWS_GENERAL_175', 'BC_AWS_LOGGING_2', 'BC_K8S_26']
+        expected_suppressions = ['404088ed-4251-41ac-8dc1-45264af0c461', 'b68013bc-2908-4c9a-969d-f1640d4aca11', '271c1a79-2333-4a12-bf7d-55ec78468b94']
         policy_level_suppressions = suppressions_integration.get_policy_level_suppressions()
-        self.assertEqual(expected_suppressions, policy_level_suppressions)
+        self.assertEqual(expected_suppressions, list(policy_level_suppressions.keys()))
 
 
 if __name__ == '__main__':

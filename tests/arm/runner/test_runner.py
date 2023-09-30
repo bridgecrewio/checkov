@@ -14,6 +14,8 @@ from checkov.runner_filter import RunnerFilter
 from checkov.arm.runner import Runner
 from checkov.arm.registry import arm_resource_registry, arm_parameter_registry
 
+RESOURCES_DIR = Path(__file__).parent / "resources"
+
 
 class TestRunnerValid(unittest.TestCase):
 
@@ -303,6 +305,36 @@ class TestRunnerValid(unittest.TestCase):
 
         all_checks = report.failed_checks + report.passed_checks
         self.assertTrue(any(c.check_id == custom_check_id for c in all_checks))
+
+    def test_invalid_file_raises_no_exception(self):
+        # given
+        test_file_path = RESOURCES_DIR / "invalid.json"
+
+        # when
+        report = Runner().run(files=[str(test_file_path)])
+
+        # then
+        summary = report.get_summary()
+
+        assert summary["passed"] == 0
+        assert summary["failed"] == 0
+        assert summary["skipped"] == 0
+        assert summary["parsing_errors"] == 0
+
+    def test_no_resource_raises_no_exception(self):
+        # given
+        test_file_path = RESOURCES_DIR / "no_resource.json"
+
+        # when
+        report = Runner().run(files=[str(test_file_path)])
+
+        # then
+        summary = report.get_summary()
+
+        assert summary["passed"] == 0
+        assert summary["failed"] == 0
+        assert summary["skipped"] == 0
+        assert summary["parsing_errors"] == 0
 
     def tearDown(self):
         arm_resource_registry.checks = self.orig_checks

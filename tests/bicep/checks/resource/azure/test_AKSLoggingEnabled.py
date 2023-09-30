@@ -17,6 +17,7 @@ def test_examples():
 
     passing_resources = {
         "Microsoft.ContainerService/managedClusters.enabled",
+        "Microsoft.ContainerService/managedClusters.enabledCamelCase",
     }
 
     failing_resources = {

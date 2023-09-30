@@ -1,11 +1,9 @@
-import os
 import warnings
 from pathlib import Path
 from typing import List
 from parameterized import parameterized_class
 
-from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
-from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
+from tests.graph_utils.utils import set_db_connector_by_graph_framework, PARAMETERIZED_GRAPH_FRAMEWORKS
 
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.models.enums import CheckResult
@@ -17,17 +15,10 @@ from checkov.ansible.graph_builder.local_graph import AnsibleLocalGraph
 from tests.common.graph.checks.test_yaml_policies_base import TestYamlPoliciesBase
 
 
-@parameterized_class([
-   {"graph_framework": "NETWORKX"},
-   {"graph_framework": "IGRAPH"}
-])
+@parameterized_class(PARAMETERIZED_GRAPH_FRAMEWORKS)
 class TestYamlPolicies(TestYamlPoliciesBase):
     def __init__(self, args):
-        db_connector = None
-        if self.graph_framework == 'NETWORKX':
-            db_connector = NetworkxConnector()
-        elif self.graph_framework == 'IGRAPH':
-            db_connector = IgraphConnector()
+        db_connector = set_db_connector_by_graph_framework(self.graph_framework)
         graph_manager = ObjectGraphManager(db_connector=db_connector, source="Ansible")
         super().__init__(
             graph_manager=graph_manager,
@@ -52,6 +43,49 @@ class TestYamlPolicies(TestYamlPoliciesBase):
 
     def test_UriHttpsOnly(self):
         self.go("UriHttpsOnly", local_graph_class=AnsibleLocalGraph)
+
+    def test_DnfDisableGpgCheck(self):
+        self.go("DnfDisableGpgCheck", local_graph_class=AnsibleLocalGraph)
+
+    def test_DnfSslVerify(self):
+        self.go("DnfSslVerify", local_graph_class=AnsibleLocalGraph)
+
+    def test_DnfValidateCerts(self):
+        self.go("DnfValidateCerts", local_graph_class=AnsibleLocalGraph)
+    
+    # PAN-OS checks
+    def test_PanosPolicyNoDSRI(self):
+        self.go("PanosPolicyNoDSRI", local_graph_class=AnsibleLocalGraph)
+
+    def test_PanosPolicyDescription(self):
+        self.go("PanosPolicyDescription", local_graph_class=AnsibleLocalGraph)
+
+    def test_PanosPolicyNoServiceAny(self):
+        self.go("PanosPolicyNoServiceAny", local_graph_class=AnsibleLocalGraph)
+
+    def test_PanosPolicyNoApplicationAny(self):
+        self.go("PanosPolicyNoApplicationAny", local_graph_class=AnsibleLocalGraph)
+
+    def test_PanosPolicyNoSrcAnyDstAny(self):
+        self.go("PanosPolicyNoSrcAnyDstAny", local_graph_class=AnsibleLocalGraph)
+
+    def test_PanosInterfaceMgmtProfileNoHTTP(self):
+        self.go("PanosInterfaceMgmtProfileNoHTTP", local_graph_class=AnsibleLocalGraph)
+
+    def test_PanosInterfaceMgmtProfileNoTelnet(self):
+        self.go("PanosInterfaceMgmtProfileNoTelnet", local_graph_class=AnsibleLocalGraph)
+
+    def test_PanosPolicyLogForwarding(self):
+        self.go("PanosPolicyLogForwarding", local_graph_class=AnsibleLocalGraph)
+
+    def test_PanosPolicyLoggingEnabled(self):
+        self.go("PanosPolicyLoggingEnabled", local_graph_class=AnsibleLocalGraph)
+
+    def test_PanosZoneProtectionProfile(self):
+        self.go("PanosZoneProtectionProfile", local_graph_class=AnsibleLocalGraph)
+
+    def test_PanosZoneUserIDIncludeACL(self):
+        self.go("PanosZoneUserIDIncludeACL", local_graph_class=AnsibleLocalGraph)
 
     def test_registry_load(self):
         registry = self.get_checks_registry()

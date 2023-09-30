@@ -6,6 +6,8 @@ import json
 import logging
 import os
 import re
+import platform
+import sys
 
 from collections import defaultdict
 from collections.abc import Iterable
@@ -14,7 +16,7 @@ from typing import List, Dict, Any, Optional, cast, TYPE_CHECKING, Type
 
 from typing_extensions import Literal
 
-from checkov.common.bridgecrew.code_categories import CodeCategoryMapping
+from checkov.common.bridgecrew.code_categories import CodeCategoryMapping, CodeCategoryType
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
     integration as metadata_integration
@@ -31,46 +33,71 @@ from checkov.common.output.csv import CSVSBOM
 from checkov.common.output.cyclonedx import CycloneDX
 from checkov.common.output.gitlab_sast import GitLabSast
 from checkov.common.output.report import Report, merge_reports
+from checkov.common.output.sarif import Sarif
+from checkov.common.output.spdx import SPDX
 from checkov.common.parallelizer.parallel_runner import parallel_runner
-from checkov.common.typing import _ExitCodeThresholds, _BaseRunner
+from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
+from checkov.common.typing import _ExitCodeThresholds, _BaseRunner, _ScaExitCodeThresholds
 from checkov.common.util import data_structures_utils
 from checkov.common.util.banner import tool as tool_name
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.json_utils import CustomJSONEncoder
 from checkov.common.util.secrets_omitter import SecretsOmitter
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list, force_list
 from checkov.sca_image.runner import Runner as image_runner
-from checkov.secrets.consts import SECRET_VALIDATION_STATUSES
+from checkov.common.secrets.consts import SECRET_VALIDATION_STATUSES
 from checkov.terraform.context_parsers.registry import parser_registry
-from checkov.terraform.parser import Parser
-from checkov.terraform.runner import Runner as tf_runner
+from checkov.terraform.tf_parser import TFParser
 
 if TYPE_CHECKING:
     from checkov.common.output.baseline import Baseline
     from checkov.common.runners.base_runner import BaseRunner  # noqa
     from checkov.runner_filter import RunnerFilter
+    from igraph import Graph
+    from networkx import DiGraph
 
 CONSOLE_OUTPUT = "console"
 CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
 CYCLONEDX_OUTPUTS = ("cyclonedx", "cyclonedx_json")
-OUTPUT_CHOICES = ["cli", "cyclonedx", "cyclonedx_json", "json", "junitxml", "github_failed_only", "gitlab_sast", "sarif", "csv"]
+OUTPUT_CHOICES = [
+    "cli",
+    "csv",
+    "cyclonedx",
+    "cyclonedx_json",
+    "json",
+    "junitxml",
+    "github_failed_only",
+    "gitlab_sast",
+    "sarif",
+    "spdx",
+]
 SUMMARY_POSITIONS = frozenset(['top', 'bottom'])
 OUTPUT_DELIMITER = "\n--- OUTPUT DELIMITER ---\n"
 
 
 class RunnerRegistry:
-    def __init__(self, banner: str, runner_filter: RunnerFilter, *runners: _BaseRunner,
-                 secrets_omitter_class: Type[SecretsOmitter] = SecretsOmitter) -> None:
+    def __init__(
+        self,
+        banner: str,
+        runner_filter: RunnerFilter,
+        *runners: _BaseRunner,
+        tool: str = tool_name,
+        secrets_omitter_class: Type[SecretsOmitter] = SecretsOmitter,
+    ) -> None:
         self.logger = logging.getLogger(__name__)
+        add_resource_code_filter_to_logger(self.logger)
         self.runner_filter = runner_filter
         self.runners = list(runners)
         self.banner = banner
+        self.sca_supported_ir_report: Optional[Report] = None
         self.scan_reports: list[Report] = []
         self.image_referencing_runners = self._get_image_referencing_runners()
         self.filter_runner_framework()
-        self.tool = tool_name
+        self.tool = tool
         self._check_type_to_report_map: dict[str, Report] = {}  # used for finding reports with the same check type
         self.licensing_integration = licensing_integration  # can be maniuplated by unit tests
         self.secrets_omitter_class = secrets_omitter_class
+        self.check_type_to_graph: dict[str, Graph | DiGraph] = {}
         for runner in runners:
             if isinstance(runner, image_runner):
                 runner.image_referencers = self.image_referencing_runners
@@ -99,7 +126,7 @@ class RunnerRegistry:
                 # This is the only runner, so raise a clear indication of failure
                 raise ModuleNotEnabledError(f'The framework "{runner_check_type}" is part of the "{self.licensing_integration.get_subscription_for_runner(runner_check_type).name}" module, which is not enabled in the platform')
         else:
-            def _parallel_run(runner: _BaseRunner) -> Report | list[Report]:
+            def _parallel_run(runner: _BaseRunner) -> tuple[Report | list[Report], str | None, DiGraph | Graph | None]:
                 report = runner.run(
                     root_folder=root_folder,
                     external_checks_dir=external_checks_dir,
@@ -112,7 +139,9 @@ class RunnerRegistry:
                     logging.error(f"Failed to create report for {runner.check_type} framework")
                     report = Report(check_type=runner.check_type)
 
-                return report
+                if runner.graph_manager:
+                    return report, runner.check_type, runner.graph_manager.get_reader_endpoint()
+                return report, None, None
 
             valid_runners = []
             invalid_runners = []
@@ -139,7 +168,17 @@ class RunnerRegistry:
                 for runner in invalid_runners:
                     logging.log(level, f'The framework "{runner.check_type}" is part of the "{self.licensing_integration.get_subscription_for_runner(runner.check_type).name}" module, which is not enabled in the platform')
 
-            reports = [r for r in parallel_runner.run_function(func=_parallel_run, items=valid_runners, group_size=1) if r]
+            parallel_runner_results = parallel_runner.run_function(func=_parallel_run, items=valid_runners,
+                                                                   group_size=1)
+            reports = []
+            full_check_type_to_graph = {}
+            for result in parallel_runner_results:
+                if result is not None:
+                    report, check_type, graph = result
+                    reports.append(report)
+                    if check_type is not None and graph is not None:
+                        full_check_type_to_graph[check_type] = graph
+            self.check_type_to_graph = full_check_type_to_graph
 
         merged_reports = self._merge_reports(reports)
         if bc_integration.bc_api_key:
@@ -151,6 +190,10 @@ class RunnerRegistry:
 
         for scan_report in merged_reports:
             self._handle_report(scan_report, repo_root_for_plan_enrichment)
+
+        if not self.check_type_to_graph:
+            self.check_type_to_graph = {runner.check_type: runner.graph_manager.get_reader_endpoint() for runner
+                                        in self.runners if runner.graph_manager}
         return self.scan_reports
 
     def _merge_reports(self, reports: Iterable[Report | list[Report]]) -> list[Report]:
@@ -171,7 +214,24 @@ class RunnerRegistry:
                     self._check_type_to_report_map[sub_report.check_type] = sub_report
                     merged_reports.append(sub_report)
 
+                if self.should_add_sca_results_to_sca_supported_ir_report(sub_report, sub_reports):
+                    if self.sca_supported_ir_report:
+                        merge_reports(self.sca_supported_ir_report, sub_report)
+                    else:
+                        self.sca_supported_ir_report = pickle_deepcopy(sub_report)
+
         return merged_reports
+
+    @staticmethod
+    def should_add_sca_results_to_sca_supported_ir_report(sub_report: Report, sub_reports: list[Report]) -> bool:
+        if sub_report.check_type == 'sca_image' and bc_integration.customer_run_config_response:
+            # The regular sca report
+            if len(sub_reports) == 1:
+                return True
+            # Dup report: first - regular iac, second - IR. we are checking that report fw is in the IR supported list.
+            if len(sub_reports) == 2 and sub_reports[0].check_type in bc_integration.customer_run_config_response.get('supportedIrFw', []):
+                return True
+        return False
 
     def _handle_report(self, scan_report: Report, repo_root_for_plan_enrichment: list[str | Path] | None) -> None:
         integration_feature_registry.run_post_runner(scan_report)
@@ -201,12 +261,16 @@ class RunnerRegistry:
         return any(scan_report.error_status != ErrorStatus.SUCCESS for scan_report in reports)
 
     @staticmethod
-    def get_fail_thresholds(config: argparse.Namespace, report_type: str) -> _ExitCodeThresholds:
+    def get_fail_thresholds(config: argparse.Namespace, report_type: str) -> _ExitCodeThresholds | _ScaExitCodeThresholds:
 
         soft_fail = config.soft_fail
 
         soft_fail_on_checks = []
         soft_fail_threshold = None
+
+        # these specifically check the --hard-fail-on and --soft-fail-on args, NOT enforcement rules, so
+        # we don't care about SCA as a special case
+
         # soft fail on the highest severity threshold in the list
         for val in convert_csv_string_arg_to_list(config.soft_fail_on):
             if val.upper() in Severities:
@@ -239,25 +303,38 @@ class RunnerRegistry:
 
         if not config.use_enforcement_rules:
             logging.debug('Use enforcement rules is FALSE')
-        elif not soft_fail:
-            code_category_type = CodeCategoryMapping[report_type]
-            enf_rule = repo_config_integration.code_category_configs.get(code_category_type)
 
-            if enf_rule:
-                logging.debug('Use enforcement rules is TRUE')
+        # if there is a severity in either the soft-fail-on list or hard-fail-on list, then we will ignore enforcement rules and skip this
+        # it means that SCA will not be treated as having two different thresholds in that case
+        # if the lists only contain check IDs, then we will merge them with the enforcement rule value
+        elif not soft_fail and not soft_fail_threshold and not hard_fail_threshold:
+            if 'sca_' in report_type:
+                code_category_types = cast(List[CodeCategoryType], CodeCategoryMapping[report_type])
+                category_rules = {
+                    category: repo_config_integration.code_category_configs[category] for category in code_category_types
+                }
+                return cast(_ScaExitCodeThresholds, {
+                    category: {
+                        'soft_fail': category_rules[category].is_global_soft_fail(),
+                        'soft_fail_checks': soft_fail_on_checks,
+                        'soft_fail_threshold': soft_fail_threshold,
+                        'hard_fail_checks': hard_fail_on_checks,
+                        'hard_fail_threshold': category_rules[category].hard_fail_threshold
+                    } for category in code_category_types
+                })
+            else:
+                code_category_type = cast(CodeCategoryType, CodeCategoryMapping[report_type])  # not a list
+                enf_rule = repo_config_integration.code_category_configs[code_category_type]
 
-                # if there is a severity in either the soft-fail-on list or hard-fail-on list, then we will ignore enforcement rules
-                # if the lists only contain check IDs, then we will merge them with the enforcement rule value
-                if soft_fail_threshold or hard_fail_threshold:
-                    logging.debug('Soft or hard fail threshold is set; ignoring enforcement rules')
-                else:
+                if enf_rule:
+                    logging.debug('Use enforcement rules is TRUE')
                     hard_fail_threshold = enf_rule.hard_fail_threshold
                     soft_fail = enf_rule.is_global_soft_fail()
                     logging.debug(f'Using enforcement rule hard fail threshold for this report: {hard_fail_threshold.name}')
-            else:
-                logging.debug(f'Use enforcement rules is TRUE, but did not find an enforcement rule for report type {report_type}, so falling back to CLI args')
+                else:
+                    logging.debug(f'Use enforcement rules is TRUE, but did not find an enforcement rule for report type {report_type}, so falling back to CLI args')
         else:
-            logging.debug('Soft fail was true; ignoring enforcement rules')
+            logging.debug('Soft fail was true or a severity was used in soft fail on / hard fail on; ignoring enforcement rules')
 
         return {
             'soft_fail': soft_fail,
@@ -292,6 +369,7 @@ class RunnerRegistry:
         github_reports = []
         cyclonedx_reports = []
         gitlab_reports = []
+        spdx_reports = []
         csv_sbom_report = CSVSBOM()
 
         try:
@@ -320,6 +398,8 @@ class RunnerRegistry:
             if not report.is_empty() or len(report.extra_resources):
                 if any(cyclonedx in config.output for cyclonedx in CYCLONEDX_OUTPUTS):
                     cyclonedx_reports.append(report)
+                if "spdx" in config.output:
+                    spdx_reports.append(report)
                 if "csv" in config.output:
                     git_org = ""
                     git_repository = ""
@@ -352,7 +432,8 @@ class RunnerRegistry:
                     created_baseline_path=created_baseline_path,
                     baseline=baseline,
                     use_bc_ids=config.output_bc_ids,
-                    summary_position=config.summary_position
+                    summary_position=config.summary_position,
+                    openai_api_key=config.openai_api_key,
                 )
 
             self._print_to_console(
@@ -366,7 +447,7 @@ class RunnerRegistry:
             ansi_escape = re.compile(r'(?:\x1B[@-_]|[\x80-\x9F])[0–9:;<=>?]*[ -/]*[@-~]')
             data_outputs['cli'] = ansi_escape.sub('', cli_output)
         if "sarif" in config.output:
-            master_report = Report("merged")
+            sarif = Sarif(reports=sarif_reports, tool=self.tool)
 
             output_format = output_formats["sarif"]
             if "cli" not in config.output and output_format == CONSOLE_OUTPUT:
@@ -382,22 +463,20 @@ class RunnerRegistry:
                         use_bc_ids=config.output_bc_ids,
                         summary_position=config.summary_position
                     ))
-                master_report.failed_checks += report.failed_checks
-                master_report.skipped_checks += report.skipped_checks
 
             if output_format == CONSOLE_OUTPUT:
-                # don't write to file, if an explicit file path was set
-                master_report.write_sarif_output(self.tool)
+                if not config.output_file_path or "," in config.output_file_path:
+                    # don't write to file, if an explicit file path was set
+                    sarif.write_sarif_output()
 
-            if output_format == CONSOLE_OUTPUT:
                 del output_formats["sarif"]
 
                 if "cli" not in config.output and url:
-                    print("More details: {}".format(url))
+                    print(f"More details: {url}")
                 if CONSOLE_OUTPUT in output_formats.values():
                     print(OUTPUT_DELIMITER)
 
-            data_outputs["sarif"] = json.dumps(master_report.get_sarif_json(self.tool), cls=CustomJSONEncoder)
+            data_outputs["sarif"] = json.dumps(sarif.json, cls=CustomJSONEncoder)
         if "json" in config.output:
             if config.compact and report_jsons:
                 self.strip_code_blocks_from_json(report_jsons)
@@ -471,6 +550,17 @@ class RunnerRegistry:
             )
 
             data_outputs["gitlab_sast"] = json.dumps(gl_sast.sast_json)
+        if "spdx" in config.output:
+            spdx = SPDX(repo_id=metadata_integration.bc_integration.repo_id, reports=spdx_reports)
+            spdx_output = spdx.get_tag_value_output()
+
+            self._print_to_console(
+                output_formats=output_formats,
+                output_format="spdx",
+                output=spdx_output,
+            )
+
+            data_outputs["spdx"] = spdx_output
         if "csv" in config.output:
             is_api_key = False
             if 'bc_api_key' in config and config.bc_api_key is not None:
@@ -487,6 +577,7 @@ class RunnerRegistry:
             'cyclonedx': 'results_cyclonedx.xml',
             'cyclonedx_json': 'results_cyclonedx.json',
             'gitlab_sast': 'results_gitlab_sast.json',
+            'spdx': 'results_spdx.spdx',
         }
 
         if config.output_file_path:
@@ -510,14 +601,17 @@ class RunnerRegistry:
 
     def _print_to_console(self, output_formats: dict[str, str], output_format: str, output: str, url: str | None = None) -> None:
         """Prints the output to console, if needed"""
-
         output_dest = output_formats[output_format]
         if output_dest == CONSOLE_OUTPUT:
             del output_formats[output_format]
 
-            print(output)
+            if platform.system() == 'Windows':
+                sys.stdout.buffer.write(output.encode("utf-8"))
+            else:
+                print(output)
             if url:
                 print(f"More details: {url}")
+
             if CONSOLE_OUTPUT in output_formats.values():
                 print(OUTPUT_DELIMITER)
 
@@ -584,14 +678,14 @@ class RunnerRegistry:
     def get_enriched_resources(
         repo_roots: list[str | Path], download_external_modules: bool
     ) -> dict[str, dict[str, Any]]:
+        from checkov.terraform.modules.module_objects import TFDefinitionKey
+
         repo_definitions = {}
         for repo_root in repo_roots:
-            tf_definitions: dict[str, Any] = {}
             parsing_errors: dict[str, Exception] = {}
             repo_root = os.path.abspath(repo_root)
-            Parser().parse_directory(
+            tf_definitions: dict[TFDefinitionKey, dict[str, list[dict[str, Any]]]] = TFParser().parse_directory(
                 directory=repo_root,  # assume plan file is in the repo-root
-                out_definitions=tf_definitions,
                 out_parsing_errors=parsing_errors,
                 download_external_modules=download_external_modules,
             )
@@ -599,9 +693,10 @@ class RunnerRegistry:
 
         enriched_resources = {}
         for repo_root, parse_results in repo_definitions.items():
-            for full_file_path, definition in parse_results['tf_definitions'].items():
+            definitions = cast("dict[TFDefinitionKey, dict[str, list[dict[str, Any]]]]", parse_results['tf_definitions'])
+            for full_file_path, definition in definitions.items():
                 definitions_context = parser_registry.enrich_definitions_context((full_file_path, definition))
-                abs_scanned_file, _ = tf_runner._strip_module_referrer(full_file_path)
+                abs_scanned_file = full_file_path.file_path
                 scanned_file = os.path.relpath(abs_scanned_file, repo_root)
                 for block_type, block_value in definition.items():
                     if block_type in CHECK_BLOCK_TYPES:

@@ -1,0 +1,12 @@
+FROM node:18s
+RUN TEST_123="456"        NPM_CONFIG_STRICT_SSL=false  npm install
+RUN TEST_123='456'        NPM_CONFIG_STRICT_SSL="false"  npm install
+RUN TEST_123=456        NPM_CONFIG_STRICT_SSL='false'  npm install
+
+RUN TEST_123="456"        npm_config_strict_ssl=false      TEST="lol"    npm install
+RUN TEST_123='456'        npm_config_strict_ssl="false"    TEST="lol"    npm install
+RUN TEST_123=456          npm_config_strict_ssl='false'    TEST="lol"    npm install
+
+RUN NPM_CONFIG_STRICT_SSL=false      TEST="lol"    npm install
+RUN NPM_CONFIG_STRICT_SSL="false"    TEST="lol"    npm install
+RUN NPM_CONFIG_STRICT_SSL='false'    TEST="lol"    npm install

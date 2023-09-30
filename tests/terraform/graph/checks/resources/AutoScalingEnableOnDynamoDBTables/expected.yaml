@@ -1,6 +1,7 @@
 pass:
   - "aws_dynamodb_table.pass"
   - "aws_dynamodb_table.pass_on_demand"
+  - "aws_dynamodb_table.pass_unset"
 fail:
   - "aws_dynamodb_table.fail"
   - "aws_dynamodb_table.fail_no_policy"

@@ -23,6 +23,9 @@ from checkov.cloudformation.runner import Runner
 from checkov.common.output.report import Report
 from checkov.cloudformation.cfn_utils import create_definitions
 
+RESOURCES_DIR = Path(__file__).parent / "resources"
+
+
 @parameterized_class([
    {"db_connector": NetworkxConnector},
    {"db_connector": IgraphConnector}
@@ -269,7 +272,7 @@ class TestRunnerValid(unittest.TestCase):
                             'DBInstanceClass': 'db.t3.micro',
                             'Engine': 'mysql',
                             'MasterUsername': 'master',
-                            'MasterUserPassword': 'password',
+                            'MasterUserPassword': 'password',  # checkov:skip=CKV_SECRET_6 test secret
                             '__startline__': 23,
                             '__endline__': 32,
                             'resource_type': 'AWS::RDS::DBInstance'
@@ -278,7 +281,79 @@ class TestRunnerValid(unittest.TestCase):
                 }
             }
         }
-        context = {f'{dir_abs_path}/s3.yaml': {'Parameters': {'KmsMasterKeyId': {'start_line': 5, 'end_line': 9, 'code_lines': [(5, '    "KmsMasterKeyId": {\n'), (6, '      "Description": "Company Name",\n'), (7, '      "Type": "String",\n'), (8, '      "Default": "kms_id"\n'), (9, '    },\n')]}, 'DBName': {'start_line': 10, 'end_line': 14, 'code_lines': [(10, '    "DBName": {\n'), (11, '      "Description": "Name of the Database",\n'), (12, '      "Type": "String",\n'), (13, '      "Default": "db"\n'), (14, '    }\n')]}}, 'Resources': {'MySourceQueue': {'start_line': 17, 'end_line': 22, 'code_lines': [(17, '    "MySourceQueue": {\n'), (18, '      "Type": "AWS::SQS::Queue",\n'), (19, '      "Properties": {\n'), (20, '        "KmsMasterKeyId": { "Ref": "KmsMasterKeyId" }\n'), (21, '      }\n'), (22, '    },\n')], 'skipped_checks': []}, 'MyDB': {'start_line': 23, 'end_line': 32, 'code_lines': [(23, '    "MyDB": {\n'), (24, '      "Type": "AWS::RDS::DBInstance",\n'), (25, '      "Properties": {\n'), (26, '        "DBName": { "Ref": "DBName" },\n'), (27, '        "DBInstanceClass": "db.t3.micro",\n'), (28, '        "Engine": "mysql",\n'), (29, '        "MasterUsername": "master",\n'), (30, '        "MasterUserPassword": "password"\n'), (31, '      }\n'), (32, '    }\n')], 'skipped_checks': []}}, 'Outputs': {'DBAppPublicDNS': {'start_line': 35, 'end_line': 38, 'code_lines': [(35, '    "DBAppPublicDNS": {\n'), (36, '      "Description": "DB App Public DNS Name",\n'), (37, '      "Value": { "Fn::GetAtt" : [ "MyDB", "PublicDnsName" ] }\n'), (38, '    }\n')]}}}}
+
+        context = {
+            f"{dir_abs_path}/s3.yaml": {
+                "Parameters": {
+                    "KmsMasterKeyId": {
+                        "start_line": 5,
+                        "end_line": 9,
+                        "code_lines": [
+                            (5, '    "KmsMasterKeyId": {\n'),
+                            (6, '      "Description": "Company Name",\n'),
+                            (7, '      "Type": "String",\n'),
+                            (8, '      "Default": "kms_id"\n'),
+                            (9, "    },\n"),
+                        ],
+                    },
+                    "DBName": {
+                        "start_line": 10,
+                        "end_line": 14,
+                        "code_lines": [
+                            (10, '    "DBName": {\n'),
+                            (11, '      "Description": "Name of the Database",\n'),
+                            (12, '      "Type": "String",\n'),
+                            (13, '      "Default": "db"\n'),
+                            (14, "    }\n"),
+                        ],
+                    },
+                },
+                "Resources": {
+                    "MySourceQueue": {
+                        "start_line": 17,
+                        "end_line": 22,
+                        "code_lines": [
+                            (17, '    "MySourceQueue": {\n'),
+                            (18, '      "Type": "AWS::SQS::Queue",\n'),
+                            (19, '      "Properties": {\n'),
+                            (20, '        "KmsMasterKeyId": { "Ref": "KmsMasterKeyId" }\n'),
+                            (21, "      }\n"),
+                            (22, "    },\n"),
+                        ],
+                        "skipped_checks": [],
+                    },
+                    "MyDB": {
+                        "start_line": 23,
+                        "end_line": 32,
+                        "code_lines": [
+                            (23, '    "MyDB": {\n'),
+                            (24, '      "Type": "AWS::RDS::DBInstance",\n'),
+                            (25, '      "Properties": {\n'),
+                            (26, '        "DBName": { "Ref": "DBName" },\n'),
+                            (27, '        "DBInstanceClass": "db.t3.micro",\n'),
+                            (28, '        "Engine": "mysql",\n'),
+                            (29, '        "MasterUsername": "master",\n'),
+                            (30, '        "MasterUserPassword": "password"\n'),
+                            (31, "      }\n"),
+                            (32, "    }\n"),
+                        ],
+                        "skipped_checks": [],
+                    },
+                },
+                "Outputs": {
+                    "DBAppPublicDNS": {
+                        "start_line": 35,
+                        "end_line": 38,
+                        "code_lines": [
+                            (35, '    "DBAppPublicDNS": {\n'),
+                            (36, '      "Description": "DB App Public DNS Name",\n'),
+                            (37, '      "Value": { "Fn::GetAtt" : [ "MyDB", "PublicDnsName" ] }\n'),
+                            (38, "    }\n"),
+                        ],
+                    }
+                },
+            }
+        }
         breadcrumbs = {}
         runner = Runner(db_connector=self.db_connector())
         runner.set_external_data(definitions, context, breadcrumbs)
@@ -325,7 +400,7 @@ class TestRunnerValid(unittest.TestCase):
         report = runner.run(root_folder=None, external_checks_dir=None, files=[scan_file_path],
                             runner_filter=RunnerFilter(framework='cloudformation'))
         self.assertEqual(len(report.failed_checks), 3)
-        self.assertEqual(len(report.passed_checks), 2)
+        self.assertEqual(len(report.passed_checks), 3)
 
     def test_runner_honors_enforcement_rules(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -348,7 +423,7 @@ class TestRunnerValid(unittest.TestCase):
         report = runner.run(root_folder=None, external_checks_dir=None, files=[scan_file_path],
                             runner_filter=RunnerFilter(framework='cloudformation'))
         self.assertEqual(len(report.failed_checks), 3)
-        self.assertEqual(len(report.passed_checks), 2)
+        self.assertEqual(len(report.passed_checks), 3)
 
     def test_parsing_error_yaml(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -526,6 +601,22 @@ class TestRunnerValid(unittest.TestCase):
 
         all_checks = report.failed_checks + report.passed_checks
         self.assertTrue(any(c.check_id == custom_check_id for c in all_checks))
+
+    def test_graph_check_suppressions(self):
+        # given
+        test_file = RESOURCES_DIR / "suppress_graph_check.yaml"
+
+        # when
+        report = Runner(db_connector=self.db_connector()).run(
+            root_folder=None,
+            files=[str(test_file)],
+            runner_filter=RunnerFilter(framework=["cloudformation"], checks=["CKV2_AWS_33"]),
+        )
+
+        # then
+        self.assertEqual(len(report.failed_checks), 0)
+        self.assertEqual(len(report.passed_checks), 0)
+        self.assertEqual(len(report.skipped_checks), 2)
 
     def tearDown(self):
         cfn_registry.checks = self.orig_checks

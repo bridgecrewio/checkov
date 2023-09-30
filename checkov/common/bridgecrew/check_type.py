@@ -28,6 +28,7 @@ class CheckType:
     SECRETS = "secrets"
     SERVERLESS = "serverless"
     TERRAFORM = "terraform"
+    TERRAFORM_JSON = "terraform_json"
     TERRAFORM_PLAN = "terraform_plan"
     POLICY_3D = "3d_policy"
 

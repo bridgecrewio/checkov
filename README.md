@@ -1,14 +1,14 @@
-[![checkov](https://raw.githubusercontent.com/bridgecrewio/checkov/master/docs/web/images/checkov_by_bridgecrew.png)](#)
+[![checkov](https://raw.githubusercontent.com/bridgecrewio/checkov/main/docs/web/images/checkov_by_bridgecrew.png)](#)
        
 [![Maintained by Bridgecrew.io](https://img.shields.io/badge/maintained%20by-bridgecrew.io-blueviolet)](https://bridgecrew.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov)
 [![build status](https://github.com/bridgecrewio/checkov/workflows/build/badge.svg)](https://github.com/bridgecrewio/checkov/actions?query=workflow%3Abuild)
 [![security status](https://github.com/bridgecrewio/checkov/workflows/security/badge.svg)](https://github.com/bridgecrewio/checkov/actions?query=event%3Apush+branch%3Amaster+workflow%3Asecurity) 
-[![code_coverage](https://raw.githubusercontent.com/bridgecrewio/checkov/master/coverage.svg?sanitize=true)](https://github.com/bridgecrewio/checkov/actions?query=workflow%3Acoverage) 
+[![code_coverage](https://raw.githubusercontent.com/bridgecrewio/checkov/main/coverage.svg?sanitize=true)](https://github.com/bridgecrewio/checkov/actions?query=workflow%3Acoverage) 
 [![docs](https://img.shields.io/badge/docs-passing-brightgreen)](https://www.checkov.io/1.Welcome/What%20is%20Checkov.html?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov)
 [![PyPI](https://img.shields.io/pypi/v/checkov)](https://pypi.org/project/checkov/)
 [![Python Version](https://img.shields.io/pypi/pyversions/checkov)](#)
 [![Terraform Version](https://img.shields.io/badge/tf-%3E%3D0.12.0-blue.svg)](#)
-[![Downloads](https://pepy.tech/badge/checkov)](https://pepy.tech/project/checkov)
+[![Downloads](https://static.pepy.tech/badge/checkov)](https://pepy.tech/project/checkov)
 [![Docker Pulls](https://img.shields.io/docker/pulls/bridgecrew/checkov.svg)](https://hub.docker.com/r/bridgecrew/checkov)
 [![slack-community](https://img.shields.io/badge/Slack-4A154B?style=plastic&logo=slack&logoColor=white)](https://slack.bridgecrew.io/)
  
@@ -41,7 +41,7 @@ Checkov also powers [**Bridgecrew**](https://bridgecrew.io/?utm_source=github&ut
  ## Features
 
  * [Over 1000 built-in policies](docs/5.Policy%20Index/all.md) cover security and compliance best practices for AWS, Azure and Google Cloud.
- * Scans Terraform, Terraform Plan, CloudFormation, AWS SAM, Kubernetes, Dockerfile, Serverless framework, Ansible, Bicep and ARM template files.
+ * Scans Terraform, Terraform Plan, Terraform JSON, CloudFormation, AWS SAM, Kubernetes, Helm, Kustomize, Dockerfile, Serverless framework, Ansible, Bicep and ARM template files.
  * Scans Argo Workflows, Azure Pipelines, BitBucket Pipelines, Circle CI Pipelines, GitHub Actions and GitLab CI workflow files
  * Supports Context-awareness policies based on in-memory graph-based scanning.
  * Supports Python format for attribute policies and YAML format for both attribute and composite policies.
@@ -56,11 +56,11 @@ Checkov also powers [**Bridgecrew**](https://bridgecrew.io/?utm_source=github&ut
 
 Scan results in CLI
 
-![scan-screenshot](https://raw.githubusercontent.com/bridgecrewio/checkov/master/docs/checkov-recording.gif)
+![scan-screenshot](https://raw.githubusercontent.com/bridgecrewio/checkov/main/docs/checkov-recording.gif)
 
 Scheduled scan result in Jenkins
 
-![jenikins-screenshot](https://raw.githubusercontent.com/bridgecrewio/checkov/master/docs/checkov-jenkins.png)
+![jenikins-screenshot](https://raw.githubusercontent.com/bridgecrewio/checkov/main/docs/checkov-jenkins.png)
 
 ## Getting started
 
@@ -70,39 +70,16 @@ Scheduled scan result in Jenkins
 
 ### Installation
 
+To install pip follow the official [docs](https://pip.pypa.io/en/stable/cli/pip_install/)
+
 ```sh
 pip3 install checkov
 ```
 
-Installation on Alpine:
-```sh
-pip3 install --upgrade pip && pip3 install --upgrade setuptools
-pip3 install checkov
-```
-
-Installation on Ubuntu 18.04 LTS:
-
-Ubuntu 18.04 ships with Python 3.6. Install python 3.7 (from ppa repository)
-
-```sh
-sudo apt update
-sudo apt install software-properties-common
-sudo add-apt-repository ppa:deadsnakes/ppa
-sudo apt install python3.7
-sudo apt install python3-pip
-sudo python3.7 -m pip install -U checkov #to install or upgrade checkov)
-```
-
-or using [homebrew](https://formulae.brew.sh/formula/checkov) (macOS or Linux)
+or with [Homebrew](https://formulae.brew.sh/formula/checkov) (macOS or Linux)
 
 ```sh
 brew install checkov
-```
-
-or
-
-```sh
-brew upgrade checkov
 ```
 
 ### Enabling bash autocomplete
@@ -114,6 +91,12 @@ source <(register-python-argcomplete checkov)
 if you installed checkov with pip3
 ```sh
 pip3 install -U checkov
+```
+
+or with Homebrew
+
+```sh
+brew upgrade checkov
 ```
 
 ### Configure an input folder or file
@@ -279,13 +262,13 @@ Run an SCA scan of packages in a repo:
 checkov -d . --framework sca_package --bc-api-key ... --repo-id <repo_id(arbitrary)>
 ```
 
-Run a scan of a directory with environment variables removing buffering, adding debug level logs, turning on image referencer:
+Run a scan of a directory with environment variables removing buffering, adding debug level logs:
 ```sh
-PYTHONUNBUFFERED=1 LOG_LEVEL=DEBUG CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING=TRUE checkov -d .
+PYTHONUNBUFFERED=1 LOG_LEVEL=DEBUG checkov -d .
 ```
 OR enable the environment variables for multiple runs
 ```sh
-export PYTHONUNBUFFERED=1 LOG_LEVEL=DEBUG CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING=TRUE
+export PYTHONUNBUFFERED=1 LOG_LEVEL=DEBUG
 checkov -d .
 ```
 

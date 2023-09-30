@@ -6,7 +6,11 @@ import re
 from typing import List, Callable
 
 from checkov.common.parallelizer.parallel_runner import parallel_runner
+from checkov.common.util.file_utils import read_file_with_any_encoding
 from checkov.terraform.module_loading.registry import module_loader_registry
+
+MODULE_SOURCE_PATTERN = re.compile(r'[^#]*\bsource\s*=\s*"(?P<link>.*)"')
+MODULE_VERSION_PATTERN = re.compile(r'[^#]*\bversion\s*=\s*"(?P<operator>=|!=|>=|>|<=|<|~>)?\s*(?P<version>[\d.]+-?\w*)"')
 
 
 class ModuleDownload:
@@ -15,68 +19,77 @@ class ModuleDownload:
         self.module_link: str | None = None
         self.version: str | None = None
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.source_dir} -> {self.module_link} ({self.version})"
 
     @property
-    def address(self):
+    def address(self) -> str:
         return f'{self.module_link}:{self.version}'
 
 
 def find_modules(path: str) -> List[ModuleDownload]:
-    modules_found = []
+    modules_found: list[ModuleDownload] = []
+
     for root, _, full_file_names in os.walk(path):
         for file_name in full_file_names:
             if not file_name.endswith('.tf'):
                 continue
-            with open(os.path.join(path, root, file_name)) as f:
-                try:
-                    in_module = False
-                    curr_md = None
-                    for line in f:
-                        if line.strip().startswith('#'):
+
+            try:
+                content = read_file_with_any_encoding(file_path=os.path.join(path, root, file_name))
+                if "module " not in content:
+                    # if there is no "module " ref in the whole file, then no need to search line by line
+                    continue
+
+                curr_md = None
+                for line in content.splitlines():
+                    if not curr_md:
+                        if line.startswith('module'):
+                            curr_md = ModuleDownload(os.path.dirname(os.path.join(root, file_name)))
                             continue
-                        if not in_module:
-                            if line.startswith('module'):
-                                in_module = True
-                                curr_md = ModuleDownload(os.path.dirname(os.path.join(root, file_name)))
-                                continue
-                        if in_module:
-                            if line.startswith('}'):
-                                in_module = False
-                                if curr_md.module_link is None:
-                                    logging.warning(f'A module at {curr_md.source_dir} had no source, skipping')
-                                else:
-                                    modules_found.append(curr_md)
-                                curr_md = None
-                                continue
+                    else:
+                        if line.startswith('}'):
+                            if curr_md.module_link is None:
+                                logging.warning(f'A module at {curr_md.source_dir} had no source, skipping')
+                            else:
+                                modules_found.append(curr_md)
+                            curr_md = None
+                            continue
 
-                            match = re.match(re.compile('.*\\bsource\\s*=\\s*"(?P<LINK>.*)"'), line)
+                        if "source" in line:
+                            match = re.match(MODULE_SOURCE_PATTERN, line)
                             if match:
-                                curr_md.module_link = match.group('LINK')
+                                curr_md.module_link = match.group('link')
                                 continue
 
-                            match = re.match(re.compile('.*\\bversion\\s*=\\s*"(?P<operator>=|!=|>=|>|<=|<|~>)?\\s*(?P<version>[\\d.]+-?\\w*)"'), line)
+                        if "version" in line:
+                            match = re.match(MODULE_VERSION_PATTERN, line)
                             if match:
                                 curr_md.version = f"{match.group('operator')}{match.group('version')}" if match.group('operator') else match.group('version')
-                except (UnicodeDecodeError, FileNotFoundError) as e:
-                    logging.warning(f"Skipping {os.path.join(path, root, file_name)} because of {e}")
-                    continue
+            except (UnicodeDecodeError, FileNotFoundError) as e:
+                logging.warning(f"Skipping {os.path.join(path, root, file_name)} because of {e}")
+                continue
 
     return modules_found
 
 
-def should_download(path: str) -> bool:
-    return not (path.startswith('./') or path.startswith('../') or path.startswith('/'))
+def should_download(path: str | None) -> bool:
+
+    return path is not None and not (path.startswith('./') or path.startswith('../') or path.startswith('/'))
 
 
-def load_tf_modules(path: str, should_download_module: Callable[[str], bool] = should_download, run_parallel=False,
-                    modules_to_load: List[ModuleDownload] = None):
+def load_tf_modules(
+    path: str,
+    should_download_module: Callable[[str | None], bool] = should_download,
+    run_parallel: bool = False,
+    modules_to_load: List[ModuleDownload] | None = None,
+    stop_on_failure: bool = False
+) -> None:
     module_loader_registry.root_dir = path
     if not modules_to_load:
         modules_to_load = find_modules(path)
 
-    def _download_module(m):
+    def _download_module(m: ModuleDownload) -> bool:
         if should_download_module(m.module_link):
             logging.info(f'Downloading module {m.address}')
             try:
@@ -87,8 +100,11 @@ def load_tf_modules(path: str, should_download_module: Callable[[str], bool] = s
                     if not module_loader_registry.download_external_modules:
                         log_message += ' (for external modules, the --download-external-modules flag is required)'
                     logging.warning(log_message)
+                    return False
             except Exception as e:
                 logging.warning(f"Unable to load module ({m.address}): {e}")
+                return False
+        return True
 
     # To avoid duplicate work, we need to get the distinct module sources
     distinct_modules = list({m.address: m for m in modules_to_load}.values())
@@ -96,5 +112,9 @@ def load_tf_modules(path: str, should_download_module: Callable[[str], bool] = s
     if run_parallel:
         list(parallel_runner.run_function(_download_module, distinct_modules))
     else:
+        logging.info(f"Starting download of modules of length {len(distinct_modules)}")
         for m in distinct_modules:
-            _download_module(m)
+            success = _download_module(m)
+            if not success and stop_on_failure:
+                logging.info(f"Stopping downloading of modules due to failed attempt on {m.address}")
+                break

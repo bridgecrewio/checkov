@@ -1,0 +1,12 @@
+metadata:
+  id: "CKV2_ANSIBLE_6"
+  name: "Ensure that certificate validation isn't disabled with dnf"
+  category: "GENERAL_SECURITY"
+definition:
+  cond_type: attribute
+  resource_types:
+    - tasks.ansible.builtin.dnf
+    - tasks.dnf
+  attribute: validate_certs
+  operator: not_equals
+  value: false

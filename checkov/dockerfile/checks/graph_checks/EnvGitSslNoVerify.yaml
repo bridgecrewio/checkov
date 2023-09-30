@@ -1,0 +1,19 @@
+metadata:
+  id: "CKV2_DOCKER_14"
+  name: "Ensure that certificate validation isn't disabled for git by setting the environment variable 'GIT_SSL_NO_VERIFY' to any value"
+  category: "APPLICATION_SECURITY"
+definition:
+  or:
+    - cond_type: attribute
+      resource_types:
+        - ARG
+        - ENV
+      attribute: value
+      operator: not_regex_match
+      value: "(.*\\s+)?(GIT_SSL_NO_VERIFY(=|\\s+)[^\\s]+).*"
+    - cond_type: attribute
+      resource_types:
+        - RUN
+      attribute: value
+      operator: not_regex_match
+      value: "(.*[\\s;&|]+)?(export\\s+)?(GIT_SSL_NO_VERIFY=(([^\\s]+)|('[^']+')|(\"[^s\"]+\"))).*"

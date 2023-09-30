@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import re
 from re import Pattern
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, Optional
 
 from detect_secrets.util.filetype import FileType
 from detect_secrets.plugins.keyword import DENYLIST
@@ -108,6 +108,15 @@ FOLLOWED_BY_EQUAL_VALUE_SECRET_REGEX = re.compile(
     flags=re.IGNORECASE,
 )
 
+ALLOW_LIST = ('secretsmanager', "secretName", "secret_name", "creation_token")  # can add more keys like that
+ALLOW_LIST_REGEX = r'|'.join(ALLOW_LIST)
+# Support for suffix of function name i.e "secretsmanager:GetSecretValue"
+CAMEL_CASE_NAMES = r'[A-Z]([A-Z0-9]*[a-z][a-z0-9]*[A-Z]|[a-z0-9]*[A-Z][A-Z0-9]*[a-z])[A-Za-z0-9]*'
+FUNCTION_CALL_AFTER_KEYWORD_REGEX = re.compile(r'({allowlist})\s*(:|=)\s*{suffix}'.format(
+    allowlist=ALLOW_LIST_REGEX,
+    suffix=AFFIX_REGEX,
+))
+
 #  if the current regex is not enough, can add more regexes to check
 
 YML_PAIR_VALUE_KEYWORD_REGEX_TO_GROUP = {
@@ -165,13 +174,24 @@ MULTILINE_PARSERS = {
 }
 
 
-def remove_fp_secrets_in_keys(detected_secrets: set[PotentialSecret], line: str) -> None:
+def remove_fp_secrets_in_keys(detected_secrets: set[PotentialSecret], line: str, is_code_file: bool = False) -> None:
+    formatted_line = line.replace('"', '').replace("'", '')
+    secrets_to_remove = set()
     for detected_secret in detected_secrets:
-        if detected_secret.secret_value and line.replace('"', '').replace("'", '').startswith(
-                detected_secret.secret_value):
-            # Found keyword prefix as potential secret
-            detected_secrets.remove(detected_secret)
-            break
+        if not detected_secret.secret_value:
+            continue
+        # Found keyword prefix as potential secret
+        if formatted_line.startswith(detected_secret.secret_value):
+            secrets_to_remove.add(detected_secret)
+        # found a function name at the end of the line
+        if formatted_line and FUNCTION_CALL_AFTER_KEYWORD_REGEX.search(formatted_line):
+            secrets_to_remove.add(detected_secret)
+        # secret value is substring of keywork
+        if is_code_file and FOLLOWED_BY_EQUAL_VALUE_KEYWORD_REGEX.search(formatted_line):
+            key, value = line.split("=", 1)
+            if detected_secret.secret_value in key and detected_secret.secret_value in value:
+                secrets_to_remove.add(detected_secret)
+    detected_secrets -= secrets_to_remove
 
 
 def format_reducing_noise_secret(string: str) -> str:
@@ -185,7 +205,7 @@ def extract_from_string(pattern: dict[Pattern[str], int] | None, string: str) ->
     for value_regex, group_number in pattern.items():
         match = value_regex.search(string)
         if match:
-            matches |= {match.group(group_number)}
+            matches |= {match.group(group_number).rstrip('\n')}
     return matches
 
 
@@ -194,11 +214,14 @@ def detect_secret(
         filename: str,
         line: str,
         line_number: int = 0,
+        is_multiline: Optional[bool] = None,
         **kwargs: Any,
 ) -> set[PotentialSecret]:
     for scanner in scanners:
         matches = scanner.analyze_line(filename, line, line_number, **kwargs)
         if matches:
+            if is_multiline:
+                mark_set_multiline(matches)
             return matches
     return set()
 
@@ -212,6 +235,8 @@ def analyze_multiline_keyword_combinator(
         raw_context: CodeSnippet | None = None,
         value_pattern: dict[Pattern[str], int] | None = None,
         secret_pattern: dict[Pattern[str], int] | None = None,
+        is_added: bool = False,
+        is_removed: bool = False,
         **kwargs: Any,
 ) -> set[PotentialSecret]:
     secrets: set[PotentialSecret] = set()
@@ -226,6 +251,9 @@ def analyze_multiline_keyword_combinator(
             filename=filename,
             line=secret_adjust,
             line_number=line_number,
+            is_added=is_added,
+            is_removed=is_removed,
+            is_multiline=True,  # always true because we check here for multiline
             kwargs=kwargs
         )
 
@@ -250,3 +278,8 @@ def analyze_multiline_keyword_combinator(
                     secrets |= potential_secrets
                     break
     return secrets
+
+
+def mark_set_multiline(secrets: set[PotentialSecret]) -> None:
+    for sec in secrets:
+        sec.is_multiline = True

@@ -1,0 +1,12 @@
+metadata:
+  id: "CKV2_ANSIBLE_5"
+  name: "Ensure that SSL validation isn't disabled with dnf"
+  category: "GENERAL_SECURITY"
+definition:
+  cond_type: attribute
+  resource_types:
+    - tasks.ansible.builtin.dnf
+    - tasks.dnf
+  attribute: sslverify
+  operator: not_equals
+  value: false

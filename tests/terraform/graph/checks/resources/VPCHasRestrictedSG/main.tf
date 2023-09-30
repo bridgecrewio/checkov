@@ -47,3 +47,38 @@ resource "aws_security_group_rule" "default_sg_rule" {
   type              = "-1"
   security_group_id = aws_default_security_group.default_3.id
 }
+
+resource "aws_vpc_security_group_ingress_rule" "pike" {
+  security_group_id = aws_default_security_group.default_4.id
+
+  cidr_ipv4   = "10.0.0.0/8"
+  from_port   = 80
+  ip_protocol = "tcp"
+  to_port     = 8080
+}
+
+
+resource "aws_vpc_security_group_egress_rule" "pike" {
+  security_group_id = aws_default_security_group.default_5.id
+
+  cidr_ipv4   = "10.0.0.0/8"
+  from_port   = 80
+  ip_protocol = "tcp"
+  to_port     = 8080
+}
+
+resource "aws_vpc" "not_ok_vpc_4" {
+  cidr_block = "10.0.0.0/16"
+}
+
+resource "aws_vpc" "not_ok_vpc_5" {
+  cidr_block = "10.0.0.0/16"
+}
+
+resource "aws_default_security_group" "default_4" {
+  vpc_id = aws_vpc.not_ok_vpc_4.id
+}
+
+resource "aws_default_security_group" "default_5" {
+  vpc_id = aws_vpc.not_ok_vpc_5.id
+}

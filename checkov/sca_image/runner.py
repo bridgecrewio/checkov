@@ -22,7 +22,7 @@ from checkov.common.runners.base_runner import filter_ignored_paths, strtobool
 from checkov.common.sca.commons import should_run_scan
 from checkov.common.sca.output import add_to_report_sca_data, get_license_statuses
 from checkov.common.util.file_utils import compress_file_gzip_base64
-from checkov.common.util.dockerfile import is_docker_file
+from checkov.common.util.dockerfile import is_dockerfile
 from checkov.common.util.http_utils import request_wrapper
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package.runner import Runner as PackageRunner
@@ -41,7 +41,7 @@ class Runner(PackageRunner):
         self.image_referencers: set[ImageReferencer] | None = None
 
     def should_scan_file(self, filename: str) -> bool:
-        return is_docker_file(os.path.basename(filename))
+        return is_dockerfile(os.path.basename(filename))
 
     def scan(
             self,
@@ -100,6 +100,7 @@ class Runner(PackageRunner):
         exit_code = await process.wait()
 
         if exit_code:
+            logging.error(f"error when running twistcli on image_id {image_id}")
             logging.error(stderr.decode())
             return {}
 
@@ -166,13 +167,13 @@ class Runner(PackageRunner):
                 self.iterate_image_files(file, report, runner_filter)
                 self.pbar.update()
             self.pbar.close()
-        if root_folder:
-            for root, d_names, f_names in os.walk(root_folder):
+        if self._code_repo_path:
+            for root, d_names, f_names in os.walk(self._code_repo_path):
                 filter_ignored_paths(root, d_names, runner_filter.excluded_paths, included_paths=self.included_paths())
                 filter_ignored_paths(root, f_names, runner_filter.excluded_paths, included_paths=self.included_paths())
                 for file in f_names:
                     abs_fname = os.path.join(root, file)
-                    self.iterate_image_files(abs_fname, report, runner_filter, root_folder)
+                    self.iterate_image_files(abs_fname, report, runner_filter, self._code_repo_path)
         return report
 
     def iterate_image_files(self, abs_fname: str, report: Report, runner_filter: RunnerFilter,
@@ -249,7 +250,8 @@ class Runner(PackageRunner):
             file_content=f'image: {image.name}',
             docker_image_name=image.name,
             related_resource_id=image.related_resource_id,
-            root_folder=root_folder)
+            root_folder=root_folder,
+            error_lines=[image.start_line, image.end_line])
         return payload
 
     def get_image_report(self, dockerfile_path: str, image: Image, runner_filter: RunnerFilter,
@@ -284,25 +286,6 @@ class Runner(PackageRunner):
                                            f"{image.end_line} ({image_id}))"
             return self.get_report_from_scan_result(result, dockerfile_path, rootless_file_path_to_report,
                                                     image_details, runner_filter)
-
-        elif strtobool(os.getenv("CHECKOV_EXPERIMENTAL_IMAGE_REFERENCING", "False")):
-            # experimental flag on running image referencers via local twistcli
-            image_id = ImageReferencer.inspect(image.name)
-            if not image_id:
-                logging.info(f"Unable to extract image id from {image.name}")
-                return Report(self.check_type)
-            scan_result = self.scan(image_id, dockerfile_path, runner_filter)
-            if scan_result is None:
-                report = Report(self.check_type)
-                report.set_error_status(ErrorStatus.ERROR)
-                return report
-
-            self.raw_report = scan_result
-            result = scan_result.get('results', [{}])[0]
-            rootless_file_path_to_report = f"{dockerfile_path} ({image.name} lines:{image.start_line}-" \
-                                           f"{image.end_line} ({image_id}))"
-            return self.get_report_from_scan_result(result, dockerfile_path, rootless_file_path_to_report, None,
-                                                    runner_filter)
         else:
             logging.info(f"No cache hit for image {image.name}")
 

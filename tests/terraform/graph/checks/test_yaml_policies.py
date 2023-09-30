@@ -22,8 +22,23 @@ class TestYamlPolicies(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
+    def test_KmsKeyPolicyIsDefined(self):
+        self.go("KmsKeyPolicyIsDefined")
+
+    def test_NetworkFirewallHasLogging(self):
+        self.go("NetworkFirewallHasLogging")
+
+    def test_SecretsAreRotated(self):
+        self.go("SecretsAreRotated")
+
+    def test_S3BucketLifecycle(self):
+        self.go("S3BucketLifecycle")
+
     def test_AccessControlGroupRuleDefine(self):
         self.go("AccessControlGroupRuleDefine")
+
+    def test_S3BucketEventNotifications(self):
+        self.go("S3BucketEventNotifications")
 
     def test_ADORepositoryHasMinTwoReviewers(self):
         self.go("ADORepositoryHasMinTwoReviewers")
@@ -217,9 +232,6 @@ class TestYamlPolicies(unittest.TestCase):
     def test_GKEClustersAreNotUsingDefaultServiceAccount(self):
         self.go("GKEClustersAreNotUsingDefaultServiceAccount")
 
-    def test_AzureStorageAccountsUseCustomerManagedKeyForEncryption(self):
-        self.go("AzureStorageAccountsUseCustomerManagedKeyForEncryption")
-
     def test_AzureMSSQLServerHasSecurityAlertPolicy(self):
         self.go("AzureMSSQLServerHasSecurityAlertPolicy")
 
@@ -339,6 +351,72 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_GCPComputeFirewallOverlyPermissiveToAllTraffic(self):
         self.go("GCPComputeFirewallOverlyPermissiveToAllTraffic")
+
+    def test_AzureConfigMSSQLwithAD(self):
+        self.go("AzureConfigMSSQLwithAD")
+
+    def test_AzurePostgreSQLFlexServerNotOverlyPermissive(self):
+        self.go("AzurePostgreSQLFlexServerNotOverlyPermissive")
+
+    def test_GCPMySQLdbInstancePoint_In_TimeRecoveryBackupIsEnabled(self):
+        self.go("GCPMySQLdbInstancePoint_In_TimeRecoveryBackupIsEnabled")
+
+    def test_GCPdisableAlphaClusterFeatureInKubernetesEngineClusters(self):
+        self.go("GCPdisableAlphaClusterFeatureInKubernetesEngineClusters")
+        
+    def test_AzureContainerInstanceconfigManagedIdentity(self):
+            self.go("AzureContainerInstanceconfigManagedIdentity")
+
+    def test_AzureAKSclusterAzureCNIEnabled(self):
+        self.go("AzureAKSclusterAzureCNIEnabled")
+
+    def test_AzureACR_HTTPSwebhook(self):
+        self.go("AzureACR_HTTPSwebhook")
+
+    def test_AzureSubnetConfigWithNSG(self):
+        self.go("AzureSubnetConfigWithNSG")
+
+    def test_AzureKeyVaultConfigPrivateEndpoint(self):
+        self.go("AzureKeyVaultConfigPrivateEndpoint")
+
+    def test_AzureStorageAccConfigWithPrivateEndpoint(self):
+        self.go("AzureStorageAccConfigWithPrivateEndpoint")
+    
+    def test_OCI_K8EngineClusterBootVolConfigInTransitEncryption(self):
+            self.go("OCI_K8EngineClusterBootVolConfigInTransitEncryption")
+
+    def test_OCI_K8EngineClusterPodSecPolicyEnforced(self):
+            self.go("OCI_K8EngineClusterPodSecPolicyEnforced")
+
+    def test_OCI_KubernetesEngineClusterEndpointConfigWithNSG(self):
+            self.go("OCI_KubernetesEngineClusterEndpointConfigWithNSG")
+
+    def test_OCI_NFSaccessRestrictedToRootUsers(self):
+            self.go("OCI_NFSaccessRestrictedToRootUsers")
+
+    def test_OCI_NSGNotAllowRDP(self):
+            self.go("OCI_NSGNotAllowRDP")
+
+    def test_AzureSQLserverNotOverlyPermissive(self):
+            self.go("AzureSQLserverNotOverlyPermissive")
+
+    def test_AzureRecoveryServicesvaultConfigManagedIdentity(self):
+            self.go("AzureRecoveryServicesvaultConfigManagedIdentity")
+
+    def test_AzureAutomationAccConfigManagedIdentity(self):
+            self.go("AzureAutomationAccConfigManagedIdentity")
+
+    def test_AzureMariaDBserverUsingTLS_1_2(self):
+            self.go("AzureMariaDBserverUsingTLS_1_2")
+
+    def test_AzureStorageAccountEnableSoftDelete(self):
+            self.go("AzureStorageAccountEnableSoftDelete")
+
+    def test_AWSdisableS3ACL(self):
+        self.go("AWSdisableS3ACL")
+
+    def test_AWS_private_MWAA_environment(self):
+        self.go("AWS_private_MWAA_environment")
 
     def test_registry_load(self):
         registry = Registry(parser=GraphCheckParser(), checks_dir=str(

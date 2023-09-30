@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 from typing import Any, List
 
+from checkov.common.bridgecrew.bc_source import IDEsSourceTypes
 from checkov.common.sca.commons import should_run_scan
 from checkov.common.sca.output import add_to_report_sca_data
 from checkov.common.typing import _LicenseStatus
@@ -18,7 +19,7 @@ from checkov.runner_filter import RunnerFilter
 from checkov.sca_package_2.scanner import Scanner
 
 
-class Runner(BaseRunner[None]):
+class Runner(BaseRunner[None, None, None]):
     check_type = CheckType.SCA_PACKAGE  # noqa: CCE003  # a static attribute
 
     def __init__(self, report_type: str = check_type) -> None:
@@ -33,19 +34,27 @@ class Runner(BaseRunner[None]):
             files: list[str] | None = None,
             runner_filter: RunnerFilter | None = None,
             excluded_file_names: set[str] | None = None,
-    ) -> dict[str, Any] | None:
+    ) -> tuple[dict[str, Any] | None, list[FileToPersist]]:
         runner_filter = runner_filter or RunnerFilter()
         excluded_file_names = excluded_file_names or set()
 
         # skip complete run, if flag '--check' was used without a CVE check ID or the license policies
         if not should_run_scan(runner_filter.checks):
-            return None
+            return None, []
 
         if not bc_integration.bc_api_key:
             logging.info("The --bc-api-key flag needs to be set to run SCA package scanning")
-            return None
+            return None, []
+
+        if bc_integration.bc_source and bc_integration.bc_source.name in IDEsSourceTypes \
+                and not bc_integration.is_prisma_integration():
+            logging.info("The --bc-api-key flag needs to be set to a Prisma token for SCA scan for vscode or jetbrains extention")
+            return {}, []  # should just return an empty result
 
         self._code_repo_path = Path(root_folder) if root_folder else None
+
+        if not bc_integration.timestamp and bc_integration.bc_source and not bc_integration.bc_source.upload_results:
+            bc_integration.set_s3_integration()
 
         excluded_paths = {*ignored_directories}
         if runner_filter.excluded_paths:
@@ -59,10 +68,11 @@ class Runner(BaseRunner[None]):
         )
         if uploaded_files is None:
             # failure happened during uploading
-            return None
+            return None, []
+
         if len(uploaded_files) == 0:
             # no packages were uploaded. we can skip the scanning
-            return {}
+            return {}, uploaded_files
 
         scanner = Scanner(self.pbar, root_folder)
         self._check_class = f"{scanner.__module__}.{scanner.__class__.__qualname__}"
@@ -70,7 +80,8 @@ class Runner(BaseRunner[None]):
 
         if scan_results is not None:
             logging.info(f"SCA package scanning successfully scanned {len(scan_results)} files")
-        return scan_results
+
+        return scan_results, uploaded_files
 
     def run(
             self,
@@ -85,8 +96,7 @@ class Runner(BaseRunner[None]):
             self.pbar.turn_off_progress_bar()
 
         report = Report(self.check_type)
-
-        scan_results = self.prepare_and_scan(root_folder, files, runner_filter)
+        scan_results, uploaded_files = self.prepare_and_scan(root_folder, files, runner_filter)
         if scan_results is None:
             report.set_error_status(ErrorStatus.ERROR)
             return report
@@ -94,6 +104,7 @@ class Runner(BaseRunner[None]):
         for path, result in scan_results.items():
             if not result:
                 continue
+            bc_integration.source_id = result.get("sourceId")
             package_file_path = Path(path)
             if self._code_repo_path:
                 try:
@@ -110,6 +121,8 @@ class Runner(BaseRunner[None]):
                                 for elm in result.get("license_statuses") or []]
 
             rootless_file_path = str(package_file_path).replace(package_file_path.anchor, "", 1)
+            inline_suppressions = result.get("inlineSuppressions")
+
             add_to_report_sca_data(
                 report=report,
                 check_class=self._check_class,
@@ -120,7 +133,9 @@ class Runner(BaseRunner[None]):
                 packages=packages,
                 license_statuses=license_statuses,
                 report_type=self.report_type,
-                dependencies=result.get("dependencies", None)
+                dependencies=result.get("dependencies", None),
+                inline_suppressions=inline_suppressions,
+                used_private_registry=result.get("used_private_reg", False)
             )
 
         return report

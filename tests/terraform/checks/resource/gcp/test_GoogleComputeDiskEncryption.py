@@ -31,7 +31,7 @@ class TestGoogleComputeDiskEncryption(unittest.TestCase):
               image = "debian-8-jessie-v20170523"
               physical_block_size_bytes = 4096
               disk_encryption_key {
-                raw_key = "acXTX3rxrKAFTF0tYVLvydU1riRZTvUNC4g5I11NY-c="
+                raw_key = "acXTX3rxrKAFTF0tYVLvydU1riRZTvUNC4g5I11NY-c="  # checkov:skip=CKV_SECRET_6 test secret
                 }
             }
                 """)

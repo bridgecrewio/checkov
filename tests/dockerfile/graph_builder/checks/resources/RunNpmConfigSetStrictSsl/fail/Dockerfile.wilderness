@@ -1,0 +1,16 @@
+FROM node:18
+RUN set -eux \
+    &&  if [[ -n "${NPM_PROXY}" ]]; then \
+          npm config set proxy       $NPM_PROXY; \
+          npm config set https-proxy $NPM_PROXY; \
+          npm config set strict-ssl  false; \
+        fi \
+    &&  npm install npm-proxy-cache -g
+RUN npm config set "strict-ssl" false
+RUN npm config set strict-ssl false
+RUN npm config set strict-ssl false -g
+RUN yarn config set strict-ssl false --global
+RUN npm set strict-ssl false && npm install --only=development
+RUN npm set strict-ssl false --global
+RUN yarn config set strict-ssl false
+RUN npm set strict-ssl false  && npm install -g serve

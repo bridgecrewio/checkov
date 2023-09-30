@@ -1,0 +1,186 @@
+---
+- name: Verify tests
+  hosts: all
+  connection: local
+  gather_facts: false
+
+  vars:
+    device:
+      ip_address: "{{ ip_address }}"
+      username: "{{ username | default(omit) }}"
+      password: "{{ password | default(omit) }}"
+      api_key: "{{ api_key | default(omit) }}"
+
+  tasks:
+    - name: Security_rule_pass_1
+      paloaltonetworks.panos.panos_security_rule:
+        provider: '{{ provider }}'
+        rule_name: 'Test rule'
+        source_zone: ['any']
+        destination_zone: ['any']
+        source_ip: ['1.1.1.1']
+        destination_ip: ['10.10.10.10']
+        # Source and destination IP addresses provided
+        category: ['any']
+        application: ['ssl']
+        service: ['service-http', 'service-https']
+        description: "A nice rule"
+        action: 'allow'
+        log_setting: 'default'
+
+    - name: Security_rule_pass_2
+      paloaltonetworks.panos.panos_security_rule:
+        provider: '{{ provider }}'
+        rule_name: 'Test rule'
+        source_zone: ['any']
+        destination_zone: ['any']
+        source_ip: ['1.1.1.1', '2.2.2.2']
+        destination_ip: ['10.10.10.10']
+        # Source and destination IP addresses provided, multiples
+        category: ['any']
+        application: ['ssl']
+        service: ['service-http', 'service-https']
+        description: "A nice rule"
+        action: 'allow'
+        log_setting: 'default'
+
+    - name: Security_rule_pass_3
+      paloaltonetworks.panos.panos_security_rule:
+        provider: '{{ provider }}'
+        rule_name: 'Test rule'
+        source_zone: ['any']
+        destination_zone: ['any']
+        source_ip: ['1.1.1.1']
+        destination_ip: ['10.10.10.10', '10.10.10.11']
+        # Source and destination IP addresses provided, multiples
+        category: ['any']
+        application: ['ssl']
+        service: ['service-http', 'service-https']
+        description: "A nice rule"
+        action: 'allow'
+        log_setting: 'default'
+
+    - name: Security_rule_pass_4
+      paloaltonetworks.panos.panos_security_rule:
+        provider: '{{ provider }}'
+        rule_name: 'Test rule'
+        source_zone: ['any']
+        destination_zone: ['any']
+        source_ip: ['1.1.1.1','2.2.2.2']
+        destination_ip: ['10.10.10.10', '10.10.10.11']
+        # Source and destination IP addresses provided, multiples
+        category: ['any']
+        application: ['ssl']
+        service: ['service-http', 'service-https']
+        description: "A nice rule"
+        action: 'allow'
+        log_setting: 'default'
+
+    - name: Security_rule_pass_5
+      paloaltonetworks.panos.panos_security_rule:
+        provider: '{{ provider }}'
+        rule_name: 'Test rule'
+        source_zone: ['any']
+        destination_zone: ['any']
+        source_ip: ['host_a']
+        destination_ip: ['host_b']
+        # Source and destination provided, object names instead of IP addresses
+        category: ['any']
+        application: ['ssl']
+        service: ['service-http', 'service-https']
+        description: "A nice rule"
+        action: 'allow'
+        log_setting: 'default'
+
+    - name: Security_rule_pass_6
+      paloaltonetworks.panos.panos_security_rule:
+        provider: '{{ provider }}'
+        rule_name: 'Test rule'
+        source_zone: ['any']
+        destination_zone: ['any']
+        source_ip: ['1.1.1.1']
+        destination_ip: ['any'] # Only destination IP is any, source IP is provided
+        category: ['any']
+        application: ['ssl']
+        service: ['service-http', 'service-https']
+        description: "A nice rule"
+        action: 'allow'
+        log_setting: 'default'
+
+    - name: Security_rule_pass_7
+      paloaltonetworks.panos.panos_security_rule:
+        provider: '{{ provider }}'
+        rule_name: 'Test rule'
+        source_zone: ['any']
+        destination_zone: ['any']
+        source_ip: ['1.1.1.1']
+        # Only destination IP is not provided (defaults to 'any'), source IP is provided
+        category: ['any']
+        application: ['ssl']
+        service: ['service-http', 'service-https']
+        description: "A nice rule"
+        action: 'allow'
+        log_setting: 'default'
+
+    - name: Security_rule_pass_8
+      paloaltonetworks.panos.panos_security_rule:
+        provider: '{{ provider }}'
+        rule_name: 'Test rule'
+        source_zone: ['any']
+        destination_zone: ['any']
+        source_ip: ['1.1.1.1']
+        destination_ip: ['']
+        # Only destination IP is empty, source IP is provided
+        category: ['any']
+        application: ['ssl']
+        service: ['service-http', 'service-https']
+        description: "A nice rule"
+        action: 'allow'
+        log_setting: 'default'
+
+    - name: Security_rule_pass_9
+      paloaltonetworks.panos.panos_security_rule:
+        provider: '{{ provider }}'
+        rule_name: 'Test rule'
+        source_zone: ['any']
+        destination_zone: ['any']
+        source_ip: ['any']
+        destination_ip: ['1.1.1.1']
+        # Only source IP is any, destination IP is provided
+        category: ['any']
+        application: ['ssl']
+        service: ['service-http', 'service-https']
+        description: "A nice rule"
+        action: 'allow'
+        log_setting: 'default'
+
+    - name: Security_rule_pass_10
+      paloaltonetworks.panos.panos_security_rule:
+        provider: '{{ provider }}'
+        rule_name: 'Test rule'
+        source_zone: ['any']
+        destination_zone: ['any']
+        destination_ip: ['1.1.1.1']
+        # Only source IP is not provided (defaults to 'any'), destination IP is provided
+        category: ['any']
+        application: ['ssl']
+        service: ['service-http', 'service-https']
+        description: "A nice rule"
+        action: 'allow'
+        log_setting: 'default'
+
+    - name: Security_rule_pass_11
+      paloaltonetworks.panos.panos_security_rule:
+        provider: '{{ provider }}'
+        rule_name: 'Test rule'
+        source_zone: ['any']
+        destination_zone: ['any']
+        source_ip: ['']
+        destination_ip: ['1.1.1.1']
+        # Only source IP is empty, destination IP is provided
+        category: ['any']
+        application: ['ssl']
+        service: ['service-http', 'service-https']
+        description: "A nice rule"
+        action: 'allow'
+        log_setting: 'default'

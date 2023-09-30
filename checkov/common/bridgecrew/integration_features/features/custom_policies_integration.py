@@ -4,7 +4,6 @@ import json
 import logging
 import re
 from collections import defaultdict
-from copy import deepcopy
 from typing import TYPE_CHECKING, Any, List
 
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
@@ -12,6 +11,7 @@ from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.severities import Severities
 from checkov.common.checks_infra.checks_parser import GraphCheckParser
 from checkov.common.checks_infra.registry import Registry, get_graph_checks_registry
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
@@ -27,9 +27,12 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration: BcPlatformIntegration) -> None:
         super().__init__(bc_integration=bc_integration, order=1)  # must be after policy metadata and before suppression integration
         self.platform_policy_parser = GraphCheckParser()
-        self.policies_url = f"{self.bc_integration.api_url}/api/v1/policies/table/data"
         self.bc_cloned_checks: dict[str, list[dict[str, Any]]] = defaultdict(list)
         self.policy_level_suppression: List[str] = []
+
+    @property
+    def policies_url(self) -> str:
+        return f"{self.bc_integration.api_url}/api/v1/policies/table/data"
 
     def is_valid(self) -> bool:
         return (
@@ -107,15 +110,19 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
             logging.debug('From origin policy:')
             logging.debug(records[idx].get_unique_string())
             for cloned_policy in cloned_policies:
-                new_record = deepcopy(records[idx])
+                new_record = pickle_deepcopy(records[idx])
                 new_record.check_id = cloned_policy['id']
                 new_record.bc_check_id = cloned_policy['id']
                 new_record.guideline = cloned_policy['guideline']
                 new_record.severity = cloned_policy['severity']
                 new_record.check_name = cloned_policy['title']
                 records.append(new_record)
-        records = [record for record in records if record.bc_check_id not in self.policy_level_suppression]  # Filter out policy level suppressions after cloned policy is added
+        policy_level_suppression_check_ids = self.convert_suppression_ids_to_bc_check_ids()
+        records = [record for record in records if record.bc_check_id not in policy_level_suppression_check_ids]  # Filter out policy level suppressions after cloned policy is added
         return records
+
+    def convert_suppression_ids_to_bc_check_ids(self) -> List[str]:
+        return ["_".join(policy.split('_')[:-1]) for policy in self.policy_level_suppression]
 
     def pre_runner(self, runner: _BaseRunner) -> None:
         # not used

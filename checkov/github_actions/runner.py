@@ -58,10 +58,16 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
             tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
         if is_workflow_file(f):
             entity_schema: tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None = super()._parse_file(f)
+            if not entity_schema:
+                # Indicates that there was an exception/error while trying to read the file,
+                # hence no need to check the schema validity.
+                return None
+
             if not file_content:
                 with open(f, 'r') as f_obj:
                     file_content = f_obj.read()
-            if entity_schema and all(map(is_schema_valid, yaml.load_all(file_content, Loader=loader.SafeLineLoaderGhaSchema))):  # nosec
+
+            if all(map(is_schema_valid, yaml.load_all(file_content, Loader=loader.SafeLineLoaderGhaSchema))):  # nosec
                 return entity_schema
         return None
 
@@ -69,7 +75,7 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
         return [".github"]
 
     def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str],
-                     start_line: int = -1, end_line: int = -1) -> str:
+                     start_line: int = -1, end_line: int = -1, graph_resource: bool = False) -> str:
         """
         supported resources for GHA:
             jobs
@@ -87,13 +93,16 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
         if 'on' in supported_entities:
             workflow_name = definition.get('name', "")
             new_key = f"on({workflow_name})" if workflow_name else "on"
-        elif 'jobs' in supported_entities:
+        elif 'jobs' in supported_entities or graph_resource and 'steps' in supported_entities:
             job_name = self.resolve_sub_name(definition, start_line, end_line, tag='jobs')
             new_key = f"jobs({job_name})" if job_name else "jobs"
 
-            if 'jobs.*.steps[]' in supported_entities and key.split('.')[1] == '*':
+            if (graph_resource and supported_entities == 'steps') or \
+                    (not graph_resource and 'jobs.*.steps[]' in supported_entities and key.split('.')[1] == '*'):
                 step_name = self.resolve_step_name(definition['jobs'].get(job_name), start_line, end_line)
                 new_key = f'jobs({job_name}).steps{step_name}'
+        elif 'permissions' in supported_entities:
+            new_key = 'permissions'
         return new_key
 
     def run(

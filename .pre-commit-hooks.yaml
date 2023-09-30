@@ -13,3 +13,18 @@
     files: \.tf$
     exclude: \.+.terraform\/.*$
     require_serial: true
+
+-   id: checkov_diff
+    name: Checkov Diff
+    description: This hook runs checkov against all changed files.
+    entry: checkov --enable-secret-scan-all-files -f
+    language: python
+    require_serial: true
+
+-   id: checkov_secrets
+    name: Checkov Secrets
+    description: This hook looks for secrets with checkov.
+    entry: checkov --framework secrets --enable-secret-scan-all-files -f
+    language: python
+    always_run: true
+    require_serial: true

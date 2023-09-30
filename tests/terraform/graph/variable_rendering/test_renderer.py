@@ -177,7 +177,7 @@ class TestRenderer(TestCase):
                     self.assertEqual(expected_value, actual_value,
                                      f'error during comparing {v.block_type} in attribute key: {attribute_key}')
 
-    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "False"})
+    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_graph_rendering_order(self):
         resource_path = os.path.join(TEST_DIRNAME, "..", "resources", "module_rendering", "example")
         graph_manager = TerraformGraphManager('m', ['m'])
@@ -199,7 +199,6 @@ class TestRenderer(TestCase):
                     count += 1
         self.assertEqual(found, count, f"Expected all instances to have the same value, found {found} instances but only {count} correct values")
 
-    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "True"})
     def test_graph_rendering_order_nested_module_enable(self):
         resource_path = os.path.realpath(os.path.join(TEST_DIRNAME, "..", "resources", "module_rendering", "example"))
         graph_manager = TerraformGraphManager('m', ['m'])
@@ -419,3 +418,55 @@ class TestRenderer(TestCase):
         resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
         assert resources_vertex[0].attributes.get('identity').get('identity_ids') == 'null'
         assert resources_vertex[0].attributes.get('identity').get('type') == 'SystemAssigned'
+
+    def test_lookup_from_var(self):
+        graph_manager = TerraformGraphManager('m', ['m'])
+        local_graph, _ = graph_manager.build_graph_from_source_directory(
+            os.path.join(TEST_DIRNAME, "test_resources", "lookup_from_var"), render_variables=True)
+        resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE, local_graph.vertices))
+        assert resources_vertex[0].attributes.get('protocol')[0] == 'http'
+        assert resources_vertex[0].attributes.get('endpoint')[0] == 'http://www.example.com'
+
+    def test_skip_rendering_unsupported_values(self):
+        # given
+        resource_path = Path(TEST_DIRNAME) / "test_resources/skip_renderer"
+
+        # when
+        graph_manager = TerraformGraphManager('m', ['m'])
+        local_graph, _ = graph_manager.build_graph_from_source_directory(str(resource_path), render_variables=True)
+
+        # then
+        local_b = next(vertex for vertex in local_graph.vertices if vertex.block_type == BlockType.LOCALS and vertex.name == "b")
+        assert local_b.attributes["b"] == ["..."]  # not Ellipsis object
+
+    def test_default_map_value(self):
+        # given
+        resource_path = Path(TEST_DIRNAME) / "test_resources/default_map_value"
+
+        # when
+        graph_manager = TerraformGraphManager('m', ['m'])
+        local_graph, _ = graph_manager.build_graph_from_source_directory(str(resource_path), render_variables=True)
+
+        # then
+        key_vault = next(vertex for vertex in local_graph.vertices if vertex.block_type == BlockType.RESOURCE and vertex.name == "azurerm_key_vault.this")
+        assert key_vault.attributes["network_acls"] == {
+            "bypass": "AzureServices",
+            "default_action": "Deny",
+            "ip_rules": [],
+            "virtual_network_subnet_ids": []
+        }
+
+    def test_provider_alias(self):
+        # given
+        resource_path = Path(TEST_DIRNAME) / "test_resources/provider_alias"
+
+        # when
+        graph_manager = TerraformGraphManager('m', ['m'])
+        local_graph, _ = graph_manager.build_graph_from_source_directory(str(resource_path), render_variables=True)
+
+        # then
+        provider = next(vertex for vertex in local_graph.vertices if vertex.block_type == BlockType.PROVIDER and vertex.name == "aws")
+        assert provider.config["aws"]["default_tags"] == [{"tags": [{"test": "Test"}]}]
+
+        provider_alias = next(vertex for vertex in local_graph.vertices if vertex.block_type == BlockType.PROVIDER and vertex.name == "aws.test")
+        assert provider_alias.config["aws"]["default_tags"] == [{"tags": [{"test": "Test"}]}]

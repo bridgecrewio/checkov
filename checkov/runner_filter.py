@@ -4,15 +4,17 @@ import logging
 import fnmatch
 from collections import defaultdict
 from collections.abc import Iterable
-from typing import Any, Set, Optional, Union, List, TYPE_CHECKING, Dict, DefaultDict
+from typing import Any, Set, Optional, Union, List, TYPE_CHECKING, Dict, DefaultDict, cast
 import re
 
-from checkov.secrets.consts import ValidationStatus
+from checkov.common.bridgecrew.check_type import CheckType
+from checkov.common.secrets.consts import ValidationStatus
 
-from checkov.common.bridgecrew.code_categories import CodeCategoryMapping, CodeCategoryConfiguration
+from checkov.common.bridgecrew.code_categories import CodeCategoryMapping, CodeCategoryConfiguration, CodeCategoryType
 from checkov.common.bridgecrew.severities import Severity, Severities
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
+from checkov.common.util.str_utils import convert_to_seconds
 
 if TYPE_CHECKING:
     from checkov.common.checks.base_check import BaseCheck
@@ -49,7 +51,9 @@ class RunnerFilter(object):
             deep_analysis: bool = False,
             repo_root_for_plan_enrichment: Optional[List[str]] = None,
             resource_attr_to_omit: Optional[Dict[str, Set[str]]] = None,
-            enable_git_history_secret_scan: bool = False
+            enable_git_history_secret_scan: bool = False,
+            git_history_timeout: str = '12h',
+            git_history_last_commit_scanned: Optional[str] = None  # currently not exposed by a CLI flag
     ) -> None:
 
         checks = convert_csv_string_arg_to_list(checks)
@@ -59,7 +63,7 @@ class RunnerFilter(object):
                                                         for skip_check in skip_checks)
 
         self.use_enforcement_rules = use_enforcement_rules
-        self.enforcement_rule_configs: Optional[Dict[str, Severity]] = None
+        self.enforcement_rule_configs: Dict[str, Severity | Dict[CodeCategoryType, Severity]] = {}
 
         # we will store the lowest value severity we find in checks, and the highest value we find in skip-checks
         # so the logic is "run all checks >= severity" and/or "skip all checks <= severity"
@@ -68,7 +72,7 @@ class RunnerFilter(object):
         self.checks = []
         self.bc_cloned_checks: dict[str, list[dict[str, Any]]] = defaultdict(list)
         self.skip_checks = []
-        self.skip_checks_regex_patterns = defaultdict(lambda: [])
+        self.skip_checks_regex_patterns = defaultdict(list)
         self.show_progress_bar = show_progress_bar
 
         # split out check/skip thresholds so we can access them easily later
@@ -129,10 +133,15 @@ class RunnerFilter(object):
             resource_attr_to_omit
         )
         self.enable_git_history_secret_scan: bool = enable_git_history_secret_scan
+        if self.enable_git_history_secret_scan:
+            self.git_history_timeout = convert_to_seconds(git_history_timeout)
+            self.framework = [CheckType.SECRETS]
+            logging.debug("Scan secrets history was enabled ignoring other frameworks")
+            self.git_history_last_commit_scanned = git_history_last_commit_scanned
 
     @staticmethod
     def _load_resource_attr_to_omit(resource_attr_to_omit_input: Optional[Dict[str, Set[str]]]) -> DefaultDict[str, Set[str]]:
-        resource_attributes_to_omit: DefaultDict[str, Set[str]] = defaultdict(lambda: set())
+        resource_attributes_to_omit: DefaultDict[str, Set[str]] = defaultdict(set)
         # In order to create new object (and not a reference to the given one)
         if resource_attr_to_omit_input:
             resource_attributes_to_omit.update(resource_attr_to_omit_input)
@@ -141,10 +150,21 @@ class RunnerFilter(object):
     def apply_enforcement_rules(self, enforcement_rule_configs: Dict[str, CodeCategoryConfiguration]) -> None:
         self.enforcement_rule_configs = {}
         for report_type, code_category in CodeCategoryMapping.items():
-            config = enforcement_rule_configs.get(code_category)
-            if not config:
-                raise Exception(f'Could not find an enforcement rule config for category {code_category} (runner: {report_type})')
-            self.enforcement_rule_configs[report_type] = config.soft_fail_threshold
+            if isinstance(code_category, list):
+                self.enforcement_rule_configs[report_type] = {c: enforcement_rule_configs.get(c).soft_fail_threshold for c in code_category}  # type:ignore[union-attr] # will not be None
+            else:
+                config = enforcement_rule_configs.get(code_category)
+                if not config:
+                    raise Exception(f'Could not find an enforcement rule config for category {code_category} (runner: {report_type})')
+                self.enforcement_rule_configs[report_type] = config.soft_fail_threshold
+
+    def extract_enforcement_rule_threshold(self, check_id: str, report_type: str) -> Severity:
+        if 'sca_' in report_type and '_LIC_' in check_id:
+            return cast("dict[CodeCategoryType, Severity]", self.enforcement_rule_configs[report_type])[CodeCategoryType.LICENSES]
+        elif 'sca_' in report_type:  # vulnerability
+            return cast("dict[CodeCategoryType, Severity]", self.enforcement_rule_configs[report_type])[CodeCategoryType.VULNERABILITIES]
+        else:
+            return cast(Severity, self.enforcement_rule_configs[report_type])
 
     def should_run_check(
             self,
@@ -163,10 +183,13 @@ class RunnerFilter(object):
 
         assert check_id is not None  # nosec (for mypy (and then for bandit))
 
+        check_threshold: Optional[Severity]
+        skip_check_threshold: Optional[Severity]
+
         # apply enforcement rules if specified, but let --check/--skip-check with a severity take priority
         if self.use_enforcement_rules and report_type:
             if not self.check_threshold and not self.skip_check_threshold:
-                check_threshold = self.enforcement_rule_configs[report_type]  # type:ignore[index] # mypy thinks it might be null
+                check_threshold = self.extract_enforcement_rule_threshold(check_id, report_type)
                 skip_check_threshold = None
             else:
                 check_threshold = self.check_threshold

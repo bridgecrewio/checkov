@@ -1,0 +1,12 @@
+metadata:
+  id: "CKV2_ANSIBLE_4"
+  name: "Ensure that packages with untrusted or missing GPG signatures are not used by dnf"
+  category: "GENERAL_SECURITY"
+definition:
+  cond_type: attribute
+  resource_types:
+    - tasks.ansible.builtin.dnf
+    - tasks.dnf
+  attribute: disable_gpg_check
+  operator: not_equals
+  value: true

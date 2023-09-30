@@ -1,35 +1,41 @@
 import unittest
+from pathlib import Path
 
-from checkov.common.models.enums import CheckResult
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.aws.DocDBLogging import check
+from checkov.terraform.runner import Runner
 
 
 class TestDocDBLogging(unittest.TestCase):
+    def test(self):
+        # given
+        test_files_dir = Path(__file__).parent / "example_DocDBLogging"
 
-    def test_failure(self):
-        resource_conf = {
-            "cluster_identifier": "my-docdb-cluster",
+        # when
+        report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
+
+        # then
+        summary = report.get_summary()
+
+        passing_resources = {
+            "aws_docdb_cluster.pass_single",
+            "aws_docdb_cluster.pass_double",
         }
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
-
-    def test_failure_partial(self):
-        resource_conf = {
-            "cluster_identifier": "my-docdb-cluster",
-            "enabled_cloudwatch_logs_exports": ["audit"],
-        }
-
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
-
-    def test_success(self):
-        resource_conf = {
-            "cluster_identifier": "my-docdb-cluster",
-            "enabled_cloudwatch_logs_exports": ["audit", "profiler"],
+        failing_resources = {
+            "aws_docdb_cluster.fail",
         }
 
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
 
-if __name__ == '__main__':
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
+
+
+if __name__ == "__main__":
     unittest.main()

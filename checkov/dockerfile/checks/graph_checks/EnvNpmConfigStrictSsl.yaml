@@ -1,0 +1,19 @@
+metadata:
+  id: "CKV2_DOCKER_12"
+  name: "Ensure that certificate validation isn't disabled for npm via the 'NPM_CONFIG_STRICT_SSL' environmnet variable"
+  category: "APPLICATION_SECURITY"
+definition:
+  or:
+    - cond_type: attribute
+      resource_types:
+        - ARG
+        - ENV
+      attribute: value
+      operator: not_regex_match
+      value: "(.*\\s+)?(((NPM_CONFIG_STRICT_SSL)|(npm_config_strict_ssl))(=|\\s+)((false)|('false')|(\"false\"))).*"
+    - cond_type: attribute
+      resource_types:
+        - RUN
+      attribute: value
+      operator: not_regex_match
+      value: "(.*[\\s;&|]+)?(((NPM_CONFIG_STRICT_SSL)|(npm_config_strict_ssl))=((false)|('false')|(\"false\"))) .*"

@@ -6,16 +6,18 @@ import logging
 import os
 from collections.abc import Iterable
 
-from typing import List, Dict, Union, Any, Optional, TYPE_CHECKING
+from typing import List, Dict, Union, Any, Optional, TYPE_CHECKING, cast
 from colorama import init
 from junit_xml import TestCase, TestSuite, to_xml_report_string
 from tabulate import tabulate
 from termcolor import colored
 
-from checkov.common.bridgecrew.severities import BcSeverities
+from checkov.common.bridgecrew.code_categories import CodeCategoryType
+from checkov.common.bridgecrew.severities import BcSeverities, Severity
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.enums import CheckResult, ErrorStatus
-from checkov.common.typing import _ExitCodeThresholds
+from checkov.common.output.ai import OpenAi
+from checkov.common.typing import _ExitCodeThresholds, _ScaExitCodeThresholds
 from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME
 from checkov.common.util.consts import PARSE_ERROR_FAIL_FLAG, CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
 from checkov.common.util.json_utils import CustomJSONEncoder
@@ -128,7 +130,7 @@ class Report:
                 "url": url,
             }
 
-    def get_exit_code(self, exit_code_thresholds: _ExitCodeThresholds) -> int:
+    def get_exit_code(self, exit_code_thresholds: Union[_ExitCodeThresholds, _ScaExitCodeThresholds]) -> int:
         """
         Returns the appropriate exit code depending on the flags that are passed in.
 
@@ -138,24 +140,76 @@ class Report:
         hard_fail_on_parsing_errors = os.getenv(PARSE_ERROR_FAIL_FLAG, "false").lower() == 'true'
         logging.debug(f'In get_exit_code; exit code thresholds: {exit_code_thresholds}, hard_fail_on_parsing_errors: {hard_fail_on_parsing_errors}')
 
-        soft_fail_on_checks = exit_code_thresholds['soft_fail_checks']
-        soft_fail_threshold = exit_code_thresholds['soft_fail_threshold']
-        hard_fail_on_checks = exit_code_thresholds['hard_fail_checks']
-        hard_fail_threshold = exit_code_thresholds['hard_fail_threshold']
-        soft_fail = exit_code_thresholds['soft_fail']
-
-        has_soft_fail_values = soft_fail_on_checks or soft_fail_threshold
-        has_hard_fail_values = hard_fail_on_checks or hard_fail_threshold
-
         if self.parsing_errors and hard_fail_on_parsing_errors:
             logging.debug('hard_fail_on_parsing_errors is True and there were parsing errors - returning 1')
             return 1
-        elif not self.failed_checks or (not has_soft_fail_values and not has_hard_fail_values and soft_fail):
-            logging.debug('No failed checks, or soft_fail is True and soft_fail_on and hard_fail_on are empty - returning 0')
+
+        if not self.failed_checks:
+            logging.debug('No failed checks in this report - returning 0')
             return 0
-        elif not has_soft_fail_values and not has_hard_fail_values and self.failed_checks:
-            logging.debug('There are failed checks and all soft/hard fail args are empty - returning 1')
-            return 1
+
+        # we will have two different sets of logic in this method, determined by this variable.
+        # if we are using enforcement rules, then there are two different sets of thresholds that apply for licenses and vulnerabilities
+        # and we have to handle that throughout while processing the report
+        # if we are not using enforcement rules, then we can combine licenses and vulnerabilities like normal and same as all other report types
+        # this determination is made in runner_registry.get_fail_thresholds
+        has_split_enforcement = CodeCategoryType.LICENSES in exit_code_thresholds
+
+        hard_fail_threshold: Optional[Severity | Dict[str, Severity]]
+        soft_fail: Optional[bool | Dict[str, bool]]
+
+        if has_split_enforcement:
+            sca_thresholds = cast(_ScaExitCodeThresholds, exit_code_thresholds)
+            # these three are the same even in split enforcement rules
+            generic_thresholds = cast(_ExitCodeThresholds, next(iter(sca_thresholds.values())))
+            soft_fail_on_checks = generic_thresholds['soft_fail_checks']
+            soft_fail_threshold = generic_thresholds['soft_fail_threshold']
+            hard_fail_on_checks = generic_thresholds['hard_fail_checks']
+
+            # these two can be different for licenses / vulnerabilities
+            hard_fail_threshold = {category: thresholds['hard_fail_threshold'] for category, thresholds in sca_thresholds.items()}  # type:ignore[index] # thinks it's an object, can't possibly be more clear
+            soft_fail = {category: thresholds['soft_fail'] for category, thresholds in sca_thresholds.items()}  # type:ignore[index] # thinks it's an object
+
+            failed_checks_by_category = {
+                CodeCategoryType.LICENSES: [fc for fc in self.failed_checks if '_LIC_' in fc.check_id],
+                CodeCategoryType.VULNERABILITIES: [fc for fc in self.failed_checks if '_VUL_' in fc.check_id]
+            }
+
+            has_soft_fail_values = soft_fail_on_checks or soft_fail_threshold
+
+            if all(
+                not failed_checks_by_category[cast(CodeCategoryType, c)] or (
+                    not has_soft_fail_values and not (hard_fail_threshold[c] or hard_fail_on_checks) and soft_fail[c]
+                )
+                for c in sca_thresholds.keys()
+            ):
+                logging.debug(
+                    'No failed checks, or soft_fail is True and soft_fail_on and hard_fail_on are empty for all SCA types - returning 0')
+                return 0
+
+            if any(
+                not has_soft_fail_values and not (hard_fail_threshold[c] or hard_fail_on_checks) and failed_checks_by_category[cast(CodeCategoryType, c)]
+                for c in sca_thresholds.keys()
+            ):
+                logging.debug('There are failed checks and all soft/hard fail args are empty for one or more SCA reports - returning 1')
+                return 1
+        else:
+            non_sca_thresholds = cast(_ExitCodeThresholds, exit_code_thresholds)
+            soft_fail_on_checks = non_sca_thresholds['soft_fail_checks']
+            soft_fail_threshold = non_sca_thresholds['soft_fail_threshold']
+            hard_fail_on_checks = non_sca_thresholds['hard_fail_checks']
+            hard_fail_threshold = non_sca_thresholds['hard_fail_threshold']
+            soft_fail = non_sca_thresholds['soft_fail']
+
+            has_soft_fail_values = soft_fail_on_checks or soft_fail_threshold
+            has_hard_fail_values = hard_fail_threshold or hard_fail_on_checks
+
+            if not has_soft_fail_values and not has_hard_fail_values and soft_fail:
+                logging.debug('Soft_fail is True and soft_fail_on and hard_fail_on are empty - returning 0')
+                return 0
+            elif not has_soft_fail_values and not has_hard_fail_values:
+                logging.debug('There are failed checks and all soft/hard fail args are empty - returning 1')
+                return 1
 
         for failed_check in self.failed_checks:
             check_id = failed_check.check_id
@@ -163,8 +217,23 @@ class Report:
             severity = failed_check.severity
             secret_validation_status = failed_check.validation_status if hasattr(failed_check, 'validation_status') else ''
 
+            hf_threshold: Severity
+            sf: bool
+
+            if has_split_enforcement:
+                category = CodeCategoryType.LICENSES if '_LIC_' in check_id else CodeCategoryType.VULNERABILITIES
+                hard_fail_threshold = cast(Dict[str, Severity], hard_fail_threshold)
+                hf_threshold = hard_fail_threshold[category]
+                soft_fail = cast(Dict[str, bool], soft_fail)
+                sf = soft_fail[category]
+            else:
+                hard_fail_threshold = cast(Severity, hard_fail_threshold)
+                hf_threshold = hard_fail_threshold
+                soft_fail = cast(bool, soft_fail)
+                sf = soft_fail
+
             soft_fail_severity = severity and soft_fail_threshold and severity.level <= soft_fail_threshold.level
-            hard_fail_severity = severity and hard_fail_threshold and severity.level >= hard_fail_threshold.level
+            hard_fail_severity = severity and hf_threshold and severity.level >= hf_threshold.level
             explicit_soft_fail = RunnerFilter.check_matches(check_id, bc_check_id, soft_fail_on_checks)
             explicit_hard_fail = RunnerFilter.check_matches(check_id, bc_check_id, hard_fail_on_checks)
             explicit_secrets_soft_fail = RunnerFilter.secret_validation_status_matches(secret_validation_status, soft_fail_on_checks)
@@ -174,7 +243,7 @@ class Report:
 
             if explicit_hard_fail or \
                     (hard_fail_severity and not explicit_soft_fail) or \
-                    (implicit_hard_fail and not implicit_soft_fail and not soft_fail):
+                    (implicit_hard_fail and not implicit_soft_fail and not sf):
                 logging.debug(f'Check {check_id} (BC ID: {bc_check_id}, severity: {severity.level if severity else None} triggered hard fail - returning 1')
                 return 1
 
@@ -201,7 +270,8 @@ class Report:
             created_baseline_path: str | None = None,
             baseline: Baseline | None = None,
             use_bc_ids: bool = False,
-            summary_position: str = 'top'
+            summary_position: str = 'top',
+            openai_api_key: str | None = None,
     ) -> str:
         summary = self.get_summary()
         output_data = colored(f"{self.check_type} scan results:\n", "blue")
@@ -234,6 +304,8 @@ class Report:
             if not is_quiet:
                 for record in self.passed_checks:
                     output_data += record.to_string(compact=is_compact, use_bc_ids=use_bc_ids)
+            if self.failed_checks:
+                OpenAi(api_key=openai_api_key).enhance_records(runner_type=self.check_type, records=self.failed_checks)
             for record in self.failed_checks:
                 output_data += record.to_string(compact=is_compact, use_bc_ids=use_bc_ids)
             if not is_quiet:
@@ -261,127 +333,6 @@ class Report:
     @staticmethod
     def _print_parsing_error_console(file: str) -> None:
         print(colored(f"Error parsing file {file}", "red"))
-
-    def get_sarif_json(self, tool: str) -> Dict[str, Any]:
-        runs = []
-        rules = []
-        results = []
-        ruleset = set()
-        idx = 0
-        level = "warning"
-        tool = tool if tool else "Bridgecrew"
-        information_uri = "https://docs.bridgecrew.io" if tool.lower() == "bridgecrew" else "https://checkov.io"
-
-        for record in self.failed_checks + self.skipped_checks:
-            if self.check_type == CheckType.SCA_PACKAGE and record.check_name != SCA_PACKAGE_SCAN_CHECK_NAME:
-                continue
-
-            help_uri = record.guideline
-            if record.vulnerability_details:
-                # use the CVE link, if it is a SCA record
-                help_uri = record.vulnerability_details.get("link")
-
-            rule = {
-                "id": record.check_id,
-                "name": record.check_name,
-                "shortDescription": {
-                    "text": record.short_description if record.short_description else record.check_name,
-                },
-                "fullDescription": {
-                    "text": record.description if record.description else record.check_name,
-                },
-                "help": {
-                    "text": f'"{record.check_name}\nResource: {record.resource}"',
-                },
-                "defaultConfiguration": {"level": "error"},
-            }
-            if help_uri:
-                rule["helpUri"] = help_uri
-
-            if record.check_id not in ruleset:
-                ruleset.add(record.check_id)
-                rules.append(rule)
-                idx = rules.index(rule)
-            else:
-                for r in rules:
-                    if r['id'] == rule['id']:
-                        idx = rules.index(r)
-                        break
-            if record.file_line_range[0] == 0:
-                record.file_line_range[0] = 1
-            if record.file_line_range[1] == 0:
-                record.file_line_range[1] = 1
-
-            if record.severity:
-                level = SEVERITY_TO_SARIF_LEVEL.get(record.severity.name.lower(), "none")
-            elif record.check_result.get("result") == CheckResult.FAILED:
-                level = "error"
-
-            result = {
-                "ruleId": record.check_id,
-                "ruleIndex": idx,
-                "level": level,
-                "attachments": [{'description': detail} for detail in record.details],
-                "message": {
-                    "text": record.description if record.description else record.check_name,
-                },
-                "locations": [
-                    {
-                        "physicalLocation": {
-                            "artifactLocation": {"uri": record.file_path.lstrip("/")},
-                            "region": {
-                                "startLine": int(record.file_line_range[0]),
-                                "endLine": int(record.file_line_range[1]),
-                            },
-                        }
-                    }
-                ],
-            }
-
-            if record.check_result.get("result") == CheckResult.SKIPPED:
-                # sca_package suppressions can only be enabled via flag
-                # other runners only report in source suppressions
-                kind = "external" if record.vulnerability_details else "inSource"
-                justification = record.check_result.get("suppress_comment")
-                if justification is None:
-                    justification = "No comment provided"
-
-                result["suppressions"] = [
-                    {
-                        "kind": kind,
-                        "justification": justification,
-                    }
-                ]
-
-            results.append(result)
-
-        runs.append({
-            "tool": {
-                "driver": {
-                    "name": tool,
-                    "version": version,
-                    "informationUri": information_uri,
-                    "rules": rules,
-                    "organization": "bridgecrew",
-                }
-            },
-            "results": results,
-        })
-        sarif_template_report = {
-            "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
-            "version": "2.1.0",
-            "runs": runs,
-        }
-        return sarif_template_report
-
-    def write_sarif_output(self, tool: str) -> None:
-        try:
-            with open("results.sarif", "w") as f:
-                f.write(json.dumps(self.get_sarif_json(tool)))
-                print("\nWrote output in SARIF format to the file 'results.sarif'")
-        except EnvironmentError as e:
-            print("\nAn error occurred while writing SARIF results to file: results.sarif")
-            print(f"More details: \n {e}")
 
     @staticmethod
     def get_junit_xml_string(ts: list[TestSuite]) -> str:
@@ -450,7 +401,7 @@ class Report:
                 if self.check_type == CheckType.SCA_PACKAGE:
                     test_case.add_skipped_info(f"{check_id} skipped for {test_name_detail}")
                 else:
-                    test_case.add_skipped_info(record.check_result["suppress_comment"])
+                    test_case.add_skipped_info(record.check_result.get("suppress_comment", ""))
 
             test_cases.append(test_case)
 
@@ -614,6 +565,22 @@ class Report:
         if '[' in resource_raw_id:
             resource_raw_id = resource_raw_id[:resource_raw_id.index('[')]
         return resource_raw_id
+
+    @classmethod
+    def from_reduced_json(cls, json_report: dict[str, Any], check_type: str) -> Report:
+        report = Report(check_type)
+        report.image_cached_results = json_report['image_cached_results']
+
+        all_json_records = json_report["checks"]["passed_checks"] + \
+            json_report["checks"]["failed_checks"] + \
+            json_report["checks"]["skipped_checks"]
+
+        for json_record in all_json_records:
+            report.add_record(
+                Record.from_reduced_json(json_record)
+            )
+
+        return report
 
 
 def merge_reports(base_report: Report, report_to_merge: Report) -> None:

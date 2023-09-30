@@ -33,6 +33,15 @@ resource "aws_security_group_rule" "pass" {
   type              = "ingress"
 }
 
+resource "aws_vpc_security_group_ingress_rule" "pass" {
+  security_group_id = aws_security_group.example.id
+
+  cidr_ipv4   = "10.0.0.0/8"
+  from_port   = 80
+  ip_protocol = "tcp"
+  to_port     = 80
+}
+
 # fail
 
 resource "aws_security_group" "fail" {
@@ -66,4 +75,13 @@ resource "aws_security_group_rule" "fail" {
   protocol          = "tcp"
   security_group_id = "sg-12345"
   type              = "ingress"
+}
+
+resource "aws_vpc_security_group_ingress_rule" "fail" {
+  security_group_id = aws_security_group.fail.id
+
+  cidr_ipv4   = "0.0.0.0/0"
+  from_port   = 3389
+  ip_protocol = "tcp"
+  to_port     = 3389
 }
