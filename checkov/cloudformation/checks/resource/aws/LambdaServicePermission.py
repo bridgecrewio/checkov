@@ -25,8 +25,8 @@ class LambdaServicePermission(BaseResourceCheck):
                         return CheckResult.FAILED
             except IndexError:
                 # Not a service principal, so pass.
-                return CheckResult.PASSED
-        return CheckResult.PASSED
+                return CheckResult.UNKNOWN
+        return CheckResult.UNKNOWN
 
     def get_evaluated_keys(self) -> List[str]:
         return ['Properties/Principal', 'Properties/SourceArn', 'Properties/SourceAccount']
