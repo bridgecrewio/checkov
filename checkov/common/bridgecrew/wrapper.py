@@ -6,7 +6,7 @@ import json
 import itertools
 from concurrent import futures
 from io import StringIO
-from typing import Any, TYPE_CHECKING, Tuple, Optional
+from typing import Any, TYPE_CHECKING, Optional
 from collections import defaultdict
 
 import dpath
@@ -153,12 +153,13 @@ def enrich_and_persist_checks_metadata(
 
 
 def persist_graphs(
-        graphs: dict[str, list[Tuple[LibraryGraph, Optional[str]]]],
+        graphs: dict[str, list[tuple[LibraryGraph, Optional[str]]]],
         s3_client: S3Client,
         bucket: str,
         full_repo_object_key: str,
         timeout: int,
-        absolute_root_folder: str = '') -> None:
+        absolute_root_folder: str = ''
+) -> None:
     def _upload_graph(check_type: str, graph: LibraryGraph, _absolute_root_folder: str = '', subgraph_path: Optional[str] = None) -> None:
         if isinstance(graph, DiGraph):
             json_obj = node_link_data(graph)

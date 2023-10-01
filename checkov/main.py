@@ -12,7 +12,7 @@ import sys
 import platform
 from collections import defaultdict
 from pathlib import Path
-from typing import TYPE_CHECKING, Tuple, Optional
+from typing import TYPE_CHECKING, Optional
 
 import argcomplete
 import configargparse
@@ -130,7 +130,7 @@ class Checkov:
         self.runners = DEFAULT_RUNNERS
         self.scan_reports: "list[Report]" = []
         self.run_metadata: dict[str, str | list[str]] = {}
-        self.graphs: dict[str, list[Tuple[LibraryGraph, Optional[str]]]] = {}
+        self.graphs: dict[str, list[tuple[LibraryGraph, Optional[str]]]] = {}
         self.url: str | None = None
 
         self.parse_config(argv=argv)
