@@ -199,7 +199,13 @@ def process_dynamic_values(conf: Dict[str, List[Any]]) -> bool:
 
         for element_name, element_value in dynamic_element.items():
             if "content" in element_value:
-                conf[element_name] = element_value["content"]
+                if element_name in conf:
+                    if isinstance(conf[element_name], list):
+                        conf[element_name].append(element_value["content"])
+                    else:
+                        conf[element_name] = [conf[element_name], element_value["content"]]
+                else:
+                    conf[element_name] = element_value["content"]
             else:
                 # this should be the result of a successful dynamic block rendering
                 # in some cases a whole dict is added, which doesn't have a list around it
