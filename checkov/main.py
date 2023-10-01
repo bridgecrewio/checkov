@@ -12,7 +12,7 @@ import sys
 import platform
 from collections import defaultdict
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 import argcomplete
 import configargparse
@@ -45,6 +45,7 @@ from checkov.common.output.baseline import Baseline
 from checkov.common.bridgecrew.check_type import checkov_runners, CheckType
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.runners.runner_registry import RunnerRegistry
+from checkov.common.typing import LibraryGraph
 from checkov.common.util import prompt
 from checkov.common.util.banner import banner as checkov_banner, tool as checkov_tool
 from checkov.common.util.config_utils import get_default_config_paths
@@ -83,8 +84,6 @@ if TYPE_CHECKING:
     from checkov.common.output.report import Report
     from configargparse import Namespace
     from typing_extensions import Literal
-    from igraph import Graph
-    from networkx import DiGraph
 
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
@@ -131,7 +130,7 @@ class Checkov:
         self.runners = DEFAULT_RUNNERS
         self.scan_reports: "list[Report]" = []
         self.run_metadata: dict[str, str | list[str]] = {}
-        self.graphs: dict[str, DiGraph | Graph] = {}
+        self.graphs: dict[str, list[tuple[LibraryGraph, Optional[str]]]] = {}
         self.url: str | None = None
 
         self.parse_config(argv=argv)

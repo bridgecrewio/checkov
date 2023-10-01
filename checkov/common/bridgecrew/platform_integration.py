@@ -14,7 +14,7 @@ from json import JSONDecodeError
 from os import path
 from pathlib import Path
 from time import sleep
-from typing import List, Dict, TYPE_CHECKING, Any, cast
+from typing import List, Dict, TYPE_CHECKING, Any, cast, Optional
 
 import boto3
 import dpath
@@ -37,7 +37,7 @@ from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_check
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILES, SCANNABLE_PACKAGE_FILES
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import filter_ignored_paths
-from checkov.common.typing import _CicdDetails
+from checkov.common.typing import _CicdDetails, LibraryGraph
 from checkov.common.util.consts import PRISMA_PLATFORM, BRIDGECREW_PLATFORM, CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
 from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.dockerfile import is_dockerfile
@@ -66,8 +66,6 @@ if TYPE_CHECKING:
     from mypy_boto3_s3.client import S3Client
     from requests import Response
     from typing_extensions import TypeGuard
-    from igraph import Graph
-    from networkx import DiGraph
 
 
 SLEEP_SECONDS = 1
@@ -558,7 +556,7 @@ class BcPlatformIntegration:
         log_path = f'{self.support_repo_path}/checkov_results' if self.support_repo_path == self.repo_path else self.support_repo_path
         persist_logs_stream(logs_stream, self.s3_client, self.support_bucket, log_path)
 
-    def persist_graphs(self, graphs: dict[str, DiGraph | Graph], absolute_root_folder: str = '') -> None:
+    def persist_graphs(self, graphs: dict[str, list[tuple[LibraryGraph, Optional[str]]]], absolute_root_folder: str = '') -> None:
         if not self.use_s3_integration or not self.s3_client:
             return
         if not self.bucket or not self.repo_path:
