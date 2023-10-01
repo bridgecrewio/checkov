@@ -23,7 +23,7 @@ except ImportError:
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
-from checkov.common.typing import _ReducedScanReport
+from checkov.common.typing import _ReducedScanReport, LibraryGraph
 from checkov.common.util.file_utils import compress_string_io_tar
 from checkov.common.util.igraph_serialization import serialize_to_json
 from checkov.common.util.json_utils import CustomJSONEncoder
@@ -152,9 +152,14 @@ def enrich_and_persist_checks_metadata(
     return checks_metadata_paths
 
 
-def persist_graphs(graphs: dict[str, list[Tuple[DiGraph | Graph | PyDiGraph[Any, Any], Optional[str]]]], s3_client: S3Client, bucket: str, full_repo_object_key: str,
-                   timeout: int, absolute_root_folder: str = '') -> None:
-    def _upload_graph(check_type: str, graph: DiGraph | Graph | PyDiGraph[Any, Any], _absolute_root_folder: str = '', subgraph_path: Optional[str] = None) -> None:
+def persist_graphs(
+        graphs: dict[str, list[Tuple[LibraryGraph, Optional[str]]]],
+        s3_client: S3Client,
+        bucket: str,
+        full_repo_object_key: str,
+        timeout: int,
+        absolute_root_folder: str = '') -> None:
+    def _upload_graph(check_type: str, graph: LibraryGraph, _absolute_root_folder: str = '', subgraph_path: Optional[str] = None) -> None:
         if isinstance(graph, DiGraph):
             json_obj = node_link_data(graph)
             graph_file_name = FILE_NAME_NETWORKX
