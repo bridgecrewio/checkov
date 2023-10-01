@@ -32,7 +32,7 @@ class TerraformGraphManager(GraphManager[TerraformLocalGraph, "dict[TFDefinition
         external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR,
         vars_files: list[str] | None = None,
         create_graph: bool = True,
-    ) -> list[tuple[TerraformLocalGraph | None, list[dict[TFDefinitionKey, dict[str, Any]]]]]:
+    ) -> list[tuple[TerraformLocalGraph | None, list[dict[TFDefinitionKey, dict[str, Any]]], str]]:
         logging.info("Parsing HCL files in source dir to multi graph")
         modules_with_definitions = self.parser.parse_multi_graph_hcl_module(
             source_dir=source_dir,
@@ -45,13 +45,15 @@ class TerraformGraphManager(GraphManager[TerraformLocalGraph, "dict[TFDefinition
             create_graph=create_graph,
         )
 
-        graphs: list[tuple[TerraformLocalGraph | None, list[dict[TFDefinitionKey, dict[str, Any]]]]] = []
+        graphs: list[tuple[TerraformLocalGraph | None, list[dict[TFDefinitionKey, dict[str, Any]]], str]] = []
         for module, tf_definitions in modules_with_definitions:
             if create_graph and module:
                 logging.info("Building graph from parsed module")
                 local_graph = local_graph_class(module)
                 local_graph.build_graph(render_variables=render_variables)
-                graphs.append((local_graph, tf_definitions))
+                subgraph_abs_path = module.source_dir
+                subgraph_path = subgraph_abs_path[subgraph_abs_path.rindex(source_dir) + len(source_dir) + 1:]
+                graphs.append((local_graph, tf_definitions, subgraph_path))
 
         return graphs
 
@@ -111,15 +113,15 @@ class TerraformGraphManager(GraphManager[TerraformLocalGraph, "dict[TFDefinition
         return local_graph
 
     def build_multi_graph_from_definitions(self, definitions: dict[TFDefinitionKey, dict[str, Any]],
-                                           render_variables: bool = True) -> list[TerraformLocalGraph]:
+                                           render_variables: bool = True) -> list[tuple[str, TerraformLocalGraph]]:
         module, tf_definitions = self.parser.parse_hcl_module_from_tf_definitions(definitions, "", self.source)
         dirs_to_definitions = self.parser.create_definition_by_dirs(tf_definitions)
 
-        graphs: list[TerraformLocalGraph] = []
+        graphs: list[tuple[str, TerraformLocalGraph]] = []
         for source_path, dir_definitions in dirs_to_definitions.items():
             module, parsed_tf_definitions = self.parser.parse_hcl_module_from_multi_tf_definitions(dir_definitions, source_path, self.source)
             local_graph = TerraformLocalGraph(module)
             local_graph.build_graph(render_variables=render_variables)
-            graphs.append(local_graph)
+            graphs.append((source_path, local_graph))
 
         return graphs
