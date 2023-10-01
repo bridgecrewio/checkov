@@ -31,8 +31,7 @@ class TerraformGraphManager(GraphManager[TerraformLocalGraph, "dict[TFDefinition
         excluded_paths: list[str] | None = None,
         external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR,
         vars_files: list[str] | None = None,
-        create_graph: bool = True,
-    ) -> list[tuple[TerraformLocalGraph | None, list[dict[TFDefinitionKey, dict[str, Any]]], str]]:
+    ) -> list[tuple[TerraformLocalGraph, list[dict[TFDefinitionKey, dict[str, Any]]], str]]:
         logging.info("Parsing HCL files in source dir to multi graph")
         modules_with_definitions = self.parser.parse_multi_graph_hcl_module(
             source_dir=source_dir,
@@ -42,18 +41,16 @@ class TerraformGraphManager(GraphManager[TerraformLocalGraph, "dict[TFDefinition
             parsing_errors=parsing_errors,
             excluded_paths=excluded_paths,
             vars_files=vars_files,
-            create_graph=create_graph,
         )
 
-        graphs: list[tuple[TerraformLocalGraph | None, list[dict[TFDefinitionKey, dict[str, Any]]], str]] = []
+        graphs: list[tuple[TerraformLocalGraph, list[dict[TFDefinitionKey, dict[str, Any]]], str]] = []
         for module, tf_definitions in modules_with_definitions:
-            if create_graph and module:
-                logging.info("Building graph from parsed module")
-                local_graph = local_graph_class(module)
-                local_graph.build_graph(render_variables=render_variables)
-                subgraph_abs_path = module.source_dir
-                subgraph_path = subgraph_abs_path[subgraph_abs_path.rindex(source_dir) + len(source_dir) + 1:]
-                graphs.append((local_graph, tf_definitions, subgraph_path))
+            logging.info("Building graph from parsed module")
+            local_graph = local_graph_class(module)
+            local_graph.build_graph(render_variables=render_variables)
+            subgraph_abs_path = module.source_dir
+            subgraph_path = subgraph_abs_path[subgraph_abs_path.rindex(source_dir) + len(source_dir) + 1:]
+            graphs.append((local_graph, tf_definitions, subgraph_path))
 
         return graphs
 
@@ -67,8 +64,7 @@ class TerraformGraphManager(GraphManager[TerraformLocalGraph, "dict[TFDefinition
         excluded_paths: list[str] | None = None,
         external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR,
         vars_files: list[str] | None = None,
-        create_graph: bool = True,
-    ) -> tuple[TerraformLocalGraph | None, dict[TFDefinitionKey, dict[str, Any]]]:
+    ) -> tuple[TerraformLocalGraph, dict[TFDefinitionKey, dict[str, Any]]]:
         logging.info("Parsing HCL files in source dir to graph")
         module, tf_definitions = self.parser.parse_hcl_module(
             source_dir=source_dir,
@@ -78,14 +74,11 @@ class TerraformGraphManager(GraphManager[TerraformLocalGraph, "dict[TFDefinition
             parsing_errors=parsing_errors,
             excluded_paths=excluded_paths,
             vars_files=vars_files,
-            create_graph=create_graph,
         )
 
-        local_graph = None
-        if create_graph and module:
-            logging.info("Building graph from parsed module")
-            local_graph = local_graph_class(module)
-            local_graph.build_graph(render_variables=render_variables)
+        logging.info("Building graph from parsed module")
+        local_graph = local_graph_class(module)
+        local_graph.build_graph(render_variables=render_variables)
 
         return local_graph, tf_definitions
 

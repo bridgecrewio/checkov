@@ -27,7 +27,7 @@ from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.bridgecrew.check_type import CheckType
-from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
+from checkov.common.runners.base_runner import BaseRunner
 from checkov.common.typing import _CheckResult
 from checkov.common.util.secrets import omit_secret_value_from_checks
 from checkov.common.util.suppression import collect_suppressions_for_report
@@ -106,21 +106,18 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_BicepDefinitions, _BicepCon
             if external_checks_dir:
                 for directory in external_checks_dir:
                     resource_registry.load_external_checks(directory)
-
-                    if CHECKOV_CREATE_GRAPH:
-                        self.graph_registry.load_external_checks(directory)
+                    self.graph_registry.load_external_checks(directory)
 
             self.context = build_definitions_context(definitions=self.definitions, definitions_raw=self.definitions_raw)
 
-            if CHECKOV_CREATE_GRAPH:
-                logging.info("Creating Bicep graph")
-                local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
-                logging.info("Successfully created Bicep graph")
+            logging.info("Creating Bicep graph")
+            local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
+            logging.info("Successfully created Bicep graph")
 
-                self.graph_manager.save_graph(local_graph)
-                self.definitions, self.breadcrumbs = convert_graph_vertices_to_tf_definitions(
-                    vertices=local_graph.vertices, root_folder=root_folder
-                )
+            self.graph_manager.save_graph(local_graph)
+            self.definitions, self.breadcrumbs = convert_graph_vertices_to_tf_definitions(
+                vertices=local_graph.vertices, root_folder=root_folder
+            )
 
         self.pbar.initiate(len(self.definitions))
 
@@ -128,8 +125,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_BicepDefinitions, _BicepCon
         self.add_python_check_results(report=report, runner_filter=runner_filter, root_folder=root_folder)
 
         # run graph checks
-        if CHECKOV_CREATE_GRAPH:
-            self.add_graph_check_results(report=report, runner_filter=runner_filter)
+        self.add_graph_check_results(report=report, runner_filter=runner_filter)
 
         if runner_filter.run_image_referencer:
             if files:
