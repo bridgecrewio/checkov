@@ -14,7 +14,6 @@ from checkov.common.util.tqdm_utils import ProgressBar
 
 from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 from checkov.common.output.report import Report
-from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.runner_filter import RunnerFilter
 from checkov.common.graph.graph_manager import GraphManager  # noqa
 
