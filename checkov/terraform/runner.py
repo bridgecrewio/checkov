@@ -3,7 +3,7 @@ from __future__ import annotations
 import dataclasses
 import logging
 import os
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, Optional
 
 from typing_extensions import TypeAlias  # noqa[TC002]
 
@@ -56,7 +56,7 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
         graph_manager: TerraformGraphManager | None = None,
     ) -> None:
         super().__init__(parser, db_connector, external_registries, source, graph_class, graph_manager)
-        self.all_graphs: list[tuple[LibraryGraph, str]] = []
+        self.all_graphs: list[tuple[LibraryGraph, Optional[str]]] = []
 
     def run(
         self,
@@ -108,7 +108,7 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
                         create_graph=CHECKOV_CREATE_GRAPH,
                     )
                     # Make graph a list to allow single processing method for all cases
-                    local_graphs = [('', single_graph)]
+                    local_graphs = [(None, single_graph)]
             elif files:
                 files = [os.path.abspath(file) for file in files]
                 root_folder = os.path.split(os.path.commonprefix(files))[0]
@@ -121,7 +121,7 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
                         )
                     else:
                         # local_graph needs to be a list to allow supporting multi graph
-                        local_graphs = [('', self.graph_manager.build_graph_from_definitions(self.definitions))]
+                        local_graphs = [(None, self.graph_manager.build_graph_from_definitions(self.definitions))]
             else:
                 raise Exception("Root directory was not specified, files were not specified")
 
@@ -190,7 +190,7 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
                     parsing_errors.update(file_parsing_errors)
 
     def _update_definitions_and_breadcrumbs(
-        self, local_graphs: list[tuple[str, TerraformLocalGraph]], report: Report, root_folder: str
+        self, local_graphs: list[tuple[Optional[str], TerraformLocalGraph]], report: Report, root_folder: str
     ) -> None:
         self.definitions = {}
         self.breadcrumbs = {}
