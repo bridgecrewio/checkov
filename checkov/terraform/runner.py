@@ -3,7 +3,7 @@ from __future__ import annotations
 import dataclasses
 import logging
 import os
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, Optional
 
 from typing_extensions import TypeAlias  # noqa[TC002]
 
@@ -57,6 +57,7 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
     ) -> None:
         super().__init__(parser, db_connector, external_registries, source, graph_class, graph_manager)
         self.all_graphs: list[tuple[LibraryGraph, str]] = []
+        self.resource_subgraph_map: Optional[dict[str, str]] = None
 
     def run(
         self,
@@ -81,7 +82,7 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
             if root_folder:
                 root_folder = os.path.abspath(root_folder)
                 if tf_split_graph:
-                    graphs_with_definitions = self.graph_manager.build_multi_graph_from_source_directory(
+                    graphs_with_definitions, self.resource_subgraph_map = self.graph_manager.build_multi_graph_from_source_directory(
                         source_dir=root_folder,
                         local_graph_class=self.graph_class,
                         download_external_modules=runner_filter.download_external_modules,
