@@ -73,7 +73,7 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
         report = Report(self.check_type)
         parsing_errors: dict[str, Exception] = {}
         self.load_external_checks(external_checks_dir)
-        local_graphs = None
+        local_graphs: Optional[list[tuple[Optional[str], Optional[TerraformLocalGraph]]]] = None
         if self.context is None or self.definitions is None or self.breadcrumbs is None:
             self.definitions = {}
             logging.info("Scanning root folder and producing fresh tf_definitions and context")
