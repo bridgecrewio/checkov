@@ -129,7 +129,9 @@ class TerraformGraphManager(GraphManager[TerraformLocalGraph, "dict[TFDefinition
         return graphs
 
     @staticmethod
-    def update_resource_subgraph_map(local_graph: TerraformLocalGraph, subgraph_path: str, resource_subgraph_map: dict[str, str], source_dir: str):
+    def update_resource_subgraph_map(
+            local_graph: TerraformLocalGraph, subgraph_path: str, resource_subgraph_map: dict[str, str], source_dir: str
+    ) -> None:
         for v in local_graph.vertices:
             resource_id = f"/{os.path.relpath(v.path, source_dir)}:{v.id}"
             resource_subgraph_map[resource_id] = subgraph_path

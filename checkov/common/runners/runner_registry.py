@@ -775,4 +775,4 @@ class RunnerRegistry:
     @staticmethod
     def extract_resource_subgraph_map_from_runner(runner: _BaseRunner) -> Optional[dict[str, str]]:
         # exist only for terraform
-        return getattr(runner, 'resource_subgraph_map', None)   # type:ignore[no-any-return]
+        return getattr(runner, 'resource_subgraph_map', None)

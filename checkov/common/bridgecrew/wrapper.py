@@ -199,7 +199,7 @@ def persist_resource_subgraph_maps(
         full_repo_object_key: str,
         timeout: int
 ) -> None:
-    def _upload_resource_subgraph_map(check_type: str, resource_subgraph_map: dict[str, str]):
+    def _upload_resource_subgraph_map(check_type: str, resource_subgraph_map: dict[str, str]) -> None:
         s3_key = os.path.join(graphs_repo_object_key, check_type, "multi-graph/resource_subgraph_maps")
         try:
             _put_json_object(s3_client, resource_subgraph_map, bucket, s3_key)
