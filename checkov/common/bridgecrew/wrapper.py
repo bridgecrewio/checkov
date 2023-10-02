@@ -173,7 +173,7 @@ def persist_graphs(
         else:
             logging.error(f"unsupported graph type '{graph.__class__.__name__}'")
             return
-        multi_graph_addition = (f"multi-graph/{subgraph_path}" if subgraph_path else '').rstrip("/")
+        multi_graph_addition = (f"multi-graph/{subgraph_path}" if subgraph_path is not None else '').rstrip("/")
         s3_key = os.path.join(graphs_repo_object_key, check_type, multi_graph_addition, graph_file_name)
         try:
             _put_json_object(s3_client, json_obj, bucket, s3_key)
