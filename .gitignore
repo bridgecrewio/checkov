@@ -104,7 +104,6 @@ ENV/
 ### VirtualEnv template
 # Virtualenv
 # http://iamzed.com/2009/05/07/a-primer-on-virtualenv/
-.Python
 [Ii]nclude
 [Ll]ib
 [Ll]ib64
@@ -173,3 +172,8 @@ tests/20*
 .vim/
 .vimspector.json
 !tests/terraform/graph/variable_rendering/test_resources/tfvar_module_variables/modules/instance
+
+# sast go mod
+checkov/sast_core/vendor
+
+*.prof

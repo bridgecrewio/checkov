@@ -39,7 +39,7 @@ class TestLicensingIntegration(unittest.TestCase):
 
     def test_constants(self):
         # these tests ensure that these lists get maintained if the runners and categories change
-        self.assertEqual(set(module_keys), {'IAC', 'SECRETS', 'SCA'})
+        self.assertEqual(set(module_keys), {'IAC', 'SECRETS', 'SCA', 'SAST'})
 
         self.assertEqual(set(checkov_runners), {
             'ansible',
@@ -70,18 +70,24 @@ class TestLicensingIntegration(unittest.TestCase):
             'terraform_json',
             'terraform_plan',
             'yaml',
+            'sast',
+            'sast_python',
+            'sast_java',
+            'sast_javascript',
             '3d_policy'
         })
 
         self.assertEqual(SubscriptionCategoryMapping.get(CustomerSubscription.IAC), (CodeCategoryType.IAC, CodeCategoryType.BUILD_INTEGRITY))
         self.assertEqual(SubscriptionCategoryMapping.get(CustomerSubscription.SCA), (CodeCategoryType.LICENSES, CodeCategoryType.VULNERABILITIES))
         self.assertEqual(SubscriptionCategoryMapping.get(CustomerSubscription.SECRETS), (CodeCategoryType.SECRETS,))
+        self.assertEqual(SubscriptionCategoryMapping.get(CustomerSubscription.SAST), (CodeCategoryType.SAST,))
 
         self.assertEqual(CategoryToSubscriptionMapping[CodeCategoryType.IAC], CustomerSubscription.IAC)
         self.assertEqual(CategoryToSubscriptionMapping[CodeCategoryType.BUILD_INTEGRITY], CustomerSubscription.IAC)
         self.assertEqual(CategoryToSubscriptionMapping[CodeCategoryType.LICENSES], CustomerSubscription.SCA)
         self.assertEqual(CategoryToSubscriptionMapping[CodeCategoryType.VULNERABILITIES], CustomerSubscription.SCA)
         self.assertEqual(CategoryToSubscriptionMapping[CodeCategoryType.SECRETS], CustomerSubscription.SECRETS)
+        self.assertEqual(CategoryToSubscriptionMapping[CodeCategoryType.SAST], CustomerSubscription.SAST)
 
         self.assertEqual(CodeCategoryMapping.get(CheckType.BITBUCKET_PIPELINES), CodeCategoryType.BUILD_INTEGRITY)
         self.assertEqual(CodeCategoryMapping.get(CheckType.CIRCLECI_PIPELINES), CodeCategoryType.BUILD_INTEGRITY)
@@ -110,6 +116,7 @@ class TestLicensingIntegration(unittest.TestCase):
         self.assertEqual(CodeCategoryMapping.get(CheckType.TERRAFORM), CodeCategoryType.IAC)
         self.assertEqual(CodeCategoryMapping.get(CheckType.TERRAFORM_PLAN), CodeCategoryType.IAC)
         self.assertEqual(CodeCategoryMapping.get(CheckType.ARGO_WORKFLOWS), CodeCategoryType.BUILD_INTEGRITY)
+        self.assertEqual(CodeCategoryMapping.get(CheckType.SAST), CodeCategoryType.SAST)
 
         self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.BITBUCKET_PIPELINES), CustomerSubscription.IAC)
         self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.CIRCLECI_PIPELINES), CustomerSubscription.IAC)
@@ -138,8 +145,9 @@ class TestLicensingIntegration(unittest.TestCase):
         self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.TERRAFORM), CustomerSubscription.IAC)
         self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.TERRAFORM_PLAN), CustomerSubscription.IAC)
         self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.ARGO_WORKFLOWS), CustomerSubscription.IAC)
+        self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.SAST), CustomerSubscription.SAST)
 
-        self.assertEqual(open_source_categories, [CodeCategoryType.IAC, CodeCategoryType.SECRETS, CodeCategoryType.BUILD_INTEGRITY])
+        self.assertEqual(open_source_categories, [CodeCategoryType.IAC, CodeCategoryType.SECRETS, CodeCategoryType.BUILD_INTEGRITY, CodeCategoryType.SAST])
 
     def test_integration_valid(self):
         instance = BcPlatformIntegration()

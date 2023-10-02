@@ -43,6 +43,10 @@ from checkov.runner_filter import RunnerFilter
                 "sca_package",
                 "openapi",
                 "sca_image",
+                "sast",
+                'sast_java',
+                'sast_javascript',
+                'sast_python',
                 "3d_policy"
             },
         ),

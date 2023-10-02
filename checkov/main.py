@@ -26,6 +26,7 @@ from checkov.arm.runner import Runner as arm_runner
 from checkov.azure_pipelines.runner import Runner as azure_pipelines_runner
 from checkov.bitbucket.runner import Runner as bitbucket_configuration_runner
 from checkov.bitbucket_pipelines.runner import Runner as bitbucket_pipelines_runner
+from checkov.cdk.runner import CdkRunner
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.bc_source import SourceTypes, BCSourceType, get_source_type, SourceType
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
@@ -65,6 +66,7 @@ from checkov.json_doc.runner import Runner as json_runner
 from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.kustomize.runner import Runner as kustomize_runner
 from checkov.runner_filter import RunnerFilter
+from checkov.sast.report import SastData, SastReport
 from checkov.sca_image.runner import Runner as sca_image_runner
 from checkov.sca_package.runner import Runner as sca_package_runner
 from checkov.sca_package_2.runner import Runner as sca_package_runner_2
@@ -78,12 +80,15 @@ from checkov.yaml_doc.runner import Runner as yaml_runner
 from checkov.bicep.runner import Runner as bicep_runner
 from checkov.openapi.runner import Runner as openapi_runner
 from checkov.circleci_pipelines.runner import Runner as circleci_pipelines_runner
+from checkov.sast.runner import Runner as sast_runner
 from checkov.logging_init import log_stream as logs_stream
 
 if TYPE_CHECKING:
     from checkov.common.output.report import Report
     from configargparse import Namespace
     from typing_extensions import Literal
+    from igraph import Graph
+    from networkx import DiGraph
 
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
@@ -120,6 +125,8 @@ DEFAULT_RUNNERS = [
     azure_pipelines_runner(),
     ansible_runner(),
     TerraformJsonRunner(),
+    sast_runner(),
+    CdkRunner(),
 ]
 
 
@@ -132,6 +139,7 @@ class Checkov:
         self.run_metadata: dict[str, str | list[str]] = {}
         self.graphs: dict[str, list[tuple[LibraryGraph, Optional[str]]]] = {}
         self.url: str | None = None
+        self.sast_data: SastData = SastData()
 
         self.parse_config(argv=argv)
 
@@ -296,7 +304,8 @@ class Checkov:
                 repo_root_for_plan_enrichment=self.config.repo_root_for_plan_enrichment,
                 resource_attr_to_omit=self.config.mask,
                 enable_git_history_secret_scan=self.config.scan_secrets_history,
-                git_history_timeout=self.config.secrets_history_timeout
+                git_history_timeout=self.config.secrets_history_timeout,
+                report_sast_imports=bool(convert_str_to_bool(os.getenv('CKV_ENABLE_UPLOAD_SAST_IMPORTS', False)))
             )
 
             source_env_val = os.getenv('BC_SOURCE', 'cli')
@@ -596,6 +605,7 @@ class Checkov:
                     root_folder = os.path.split(os.path.commonprefix(files))[0]
                     absolute_root_folder = os.path.abspath(root_folder)
 
+                    self.save_sast_assets_data(self.scan_reports)
                     self.upload_results(
                         root_folder=root_folder,
                         absolute_root_folder=absolute_root_folder,
@@ -677,10 +687,18 @@ class Checkov:
         else:
             scan_reports_to_upload = self.scan_reports
         bc_integration.persist_scan_results(scan_reports_to_upload)
+        bc_integration.persist_assets_scan_results(self.sast_data.imports_data)
         bc_integration.persist_run_metadata(self.run_metadata)
         if bc_integration.enable_persist_graphs:
             bc_integration.persist_graphs(self.graphs, absolute_root_folder=absolute_root_folder)
         self.url = self.commit_repository()
+
+    def save_sast_assets_data(self, scan_reports: List[Report]) -> None:
+        if not bool(convert_str_to_bool(os.getenv('CKV_ENABLE_UPLOAD_SAST_IMPORTS', False))):
+            return
+        sast_report = [scan_report for scan_report in scan_reports if type(scan_report) == SastReport]
+        sast_imports_report = self.sast_data.get_sast_import_report(sast_report)
+        self.sast_data.set_imports_data(sast_imports_report)
 
     def print_results(
             self,
