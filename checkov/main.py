@@ -472,6 +472,7 @@ class Checkov:
                         files=file,
                     )
                     self.graphs = runner_registry.check_type_to_graph
+                    self.resource_subgraph_maps = runner_registry.check_type_to_resource_subgraph_map
                     if runner_registry.is_error_in_reports(self.scan_reports):
                         self.exit_run()
                     if baseline:
@@ -555,6 +556,7 @@ class Checkov:
                     bc_integration.persist_run_metadata(self.run_metadata)
                     if bc_integration.enable_persist_graphs:
                         bc_integration.persist_graphs(self.graphs)
+                        bc_integration.persist_resource_subgraph_maps(self.resource_subgraph_maps)
                     self.url = self.commit_repository()
 
                 should_run_contributor_metrics = bc_integration.bc_api_key and self.config.repo_id and self.config.prisma_api_url
@@ -575,6 +577,7 @@ class Checkov:
                     repo_root_for_plan_enrichment=self.config.repo_root_for_plan_enrichment,
                 )
                 self.graphs = runner_registry.check_type_to_graph
+                self.resource_subgraph_maps = runner_registry.check_type_to_resource_subgraph_map
                 if runner_registry.is_error_in_reports(self.scan_reports):
                     self.exit_run()
                 if baseline:
@@ -680,6 +683,7 @@ class Checkov:
         bc_integration.persist_run_metadata(self.run_metadata)
         if bc_integration.enable_persist_graphs:
             bc_integration.persist_graphs(self.graphs, absolute_root_folder=absolute_root_folder)
+            bc_integration.persist_resource_subgraph_maps(self.resource_subgraph_maps)
         self.url = self.commit_repository()
 
     def print_results(

@@ -96,6 +96,7 @@ class RunnerRegistry:
         self.licensing_integration = licensing_integration  # can be maniuplated by unit tests
         self.secrets_omitter_class = secrets_omitter_class
         self.check_type_to_graph: dict[str, list[tuple[LibraryGraph, Optional[str]]]] = {}
+        self.check_type_to_resource_subgraph_map: dict[str, dict[str, str]] = {}
         for runner in runners:
             if isinstance(runner, image_runner):
                 runner.image_referencers = self.image_referencing_runners
@@ -124,7 +125,7 @@ class RunnerRegistry:
                 # This is the only runner, so raise a clear indication of failure
                 raise ModuleNotEnabledError(f'The framework "{runner_check_type}" is part of the "{self.licensing_integration.get_subscription_for_runner(runner_check_type).name}" module, which is not enabled in the platform')
         else:
-            def _parallel_run(runner: _BaseRunner) -> tuple[Report | list[Report], str | None, Optional[list[tuple[LibraryGraph, Optional[str]]]]]:
+            def _parallel_run(runner: _BaseRunner) -> tuple[Report | list[Report], str | None, Optional[list[tuple[LibraryGraph, Optional[str]]]], Optional[dict[str, str]]]:
                 report = runner.run(
                     root_folder=root_folder,
                     external_checks_dir=external_checks_dir,
@@ -138,8 +139,9 @@ class RunnerRegistry:
                     report = Report(check_type=runner.check_type)
 
                 if runner.graph_manager:
-                    return report, runner.check_type, self.extract_graphs_from_runner(runner)
-                return report, None, None
+                    return report, runner.check_type, self.extract_graphs_from_runner(runner), \
+                        self.extract_resource_subgraph_map_from_runner(runner)
+                return report, None, None, None
 
             valid_runners = []
             invalid_runners = []
@@ -170,13 +172,18 @@ class RunnerRegistry:
                                                                    group_size=1)
             reports = []
             full_check_type_to_graph = {}
+            full_check_type_to_resource_subgraph_map = {}
             for result in parallel_runner_results:
                 if result is not None:
-                    report, check_type, graphs = result
+                    report, check_type, graphs, resource_subgraph_map = result
                     reports.append(report)
-                    if check_type is not None and graphs is not None:
-                        full_check_type_to_graph[check_type] = graphs
+                    if check_type is not None:
+                        if graphs is not None:
+                            full_check_type_to_graph[check_type] = graphs
+                        if resource_subgraph_map is not None:
+                            full_check_type_to_resource_subgraph_map[check_type] = resource_subgraph_map
             self.check_type_to_graph = full_check_type_to_graph
+            self.check_type_to_resource_subgraph_map = full_check_type_to_resource_subgraph_map
 
         merged_reports = self._merge_reports(reports)
         if bc_integration.bc_api_key:
@@ -192,6 +199,12 @@ class RunnerRegistry:
         if not self.check_type_to_graph:
             self.check_type_to_graph = {runner.check_type: self.extract_graphs_from_runner(runner) for runner
                                         in self.runners if runner.graph_manager}
+        if not self.check_type_to_resource_subgraph_map:
+            self.check_type_to_resource_subgraph_map = {}
+            for runner in self.runners:
+                resource_subgraph_map = self.extract_resource_subgraph_map_from_runner(runner)
+                if resource_subgraph_map is not None:
+                    self.check_type_to_resource_subgraph_map[runner.check_type] = resource_subgraph_map
         return self.scan_reports
 
     def _merge_reports(self, reports: Iterable[Report | list[Report]]) -> list[Report]:
@@ -758,3 +771,8 @@ class RunnerRegistry:
         elif runner.graph_manager:
             return [(runner.graph_manager.get_reader_endpoint(), None)]
         return []
+
+    @staticmethod
+    def extract_resource_subgraph_map_from_runner(runner: _BaseRunner) -> Optional[dict[str, str]]:
+        # exist only for terraform
+        return getattr(runner, 'resource_subgraph_map', None)   # type:ignore[no-any-return]
