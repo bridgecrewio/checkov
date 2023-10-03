@@ -12,7 +12,7 @@ import sys
 import platform
 from collections import defaultdict
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 import argcomplete
 import configargparse
@@ -45,6 +45,7 @@ from checkov.common.output.baseline import Baseline
 from checkov.common.bridgecrew.check_type import checkov_runners, CheckType
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.runners.runner_registry import RunnerRegistry
+from checkov.common.typing import LibraryGraph
 from checkov.common.util import prompt
 from checkov.common.util.banner import banner as checkov_banner, tool as checkov_tool
 from checkov.common.util.config_utils import get_default_config_paths
@@ -83,8 +84,6 @@ if TYPE_CHECKING:
     from checkov.common.output.report import Report
     from configargparse import Namespace
     from typing_extensions import Literal
-    from igraph import Graph
-    from networkx import DiGraph
 
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
@@ -131,7 +130,7 @@ class Checkov:
         self.runners = DEFAULT_RUNNERS
         self.scan_reports: "list[Report]" = []
         self.run_metadata: dict[str, str | list[str]] = {}
-        self.graphs: dict[str, DiGraph | Graph] = {}
+        self.graphs: dict[str, list[tuple[LibraryGraph, Optional[str]]]] = {}
         self.url: str | None = None
 
         self.parse_config(argv=argv)
@@ -473,6 +472,7 @@ class Checkov:
                         files=file,
                     )
                     self.graphs = runner_registry.check_type_to_graph
+                    self.resource_subgraph_maps = runner_registry.check_type_to_resource_subgraph_map
                     if runner_registry.is_error_in_reports(self.scan_reports):
                         self.exit_run()
                     if baseline:
@@ -556,6 +556,7 @@ class Checkov:
                     bc_integration.persist_run_metadata(self.run_metadata)
                     if bc_integration.enable_persist_graphs:
                         bc_integration.persist_graphs(self.graphs)
+                        bc_integration.persist_resource_subgraph_maps(self.resource_subgraph_maps)
                     self.url = self.commit_repository()
 
                 should_run_contributor_metrics = bc_integration.bc_api_key and self.config.repo_id and self.config.prisma_api_url
@@ -576,6 +577,7 @@ class Checkov:
                     repo_root_for_plan_enrichment=self.config.repo_root_for_plan_enrichment,
                 )
                 self.graphs = runner_registry.check_type_to_graph
+                self.resource_subgraph_maps = runner_registry.check_type_to_resource_subgraph_map
                 if runner_registry.is_error_in_reports(self.scan_reports):
                     self.exit_run()
                 if baseline:
@@ -681,6 +683,7 @@ class Checkov:
         bc_integration.persist_run_metadata(self.run_metadata)
         if bc_integration.enable_persist_graphs:
             bc_integration.persist_graphs(self.graphs, absolute_root_folder=absolute_root_folder)
+            bc_integration.persist_resource_subgraph_maps(self.resource_subgraph_maps)
         self.url = self.commit_repository()
 
     def print_results(

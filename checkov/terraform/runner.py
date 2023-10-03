@@ -3,11 +3,13 @@ from __future__ import annotations
 import dataclasses
 import logging
 import os
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, Optional
 
 from typing_extensions import TypeAlias  # noqa[TC002]
 
 from checkov.common.bridgecrew.check_type import CheckType
+from checkov.common.graph.checks_infra.registry import BaseRegistry
+from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.output.graph_record import GraphRecord
@@ -20,6 +22,7 @@ from checkov.terraform import get_module_from_full_path, get_module_name, get_ab
 from checkov.common.util.secrets import omit_secret_value_from_checks
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.base_runner import BaseTerraformRunner
+from checkov.terraform.graph_manager import TerraformGraphManager
 from checkov.terraform.modules.module_objects import TFDefinitionKey, TFModule
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.evaluation.base_variable_evaluation import BaseVariableEvaluation
@@ -29,9 +32,10 @@ from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_grap
 from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 from checkov.terraform.tag_providers import get_resource_tags
 from checkov.common.runners.base_runner import strtobool
+from checkov.terraform.tf_parser import TFParser
 
 if TYPE_CHECKING:
-    from checkov.common.typing import _SkippedCheck, LibraryGraph
+    from checkov.common.typing import _SkippedCheck, LibraryGraph, LibraryGraphConnector
 
 _TerraformContext: TypeAlias = "dict[TFDefinitionKey, dict[str, Any]]"
 _TerraformDefinitions: TypeAlias = "dict[TFDefinitionKey, dict[str, Any]]"
@@ -41,6 +45,18 @@ CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
 
 class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDefinitionKey]):
     check_type = CheckType.TERRAFORM  # noqa: CCE003  # a static attribute
+
+    def __init__(
+        self,
+        parser: TFParser | None = None,
+        db_connector: LibraryGraphConnector | None = None,
+        external_registries: list[BaseRegistry] | None = None,
+        source: str = GraphSource.TERRAFORM,
+        graph_class: type[TerraformLocalGraph] = TerraformLocalGraph,
+        graph_manager: TerraformGraphManager | None = None,
+    ) -> None:
+        super().__init__(parser, db_connector, external_registries, source, graph_class, graph_manager)
+        self.all_graphs: list[tuple[LibraryGraph, Optional[str]]] = []
 
     def run(
         self,
@@ -57,8 +73,7 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
         report = Report(self.check_type)
         parsing_errors: dict[str, Exception] = {}
         self.load_external_checks(external_checks_dir)
-        local_graph = None
-        all_graphs: list[LibraryGraph] = []
+        local_graphs: Optional[list[tuple[Optional[str], Optional[TerraformLocalGraph]]]] = None
         if self.context is None or self.definitions is None or self.breadcrumbs is None:
             self.definitions = {}
             logging.info("Scanning root folder and producing fresh tf_definitions and context")
@@ -66,7 +81,7 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
             if root_folder:
                 root_folder = os.path.abspath(root_folder)
                 if tf_split_graph:
-                    graphs_with_definitions = self.graph_manager.build_multi_graph_from_source_directory(
+                    graphs_with_definitions, self.resource_subgraph_map = self.graph_manager.build_multi_graph_from_source_directory(
                         source_dir=root_folder,
                         local_graph_class=self.graph_class,
                         download_external_modules=runner_filter.download_external_modules,
@@ -76,11 +91,11 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
                         vars_files=runner_filter.var_files,
                         create_graph=CHECKOV_CREATE_GRAPH,
                     )
-                    local_graph = []
-                    for graph, definitions in graphs_with_definitions:
+                    local_graphs = []
+                    for graph, definitions, subgraph_path in graphs_with_definitions:
                         for definition in definitions:
                             self.definitions.update(definition)
-                        local_graph.append(graph)
+                        local_graphs.append((subgraph_path, graph))
                 else:
                     single_graph, self.definitions = self.graph_manager.build_graph_from_source_directory(
                         source_dir=root_folder,
@@ -93,7 +108,7 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
                         create_graph=CHECKOV_CREATE_GRAPH,
                     )
                     # Make graph a list to allow single processing method for all cases
-                    local_graph = [single_graph]
+                    local_graphs = [(None, single_graph)]
             elif files:
                 files = [os.path.abspath(file) for file in files]
                 root_folder = os.path.split(os.path.commonprefix(files))[0]
@@ -101,22 +116,20 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
 
                 if CHECKOV_CREATE_GRAPH:
                     if tf_split_graph:
-                        local_graph = self.graph_manager.build_multi_graph_from_definitions(  # type:ignore[assignment]  # will be fixed after removing 'CHECKOV_CREATE_GRAPH'
+                        local_graphs = self.graph_manager.build_multi_graph_from_definitions(  # type:ignore[assignment]  # will be fixed after removing 'CHECKOV_CREATE_GRAPH'
                             self.definitions
                         )
                     else:
                         # local_graph needs to be a list to allow supporting multi graph
-                        local_graph = [self.graph_manager.build_graph_from_definitions(self.definitions)]
+                        local_graphs = [(None, self.graph_manager.build_graph_from_definitions(self.definitions))]
             else:
                 raise Exception("Root directory was not specified, files were not specified")
 
-            if CHECKOV_CREATE_GRAPH and local_graph:
+            if CHECKOV_CREATE_GRAPH and local_graphs:
                 self._update_definitions_and_breadcrumbs(
-                    all_graphs,
-                    local_graph,  # type:ignore[arg-type]  # will be fixed after removing 'CHECKOV_CREATE_GRAPH'
+                    local_graphs,  # type:ignore[arg-type]  # will be fixed after removing 'CHECKOV_CREATE_GRAPH'
                     report,
-                    root_folder,
-                )
+                    root_folder)
         else:
             logging.info("Scanning root folder using existing tf_definitions")
             if root_folder is None:
@@ -129,8 +142,8 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
         report.add_parsing_errors(parsing_errors.keys())
 
         if CHECKOV_CREATE_GRAPH:
-            if all_graphs:
-                for igraph_graph in all_graphs:
+            if self.all_graphs:
+                for igraph_graph, _ in self.all_graphs:
                     graph_report = self.get_graph_checks_report(root_folder, runner_filter, graph=igraph_graph)
                     merge_reports(report, graph_report)
             else:
@@ -177,17 +190,18 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
                     parsing_errors.update(file_parsing_errors)
 
     def _update_definitions_and_breadcrumbs(
-        self, all_graphs: list[LibraryGraph], local_graph: list[TerraformLocalGraph], report: Report, root_folder: str
+        self, local_graphs: list[tuple[Optional[str], TerraformLocalGraph]], report: Report, root_folder: str
     ) -> None:
         self.definitions = {}
         self.breadcrumbs = {}
-        for graph in local_graph:
+        self.all_graphs = []
+        for subgraph_path, graph in local_graphs:
             for vertex in graph.vertices:
                 if vertex.block_type == BlockType.RESOURCE:
                     vertex_id = vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS)
                     report.add_resource(f"{vertex.path}:{vertex_id}")
             igraph_graph = self.graph_manager.save_graph(graph)
-            all_graphs.append(igraph_graph)
+            self.all_graphs.append((igraph_graph, subgraph_path))
             current_definitions, current_breadcrumbs = convert_graph_vertices_to_tf_definitions(
                 graph.vertices,
                 root_folder,
