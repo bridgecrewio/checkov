@@ -1,0 +1,13 @@
+metadata:
+  id: "CKV2_AWS_59"
+  name: "Ensure ElasticSearch/OpenSearch has dedicated master node enabled"
+  category: "GENERAL_SECURITY"
+
+definition:
+  cond_type: attribute
+  resource_types: 
+    - "aws_opensearch_domain"
+    - "aws_elasticsearch_domain"
+  attribute: "cluster_config.dedicated_master_enabled"
+  operator: "equals"
+  value: "true"

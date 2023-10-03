@@ -1,0 +1,27 @@
+---
+- name: Verify tests
+  hosts: all
+  gather_facts: False
+  tasks:
+    - name: long_implicit_ok
+      ansible.builtin.apt:
+        name: apache2
+        state: present
+        install_recommends: no
+
+    - name: short_implicit_ok
+      apt:
+        name: nginx
+        state: present
+
+    - name: long_explicit_ok
+      ansible.builtin.apt:
+        name: openssl
+        state: latest
+        allow_unauthenticated: false
+
+    - name: short_explicit_ok
+      apt:
+        name: ca-certificates
+        state: latest
+        allow_unauthenticated: false

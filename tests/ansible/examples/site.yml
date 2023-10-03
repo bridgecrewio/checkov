@@ -4,6 +4,10 @@
   hosts: all
   gather_facts: False
   tasks:
+    - name: Get Running instance Info
+      amazon.aws.ec2_instance_info:
+      register: ec2info
+
     - name: enabled
       amazon.aws.ec2_instance:
         name: "public-compute-instance"

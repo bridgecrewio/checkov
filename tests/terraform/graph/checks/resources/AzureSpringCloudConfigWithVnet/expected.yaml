@@ -1,0 +1,5 @@
+pass:
+  - "azurerm_spring_cloud_service.pass"
+fail:
+  - "azurerm_spring_cloud_service.fail_1"
+  - "azurerm_spring_cloud_service.fail_2"

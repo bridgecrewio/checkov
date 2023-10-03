@@ -22,6 +22,7 @@ class Block:
         "source",
         "has_dynamic_block",
         "dynamic_attributes",
+        "foreach_attrs"
     )
 
     def __init__(
@@ -34,7 +35,7 @@ class Block:
             id: str = "",
             source: str = "",
             has_dynamic_block: bool = False,
-            dynamic_attributes: dict[str, Any] | None = None,
+            dynamic_attributes: dict[str, Any] | None = None
     ) -> None:
         """
             :param name: unique name given to the block, for example

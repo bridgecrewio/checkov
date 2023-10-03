@@ -1,0 +1,3 @@
+pass: []
+fail:
+  - "aws_elasticsearch_domain.elastic"

@@ -136,8 +136,6 @@ class EntropyKeywordCombinator(BasePlugin):
             line_number: int = 0,
             context: CodeSnippet | None = None,
             raw_context: CodeSnippet | None = None,
-            is_added: bool = False,
-            is_removed: bool = False,
             **kwargs: Any,
     ) -> set[PotentialSecret]:
         if len(line) > self.max_line_length:

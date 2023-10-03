@@ -1,0 +1,13 @@
+metadata: 
+  id: "CKV2_AZURE_25"
+  name: "Ensure Azure SQL database Transparent Data Encryption (TDE) is enabled"
+  category: "GENERAL_SECURITY"
+
+definition:
+
+  cond_type: attribute
+  resource_types: "azurerm_mssql_database"
+  attribute: "transparent_data_encryption_enabled"
+  operator: "not_equals"
+  value: "false"
+

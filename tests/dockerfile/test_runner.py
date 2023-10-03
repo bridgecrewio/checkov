@@ -106,9 +106,9 @@ class TestRunnerValid(unittest.TestCase):
 
         #  also check the abs file paths
         record_python = next(check for check in report.passed_checks if check.check_id == "CKV_DOCKER_1")
-        assert record_python.file_abs_path.endswith("tests/dockerfile/resources/expose_port/pass/Dockerfile")
+        assert record_python.file_abs_path.endswith("checkov/tests/dockerfile/resources/expose_port/pass/Dockerfile")
         record_graph = next(check for check in report.passed_checks if check.check_id == "CKV2_DOCKER_1")
-        assert record_graph.file_abs_path.endswith("tests/dockerfile/resources/expose_port/pass/Dockerfile")
+        assert record_graph.file_abs_path.endswith("checkov/tests/dockerfile/resources/expose_port/pass/Dockerfile")
 
     def test_runner_skip_check(self):
         #  given

@@ -1,0 +1,6 @@
+pass:
+  - "azurerm_mssql_database.pass_1"
+  - "azurerm_mssql_database.pass_2"
+
+fail:
+  - "azurerm_mssql_database.fail"

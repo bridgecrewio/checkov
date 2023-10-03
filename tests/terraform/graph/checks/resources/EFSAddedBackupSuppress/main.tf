@@ -39,7 +39,7 @@ resource "aws_backup_selection" "not_ok_backup" {
 }
 
 resource "aws_efs_file_system" "ok_efs" {
-  creation_token = "my-product"  # checkov:skip=CKV_SECRET_6 false positive
+  creation_token = "my-product"
 
   tags = {
     Name = "MyProduct"

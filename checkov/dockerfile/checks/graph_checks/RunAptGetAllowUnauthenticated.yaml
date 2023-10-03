@@ -1,0 +1,11 @@
+metadata:
+  id: "CKV2_DOCKER_8"
+  name: "Ensure that packages with untrusted or missing signatures are not used by apt-get via the '--allow-unauthenticated' option"
+  category: "APPLICATION_SECURITY"
+definition:
+    cond_type: attribute
+    resource_types:
+      - RUN
+    attribute: value
+    operator: not_regex_match
+    value: ".*(apt-get[^\\|&;]*\\s+--allow-unauthenticated).*"

@@ -13,7 +13,6 @@ from checkov.common.bridgecrew.severities import Severity
 
 from checkov.common.output.record import Record
 from checkov.common.typing import _CheckResult
-from checkov.secrets.git_types import GIT_HISTORY_NOT_BEEN_REMOVED
 
 COMMIT_ADDED_STR = 'Commit Added'
 COMMIT_REMOVED_STR = 'Commit Removed'

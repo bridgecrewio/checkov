@@ -360,7 +360,7 @@ def get_file_path_to_referred_id_igraph(graph_object: igraph.Graph) -> dict[str,
     for module_vertex in modules:
         module_name = module_vertex['name']
         module_content = module_vertex['attr'].get(CustomAttributes.CONFIG, {})
-        for path in module_content.get('batch').get("__resolved__", []):
+        for path in module_content.get('batch', {}).get("__resolved__", []):
             file_path_to_module_id[path] = f"module.{module_name}"
     return file_path_to_module_id
 

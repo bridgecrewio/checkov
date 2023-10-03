@@ -27,7 +27,10 @@ SUPPORTED_FIX_FRAMEWORKS = ['terraform', 'cloudformation']
 class FixesIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration: BcPlatformIntegration) -> None:
         super().__init__(bc_integration=bc_integration, order=10)
-        self.fixes_url = f"{self.bc_integration.api_url}/api/v1/fixes/checkov"
+
+    @property
+    def fixes_url(self) -> str:
+        return f"{self.bc_integration.api_url}/api/v1/fixes/checkov"
 
     def is_valid(self) -> bool:
         return (

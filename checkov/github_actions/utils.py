@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import platform
 from pathlib import Path
 from typing import Any, Tuple
 import dpath
@@ -19,6 +20,7 @@ from checkov.github_actions.schemas import gha_schema, gha_workflow
 from checkov.runner_filter import RunnerFilter
 
 WORKFLOW_DIRECTORY = ".github/workflows/"
+WIN_WORKFLOW_DIRECTORY = ".github\\workflows\\"
 
 
 def get_scannable_file_paths(root_folder: str | Path) -> set[Path]:
@@ -54,7 +56,16 @@ def is_workflow_file(file_path: str | Path) -> bool:
     :return: True if the file mentioned is in a github action workflow directory and is a YAML file. Otherwise: False
     """
     abspath = os.path.abspath(file_path)
-    return WORKFLOW_DIRECTORY in abspath and abspath.endswith(("yml", "yaml"))
+    return get_workflow_dir() in abspath and abspath.endswith(("yml", "yaml"))
+
+
+def get_workflow_dir() -> str:
+    """
+    Detects os and uses different dir string
+    """
+    if platform.system() == "Windows":
+        return WIN_WORKFLOW_DIRECTORY
+    return WORKFLOW_DIRECTORY
 
 
 def is_schema_valid(config: dict[str, Any] | list[dict[str, Any]]) -> bool:

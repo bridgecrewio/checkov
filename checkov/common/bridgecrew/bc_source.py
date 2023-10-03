@@ -37,6 +37,9 @@ SourceTypes = {
 }
 
 
+IDEsSourceTypes = {BCSourceType.VSCODE, BCSourceType.JETBRAINS}
+
+
 def get_source_type(source: str) -> SourceType:
     # helper method to get the source type with a default - using dict.get is ugly; you have to do:
     # SourceTypes.get(xyz, SourceTypes[BCSourceType.Disabled])

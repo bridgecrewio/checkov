@@ -1,0 +1,26 @@
+metadata:
+  id: "CKV2_AWS_60"
+  name: "Ensure RDS instance with copy tags to snapshots is enabled"
+  category: "GENERAL_SECURITY"
+definition:
+  and:
+    - cond_type: attribute
+      resource_types: "aws_db_instance"
+      attribute: "copy_tags_to_snapshot"
+      operator: "equals"
+      value: "true"
+
+    - cond_type: attribute
+      resource_types: "aws_db_instance"
+      attribute: "copy_tags_to_snapshot"
+      operator: "exists"
+
+    - cond_type: attribute
+      resource_types: "aws_db_instance"
+      attribute: "engine"
+      operator: "not_within"
+      value:
+        - "neptune"
+        - "aurora"
+        - "docdb"
+

@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   validate:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # TODO: use checkov version
     permissions:
       contents: write
     steps:

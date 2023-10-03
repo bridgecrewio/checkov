@@ -1,0 +1,20 @@
+{
+  "main.tf": {
+    "locals": [
+      {
+        "common_tags": [
+          {
+            "Tag1": "one",
+            "Tag2": "two"
+          }
+        ],
+        "one_arg_local": [
+          {
+            "Tag1": "one",
+            "Tag2": "two"
+          }
+        ]
+      }
+    ]
+  }
+}

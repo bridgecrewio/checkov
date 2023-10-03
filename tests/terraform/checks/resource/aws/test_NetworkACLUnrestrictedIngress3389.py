@@ -23,6 +23,7 @@ class TestNetworkACLUnrestrictedIngress3389(unittest.TestCase):
         passing_resources = {
             "aws_network_acl.pass",
             "aws_network_acl.pass2",
+            "aws_network_acl.pass3",
             "aws_network_acl_rule.pass",
             "aws_network_acl_rule.pass2",
             "aws_network_acl_rule.count_pass",
@@ -31,6 +32,7 @@ class TestNetworkACLUnrestrictedIngress3389(unittest.TestCase):
             "aws_network_acl.fail",
             "aws_network_acl.fail2",
             "aws_network_acl.fail3",
+            "aws_network_acl.fail4",
             "aws_network_acl_rule.fail",
             "aws_network_acl_rule.fail2",
             "aws_network_acl_rule.public_ingress",
@@ -39,8 +41,8 @@ class TestNetworkACLUnrestrictedIngress3389(unittest.TestCase):
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 5)
-        self.assertEqual(summary["failed"], 6)
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 

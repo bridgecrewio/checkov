@@ -56,6 +56,33 @@ class ParserMode(Enum):
         return str(self.value)
 
 
+def is_acceptable_module_param(value: Any) -> bool:
+    """
+    This function determines if a value should be passed to a module as a parameter. We don't want to pass
+    unresolved var, local or module references because they can't be resolved from the module, so they need
+    to be resolved prior to being passed down.
+    """
+    value_type = type(value)
+    if value_type is dict:
+        for k, v in value.items():
+            if not is_acceptable_module_param(v) or not is_acceptable_module_param(k):
+                return False
+        return True
+    if value_type is set or value_type is list:
+        for v in value:
+            if not is_acceptable_module_param(v):
+                return False
+        return True
+
+    if value_type is not str:
+        return True
+
+    for vbm in find_var_blocks(value):
+        if vbm.is_simple_var():
+            return False
+    return True
+
+
 def find_var_blocks(value: str) -> List[VarBlockMatch]:
     """
     Find and return all the var blocks within a given string. Order is important and may contain portions of
