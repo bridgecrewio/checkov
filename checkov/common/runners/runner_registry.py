@@ -140,7 +140,7 @@ class RunnerRegistry:
 
                 if runner.graph_manager:
                     return report, runner.check_type, self.extract_graphs_from_runner(runner), \
-                        self.extract_resource_subgraph_map_from_runner(runner)
+                        runner.resource_subgraph_map
                 return report, None, None, None
 
             valid_runners = []
@@ -200,11 +200,8 @@ class RunnerRegistry:
             self.check_type_to_graph = {runner.check_type: self.extract_graphs_from_runner(runner) for runner
                                         in self.runners if runner.graph_manager}
         if not self.check_type_to_resource_subgraph_map:
-            self.check_type_to_resource_subgraph_map = {}
-            for runner in self.runners:
-                resource_subgraph_map = self.extract_resource_subgraph_map_from_runner(runner)
-                if resource_subgraph_map is not None:
-                    self.check_type_to_resource_subgraph_map[runner.check_type] = resource_subgraph_map
+            self.check_type_to_resource_subgraph_map = {runner.check_type: runner.resource_subgraph_map for runner in
+                                                        self.runners if runner.resource_subgraph_map is not None}
         return self.scan_reports
 
     def _merge_reports(self, reports: Iterable[Report | list[Report]]) -> list[Report]:
@@ -771,8 +768,3 @@ class RunnerRegistry:
         elif runner.graph_manager:
             return [(runner.graph_manager.get_reader_endpoint(), None)]
         return []
-
-    @staticmethod
-    def extract_resource_subgraph_map_from_runner(runner: _BaseRunner) -> Optional[dict[str, str]]:
-        # exist only for terraform
-        return getattr(runner, 'resource_subgraph_map', None)

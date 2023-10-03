@@ -206,6 +206,7 @@ def persist_resource_subgraph_maps(
         except Exception:
             logging.error(f'failed to upload resource_subgraph_map from framework {check_type} to platform', exc_info=True)
 
+    # removing '/src' with [:-4]
     graphs_repo_object_key = full_repo_object_key.replace('checkov', 'graphs')[:-4]
     with futures.ThreadPoolExecutor() as executor:
         futures.wait(
@@ -214,4 +215,4 @@ def persist_resource_subgraph_maps(
             return_when=futures.FIRST_EXCEPTION,
             timeout=timeout
         )
-    logging.info(f"Done persisting {len(resource_subgraph_maps)} resource_subgraph_maps")
+    logging.info(f"Done persisting resource_subgraph_maps for frameworks - {', '.join(resource_subgraph_maps.keys())}")

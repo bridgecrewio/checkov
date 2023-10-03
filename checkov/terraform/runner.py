@@ -57,7 +57,6 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
     ) -> None:
         super().__init__(parser, db_connector, external_registries, source, graph_class, graph_manager)
         self.all_graphs: list[tuple[LibraryGraph, Optional[str]]] = []
-        self.resource_subgraph_map: Optional[dict[str, str]] = None
 
     def run(
         self,
