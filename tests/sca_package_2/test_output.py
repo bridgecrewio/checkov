@@ -52,7 +52,7 @@ def test_create_report_cve_record():
         licenses='OSI_BDS',
         package={'name': "django", 'version': "1.12", 'package_registry': "https://registry.npmjs.org/",
                  'is_private_registry': False, "lines": [5, 5], "code_block": 'django==1.12'},
-        root_package={'name': "django", 'version': "1.12"},
+        root_package={'name': "django", 'version': "1.12", "lines": [5, 5]},
         used_private_registry=False
     )
 

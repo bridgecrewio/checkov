@@ -4,8 +4,7 @@ from pathlib import Path
 from typing import List
 from parameterized import parameterized_class
 
-from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
-from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from tests.graph_utils.utils import set_db_connector_by_graph_framework, PARAMETERIZED_GRAPH_FRAMEWORKS
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
@@ -15,19 +14,12 @@ from checkov.dockerfile.graph_manager import DockerfileGraphManager
 from tests.common.graph.checks.test_yaml_policies_base import TestYamlPoliciesBase
 
 
-@parameterized_class([
-   {"graph_framework": "NETWORKX"},
-   {"graph_framework": "IGRAPH"}
-])
+@parameterized_class(PARAMETERIZED_GRAPH_FRAMEWORKS)
 class TestYamlPolicies(TestYamlPoliciesBase):
     def __init__(self, args):
-        db_connector = None
-        if self.graph_framework == 'NETWORKX':
-            db_connector = NetworkxConnector
-        elif self.graph_framework == 'IGRAPH':
-            db_connector = IgraphConnector
+        db_connector = set_db_connector_by_graph_framework(self.graph_framework)
 
-        graph_manager = DockerfileGraphManager(db_connector=db_connector())
+        graph_manager = DockerfileGraphManager(db_connector=db_connector)
         super().__init__(
             graph_manager=graph_manager,
             real_graph_checks_path=str(
@@ -90,6 +82,9 @@ class TestYamlPolicies(TestYamlPoliciesBase):
 
     def test_EnvPipTrustedHost(self):
         self.go("EnvPipTrustedHost")
+
+    def test_RunChpasswd(self):
+        self.go("RunChpasswd")
 
     def test_registry_load(self):
         registry = self.get_checks_registry()

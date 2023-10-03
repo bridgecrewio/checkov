@@ -21,7 +21,7 @@ from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.helm.image_referencer.manager import HelmImageReferencerManager
 from checkov.helm.registry import registry
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
-from checkov.kubernetes.runner import Runner as k8_runner, handle_timeout
+from checkov.kubernetes.runner import Runner as k8_runner, handle_timeout, _KubernetesContext, _KubernetesDefinitions
 from checkov.runner_filter import RunnerFilter
 import signal
 
@@ -122,7 +122,7 @@ class K8sHelmRunner(k8_runner):
         return images
 
 
-class Runner(BaseRunner["KubernetesGraphManager"]):
+class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesGraphManager"]):
     check_type: str = CheckType.HELM  # noqa: CCE003  # a static attribute
     helm_command = 'helm'  # noqa: CCE003  # a static attribute
     system_deps = True  # noqa: CCE003  # a static attribute
@@ -234,6 +234,14 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
         return target_dir
 
     @staticmethod
+    def get_binary_output_from_directory(chart_dir: str, target_dir: str, helm_command: str,
+                                         runner_filter: RunnerFilter, timeout: int = 3600) \
+            -> tuple[bytes, tuple[str, dict[str, Any]]] | tuple[None, None]:
+        chart_meta = Runner.parse_helm_chart_details(chart_dir)
+        chart_item = (chart_dir, chart_meta or {})
+        return Runner.get_binary_output(chart_item, target_dir, helm_command, runner_filter, timeout)
+
+    @staticmethod
     def get_binary_output(
         chart_item: tuple[str, dict[str, Any]], target_dir: str, helm_command: str, runner_filter: RunnerFilter, timeout: int = 3600
     ) -> tuple[bytes, tuple[str, dict[str, Any]]] | tuple[None, None]:
@@ -280,7 +288,7 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
                 signal.alarm(0)
             if e:
                 logging.warning(
-                    f"Error processing helm chart {chart_name} at dir: {chart_dir}. Working dir: {target_dir}. Error details: {str(e, 'utf-8')}")
+                    f"Failed processing helm chart {chart_name} at dir: {chart_dir}. Working dir: {target_dir}. Failure details: {str(e, 'utf-8')}")
                 return None, None
             logging.debug(
                 f"Ran helm command to template chart output. Chart: {chart_name}. dir: {target_dir}. Output: {str(o, 'utf-8')}. Errors: {str(e, 'utf-8')}")

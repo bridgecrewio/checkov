@@ -26,11 +26,11 @@ class KMSKeyWildcardPrincipal(BaseResourceCheck):
                             continue
                         if 'AWS' in principal:
                             aws = principal['AWS']
-                            if (type(aws) == str and aws == '*') or (type(aws) == list and '*' in aws):
+                            if (isinstance(aws, str) and aws == '*') or (isinstance(aws, list) and '*' in aws):
                                 idx_evaluated_key = f'[{idx}]/' if isinstance(policy_block['Statement'], list) else ''
                                 self.evaluated_keys = [f'policy/[0]/Statement/{idx_evaluated_key}Principal/AWS']
                                 return CheckResult.FAILED
-                        if (type(principal) == str and principal == '*') or (type(principal) == list and '*' in principal):
+                        if (isinstance(principal, str) and principal == '*') or (isinstance(principal, list) and '*' in principal):
                             idx_evaluated_key = f'[{idx}]/' if isinstance(policy_block['Statement'], list) else ''
                             self.evaluated_keys = [f'policy/[0]/Statement/{idx_evaluated_key}Principal']
                             return CheckResult.FAILED

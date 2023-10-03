@@ -12,7 +12,7 @@ import sys
 import platform
 from collections import defaultdict
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 import argcomplete
 import configargparse
@@ -45,16 +45,17 @@ from checkov.common.output.baseline import Baseline
 from checkov.common.bridgecrew.check_type import checkov_runners, CheckType
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.runners.runner_registry import RunnerRegistry
+from checkov.common.typing import LibraryGraph
 from checkov.common.util import prompt
 from checkov.common.util.banner import banner as checkov_banner, tool as checkov_tool
 from checkov.common.util.config_utils import get_default_config_paths
 from checkov.common.util.consts import CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
-from checkov.common.util.docs_generator import print_checks
 from checkov.common.util.ext_argument_parser import ExtArgumentParser
 from checkov.common.util.runner_dependency_handler import RunnerDependencyHandler
 from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.contributor_metrics import report_contributor_metrics
 from checkov.dockerfile.runner import Runner as dockerfile_runner
+from checkov.docs_generator import print_checks
 from checkov.github.runner import Runner as github_configuration_runner
 from checkov.github_actions.runner import Runner as github_actions_runner
 from checkov.gitlab.runner import Runner as gitlab_configuration_runner
@@ -83,8 +84,6 @@ if TYPE_CHECKING:
     from checkov.common.output.report import Report
     from configargparse import Namespace
     from typing_extensions import Literal
-    from igraph import Graph
-    from networkx import DiGraph
 
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
@@ -131,7 +130,7 @@ class Checkov:
         self.runners = DEFAULT_RUNNERS
         self.scan_reports: "list[Report]" = []
         self.run_metadata: dict[str, str | list[str]] = {}
-        self.graphs: dict[str, DiGraph | Graph] = {}
+        self.graphs: dict[str, list[tuple[LibraryGraph, Optional[str]]]] = {}
         self.url: str | None = None
 
         self.parse_config(argv=argv)
@@ -473,6 +472,7 @@ class Checkov:
                         files=file,
                     )
                     self.graphs = runner_registry.check_type_to_graph
+                    self.resource_subgraph_maps = runner_registry.check_type_to_resource_subgraph_map
                     if runner_registry.is_error_in_reports(self.scan_reports):
                         self.exit_run()
                     if baseline:
@@ -491,6 +491,7 @@ class Checkov:
                             excluded_paths=runner_filter.excluded_paths,
                             included_paths=included_paths,
                             git_configuration_folders=git_configuration_folders,
+                            sca_supported_ir_report=runner_registry.sca_supported_ir_report,
                         )
 
                     if self.config.create_baseline:
@@ -555,6 +556,7 @@ class Checkov:
                     bc_integration.persist_run_metadata(self.run_metadata)
                     if bc_integration.enable_persist_graphs:
                         bc_integration.persist_graphs(self.graphs)
+                        bc_integration.persist_resource_subgraph_maps(self.resource_subgraph_maps)
                     self.url = self.commit_repository()
 
                 should_run_contributor_metrics = bc_integration.bc_api_key and self.config.repo_id and self.config.prisma_api_url
@@ -575,6 +577,7 @@ class Checkov:
                     repo_root_for_plan_enrichment=self.config.repo_root_for_plan_enrichment,
                 )
                 self.graphs = runner_registry.check_type_to_graph
+                self.resource_subgraph_maps = runner_registry.check_type_to_resource_subgraph_map
                 if runner_registry.is_error_in_reports(self.scan_reports):
                     self.exit_run()
                 if baseline:
@@ -659,6 +662,7 @@ class Checkov:
             excluded_paths: list[str] | None = None,
             included_paths: list[str] | None = None,
             git_configuration_folders: list[str] | None = None,
+            sca_supported_ir_report: Report | None = None,
     ) -> None:
         """Upload scan results and other relevant files"""
 
@@ -670,10 +674,16 @@ class Checkov:
         )
         if git_configuration_folders:
             bc_integration.persist_git_configuration(os.getcwd(), git_configuration_folders)
-        bc_integration.persist_scan_results(self.scan_reports)
+        if sca_supported_ir_report:
+            scan_reports_to_upload = [report for report in self.scan_reports if report.check_type != 'sca_image']
+            scan_reports_to_upload.append(sca_supported_ir_report)
+        else:
+            scan_reports_to_upload = self.scan_reports
+        bc_integration.persist_scan_results(scan_reports_to_upload)
         bc_integration.persist_run_metadata(self.run_metadata)
         if bc_integration.enable_persist_graphs:
             bc_integration.persist_graphs(self.graphs, absolute_root_folder=absolute_root_folder)
+            bc_integration.persist_resource_subgraph_maps(self.resource_subgraph_maps)
         self.url = self.commit_repository()
 
     def print_results(

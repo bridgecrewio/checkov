@@ -36,7 +36,7 @@ class CPULimits(BaseResourceCheck):
         if not containers:
             return CheckResult.UNKNOWN
         for idx, container in enumerate(containers):
-            if type(container) != dict:
+            if not isinstance(container, dict):
                 return CheckResult.UNKNOWN
             if container.get("resources"):
                 resources = container.get("resources")[0]

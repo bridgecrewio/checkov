@@ -5,6 +5,8 @@ import logging
 from pathlib import Path
 from typing import cast, Type, TYPE_CHECKING, Any
 
+from typing_extensions import TypeAlias  # noqa[TC002]
+
 from checkov.bicep.graph_builder.context_definitions import build_definitions_context
 from checkov.bicep.checks.param.registry import registry as param_registry
 from checkov.bicep.checks.resource.registry import registry as resource_registry
@@ -40,8 +42,11 @@ if TYPE_CHECKING:
     from pycep.typing import BicepJson
     from typing_extensions import Literal
 
+_BicepContext: TypeAlias = "dict[str, dict[str, Any]]"
+_BicepDefinitions: TypeAlias = "dict[Path, BicepJson]"
 
-class Runner(ImageReferencerMixin[None], BaseRunner[BicepGraphManager]):
+
+class Runner(ImageReferencerMixin[None], BaseRunner[_BicepDefinitions, _BicepContext, BicepGraphManager]):
     check_type = CheckType.BICEP  # noqa: CCE003  # a static attribute
 
     block_type_registries: 'dict[Literal["parameters", "resources"], BaseCheckRegistry]' = {  # noqa: CCE003  # a static attribute
@@ -66,8 +71,8 @@ class Runner(ImageReferencerMixin[None], BaseRunner[BicepGraphManager]):
         )
         self.graph_registry: Registry = get_graph_checks_registry(self.check_type)
 
-        self.context: dict[str, dict[str, Any]] = {}
-        self.definitions: dict[Path, BicepJson] = {}  # type:ignore[assignment]  # need to check, how to support subclass differences
+        self.context: _BicepContext = {}
+        self.definitions: _BicepDefinitions = {}
         self.definitions_raw: dict[Path, list[tuple[int, str]]] = {}    # type:ignore[assignment]
         self.root_folder: str | Path | None = None
 

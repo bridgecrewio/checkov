@@ -3,10 +3,10 @@ from __future__ import annotations
 import logging
 import os
 import platform
-
-from typing import Type, Optional
-
 import pathlib
+from typing import Type, Optional, Any, cast
+
+from typing_extensions import TypeAlias  # noqa[TC002]
 
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.typing import LibraryGraphConnector, TFDefinitionKeyType
@@ -21,18 +21,19 @@ from checkov.common.output.record import Record
 from checkov.common.util.secrets import omit_secret_value_from_checks
 
 from checkov.common.bridgecrew.check_type import CheckType
-from checkov.common.output.report import Report
+from checkov.common.output.report import Report, merge_reports
 from checkov.common.runners.base_runner import CHECKOV_CREATE_GRAPH
 from checkov.runner_filter import RunnerFilter
+from checkov.terraform.base_runner import BaseTerraformRunner
 from checkov.terraform.checks.data.registry import data_registry
 from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.plan_parser import TF_PLAN_RESOURCE_ADDRESS
-from checkov.terraform.plan_utils import create_definitions, build_definitions_context, \
-    get_resource_id_without_nested_modules
-from checkov.terraform.runner import Runner as TerraformRunner, merge_reports
+from checkov.terraform.plan_utils import create_definitions, build_definitions_context
 from checkov.terraform.deep_analysis_plan_graph_manager import DeepAnalysisGraphManager
 
+_TerraformPlanContext: TypeAlias = "dict[str, dict[str, Any]]"
+_TerraformPlanDefinitions: TypeAlias = "dict[str, dict[str, Any]]"
 
 # set of check IDs with lifecycle condition
 TF_LIFECYCLE_CHECK_IDS = {
@@ -68,7 +69,7 @@ RESOURCE_ATTRIBUTES_TO_OMIT = {
 }
 
 
-class Runner(TerraformRunner):
+class Runner(BaseTerraformRunner[_TerraformPlanDefinitions, _TerraformPlanContext, str]):
     check_type = CheckType.TERRAFORM_PLAN  # noqa: CCE003  # a static attribute
 
     def __init__(self, graph_class: Type[TerraformLocalGraph] = TerraformLocalGraph,
@@ -84,12 +85,12 @@ class Runner(TerraformRunner):
             source=source,
         )
         self.file_extensions = ['.json']  # override what gets set from the TF runner
-        self.definitions = None
-        self.context = None
-        self.graph_registry = get_graph_checks_registry(super().check_type)
+        self.definitions: _TerraformPlanDefinitions | None = None
+        self.context: _TerraformPlanContext | None = None
+        self.graph_registry = get_graph_checks_registry(check_type=CheckType.TERRAFORM)
         self.deep_analysis = False
-        self.repo_root_for_plan_enrichment = []
-        self.tf_plan_local_graph = None
+        self.repo_root_for_plan_enrichment: str | None = None
+        self.tf_plan_local_graph: TerraformLocalGraph | None = None
 
     block_type_registries = {  # noqa: CCE003  # a static attribute
         'resource': resource_registry,
@@ -121,11 +122,7 @@ class Runner(TerraformRunner):
                 for vertex in self.tf_plan_local_graph.vertices:
                     if vertex.block_type == BlockType.RESOURCE:
                         address = vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS)
-                        if self.enable_nested_modules:
-                            report.add_resource(f'{vertex.path}:{address}')
-                        else:
-                            resource_id = get_resource_id_without_nested_modules(address)
-                            report.add_resource(f'{vertex.path}:{resource_id}')
+                        report.add_resource(f'{vertex.path}:{address}')
                 self.graph_manager.save_graph(self.tf_plan_local_graph)
                 if self._should_run_deep_analysis:
                     tf_local_graph = self._create_terraform_graph(runner_filter)
@@ -135,7 +132,8 @@ class Runner(TerraformRunner):
                 resource_registry.load_external_checks(directory)
                 self.graph_registry.load_external_checks(directory)
         if not root_folder:
-            root_folder = os.path.split(os.path.commonprefix(files))[0]
+            # 'root_folder' and 'files' can't be both empty
+            root_folder = os.path.split(os.path.commonprefix(files))[0]  # type:ignore[arg-type]
         self.check_tf_definition(report, root_folder, runner_filter)
         report.add_parsing_errors(parsing_errors.keys())
 
@@ -161,7 +159,7 @@ class Runner(TerraformRunner):
         return report
 
     @staticmethod
-    def _extend_resource_attributes_to_omit(runner_filter: RunnerFilter):
+    def _extend_resource_attributes_to_omit(runner_filter: RunnerFilter) -> None:
         for k, v in RESOURCE_ATTRIBUTES_TO_OMIT.items():
             # It's ok as runner_filter is ALWAYS default dict with set() as value
             runner_filter.resource_attr_to_omit[k].update(v)
@@ -172,7 +170,7 @@ class Runner(TerraformRunner):
             runner_filter: RunnerFilter,
             tf_local_graph: Optional[TerraformLocalGraph]
     ) -> Report:
-        if self._should_run_deep_analysis and tf_local_graph:
+        if self._should_run_deep_analysis and tf_local_graph and self.tf_plan_local_graph:
             deep_analysis_graph_manager = DeepAnalysisGraphManager(tf_local_graph, self.tf_plan_local_graph)
             deep_analysis_graph_manager.enrich_tf_graph_attributes()
             self.graph_manager.save_graph(tf_local_graph)
@@ -181,17 +179,22 @@ class Runner(TerraformRunner):
             return graph_report
         return self.get_graph_checks_report(root_folder, runner_filter)
 
-    def _create_terraform_graph(self, runner_filter) -> TerraformLocalGraph:
+    def _create_terraform_graph(self, runner_filter: RunnerFilter) -> TerraformLocalGraph:
         graph_manager = TerraformGraphManager(db_connector=self.db_connector)
         tf_local_graph, _ = graph_manager.build_graph_from_source_directory(
-            self.repo_root_for_plan_enrichment,
+            self.repo_root_for_plan_enrichment,  # type:ignore[arg-type]  # can't be 'None' at this point
             render_variables=True,
             download_external_modules=runner_filter.download_external_modules
         )
         self.graph_manager = graph_manager
-        return tf_local_graph
+        return tf_local_graph  # type:ignore[return-value]  # will be fixed after removing 'CHECKOV_CREATE_GRAPH'
 
-    def check_tf_definition(self, report, root_folder, runner_filter, collect_skip_comments=True):
+    def check_tf_definition(
+        self, report: Report, root_folder: str, runner_filter: RunnerFilter, collect_skip_comments: bool = True
+    ) -> None:
+        if not self.definitions:
+            return
+
         for full_file_path, definition in self.definitions.items():
             full_file_path, scanned_file = self._get_file_path(full_file_path, root_folder)
             logging.debug(f"Scanning file: {scanned_file}")
@@ -203,6 +206,7 @@ class Runner(TerraformRunner):
     @staticmethod
     def _get_file_path(full_file_path: TFDefinitionKeyType, root_folder: str | pathlib.Path) -> tuple[str, str]:
         if isinstance(full_file_path, TFDefinitionKey):
+            # It might be str for terraform-plan files
             full_file_path = full_file_path.file_path
         if platform.system() == "Windows":
             temp = os.path.split(full_file_path)[0]
@@ -211,11 +215,20 @@ class Runner(TerraformRunner):
             scanned_file = f"/{os.path.relpath(full_file_path, root_folder)}"
         return full_file_path, scanned_file
 
-    def run_block(self, entities,
-                  definition_context,
-                  full_file_path, root_folder, report, scanned_file,
-                  block_type, runner_filter=None, entity_context_path_header=None,
-                  module_referrer: str | None = None):
+    def run_block(
+        self,
+        entities: list[dict[str, Any]],
+        definition_context: _TerraformPlanContext | None,
+        full_file_path: str,
+        root_folder: str,
+        report: Report,
+        scanned_file: str,
+        block_type: str,
+        runner_filter: RunnerFilter | None = None,
+        entity_context_path_header: str | None = None,
+        module_referrer: str | None = None,
+    ) -> None:
+        runner_filter = runner_filter or RunnerFilter()
         registry = self.block_type_registries[block_type]
         if registry:
             for entity in entities:
@@ -223,10 +236,9 @@ class Runner(TerraformRunner):
                 definition_path = context_parser.get_entity_context_path(entity)
                 # Entity can exist only once per dir, for file as well
                 entity_context = self.get_entity_context(definition_path, full_file_path, entity)
-                entity_lines_range = [entity_context.get('start_line'), entity_context.get('end_line')]
-                entity_code_lines = entity_context.get('code_lines')
-                entity_address = entity_context.get('address')
-                entity_id = entity_address if self.enable_nested_modules else get_resource_id_without_nested_modules(entity_address)
+                entity_lines_range = [entity_context.get('start_line', 1), entity_context.get('end_line', 1)]
+                entity_code_lines = entity_context.get('code_lines', [])
+                entity_address = entity_context['address']
                 _, _, entity_config = registry.extract_entity_details(entity)
 
                 results = registry.scan(scanned_file, entity, [], runner_filter, report_type=CheckType.TERRAFORM_PLAN)
@@ -249,7 +261,7 @@ class Runner(TerraformRunner):
                         code_block=censored_code_lines,
                         file_path=scanned_file,
                         file_line_range=entity_lines_range,
-                        resource=entity_id,
+                        resource=entity_address,
                         resource_address=entity_address,
                         evaluations=None,
                         check_class=check.__class__.__module__,
@@ -260,22 +272,30 @@ class Runner(TerraformRunner):
                     record.set_guideline(check.guideline)
                     report.add_record(record=record)
 
-    def get_entity_context_and_evaluations(self, entity):
+    def get_entity_context_and_evaluations(self, entity: dict[str, Any]) -> dict[str, Any] | None:
+        if not self.context:
+            return None
+
         entity_id = entity[TF_PLAN_RESOURCE_ADDRESS]
-        raw_context = self.context.get(entity[CustomAttributes.FILE_PATH], {}).get(entity_id)
+        raw_context: dict[str, Any] | None = self.context.get(entity[CustomAttributes.FILE_PATH], {}).get(entity_id)
         if raw_context:
             raw_context['definition_path'] = entity[CustomAttributes.BLOCK_NAME].split('.')
-        return raw_context, None
+        return raw_context
 
-    def get_entity_context(self, definition_path, full_file_path, entity):
+    def get_entity_context(
+        self, definition_path: list[str], full_file_path: str, entity: dict[str, Any]
+    ) -> dict[str, Any]:
+        if not self.context:
+            return {}
+
         if len(definition_path) > 1:
             resource_type = definition_path[0]
             resource_name = definition_path[1]
             entity_id = entity.get(resource_type, {}).get(resource_name, {}).get(TF_PLAN_RESOURCE_ADDRESS)
         else:
             entity_id = definition_path[0]
-        return self.context.get(full_file_path, {}).get(entity_id)
+        return cast("dict[str, Any]", self.context.get(full_file_path, {}).get(entity_id, {}))
 
     @property
     def _should_run_deep_analysis(self) -> bool:
-        return self.deep_analysis and self.repo_root_for_plan_enrichment and self.tf_plan_local_graph
+        return bool(self.deep_analysis and self.repo_root_for_plan_enrichment and self.tf_plan_local_graph)

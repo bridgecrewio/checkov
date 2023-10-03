@@ -346,7 +346,7 @@ def test_load_local_path(git_getter, tmp_path: Path, source, expected_content_pa
             "git::https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1",
             "",
         ),
-       ( 
+       (
             "git::https://github.com/kartikp10/terraform-aws-s3-bucket1.git",
             "github.com/kartikp10/terraform-aws-s3-bucket1/HEAD",
             "https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1.git",
@@ -354,7 +354,7 @@ def test_load_local_path(git_getter, tmp_path: Path, source, expected_content_pa
             "git::https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1.git",
             "",
         ),
-       ( 
+       (
            "git@github.com:kartikp10/terraform-aws-s3-bucket1.git",
             "github.com/kartikp10/terraform-aws-s3-bucket1/HEAD",
             "https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1.git",
@@ -362,7 +362,7 @@ def test_load_local_path(git_getter, tmp_path: Path, source, expected_content_pa
             "git::https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1.git",
             "",
         ),
-       ( 
+       (
            "git::ssh://git@github.com/kartikp10/terraform-aws-s3-bucket1.git",
             "github.com/kartikp10/terraform-aws-s3-bucket1/HEAD",
             "https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1.git",
@@ -386,7 +386,7 @@ def test_load_local_path(git_getter, tmp_path: Path, source, expected_content_pa
             "git::https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-s3-bucket1.git?ref=v1.2.0",
             "",
         ),
-       ( 
+       (
            "git@github.com:kartikp10/terraform-aws-security-group.git//modules/http-80",
             "github.com/kartikp10/terraform-aws-security-group/HEAD",
             "https://x-access-token:ghp_xxxxxxxxxxxxxxxxx@github.com/kartikp10/terraform-aws-security-group",
@@ -505,3 +505,23 @@ def test_load_terraform_registry_check_cache(tmp_path: Path):
     # then
     assert source1 in registry.failed_urls_cache
     assert source2 in registry.failed_urls_cache
+
+
+def test_loader_equality():
+    githubLoaderOne = GithubLoader()
+    githubLoaderTwo = GithubLoader()
+    assert githubLoaderOne == githubLoaderTwo
+    bitLoader = BitbucketLoader()
+    assert githubLoaderOne != bitLoader
+    genericLoader = GenericGitLoader()
+    assert githubLoaderOne != genericLoader and bitLoader != genericLoader
+
+
+def test_multiple_similar_loaders():
+    registry = ModuleLoaderRegistry(download_external_modules=True)
+    assert len(registry.loaders) == 7
+    GithubLoader()
+    GithubLoader()
+    GenericGitLoader()
+    BitbucketLoader()
+    assert len(registry.loaders) == 7

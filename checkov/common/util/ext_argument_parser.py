@@ -391,6 +391,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
                  "https://www.terraform.io/docs/language/values/variables.html#variable-definitions-tfvars-files)."
                  "Currently only supported for source Terraform (.tf file), and Helm chart scans."
                  "Requires using --directory, not --file.",
+            env_var="CKV_VAR_FILE",
         )
         self.add(
             "--external-modules-download-path",

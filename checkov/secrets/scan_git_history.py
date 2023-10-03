@@ -6,13 +6,14 @@ import os
 import platform
 from typing import TYPE_CHECKING, Optional, List, Tuple
 
+from detect_secrets.core import scan
+
 from checkov.common.util.stopit import ThreadingTimeout, SignalTimeout, TimeoutException
 from checkov.common.util.decorators import time_it
 from checkov.common.parallelizer.parallel_runner import parallel_runner
-from detect_secrets.core import scan
-
+from checkov.common.secrets.consts import GIT_HISTORY_NOT_BEEN_REMOVED
 from checkov.secrets.git_history_store import GitHistorySecretStore, RawStore, RENAME_STR, FILE_RESULTS_STR
-from checkov.secrets.git_types import Commit, CommitMetadata, GIT_HISTORY_NOT_BEEN_REMOVED, PROHIBITED_FILES
+from checkov.secrets.git_types import Commit, CommitMetadata, PROHIBITED_FILES
 
 if TYPE_CHECKING:
     from detect_secrets import SecretsCollection
