@@ -81,7 +81,7 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
             if root_folder:
                 root_folder = os.path.abspath(root_folder)
                 if tf_split_graph:
-                    graphs_with_definitions = self.graph_manager.build_multi_graph_from_source_directory(
+                    graphs_with_definitions, self.resource_subgraph_map = self.graph_manager.build_multi_graph_from_source_directory(
                         source_dir=root_folder,
                         local_graph_class=self.graph_class,
                         download_external_modules=runner_filter.download_external_modules,
