@@ -131,6 +131,7 @@ class Checkov:
         self.scan_reports: "list[Report]" = []
         self.run_metadata: dict[str, str | list[str]] = {}
         self.graphs: dict[str, list[tuple[LibraryGraph, Optional[str]]]] = {}
+        self.resource_subgraph_maps: dict[str, dict[str, str]] = {}
         self.url: str | None = None
 
         self.parse_config(argv=argv)
