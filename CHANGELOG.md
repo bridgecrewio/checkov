@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.4.58...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.4.59...HEAD)
+
+## [2.4.59](https://github.com/bridgecrewio/checkov/compare/2.4.58...2.4.59) - 2023-10-02
+
+### Platform
+
+- **terraform:** fix in subgraphs uploads - [#5610](https://github.com/bridgecrewio/checkov/pull/5610)
 
 ## [2.4.58](https://github.com/bridgecrewio/checkov/compare/2.4.57...2.4.58) - 2023-10-01
 
