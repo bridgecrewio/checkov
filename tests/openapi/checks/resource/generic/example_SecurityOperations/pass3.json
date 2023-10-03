@@ -1,5 +1,5 @@
 {
-  "openapi": "3.0.0",
+  "openapi": "3.0.3",
   "info": {
     "title": "example",
     "version": "1.0.0",
@@ -9,18 +9,16 @@
       "email": "user@gmail.com"
     }
   },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ],
   "paths": {
     "/": {
       "get": {
         "operationId": "id",
         "summary": "example",
-        "security": [
-          {
-            "OAuth2": [
-              "write"
-            ]
-          }
-        ],
         "responses": {
           "200": {
             "description": "200 response",
@@ -45,11 +43,13 @@
       }
     }
   },
-  "security": [
-    {
-      "OAuth2": [
-        "read"
-      ]
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-KEY"
+      }
     }
-  ]
+  }
 }
