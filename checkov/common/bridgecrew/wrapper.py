@@ -215,4 +215,5 @@ def persist_resource_subgraph_maps(
             return_when=futures.FIRST_EXCEPTION,
             timeout=timeout
         )
-    logging.info(f"Done persisting resource_subgraph_maps for frameworks - {', '.join(resource_subgraph_maps.keys())}")
+    if resource_subgraph_maps:
+        logging.info(f"Done persisting resource_subgraph_maps for frameworks - {', '.join(resource_subgraph_maps.keys())}")
