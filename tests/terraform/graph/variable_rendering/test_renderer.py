@@ -470,3 +470,18 @@ class TestRenderer(TestCase):
 
         provider_alias = next(vertex for vertex in local_graph.vertices if vertex.block_type == BlockType.PROVIDER and vertex.name == "aws.test")
         assert provider_alias.config["aws"]["default_tags"] == [{"tags": [{"test": "Test"}]}]
+
+    def test_multiple_dynamic_blocks_value_not_supporting(self):
+        resource_paths = [
+            os.path.join(TEST_DIRNAME, 'test_resources', 'multiple_dynamic_blocks'),
+        ]
+        for path in resource_paths:
+            graph_manager = TerraformGraphManager('m', ['m'])
+            local_graph, _ = graph_manager.build_graph_from_source_directory(path, render_variables=True)
+
+            resources_vertex = list(filter(lambda v: v.block_type == BlockType.RESOURCE and v.has_dynamic_block, local_graph.vertices))
+            value_block_1 = resources_vertex[0].config['google_sql_database_instance']['instance4-should-fail']['settings'][0]['ip_configuration'][0]['dynamic'][0]['authorized_networks']['content'][0]['value']
+            value_block_2 = resources_vertex[0].config['google_sql_database_instance']['instance4-should-fail']['settings'][0]['ip_configuration'][0][
+                'dynamic'][1]['authorized_networks']['content'][0]['value']
+            # TODO - for now we nor support multiple dynamic blocks - the value_block_1 and value_block_2 needs to be diffrent and not overide each other
+            assert not value_block_1 != value_block_2

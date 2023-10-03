@@ -5,6 +5,7 @@ import logging
 from collections.abc import Hashable
 from typing import Dict, List, Union, Any, Callable
 
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.common.util.parser_utils import eval_string, split_merge_args, string_to_native, to_string
 
@@ -200,12 +201,15 @@ def process_dynamic_values(conf: Dict[str, List[Any]]) -> bool:
         for element_name, element_value in dynamic_element.items():
             if "content" in element_value:
                 if element_name in conf:
-                    if isinstance(conf[element_name], list):
-                        conf[element_name].append(element_value["content"])
+                    if not isinstance(conf[element_name], list):
+                        conf[element_name] = [conf[element_name]]
+                    if isinstance(element_value["content"], list):
+                        conf[element_name].extend(element_value["content"])
                     else:
-                        conf[element_name] = [conf[element_name], element_value["content"]]
+                        conf[element_name].append(element_value["content"])
+
                 else:
-                    conf[element_name] = element_value["content"]
+                    conf[element_name] = pickle_deepcopy(element_value["content"])
             else:
                 # this should be the result of a successful dynamic block rendering
                 # in some cases a whole dict is added, which doesn't have a list around it
