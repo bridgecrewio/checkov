@@ -554,9 +554,7 @@ class Checkov:
                                                               self.config.branch)
 
                     bc_integration.persist_run_metadata(self.run_metadata)
-                    if bc_integration.enable_persist_graphs:
-                        bc_integration.persist_graphs(self.graphs)
-                        bc_integration.persist_resource_subgraph_maps(self.resource_subgraph_maps)
+                    # there is no graph to persist
                     self.url = self.commit_repository()
 
                 should_run_contributor_metrics = bc_integration.bc_api_key and self.config.repo_id and self.config.prisma_api_url
