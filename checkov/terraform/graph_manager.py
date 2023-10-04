@@ -107,12 +107,15 @@ class TerraformGraphManager(GraphManager[TerraformLocalGraph, "dict[TFDefinition
 
         return local_graph
 
-    def build_multi_graph_from_definitions(self, definitions: dict[TFDefinitionKey, dict[str, Any]],
-                                           render_variables: bool = True) -> list[tuple[str, TerraformLocalGraph]]:
+    def build_multi_graph_from_definitions(
+        self,
+        definitions: dict[TFDefinitionKey, dict[str, Any]],
+        render_variables: bool = True,
+    ) -> list[tuple[str | None, TerraformLocalGraph]]:
         module, tf_definitions = self.parser.parse_hcl_module_from_tf_definitions(definitions, "", self.source)
         dirs_to_definitions = self.parser.create_definition_by_dirs(tf_definitions)
 
-        graphs: list[tuple[str, TerraformLocalGraph]] = []
+        graphs: list[tuple[str | None, TerraformLocalGraph]] = []
         for source_path, dir_definitions in dirs_to_definitions.items():
             module, parsed_tf_definitions = self.parser.parse_hcl_module_from_multi_tf_definitions(dir_definitions, source_path, self.source)
             local_graph = TerraformLocalGraph(module)

@@ -88,7 +88,7 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
                         excluded_paths=runner_filter.excluded_paths,
                         vars_files=runner_filter.var_files,
                     )
-                    local_graphs = []
+                    local_graphs: list[tuple[str | None, TerraformLocalGraph]] = []
                     for graph, definitions, subgraph_path in graphs_with_definitions:
                         for definition in definitions:
                             self.definitions.update(definition)
