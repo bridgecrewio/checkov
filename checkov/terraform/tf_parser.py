@@ -321,8 +321,7 @@ class TFParser:
         excluded_paths: list[str] | None = None,
         vars_files: list[str] | None = None,
         external_modules_content_cache: dict[str, ModuleContent | None] | None = None,
-        create_graph: bool = True,
-    ) -> tuple[Module | None, dict[TFDefinitionKey, dict[str, Any]]]:
+    ) -> tuple[Module, dict[TFDefinitionKey, dict[str, Any]]]:
         tf_definitions = self.parse_directory(
             directory=source_dir, out_evaluations_context={},
             out_parsing_errors=parsing_errors if parsing_errors is not None else {},
@@ -333,9 +332,7 @@ class TFParser:
         tf_definitions = clean_parser_types(tf_definitions)
         tf_definitions = serialize_definitions(tf_definitions)
 
-        module = None
-        if create_graph:
-            module, tf_definitions = self.parse_hcl_module_from_tf_definitions(tf_definitions, source_dir, source)
+        module, tf_definitions = self.parse_hcl_module_from_tf_definitions(tf_definitions, source_dir, source)
 
         return module, tf_definitions
 
@@ -349,7 +346,6 @@ class TFParser:
         excluded_paths: list[str] | None = None,
         vars_files: list[str] | None = None,
         external_modules_content_cache: dict[str, ModuleContent | None] | None = None,
-        create_graph: bool = True,
     ) -> list[tuple[Module, list[dict[TFDefinitionKey, dict[str, Any]]]]]:
         """
         This function is similar to parse_hcl_module, except that it creates a list of tuples instead of a single tuple.
@@ -369,10 +365,9 @@ class TFParser:
         dirs_to_definitions = self.create_definition_by_dirs(tf_definitions)
 
         modules_and_definitions_tuple: list[tuple[Module, list[dict[TFDefinitionKey, dict[str, Any]]]]] = []
-        if create_graph:
-            for source_path, definitions in dirs_to_definitions.items():
-                module, parsed_tf_definitions = self.parse_hcl_module_from_multi_tf_definitions(definitions, source_path, source)
-                modules_and_definitions_tuple.append((module, parsed_tf_definitions))
+        for source_path, definitions in dirs_to_definitions.items():
+            module, parsed_tf_definitions = self.parse_hcl_module_from_multi_tf_definitions(definitions, source_path, source)
+            modules_and_definitions_tuple.append((module, parsed_tf_definitions))
 
         return modules_and_definitions_tuple
 
