@@ -20,8 +20,6 @@ class SecurityOperations(BaseOpenapiCheck):
 
         # Check if security field is present and not empty at the root level
         root_security = conf.get('security')
-        if root_security:
-            return CheckResult.PASSED, conf
 
         # If security field is not present or empty at the root level, check within each operation
         paths = conf.get('paths', {}) or {}
@@ -36,12 +34,9 @@ class SecurityOperations(BaseOpenapiCheck):
                         self.evaluated_keys = ['security']
                         if not isinstance(op_val, dict):
                             continue
-                        if 'security' not in op_val:
+                        op_security = op_val.get("security")
+                        if op_security is not None and (not op_security or not root_security):
                             return CheckResult.FAILED, conf
-
-                        security = op_val['security']
-                        if not security:
-                            return CheckResult.FAILED, paths
 
         return CheckResult.PASSED, conf
 
