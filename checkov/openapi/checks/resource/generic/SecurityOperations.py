@@ -35,7 +35,12 @@ class SecurityOperations(BaseOpenapiCheck):
                         if not isinstance(op_val, dict):
                             continue
                         op_security = op_val.get("security")
-                        if op_security is not None and (not op_security or not root_security):
+                        if op_security is not None and not op_security:
+                            # fails when security field is set as empty list
+                            return CheckResult.FAILED, conf
+
+                        if op_security is None and not root_security:
+                            # no security field for the operation and not in the root
                             return CheckResult.FAILED, conf
 
         return CheckResult.PASSED, conf

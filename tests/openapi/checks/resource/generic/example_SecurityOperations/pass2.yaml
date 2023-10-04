@@ -28,6 +28,3 @@ paths:
             required:
               - code
               - message
-security:
-  - OAuth2:
-      - read
