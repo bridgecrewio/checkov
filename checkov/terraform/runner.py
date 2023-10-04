@@ -15,7 +15,6 @@ from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, merge_reports, remove_duplicate_results
-from checkov.common.runners.base_runner import CHECKOV_CREATE_GRAPH
 from checkov.common.util import data_structures_utils
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
 from checkov.terraform import get_module_from_full_path, get_module_name, get_abs_path
@@ -73,7 +72,6 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
         report = Report(self.check_type)
         parsing_errors: dict[str, Exception] = {}
         self.load_external_checks(external_checks_dir)
-        local_graphs: Optional[list[tuple[Optional[str], Optional[TerraformLocalGraph]]]] = None
         if self.context is None or self.definitions is None or self.breadcrumbs is None:
             self.definitions = {}
             logging.info("Scanning root folder and producing fresh tf_definitions and context")
@@ -89,9 +87,8 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
                         parsing_errors=parsing_errors,
                         excluded_paths=runner_filter.excluded_paths,
                         vars_files=runner_filter.var_files,
-                        create_graph=CHECKOV_CREATE_GRAPH,
                     )
-                    local_graphs = []
+                    local_graphs: list[tuple[str | None, TerraformLocalGraph]] = []
                     for graph, definitions, subgraph_path in graphs_with_definitions:
                         for definition in definitions:
                             self.definitions.update(definition)
@@ -105,7 +102,6 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
                         parsing_errors=parsing_errors,
                         excluded_paths=runner_filter.excluded_paths,
                         vars_files=runner_filter.var_files,
-                        create_graph=CHECKOV_CREATE_GRAPH,
                     )
                     # Make graph a list to allow single processing method for all cases
                     local_graphs = [(None, single_graph)]
@@ -114,20 +110,17 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
                 root_folder = os.path.split(os.path.commonprefix(files))[0]
                 self._parse_files(files, parsing_errors)
 
-                if CHECKOV_CREATE_GRAPH:
-                    if tf_split_graph:
-                        local_graphs = self.graph_manager.build_multi_graph_from_definitions(  # type:ignore[assignment]  # will be fixed after removing 'CHECKOV_CREATE_GRAPH'
-                            self.definitions
-                        )
-                    else:
-                        # local_graph needs to be a list to allow supporting multi graph
-                        local_graphs = [(None, self.graph_manager.build_graph_from_definitions(self.definitions))]
+                if tf_split_graph:
+                    local_graphs = self.graph_manager.build_multi_graph_from_definitions(self.definitions)
+                else:
+                    # local_graph needs to be a list to allow supporting multi graph
+                    local_graphs = [(None, self.graph_manager.build_graph_from_definitions(self.definitions))]
             else:
                 raise Exception("Root directory was not specified, files were not specified")
 
-            if CHECKOV_CREATE_GRAPH and local_graphs:
+            if local_graphs:
                 self._update_definitions_and_breadcrumbs(
-                    local_graphs,  # type:ignore[arg-type]  # will be fixed after removing 'CHECKOV_CREATE_GRAPH'
+                    local_graphs,
                     report,
                     root_folder)
         else:
@@ -141,14 +134,13 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
 
         report.add_parsing_errors(parsing_errors.keys())
 
-        if CHECKOV_CREATE_GRAPH:
-            if self.all_graphs:
-                for igraph_graph, _ in self.all_graphs:
-                    graph_report = self.get_graph_checks_report(root_folder, runner_filter, graph=igraph_graph)
-                    merge_reports(report, graph_report)
-            else:
-                graph_report = self.get_graph_checks_report(root_folder, runner_filter)
+        if self.all_graphs:
+            for igraph_graph, _ in self.all_graphs:
+                graph_report = self.get_graph_checks_report(root_folder, runner_filter, graph=igraph_graph)
                 merge_reports(report, graph_report)
+        else:
+            graph_report = self.get_graph_checks_report(root_folder, runner_filter)
+            merge_reports(report, graph_report)
 
         report = remove_duplicate_results(report)
 
@@ -439,7 +431,7 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
                         details=check.details,
                         definition_context_file_path=full_file_path.file_path,
                     )
-                    if CHECKOV_CREATE_GRAPH and self.breadcrumbs:
+                    if self.breadcrumbs:
                         entity_key = entity_id
                         breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(entity_key)
                         if breadcrumb:
