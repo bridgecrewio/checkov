@@ -4,6 +4,6 @@ Resources:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: TestFunction.Arn
+      FunctionName: TestFunction
       Principal: apigateway.amazonaws.com
 
