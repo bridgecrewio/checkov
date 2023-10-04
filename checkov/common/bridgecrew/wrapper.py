@@ -190,3 +190,30 @@ def persist_graphs(
             timeout=timeout
         )
     logging.info(f"Done persisting {len(list(itertools.chain(*graphs.values())))} graphs")
+
+
+def persist_resource_subgraph_maps(
+        resource_subgraph_maps: dict[str, dict[str, str]],
+        s3_client: S3Client,
+        bucket: str,
+        full_repo_object_key: str,
+        timeout: int
+) -> None:
+    def _upload_resource_subgraph_map(check_type: str, resource_subgraph_map: dict[str, str]) -> None:
+        s3_key = os.path.join(graphs_repo_object_key, check_type, "multi-graph/resource_subgraph_maps/resource_subgraph_map.json")
+        try:
+            _put_json_object(s3_client, resource_subgraph_map, bucket, s3_key)
+        except Exception:
+            logging.error(f'failed to upload resource_subgraph_map from framework {check_type} to platform', exc_info=True)
+
+    # removing '/src' with [:-4]
+    graphs_repo_object_key = full_repo_object_key.replace('checkov', 'graphs')[:-4]
+    with futures.ThreadPoolExecutor() as executor:
+        futures.wait(
+            [executor.submit(_upload_resource_subgraph_map, check_type, resource_subgraph_map) for
+             check_type, resource_subgraph_map in resource_subgraph_maps.items()],
+            return_when=futures.FIRST_EXCEPTION,
+            timeout=timeout
+        )
+    if resource_subgraph_maps:
+        logging.info(f"Done persisting resource_subgraph_maps for frameworks - {', '.join(resource_subgraph_maps.keys())}")

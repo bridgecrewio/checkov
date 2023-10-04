@@ -1,6 +1,7 @@
 from dataclasses import dataclass
+from typing import Literal
 
-from typing_extensions import Literal, TypeAlias
+from typing_extensions import TypeAlias  # noqa[TC002]
 
 from checkov.common.graph.graph_builder.graph_components.block_types import BlockType as CommonBlockType
 
