@@ -10,7 +10,7 @@ class LambdaServicePermission(BaseResourceCheck):
         description = "Ensure that AWS Lambda function permissions delegated to AWS services are limited by SourceArn or SourceAccount"
 
         # This is the Unique ID for your check
-        id = "CKV_AWS_293"
+        id = "CKV_AWS_364"
 
         # These are the terraform objects supported by this check (ex: aws_iam_policy_document)
         supported_resources = ('aws_lambda_permission',)
