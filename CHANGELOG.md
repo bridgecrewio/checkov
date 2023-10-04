@@ -1,6 +1,28 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.4.57...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.4.61...HEAD)
+
+## [2.4.61](https://github.com/bridgecrewio/checkov/compare/2.4.59...2.4.61) - 2023-10-03
+
+### Bug Fix
+
+- **terraform:** fix upload resource_subgraph_maps - [#5615](https://github.com/bridgecrewio/checkov/pull/5615)
+
+### Platform
+
+- **terraform:** Upload resource subgraph map - [#5612](https://github.com/bridgecrewio/checkov/pull/5612)
+
+## [2.4.59](https://github.com/bridgecrewio/checkov/compare/2.4.58...2.4.59) - 2023-10-02
+
+### Platform
+
+- **terraform:** fix in subgraphs uploads - [#5610](https://github.com/bridgecrewio/checkov/pull/5610)
+
+## [2.4.58](https://github.com/bridgecrewio/checkov/compare/2.4.57...2.4.58) - 2023-10-01
+
+### Platform
+
+- **terraform:** upload tf sub graphs - [#5596](https://github.com/bridgecrewio/checkov/pull/5596)
 
 ## [2.4.57](https://github.com/bridgecrewio/checkov/compare/2.4.55...2.4.57) - 2023-09-29
 

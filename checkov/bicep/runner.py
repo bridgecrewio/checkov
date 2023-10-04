@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 import logging
 from pathlib import Path
-from typing import cast, Type, TYPE_CHECKING, Any
+from typing import cast, Type, TYPE_CHECKING, Any, Literal
 
 from typing_extensions import TypeAlias  # noqa[TC002]
 
@@ -40,7 +40,6 @@ if TYPE_CHECKING:
     from checkov.common.images.image_referencer import Image
     from networkx import DiGraph
     from pycep.typing import BicepJson
-    from typing_extensions import Literal
 
 _BicepContext: TypeAlias = "dict[str, dict[str, Any]]"
 _BicepDefinitions: TypeAlias = "dict[Path, BicepJson]"

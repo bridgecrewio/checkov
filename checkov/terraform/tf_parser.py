@@ -7,12 +7,12 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, cast, TYPE_CHECKING, overload
 
-import deep_merge
 import hcl2
 
 from checkov.common.runners.base_runner import filter_ignored_paths, IGNORE_HIDDEN_DIRECTORY_ENV
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
 from checkov.common.util.data_structures_utils import pickle_deepcopy
+from checkov.common.util.deep_merge import pickle_deep_merge
 from checkov.common.util.type_forcers import force_list
 from checkov.common.variables.context import EvaluationContext
 from checkov.terraform import validate_malformed_definitions, clean_bad_definitions
@@ -299,7 +299,7 @@ class TFParser:
                                 resolved_loc_list.append(new_key)
 
                         if all_module_definitions:
-                            deep_merge.merge(all_module_definitions, module_definitions)
+                            pickle_deep_merge(all_module_definitions, module_definitions)
                         else:
                             all_module_definitions = module_definitions
 
@@ -308,7 +308,7 @@ class TFParser:
                         logging.warning(f"Unable to load module - source: {source}, version: {version}, error: {str(e)}")
 
         if all_module_definitions:
-            deep_merge.merge(self.out_definitions, all_module_definitions)
+            pickle_deep_merge(self.out_definitions, all_module_definitions)
         return skipped_a_module
 
     def parse_hcl_module(

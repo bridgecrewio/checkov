@@ -6,7 +6,7 @@ import os
 import re
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
-from typing import List, Any, TYPE_CHECKING, TypeVar, Generic, Dict
+from typing import List, Any, TYPE_CHECKING, TypeVar, Generic, Dict, Optional
 
 from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
 from checkov.common.graph.graph_builder import CustomAttributes
@@ -60,6 +60,7 @@ class BaseRunner(ABC, Generic[_Definitions, _Context, _GraphManager]):
     graph_manager: _GraphManager | None = None
     graph_registry: Registry | None = None
     db_connector: LibraryGraphConnector
+    resource_subgraph_map: Optional[dict[str, str]] = None
 
     def __init__(self, file_extensions: Iterable[str] | None = None, file_names: Iterable[str] | None = None):
         self.file_extensions = file_extensions or []
