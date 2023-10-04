@@ -54,7 +54,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.7", "3.8", "3.9", "3.10", "3.11"]  # TODO: remove 3.7 end of September
+        python: ["3.8", "3.9", "3.10", "3.11"]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -79,12 +79,7 @@ jobs:
           # remove venv, if exists
           pipenv --rm || true
           pipenv --python ${{ matrix.python }}
-          # TODO: remove 3.7 end of September
-          if [ ${{ matrix.python }} == '3.7' ]; then
-            pipenv install --skip-lock --dev -v
-          else
-            pipenv install --dev -v
-          fi
+          pipenv install --dev -v
           pipenv run pip install redefine --index-url https://pip.redefine.dev
       - name: Unit tests
         env:
