@@ -12,7 +12,7 @@ import sys
 import platform
 from collections import defaultdict
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Literal, Optional
 
 import argcomplete
 import configargparse
@@ -83,7 +83,6 @@ from checkov.logging_init import log_stream as logs_stream
 if TYPE_CHECKING:
     from checkov.common.output.report import Report
     from configargparse import Namespace
-    from typing_extensions import Literal
 
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 

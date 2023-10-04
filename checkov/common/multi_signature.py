@@ -4,8 +4,7 @@ import inspect
 from abc import ABCMeta
 from functools import update_wrapper
 from types import CodeType
-from typing import Callable, Any, TypeVar, cast
-from typing_extensions import Protocol
+from typing import Callable, Any, TypeVar, cast, Protocol
 
 _MultiT = TypeVar("_MultiT")
 
