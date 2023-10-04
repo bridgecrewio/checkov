@@ -1,4 +1,4 @@
-openapi: 3.0.0
+openapi: "3.0.3"
 info:
   title: example
   version: 1.0.0
@@ -6,14 +6,13 @@ info:
     name: contact
     url: https://www.google.com/
     email: user@gmail.com
+security:  
+  - ApiKeyAuth: []
 paths:
   "/":
     get:
       operationId: id
       summary: example
-      security:
-        - OAuth2:
-            - write
       responses:
         "200":
           description: 200 response
@@ -28,3 +27,9 @@ paths:
             required:
               - code
               - message
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-KEY
