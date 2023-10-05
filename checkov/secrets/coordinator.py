@@ -1,6 +1,5 @@
 from __future__ import annotations
-from typing import Iterable
-from typing_extensions import TypedDict
+from typing import Iterable, TypedDict
 
 
 class EnrichedSecret(TypedDict):

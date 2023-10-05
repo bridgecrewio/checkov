@@ -29,7 +29,7 @@ class BaseRegistry:
         }
 
     def run_check(self, check: BaseGraphCheck, graph_connector: LibraryGraph) -> list[_CheckResult]:
-        logging.debug(f'Running graph check: {check.id}')
+        logging.debug(f"Running graph check: {check.id}")
         debug.graph_check(check_id=check.id, check_name=check.name)
 
         passed, failed, unknown = check.run(graph_connector)

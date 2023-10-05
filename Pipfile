@@ -46,7 +46,6 @@ boto3-stubs-lite = {extras = ["s3"], version = "*"}
 bc-python-hcl2 = "==0.3.51"
 bc-detect-secrets = "==1.4.30"
 bc-jsonpath-ng = "==1.5.9"
-deep-merge = "*"
 tabulate = "*"
 colorama="*"
 termcolor="*"
@@ -89,6 +88,7 @@ yarl = "*"
 openai = "*"
 spdx-tools = ">=0.8.0,<0.9.0"
 license-expression = "*"
+rustworkx = "*"
 
 [requires]
 python_version = "3.8"

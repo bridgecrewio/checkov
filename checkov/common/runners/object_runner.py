@@ -7,8 +7,8 @@ import platform
 from abc import abstractmethod
 from collections.abc import Iterable
 from pathlib import Path
-from typing import Any, TYPE_CHECKING, Callable
-from typing_extensions import TypedDict, TypeAlias
+from typing import Any, TYPE_CHECKING, Callable, TypedDict
+from typing_extensions import TypeAlias  # noqa[TC002]
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.models.enums import CheckResult
@@ -18,7 +18,7 @@ from checkov.common.output.github_actions_record import GithubActionsRecord
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, CheckType
 from checkov.common.parallelizer.parallel_runner import parallel_runner
-from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths, CHECKOV_CREATE_GRAPH
+from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.common.runners.graph_manager import ObjectGraphManager
 from checkov.common.typing import _CheckResult
 from checkov.common.util.consts import START_LINE, END_LINE
@@ -121,7 +121,7 @@ class Runner(BaseRunner[_ObjectDefinitions, _ObjectContext, ObjectGraphManager])
             for directory in external_checks_dir:
                 registry.load_external_checks(directory)
 
-                if CHECKOV_CREATE_GRAPH and self.graph_registry:
+                if self.graph_registry:
                     self.graph_registry.load_external_checks(directory)
 
         if not self.context or not self.definitions:
@@ -139,7 +139,7 @@ class Runner(BaseRunner[_ObjectDefinitions, _ObjectContext, ObjectGraphManager])
 
             self.context = self.build_definitions_context(definitions=self.definitions, definitions_raw=self.definitions_raw)
 
-            if CHECKOV_CREATE_GRAPH and self.graph_registry and self.graph_manager:
+            if self.graph_registry and self.graph_manager:
                 logging.info(f"Creating {self.source} graph")
                 local_graph = self.graph_manager.build_graph_from_definitions(
                     definitions=self.definitions, graph_class=self.graph_class  # type:ignore[arg-type]  # the paths are just `str`
@@ -158,7 +158,7 @@ class Runner(BaseRunner[_ObjectDefinitions, _ObjectContext, ObjectGraphManager])
         self.add_python_check_results(report=report, registry=registry, runner_filter=runner_filter, root_folder=root_folder)
 
         # run graph checks
-        if CHECKOV_CREATE_GRAPH and self.graph_registry:
+        if self.graph_registry:
             self.add_graph_check_results(report=report, runner_filter=runner_filter)
 
         return report

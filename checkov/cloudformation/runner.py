@@ -28,7 +28,7 @@ from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, merge_reports, CheckType
-from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
+from checkov.common.runners.base_runner import BaseRunner
 from checkov.common.util.secrets import omit_secret_value_from_checks
 from checkov.runner_filter import RunnerFilter
 
@@ -89,25 +89,22 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_CloudformationDefinitions, 
             if external_checks_dir:
                 for directory in external_checks_dir:
                     cfn_registry.load_external_checks(directory)
-
-                    if CHECKOV_CREATE_GRAPH:
-                        self.graph_registry.load_external_checks(directory)
+                    self.graph_registry.load_external_checks(directory)
 
             self.context = build_definitions_context(self.definitions, self.definitions_raw)
 
-            if CHECKOV_CREATE_GRAPH:
-                logging.info("creating CloudFormation graph")
-                local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
-                logging.info("Successfully created CloudFormation graph")
+            logging.info("creating CloudFormation graph")
+            local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
+            logging.info("Successfully created CloudFormation graph")
 
-                for vertex in local_graph.vertices:
-                    if vertex.block_type == BlockType.RESOURCE:
-                        report.add_resource(f'{vertex.path}:{vertex.id}')
-                self.graph_manager.save_graph(local_graph)
-                self.definitions, self.breadcrumbs = convert_graph_vertices_to_definitions(
-                    vertices=local_graph.vertices,
-                    root_folder=root_folder,
-                )
+            for vertex in local_graph.vertices:
+                if vertex.block_type == BlockType.RESOURCE:
+                    report.add_resource(f'{vertex.path}:{vertex.id}')
+            self.graph_manager.save_graph(local_graph)
+            self.definitions, self.breadcrumbs = convert_graph_vertices_to_definitions(
+                vertices=local_graph.vertices,
+                root_folder=root_folder,
+            )
 
         # TODO: replace with real graph rendering
         for cf_file in self.definitions.keys():
@@ -126,9 +123,8 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_CloudformationDefinitions, 
         self.check_definitions(root_folder, runner_filter, report)
 
         # run graph checks
-        if CHECKOV_CREATE_GRAPH:
-            graph_report = self.get_graph_checks_report(root_folder, runner_filter)
-            merge_reports(report, graph_report)
+        graph_report = self.get_graph_checks_report(root_folder, runner_filter)
+        merge_reports(report, graph_report)
 
         if runner_filter.run_image_referencer:
             if files:
@@ -191,7 +187,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_CloudformationDefinitions, 
                                         severity=check.severity
                                     )
 
-                                    if CHECKOV_CREATE_GRAPH and self.breadcrumbs:
+                                    if self.breadcrumbs:
                                         breadcrumb = self.breadcrumbs.get(record.file_path, {}).get(record.resource)
                                         if breadcrumb:
                                             record = GraphRecord(record, breadcrumb)

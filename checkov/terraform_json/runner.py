@@ -14,7 +14,6 @@ from checkov.common.output.graph_record import GraphRecord
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
-from checkov.common.runners.base_runner import CHECKOV_CREATE_GRAPH
 from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.common.util.secrets import omit_secret_value_from_checks
 from checkov.runner_filter import RunnerFilter
@@ -92,19 +91,16 @@ class TerraformJsonRunner(BaseTerraformRunner[_TerraformJsonDefinitions, _Terraf
             if external_checks_dir:
                 for directory in external_checks_dir:
                     resource_registry.load_external_checks(directory)
-
-                    if CHECKOV_CREATE_GRAPH:
-                        self.graph_registry.load_external_checks(directory)
+                    self.graph_registry.load_external_checks(directory)
 
             # TODO: create function 'build_definitions_context()'
             # self.context = build_definitions_context(definitions=self.definitions, definitions_raw=self.definitions_raw)
 
-            if CHECKOV_CREATE_GRAPH:
-                logger.info("Creating Terraform JSON graph")
-                local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
-                logger.info("Successfully created Terraform JSON graph")
+            logger.info("Creating Terraform JSON graph")
+            local_graph = self.graph_manager.build_graph_from_definitions(self.definitions)
+            logger.info("Successfully created Terraform JSON graph")
 
-                self.graph_manager.save_graph(local_graph)
+            self.graph_manager.save_graph(local_graph)
 
             self.pbar.initiate(len(self.definitions))
 
@@ -112,8 +108,7 @@ class TerraformJsonRunner(BaseTerraformRunner[_TerraformJsonDefinitions, _Terraf
             self.add_python_check_results(report=report, runner_filter=runner_filter)
 
             # run graph checks
-            if CHECKOV_CREATE_GRAPH:
-                self.add_graph_check_results(report=report, runner_filter=runner_filter)
+            self.add_graph_check_results(report=report, runner_filter=runner_filter)
 
         return report
 

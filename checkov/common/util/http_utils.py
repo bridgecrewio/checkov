@@ -208,16 +208,10 @@ async def aiohttp_client_session_wrapper(
     request_max_tries = int(os.getenv('REQUEST_MAX_TRIES', 3))
     sleep_between_request_tries = float(os.getenv('SLEEP_BETWEEN_REQUEST_TRIES', 1))
 
-    try:  # TODO: test again, when Python 3.11 is out
-        import aiodns  # type: ignore[import]  # noqa: F401
-        resolver: "aiohttp.abc.AbstractResolver" = aiohttp.AsyncResolver()
-    except ImportError:
-        resolver = aiohttp.ThreadedResolver()
-
     # adding retry mechanism for avoiding the next repeated unexpected issues:
     # 1. Gateway Timeout from the server
     # 2. ClientOSError
-    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(resolver=resolver)) as session:
+    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(resolver=aiohttp.AsyncResolver())) as session:
         for i in range(request_max_tries):
             logging.info(
                 f"[http_utils](aiohttp_client_session_wrapper) reporting attempt {i + 1} out of {request_max_tries}")
