@@ -2,15 +2,12 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 from checkov.cdk.checks_infra.base_registry import BaseCdkRegistry
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.output.report import Report
 from checkov.sast.runner import Runner as SastRunner
-
-if TYPE_CHECKING:
-    from checkov.runner_filter import RunnerFilter
+from checkov.runner_filter import RunnerFilter
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +29,8 @@ class CdkRunner(SastRunner):
         runner_filter: RunnerFilter | None = None,
         collect_skip_comments: bool = True,
     ) -> list[Report]:
+        runner_filter = runner_filter or RunnerFilter()
+        runner_filter.remove_default_sast_policies = True
         reports = super().run(
             root_folder=root_folder,
             external_checks_dir=external_checks_dir,

@@ -54,7 +54,7 @@ class TestVulnerabilitiesIntegration(unittest.TestCase):
 
         sca_report: Report = Report(check_type=CheckType.SCA_PACKAGE)
         sca_report.failed_checks = failed_checks
-        sast_report: SastReport = SastReport(check_type=CheckType.SAST_JAVASCRIPT, engine_name="prisma cloud",
+        sast_report: SastReport = SastReport(check_type=CheckType.SAST_JAVASCRIPT,
                                              language=SastLanguages.JAVASCRIPT, metadata=None)
         sast_report.sast_imports = sast_imports
         merged_reports = [sca_report, sast_report]
@@ -87,7 +87,7 @@ class TestVulnerabilitiesIntegration(unittest.TestCase):
 
         sca_report: Report = Report(check_type=CheckType.SCA_PACKAGE)
         sca_report.failed_checks = failed_checks
-        sast_report: SastReport = SastReport(check_type=CheckType.SAST_JAVASCRIPT, engine_name="prisma cloud",
+        sast_report: SastReport = SastReport(check_type=CheckType.SAST_JAVASCRIPT,
                                              language=SastLanguages.JAVASCRIPT, metadata=None)
         sast_report.sast_imports = sast_imports
         merged_reports = [sca_report, sast_report]

@@ -1,5 +1,5 @@
 metadata:
-  version: 0.1
+  version: 0.2
   id: CKV_AWS_21
   name: Ensure all data stored in the S3 bucket have versioning enabled
   category: BACKUP_AND_RECOVERY
@@ -7,10 +7,6 @@ scope:
   languages:
     - python
 definition:
-  - and:
-      - cond_type: pattern
-        operator: equals
-        value: "aws_cdk.aws_s3.Bucket(...)"
-      - cond_type: pattern
-        operator: not_equals
-        value: "aws_cdk.aws_s3.Bucket(..., versioned=True, ...)"
+  pattern: aws_cdk.aws_s3.Bucket(<ANY>)
+  conditions:
+    - not_pattern: aws_cdk.aws_s3.Bucket(<ANY>, versioned=True, <ANY>)

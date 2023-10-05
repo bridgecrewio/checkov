@@ -1,5 +1,5 @@
 metadata:
-  version: 0.1
+  version: 0.2
   id: CKV_AWS_145
   name: Ensure that S3 buckets are encrypted with KMS by default
   category: ENCRYPTION
@@ -7,19 +7,12 @@ scope:
   languages:
     - python
 definition:
-  - or:
-      - and:
-          - cond_type: pattern
-            operator: equals
-            value: "aws_cdk.aws_s3.Bucket(...)"
-          - cond_type: pattern
-            operator: not_equals
-            value: "aws_cdk.aws_s3.Bucket(..., encryption=aws_cdk.aws_s3.BucketEncryption.$ANY_VAR, ...)"
-      - and:
-          - cond_type: variable
-            variable: $ENCRYPTION
-            operator: regex_match
-            value: ^(S3_MANAGED|UNENCRYPTED)$
-          - cond_type: pattern
-            operator: equals
-            value: "aws_cdk.aws_s3.Bucket(..., encryption=aws_cdk.aws_s3.BucketEncryption.$ENCRYPTION, ...)"
+  patterns:
+    or:
+      - pattern: aws_cdk.aws_s3.Bucket(<ANY>)
+        conditions:
+          - not_pattern: aws_cdk.aws_s3.Bucket(<ANY>, encryption=aws_cdk.aws_s3.BucketEncryption.$ANY_VAR, <ANY>)
+      - pattern: aws_cdk.aws_s3.Bucket(<ANY>, encryption=aws_cdk.aws_s3.BucketEncryption.$ENCRYPTION, <ANY>)
+        conditions:
+          - metavariable: $ENCRYPTION
+            regex: ^(S3_MANAGED|UNENCRYPTED)$

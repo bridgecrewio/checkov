@@ -56,7 +56,8 @@ class RunnerFilter(object):
             enable_git_history_secret_scan: bool = False,
             git_history_timeout: str = '12h',
             git_history_last_commit_scanned: Optional[str] = None,  # currently not exposed by a CLI flag
-            report_sast_imports: bool = False
+            report_sast_imports: bool = False,
+            remove_default_sast_policies: bool = False
     ) -> None:
 
         checks = convert_csv_string_arg_to_list(checks)
@@ -148,6 +149,7 @@ class RunnerFilter(object):
             self.git_history_last_commit_scanned = git_history_last_commit_scanned
 
         self.report_sast_imports = report_sast_imports
+        self.remove_default_sast_policies = remove_default_sast_policies
 
     @staticmethod
     def _load_resource_attr_to_omit(resource_attr_to_omit_input: Optional[Dict[str, Set[str]]]) -> DefaultDict[str, Set[str]]:
@@ -380,7 +382,7 @@ class RunnerFilter(object):
         if not frameworks:
             return langs
         for framework in frameworks:
-            if framework == CheckType.SAST:
+            if framework in [CheckType.SAST, CheckType.CDK]:
                 for sast_lang in SastLanguages:
                     langs.add(sast_lang)
                 return langs

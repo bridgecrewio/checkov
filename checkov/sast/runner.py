@@ -10,11 +10,8 @@ from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import BaseRunner
 from checkov.runner_filter import RunnerFilter
 from checkov.sast.checks_infra.base_registry import Registry
-from checkov.sast.consts import SUPPORT_FILE_EXT, FILE_EXT_TO_SAST_LANG, SastEngines
-from checkov.sast.engines.base_engine import SastEngine
+from checkov.sast.consts import SUPPORT_FILE_EXT, FILE_EXT_TO_SAST_LANG
 from checkov.sast.engines.prisma_engine import PrismaEngine
-from checkov.sast.engines.semgrep_engine import SemgrepEngine
-from checkov.common.bridgecrew.platform_integration import bc_integration
 
 from typing import List, Optional
 
@@ -29,6 +26,7 @@ class Runner(BaseRunner[None]):
     def __init__(self) -> None:
         super().__init__(file_extensions=["." + a for a in FILE_EXT_TO_SAST_LANG.keys()])
         self.registry = Registry(checks_dir=CHECKS_DIR)
+        self.engine = PrismaEngine()  # noqa: disallow-untyped-calls
 
     def should_scan_file(self, file: str) -> bool:
         for extensions in SUPPORT_FILE_EXT.values():
@@ -63,29 +61,10 @@ class Runner(BaseRunner[None]):
         if files:
             targets.extend([a if os.path.isabs(a) else os.path.abspath(a) for a in files])
 
-        engine_name = self.get_engine()
-        engine: SastEngine
-        if engine_name == SastEngines.SEMGREP:
-            engine = SemgrepEngine()  # noqa: disallow-untyped-calls
-        elif engine_name == SastEngines.PRISMA:
-            engine = PrismaEngine()  # noqa: disallow-untyped-calls
-        else:
-            logging.error(f"not supported engine: {engine_name}")
-            return [Report(self.check_type)]
-
         reports = []
         try:
-            reports = engine.get_reports(targets, self.registry, runner_filter.sast_languages)
+            reports = self.engine.get_reports(targets, self.registry, runner_filter.sast_languages)
         except BaseException as e:
-            logger.error(f"got error when try to run prisma sast, fallback to semgrep: {e}")
-            if engine_name == SastEngines.PRISMA:
-                engine = SemgrepEngine()  # noqa: disallow-untyped-calls
-                reports = engine.get_reports(targets, self.registry, runner_filter.sast_languages)
+            logger.error(f"got error when try to run prisma sast: {e}")
 
         return reports
-
-    @staticmethod
-    def get_engine() -> SastEngines:
-        if bc_integration.bc_api_key and not os.getenv("IS_TEST"):
-            return SastEngines.PRISMA
-        return SastEngines.SEMGREP

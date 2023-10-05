@@ -30,7 +30,7 @@ def load(
             content = file_path.read_text()
     except UnicodeDecodeError:
         LOGGER.info(f"Encoding for file {filename} is not UTF-8, trying to detect it")
-        content = str(from_path(filename).best())  # type:ignore[arg-type]  # somehow str is not recognized as PathLike
+        content = str(from_path(filename).best())
 
     file_lines = [(idx + 1, line) for idx, line in enumerate(content.splitlines(keepends=True))]
 

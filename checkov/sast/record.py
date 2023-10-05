@@ -24,7 +24,7 @@ class SastRecord(Record):
                  bc_check_id: Optional[str] = None,
                  cwe: Optional[Union[List[str], str]] = None,
                  owasp: Optional[Union[List[str], str]] = None,
-                 show_severity: Optional[bool] = False  # should be false in case the severities are just a default value, as we deafult the semgrep result to warning severity
+                 show_severity: Optional[bool] = False  # should be false in case the severities are just a default value
                  ) -> None:
         super().__init__(
             check_id=check_id,
