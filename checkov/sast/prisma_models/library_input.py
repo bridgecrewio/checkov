@@ -16,3 +16,4 @@ class LibraryInput(TypedDict):
     skip_path: List[str]
     list_policies: NotRequired[bool]
     report_imports: bool
+    remove_default_policies: NotRequired[bool]

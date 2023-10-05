@@ -9,13 +9,12 @@ import logging
 from pathlib import Path
 from typing import Any
 
+from charset_normalizer import from_path
+
 from checkov.common.parsers.json.decoder import Decoder
 from checkov.common.parsers.json.errors import DecodeError
-from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
-from checkov.common.util.file_utils import read_file_with_any_encoding
 
 LOGGER = logging.getLogger(__name__)
-add_resource_code_filter_to_logger(LOGGER)
 
 
 def load(
@@ -25,8 +24,13 @@ def load(
     Load the given JSON file
     """
 
-    if not content:
-        content = read_file_with_any_encoding(file_path=filename)
+    try:
+        if not content:
+            file_path = filename if isinstance(filename, Path) else Path(filename)
+            content = file_path.read_text()
+    except UnicodeDecodeError:
+        LOGGER.info(f"Encoding for file {filename} is not UTF-8, trying to detect it")
+        content = str(from_path(filename).best())
 
     file_lines = [(idx + 1, line) for idx, line in enumerate(content.splitlines(keepends=True))]
 

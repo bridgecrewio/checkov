@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-# temporary code common to semgrep and go runner
 from typing import List, Tuple
 
 from checkov.common.output.record import PLACEHOLDER_LINE
