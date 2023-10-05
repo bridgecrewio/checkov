@@ -7,35 +7,35 @@ import re
 import uuid
 import webbrowser
 from collections import namedtuple
-from urllib.parse import urlparse
 from concurrent import futures
 from io import StringIO
 from json import JSONDecodeError
 from os import path
 from pathlib import Path
 from time import sleep
-from typing import List, Dict, TYPE_CHECKING, Any, Optional, cast, Optional
+from typing import List, Dict, TYPE_CHECKING, Any, cast, Optional
+from urllib.parse import urlparse
 
 import boto3
 import dpath
 import requests
 import urllib3
-from botocore.exceptions import ClientError
 from botocore.config import Config
+from botocore.exceptions import ClientError
 from cachetools import cached, TTLCache
 from colorama import Style
 from termcolor import colored
 from tqdm import trange
 from urllib3.exceptions import HTTPError, MaxRetryError
 
-from checkov.common.bridgecrew.run_metadata.registry import registry
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.bridgecrew.platform_key import read_key, persist_key, bridgecrew_file
+from checkov.common.bridgecrew.run_metadata.registry import registry
 from checkov.common.bridgecrew.wrapper import persist_assets_results, reduce_scan_reports, persist_checks_results, \
     enrich_and_persist_checks_metadata, checkov_results_prefix, persist_run_metadata, _put_json_object, \
     persist_logs_stream, persist_graphs
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILES, SCANNABLE_PACKAGE_FILES
-from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.typing import _CicdDetails, LibraryGraph
 from checkov.common.util.consts import PRISMA_PLATFORM, BRIDGECREW_PLATFORM, CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
@@ -66,9 +66,6 @@ if TYPE_CHECKING:
     from mypy_boto3_s3.client import S3Client
     from requests import Response
     from typing_extensions import TypeGuard
-    from igraph import Graph
-    from networkx import DiGraph
-
 
 SLEEP_SECONDS = 1
 

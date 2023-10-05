@@ -54,7 +54,7 @@ class VulnerabilitiesIntegration(BaseIntegrationFeature):
             return
 
         # Extract SAST imports report
-        sast_reports = [scan_report for scan_report in merged_reports if type(scan_report) == SastReport]
+        sast_reports = [scan_report for scan_report in merged_reports if isinstance(scan_report, SastReport)]
         if not len(sast_reports):
             return
 

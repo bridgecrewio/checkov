@@ -249,20 +249,3 @@ class Record:
             file_abs_path=record_json['file_abs_path'],
             severity=record_json.get('severity')
         )
-
-    @classmethod
-    def from_reduced_json(cls, record_json: dict[str, Any]) -> Record:
-        return Record(
-            check_id=record_json['check_id'],
-            bc_check_id=record_json['bc_check_id'],
-            check_name=record_json['check_name'],
-            check_result=record_json['check_result'],
-            code_block=record_json['code_block'],
-            file_path=record_json['file_path'],
-            file_line_range=record_json['file_line_range'],
-            resource=record_json['resource'],
-            evaluations=record_json.get('evaluations'),
-            check_class='',
-            file_abs_path=record_json['file_abs_path'],
-            severity=record_json.get('severity')
-        )

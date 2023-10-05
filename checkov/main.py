@@ -6,44 +6,46 @@ import itertools
 import json
 import logging
 import os
+import platform
 import shutil
 import signal
 import sys
-import platform
 from collections import defaultdict
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, List
 
 import argcomplete
 import configargparse
 from urllib3.exceptions import MaxRetryError
 
 import checkov.logging_init  # noqa  # should be imported before the others to ensure correct logging setup
-
 from checkov.ansible.runner import Runner as ansible_runner
 from checkov.argo_workflows.runner import Runner as argo_workflows_runner
 from checkov.arm.runner import Runner as arm_runner
 from checkov.azure_pipelines.runner import Runner as azure_pipelines_runner
+from checkov.bicep.runner import Runner as bicep_runner
 from checkov.bitbucket.runner import Runner as bitbucket_configuration_runner
 from checkov.bitbucket_pipelines.runner import Runner as bitbucket_pipelines_runner
 from checkov.cdk.runner import CdkRunner
+from checkov.circleci_pipelines.runner import Runner as circleci_pipelines_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.bc_source import SourceTypes, BCSourceType, get_source_type, SourceType
+from checkov.common.bridgecrew.check_type import checkov_runners, CheckType
+from checkov.common.bridgecrew.integration_features.features.custom_policies_integration import \
+    integration as custom_policies_integration
+from checkov.common.bridgecrew.integration_features.features.licensing_integration import \
+    integration as licensing_integration
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
     integration as policy_metadata_integration
 from checkov.common.bridgecrew.integration_features.features.repo_config_integration import \
     integration as repo_config_integration
 from checkov.common.bridgecrew.integration_features.features.suppressions_integration import \
     integration as suppressions_integration
-from checkov.common.bridgecrew.integration_features.features.custom_policies_integration import \
-    integration as custom_policies_integration
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.common.bridgecrew.integration_features.features.licensing_integration import integration as licensing_integration
 from checkov.common.bridgecrew.severities import BcSeverities
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.output.baseline import Baseline
-from checkov.common.bridgecrew.check_type import checkov_runners, CheckType
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.common.typing import LibraryGraph
@@ -65,8 +67,11 @@ from checkov.helm.runner import Runner as helm_runner
 from checkov.json_doc.runner import Runner as json_runner
 from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.kustomize.runner import Runner as kustomize_runner
+from checkov.logging_init import log_stream as logs_stream
+from checkov.openapi.runner import Runner as openapi_runner
 from checkov.runner_filter import RunnerFilter
 from checkov.sast.report import SastData, SastReport
+from checkov.sast.runner import Runner as sast_runner
 from checkov.sca_image.runner import Runner as sca_image_runner
 from checkov.sca_package.runner import Runner as sca_package_runner
 from checkov.sca_package_2.runner import Runner as sca_package_runner_2
@@ -77,18 +82,11 @@ from checkov.terraform.runner import Runner as tf_graph_runner
 from checkov.terraform_json.runner import TerraformJsonRunner
 from checkov.version import version
 from checkov.yaml_doc.runner import Runner as yaml_runner
-from checkov.bicep.runner import Runner as bicep_runner
-from checkov.openapi.runner import Runner as openapi_runner
-from checkov.circleci_pipelines.runner import Runner as circleci_pipelines_runner
-from checkov.sast.runner import Runner as sast_runner
-from checkov.logging_init import log_stream as logs_stream
 
 if TYPE_CHECKING:
     from checkov.common.output.report import Report
     from configargparse import Namespace
     from typing_extensions import Literal
-    from igraph import Graph
-    from networkx import DiGraph
 
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
@@ -696,7 +694,7 @@ class Checkov:
     def save_sast_assets_data(self, scan_reports: List[Report]) -> None:
         if not bool(convert_str_to_bool(os.getenv('CKV_ENABLE_UPLOAD_SAST_IMPORTS', False))):
             return
-        sast_report = [scan_report for scan_report in scan_reports if type(scan_report) == SastReport]
+        sast_report = [scan_report for scan_report in scan_reports if isinstance(scan_report, SastReport)]
         sast_imports_report = self.sast_data.get_sast_import_report(sast_report)
         self.sast_data.set_imports_data(sast_imports_report)
 

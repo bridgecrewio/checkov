@@ -6,7 +6,7 @@ import json
 import itertools
 from concurrent import futures
 from io import StringIO
-from typing import Any, TYPE_CHECKING, Optional
+from typing import Any, TYPE_CHECKING, Optional, Dict
 from collections import defaultdict
 
 import dpath
@@ -95,6 +95,15 @@ def reduce_scan_reports(scan_reports: list[Report]) -> dict[str, _ReducedScanRep
                 "image_cached_results": report.image_cached_results
         }
     return reduced_scan_reports
+
+
+def persist_assets_results(check_type: str, assets_report: Dict[str, Any], s3_client: Optional[S3Client],
+                           bucket: Optional[str], full_repo_object_key: Optional[str]) -> str:
+    if not s3_client or not bucket or not full_repo_object_key:
+        return ''
+    check_result_object_path = f'{full_repo_object_key}/{checkov_results_prefix}/{check_type}/assets.json'
+    _put_json_object(s3_client, assets_report, bucket, check_result_object_path)
+    return check_result_object_path
 
 
 def persist_checks_results(
