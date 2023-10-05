@@ -15,6 +15,7 @@ SIMPLE_TYPES = (str, int, float, bool)
 TF_PLAN_RESOURCE_ADDRESS = CustomAttributes.TF_RESOURCE_ADDRESS
 TF_PLAN_RESOURCE_CHANGE_ACTIONS = "__change_actions__"
 TF_PLAN_RESOURCE_CHANGE_KEYS = "__change_keys__"
+TF_PLAN_RESOURCE_PROVISIONERS = "provisioners"
 
 RESOURCE_TYPES_JSONIFY = {
     "aws_batch_job_definition": "container_properties",
@@ -164,6 +165,10 @@ def _prepare_resource_block(
         if changes:
             resource_conf[TF_PLAN_RESOURCE_CHANGE_ACTIONS] = changes.get("change", {}).get("actions") or []
             resource_conf[TF_PLAN_RESOURCE_CHANGE_KEYS] = changes.get(TF_PLAN_RESOURCE_CHANGE_KEYS) or []
+
+        provisioners = conf.get(TF_PLAN_RESOURCE_PROVISIONERS) if conf else None
+        if provisioners:
+            resource_conf[TF_PLAN_RESOURCE_PROVISIONERS] = provisioners
 
         resource_block[resource_type][resource.get("name", "default")] = resource_conf
         prepared = True
