@@ -1,16 +1,15 @@
-import os
 import unittest
 from pathlib import Path
 
+from checkov.arm.checks.resource.VMScaleSetsAutoOSImagePatchingEnabled import check
+from checkov.arm.runner import Runner
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.resource.aws.S3AbortIncompleteUploads import check
-from checkov.terraform.runner import Runner
 
 
-class TestS3AbortIncompleteUploads(unittest.TestCase):
-    def test(self):
+class TestVMScaleSetsAutoOSImagePatchingEnabled(unittest.TestCase):
+    def test_summary(self):
         # given
-        test_files_dir = Path(__file__).parent / "example_S3AbortIncompleteUploads"
+        test_files_dir = Path(__file__).parent / "example_VMScaleSetsAutoOSImagePatchingEnabled"
 
         # when
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
@@ -19,15 +18,14 @@ class TestS3AbortIncompleteUploads(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "aws_s3_bucket_lifecycle_configuration.pass",
-            "aws_s3_bucket_lifecycle_configuration.pass2",
-            "aws_s3_bucket_lifecycle_configuration.pass3",
-            "aws_s3_bucket_lifecycle_configuration.resource_with_dynamic_rule_pass4"
+            "Microsoft.Compute/virtualMachineScaleSets.pass",
+            "Microsoft.Compute/virtualMachineScaleSets.pass-windows",
         }
         failing_resources = {
-            "aws_s3_bucket_lifecycle_configuration.fail",
-            "aws_s3_bucket_lifecycle_configuration.fail2",
-            "aws_s3_bucket_lifecycle_configuration.fail3",
+            "Microsoft.Compute/virtualMachineScaleSets.fail",
+            "Microsoft.Compute/virtualMachineScaleSets.fail2",
+            "Microsoft.Compute/virtualMachineScaleSets.fail-windows",
+            "Microsoft.Compute/virtualMachineScaleSets.fail-windows2",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
@@ -40,6 +38,7 @@ class TestS3AbortIncompleteUploads(unittest.TestCase):
 
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)
+
 
 if __name__ == "__main__":
     unittest.main()
