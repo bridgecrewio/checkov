@@ -20,7 +20,6 @@ export BC_SOURCE=githubActions
 [[ -n "$INPUT_SKIP_CHECK" ]] && SKIP_CHECK_FLAG="--skip-check $INPUT_SKIP_CHECK"
 [[ -n "$INPUT_FRAMEWORK" ]] && FRAMEWORK_FLAG="--framework $INPUT_FRAMEWORK"
 [[ -n "$INPUT_SKIP_FRAMEWORK" ]] && SKIP_FRAMEWORK_FLAG="--skip-framework $INPUT_SKIP_FRAMEWORK"
-[[ -n "$INPUT_SKIP_CVE_PACKAGE" ]] && SKIP_CVE_PACKAGE_FLAG="--skip-cve-package $INPUT_SKIP_CVE_PACKAGE"
 [[ -n "$INPUT_OUTPUT_FILE_PATH" ]] && OUTPUT_FILE_PATH_FLAG="--output-file-path $INPUT_OUTPUT_FILE_PATH"
 [[ -n "$INPUT_BASELINE" ]] && BASELINE_FLAG="--baseline $INPUT_BASELINE"
 [[ -n "$INPUT_CONFIG_FILE" ]] && CONFIG_FILE_FLAG="--config-file $INPUT_CONFIG_FILE"
@@ -120,6 +119,15 @@ if [ -n "$INPUT_SKIP_PATH" ]; then
   for skip_path in "${skip_paths[@]}"
   do
     SKIP_PATH_FLAG="$SKIP_PATH_FLAG --skip-path $skip_path"
+  done
+fi
+
+SKIP_CVE_PACKAGE_FLAG=""
+if [ -n "$INPUT_SKIP_CVE_PACKAGE" ]; then
+  IFS=', ' read -r -a skip_cve_packages <<< "$INPUT_SKIP_CVE_PACKAGE"
+  for skip_cve_package in "${skip_cve_packages[@]}"
+  do
+    SKIP_CVE_PACKAGE_FLAG="$SKIP_CVE_PACKAGE_FLAG --skip-cve-package $skip_cve_package"
   done
 fi
 
