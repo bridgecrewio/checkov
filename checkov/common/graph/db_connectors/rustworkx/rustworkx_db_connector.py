@@ -37,7 +37,7 @@ class RustworkxConnector(DBConnector["rx.PyDiGraph[Any, Any]"]):
             (
                 e.origin,
                 e.dest,
-                {"label": e.label},
+                {"label": e.label, "source": e.origin, "target": e.dest},
             )
             for e in local_graph.edges
         ]
