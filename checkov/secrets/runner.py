@@ -286,7 +286,7 @@ class Runner(BaseRunner[None, None, None]):
                     code_block=[(secret.line_number, line_text_censored)],
                     file_path=relative_file_path,
                     file_line_range=[secret.line_number, secret.line_number + 1],
-                    resource=secret.secret_hash,
+                    resource=f'{added_commit_hash}:{secret.secret_hash}' if added_commit_hash else secret.secret_hash,
                     check_class="",
                     evaluations=None,
                     file_abs_path=os.path.abspath(secret.filename),

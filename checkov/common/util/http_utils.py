@@ -18,6 +18,7 @@ from checkov.common.resource_code_logger_filter import add_resource_code_filter_
 from checkov.common.util.consts import DEV_API_GET_HEADERS, DEV_API_POST_HEADERS, PRISMA_API_GET_HEADERS, \
     PRISMA_PLATFORM, BRIDGECREW_PLATFORM
 from checkov.common.util.data_structures_utils import merge_dicts
+from checkov.common.util.type_forcers import force_int, force_float
 from checkov.version import version as checkov_version
 
 if TYPE_CHECKING:
@@ -25,7 +26,12 @@ if TYPE_CHECKING:
     from requests import Response
 
 # https://requests.readthedocs.io/en/latest/user/advanced/#timeouts
-DEFAULT_TIMEOUT = (3.1, 30)
+REQUEST_CONNECT_TIMEOUT = force_float(os.getenv("CHECKOV_REQUEST_CONNECT_TIMEOUT")) or 3.1
+REQUEST_READ_TIMEOUT = force_int(os.getenv("CHECKOV_REQUEST_READ_TIMEOUT")) or 30
+DEFAULT_TIMEOUT = (REQUEST_CONNECT_TIMEOUT, REQUEST_READ_TIMEOUT)
+
+# https://urllib3.readthedocs.io/en/stable/user-guide.html#retrying-requests
+REQUEST_RETRIES = force_int(os.getenv("CHECKOV_REQUEST_RETRIES")) or 3
 
 logger = logging.getLogger(__name__)
 add_resource_code_filter_to_logger(logger)
@@ -202,16 +208,10 @@ async def aiohttp_client_session_wrapper(
     request_max_tries = int(os.getenv('REQUEST_MAX_TRIES', 3))
     sleep_between_request_tries = float(os.getenv('SLEEP_BETWEEN_REQUEST_TRIES', 1))
 
-    try:  # TODO: test again, when Python 3.11 is out
-        import aiodns  # type: ignore[import]  # noqa: F401
-        resolver: "aiohttp.abc.AbstractResolver" = aiohttp.AsyncResolver()
-    except ImportError:
-        resolver = aiohttp.ThreadedResolver()
-
     # adding retry mechanism for avoiding the next repeated unexpected issues:
     # 1. Gateway Timeout from the server
     # 2. ClientOSError
-    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(resolver=resolver)) as session:
+    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(resolver=aiohttp.AsyncResolver())) as session:
         for i in range(request_max_tries):
             logging.info(
                 f"[http_utils](aiohttp_client_session_wrapper) reporting attempt {i + 1} out of {request_max_tries}")

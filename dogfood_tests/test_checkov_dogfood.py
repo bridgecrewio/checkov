@@ -69,7 +69,9 @@ def test_argo_workflows_framework(caplog: LogCaptureFixture) -> None:
 
 
 def test_arm_framework(caplog: LogCaptureFixture) -> None:
-    run_framework_test(caplog=caplog, framework=CheckType.ARM)
+    excluded_paths = ["arm/parser/examples/json/with_comments.json$"]
+
+    run_framework_test(caplog=caplog, framework=CheckType.ARM, excluded_paths=excluded_paths)
 
 
 def test_azure_pipelines_framework(caplog: LogCaptureFixture) -> None:
@@ -158,6 +160,7 @@ def test_terraform_json_framework(caplog: LogCaptureFixture) -> None:
 
 def test_terraform_plan_framework(caplog: LogCaptureFixture) -> None:
     excluded_paths = [
+        "arm/parser/examples/json/with_comments.json$",
         "cloudformation/parser/fail.json$",
         "cloudformation/parser/success_triple_quotes_string.json$",
         "cloudformation/runner/resources/invalid.json$",

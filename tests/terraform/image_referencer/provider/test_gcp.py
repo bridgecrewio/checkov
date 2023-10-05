@@ -2,25 +2,19 @@ import os
 import unittest
 from unittest import mock
 
-import igraph
-from networkx import DiGraph
 from parameterized import parameterized_class
 
-from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.images.image_referencer import Image
 from checkov.terraform.image_referencer.provider.gcp import GcpTerraformProvider
+from tests.graph_utils.utils import set_graph_by_graph_framework, PARAMETERIZED_GRAPH_FRAMEWORKS, \
+    add_vertices_to_graph_by_graph_framework
 
-@parameterized_class([
-   {"graph_framework": "NETWORKX"},
-   {"graph_framework": "IGRAPH"}
-])
+
+@parameterized_class(PARAMETERIZED_GRAPH_FRAMEWORKS)
 class TestGcp(unittest.TestCase):
     def setUp(self) -> None:
-        if self.graph_framework == 'NETWORKX':  # type: ignore
-            self.graph = DiGraph()
-        elif self.graph_framework == 'IGRAPH':  # type: ignore
-            self.graph = igraph.Graph()
-        
+        self.graph = set_graph_by_graph_framework(self.graph_framework)
+
     def test_extract_images_from_resources(self):
         # given
         resource = {
@@ -36,16 +30,8 @@ class TestGcp(unittest.TestCase):
             },
             "resource_type": "google_cloud_run_service",
         }
-        if self.graph_framework == 'NETWORKX':
-            self.graph.add_node(1, **resource)
-        elif self.graph_framework == 'IGRAPH':
-            self.graph.add_vertex(
-                name='1',
-                block_type_='resource',
-                resource_type=resource[
-                    CustomAttributes.RESOURCE_TYPE] if CustomAttributes.RESOURCE_TYPE in resource else None,
-                attr=resource,
-            )
+        self.graph = set_graph_by_graph_framework(self.graph_framework)
+        add_vertices_to_graph_by_graph_framework(self.graph_framework, resource, self.graph)
 
         # when
         with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': self.graph_framework}):
@@ -78,16 +64,8 @@ class TestGcp(unittest.TestCase):
             },
             "resource_type": "google_cloud_run_service",
         }
-        if self.graph_framework == 'NETWORKX':
-            self.graph.add_node(1, **resource)
-        elif self.graph_framework == 'IGRAPH':
-            self.graph.add_vertex(
-                name='1',
-                block_type_='resource',
-                resource_type=resource[
-                    CustomAttributes.RESOURCE_TYPE] if CustomAttributes.RESOURCE_TYPE in resource else None,
-                attr=resource,
-            )
+        self.graph = set_graph_by_graph_framework(self.graph_framework)
+        add_vertices_to_graph_by_graph_framework(self.graph_framework, resource, self.graph)
 
         # when
         with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': self.graph_framework}):
