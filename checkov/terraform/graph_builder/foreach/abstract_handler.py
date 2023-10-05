@@ -7,7 +7,6 @@ import typing
 from typing import Any
 
 from checkov.common.util.data_structures_utils import pickle_deepcopy
-from checkov.terraform import TFModule
 from checkov.terraform.graph_builder.foreach.consts import COUNT_STRING, FOREACH_STRING, COUNT_KEY, EACH_VALUE, \
     EACH_KEY, REFERENCES_VALUES
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
@@ -55,7 +54,7 @@ class ForeachAbstractHandler:
         from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 
         sub_graph = TerraformLocalGraph(self.local_graph.module)
-        sub_graph.vertices = [{}] * len(self.local_graph.vertices)
+        sub_graph.vertices = [{}] * len(self.local_graph.vertices)  # type:ignore[list-item]  # are correctly set in the next lines
         for i, block in enumerate(self.local_graph.vertices):
             if not (block.block_type == BlockType.RESOURCE and i not in blocks_to_render):
                 sub_graph.vertices[i] = pickle_deepcopy(block)
@@ -66,16 +65,6 @@ class ForeachAbstractHandler:
         sub_graph.in_edges = self.local_graph.in_edges
         sub_graph.out_edges = self.local_graph.out_edges
         return sub_graph
-
-    @staticmethod
-    def _update_nested_tf_module_foreach_idx(original_foreach_or_count_key: int | str, original_module_key: TFModule,
-                                             tf_moudle: TFModule | None) -> None:
-        original_module_key.foreach_idx = None  # Make sure it is always None even if we didn't override it previously
-        while tf_moudle is not None:
-            if tf_moudle == original_module_key:
-                tf_moudle.foreach_idx = original_foreach_or_count_key
-                break
-            tf_moudle = tf_moudle.nested_tf_module
 
     @staticmethod
     def _pop_foreach_attrs(attrs: dict[str, Any]) -> None:
@@ -252,10 +241,13 @@ class ForeachAbstractHandler:
 
     @staticmethod
     def need_to_add_quotes(code: str, key: str) -> bool:
-        patterns = [r'lower\(' + key + r'\)', r'upper\(' + key + r'\)']
-        for pattern in patterns:
-            if re.search(pattern, code):
-                return True
+        if "lower" in code or "upper" in code:
+            patterns = (r'lower\(' + key + r'\)', r'upper\(' + key + r'\)')
+            for pattern in patterns:
+                if re.search(pattern, code):
+                    return True
+
         if f'[{key}]' in code:
             return True
+
         return False

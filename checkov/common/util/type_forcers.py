@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+import typing
 from json import JSONDecodeError
 from typing import TypeVar, overload, Any, Dict
 
@@ -44,13 +45,16 @@ def force_float(var: Any) -> float | None:
         return None
 
 
-def convert_str_to_bool(bool_str: bool | str) -> bool | str:
-    if bool_str in ["true", '"true"', "True", '"True"']:
-        return True
-    elif bool_str in ["false", '"false"', "False", '"False"']:
-        return False
-    else:
-        return bool_str
+def convert_str_to_bool(bool_str: bool | str) -> bool:
+    if isinstance(bool_str, str):
+        bool_str_lower = bool_str.lower()
+        if bool_str_lower in ("true", '"true"'):
+            return True
+        elif bool_str_lower in ("false", '"false"'):
+            return False
+
+    # If we got here it must be a boolean, mypy doesn't understand it, so we use cast
+    return typing.cast(bool, bool_str)
 
 
 def force_dict(obj: Any) -> dict[str, Any] | None:

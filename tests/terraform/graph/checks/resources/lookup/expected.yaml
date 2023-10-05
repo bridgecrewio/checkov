@@ -1,0 +1,3 @@
+pass: []
+fail:
+  - "aws_sns_topic_subscription.sample_nc_local"

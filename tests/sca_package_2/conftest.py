@@ -210,6 +210,30 @@ def scan_result_2() -> Dict[str, Dict[str, Any]]:
                     "policy": "BC_LIC_1"
                 }
             ],
+            "inlineSuppressions": {
+                "cves": {
+                    "byCve": [
+                        {
+                            "cveId": "CVE-2019-1010083",
+                            "reason": "Test CVE suppression 1"
+                        },
+                        {
+                            "cveId": "CVE-2016-6186",
+                            "reason": "Test CVE suppression 2"
+                        }
+                    ]
+                },
+                "licenses": {
+                    "byPackage": [
+                        {
+                            "licenses": [],
+                            "licensePolicy": "BC_LIC_1",
+                            "packageName": "django",
+                            "reason": "Test License suppression 1"
+                        }
+                    ]
+                }
+            }
         },
         "/path/to/sub/requirements.txt": {
             "repository": "/path/to/sub/requirements.txt",
@@ -1698,7 +1722,7 @@ def create_cli_output_wrapper(with_line_numbers: bool) -> str:
             vulnerability_details=details,
             licenses='Unknown',
             package=packages.get(get_package_alias(details["packageName"], details["packageVersion"]), dummy_package),
-            root_package={'name': "django", 'version': "1.2"},
+            root_package={'name': "django", 'version': "1.2", 'lines': [1, 2] if with_line_numbers else [0, 0]},
             used_private_registry=False
         )
         for details in get_vulnerabilities_details()

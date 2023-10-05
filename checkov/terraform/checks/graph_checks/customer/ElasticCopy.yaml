@@ -1,0 +1,44 @@
+#metadata:
+# name: "Elastic Testing"
+# category: "general"
+# id: "elastic"
+# guidelines: "testing"
+# severity: "high"
+#scope:
+#  provider: "aws"
+#definition:
+#  and:
+#    - ## THIS CONDITION IS TRUE BECAUSE THE FIRST CONDITION IS TRUE
+#    - or:
+#        ## THIS CONDITION IS TRUE BECAUSE cognito_options.enabled = TRUE
+#        - cond_type: "attribute"
+#          resource_types:
+#          - "aws_elasticsearch_domain"
+#          attribute: "cognito_options.enabled"
+#          operator: "equals"
+#          value: "true"
+#        - or:
+#            - cond_type: "attribute"
+#              resource_types:
+#                - "aws_elasticsearch_domain_saml_options"
+#              attribute: "saml_options.enabled"
+#              operator: "equals"
+#              value: "true"
+#            - cond_type: "attribute"
+#              resource_types:
+#                - "aws_elasticsearch_domain_saml_options"
+#              attribute: "saml_options.enabled"
+#              operator: "not_exists"
+#    ## THIS CONDITION IS TRUE SINCE aws_elasticsearch_domain_saml_options.example IS REFERRING aws_elasticsearch_domain.elastic.domain_name
+#    - cond_type: "connection"
+#      resource_types:
+#        - "aws_elasticsearch_domain"
+#      connected_resource_types:
+#        - "aws_elasticsearch_domain_saml_options"
+#      operator: "exists"
+#    - cond_type: "filter"
+#      attribute: "resource_type"
+#      operator: "within"
+#      value: "aws_elasticsearch_domain"
+#
+#

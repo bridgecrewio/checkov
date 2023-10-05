@@ -14,9 +14,8 @@ from checkov.sca_package_2.output import (
     CveCount,
 )
 from tests.sca_package_2.conftest import get_vulnerabilities_details_package_json, get_vulnerabilities_details, \
-    get_vulnerabilities_details_no_deps, get_vulnerabilities_details_package_lock_json,\
-    create_cli_license_violations_table_wrapper, create_cli_output_wrapper, \
-    get_vulnerabilities_details_is_used_packages, get_vulnerabilities_details_no_deps_is_used_packages
+    get_vulnerabilities_details_no_deps, get_vulnerabilities_details_package_lock_json, \
+    create_cli_license_violations_table_wrapper, create_cli_output_wrapper
 
 
 def test_create_report_cve_record():
@@ -38,7 +37,10 @@ def test_create_report_cve_record():
         "impactedVersions": ["<1.11.27"],
         "publishedDate": "2019-12-18T20:15:00+01:00",
         "discoveredDate": "2019-12-18T19:15:00Z",
-        "fixDate": "2019-12-18T20:15:00+01:00"
+        "fixDate": "2019-12-18T20:15:00+01:00",
+        "fixCode": "django==2.2.9",
+        "fixCommand": {"msg": "After updating package version manually, run:",
+                       "cmds": ["pip install -r requirements.txt"], "manualCodeFix": True}
     }
 
     # when
@@ -48,8 +50,9 @@ def test_create_report_cve_record():
         check_class=check_class,
         vulnerability_details=vulnerability_details,
         licenses='OSI_BDS',
-        package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False, "lines": [5, 10]},
-        root_package={'name': "django", 'version': "1.12"},
+        package={'name': "django", 'version': "1.12", 'package_registry': "https://registry.npmjs.org/",
+                 'is_private_registry': False, "lines": [5, 5], "code_block": 'django==1.12'},
+        root_package={'name': "django", 'version': "1.12", "lines": [5, 5]},
         used_private_registry=False
     )
 
@@ -59,13 +62,13 @@ def test_create_report_cve_record():
     assert record.check_class == check_class
     assert record.check_name == "SCA package scan"
     assert record.check_result == {"result": CheckResult.FAILED}
-    assert record.code_block == [(0, "django: 1.12")]
+    assert record.code_block == [(5, 'django==1.12')]
     assert (
             record.description
             == "Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover. ..."
     )
     assert record.file_abs_path == file_abs_path
-    assert record.file_line_range == [5, 10]
+    assert record.file_line_range == [5, 5]
     assert record.file_path == f"/{rootless_file_path}"
     assert record.repo_file_path == file_abs_path
     assert record.resource == "requirements.txt.django"
@@ -80,6 +83,10 @@ def test_create_report_cve_record():
     assert record.vulnerability_details["licenses"] == 'OSI_BDS'
     assert record.vulnerability_details["root_package_version"] == "1.12"
     assert record.vulnerability_details["root_package_name"] == "django"
+    assert record.fixed_definition == 'django==2.2.9'
+    assert record.vulnerability_details["fix_command"] == {'msg': 'After updating package version manually, run:',
+                                                           'cmds': ['pip install -r requirements.txt'],
+                                                           'manualCodeFix': True}
 
 
 def test_create_report_cve_record_results_from_platform():
@@ -137,7 +144,8 @@ def test_create_report_cve_record_results_from_platform():
         check_class=check_class,
         vulnerability_details=vulnerability_details,
         licenses='OSI_BDS',
-        package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
+        package={'name': "django", 'version': "1.12", 'package_registry': "https://registry.npmjs.org/",
+                 'is_private_registry': False, "lines": [6, 6], "code_block": 'django==1.12'},
         scan_data_format=ScanDataFormat.PLATFORM,
         root_package={'name': "django", 'version': "1.2"},
         used_private_registry=False
@@ -281,7 +289,10 @@ def test_create_report_cve_record_package_filter():
         "fixDate": "2019-12-18T20:15:00+01:00",
         "root_package_alias": 'django@1.2',
         "root_package_version": '1.2',
-        "root_package_name": 'django'
+        "root_package_name": 'django',
+        "fixCode": 'django==1.11.27',
+        "fixCommand": {"msg": "After updating package version manually, run:",
+                       "cmds": ["pip install -r requirements.txt"], "manualCodeFix": True}
     }
 
     # when
@@ -401,27 +412,25 @@ def test_create_cli_cves_table():
     assert table == "".join(
         [
             "\t/path/to/requirements.txt - CVEs Summary:\n",
-            "\t┌──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┐\n",
-            "\t│ Total CVEs: 6        │ critical: 0          │ high: 3              │ medium: 2            │ low: 0               │ skipped: 1           │ Total Packages Used: │\n",
-            "\t│                      │                      │                      │                      │                      │                      │ 0                    │\n",
-            "\t├──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┤\n",
-            "\t│ To fix 5/5 CVEs, go to https://www.bridgecrew.cloud/                                                                                                           │\n",
-            "\t├──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┤\n",
-            "\t│ Package [Lines]      │ CVE ID               │ Severity             │ Current version      │ Root fixed version   │ Compliant version    │ Reachability         │\n",
-            "\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n",
-            "\t│ django [1-2]         │ CVE-2016-7401        │ high                 │ 1.2                  │ 1.8.15               │ 2.2.24               │                      │\n",
-            "\t│                      │ CVE-2016-6186        │ medium               │                      │ 1.8.14               │                      │                      │\n",
-            "\t│                      │ CVE-2021-33203       │ medium               │                      │ 2.2.24               │                      │                      │\n",
-            "\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n",
-            "\t│ flask                │ CVE-2019-1010083     │ high                 │ 0.6                  │ 1.0                  │ 1.0                  │                      │\n",
-            "\t│                      │ CVE-2018-1000656     │ high                 │                      │ 0.12.3               │                      │                      │\n",
-            "\t└──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┘\n",
+            "\t┌──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┐\n",
+            "\t│ Total CVEs: 6        │ critical: 0          │ high: 3              │ medium: 2            │ low: 0               │ skipped: 1           │\n",
+            "\t├──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┤\n",
+            "\t│ To fix 5/5 CVEs, go to https://www.bridgecrew.cloud/                                                                                    │\n",
+            "\t├──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┤\n",
+            "\t│ Package [Lines]      │ CVE ID               │ Severity             │ Current version      │ Root fixed version   │ Compliant version    │\n",
+            "\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n",
+            "\t│ django [1-2]         │ CVE-2016-7401        │ high                 │ 1.2                  │ 1.8.15               │ 2.2.24               │\n",
+            "\t│                      │ CVE-2016-6186        │ medium               │                      │ 1.8.14               │                      │\n",
+            "\t│                      │ CVE-2021-33203       │ medium               │                      │ 2.2.24               │                      │\n",
+            "\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n",
+            "\t│ flask                │ CVE-2019-1010083     │ high                 │ 0.6                  │ 1.0                  │ 1.0                  │\n",
+            "\t│                      │ CVE-2018-1000656     │ high                 │                      │ 0.12.3               │                      │\n",
+            "\t└──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┘\n",
         ]
     )
 
 
 def test_create_cli_license_violations_table_no_line_numbers():
-
     # when
     table = create_cli_license_violations_table_wrapper(with_line_numbers=False)
 
@@ -444,7 +453,6 @@ def test_create_cli_license_violations_table_no_line_numbers():
 
 
 def test_create_cli_license_violations_table_with_line_numbers():
-
     # when
     table = create_cli_license_violations_table_wrapper(with_line_numbers=True)
 
@@ -484,12 +492,11 @@ def test_create_cli_cves_table_with_no_found_vulnerabilities():
     assert table == "".join(
         [
             "\t/path/to/requirements.txt - CVEs Summary:\n",
-            "\t┌──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┐\n",
-            "\t│ Total CVEs: 2        │ critical: 0          │ high: 0              │ medium: 0            │ low: 0               │ skipped: 2           │ Total Packages Used: │\n",
-            "\t│                      │                      │                      │                      │                      │                      │ 0                    │\n",
-            "\t├──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┤\n",
-            "\t│ To fix 0/0 CVEs, go to https://www.bridgecrew.cloud/                                                                                                           │\n",
-            "\t└────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘\n",
+            "\t┌──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┐\n",
+            "\t│ Total CVEs: 2        │ critical: 0          │ high: 0              │ medium: 0            │ low: 0               │ skipped: 2           │\n",
+            "\t├──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┤\n",
+            "\t│ To fix 0/0 CVEs, go to https://www.bridgecrew.cloud/                                                                                    │\n",
+            "\t└─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘\n",
         ]
     )
 
@@ -502,17 +509,16 @@ def test_create_cli_output_no_line_numbers():
     assert cli_output == "".join(
         [
             "\t/requirements.txt - CVEs Summary:\n",
-            "\t┌──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┐\n"
-            "\t│ Total CVEs: 2        │ critical: 1          │ high: 0              │ medium: 1            │ low: 0               │ skipped: 0           │ Total Packages Used: │\n"
-            "\t│                      │                      │                      │                      │                      │                      │ 0                    │\n"
-            "\t├──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┤\n"
-            "\t│ To fix 2/2 CVEs, go to https://www.bridgecrew.cloud/                                                                                                           │\n"
-            "\t├──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┤\n"
-            "\t│ Package              │ CVE ID               │ Severity             │ Current version      │ Root fixed version   │ Compliant version    │ Reachability         │\n"
-            "\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n"
-            "\t│ django               │ CVE-2019-19844       │ CRITICAL             │ 1.2                  │ 1.11.27              │ 1.11.27              │                      │\n"
-            "\t│                      │ CVE-2016-6186        │ MEDIUM               │                      │ 1.8.14               │                      │                      │\n"
-            "\t└──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┘\n"
+            "\t┌──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┐\n"
+            "\t│ Total CVEs: 2        │ critical: 1          │ high: 0              │ medium: 1            │ low: 0               │ skipped: 0           │\n"
+            "\t├──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┤\n"
+            "\t│ To fix 2/2 CVEs, go to https://www.bridgecrew.cloud/                                                                                    │\n"
+            "\t├──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┤\n"
+            "\t│ Package              │ CVE ID               │ Severity             │ Current version      │ Root fixed version   │ Compliant version    │\n"
+            "\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n"
+            "\t│ django               │ CVE-2019-19844       │ CRITICAL             │ 1.2                  │ 1.11.27              │ 1.11.27              │\n"
+            "\t│                      │ CVE-2016-6186        │ MEDIUM               │                      │ 1.8.14               │                      │\n"
+            "\t└──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┘\n"
             "\n",
             "\t/requirements.txt - Licenses Statuses:\n",
             "\t┌──────────────────────────┬──────────────────────────┬──────────────────────────┬──────────────────────────┬───────────────────────────┐\n"
@@ -537,17 +543,16 @@ def test_create_cli_output_with_line_numbers():
     assert cli_output == "".join(
         [
             "\t/requirements.txt - CVEs Summary:\n",
-            "\t┌──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┐\n"
-            "\t│ Total CVEs: 2        │ critical: 1          │ high: 0              │ medium: 1            │ low: 0               │ skipped: 0           │ Total Packages Used: │\n"
-            "\t│                      │                      │                      │                      │                      │                      │ 0                    │\n"
-            "\t├──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┤\n"
-            "\t│ To fix 2/2 CVEs, go to https://www.bridgecrew.cloud/                                                                                                           │\n"
-            "\t├──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┤\n"
-            "\t│ Package [Lines]      │ CVE ID               │ Severity             │ Current version      │ Root fixed version   │ Compliant version    │ Reachability         │\n"
-            "\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n"
-            "\t│ django [1-2]         │ CVE-2019-19844       │ CRITICAL             │ 1.2                  │ 1.11.27              │ 1.11.27              │                      │\n"
-            "\t│                      │ CVE-2016-6186        │ MEDIUM               │                      │ 1.8.14               │                      │                      │\n"
-            "\t└──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┘\n"
+            "\t┌──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┐\n"
+            "\t│ Total CVEs: 2        │ critical: 1          │ high: 0              │ medium: 1            │ low: 0               │ skipped: 0           │\n"
+            "\t├──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┤\n"
+            "\t│ To fix 2/2 CVEs, go to https://www.bridgecrew.cloud/                                                                                    │\n"
+            "\t├──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┤\n"
+            "\t│ Package [Lines]      │ CVE ID               │ Severity             │ Current version      │ Root fixed version   │ Compliant version    │\n"
+            "\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n"
+            "\t│ django [1-2]         │ CVE-2019-19844       │ CRITICAL             │ 1.2                  │ 1.11.27              │ 1.11.27              │\n"
+            "\t│                      │ CVE-2016-6186        │ MEDIUM               │                      │ 1.8.14               │                      │\n"
+            "\t└──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┘\n"
             "\n",
             "\t/requirements.txt - Licenses Statuses:\n",
             "\t┌──────────────────────────┬──────────────────────────┬──────────────────────────┬──────────────────────────┬───────────────────────────┐\n"
@@ -588,56 +593,16 @@ def test_create_cli_output_without_license_records():
     assert cli_output == "".join(
         [
             "\t/requirements.txt - CVEs Summary:\n",
-            '\t┌──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┐\n',
-            '\t│ Total CVEs: 2        │ critical: 1          │ high: 0              │ medium: 1            │ low: 0               │ skipped: 0           │ Total Packages Used: │\n',
-            "\t│                      │                      │                      │                      │                      │                      │ 0                    │\n",
-            '\t├──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┤\n',
-            "\t│ To fix 2/2 CVEs, go to https://www.bridgecrew.cloud/                                                                                                           │\n",
-            '\t├──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┤\n',
-            "\t│ Package              │ CVE ID               │ Severity             │ Current version      │ Root fixed version   │ Compliant version    │ Reachability         │\n",
-            "\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n",
-            '\t│ django               │ CVE-2019-19844       │ CRITICAL             │ 1.2                  │ 1.11.27              │ 1.11.27              │                      │\n',
-            '\t│                      │ CVE-2016-6186        │ MEDIUM               │                      │ 1.8.14               │                      │                      │\n',
-            "\t└──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┘\n"
-        ]
-    )
-
-
-def test_create_cli_output_without_license_records_is_used_packages():
-    # given
-    rootless_file_path = "requirements.txt"
-    file_abs_path = "/path/to/requirements.txt"
-    check_class = "checkov.sca_package_2.scanner.Scanner"
-    # when
-    cves_records = [
-        create_report_cve_record(
-            rootless_file_path=rootless_file_path,
-            file_abs_path=file_abs_path,
-            check_class=check_class,
-            vulnerability_details=details,
-            licenses='Unknown',
-            package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
-            root_package={'name': "django", 'version': "1.2"},
-            used_private_registry=False
-        )
-        for details in get_vulnerabilities_details_is_used_packages()
-    ]
-    cli_output = create_cli_output(True, cves_records)
-    # then
-    assert cli_output == "".join(
-        [
-            "\t/requirements.txt - CVEs Summary:\n",
-            '\t┌──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┐\n',
-            '\t│ Total CVEs: 2        │ critical: 1          │ high: 0              │ medium: 1            │ low: 0               │ skipped: 0           │ Total Packages Used: │\n',
-            "\t│                      │                      │                      │                      │                      │                      │ 1                    │\n",
-            '\t├──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┤\n',
-            "\t│ To fix 2/2 CVEs, go to https://www.bridgecrew.cloud/                                                                                                           │\n",
-            '\t├──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┤\n',
-            "\t│ Package              │ CVE ID               │ Severity             │ Current version      │ Root fixed version   │ Compliant version    │ Reachability         │\n",
-            "\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n",
-            '\t│ django               │ CVE-2019-19844       │ CRITICAL             │ 1.2                  │ 1.11.27              │ 1.11.27              │                      │\n',
-            '\t│                      │ CVE-2016-6186        │ MEDIUM               │                      │ 1.8.14               │                      │ Package Used         │\n',
-            "\t└──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┘\n"
+            '\t┌──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┐\n',
+            '\t│ Total CVEs: 2        │ critical: 1          │ high: 0              │ medium: 1            │ low: 0               │ skipped: 0           │\n',
+            '\t├──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┤\n',
+            "\t│ To fix 2/2 CVEs, go to https://www.bridgecrew.cloud/                                                                                    │\n",
+            '\t├──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┤\n',
+            "\t│ Package              │ CVE ID               │ Severity             │ Current version      │ Root fixed version   │ Compliant version    │\n",
+            "\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n",
+            '\t│ django               │ CVE-2019-19844       │ CRITICAL             │ 1.2                  │ 1.11.27              │ 1.11.27              │\n',
+            '\t│                      │ CVE-2016-6186        │ MEDIUM               │                      │ 1.8.14               │                      │\n',
+            "\t└──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┘\n"
         ]
     )
 
@@ -707,8 +672,8 @@ def test_create_cli_table_for_sca_package_with_dependencies():
             licenses='Unknown',
             package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
             root_package={'name': details["root_package_name"], 'version': details["root_package_version"]},
-            root_package_fixed_version=details.get('root_package_fix_version', None),
-            used_private_registry=False
+            used_private_registry=False,
+            root_package_cve={'fixVersion': details.get('root_package_fix_version')}
         )
         for details in get_vulnerabilities_details_package_json()
     ]
@@ -717,51 +682,50 @@ def test_create_cli_table_for_sca_package_with_dependencies():
     # then
     assert cli_output == "".join([
         "\t/package-lock.json - CVEs Summary:\n",
-        '\t┌──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┐\n',
-        '\t│ Total CVEs: 26       │ critical: 4          │ high: 10             │ medium: 11           │ low: 1               │ skipped: 0           │ Total Packages Used: │\n',
-        "\t│                      │                      │                      │                      │                      │                      │ 0                    │\n",
-        '\t├──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┤\n',
-        '\t│ To fix 24/26 CVEs, go to https://www.bridgecrew.cloud/                                                                                                         │\n',
-        '\t├──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┤\n',
-        "\t│ Package              │ CVE ID               │ Severity             │ Current version      │ Root fixed version   │ Compliant version    │ Reachability         │\n",
-        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
-        '\t│ cypress              │ PRISMA-2021-0070     │ MEDIUM               │ 3.8.3                │ 7.2.0                │ 7.2.0                │                      │\n',
-        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
-        '\t│ forever              │                      │                      │ 2.0.0                │                      │ N/A                  │                      │\n',
-        '\t│ ├─ decode-uri-       │ CVE-2022-38900       │ LOW                  │ 0.2.0                │                      │                      │                      │\n',
-        '\t│ component            │                      │                      │                      │                      │                      │                      │\n',
-        '\t│ ├─ glob-parent       │ CVE-2020-28469       │ HIGH                 │ 3.1.0                │                      │                      │                      │\n',
-        '\t│ ├─ minimist          │ CVE-2021-44906       │ CRITICAL             │ 0.0.10               │                      │                      │                      │\n',
-        '\t│ │                    │ CVE-2020-7598        │ MEDIUM               │                      │                      │                      │                      │\n',
-        '\t│ ├─ minimist          │ CVE-2021-44906       │ CRITICAL             │ 1.2.5                │                      │                      │                      │\n',
-        '\t│ ├─ nconf             │ CVE-2022-21803       │ HIGH                 │ 0.10.0               │                      │                      │                      │\n',
-        '\t│ ├─ nconf             │ CVE-2022-21803       │ HIGH                 │ 0.6.9                │                      │                      │                      │\n',
-        '\t│ └─ unset-value       │ PRISMA-2022-0049     │ HIGH                 │ 1.0.0                │                      │                      │                      │\n',
-        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
-        '\t│ grunt                │ CVE-2022-1537        │ HIGH                 │ 1.4.1                │ 1.5.3                │ 1.5.3                │                      │\n',
-        '\t│                      │ CVE-2022-0436        │ MEDIUM               │                      │ 1.5.2                │                      │                      │\n',
-        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
-        '\t│ helmet               │ GHSA-C3M8-X3CG-QM2C  │ MEDIUM               │ 2.3.0                │ 2.4.0                │ 2.4.0                │                      │\n',
-        '\t│ ├─ debug             │ CVE-2017-16137       │ MEDIUM               │ 2.2.0                │ 2.4.0                │                      │                      │\n',
-        '\t│ └─ helmet-csp        │ GHSA-C3M8-X3CG-QM2C  │ MEDIUM               │ 1.2.2                │                      │                      │                      │\n',
-        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
-        '\t│ marked               │ CVE-2022-21681       │ HIGH                 │ 0.3.9                │ 4.0.10               │ 4.0.10               │                      │\n',
-        '\t│                      │ CVE-2022-21680       │ HIGH                 │                      │ 4.0.10               │                      │                      │\n',
-        '\t│                      │ PRISMA-2021-0013     │ MEDIUM               │                      │ 1.1.1                │                      │                      │\n',
-        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
-        '\t│ mocha                │ PRISMA-2022-0230     │ HIGH                 │ 2.5.3                │ N/A                  │ N/A                  │                      │\n',
-        '\t│                      │ PRISMA-2022-0335     │ MEDIUM               │                      │ N/A                  │                      │                      │\n',
-        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
-        '\t│ mongodb              │ GHSA-MH5C-679W-HH4R  │ HIGH                 │ 2.2.36               │ 3.1.13               │ 3.1.13               │                      │\n',
-        '\t│ └─ bson              │ CVE-2020-7610        │ CRITICAL             │ 1.0.9                │                      │                      │                      │\n',
-        '\t│                      │ CVE-2019-2391        │ MEDIUM               │                      │                      │                      │                      │\n',
-        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
-        '\t│ swig                 │                      │                      │ 1.4.2                │                      │ N/A                  │                      │\n',
-        '\t│ ├─ minimist          │ CVE-2021-44906       │ CRITICAL             │ 0.0.10               │                      │                      │                      │\n',
-        '\t│ │                    │ CVE-2020-7598        │ MEDIUM               │                      │                      │                      │                      │\n',
-        '\t│ └─ uglify-js         │ CVE-2015-8858        │ HIGH                 │ 2.4.24               │                      │                      │                      │\n',
-        '\t│                      │ PRISMA-2021-0169     │ MEDIUM               │                      │                      │                      │                      │\n',
-        '\t└──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┘\n'])
+        '\t┌──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┐\n',
+        '\t│ Total CVEs: 26       │ critical: 4          │ high: 10             │ medium: 11           │ low: 1               │ skipped: 0           │\n',
+        '\t├──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┤\n',
+        '\t│ To fix 24/26 CVEs, go to https://www.bridgecrew.cloud/                                                                                  │\n',
+        '\t├──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┤\n',
+        "\t│ Package              │ CVE ID               │ Severity             │ Current version      │ Root fixed version   │ Compliant version    │\n",
+        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
+        '\t│ cypress              │ PRISMA-2021-0070     │ MEDIUM               │ 3.8.3                │ 7.2.0                │ 7.2.0                │\n',
+        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
+        '\t│ forever              │                      │                      │ 2.0.0                │                      │ N/A                  │\n',
+        '\t│ ├─ decode-uri-       │ CVE-2022-38900       │ LOW                  │ 0.2.0                │                      │                      │\n',
+        '\t│ component            │                      │                      │                      │                      │                      │\n',
+        '\t│ ├─ glob-parent       │ CVE-2020-28469       │ HIGH                 │ 3.1.0                │                      │                      │\n',
+        '\t│ ├─ minimist          │ CVE-2021-44906       │ CRITICAL             │ 0.0.10               │                      │                      │\n',
+        '\t│ │                    │ CVE-2020-7598        │ MEDIUM               │                      │                      │                      │\n',
+        '\t│ ├─ minimist          │ CVE-2021-44906       │ CRITICAL             │ 1.2.5                │                      │                      │\n',
+        '\t│ ├─ nconf             │ CVE-2022-21803       │ HIGH                 │ 0.10.0               │                      │                      │\n',
+        '\t│ ├─ nconf             │ CVE-2022-21803       │ HIGH                 │ 0.6.9                │                      │                      │\n',
+        '\t│ └─ unset-value       │ PRISMA-2022-0049     │ HIGH                 │ 1.0.0                │                      │                      │\n',
+        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
+        '\t│ grunt                │ CVE-2022-1537        │ HIGH                 │ 1.4.1                │ 1.5.3                │ 1.5.3                │\n',
+        '\t│                      │ CVE-2022-0436        │ MEDIUM               │                      │ 1.5.2                │                      │\n',
+        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
+        '\t│ helmet               │ GHSA-C3M8-X3CG-QM2C  │ MEDIUM               │ 2.3.0                │ 2.4.0                │ 2.4.0                │\n',
+        '\t│ ├─ debug             │ CVE-2017-16137       │ MEDIUM               │ 2.2.0                │ 2.4.0                │                      │\n',
+        '\t│ └─ helmet-csp        │ GHSA-C3M8-X3CG-QM2C  │ MEDIUM               │ 1.2.2                │                      │                      │\n',
+        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
+        '\t│ marked               │ CVE-2022-21681       │ HIGH                 │ 0.3.9                │ 4.0.10               │ 4.0.10               │\n',
+        '\t│                      │ CVE-2022-21680       │ HIGH                 │                      │ 4.0.10               │                      │\n',
+        '\t│                      │ PRISMA-2021-0013     │ MEDIUM               │                      │ 1.1.1                │                      │\n',
+        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
+        '\t│ mocha                │ PRISMA-2022-0230     │ HIGH                 │ 2.5.3                │ N/A                  │ N/A                  │\n',
+        '\t│                      │ PRISMA-2022-0335     │ MEDIUM               │                      │ N/A                  │                      │\n',
+        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
+        '\t│ mongodb              │ GHSA-MH5C-679W-HH4R  │ HIGH                 │ 2.2.36               │ 3.1.13               │ 3.1.13               │\n',
+        '\t│ └─ bson              │ CVE-2020-7610        │ CRITICAL             │ 1.0.9                │                      │                      │\n',
+        '\t│                      │ CVE-2019-2391        │ MEDIUM               │                      │                      │                      │\n',
+        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
+        '\t│ swig                 │                      │                      │ 1.4.2                │                      │ N/A                  │\n',
+        '\t│ ├─ minimist          │ CVE-2021-44906       │ CRITICAL             │ 0.0.10               │                      │                      │\n',
+        '\t│ │                    │ CVE-2020-7598        │ MEDIUM               │                      │                      │                      │\n',
+        '\t│ └─ uglify-js         │ CVE-2015-8858        │ HIGH                 │ 2.4.24               │                      │                      │\n',
+        '\t│                      │ PRISMA-2021-0169     │ MEDIUM               │                      │                      │                      │\n',
+        '\t└──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┘\n'])
 
 
 def test_create_cli_output_without_dependencies():
@@ -789,60 +753,17 @@ def test_create_cli_output_without_dependencies():
 
     assert cli_output == "".join(
         ["\t/package.json - CVEs Summary:\n",
-         '\t┌──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┐\n',
-         '\t│ Total CVEs: 3        │ critical: 0          │ high: 2              │ medium: 1            │ low: 0               │ skipped: 0           │ Total Packages Used: │\n',
-         "\t│                      │                      │                      │                      │                      │                      │ 0                    │\n",
-         '\t├──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┤\n',
-         '\t│ To fix 3/3 CVEs, go to https://www.bridgecrew.cloud/                                                                                                           │\n',
-         '\t├──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┤\n',
-         "\t│ Package              │ CVE ID               │ Severity             │ Current version      │ Root fixed version   │ Compliant version    │ Reachability         │\n",
-         '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
-         '\t│ marked               │ CVE-2022-21681       │ HIGH                 │ 0.3.9                │ 4.0.10               │ 4.0.10               │                      │\n',
-         '\t│                      │ CVE-2022-21680       │ HIGH                 │                      │ 4.0.10               │                      │                      │\n',
-         '\t│                      │ PRISMA-2021-0013     │ MEDIUM               │                      │ 1.1.1                │                      │                      │\n',
-         '\t└──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┘\n'
-
-         ]
-    )
-
-
-def test_create_cli_output_without_dependencies_is_used_packages():
-    # given
-    rootless_file_path = "package.json"
-    file_abs_path = "/path/to/package.json"
-    check_class = "checkov.sca_package_2.scanner.Scanner"
-    # when
-    cves_records = [
-        create_report_cve_record(
-            rootless_file_path=rootless_file_path,
-            file_abs_path=file_abs_path,
-            check_class=check_class,
-            vulnerability_details=details,
-            licenses='Unknown',
-            package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
-            root_package={'name': details["packageName"], 'version': details["packageVersion"]},
-            used_private_registry=False
-        )
-        for details in get_vulnerabilities_details_no_deps_is_used_packages()
-    ]
-
-    cli_output = create_cli_output(True, cves_records)
-    # then
-
-    assert cli_output == "".join(
-        ["\t/package.json - CVEs Summary:\n",
-         '\t┌──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┐\n',
-         '\t│ Total CVEs: 3        │ critical: 0          │ high: 2              │ medium: 1            │ low: 0               │ skipped: 0           │ Total Packages Used: │\n',
-         "\t│                      │                      │                      │                      │                      │                      │ 2                    │\n",
-         '\t├──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┤\n',
-         '\t│ To fix 3/3 CVEs, go to https://www.bridgecrew.cloud/                                                                                                           │\n',
-         '\t├──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┤\n',
-         "\t│ Package              │ CVE ID               │ Severity             │ Current version      │ Root fixed version   │ Compliant version    │ Reachability         │\n",
-         '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
-         '\t│ marked               │ CVE-2022-21681       │ HIGH                 │ 0.3.9                │ 4.0.10               │ 4.0.10               │ Package Used         │\n',
-         '\t│                      │ CVE-2022-21680       │ HIGH                 │                      │ 4.0.10               │                      │                      │\n',
-         '\t│                      │ PRISMA-2021-0013     │ MEDIUM               │                      │ 1.1.1                │                      │ Package Used         │\n',
-         '\t└──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┘\n'
+         '\t┌──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┐\n',
+         '\t│ Total CVEs: 3        │ critical: 0          │ high: 2              │ medium: 1            │ low: 0               │ skipped: 0           │\n',
+         '\t├──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┤\n',
+         '\t│ To fix 3/3 CVEs, go to https://www.bridgecrew.cloud/                                                                                    │\n',
+         '\t├──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┤\n',
+         "\t│ Package              │ CVE ID               │ Severity             │ Current version      │ Root fixed version   │ Compliant version    │\n",
+         '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
+         '\t│ marked               │ CVE-2022-21681       │ HIGH                 │ 0.3.9                │ 4.0.10               │ 4.0.10               │\n',
+         '\t│                      │ CVE-2022-21680       │ HIGH                 │                      │ 4.0.10               │                      │\n',
+         '\t│                      │ PRISMA-2021-0013     │ MEDIUM               │                      │ 1.1.1                │                      │\n',
+         '\t└──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┘\n'
 
          ]
     )
@@ -864,8 +785,8 @@ def test_create_cli_table_for_package_with_diff_CVEs():
             licenses='Unknown',
             package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
             root_package={'name': details["root_package_name"], 'version': details["root_package_version"]},
-            root_package_fixed_version=details.get('root_package_fix_version', None),
-            used_private_registry=False
+            used_private_registry=False,
+            root_package_cve={'fixVersion': details.get('root_package_fix_version')}
         )
         for details in get_vulnerabilities_details_package_lock_json()
     ]
@@ -874,49 +795,48 @@ def test_create_cli_table_for_package_with_diff_CVEs():
     # then
     assert cli_output == "".join([
         "\t/package-lock.json - CVEs Summary:\n",
-        '\t┌──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┐\n',
-        '\t│ Total CVEs: 27       │ critical: 4          │ high: 11             │ medium: 11           │ low: 1               │ skipped: 0           │ Total Packages Used: │\n',
-        "\t│                      │                      │                      │                      │                      │                      │ 0                    │\n",
-        '\t├──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┤\n',
-        '\t│ To fix 25/27 CVEs, go to https://www.bridgecrew.cloud/                                                                                                         │\n',
-        '\t├──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┤\n',
-        "\t│ Package              │ CVE ID               │ Severity             │ Current version      │ Root fixed version   │ Compliant version    │ Reachability         │\n",
-        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
-        '\t│ cypress              │ PRISMA-2021-0070     │ MEDIUM               │ 3.8.3                │ 7.2.0                │ 7.2.0                │                      │\n',
-        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
-        '\t│ forever              │                      │                      │ 2.0.0                │                      │ N/A                  │                      │\n',
-        '\t│ ├─ decode-uri-       │ CVE-2022-38900       │ LOW                  │ 0.2.0                │                      │                      │                      │\n',
-        '\t│ component            │                      │                      │                      │                      │                      │                      │\n',
-        '\t│ ├─ glob-parent       │ CVE-2020-28469       │ HIGH                 │ 3.1.0                │                      │                      │                      │\n',
-        '\t│ ├─ minimist          │ CVE-2021-44906       │ CRITICAL             │ 0.0.10               │                      │                      │                      │\n',
-        '\t│ │                    │ CVE-2020-7598        │ MEDIUM               │                      │                      │                      │                      │\n',
-        '\t│ ├─ minimist          │ CVE-2021-44906       │ CRITICAL             │ 1.2.5                │                      │                      │                      │\n',
-        '\t│ ├─ nconf             │ CVE-2022-21803       │ HIGH                 │ 0.10.0               │                      │                      │                      │\n',
-        '\t│ ├─ nconf             │ CVE-2022-21803       │ HIGH                 │ 0.6.9                │                      │                      │                      │\n',
-        '\t│ │                    │ CVE-2002-21803       │ HIGH                 │                      │                      │                      │                      │\n',
-        '\t│ └─ unset-value       │ PRISMA-2022-0049     │ HIGH                 │ 1.0.0                │                      │                      │                      │\n',
-        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
-        '\t│ grunt                │ CVE-2022-1537        │ HIGH                 │ 1.4.1                │ 1.5.3                │ 1.5.3                │                      │\n',
-        '\t│                      │ CVE-2022-0436        │ MEDIUM               │                      │ 1.5.2                │                      │                      │\n',
-        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
-        '\t│ helmet               │ GHSA-C3M8-X3CG-QM2C  │ MEDIUM               │ 2.3.0                │ 2.4.0                │ 2.4.0                │                      │\n',
-        '\t│ ├─ debug             │ CVE-2017-16137       │ MEDIUM               │ 2.2.0                │ 2.4.0                │                      │                      │\n',
-        '\t│ └─ helmet-csp        │ GHSA-C3M8-X3CG-QM2C  │ MEDIUM               │ 1.2.2                │                      │                      │                      │\n',
-        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
-        '\t│ marked               │ CVE-2022-21681       │ HIGH                 │ 0.3.9                │ 4.0.10               │ 4.0.10               │                      │\n',
-        '\t│                      │ CVE-2022-21680       │ HIGH                 │                      │ 4.0.10               │                      │                      │\n',
-        '\t│                      │ PRISMA-2021-0013     │ MEDIUM               │                      │ 1.1.1                │                      │                      │\n',
-        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
-        '\t│ mocha                │ PRISMA-2022-0230     │ HIGH                 │ 2.5.3                │ N/A                  │ N/A                  │                      │\n',
-        '\t│                      │ PRISMA-2022-0335     │ MEDIUM               │                      │ N/A                  │                      │                      │\n',
-        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
-        '\t│ mongodb              │ GHSA-MH5C-679W-HH4R  │ HIGH                 │ 2.2.36               │ 3.1.13               │ 3.1.13               │                      │\n',
-        '\t│ └─ bson              │ CVE-2020-7610        │ CRITICAL             │ 1.0.9                │                      │                      │                      │\n',
-        '\t│                      │ CVE-2019-2391        │ MEDIUM               │                      │                      │                      │                      │\n',
-        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
-        '\t│ swig                 │                      │                      │ 1.4.2                │                      │ N/A                  │                      │\n',
-        '\t│ ├─ minimist          │ CVE-2021-44906       │ CRITICAL             │ 0.0.10               │                      │                      │                      │\n',
-        '\t│ │                    │ CVE-2020-7598        │ MEDIUM               │                      │                      │                      │                      │\n',
-        '\t│ └─ uglify-js         │ CVE-2015-8858        │ HIGH                 │ 2.4.24               │                      │                      │                      │\n',
-        '\t│                      │ PRISMA-2021-0169     │ MEDIUM               │                      │                      │                      │                      │\n',
-        '\t└──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┘\n'])
+        '\t┌──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┐\n',
+        '\t│ Total CVEs: 27       │ critical: 4          │ high: 11             │ medium: 11           │ low: 1               │ skipped: 0           │\n',
+        '\t├──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┤\n',
+        '\t│ To fix 25/27 CVEs, go to https://www.bridgecrew.cloud/                                                                                  │\n',
+        '\t├──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┤\n',
+        "\t│ Package              │ CVE ID               │ Severity             │ Current version      │ Root fixed version   │ Compliant version    │\n",
+        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
+        '\t│ cypress              │ PRISMA-2021-0070     │ MEDIUM               │ 3.8.3                │ 7.2.0                │ 7.2.0                │\n',
+        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
+        '\t│ forever              │                      │                      │ 2.0.0                │                      │ N/A                  │\n',
+        '\t│ ├─ decode-uri-       │ CVE-2022-38900       │ LOW                  │ 0.2.0                │                      │                      │\n',
+        '\t│ component            │                      │                      │                      │                      │                      │\n',
+        '\t│ ├─ glob-parent       │ CVE-2020-28469       │ HIGH                 │ 3.1.0                │                      │                      │\n',
+        '\t│ ├─ minimist          │ CVE-2021-44906       │ CRITICAL             │ 0.0.10               │                      │                      │\n',
+        '\t│ │                    │ CVE-2020-7598        │ MEDIUM               │                      │                      │                      │\n',
+        '\t│ ├─ minimist          │ CVE-2021-44906       │ CRITICAL             │ 1.2.5                │                      │                      │\n',
+        '\t│ ├─ nconf             │ CVE-2022-21803       │ HIGH                 │ 0.10.0               │                      │                      │\n',
+        '\t│ ├─ nconf             │ CVE-2022-21803       │ HIGH                 │ 0.6.9                │                      │                      │\n',
+        '\t│ │                    │ CVE-2002-21803       │ HIGH                 │                      │                      │                      │\n',
+        '\t│ └─ unset-value       │ PRISMA-2022-0049     │ HIGH                 │ 1.0.0                │                      │                      │\n',
+        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
+        '\t│ grunt                │ CVE-2022-1537        │ HIGH                 │ 1.4.1                │ 1.5.3                │ 1.5.3                │\n',
+        '\t│                      │ CVE-2022-0436        │ MEDIUM               │                      │ 1.5.2                │                      │\n',
+        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
+        '\t│ helmet               │ GHSA-C3M8-X3CG-QM2C  │ MEDIUM               │ 2.3.0                │ 2.4.0                │ 2.4.0                │\n',
+        '\t│ ├─ debug             │ CVE-2017-16137       │ MEDIUM               │ 2.2.0                │ 2.4.0                │                      │\n',
+        '\t│ └─ helmet-csp        │ GHSA-C3M8-X3CG-QM2C  │ MEDIUM               │ 1.2.2                │                      │                      │\n',
+        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
+        '\t│ marked               │ CVE-2022-21681       │ HIGH                 │ 0.3.9                │ 4.0.10               │ 4.0.10               │\n',
+        '\t│                      │ CVE-2022-21680       │ HIGH                 │                      │ 4.0.10               │                      │\n',
+        '\t│                      │ PRISMA-2021-0013     │ MEDIUM               │                      │ 1.1.1                │                      │\n',
+        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
+        '\t│ mocha                │ PRISMA-2022-0230     │ HIGH                 │ 2.5.3                │ N/A                  │ N/A                  │\n',
+        '\t│                      │ PRISMA-2022-0335     │ MEDIUM               │                      │ N/A                  │                      │\n',
+        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
+        '\t│ mongodb              │ GHSA-MH5C-679W-HH4R  │ HIGH                 │ 2.2.36               │ 3.1.13               │ 3.1.13               │\n',
+        '\t│ └─ bson              │ CVE-2020-7610        │ CRITICAL             │ 1.0.9                │                      │                      │\n',
+        '\t│                      │ CVE-2019-2391        │ MEDIUM               │                      │                      │                      │\n',
+        '\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n',
+        '\t│ swig                 │                      │                      │ 1.4.2                │                      │ N/A                  │\n',
+        '\t│ ├─ minimist          │ CVE-2021-44906       │ CRITICAL             │ 0.0.10               │                      │                      │\n',
+        '\t│ │                    │ CVE-2020-7598        │ MEDIUM               │                      │                      │                      │\n',
+        '\t│ └─ uglify-js         │ CVE-2015-8858        │ HIGH                 │ 2.4.24               │                      │                      │\n',
+        '\t│                      │ PRISMA-2021-0169     │ MEDIUM               │                      │                      │                      │\n',
+        '\t└──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┘\n'])

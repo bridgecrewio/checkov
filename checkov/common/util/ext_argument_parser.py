@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from io import StringIO
 from typing import Any, TYPE_CHECKING, cast
 
@@ -157,8 +156,9 @@ class ExtArgumentParser(configargparse.ArgumentParser):
         self.add(
             "--external-checks-git",
             action="append",
-            help="Github url of external checks to be added. \n you can specify a subdirectory after a "
-                 "double-slash //. \n cannot be used together with --external-checks-dir",
+            help="Github url of external checks to be added.\n you can specify a subdirectory after a double-slash //."
+                 "\n possible to use ?ref=tags/tagName or ?ref=heads/branchName or ?ref=commit_id"
+                 "\n cannot be used together with --external-checks-dir",
         )
         self.add(
             "-l",
@@ -381,7 +381,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
         self.add(
             "--download-external-modules",
             help="download external terraform modules from public git repositories and terraform registry",
-            default=os.getenv("DOWNLOAD_EXTERNAL_MODULES", False),
+            default=False,
             env_var="DOWNLOAD_EXTERNAL_MODULES",
         )
         self.add(
@@ -391,6 +391,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
                  "https://www.terraform.io/docs/language/values/variables.html#variable-definitions-tfvars-files)."
                  "Currently only supported for source Terraform (.tf file), and Helm chart scans."
                  "Requires using --directory, not --file.",
+            env_var="CKV_VAR_FILE",
         )
         self.add(
             "--external-modules-download-path",

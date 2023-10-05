@@ -10,7 +10,6 @@ if TYPE_CHECKING:
 PROHIBITED_FILES = ('Pipfile.lock', 'yarn.lock', 'package-lock.json', 'requirements.txt', 'go.sum')
 
 
-GIT_HISTORY_NOT_BEEN_REMOVED = 'not-removed'
 ADDED = 'added'
 REMOVED = 'removed'
 GIT_HISTORY_OPTIONS = {ADDED, REMOVED}

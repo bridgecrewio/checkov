@@ -12,9 +12,9 @@ permissions:
 
 jobs:
   bandit:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # TODO: use checkov version
     steps:
-      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
+      - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608  # v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - name: security test
@@ -22,9 +22,9 @@ jobs:
         with:
           path: 'checkov'
   trufflehog-secrets:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # TODO: use checkov version
     steps:
-      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
+      - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608  # v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - name: detect secrets
@@ -32,9 +32,9 @@ jobs:
         with:
           scanArguments: "--regex --entropy=False --exclude_paths .github/exclude-patterns.txt --max_depth=1"
   checkov-secrets:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # TODO: use checkov version
     steps:
-      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
+      - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608  # v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - name: Scan for secrets

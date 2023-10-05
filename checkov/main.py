@@ -6,55 +6,59 @@ import itertools
 import json
 import logging
 import os
+import platform
 import shutil
 import signal
 import sys
-import platform
 from collections import defaultdict
 from pathlib import Path
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, Optional, List
 
 import argcomplete
 import configargparse
 from urllib3.exceptions import MaxRetryError
 
 import checkov.logging_init  # noqa  # should be imported before the others to ensure correct logging setup
-
 from checkov.ansible.runner import Runner as ansible_runner
 from checkov.argo_workflows.runner import Runner as argo_workflows_runner
 from checkov.arm.runner import Runner as arm_runner
 from checkov.azure_pipelines.runner import Runner as azure_pipelines_runner
+from checkov.bicep.runner import Runner as bicep_runner
 from checkov.bitbucket.runner import Runner as bitbucket_configuration_runner
 from checkov.bitbucket_pipelines.runner import Runner as bitbucket_pipelines_runner
 from checkov.cdk.runner import CdkRunner
+from checkov.circleci_pipelines.runner import Runner as circleci_pipelines_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.bc_source import SourceTypes, BCSourceType, get_source_type, SourceType
+from checkov.common.bridgecrew.check_type import checkov_runners, CheckType
+from checkov.common.bridgecrew.integration_features.features.custom_policies_integration import \
+    integration as custom_policies_integration
+from checkov.common.bridgecrew.integration_features.features.licensing_integration import \
+    integration as licensing_integration
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
     integration as policy_metadata_integration
 from checkov.common.bridgecrew.integration_features.features.repo_config_integration import \
     integration as repo_config_integration
 from checkov.common.bridgecrew.integration_features.features.suppressions_integration import \
     integration as suppressions_integration
-from checkov.common.bridgecrew.integration_features.features.custom_policies_integration import \
-    integration as custom_policies_integration
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.common.bridgecrew.integration_features.features.licensing_integration import integration as licensing_integration
 from checkov.common.bridgecrew.severities import BcSeverities
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.output.baseline import Baseline
-from checkov.common.bridgecrew.check_type import checkov_runners, CheckType
+from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.runners.runner_registry import RunnerRegistry
+from checkov.common.typing import LibraryGraph
 from checkov.common.util import prompt
 from checkov.common.util.banner import banner as checkov_banner, tool as checkov_tool
 from checkov.common.util.config_utils import get_default_config_paths
 from checkov.common.util.consts import CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
-from checkov.common.util.docs_generator import print_checks
 from checkov.common.util.ext_argument_parser import ExtArgumentParser
 from checkov.common.util.runner_dependency_handler import RunnerDependencyHandler
 from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.contributor_metrics import report_contributor_metrics
 from checkov.dockerfile.runner import Runner as dockerfile_runner
+from checkov.docs_generator import print_checks
 from checkov.github.runner import Runner as github_configuration_runner
 from checkov.github_actions.runner import Runner as github_actions_runner
 from checkov.gitlab.runner import Runner as gitlab_configuration_runner
@@ -63,8 +67,11 @@ from checkov.helm.runner import Runner as helm_runner
 from checkov.json_doc.runner import Runner as json_runner
 from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.kustomize.runner import Runner as kustomize_runner
+from checkov.logging_init import log_stream as logs_stream
+from checkov.openapi.runner import Runner as openapi_runner
 from checkov.runner_filter import RunnerFilter
 from checkov.sast.report import SastData, SastReport
+from checkov.sast.runner import Runner as sast_runner
 from checkov.sca_image.runner import Runner as sca_image_runner
 from checkov.sca_package.runner import Runner as sca_package_runner
 from checkov.sca_package_2.runner import Runner as sca_package_runner_2
@@ -75,24 +82,18 @@ from checkov.terraform.runner import Runner as tf_graph_runner
 from checkov.terraform_json.runner import TerraformJsonRunner
 from checkov.version import version
 from checkov.yaml_doc.runner import Runner as yaml_runner
-from checkov.bicep.runner import Runner as bicep_runner
-from checkov.openapi.runner import Runner as openapi_runner
-from checkov.circleci_pipelines.runner import Runner as circleci_pipelines_runner
-from checkov.sast.runner import Runner as sast_runner
-from checkov.logging_init import log_stream as logs_stream
 
 if TYPE_CHECKING:
     from checkov.common.output.report import Report
     from configargparse import Namespace
     from typing_extensions import Literal
-    from igraph import Graph
-    from networkx import DiGraph
 
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
 
 outer_registry = None
 
 logger = logging.getLogger(__name__)
+add_resource_code_filter_to_logger(logger)
 
 # sca package runner added during the run method
 DEFAULT_RUNNERS = [
@@ -134,7 +135,7 @@ class Checkov:
         self.runners = DEFAULT_RUNNERS.copy()
         self.scan_reports: "list[Report]" = []
         self.run_metadata: dict[str, str | list[str]] = {}
-        self.graphs: dict[str, DiGraph | Graph] = {}
+        self.graphs: dict[str, list[tuple[LibraryGraph, Optional[str]]]] = {}
         self.url: str | None = None
         self.sast_data: SastData = SastData()
 
@@ -460,7 +461,7 @@ class Checkov:
             external_checks_dir = self.get_external_checks_dir()
             created_baseline_path = None
 
-            default_github_dir_path = os.getcwd() + '/' + os.getenv('CKV_GITLAB_CONF_DIR_NAME', 'github_conf')
+            default_github_dir_path = os.getcwd() + '/' + os.getenv('CKV_GITHUB_CONF_DIR_NAME', 'github_conf')
             git_configuration_folders = [os.getenv("CKV_GITHUB_CONF_DIR_PATH", default_github_dir_path),
                                          os.getcwd() + '/' + os.getenv('CKV_GITLAB_CONF_DIR_NAME', 'gitlab_conf')]
 
@@ -490,13 +491,13 @@ class Checkov:
                         included_paths = [self.config.external_modules_download_path]
                         for r in runner_registry.runners:
                             included_paths.extend(r.included_paths())
-                        self.save_sast_assets_data(self.scan_reports)
                         self.upload_results(
                             root_folder=root_folder,
                             absolute_root_folder=absolute_root_folder,
                             excluded_paths=runner_filter.excluded_paths,
                             included_paths=included_paths,
                             git_configuration_folders=git_configuration_folders,
+                            sca_supported_ir_report=runner_registry.sca_supported_ir_report,
                         )
 
                     if self.config.create_baseline:
@@ -653,7 +654,7 @@ class Checkov:
     def get_external_checks_dir(self) -> list[str]:
         external_checks_dir: "list[str]" = self.config.external_checks_dir
         if self.config.external_checks_git:
-            git_getter = GitGetter(self.config.external_checks_git[0])
+            git_getter = GitGetter(url=self.config.external_checks_git[0])
             external_checks_dir = [git_getter.get()]
             atexit.register(shutil.rmtree, str(Path(external_checks_dir[0]).parent))
         return external_checks_dir
@@ -666,6 +667,7 @@ class Checkov:
             excluded_paths: list[str] | None = None,
             included_paths: list[str] | None = None,
             git_configuration_folders: list[str] | None = None,
+            sca_supported_ir_report: Report | None = None,
     ) -> None:
         """Upload scan results and other relevant files"""
 
@@ -677,7 +679,12 @@ class Checkov:
         )
         if git_configuration_folders:
             bc_integration.persist_git_configuration(os.getcwd(), git_configuration_folders)
-        bc_integration.persist_scan_results(self.scan_reports)
+        if sca_supported_ir_report:
+            scan_reports_to_upload = [report for report in self.scan_reports if report.check_type != 'sca_image']
+            scan_reports_to_upload.append(sca_supported_ir_report)
+        else:
+            scan_reports_to_upload = self.scan_reports
+        bc_integration.persist_scan_results(scan_reports_to_upload)
         bc_integration.persist_assets_scan_results(self.sast_data.imports_data)
         bc_integration.persist_run_metadata(self.run_metadata)
         if bc_integration.enable_persist_graphs:
@@ -687,7 +694,7 @@ class Checkov:
     def save_sast_assets_data(self, scan_reports: List[Report]) -> None:
         if not bool(convert_str_to_bool(os.getenv('CKV_ENABLE_UPLOAD_SAST_IMPORTS', False))):
             return
-        sast_report = [scan_report for scan_report in scan_reports if type(scan_report) == SastReport]
+        sast_report = [scan_report for scan_report in scan_reports if isinstance(scan_report, SastReport)]
         sast_imports_report = self.sast_data.get_sast_import_report(sast_report)
         self.sast_data.set_imports_data(sast_imports_report)
 

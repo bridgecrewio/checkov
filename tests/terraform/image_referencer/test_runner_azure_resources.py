@@ -9,11 +9,12 @@ from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner
 from tests.common.image_referencer.test_utils import mock_get_empty_license_statuses_async, \
     mock_get_image_cached_result_async
+from tests.graph_utils.utils import GRAPH_FRAMEWORKS
 
 RESOURCES_PATH = Path(__file__).parent / "resources/azure"
 
 
-@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
 def test_batch_resources(mocker: MockerFixture, graph_framework):
     # given
     file_name = "batch.tf"
@@ -55,7 +56,7 @@ def test_batch_resources(mocker: MockerFixture, graph_framework):
     assert len(sca_image_report.parsing_errors) == 0
 
 
-@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
 def test_containers_resources(mocker: MockerFixture, graph_framework):
     # given
     file_name = "containers.tf"
@@ -102,7 +103,7 @@ def test_containers_resources(mocker: MockerFixture, graph_framework):
     assert len(sca_image_report.parsing_errors) == 0
 
 
-@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
 def test_app_service_linux_function_resources(mocker: MockerFixture, graph_framework):
     # given
     file_name = "app_service_linux_function.tf"
@@ -134,7 +135,7 @@ def test_app_service_linux_function_resources(mocker: MockerFixture, graph_frame
 
     assert len(tf_report.resources) == 2
     assert len(tf_report.passed_checks) == 0
-    assert len(tf_report.failed_checks) == 0
+    assert len(tf_report.failed_checks) == 2
     assert len(tf_report.skipped_checks) == 0
     assert len(tf_report.parsing_errors) == 0
 
@@ -149,7 +150,7 @@ def test_app_service_linux_function_resources(mocker: MockerFixture, graph_frame
     assert len(sca_image_report.parsing_errors) == 0
 
 
-@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
 def test_app_service_linux_web_resources(mocker: MockerFixture, graph_framework):
     # given
     file_name = "app_service_linux_web.tf"
@@ -181,7 +182,7 @@ def test_app_service_linux_web_resources(mocker: MockerFixture, graph_framework)
 
     assert len(tf_report.resources) == 2
     assert len(tf_report.passed_checks) == 4
-    assert len(tf_report.failed_checks) == 12
+    assert len(tf_report.failed_checks) == 13
     assert len(tf_report.skipped_checks) == 0
     assert len(tf_report.parsing_errors) == 0
 
@@ -196,7 +197,7 @@ def test_app_service_linux_web_resources(mocker: MockerFixture, graph_framework)
     assert len(sca_image_report.parsing_errors) == 0
 
 
-@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
 def test_spring_cloud_resources(mocker: MockerFixture, graph_framework):
     # given
     file_name = "spring_cloud.tf"
@@ -238,7 +239,7 @@ def test_spring_cloud_resources(mocker: MockerFixture, graph_framework):
     assert len(sca_image_report.parsing_errors) == 0
 
 
-@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
 def test_app_service_windows_web_resources(mocker: MockerFixture, graph_framework):
     # given
     file_name = "app_service_windows_web.tf"
@@ -270,7 +271,7 @@ def test_app_service_windows_web_resources(mocker: MockerFixture, graph_framewor
 
     assert len(tf_report.resources) == 2
     assert len(tf_report.passed_checks) == 4
-    assert len(tf_report.failed_checks) == 12
+    assert len(tf_report.failed_checks) == 13
     assert len(tf_report.skipped_checks) == 0
     assert len(tf_report.parsing_errors) == 0
 

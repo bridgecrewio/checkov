@@ -11,7 +11,7 @@ class TestRDSInstancePerfInsightsEncryptionWithCMK(unittest.TestCase):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
-        test_files_dir = current_dir + "/example_RDSInstancePerfInsightsEncryptionWithCMK"  # checkov:skip=CKV_SECRET_6 false positive
+        test_files_dir = current_dir + "/example_RDSInstancePerfInsightsEncryptionWithCMK"
         report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
 

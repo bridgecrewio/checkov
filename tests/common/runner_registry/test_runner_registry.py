@@ -3,6 +3,8 @@ import json
 import shutil
 import unittest
 
+import logging
+import sys
 import os
 import io
 from pathlib import Path
@@ -28,6 +30,9 @@ from checkov.terraform.runner import Runner as tf_runner
 from checkov.bicep.runner import Runner as bicep_runner
 import re
 
+
+logger = logging.getLogger()
+logger.level = logging.INFO
 
 class TestRunnerRegistry(unittest.TestCase):
     def test_multi_iac(self):
@@ -145,7 +150,13 @@ class TestRunnerRegistry(unittest.TestCase):
         )
 
         with patch('sys.stdout', new=io.StringIO()) as captured_output:
-            runner_registry.print_reports(scan_reports=reports, config=config)
+            try:
+                stream_handler = logging.StreamHandler(sys.stdout)
+                logger.addHandler(stream_handler)
+
+                runner_registry.print_reports(scan_reports=reports, config=config)
+            finally:
+                logger.removeHandler(stream_handler)
 
         output = captured_output.getvalue()
 
@@ -161,7 +172,7 @@ class TestRunnerRegistry(unittest.TestCase):
         with open(oss_file_path) as file:
             content = file.readlines()
             header = content[:1][0]
-            self.assertEqual('Package,Version,Path,Line(s),Git Org,Git Repository,Vulnerability,Severity,Description,Licenses,Fix Version\n', header)
+            self.assertEqual('Package,Version,Path,Line(s),Git Org,Git Repository,Vulnerability,Severity,Description,Licenses,Fix Version,Registry URL,Root Package,Root Version\n', header)
             row = content[1:][0]
             self.assertIn('bridgecrew.cloud', row)
 
@@ -212,8 +223,8 @@ class TestRunnerRegistry(unittest.TestCase):
 
         oss_packages_csv = open(f'{results_path_dir}/{oss_packages_csv_file_name}')
         results = oss_packages_csv.read()
-        expected_results = 'Package,Version,Path,Line(s),Git Org,Git Repository,Vulnerability,Severity,Description,Licenses,Fix Version' \
-                           '\nbabel-jest,,/package.json,,,,,,,Unknown,N/A\n'
+        expected_results = 'Package,Version,Path,Line(s),Git Org,Git Repository,Vulnerability,Severity,Description,Licenses,Fix Version,Registry URL,Root Package,Root Version' \
+                           '\nbabel-jest,,/package.json,,,,,,,Unknown,N/A,,,\n'
 
         assert results == expected_results
 
@@ -455,6 +466,156 @@ class TestRunnerRegistry(unittest.TestCase):
 
         # then
         assert len(merged_reports[0].image_cached_results) == 2
+
+    def test_merge_reports_sca_supported_ir_report(self):
+        from checkov.common.bridgecrew.platform_integration import bc_integration
+        bc_integration.customer_run_config_response = {'supportedIrFw': 'terraform'}
+        # given
+        runner_registry = RunnerRegistry(banner, RunnerFilter(), *DEFAULT_RUNNERS)
+        tf_report = Report(check_type=CheckType.TERRAFORM)
+        tf_ir_report = Report(check_type=CheckType.SCA_IMAGE)
+        tf_ir_report.image_cached_results = [
+            {
+                "dockerImageName": "busybox",
+                "dockerFilePath": "/Users/arielk/dev/terragoat/terraform/aws/image-referencer.tf",
+                "dockerFileContent": "image: busybox",
+                "type": "Image",
+                "sourceId": "ariel-cli/terragoat",
+                "branch": "branch-name",
+                "sourceType": "cli",
+                "vulnerabilities":
+                    [
+                        {
+                            "cveId": "CVE-2022-28391",
+                            "status": "open",
+                            "severity": "high",
+                            "packageName": "busybox",
+                            "packageVersion": "1.34.1",
+                            "link": "https://nvd.nist.gov/vuln/detail/CVE-2022-28391",
+                            "cvss": 8.8,
+                            "vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H",
+                            "description": "BusyBox through 1.35.0 allows remote attackers to execute arbitrary code if netstat is used to print a DNS PTR record\\'s value to a VT compatible terminal. Alternatively, the attacker could choose to change the terminal\\'s colors.",
+                            "riskFactors":
+                                [
+                                    "Attack complexity: low",
+                                    "Attack vector: network",
+                                    "High severity",
+                                    "Recent vulnerability",
+                                    "Remote execution"
+                                ],
+                            "publishedDate": "2022-04-03T21:15:00Z"
+                        }
+                    ],
+                "packages":
+                    [],
+                "relatedResourceId": "/Users/arielk/dev/terragoat/terraform/aws/image-referencer.tf:aws_batch_job_definition.test1111"
+            }
+        ]
+        gha_report = Report(CheckType.GITHUB_ACTIONS)
+        gha_ir_report = Report(check_type=CheckType.SCA_IMAGE)
+        gha_ir_report.image_cached_results = [
+            {
+                "dockerImageName": "nginx:stable-alpine-perl",
+                "dockerFilePath": "/.github/workflows/ci.yaml",
+                "dockerFileContent": "image: nginx:stable-alpine-perl",
+                "type": "Image",
+                "sourceId": "arielkru/ak19-pr-sce-test",
+                "branch": None,
+                "sourceType": "Github",
+                "vulnerabilities":
+                    [
+                        {
+                            "cveId": "CVE-2020-35538",
+                            "status": "open",
+                            "severity": "medium",
+                            "packageName": "libjpeg-turbo",
+                            "packageVersion": "2.1.3-r1",
+                            "link": "https://nvd.nist.gov/vuln/detail/CVE-2020-35538",
+                            "cvss": 5.5,
+                            "vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H",
+                            "description": "A crafted input file could cause a null pointer dereference in jcopy_sample_rows() when processed by libjpeg-turbo.",
+                            "riskFactors":
+                                [
+                                    "Attack complexity: low",
+                                    "Medium severity"
+                                ],
+                            "publishedDate": "2022-08-31T16:15:00Z"
+                        }
+                    ],
+                "packages":
+                    [
+                        {
+                            "type": "os",
+                            "name": "tzdata",
+                            "version": "2022a-r0",
+                            "licenses":
+                                [
+                                    "Public-Domain"
+                                ]
+                        }
+                    ],
+                "relatedResourceId": "jobs.container-test-job",
+            }
+        ]
+        sca_report = Report(CheckType.SCA_IMAGE)
+        sca_report.image_cached_results = [
+            {
+                "dockerImageName": "nginx:stable-alpine-perl2",
+                "dockerFilePath": "/.github/workflows/ci.yaml",
+                "dockerFileContent": "image: nginx:stable-alpine-perl",
+                "type": "Image",
+                "sourceId": "arielkru/ak19-pr-sce-test",
+                "branch": None,
+                "sourceType": "Github",
+                "vulnerabilities":
+                    [
+                        {
+                            "cveId": "CVE-2020-35538",
+                            "status": "open",
+                            "severity": "medium",
+                            "packageName": "libjpeg-turbo",
+                            "packageVersion": "2.1.3-r1",
+                            "link": "https://nvd.nist.gov/vuln/detail/CVE-2020-35538",
+                            "cvss": 5.5,
+                            "vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H",
+                            "description": "A crafted input file could cause a null pointer dereference in jcopy_sample_rows() when processed by libjpeg-turbo.",
+                            "riskFactors":
+                                [
+                                    "Attack complexity: low",
+                                    "Medium severity"
+                                ],
+                            "publishedDate": "2022-08-31T16:15:00Z"
+                        }
+                    ],
+                "packages":
+                    [
+                        {
+                            "type": "os",
+                            "name": "tzdata",
+                            "version": "2022a-r0",
+                            "licenses":
+                                [
+                                    "Public-Domain"
+                                ]
+                        }
+                    ],
+                "relatedResourceId": "jobs.container-test-job",
+            }
+        ]
+
+        reports = [
+            [tf_report, tf_ir_report],
+            [gha_report, gha_ir_report],
+            sca_report
+        ]
+
+        # when
+        merged_reports = runner_registry._merge_reports(reports=reports)
+
+        # then
+        sca_report = [r for r in merged_reports if r.check_type == CheckType.SCA_IMAGE]
+        assert len(sca_report[0].image_cached_results) == 3
+        assert len(runner_registry.sca_supported_ir_report.image_cached_results) == 2
 
 
 def test_non_compact_json_output(capsys):

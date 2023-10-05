@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 CHECKS_DIR = (os.path.join(pathlib.Path(__file__).parent.resolve(), 'checks'))
 
 
-class Runner(BaseRunner[None]):
+class Runner(BaseRunner[None, None, None]):
     check_type = CheckType.SAST  # noqa: CCE003  # a static attribute
 
     def __init__(self) -> None:

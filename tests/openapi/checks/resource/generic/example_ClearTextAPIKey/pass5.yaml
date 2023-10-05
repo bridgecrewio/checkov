@@ -1,0 +1,26 @@
+swagger: "2.0"
+info:
+  title: Simple API overview
+  version: 1.0.0
+schemes:
+  - wss
+paths:
+  /pets:
+    post:
+      description: Creates a new pet in the store
+      responses:
+        "200":
+          description: 200 response
+      operationId: addPet
+      security:
+        - apiKey1: []
+          apiKey3: []
+securityDefinitions:
+  apiKey1:
+    type: apiKey
+    name: X-API-Key
+    in: header
+  apiKey3:
+    type: apiKey
+    name: X-API-Key
+    in: query

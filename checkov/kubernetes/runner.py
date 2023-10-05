@@ -4,6 +4,8 @@ import logging
 import os
 from typing import Type, Any, TYPE_CHECKING
 
+from typing_extensions import TypeAlias  # noqa[TC002]
+
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.typing import LibraryGraphConnector
@@ -39,6 +41,9 @@ if TYPE_CHECKING:
     from checkov.common.images.image_referencer import Image
     from checkov.common.typing import _CheckResult, _EntityContext
 
+_KubernetesContext: TypeAlias = "dict[str, dict[str, Any]]"
+_KubernetesDefinitions: TypeAlias = "dict[str, list[dict[str, Any]]]"
+
 
 class TimeoutError(Exception):
     pass
@@ -48,7 +53,7 @@ def handle_timeout(signum: int, frame: FrameType | None) -> Any:
     raise TimeoutError('command got timeout')
 
 
-class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
+class Runner(ImageReferencerMixin[None], BaseRunner[_KubernetesDefinitions, _KubernetesContext, KubernetesGraphManager]):
     check_type = CheckType.KUBERNETES  # noqa: CCE003  # a static attribute
 
     def __init__(
@@ -69,8 +74,9 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
             graph_manager if graph_manager else KubernetesGraphManager(source=source, db_connector=db_connector)
 
         self.graph_registry = get_graph_checks_registry(self.check_type)
-        self.definitions: "dict[str, list[dict[str, Any]]]" = {}  # type:ignore[assignment]
+        self.definitions: _KubernetesDefinitions = {}
         self.definitions_raw: "dict[str, list[tuple[int, str]]]" = {}
+        self.context: _KubernetesContext | None = None
         self.report_mutator_data: "dict[str, dict[str, Any]]" = {}
         self.report_type = report_type
 
@@ -174,7 +180,8 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
                 # TODO? - Variable Eval Message!
                 variable_evaluations: "dict[str, Any]" = {}
 
-                report = self.mutate_kubernetes_results(results, report, k8_file, k8_file_path, file_abs_path, entity_conf, variable_evaluations)
+                report = self.mutate_kubernetes_results(results, report, k8_file, k8_file_path, file_abs_path,
+                                                        entity_conf, variable_evaluations, root_folder)
             self.pbar.update()
         self.pbar.close()
         return report
@@ -194,6 +201,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
         file_abs_path: str,
         entity_conf: dict[str, Any],
         variable_evaluations: dict[str, Any],
+        root_folder: str | None = None
     ) -> Report:
         # Moves report generation logic out of run() method in Runner class.
         # Allows function overriding of a much smaller function than run() for other "child" frameworks such as Kustomize, Helm

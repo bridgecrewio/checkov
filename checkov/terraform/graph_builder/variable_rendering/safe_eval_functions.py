@@ -8,6 +8,8 @@ from typing import Union, Any, Dict, Callable, List, Optional
 
 from checkov.terraform.parser_functions import tonumber, FUNCTION_FAILED, create_map, tobool, tostring
 
+TIME_DELTA_PATTERN = re.compile(r"(\d*\.*\d+)")
+
 """
 This file contains a custom implementation of the builtin `eval` function.
 `eval` is not a safe function, because it can execute *every* command,
@@ -139,7 +141,7 @@ def timeadd(input_str: str, time_delta: str) -> str:
         adding = False
         time_delta = time_delta[1:]
     # Split out into each of the deltas
-    deltas = re.split(r'(\d*\.*\d+)', time_delta)
+    deltas = re.split(TIME_DELTA_PATTERN, time_delta)
     # Needed to strip the leading empty element
     deltas = list(filter(None, deltas))
     while len(deltas) > 0:

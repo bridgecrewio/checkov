@@ -19,6 +19,8 @@ DIRECTIVE_EXPR = re.compile(r"\%\{([^\}]*)\}")
 
 # exclude "']" one the right side of the compare via (?!']), this can happen with a base64 encoded string
 COMPARE_REGEX = re.compile(r"^(?P<a>.+?)\s*(?P<operator>==|!=|>=|>|<=|<|&&|\|\|)\s*(?P<b>(?!']).+)$")
+COMPARE_OPERATORS = (" == ", " != ", " < ", " <= ", " > ", " >= ", " && ", " || ")
+
 CHECKOV_RENDER_MAX_LEN = force_int(os.getenv("CHECKOV_RENDER_MAX_LEN", "10000"))
 
 
@@ -70,7 +72,7 @@ def evaluate_terraform(input_str: Any, keep_interpolations: bool = True) -> Any:
 
 def _try_evaluate(input_str: Union[str, bool]) -> Any:
     try:
-        return evaluate(input_str)
+        return evaluate(input_str)  # type:ignore[arg-type]
     except Exception:
         try:
             return evaluate(f'"{input_str}"')
@@ -144,7 +146,7 @@ def _find_new_value_for_interpolation(origin_str: str, str_to_replace: str, new_
         return new_value
 
 
-def remove_interpolation(original_str: str, var_to_clean: Optional[str] = None, escape_unrendered=True) -> str:
+def remove_interpolation(original_str: str, var_to_clean: Optional[str] = None, escape_unrendered: bool = True) -> str:
     # get all variable references in string
     # remove from the string all ${} or '${}' occurrences
     var_blocks = find_var_blocks(original_str)
@@ -181,9 +183,9 @@ def strip_double_quotes(input_str: str) -> str:
 
 
 def evaluate_conditional_expression(input_str: str) -> str:
-    variable_ref = re.match(re.compile(r"^\${(.*)}$"), input_str)
-    if variable_ref:
-        input_str = variable_ref.groups()[0]
+    if input_str.startswith("${") and input_str.endswith("}"):
+        # just remove the needed char length of the interpolation marks
+        input_str = input_str[2:-1]
 
     condition = find_conditional_expression_groups(input_str)
     while condition:
@@ -207,12 +209,16 @@ def evaluate_conditional_expression(input_str: str) -> str:
     return input_str
 
 
-def evaluate_compare(input_str: str) -> Union[str, bool]:
+def evaluate_compare(input_str: str) -> str | bool | int:
     """
     :param input_str: string like "a && b" (supported operators: ==, != , <, <=, >, >=, && , ||)
     :return: evaluation of the expression
     """
     if isinstance(input_str, str) and "for" not in input_str:
+        if not any(operator in input_str for operator in COMPARE_OPERATORS):
+            # if an operator doesn't exist in the string, no need to proceed
+            return input_str
+
         match = re.search(COMPARE_REGEX, input_str)
         if match:
             compare_parts = match.groupdict()
@@ -228,20 +234,22 @@ def evaluate_compare(input_str: str) -> Union[str, bool]:
     return input_str
 
 
-def _handle_literal(input_str: str) -> str:
+def _handle_literal(input_str: str) -> Any:
     try:
         e = ast.literal_eval(input_str)
         if isinstance(e, list) and len(e) == 1:
             return e[0]
     except (ValueError, SyntaxError):
-        return input_str
+        pass
+
+    return input_str
 
 
 def _remove_variable_formatting(input_str: str) -> str:
     return input_str[2:-1] if input_str.startswith(f'{renderer.DOLLAR_PREFIX}{renderer.LEFT_CURLY}') and input_str.endswith(renderer.RIGHT_CURLY) else input_str
 
 
-def handle_for_loop(input_str: Union[str, int, bool]) -> str:
+def handle_for_loop(input_str: Union[str, int, bool]) -> str | int | bool:
     if isinstance(input_str, str) and renderer.FOR_LOOP in input_str and '?' not in input_str:
         old_input_str = input_str
         input_str = _handle_literal(input_str)
@@ -253,7 +261,7 @@ def handle_for_loop(input_str: Union[str, int, bool]) -> str:
                 return old_input_str
 
             rendered_statement = input_str[start_bracket_idx:end_bracket_idx + 1].replace('"', '\\"').replace("'", '"')
-            new_val = ''
+            new_val: str | None = ''
             if input_str.startswith(renderer.LEFT_CURLY):
                 new_val = _handle_for_loop_in_dict(rendered_statement, input_str, end_bracket_idx + 1)
             elif input_str.startswith(renderer.LEFT_BRACKET):
@@ -280,7 +288,7 @@ def _extract_expression_from_statement(statement: str, start_expression_idx: int
 
 def _handle_for_loop_in_dict(object_to_run_on: str, statement: str, start_expression_idx: int) -> Optional[str]:
     try:
-        object_to_run_on = ast.literal_eval(object_to_run_on.replace(' ', ''))
+        evaluated_object_to_run_on: list[dict[str, Any]] = ast.literal_eval(object_to_run_on.replace(' ', ''))
     except (ValueError, SyntaxError):
         return None
     expression = _extract_expression_from_statement(statement, start_expression_idx)
@@ -292,18 +300,18 @@ def _handle_for_loop_in_dict(object_to_run_on: str, statement: str, start_expres
     if k_expression.startswith(f'{obj_key}.'):
         k_expression = k_expression.replace(f'{obj_key}.', '')
     rendered_result = {}
-    for obj in object_to_run_on:
+    for obj in evaluated_object_to_run_on:
         val_to_assign = obj if statement.startswith(f'{renderer.LEFT_CURLY}{renderer.FOR_LOOP} {v_expression}') else evaluate_terraform(v_expression)
         try:
             rendered_result[obj[k_expression]] = val_to_assign
         except (TypeError, KeyError):
-            return
+            return None
     return json.dumps(rendered_result)
 
 
 def _handle_for_loop_in_list(object_to_run_on: str, statement: str, start_expression_idx: int) -> Optional[str]:
     try:
-        object_to_run_on = ast.literal_eval(object_to_run_on.replace(' ', ''))
+        evaluated_object_to_run_on: list[Any] = ast.literal_eval(object_to_run_on.replace(' ', ''))
     except (ValueError, SyntaxError):
         return None
     expression = _extract_expression_from_statement(statement, start_expression_idx)
@@ -311,13 +319,13 @@ def _handle_for_loop_in_list(object_to_run_on: str, statement: str, start_expres
         return None
     if renderer.DOLLAR_PREFIX in expression:
         return _handle_for_loop_in_list_of_dicts(
-            object_to_run_on=object_to_run_on,
+            object_to_run_on=evaluated_object_to_run_on,
             statement=statement,
             expression=expression,
         )
 
     rendered_result = []
-    for obj in object_to_run_on:
+    for obj in evaluated_object_to_run_on:
         val_to_assign = obj if statement.startswith(f'{renderer.LEFT_BRACKET}{renderer.FOR_LOOP} {expression}') else evaluate_terraform(expression)
         rendered_result.append(val_to_assign)
     return json.dumps(rendered_result)
@@ -358,9 +366,9 @@ def evaluate_json_types(input_str: Any) -> Any:
     return input_str
 
 
-def apply_binary_op(a: Optional[Union[str, int, bool]], b: Optional[Union[str, int, bool]], operator: str) -> bool:
+def apply_binary_op(a: Optional[Union[str, int, bool]], b: Optional[Union[str, int, bool]], operator: str) -> bool | int | str:
     # apply the operator after verifying that a and b have the same type.
-    operators: Dict[str, Callable[[T, T], bool]] = {
+    operators: Dict[str, Callable[[T, T], bool | int | str]] = {
         "==": lambda a, b: a == b,
         "!=": lambda a, b: a != b,
         ">": lambda a, b: a > b,
@@ -375,20 +383,24 @@ def apply_binary_op(a: Optional[Union[str, int, bool]], b: Optional[Union[str, i
 
     if type_a != type_b:
         try:
-            temp_b = type_a(b)
+            temp_b = type_a(b)  # type:ignore[misc,arg-type]
             if isinstance(type_a, bool):
                 temp_b = bool(convert_to_bool(b))
-            return operators[operator](a, temp_b)
+            return operators[operator](a, temp_b)  # type:ignore[type-var]
         except Exception:
-            temp_a = type_b(a)
+            temp_a = type_b(a)  # type:ignore[misc,arg-type]
             if isinstance(type_b, bool):
                 temp_a = bool(convert_to_bool(a))
-            return operators[operator](temp_a, b)
+            return operators[operator](temp_a, b)  # type:ignore[type-var]
     else:
-        return operators[operator](a, b)
+        return operators[operator](a, b)  # type:ignore[type-var]
 
 
 def evaluate_directives(input_str: str) -> str:
+    if "%{" not in input_str:
+        # no need to proceed further
+        return input_str
+
     if re.search(DIRECTIVE_EXPR, input_str) is None:
         return input_str
 
@@ -518,9 +530,9 @@ def find_conditional_expression_groups(input_str: str) -> Optional[Tuple[List[st
     from condition ? true_val : false_val return [condition, true_val, false_val]
     """
     if '?' not in input_str or ':' not in input_str:
-        return
+        return None
     if input_str.index('?') > input_str.rindex(':'):
-        return
+        return None
     brackets_pairs = {
         '[': ']',
         '{': '}',
@@ -528,11 +540,11 @@ def find_conditional_expression_groups(input_str: str) -> Optional[Tuple[List[st
     }
     str_keys = {'\'', '"'}
 
-    stack = []
+    stack: list[tuple[str, int]] = []
     groups = []
     end_stack = []
 
-    def _update_stack_if_needed(char, i):
+    def _update_stack_if_needed(char: str, i: int) -> None:
         # can be true only if the char in str_keys or in brackets_pairs.values()
         if stack and stack[-1][0] == char:
             stack.pop(len(stack) - 1)
@@ -552,17 +564,19 @@ def find_conditional_expression_groups(input_str: str) -> Optional[Tuple[List[st
                     return i
             _update_stack_if_needed(char, i)
 
+        return None
+
     # find first separator
     first_separator = _find_separator_index('?', input_str, 0, update_end_stack=True)
     if first_separator is None:
-        return
+        return None
     start = 0 if not stack else stack[-1][1]
     groups.append(input_str[start:first_separator])
 
     # find second separator
     second_separator = _find_separator_index(':', input_str, first_separator)
     if second_separator is None:
-        return
+        return None
     groups.append(input_str[first_separator + 1:second_separator])
 
     if not stack:
@@ -577,7 +591,7 @@ def find_conditional_expression_groups(input_str: str) -> Optional[Tuple[List[st
         if not stack:
             end = i + 1
             break
-        if len(stack) + 1 == end_stack:
+        if len(stack) + 1 == len(end_stack):
             end = i
             break
 

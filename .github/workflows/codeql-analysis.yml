@@ -27,16 +27,16 @@ permissions:
 jobs:
   analyze:
     name: Analyze
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # TODO: use checkov version
     permissions:
       actions: read
       contents: read
       security-events: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
+        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608  # v3
       - name: Set up Python
-        uses: actions/setup-python@bd6b4b6205c4dbad673328db7b31b7fab9e241c0  # v4
+        uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1  # v4
         with:
           python-version: '3.10'
       - name: Setup python for CodeQL
@@ -54,12 +54,12 @@ jobs:
           pipenv lock -r > requirements.txt
           pip install -r requirements.txt
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@83f0fe6c4988d98a455712a27f0255212bba9bd4  # v2
+        uses: github/codeql-action/init@6a28655e3dcb49cb0840ea372fd6d17733edd8a4  # v2
         with:
           languages: python
           setup-python-dependencies: false
           config-file: ./.github/codeql-config.yml
       - name: Autobuild
-        uses: github/codeql-action/autobuild@83f0fe6c4988d98a455712a27f0255212bba9bd4  # v2
+        uses: github/codeql-action/autobuild@6a28655e3dcb49cb0840ea372fd6d17733edd8a4  # v2
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@83f0fe6c4988d98a455712a27f0255212bba9bd4  # v2
+        uses: github/codeql-action/analyze@6a28655e3dcb49cb0840ea372fd6d17733edd8a4  # v2

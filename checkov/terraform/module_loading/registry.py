@@ -5,6 +5,7 @@ import os
 import hashlib
 from typing import Optional, List, TYPE_CHECKING, Set, Dict
 
+from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.terraform.module_loading.content import ModuleContent
 from checkov.terraform.module_loading.module_params import ModuleParams
@@ -21,6 +22,7 @@ class ModuleLoaderRegistry:
         self, download_external_modules: bool = False, external_modules_folder_name: str = DEFAULT_EXTERNAL_MODULES_DIR
     ) -> None:
         self.logger = logging.getLogger(__name__)
+        add_resource_code_filter_to_logger(self.logger)
         self.download_external_modules = download_external_modules
         self.external_modules_folder_name = external_modules_folder_name
         self.failed_urls_cache: Set[str] = set()
@@ -57,6 +59,7 @@ information, see `loader.ModuleLoader.load`.
             next_url = ""
             if source in self.failed_urls_cache:
                 break
+            logging.info(f"Iterating over {len(self.loaders)} loaders")
             for loader in self.loaders:
                 if not self.download_external_modules and loader.is_external:
                     continue
@@ -68,6 +71,7 @@ information, see `loader.ModuleLoader.load`.
                                                  dest_dir=local_dir,
                                                  external_modules_folder_name=self.external_modules_folder_name,
                                                  inner_module=inner_module)
+                    logging.info(f"Attempting loading via {loader.__class__} loader")
                     content = loader.load(module_params)
                 except Exception as e:
                     logging.warning(f'Module {module_address} failed to load via {loader.__class__}')
@@ -97,7 +101,8 @@ information, see `loader.ModuleLoader.load`.
         return content
 
     def register(self, loader: "ModuleLoader") -> None:
-        self.loaders.append(loader)
+        if loader not in self.loaders:
+            self.loaders.append(loader)
 
     def reset_module_content_cache(self) -> None:
         self.module_content_cache = {}

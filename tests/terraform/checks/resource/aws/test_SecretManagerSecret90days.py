@@ -20,10 +20,11 @@ class TestSecretManagerSecret90days(unittest.TestCase):
         }
         failing_resources = {
             "aws_secretsmanager_secret_rotation.fail",
+            "aws_secretsmanager_secret_rotation.fail_2",
         }
 
-        passed_check_resources = set([c.resource for c in report.passed_checks])
-        failed_check_resources = set([c.resource for c in report.failed_checks])
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
 
         self.assertEqual(summary["passed"], len(passing_resources))
         self.assertEqual(summary["failed"], len(failing_resources))

@@ -9,7 +9,7 @@ import re
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.sast.checks_infra.base_check import BaseSastCheck
-from checkov.secrets.consts import ValidationStatus
+from checkov.common.secrets.consts import ValidationStatus
 
 from checkov.common.bridgecrew.code_categories import CodeCategoryMapping, CodeCategoryConfiguration, CodeCategoryType
 from checkov.common.bridgecrew.severities import Severity, Severities

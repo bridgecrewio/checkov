@@ -8,7 +8,9 @@ from typing import List, Tuple, Dict, Any, Optional, Pattern, TYPE_CHECKING
 
 from igraph import Graph
 from bc_jsonpath_ng.ext import parse
+from networkx import DiGraph
 
+from checkov.common.graph.checks_infra import debug
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
 
@@ -64,8 +66,17 @@ class BaseAttributeSolver(BaseSolver):
                     failed_vertices.append(data)
 
             return passed_vertices, failed_vertices, unknown_vertices
+        elif isinstance(graph_connector, DiGraph):
+            for _, data in graph_connector.nodes(data=True):
+                if (not self.resource_types or data.get(CustomAttributes.RESOURCE_TYPE) in self.resource_types) \
+                        and data.get(CustomAttributes.BLOCK_TYPE) in SUPPORTED_BLOCK_TYPES:
+                    jobs.append(executer.submit(
+                        self._process_node, data, passed_vertices, failed_vertices, unknown_vertices))
 
-        for _, data in graph_connector.nodes(data=True):
+            concurrent.futures.wait(jobs)
+            return passed_vertices, failed_vertices, unknown_vertices
+
+        for _, data in graph_connector.nodes():
             if (not self.resource_types or data.get(CustomAttributes.RESOURCE_TYPE) in self.resource_types) \
                     and data.get(CustomAttributes.BLOCK_TYPE) in SUPPORTED_BLOCK_TYPES:
                 jobs.append(executer.submit(
@@ -85,7 +96,7 @@ class BaseAttributeSolver(BaseSolver):
         for attr in attr_parts:
             attr_to_check = f'{attr_to_check}.{attr}' if attr_to_check else attr
             value_to_check = vertex.get(attr_to_check)
-            value_to_check = self._render_json_str(value_to_check)
+            value_to_check = self._render_json_str(value_to_check, attr, vertex)
 
             # we can only check is_attribute_value_check when evaluating the full attribute
             # for example, if we have a policy that says "tags.component exists", and tags = local.tags, then
@@ -106,20 +117,38 @@ class BaseAttributeSolver(BaseSolver):
                     if not resource_variable_dependant or resource_variable_dependant and policy_variable_dependant:
                         filtered_attribute_matches.append(attribute)
             if attribute_matches:
-                if self.is_jsonpath_check:
-                    if self.resource_type_pred(vertex, self.resource_types) and all(
-                            self._get_operation(vertex=vertex, attribute=attr) for attr in filtered_attribute_matches):
-                        return True if len(attribute_matches) == len(filtered_attribute_matches) else None
-                    return False
+                result = self._evaluate_attribute_matches(
+                    vertex=vertex,
+                    attribute_matches=attribute_matches,
+                    filtered_attribute_matches=filtered_attribute_matches,
+                )
+                if result is not None:
+                    # skip unknown
+                    debug.attribute_block(
+                        resource_types=self.resource_types,
+                        attribute=self.attribute,
+                        operator=self.operator,
+                        value=self.value,
+                        resource=vertex,
+                        status="passed" if result is True else "failed",
+                    )
 
-                if self.resource_type_pred(vertex, self.resource_types) and any(
-                        self._get_operation(vertex=vertex, attribute=attr) for attr in filtered_attribute_matches):
-                    return True
-                return False if len(attribute_matches) == len(filtered_attribute_matches) else None
+                return result
 
-        return self.resource_type_pred(vertex, self.resource_types) and self._get_operation(
+        result = self.resource_type_pred(vertex, self.resource_types) and self._get_operation(
             vertex=vertex, attribute=self.attribute
         )
+
+        debug.attribute_block(
+            resource_types=self.resource_types,
+            attribute=self.attribute,
+            operator=self.operator,
+            value=self.value,
+            resource=vertex,
+            status="passed" if result is True else "failed",
+        )
+
+        return result
 
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
         raise NotImplementedError
@@ -139,6 +168,22 @@ class BaseAttributeSolver(BaseSolver):
         else:
             failed_vertices.append(data)
 
+    def _evaluate_attribute_matches(
+        self, vertex: dict[str, Any], attribute_matches: list[str], filtered_attribute_matches: list[str]
+    ) -> bool | None:
+        if self.is_jsonpath_check:
+            if self.resource_type_pred(vertex, self.resource_types) and all(
+                self._get_operation(vertex=vertex, attribute=attr) for attr in filtered_attribute_matches
+            ):
+                return True if len(attribute_matches) == len(filtered_attribute_matches) else None
+            return False
+
+        if self.resource_type_pred(vertex, self.resource_types) and any(
+            self._get_operation(vertex=vertex, attribute=attr) for attr in filtered_attribute_matches
+        ):
+            return True
+        return False if len(attribute_matches) == len(filtered_attribute_matches) else None
+
     def get_attribute_matches(self, vertex: Dict[str, Any]) -> List[str]:
         try:
             attribute_matches: List[str] = []
@@ -151,11 +196,14 @@ class BaseAttributeSolver(BaseSolver):
                         vertex[full_path] = match.value
 
                     attribute_matches.append(full_path)
-
             elif isinstance(self.attribute, str):
                 attribute_patterns = self.get_attribute_patterns(self.attribute)
+                attribute_parts = [attr for attr in self.attribute.split(".") if attr != "*"]
                 for attr in vertex:
-                    if any(re.match(re.compile(attribute_pattern), attr) for attribute_pattern in attribute_patterns):
+                    if any(part not in attr for part in attribute_parts):
+                        # if even one attribute part doesn't exist in the vertex attribute, then no need to further proceed
+                        continue
+                    if any(re.match(attribute_pattern, attr) for attribute_pattern in attribute_patterns):
                         attribute_matches.append(attr)
 
             return attribute_matches
@@ -197,31 +245,13 @@ class BaseAttributeSolver(BaseSolver):
         return False
 
     @staticmethod
-    def _render_json_str(value_to_check: Any) -> Any:
-        """
-        Tries to render objects containing json dict, for example:
-        - resource "aws_iam_policy" "example1" {
-            policy == <<POLICY
-                {
-                ... json-data
-                }
-            POLICY
-        }
-        - resource "aws_emr_security_configuration" "example2" {
-            configuration = <<EOF
-                {
-                ... json-data
-                }
-            EOF
-        }
-        """
-        try:
-            # Check if the value looks like a json object, and if it is try to parse it
-            if isinstance(value_to_check, str) and value_to_check.strip().startswith('{'):
+    def _render_json_str(value_to_check: Any, attr: str, vertex: Dict[str, Any]) -> Any:
+        if attr == 'policy' and vertex.get('resource_type', '').endswith('policy'):
+            try:
                 value_to_check = json.loads(value_to_check)
                 return value_to_check
-        except Exception as e:
-            logging.info(f'cant parse policy str to object, {str(e)}')
+            except Exception as e:
+                logging.info(f'cant parse policy str to object, {str(e)}')
         return value_to_check
 
     def _get_cached_jsonpath_statement(self, statement: str) -> JSONPath:

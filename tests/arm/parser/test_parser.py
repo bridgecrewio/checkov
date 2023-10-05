@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from checkov.arm.parser.parser import load
+from checkov.arm.parser.parser import load, parse
 
 EXAMPLES_DIR = Path(__file__).parent / "examples"
 
@@ -27,3 +27,15 @@ def test_load_not_arm_file():
     # then
     assert template == {}
     assert file_lines == []
+
+
+def test_parse_arm_file_with_comments():
+    # given
+    file_path = EXAMPLES_DIR / "json/with_comments.json"
+
+    # when
+    template, file_lines = parse(str(file_path))
+
+    # then
+    assert template is None
+    assert file_lines is None

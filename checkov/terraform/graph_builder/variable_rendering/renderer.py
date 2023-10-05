@@ -5,11 +5,11 @@ from ast import literal_eval
 import logging
 import os
 import re
-from collections.abc import Hashable
+from collections.abc import Hashable, Sequence
 from json import JSONDecodeError
 
 import dpath
-from typing import TYPE_CHECKING, List, Dict, Any, Tuple, Union, Optional
+from typing import TYPE_CHECKING, List, Dict, Any, Tuple, Union, Optional, cast
 
 from lark.tree import Tree
 
@@ -110,7 +110,8 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
                 origin_vertex.block_type == BlockType.VARIABLE
                 and destination_vertex.block_type == BlockType.TF_VARIABLE
             ):
-                destination_vertex = list(filter(lambda v: v.block_type == BlockType.TF_VARIABLE, map(lambda e: self.local_graph.vertices[e.dest], edge_list)))[-1]  # evaluate the last specified variable based on .tfvars precedence
+                # evaluate the last specified variable based on .tfvars precedence
+                destination_vertex = list(filter(lambda v: v.block_type == BlockType.TF_VARIABLE, map(lambda e: self.local_graph.vertices[e.dest], edge_list)))[-1]
                 self.update_evaluated_value(
                     changed_attribute_key=edge.label,
                     changed_attribute_value=destination_vertex.attributes["default"],
@@ -216,7 +217,7 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
 
     @staticmethod
     def find_path_from_referenced_vertices(
-        referenced_vertices: List[VertexReference], vertex_attributes: Dict[str, Any]
+        referenced_vertices: Sequence[VertexReference], vertex_attributes: Dict[str, Any]
     ) -> Tuple[List[str], str]:
         """
         :param referenced_vertices: an array of VertexReference
@@ -341,7 +342,7 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
 
     @staticmethod
     def _process_dynamic_blocks(dynamic_blocks: list[dict[str, Any]] | dict[str, Any]) -> dict[
-            str, list[dict[str, Any]]]:
+            str, list[dict[str, Any]] | dict[str, Any]]:
         rendered_blocks: dict[str, list[dict[str, Any]] | dict[str, Any]] = {}
 
         if not isinstance(dynamic_blocks, list) and not isinstance(dynamic_blocks, dict):
@@ -360,7 +361,7 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
             if not block_content or not dynamic_values or isinstance(dynamic_values, str):
                 continue
 
-            dynamic_arguments = []
+            dynamic_arguments: list[str] = []
             TerraformVariableRenderer._extract_dynamic_arguments(block_name, block_content, dynamic_arguments, [])
             if dynamic_arguments and isinstance(dynamic_values, list):
                 block_confs = []
@@ -401,12 +402,14 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
                     flatten_key = next(iter(rendered_blocks.keys()))
                 except StopIteration:
                     flatten_key = ''
-                if rendered_blocks.get(flatten_key) and next_key in rendered_blocks[flatten_key]:
-                    rendered_blocks[flatten_key].update(TerraformVariableRenderer._process_dynamic_blocks(block_content[DYNAMIC_STRING]))
-                elif isinstance(rendered_blocks.get(flatten_key), list) and isinstance(dynamic_values, list):
-                    for i in range(len(rendered_blocks[flatten_key])):
+
+                flatten_key_block = rendered_blocks.get(flatten_key)
+                if isinstance(flatten_key_block, dict) and next_key in flatten_key_block:
+                    flatten_key_block.update(TerraformVariableRenderer._process_dynamic_blocks(block_content[DYNAMIC_STRING]))
+                elif isinstance(flatten_key_block, list) and isinstance(dynamic_values, list):
+                    for i in range(len(flatten_key_block)):
                         block_content[DYNAMIC_STRING][next_key]['for_each'] = [dynamic_values[i]]
-                        rendered_blocks[flatten_key][i].update(TerraformVariableRenderer._process_dynamic_blocks(block_content[DYNAMIC_STRING]))
+                        flatten_key_block[i].update(TerraformVariableRenderer._process_dynamic_blocks(block_content[DYNAMIC_STRING]))
                 else:
                     rendered_blocks.update(TerraformVariableRenderer._process_dynamic_blocks(block_content[DYNAMIC_STRING]))
 
@@ -419,21 +422,22 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
             block_conf: dict[str, Any],
             block_content: dict[str, Any],
             block_name: str,
-    ):
+    ) -> None:
         dynamic_value_in_map = TerraformVariableRenderer.extract_dynamic_value_in_map(
             dpath.get(block_content, dynamic_argument, separator=DOT_SEPERATOR), dynamic_argument
         )
-        if block_name not in dynamic_value and dynamic_value_in_map in dynamic_value:
+        if isinstance(dynamic_value, dict) and block_name not in dynamic_value and dynamic_value_in_map in dynamic_value:
             dpath.set(block_conf, dynamic_argument, dynamic_value[dynamic_value_in_map], separator=DOT_SEPERATOR)
         else:
             try:
                 if DOT_SEPERATOR in dynamic_argument:
                     dynamic_args = dynamic_argument.split(DOT_SEPERATOR)
-                    dpath.set(block_conf, dynamic_argument, dynamic_value[block_name][0][dynamic_args[0]][dynamic_args[1]], separator=DOT_SEPERATOR)
+                    dpath.set(block_conf, dynamic_argument, dynamic_value[block_name][0][dynamic_args[0]][dynamic_args[1]], separator=DOT_SEPERATOR)  # type:ignore[index]
                 else:
-                    dpath.set(block_conf, dynamic_argument, dynamic_value[block_name][0][dynamic_value_in_map], separator=DOT_SEPERATOR)
+                    dpath.set(block_conf, dynamic_argument, dynamic_value[block_name][0][dynamic_value_in_map], separator=DOT_SEPERATOR)  # type:ignore[index]
             except (KeyError, IndexError):
-                if block_content.get(dynamic_argument) and LOOKUP in block_content.get(dynamic_argument):
+                dynamic_content = block_content.get(dynamic_argument)
+                if dynamic_content and LOOKUP in dynamic_content:
                     block_conf[dynamic_argument] = get_lookup_value(block_content, dynamic_argument)
                 else:
                     return
@@ -450,7 +454,7 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
             if start_bracket_idx != -1 and end_bracket_idx != -1:
                 rendered_dynamic_values = rendered_dynamic_values[start_bracket_idx:end_bracket_idx + 1].replace("'", '"')
             try:
-                return json.loads(rendered_dynamic_values)
+                return cast("dict[str, Any] | list[dict[str, Any]]", json.loads(rendered_dynamic_values))
             except JSONDecodeError:
                 return dynamic_values
         return dynamic_values
@@ -461,7 +465,7 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
             dynamic_argument: str,
             block_conf: dict[str, Any],
             block_content: dict[str, Any],
-    ):
+    ) -> None:
         if isinstance(dynamic_value, dict):
             if dynamic_argument in dynamic_value:
                 dpath.set(block_conf, dynamic_argument, dynamic_value[dynamic_argument], separator=DOT_SEPERATOR)
@@ -569,7 +573,7 @@ def find_match_bracket_index(s: str, open_bracket_idx: int) -> int:
     return res.get(open_bracket_idx) or -1
 
 
-def get_lookup_value(block_content, dynamic_argument) -> str:
+def get_lookup_value(block_content: dict[str, Any], dynamic_argument: str) -> str:
     lookup_value: str = ''
     if 'None' in block_content[dynamic_argument]:
         lookup_value = 'null'

@@ -1,8 +1,6 @@
 import unittest
 from pathlib import Path
 
-import pytest
-
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.github_actions.runner import Runner
@@ -215,7 +213,6 @@ class TestRunnerValid(unittest.TestCase):
         assert report.passed_checks[1].triggers[0] == {"workflow_dispatch", "schedule"}
         assert report.passed_checks[1].workflow_name == 'Supply Chain'
 
-    @pytest.mark.skip('Changed in this fork temporarily')
     def test_runner_on_build(self):
         # given
         file_path = Path(__file__).parent.parent.parent / ".github/workflows/build.yml"

@@ -1,0 +1,109 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vaultName": {
+            "type": "string",
+            "metadata": {
+                "description": "Specifies the name of the KeyVault, this vault must already exist."
+            }
+        },
+        "keyName": {
+            "type": "string",
+            "metadata": {
+                "description": "Specifies the name of the key to be created."
+            }
+        },
+        "crv": {
+            "type": "string",
+            "defaultValue": "",
+            "allowedValues": [
+                "",
+                "P-256",
+                "P-256K",
+                "P-384",
+                "P-521"
+            ],
+            "metadata": {
+                "description": "Elliptic curve name."
+            }
+        },
+        "exp" : {
+            "type": "int",
+            "defaultValue": "[dateTimeToEpoch(dateTimeAdd(utcNow(), 'P1Y'))]",
+            "metadata": {
+                "description": "Expiry date in seconds since 1970-01-01T00:00:00Z.  Defaults to 1 year from today."
+            }
+        },
+        "key_ops": {
+            "type": "array",
+            "defaultValue": [],
+            "metadata": {
+                "description": "JSON web key operations. Operations include: 'encrypt', 'decrypt', 'sign', 'verify', 'wrapKey', 'unwrapKey'"
+            }
+        },
+        "key_size": {
+            "type": "int",
+            "defaultValue": 4096,
+            "metadata": {
+                "description": "The key size in bits. For example: 2048, 3072, or 4096 for RSA."
+            }
+        },
+        "kty": {
+            "type": "string",
+            "defaultValue": "RSA",
+            "allowedValues": [
+                "EC",
+                "EC-HSM",
+                "RSA",
+                "RSA-HSM"
+            ],
+            "metadata": {
+                "description": "The type of key to create"
+            }
+        },
+        "tags": {
+            "type": "object",
+            "defaultValue": {},
+            "metadata": {
+                "description": "Tags to be assigned to the Key."
+            }
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.KeyVault/vaults/keys",
+            "apiVersion": "2021-10-01",
+            "name": "pass",
+            "tags": "[parameters('tags')]",
+            "properties": {
+                "attributes": {
+                    "exp": "[parameters('exp')]"
+                },
+                "crv": "[parameters('crv')]",
+                "kty": "[parameters('kty')]",
+                "key_ops": "[parameters('key_ops')]",
+                "key_size": "[parameters('key_size')]",
+                "rotationPolicy": {
+                    "attributes": {
+                        "expiryTime": "somevalue"
+                    }
+                },
+                "password": "asdasasd",
+                "acceptMarketingEmails": false,
+                "email": "jim.wolf@duck.com"
+            },
+            "plan": {
+                "name": "jim",
+                "publisher": "redwolf",
+                "product": "pike"
+            }
+        }
+    ],
+    "outputs": {
+        "key": {
+            "type": "object",
+            "value": "[reference(resourceId('Microsoft.KeyVault/vaults/keys', parameters('vaultName'), parameters('keyName')), '2021-10-01', 'Full')]"
+        }
+    }
+}

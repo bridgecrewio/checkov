@@ -4,6 +4,11 @@ metadata:
   category: "GENERAL_SECURITY"
 definition:
   and:
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - aws_guardduty_detector
+      operator: within
     - resource_types:
         - aws_guardduty_detector
       connected_resource_types:
@@ -12,19 +17,22 @@ definition:
       cond_type: connection
     - cond_type: "attribute"
       resource_types: 
-        - aws_guardduty_organization_configuration
-      attribute: auto_enable
-      operator: equals
-      value: true
-    - cond_type: "attribute"
-      resource_types: 
         - aws_guardduty_detector
       attribute: enable
       operator: equals
       value: true
-    - cond_type: filter
-      attribute: resource_type
-      value:
-        - aws_guardduty_detector
-      operator: within
-
+    - or:
+        - cond_type: "attribute"
+          resource_types:
+            - aws_guardduty_organization_configuration
+          attribute: auto_enable
+          operator: equals
+          value: true
+        - cond_type: "attribute"
+          resource_types:
+            - aws_guardduty_organization_configuration
+          attribute: auto_enable_organization_members
+          operator: within
+          value:
+            - "ALL"
+            - "NEW"

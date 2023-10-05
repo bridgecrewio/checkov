@@ -1,0 +1,4 @@
+pass:
+  - "AWS::EC2::SecurityGroup.secGroupName"
+evaluated_keys:
+  - 'Tags/*/Key'
