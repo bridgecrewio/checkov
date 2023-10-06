@@ -1131,7 +1131,7 @@ class BcPlatformIntegration:
 
     def setup_on_prem(self):
         if self.customer_run_config_response:
-            self.on_prem = self.customer_run_config_response.get('onPrem', True)
+            self.on_prem = self.customer_run_config_response.get('onPrem', False)
 
 
 bc_integration = BcPlatformIntegration()
