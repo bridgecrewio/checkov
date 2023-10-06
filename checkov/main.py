@@ -386,7 +386,7 @@ class Checkov:
                         logger.error('Please try setting the environment variable LOG_LEVEL=DEBUG and re-running the command, and provide the output to support', exc_info=True)
                     self.exit_run()
             else:
-                if bc_integration.support:
+                if bc_integration.support_flag_enabled:
                     logger.warning("--bc-api-key argument is required when using --support")
                 logger.debug('No API key found. Scanning locally only.')
                 self.config.include_all_checkov_policies = True
