@@ -1,10 +1,7 @@
-import os
-import unittest
 from pathlib import Path
 from unittest import mock
 
 import pytest
-from parameterized import parameterized_class
 from pytest_mock import MockerFixture
 
 from checkov.common.bridgecrew.bc_source import get_source_type
@@ -16,11 +13,12 @@ from tests.common.image_referencer.test_utils import (
     mock_get_license_statuses_async,
     mock_get_image_cached_result_async,
 )
+from tests.graph_utils.utils import GRAPH_FRAMEWORKS
 
 RESOURCES_PATH = Path(__file__).parent / "resources/k8s"
 
 
-@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
 def test_pod_resources(mocker: MockerFixture, graph_framework):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
@@ -79,7 +77,7 @@ def test_pod_resources(mocker: MockerFixture, graph_framework):
     assert len(sca_image_report.parsing_errors) == 0
 
 
-@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
 def test_cron_job_resources(mocker: MockerFixture, graph_framework):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
@@ -126,7 +124,7 @@ def test_cron_job_resources(mocker: MockerFixture, graph_framework):
     assert len(sca_image_report.parsing_errors) == 0
 
 
-@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
 def test_daemon_set_resources(mocker: MockerFixture, graph_framework):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
@@ -173,7 +171,7 @@ def test_daemon_set_resources(mocker: MockerFixture, graph_framework):
     assert len(sca_image_report.parsing_errors) == 0
 
 
-@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
 def test_deployment_resources(mocker: MockerFixture, graph_framework):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
@@ -220,7 +218,7 @@ def test_deployment_resources(mocker: MockerFixture, graph_framework):
     assert len(sca_image_report.parsing_errors) == 0
 
 
-@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
 def test_deployment_config_resources(mocker: MockerFixture, graph_framework):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
@@ -267,7 +265,7 @@ def test_deployment_config_resources(mocker: MockerFixture, graph_framework):
     assert len(sca_image_report.parsing_errors) == 0
 
 
-@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
 def test_job_resources(mocker: MockerFixture, graph_framework):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
@@ -314,7 +312,7 @@ def test_job_resources(mocker: MockerFixture, graph_framework):
     assert len(sca_image_report.parsing_errors) == 0
 
 
-@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
 def test_pod_template_resources(mocker: MockerFixture, graph_framework):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
@@ -361,7 +359,7 @@ def test_pod_template_resources(mocker: MockerFixture, graph_framework):
     assert len(sca_image_report.parsing_errors) == 0
 
 
-@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
 def test_replica_set_resources(mocker: MockerFixture, graph_framework):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
@@ -408,7 +406,7 @@ def test_replica_set_resources(mocker: MockerFixture, graph_framework):
     assert len(sca_image_report.parsing_errors) == 0
 
 
-@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
 def test_replication_controller_resources(mocker: MockerFixture, graph_framework):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
@@ -458,7 +456,7 @@ def test_replication_controller_resources(mocker: MockerFixture, graph_framework
     assert len(sca_image_report.parsing_errors) == 0
 
 
-@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
 def test_stateful_set_resources(mocker: MockerFixture, graph_framework):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
