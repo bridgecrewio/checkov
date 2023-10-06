@@ -386,7 +386,7 @@ class Checkov:
                         logger.error('Please try setting the environment variable LOG_LEVEL=DEBUG and re-running the command, and provide the output to support', exc_info=True)
                     self.exit_run()
             else:
-                if self.config.support:
+                if bc_integration.support:
                     logger.warning("--bc-api-key argument is required when using --support")
                 logger.debug('No API key found. Scanning locally only.')
                 self.config.include_all_checkov_policies = True
@@ -412,6 +412,13 @@ class Checkov:
                           '(but note that this will not include any custom platform configurations or policy metadata).',
                           file=sys.stderr)
                     self.exit_run()
+            bc_integration.setup_on_prem()
+            if bc_integration.on_prem:
+                # disable --support for on-premise integrations
+                bc_integration.support_flag_enabled = False
+                # disable sca_package, sca_image for on-premise integrations
+                if not outer_registry:
+                    runner_registry.runners = [runner for runner in runner_registry.runners if runner.check_type not in [CheckType.SCA_IMAGE, CheckType.SCA_PACKAGE]]
 
             bc_integration.get_prisma_build_policies(self.config.policy_metadata_filter)
 
@@ -633,7 +640,7 @@ class Checkov:
             raise
 
         finally:
-            if self.config.support:
+            if bc_integration.support_flag_enabled:
                 bc_integration.persist_logs_stream(logs_stream)
 
     def exit_run(self) -> None:
@@ -667,19 +674,19 @@ class Checkov:
     ) -> None:
         """Upload scan results and other relevant files"""
 
-        bc_integration.persist_repository(
-            root_dir=root_folder,
-            files=files,
-            excluded_paths=excluded_paths,
-            included_paths=included_paths,
-        )
-        if git_configuration_folders:
-            bc_integration.persist_git_configuration(os.getcwd(), git_configuration_folders)
-        if sca_supported_ir_report:
-            scan_reports_to_upload = [report for report in self.scan_reports if report.check_type != 'sca_image']
-            scan_reports_to_upload.append(sca_supported_ir_report)
-        else:
-            scan_reports_to_upload = self.scan_reports
+        scan_reports_to_upload = self.scan_reports
+        if not bc_integration.on_prem:
+            bc_integration.persist_repository(
+                root_dir=root_folder,
+                files=files,
+                excluded_paths=excluded_paths,
+                included_paths=included_paths,
+            )
+            if git_configuration_folders:
+                bc_integration.persist_git_configuration(os.getcwd(), git_configuration_folders)
+            if sca_supported_ir_report:
+                scan_reports_to_upload = [report for report in self.scan_reports if report.check_type != 'sca_image']
+                scan_reports_to_upload.append(sca_supported_ir_report)
         bc_integration.persist_scan_results(scan_reports_to_upload)
         bc_integration.persist_run_metadata(self.run_metadata)
         if bc_integration.enable_persist_graphs:

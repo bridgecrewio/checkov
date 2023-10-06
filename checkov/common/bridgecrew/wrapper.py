@@ -58,18 +58,20 @@ def _put_json_object(s3_client: S3Client, json_obj: Any, bucket: str, object_pat
         raise
 
 
-def _extract_checks_metadata(report: Report, full_repo_object_key: str) -> dict[str, dict[str, Any]]:
+def _extract_checks_metadata(report: Report, full_repo_object_key: str, on_prem: bool) -> dict[str, dict[str, Any]]:
     metadata: dict[str, dict[str, Any]] = defaultdict(dict)
     for check in itertools.chain(report.passed_checks, report.failed_checks, report.skipped_checks):
         metadata_key = f'{check.file_path}:{check.resource}'
         check_meta = {k: getattr(check, k, "") for k in check_metadata_keys}
         check_meta['file_object_path'] = full_repo_object_key + check.file_path
+        if on_prem:
+            check_meta['code_block'] = []
         metadata[metadata_key][check.check_id] = check_meta
 
     return metadata
 
 
-def reduce_scan_reports(scan_reports: list[Report]) -> dict[str, _ReducedScanReport]:
+def reduce_scan_reports(scan_reports: list[Report], on_prem: bool) -> dict[str, _ReducedScanReport]:
     """
     Transform checkov reports objects into compact dictionaries
     :param scan_reports: List of checkov output reports
@@ -79,6 +81,8 @@ def reduce_scan_reports(scan_reports: list[Report]) -> dict[str, _ReducedScanRep
     for report in scan_reports:
         check_type = report.check_type
         reduced_keys = secrets_check_reduced_keys if check_type == CheckType.SECRETS else check_reduced_keys
+        if on_prem:
+            reduced_keys = tuple(k for k in reduced_keys if k != 'code_block')
         reduced_scan_reports[check_type] = \
             {
                 "checks": {
@@ -136,7 +140,7 @@ def persist_logs_stream(logs_stream: StringIO, s3_client: S3Client, bucket: str,
 
 
 def enrich_and_persist_checks_metadata(
-        scan_reports: list[Report], s3_client: S3Client, bucket: str, full_repo_object_key: str
+        scan_reports: list[Report], s3_client: S3Client, bucket: str, full_repo_object_key: str, on_prem: bool
 ) -> dict[str, dict[str, str]]:
     """
     Save checks metadata into bridgecrew's platform
@@ -145,7 +149,7 @@ def enrich_and_persist_checks_metadata(
     checks_metadata_paths: dict[str, dict[str, str]] = {}
     for scan_report in scan_reports:
         check_type = scan_report.check_type
-        checks_metadata_object = _extract_checks_metadata(scan_report, full_repo_object_key)
+        checks_metadata_object = _extract_checks_metadata(scan_report, full_repo_object_key, on_prem)
         checks_metadata_object_path = f'{full_repo_object_key}/{checkov_results_prefix}/{check_type}/checks_metadata.json'
         dpath.new(checks_metadata_paths, f"{check_type}/checks_metadata_path", checks_metadata_object_path)
         _put_json_object(s3_client, checks_metadata_object, bucket, checks_metadata_object_path)
