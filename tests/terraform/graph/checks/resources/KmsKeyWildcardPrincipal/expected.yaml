@@ -1,0 +1,11 @@
+pass:
+  - "aws_kms_key.pass_0"
+  - "aws_kms_key.pass_1"
+  - "aws_kms_key.pass_2"
+  - "aws_kms_key.pass_3"
+fail:
+  - "aws_kms_key.fail_0"
+  - "aws_kms_key.fail_1"
+  - "aws_kms_key.fail_2"
+  - "aws_kms_key.fail_3"
+  - "aws_kms_key.fail_4"
