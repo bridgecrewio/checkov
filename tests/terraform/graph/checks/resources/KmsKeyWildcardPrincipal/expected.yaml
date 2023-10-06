@@ -9,3 +9,4 @@ fail:
   - "aws_kms_key.fail_2"
   - "aws_kms_key.fail_3"
   - "aws_kms_key.fail_4"
+  - "aws_kms_key.fail_5"
