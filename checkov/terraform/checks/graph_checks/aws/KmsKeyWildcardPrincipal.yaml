@@ -1,8 +1,8 @@
 ---
 metadata:
-  id: "CKV2_AWS_67"
+  id: "CKV_AWS_33"
   name: "Ensure KMS key policy does not contain wildcard (*) principal"
-  category: "GENERAL_SECURITY"
+  category: "IAM"
 definition:
   and:
     - cond_type: "connection"
