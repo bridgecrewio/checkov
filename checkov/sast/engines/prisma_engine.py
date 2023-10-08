@@ -212,8 +212,6 @@ class PrismaEngine(SastEngine):
         return self.create_report(result)
 
     def create_prisma_report(self, data: Dict[str, Any]) -> PrismaReport:
-        if not data.get("imports"):
-            data["imports"] = {}
         return PrismaReport(**data)
 
     def run_go_library_list_policies(self, document: Dict[str, Any]) -> SastPolicies:

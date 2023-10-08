@@ -59,12 +59,32 @@ class RuleMatch(BaseModel):
     matches: List[Match]  # noqa: CCE003
 
 
+class Function(BaseModel):
+    name: str
+    alias: str
+    line_number: int
+    code_block : str
+
+
+class Package(BaseModel):
+    alias: str
+    functions: List[Function]
+
+
 class PrismaReport(BaseModel):
     rule_match: Dict[SastLanguages, Dict[str, RuleMatch]]  # noqa: CCE003
     errors: Dict[str, List[str]]  # noqa: CCE003
     profiler: Dict[str, Profiler]  # noqa: CCE003
     run_metadata: Dict[str, Optional[Union[str, int, List[str]]]]  # noqa: CCE003
-    imports: Dict[SastLanguages, Dict[str, Dict[str, List[str]]]]  # noqa: CCE003
+    imports: Optional[Dict[SastLanguages, Dict[str, Dict[str, List[str]]]]] # noqa: CCE003
+    reachability_report: Optional[Dict[str, List[Dict[str,Dict[str, Package]]]]] # noqa: CCE003
+
+    def __init__(self, **data):
+        if data.get('imports') is None:
+            data['imports'] = {}
+        if data.get('reachability_report') is None:
+            data['reachability_report'] = {}
+        super().__init__(**data)
 
 
 def create_empty_report(languages: List[SastLanguages]) -> PrismaReport:
