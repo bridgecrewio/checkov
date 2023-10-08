@@ -1,19 +1,21 @@
 from __future__ import annotations
 
+import json
 import logging
 import os
 from collections import defaultdict
 from pathlib import Path
-from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, cast, TYPE_CHECKING
+from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, cast, TYPE_CHECKING, overload
 
-import deep_merge
+import hcl2
 
 from checkov.common.runners.base_runner import filter_ignored_paths, IGNORE_HIDDEN_DIRECTORY_ENV
-from checkov.common.typing import TFDefinitionKeyType
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
 from checkov.common.util.data_structures_utils import pickle_deepcopy
+from checkov.common.util.deep_merge import pickle_deep_merge
 from checkov.common.util.type_forcers import force_list
 from checkov.common.variables.context import EvaluationContext
+from checkov.terraform import validate_malformed_definitions, clean_bad_definitions
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.module import Module
 from checkov.terraform.module_loading.content import ModuleContent
@@ -21,9 +23,9 @@ from checkov.terraform.module_loading.module_finder import load_tf_modules
 from checkov.terraform.module_loading.registry import module_loader_registry as default_ml_registry, \
     ModuleLoaderRegistry
 from checkov.common.util.parser_utils import is_acceptable_module_param
-from checkov.terraform.modules.module_utils import load_or_die_quietly, safe_index, \
+from checkov.terraform.modules.module_utils import safe_index, \
     remove_module_dependency_from_path, \
-    clean_parser_types, serialize_definitions
+    clean_parser_types, serialize_definitions, _Hcl2Payload
 from checkov.terraform.modules.module_objects import TFModule, TFDefinitionKey
 
 if TYPE_CHECKING:
@@ -47,7 +49,7 @@ class TFParser:
         self.external_variables_data: list[tuple[str, Any, str]] = []
 
     def _init(self, directory: str,
-              out_evaluations_context: Dict[str, Dict[str, EvaluationContext]] | None,
+              out_evaluations_context: Dict[TFDefinitionKey, Dict[str, EvaluationContext]] | None,
               out_parsing_errors: Dict[str, Exception] | None,
               env_vars: Mapping[str, str] | None,
               download_external_modules: bool,
@@ -80,7 +82,7 @@ class TFParser:
     def parse_directory(
         self,
         directory: str,
-        out_evaluations_context: Dict[str, Dict[str, EvaluationContext]] | None = None,
+        out_evaluations_context: Dict[TFDefinitionKey, Dict[str, EvaluationContext]] | None = None,
         out_parsing_errors: Dict[str, Exception] | None = None,
         env_vars: Mapping[str, str] | None = None,
         download_external_modules: bool = False,
@@ -239,10 +241,15 @@ class TFParser:
                         resolved_loc_list = self.module_to_resolved[current_nested_data]
                     self.module_to_resolved[current_nested_data] = resolved_loc_list
 
-                    specified_vars = {k: v[0] if isinstance(v, list) and v else v for k, v in module_call_data.items()
-                                      if k != "source" and k != "version"}
-                    skipped_a_module = self.should_skip_a_module(specified_vars, ignore_unresolved_params)
-                    if skipped_a_module:
+                    specified_vars = {
+                        k: v[0] if isinstance(v, list) and v else v
+                        for k, v in module_call_data.items()
+                        if k != "source" and k != "version"
+                    }
+                    skip_module = self.should_skip_a_module(specified_vars, ignore_unresolved_params)
+                    if skip_module:
+                        # keep module skip info till the end
+                        skipped_a_module = True
                         continue
 
                     version = self.get_module_version(module_call_data)
@@ -292,7 +299,7 @@ class TFParser:
                                 resolved_loc_list.append(new_key)
 
                         if all_module_definitions:
-                            deep_merge.merge(all_module_definitions, module_definitions)
+                            pickle_deep_merge(all_module_definitions, module_definitions)
                         else:
                             all_module_definitions = module_definitions
 
@@ -301,7 +308,7 @@ class TFParser:
                         logging.warning(f"Unable to load module - source: {source}, version: {version}, error: {str(e)}")
 
         if all_module_definitions:
-            deep_merge.merge(self.out_definitions, all_module_definitions)
+            pickle_deep_merge(self.out_definitions, all_module_definitions)
         return skipped_a_module
 
     def parse_hcl_module(
@@ -314,8 +321,7 @@ class TFParser:
         excluded_paths: list[str] | None = None,
         vars_files: list[str] | None = None,
         external_modules_content_cache: dict[str, ModuleContent | None] | None = None,
-        create_graph: bool = True,
-    ) -> tuple[Module | None, dict[TFDefinitionKey, dict[str, Any]]]:
+    ) -> tuple[Module, dict[TFDefinitionKey, dict[str, Any]]]:
         tf_definitions = self.parse_directory(
             directory=source_dir, out_evaluations_context={},
             out_parsing_errors=parsing_errors if parsing_errors is not None else {},
@@ -326,9 +332,7 @@ class TFParser:
         tf_definitions = clean_parser_types(tf_definitions)
         tf_definitions = serialize_definitions(tf_definitions)
 
-        module = None
-        if create_graph:
-            module, tf_definitions = self.parse_hcl_module_from_tf_definitions(tf_definitions, source_dir, source)
+        module, tf_definitions = self.parse_hcl_module_from_tf_definitions(tf_definitions, source_dir, source)
 
         return module, tf_definitions
 
@@ -342,7 +346,6 @@ class TFParser:
         excluded_paths: list[str] | None = None,
         vars_files: list[str] | None = None,
         external_modules_content_cache: dict[str, ModuleContent | None] | None = None,
-        create_graph: bool = True,
     ) -> list[tuple[Module, list[dict[TFDefinitionKey, dict[str, Any]]]]]:
         """
         This function is similar to parse_hcl_module, except that it creates a list of tuples instead of a single tuple.
@@ -362,10 +365,9 @@ class TFParser:
         dirs_to_definitions = self.create_definition_by_dirs(tf_definitions)
 
         modules_and_definitions_tuple: list[tuple[Module, list[dict[TFDefinitionKey, dict[str, Any]]]]] = []
-        if create_graph:
-            for source_path, definitions in dirs_to_definitions.items():
-                module, parsed_tf_definitions = self.parse_hcl_module_from_multi_tf_definitions(definitions, source_path, source)
-                modules_and_definitions_tuple.append((module, parsed_tf_definitions))
+        for source_path, definitions in dirs_to_definitions.items():
+            module, parsed_tf_definitions = self.parse_hcl_module_from_multi_tf_definitions(definitions, source_path, source)
+            modules_and_definitions_tuple.append((module, parsed_tf_definitions))
 
         return modules_and_definitions_tuple
 
@@ -427,15 +429,32 @@ class TFParser:
 
         return None
 
+    @overload
     def parse_hcl_module_from_tf_definitions(
         self,
-        tf_definitions: Dict[TFDefinitionKey, Dict[str, Any]],
+        tf_definitions: dict[str, dict[str, Any]],
         source_dir: str,
         source: str,
-    ) -> Tuple[Module, Dict[TFDefinitionKey, Dict[str, Any]]]:
+    ) -> tuple[Module, dict[str, dict[str, Any]]]:
+        ...
+
+    @overload
+    def parse_hcl_module_from_tf_definitions(
+        self,
+        tf_definitions: dict[TFDefinitionKey, dict[str, Any]],
+        source_dir: str,
+        source: str,
+    ) -> tuple[Module, dict[TFDefinitionKey, dict[str, Any]]]:
+        ...
+
+    def parse_hcl_module_from_tf_definitions(
+        self,
+        tf_definitions: dict[str, dict[str, Any]] | dict[TFDefinitionKey, dict[str, Any]],
+        source_dir: str,
+        source: str,
+    ) -> tuple[Module, dict[str, dict[str, Any]] | dict[TFDefinitionKey, dict[str, Any]]]:
         module = self.get_new_module(
             source_dir=source_dir,
-            module_address_map=self.module_address_map,
             external_modules_source_map=self.external_modules_source_map,
         )
         self.add_tfvars(module, source)
@@ -457,7 +476,6 @@ class TFParser:
     ) -> tuple[Module, list[dict[TFDefinitionKey, dict[str, Any]]]]:
         module = self.get_new_module(
             source_dir=source_dir,
-            module_address_map=self.module_address_map,
             external_modules_source_map=self.external_modules_source_map,
         )
         self.add_tfvars_with_source_dir(module, source, source_dir)
@@ -509,20 +527,19 @@ class TFParser:
                 block = [{var_name: {"default": default}}]
                 module.add_blocks(BlockType.TF_VARIABLE, block, path, source)
 
-    def get_dirname(self, path: TFDefinitionKeyType) -> str:
-        if isinstance(path, TFDefinitionKey):
-            path = path.file_path
-        dirname_path = self.dirname_cache.get(path)
+    def get_dirname(self, path: TFDefinitionKey) -> str:
+        file_path = path.file_path
+        dirname_path = self.dirname_cache.get(file_path)
         if not dirname_path:
-            dirname_path = os.path.dirname(path)
-            self.dirname_cache[path] = dirname_path
+            dirname_path = os.path.dirname(file_path)
+            self.dirname_cache[file_path] = dirname_path
         return dirname_path
 
     def should_loaded_file(self, file: TFDefinitionKey, root_dir: str) -> bool:
         return not self.get_dirname(file) != root_dir
 
     def get_module_source(
-        self, module_call_data: dict[str, Any], module_call_name: str, file: TFDefinitionKeyType
+        self, module_call_data: dict[str, Any], module_call_name: str, file: TFDefinitionKey
     ) -> Optional[str]:
         source = module_call_data.get("source")
         if not source or not isinstance(source, list):
@@ -532,7 +549,7 @@ class TFParser:
             return None
 
         if source.startswith("./") or source.startswith("../"):
-            file_to_load = file.file_path if isinstance(file, TFDefinitionKey) else file
+            file_to_load = file.file_path
             source = os.path.normpath(os.path.join(os.path.dirname(remove_module_dependency_from_path(file_to_load)), source))
         return source
 
@@ -653,12 +670,10 @@ class TFParser:
     @staticmethod
     def get_new_module(
             source_dir: str,
-            module_address_map: dict[tuple[str, str], str],
             external_modules_source_map: dict[tuple[str, str], str],
     ) -> Module:
         return Module(
             source_dir=source_dir,
-            module_address_map=module_address_map,
             external_modules_source_map=external_modules_source_map,
         )
 
@@ -675,3 +690,33 @@ def get_tf_definition_object_from_module_dependency(
     if not is_nested_object(module_dependency):
         return TFDefinitionKey(path.file_path, TFModule(path=module_dependency.file_path, name=module_dependency_name))
     return TFDefinitionKey(path.file_path, TFModule(path=module_dependency.file_path, name=module_dependency_name, nested_tf_module=module_dependency.tf_source_modules))
+
+
+def load_or_die_quietly(
+    file: str | Path | os.DirEntry[str], parsing_errors: dict[str, Exception], clean_definitions: bool = True
+) -> Optional[_Hcl2Payload]:
+    """
+Load JSON or HCL, depending on filename.
+    :return: None if the file can't be loaded
+    """
+
+    file_path = os.fspath(file)
+    file_name = os.path.basename(file_path)
+
+    try:
+        logging.debug(f"Parsing {file_path}")
+
+        with open(file_path, "r", encoding="utf-8-sig") as f:
+            if file_name.endswith(".json"):
+                return cast("_Hcl2Payload", json.load(f))
+            else:
+                raw_data = hcl2.load(f)
+                non_malformed_definitions = validate_malformed_definitions(raw_data)
+                if clean_definitions:
+                    return clean_bad_definitions(non_malformed_definitions)
+                else:
+                    return non_malformed_definitions
+    except Exception as e:
+        logging.debug(f'failed while parsing file {file_path}', exc_info=True)
+        parsing_errors[file_path] = e
+        return None

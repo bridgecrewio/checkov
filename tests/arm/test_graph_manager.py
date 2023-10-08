@@ -24,7 +24,7 @@ EXAMPLES_DIR = Path(__file__).parent / "examples"
 def test_build_graph_from_definitions(graph_connector):
     # given
     test_file = str(EXAMPLES_DIR / "container_instance.json")
-    definitions, _ = get_files_definitions([test_file])
+    definitions, _, _ = get_files_definitions([test_file])
 
     graph_manager = ArmGraphManager(db_connector=graph_connector())
 

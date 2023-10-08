@@ -1,0 +1,95 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "virtualMachines_pike_name": {
+            "defaultValue": "pike",
+            "type": "String"
+        },
+        "disks_pike_OsDisk_1_8456bd2e1ebc4b3e9ece2b8770126050_externalid": {
+            "defaultValue": "/subscriptions/037ce662-dfc1-4b8b-a8a7-6c414b540ed6/resourceGroups/example-resources/providers/Microsoft.Compute/disks/pike_OsDisk_1_8456bd2e1ebc4b3e9ece2b8770126050",
+            "type": "String"
+        },
+        "networkInterfaces_pike_nic_externalid": {
+            "defaultValue": "/subscriptions/037ce662-dfc1-4b8b-a8a7-6c414b540ed6/resourceGroups/example-resources/providers/Microsoft.Network/networkInterfaces/pike_nic",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2023-03-01",
+            "name": "[parameters('virtualMachines_pike_name')]",
+            "location": "westeurope",
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_F2"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "Canonical",
+                        "offer": "0001-com-ubuntu-server-focal",
+                        "sku": "20_04-lts",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "osType": "Linux",
+                        "name": "[concat(parameters('virtualMachines_pike_name'), '_OsDisk_1_8456bd2e1ebc4b3e9ece2b8770126050')]",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "writeAcceleratorEnabled": false,
+                        "managedDisk": {
+                            "storageAccountType": "Standard_LRS",
+                            "id": "[parameters('disks_pike_OsDisk_1_8456bd2e1ebc4b3e9ece2b8770126050_externalid')]"
+                        },
+                        "deleteOption": "Detach",
+                        "diskSizeGB": 30
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "[parameters('virtualMachines_pike_name')]",
+                    "adminUsername": "adminuser",
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": true,
+                        "ssh": {
+                            "publicKeys": [
+                                {
+                                    "path": "/home/adminuser/.ssh/authorized_keys",
+                                    "keyData": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC5M1Z6i9r0/5ld5oWUhWIDI8j1DPc1sDrRqfPc4GMuotkpg2Iza7mX+JkieB36RmzRmhOjNZDh8FdtnoW3gtJ/dTkY8t2cnttAAD49BWmg9C9scfVXj5zNYdaDX9eYFY+a4UyYNkDZtmTnaK+i4r32lIAahcCd8L4vD8ltpw/LIZmI4FpShy019pXadYMVhPA3X6Tav8+BUW76enj1BKD2e5WqUOSvdxuiKcLIiJeyveq2Yl30kbmB0o3hVp7fQYrIwtEjz/11X29NcIgyb9wNuEGPq751Vfgwk6vh0tBUasrOGrh5wo3gHezBEtfOWXYadIxMzGW/a7QYRbXhcUfz\n"
+                                }
+                            ]
+                        },
+                        "provisionVMAgent": true,
+                        "patchSettings": {
+                            "patchMode": "ImageDefault",
+                            "assessmentMode": "ImageDefault"
+                        },
+                        "enableVMAgentPlatformUpdates": false
+                    },
+                    "secrets": [],
+                    "allowExtensionOperations": false,
+                    "requireGuestProvisionSignal": true
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[parameters('networkInterfaces_pike_nic_externalid')]",
+                            "properties": {
+                                "primary": true
+                            }
+                        }
+                    ]
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": false
+                    }
+                },
+                "priority": "Regular",
+                "extensionsTimeBudget": "PT1H30M"
+            }
+        }
+    ]
+}

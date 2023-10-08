@@ -10,7 +10,7 @@ EXAMPLES_DIR = Path(__file__).parent.parent / "examples"
 def test_build_graph():
     # given
     test_file = EXAMPLES_DIR / "container_instance.json"
-    definitions, _ = get_files_definitions([str(test_file)])
+    definitions, _, _ = get_files_definitions([str(test_file)])
 
     local_graph = ArmLocalGraph(definitions=definitions)
 

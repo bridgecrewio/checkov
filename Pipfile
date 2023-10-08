@@ -44,9 +44,8 @@ boto3-stubs-lite = {extras = ["s3"], version = "*"}
 # REMINDER: Update "install_requires" deps on setup.py when changing
 #
 bc-python-hcl2 = "==0.3.51"
-bc-detect-secrets = "==1.4.29"
+bc-detect-secrets = "==1.4.30"
 bc-jsonpath-ng = "==1.5.9"
-deep-merge = "*"
 tabulate = "*"
 colorama="*"
 termcolor="*"
@@ -87,8 +86,9 @@ schema = "*"
 requests = ">=2.27.0"
 yarl = "*"
 openai = "*"
-spdx-tools = "<0.8.0"
-license-expression = "==30.1.0"
+spdx-tools = ">=0.8.0,<0.9.0"
+license-expression = "*"
+rustworkx = "*"
 
 [requires]
-python_version = "3.7"
+python_version = "3.8"

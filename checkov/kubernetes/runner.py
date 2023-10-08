@@ -4,6 +4,8 @@ import logging
 import os
 from typing import Type, Any, TYPE_CHECKING
 
+from typing_extensions import TypeAlias  # noqa[TC002]
+
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.typing import LibraryGraphConnector
@@ -14,7 +16,7 @@ from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, merge_reports
 from checkov.common.bridgecrew.check_type import CheckType
-from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
+from checkov.common.runners.base_runner import BaseRunner
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.kubernetes.checks.resource.registry import registry
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
@@ -39,6 +41,9 @@ if TYPE_CHECKING:
     from checkov.common.images.image_referencer import Image
     from checkov.common.typing import _CheckResult, _EntityContext
 
+_KubernetesContext: TypeAlias = "dict[str, dict[str, Any]]"
+_KubernetesDefinitions: TypeAlias = "dict[str, list[dict[str, Any]]]"
+
 
 class TimeoutError(Exception):
     pass
@@ -48,7 +53,7 @@ def handle_timeout(signum: int, frame: FrameType | None) -> Any:
     raise TimeoutError('command got timeout')
 
 
-class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
+class Runner(ImageReferencerMixin[None], BaseRunner[_KubernetesDefinitions, _KubernetesContext, KubernetesGraphManager]):
     check_type = CheckType.KUBERNETES  # noqa: CCE003  # a static attribute
 
     def __init__(
@@ -69,8 +74,9 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
             graph_manager if graph_manager else KubernetesGraphManager(source=source, db_connector=db_connector)
 
         self.graph_registry = get_graph_checks_registry(self.check_type)
-        self.definitions: "dict[str, list[dict[str, Any]]]" = {}  # type:ignore[assignment]
+        self.definitions: _KubernetesDefinitions = {}
         self.definitions_raw: "dict[str, list[tuple[int, str]]]" = {}
+        self.context: _KubernetesContext | None = None
         self.report_mutator_data: "dict[str, dict[str, Any]]" = {}
         self.report_type = report_type
 
@@ -96,13 +102,13 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
                 for directory in external_checks_dir:
                     registry.load_external_checks(directory)
 
-                    if CHECKOV_CREATE_GRAPH and self.graph_registry:
+                    if self.graph_registry:
                         self.graph_registry.load_external_checks(directory)
 
             self.context = build_definitions_context(self.definitions, self.definitions_raw)
             self.spread_list_items()
 
-            if CHECKOV_CREATE_GRAPH and self.graph_manager:
+            if self.graph_manager:
                 logging.info("creating Kubernetes graph")
                 local_graph = self.graph_manager.build_graph_from_definitions(pickle_deepcopy(self.definitions))
                 logging.info("Successfully created Kubernetes graph")
@@ -114,7 +120,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[KubernetesGraphManager]):
         self.pbar.initiate(len(self.definitions))
         report = self.check_definitions(root_folder, runner_filter, report, collect_skip_comments=collect_skip_comments)
 
-        if CHECKOV_CREATE_GRAPH and self.graph_manager:
+        if self.graph_manager:
             graph_report = self.get_graph_checks_report(root_folder, runner_filter)
             merge_reports(report, graph_report)
 
