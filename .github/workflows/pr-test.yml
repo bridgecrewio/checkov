@@ -129,8 +129,7 @@ jobs:
           pipenv --rm || true
           pipenv --python ${{ matrix.python }}
 
-          if [ '${{ matrix.python }}' == '3.12' ]; then
-            pipenv run pip install -U setuptools pip
+          if [[ '${{ matrix.python }}' == '3.12' ]]; then
             pipenv run pip install aiohttp==3.9.0b0
           fi
 

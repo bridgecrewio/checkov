@@ -1,4 +1,4 @@
-from freezegun import freeze_time
+from time_machine import travel
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.output.extra_resource import ExtraResource
@@ -7,7 +7,7 @@ from checkov.common.output.spdx import SPDX
 from checkov.common.sca.output import create_report_cve_record
 
 
-@freeze_time("2022-12-24")
+@travel("2022-12-24")
 def test_sca_package_output():
     # given
     rootless_file_path = "requirements.txt"
@@ -85,7 +85,7 @@ def test_sca_package_output():
             "## Creation Information\n",
             "Creator: Tool: checkov\n",
             "Creator: Organization: bridgecrew (meet@bridgecrew.io)\n",
-            "Created: 2022-12-24T00:00:00+00:00Z\n",
+            "Created: 2022-12-23T23:00:00+00:00Z\n",
             "\n",
             "## Package Information\n",
             "PackageName: django\n",

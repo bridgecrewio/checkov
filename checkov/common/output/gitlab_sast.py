@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
@@ -37,7 +37,7 @@ class GitLabSast:
         }
 
     def _create_scan(self) -> dict[str, Any]:
-        current_datetime = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
+        current_datetime = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
         scanner = {
             "id": "checkov",
             "name": "Checkov",

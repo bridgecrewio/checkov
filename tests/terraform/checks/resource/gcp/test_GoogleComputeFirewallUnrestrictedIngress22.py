@@ -1,8 +1,7 @@
 import os
 import unittest
 from pathlib import Path
-
-import mock
+from unittest import mock
 
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.gcp.GoogleComputeFirewallUnrestrictedIngress22 import check

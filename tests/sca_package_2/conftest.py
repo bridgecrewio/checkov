@@ -1,12 +1,11 @@
 import os
 from pathlib import Path
 from unittest import mock
-
-from mock.mock import MagicMock
+from unittest.mock import MagicMock
 from typing import Dict, Any, List
-from pytest_mock import MockerFixture
 
 import pytest
+from pytest_mock import MockerFixture
 
 from checkov.common.bridgecrew.bc_source import SourceType
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration, bc_integration

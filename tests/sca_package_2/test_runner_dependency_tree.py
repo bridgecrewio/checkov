@@ -25,7 +25,7 @@ def test_run(sca_package_report_dt):
     assert cve_record is not None
     assert cve_record.bc_check_id == 'BC_CVE_2019_2391'
     assert cve_record.check_id == 'CKV_CVE_2019_2391'
-    assert cve_record.check_class == "mock.mock.MagicMock"  # not the real one
+    assert cve_record.check_class == "unittest.mock.MagicMock"  # not the real one
     assert cve_record.check_name == "SCA package scan"
     assert cve_record.check_result == {"result": CheckResult.FAILED}
     assert cve_record.code_block == [(0, 'bson: 1.0.9')]

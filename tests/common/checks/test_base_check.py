@@ -1,7 +1,7 @@
 import os
 import unittest
 
-import mock
+from unittest import mock
 from parameterized import parameterized
 
 from checkov.common.checks.base_check import BaseCheck
