@@ -80,6 +80,7 @@ jobs:
           # remove venv, if exists
           pipenv --rm || true
           pipenv --python ${{ matrix.python }}
+          pipenv run pip install -U setuptools pip
           pipenv install --dev -v
           pipenv run pip install redefine --index-url https://pip.redefine.dev
       - name: Unit tests
@@ -122,6 +123,7 @@ jobs:
           # remove venv, if exists
           pipenv --rm || true
           pipenv --python ${{ matrix.python }}
+          pipenv run pip install -U setuptools pip wheel
           pipenv run pip install pytest pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
