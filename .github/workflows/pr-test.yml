@@ -80,11 +80,6 @@ jobs:
           # remove venv, if exists
           pipenv --rm || true
           pipenv --python ${{ matrix.python }}
-
-          if [ ${{ matrix.python }} == '3.12' ]; then
-            pipenv run pip install aiohttp==3.9.0b0
-          fi
-
           pipenv install --dev -v
           pipenv run pip install redefine --index-url https://pip.redefine.dev
       - name: Unit tests
@@ -127,11 +122,6 @@ jobs:
           # remove venv, if exists
           pipenv --rm || true
           pipenv --python ${{ matrix.python }}
-
-          if [ ${{ matrix.python }} == '3.12' ]; then
-            pipenv run pip install aiohttp==3.9.0b0
-          fi
-
           pipenv run pip install pytest pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
