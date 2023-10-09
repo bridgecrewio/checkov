@@ -82,11 +82,11 @@ jobs:
           pipenv --python ${{ matrix.python }}
 
           if [ '${{ matrix.python }}' == '3.12' ]; then
-            pipenv run pip install -U setuptools pip
-            pipenv run pip install numpy>=1.26.0
+            pipenv install --skip-lock --dev -v
+          else
+            pipenv install --dev -v
           fi
 
-          pipenv install --dev -v
           pipenv run pip install redefine --index-url https://pip.redefine.dev
       - name: Unit tests
         env:
