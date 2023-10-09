@@ -26,16 +26,3 @@ definition:
       attribute: "policy.Statement[?(@.Effect == 'Allow')].Principal.AWS[*]"
       operator: "jsonpath_not_equals"
       value: "*"
-
-      # - cond_type: "attribute"
-      #   resource_types:
-      #   - "aws_ssoadmin_permission_set_inline_policy"
-      #   attribute: "inline_policy.Statement[?(@.Effect == Allow)].Action[*]"
-      #   operator: "jsonpath_not_equals"
-      #   value: "iam:*"
-      # - cond_type: "attribute"
-      #   resource_types:
-      #   - "data.aws_iam_policy_document"
-      #   attribute: "statement[?(@.effect == Allow)].actions[*]"
-      #   operator: "jsonpath_not_equals"
-      #   value: "iam:*"
