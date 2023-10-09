@@ -7,9 +7,9 @@ definition:
   and:
     - cond_type: "connection"
       resource_types:
-            - "aws_kms_key"
+        - "aws_kms_key_policy"
       connected_resource_types:
-            - "aws_kms_key_policy"
+        - "aws_kms_key"
       operator: "exists"
     - cond_type: "filter"
       attribute: "resource_type"
@@ -17,12 +17,25 @@ definition:
       value: "aws_kms_key"
     - cond_type: "attribute"
       resource_types:
-            - "aws_kms_key_policy"
+        - "aws_kms_key_policy"
       attribute: "policy.Statement[?(@.Effect == 'Allow' & @.Principal == '*')]"
       operator: "jsonpath_not_exists"
     - cond_type: "attribute"
       resource_types:
-            - "aws_kms_key_policy"
+        - "aws_kms_key_policy"
       attribute: "policy.Statement[?(@.Effect == 'Allow')].Principal.AWS[*]"
       operator: "jsonpath_not_equals"
       value: "*"
+
+      # - cond_type: "attribute"
+      #   resource_types:
+      #   - "aws_ssoadmin_permission_set_inline_policy"
+      #   attribute: "inline_policy.Statement[?(@.Effect == Allow)].Action[*]"
+      #   operator: "jsonpath_not_equals"
+      #   value: "iam:*"
+      # - cond_type: "attribute"
+      #   resource_types:
+      #   - "data.aws_iam_policy_document"
+      #   attribute: "statement[?(@.effect == Allow)].actions[*]"
+      #   operator: "jsonpath_not_equals"
+      #   value: "iam:*"
