@@ -111,7 +111,7 @@ resource "aws_kms_key" "fail_5" {
   policy      = <<POLICY
 {
     "Version": "2012-10-17",
-    "Statement": [        
+    "Statement": [
         {
             "Effect": "Allow",
             "Principal": {
@@ -121,7 +121,6 @@ resource "aws_kms_key" "fail_5" {
                 "kms:*"
             ],
             "Resource": "*"
-            }
         },
         {
             "Effect": "Allow",
@@ -142,88 +141,7 @@ resource "aws_kms_key" "fail_5" {
                 "kms:*"
             ],
             "Resource": "*"
-        },        {
-            "Effect": "Allow",
-            "Principal": {
-                "AWS": "arn:aws:iam::111122223333:root"
-            },
-            "Action": [
-                "kms:*"
-            ],
-            "Resource": "*"
-        },        {
-            "Effect": "Allow",
-            "Principal": {
-                "AWS": "arn:aws:iam::111122223333:root"
-            },
-            "Action": [
-                "kms:*"
-            ],
-            "Resource": "*"
-        },        {
-            "Effect": "Allow",
-            "Principal": {
-                "AWS": "arn:aws:iam::111122223333:root"
-            },
-            "Action": [
-                "kms:*"
-            ],
-            "Resource": "*"
-        },        {
-            "Effect": "Allow",
-            "Principal": {
-                "AWS": "arn:aws:iam::111122223333:root"
-            },
-            "Action": [
-                "kms:*"
-            ],
-            "Resource": "*"
-        },        {
-            "Effect": "Allow",
-            "Principal": {
-                "AWS": "arn:aws:iam::111122223333:root"
-            },
-            "Action": [
-                "kms:*"
-            ],
-            "Resource": "*"
-        },        {
-            "Effect": "Allow",
-            "Principal": {
-                "AWS": "arn:aws:iam::111122223333:root"
-            },
-            "Action": [
-                "kms:*"
-            ],
-            "Resource": "*"
-        },        {
-            "Effect": "Allow",
-            "Principal": {
-                "AWS": "arn:aws:iam::111122223333:root"
-            },
-            "Action": [
-                "kms:*"
-            ],
-            "Resource": "*"
-        },        {
-            "Effect": "Allow",
-            "Principal": {
-                "AWS": "arn:aws:iam::111122223333:root"
-            },
-            "Action": [
-                "kms:*"
-            ],
-            "Resource": "*"
-        },        {
-            "Effect": "Allow",
-            "Principal": {
-                "AWS": "arn:aws:iam::111122223333:root"
-            },
-            "Action": [
-                "kms:*"
-            ],
-            "Resource": "*"
-        },      
+        },
         {
             "Effect": "Allow",
             "Principal": {
@@ -233,101 +151,7 @@ resource "aws_kms_key" "fail_5" {
                 "kms:*"
             ],
             "Resource": "*"
-        },        {
-            "Effect": "Allow",
-            "Principal": {
-                "AWS": "arn:aws:iam::111122223333:root"
-            },
-            "Action": [
-                "kms:*"
-            ],
-            "Resource": "*"
-        },        {
-            "Effect": "Allow",
-            "Principal": {
-                "AWS": "arn:aws:iam::111122223333:root"
-            },
-            "Action": [
-                "kms:*"
-            ],
-            "Resource": "*"
-        },        {
-            "Effect": "Allow",
-            "Principal": {
-                "AWS": "arn:aws:iam::111122223333:root"
-            },
-            "Action": [
-                "kms:*"
-            ],
-            "Resource": "*"
-        },        {
-            "Effect": "Allow",
-            "Principal": {
-                "AWS": "arn:aws:iam::111122223333:root"
-            },
-            "Action": [
-                "kms:*"
-            ],
-            "Resource": "*"
-        },        {
-            "Effect": "Allow",
-            "Principal": {
-                "AWS": "arn:aws:iam::111122223333:root"
-            },
-            "Action": [
-                "kms:*"
-            ],
-            "Resource": "*"
-        },    
-            {
-            "Effect": "Allow",
-            "Principal": {
-                "AWS": "arn:aws:iam::111122223333:root"
-            },
-            "Action": [
-                "kms:*"
-            ],
-            "Resource": "*"
-        },      
-          {
-            "Effect": "Allow",
-            "Principal": {
-                "AWS": "arn:aws:iam::111122223333:root"
-            },
-            "Action": [
-                "kms:*"
-            ],
-            "Resource": "*"
-        },    
-            {
-            "Effect": "Allow",
-            "Principal": {
-                "AWS": "arn:aws:iam::111122223333:root"
-            },
-            "Action": [
-                "kms:*"
-            ],
-            "Resource": "*"
-        },    
-            {
-            "Effect": "Allow",
-            "Principal": {
-                "AWS": "arn:aws:iam::111122223333:root"
-            },
-            "Action": [
-                "kms:*"
-            ],
-            "Resource": "*"
-        },        {
-            "Effect": "Allow",
-            "Principal": {
-                "AWS": "arn:aws:iam::111122223333:root"
-            },
-            "Action": [
-                "kms:*"
-            ],
-            "Resource": "*"
-        },      
+        },
         {
             "Effect": "Allow",
             "Principal": {
@@ -337,7 +161,7 @@ resource "aws_kms_key" "fail_5" {
                 "kms:*"
             ],
             "Resource": "*"
-        },      
+        },
         {
             "Effect": "Allow",
             "Principal": {
@@ -347,7 +171,197 @@ resource "aws_kms_key" "fail_5" {
                 "kms:*"
             ],
             "Resource": "*"
-        },        
+        },
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::111122223333:root"
+            },
+            "Action": [
+                "kms:*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::111122223333:root"
+            },
+            "Action": [
+                "kms:*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::111122223333:root"
+            },
+            "Action": [
+                "kms:*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::111122223333:root"
+            },
+            "Action": [
+                "kms:*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::111122223333:root"
+            },
+            "Action": [
+                "kms:*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::111122223333:root"
+            },
+            "Action": [
+                "kms:*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::111122223333:root"
+            },
+            "Action": [
+                "kms:*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::111122223333:root"
+            },
+            "Action": [
+                "kms:*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::111122223333:root"
+            },
+            "Action": [
+                "kms:*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::111122223333:root"
+            },
+            "Action": [
+                "kms:*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::111122223333:root"
+            },
+            "Action": [
+                "kms:*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::111122223333:root"
+            },
+            "Action": [
+                "kms:*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::111122223333:root"
+            },
+            "Action": [
+                "kms:*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::111122223333:root"
+            },
+            "Action": [
+                "kms:*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::111122223333:root"
+            },
+            "Action": [
+                "kms:*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::111122223333:root"
+            },
+            "Action": [
+                "kms:*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::111122223333:root"
+            },
+            "Action": [
+                "kms:*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::111122223333:root"
+            },
+            "Action": [
+                "kms:*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::111122223333:root"
+            },
+            "Action": [
+                "kms:*"
+            ],
+            "Resource": "*"
+        },
         {
             "Sid": "AccessAnalyzerAndConfigPermissions",
             "Effect": "Allow",
