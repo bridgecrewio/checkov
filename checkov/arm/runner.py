@@ -18,7 +18,7 @@ from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.bridgecrew.check_type import CheckType
-from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
+from checkov.common.runners.base_runner import BaseRunner
 from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.common.util.secrets import omit_secret_value_from_checks
 from checkov.runner_filter import RunnerFilter
@@ -80,7 +80,7 @@ class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
             for directory in external_checks_dir:
                 arm_resource_registry.load_external_checks(directory)
 
-                if CHECKOV_CREATE_GRAPH and self.graph_registry:
+                if self.graph_registry:
                     self.graph_registry.load_external_checks(directory)
 
         if files:
@@ -96,7 +96,7 @@ class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
 
         report.add_parsing_errors(parsing_errors)
 
-        if CHECKOV_CREATE_GRAPH and self.graph_registry and self.graph_manager:
+        if self.graph_registry and self.graph_manager:
             logging.info("Creating ARM graph")
             local_graph = self.graph_manager.build_graph_from_definitions(definitions=self.definitions)
             logging.info("Successfully created ARM graph")
@@ -109,7 +109,7 @@ class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
         self.add_python_check_results(report=report, runner_filter=runner_filter, root_folder=root_folder)
 
         # run graph checks
-        if CHECKOV_CREATE_GRAPH and self.graph_registry:
+        if self.graph_registry:
             self.add_graph_check_results(report=report, runner_filter=runner_filter)
 
         return report

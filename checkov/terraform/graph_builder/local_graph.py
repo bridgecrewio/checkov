@@ -5,9 +5,7 @@ import os
 from collections import defaultdict
 from functools import partial
 from pathlib import Path
-from typing import List, Optional, Union, Any, Dict, overload
-
-from typing_extensions import TypedDict
+from typing import List, Optional, Union, Any, Dict, overload, TypedDict
 
 import checkov.terraform.graph_builder.foreach.consts
 from checkov.common.graph.graph_builder import Edge
