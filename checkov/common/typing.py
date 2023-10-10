@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, TypeVar, Set, Union
-from typing_extensions import TypeAlias, TypedDict
+from typing import TYPE_CHECKING, Any, Callable, Dict, TypeVar, Set, Union, TypedDict
+from typing_extensions import TypeAlias  # noqa[TC002]
 
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.severities import Severity
