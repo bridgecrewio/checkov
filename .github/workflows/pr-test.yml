@@ -35,7 +35,7 @@ jobs:
       PYTHON_VERSION: "3.8"
     steps:
       - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608  # v3
-      - uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1  # v4
+      - uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236  # v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Install cfn-lint
@@ -54,13 +54,13 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.7", "3.8", "3.9", "3.10", "3.11"]  # TODO: remove 3.7 end of September
+        python: ["3.8", "3.9", "3.10", "3.11"]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608  # v3
       - name: Set up Python ${{ matrix.python }}
-        uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1  # v4
+        uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236  # v4
         with:
           python-version: ${{ matrix.python }}
           cache: "pipenv"
@@ -79,12 +79,7 @@ jobs:
           # remove venv, if exists
           pipenv --rm || true
           pipenv --python ${{ matrix.python }}
-          # TODO: remove 3.7 end of September
-          if [ ${{ matrix.python }} == '3.7' ]; then
-            pipenv install --skip-lock --dev -v
-          else
-            pipenv install --dev -v
-          fi
+          pipenv install --dev -v
           pipenv run pip install redefine --index-url https://pip.redefine.dev
       - name: Unit tests
         env:
@@ -104,7 +99,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608  # v3
-      - uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1  # v4
+      - uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236  # v4
         with:
           python-version: ${{ matrix.python }}
           cache: "pipenv"
@@ -154,7 +149,7 @@ jobs:
     runs-on: [self-hosted, public, linux, x64]
     steps:
       - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608  # v3
-      - uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1  # v4
+      - uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236  # v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: "pipenv"
@@ -199,7 +194,7 @@ jobs:
       WORKING_DIRECTORY: ./dogfood_tests
     steps:
       - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608  # v3
-      - uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1  # v4
+      - uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236  # v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: "pipenv"

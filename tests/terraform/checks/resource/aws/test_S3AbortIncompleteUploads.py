@@ -22,6 +22,7 @@ class TestS3AbortIncompleteUploads(unittest.TestCase):
             "aws_s3_bucket_lifecycle_configuration.pass",
             "aws_s3_bucket_lifecycle_configuration.pass2",
             "aws_s3_bucket_lifecycle_configuration.pass3",
+            "aws_s3_bucket_lifecycle_configuration.resource_with_dynamic_rule_pass4"
         }
         failing_resources = {
             "aws_s3_bucket_lifecycle_configuration.fail",
@@ -39,7 +40,6 @@ class TestS3AbortIncompleteUploads(unittest.TestCase):
 
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)
-
 
 if __name__ == "__main__":
     unittest.main()

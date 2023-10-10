@@ -23,6 +23,8 @@ class TestSecurityOperations(unittest.TestCase):
             "/pass1.json",
             "/pass2.yaml",
             "/pass2.json",
+            "/pass3.yaml",
+            "/pass3.json",
         }
         failing_resources = {
             "/fail1.yaml",
