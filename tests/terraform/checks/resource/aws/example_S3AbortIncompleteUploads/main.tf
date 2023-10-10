@@ -197,3 +197,29 @@ resource "aws_s3_bucket_lifecycle_configuration" "pass3" {
     status = "Enabled"
   }
 }
+
+resource "aws_s3_bucket_lifecycle_configuration" "resource_with_dynamic_rule_pass4" {
+  bucket = aws_s3_bucket.main.bucket
+
+  rule {
+    id     = "abort_incomplete_multipart_upload"
+    status = "Enabled"
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = var.config.abort_incomplete_multipart_upload
+    }
+  }
+
+  dynamic "rule" {
+    for_each = local.lifecycle_rules.storage_class
+
+    content {
+      id     = "storage_class_is_${var.config.storage_class}"
+      status = "Enabled"
+
+      transition {
+        storage_class = var.config.storage_class
+      }
+    }
+  }
+}

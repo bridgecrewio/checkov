@@ -16,7 +16,7 @@ from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, merge_reports
 from checkov.common.bridgecrew.check_type import CheckType
-from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
+from checkov.common.runners.base_runner import BaseRunner
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.kubernetes.checks.resource.registry import registry
 from checkov.kubernetes.graph_builder.local_graph import KubernetesLocalGraph
@@ -102,13 +102,13 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_KubernetesDefinitions, _Kub
                 for directory in external_checks_dir:
                     registry.load_external_checks(directory)
 
-                    if CHECKOV_CREATE_GRAPH and self.graph_registry:
+                    if self.graph_registry:
                         self.graph_registry.load_external_checks(directory)
 
             self.context = build_definitions_context(self.definitions, self.definitions_raw)
             self.spread_list_items()
 
-            if CHECKOV_CREATE_GRAPH and self.graph_manager:
+            if self.graph_manager:
                 logging.info("creating Kubernetes graph")
                 local_graph = self.graph_manager.build_graph_from_definitions(pickle_deepcopy(self.definitions))
                 logging.info("Successfully created Kubernetes graph")
@@ -120,7 +120,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_KubernetesDefinitions, _Kub
         self.pbar.initiate(len(self.definitions))
         report = self.check_definitions(root_folder, runner_filter, report, collect_skip_comments=collect_skip_comments)
 
-        if CHECKOV_CREATE_GRAPH and self.graph_manager:
+        if self.graph_manager:
             graph_report = self.get_graph_checks_report(root_folder, runner_filter)
             merge_reports(report, graph_report)
 

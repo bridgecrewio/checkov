@@ -1,6 +1,70 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.4.51...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.5.6...HEAD)
+
+## [2.5.6](https://github.com/bridgecrewio/checkov/compare/2.5.3...2.5.6) - 2023-10-05
+
+### Feature
+
+- **arm:**  implement CKV_AZURE_95 for ARM - [#5500](https://github.com/bridgecrewio/checkov/pull/5500)
+- **general:** Added source and target to edge data - [#5621](https://github.com/bridgecrewio/checkov/pull/5621)
+
+### Bug Fix
+
+- **terraform_plan:** add azurerm_portal_dashboard to jsonify list - [#5618](https://github.com/bridgecrewio/checkov/pull/5618)
+- **terraform:** check if the dynamic name is one of the resources block - [#5607](https://github.com/bridgecrewio/checkov/pull/5607)
+
+## [2.5.3](https://github.com/bridgecrewio/checkov/compare/2.4.61...2.5.3) - 2023-10-04
+
+### Breaking Change
+
+- **general:** remove Python 3.7 - [#5605](https://github.com/bridgecrewio/checkov/pull/5605)
+- **graph:** remove CHECKOV_CREATE_GRAPH env var to control graph creation - [#5606](https://github.com/bridgecrewio/checkov/pull/5606)
+
+### Bug Fix
+
+- **dockerfile:** fix Docker image scan - [#5617](https://github.com/bridgecrewio/checkov/pull/5617)
+- **openapi:** Take into account that security is at the root level of your OpenAPI specification. - [#5603](https://github.com/bridgecrewio/checkov/pull/5603)
+- **terraform:** stop CKV_GCP_43 crashing when not a string - [#5561](https://github.com/bridgecrewio/checkov/pull/5561)
+
+## [2.4.61](https://github.com/bridgecrewio/checkov/compare/2.4.59...2.4.61) - 2023-10-03
+
+### Bug Fix
+
+- **terraform:** fix upload resource_subgraph_maps - [#5615](https://github.com/bridgecrewio/checkov/pull/5615)
+
+### Platform
+
+- **terraform:** Upload resource subgraph map - [#5612](https://github.com/bridgecrewio/checkov/pull/5612)
+
+## [2.4.59](https://github.com/bridgecrewio/checkov/compare/2.4.58...2.4.59) - 2023-10-02
+
+### Platform
+
+- **terraform:** fix in subgraphs uploads - [#5610](https://github.com/bridgecrewio/checkov/pull/5610)
+
+## [2.4.58](https://github.com/bridgecrewio/checkov/compare/2.4.57...2.4.58) - 2023-10-01
+
+### Platform
+
+- **terraform:** upload tf sub graphs - [#5596](https://github.com/bridgecrewio/checkov/pull/5596)
+
+## [2.4.57](https://github.com/bridgecrewio/checkov/compare/2.4.55...2.4.57) - 2023-09-29
+
+### Feature
+
+- **terraform:** Ensure ephemeral disks are used for OS disks - [#5584](https://github.com/bridgecrewio/checkov/pull/5584)
+- **terraform:** Ensure that App Service plan is zone redundant - [#5577](https://github.com/bridgecrewio/checkov/pull/5577)
+- **terraform:** Ensure that the AKS cluster encrypt temp disks, caches, and data flows between Compute and Storage resources - [#5588](https://github.com/bridgecrewio/checkov/pull/5588)
+
+## [2.4.55](https://github.com/bridgecrewio/checkov/compare/2.4.51...2.4.55) - 2023-09-28
+
+### Feature
+
+- **general:** Add image referencer rustworkx support - [#5564](https://github.com/bridgecrewio/checkov/pull/5564)
+- **general:** Add rustworkx support - [#5595](https://github.com/bridgecrewio/checkov/pull/5595)
+- **terraform:** Adding 2 new AWS policies - [#5599](https://github.com/bridgecrewio/checkov/pull/5599)
+- **terraform:** simply IMDSv2 checks - [#5601](https://github.com/bridgecrewio/checkov/pull/5601)
 
 ## [2.4.51](https://github.com/bridgecrewio/checkov/compare/2.4.50...2.4.51) - 2023-09-27
 

@@ -12,9 +12,7 @@ import sys
 from collections import defaultdict
 from collections.abc import Iterable
 from pathlib import Path
-from typing import List, Dict, Any, Optional, cast, TYPE_CHECKING, Type
-
-from typing_extensions import Literal
+from typing import List, Dict, Any, Optional, cast, TYPE_CHECKING, Type, Literal
 
 from checkov.common.bridgecrew.code_categories import CodeCategoryMapping, CodeCategoryType
 from checkov.common.bridgecrew.platform_integration import bc_integration
@@ -37,7 +35,7 @@ from checkov.common.output.sarif import Sarif
 from checkov.common.output.spdx import SPDX
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
-from checkov.common.typing import _ExitCodeThresholds, _BaseRunner, _ScaExitCodeThresholds
+from checkov.common.typing import _ExitCodeThresholds, _BaseRunner, _ScaExitCodeThresholds, LibraryGraph
 from checkov.common.util import data_structures_utils
 from checkov.common.util.banner import tool as tool_name
 from checkov.common.util.data_structures_utils import pickle_deepcopy
@@ -53,8 +51,6 @@ if TYPE_CHECKING:
     from checkov.common.output.baseline import Baseline
     from checkov.common.runners.base_runner import BaseRunner  # noqa
     from checkov.runner_filter import RunnerFilter
-    from igraph import Graph
-    from networkx import DiGraph
 
 CONSOLE_OUTPUT = "console"
 CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
@@ -97,7 +93,8 @@ class RunnerRegistry:
         self._check_type_to_report_map: dict[str, Report] = {}  # used for finding reports with the same check type
         self.licensing_integration = licensing_integration  # can be maniuplated by unit tests
         self.secrets_omitter_class = secrets_omitter_class
-        self.check_type_to_graph: dict[str, Graph | DiGraph] = {}
+        self.check_type_to_graph: dict[str, list[tuple[LibraryGraph, Optional[str]]]] = {}
+        self.check_type_to_resource_subgraph_map: dict[str, dict[str, str]] = {}
         for runner in runners:
             if isinstance(runner, image_runner):
                 runner.image_referencers = self.image_referencing_runners
@@ -126,7 +123,7 @@ class RunnerRegistry:
                 # This is the only runner, so raise a clear indication of failure
                 raise ModuleNotEnabledError(f'The framework "{runner_check_type}" is part of the "{self.licensing_integration.get_subscription_for_runner(runner_check_type).name}" module, which is not enabled in the platform')
         else:
-            def _parallel_run(runner: _BaseRunner) -> tuple[Report | list[Report], str | None, DiGraph | Graph | None]:
+            def _parallel_run(runner: _BaseRunner) -> tuple[Report | list[Report], str | None, Optional[list[tuple[LibraryGraph, Optional[str]]]], Optional[dict[str, str]]]:
                 report = runner.run(
                     root_folder=root_folder,
                     external_checks_dir=external_checks_dir,
@@ -140,8 +137,9 @@ class RunnerRegistry:
                     report = Report(check_type=runner.check_type)
 
                 if runner.graph_manager:
-                    return report, runner.check_type, runner.graph_manager.get_reader_endpoint()
-                return report, None, None
+                    return report, runner.check_type, self.extract_graphs_from_runner(runner), \
+                        runner.resource_subgraph_map
+                return report, None, None, None
 
             valid_runners = []
             invalid_runners = []
@@ -172,13 +170,18 @@ class RunnerRegistry:
                                                                    group_size=1)
             reports = []
             full_check_type_to_graph = {}
+            full_check_type_to_resource_subgraph_map = {}
             for result in parallel_runner_results:
                 if result is not None:
-                    report, check_type, graph = result
+                    report, check_type, graphs, resource_subgraph_map = result
                     reports.append(report)
-                    if check_type is not None and graph is not None:
-                        full_check_type_to_graph[check_type] = graph
+                    if check_type is not None:
+                        if graphs is not None:
+                            full_check_type_to_graph[check_type] = graphs
+                        if resource_subgraph_map is not None:
+                            full_check_type_to_resource_subgraph_map[check_type] = resource_subgraph_map
             self.check_type_to_graph = full_check_type_to_graph
+            self.check_type_to_resource_subgraph_map = full_check_type_to_resource_subgraph_map
 
         merged_reports = self._merge_reports(reports)
         if bc_integration.bc_api_key:
@@ -192,8 +195,11 @@ class RunnerRegistry:
             self._handle_report(scan_report, repo_root_for_plan_enrichment)
 
         if not self.check_type_to_graph:
-            self.check_type_to_graph = {runner.check_type: runner.graph_manager.get_reader_endpoint() for runner
+            self.check_type_to_graph = {runner.check_type: self.extract_graphs_from_runner(runner) for runner
                                         in self.runners if runner.graph_manager}
+        if not self.check_type_to_resource_subgraph_map:
+            self.check_type_to_resource_subgraph_map = {runner.check_type: runner.resource_subgraph_map for runner in
+                                                        self.runners if runner.resource_subgraph_map is not None}
         return self.scan_reports
 
     def _merge_reports(self, reports: Iterable[Report | list[Report]]) -> list[Report]:
@@ -750,3 +756,13 @@ class RunnerRegistry:
             git_org, git_repository = "", ""
 
         return git_org, git_repository
+
+    @staticmethod
+    def extract_graphs_from_runner(runner: _BaseRunner) -> list[tuple[LibraryGraph, Optional[str]]]:
+        # exist only for terraform
+        all_graphs = getattr(runner, 'all_graphs', None)
+        if all_graphs:
+            return all_graphs   # type:ignore[no-any-return]
+        elif runner.graph_manager:
+            return [(runner.graph_manager.get_reader_endpoint(), None)]
+        return []
