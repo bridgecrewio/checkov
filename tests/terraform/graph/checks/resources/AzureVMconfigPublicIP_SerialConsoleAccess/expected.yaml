@@ -1,0 +1,4 @@
+pass:
+  - "azurerm_network_interface.pass_int"
+fail:
+  - "azurerm_network_interface.fail_int"

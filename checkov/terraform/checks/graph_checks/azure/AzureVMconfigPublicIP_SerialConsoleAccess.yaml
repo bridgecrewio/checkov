@@ -1,0 +1,28 @@
+metadata:
+  id: "CKV_AZURE_228"
+  name: "Ensure Azure VM is not configured with public IP and serial console access"
+  category: "GENERAL_SECURITY"
+
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - azurerm_network_interface
+      operator: within
+
+    - resource_types:
+        - azurerm_network_interface
+      connected_resource_types:
+        - azurerm_linux_virtual_machine
+        - azurerm_windows_virtual_machine
+        - azurerm_virtual_machine
+      operator: exists
+      cond_type: connection
+
+    - cond_type: attribute
+      resource_types:
+         - azurerm_network_interface
+      attribute: ip_configuration.public_ip_address_id
+      operator: length_greater_than
+      value: 0
