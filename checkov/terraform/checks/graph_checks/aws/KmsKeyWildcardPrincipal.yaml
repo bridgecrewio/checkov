@@ -27,11 +27,3 @@ definition:
         - "aws_kms_key"
       attribute: "policy.Statement[?(@.Effect == 'Allow' & @.Principal == '*')]"
       operator: "jsonpath_not_exists"
-
-    # - cond_type: "attribute"
-    #   resource_types:
-    #     - "aws_kms_key"
-    #   attribute: "policy.Statement[?(@.Effect == 'Allow')].Principal.AWS[*]"
-    #   operator: "jsonpath_not_within"
-    #   value: 
-    #     - "*"
