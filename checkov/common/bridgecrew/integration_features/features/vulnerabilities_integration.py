@@ -11,7 +11,7 @@ from checkov.common.output.record import SCA_PACKAGE_SCAN_CHECK_NAME, Record
 from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.sast.consts import SastLanguages
 from checkov.sast.report import SastData, SastReport
-from checkov.sca_package_2.consts import get_package_by_str, ScaPackageFile, sca_package_to_sast_lang_map
+from checkov.common.sca.consts import get_package_by_str, ScaPackageFile, sca_package_to_sast_lang_map
 
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
