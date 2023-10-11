@@ -5,24 +5,33 @@ metadata:
   category: "IAM"
 definition:
   and:
-    - cond_type: "connection"
+    - cond_type: "attribute"
       resource_types:
-        - "aws_kms_key_policy"
-      connected_resource_types:
         - "aws_kms_key"
+      attribute: "policy"
       operator: "exists"
-    - cond_type: "filter"
-      attribute: "resource_type"
-      operator: "within"
-      value: "aws_kms_key"
     - cond_type: "attribute"
       resource_types:
-        - "aws_kms_key_policy"
-      attribute: "policy.Statement[?(@.Effect == 'Allow' & @.Principal == '*')]"
-      operator: "jsonpath_not_exists"
+        - "aws_kms_key"
+      attribute: "policy.Statement[?(@.Effect == 'Allow')].Principal[*]"
+      operator: "jsonpath_not_equals"
+      value: "*"
     - cond_type: "attribute"
       resource_types:
-        - "aws_kms_key_policy"
+        - "aws_kms_key"
       attribute: "policy.Statement[?(@.Effect == 'Allow')].Principal.AWS[*]"
       operator: "jsonpath_not_equals"
       value: "*"
+    - cond_type: "attribute"
+      resource_types:
+        - "aws_kms_key"
+      attribute: "policy.Statement[?(@.Effect == 'Allow' & @.Principal == '*')]"
+      operator: "jsonpath_not_exists"
+
+    # - cond_type: "attribute"
+    #   resource_types:
+    #     - "aws_kms_key"
+    #   attribute: "policy.Statement[?(@.Effect == 'Allow')].Principal.AWS[*]"
+    #   operator: "jsonpath_not_within"
+    #   value: 
+    #     - "*"
