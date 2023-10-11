@@ -56,7 +56,7 @@ def find_modules(path: str) -> List[ModuleDownload]:
                             # also extract the name for easier mapping against the TF modules.json file
                             match = re.match(MODULE_NAME_PATTERN, line)
                             if match:
-                                curr_md.module_name= match.group("name")
+                                curr_md.module_name = match.group("name")
 
                             continue
                     else:
