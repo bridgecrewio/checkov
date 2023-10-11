@@ -1,39 +1,34 @@
-from typing import List
+from __future__ import annotations
+
+from typing import List, Any
 
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 
 class LambdaServicePermission(BaseResourceCheck):
-    def __init__(self):
-        # This is the full description of your check
+    def __init__(self) -> None:
         description = "Ensure that AWS Lambda function permissions delegated to AWS services are limited by SourceArn or SourceAccount"
-
-        # This is the Unique ID for your check
         id = "CKV_AWS_364"
-
-        # These are the terraform objects supported by this check (ex: aws_iam_policy_document)
         supported_resources = ('aws_lambda_permission',)
-
-        # Valid CheckCategories are defined in checkov/common/models/enums.py
-        categories = (CheckCategories.GENERAL_SECURITY,)
+        categories = (CheckCategories.IAM,)
         super().__init__(name=description, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
+    def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
         # Replace this with the custom logic for your check
         principal = conf.get("principal")
         if principal and isinstance(principal, list) and isinstance(principal[0], str):
             principal_parts = principal[0].split('.')
-        try:
-            if principal_parts[1] == 'amazonaws' and principal_parts[2] == 'com':  # This confirms that the principal is set as a service principal.
-                if 'source_arn' in conf or 'source_account' in conf:  # If either of these are set, we're good and the check should pass.
-                    self.evaluated_keys = self.get_evaluated_keys()
-                    return CheckResult.PASSED
-                else:
-                    self.evaluated_keys = self.get_evaluated_keys()
-                    return CheckResult.FAILED
-        except IndexError:
-            return CheckResult.UNKNOWN
+            try:
+                if principal_parts[1] == 'amazonaws' and principal_parts[2] == 'com':  # This confirms that the principal is set as a service principal.
+                    if 'source_arn' in conf or 'source_account' in conf:  # If either of these are set, we're good and the check should pass.
+                        self.evaluated_keys = self.get_evaluated_keys()
+                        return CheckResult.PASSED
+                    else:
+                        self.evaluated_keys = self.get_evaluated_keys()
+                        return CheckResult.FAILED
+            except IndexError:
+                return CheckResult.UNKNOWN
         return CheckResult.UNKNOWN
 
     def get_evaluated_keys(self) -> List[str]:
