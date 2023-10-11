@@ -71,7 +71,7 @@ def _extract_checks_metadata(report: Report, full_repo_object_key: str, on_prem:
     return metadata
 
 
-def reduce_scan_reports(scan_reports: list[Report], on_prem: bool) -> dict[str, _ReducedScanReport]:
+def reduce_scan_reports(scan_reports: list[Report], on_prem: Optional[bool] = False) -> dict[str, _ReducedScanReport]:
     """
     Transform checkov reports objects into compact dictionaries
     :param scan_reports: List of checkov output reports

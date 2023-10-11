@@ -1129,7 +1129,7 @@ class BcPlatformIntegration:
 
         return report_url
 
-    def setup_on_prem(self):
+    def setup_on_prem(self) -> None:
         if self.customer_run_config_response:
             self.on_prem = self.customer_run_config_response.get('onPrem', False)
 
