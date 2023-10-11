@@ -419,7 +419,13 @@ class Checkov:
                     bc_integration.support_flag_enabled = False
                 # disable sca_package, sca_image for on-premises integrations
                 if not outer_registry:
-                    runner_registry.runners = [runner for runner in runner_registry.runners if runner.check_type not in [CheckType.SCA_IMAGE, CheckType.SCA_PACKAGE]]
+                    removed_check_types = []
+                    for runner in list(runner_registry.runners):
+                        if runner.check_type in [CheckType.SCA_IMAGE, CheckType.SCA_PACKAGE]:
+                            removed_check_types.append(runner.check_type)
+                            runner_registry.runners.remove(runner)
+                    if removed_check_types:
+                        logger.warning(f"Following runners won't run as they are not supported for on-premises integrations: {removed_check_types}")
 
             bc_integration.get_prisma_build_policies(self.config.policy_metadata_filter)
 
@@ -688,9 +694,9 @@ class Checkov:
                 scan_reports_to_upload.append(sca_supported_ir_report)
         bc_integration.persist_scan_results(scan_reports_to_upload)
         bc_integration.persist_run_metadata(self.run_metadata)
-        # if bc_integration.enable_persist_graphs:
-        #     bc_integration.persist_graphs(self.graphs, absolute_root_folder=absolute_root_folder)
-        #     bc_integration.persist_resource_subgraph_maps(self.resource_subgraph_maps)
+        if bc_integration.enable_persist_graphs:
+            bc_integration.persist_graphs(self.graphs, absolute_root_folder=absolute_root_folder)
+            bc_integration.persist_resource_subgraph_maps(self.resource_subgraph_maps)
         self.url = self.commit_repository()
 
     def print_results(
