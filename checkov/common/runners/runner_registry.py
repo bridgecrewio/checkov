@@ -12,9 +12,7 @@ import sys
 from collections import defaultdict
 from collections.abc import Iterable
 from pathlib import Path
-from typing import List, Dict, Any, Optional, cast, TYPE_CHECKING, Type
-
-from typing_extensions import Literal
+from typing import List, Dict, Any, Optional, cast, TYPE_CHECKING, Type, Literal
 
 from checkov.common.bridgecrew.code_categories import CodeCategoryMapping, CodeCategoryType
 from checkov.common.bridgecrew.platform_integration import bc_integration
