@@ -545,8 +545,8 @@ class Checkov:
                     self.parser.error("--branch argument is required when using --docker-image")
                     return None
                 files = [os.path.abspath(self.config.dockerfile_path)]
-                runner = sca_image_runner()
-                result = runner.run(
+                sca_runner = sca_image_runner()
+                result = sca_runner.run(
                     root_folder='',
                     image_id=self.config.docker_image,
                     dockerfile_path=self.config.dockerfile_path,
@@ -564,7 +564,7 @@ class Checkov:
                 if not self.config.skip_results_upload:
                     bc_integration.persist_repository(os.path.dirname(self.config.dockerfile_path), files=files)
                     bc_integration.persist_scan_results(self.scan_reports)
-                    bc_integration.persist_image_scan_results(runner.raw_report, self.config.dockerfile_path,
+                    bc_integration.persist_image_scan_results(sca_runner.raw_report, self.config.dockerfile_path,
                                                               self.config.docker_image,
                                                               self.config.branch)
 
