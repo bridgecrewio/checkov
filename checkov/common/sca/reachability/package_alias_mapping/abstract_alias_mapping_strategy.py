@@ -45,7 +45,7 @@ class AbstractAliasMappingStrategy(ABC):
                             logging.debug(
                                 f"[AbstractAliasMappingStrategy](create_alias_mapping) - done parsing for ${file_name}")
                         except Exception:
-                            raise
                             logging.error(f"[AbstractAliasMappingStrategy](create_alias_mapping) - failure when "
                                           f"parsing the file '${file_name}'. file content:\n{file_content}.\n",
                                           exc_info=True)
+                            raise
