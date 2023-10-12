@@ -13,11 +13,12 @@ from tests.common.image_referencer.test_utils import (
     mock_get_license_statuses_async,
     mock_get_image_cached_result_async,
 )
+from tests.graph_utils.utils import GRAPH_FRAMEWORKS
 
 RESOURCES_PATH = Path(__file__).parent / "resources/azure"
 
 
-@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
 def test_batch_resources(mocker: MockerFixture, graph_framework):
     # given
     from checkov.common.bridgecrew.platform_integration import bc_integration
@@ -26,7 +27,7 @@ def test_batch_resources(mocker: MockerFixture, graph_framework):
 
     file_name = "batch.bicep"
     image_name = "centos7"
-    code_lines = "1-26"
+    code_lines = "1-27"
     test_file = RESOURCES_PATH / file_name
     runner_filter = RunnerFilter(run_image_referencer=True)
 
@@ -76,7 +77,7 @@ def test_batch_resources(mocker: MockerFixture, graph_framework):
     ]
 
 
-@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
 def test_container_instance_resources(mocker: MockerFixture, graph_framework):
     # given
     file_name = "container_instance.bicep"
@@ -123,7 +124,7 @@ def test_container_instance_resources(mocker: MockerFixture, graph_framework):
     assert len(sca_image_report.parsing_errors) == 0
 
 
-@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
 def test_web_resources(mocker: MockerFixture, graph_framework):
     # given
     file_name = "web.bicep"

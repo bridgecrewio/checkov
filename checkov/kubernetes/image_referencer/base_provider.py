@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from typing import Any
 
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.images.graph.image_referencer_provider import GraphImageReferencerProvider
@@ -18,18 +19,22 @@ class BaseKubernetesProvider(GraphImageReferencerProvider):
 
         for resource in self.extract_resource(supported_resources_graph):
             resource_type = resource[CustomAttributes.RESOURCE_TYPE]
+            resource_path = self._get_resource_path(resource)
 
             extract_images_func = self.supported_resource_types.get(resource_type)
             if extract_images_func:
                 for name in extract_images_func(resource):
                     images.append(
                         Image(
-                            file_path=resource[CustomAttributes.FILE_PATH],
+                            file_path=resource_path,
                             name=name,
                             start_line=resource[START_LINE],
                             end_line=resource[END_LINE],
-                            related_resource_id=f'{removeprefix(resource.get("file_path_", ""), os.getenv("BC_ROOT_DIR", ""))}:{resource.get("id_")}',
+                            related_resource_id=f'{removeprefix(resource_path, os.getenv("BC_ROOT_DIR", ""))}:{resource.get("id_")}',
                         )
                     )
 
         return images
+
+    def _get_resource_path(self, resource: dict[str, Any]) -> str:
+        return resource.get(CustomAttributes.FILE_PATH, "")

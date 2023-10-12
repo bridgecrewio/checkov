@@ -2,7 +2,8 @@ name: PR Test
 
 on: pull_request
 
-permissions: read-all
+permissions:
+  contents: read
 
 jobs:
   lint:
@@ -10,13 +11,33 @@ jobs:
     with:
       python-version: "3.9"
 
+  danger-check:
+    runs-on: [ self-hosted, public, linux, x64 ]
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608  # v3
+      - name: Install Node.js
+        uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d  # v3
+        with:
+          node-version: "16"
+      - name: Install and run DangerJS
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npm install -g danger
+          danger ci --verbose --failOnErrors
   cfn-lint:
     runs-on: ubuntu-latest
+    env:
+      PYTHON_VERSION: "3.8"
     steps:
-      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
-      - uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435  # v4
+      - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608  # v3
+      - uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236  # v4
         with:
-          python-version: 3.7
+          python-version: ${{ env.PYTHON_VERSION }}
       - name: Install cfn-lint
         run: |
           pip install -U cfn-lint
@@ -26,23 +47,25 @@ jobs:
 
   mypy:
     uses: bridgecrewio/gha-reusable-workflows/.github/workflows/mypy.yaml@main
+    with:
+      python-version: "3.8"
 
   unit-tests:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.7", "3.8", "3.9", "3.10", "3.11"]
+        python: ["3.8", "3.9", "3.10", "3.11"]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
+      - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608  # v3
       - name: Set up Python ${{ matrix.python }}
-        uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435  # v4
+        uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236  # v4
         with:
           python-version: ${{ matrix.python }}
           cache: "pipenv"
           cache-dependency-path: "Pipfile.lock"
-      - uses: azure/setup-helm@f382f75448129b3be48f8121b9857be18d815a82  # v3
+      - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
@@ -53,29 +76,35 @@ jobs:
           python -m pip install --no-cache-dir --upgrade pipenv
       - name: Install dependencies
         run: |
+          # remove venv, if exists
+          pipenv --rm || true
           pipenv --python ${{ matrix.python }}
           pipenv install --dev -v
+          pipenv run pip install redefine --index-url https://pip.redefine.dev
       - name: Unit tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REDEFINE_AUTH: ${{ secrets.REDEFINE_AUTH }}
         run: |
+          pipenv run redefine config set stable_branch=main matrix_value=${{ matrix.python }}
+          pipenv run redefine start --pytest --discover
           pipenv run python -m pytest tests
 
   integration-tests:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.7", "3.8", "3.9", "3.10", "3.11"]
+        python: ["3.8", "3.9", "3.10", "3.11"]
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
-      - uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435  # v4
+      - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608  # v3
+      - uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236  # v4
         with:
           python-version: ${{ matrix.python }}
           cache: "pipenv"
           cache-dependency-path: "Pipfile.lock"
-      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c  # v3
+      - uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d  # v3
       - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -88,6 +117,8 @@ jobs:
           python -m pip install --no-cache-dir --upgrade pipenv
       - name: Build & install checkov package
         run: |
+          # remove venv, if exists
+          pipenv --rm || true
           pipenv --python ${{ matrix.python }}
           pipenv run pip install pytest pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
@@ -112,22 +143,18 @@ jobs:
           pipenv run pytest integration_tests -k 'not api_key'
 
   performance-tests:
-    strategy:
-      fail-fast: false
-      matrix:
-        python: ["3.7", "3.8", "3.9", "3.10", "3.11"]
-        os: [ubuntu-latest]
     env:
+      PYTHON_VERSION: "3.8"
       working-directory: ./performance_tests
-    runs-on: ${{ matrix.os }}
+    runs-on: [self-hosted, public, linux, x64]
     steps:
-      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
-      - uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435  # v4
+      - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608  # v3
+      - uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236  # v4
         with:
-          python-version: ${{ matrix.python }}
+          python-version: ${{ env.PYTHON_VERSION }}
           cache: "pipenv"
           cache-dependency-path: "Pipfile.lock"
-      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c  # v3
+      - uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d  # v3
       - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -139,7 +166,9 @@ jobs:
           python -m pip install --no-cache-dir --upgrade pipenv
       - name: Build & install checkov package
         run: |
-          pipenv --python ${{ matrix.python }}
+          # remove venv, if exists
+          pipenv --rm || true
+          pipenv --python ${{ env.PYTHON_VERSION }}
           # 'py' package is used in 'pytest-benchmark', but 'pytest' removed it in their latest version         
           pipenv run pip install pytest pytest-benchmark py
           pipenv run python setup.py sdist bdist_wheel
@@ -161,16 +190,16 @@ jobs:
   dogfood-tests:
     runs-on: ubuntu-latest
     env:
-      PYTHON_VERSION: "3.7"
+      PYTHON_VERSION: "3.8"
       WORKING_DIRECTORY: ./dogfood_tests
     steps:
-      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab  # v3
-      - uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435  # v4
+      - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608  # v3
+      - uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236  # v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: "pipenv"
           cache-dependency-path: "Pipfile.lock"
-      - uses: azure/setup-helm@f382f75448129b3be48f8121b9857be18d815a82  # v3
+      - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - uses: imranismail/setup-kustomize@a76db1c6419124d51470b1e388c4b29476f495f1  # v2
@@ -182,6 +211,8 @@ jobs:
 
       - name: Build & install checkov package
         run: |
+          # remove venv, if exists
+          pipenv --rm || true
           pipenv --python ${{ env.PYTHON_VERSION }}     
           pipenv run pip install pytest pytest-xdist
           pipenv run python setup.py sdist bdist_wheel

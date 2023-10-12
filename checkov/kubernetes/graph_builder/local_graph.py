@@ -1,14 +1,16 @@
 from __future__ import annotations
 
 import logging
-from copy import deepcopy
 from typing import Any, List, Dict
 from collections import defaultdict
 
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder.local_graph import LocalGraph
 from checkov.common.util.consts import START_LINE, END_LINE
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.kubernetes.graph_builder.graph_components.blocks import KubernetesBlock, KubernetesBlockMetadata, KubernetesSelector
+from checkov.kubernetes.graph_builder.graph_components.edge_builders.K8SEdgeBuilder import K8SEdgeBuilder
+from checkov.kubernetes.graph_builder.graph_components.edge_builders.ServiceAccountEdgeBuilder import ServiceAccountEdgeBuilder
 from checkov.kubernetes.kubernetes_utils import DEFAULT_NESTED_RESOURCE_TYPE, is_invalid_k8_definition, get_resource_id, is_invalid_k8_pod_definition, \
     remove_metadata_from_attribute, PARENT_RESOURCE_KEY_NAME, PARENT_RESOURCE_ID_KEY_NAME, SUPPORTED_POD_CONTAINERS_TYPES
 from checkov.kubernetes.kubernetes_graph_flags import K8sGraphFlags
@@ -20,7 +22,8 @@ from checkov.kubernetes.graph_builder.graph_components.edge_builders.NetworkPoli
 class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
     def __init__(self, definitions: dict[str, list[dict[str, Any]]]) -> None:
         self.definitions = definitions
-        self.edge_builders = (LabelSelectorEdgeBuilder, KeywordEdgeBuilder, NetworkPolicyEdgeBuilder)
+        self.edge_builders: list[type[K8SEdgeBuilder] | ServiceAccountEdgeBuilder] = \
+            [LabelSelectorEdgeBuilder, KeywordEdgeBuilder, NetworkPolicyEdgeBuilder, ServiceAccountEdgeBuilder()]
         super().__init__()
 
     def build_graph(self, render_variables: bool, graph_flags: K8sGraphFlags | None = None) -> None:
@@ -54,8 +57,8 @@ class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
                         file_conf.remove(resource)
                         continue
 
-                config = deepcopy(resource)
-                attributes = deepcopy(config)
+                config = pickle_deepcopy(resource)
+                attributes = pickle_deepcopy(config)
                 attributes["resource_type"] = resource_type
                 attributes["kind"] = resource_type
                 attributes[START_LINE] = resource[START_LINE]
@@ -87,7 +90,11 @@ class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
         for vertex_index, vertex in enumerate(self.vertices):
             for edge_builder in self.edge_builders:
                 if edge_builder.should_search_for_edges(vertex):
-                    current_vertex_connections = edge_builder.find_connections(vertex, self.vertices)
+                    # Needs to be handled separately as it requires an isntance rather than a static method
+                    if isinstance(edge_builder, ServiceAccountEdgeBuilder):
+                        current_vertex_connections = edge_builder.find_connections_for_instance(vertex, self.vertices)
+                    else:
+                        current_vertex_connections = edge_builder.find_connections(vertex, self.vertices)
                     if current_vertex_connections:
                         edges_to_create[vertex.name].extend(current_vertex_connections)
             for destination_vertex_index in edges_to_create[vertex.name]:
@@ -155,7 +162,20 @@ class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
                 # resource does not contain all required fields and can not be associated with the pod
                 all_resources.append(conf)
                 return
-            template[PARENT_RESOURCE_KEY_NAME] = metadata.get('name', "")
+
+            parent_name = metadata.get('name', "")
+            template[PARENT_RESOURCE_KEY_NAME] = parent_name
+            if not template.get('kind'):
+                template['kind'] = DEFAULT_NESTED_RESOURCE_TYPE
+            if not template.get('apiVersion'):
+                template['apiVersion'] = conf.get('apiVersion')
+
+            template_metadata = template.get('metadata')
+            annotations = metadata.get('annotations')
+            if annotations is not None and template_metadata is not None and 'annotations' not in template_metadata:
+                # Updates annotations to template as well to handle metadata added to the parent resource
+                template_metadata['annotations'] = annotations
+                template_metadata[PARENT_RESOURCE_ID_KEY_NAME] = parent_name
             spec.pop('template', None)
         else:
             template = {}

@@ -7,6 +7,8 @@ from typing import Any, TYPE_CHECKING
 import yaml
 from yaml.loader import SafeLoader
 
+from checkov.common.util.file_utils import read_file_with_any_encoding
+
 if TYPE_CHECKING:
     from yaml import MappingNode
 
@@ -31,8 +33,7 @@ def load(filename: str | Path, content: str | None = None) -> tuple[list[dict[st
     """
 
     if not content:
-        file_path = filename if isinstance(filename, Path) else Path(filename)
-        content = file_path.read_text()
+        content = read_file_with_any_encoding(file_path=filename)
 
     file_lines = [(idx + 1, line) for idx, line in enumerate(content.splitlines(keepends=True))]
 

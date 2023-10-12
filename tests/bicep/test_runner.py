@@ -5,7 +5,6 @@ import pytest
 from checkov.bicep.runner import Runner
 from checkov.arm.runner import Runner as ArmRunner
 from checkov.common.bridgecrew.check_type import CheckType
-from checkov.common.bridgecrew.code_categories import CodeCategoryConfiguration
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
@@ -200,3 +199,18 @@ def test_runner_extra_resources(graph_connector):
     assert extra_resource.file_abs_path == str(test_file)
     assert extra_resource.file_path.endswith("playground.bicep")
 
+
+def test_runner_loop_resource():
+    # given
+    test_file = EXAMPLES_DIR / "loop.bicep"
+
+    # when
+    report = Runner().run(root_folder="", files=[str(test_file)], runner_filter=RunnerFilter(checks=["CKV_AZURE_2"]))
+
+    # then
+    summary = report.get_summary()
+
+    assert summary["passed"] == 1
+    assert summary["failed"] == 0
+    assert summary["skipped"] == 0
+    assert summary["parsing_errors"] == 0

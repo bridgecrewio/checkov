@@ -1,0 +1,8 @@
+unit tests:
+  image:
+    entrypoint:
+      - "/opt/bin/entry_point_unit_tests.sh"
+
+  services:
+    - name: "postgres:13.2"
+      alias: postgres

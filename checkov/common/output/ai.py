@@ -14,7 +14,6 @@ if TYPE_CHECKING:
     from checkov.common.output.record import Record
     from typing_extensions import Self
 
-OPENAI_API_KEY = os.getenv("CKV_OPENAI_API_KEY")
 OPENAI_MAX_FINDINGS = int(os.getenv("CKV_OPENAI_MAX_FINDINGS", 5))
 OPENAI_MAX_TOKENS = int(os.getenv("CKV_OPENAI_MAX_TOKENS", 512))
 OPENAI_MODEL = os.getenv("CKV_OPENAI_MODEL", "gpt-3.5-turbo")
@@ -101,7 +100,7 @@ class OpenAi:
         if 0 < OPENAI_MAX_FINDINGS < len(records):
             # the higher severities should be preferred
             sorted_records = sorted(
-                records, key=lambda record: record.severity.level if record.severity else 0, reverse=True
+                records, key=lambda record: record.severity.level if record.severity else 0, reverse=True  # type:ignore[has-type]
             )
 
             # to protect the user, just take the last x findings

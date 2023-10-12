@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, TypeVar, Set, Union
-from typing_extensions import TypeAlias, TypedDict
+from typing import TYPE_CHECKING, Any, Callable, Dict, TypeVar, Set, Union, TypedDict
+from typing_extensions import TypeAlias  # noqa[TC002]
 
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.severities import Severity
@@ -11,9 +11,10 @@ if TYPE_CHECKING:
     from checkov.common.runners.base_runner import BaseRunner  # noqa
     from networkx import DiGraph
     from igraph import Graph
+    from rustworkx import PyDiGraph
     from checkov.terraform.modules.module_objects import TFDefinitionKey
 
-_BaseRunner = TypeVar("_BaseRunner", bound="BaseRunner[Any]")
+_BaseRunner = TypeVar("_BaseRunner", bound="BaseRunner[Any, Any, Any]")
 
 _ScannerCallableAlias: TypeAlias = Callable[
     [str, "BaseCheck", "list[_SkippedCheck]", "dict[str, Any]", str, str, "dict[str, Any]"], None
@@ -22,8 +23,9 @@ _ScannerCallableAlias: TypeAlias = Callable[
 _Resource: TypeAlias = str
 _Attributes: TypeAlias = Set[str]
 ResourceAttributesToOmit: TypeAlias = Dict[_Resource, _Attributes]
-LibraryGraph: TypeAlias = "Union[DiGraph, Graph]"
-LibraryGraphConnector: TypeAlias = "Union[DBConnector[DiGraph], DBConnector[Graph]]"
+LibraryGraph: TypeAlias = "Union[DiGraph, Graph, PyDiGraph]"
+LibraryGraphConnector: TypeAlias = "Union[DBConnector[DiGraph], DBConnector[Graph], DBConnector[PyDiGraph]]"
+# TODO Remove this type and only use TFDefinitionKey
 TFDefinitionKeyType: TypeAlias = "Union[str, TFDefinitionKey]"
 
 
@@ -43,9 +45,35 @@ class _SkippedCheck(TypedDict, total=False):
     line_number: int | None
 
 
+class _ScaSuppressionsMaps(TypedDict, total=False):
+    cve_suppresion_by_cve_map: dict[str, _SuppressedCves]
+    licenses_suppressions_by_policy_and_package_map: dict[str, _SuppressedLicenses]
+
+
+# _ScaSuppressions fields are in camel case because this is the output of the server report
 class _ScaSuppressions(TypedDict, total=False):
-    cve: dict[str, _SkippedCheck]
-    package: dict[str, _SkippedCheck | dict[str, _SkippedCheck]]
+    cves: _CvesSuppressions
+    licenses: _LicensesSuppressions
+
+
+class _CvesSuppressions(TypedDict):
+    byCve: list[_SuppressedCves]
+
+
+class _LicensesSuppressions(TypedDict):
+    byPackage: list[_SuppressedLicenses]
+
+
+class _SuppressedCves(TypedDict):
+    reason: str
+    cveId: str
+
+
+class _SuppressedLicenses(TypedDict):
+    reason: str
+    packageName: str
+    licensePolicy: str
+    licenses: list[str]
 
 
 class _BaselineFinding(TypedDict):
@@ -97,9 +125,14 @@ class _LicenseStatus(TypedDict):
     status: str
 
 
+class _LicenseStatusWithLines(_LicenseStatus):
+    lines: list[int] | None  # noqa: CCE003  # a static attribute
+
+
 class _EntityContext(TypedDict, total=False):
     start_line: int
     end_line: int
     policy: str
     code_lines: list[tuple[int, str]]
     skipped_checks: list[_SkippedCheck]
+    origin_relative_path: str

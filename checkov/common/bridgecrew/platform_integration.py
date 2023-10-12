@@ -7,13 +7,14 @@ import re
 import uuid
 import webbrowser
 from collections import namedtuple
+from urllib.parse import urlparse
 from concurrent import futures
 from io import StringIO
 from json import JSONDecodeError
 from os import path
 from pathlib import Path
 from time import sleep
-from typing import List, Dict, TYPE_CHECKING, Any, cast
+from typing import List, Dict, TYPE_CHECKING, Any, cast, Optional
 
 import boto3
 import dpath
@@ -32,24 +33,36 @@ from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.bridgecrew.platform_key import read_key, persist_key, bridgecrew_file
 from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_checks_results, \
     enrich_and_persist_checks_metadata, checkov_results_prefix, persist_run_metadata, _put_json_object, \
-    persist_logs_stream
+    persist_logs_stream, persist_graphs, persist_resource_subgraph_maps
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILES, SCANNABLE_PACKAGE_FILES
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import filter_ignored_paths
-from checkov.common.typing import _CicdDetails
+from checkov.common.typing import _CicdDetails, LibraryGraph
 from checkov.common.util.consts import PRISMA_PLATFORM, BRIDGECREW_PLATFORM, CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
 from checkov.common.util.data_structures_utils import merge_dicts
-from checkov.common.util.http_utils import normalize_prisma_url, get_auth_header, get_default_get_headers, \
-    get_user_agent_header, get_default_post_headers, get_prisma_get_headers, get_prisma_auth_header, \
-    get_auth_error_message, normalize_bc_url
+from checkov.common.util.dockerfile import is_dockerfile
+from checkov.common.util.http_utils import (
+    normalize_prisma_url,
+    get_auth_header,
+    get_default_get_headers,
+    get_user_agent_header,
+    get_default_post_headers,
+    get_prisma_get_headers,
+    get_prisma_auth_header,
+    get_auth_error_message,
+    normalize_bc_url,
+    REQUEST_CONNECT_TIMEOUT,
+    REQUEST_READ_TIMEOUT,
+    REQUEST_RETRIES,
+)
 from checkov.common.util.type_forcers import convert_prisma_policy_filter_to_dict, convert_str_to_bool
-from checkov.secrets.coordinator import EnrichedSecret
 from checkov.version import version as checkov_version
 
 if TYPE_CHECKING:
     import argparse
     from checkov.common.bridgecrew.bc_source import SourceType
     from checkov.common.output.report import Report
+    from checkov.secrets.coordinator import EnrichedSecret
     from mypy_boto3_s3.client import S3Client
     from requests import Response
     from typing_extensions import TypeGuard
@@ -96,6 +109,7 @@ class BcPlatformIntegration:
         self.repo_branch: str | None = None
         self.skip_fixes = False
         self.skip_download = False
+        self.source_id: str | None = None
         self.bc_source: SourceType | None = None
         self.bc_source_version: str | None = None
         self.timestamp: str | None = None
@@ -111,9 +125,16 @@ class BcPlatformIntegration:
         self.use_s3_integration = False
         self.platform_integration_configured = False
         self.http: urllib3.PoolManager | urllib3.ProxyManager | None = None
+        self.http_timeout = urllib3.Timeout(connect=REQUEST_CONNECT_TIMEOUT, read=REQUEST_READ_TIMEOUT)
+        self.http_retry = urllib3.Retry(REQUEST_RETRIES, redirect=3)
         self.bc_skip_mapping = False
         self.cicd_details: _CicdDetails = {}
         self.support_flag_enabled = False
+        self.enable_persist_graphs = convert_str_to_bool(os.getenv('BC_ENABLE_PERSIST_GRAPHS', 'True'))
+        self.persist_graphs_timeout = int(os.getenv('BC_PERSIST_GRAPHS_TIMEOUT', 60))
+        self.ca_certificate: str | None = None
+        self.no_cert_verify: bool = False
+        self.on_prem: bool = False
 
     def set_bc_api_url(self, new_url: str) -> None:
         self.bc_api_url = normalize_bc_url(new_url)
@@ -138,7 +159,6 @@ class BcPlatformIntegration:
         self.integrations_api_url = f"{self.api_url}/api/v1/integrations/types/checkov"
         self.onboarding_url = f"{self.api_url}/api/v1/signup/checkov"
         self.platform_run_config_url = f"{self.api_url}/api/v2/checkov/runConfiguration"
-        self.platform_run_config_url_backoff = f"{self.api_url}/api/v1/checkov/runConfiguration"
 
     def is_prisma_integration(self) -> bool:
         if self.bc_api_key and not self.is_bc_token(self.bc_api_key):
@@ -200,6 +220,9 @@ class BcPlatformIntegration:
         :param ca_certificate: an optional CA bundle to be used by both libraries.
         :param no_cert_verify: whether to skip SSL cert verification
         """
+        self.ca_certificate = ca_certificate
+        self.no_cert_verify = no_cert_verify
+
         ca_certificate = ca_certificate or os.getenv('BC_CA_BUNDLE')
         cert_reqs: str | None
 
@@ -211,22 +234,39 @@ class BcPlatformIntegration:
             logging.debug(f'Using CA cert {ca_certificate} and cert_reqs {cert_reqs}')
             try:
                 parsed_url = urllib3.util.parse_url(os.environ['https_proxy'])
-                self.http = urllib3.ProxyManager(os.environ['https_proxy'],
-                                                 cert_reqs=cert_reqs,
-                                                 ca_certs=ca_certificate,
-                                                 proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth))  # type:ignore[no-untyped-call]
+                self.http = urllib3.ProxyManager(
+                    os.environ['https_proxy'],
+                    cert_reqs=cert_reqs,
+                    ca_certs=ca_certificate,
+                    proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth),  # type:ignore[no-untyped-call]
+                    timeout=self.http_timeout,
+                    retries=self.http_retry,
+                )
             except KeyError:
-                self.http = urllib3.PoolManager(cert_reqs=cert_reqs, ca_certs=ca_certificate)
+                self.http = urllib3.PoolManager(
+                    cert_reqs=cert_reqs,
+                    ca_certs=ca_certificate,
+                    timeout=self.http_timeout,
+                    retries=self.http_retry,
+                )
         else:
             cert_reqs = 'CERT_NONE' if no_cert_verify else None
             logging.debug(f'Using cert_reqs {cert_reqs}')
             try:
                 parsed_url = urllib3.util.parse_url(os.environ['https_proxy'])
-                self.http = urllib3.ProxyManager(os.environ['https_proxy'],
-                                                 cert_reqs=cert_reqs,
-                                                 proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth))  # type:ignore[no-untyped-call]
+                self.http = urllib3.ProxyManager(
+                    os.environ['https_proxy'],
+                    cert_reqs=cert_reqs,
+                    proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth),  # type:ignore[no-untyped-call]
+                    timeout=self.http_timeout,
+                    retries=self.http_retry,
+                )
             except KeyError:
-                self.http = urllib3.PoolManager(cert_reqs=cert_reqs)
+                self.http = urllib3.PoolManager(
+                    cert_reqs=cert_reqs,
+                    timeout=self.http_timeout,
+                    retries=self.http_retry,
+                )
         logging.debug('Successfully set up HTTP manager')
 
     def setup_bridgecrew_credentials(
@@ -295,7 +335,8 @@ class BcPlatformIntegration:
             if support_path:
                 self.support_bucket, self.support_repo_path = support_path.split("/", 1)
             elif self.support_flag_enabled:
-                logging.debug('--support was used, but we did not get a support file upload path in the platform response. Using the old location.')
+                logging.debug(
+                    '--support was used, but we did not get a support file upload path in the platform response. Using the old location.')
                 self.support_bucket = self.bucket
                 self.support_repo_path = self.repo_path
 
@@ -323,30 +364,38 @@ class BcPlatformIntegration:
         if not self.http:
             raise AttributeError("HTTP manager was not correctly created")
 
-        request = self.http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id, "support": self.support_flag_enabled}),  # type:ignore[no-untyped-call]
+        tries = 0
+        response = self._get_s3_creds(repo_id, token)
+        while ('Message' in response or 'message' in response):
+            if response.get('Message') and response['Message'] == UNAUTHORIZED_MESSAGE:
+                raise BridgecrewAuthError()
+            if response.get('message') and ASSUME_ROLE_UNUATHORIZED_MESSAGE in response['message']:
+                raise BridgecrewAuthError(
+                    "Checkov got an unexpected authorization error that may not be due to your credentials. Please contact support.")
+            if response.get('message') and "cannot be found" in response['message']:
+                self.loading_output("creating role")
+                response = self._get_s3_creds(repo_id, token)
+            if response.get('message') is None and response.get('Message') is None:
+                if tries < 3:
+                    tries += 1
+                    response = self._get_s3_creds(repo_id, token)
+                else:
+                    raise BridgecrewAuthError(
+                        "Checkov got an unexpected error that may be due to backend issues. Please contact support.")
+        repo_full_path = response["path"]
+        support_path = response.get("supportPath")
+        return repo_full_path, support_path, response
+
+    def _get_s3_creds(self, repo_id: str, token: str) -> dict[str, Any]:
+        request = self.http.request("POST", self.integrations_api_url,  # type:ignore[union-attr]
+                                    body=json.dumps({"repoId": repo_id, "support": self.support_flag_enabled}),
                                     headers=merge_dicts({"Authorization": token, "Content-Type": "application/json"},
                                                         get_user_agent_header()))
         if request.status == 403:
             error_message = get_auth_error_message(request.status, self.is_prisma_integration(), True)
             raise BridgecrewAuthError(error_message)
-        response = json.loads(request.data.decode("utf8"))
-        while ('Message' in response or 'message' in response):
-            if 'Message' in response and response['Message'] == UNAUTHORIZED_MESSAGE:
-                raise BridgecrewAuthError()
-            if 'message' in response and ASSUME_ROLE_UNUATHORIZED_MESSAGE in response['message']:
-                raise BridgecrewAuthError(
-                    "Checkov got an unexpected authorization error that may not be due to your credentials. Please contact support.")
-            if 'message' in response and "cannot be found" in response['message']:
-                self.loading_output("creating role")
-                request = self.http.request("POST", self.integrations_api_url, body=json.dumps({"repoId": repo_id}),  # type:ignore[no-untyped-call]
-                                            headers=merge_dicts(
-                                                {"Authorization": token, "Content-Type": "application/json"},
-                                                get_user_agent_header()))
-                response = json.loads(request.data.decode("utf8"))
-
-        repo_full_path = response["path"]
-        support_path = response.get("supportPath")
-        return repo_full_path, support_path, response
+        response: dict[str, Any] = json.loads(request.data.decode("utf8"))
+        return response
 
     def is_integration_configured(self) -> bool:
         """
@@ -393,7 +442,7 @@ class BcPlatformIntegration:
                     _, file_extension = os.path.splitext(file_path)
                     if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 and file_extension in SCANNABLE_PACKAGE_FILES:
                         continue
-                    if file_extension in SUPPORTED_FILE_EXTENSIONS or file_path in SUPPORTED_FILES:
+                    if file_extension in SUPPORTED_FILE_EXTENSIONS or file_path in SUPPORTED_FILES or is_dockerfile(file_path):
                         full_file_path = os.path.join(root_path, file_path)
                         relative_file_path = os.path.relpath(full_file_path, root_dir)
                         files_to_persist.append(FileToPersist(full_file_path, relative_file_path))
@@ -435,9 +484,9 @@ class BcPlatformIntegration:
         # just process reports with actual results in it
         self.scan_reports = [scan_report for scan_report in scan_reports if not scan_report.is_empty(full=True)]
 
-        reduced_scan_reports = reduce_scan_reports(self.scan_reports)
+        reduced_scan_reports = reduce_scan_reports(self.scan_reports, self.on_prem)
         checks_metadata_paths = enrich_and_persist_checks_metadata(self.scan_reports, self.s3_client, self.bucket,
-                                                                   self.repo_path)
+                                                                   self.repo_path, self.on_prem)
         dpath.merge(reduced_scan_reports, checks_metadata_paths)
         persist_checks_results(reduced_scan_reports, self.s3_client, self.bucket, self.repo_path)
 
@@ -501,11 +550,29 @@ class BcPlatformIntegration:
         if not self.use_s3_integration or not self.s3_client:
             return
         if not self.support_bucket or not self.support_repo_path:
-            logging.error(f"Something went wrong with the log upload location: bucket {self.support_bucket}, repo path {self.support_repo_path}")
+            logging.error(
+                f"Something went wrong with the log upload location: bucket {self.support_bucket}, repo path {self.support_repo_path}")
             return
         # use checkov_results if we fall back to using the same location
         log_path = f'{self.support_repo_path}/checkov_results' if self.support_repo_path == self.repo_path else self.support_repo_path
         persist_logs_stream(logs_stream, self.s3_client, self.support_bucket, log_path)
+
+    def persist_graphs(self, graphs: dict[str, list[tuple[LibraryGraph, Optional[str]]]], absolute_root_folder: str = '') -> None:
+        if not self.use_s3_integration or not self.s3_client:
+            return
+        if not self.bucket or not self.repo_path:
+            logging.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
+            return
+        persist_graphs(graphs, self.s3_client, self.bucket, self.repo_path, self.persist_graphs_timeout,
+                       absolute_root_folder=absolute_root_folder)
+
+    def persist_resource_subgraph_maps(self, resource_subgraph_maps: dict[str, dict[str, str]]) -> None:
+        if not self.use_s3_integration or not self.s3_client:
+            return
+        if not self.bucket or not self.repo_path:
+            logging.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
+            return
+        persist_resource_subgraph_maps(resource_subgraph_maps, self.s3_client, self.bucket, self.repo_path, self.persist_graphs_timeout)
 
     def commit_repository(self, branch: str) -> str | None:
         """
@@ -550,14 +617,15 @@ class BcPlatformIntegration:
                                                                 get_user_agent_header()
                                                                 ))
                 response = json.loads(request.data.decode("utf8"))
-                url: str = response.get("url", None)
+                url: str = self.get_sso_prismacloud_url(response.get("url", None))
                 return url
             except HTTPError:
                 logging.error(f"Failed to commit repository {self.repo_path}", exc_info=True)
                 raise
             except JSONDecodeError:
                 if request:
-                    logging.warning(f"Response (status: {request.status}) of {self.integrations_api_url}: {request.data.decode('utf8')}")
+                    logging.warning(
+                        f"Response (status: {request.status}) of {self.integrations_api_url}: {request.data.decode('utf8')}")
                 logging.error(f"Response of {self.integrations_api_url} is not a valid JSON", exc_info=True)
                 raise
             finally:
@@ -634,9 +702,6 @@ class BcPlatformIntegration:
     def get_run_config_url(self) -> str:
         return f'{self.platform_run_config_url}?{self._get_run_config_query_params()}'
 
-    def get_run_config_url_backoff(self) -> str:
-        return f'{self.platform_run_config_url_backoff}?{self._get_run_config_query_params()}'
-
     def get_customer_run_config(self) -> None:
         if self.skip_download is True:
             logging.debug("Skipping customer run config API call")
@@ -666,13 +731,9 @@ class BcPlatformIntegration:
             logging.debug(f'Platform run config URL: {url}')
             request = self.http.request("GET", url, headers=headers)  # type:ignore[no-untyped-call]
             if request.status != 200:
-                url = self.get_run_config_url_backoff()
-                logging.debug(f'Platform run config URL: {url}')
-                request = self.http.request("GET", url, headers=headers)  # type:ignore[no-untyped-call]
-                if request.status != 200:
-                    error_message = get_auth_error_message(request.status, self.is_prisma_integration(), False)
-                    logging.error(error_message)
-                    raise BridgecrewAuthError(error_message)
+                error_message = get_auth_error_message(request.status, self.is_prisma_integration(), False)
+                logging.error(error_message)
+                raise BridgecrewAuthError(error_message)
             self.customer_run_config_response = json.loads(request.data.decode("utf8"))
 
             logging.debug(f"Got customer run config from {platform_type} platform")
@@ -713,13 +774,19 @@ class BcPlatformIntegration:
                 # If enabled and subtype are not explicitly set, use the only acceptable values.
                 query_params['policy.enabled'] = True
                 query_params['policy.subtype'] = 'build'
-                request = self.http.request("GET", self.prisma_policies_url, headers=headers, fields=query_params)  # type:ignore[no-untyped-call]
+                request = self.http.request(  # type:ignore[no-untyped-call]
+                    "GET",
+                    self.prisma_policies_url,
+                    headers=headers,
+                    fields=query_params,
+                )
                 self.prisma_policies_response = json.loads(request.data.decode("utf8"))
                 logging.debug("Got Prisma build policy metadata")
             else:
                 logging.warning("Skipping get prisma build policies. --policy-metadata-filter will not be applied.")
         except Exception:
-            logging.warning(f"Failed to get prisma build policy metadata from {self.platform_run_config_url}", exc_info=True)
+            logging.warning(
+                f"Failed to get prisma build policy metadata from {self.platform_run_config_url}", exc_info=True)
 
     def get_prisma_policy_filters(self) -> Dict[str, Dict[str, Any]]:
         try:
@@ -732,12 +799,17 @@ class BcPlatformIntegration:
                 return {}
 
             logging.debug(f'Prisma filter URL: {self.prisma_policy_filters_url}')
-            request = self.http.request("GET", self.prisma_policy_filters_url, headers=headers)  # type:ignore[no-untyped-call]
+            request = self.http.request(  # type:ignore[no-untyped-call]
+                "GET",
+                self.prisma_policy_filters_url,
+                headers=headers,
+            )
             policy_filters: dict[str, dict[str, Any]] = json.loads(request.data.decode("utf8"))
             logging.debug(f'Prisma filter suggestion response: {policy_filters}')
             return policy_filters
         except Exception:
-            logging.warning(f"Failed to get prisma build policy metadata from {self.platform_run_config_url}", exc_info=True)
+            logging.warning(
+                f"Failed to get prisma build policy metadata from {self.platform_run_config_url}", exc_info=True)
             return {}
 
     @staticmethod
@@ -781,7 +853,11 @@ class BcPlatformIntegration:
 
             request = self.http.request("GET", self.guidelines_api_url, headers=headers)  # type:ignore[no-untyped-call]
             if request.status >= 300:
-                request = self.http.request("GET", self.guidelines_api_url_backoff, headers=headers)  # type:ignore[no-untyped-call]
+                request = self.http.request(  # type:ignore[no-untyped-call]
+                    "GET",
+                    self.guidelines_api_url_backoff,
+                    headers=headers,
+                )
 
             self.public_metadata_response = json.loads(request.data.decode("utf8"))
             platform_type = PRISMA_PLATFORM if self.is_prisma_integration() else BRIDGECREW_PLATFORM
@@ -918,7 +994,9 @@ class BcPlatformIntegration:
     def get_repository(self, args: argparse.Namespace) -> str:
         if CI_METADATA_EXTRACTOR.from_branch:
             return CI_METADATA_EXTRACTOR.from_branch
-        basename = 'unnamed_repo' if path.basename(args.directory[0]) == '.' else path.basename(args.directory[0])
+        arg_dir = args.directory[0]
+        arg_dir.rstrip(os.path.sep)  # If directory ends with /, remove it. Does not remove any other character!!
+        basename = 'unnamed_repo' if path.basename(arg_dir) == '.' else path.basename(arg_dir)
         repo_id = f"cli_repo/{basename}"
         return repo_id
 
@@ -1018,6 +1096,42 @@ class BcPlatformIntegration:
 
         logging.info(f"Unsupported request {request_type}")
         return {}
+
+    # Define the function that will get the relay state from the Prisma Cloud Platform.
+    def get_sso_prismacloud_url(self, report_url: str) -> str:
+        if not bc_integration.prisma_api_url or not self.http or not self.bc_source or report_url is None:
+            return report_url or ''
+        url_saml_config = f"{bc_integration.prisma_api_url}/saml/config"
+        token = self.get_auth_token()
+        headers = merge_dicts(get_auth_header(token),
+                              get_default_get_headers(self.bc_source, self.bc_source_version))
+
+        request = self.http.request("GET", url_saml_config, headers=headers, timeout=10)  # type:ignore[no-untyped-call]
+        if request.status >= 300:
+            return report_url
+
+        data = json.loads(request.data.decode("utf8"))
+
+        relay_state_param_name = data.get("relayStateParamName")
+        access_saml_url = data.get("redLockAccessSamlUrl")
+
+        if relay_state_param_name and access_saml_url:
+            parsed_url = urlparse(report_url)
+            uri = parsed_url.path
+            # If there are any query parameters, append them to the URI
+            if parsed_url.query:
+                uri = f"{uri}?{parsed_url.query}"
+            # Check if the URL already contains GET parameters.
+            if "?" in access_saml_url:
+                report_url = f"{access_saml_url}&{relay_state_param_name}={uri}"
+            else:
+                report_url = f"{access_saml_url}?{relay_state_param_name}={uri}"
+
+        return report_url
+
+    def setup_on_prem(self) -> None:
+        if self.customer_run_config_response:
+            self.on_prem = self.customer_run_config_response.get('onPrem', False)
 
 
 bc_integration = BcPlatformIntegration()

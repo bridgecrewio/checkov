@@ -3,20 +3,22 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 from checkov.common.util.secrets import string_has_secrets
 from typing import List
 
+AWS = 'aws'
+
 
 class EC2Credentials(BaseResourceCheck):
 
     def __init__(self):
         name = "Ensure no hard-coded secrets exist in EC2 user data"
         id = "CKV_AWS_46"
-        supported_resources = ['aws_instance']
+        supported_resources = ['aws_instance', 'aws_launch_template', 'aws_launch_configuration']
         categories = [CheckCategories.SECRETS]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
         if 'user_data' in conf.keys():
             user_data = conf['user_data'][0]
-            if isinstance(user_data, str) and string_has_secrets(user_data):
+            if isinstance(user_data, str) and string_has_secrets(user_data, AWS):
                 conf[f'{self.id}_secret'] = user_data
                 return CheckResult.FAILED
         return CheckResult.PASSED

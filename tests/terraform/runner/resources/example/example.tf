@@ -1,7 +1,7 @@
 provider "aws" {
   region     = "us-west-2"
-  access_key = "AKIAIOSFODNN7EXAMPLE"
-  secret_key = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+  access_key = "AKIAIOSFODNN7EXAMPLE"  # checkov:skip=CKV_SECRET_2 test secret
+  secret_key = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"  # checkov:skip=CKV_SECRET_6 test secret
 }
 resource "azurerm_virtual_machine" "main" {
   name                = "${var.prefix}-vm"
@@ -33,7 +33,7 @@ resource "azurerm_virtual_machine" "main" {
   os_profile {
     computer_name  = "hostname"
     admin_username = "testadmin"
-    admin_password = "Password1234!"
+    admin_password = "Password1234!"  # checkov:skip=CKV_SECRET_80 test secret
   }
   os_profile_linux_config {
     disable_password_authentication = false
@@ -773,7 +773,7 @@ resource aws_lambda_function "bad-function" {
   environment {
     variables = {
       AWS_ACCESS_KEY_ID = "AKIAIOSFODNN7EXAMPLE"
-      secret_key = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      secret_key = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"  # checkov:skip=CKV_SECRET_80 test secret
     }
   }
 }
@@ -1426,7 +1426,7 @@ resource "azurerm_sql_server" "example" {
   location                     = azurerm_resource_group.example.location
   version                      = "12.0"
   administrator_login          = "mradministrator"
-  administrator_login_password = "thisIsDog11"
+  administrator_login_password = "thisIsDog11"  # checkov:skip=CKV_SECRET_6 test secret
 
   extended_auditing_policy {
     storage_endpoint                        = azurerm_storage_account.example.primary_blob_endpoint
@@ -1454,7 +1454,7 @@ resource "azurerm_mysql_server" "example" {
   resource_group_name = azurerm_resource_group.example.name
 
   administrator_login          = "mysqladminun"
-  administrator_login_password = "H@Sh1CoR3!"
+  administrator_login_password = "H@Sh1CoR3!"  # checkov:skip=CKV_SECRET_80 test secret
 
   sku_name   = "B_Gen5_2"
   storage_mb = 5120

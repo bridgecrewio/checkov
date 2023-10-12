@@ -7,17 +7,18 @@ import platform
 from abc import abstractmethod
 from collections.abc import Iterable
 from pathlib import Path
-from typing import Any, TYPE_CHECKING, Callable
-from typing_extensions import TypedDict
+from typing import Any, TYPE_CHECKING, Callable, TypedDict
+from typing_extensions import TypeAlias  # noqa[TC002]
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
+from checkov.common.models.enums import CheckResult
 from checkov.common.typing import LibraryGraphConnector
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.output.github_actions_record import GithubActionsRecord
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, CheckType
 from checkov.common.parallelizer.parallel_runner import parallel_runner
-from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths, CHECKOV_CREATE_GRAPH
+from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.common.runners.graph_manager import ObjectGraphManager
 from checkov.common.typing import _CheckResult
 from checkov.common.util.consts import START_LINE, END_LINE
@@ -26,7 +27,11 @@ from checkov.common.util.suppression import collect_suppressions_for_context
 
 if TYPE_CHECKING:
     from checkov.common.checks.base_check_registry import BaseCheckRegistry
+    from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
     from checkov.common.runners.graph_builder.local_graph import ObjectLocalGraph
+
+_ObjectContext: TypeAlias = "dict[str, dict[str, Any]]"
+_ObjectDefinitions: TypeAlias = "dict[str, dict[str, Any] | list[dict[str, Any]]]"
 
 
 class GhaMetadata(TypedDict):
@@ -35,7 +40,7 @@ class GhaMetadata(TypedDict):
     jobs: dict[int, str]
 
 
-class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs to replaced
+class Runner(BaseRunner[_ObjectDefinitions, _ObjectContext, ObjectGraphManager]):
     def __init__(
         self,
         db_connector: LibraryGraphConnector | None = None,
@@ -44,8 +49,9 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
         graph_manager: ObjectGraphManager | None = None,
     ) -> None:
         super().__init__()
-        self.definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] = {}
+        self.definitions: _ObjectDefinitions = {}
         self.definitions_raw: dict[str, list[tuple[int, str]]] = {}
+        self.context: _ObjectContext | None = None
         self.map_file_path_to_gha_metadata_dict: dict[str, GhaMetadata] = {}
         self.root_folder: str | None = None
 
@@ -115,7 +121,7 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
             for directory in external_checks_dir:
                 registry.load_external_checks(directory)
 
-                if CHECKOV_CREATE_GRAPH and self.graph_registry:
+                if self.graph_registry:
                     self.graph_registry.load_external_checks(directory)
 
         if not self.context or not self.definitions:
@@ -131,7 +137,9 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
                     files_to_load = [os.path.join(root, f_name) for f_name in f_names]
                     self._load_files(files_to_load=files_to_load)
 
-            if CHECKOV_CREATE_GRAPH and self.graph_registry and self.graph_manager:
+            self.context = self.build_definitions_context(definitions=self.definitions, definitions_raw=self.definitions_raw)
+
+            if self.graph_registry and self.graph_manager:
                 logging.info(f"Creating {self.source} graph")
                 local_graph = self.graph_manager.build_graph_from_definitions(
                     definitions=self.definitions, graph_class=self.graph_class  # type:ignore[arg-type]  # the paths are just `str`
@@ -150,7 +158,7 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
         self.add_python_check_results(report=report, registry=registry, runner_filter=runner_filter, root_folder=root_folder)
 
         # run graph checks
-        if CHECKOV_CREATE_GRAPH and self.graph_registry:
+        if self.graph_registry:
             self.add_graph_check_results(report=report, runner_filter=runner_filter)
 
         return report
@@ -244,6 +252,9 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
 
                 start_line = entity[START_LINE]
                 end_line = entity[END_LINE]
+                code_block = self.get_code_block(entity=entity)
+
+                self.add_inline_suppression(check=check, entity=entity, check_result=clean_check_result)
 
                 if self.check_type == CheckType.GITHUB_ACTIONS:
                     if entity.get(CustomAttributes.BLOCK_NAME) == 'permissions' and start_line == 0 and end_line == 0:
@@ -262,7 +273,7 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
                         bc_check_id=check.bc_id,
                         check_name=check.name,
                         check_result=clean_check_result,
-                        code_block=self.definitions_raw[entity_file_path][start_line - 1:end_line + 1],
+                        code_block=code_block,
                         file_path=f"/{os.path.relpath(entity_file_path, root_folder)}",
                         file_line_range=[start_line, end_line + 1],
                         resource=entity[CustomAttributes.ID],
@@ -281,7 +292,7 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
                         bc_check_id=check.bc_id,
                         check_name=check.name,
                         check_result=clean_check_result,
-                        code_block=self.definitions_raw[entity_file_path][start_line - 1:end_line + 1],
+                        code_block=code_block,
                         file_path=f"/{os.path.relpath(entity_file_path, root_folder)}",
                         file_line_range=[start_line, end_line + 1],
                         resource=entity[CustomAttributes.ID],
@@ -294,9 +305,6 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
 
                 record.set_guideline(check.guideline)
                 report.add_record(record=record)
-
-    def included_paths(self) -> Iterable[str]:
-        return []
 
     def get_resource(self, file_path: str, key: str, supported_entities: Iterable[str],
                      start_line: int = -1, end_line: int = -1, graph_resource: bool = False) -> str:
@@ -318,6 +326,61 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
         for record in report.get_all_records():
             record.file_path = record.file_path.replace(os.getcwd(), "")
             record.resource = record.resource.replace(os.getcwd(), "")
+
+    def build_definitions_context(
+        self,
+        definitions: dict[str, dict[str, Any] | list[dict[str, Any]]],
+        definitions_raw: dict[str, list[tuple[int, str]]],
+    ) -> dict[str, dict[str, Any]]:
+        # if needed, should be overridden in the actual runner class
+        return {}
+
+    def get_code_block(self, entity: dict[str, Any]) -> list[tuple[int, str]]:
+        """Returns the code block either from context or definitions_raw"""
+
+        code_block: list[tuple[int, str]] = []
+
+        entity_file_path = entity[CustomAttributes.FILE_PATH]
+
+        if self.context:
+            # not all runners have the 'context' attribute populated
+            entity_id = entity[CustomAttributes.ID]
+            entity_context = self.context[entity_file_path].get(entity_id)
+
+            if entity_context:
+                code_block = entity_context.get("code_lines")
+            else:
+                logging.info(f"Could not find context for resource {entity_id} in file {entity_file_path}")
+
+        if not code_block:
+            # fallback, if context extraction failed
+            start_line = entity[START_LINE]
+            end_line = entity[END_LINE]
+            code_block = self.definitions_raw[entity_file_path][start_line - 1:end_line + 1]
+
+        return code_block
+
+    def add_inline_suppression(self, check: BaseGraphCheck, entity: dict[str, Any], check_result: _CheckResult) -> None:
+        """Adjusts check result, if inline suppressed"""
+
+        if self.context:
+            # not all runners have the 'context' attribute populated
+            entity_file_path = entity[CustomAttributes.FILE_PATH]
+            entity_id = entity[CustomAttributes.ID]
+            entity_context = self.context[entity_file_path].get(entity_id)
+
+            if entity_context:
+                skipped_check = next(
+                    (
+                        skipped_check
+                        for skipped_check in entity_context.get("skipped_checks", [])
+                        if skipped_check["id"] in (check.id, check.bc_id)
+                    ),
+                    None,
+                )
+                if skipped_check:
+                    check_result["result"] = CheckResult.SKIPPED
+                    check_result["suppress_comment"] = skipped_check.get("suppress_comment", "")
 
     def _get_triggers(self, definition: dict[str, Any]) -> set[str]:
         triggers_set = set()

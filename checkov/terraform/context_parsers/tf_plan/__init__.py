@@ -1,13 +1,19 @@
+from __future__ import annotations
+
 import logging
-from typing import Dict
+from typing import Any
 
 from checkov.cloudformation.parser.cfn_yaml import ContentType
 from checkov.cloudformation.parser import cfn_yaml
+from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 
 LOGGER = logging.getLogger(__name__)
+add_resource_code_filter_to_logger(LOGGER)
 
 
-def parse(filename, out_parsing_errors: Dict[str, str]):
+def parse(
+    filename: str, out_parsing_errors: dict[str, str]
+) -> tuple[dict[str, Any], list[tuple[int, str]]] | tuple[None, None]:
     """
         Decode filename into an object
     """

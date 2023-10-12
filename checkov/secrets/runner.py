@@ -34,10 +34,10 @@ from checkov.common.output.report import Report
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.common.typing import _CheckResult
-from checkov.common.util.dockerfile import is_docker_file
+from checkov.common.util.dockerfile import is_dockerfile
 from checkov.common.util.secrets import omit_secret_value_from_line
 from checkov.runner_filter import RunnerFilter
-from checkov.secrets.consts import ValidationStatus, VerifySecretsResult
+from checkov.common.secrets.consts import ValidationStatus, VerifySecretsResult
 from checkov.secrets.coordinator import EnrichedSecret, SecretsCoordinator
 from checkov.secrets.plugins.load_detectors import get_runnable_plugins
 from checkov.secrets.git_history_store import GitHistorySecretStore
@@ -72,13 +72,16 @@ SECRET_TYPE_TO_ID = {
     'Twilio API Key': 'CKV_SECRET_18',
     'Hex High Entropy String': 'CKV_SECRET_19'
 }
+
+ENTROPY_CHECK_IDS = ('CKV_SECRET_6', 'CKV_SECRET_19', 'CKV_SECRET_80')
+
 CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 
 
 MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is default limit
 
 
-class Runner(BaseRunner[None]):
+class Runner(BaseRunner[None, None, None]):
     check_type = CheckType.SECRETS  # noqa: CCE003  # a static attribute
 
     def __init__(self, file_extensions: Iterable[str] | None = None, file_names: Iterable[str] | None = None):
@@ -110,6 +113,7 @@ class Runner(BaseRunner[None]):
             {'name': 'BasicAuthDetector'},
             {'name': 'CloudantDetector'},
             {'name': 'IbmCloudIamDetector'},
+            {'name': 'JwtTokenDetector'},
             {'name': 'MailchimpDetector'},
             {'name': 'PrivateKeyDetector'},
             {'name': 'SlackDetector'},
@@ -124,6 +128,7 @@ class Runner(BaseRunner[None]):
         customer_run_config = bc_integration.customer_run_config_response
         plugins_index = 0
         work_dir_obj = None
+        secret_suppressions_id: list[str] = []
         work_path = str(os.getenv('WORKDIR')) if os.getenv('WORKDIR') else None
         if work_path is None:
             work_dir_obj = tempfile.TemporaryDirectory()
@@ -131,6 +136,9 @@ class Runner(BaseRunner[None]):
 
         if customer_run_config:
             policies_list = customer_run_config.get('secretsPolicies', [])
+            suppressions = customer_run_config.get('suppressions', [])
+            if suppressions:
+                secret_suppressions_id = [suppression['policyId'] for suppression in suppressions if suppression['suppressionType'] == 'SecretsPolicy']
             if policies_list:
                 runnable_plugins: dict[str, str] = get_runnable_plugins(policies_list)
                 logging.info(f"Found {len(runnable_plugins)} runnable plugins")
@@ -187,12 +195,12 @@ class Runner(BaseRunner[None]):
                             filter_ignored_paths(root, f_names, excluded_paths)
                         for file in f_names:
                             if enable_secret_scan_all_files:
-                                if is_docker_file(file):
+                                if is_dockerfile(file):
                                     if 'dockerfile' not in block_list_secret_scan_lower:
                                         files_to_scan.append(os.path.join(root, file))
                                 elif f".{file.split('.')[-1]}" not in block_list_secret_scan_lower:
                                     files_to_scan.append(os.path.join(root, file))
-                            elif file not in PROHIBITED_FILES and f".{file.split('.')[-1]}" in SUPPORTED_FILE_EXTENSIONS or is_docker_file(
+                            elif file not in PROHIBITED_FILES and f".{file.split('.')[-1]}" in SUPPORTED_FILE_EXTENSIONS or is_dockerfile(
                                     file):
                                 files_to_scan.append(os.path.join(root, file))
                     logging.info(f'Secrets scanning will scan {len(files_to_scan)} files')
@@ -204,20 +212,20 @@ class Runner(BaseRunner[None]):
                 self.pbar.initiate(len(files_to_scan))
                 self._scan_files(files_to_scan, secrets, self.pbar)
                 self.pbar.close()
-            secrets_duplication: dict[str, bool] = {}
 
+            secret_records: dict[str, SecretsRecord] = {}
             for key, secret in secrets:
-                added_commit_hash, removed_commit_hash, code_line, added_by, removed_date, added_date = None, None, None, None, None, None
+                added_commit_hash, removed_commit_hash, code_line, added_by, removed_date, added_date = '', '', '', '', '', ''
                 if runner_filter.enable_git_history_secret_scan:
                     enriched_potential_secret = git_history_scanner.\
                         history_store.get_added_and_removed_commit_hash(key, secret, root_folder)
-                    added_commit_hash = enriched_potential_secret.get('added_commit_hash')
-                    removed_commit_hash = enriched_potential_secret.get('removed_commit_hash')
-                    code_line = enriched_potential_secret.get('code_line')
-                    added_by = enriched_potential_secret.get('added_by')
-                    removed_date = enriched_potential_secret.get('removed_date')
-                    added_date = enriched_potential_secret.get('added_date')
-                check_id = getattr(secret, "check_id", SECRET_TYPE_TO_ID.get(secret.type))
+                    added_commit_hash = enriched_potential_secret.get('added_commit_hash') or ''
+                    removed_commit_hash = enriched_potential_secret.get('removed_commit_hash') or ''
+                    code_line = enriched_potential_secret.get('code_line') or ''
+                    added_by = enriched_potential_secret.get('added_by') or ''
+                    removed_date = enriched_potential_secret.get('removed_date') or ''
+                    added_date = enriched_potential_secret.get('added_date') or ''
+                check_id = secret.check_id if secret.check_id else SECRET_TYPE_TO_ID.get(secret.type)
                 if not check_id:
                     logging.debug(f'Secret was filtered - no check_id for line_number {secret.line_number}')
                     continue
@@ -226,13 +234,15 @@ class Runner(BaseRunner[None]):
                     logging.info(
                         f"Removing secret due to UUID filtering: {hashlib.sha256(secret.secret_value.encode('utf-8')).hexdigest()}")
                     continue
-                if secret_key in secrets_duplication:
-                    logging.debug(
-                        f'Secret was filtered - secrets_duplication. line_number {secret.line_number}, check_id {check_id}')
-                    continue
-                else:
-                    secrets_duplication[secret_key] = True
+                if secret_key in secret_records.keys():
+                    if secret_records[secret_key].check_id in ENTROPY_CHECK_IDS and check_id not in ENTROPY_CHECK_IDS:
+                        secret_records.pop(secret_key)
+                    else:
+                        continue
                 bc_check_id = metadata_integration.get_bc_id(check_id)
+                if bc_check_id in secret_suppressions_id:
+                    logging.debug(f'Secret was filtered - check {check_id} was suppressed')
+                    continue
                 severity = metadata_integration.get_severity(check_id)
                 if not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id, severity=severity,
                                                       report_type=CheckType.SECRETS):
@@ -267,7 +277,7 @@ class Runner(BaseRunner[None]):
                 # via 'load_secret_from_dict'
                 self.save_secret_to_coordinator(secret.secret_value, bc_check_id, resource, secret.line_number, result)
                 line_text_censored = omit_secret_value_from_line(cast(str, secret.secret_value), line_text)
-                report.add_record(SecretsRecord(
+                secret_records[secret_key] = SecretsRecord(
                     check_id=check_id,
                     bc_check_id=bc_check_id,
                     severity=severity,
@@ -276,7 +286,7 @@ class Runner(BaseRunner[None]):
                     code_block=[(secret.line_number, line_text_censored)],
                     file_path=relative_file_path,
                     file_line_range=[secret.line_number, secret.line_number + 1],
-                    resource=secret.secret_hash,
+                    resource=f'{added_commit_hash}:{secret.secret_hash}' if added_commit_hash else secret.secret_hash,
                     check_class="",
                     evaluations=None,
                     file_abs_path=os.path.abspath(secret.filename),
@@ -286,7 +296,9 @@ class Runner(BaseRunner[None]):
                     added_by=added_by,
                     removed_date=removed_date,
                     added_date=added_date
-                ))
+                )
+            for _, v in secret_records.items():
+                report.add_record(v)
 
             enriched_secrets_s3_path = bc_integration.persist_enriched_secrets(self.secrets_coordinator.get_secrets())
             if enriched_secrets_s3_path:

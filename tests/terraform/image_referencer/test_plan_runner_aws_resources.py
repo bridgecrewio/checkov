@@ -13,11 +13,12 @@ from tests.common.image_referencer.test_utils import (
     mock_get_license_statuses_async,
     mock_get_image_cached_result_async,
 )
+from tests.graph_utils.utils import GRAPH_FRAMEWORKS
 
 RESOURCES_PATH = Path(__file__).parent / "resources/aws"
 
 
-@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
 def test_apprunner_resources(mocker: MockerFixture, graph_framework):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
@@ -79,7 +80,7 @@ def test_apprunner_resources(mocker: MockerFixture, graph_framework):
     assert len(sca_image_report.parsing_errors) == 0
 
 
-@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
 def test_batch_resources(mocker: MockerFixture, graph_framework):
     # given
     file_name = "batch_tfplan.json"
@@ -121,7 +122,7 @@ def test_batch_resources(mocker: MockerFixture, graph_framework):
     assert len(sca_image_report.parsing_errors) == 0
 
 
-@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
 def test_codebuild_resources(mocker: MockerFixture, graph_framework):
     # given
     file_name = "codebuild_tfplan.json"
@@ -163,7 +164,7 @@ def test_codebuild_resources(mocker: MockerFixture, graph_framework):
     assert len(sca_image_report.parsing_errors) == 0
 
 
-@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
 def test_ecs_resources(mocker: MockerFixture, graph_framework):
     # given
     file_name = "ecs_tfplan.json"
@@ -194,8 +195,8 @@ def test_ecs_resources(mocker: MockerFixture, graph_framework):
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
     assert len(tf_report.resources) == 1
-    assert len(tf_report.passed_checks) == 3
-    assert len(tf_report.failed_checks) == 0
+    assert len(tf_report.passed_checks) == 4
+    assert len(tf_report.failed_checks) == 1
     assert len(tf_report.skipped_checks) == 0
     assert len(tf_report.parsing_errors) == 0
 
@@ -210,7 +211,7 @@ def test_ecs_resources(mocker: MockerFixture, graph_framework):
     assert len(sca_image_report.parsing_errors) == 0
 
 
-@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
 def test_lightsail_resources(mocker: MockerFixture, graph_framework):
     # given
     file_name = "lightsail_tfplan.json"

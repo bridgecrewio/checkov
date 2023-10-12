@@ -12,22 +12,16 @@ Checkov supports the evaluation of policies on resources declared in `.tf` files
 
 ### Example
 
+The example below creates a Terraform Plan JSON file and scans it using Checkov. It uses `jq` which must be installed beforehand and leads to better formatted outputs and results. It is not explicitly required for plan scanning.
+
 ```json
 terraform init
 terraform plan --out tfplan.binary
-terraform show -json tfplan.binary > tfplan.json
+terraform show -json tfplan.binary | jq > tfplan.json
 
 checkov -f tfplan.json
 ```
 
-Note: The Terraform show output file `tf.json` will be a single line. For that reason Checkov will report all findings as line number 0.
-If you have installed jq, you can convert a JSON file into multiple lines making it easier to read the scan result.
-
-```json
-terraform show -json tfplan.binary | jq '.' > tfplan.json
-
-checkov -f tfplan.json
-```
 
 The output would look like:
 ```
@@ -75,4 +69,39 @@ Ex. YAML
   attribute: __change_actions__
   operator: not_contains
   value: delete
+```
+
+### Changed resource fields
+
+To write a check conditional on whether or not a specific field has changed, one can access the changed fields via the attribute `TF_PLAN_RESOURCE_CHANGE_KEYS` (a list of changed keys).
+
+Ex Python
+```python
+from checkov.terraform.plan_parser import TF_PLAN_RESOURCE_CHANGE_ACTIONS, TF_PLAN_RESOURCE_CHANGE_KEYS
+
+def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
+        actions = conf.get(TF_PLAN_RESOURCE_CHANGE_ACTIONS)
+        if isinstance(actions, list) and "update" in actions:
+            if "protocol" in conf.get(TF_PLAN_RESOURCE_CHANGE_KEYS):
+                return CheckResult.FAILED
+        return CheckResult.PASSED
+```
+
+## Combining Plan and Terraform scans
+Plan file scans can be enriched with the Terraform files to improve outputs, add skip comments and expand coverage. Note that these will increase scan times.
+
+### Enrichment
+Using the `--repo-root-for-plan-enrichment` flag, code blocks, and resource IDs in the output will be from the Terraform files and skip comments in the Terraform files will be respected in the Plan file scan.
+
+Example:
+```
+checkov -f tfplan.json --repo-root-for-plan-enrichment /pathToTF/
+```
+
+### Deep Analysis
+Using the `--deep-analysis` flag in combination with the `--repo-root-for-plan-enrichment` flag will combine the graph of the Plan file scan and the Terraform files scans. This allows Checkov to make graph connections where there is incomplete information in the Plan file. For example, locals do not have the connections defined in the plan file but can make that connection with the Deep Analysis.
+
+Example:
+```
+checkov -f tfplan.json --repo-root-for-plan-enrichment /pathToTF/ --deep-analysis
 ```

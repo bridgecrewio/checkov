@@ -4,17 +4,18 @@ from packaging import version as packaging_version
 
 from checkov.common.bridgecrew.severities import BcSeverities, Severities
 from checkov.common.models.enums import CheckResult, ScanDataFormat
+from checkov.common.sca.commons import get_package_alias
 from checkov.common.sca.output import create_report_cve_record, create_report_license_record
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package_2.output import (
     calculate_lowest_compliant_version,
     create_cli_cves_table,
-    create_cli_license_violations_table,
     create_cli_output,
     CveCount,
 )
 from tests.sca_package_2.conftest import get_vulnerabilities_details_package_json, get_vulnerabilities_details, \
-    get_vulnerabilities_details_no_deps, get_vulnerabilities_details_package_lock_json
+    get_vulnerabilities_details_no_deps, get_vulnerabilities_details_package_lock_json, \
+    create_cli_license_violations_table_wrapper, create_cli_output_wrapper
 
 
 def test_create_report_cve_record():
@@ -37,6 +38,9 @@ def test_create_report_cve_record():
         "publishedDate": "2019-12-18T20:15:00+01:00",
         "discoveredDate": "2019-12-18T19:15:00Z",
         "fixDate": "2019-12-18T20:15:00+01:00",
+        "fixCode": "django==2.2.9",
+        "fixCommand": {"msg": "After updating package version manually, run:",
+                       "cmds": ["pip install -r requirements.txt"], "manualCodeFix": True}
     }
 
     # when
@@ -46,9 +50,9 @@ def test_create_report_cve_record():
         check_class=check_class,
         vulnerability_details=vulnerability_details,
         licenses='OSI_BDS',
-        package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
-        root_package_version="1.12",
-        root_package_name="django",
+        package={'name': "django", 'version': "1.12", 'package_registry': "https://registry.npmjs.org/",
+                 'is_private_registry': False, "lines": [5, 5], "code_block": 'django==1.12'},
+        root_package={'name': "django", 'version': "1.12", "lines": [5, 5]},
         used_private_registry=False
     )
 
@@ -58,13 +62,13 @@ def test_create_report_cve_record():
     assert record.check_class == check_class
     assert record.check_name == "SCA package scan"
     assert record.check_result == {"result": CheckResult.FAILED}
-    assert record.code_block == [(0, "django: 1.12")]
+    assert record.code_block == [(5, 'django==1.12')]
     assert (
             record.description
             == "Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover. ..."
     )
     assert record.file_abs_path == file_abs_path
-    assert record.file_line_range == [0, 0]
+    assert record.file_line_range == [5, 5]
     assert record.file_path == f"/{rootless_file_path}"
     assert record.repo_file_path == file_abs_path
     assert record.resource == "requirements.txt.django"
@@ -79,6 +83,10 @@ def test_create_report_cve_record():
     assert record.vulnerability_details["licenses"] == 'OSI_BDS'
     assert record.vulnerability_details["root_package_version"] == "1.12"
     assert record.vulnerability_details["root_package_name"] == "django"
+    assert record.fixed_definition == 'django==2.2.9'
+    assert record.vulnerability_details["fix_command"] == {'msg': 'After updating package version manually, run:',
+                                                           'cmds': ['pip install -r requirements.txt'],
+                                                           'manualCodeFix': True}
 
 
 def test_create_report_cve_record_results_from_platform():
@@ -136,10 +144,10 @@ def test_create_report_cve_record_results_from_platform():
         check_class=check_class,
         vulnerability_details=vulnerability_details,
         licenses='OSI_BDS',
-        package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
+        package={'name': "django", 'version': "1.12", 'package_registry': "https://registry.npmjs.org/",
+                 'is_private_registry': False, "lines": [6, 6], "code_block": 'django==1.12'},
         scan_data_format=ScanDataFormat.PLATFORM,
-        root_package_version="1.2",
-        root_package_name='django',
+        root_package={'name': "django", 'version': "1.2"},
         used_private_registry=False
     )
 
@@ -186,8 +194,7 @@ def test_create_report_cve_record_moderate_severity():
         vulnerability_details=vulnerability_details,
         licenses='OSI_BDS',
         package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
-        root_package_version="1.2",
-        root_package_name='django',
+        root_package={'name': "django", 'version': "1.2"},
         used_private_registry=False
     )
 
@@ -229,8 +236,7 @@ def test_create_report_cve_record_severity_filter():
         runner_filter=RunnerFilter(checks=['HIGH']),
         licenses='OSI_BDS',
         package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
-        root_package_version="1.2",
-        root_package_name='django',
+        root_package={'name': "django", 'version': "1.2"},
         used_private_registry=False
     )
 
@@ -283,7 +289,10 @@ def test_create_report_cve_record_package_filter():
         "fixDate": "2019-12-18T20:15:00+01:00",
         "root_package_alias": 'django@1.2',
         "root_package_version": '1.2',
-        "root_package_name": 'django'
+        "root_package_name": 'django',
+        "fixCode": 'django==1.11.27',
+        "fixCommand": {"msg": "After updating package version manually, run:",
+                       "cmds": ["pip install -r requirements.txt"], "manualCodeFix": True}
     }
 
     # when
@@ -295,8 +304,7 @@ def test_create_report_cve_record_package_filter():
         runner_filter=RunnerFilter(skip_cve_package=['django', 'requests']),
         licenses='OSI_BDS',
         package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
-        root_package_version="1.2",
-        root_package_name='django',
+        root_package={'name': "django", 'version': "1.2"},
         used_private_registry=False
     )
 
@@ -358,7 +366,8 @@ def test_create_cli_cves_table():
                       "root_package_version:": "1.2",
                       "package_name": 'django',
                       "package_version": "1.2",
-                      "is_private_fix": None},
+                      "is_private_fix": None,
+                      "lines": [1, 2]},
                      {'id': 'CVE-2016-6186', 'severity': 'medium', 'fixed_version': '1.8.14',
                       "root_package_name": 'django',
                       "root_package_version:": "1.2",
@@ -396,6 +405,7 @@ def test_create_cli_cves_table():
         file_path=file_path,
         cve_count=cve_count,
         package_details_map=package_details_map,
+        lines_details_found=True
     )
 
     # then
@@ -407,9 +417,9 @@ def test_create_cli_cves_table():
             "\t├──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┤\n",
             "\t│ To fix 5/5 CVEs, go to https://www.bridgecrew.cloud/                                                                                    │\n",
             "\t├──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┤\n",
-            "\t│ Package              │ CVE ID               │ Severity             │ Current version      │ Root fixed version   │ Compliant version    │\n",
+            "\t│ Package [Lines]      │ CVE ID               │ Severity             │ Current version      │ Root fixed version   │ Compliant version    │\n",
             "\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n",
-            "\t│ django               │ CVE-2016-7401        │ high                 │ 1.2                  │ 1.8.15               │ 2.2.24               │\n",
+            "\t│ django [1-2]         │ CVE-2016-7401        │ high                 │ 1.2                  │ 1.8.15               │ 2.2.24               │\n",
             "\t│                      │ CVE-2016-6186        │ medium               │                      │ 1.8.14               │                      │\n",
             "\t│                      │ CVE-2021-33203       │ medium               │                      │ 2.2.24               │                      │\n",
             "\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n",
@@ -420,43 +430,9 @@ def test_create_cli_cves_table():
     )
 
 
-def test_create_cli_license_violations_table():
-    # given
-    file_path = "/requirements.txt"
-
-    package_licenses_details_map = {
-        "django": [
-            {
-                "package_name": "django",
-                "package_version": "1.2",
-                "license": "DUMMY_LICENSE",
-                "status": "OPEN",
-                "policy": "BC_LIC_1"
-            },
-            {
-                "package_name": "django",
-                "package_version": "1.2",
-                "license": "DUMMY_LICENSE2",
-                "status": "OPEN",
-                "policy": "BC_LIC_1"
-            },
-        ],
-        "flask": [
-            {
-                "package_name": "flask",
-                "package_version": "0.6",
-                "license": "DUMMY_LICENSE3",
-                "status": "OPEN",
-                "policy": "BC_LIC_1"
-            },
-        ]
-    }
-
+def test_create_cli_license_violations_table_no_line_numbers():
     # when
-    table = create_cli_license_violations_table(
-        file_path=file_path,
-        package_licenses_details_map=package_licenses_details_map
-    )
+    table = create_cli_license_violations_table_wrapper(with_line_numbers=False)
 
     # then
     assert table == "".join(
@@ -468,7 +444,31 @@ def test_create_cli_license_violations_table():
             "\t│ django                   │ 1.2                      │ BC_LIC_1                 │ DUMMY_LICENSE            │ OPEN                      │\n",
             "\t│                          │                          │ BC_LIC_1                 │ DUMMY_LICENSE2           │ OPEN                      │\n",
             "\t├──────────────────────────┼──────────────────────────┼──────────────────────────┼──────────────────────────┼───────────────────────────┤\n",
+            "\t│ django                   │ 1.12                     │ BC_LIC_1                 │ DUMMY_LICENSE3           │ OPEN                      │\n",
+            "\t├──────────────────────────┼──────────────────────────┼──────────────────────────┼──────────────────────────┼───────────────────────────┤\n",
             "\t│ flask                    │ 0.6                      │ BC_LIC_1                 │ DUMMY_LICENSE3           │ OPEN                      │\n",
+            "\t└──────────────────────────┴──────────────────────────┴──────────────────────────┴──────────────────────────┴───────────────────────────┘\n",
+        ]
+    )
+
+
+def test_create_cli_license_violations_table_with_line_numbers():
+    # when
+    table = create_cli_license_violations_table_wrapper(with_line_numbers=True)
+
+    # then
+    assert table == "".join(
+        [
+            "\t/requirements.txt - Licenses Statuses:\n",
+            "\t┌──────────────────────────┬──────────────────────────┬──────────────────────────┬──────────────────────────┬───────────────────────────┐\n",
+            "\t│ Package name [Lines]     │ Package version          │ Policy ID                │ License                  │ Status                    │\n",
+            "\t├──────────────────────────┼──────────────────────────┼──────────────────────────┼──────────────────────────┼───────────────────────────┤\n",
+            "\t│ django [1-2]             │ 1.2                      │ BC_LIC_1                 │ DUMMY_LICENSE            │ OPEN                      │\n",
+            "\t│                          │                          │ BC_LIC_1                 │ DUMMY_LICENSE2           │ OPEN                      │\n",
+            "\t├──────────────────────────┼──────────────────────────┼──────────────────────────┼──────────────────────────┼───────────────────────────┤\n",
+            "\t│ django                   │ 1.12                     │ BC_LIC_1                 │ DUMMY_LICENSE3           │ OPEN                      │\n",
+            "\t├──────────────────────────┼──────────────────────────┼──────────────────────────┼──────────────────────────┼───────────────────────────┤\n",
+            "\t│ flask [5-6]              │ 0.6                      │ BC_LIC_1                 │ DUMMY_LICENSE3           │ OPEN                      │\n",
             "\t└──────────────────────────┴──────────────────────────┴──────────────────────────┴──────────────────────────┴───────────────────────────┘\n",
         ]
     )
@@ -485,6 +485,7 @@ def test_create_cli_cves_table_with_no_found_vulnerabilities():
         file_path=file_path,
         cve_count=cve_count,
         package_details_map=package_details_map,
+        lines_details_found=False
     )
 
     # then
@@ -500,77 +501,70 @@ def test_create_cli_cves_table_with_no_found_vulnerabilities():
     )
 
 
-def test_create_cli_output():
-    # given
-    rootless_file_path = "requirements.txt"
-    file_abs_path = "/path/to/requirements.txt"
-    check_class = "checkov.sca_package.scanner.Scanner"
-    license_statuses = [
-        {
-            "package_name": "django",
-            "package_version": "1.2",
-            "license": "DUMMY_LICENSE",
-            "status": "OPEN",
-            "policy": "BC_LIC_1"
-        },
-        {
-            "package_name": "flask",
-            "package_version": "0.6",
-            "license": "DUMMY_OTHER_LICENSE",  # not a real license. it is just for test a package with 2 licenses
-            "status": "OPEN",
-            "policy": "BC_LIC_1"
-        }
-    ]
+def test_create_cli_output_no_line_numbers():
     # when
-    cves_records = [
-        create_report_cve_record(
-            rootless_file_path=rootless_file_path,
-            file_abs_path=file_abs_path,
-            check_class=check_class,
-            vulnerability_details=details,
-            licenses='Unknown',
-            package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
-            root_package_name='django',
-            root_package_version='1.2',
-            used_private_registry=False
-        )
-        for details in get_vulnerabilities_details()
-    ]
-    license_records = [
-        create_report_license_record(
-            rootless_file_path=rootless_file_path,
-            file_abs_path=file_abs_path,
-            check_class=check_class,
-            licenses_status=license_status,
-            package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
-        )
-        for license_status in license_statuses
-    ]
-    cli_output = create_cli_output(True, cves_records + license_records)
+    cli_output = create_cli_output_wrapper(with_line_numbers=False)
 
     # then
     assert cli_output == "".join(
         [
             "\t/requirements.txt - CVEs Summary:\n",
-            "\t┌──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┐\n",
-            "\t│ Total CVEs: 2        │ critical: 1          │ high: 0              │ medium: 1            │ low: 0               │ skipped: 0           │\n",
-            "\t├──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┤\n",
-            "\t│ To fix 2/2 CVEs, go to https://www.bridgecrew.cloud/                                                                                    │\n",
-            "\t├──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┤\n",
-            "\t│ Package              │ CVE ID               │ Severity             │ Current version      │ Root fixed version   │ Compliant version    │\n",
-            "\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n",
-            "\t│ django               │ CVE-2019-19844       │ CRITICAL             │ 1.2                  │ 1.11.27              │ 1.11.27              │\n",
-            "\t│                      │ CVE-2016-6186        │ MEDIUM               │                      │ 1.8.14               │                      │\n",
-            "\t└──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┘\n",
+            "\t┌──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┐\n"
+            "\t│ Total CVEs: 2        │ critical: 1          │ high: 0              │ medium: 1            │ low: 0               │ skipped: 0           │\n"
+            "\t├──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┤\n"
+            "\t│ To fix 2/2 CVEs, go to https://www.bridgecrew.cloud/                                                                                    │\n"
+            "\t├──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┤\n"
+            "\t│ Package              │ CVE ID               │ Severity             │ Current version      │ Root fixed version   │ Compliant version    │\n"
+            "\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n"
+            "\t│ django               │ CVE-2019-19844       │ CRITICAL             │ 1.2                  │ 1.11.27              │ 1.11.27              │\n"
+            "\t│                      │ CVE-2016-6186        │ MEDIUM               │                      │ 1.8.14               │                      │\n"
+            "\t└──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┘\n"
             "\n",
             "\t/requirements.txt - Licenses Statuses:\n",
-            "\t┌──────────────────────────┬──────────────────────────┬──────────────────────────┬──────────────────────────┬───────────────────────────┐\n",
-            "\t│ Package name             │ Package version          │ Policy ID                │ License                  │ Status                    │\n",
-            "\t├──────────────────────────┼──────────────────────────┼──────────────────────────┼──────────────────────────┼───────────────────────────┤\n",
-            "\t│ django                   │ 1.2                      │ BC_LIC_1                 │ DUMMY_LICENSE            │ FAILED                    │\n",
-            "\t├──────────────────────────┼──────────────────────────┼──────────────────────────┼──────────────────────────┼───────────────────────────┤\n",
-            "\t│ flask                    │ 0.6                      │ BC_LIC_1                 │ DUMMY_OTHER_LICENSE      │ FAILED                    │\n",
-            "\t└──────────────────────────┴──────────────────────────┴──────────────────────────┴──────────────────────────┴───────────────────────────┘\n",
+            "\t┌──────────────────────────┬──────────────────────────┬──────────────────────────┬──────────────────────────┬───────────────────────────┐\n"
+            "\t│ Package name             │ Package version          │ Policy ID                │ License                  │ Status                    │\n"
+            "\t├──────────────────────────┼──────────────────────────┼──────────────────────────┼──────────────────────────┼───────────────────────────┤\n"
+            "\t│ django                   │ 1.2                      │ BC_LIC_1                 │ DUMMY_LICENSE            │ FAILED                    │\n"
+            "\t│                          │                          │ BC_LIC_1                 │ DUMMY_LICENSE2           │ FAILED                    │\n"
+            "\t├──────────────────────────┼──────────────────────────┼──────────────────────────┼──────────────────────────┼───────────────────────────┤\n"
+            "\t│ django                   │ 1.12                     │ BC_LIC_2                 │ DUMMY_LICENSE_3          │ FAILED                    │\n"
+            "\t├──────────────────────────┼──────────────────────────┼──────────────────────────┼──────────────────────────┼───────────────────────────┤\n"
+            "\t│ flask                    │ 0.6                      │ BC_LIC_1                 │ DUMMY_OTHER_LICENSE      │ FAILED                    │\n"
+            "\t└──────────────────────────┴──────────────────────────┴──────────────────────────┴──────────────────────────┴───────────────────────────┘\n"
+        ]
+    )
+
+
+def test_create_cli_output_with_line_numbers():
+    # when
+    cli_output = create_cli_output_wrapper(with_line_numbers=True)
+
+    # then
+    assert cli_output == "".join(
+        [
+            "\t/requirements.txt - CVEs Summary:\n",
+            "\t┌──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┐\n"
+            "\t│ Total CVEs: 2        │ critical: 1          │ high: 0              │ medium: 1            │ low: 0               │ skipped: 0           │\n"
+            "\t├──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┤\n"
+            "\t│ To fix 2/2 CVEs, go to https://www.bridgecrew.cloud/                                                                                    │\n"
+            "\t├──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┤\n"
+            "\t│ Package [Lines]      │ CVE ID               │ Severity             │ Current version      │ Root fixed version   │ Compliant version    │\n"
+            "\t├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤\n"
+            "\t│ django [1-2]         │ CVE-2019-19844       │ CRITICAL             │ 1.2                  │ 1.11.27              │ 1.11.27              │\n"
+            "\t│                      │ CVE-2016-6186        │ MEDIUM               │                      │ 1.8.14               │                      │\n"
+            "\t└──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┘\n"
+            "\n",
+            "\t/requirements.txt - Licenses Statuses:\n",
+            "\t┌──────────────────────────┬──────────────────────────┬──────────────────────────┬──────────────────────────┬───────────────────────────┐\n"
+            "\t│ Package name [Lines]     │ Package version          │ Policy ID                │ License                  │ Status                    │\n"
+            "\t├──────────────────────────┼──────────────────────────┼──────────────────────────┼──────────────────────────┼───────────────────────────┤\n"
+            "\t│ django [1-2]             │ 1.2                      │ BC_LIC_1                 │ DUMMY_LICENSE            │ FAILED                    │\n"
+            "\t│                          │                          │ BC_LIC_1                 │ DUMMY_LICENSE2           │ FAILED                    │\n"
+            "\t├──────────────────────────┼──────────────────────────┼──────────────────────────┼──────────────────────────┼───────────────────────────┤\n"
+            "\t│ django                   │ 1.12                     │ BC_LIC_2                 │ DUMMY_LICENSE_3          │ FAILED                    │\n"
+            "\t├──────────────────────────┼──────────────────────────┼──────────────────────────┼──────────────────────────┼───────────────────────────┤\n"
+            "\t│ flask [5-6]              │ 0.6                      │ BC_LIC_1                 │ DUMMY_OTHER_LICENSE      │ FAILED                    │\n"
+            "\t└──────────────────────────┴──────────────────────────┴──────────────────────────┴──────────────────────────┴───────────────────────────┘\n"
         ]
     )
 
@@ -589,8 +583,7 @@ def test_create_cli_output_without_license_records():
             vulnerability_details=details,
             licenses='Unknown',
             package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
-            root_package_version='1.2',
-            root_package_name='django',
+            root_package={'name': "django", 'version': "1.2"},
             used_private_registry=False
         )
         for details in get_vulnerabilities_details()
@@ -678,10 +671,9 @@ def test_create_cli_table_for_sca_package_with_dependencies():
             vulnerability_details=details["details"],
             licenses='Unknown',
             package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
-            root_package_version=details["root_package_version"],
-            root_package_name=details["root_package_name"],
-            root_package_fixed_version=details.get('root_package_fix_version', None),
-            used_private_registry=False
+            root_package={'name': details["root_package_name"], 'version': details["root_package_version"]},
+            used_private_registry=False,
+            root_package_cve={'fixVersion': details.get('root_package_fix_version')}
         )
         for details in get_vulnerabilities_details_package_json()
     ]
@@ -750,8 +742,7 @@ def test_create_cli_output_without_dependencies():
             vulnerability_details=details,
             licenses='Unknown',
             package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
-            root_package_name=details["packageName"],
-            root_package_version=details["packageVersion"],
+            root_package={'name': details["packageName"], 'version': details["packageVersion"]},
             used_private_registry=False
         )
         for details in get_vulnerabilities_details_no_deps()
@@ -777,6 +768,7 @@ def test_create_cli_output_without_dependencies():
          ]
     )
 
+
 def test_create_cli_table_for_package_with_diff_CVEs():
     # given
     rootless_file_path = "package-lock.json"
@@ -792,10 +784,9 @@ def test_create_cli_table_for_package_with_diff_CVEs():
             vulnerability_details=details["details"],
             licenses='Unknown',
             package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
-            root_package_version=details["root_package_version"],
-            root_package_name=details["root_package_name"],
-            root_package_fixed_version=details.get('root_package_fix_version', None),
-            used_private_registry=False
+            root_package={'name': details["root_package_name"], 'version': details["root_package_version"]},
+            used_private_registry=False,
+            root_package_cve={'fixVersion': details.get('root_package_fix_version')}
         )
         for details in get_vulnerabilities_details_package_lock_json()
     ]

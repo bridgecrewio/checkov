@@ -50,6 +50,9 @@ class OperationObjectSecurityScopeUndefined(BaseOpenapiCheckV2):
                             return CheckResult.FAILED, conf
                         if not isinstance(auth_definition, dict):
                             return CheckResult.UNKNOWN, conf
+                        definition_type = auth_definition.get('type', {})
+                        if definition_type != "oauth2":
+                            continue
                         definition_scopes = auth_definition.get('scopes', {})
                         if not definition_scopes:
                             return CheckResult.FAILED, conf

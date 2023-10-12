@@ -33,7 +33,7 @@ class TestSarifReport(unittest.TestCase):
             resource="aws_ebs_volume.web_host_storage",
             evaluations=None,
             check_class=None,
-            file_abs_path="./ec2.tf",
+            file_abs_path="/path to/ec2.tf",  # spaces should be handled correctly
             entity_tags={"tag1": "value1"},
         )
         record2.set_guideline("https://docs.bridgecrew.io/docs/general_7")
@@ -125,7 +125,7 @@ class TestSarifReport(unittest.TestCase):
                                 "locations": [
                                     {
                                         "physicalLocation": {
-                                            "artifactLocation": {"uri": "ec2.tf"},
+                                            "artifactLocation": {"uri": "path%20to/ec2.tf"},
                                             "region": {
                                                 "startLine": 5,
                                                 "endLine": 7,

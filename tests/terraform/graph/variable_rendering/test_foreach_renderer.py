@@ -5,8 +5,10 @@ from unittest import mock
 import pytest
 
 from checkov.common.util.json_utils import object_hook, CustomJSONEncoder
+from checkov.terraform import TFModule
 from checkov.terraform.graph_builder.foreach.abstract_handler import ForeachAbstractHandler
 from checkov.terraform.graph_builder.foreach.builder import ForeachBuilder
+from checkov.terraform.graph_builder.foreach.module_handler import ForeachModuleHandler
 from checkov.terraform.graph_builder.foreach.resource_handler import ForeachResourceHandler
 from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
 
@@ -115,13 +117,10 @@ def test_build_sub_graph():
     assert len(sub_graph.edges) < len(local_graph.edges)
 
 
-@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "False"})
 def test_new_resources_count():
     dir_name = 'foreach_examples/count_dup_resources'
     local_graph = build_and_get_graph_by_path(dir_name)[0]
-    vertices_names = [vertice.name for vertice in local_graph.vertices]
     main_count_resource = 'aws_s3_bucket.count_var_resource'
-    assert main_count_resource in vertices_names
 
     foreach_builder = ForeachBuilder(local_graph)
     foreach_builder._module_handler.local_graph.enable_foreach_handling = True
@@ -134,7 +133,6 @@ def test_new_resources_count():
     assert main_count_resource not in new_vertices_names
 
 
-@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "False"})
 def test_new_resources_foreach():
     dir_name = 'foreach_examples/foreach_dup_resources'
     local_graph = build_and_get_graph_by_path(dir_name)[0]
@@ -148,7 +146,6 @@ def test_new_resources_foreach():
         assert config_name.endswith("[\"bucket_a\"]") or config_name.endswith("[\"bucket_b\"]")
 
 
-@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
 def test_resources_flow():
     dir_name = 'foreach_examples/depend_resources'
     local_graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
@@ -181,7 +178,7 @@ def test_resources_flow():
     assert list(resources[0].config.get('aws_s3_bucket').keys())[0] == 'foreach_map[\"bucket_a\"]'
 
 
-@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
+@mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
 def test_tf_definitions_and_breadcrumbs():
     from checkov.terraform.graph_builder.graph_to_tf_definitions import convert_graph_vertices_to_tf_definitions
     dir_name = 'foreach_examples/depend_resources'
@@ -190,7 +187,7 @@ def test_tf_definitions_and_breadcrumbs():
     expected_data = load_expected_data('expected_data_foreach.json')
     tf_definitions_to_check = {}
     for path, res in tf_definitions.items():
-        path_list = path.split('/')[-2:]
+        path_list = path.file_path.split('/')[-2:]
         real_path = os.path.join(path_list[0], path_list[1])
         tf_definitions_to_check[real_path] = tf_definitions[path]
     assert_object_equal(tf_definitions_to_check, expected_data['tf_definitions'])
@@ -219,7 +216,6 @@ def test_tf_definitions_and_breadcrumbs():
         assert expected_breadcrumbs[list(expected_breadcrumbs.keys())[0]][f'aws_s3_bucket.foreach_map{name}'][location_var][0]['path'].endswith('depend_resources/variable.tf')
 
 
-@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
 @pytest.mark.parametrize(
     "attrs,k_v_to_change,expected_attrs,expected_res",
     [
@@ -243,8 +239,6 @@ def test_update_attrs(attrs, k_v_to_change, expected_attrs, expected_res):
     assert res == expected_res
 
 
-@mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "True"})
-@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
 def test_new_tf_parser_with_foreach_modules(checkov_source_path):
     dir_name = 'parser_dup_nested'
@@ -310,26 +304,26 @@ def test_new_tf_parser_with_foreach_modules(checkov_source_path):
     assert first_source_module.foreach_idx == 'a'
 
 
-@mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "True"})
-@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
 def test_tf_definitions_for_foreach_on_modules(checkov_source_path):
-    dir_name = 'parser_dup_nested'
-    local_graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
-    tf_definitions, _ = convert_graph_vertices_to_tf_definitions(vertices=local_graph.vertices, root_folder=dir_name)
+    dir_name_and_definitions_path = [
+        ('parser_dup_nested', 'expected_foreach_modules_tf_definitions.json'),
+        ('foreach_module_dup_foreach', 'expected_foreach_module_dup_foreach.json')
+    ]
+    for dir_name, definitions_path in dir_name_and_definitions_path:
+        local_graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
+        tf_definitions, _ = convert_graph_vertices_to_tf_definitions(vertices=local_graph.vertices, root_folder=dir_name)
 
-    file_path = os.path.join(os.path.dirname(__file__), 'expected_foreach_modules_tf_definitions.json')
-    with open(file_path, 'r') as f:
-        expected_data = json.load(f, object_hook=object_hook)
+        file_path = os.path.join(os.path.dirname(__file__), definitions_path)
+        with open(file_path, 'r') as f:
+            expected_data = json.load(f, object_hook=object_hook)
 
-    tf_definitions_json = json.dumps(tf_definitions, cls=CustomJSONEncoder)
-    tf_definitions_json = tf_definitions_json.replace(checkov_source_path, '...')
-    tf_definitions_after_handling_checkov_source = json.loads(tf_definitions_json, object_hook=object_hook)
-    assert tf_definitions_after_handling_checkov_source == expected_data
+        tf_definitions_json = json.dumps(tf_definitions, cls=CustomJSONEncoder)
+        tf_definitions_json = tf_definitions_json.replace(checkov_source_path, '...')
+        tf_definitions_after_handling_checkov_source = json.loads(tf_definitions_json, object_hook=object_hook)
+        assert tf_definitions_after_handling_checkov_source == expected_data
 
 
-@mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "True"})
-@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
 def test_foreach_module_in_second_level_module(checkov_source_path):
     dir_name = 'foreach_module'
@@ -341,21 +335,36 @@ def test_foreach_module_in_second_level_module(checkov_source_path):
     assert len(tf_definitions.keys()) == 11
 
 
-@mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "True"})
-@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
 def test_foreach_module_in_both_levels_module(checkov_source_path):
     dir_name = 'foreach_module_dup_foreach'
     graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
     tf_definitions, _ = convert_graph_vertices_to_tf_definitions(vertices=graph.vertices, root_folder=dir_name)
 
-    assert len([block for block in graph.vertices if block.block_type == 'module']) == 20
-    assert len([block for block in graph.vertices if block.block_type == 'resource']) == 16
+    resources = [block for block in graph.vertices if block.block_type == 'resource']
+    locals = [block for block in graph.vertices if block.block_type == 'locals']
+    vars = [block for block in graph.vertices if block.block_type == 'variable']
+    modules = [block for block in graph.vertices if block.block_type == 'module']
+
+    assert len(modules) == 20
+    assert len(resources) == 16
     assert len(tf_definitions.keys()) == 22
 
+    for resource in resources:
+        assert resource.source_module_object.foreach_idx is not None
 
-@mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "True"})
-@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
+    for local in locals:
+        assert local.source_module_object.foreach_idx is not None
+
+    for var in vars:
+        if var.source_module_object:
+            assert var.source_module_object.foreach_idx is not None
+
+    for module in modules:
+        if module.source_module_object:
+            assert module.source_module_object.foreach_idx is not None
+
+
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
 def test_foreach_module_and_resource(checkov_source_path):
     dir_name = 'foreach_module_and_resource'
@@ -372,8 +381,6 @@ def test_foreach_module_and_resource(checkov_source_path):
     assert graph.vertices[9].config['aws_s3_bucket_public_access_block']['var_bucket["b"]']['__address__'] == 'module.s3_module["b"].aws_s3_bucket_public_access_block.var_bucket["b"]'
 
 
-@mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "True"})
-@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
 def test_foreach_module_with_more_than_two_resources(checkov_source_path):
     dir_name = 'foreach_module_with_more_than_two_resources'
@@ -385,7 +392,6 @@ def test_foreach_module_with_more_than_two_resources(checkov_source_path):
     assert len(tf_definitions.keys()) == 17
 
 
-@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_FOREACH_HANDLING": "True"})
 @pytest.mark.parametrize(
     "statement,expected",
     [
@@ -400,3 +406,37 @@ def test_foreach_module_with_more_than_two_resources(checkov_source_path):
 def test__is_static_foreach_statement(statement, expected):
     abstract_handler = ForeachAbstractHandler(None)
     assert abstract_handler._is_static_foreach_statement(statement) == expected
+
+
+@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
+def test_foreach_with_lookup():
+    dir_name = 'foreach_examples/foreach_lookup'
+    graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
+    assert graph.vertices[0].attributes.get('uniform_bucket_level_access') == [True]
+    assert graph.vertices[1].attributes.get('uniform_bucket_level_access') == [True]
+
+
+def test__get_tf_module_with_no_foreach():
+    module = TFModule(name='1', path='1', foreach_idx='1',
+                      nested_tf_module=TFModule(name='2', path='2', foreach_idx='2', nested_tf_module=None))
+    result = ForeachModuleHandler._get_tf_module_with_no_foreach(module)
+    assert result == TFModule(name='1', path='1', foreach_idx=None,
+                      nested_tf_module=TFModule(name='2', path='2', foreach_idx=None, nested_tf_module=None))
+
+
+def test__get_module_with_only_relevant_foreach_idx():
+    module = TFModule(name='1', path='1', foreach_idx='1',
+                      nested_tf_module=TFModule(name='2', path='2', foreach_idx='2',
+                                                nested_tf_module=TFModule(name='3', path='3', foreach_idx='3',
+                                                                          nested_tf_module=None)
+                                                )
+                      )
+    original_key = TFModule(name='2', path='2', foreach_idx='2',
+                            nested_tf_module=TFModule(name='3', path='3', foreach_idx='3', nested_tf_module=None))
+    result = ForeachModuleHandler._get_module_with_only_relevant_foreach_idx('test', original_key, module)
+    assert result == TFModule(name='1', path='1', foreach_idx='1',
+                      nested_tf_module=TFModule(name='2', path='2', foreach_idx='test',
+                                                nested_tf_module=TFModule(name='3', path='3', foreach_idx='3',
+                                                                          nested_tf_module=None)
+                                                )
+                      )

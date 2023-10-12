@@ -4,17 +4,20 @@ from unittest import mock
 from pathlib import Path
 import shutil
 from copy import deepcopy
-from pytest_mock import MockerFixture
 
 from detect_secrets import SecretsCollection
+from detect_secrets.core.potential_secret import PotentialSecret
+from detect_secrets.settings import transient_settings
+from pytest_mock import MockerFixture
 
+from checkov.secrets.git_history_store import GitHistorySecretStore
+from checkov.secrets.git_types import Commit, CommitMetadata
 from checkov.secrets.runner import Runner
 from checkov.runner_filter import RunnerFilter
-from detect_secrets.settings import transient_settings
 from checkov.common.output.secrets_record import COMMIT_REMOVED_STR, COMMIT_ADDED_STR
 
-from tests.secrets.git_history.test_utils import mock_git_repo_commits1, mock_git_repo_commits2, mock_git_repo_commits3, \
-    mock_git_repo_commits_too_much, mock_git_repo_commits_remove_file, mock_git_repo_commits_rename_file, \
+from tests.secrets.git_history.test_utils import mock_git_repo_commits1, mock_git_repo_commits2, \
+    mock_git_repo_commits3, mock_git_repo_commits_remove_file, mock_git_repo_commits_rename_file, \
     mock_git_repo_commits_modify_and_rename_file, mock_remove_file_with_two_equal_secret, \
     mock_remove_file_with_two_secret, mock_git_repo_multiline_json, mock_git_repo_multiline_terraform, \
     mock_git_repo_multiline_yml, mock_commit_with_keyword_combinator, mock_set_repo, mock_get_first_commit, \
@@ -143,32 +146,34 @@ def test_scan_git_history_merge_added_removed2() -> None:
                           commit_hash='900b1e8f6f336a92e8f5fca3babca764e32c3b3d')
 
 
-@mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff', mock_git_repo_commits_too_much)
-@mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner.set_repo', mock_set_repo)
-@mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_first_commit', mock_get_first_commit)
-def test_scan_history_secrets_timeout() -> None:
-    """
-    add way too many cases to check in 1 second
-    """
-    valid_dir_path = "test"
-    secrets = SecretsCollection()
-    plugins_used = [
-        {'name': 'AWSKeyDetector'},
-    ]
-    from checkov.secrets.scan_git_history import GitHistoryScanner
-
-    with transient_settings({
-        # Only run scans with only these plugins.
-        'plugins_used': plugins_used
-    }) as settings:
-        settings.disable_filters(*['detect_secrets.filters.common.is_invalid_file'])
-        finished = GitHistoryScanner(valid_dir_path, secrets, None, 1).scan_history()
-
-    assert finished is False
+# this test is too flaky !
+# @pytest.mark.filterwarnings("error")  # otherwise pytest sometimes suppresses the raised Timeout Exception
+# @mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff', mock_git_repo_commits_too_much)
+# @mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner.set_repo', mock_set_repo)
+# @mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_first_commit', mock_get_first_commit)
+# def test_scan_history_secrets_timeout() -> None:
+#     """
+#     add way too many cases to check in 1 second
+#     """
+#     valid_dir_path = "test"
+#     secrets = SecretsCollection()
+#     plugins_used = [
+#         {'name': 'AWSKeyDetector'},
+#     ]
+#     from checkov.secrets.scan_git_history import GitHistoryScanner
+#
+#     with transient_settings({
+#         # Only run scans with only these plugins.
+#         'plugins_used': plugins_used
+#     }) as settings:
+#         settings.disable_filters(*['detect_secrets.filters.common.is_invalid_file'])
+#         finished = GitHistoryScanner(valid_dir_path, secrets, None, 1).scan_history()
+#
+#     assert finished is False
 
 
 @mock.patch('checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff', mock_run_forever)
-def test_scan_history_secrets_timeout2() -> None:
+def test_scan_history_secrets_timeout() -> None:
     """
     add way too many cases to check in 1 second
     """
@@ -304,11 +309,11 @@ def test_scan_git_history_multiline_keyword_terraform() -> None:
                         runner_filter=RunnerFilter(framework=['secrets'], enable_git_history_secret_scan=True))
     #  then
     failing_resources = {
-        "dcbf46de362e1b6942054b89ee293984e9a8a40a",
-        "ac236b0474a9a702f99dbe244a14548783ace5c5",
-        "9ed4f1457a9c27dd868c1f21276c6d7098d2bacf",
-        "06af723e58378574456be0b4c41a89194aaed0c3",
-        "5db2fafebcfed9b4c9ffc570c46ef2ca94a3881a",
+        "6bee3eb2f69e06095395ae1d54c810c3a2a99841:9ed4f1457a9c27dd868c1f21276c6d7098d2bacf",
+        "6bee3eb2f69e06095395ae1d54c810c3a2a99841:5db2fafebcfed9b4c9ffc570c46ef2ca94a3881a",
+        "6bee3eb2f69e06095395ae1d54c810c3a2a99841:ac236b0474a9a702f99dbe244a14548783ace5c5",
+        "6bee3eb2f69e06095395ae1d54c810c3a2a99841:06af723e58378574456be0b4c41a89194aaed0c3",
+        "6bee3eb2f69e06095395ae1d54c810c3a2a99841:dcbf46de362e1b6942054b89ee293984e9a8a40a",
     }
 
     failed_check_resources = {c.resource for c in report.failed_checks}
@@ -424,3 +429,55 @@ def test_git_history_plugin(mocker: MockerFixture) -> None:
     check = report.failed_checks[0]
     assert check.added_commit_hash
     assert check.check_name == 'Base64 High Entropy String'
+
+
+@mock.patch("checkov.secrets.scan_git_history.GitHistoryScanner._get_commits_diff", lambda self, last_commit_sha: [])
+@mock.patch("checkov.secrets.scan_git_history.GitHistoryScanner.set_repo", mock_set_repo)
+@mock.patch("checkov.secrets.scan_git_history.GitHistoryScanner._get_first_commit", mock_get_first_commit)
+def test_scan_history_secrets_with_history_store_and_no_new_commit() -> None:
+    # given
+    root_folder = "test"
+    secrets = SecretsCollection()
+    plugins_used = [
+        {"name": "AWSKeyDetector"},
+    ]
+
+    file_name = "Dockerfile"
+    file_results = [
+        PotentialSecret(
+            type="AWS Access Key",
+            filename=file_name,
+            secret="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+            line_number=7,
+            is_added=True,
+            is_removed=False,
+        )
+    ]
+    commit = Commit(
+        metadata=CommitMetadata(
+            commit_hash="8a21fa691e17907afee57e93b7820c5943b12746",
+            committer="Momo",
+            committed_datetime="2022-12-24T01:02:03+00:00",
+        ),
+        files={
+            "Dockerfile": 'diff --git a/Dockerfile b/Dockerfile\nindex 0000..0000 0000\n--- a/Dockerfile\n+++ b/Dockerfile\n@@ -4,6 +4,8 @@ FROM public.ecr.aws/lambda/python:3.9\n \n ENV PIP_ENV_VERSION="2022.1.8"\n \n+ENV AWS_ACCESS_KEY_ID="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"\n+\n COPY Pipfile Pipfile.lock ./\n \n RUN pip install pipenv==${PIP_ENV_VERSION} \\\n'
+        },
+    )
+
+    history_store = GitHistorySecretStore()
+    history_store.set_secret_map(file_results=file_results, file_name=file_name, commit=commit)
+
+    # when
+    from checkov.secrets.scan_git_history import GitHistoryScanner
+
+    with transient_settings(
+        {
+            # Only run scans with only these plugins.
+            "plugins_used": plugins_used
+        }
+    ) as settings:
+        settings.disable_filters(*["detect_secrets.filters.common.is_invalid_file"])
+        GitHistoryScanner(root_folder=root_folder, secrets=secrets, history_store=history_store).scan_history()
+
+    # then
+    assert len(secrets.data) == 1

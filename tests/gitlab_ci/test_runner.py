@@ -22,7 +22,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(len(report.failed_checks), 5)
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(len(report.passed_checks), 9)
-        self.assertEqual(report.skipped_checks, [])
+        self.assertEqual(len(report.skipped_checks), 1)
         report.print_console()
 
     def test_runner_honors_enforcement_rules(self):

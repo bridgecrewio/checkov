@@ -2,10 +2,13 @@ import logging
 import os
 from io import StringIO
 
-LOG_LEVEL = os.environ.get('LOG_LEVEL', 'WARNING').upper()
+from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
+
+LOG_LEVEL = os.getenv('LOG_LEVEL', 'WARNING').upper()
 logging.basicConfig(level=LOG_LEVEL)
 log_formatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
 root_logger = logging.getLogger()
+add_resource_code_filter_to_logger(root_logger)
 stream_handler = root_logger.handlers[0]
 stream_handler.setFormatter(log_formatter)
 stream_handler.setLevel(LOG_LEVEL)

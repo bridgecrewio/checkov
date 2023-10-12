@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Optional, TYPE_CHECKING
-from typing_extensions import TypedDict
+from typing import Optional, TYPE_CHECKING, TypedDict
 
 if TYPE_CHECKING:
     from detect_secrets.core.potential_secret import PotentialSecret
@@ -10,7 +9,6 @@ if TYPE_CHECKING:
 PROHIBITED_FILES = ('Pipfile.lock', 'yarn.lock', 'package-lock.json', 'requirements.txt', 'go.sum')
 
 
-GIT_HISTORY_NOT_BEEN_REMOVED = 'not-removed'
 ADDED = 'added'
 REMOVED = 'removed'
 GIT_HISTORY_OPTIONS = {ADDED, REMOVED}

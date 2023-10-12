@@ -1,10 +1,37 @@
 #!/usr/bin/env python
+import json
 import logging
 import os
 from importlib import util
 from os import path
+from pathlib import Path
 
 from setuptools import setup, find_packages
+from setuptools.command.build_py import build_py
+
+
+class PreBuildCommand(build_py):
+    """Pre-build command"""
+
+    def transform_graph_yaml_to_json(self) -> None:
+        """Transforms YAML graph checks to JSON and copies them to build/lib"""
+
+        import yaml  # can't be top-level, because it needs to be first installed via 'setup_requires'
+
+        graph_check_paths = ("checkov/*/checks/graph_checks",)
+        build_path = Path(self.build_lib)
+        src_path = Path()
+
+        for graph_check_path in graph_check_paths:
+            for yaml_file in src_path.glob(f"{graph_check_path}/**/*.yaml"):
+                json_file = (build_path / yaml_file).with_suffix(".json")
+                self.mkpath(str(json_file.parent))
+                json_file.write_text(json.dumps(yaml.safe_load(yaml_file.read_text())))
+
+    def run(self) -> None:
+        self.execute(self.transform_graph_yaml_to_json, ())
+        build_py.run(self)
+
 
 # read the contents of your README file
 this_directory = path.abspath(path.dirname(__file__))
@@ -21,6 +48,12 @@ spec.loader.exec_module(mod)  # type: ignore
 version = mod.version  # type: ignore
 
 setup(
+    cmdclass={
+        "build_py": PreBuildCommand,
+    },
+    setup_requires=[
+        "pyyaml",
+    ],
     extras_require={
         "dev": [
             "pytest==5.3.1",
@@ -33,9 +66,8 @@ setup(
     },
     install_requires=[
         "bc-python-hcl2==0.3.51",
-        "bc-detect-secrets==1.4.21",
+        "bc-detect-secrets==1.4.30",
         "bc-jsonpath-ng==1.5.9",
-        "deep-merge",
         "tabulate",
         "colorama",
         "termcolor",
@@ -51,7 +83,7 @@ setup(
         "packaging",
         "cloudsplaining>=0.4.3",
         "networkx<2.7",
-        "igraph",
+        "igraph<0.11.0",
         "dockerfile-parse",
         "docker",
         "configargparse",
@@ -68,7 +100,7 @@ setup(
         "aiomultiprocess",
         "jsonschema<5.0.0,>=4.6.0",
         "prettytable>=3.0.0",
-        "pycep-parser==0.3.9",
+        "pycep-parser==0.4.1",
         "charset-normalizer",
         "pyston-autoload==2.3.5; python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64' and implementation_name == 'cpython'",
         "pyston==2.3.5; python_version < '3.11' and (sys_platform == 'linux' or sys_platform == 'darwin') and platform_machine == 'x86_64' and implementation_name == 'cpython'",
@@ -76,42 +108,40 @@ setup(
         "requests>=2.27.0",
         "yarl",
         "openai",
+        "spdx-tools>=0.8.0,<0.9.0",
+        "license-expression",
+        "rustworkx",
     ],
     dependency_links=[],  # keep it empty, needed for pipenv-setup
     license="Apache License 2.0",
     name="checkov",
     version=version,
-    python_requires=">=3.7",
+    python_requires=">=3.8",
     description="Infrastructure as code static analysis",
     author="bridgecrew",
     author_email="meet@bridgecrew.io",
     url="https://github.com/bridgecrewio/checkov",
-    packages=find_packages(exclude=["tests*", "integration_tests*"]),
+    packages=find_packages(
+        exclude=[
+            "dogfood_tests*",
+            "flake8_plugins*",
+            "integration_tests*",
+            "performance_tests*",
+            "tests*",
+        ]
+    ),
     include_package_data=True,
-    package_dir={
-        "checkov.ansible.checks.graph_checks": "checkov/ansible/checks/graph_checks",
-        "checkov.arm.checks.graph_checks": "checkov/arm/checks/graph_checks",
-        "checkov.bicep.checks.graph_checks": "checkov/bicep/checks/graph_checks",
-        "checkov.cloudformation.checks.graph_checks": "checkov/cloudformation/checks/graph_checks",
-        "checkov.dockerfile.checks.graph_checks": "checkov/dockerfile/checks/graph_checks",
-        "checkov.github_actions.checks.graph_checks": "checkov/github_actions/checks/graph_checks",
-        "checkov.terraform.checks.graph_checks": "checkov/terraform/checks/graph_checks",
-        "checkov.kubernetes.checks.graph_checks": "checkov/kubernetes/checks/graph_checks",
-    },
     package_data={
         "checkov": ["py.typed"],
-        "checkov.ansible.checks.graph_checks": ["*.yaml"],
-        "checkov.arm.checks.graph_checks": ["*.yaml"],
-        "checkov.bicep.checks.graph_checks": ["*.yaml"],
         "checkov.common.util.templates": ["*.jinja2"],
-        "checkov.dockerfile.checks.graph_checks": ["*.yaml"],
-        "checkov.github_actions.checks.graph_checks": ["*.yaml"],
-        "checkov.terraform.checks.graph_checks": [
-            "aws/*.yaml",
-            "gcp/*.yaml",
-            "azure/*.yaml",
-        ],
-        "checkov.kubernetes.checks.graph_checks": ["*.yaml"],
+        "checkov.ansible.checks.graph_checks": ["**/*.json"],
+        "checkov.arm.checks.graph_checks": ["**/*.json"],
+        "checkov.bicep.checks.graph_checks": ["**/*.json"],
+        "checkov.cloudformation.checks.graph_checks": ["**/*.json"],
+        "checkov.dockerfile.checks.graph_checks": ["**/*.json"],
+        "checkov.github_actions.checks.graph_checks": ["**/*.json"],
+        "checkov.kubernetes.checks.graph_checks": ["**/*.json"],
+        "checkov.terraform.checks.graph_checks": ["**/*.json"],
     },
     scripts=["bin/checkov", "bin/checkov.cmd"],
     long_description=long_description,
@@ -122,7 +152,6 @@ setup(
         "Intended Audience :: System Administrators",
         "License :: OSI Approved :: Apache Software License",
         "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",

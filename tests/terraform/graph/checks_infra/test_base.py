@@ -2,19 +2,23 @@ import os
 from unittest import TestCase
 from unittest import mock
 
+from parameterized import parameterized_class
+
 from checkov.common.checks_infra.checks_parser import GraphCheckParser
 from checkov.common.checks_infra.registry import Registry
 from checkov.terraform.runner import Runner
 from checkov.runner_filter import RunnerFilter
 from checkov.common.checks_infra.solvers.attribute_solvers.base_attribute_solver import BaseAttributeSolver
+from tests.graph_utils.utils import PARAMETERIZED_GRAPH_FRAMEWORKS
 
 
+@parameterized_class(
+    PARAMETERIZED_GRAPH_FRAMEWORKS
+)
 class TestBaseSolver(TestCase):
     checks_dir = ""
 
     def setUp(self):
-        if not hasattr(self, 'graph_framework'):
-            self.graph_framework = "NETWORKX"
         with mock.patch.dict(os.environ, {"CHECKOV_GRAPH_FRAMEWORK": self.graph_framework}):
             self.source = "Terraform"
             self.registry = Registry(parser=GraphCheckParser(), checks_dir=self.checks_dir)

@@ -5,6 +5,7 @@ import logging
 import os
 import sys
 from datetime import datetime
+from importlib.metadata import version as meta_version
 from pathlib import Path
 from typing import TYPE_CHECKING, cast, Any
 
@@ -17,6 +18,7 @@ from cyclonedx.model import (
     HashType,
     LicenseChoice,
     License,
+    Property,
     Tool,
 )
 from cyclonedx.model.bom import Bom
@@ -34,7 +36,7 @@ from cyclonedx.schema import OutputFormat
 from cyclonedx.output import get_instance
 from packageurl import PackageURL
 
-from checkov.common.output.common import ImageDetails, format_string_to_licenses
+from checkov.common.output.common import ImageDetails, format_string_to_licenses, validate_lines
 from checkov.common.output.report import CheckType
 from checkov.common.output.cyclonedx_consts import (
     SCA_CHECKTYPES,
@@ -48,12 +50,6 @@ from checkov.common.output.cyclonedx_consts import (
 )
 from checkov.common.output.record import SCA_PACKAGE_SCAN_CHECK_NAME
 from checkov.common.sca.commons import UNFIXABLE_VERSION, get_fix_version
-from checkov.common.util.consts import CHECKOV_DISPLAY_REGISTRY_URL
-
-if sys.version_info >= (3, 8):
-    from importlib.metadata import version as meta_version
-else:
-    from importlib_metadata import version as meta_version
 
 if TYPE_CHECKING:
     from checkov.common.output.extra_resource import ExtraResource
@@ -73,7 +69,7 @@ class CycloneDX:
         bom = Bom()
 
         try:
-            version = meta_version("checkov")  # type:ignore[no-untyped-call]
+            version = meta_version("checkov")
         except Exception:
             # Unable to determine current version of 'checkov'
             version = "UNKNOWN"
@@ -189,6 +185,10 @@ class CycloneDX:
           <name>flask</name>
           <version>0.6</version>
           <purl>pkg:pypi/cli_repo/pd/requirements.txt/flask@0.6</purl>
+          <properties>
+            <property name="startLine">5</property>
+            <property name="endLine">6</property>
+          </properties>
         </component>
         """
 
@@ -214,7 +214,7 @@ class CycloneDX:
             namespace = f"{self.repo_id}/{resource.file_path}"
             registry_url = resource.vulnerability_details.get("package_registry")
             is_private_registry = resource.vulnerability_details.get("is_private_registry", False)
-            if CHECKOV_DISPLAY_REGISTRY_URL and registry_url and is_private_registry:
+            if registry_url and is_private_registry:
                 qualifiers = f'registry_url={registry_url}'
         package_group = None
         package_name = resource.vulnerability_details["package_name"]
@@ -231,6 +231,7 @@ class CycloneDX:
         # add licenses, if exists
         license_choices = None
         licenses = resource.vulnerability_details.get("licenses")
+
         if licenses:
             license_choices = [
                 LicenseChoice(license=License(name=license)) for license in format_string_to_licenses(licenses)
@@ -243,6 +244,13 @@ class CycloneDX:
             version=package_version,
             qualifiers=qualifiers,
         )
+
+        lines = resource.file_line_range
+        lines = validate_lines(lines)
+        properties = None
+        if lines:
+            properties = [Property(name="endLine", value=str(lines[1])), Property(name="startLine", value=str(lines[0]))]
+
         component = Component(
             bom_ref=str(purl),
             group=package_group,
@@ -251,6 +259,7 @@ class CycloneDX:
             type=ComponentType.LIBRARY,
             licenses=license_choices,
             purl=purl,
+            properties=properties
         )
         return component
 
