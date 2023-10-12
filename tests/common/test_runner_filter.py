@@ -829,6 +829,8 @@ class TestRunnerFilter(unittest.TestCase):
         sast_langs = RunnerFilter.get_sast_languages(['sast_python', 'sast_javascript'])
         assert SastLanguages.PYTHON in sast_langs
         assert SastLanguages.JAVASCRIPT in sast_langs
+        sast_langs = RunnerFilter.get_sast_languages(['all'])
+        assert all(lang in sast_langs for lang in SastLanguages)
 
     def test_scan_secrets_history_limits_to_secrets_framework(self):
         # when

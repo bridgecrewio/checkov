@@ -9,7 +9,7 @@ from checkov.runner_filter import RunnerFilter
 @pytest.mark.parametrize(
     "input_frameworks,input_skip_frameworks,expected_frameworks",
     [
-        (["all"], None, {"all"}),
+        (["all"], None, {"all", "sast"}),
         (None, None, {"all"}),
         (["terraform"], None, {"terraform"}),
         (["cloudformation", "serverless"], None, {"cloudformation", "serverless"}),
@@ -44,9 +44,6 @@ from checkov.runner_filter import RunnerFilter
                 "openapi",
                 "sca_image",
                 "sast",
-                'sast_java',
-                'sast_javascript',
-                'sast_python',
                 "3d_policy"
             },
         ),
