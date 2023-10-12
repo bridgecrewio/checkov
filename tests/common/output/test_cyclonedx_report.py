@@ -114,7 +114,7 @@ def test_valid_cyclonedx_image_bom():
     assert package_component.type == ComponentType.LIBRARY
     assert package_component.version == "7.74.0-1.3+deb11u1"
     assert len(package_component.licenses) == 1
-    assert next(iter(package_component.licenses)).license.name == "BSD-3-Clause"
+    assert next(iter(package_component.licenses)).name == "BSD-3-Clause"
 
     assert len(cyclonedx.bom.vulnerabilities) == 1
     assert next(iter(next(iter(cyclonedx.bom.vulnerabilities)).ratings)).severity == VulnerabilitySeverity.CRITICAL

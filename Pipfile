@@ -70,7 +70,7 @@ policyuniverse = "*"
 typing-extensions = ">=4.1.0"
 importlib-metadata = ">=0.12"
 cachetools = "*"
-cyclonedx-python-lib = ">=4.0.0"
+cyclonedx-python-lib = "==5.0.0rc1"  # TODO: adjust when GA https://github.com/CycloneDX/cyclonedx-python-lib/pull/440
 packageurl-python = "*"
 click = ">=8.0.0"
 aiohttp = "*"

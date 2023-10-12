@@ -3,7 +3,6 @@ from __future__ import annotations
 import itertools
 import logging
 import os
-import sys
 from datetime import datetime
 from importlib.metadata import version as meta_version
 from pathlib import Path
@@ -16,13 +15,12 @@ from cyclonedx.model import (
     sha1sum,
     HashAlgorithm,
     HashType,
-    LicenseChoice,
-    License,
     Property,
     Tool,
 )
 from cyclonedx.model.bom import Bom
 from cyclonedx.model.component import Component, ComponentType
+from cyclonedx.model.license import DisjunctiveLicense
 from cyclonedx.model.vulnerability import (
     Vulnerability,
     VulnerabilityAdvisory,
@@ -229,12 +227,12 @@ class CycloneDX:
                 package_name = resource.vulnerability_details["package_name"]
 
         # add licenses, if exists
-        license_choices = None
+        disjunctive_licenses = None
         licenses = resource.vulnerability_details.get("licenses")
 
         if licenses:
-            license_choices = [
-                LicenseChoice(license=License(name=license)) for license in format_string_to_licenses(licenses)
+            disjunctive_licenses = [
+                DisjunctiveLicense(name=license) for license in format_string_to_licenses(licenses)
             ]
 
         purl = PackageURL(
@@ -257,7 +255,7 @@ class CycloneDX:
             name=package_name,
             version=package_version,
             type=ComponentType.LIBRARY,
-            licenses=license_choices,
+            licenses=disjunctive_licenses,
             purl=purl,
             properties=properties
         )

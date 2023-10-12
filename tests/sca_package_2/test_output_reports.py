@@ -30,7 +30,7 @@ def _get_deterministic_items_in_cyclonedx(pretty_xml_as_list: List[str]) -> List
     for i, line in enumerate(pretty_xml_as_list):
         if not any(word in line for word in black_list_words):
             if i == 0 or not any(tool_name in pretty_xml_as_list[i - 1] for tool_name in
-                                 ("<ns0:name>checkov</ns0:name>", "<ns0:name>cyclonedx-python-lib</ns0:name>")):
+                                 ("name>checkov</name>", "<name>cyclonedx-python-lib</name>")):
                 filtered_list.append(line)
     return filtered_list
 
