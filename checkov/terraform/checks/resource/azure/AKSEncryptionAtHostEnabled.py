@@ -22,7 +22,11 @@ class AKSEncryptionAtHostEnabled(BaseResourceValueCheck):
                          missing_block_result=CheckResult.FAILED)
 
     def get_inspected_key(self) -> str:
-        return "enable_host_encryption"
+        if self.entity_type == "azurerm_kubernetes_cluster":
+            return "default_node_pool/[0]/enable_host_encryption"
+        else:
+            return "enable_host_encryption"
+
 
 
 check = AKSEncryptionAtHostEnabled()
