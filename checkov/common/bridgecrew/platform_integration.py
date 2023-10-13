@@ -134,6 +134,7 @@ class BcPlatformIntegration:
         self.persist_graphs_timeout = int(os.getenv('BC_PERSIST_GRAPHS_TIMEOUT', 60))
         self.ca_certificate: str | None = None
         self.no_cert_verify: bool = False
+        self.on_prem: bool = False
 
     def set_bc_api_url(self, new_url: str) -> None:
         self.bc_api_url = normalize_bc_url(new_url)
@@ -483,9 +484,9 @@ class BcPlatformIntegration:
         # just process reports with actual results in it
         self.scan_reports = [scan_report for scan_report in scan_reports if not scan_report.is_empty(full=True)]
 
-        reduced_scan_reports = reduce_scan_reports(self.scan_reports)
+        reduced_scan_reports = reduce_scan_reports(self.scan_reports, self.on_prem)
         checks_metadata_paths = enrich_and_persist_checks_metadata(self.scan_reports, self.s3_client, self.bucket,
-                                                                   self.repo_path)
+                                                                   self.repo_path, self.on_prem)
         dpath.merge(reduced_scan_reports, checks_metadata_paths)
         persist_checks_results(reduced_scan_reports, self.s3_client, self.bucket, self.repo_path)
 
@@ -1127,6 +1128,10 @@ class BcPlatformIntegration:
                 report_url = f"{access_saml_url}?{relay_state_param_name}={uri}"
 
         return report_url
+
+    def setup_on_prem(self) -> None:
+        if self.customer_run_config_response:
+            self.on_prem = self.customer_run_config_response.get('onPrem', False)
 
 
 bc_integration = BcPlatformIntegration()
