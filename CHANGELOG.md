@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.5.6...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.5.8...HEAD)
+
+## [2.5.8](https://github.com/bridgecrewio/checkov/compare/2.5.6...2.5.8) - 2023-10-12
+
+### Feature
+
+- **general:** Remove code upload for on-prem integrations - [#5624](https://github.com/bridgecrewio/checkov/pull/5624)
 
 ## [2.5.6](https://github.com/bridgecrewio/checkov/compare/2.5.3...2.5.6) - 2023-10-05
 
