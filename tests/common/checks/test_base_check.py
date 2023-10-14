@@ -96,10 +96,7 @@ class TestBaseCheck(unittest.TestCase):
             TestCheckUnknownSignature()
 
         self.assertIsInstance(context.exception, TypeError)
-        self.assertEqual(
-            "Can't instantiate abstract class TestCheckUnknownSignature with abstract methods scan_entity_conf",
-            context.exception.args[0]
-        )
+        self.assertRegex(context.exception.args[0], r"Can't instantiate abstract class TestCheckUnknownSignature with abstract method(s)? scan_entity_conf")
 
     def test_details_reinitializing_after_execution(self):
         check = TestCheckDetails()

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from collections.abc import Iterable
-from typing import Any, Callable
+from typing import Any
 
 from checkov.arm.registry import arm_resource_registry
 from checkov.bicep.checks.resource.registry import registry as bicep_registry

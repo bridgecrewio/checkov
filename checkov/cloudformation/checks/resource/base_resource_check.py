@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from collections.abc import Iterable
-from typing import Callable, Optional, Dict, Any
+from typing import Optional, Dict, Any
 
 from checkov.cloudformation.checks.resource.registry import cfn_registry
 from checkov.common.checks.base_check import BaseCheck

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from collections.abc import Iterable
-from typing import Dict, List, Callable, Optional, Any
+from typing import Dict, List, Any
 
 from checkov.common.checks.base_check import BaseCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
