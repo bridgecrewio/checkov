@@ -26,7 +26,7 @@ class AKSEphemeralOSDisks(BaseResourceValueCheck):
 
     def get_inspected_key(self) -> str:
         return "default_node_pool/[0]/os_disk_type"
-    
+
     def get_expected_value(self) -> Any:
         return "Ephemeral"
 
