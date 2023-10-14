@@ -186,7 +186,7 @@ class TestRunnerValid(unittest.TestCase):
                     ["serverless_aws"]
                 )
 
-            def scan_function_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
+            def scan_function_conf(self, conf: Dict[str, Any]) -> CheckResult:
                 return CheckResult.FAILED
 
         check = AnyFailingCheck()
@@ -215,7 +215,7 @@ class TestRunnerValid(unittest.TestCase):
                     ["serverless_aws"]
                 )
 
-            def scan_function_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
+            def scan_function_conf(self, conf: Dict[str, Any]) -> CheckResult:
                 return CheckResult.FAILED
 
         check = AnyFailingCheck()
@@ -245,7 +245,7 @@ class TestRunnerValid(unittest.TestCase):
                     ["serverless_aws"]
                 )
 
-            def scan_function_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
+            def scan_function_conf(self, conf: Dict[str, Any]) -> CheckResult:
                 return CheckResult.FAILED
 
         check = AnyFailingCheck()
@@ -303,7 +303,7 @@ class TestRunnerValid(unittest.TestCase):
                     ["serverless_aws"]
                 )
 
-            def scan_function_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
+            def scan_function_conf(self, conf: Dict[str, Any]) -> CheckResult:
                 return CheckResult.FAILED
 
         check = AnyFailingCheck()

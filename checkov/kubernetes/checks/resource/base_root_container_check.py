@@ -2,7 +2,6 @@ from abc import abstractmethod
 from typing import Dict, Any, Optional
 
 from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.common.multi_signature import multi_signature
 from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
 from checkov.kubernetes.checks.resource.registry import registry
 
@@ -22,13 +21,12 @@ class BaseK8sRootContainerCheck(BaseK8Check):
                          guideline=guideline)
         registry.register(self)
 
-    @multi_signature()
     @abstractmethod
-    def scan_spec_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
+    def scan_spec_conf(self, conf: Dict[str, Any]) -> CheckResult:
         """Return result of Kubernetes rooot container check."""
         raise NotImplementedError()
 
-    def extract_spec(self, conf: Dict[str, Any]) -> Dict:
+    def extract_spec(self, conf: Dict[str, Any]) -> Dict[str, Any]:
         spec = {}
 
         if conf['kind'] == 'Pod':

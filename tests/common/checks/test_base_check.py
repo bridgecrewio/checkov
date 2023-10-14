@@ -23,7 +23,7 @@ class TestCheckTypeNotInSignature(BaseCheck):
                          block_type=block_type)
 
     # noinspection PyMethodOverriding
-    def scan_entity_conf(self, conf):
+    def scan_entity_conf(self, conf, entity_type):
         """
         My documentation
         :param conf:
@@ -47,7 +47,7 @@ class TestCheckDetails(BaseCheck):
                          block_type=block_type)
 
     # noinspection PyMethodOverriding
-    def scan_entity_conf(self, conf):
+    def scan_entity_conf(self, conf, entity_type):
         """
         My documentation
         :param conf:
@@ -81,7 +81,7 @@ class TestBaseCheck(unittest.TestCase):
         """)
 
     def test_invalid_signature_is_detected(self):
-        with self.assertRaises(NotImplementedError) as context:
+        with self.assertRaises(TypeError) as context:
             class TestCheckUnknownSignature(BaseCheck):
 
                 def __init__(self):
@@ -93,13 +93,11 @@ class TestBaseCheck(unittest.TestCase):
                     super().__init__(name=name, id=id, categories=categories, supported_entities=supported_entities,
                                      block_type=block_type)
 
-                # noinspection PyMethodOverriding
-                def scan_entity_conf(self, conf, some_unexpected_parameter_123):
-                    return CheckResult.PASSED
-        self.assertIsInstance(context.exception, NotImplementedError)
+            TestCheckUnknownSignature()
+
+        self.assertIsInstance(context.exception, TypeError)
         self.assertEqual(
-            "The signature ((\'self\', \'conf\', \'some_unexpected_parameter_123\'), None, None) for scan_entity_conf "
-            "is not supported.",
+            "Can't instantiate abstract class TestCheckUnknownSignature with abstract methods scan_entity_conf",
             context.exception.args[0]
         )
 
