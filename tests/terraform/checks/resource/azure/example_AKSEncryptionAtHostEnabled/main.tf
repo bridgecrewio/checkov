@@ -1,23 +1,26 @@
 resource "azurerm_kubernetes_cluster" "pass" {
-  name                = "example-aks1"
-  location            = azurerm_resource_group.example.location
-  resource_group_name = azurerm_resource_group.example.name
-  dns_prefix          = "exampleaks1"
-  enable_host_encryption  = true
+  name                  = "internal"
+  kubernetes_cluster_id = azurerm_kubernetes_cluster.example.id
+  vm_size               = "Standard_DS2_v2"
+  node_count            = 1
 
   default_node_pool {
-    name       = "default"
-    node_count = 1
-    vm_size    = "Standard_D2_v2"
+    name = "default"
+
+    enable_host_encryption       = true
+    vm_size                      = "Standard_E4ads_v5"
+    os_disk_type                 = "Ephemeral"
+    zones                        = [1, 2, 3]
+    only_critical_addons_enabled = true
+
+    type                 = "VirtualMachineScaleSets"
+    vnet_subnet_id       = var.subnet_id
+    enable_auto_scaling  = true
+    max_count            = 6
+    min_count            = 2
+    orchestrator_version = local.kubernetes_version
   }
 
-  identity {
-    type = "SystemAssigned"
-  }
-
-  tags = {
-    Environment = "Production"
-  }
 }
 
 resource "azurerm_kubernetes_cluster_node_pool" "pass" {
@@ -25,64 +28,40 @@ resource "azurerm_kubernetes_cluster_node_pool" "pass" {
   kubernetes_cluster_id = azurerm_kubernetes_cluster.example.id
   vm_size               = "Standard_DS2_v2"
   node_count            = 1
-  enable_host_encryption  = true
+  enable_host_encryption = true
 
   tags = {
     Environment = "Production"
   }
 }
 
-resource "azurerm_kubernetes_cluster" "fail" {
-  name                = "example-aks1"
-  location            = azurerm_resource_group.example.location
-  resource_group_name = azurerm_resource_group.example.name
-  dns_prefix          = "exampleaks1"
 
-  default_node_pool {
-    name       = "default"
-    node_count = 1
-    vm_size    = "Standard_D2_v2"
-  }
-
-  identity {
-    type = "SystemAssigned"
-  }
-
-  tags = {
-    Environment = "Production"
-  }
-}
-
-resource "azurerm_kubernetes_cluster_node_pool" "fail" {
+resource "azurerm_kubernetes_cluster" "fail1" {
   name                  = "internal"
   kubernetes_cluster_id = azurerm_kubernetes_cluster.example.id
   vm_size               = "Standard_DS2_v2"
   node_count            = 1
+
   tags = {
     Environment = "Production"
   }
-}
-
-resource "azurerm_kubernetes_cluster" "fail1" {
-  name                = "example-aks1"
-  location            = azurerm_resource_group.example.location
-  resource_group_name = azurerm_resource_group.example.name
-  dns_prefix          = "exampleaks1"
-  enable_host_encryption  = false
 
   default_node_pool {
-    name       = "default"
-    node_count = 1
-    vm_size    = "Standard_D2_v2"
+    name = "default"
+
+    enable_host_encryption       = false
+    vm_size                      = "Standard_E4ads_v5"
+    zones                        = [1, 2, 3]
+    only_critical_addons_enabled = true
+
+    type                 = "VirtualMachineScaleSets"
+    vnet_subnet_id       = var.subnet_id
+    enable_auto_scaling  = true
+    max_count            = 6
+    min_count            = 2
+    orchestrator_version = local.kubernetes_version
   }
 
-  identity {
-    type = "SystemAssigned"
-  }
-
-  tags = {
-    Environment = "Production"
-  }
 }
 
 resource "azurerm_kubernetes_cluster_node_pool" "fail1" {
@@ -90,7 +69,43 @@ resource "azurerm_kubernetes_cluster_node_pool" "fail1" {
   kubernetes_cluster_id = azurerm_kubernetes_cluster.example.id
   vm_size               = "Standard_DS2_v2"
   node_count            = 1
-  enable_host_encryption  = false
+  enable_host_encryption = false
+
+  tags = {
+    Environment = "Production"
+  }
+}
+
+
+resource "azurerm_kubernetes_cluster" "fail2" {
+  name                  = "internal"
+  kubernetes_cluster_id = azurerm_kubernetes_cluster.example.id
+  vm_size               = "Standard_DS2_v2"
+  node_count            = 1
+
+  default_node_pool {
+    name = "default"
+
+    vm_size                      = "Standard_E4ads_v5"
+    os_disk_type                 = "Ephemeral"
+    zones                        = [1, 2, 3]
+    only_critical_addons_enabled = true
+
+    type                 = "VirtualMachineScaleSets"
+    vnet_subnet_id       = var.subnet_id
+    enable_auto_scaling  = true
+    max_count            = 6
+    min_count            = 2
+    orchestrator_version = local.kubernetes_version
+  }
+
+}
+
+resource "azurerm_kubernetes_cluster_node_pool" "fail2" {
+  name                  = "internal"
+  kubernetes_cluster_id = azurerm_kubernetes_cluster.example.id
+  vm_size               = "Standard_DS2_v2"
+  node_count            = 1
 
   tags = {
     Environment = "Production"
