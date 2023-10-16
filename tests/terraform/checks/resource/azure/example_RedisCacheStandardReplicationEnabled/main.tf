@@ -18,7 +18,7 @@ resource "azurerm_redis_cache" "pass2" {
   resource_group_name = azurerm_resource_group.example.name
   capacity            = 2
   family              = "C"
-  sku_name            = "Prenium"
+  sku_name            = "Premium"
   enable_non_ssl_port = false
   minimum_tls_version = "1.2"
 
