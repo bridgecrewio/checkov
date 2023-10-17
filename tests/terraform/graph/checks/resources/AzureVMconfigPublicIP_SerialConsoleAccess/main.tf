@@ -16,9 +16,9 @@ resource "azurerm_resource_group" "pud-rg" {
   location = "West Europe"
 }
 
-# Case 1: Pass case: "ip_configuration.public_ip_address_id" exists
+# Case 1: FAIL case: "ip_configuration.public_ip_address_id" exists and boot_diagnostics also exists
 
-resource "azurerm_network_interface" "pass_int" {
+resource "azurerm_network_interface" "fail_int" {
   name                = "pass-nic"
   location            = azurerm_resource_group.pud-rg.location
   resource_group_name = azurerm_resource_group.pud-rg.name
@@ -35,14 +35,20 @@ resource "azurerm_virtual_machine" "pass_vm" {
   name                  = "${var.prefix}-vm"
   location              = azurerm_resource_group.pud-rg.location
   resource_group_name   = azurerm_resource_group.pud-rg.name
-  network_interface_ids = [azurerm_network_interface.pass_int.id]
+  network_interface_ids = [azurerm_network_interface.fail_int.id]
   vm_size               = "Standard_DS1_v2"
+
+  boot_diagnostics {
+    storage_account_uri = null # null enables managed storage account for boot diagnostics
+    enabled             = true
+    storage_uri         = ""
+  }
 }
 
-# Case 2: Fail case: Missing "ip_configuration.public_ip_address_id" (does NOT exist)
+# Case 2: Pass case: "ip_configuration.public_ip_address_id" does NOT exist
 
-resource "azurerm_network_interface" "fail_int" {
-  name                = "fail-nic"
+resource "azurerm_network_interface" "pass_int_1" {
+  name                = "pass-nic"
   location            = azurerm_resource_group.pud-rg.location
   resource_group_name = azurerm_resource_group.pud-rg.name
 
@@ -60,7 +66,36 @@ resource "azurerm_linux_virtual_machine" "pud-linux-vm" {
   size                = "Standard_F2"
   admin_username      = "pud-admin"
   network_interface_ids = [
-    azurerm_network_interface.fail_int.id,
+    azurerm_network_interface.pass_int_1.id,
   ]
 
+}
+
+# Case 3: Pass case: "ip_configuration.public_ip_address_id" exists but boot_diagnostics does not exist
+
+resource "azurerm_network_interface" "pass_int_2" {
+  name                = "pass-nic"
+  location            = azurerm_resource_group.pud-rg.location
+  resource_group_name = azurerm_resource_group.pud-rg.name
+
+  ip_configuration {
+    name                          = "internal"
+    subnet_id                     = var.prefix
+    private_ip_address_allocation = "Dynamic"
+    public_ip_address_id = var.pub-ip-id
+  }
+}
+
+resource "azurerm_virtual_machine" "pass_vm" {
+  name                  = "${var.prefix}-vm"
+  location              = azurerm_resource_group.pud-rg.location
+  resource_group_name   = azurerm_resource_group.pud-rg.name
+  network_interface_ids = [azurerm_network_interface.pass_int_2.id]
+  vm_size               = "Standard_DS1_v2"
+
+#  boot_diagnostics {
+#    storage_account_uri = null # null enables managed storage account for boot diagnostics
+#    enabled             = true
+#    storage_uri         = ""
+#  }
 }

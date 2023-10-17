@@ -1,7 +1,7 @@
 metadata:
-  id: "CKV_AZURE_229"
-  name: "Ensure storage account is configured with Shared Key authorization"
-  category: "GENERAL_SECURITY"
+  id: "CKV2_AZURE_40"
+  name: "Ensure storage account is not configured with Shared Key authorization"
+  category: "IAM"
 
 definition:
   and:

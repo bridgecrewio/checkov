@@ -1,7 +1,7 @@
 metadata:
-  id: "CKV_AZURE_230"
+  id: "CKV2_AZURE_41"
   name: "Ensure storage account is configured with SAS expiration policy"
-  category: "GENERAL_SECURITY"
+  category: "IAM"
 
 definition:
   and:
@@ -14,7 +14,7 @@ definition:
       resource_types: "azurerm_storage_account"
       attribute: "shared_access_key_enabled"
       operator: "equals_ignore_case"
-      value: "false"
+      value: "true"
 
     - cond_type: "attribute"
       resource_types: "azurerm_storage_account"
