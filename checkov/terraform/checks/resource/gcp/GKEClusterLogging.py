@@ -1,6 +1,6 @@
-from typing import List
+from typing import Any
 
-from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.models.enums import CheckCategories
 from checkov.terraform.checks.resource.base_resource_negative_value_check import BaseResourceNegativeValueCheck
 
 
@@ -12,10 +12,10 @@ class GKEClusterLogging(BaseResourceNegativeValueCheck):
         categories = (CheckCategories.KUBERNETES,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def get_inspected_key(self):
+    def get_inspected_key(self) -> str:
         return "logging_service"
 
-    def get_forbidden_values(self):
+    def get_forbidden_values(self) -> Any:
         return "none"
 
 
