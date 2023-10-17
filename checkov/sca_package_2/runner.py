@@ -140,6 +140,13 @@ class Runner(BaseRunner[None, None, None]):
 
         return report
 
+    def _persist_file_if_required(self, package_files_to_persist: List[FileToPersist],
+                                  file_path: Path, root_path: Path | None) -> None:
+        if file_path.name in SCANNABLE_PACKAGE_FILES or file_path.suffix in SCANNABLE_PACKAGE_FILES_EXTENSIONS:
+            file_path_str = str(file_path)
+            # in case of root_path is None, we will get the path in related to the current work dir
+            package_files_to_persist.append(FileToPersist(file_path_str, os.path.relpath(file_path_str, root_path)))
+
     def upload_package_files(
             self,
             root_path: Path | None,
@@ -154,21 +161,18 @@ class Runner(BaseRunner[None, None, None]):
         try:
             if root_path:
                 for file_path in root_path.glob("**/*"):
-                    if (file_path.name in SCANNABLE_PACKAGE_FILES or file_path.suffix in SCANNABLE_PACKAGE_FILES_EXTENSIONS) and not any(
-                            p in file_path.parts for p in excluded_paths) and file_path.name not in excluded_file_names:
-                        file_path_str = str(file_path)
-                        package_files_to_persist.append(
-                            FileToPersist(file_path_str, os.path.relpath(file_path_str, root_path)))
+                    if any(p in file_path.parts for p in excluded_paths) or file_path.name in excluded_file_names:
+                        logging.debug(f"[sca_package:runner](upload_package_files) - File {file_path} was excluded")
+                        continue
+                    self._persist_file_if_required(package_files_to_persist, file_path, root_path)
 
             if files:
-                root_folder = os.path.split(os.path.commonprefix(files))[0]
                 for file in files:
                     file_path = Path(file)
                     if not file_path.exists():
-                        logging.warning(f"File {file_path} doesn't exist")
+                        logging.warning(f"[sca_package:runner](upload_package_files) - File {file_path} doesn't exist")
                         continue
-                    if file_path.name in SCANNABLE_PACKAGE_FILES or file_path.suffix in SCANNABLE_PACKAGE_FILES_EXTENSIONS:
-                        package_files_to_persist.append(FileToPersist(file, os.path.relpath(file, root_folder)))
+                    self._persist_file_if_required(package_files_to_persist, file_path, root_path)
 
             logging.info(f"{len(package_files_to_persist)} sca package files found.")
             bc_integration.persist_files(package_files_to_persist)

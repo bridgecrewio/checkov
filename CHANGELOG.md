@@ -1,6 +1,22 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.5.8...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.5.10...HEAD)
+
+## [2.5.10](https://github.com/bridgecrewio/checkov/compare/2.5.9...2.5.10) - 2023-10-16
+
+### Feature
+
+- **terraform:** support scanning of Terraform managed modules instead of downloading them - [#5635](https://github.com/bridgecrewio/checkov/pull/5635)
+
+### Bug Fix
+
+- **terraform:** Fixing issues with checks CKV_AZURE_226 & CKV_AZURE_227 - [#5638](https://github.com/bridgecrewio/checkov/pull/5638)
+
+## [2.5.9](https://github.com/bridgecrewio/checkov/compare/2.5.8...2.5.9) - 2023-10-15
+
+### Feature
+
+- **sca:** support case where there are no cves suppressions - [#5636](https://github.com/bridgecrewio/checkov/pull/5636)
 
 ## [2.5.8](https://github.com/bridgecrewio/checkov/compare/2.5.6...2.5.8) - 2023-10-12
 
