@@ -37,4 +37,4 @@ class BaseKubernetesProvider(GraphImageReferencerProvider):
         return images
 
     def _get_resource_path(self, resource: dict[str, Any]) -> str:
-        return resource.get(CustomAttributes.FILE_PATH, "")
+        return str(resource.get(CustomAttributes.FILE_PATH, ""))

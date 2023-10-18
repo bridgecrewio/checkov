@@ -119,7 +119,7 @@ class Block:
 
     def get_hash(self) -> str:
         attributes_dict = self.get_attribute_dict()
-        return attributes_dict.get(CustomAttributes.HASH, "")
+        return str(attributes_dict.get(CustomAttributes.HASH, ""))
 
     def update_attribute(
         self,
