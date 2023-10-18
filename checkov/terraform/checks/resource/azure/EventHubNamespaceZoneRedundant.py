@@ -18,7 +18,7 @@ class EventHubNamespaceZoneRedundant(BaseResourceValueCheck):
         distributed among the remaining partitions. This behavior allows for the greatest amount of up time.
         """
         name = "Ensure the Azure Event Hub Namespace is zone redundant"
-        id = "CKV_AZURE_221"
+        id = "CKV_AZURE_228"
         supported_resources = ("azurerm_eventhub_namespace",)
         categories = (CheckCategories.BACKUP_AND_RECOVERY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
