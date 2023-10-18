@@ -715,7 +715,7 @@ def test_sarif_output(sca_package_report_2_with_skip_scope_function):
                             {
                                 "physicalLocation": {
                                     "artifactLocation": {
-                                        "uri": "tests/sca_package_2/examples/requirements.txt"
+                                        "uri": "requirements.txt"
                                     },
                                     "region": {
                                         "startLine": 1,
