@@ -22,15 +22,15 @@ class AKSEncryptionAtHostEnabled(unittest.TestCase):
             'azurerm_kubernetes_cluster_node_pool.pass'
         }
         failing_resources = {
-            'azurerm_kubernetes_cluster.fail',
             'azurerm_kubernetes_cluster.fail1',
-            'azurerm_kubernetes_cluster_node_pool.fail',
+            'azurerm_kubernetes_cluster.fail2',
             'azurerm_kubernetes_cluster_node_pool.fail1',
+            'azurerm_kubernetes_cluster_node_pool.fail2',
         }
         skipped_resources = {}
 
-        passed_check_resources = set([c.resource for c in report.passed_checks])
-        failed_check_resources = set([c.resource for c in report.failed_checks])
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
 
         self.assertEqual(summary['passed'], len(passing_resources))
         self.assertEqual(summary['failed'], len(failing_resources))

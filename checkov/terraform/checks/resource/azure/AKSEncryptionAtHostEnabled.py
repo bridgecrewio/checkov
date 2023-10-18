@@ -1,4 +1,3 @@
-
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
@@ -18,11 +17,19 @@ class AKSEncryptionAtHostEnabled(BaseResourceValueCheck):
         id = "CKV_AZURE_227"
         supported_resources = ("azurerm_kubernetes_cluster", "azurerm_kubernetes_cluster_node_pool")
         categories = (CheckCategories.KUBERNETES,)
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,
-                         missing_block_result=CheckResult.FAILED)
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_resources=supported_resources,
+            missing_block_result=CheckResult.FAILED,
+        )
 
     def get_inspected_key(self) -> str:
-        return "enable_host_encryption"
+        if self.entity_type == "azurerm_kubernetes_cluster":
+            return "default_node_pool/[0]/enable_host_encryption"
+        else:
+            return "enable_host_encryption"
 
 
 check = AKSEncryptionAtHostEnabled()
