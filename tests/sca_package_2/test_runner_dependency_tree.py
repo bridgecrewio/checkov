@@ -34,7 +34,7 @@ def test_run(sca_package_report_dt):
         'This may cause unexpected application behaviour including data disclosure. '
         'This issue affects: MongoDB Inc. js-bson library version 1.1.3 and prior to.'
     )
-    assert cve_record.file_abs_path == "/package-lock.json"
+    assert cve_record.file_abs_path == "/Users/ipeleg/Work/checkov/tests/sca_package_2/examples/package-lock.json"
     assert cve_record.file_line_range == [0, 0]
     assert cve_record.file_path == "/package-lock.json"
     assert cve_record.repo_file_path == "/package-lock.json"

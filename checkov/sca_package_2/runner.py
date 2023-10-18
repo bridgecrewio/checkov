@@ -128,7 +128,7 @@ class Runner(BaseRunner[None, None, None]):
             add_to_report_sca_data(
                 report=report,
                 check_class=self._check_class,
-                scanned_file_path=s3_file_key_to_abs_path.get(rootless_file_path, ""),
+                scanned_file_path=s3_file_key_to_abs_path.get(rootless_file_path, str(package_file_path)),
                 rootless_file_path=rootless_file_path,
                 runner_filter=runner_filter,
                 vulnerabilities=vulnerabilities,
