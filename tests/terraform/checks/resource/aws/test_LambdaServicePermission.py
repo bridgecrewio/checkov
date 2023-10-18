@@ -3,34 +3,35 @@ import unittest
 
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner
-from checkov.terraform.checks.resource.azure.AKSEncryptionAtHostEnabled import check
+from checkov.terraform.checks.resource.aws.LambdaServicePermission import check
 
 
-class AKSEncryptionAtHostEnabled(unittest.TestCase):
+class TestLambdaServicePermission(unittest.TestCase):
 
     def test(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
-        test_files_dir = os.path.join(current_dir, "example_AKSEncryptionAtHostEnabled")
+        test_files_dir = os.path.join(current_dir, "example_LambdaServicePermission")
         report = runner.run(root_folder=test_files_dir,
                             runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
 
         passing_resources = {
-            'azurerm_kubernetes_cluster.pass',
-            'azurerm_kubernetes_cluster_node_pool.pass'
+            'aws_lambda_permission.ckv_unittest_pass_source_arn',
+            'aws_lambda_permission.ckv_unittest_pass_source_account'
         }
         failing_resources = {
-            'azurerm_kubernetes_cluster.fail1',
-            'azurerm_kubernetes_cluster.fail2',
-            'azurerm_kubernetes_cluster_node_pool.fail1',
-            'azurerm_kubernetes_cluster_node_pool.fail2',
+            'aws_lambda_permission.ckv_unittest_fail',
         }
+        unknown_resources = {
+            'aws_lambda_permission.ckv_unittest_pass_principal',
+        }
+
         skipped_resources = {}
 
-        passed_check_resources = {c.resource for c in report.passed_checks}
-        failed_check_resources = {c.resource for c in report.failed_checks}
+        passed_check_resources = set([c.resource for c in report.passed_checks])
+        failed_check_resources = set([c.resource for c in report.failed_checks])
 
         self.assertEqual(summary['passed'], len(passing_resources))
         self.assertEqual(summary['failed'], len(failing_resources))
