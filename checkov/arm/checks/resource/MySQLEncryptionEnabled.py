@@ -6,27 +6,24 @@ from checkov.arm.base_resource_check import BaseResourceCheck
 
 
 class MySQLEncryptionEnabled(BaseResourceCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure that MySQL server enables infrastructure encryption"
         id = "CKV_AZURE_96"
-        supported_resources = ['Microsoft.DBforMySQL/flexibleServers']
-        categories = [CheckCategories.ENCRYPTION]
+        supported_resources = ("Microsoft.DBforMySQL/flexibleServers",)
+        categories = (CheckCategories.ENCRYPTION,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult:
-        if conf.get("properties") and isinstance(conf.get("properties"), dict):
-            properties = conf.get("properties")
-            self.evaluated_keys = ['properties']
-
-            if properties.get('dataencryption') and isinstance(properties.get('dataencryption'), dict):
-                dataencryption = properties.get('dataencryption')
-                self.evaluated_keys = ['properties/dataencryption']
-                if dataencryption is None:
+        properties = conf.get("properties")
+        if properties and isinstance(properties, dict):
+            self.evaluated_keys = ["properties/dataencryption"]
+            data_encryption = properties.get("dataencryption")
+            if data_encryption and isinstance(data_encryption, dict):
+                if data_encryption is None:
                     return CheckResult.FAILED
-
                 return CheckResult.PASSED
             # unparsed
-            if properties.get('dataencryption') and isinstance(properties.get('dataencryption'), str):
+            elif data_encryption and isinstance(data_encryption, str):
                 return CheckResult.UNKNOWN
             return CheckResult.FAILED
         return CheckResult.UNKNOWN
