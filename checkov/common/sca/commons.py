@@ -52,7 +52,8 @@ def normalize_twistcli_language(language: str) -> str:
 
 
 def get_package_lines(package: dict[str, Any]) -> list[int] | None:
-    return list(package.get("linesNumbers", package.get("lines")))
+    lines = package.get("linesNumbers", package.get("lines"))
+    return list(lines) if lines else None
 
 
 def get_record_file_line_range(package: dict[str, Any], file_line_range: list[int] | None) -> list[int]:
