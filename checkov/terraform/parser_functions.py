@@ -30,9 +30,7 @@ from checkov.common.util.parser_utils import (
 FUNCTION_FAILED = "____FUNCTION_FAILED____"
 
 
-def merge(
-    original: str, var_resolver: Callable[[Any], Any], **_: Any
-) -> dict[Hashable, Any] | str:
+def merge(original: str, var_resolver: Callable[[Any], Any], **_: Any) -> dict[Hashable, Any] | str:
     # https://www.terraform.io/docs/language/functions/merge.html
     args = split_merge_args(original)
     if args is None:
@@ -52,9 +50,7 @@ def merge(
     return merged_map
 
 
-def concat(
-    original: str, var_resolver: Callable[[Any], Any], **_: Any
-) -> list[Any] | str:
+def concat(original: str, var_resolver: Callable[[Any], Any], **_: Any) -> list[Any] | str:
     # https://www.terraform.io/docs/language/functions/concat.html
     args = split_merge_args(original)
     if args is None:
@@ -145,9 +141,7 @@ def map(original: str, **_: Any) -> dict[Hashable, Any] | str:
     #       the issue, act like it's a list (to allow comma separation) and let the HCL
     #       parser deal with it. Then iterating the list is easy.
     converted_to_list = eval_string(f"[{original}]")
-    if (
-        converted_to_list is None or len(converted_to_list) & 1
-    ):  # none or odd number of args
+    if converted_to_list is None or len(converted_to_list) & 1:  # none or odd number of args
         return FUNCTION_FAILED
 
     return create_map(converted_to_list)
@@ -185,9 +179,7 @@ def _check_map_type_consistency(value: dict[Hashable, Any]) -> dict[Hashable, An
     return value
 
 
-def handle_dynamic_values(
-    conf: Dict[str, List[Any]], has_dynamic_block: bool = False
-) -> bool:
+def handle_dynamic_values(conf: Dict[str, List[Any]], has_dynamic_block: bool = False) -> bool:
     # recursively search for blocks that are dynamic
     for block_name in conf.keys():
         conf_block = conf[block_name]
@@ -195,11 +187,7 @@ def handle_dynamic_values(
             has_dynamic_block = handle_dynamic_values(conf_block, has_dynamic_block)
 
         # if the configuration is a block element, search down again.
-        if (
-            conf_block
-            and isinstance(conf_block, list)
-            and isinstance(conf_block[0], dict)
-        ):
+        if conf_block and isinstance(conf_block, list) and isinstance(conf_block[0], dict):
             has_dynamic_block = handle_dynamic_values(conf_block[0], has_dynamic_block)
 
     # if a dynamic block exists somewhere in the resource it will return True
@@ -207,7 +195,7 @@ def handle_dynamic_values(
 
 
 def process_dynamic_values(conf: Dict[str, List[Any]]) -> bool:
-    dynamic_conf = conf.get("dynamic", {})
+    dynamic_conf: Union[List[Any], Dict[str, List[Any]]] = conf.get("dynamic", {})
 
     if not isinstance(dynamic_conf, list):
         return False
@@ -235,11 +223,7 @@ def process_dynamic_values(conf: Dict[str, List[Any]]) -> bool:
             else:
                 # this should be the result of a successful dynamic block rendering
                 # in some cases a whole dict is added, which doesn't have a list around it
-                conf[element_name] = (
-                    element_value
-                    if isinstance(element_value, list)
-                    else [element_value]
-                )
+                conf[element_name] = element_value if isinstance(element_value, list) else [element_value]
 
         has_dynamic_block = True
 
