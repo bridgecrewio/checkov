@@ -3,11 +3,10 @@ from __future__ import annotations
 import itertools
 import logging
 import os
-import sys
 from datetime import datetime
+from importlib.metadata import version as meta_version
 from pathlib import Path
 from typing import TYPE_CHECKING, cast, Any
-from checkov.common.output.common import format_string_to_licenses, validate_lines
 
 from cyclonedx.model import (
     XsUri,
@@ -33,7 +32,7 @@ from cyclonedx.model.vulnerability import (
 from cyclonedx.output import get_instance, OutputFormat
 from packageurl import PackageURL
 
-from checkov.common.output.common import ImageDetails
+from checkov.common.output.common import format_string_to_licenses, validate_lines, ImageDetails
 from checkov.common.output.report import CheckType
 from checkov.common.output.cyclonedx_consts import (
     SCA_CHECKTYPES,
@@ -47,11 +46,6 @@ from checkov.common.output.cyclonedx_consts import (
 )
 from checkov.common.output.record import SCA_PACKAGE_SCAN_CHECK_NAME
 from checkov.common.sca.commons import UNFIXABLE_VERSION, get_fix_version
-
-if sys.version_info >= (3, 8):
-    from importlib.metadata import version as meta_version
-else:
-    from importlib_metadata import version as meta_version
 
 if TYPE_CHECKING:
     from checkov.common.output.extra_resource import ExtraResource

@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import logging
 from collections import defaultdict
-from typing import TYPE_CHECKING, Dict, List, Optional
-from typing_extensions import TypedDict
+from typing import TYPE_CHECKING, Dict, List, Optional, TypedDict
 
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.secrets import omit_secret_value_from_line
