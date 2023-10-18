@@ -28,7 +28,7 @@ class GoogleKMSKeyRotationPeriod(BaseResourceCheck):
 
         self.evaluated_keys = ["rotation_period"]
         rotation = conf.get("rotation_period")
-        if rotation and rotation[0]:
+        if rotation and rotation[0] and isinstance(rotation[0], str):
             time = force_int(rotation[0][:-1])
             if time and ONE_DAY <= time <= NINETY_DAYS:
                 return CheckResult.PASSED

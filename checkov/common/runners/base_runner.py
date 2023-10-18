@@ -6,7 +6,7 @@ import os
 import re
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
-from typing import List, Any, TYPE_CHECKING, TypeVar, Generic, Dict
+from typing import List, Any, TYPE_CHECKING, TypeVar, Generic, Dict, Optional
 
 from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
 from checkov.common.graph.graph_builder import CustomAttributes
@@ -14,7 +14,6 @@ from checkov.common.util.tqdm_utils import ProgressBar
 
 from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 from checkov.common.output.report import Report
-from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.runner_filter import RunnerFilter
 from checkov.common.graph.graph_manager import GraphManager  # noqa
 
@@ -45,7 +44,6 @@ def strtobool(val: str) -> int:
         raise ValueError("invalid boolean value %r for environment variable CKV_IGNORE_HIDDEN_DIRECTORIES" % (val,))
 
 
-CHECKOV_CREATE_GRAPH = convert_str_to_bool(os.getenv("CHECKOV_CREATE_GRAPH", "True"))
 IGNORED_DIRECTORIES_ENV = os.getenv("CKV_IGNORED_DIRECTORIES", "node_modules,.terraform,.serverless")
 IGNORE_HIDDEN_DIRECTORY_ENV = strtobool(os.getenv("CKV_IGNORE_HIDDEN_DIRECTORIES", "True"))
 
@@ -62,18 +60,22 @@ class BaseRunner(ABC, Generic[_Definitions, _Context, _GraphManager]):
     graph_manager: _GraphManager | None = None
     graph_registry: Registry | None = None
     db_connector: LibraryGraphConnector
+    resource_subgraph_map: Optional[dict[str, str]] = None
 
     def __init__(self, file_extensions: Iterable[str] | None = None, file_names: Iterable[str] | None = None):
         self.file_extensions = file_extensions or []
         self.file_names = file_names or []
         self.pbar = ProgressBar(self.check_type)
-        db_connector_class: "type[NetworkxConnector | IgraphConnector]" = IgraphConnector
+        db_connector_class: "type[NetworkxConnector | IgraphConnector | RustworkxConnector]" = IgraphConnector
         graph_framework = os.getenv("CHECKOV_GRAPH_FRAMEWORK", "IGRAPH")
         if graph_framework == "IGRAPH":
             db_connector_class = IgraphConnector
         elif graph_framework == "NETWORKX":
             from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
             db_connector_class = NetworkxConnector
+        elif graph_framework == "RUSTWORKX":
+            from checkov.common.graph.db_connectors.rustworkx.rustworkx_db_connector import RustworkxConnector
+            db_connector_class = RustworkxConnector
 
         self.db_connector = db_connector_class()
 

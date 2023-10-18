@@ -28,6 +28,9 @@ class ModuleLoader(ABC):
         self.inner_module: Optional[str] = None
         self.root_dir = ""  # root dir for storing external modules
 
+    def __eq__(self, loader: object) -> bool:
+        return type(loader) is type(self)
+
     @abstractmethod
     def discover(self, module_params: ModuleParams) -> None:
         """

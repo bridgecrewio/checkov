@@ -6,11 +6,12 @@ import json
 import itertools
 from concurrent import futures
 from io import StringIO
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, Optional
 from collections import defaultdict
 
 import dpath
 from igraph import Graph
+from rustworkx import PyDiGraph, digraph_node_link_json  # type: ignore
 
 try:
     from networkx import DiGraph, node_link_data
@@ -19,9 +20,10 @@ except ImportError:
     DiGraph = str
     node_link_data = lambda G : {}
 
+
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
-from checkov.common.typing import _ReducedScanReport
+from checkov.common.typing import _ReducedScanReport, LibraryGraph
 from checkov.common.util.file_utils import compress_string_io_tar
 from checkov.common.util.igraph_serialization import serialize_to_json
 from checkov.common.util.json_utils import CustomJSONEncoder
@@ -38,6 +40,10 @@ check_reduced_keys = (
 secrets_check_reduced_keys = check_reduced_keys + ('validation_status',)
 check_metadata_keys = ('evaluations', 'code_block', 'workflow_name', 'triggers', 'job')
 
+FILE_NAME_NETWORKX = 'graph_networkx.json'
+FILE_NAME_IGRAPH = 'graph_igraph.json'
+FILE_NAME_RUSTWORKX = 'graph_rustworkx.json'
+
 
 def _is_scanned_file(file: str) -> bool:
     file_ending = os.path.splitext(file)[1]
@@ -52,18 +58,20 @@ def _put_json_object(s3_client: S3Client, json_obj: Any, bucket: str, object_pat
         raise
 
 
-def _extract_checks_metadata(report: Report, full_repo_object_key: str) -> dict[str, dict[str, Any]]:
+def _extract_checks_metadata(report: Report, full_repo_object_key: str, on_prem: bool) -> dict[str, dict[str, Any]]:
     metadata: dict[str, dict[str, Any]] = defaultdict(dict)
     for check in itertools.chain(report.passed_checks, report.failed_checks, report.skipped_checks):
         metadata_key = f'{check.file_path}:{check.resource}'
         check_meta = {k: getattr(check, k, "") for k in check_metadata_keys}
         check_meta['file_object_path'] = full_repo_object_key + check.file_path
+        if on_prem:
+            check_meta['code_block'] = []
         metadata[metadata_key][check.check_id] = check_meta
 
     return metadata
 
 
-def reduce_scan_reports(scan_reports: list[Report]) -> dict[str, _ReducedScanReport]:
+def reduce_scan_reports(scan_reports: list[Report], on_prem: Optional[bool] = False) -> dict[str, _ReducedScanReport]:
     """
     Transform checkov reports objects into compact dictionaries
     :param scan_reports: List of checkov output reports
@@ -73,6 +81,8 @@ def reduce_scan_reports(scan_reports: list[Report]) -> dict[str, _ReducedScanRep
     for report in scan_reports:
         check_type = report.check_type
         reduced_keys = secrets_check_reduced_keys if check_type == CheckType.SECRETS else check_reduced_keys
+        if on_prem:
+            reduced_keys = tuple(k for k in reduced_keys if k != 'code_block')
         reduced_scan_reports[check_type] = \
             {
                 "checks": {
@@ -130,7 +140,7 @@ def persist_logs_stream(logs_stream: StringIO, s3_client: S3Client, bucket: str,
 
 
 def enrich_and_persist_checks_metadata(
-        scan_reports: list[Report], s3_client: S3Client, bucket: str, full_repo_object_key: str
+        scan_reports: list[Report], s3_client: S3Client, bucket: str, full_repo_object_key: str, on_prem: bool
 ) -> dict[str, dict[str, str]]:
     """
     Save checks metadata into bridgecrew's platform
@@ -139,26 +149,36 @@ def enrich_and_persist_checks_metadata(
     checks_metadata_paths: dict[str, dict[str, str]] = {}
     for scan_report in scan_reports:
         check_type = scan_report.check_type
-        checks_metadata_object = _extract_checks_metadata(scan_report, full_repo_object_key)
+        checks_metadata_object = _extract_checks_metadata(scan_report, full_repo_object_key, on_prem)
         checks_metadata_object_path = f'{full_repo_object_key}/{checkov_results_prefix}/{check_type}/checks_metadata.json'
         dpath.new(checks_metadata_paths, f"{check_type}/checks_metadata_path", checks_metadata_object_path)
         _put_json_object(s3_client, checks_metadata_object, bucket, checks_metadata_object_path)
     return checks_metadata_paths
 
 
-def persist_graphs(graphs: dict[str, DiGraph | Graph], s3_client: S3Client, bucket: str, full_repo_object_key: str,
-                   timeout: int, absolute_root_folder: str = '') -> None:
-    def _upload_graph(check_type: str, graph: DiGraph | Graph, _absolute_root_folder: str = '') -> None:
+def persist_graphs(
+        graphs: dict[str, list[tuple[LibraryGraph, Optional[str]]]],
+        s3_client: S3Client,
+        bucket: str,
+        full_repo_object_key: str,
+        timeout: int,
+        absolute_root_folder: str = ''
+) -> None:
+    def _upload_graph(check_type: str, graph: LibraryGraph, _absolute_root_folder: str = '', subgraph_path: Optional[str] = None) -> None:
         if isinstance(graph, DiGraph):
             json_obj = node_link_data(graph)
-            graph_file_name = 'graph_networkx.json'
+            graph_file_name = FILE_NAME_NETWORKX
         elif isinstance(graph, Graph):
             json_obj = serialize_to_json(graph, _absolute_root_folder)
-            graph_file_name = 'graph_igraph.json'
+            graph_file_name = FILE_NAME_IGRAPH
+        elif isinstance(graph, PyDiGraph):
+            json_obj = digraph_node_link_json(graph)
+            graph_file_name = FILE_NAME_RUSTWORKX
         else:
             logging.error(f"unsupported graph type '{graph.__class__.__name__}'")
             return
-        s3_key = f'{graphs_repo_object_key}/{check_type}/{graph_file_name}'
+        multi_graph_addition = (f"multi-graph/{subgraph_path}" if subgraph_path is not None else '').rstrip("/")
+        s3_key = os.path.join(graphs_repo_object_key, check_type, multi_graph_addition, graph_file_name)
         try:
             _put_json_object(s3_client, json_obj, bucket, s3_key)
         except Exception:
@@ -168,9 +188,36 @@ def persist_graphs(graphs: dict[str, DiGraph | Graph], s3_client: S3Client, buck
 
     with futures.ThreadPoolExecutor() as executor:
         futures.wait(
-            [executor.submit(_upload_graph, check_type, graph, absolute_root_folder) for
-             check_type, graph in graphs.items()],
+            [executor.submit(_upload_graph, check_type, graph, absolute_root_folder, subgraph_path) for
+             check_type, graphs in graphs.items() for graph, subgraph_path in graphs],
             return_when=futures.FIRST_EXCEPTION,
             timeout=timeout
         )
-    logging.info(f"Done persisting {len(graphs)} graphs")
+    logging.info(f"Done persisting {len(list(itertools.chain(*graphs.values())))} graphs")
+
+
+def persist_resource_subgraph_maps(
+        resource_subgraph_maps: dict[str, dict[str, str]],
+        s3_client: S3Client,
+        bucket: str,
+        full_repo_object_key: str,
+        timeout: int
+) -> None:
+    def _upload_resource_subgraph_map(check_type: str, resource_subgraph_map: dict[str, str]) -> None:
+        s3_key = os.path.join(graphs_repo_object_key, check_type, "multi-graph/resource_subgraph_maps/resource_subgraph_map.json")
+        try:
+            _put_json_object(s3_client, resource_subgraph_map, bucket, s3_key)
+        except Exception:
+            logging.error(f'failed to upload resource_subgraph_map from framework {check_type} to platform', exc_info=True)
+
+    # removing '/src' with [:-4]
+    graphs_repo_object_key = full_repo_object_key.replace('checkov', 'graphs')[:-4]
+    with futures.ThreadPoolExecutor() as executor:
+        futures.wait(
+            [executor.submit(_upload_resource_subgraph_map, check_type, resource_subgraph_map) for
+             check_type, resource_subgraph_map in resource_subgraph_maps.items()],
+            return_when=futures.FIRST_EXCEPTION,
+            timeout=timeout
+        )
+    if resource_subgraph_maps:
+        logging.info(f"Done persisting resource_subgraph_maps for frameworks - {', '.join(resource_subgraph_maps.keys())}")

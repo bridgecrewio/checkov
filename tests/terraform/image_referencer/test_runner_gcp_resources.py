@@ -14,11 +14,12 @@ from tests.common.image_referencer.test_utils import (
     mock_get_license_statuses_async,
     mock_get_image_cached_result_async,
 )
+from tests.graph_utils.utils import GRAPH_FRAMEWORKS
 
 RESOURCES_PATH = Path(__file__).parent / "resources/gcp"
 
 
-@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
 def test_cloud_run_resources(mocker: MockerFixture, graph_framework):
     from checkov.common.bridgecrew.platform_integration import bc_integration
 
@@ -77,7 +78,7 @@ def test_cloud_run_resources(mocker: MockerFixture, graph_framework):
     assert len(sca_image_report.parsing_errors) == 0
 
 
-@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
 def test_cloud_run_v2_resources(mocker: MockerFixture, graph_framework):
     # given
     file_name = "cloud_run_v2.tf"
@@ -124,7 +125,7 @@ def test_cloud_run_v2_resources(mocker: MockerFixture, graph_framework):
     assert len(sca_image_report.parsing_errors) == 0
 
 
-@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
 def test_cloudbuild_resources(mocker: MockerFixture, graph_framework):
     # given
     file_name = "cloudbuild.tf"
