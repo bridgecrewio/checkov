@@ -37,7 +37,7 @@ def test_run(sca_package_report_dt):
     assert cve_record.file_abs_path == f"{EXAMPLES_DIR}/package-lock.json"
     assert cve_record.file_line_range == [0, 0]
     assert cve_record.file_path == "/package-lock.json"
-    assert cve_record.repo_file_path == "/package-lock.json"
+    assert cve_record.repo_file_path == "/tests/sca_package_2/test_runner_dependency_tree.py"
     assert cve_record.resource == 'package-lock.json.bson'
     assert cve_record.severity == Severities[BcSeverities.MEDIUM]
     assert cve_record.short_description == 'CVE-2019-2391 - bson: 1.0.9'
