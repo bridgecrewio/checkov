@@ -167,7 +167,6 @@ def _prepare_resource_block(
             resource_conf[TF_PLAN_RESOURCE_CHANGE_KEYS] = changes.get(TF_PLAN_RESOURCE_CHANGE_KEYS) or []
 
         provisioners = conf.get(TF_PLAN_RESOURCE_PROVISIONERS) if conf else None
-        #resource_conf["provisioner"] = provisioners
         if provisioners:
             resource_conf["provisioner"] = _get_provisioner(provisioners)
 
