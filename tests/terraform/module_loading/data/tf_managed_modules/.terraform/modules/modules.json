@@ -1,0 +1,10 @@
+{
+  "Modules": [
+    {
+      "Key": "log_group",
+      "Source": "registry.terraform.io/terraform-aws-modules/cloudwatch/aws//modules/log-group",
+      "Version": "4.1.0",
+      "Dir": ".terraform/modules/log_group/modules/log-group"
+    }
+  ]
+}
