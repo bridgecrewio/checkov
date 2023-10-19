@@ -185,7 +185,7 @@ def request_wrapper(
             logging.exception("request_wrapper connection error")
             raise connection_error
         except requests.exceptions.HTTPError as http_error:
-            status_code = http_error.response.status_code
+            status_code = http_error.response.status_code   # type:ignore[union-attr]
             logging.error(f"HTTP error on request {method}:{url},\ndata:\n{data}\njson:{json if log_json_body else 'Redacted'}\nheaders:{headers}")
             if (status_code >= 500 or status_code == 403) and i != request_max_tries - 1:
                 sleep_secs = sleep_between_request_tries * (i + 1)
