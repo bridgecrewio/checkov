@@ -58,7 +58,7 @@ class TestPlanFileParser(unittest.TestCase):
         file_resource_definition = tf_definition['resource'][1]
         resource_definition = next(iter(file_resource_definition.values()))
         resource_attributes = next(iter(resource_definition.values()))
-        self.assertTrue(resource_attributes['provisioners'])
+        self.assertTrue(resource_attributes['provisioner'])
 
 
 def test_large_file(mocker: MockerFixture):
