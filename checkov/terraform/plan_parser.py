@@ -167,8 +167,9 @@ def _prepare_resource_block(
             resource_conf[TF_PLAN_RESOURCE_CHANGE_KEYS] = changes.get(TF_PLAN_RESOURCE_CHANGE_KEYS) or []
 
         provisioners = conf.get(TF_PLAN_RESOURCE_PROVISIONERS) if conf else None
+        #resource_conf["provisioner"] = provisioners
         if provisioners:
-            resource_conf[TF_PLAN_RESOURCE_PROVISIONERS] = provisioners
+            resource_conf["provisioner"] = _get_provisioner(provisioners)
 
         resource_block[resource_type][resource.get("name", "default")] = resource_conf
         prepared = True
@@ -347,3 +348,15 @@ def _clean_simple_type_list(value_list: List[Any]) -> List[Any]:
             if lower_case_value == "false":
                 value_list[i] = False
     return value_list
+
+
+def _get_provisioner(input_data: List[Any]) -> List[Any]:
+    result = []
+    for item in input_data:
+        key = item['type']
+        command_value = item['expressions']['command']
+        if not isinstance(command_value, list):
+            command_value = [command_value]
+        transformed_item = {key: {'command': command_value}}
+        result.append(transformed_item)
+    return result
