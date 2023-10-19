@@ -2,7 +2,7 @@ from checkov.common.models.enums import CheckCategories
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
 
-class MySQLEncryptionEnaled(BaseResourceValueCheck):
+class MySQLEncryptionEnabled(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure that MySQL server enables infrastructure encryption"
         id = "CKV_AZURE_96"
@@ -14,4 +14,4 @@ class MySQLEncryptionEnaled(BaseResourceValueCheck):
         return 'infrastructure_encryption_enabled'
 
 
-check = MySQLEncryptionEnaled()
+check = MySQLEncryptionEnabled()
