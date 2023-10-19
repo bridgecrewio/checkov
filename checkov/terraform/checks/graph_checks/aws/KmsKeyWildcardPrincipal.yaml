@@ -1,29 +1,37 @@
 ---
 metadata:
-  id: "CKV_AWS_33"
+  id: CKV_AWS_33
   name: "Ensure KMS key policy does not contain wildcard (*) principal"
-  category: "IAM"
+  category: IAM
 definition:
-  and:
-    - cond_type: "attribute"
-      resource_types:
-        - "aws_kms_key"
-      attribute: "policy"
-      operator: "exists"
-    - cond_type: "attribute"
-      resource_types:
-        - "aws_kms_key"
-      attribute: "policy.Statement[?(@.Effect == 'Allow')].Principal[*]"
-      operator: "jsonpath_not_equals"
-      value: "*"
-    - cond_type: "attribute"
-      resource_types:
-        - "aws_kms_key"
-      attribute: "policy.Statement[?(@.Effect == 'Allow')].Principal.AWS[*]"
-      operator: "jsonpath_not_equals"
-      value: "*"
-    - cond_type: "attribute"
-      resource_types:
-        - "aws_kms_key"
-      attribute: "policy.Statement[?(@.Effect == 'Allow' & @.Principal == '*')]"
-      operator: "jsonpath_not_exists"
+  or:
+    - and:
+      - cond_type: attribute
+        resource_types:
+          - aws_kms_key
+        attribute: policy
+        operator: exists
+      - cond_type: attribute
+        resource_types:
+          - aws_kms_key
+        attribute: "policy.Statement[?(@.Effect == 'Allow')].Principal[*]"
+        operator: "jsonpath_not_equals"
+        value: "*"
+      - cond_type: "attribute"
+        resource_types:
+          - aws_kms_key
+        attribute: "policy.Statement[?(@.Effect == 'Allow')].Principal.AWS[*]"
+        operator: "jsonpath_not_equals"
+        value: "*"
+      - cond_type: "attribute"
+        resource_types:
+          - aws_kms_key
+        attribute: "policy.Statement[?(@.Effect == 'Allow' & @.Principal == '*')]"
+        operator: "jsonpath_not_exists"
+    - and:
+      - cond_type: "attribute"
+        resource_types:
+          - "data.aws_iam_policy_document"
+        attribute: "statement[?(@.effect == Allow)].principals.identifiers[*]"
+        operator: "jsonpath_not_equals"
+        value: "*"
