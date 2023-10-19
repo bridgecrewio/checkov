@@ -1090,7 +1090,7 @@ def sca_package_2_report(package_mocker: MockerFixture, scan_result_2: Dict[str,
 
     bc_integration.set_s3_integration = none
 
-
+    os.chdir(str(Path(__file__).parent.parent.parent))
     return Runner().run(root_folder=EXAMPLES_DIR)
 
 
@@ -1101,7 +1101,7 @@ def sca_package_report_dt(package_mocker: MockerFixture, scan_results_dt: Dict[s
     scanner_mock = MagicMock()
     scanner_mock.return_value.scan.return_value = scan_results_dt
     package_mocker.patch("checkov.sca_package_2.runner.Scanner", side_effect=scanner_mock)
-
+    os.chdir(str(Path(__file__).parent.parent.parent))
     return Runner().run(root_folder=EXAMPLES_DIR)
 
 
