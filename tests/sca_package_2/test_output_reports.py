@@ -279,10 +279,10 @@ def test_get_csv_report(sca_package_2_report, tmp_path: Path):
         'github.com/dgrijalva/jwt-go,v3.2.0,/path/to/go.sum,,acme,bridgecrewio/example,CVE-2020-26160,HIGH,"jwt-go before 4.0.0-preview1 allows attackers to bypass intended access restrictions in situations with []string{} for m[\\""aud\\""] (which is allowed by the specification). Because the type assertion fails, \\""\\"" is the value of aud. This is a security problem if the JWT token is presented to a service that lacks its own audience check.",Unknown,4.0.0rc1,,,',
         'django,1.2,/requirements.txt,,acme,bridgecrewio/example,CVE-2016-6186,MEDIUM,"Cross-site scripting (XSS) vulnerability in the dismissChangeRelatedObjectPopup function in contrib/admin/static/admin/js/admin/RelatedObjectLookups.js in Django before 1.8.14, 1.9.x before 1.9.8, and 1.10.x before 1.10rc1 allows remote attackers to inject arbitrary web script or HTML via vectors involving unsafe usage of Element.innerHTML.",OSI_BDS,1.8.14,https://pypi.python.org/,,',
         'flask,0.6,/requirements.txt,,acme,bridgecrewio/example,CVE-2019-1010083,HIGH,The Pallets Project Flask before 1.0 is affected by: unexpected memory usage. The impact is: denial of service. The attack vector is: crafted encoded JSON data. The fixed version is: 1. NOTE: this may overlap CVE-2018-1000656.,"OSI_APACHE, DUMMY_OTHER_LICENSE",1.0,https://pypi.python.org/,,',
+        'requests,2.26.0,/requirements.txt,,acme,bridgecrewio/example,,,,OSI_APACHE,N/A,https://pypi.python.org/,,',
         'github.com/miekg/dns,v1.1.41,/path/to/go.sum,,acme,bridgecrewio/example,,,,Unknown,N/A,,,',
         'github.com/prometheus/client_model,v0.0.0-20190129233127-fd36f4220a90,/path/to/go.sum,,acme,bridgecrewio/example,,,,Unknown,N/A,,,',
-        'requests,2.26.0,/path/to/sub/requirements.txt,,acme,bridgecrewio/example,,,,OSI_APACHE,N/A,,,',
-        'requests,2.26.0,/requirements.txt,,acme,bridgecrewio/example,,,,OSI_APACHE,N/A,https://pypi.python.org/,,', '']
+        'requests,2.26.0,/path/to/sub/requirements.txt,,acme,bridgecrewio/example,,,,OSI_APACHE,N/A,,,', '']
     csv_output_as_list = csv_output.split("\n")
     assert csv_output_as_list == expected_csv_output
 
@@ -296,10 +296,10 @@ def test_get_csv_report(sca_package_2_report, tmp_path: Path):
         '"github.com/dgrijalva/jwt-go",v3.2.0,/path/to/go.sum,,acme,bridgecrewio/example,CVE-2020-26160,HIGH,"jwt-go before 4.0.0-preview1 allows attackers to bypass intended access restrictions in situations with []string{} for m[\\"aud\\"] (which is allowed by the specification). Because the type assertion fails, \\"\\" is the value of aud. This is a security problem if the JWT token is presented to a service that lacks its own audience check.","Unknown",4.0.0rc1,,,',
         '"django",1.2,/requirements.txt,,acme,bridgecrewio/example,CVE-2016-6186,MEDIUM,"Cross-site scripting (XSS) vulnerability in the dismissChangeRelatedObjectPopup function in contrib/admin/static/admin/js/admin/RelatedObjectLookups.js in Django before 1.8.14, 1.9.x before 1.9.8, and 1.10.x before 1.10rc1 allows remote attackers to inject arbitrary web script or HTML via vectors involving unsafe usage of Element.innerHTML.","OSI_BDS",1.8.14,https://pypi.python.org/,,',
         '"flask",0.6,/requirements.txt,,acme,bridgecrewio/example,CVE-2019-1010083,HIGH,"The Pallets Project Flask before 1.0 is affected by: unexpected memory usage. The impact is: denial of service. The attack vector is: crafted encoded JSON data. The fixed version is: 1. NOTE: this may overlap CVE-2018-1000656.","OSI_APACHE, DUMMY_OTHER_LICENSE",1.0,https://pypi.python.org/,,',
+        '"requests",2.26.0,/requirements.txt,,acme,bridgecrewio/example,,,"","OSI_APACHE",N/A,https://pypi.python.org/,,',
         '"github.com/miekg/dns",v1.1.41,/path/to/go.sum,,acme,bridgecrewio/example,,,"","Unknown",N/A,,,',
         '"github.com/prometheus/client_model",v0.0.0-20190129233127-fd36f4220a90,/path/to/go.sum,,acme,bridgecrewio/example,,,"","Unknown",N/A,,,',
         '"requests",2.26.0,/path/to/sub/requirements.txt,,acme,bridgecrewio/example,,,"","OSI_APACHE",N/A,,,',
-        '"requests",2.26.0,/requirements.txt,,acme,bridgecrewio/example,,,"","OSI_APACHE",N/A,https://pypi.python.org/,,',
         '']
     csv_output_str_as_list = csv_output_str.split("\n")
     assert csv_output_str_as_list == expected_csv_output_str
@@ -534,7 +534,7 @@ def test_sarif_output(sca_package_report_2_with_skip_scope_function):
                             {
                                 "physicalLocation": {
                                     "artifactLocation": {
-                                        "uri": "requirements.txt"
+                                        "uri": "tests/sca_package_2/examples/requirements.txt"
                                     },
                                     "region": {
                                         "startLine": 1,
@@ -559,7 +559,7 @@ def test_sarif_output(sca_package_report_2_with_skip_scope_function):
                             {
                                 "physicalLocation": {
                                     "artifactLocation": {
-                                        "uri": "requirements.txt"
+                                        "uri": "tests/sca_package_2/examples/requirements.txt"
                                     },
                                     "region": {
                                         "startLine": 1,
@@ -584,7 +584,7 @@ def test_sarif_output(sca_package_report_2_with_skip_scope_function):
                             {
                                 "physicalLocation": {
                                     "artifactLocation": {
-                                        "uri": "requirements.txt"
+                                        "uri": "tests/sca_package_2/examples/requirements.txt"
                                     },
                                     "region": {
                                         "startLine": 1,
@@ -609,7 +609,7 @@ def test_sarif_output(sca_package_report_2_with_skip_scope_function):
                             {
                                 "physicalLocation": {
                                     "artifactLocation": {
-                                        "uri": "requirements.txt"
+                                        "uri": "tests/sca_package_2/examples/requirements.txt"
                                     },
                                     "region": {
                                         "startLine": 1,
@@ -634,7 +634,7 @@ def test_sarif_output(sca_package_report_2_with_skip_scope_function):
                             {
                                 "physicalLocation": {
                                     "artifactLocation": {
-                                        "uri": "requirements.txt"
+                                        "uri": "tests/sca_package_2/examples/requirements.txt"
                                     },
                                     "region": {
                                         "startLine": 1,
@@ -684,7 +684,7 @@ def test_sarif_output(sca_package_report_2_with_skip_scope_function):
                             {
                                 "physicalLocation": {
                                     "artifactLocation": {
-                                        "uri": "requirements.txt"
+                                        "uri": "tests/sca_package_2/examples/requirements.txt"
                                     },
                                     "region": {
                                         "startLine": 1,
@@ -715,7 +715,7 @@ def test_sarif_output(sca_package_report_2_with_skip_scope_function):
                             {
                                 "physicalLocation": {
                                     "artifactLocation": {
-                                        "uri": "requirements.txt"
+                                        "uri": "tests/sca_package_2/examples/requirements.txt"
                                     },
                                     "region": {
                                         "startLine": 1,
@@ -746,7 +746,7 @@ def test_sarif_output(sca_package_report_2_with_skip_scope_function):
                             {
                                 "physicalLocation": {
                                     "artifactLocation": {
-                                        "uri": "requirements.txt"
+                                        "uri": "tests/sca_package_2/examples/requirements.txt"
                                     },
                                     "region": {
                                         "startLine": 1,
