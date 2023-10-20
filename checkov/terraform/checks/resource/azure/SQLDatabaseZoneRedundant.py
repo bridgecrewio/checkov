@@ -31,7 +31,7 @@ class SQLDatabaseZoneRedundant(BaseResourceValueCheck):
              and thus impact the performance of some OLTP workloads.
         """
         name = "Ensure the Azure SQL Database Namespace is zone redundant"
-        id = "CKV_AZURE_223"
+        id = "CKV_AZURE_229"
         supported_resources = ("azurerm_mssql_database",)
         categories = (CheckCategories.BACKUP_AND_RECOVERY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
