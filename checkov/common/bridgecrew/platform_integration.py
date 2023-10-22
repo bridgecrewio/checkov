@@ -34,7 +34,7 @@ from checkov.common.bridgecrew.platform_key import read_key, persist_key, bridge
 from checkov.common.bridgecrew.run_metadata.registry import registry
 from checkov.common.bridgecrew.wrapper import persist_assets_results, reduce_scan_reports, persist_checks_results, \
     enrich_and_persist_checks_metadata, checkov_results_prefix, persist_run_metadata, _put_json_object, \
-    persist_logs_stream, persist_graphs
+    persist_logs_stream, persist_graphs, persist_resource_subgraph_maps
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILES, SCANNABLE_PACKAGE_FILES
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.typing import _CicdDetails, LibraryGraph
@@ -133,6 +133,7 @@ class BcPlatformIntegration:
         self.persist_graphs_timeout = int(os.getenv('BC_PERSIST_GRAPHS_TIMEOUT', 60))
         self.ca_certificate: str | None = None
         self.no_cert_verify: bool = False
+        self.on_prem: bool = False
 
     def set_bc_api_url(self, new_url: str) -> None:
         self.bc_api_url = normalize_bc_url(new_url)
@@ -483,9 +484,9 @@ class BcPlatformIntegration:
         # just process reports with actual results in it
         self.scan_reports = [scan_report for scan_report in scan_reports if not scan_report.is_empty(full=True)]
 
-        reduced_scan_reports = reduce_scan_reports(self.scan_reports)
+        reduced_scan_reports = reduce_scan_reports(self.scan_reports, self.on_prem)
         checks_metadata_paths = enrich_and_persist_checks_metadata(self.scan_reports, self.s3_client, self.bucket,
-                                                                   self.repo_path)
+                                                                   self.repo_path, self.on_prem)
         dpath.merge(reduced_scan_reports, checks_metadata_paths)
         persist_checks_results(reduced_scan_reports, self.s3_client, self.bucket, self.repo_path)
 
@@ -581,6 +582,14 @@ class BcPlatformIntegration:
             return
         persist_graphs(graphs, self.s3_client, self.bucket, self.repo_path, self.persist_graphs_timeout,
                        absolute_root_folder=absolute_root_folder)
+
+    def persist_resource_subgraph_maps(self, resource_subgraph_maps: dict[str, dict[str, str]]) -> None:
+        if not self.use_s3_integration or not self.s3_client:
+            return
+        if not self.bucket or not self.repo_path:
+            logging.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
+            return
+        persist_resource_subgraph_maps(resource_subgraph_maps, self.s3_client, self.bucket, self.repo_path, self.persist_graphs_timeout)
 
     def commit_repository(self, branch: str) -> str | None:
         """
@@ -1177,6 +1186,10 @@ class BcPlatformIntegration:
                 report_url = f"{access_saml_url}?{relay_state_param_name}={uri}"
 
         return report_url
+
+    def setup_on_prem(self) -> None:
+        if self.customer_run_config_response:
+            self.on_prem = self.customer_run_config_response.get('onPrem', False)
 
 
 bc_integration = BcPlatformIntegration()

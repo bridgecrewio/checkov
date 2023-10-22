@@ -15,7 +15,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: thehanimo/pr-title-checker@0cf5902181e78341bb97bb06646396e5bd354b3f  # v1
+      - uses: thehanimo/pr-title-checker@5652588c80c479af803eabfbdb5a3895a77c1388  # v1
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           configuration_path: ".github/pr-title-checker-config.json"

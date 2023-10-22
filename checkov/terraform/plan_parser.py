@@ -25,6 +25,7 @@ RESOURCE_TYPES_JSONIFY = {
     "aws_iam_group_policy": "policy",
     "aws_iam_user_policy": "policy",
     "aws_ssoadmin_permission_set_inline_policy": "inline_policy",
+    "azurerm_portal_dashboard": "dashboard_properties",
 }
 
 
@@ -233,7 +234,7 @@ def _get_module_call_resources(module_address: str, root_module_conf: dict[str, 
             continue
         root_module_conf = root_module_conf.get("module_calls", {}).get(module_name, {}).get("module", {})
 
-    return root_module_conf.get("resources", [])
+    return list(root_module_conf.get("resources", []))
 
 
 def _get_resource_changes(template: dict[str, Any]) -> dict[str, dict[str, Any]]:

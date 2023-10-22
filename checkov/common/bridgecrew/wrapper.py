@@ -58,18 +58,20 @@ def _put_json_object(s3_client: S3Client, json_obj: Any, bucket: str, object_pat
         raise
 
 
-def _extract_checks_metadata(report: Report, full_repo_object_key: str) -> dict[str, dict[str, Any]]:
+def _extract_checks_metadata(report: Report, full_repo_object_key: str, on_prem: bool) -> dict[str, dict[str, Any]]:
     metadata: dict[str, dict[str, Any]] = defaultdict(dict)
     for check in itertools.chain(report.passed_checks, report.failed_checks, report.skipped_checks):
         metadata_key = f'{check.file_path}:{check.resource}'
         check_meta = {k: getattr(check, k, "") for k in check_metadata_keys}
         check_meta['file_object_path'] = full_repo_object_key + check.file_path
+        if on_prem:
+            check_meta['code_block'] = []
         metadata[metadata_key][check.check_id] = check_meta
 
     return metadata
 
 
-def reduce_scan_reports(scan_reports: list[Report]) -> dict[str, _ReducedScanReport]:
+def reduce_scan_reports(scan_reports: list[Report], on_prem: Optional[bool] = False) -> dict[str, _ReducedScanReport]:
     """
     Transform checkov reports objects into compact dictionaries
     :param scan_reports: List of checkov output reports
@@ -79,6 +81,8 @@ def reduce_scan_reports(scan_reports: list[Report]) -> dict[str, _ReducedScanRep
     for report in scan_reports:
         check_type = report.check_type
         reduced_keys = secrets_check_reduced_keys if check_type == CheckType.SECRETS else check_reduced_keys
+        if on_prem:
+            reduced_keys = tuple(k for k in reduced_keys if k != 'code_block')
         reduced_scan_reports[check_type] = \
             {
                 "checks": {
@@ -145,7 +149,7 @@ def persist_logs_stream(logs_stream: StringIO, s3_client: S3Client, bucket: str,
 
 
 def enrich_and_persist_checks_metadata(
-        scan_reports: list[Report], s3_client: S3Client, bucket: str, full_repo_object_key: str
+        scan_reports: list[Report], s3_client: S3Client, bucket: str, full_repo_object_key: str, on_prem: bool
 ) -> dict[str, dict[str, str]]:
     """
     Save checks metadata into bridgecrew's platform
@@ -154,7 +158,7 @@ def enrich_and_persist_checks_metadata(
     checks_metadata_paths: dict[str, dict[str, str]] = {}
     for scan_report in scan_reports:
         check_type = scan_report.check_type
-        checks_metadata_object = _extract_checks_metadata(scan_report, full_repo_object_key)
+        checks_metadata_object = _extract_checks_metadata(scan_report, full_repo_object_key, on_prem)
         checks_metadata_object_path = f'{full_repo_object_key}/{checkov_results_prefix}/{check_type}/checks_metadata.json'
         dpath.new(checks_metadata_paths, f"{check_type}/checks_metadata_path", checks_metadata_object_path)
         _put_json_object(s3_client, checks_metadata_object, bucket, checks_metadata_object_path)
@@ -199,3 +203,30 @@ def persist_graphs(
             timeout=timeout
         )
     logging.info(f"Done persisting {len(list(itertools.chain(*graphs.values())))} graphs")
+
+
+def persist_resource_subgraph_maps(
+        resource_subgraph_maps: dict[str, dict[str, str]],
+        s3_client: S3Client,
+        bucket: str,
+        full_repo_object_key: str,
+        timeout: int
+) -> None:
+    def _upload_resource_subgraph_map(check_type: str, resource_subgraph_map: dict[str, str]) -> None:
+        s3_key = os.path.join(graphs_repo_object_key, check_type, "multi-graph/resource_subgraph_maps/resource_subgraph_map.json")
+        try:
+            _put_json_object(s3_client, resource_subgraph_map, bucket, s3_key)
+        except Exception:
+            logging.error(f'failed to upload resource_subgraph_map from framework {check_type} to platform', exc_info=True)
+
+    # removing '/src' with [:-4]
+    graphs_repo_object_key = full_repo_object_key.replace('checkov', 'graphs')[:-4]
+    with futures.ThreadPoolExecutor() as executor:
+        futures.wait(
+            [executor.submit(_upload_resource_subgraph_map, check_type, resource_subgraph_map) for
+             check_type, resource_subgraph_map in resource_subgraph_maps.items()],
+            return_when=futures.FIRST_EXCEPTION,
+            timeout=timeout
+        )
+    if resource_subgraph_maps:
+        logging.info(f"Done persisting resource_subgraph_maps for frameworks - {', '.join(resource_subgraph_maps.keys())}")

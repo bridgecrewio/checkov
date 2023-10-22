@@ -28,7 +28,14 @@ class ModuleLoaderRegistry:
         self.failed_urls_cache: Set[str] = set()
         self.root_dir = ""  # root dir for storing external modules
 
-    def load(self, current_dir: str, source: str | None, source_version: Optional[str]) -> ModuleContent | None:
+    def load(
+        self,
+        current_dir: str,
+        source: str | None,
+        source_version: str | None,
+        module_address: str | None = None,
+        tf_managed: bool = False,
+    ) -> ModuleContent | None:
         """
 Search all registered loaders for the first one which is able to load the module source type. For more
 information, see `loader.ModuleLoader.load`.
@@ -36,7 +43,8 @@ information, see `loader.ModuleLoader.load`.
         if source is None:
             return None
 
-        module_address = f'{source}:{source_version}'
+        if module_address is None:
+            module_address = f'{source}:{source_version}'
         if module_address in self.module_content_cache:
             logging.debug(f'Used the cache for module {module_address}')
             return self.module_content_cache[module_address]
@@ -64,13 +72,16 @@ information, see `loader.ModuleLoader.load`.
                 if not self.download_external_modules and loader.is_external:
                     continue
                 try:
-                    module_params = ModuleParams(root_dir=self.root_dir,
-                                                 current_dir=current_dir,
-                                                 source=source,
-                                                 source_version=source_version,
-                                                 dest_dir=local_dir,
-                                                 external_modules_folder_name=self.external_modules_folder_name,
-                                                 inner_module=inner_module)
+                    module_params = ModuleParams(
+                        root_dir=self.root_dir,
+                        current_dir=current_dir,
+                        source=source,
+                        source_version=source_version,
+                        dest_dir=local_dir,
+                        external_modules_folder_name=self.external_modules_folder_name,
+                        inner_module=inner_module,
+                        tf_managed=tf_managed,
+                    )
                     logging.info(f"Attempting loading via {loader.__class__} loader")
                     content = loader.load(module_params)
                 except Exception as e:
