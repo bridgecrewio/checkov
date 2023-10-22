@@ -28,7 +28,7 @@ class VMEncryptionAtHostEnabled(BaseResourceCheck):
                 input_dict=conf, key_path="properties/virtualMachineProfile/securityProfile/encryptionAtHost"
             )
 
-        if encryption == "true":
+        if str(encryption).lower() == "true":
             return CheckResult.PASSED
 
         return CheckResult.FAILED
