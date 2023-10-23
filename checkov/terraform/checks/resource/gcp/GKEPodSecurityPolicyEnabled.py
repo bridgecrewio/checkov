@@ -22,15 +22,19 @@ class GKEPodSecurityPolicyEnabled(BaseResourceCheck):
     def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
 
         if conf.get('min_master_version') and isinstance(conf.get('min_master_version'), list):
-            version = float(conf.get('min_master_version')[0])
-            if version < 1.25:
-                if conf.get('pod_security_policy_config') and isinstance(conf.get('pod_security_policy_config'), list):
-                    policy = conf.get('pod_security_policy_config')[0]
-                    if policy.get('enabled') and isinstance(policy.get('enabled'), list):
-                        secure = policy.get('enabled')[0]
-                        if secure:
-                            return CheckResult.PASSED
-                return CheckResult.FAILED
+            raw = conf.get('min_master_version')[0]
+            splitter = raw.split(".")
+            if len(splitter) >= 2:
+                str_version = splitter[0] + "." + splitter[1]
+                version = float(str_version)
+                if version < 1.25:
+                    if conf.get('pod_security_policy_config') and isinstance(conf.get('pod_security_policy_config'), list):
+                        policy = conf.get('pod_security_policy_config')[0]
+                        if policy.get('enabled') and isinstance(policy.get('enabled'), list):
+                            secure = policy.get('enabled')[0]
+                            if secure:
+                                return CheckResult.PASSED
+                    return CheckResult.FAILED
         return CheckResult.UNKNOWN
 
 
