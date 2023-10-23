@@ -637,8 +637,6 @@ class Checkov:
                 return exit_code
             elif not self.config.quiet:
                 print(f"{banner}")
-
-                bc_integration.onboarding()
             return None
         except BaseException:
             logging.error("Exception traceback:", exc_info=True)
