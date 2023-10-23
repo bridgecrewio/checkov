@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from policyuniverse.policy import Policy
+from cloudsplaining.scan.resource_policy_document import ResourcePolicyDocument
 
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
@@ -13,20 +13,19 @@ class SNSTopicPolicyAnyPrincipal(BaseResourceCheck):
         name = "Ensure SNS topic policy is not public by only allowing specific services or principals to access it"
         id = "CKV_AWS_169"
         supported_resources = ("aws_sns_topic_policy",)
-        categories = (CheckCategories.GENERAL_SECURITY,)
+        categories = (CheckCategories.IAM,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
         conf_policy = conf.get("policy")
         if conf_policy:
             if isinstance(conf_policy[0], dict):
-                policy = conf_policy[0]
-                condition_values = policy.get('Statement', [{}])[0].get('Condition', {}).values()
-                if condition_values and not any(isinstance(condition, dict) for condition in condition_values):
+                try:
+                    policy = ResourcePolicyDocument(policy=conf_policy[0])
+                    if policy.internet_accessible_actions:
+                        return CheckResult.FAILED
+                except (TypeError, AttributeError):
                     return CheckResult.UNKNOWN
-                policy = Policy(policy)
-                if policy.is_internet_accessible():
-                    return CheckResult.FAILED
             else:
                 return CheckResult.UNKNOWN
         return CheckResult.PASSED
