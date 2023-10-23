@@ -57,7 +57,8 @@ class RunnerFilter(object):
             git_history_timeout: str = '12h',
             git_history_last_commit_scanned: Optional[str] = None,  # currently not exposed by a CLI flag
             report_sast_imports: bool = False,
-            remove_default_sast_policies: bool = False
+            remove_default_sast_policies: bool = False,
+            report_sast_reachability: bool = False
     ) -> None:
 
         checks = convert_csv_string_arg_to_list(checks)
@@ -150,6 +151,7 @@ class RunnerFilter(object):
 
         self.report_sast_imports = report_sast_imports
         self.remove_default_sast_policies = remove_default_sast_policies
+        self.report_sast_reachability = report_sast_reachability
 
     @staticmethod
     def _load_resource_attr_to_omit(resource_attr_to_omit_input: Optional[Dict[str, Set[str]]]) -> DefaultDict[str, Set[str]]:

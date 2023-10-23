@@ -17,3 +17,4 @@ class LibraryInput(TypedDict):
     list_policies: NotRequired[bool]
     report_imports: bool
     remove_default_policies: NotRequired[bool]
+    report_reachability: bool

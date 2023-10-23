@@ -12,7 +12,7 @@ import signal
 import sys
 from collections import defaultdict
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal, Optional, List
+from typing import TYPE_CHECKING, Any, Dict, Literal, Optional, List
 
 import argcomplete
 import configargparse
@@ -70,6 +70,8 @@ from checkov.kustomize.runner import Runner as kustomize_runner
 from checkov.logging_init import log_stream as logs_stream
 from checkov.openapi.runner import Runner as openapi_runner
 from checkov.runner_filter import RunnerFilter
+from checkov.sast.consts import SastLanguages
+from checkov.sast.prisma_models.report import serialize_reachability_report
 from checkov.sast.report import SastData, SastReport
 from checkov.sast.runner import Runner as sast_runner
 from checkov.sca_image.runner import Runner as sca_image_runner
@@ -303,7 +305,8 @@ class Checkov:
                 resource_attr_to_omit=self.config.mask,
                 enable_git_history_secret_scan=self.config.scan_secrets_history,
                 git_history_timeout=self.config.secrets_history_timeout,
-                report_sast_imports=bool(convert_str_to_bool(os.getenv('CKV_ENABLE_UPLOAD_SAST_IMPORTS', False)))
+                report_sast_imports=bool(convert_str_to_bool(os.getenv('CKV_ENABLE_UPLOAD_SAST_IMPORTS', False))),
+                report_sast_reachability=bool(convert_str_to_bool(os.getenv('CKV_ENABLE_UPLOAD_SAST_REACHABILITY', False)))
             )
 
             source_env_val = os.getenv('BC_SOURCE', 'cli')
@@ -507,6 +510,8 @@ class Checkov:
                         included_paths = [self.config.external_modules_download_path]
                         for r in runner_registry.runners:
                             included_paths.extend(r.included_paths())
+                        self.save_sast_assets_data(self.scan_reports)
+                        self.save_sast_reachability_data(self.scan_reports)
                         self.upload_results(
                             root_folder=root_folder,
                             absolute_root_folder=absolute_root_folder,
@@ -620,6 +625,7 @@ class Checkov:
                     absolute_root_folder = os.path.abspath(root_folder)
 
                     self.save_sast_assets_data(self.scan_reports)
+                    self.save_sast_reachability_data(self.scan_reports)
                     self.upload_results(
                         root_folder=root_folder,
                         absolute_root_folder=absolute_root_folder,
@@ -702,6 +708,7 @@ class Checkov:
                 scan_reports_to_upload.append(sca_supported_ir_report)
         bc_integration.persist_scan_results(scan_reports_to_upload)
         bc_integration.persist_assets_scan_results(self.sast_data.imports_data)
+        bc_integration.persist_reachability_scan_results(self.sast_data.reachability_report)
         bc_integration.persist_run_metadata(self.run_metadata)
         if bc_integration.enable_persist_graphs:
             bc_integration.persist_graphs(self.graphs, absolute_root_folder=absolute_root_folder)
@@ -714,6 +721,20 @@ class Checkov:
         sast_report = [scan_report for scan_report in scan_reports if isinstance(scan_report, SastReport)]
         sast_imports_report = self.sast_data.get_sast_import_report(sast_report)
         self.sast_data.set_imports_data(sast_imports_report)
+
+    def save_sast_reachability_data(self, scan_reports: List[Report]) -> None:
+        if not bool(convert_str_to_bool(os.getenv('CKV_ENABLE_UPLOAD_SAST_REACHABILITY', False))):
+            return
+        sast_report = [scan_report for scan_report in scan_reports if isinstance(scan_report, SastReport)]
+        result: Dict[SastLanguages, Any] = {}
+        for rep in sast_report:
+            if rep.sast_reachability:
+                result[rep.language] = {}
+        for rep in sast_report:
+            if rep.sast_reachability:
+                result[rep.language] = {**result[rep.language], **serialize_reachability_report(rep.sast_reachability)}
+
+        self.sast_data.set_reachability_report(result)
 
     def print_results(
             self,

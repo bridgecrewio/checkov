@@ -18,6 +18,7 @@ from checkov.common.bridgecrew.platform_key import bridgecrew_dir
 from checkov.common.bridgecrew.severities import get_severity
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.report import Report
+from checkov.common.sca.reachability.sast_contract.data_fetcher_sast_lib import SastReachabilityDataFetcher
 from checkov.common.typing import _CheckResult
 from checkov.common.util.http_utils import request_wrapper
 from checkov.sast.checks_infra.base_registry import Registry
@@ -63,6 +64,7 @@ class PrismaEngine(SastEngine):
             'skip_path': registry.runner_filter.excluded_paths if registry.runner_filter else [],
             'report_imports': registry.runner_filter.report_sast_imports if registry.runner_filter else False,
             'remove_default_policies': registry.runner_filter.remove_default_sast_policies if registry.runner_filter else False,
+            'report_reachability': registry.runner_filter.report_sast_reachability if registry.runner_filter else False,
         }
         prisma_result = self.run_go_library(**library_input)
 
@@ -157,6 +159,7 @@ class PrismaEngine(SastEngine):
                        skip_path: List[str],
                        list_policies: bool = False,
                        report_imports: bool = True,
+                       report_reachability: bool = False,
                        remove_default_policies: bool = False) -> Union[List[Report], SastPolicies]:
 
         validate_params(languages, source_codes, policies, list_policies)
@@ -165,6 +168,12 @@ class PrismaEngine(SastEngine):
             name = bc_integration.bc_source.name
         else:
             name = "unknown"
+
+        reachability_data = None
+        if report_reachability:
+            # TODO - run sast-core per src
+            for source_code in source_codes:
+                reachability_data = get_reachability_data(source_code)
 
         document = {
             "scan_code_params": {
@@ -177,7 +186,8 @@ class PrismaEngine(SastEngine):
                 "list_policies": list_policies,
                 "report_imports": report_imports,
                 "remove_default_policies": remove_default_policies,
-
+                "report_reachability": report_reachability,
+                "reachability_data": reachability_data
             },
             "auth": {
                 "api_key": bc_integration.get_auth_token(),
@@ -214,6 +224,8 @@ class PrismaEngine(SastEngine):
     def create_prisma_report(self, data: Dict[str, Any]) -> PrismaReport:
         if not data.get("imports"):
             data["imports"] = {}
+        if not data.get("reachability_report"):
+            data["reachability_report"] = {}
         return PrismaReport(**data)
 
     def run_go_library_list_policies(self, document: Dict[str, Any]) -> SastPolicies:
@@ -230,6 +242,7 @@ class PrismaEngine(SastEngine):
 
             # convert our byte array to a string
             list_policies_string = list_policies_bytes.decode('utf-8')
+
             d = json.loads(list_policies_string)
         except Exception as e:
             logging.error(e)
@@ -287,6 +300,16 @@ class PrismaEngine(SastEngine):
                 report = SastReport(f'{self.check_type.lower()}_{lang.value}', prisma_report.run_metadata, lang)
                 report.sast_imports = prisma_report.imports[lang]
                 reports.append(report)
+
+        for lang in prisma_report.reachability_report:
+            for report in reports:
+                if report.language == lang:
+                    report.sast_reachability = prisma_report.reachability_report[lang]
+                    break
+            else:
+                report = SastReport(f'{self.check_type.lower()}_{lang.value}', prisma_report.run_metadata, lang)
+                report.sast_reachability = prisma_report.reachability_report[lang]
+                reports.append(report)
         return reports
 
     def get_policies(self, languages: Set[SastLanguages]) -> SastPolicies:
@@ -309,7 +332,8 @@ class PrismaEngine(SastEngine):
             'checks': [],
             'skip_checks': [],
             'skip_path': [],
-            'report_imports': False
+            'report_imports': False,
+            'report_reachability': False
         }
         prisma_result = self.run_go_library(**library_input)
         return prisma_result
@@ -341,3 +365,25 @@ def get_machine() -> str:
         return 'arm64'
 
     return ''
+
+
+def get_reachability_data(repo_path: str) -> Dict[str, Any]:
+    fetcher = SastReachabilityDataFetcher()
+    reachability_data = fetcher.fetch(repository_name=repo_path, repository_root_dir=repo_path)
+    data: Dict[str, Any] = {}
+    if not reachability_data:
+        return data
+    langs = reachability_data.aliasMapping.get("languages")
+    if not langs:
+        return {}
+    for lang, lang_data in langs.items():
+        if lang == "nodejs":
+            lang = "javascript"
+        data[lang] = {"package_alias": {}}
+        for _, files in lang_data.get("repositories", {}).items():
+            for _, files_data in files.get("files", {}).items():
+                for original_package_name, package_alias in files_data.get("packageAliases", {}).items():
+                    aliases = package_alias.get("packageAliases", [])
+                    if aliases:
+                        data[lang]["package_alias"][original_package_name] = aliases[0]
+    return data

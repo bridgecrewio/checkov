@@ -110,6 +110,15 @@ def persist_assets_results(check_type: str, assets_report: Dict[str, Any], s3_cl
     return check_result_object_path
 
 
+def persist_reachability_results(check_type: str, reachability_report: Dict[str, Any], s3_client: Optional[S3Client],
+                                 bucket: Optional[str], full_repo_object_key: Optional[str]) -> str:
+    if not s3_client or not bucket or not full_repo_object_key:
+        return ''
+    check_result_object_path = f'{full_repo_object_key}/{checkov_results_prefix}/{check_type}/reachability_report.json'
+    _put_json_object(s3_client, reachability_report, bucket, check_result_object_path)
+    return check_result_object_path
+
+
 def persist_checks_results(
         reduced_scan_reports: dict[str, _ReducedScanReport], s3_client: S3Client, bucket: str,
         full_repo_object_key: str
