@@ -174,7 +174,7 @@ class TestRunnerRegistry(unittest.TestCase):
             header = content[:1][0]
             self.assertEqual('Package,Version,Path,Line(s),Git Org,Git Repository,Vulnerability,Severity,Description,Licenses,Fix Version,Registry URL,Root Package,Root Version\n', header)
             row = content[1:][0]
-            self.assertIn('bridgecrew.cloud', row)
+            self.assertIn('Prisma Cloud', row)
 
     def test_csv_invulnerable_report(self):
         report = Report('sca_package')

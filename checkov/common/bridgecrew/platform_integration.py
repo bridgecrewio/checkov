@@ -5,7 +5,6 @@ import logging
 import os.path
 import re
 import uuid
-import webbrowser
 from collections import namedtuple
 from urllib.parse import urlparse
 from concurrent import futures
@@ -18,7 +17,6 @@ from typing import List, Dict, TYPE_CHECKING, Any, cast, Optional
 
 import boto3
 import dpath
-import requests
 import urllib3
 from botocore.exceptions import ClientError
 from botocore.config import Config
@@ -30,7 +28,7 @@ from urllib3.exceptions import HTTPError, MaxRetryError
 
 from checkov.common.bridgecrew.run_metadata.registry import registry
 from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
-from checkov.common.bridgecrew.platform_key import read_key, persist_key, bridgecrew_file
+from checkov.common.bridgecrew.platform_key import read_key
 from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_checks_results, \
     enrich_and_persist_checks_metadata, checkov_results_prefix, persist_run_metadata, _put_json_object, \
     persist_logs_stream, persist_graphs, persist_resource_subgraph_maps
@@ -64,7 +62,6 @@ if TYPE_CHECKING:
     from checkov.common.output.report import Report
     from checkov.secrets.coordinator import EnrichedSecret
     from mypy_boto3_s3.client import S3Client
-    from requests import Response
     from typing_extensions import TypeGuard
 
 
