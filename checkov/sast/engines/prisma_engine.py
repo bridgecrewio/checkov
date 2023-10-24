@@ -53,9 +53,9 @@ class PrismaEngine(SastEngine):
         """
         none = Severities[BcSeverities.NONE]
 
-        check_threshold: Optional[Severity] = registry.runner_filter.check_threshold
-        skip_check_threshold: Optional[Severity] = registry.runner_filter.skip_check_threshold
-        enforcement_threshold: Optional[Severity] = registry.runner_filter.enforcement_rule_configs[self.check_type] if registry.runner_filter.use_enforcement_rules else None
+        check_threshold: Optional[Severity] = registry.runner_filter.check_threshold  # type:ignore[union-attr] # not null
+        skip_check_threshold: Optional[Severity] = registry.runner_filter.skip_check_threshold  # type:ignore[union-attr] # not null
+        enforcement_threshold: Optional[Severity] = cast(Severity, registry.runner_filter.enforcement_rule_configs[self.check_type]) if registry.runner_filter.use_enforcement_rules else None  # type:ignore[union-attr] # not null
 
         return (check_threshold or none, skip_check_threshold or none) if (check_threshold or skip_check_threshold) else \
             (enforcement_threshold, none) if enforcement_threshold else \
@@ -357,6 +357,8 @@ class PrismaEngine(SastEngine):
             'policies': [],
             'checks': [],
             'skip_checks': [],
+            'check_threshold': None,
+            'skip_check_threshold': None,
             'skip_path': [],
             'report_imports': False,
             'report_reachability': False
