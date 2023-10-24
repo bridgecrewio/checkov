@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   bandit:
-    runs-on: ubuntu-latest # TODO: use checkov version
+    runs-on: [self-hosted, public, linux, x64]
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
         with:
@@ -22,7 +22,7 @@ jobs:
         with:
           path: 'checkov'
   trufflehog-secrets:
-    runs-on: ubuntu-latest # TODO: use checkov version
+    runs-on: [self-hosted, public, linux, x64]
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
         with:
@@ -32,7 +32,7 @@ jobs:
         with:
           scanArguments: "--regex --entropy=False --exclude_paths .github/exclude-patterns.txt --max_depth=1"
   checkov-secrets:
-    runs-on: ubuntu-latest # TODO: use checkov version
+    runs-on: [self-hosted, public, linux, x64]
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
         with:

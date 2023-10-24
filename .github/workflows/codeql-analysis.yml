@@ -27,7 +27,7 @@ permissions:
 jobs:
   analyze:
     name: Analyze
-    runs-on: ubuntu-latest # TODO: use checkov version
+    runs-on: [self-hosted, public, linux, x64]
     permissions:
       actions: read
       contents: read

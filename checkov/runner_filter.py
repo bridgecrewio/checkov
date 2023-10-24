@@ -381,7 +381,7 @@ class RunnerFilter(object):
     @staticmethod
     def get_sast_languages(frameworks: Optional[List[str]], skip_framework: Optional[List[str]]) -> Set[SastLanguages]:
         langs: Set[SastLanguages] = set()
-        if not frameworks or "sast" in skip_framework:
+        if not frameworks or (skip_framework and "sast" in skip_framework):
             return langs
         if 'all' in frameworks:
             sast_languages = SastLanguages.set()

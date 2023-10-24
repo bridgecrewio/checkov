@@ -110,12 +110,11 @@ setup(
         "spdx-tools>=0.8.0,<0.9.0",
         "license-expression",
         "rustworkx",
-        "semgrep==1.10.0",
-        "pydantic==1.10.7"
+        "pydantic>=1.10.7,<2.0.0"
     ],
     dependency_links=[],  # keep it empty, needed for pipenv-setup
     license="Apache License 2.0",
-    name="checkov3",
+    name="checkov",
     version=version,
     python_requires=">=3.8",
     description="Infrastructure as code static analysis",

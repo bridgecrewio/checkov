@@ -124,7 +124,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
             "--version",
             help="version",
             action="version",
-            version=f"(checkov3){version}",
+            version=version,
         )
         self.add(
             "--support",

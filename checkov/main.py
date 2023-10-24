@@ -212,14 +212,14 @@ class Checkov:
             # it is passed as a list of lists
             self.config.file = list(itertools.chain.from_iterable(self.config.file))
 
-    def normalize_framework_arg(self, raw_framework_arg: List[List[str]], handle_all=False) -> List[str]:
+    def normalize_framework_arg(self, raw_framework_arg: List[List[str]], handle_all: bool = False) -> List[str]:
         # frameworks come as arrays of arrays, e.g. --framework terraform arm --framework bicep,cloudformation
         # becomes: [['terraform', 'arm'], ['bicep,cloudformation']]
         # we'll collapse it into a single array (which is how it was before checkov3)
 
         if raw_framework_arg:
             logging.debug(f'Raw framework value: {raw_framework_arg}')
-            frameworks = flatten_csv(cast(List[List[str]], raw_framework_arg))
+            frameworks = flatten_csv(raw_framework_arg)
             logging.debug(f'Flattened frameworks: {frameworks}')
             if handle_all and 'all' in frameworks:
                 return ['all']
