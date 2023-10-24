@@ -21,7 +21,7 @@ class BaseOpenapiCheckV3(BaseOpenapiCheck):
     def scan_openapi_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:
         raise NotImplementedError()
 
-    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:  # type:ignore[override]
+    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:
         if "openapi" in conf:
             openapi = conf.get("openapi")
             if isinstance(openapi, str) and openapi.startswith("3."):
