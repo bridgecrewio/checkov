@@ -19,3 +19,19 @@ def test_CKV_AWS_145_S3BucketKMSEncryption():
 
 def test_CKV2_AWS_6_S3BucketPublicAccessBlock():
     run_check(lang='python', check_name="S3BucketPublicAccessBlock")
+
+
+def test_CKV_AWS_54_S3BlockPublicPolicy():
+    run_check(lang='python', check_name="S3BlockPublicPolicy")
+
+
+def test_CKV_AWS_26_SNSTopicEncryption():
+    run_check(lang='python', check_name="SNSTopicEncryption")
+
+
+def test_CKV_AWS_20_S3PublicACLRead():
+    run_check(lang='python', check_name="S3PublicACLRead")
+
+
+def test_CKV_AWS_55_S3IgnorePublicACLs():
+    run_check(lang='python', check_name="S3IgnorePublicACLs")
