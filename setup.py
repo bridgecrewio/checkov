@@ -91,7 +91,7 @@ setup(
         "typing-extensions>=4.1.0",
         "importlib-metadata>=0.12",
         "cachetools",
-        "cyclonedx-python-lib>=2.4.0,<4.0.0",
+        "cyclonedx-python-lib<4.0.0,>=2.4.0",
         "packageurl-python",
         "click>=8.0.0",
         "aiohttp",
@@ -110,6 +110,7 @@ setup(
         "spdx-tools>=0.8.0,<0.9.0",
         "license-expression",
         "rustworkx",
+        "pydantic>=1.10.7,<2.0.0"
     ],
     dependency_links=[],  # keep it empty, needed for pipenv-setup
     license="Apache License 2.0",
@@ -141,6 +142,11 @@ setup(
         "checkov.github_actions.checks.graph_checks": ["**/*.json"],
         "checkov.kubernetes.checks.graph_checks": ["**/*.json"],
         "checkov.terraform.checks.graph_checks": ["**/*.json"],
+        "checkov.sast.checks": [
+            "java/*.yaml",
+            "python/*.yaml",
+            "javascript/*.yaml",
+        ],
     },
     scripts=["bin/checkov", "bin/checkov.cmd"],
     long_description=long_description,

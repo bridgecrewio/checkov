@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Dict, Set, Any
 
-from checkov.common.sca.reachability.abstract_alias_mapping_strategy import AbstractAliasMappingStrategy
-from checkov.common.sca.reachability.nodejs.nodejs_alias_mapping_strategy import NodejsAliasMappingStrategy
+from checkov.common.sca.reachability.package_alias_mapping.abstract_alias_mapping_strategy import AbstractAliasMappingStrategy
+from checkov.common.sca.reachability.package_alias_mapping.nodejs.nodejs_alias_mapping_strategy import NodejsAliasMappingStrategy
 
 language_to_strategy: Dict[str, AbstractAliasMappingStrategy] = {
     "nodejs": NodejsAliasMappingStrategy()

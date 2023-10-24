@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import logging
 import os.path
+from json import JSONDecodeError
 from typing import Dict, Set, Any
 import re
 import json
@@ -88,7 +90,12 @@ def parse_rollup_file(file_content: str, relevant_packages: Set[str]) -> Dict[st
 
 def parse_package_json_file(file_content: str, relevant_packages: Set[str]) -> Dict[str, Any]:
     output: Dict[str, Any] = {"packageAliases": {}}
-    package_json = json.loads(file_content)
+    try:
+        package_json = json.loads(file_content)
+    except JSONDecodeError:
+        logging.warning('unable to parse package json file')
+        return output
+
     aliases: Dict[str, str] = dict()
     if "alias" in package_json:
         aliases.update(package_json["alias"])
