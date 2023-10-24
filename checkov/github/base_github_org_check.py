@@ -22,7 +22,7 @@ class BaseOrganizationCheck(BaseGithubCheck):
         )
         self.missing_attribute_result = missing_attribute_result
 
-    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult:  # type:ignore[override]
+    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult:
         ckv_metadata, conf = self.resolve_ckv_metadata_conf(conf=conf)
         if 'org_metadata' in ckv_metadata.get('file_name', ''):
             if org_schema.validate(conf):

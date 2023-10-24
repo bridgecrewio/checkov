@@ -36,6 +36,7 @@ class FixesIntegration(BaseIntegrationFeature):
         return (
             self.bc_integration.is_integration_configured()
             and not self.bc_integration.skip_fixes
+            and not self.bc_integration.skip_download
             and not self.integration_feature_failures
         )
 

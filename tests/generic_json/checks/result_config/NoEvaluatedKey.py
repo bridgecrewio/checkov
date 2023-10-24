@@ -16,7 +16,7 @@ class NoEvaluatedKey(BaseJsonCheck):
             block_type=BlockType.DOCUMENT,
         )
 
-    def scan_entity_conf(self, conf):
+    def scan_entity_conf(self, conf, entity_type):
         return CheckResult.PASSED
 
 

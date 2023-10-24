@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Dict, Set, Callable, Any
 
-from checkov.common.sca.reachability.abstract_alias_mapping_strategy import AbstractAliasMappingStrategy
-from checkov.common.sca.reachability.nodejs.utils import parse_webpack_file, parse_tsconfig_file, parse_babel_file, \
+from checkov.common.sca.reachability.package_alias_mapping.abstract_alias_mapping_strategy import AbstractAliasMappingStrategy
+from checkov.common.sca.reachability.package_alias_mapping.nodejs.utils import parse_webpack_file, parse_tsconfig_file, parse_babel_file, \
     parse_rollup_file, parse_package_json_file, parse_snowpack_file, parse_vite_file
 
 

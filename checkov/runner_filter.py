@@ -8,12 +8,14 @@ from typing import Any, Set, Optional, Union, List, TYPE_CHECKING, Dict, Default
 import re
 
 from checkov.common.bridgecrew.check_type import CheckType
+from checkov.sast.checks_infra.base_check import BaseSastCheck
 from checkov.common.secrets.consts import ValidationStatus
 
 from checkov.common.bridgecrew.code_categories import CodeCategoryMapping, CodeCategoryConfiguration, CodeCategoryType
 from checkov.common.bridgecrew.severities import Severity, Severities
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
+from checkov.sast.consts import SastLanguages
 from checkov.common.util.str_utils import convert_to_seconds
 
 if TYPE_CHECKING:
@@ -53,7 +55,10 @@ class RunnerFilter(object):
             resource_attr_to_omit: Optional[Dict[str, Set[str]]] = None,
             enable_git_history_secret_scan: bool = False,
             git_history_timeout: str = '12h',
-            git_history_last_commit_scanned: Optional[str] = None  # currently not exposed by a CLI flag
+            git_history_last_commit_scanned: Optional[str] = None,  # currently not exposed by a CLI flag
+            report_sast_imports: bool = False,
+            remove_default_sast_policies: bool = False,
+            report_sast_reachability: bool = False
     ) -> None:
 
         checks = convert_csv_string_arg_to_list(checks)
@@ -132,12 +137,26 @@ class RunnerFilter(object):
         self.resource_attr_to_omit: DefaultDict[str, Set[str]] = RunnerFilter._load_resource_attr_to_omit(
             resource_attr_to_omit
         )
+        self.sast_languages: Set[SastLanguages] = RunnerFilter.get_sast_languages(framework, skip_framework)
+        if self.sast_languages and any(item for item in self.framework if item.startswith(CheckType.SAST) or item == 'all'):
+            self.framework = [item for item in self.framework if not item.startswith(CheckType.SAST)]
+            self.framework.append(CheckType.SAST)
+        elif not self.sast_languages:
+            # remove all SAST and CDK frameworks
+            self.framework = [
+                item for item in self.framework if not item.startswith(CheckType.SAST) and item != CheckType.CDK
+            ]
+
         self.enable_git_history_secret_scan: bool = enable_git_history_secret_scan
         if self.enable_git_history_secret_scan:
             self.git_history_timeout = convert_to_seconds(git_history_timeout)
             self.framework = [CheckType.SECRETS]
             logging.debug("Scan secrets history was enabled ignoring other frameworks")
             self.git_history_last_commit_scanned = git_history_last_commit_scanned
+
+        self.report_sast_imports = report_sast_imports
+        self.remove_default_sast_policies = remove_default_sast_policies
+        self.report_sast_reachability = report_sast_reachability
 
     @staticmethod
     def _load_resource_attr_to_omit(resource_attr_to_omit_input: Optional[Dict[str, Set[str]]]) -> DefaultDict[str, Set[str]]:
@@ -168,7 +187,7 @@ class RunnerFilter(object):
 
     def should_run_check(
             self,
-            check: BaseCheck | BaseGraphCheck | None = None,
+            check: BaseCheck | BaseGraphCheck | BaseSastCheck | None = None,
             check_id: str | None = None,
             bc_check_id: str | None = None,
             severity: Severity | None = None,
@@ -363,3 +382,23 @@ class RunnerFilter(object):
     def set_suppressed_policies(self, policy_level_suppressions: List[str]) -> None:
         logging.debug(f"Received the following policy-level suppressions, that will be skipped from running: {policy_level_suppressions}")
         self.suppressed_policies = policy_level_suppressions
+
+    @staticmethod
+    def get_sast_languages(frameworks: Optional[List[str]], skip_framework: Optional[List[str]]) -> Set[SastLanguages]:
+        langs: Set[SastLanguages] = set()
+        if not frameworks or (skip_framework and "sast" in skip_framework):
+            return langs
+        if 'all' in frameworks:
+            sast_languages = SastLanguages.set()
+            skip_framework = [] if not skip_framework else [f.split("sast_")[-1] for f in skip_framework]
+            return set([lang for lang in sast_languages if lang.value not in skip_framework])
+        for framework in frameworks:
+            if framework in [CheckType.SAST, CheckType.CDK]:
+                for sast_lang in SastLanguages:
+                    langs.add(sast_lang)
+                return langs
+            if not framework.startswith(CheckType.SAST):
+                continue
+            lang = '_'.join(framework.split('_')[1:])
+            langs.add(SastLanguages[lang.upper()])
+        return langs

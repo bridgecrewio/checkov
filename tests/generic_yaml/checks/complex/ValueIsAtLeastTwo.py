@@ -17,7 +17,7 @@ class ValueIsAtLeastTwo(BaseYamlCheck):
             path="array_of_objects"
         )
 
-    def scan_entity_conf(self, conf):
+    def scan_entity_conf(self, conf, entity_type):
         for obj in conf:
             if obj["value"] < 2:
                 return CheckResult.FAILED, obj
