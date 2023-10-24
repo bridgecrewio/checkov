@@ -1,6 +1,64 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.5.8...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.5.18...HEAD)
+
+## [2.5.18](https://github.com/bridgecrewio/checkov/compare/2.5.15...2.5.18) - 2023-10-22
+
+### Feature
+
+- **general:** Adds GHA support for skip-frameworks, skip-cve-package & output-bc-ids flags - [#5619](https://github.com/bridgecrewio/checkov/pull/5619)
+- **terraform:** Ensure that the SQL database is zone-redundant - [#5540](https://github.com/bridgecrewio/checkov/pull/5540)
+- **terraform:** Ensure the Azure Event Hub Namespace is zone redundant - [#5538](https://github.com/bridgecrewio/checkov/pull/5538)
+
+### Bug Fix
+
+- **bicep:** enforce encryption flag to be string for CKV_AZURE_97 - [#5669](https://github.com/bridgecrewio/checkov/pull/5669)
+- **terraform_plan:** Add provisioners to TF Plan parser - [#5622](https://github.com/bridgecrewio/checkov/pull/5622)
+
+## [2.5.15](https://github.com/bridgecrewio/checkov/compare/2.5.13...2.5.15) - 2023-10-19
+
+### Feature
+
+- **terraform:** Support for merge func inside jsondecode - [#5656](https://github.com/bridgecrewio/checkov/pull/5656)
+
+### Bug Fix
+
+- **sca:** make the abs path to be correcnt - [#5660](https://github.com/bridgecrewio/checkov/pull/5660)
+
+## [2.5.13](https://github.com/bridgecrewio/checkov/compare/2.5.11...2.5.13) - 2023-10-18
+
+### Feature
+
+- **arm:** implement CKV_AZURE_103 for ARM - [#5527](https://github.com/bridgecrewio/checkov/pull/5527)
+- **arm:** implement CKV_AZURE_96 for ARM - [#5506](https://github.com/bridgecrewio/checkov/pull/5506)
+- **arm:** implement CKV_AZURE_97 for ARM - [#5515](https://github.com/bridgecrewio/checkov/pull/5515)
+
+### Bug Fix
+
+- **terraform:** Added a check to make sure dynamic "blocks" are of the expected type - [#5642](https://github.com/bridgecrewio/checkov/pull/5642)
+- **terraform:** update CKV_AWS_339 valid EKS versions - [#5652](https://github.com/bridgecrewio/checkov/pull/5652)
+
+## [2.5.11](https://github.com/bridgecrewio/checkov/compare/2.5.10...2.5.11) - 2023-10-17
+
+### Feature
+
+- **sca:** giving file path on relative the the current dir for cases there is no either specified root_folder and the is no repo scan dir - [#5654](https://github.com/bridgecrewio/checkov/pull/5654)
+
+## [2.5.10](https://github.com/bridgecrewio/checkov/compare/2.5.9...2.5.10) - 2023-10-16
+
+### Feature
+
+- **terraform:** support scanning of Terraform managed modules instead of downloading them - [#5635](https://github.com/bridgecrewio/checkov/pull/5635)
+
+### Bug Fix
+
+- **terraform:** Fixing issues with checks CKV_AZURE_226 & CKV_AZURE_227 - [#5638](https://github.com/bridgecrewio/checkov/pull/5638)
+
+## [2.5.9](https://github.com/bridgecrewio/checkov/compare/2.5.8...2.5.9) - 2023-10-15
+
+### Feature
+
+- **sca:** support case where there are no cves suppressions - [#5636](https://github.com/bridgecrewio/checkov/pull/5636)
 
 ## [2.5.8](https://github.com/bridgecrewio/checkov/compare/2.5.6...2.5.8) - 2023-10-12
 

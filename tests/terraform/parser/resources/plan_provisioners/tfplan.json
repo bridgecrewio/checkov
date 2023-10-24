@@ -1,0 +1,405 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.5.7",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_db_instance.default",
+          "mode": "managed",
+          "type": "aws_db_instance",
+          "name": "default",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "schema_version": 2,
+          "values": {
+            "allocated_storage": 10,
+            "allow_major_version_upgrade": null,
+            "apply_immediately": false,
+            "auto_minor_version_upgrade": true,
+            "blue_green_update": [],
+            "copy_tags_to_snapshot": false,
+            "custom_iam_instance_profile": null,
+            "customer_owned_ip_enabled": null,
+            "db_name": "mydb",
+            "delete_automated_backups": true,
+            "deletion_protection": null,
+            "domain": null,
+            "domain_iam_role_name": null,
+            "enabled_cloudwatch_logs_exports": null,
+            "engine": "mysql",
+            "engine_version": "5.7",
+            "final_snapshot_identifier": null,
+            "iam_database_authentication_enabled": null,
+            "instance_class": "db.t3.micro",
+            "manage_master_user_password": null,
+            "max_allocated_storage": null,
+            "monitoring_interval": 0,
+            "parameter_group_name": "default.mysql5.7",
+            "password": "foobarbaz",
+            "performance_insights_enabled": false,
+            "publicly_accessible": false,
+            "replicate_source_db": null,
+            "restore_to_point_in_time": [],
+            "s3_import": [],
+            "skip_final_snapshot": true,
+            "storage_encrypted": null,
+            "tags": null,
+            "timeouts": null,
+            "username": "foo"
+          },
+          "sensitive_values": {
+            "blue_green_update": [],
+            "listener_endpoint": [],
+            "master_user_secret": [],
+            "replicas": [],
+            "restore_to_point_in_time": [],
+            "s3_import": [],
+            "tags_all": {},
+            "vpc_security_group_ids": []
+          }
+        },
+        {
+          "address": "terraform_data.bad2",
+          "mode": "managed",
+          "type": "terraform_data",
+          "name": "bad2",
+          "provider_name": "terraform.io/builtin/terraform",
+          "schema_version": 0,
+          "values": {
+            "input": null,
+            "output": null,
+            "triggers_replace": null
+          },
+          "sensitive_values": {}
+        }
+      ]
+    }
+  },
+  "resource_changes": [
+    {
+      "address": "aws_db_instance.default",
+      "mode": "managed",
+      "type": "aws_db_instance",
+      "name": "default",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "allocated_storage": 10,
+          "allow_major_version_upgrade": null,
+          "apply_immediately": false,
+          "auto_minor_version_upgrade": true,
+          "blue_green_update": [],
+          "copy_tags_to_snapshot": false,
+          "custom_iam_instance_profile": null,
+          "customer_owned_ip_enabled": null,
+          "db_name": "mydb",
+          "delete_automated_backups": true,
+          "deletion_protection": null,
+          "domain": null,
+          "domain_iam_role_name": null,
+          "enabled_cloudwatch_logs_exports": null,
+          "engine": "mysql",
+          "engine_version": "5.7",
+          "final_snapshot_identifier": null,
+          "iam_database_authentication_enabled": null,
+          "instance_class": "db.t3.micro",
+          "manage_master_user_password": null,
+          "max_allocated_storage": null,
+          "monitoring_interval": 0,
+          "parameter_group_name": "default.mysql5.7",
+          "password": "foobarbaz",
+          "performance_insights_enabled": false,
+          "publicly_accessible": false,
+          "replicate_source_db": null,
+          "restore_to_point_in_time": [],
+          "s3_import": [],
+          "skip_final_snapshot": true,
+          "storage_encrypted": null,
+          "tags": null,
+          "timeouts": null,
+          "username": "foo"
+        },
+        "after_unknown": {
+          "address": true,
+          "arn": true,
+          "availability_zone": true,
+          "backup_retention_period": true,
+          "backup_target": true,
+          "backup_window": true,
+          "blue_green_update": [],
+          "ca_cert_identifier": true,
+          "character_set_name": true,
+          "db_subnet_group_name": true,
+          "endpoint": true,
+          "engine_version_actual": true,
+          "hosted_zone_id": true,
+          "id": true,
+          "identifier": true,
+          "identifier_prefix": true,
+          "iops": true,
+          "kms_key_id": true,
+          "latest_restorable_time": true,
+          "license_model": true,
+          "listener_endpoint": true,
+          "maintenance_window": true,
+          "master_user_secret": true,
+          "master_user_secret_kms_key_id": true,
+          "monitoring_role_arn": true,
+          "multi_az": true,
+          "nchar_character_set_name": true,
+          "network_type": true,
+          "option_group_name": true,
+          "performance_insights_kms_key_id": true,
+          "performance_insights_retention_period": true,
+          "port": true,
+          "replica_mode": true,
+          "replicas": true,
+          "resource_id": true,
+          "restore_to_point_in_time": [],
+          "s3_import": [],
+          "snapshot_identifier": true,
+          "status": true,
+          "storage_throughput": true,
+          "storage_type": true,
+          "tags_all": true,
+          "timezone": true,
+          "vpc_security_group_ids": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "blue_green_update": [],
+          "listener_endpoint": [],
+          "master_user_secret": [],
+          "password": true,
+          "replicas": [],
+          "restore_to_point_in_time": [],
+          "s3_import": [],
+          "tags_all": {},
+          "vpc_security_group_ids": []
+        }
+      }
+    },
+    {
+      "address": "terraform_data.bad2",
+      "mode": "managed",
+      "type": "terraform_data",
+      "name": "bad2",
+      "provider_name": "terraform.io/builtin/terraform",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "input": null,
+          "output": null,
+          "triggers_replace": null
+        },
+        "after_unknown": {
+          "id": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {}
+      }
+    }
+  ],
+  "configuration": {
+    "provider_config": {
+      "aws": {
+        "name": "aws",
+        "full_name": "registry.terraform.io/hashicorp/aws",
+        "version_constraint": "~> 5.0",
+        "expressions": {
+          "access_key": {
+            "constant_value": "mock_access_key"
+          },
+          "region": {
+            "constant_value": "us-east-1"
+          },
+          "secret_key": {
+            "constant_value": "mock_secret_key"
+          },
+          "skip_credentials_validation": {
+            "constant_value": true
+          },
+          "skip_metadata_api_check": {
+            "constant_value": true
+          },
+          "skip_requesting_account_id": {
+            "constant_value": true
+          }
+        }
+      },
+      "terraform": {
+        "name": "terraform",
+        "full_name": "terraform.io/builtin/terraform"
+      }
+    },
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_db_instance.default",
+          "mode": "managed",
+          "type": "aws_db_instance",
+          "name": "default",
+          "provider_config_key": "aws",
+          "expressions": {
+            "allocated_storage": {
+              "constant_value": 10
+            },
+            "db_name": {
+              "constant_value": "mydb"
+            },
+            "engine": {
+              "constant_value": "mysql"
+            },
+            "engine_version": {
+              "constant_value": "5.7"
+            },
+            "instance_class": {
+              "constant_value": "db.t3.micro"
+            },
+            "parameter_group_name": {
+              "constant_value": "default.mysql5.7"
+            },
+            "password": {
+              "constant_value": "foobarbaz"
+            },
+            "skip_final_snapshot": {
+              "constant_value": true
+            },
+            "username": {
+              "constant_value": "foo"
+            }
+          },
+          "schema_version": 2
+        },
+        {
+          "address": "aws_instance.bad",
+          "mode": "managed",
+          "type": "aws_instance",
+          "name": "bad",
+          "provider_config_key": "aws",
+          "provisioners": [
+            {
+              "type": "local-exec",
+              "expressions": {
+                "command": {
+                  "references": [
+                    "self.private_ip",
+                    "self"
+                  ]
+                }
+              }
+            }
+          ],
+          "expressions": {
+            "ami": {
+              "references": [
+                "data.aws_ami.ubuntu.id",
+                "data.aws_ami.ubuntu"
+              ]
+            },
+            "instance_type": {
+              "constant_value": "t3.micro"
+            }
+          },
+          "schema_version": 1
+        },
+        {
+          "address": "aws_instance.web",
+          "mode": "managed",
+          "type": "aws_instance",
+          "name": "web",
+          "provider_config_key": "aws",
+          "expressions": {
+            "ami": {
+              "references": [
+                "data.aws_ami.ubuntu.id",
+                "data.aws_ami.ubuntu"
+              ]
+            },
+            "instance_type": {
+              "constant_value": "t3.micro"
+            },
+            "tags": {
+              "constant_value": {
+                "Name": "HelloWorld"
+              }
+            }
+          },
+          "schema_version": 1
+        },
+        {
+          "address": "terraform_data.bad2",
+          "mode": "managed",
+          "type": "terraform_data",
+          "name": "bad2",
+          "provider_config_key": "terraform",
+          "provisioners": [
+            {
+              "type": "local-exec",
+              "expressions": {
+                "command": {
+                  "constant_value": "open WFH, '>completed.txt' and print WFH scalar localtime"
+                },
+                "interpreter": {
+                  "constant_value": [
+                    "perl",
+                    "-e"
+                  ]
+                }
+              }
+            }
+          ],
+          "schema_version": 0
+        },
+        {
+          "address": "data.aws_ami.ubuntu",
+          "mode": "data",
+          "type": "aws_ami",
+          "name": "ubuntu",
+          "provider_config_key": "aws",
+          "expressions": {
+            "filter": [
+              {
+                "name": {
+                  "constant_value": "name"
+                },
+                "values": {
+                  "constant_value": [
+                    "ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"
+                  ]
+                }
+              },
+              {
+                "name": {
+                  "constant_value": "virtualization-type"
+                },
+                "values": {
+                  "constant_value": [
+                    "hvm"
+                  ]
+                }
+              }
+            ],
+            "most_recent": {
+              "constant_value": true
+            },
+            "owners": {
+              "constant_value": [
+                "099720109477"
+              ]
+            }
+          },
+          "schema_version": 0
+        }
+      ]
+    }
+  },
+  "timestamp": "2023-09-30T04:54:35Z"
+}

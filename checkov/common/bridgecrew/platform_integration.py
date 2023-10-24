@@ -7,35 +7,35 @@ import re
 import uuid
 import webbrowser
 from collections import namedtuple
-from urllib.parse import urlparse
 from concurrent import futures
 from io import StringIO
 from json import JSONDecodeError
 from os import path
 from pathlib import Path
 from time import sleep
-from typing import List, Dict, TYPE_CHECKING, Any, cast, Optional
+from typing import List, Dict, TYPE_CHECKING, Any, cast, Optional, Union
+from urllib.parse import urlparse
 
 import boto3
 import dpath
 import requests
 import urllib3
-from botocore.exceptions import ClientError
 from botocore.config import Config
+from botocore.exceptions import ClientError
 from cachetools import cached, TTLCache
 from colorama import Style
 from termcolor import colored
 from tqdm import trange
 from urllib3.exceptions import HTTPError, MaxRetryError
 
-from checkov.common.bridgecrew.run_metadata.registry import registry
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.bridgecrew.platform_key import read_key, persist_key, bridgecrew_file
-from checkov.common.bridgecrew.wrapper import reduce_scan_reports, persist_checks_results, \
+from checkov.common.bridgecrew.run_metadata.registry import registry
+from checkov.common.bridgecrew.wrapper import persist_assets_results, reduce_scan_reports, persist_checks_results, \
     enrich_and_persist_checks_metadata, checkov_results_prefix, persist_run_metadata, _put_json_object, \
-    persist_logs_stream, persist_graphs, persist_resource_subgraph_maps
+    persist_logs_stream, persist_graphs, persist_resource_subgraph_maps, persist_reachability_results
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILES, SCANNABLE_PACKAGE_FILES
-from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.typing import _CicdDetails, LibraryGraph
 from checkov.common.util.consts import PRISMA_PLATFORM, BRIDGECREW_PLATFORM, CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
@@ -56,6 +56,7 @@ from checkov.common.util.http_utils import (
     REQUEST_RETRIES,
 )
 from checkov.common.util.type_forcers import convert_prisma_policy_filter_to_dict, convert_str_to_bool
+from checkov.sast.consts import SastLanguages
 from checkov.version import version as checkov_version
 
 if TYPE_CHECKING:
@@ -66,7 +67,6 @@ if TYPE_CHECKING:
     from mypy_boto3_s3.client import S3Client
     from requests import Response
     from typing_extensions import TypeGuard
-
 
 SLEEP_SECONDS = 1
 
@@ -107,7 +107,7 @@ class BcPlatformIntegration:
         self.support_repo_path: str | None = None
         self.repo_id: str | None = None
         self.repo_branch: str | None = None
-        self.skip_fixes = False
+        self.skip_fixes = False  # even though we removed the CLI flag, this gets set so we know whether this is a fix run (IDE) or not (normal CLI)
         self.skip_download = False
         self.source_id: str | None = None
         self.bc_source: SourceType | None = None
@@ -159,6 +159,7 @@ class BcPlatformIntegration:
         self.integrations_api_url = f"{self.api_url}/api/v1/integrations/types/checkov"
         self.onboarding_url = f"{self.api_url}/api/v1/signup/checkov"
         self.platform_run_config_url = f"{self.api_url}/api/v2/checkov/runConfiguration"
+        self.reachability_run_config_url = f"{self.api_url}/api/v2/checkov/reachabilityRunConfiguration"
 
     def is_prisma_integration(self) -> bool:
         if self.bc_api_key and not self.is_bc_token(self.bc_api_key):
@@ -281,9 +282,9 @@ class BcPlatformIntegration:
     def setup_bridgecrew_credentials(
         self,
         repo_id: str,
-        skip_fixes: bool = False,
         skip_download: bool = False,
         source: SourceType | None = None,
+        skip_fixes: bool = False,
         source_version: str | None = None,
         repo_branch: str | None = None,
         prisma_api_url: str | None = None,
@@ -291,7 +292,6 @@ class BcPlatformIntegration:
         """
         Setup credentials against Bridgecrew's platform.
         :param repo_id: Identity string of the scanned repository, of the form <repo_owner>/<repo_name>
-        :param skip_fixes: whether to skip querying fixes from Bridgecrew
         :param skip_download: whether to skip downloading data (guidelines, custom policies, etc) from the platform
         :param source:
         :param prisma_api_url: optional URL for the Prisma Cloud platform, requires a Prisma Cloud Access Key as bc_api_key
@@ -498,6 +498,29 @@ class BcPlatformIntegration:
                                                                    self.repo_path, self.on_prem)
         dpath.merge(reduced_scan_reports, checks_metadata_paths)
         persist_checks_results(reduced_scan_reports, self.s3_client, self.bucket, self.repo_path)
+
+    async def persist_reachability_alias_mapping(self, alias_mapping: Dict[str, Any]) -> None:
+        if not self.use_s3_integration or not self.s3_client:
+            return
+        if not self.bucket or not self.repo_path:
+            logging.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
+            return
+
+        s3_path = f'{self.repo_path}/alias_mapping.json'
+        _put_json_object(self.s3_client, alias_mapping, self.bucket, s3_path)
+
+    def persist_assets_scan_results(self, assets_report: Optional[Dict[str, Any]]) -> None:
+        if not assets_report:
+            return
+        for lang, assets in assets_report['imports'].items():
+            new_report = {'imports': {lang.value: assets}}
+            persist_assets_results(f'sast_{lang.value}', new_report, self.s3_client, self.bucket, self.repo_path)
+
+    def persist_reachability_scan_results(self, reachability_report: Optional[Dict[SastLanguages, Any]]) -> None:
+        if not reachability_report:
+            return
+        for lang, report in reachability_report.items():
+            persist_reachability_results(f'sast_{lang.value}', report, self.s3_client, self.bucket, self.repo_path)
 
     def persist_image_scan_results(self, report: dict[str, Any] | None, file_path: str, image_name: str, branch: str) -> None:
         if not self.s3_client:
@@ -748,6 +771,47 @@ class BcPlatformIntegration:
             logging.debug(f"Got customer run config from {platform_type} platform")
         except Exception:
             logging.warning(f"Failed to get the customer run config from {self.platform_run_config_url}", exc_info=True)
+            raise
+
+    def get_reachability_run_config(self) -> Union[Dict[str, Any], None]:
+        if self.skip_download is True:
+            logging.debug("Skipping customer run config API call")
+            return None
+
+        if not self.bc_api_key or not self.is_integration_configured():
+            raise Exception(
+                "Tried to get customer run config, but the API key was missing or the integration was not set up")
+
+        if not self.bc_source:
+            logging.error("Source was not set")
+            return None
+
+        try:
+            token = self.get_auth_token()
+            headers = merge_dicts(get_auth_header(token),
+                                  get_default_get_headers(self.bc_source, self.bc_source_version))
+
+            self.setup_http_manager()
+            if not self.http:
+                logging.error("HTTP manager was not correctly created")
+                return None
+
+            platform_type = PRISMA_PLATFORM if self.is_prisma_integration() else BRIDGECREW_PLATFORM
+
+            request = self.http.request("GET", self.reachability_run_config_url,
+                                        headers=headers)  # type:ignore[no-untyped-call]
+            if request.status != 200:
+                error_message = get_auth_error_message(request.status, self.is_prisma_integration(), False)
+                logging.error(error_message)
+                raise BridgecrewAuthError(error_message)
+
+            logging.debug(f"Got reachability run config from {platform_type} platform")
+
+            res: Dict[str, Any] = json.loads(request.data.decode("utf8"))
+            return res
+        except Exception:
+            logging.warning(f"Failed to get the reachability run config from {self.reachability_run_config_url}",
+                            exc_info=True)
             raise
 
     def get_prisma_build_policies(self, policy_filter: str) -> None:

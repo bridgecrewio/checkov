@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from typing import Any
+from typing import Any, cast
 
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.images.graph.image_referencer_provider import GraphImageReferencerProvider
@@ -37,4 +37,4 @@ class BaseKubernetesProvider(GraphImageReferencerProvider):
         return images
 
     def _get_resource_path(self, resource: dict[str, Any]) -> str:
-        return resource.get(CustomAttributes.FILE_PATH, "")
+        return cast("str", resource.get(CustomAttributes.FILE_PATH, ""))

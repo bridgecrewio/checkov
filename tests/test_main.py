@@ -76,7 +76,7 @@ def test_run():
     assert ckv.run_metadata["args"] and isinstance(ckv.run_metadata["args"], list)
 
     # check all runners were initialized, but only 2 were actually run
-    assert len(ckv.runners) == 28
+    assert len(ckv.runners) == 29
 
     assert len(ckv.scan_reports) == 2
     assert {report.check_type for report in ckv.scan_reports} == {"kubernetes", "terraform"}
@@ -92,6 +92,7 @@ def test_run_with_severity_filter_and_api_key(caplog: LogCaptureFixture):
         "--framework", "terraform",
         "--check", "MEDIUM",
         "--bc-api-key", "12345678-abcd-1234-abcd-123456789012",
+        "--repo-id", "acme/example",
         "--show-config",  # just set to terminate the run early enough
     ]
 

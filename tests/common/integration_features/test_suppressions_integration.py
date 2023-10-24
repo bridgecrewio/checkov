@@ -1,8 +1,8 @@
 import unittest
 
-from checkov.common.bridgecrew.integration_features.features.suppressions_integration import SuppressionsIntegration
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
     integration as metadata_integration
+from checkov.common.bridgecrew.integration_features.features.suppressions_integration import SuppressionsIntegration
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
@@ -450,13 +450,14 @@ class TestSuppressionsIntegration(unittest.TestCase):
         suppressions_integration._init_repo_regex()
 
         suppression = {
-        'suppressionType': 'Cves',
-        'policyId': 'BC_VUL_2',
-        'comment': 'suppress cve ',
-        'accountIds': ['customer_some/repo'],
-        'cves': [{'uuid': '90397534-a1a0-41bb-a552-acdd861df618', 'id': '/requirements.txt', 'cve': 'CVE-2022-35920'},
-                 {'uuid': '90397534-a1a0-41bb-a552-acdd861df699', 'id': '/requirements.txt', 'cve': 'CVE-2021-23727'}],
-        'checkovPolicyId': 'BC_VUL_2'
+            'suppressionType': 'Cves',
+            'policyId': 'BC_VUL_2',
+            'comment': 'suppress cve ',
+            'accountIds': ['customer_some/repo'],
+            'cves': [
+                {'uuid': '90397534-a1a0-41bb-a552-acdd861df618', 'id': '/requirements.txt', 'cve': 'CVE-2022-35920'},
+                {'uuid': '90397534-a1a0-41bb-a552-acdd861df699', 'id': '/requirements.txt', 'cve': 'CVE-2021-23727'}],
+            'checkovPolicyId': 'BC_VUL_2'
         }
 
         record1 = Record(check_id='BC_VUL_2', check_name=None, check_result=None,
@@ -489,6 +490,28 @@ class TestSuppressionsIntegration(unittest.TestCase):
         self.assertFalse(suppressions_integration._check_suppression(record3, suppression))
         self.assertFalse(suppressions_integration._check_suppression(record4, suppression))
 
+    def test_suppress_by_cve_with_empty_cves(self):
+        instance = BcPlatformIntegration()
+        instance.repo_id = 'repo/path'
+        suppressions_integration = SuppressionsIntegration(instance)
+        suppressions_integration._init_repo_regex()
+
+        suppression = {
+            'suppressionType': 'Cves',
+            'policyId': 'BC_VUL_2',
+            'comment': 'suppress cve ',
+            'cves': [],
+            'checkovPolicyId': 'BC_VUL_2'
+        }
+
+        record1 = Record(check_id='BC_VUL_2', check_name=None, check_result=None,
+                         code_block=None, file_path='repo/path',
+                         file_line_range=None,
+                         resource=None, evaluations=None,
+                         check_class=None, file_abs_path='.', entity_tags=None,
+                         vulnerability_details={'id': 'CVE-2022-35920'})
+        self.assertFalse(suppressions_integration._check_suppression(record1, suppression))
+
     def test_supress_by_cve_for_package_scan_with_different_repo_id(self):
         instance = BcPlatformIntegration()
         instance.repo_id = 'some/repo'
@@ -497,13 +520,14 @@ class TestSuppressionsIntegration(unittest.TestCase):
         suppressions_integration._init_repo_regex()
 
         suppression = {
-        'suppressionType': 'Cves',
-        'policyId': 'BC_VUL_2',
-        'comment': 'suppress cve ',
-        'accountIds': ['customer_other/repo'],
-        'cves': [{'uuid': '90397534-a1a0-41bb-a552-acdd861df618', 'id': '/requirements.txt', 'cve': 'CVE-2022-35920'},
-                 {'uuid': '90397534-a1a0-41bb-a552-acdd861df699', 'id': '/requirements.txt', 'cve': 'CVE-2021-23727'}],
-        'checkovPolicyId': 'BC_VUL_2'
+            'suppressionType': 'Cves',
+            'policyId': 'BC_VUL_2',
+            'comment': 'suppress cve ',
+            'accountIds': ['customer_other/repo'],
+            'cves': [
+                {'uuid': '90397534-a1a0-41bb-a552-acdd861df618', 'id': '/requirements.txt', 'cve': 'CVE-2022-35920'},
+                {'uuid': '90397534-a1a0-41bb-a552-acdd861df699', 'id': '/requirements.txt', 'cve': 'CVE-2021-23727'}],
+            'checkovPolicyId': 'BC_VUL_2'
         }
 
         record1 = Record(check_id='BC_VUL_2', check_name=None, check_result=None,
@@ -733,11 +757,11 @@ class TestSuppressionsIntegration(unittest.TestCase):
         suppressions_integration = SuppressionsIntegration(instance)
 
         suppression = {'suppressionType': 'LicenseType',
-                      'policyId': 'BC_LIC_1',
-                      'comment': 'test licenses suppressions by type ',
-                      'licenseTypes': ['GPL-1.0', 'JSON'],
-                      'checkovPolicyId': 'BC_LIC_1'
-                      }
+                       'policyId': 'BC_LIC_1',
+                       'comment': 'test licenses suppressions by type ',
+                       'licenseTypes': ['GPL-1.0', 'JSON'],
+                       'checkovPolicyId': 'BC_LIC_1'
+                       }
         record1 = Record(check_id='BC_LIC_1', check_name=None, check_result=None,
                          code_block=None, file_path=None,
                          file_line_range=None,
@@ -766,7 +790,6 @@ class TestSuppressionsIntegration(unittest.TestCase):
         self.assertTrue(suppressions_integration._check_suppression(record2, suppression))
         self.assertFalse(suppressions_integration._check_suppression(record3, suppression))
         self.assertFalse(suppressions_integration._check_suppression(record4, suppression))
-
 
     def test_account_suppression(self):
         instance = BcPlatformIntegration()
@@ -1023,7 +1046,7 @@ class TestSuppressionsIntegration(unittest.TestCase):
         self.assertEqual(len(report.passed_checks), 1)
         self.assertEqual(report.passed_checks[0].check_id, 'CKV_AWS_2')
         self.assertEqual(len(report.skipped_checks), 2)
-    
+
     def test_get_policy_level_suppressions(self):
         instance = BcPlatformIntegration()
 
@@ -1031,7 +1054,7 @@ class TestSuppressionsIntegration(unittest.TestCase):
         suppressions_integration.suppressions = {
             'CKV_AWS_252': [{'suppressionType': 'Policy', 'id': '404088ed-4251-41ac-8dc1-45264af0c461',
                              'policyId': 'BC_AWS_GENERAL_175', 'creationDate': '2022-11-09T16:27:36.413Z',
-                             'comment': 'Test2', 'checkovPolicyId': 'CKV_AWS_252'}], 
+                             'comment': 'Test2', 'checkovPolicyId': 'CKV_AWS_252'}],
             'CKV_AWS_36': [
                 {'suppressionType': 'Policy', 'id': 'b68013bc-2908-4c9a-969d-f1640d4aca11',
                  'policyId': 'BC_AWS_LOGGING_2',
@@ -1039,7 +1062,7 @@ class TestSuppressionsIntegration(unittest.TestCase):
             'CKV_K8S_27': [
                 {'suppressionType': 'Policy', 'id': '271c1a79-2333-4a12-bf7d-55ec78468b94', 'policyId': 'BC_K8S_26',
                  'creationDate': '2022-12-08T08:00:04.561Z', 'comment': 'test checkov suppressions',
-                 'checkovPolicyId': 'CKV_K8S_27'}], 
+                 'checkovPolicyId': 'CKV_K8S_27'}],
             'acme_AWS_1668010000289': [
                 {'suppressionType': 'Resources', 'id': '5565e523-58da-4bc7-970e-c3fceef93ac1',
                  'policyId': 'acme_AWS_1668010000289', 'creationDate': '2022-11-09T16:28:50.887Z',
@@ -1057,7 +1080,8 @@ class TestSuppressionsIntegration(unittest.TestCase):
                                                       'resourceId': '/src/BC_AWS_LOGGING_7.tf:aws_cloudtrail.cloudtrail8'}],
                  'checkovPolicyId': 'acme_AWS_1668010000289'}]}
 
-        expected_suppressions = ['404088ed-4251-41ac-8dc1-45264af0c461', 'b68013bc-2908-4c9a-969d-f1640d4aca11', '271c1a79-2333-4a12-bf7d-55ec78468b94']
+        expected_suppressions = ['404088ed-4251-41ac-8dc1-45264af0c461', 'b68013bc-2908-4c9a-969d-f1640d4aca11',
+                                 '271c1a79-2333-4a12-bf7d-55ec78468b94']
         policy_level_suppressions = suppressions_integration.get_policy_level_suppressions()
         self.assertEqual(expected_suppressions, list(policy_level_suppressions.keys()))
 
