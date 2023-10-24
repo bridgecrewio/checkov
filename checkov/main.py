@@ -185,6 +185,9 @@ class Checkov:
         if self.config.use_enforcement_rules and not self.config.bc_api_key:
             self.parser.error('Must specify an API key with --use-enforcement-rules')
 
+        if self.config.bc_api_key and not self.config.repo_id:
+            self.parser.error('--repo-id is required when using a platform API key')
+
         if self.config.policy_metadata_filter and not (self.config.bc_api_key and self.config.prisma_api_url):
             logger.warning(
                 '--policy-metadata-filter flag was used without a Prisma Cloud API key. Policy filtering will be skipped.'

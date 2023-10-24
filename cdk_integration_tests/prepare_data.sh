@@ -8,7 +8,7 @@ for file in "checkov/cdk/checks/python"/*; do
         filename="${basename%.*}"
         # create a report for this check
         echo "creating report for check: $filename"
-        pipenv run checkov -s --framework cdk -o json \
+        pipenv run checkov -s --framework cdk --repo-id cli/cdk -o json \
           -d "cdk_integration_tests/src/python/$filename" \
           --external-checks-dir "checkov/cdk/checks/python/$filename.yaml" > "checkov_report_cdk_python_$filename.json"
     fi
