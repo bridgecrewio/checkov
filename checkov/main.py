@@ -177,23 +177,7 @@ class Checkov:
         self.normalize_config()
 
     def normalize_config(self) -> None:
-        if self.config.no_guide:
-            logger.warning(
-                '--no-guide is deprecated and will be removed in a future release. Use --skip-download instead'
-            )
-            self.config.skip_download = True
-        if self.config.skip_suppressions:
-            logger.warning(
-                '--skip-suppressions is deprecated and will be removed in a future release. Use --skip-download instead'
-            )
-            self.config.skip_download = True
-        if self.config.skip_policy_download:
-            logger.warning(
-                '--skip-policy-download is deprecated and will be removed in a future release. Use --skip-download instead'
-            )
-            self.config.skip_download = True
-
-        elif not self.config.bc_api_key and not self.config.include_all_checkov_policies:
+        if not self.config.bc_api_key and not self.config.include_all_checkov_policies:
             # makes it easier to pick out policies later if we can just always rely on this flag without other context
             logger.debug('No API key present; setting include_all_checkov_policies to True')
             self.config.include_all_checkov_policies = True
@@ -408,7 +392,7 @@ class Checkov:
                 try:
                     bc_integration.bc_api_key = self.config.bc_api_key
                     bc_integration.setup_bridgecrew_credentials(repo_id=self.config.repo_id,
-                                                                skip_fixes=self.config.skip_fixes,
+                                                                skip_fixes=False,  # will be set to True if this run is not eligible for fixes
                                                                 skip_download=self.config.skip_download,
                                                                 source=source,
                                                                 source_version=source_version,

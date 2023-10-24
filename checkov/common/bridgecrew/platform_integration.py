@@ -107,7 +107,7 @@ class BcPlatformIntegration:
         self.support_repo_path: str | None = None
         self.repo_id: str | None = None
         self.repo_branch: str | None = None
-        self.skip_fixes = False
+        self.skip_fixes = False  # even though we removed the CLI flag, this gets set so we know whether this is a fix run (IDE) or not (normal CLI)
         self.skip_download = False
         self.source_id: str | None = None
         self.bc_source: SourceType | None = None
@@ -273,9 +273,9 @@ class BcPlatformIntegration:
     def setup_bridgecrew_credentials(
         self,
         repo_id: str,
-        skip_fixes: bool = False,
         skip_download: bool = False,
         source: SourceType | None = None,
+        skip_fixes: bool = False,
         source_version: str | None = None,
         repo_branch: str | None = None,
         prisma_api_url: str | None = None,
@@ -283,7 +283,6 @@ class BcPlatformIntegration:
         """
         Setup credentials against Bridgecrew's platform.
         :param repo_id: Identity string of the scanned repository, of the form <repo_owner>/<repo_name>
-        :param skip_fixes: whether to skip querying fixes from Bridgecrew
         :param skip_download: whether to skip downloading data (guidelines, custom policies, etc) from the platform
         :param source:
         :param prisma_api_url: optional URL for the Prisma Cloud platform, requires a Prisma Cloud Access Key as bc_api_key

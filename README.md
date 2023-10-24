@@ -402,7 +402,7 @@ checkov --config-file path/to/config.yaml
 ```
 Users can also create a config file using the `--create-config` command, which takes the current command line args and writes them out to a given path. For example:
 ```sh
-checkov --compact --directory test-dir --docker-image sample-image --dockerfile-path Dockerfile --download-external-modules True --external-checks-dir sample-dir --no-guide --quiet --repo-id bridgecrew/sample-repo --skip-check CKV_DOCKER_3,CKV_DOCKER_2 --skip-fixes --skip-framework dockerfile secrets --skip-suppressions --soft-fail --branch develop --check CKV_DOCKER_1 --create-config /Users/sample/config.yml
+checkov --compact --directory test-dir --docker-image sample-image --dockerfile-path Dockerfile --download-external-modules True --external-checks-dir sample-dir --quiet --repo-id bridgecrew/sample-repo --skip-check CKV_DOCKER_3,CKV_DOCKER_2 --skip-framework dockerfile secrets --soft-fail --branch develop --check CKV_DOCKER_1 --create-config /Users/sample/config.yml
 ```
 Will create a `config.yaml` file which looks like this:
 ```yaml
@@ -421,18 +421,15 @@ external-checks-dir:
 external-modules-download-path: .external_modules 
 framework:
   - all 
-no-guide: true 
 output: cli 
 quiet: true 
 repo-id: bridgecrew/sample-repo 
 skip-check: 
   - CKV_DOCKER_3 
   - CKV_DOCKER_2 
-skip-fixes: true 
 skip-framework:
   - dockerfile
   - secrets
-skip-suppressions: true 
 soft-fail: true
 ```
 
@@ -472,7 +469,7 @@ Looking to contribute new checks? Learn how to write a new check (AKA policy) [h
 `checkov` does not save, publish or share with anyone any identifiable customer information.  
 No identifiable customer information is used to query Bridgecrew's publicly accessible guides.
 `checkov` uses Bridgecrew's API to enrich the results with links to remediation guides.
-To skip this API call use the flag `--no-guide`.
+To skip this API call use the flag `--skip-download`.
 
 ## Support
 
