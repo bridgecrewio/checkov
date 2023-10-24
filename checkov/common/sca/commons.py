@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import List, Optional, Any
+from typing import List, Optional, Any, cast
 
 from checkov.common.output.common import SCADetails
 
@@ -39,8 +39,8 @@ def get_package_type(package_name: str, package_version: str, sca_details: SCADe
 
 def get_registry_url(package: dict[str, Any]) -> str:
     if "registry" in package:
-        return str(package.get("registry", ""))
-    return str(package.get("registryUrl", ""))
+        return cast("str", package.get("registry", ""))
+    return cast("str", package.get("registryUrl", ""))
 
 
 def normalize_twistcli_language(language: str) -> str:
@@ -52,8 +52,7 @@ def normalize_twistcli_language(language: str) -> str:
 
 
 def get_package_lines(package: dict[str, Any]) -> list[int] | None:
-    lines = package.get("linesNumbers", package.get("lines"))
-    return list(lines) if lines else None
+    return cast("list[int] | None", package.get("linesNumbers", package.get("lines")))
 
 
 def get_record_file_line_range(package: dict[str, Any], file_line_range: list[int] | None) -> list[int]:
