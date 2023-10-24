@@ -172,13 +172,14 @@ class BcPlatformIntegration:
         parts_len = len(parts)
         if parts_len == 1:
             valid = BcPlatformIntegration.is_bc_token(token)
-            if valid:
-                print(
-                    "We're glad you're using Checkov with Bridgecrew!\n"
-                    "Bridgecrew has been fully integrated into Prisma Cloud with a powerful code to cloud experience.\n"
-                    "As a part of the transition, we will be shutting down Bridgecrew standalone edition at the end of 2023 (https://www.paloaltonetworks.com/services/support/end-of-life-announcements).\n"
-                    "Please upgrade to Prisma Cloud Enterprise Edition before the end of the year.\n"
-                )
+            # TODO: add it back at a later time
+            # if valid:
+            #     print(
+            #         "We're glad you're using Checkov with Bridgecrew!\n"
+            #         "Bridgecrew has been fully integrated into Prisma Cloud with a powerful code to cloud experience.\n"
+            #         "As a part of the transition, we will be shutting down Bridgecrew standalone edition at the end of 2023 (https://www.paloaltonetworks.com/services/support/end-of-life-announcements).\n"
+            #         "Please upgrade to Prisma Cloud Enterprise Edition before the end of the year.\n"
+            #     )
 
             return valid
         elif parts_len == 2:

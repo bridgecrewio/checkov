@@ -8,7 +8,6 @@ nav_order: 5
 # Migration - v2 to v3
 
 With v3 not only new features were added, but following behaviour changed or was completely removed.
-We plan to release the new version end of October 2023.
 
 ## Remove of "level up"
 
@@ -55,3 +54,21 @@ class Example(BaseResourceCheck):
         
         ...
 ```
+
+## Repo ID requirement
+
+For anyone using `checkov` with an API key will now require to set the repo ID via flag.
+
+```shell
+checkov -d. --bc-api-key xyz --repo-id example/example
+```
+
+## Deprecated flag removal
+
+Following flags were deprecated a while ago and are now completely removed
+
+- `--no-guide`
+- `--skip-suppressions`
+- `--skip-policy-download`
+
+They were combined and replaced by the `--skip-download` flag. 
