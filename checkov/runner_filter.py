@@ -137,7 +137,7 @@ class RunnerFilter(object):
         self.resource_attr_to_omit: DefaultDict[str, Set[str]] = RunnerFilter._load_resource_attr_to_omit(
             resource_attr_to_omit
         )
-        self.sast_languages: Set[SastLanguages] = RunnerFilter.get_sast_languages(framework)
+        self.sast_languages: Set[SastLanguages] = RunnerFilter.get_sast_languages(framework, skip_framework)
         if self.sast_languages and any([item for item in self.framework if item.startswith(CheckType.SAST) or item == 'all']) :
             self.framework = [item for item in self.framework if not item.startswith(CheckType.SAST)]
             self.framework.append(CheckType.SAST)
@@ -379,12 +379,14 @@ class RunnerFilter(object):
         self.suppressed_policies = policy_level_suppressions
 
     @staticmethod
-    def get_sast_languages(frameworks: Optional[List[str]]) -> Set[SastLanguages]:
+    def get_sast_languages(frameworks: Optional[List[str]], skip_framework: Optional[List[str]]) -> Set[SastLanguages]:
         langs: Set[SastLanguages] = set()
-        if not frameworks:
+        if not frameworks or "sast" in skip_framework:
             return langs
         if 'all' in frameworks:
-            return SastLanguages.set()
+            sast_languages = SastLanguages.set()
+            skip_framework = [] if not skip_framework else [f.split("sast_")[-1] for f in skip_framework]
+            return set([lang for lang in sast_languages if lang.value not in skip_framework])
         for framework in frameworks:
             if framework in [CheckType.SAST, CheckType.CDK]:
                 for sast_lang in SastLanguages:
