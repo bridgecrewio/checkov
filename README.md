@@ -37,6 +37,7 @@ Checkov also powers [**Bridgecrew**](https://bridgecrew.io/?utm_source=github&ut
 - [Getting Started](#getting-started)
 - [Disclaimer](#disclaimer)
 - [Support](#support)
+- [Migration - v2 to v3](docs/1.Welcome/Migration.md)
 
  ## Features
 
