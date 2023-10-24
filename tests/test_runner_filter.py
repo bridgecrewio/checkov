@@ -13,6 +13,8 @@ from checkov.runner_filter import RunnerFilter
         (None, None, {"all"}),
         (["terraform"], None, {"terraform"}),
         (["cloudformation", "serverless"], None, {"cloudformation", "serverless"}),
+        (["cdk"], None, {"cdk"}),
+        (["cdk", "sast"], None, {"cdk", "sast"}),
         (
             ["all"],
             ["terraform", "secrets"],
@@ -49,7 +51,7 @@ from checkov.runner_filter import RunnerFilter
         ),
         (["cloudformation", "serverless"], ["serverless", "secrets"], {"cloudformation"}),
     ],
-    ids=["all", "none", "terraform", "multiple", "all_with_skip", "multiple_with_skip"],
+    ids=["all", "none", "terraform", "multiple", "only cdk", "cdk and sast", "all_with_skip", "multiple_with_skip"],
 )
 def test_runner_filter_constructor_framework(
         input_frameworks: Optional[List[str]], input_skip_frameworks: Optional[List[str]], expected_frameworks: Set[str]

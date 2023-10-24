@@ -138,7 +138,7 @@ class RunnerFilter(object):
             resource_attr_to_omit
         )
         self.sast_languages: Set[SastLanguages] = RunnerFilter.get_sast_languages(framework)
-        if self.sast_languages:
+        if self.sast_languages and any([item for item in self.framework if item.startswith(CheckType.SAST) or item == 'all']) :
             self.framework = [item for item in self.framework if not item.startswith(CheckType.SAST)]
             self.framework.append(CheckType.SAST)
 
