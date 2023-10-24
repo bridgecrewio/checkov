@@ -7,7 +7,7 @@ import platform
 import re
 import stat
 from pathlib import Path
-from typing import Optional, List, Set, Union, Dict, Any, Tuple
+from typing import Optional, List, Set, Union, Dict, Any, Tuple, cast
 
 from cachetools import cached, TTLCache
 from pydantic import ValidationError
@@ -357,8 +357,8 @@ class PrismaEngine(SastEngine):
             'policies': [],
             'checks': [],
             'skip_checks': [],
-            'check_threshold': None,
-            'skip_check_threshold': None,
+            'check_threshold': Severities[BcSeverities.NONE],
+            'skip_check_threshold': Severities[BcSeverities.NONE],
             'skip_path': [],
             'report_imports': False,
             'report_reachability': False
