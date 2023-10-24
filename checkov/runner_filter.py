@@ -138,9 +138,14 @@ class RunnerFilter(object):
             resource_attr_to_omit
         )
         self.sast_languages: Set[SastLanguages] = RunnerFilter.get_sast_languages(framework, skip_framework)
-        if self.sast_languages and any([item for item in self.framework if item.startswith(CheckType.SAST) or item == 'all']) :
+        if self.sast_languages and any(item for item in self.framework if item.startswith(CheckType.SAST) or item == 'all'):
             self.framework = [item for item in self.framework if not item.startswith(CheckType.SAST)]
             self.framework.append(CheckType.SAST)
+        elif not self.sast_languages:
+            # remove all SAST and CDK frameworks
+            self.framework = [
+                item for item in self.framework if not item.startswith(CheckType.SAST) and item != CheckType.CDK
+            ]
 
         self.enable_git_history_secret_scan: bool = enable_git_history_secret_scan
         if self.enable_git_history_secret_scan:
