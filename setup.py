@@ -110,7 +110,7 @@ setup(
         "spdx-tools>=0.8.0,<0.9.0",
         "license-expression",
         "rustworkx",
-        "pydantic>=1.10.7,<2.0.0"
+        "pydantic"
     ],
     dependency_links=[],  # keep it empty, needed for pipenv-setup
     license="Apache License 2.0",
