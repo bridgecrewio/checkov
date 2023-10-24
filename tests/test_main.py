@@ -92,6 +92,7 @@ def test_run_with_severity_filter_and_api_key(caplog: LogCaptureFixture):
         "--framework", "terraform",
         "--check", "MEDIUM",
         "--bc-api-key", "12345678-abcd-1234-abcd-123456789012",
+        "--repo-id", "acme/example",
         "--show-config",  # just set to terminate the run early enough
     ]
 
