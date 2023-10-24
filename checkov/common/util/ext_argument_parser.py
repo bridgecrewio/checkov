@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from io import StringIO
-from typing import Any, TYPE_CHECKING, cast
+from typing import Any, TYPE_CHECKING, cast, List
 
 import configargparse
 
-from checkov.common.bridgecrew.check_type import checkov_runners, sast_types
+from checkov.common.bridgecrew.check_type import checkov_runners
 from checkov.common.runners.runner_registry import OUTPUT_CHOICES, SUMMARY_POSITIONS
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.type_forcers import convert_str_to_bool
@@ -13,6 +13,18 @@ from checkov.version import version
 
 if TYPE_CHECKING:
     import argparse
+
+
+def flatten_csv(list_to_flatten: List[List[str]]) -> List[str]:
+    """
+    Flattens a list of list of strings into a list of strings, while also splitting out comma-separated values
+    Duplicates will be removed.
+    [['terraform', 'arm'], ['bicep,cloudformation,arm']] -> ['terraform', 'arm', 'bicep', 'cloudformation']
+    (Order is not guaranteed)
+    """
+    if not list_to_flatten:
+        return []
+    return list({s for sublist in list_to_flatten for val in sublist for s in val.split(',')})
 
 
 class ExtArgumentParser(configargparse.ArgumentParser):
@@ -211,21 +223,26 @@ class ExtArgumentParser(configargparse.ArgumentParser):
         )
         self.add(
             "--framework",
-            help="Filter scan to run only on specific infrastructure code frameworks",
-            choices=checkov_runners + sast_types + ["all"],
-            default=["all"],
+            help="Filter scan to run only on specific infrastructure as code frameworks. Defaults to all frameworks. If you "
+                 "explicitly include 'all' as a value, then all other values are ignored. Enter as a "
+                 "comma-separated list or repeat the flag multiple times. For example, --framework terraform,sca_package "
+                 f"or --framework terraform --framework sca_package. Possible values: {', '.join(['all'] + checkov_runners)}",
             env_var="CKV_FRAMEWORK",
-            nargs="+",
+            action='append',
+            nargs='+'  # we will still allow the old way (eg: --framework terraform arm cloudformation), just not prefer it
+            # intentionally no default value - we will set it explicitly during normalization (it messes up the list of lists)
         )
         self.add(
             "--skip-framework",
-            help="Filter scan to skip specific infrastructure as code frameworks."
+            help="Filter scan to skip specific infrastructure as code frameworks. "
                  "This will be included automatically for some frameworks if system dependencies "
-                 "are missing. Add multiple frameworks using spaces. For example, "
-                 "--skip-framework terraform sca_package.",
-            choices=checkov_runners,
+                 "are missing. Enter as a comma-separated list or repeat the flag multiple times. For example, "
+                 "--skip-framework terraform,sca_package or --skip-framework terraform --skip-framework sca_package. "
+                 "Cannot include values that are also included in --framework. "
+                 f"Possible values: {', '.join(checkov_runners)}",
             default=None,
-            nargs="+",
+            action='append',
+            nargs='+'
         )
         self.add(
             "-c",
