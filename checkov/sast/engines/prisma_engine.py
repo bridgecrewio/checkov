@@ -45,10 +45,13 @@ class PrismaEngine(SastEngine):
 
     def get_reports(self, targets: List[str], registry: Registry, languages: Set[SastLanguages]) -> List[Report]:
         if not bc_integration.bc_api_key:
-            logging.info("The --bc-api-key flag needs to be set to run Sast prisma scanning")
+            logging.info("The --bc-api-key flag needs to be set to run SAST Prisma Cloud scanning")
             return []
 
-        self.setup_sast_artifact()
+        status = self.setup_sast_artifact()
+        if not status:
+            return []
+
         prisma_lib_path = self.get_sast_artifact()
         if not prisma_lib_path:
             return []
@@ -105,10 +108,14 @@ class PrismaEngine(SastEngine):
             headers = bc_integration.get_default_headers("GET")
             headers["X-Client-Sast-Version"] = current_version
             headers["X-Required-Sast-Version"] = "latest"  # or ant version seperated with _
-            response = request_wrapper("GET",
-                                       f"{bc_integration.api_url}/{self.sast_platform_base_path}/{os_type}/{machine}/artifacts",
-                                       headers=headers,
-                                       should_call_raise_for_status=True)
+
+            # don't use the 'should_call_raise_for_status' parameter for now, because it logs errors messages
+            response = request_wrapper(
+                method="GET",
+                url=f"{bc_integration.api_url}/{self.sast_platform_base_path}/{os_type}/{machine}/artifacts",
+                headers=headers,
+            )
+            response.raise_for_status()
 
             if response.status_code == 304:
                 return True
