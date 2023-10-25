@@ -1,8 +1,6 @@
 import json
 import os
 
-import pytest
-
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
 
@@ -11,7 +9,6 @@ def test_sast_python() -> None:
     validate_report(os.path.abspath(report_path))
 
 
-@pytest.mark.skip(reason="Need to find a smaller java repo - jenkins is too heavy")
 def test_sast_java() -> None:
     report_path = os.path.join(current_dir, '..', 'checkov_report_sast_java.json')
     validate_report(os.path.abspath(report_path))
