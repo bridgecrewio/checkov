@@ -631,6 +631,7 @@ class BcPlatformIntegration:
                     # no need to upload something
                     return None
 
+                logging.debug(f'Submitting finalize upload request to {self.integrations_api_url}')
                 request = self.http.request("PUT", f"{self.integrations_api_url}?source={self.bc_source.name}",  # type:ignore[no-untyped-call]
                                             body=json.dumps(
                                                 {"path": self.repo_path, "branch": branch,
@@ -651,20 +652,21 @@ class BcPlatformIntegration:
                                                                 get_user_agent_header()
                                                                 ))
                 response = json.loads(request.data.decode("utf8"))
+                logging.debug(f'Request ID: {request.headers.get("x-amzn-requestid")}')
+                logging.debug(f'Trace ID: {request.headers.get("x-amzn-trace-id")}')
                 url: str = self.get_sso_prismacloud_url(response.get("url", None))
                 return url
             except HTTPError:
                 logging.error(f"Failed to commit repository {self.repo_path}", exc_info=True)
-                raise
+                self.s3_setup_failed = True
             except JSONDecodeError:
                 if request:
-                    logging.warning(
-                        f"Response (status: {request.status}) of {self.integrations_api_url}: {request.data.decode('utf8')}")
+                    logging.warning(f"Response (status: {request.status}) of {self.integrations_api_url}: {request.data.decode('utf8')}")
                 logging.error(f"Response of {self.integrations_api_url} is not a valid JSON", exc_info=True)
-                raise
+                self.s3_setup_failed = True
             finally:
                 if request and request.status == 201 and response and response.get("result") == "Success":
-                    logging.info(f"Finalize repository {self.repo_id} in bridgecrew's platform")
+                    logging.info(f"Finalize repository {self.repo_id} in the platform")
                 elif (
                     response
                     and try_num < MAX_RETRIES
@@ -675,8 +677,8 @@ class BcPlatformIntegration:
                     try_num += 1
                     sleep(SLEEP_SECONDS)
                 else:
-                    raise Exception(
-                        f"Failed to finalize repository {self.repo_id} in bridgecrew's platform\n{response}")
+                    logging.error(f"Failed to finalize repository {self.repo_id} in the platform with the following error:\n{response}")
+                    self.s3_setup_failed = True
 
         return None
 
