@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 import os
-import pathlib
 import sys
 
 from checkov.common.bridgecrew.check_type import CheckType
