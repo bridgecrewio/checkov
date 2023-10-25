@@ -56,7 +56,6 @@ from checkov.common.util.http_utils import (
     REQUEST_RETRIES,
 )
 from checkov.common.util.type_forcers import convert_prisma_policy_filter_to_dict, convert_str_to_bool
-from checkov.sast.consts import SastLanguages
 from checkov.version import version as checkov_version
 
 if TYPE_CHECKING:
