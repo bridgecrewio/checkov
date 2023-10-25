@@ -2,7 +2,6 @@ from typing import Any, Dict, Union, List, Optional
 
 from checkov.common.output.report import Report
 from checkov.sast.consts import POLICIES_ERRORS, POLICIES_ERRORS_COUNT, SOURCE_FILES_COUNT, POLICY_COUNT, SastLanguages
-from abc import abstractmethod
 
 
 class SastReport(Report):
@@ -35,7 +34,7 @@ class SastReport(Report):
 
         return base_summary
 
-    @abstractmethod
+    @staticmethod
     def get_formated_reachability_report(reachability_report_dict: Dict[str, Any]) -> Dict[str, Any]:
         formated_report = {}
         for lang, repos_data in reachability_report_dict.items():
