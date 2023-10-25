@@ -757,7 +757,22 @@ class Checkov:
             if rep.sast_reachability:
                 result[rep.language] = {**result[rep.language], **serialize_reachability_report(rep.sast_reachability)}
 
-        self.sast_data.set_reachability_report(result)
+        formated_report = {}
+        for lang, repos_data in result.items():
+            formated_report[lang] = []
+            for repo_name, files_data in repos_data.items():
+                new_repo = {'Name': repo_name, 'Files': []}
+                for file_path, packages_data in files_data['files'].items():
+                    new_file = {'Path': file_path, 'Packages': []}
+                    for package_name, package_data in packages_data['packages'].items():
+                        new_package = {'Name': package_name, 'Alias': package_data['alias'], 'Functions': []}
+                        for func in package_data['functions']:
+                            new_func = {'Name': func['name'], 'Alias': func['alias'], 'LineNumber': func['line_number'], 'CodeBlock': [func['code_block']]}
+                            new_package['Functions'].append(new_func)
+                        new_file['Packages'].append(new_package)
+                    new_repo['Files'].append(new_file)
+                formated_report[lang].append(new_repo)
+        self.sast_data.set_reachability_report(formated_report)
 
     def print_results(
             self,
