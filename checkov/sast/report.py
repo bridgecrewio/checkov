@@ -35,8 +35,8 @@ class SastReport(Report):
         return base_summary
 
     @staticmethod
-    def get_formated_reachability_report(reachability_report_dict: Dict[str, Any]) -> Dict[str, Any]:
-        formated_report = {}
+    def get_formated_reachability_report(reachability_report_dict: Dict[SastLanguages, Any]) -> Dict[str, Any]:
+        formated_report: Dict[str, Any] = {}
         for lang, repos_data in reachability_report_dict.items():
             formated_report[lang.value] = []
             for repo_name, files_data in repos_data.items():
@@ -62,7 +62,7 @@ class SastData:
     def set_imports_data(self, imports_data: Dict[str, Any]) -> None:
         self.imports_data = imports_data
 
-    def set_reachability_report(self, reachability_report: Dict[SastLanguages, Any]) -> None:
+    def set_reachability_report(self, reachability_report: Dict[str, Any]) -> None:
         self.reachability_report = reachability_report
 
     @staticmethod
