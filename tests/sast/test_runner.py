@@ -2,7 +2,10 @@ import pytest
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.platform_integration import bc_integration
+from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.common.models.enums import CheckResult
+from checkov.sast.checks_infra.base_registry import Registry
+from checkov.sast.engines.prisma_engine import PrismaEngine
 from checkov.sast.runner import Runner
 from checkov.runner_filter import RunnerFilter
 import pathlib
@@ -97,3 +100,44 @@ def test_sast_prisma_runner(mocker):
     bc_integration.bc_api_key = temp
 
     assert len(reports) == 0
+
+
+def test_get_check_thresholds():
+    prisma_engine = PrismaEngine()
+    registry = Registry('')
+    runner_filter = RunnerFilter()
+    registry.runner_filter = runner_filter
+
+    none = Severities[BcSeverities.NONE]
+    medium = Severities[BcSeverities.MEDIUM]
+    high = Severities[BcSeverities.HIGH]
+
+    # test plain thresholds specified using --check and --skip-check, no enforcement rules
+    assert prisma_engine.get_check_thresholds(registry) == (none, none)
+
+    runner_filter.check_threshold = medium
+    assert prisma_engine.get_check_thresholds(registry) == (medium, none)
+
+    runner_filter.skip_check_threshold = medium
+    assert prisma_engine.get_check_thresholds(registry) == (medium, medium)
+
+    runner_filter.check_threshold = None
+    assert prisma_engine.get_check_thresholds(registry) == (none, medium)
+
+    # apply enforcement rules
+    runner_filter.skip_check_threshold = None
+    runner_filter.use_enforcement_rules = True
+    runner_filter.enforcement_rule_configs = {
+        CheckType.SAST: high
+    }
+    assert prisma_engine.get_check_thresholds(registry) == (high, none)
+
+    # but --check and --skip-check with severities overrides enforcement rules
+    runner_filter.check_threshold = medium
+    assert prisma_engine.get_check_thresholds(registry) == (medium, none)
+
+    runner_filter.skip_check_threshold = medium
+    assert prisma_engine.get_check_thresholds(registry) == (medium, medium)
+
+    runner_filter.check_threshold = None
+    assert prisma_engine.get_check_thresholds(registry) == (none, medium)
