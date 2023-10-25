@@ -507,7 +507,7 @@ class BcPlatformIntegration:
             new_report = {'imports': {lang.value: assets}}
             persist_assets_results(f'sast_{lang.value}', new_report, self.s3_client, self.bucket, self.repo_path)
 
-    def persist_reachability_scan_results(self, reachability_report: Optional[Dict[SastLanguages, Any]]) -> None:
+    def persist_reachability_scan_results(self, reachability_report: Optional[Dict[str, Any]]) -> None:
         if not reachability_report:
             return
         for lang, report in reachability_report.items():

@@ -57,7 +57,7 @@ class SastReport(Report):
 class SastData:
     def __init__(self) -> None:
         self.imports_data: Optional[Dict[str, Any]] = None
-        self.reachability_report: Optional[Dict[SastLanguages, Any]] = None
+        self.reachability_report: Optional[Dict[str, Any]] = None
 
     def set_imports_data(self, imports_data: Dict[str, Any]) -> None:
         self.imports_data = imports_data
