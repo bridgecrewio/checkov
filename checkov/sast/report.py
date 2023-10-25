@@ -53,5 +53,7 @@ class SastData:
             sast_imports_report[report.language] = {}
         for report in scan_reports:
             for file_name, all_data in report.sast_imports.items():
-                sast_imports_report[report.language][file_name] = {'all': all_data.get('all', [])}
+                current_imports = all_data.get('all', [])
+                if current_imports:
+                    sast_imports_report[report.language][file_name] = {'all': current_imports}
         return {"imports": sast_imports_report}
