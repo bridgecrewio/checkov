@@ -19,7 +19,7 @@ class Registry(BaseCheckRegistry):
         self.checks_dir = checks_dir
         self.logger = logging.getLogger(__name__)
         self.runner_filter: Optional[RunnerFilter] = None
-        self.checks_dirs_path: List[str] = []
+        self.checks_dirs_path: List[str] = [checks_dir] if checks_dir else []
 
     def extract_entity_details(self, entity: dict[str, Any]) -> tuple[str, str, dict[str, Any]]:
         # TODO
