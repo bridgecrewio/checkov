@@ -661,7 +661,7 @@ class BcPlatformIntegration:
                 self.s3_setup_failed = True
             except JSONDecodeError:
                 if request:
-                    logging.warning(f"Response (status: {request.status}) of {self.integrations_api_url}: {request.data.decode('utf8')}")  # nosec
+                    logging.warning(f"Response (status: {request.status}) of {self.integrations_api_url}: {request.data.decode('utf8')}")  # danger:ignore - we won't be here if the response contains valid data
                 logging.error(f"Response of {self.integrations_api_url} is not a valid JSON", exc_info=True)
                 self.s3_setup_failed = True
             finally:
