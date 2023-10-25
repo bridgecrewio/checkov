@@ -38,6 +38,7 @@ from checkov.common.resource_code_logger_filter import add_resource_code_filter_
 from checkov.common.typing import _ExitCodeThresholds, _BaseRunner, _ScaExitCodeThresholds, LibraryGraph
 from checkov.common.util import data_structures_utils
 from checkov.common.util.banner import tool as tool_name
+from checkov.common.util.consts import S3_UPLOAD_DETAILS_MESSAGE
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.json_utils import CustomJSONEncoder
 from checkov.common.util.secrets_omitter import SecretsOmitter
@@ -481,7 +482,7 @@ class RunnerRegistry:
                     if url:
                         print(f"More details: {url}")
                     elif bc_integration.s3_setup_failed:
-                        print("An error occurred uploading results to the platform. A details URL is not available for this run.")
+                        print(S3_UPLOAD_DETAILS_MESSAGE)
                 if CONSOLE_OUTPUT in output_formats.values():
                     print(OUTPUT_DELIMITER)
 
@@ -621,7 +622,7 @@ class RunnerRegistry:
             if url:
                 print(f"More details: {url}")
             elif bc_integration.s3_setup_failed:
-                print("An error occurred uploading results to the platform. A details URL is not available for this run.")
+                print(S3_UPLOAD_DETAILS_MESSAGE)
 
             if CONSOLE_OUTPUT in output_formats.values():
                 print(OUTPUT_DELIMITER)

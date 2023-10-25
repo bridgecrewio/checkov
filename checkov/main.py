@@ -597,7 +597,7 @@ class Checkov:
 
                 integration_feature_registry.run_post_runner(self.scan_reports[0])
 
-                if not self.config.skip_results_upload:
+                if not self.config.skip_results_upload and not bc_integration.s3_setup_failed:
                     bc_integration.persist_repository(os.path.dirname(self.config.dockerfile_path), files=files)
                     bc_integration.persist_scan_results(self.scan_reports)
                     bc_integration.persist_image_scan_results(sca_runner.raw_report, self.config.dockerfile_path,
@@ -643,7 +643,8 @@ class Checkov:
                 if bc_integration.is_integration_configured() \
                         and bc_integration.bc_source \
                         and bc_integration.bc_source.upload_results \
-                        and not self.config.skip_results_upload:
+                        and not self.config.skip_results_upload \
+                        and not bc_integration.s3_setup_failed:
                     files = [os.path.abspath(file) for file in self.config.file]
                     root_folder = os.path.split(os.path.commonprefix(files))[0]
                     absolute_root_folder = os.path.abspath(root_folder)
