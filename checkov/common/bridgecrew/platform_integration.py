@@ -316,7 +316,7 @@ class BcPlatformIntegration:
         try:
             self.skip_fixes = True  # no need to run fixes on CI integration
             repo_full_path, support_path, response = self.get_s3_role(self.repo_id)  # type: ignore
-            if not repo_full_path:
+            if not repo_full_path:  # happens if the setup fails with something other than an auth error - we continue locally
                 return
 
             self.bucket, self.repo_path = repo_full_path.split("/", 1)
@@ -363,7 +363,7 @@ class BcPlatformIntegration:
             logging.error("Received an error response during authentication")
             raise
 
-    def get_s3_role(self, repo_id: str) -> tuple[str | None, str | None, dict[str, Any]]:
+    def get_s3_role(self, repo_id: str) -> tuple[str, str, dict[str, Any]] | tuple[None, None, dict[str, Any]]:
         token = self.get_auth_token()
 
         if not self.http:
@@ -385,8 +385,8 @@ class BcPlatformIntegration:
                     tries += 1
                     response = self._get_s3_creds(repo_id, token)
                 else:
-                    logging.error(f'Checkov got an unexpected error that may be due to backend issues. The scan will continue, '
-                                  f'but results will not be sent to the platform. Please contact support for assistance.')
+                    logging.error('Checkov got an unexpected error that may be due to backend issues. The scan will continue, '
+                                  'but results will not be sent to the platform. Please contact support for assistance.')
                     logging.error(f'Error from platform: {response.get("message") or response.get("Message")}')
                     self.s3_setup_failed = True
                     return None, None, response
@@ -661,7 +661,7 @@ class BcPlatformIntegration:
                 self.s3_setup_failed = True
             except JSONDecodeError:
                 if request:
-                    logging.warning(f"Response (status: {request.status}) of {self.integrations_api_url}: {request.data.decode('utf8')}")
+                    logging.warning(f"Response (status: {request.status}) of {self.integrations_api_url}: {request.data.decode('utf8')}")  # nosec
                 logging.error(f"Response of {self.integrations_api_url} is not a valid JSON", exc_info=True)
                 self.s3_setup_failed = True
             finally:

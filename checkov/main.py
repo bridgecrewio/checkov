@@ -611,6 +611,7 @@ class Checkov:
                         self.url = self.commit_repository()
                     except Exception:
                         logging.error('An error occurred while uploading scan results to the platform', exc_info=True)
+                        bc_integration.s3_setup_failed = True
 
                 should_run_contributor_metrics = bc_integration.bc_api_key and self.config.repo_id and self.config.prisma_api_url
                 logger.debug(f"Should run contributor metrics report: {should_run_contributor_metrics}")
@@ -689,7 +690,7 @@ class Checkov:
             if bc_integration.support_flag_enabled:
                 if bc_integration.s3_setup_failed:
                     print_to_stderr = os.getenv('CKV_STDERR_DEBUG', 'FALSE').upper() == 'TRUE'
-                    log_level = os.getenv('LOG_LEVEL', '').upper()
+                    log_level = os.getenv('LOG_LEVEL', '')
                     if log_level == 'DEBUG':
                         print('Unable to upload support logs. However, LOG_LEVEL is already set to DEBUG, so debug logs are available locally.')
                     elif print_to_stderr:
