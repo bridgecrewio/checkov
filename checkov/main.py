@@ -598,15 +598,19 @@ class Checkov:
                 integration_feature_registry.run_post_runner(self.scan_reports[0])
 
                 if not self.config.skip_results_upload and not bc_integration.s3_setup_failed:
-                    bc_integration.persist_repository(os.path.dirname(self.config.dockerfile_path), files=files)
-                    bc_integration.persist_scan_results(self.scan_reports)
-                    bc_integration.persist_image_scan_results(sca_runner.raw_report, self.config.dockerfile_path,
-                                                              self.config.docker_image,
-                                                              self.config.branch)
+                    try:
+                        if not bc_integration.on_prem:
+                            bc_integration.persist_repository(os.path.dirname(self.config.dockerfile_path), files=files)
+                        bc_integration.persist_scan_results(self.scan_reports)
+                        bc_integration.persist_image_scan_results(sca_runner.raw_report, self.config.dockerfile_path,
+                                                                  self.config.docker_image,
+                                                                  self.config.branch)
 
-                    bc_integration.persist_run_metadata(self.run_metadata)
-                    # there is no graph to persist
-                    self.url = self.commit_repository()
+                        bc_integration.persist_run_metadata(self.run_metadata)
+                        # there is no graph to persist
+                        self.url = self.commit_repository()
+                    except Exception:
+                        logging.error('An error occurred while uploading scan results to the platform', exc_info=True)
 
                 should_run_contributor_metrics = bc_integration.bc_api_key and self.config.repo_id and self.config.prisma_api_url
                 logger.debug(f"Should run contributor metrics report: {should_run_contributor_metrics}")
@@ -735,27 +739,31 @@ class Checkov:
     ) -> None:
         """Upload scan results and other relevant files"""
 
-        scan_reports_to_upload = self.scan_reports
-        if not bc_integration.on_prem:
-            bc_integration.persist_repository(
-                root_dir=root_folder,
-                files=files,
-                excluded_paths=excluded_paths,
-                included_paths=included_paths,
-            )
-            if git_configuration_folders:
-                bc_integration.persist_git_configuration(os.getcwd(), git_configuration_folders)
-            if sca_supported_ir_report:
-                scan_reports_to_upload = [report for report in self.scan_reports if report.check_type != 'sca_image']
-                scan_reports_to_upload.append(sca_supported_ir_report)
-        bc_integration.persist_scan_results(scan_reports_to_upload)
-        bc_integration.persist_assets_scan_results(self.sast_data.imports_data)
-        bc_integration.persist_reachability_scan_results(self.sast_data.reachability_report)
-        bc_integration.persist_run_metadata(self.run_metadata)
-        if bc_integration.enable_persist_graphs:
-            bc_integration.persist_graphs(self.graphs, absolute_root_folder=absolute_root_folder)
-            bc_integration.persist_resource_subgraph_maps(self.resource_subgraph_maps)
-        self.url = self.commit_repository()
+        try:
+            scan_reports_to_upload = self.scan_reports
+            if not bc_integration.on_prem:
+                bc_integration.persist_repository(
+                    root_dir=root_folder,
+                    files=files,
+                    excluded_paths=excluded_paths,
+                    included_paths=included_paths,
+                )
+                if git_configuration_folders:
+                    bc_integration.persist_git_configuration(os.getcwd(), git_configuration_folders)
+                if sca_supported_ir_report:
+                    scan_reports_to_upload = [report for report in self.scan_reports if report.check_type != 'sca_image']
+                    scan_reports_to_upload.append(sca_supported_ir_report)
+            bc_integration.persist_scan_results(scan_reports_to_upload)
+            bc_integration.persist_assets_scan_results(self.sast_data.imports_data)
+            bc_integration.persist_reachability_scan_results(self.sast_data.reachability_report)
+            bc_integration.persist_run_metadata(self.run_metadata)
+            if bc_integration.enable_persist_graphs:
+                bc_integration.persist_graphs(self.graphs, absolute_root_folder=absolute_root_folder)
+                bc_integration.persist_resource_subgraph_maps(self.resource_subgraph_maps)
+            self.url = self.commit_repository()
+        except Exception:
+            logging.error('An error occurred while uploading scan results to the platform', exc_info=True)
+            bc_integration.s3_setup_failed = True
 
     def save_sast_assets_data(self, scan_reports: List[Report]) -> None:
         if not bool(convert_str_to_bool(os.getenv('CKV_ENABLE_UPLOAD_SAST_IMPORTS', False))):
