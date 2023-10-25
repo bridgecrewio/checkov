@@ -6,7 +6,7 @@ class AppServiceSlotHTTPSOnly(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure web app redirects all HTTP traffic to HTTPS in Azure App Service Slot"
         id = "CKV_AZURE_153"
-        supported_resources = ['azurerm_app_service_slot']
+        supported_resources = ['azurerm_app_service_slot','azurerm_linux_web_app_slot','azurerm_windows_web_app_slot']
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
