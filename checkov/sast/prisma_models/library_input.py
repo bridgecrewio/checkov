@@ -1,4 +1,6 @@
 from typing import Set, List
+
+from checkov.common.bridgecrew.severities import Severity
 from checkov.sast.consts import SastLanguages
 import sys
 if sys.version_info < (3, 11):
@@ -14,6 +16,8 @@ class LibraryInput(TypedDict):
     checks: List[str]
     skip_checks: List[str]
     skip_path: List[str]
+    check_threshold: Severity
+    skip_check_threshold: Severity
     list_policies: NotRequired[bool]
     report_imports: bool
     remove_default_policies: NotRequired[bool]
