@@ -529,7 +529,8 @@ class Checkov:
                     if bc_integration.is_integration_configured() \
                             and bc_integration.bc_source \
                             and bc_integration.bc_source.upload_results \
-                            and not self.config.skip_results_upload:
+                            and not self.config.skip_results_upload \
+                            and not bc_integration.s3_setup_failed:
                         included_paths = [self.config.external_modules_download_path]
                         for r in runner_registry.runners:
                             included_paths.extend(r.included_paths())

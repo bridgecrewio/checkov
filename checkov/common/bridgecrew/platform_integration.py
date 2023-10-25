@@ -115,6 +115,7 @@ class BcPlatformIntegration:
         self.prisma_policies_response = None
         self.public_metadata_response = None
         self.use_s3_integration = False
+        self.s3_setup_failed = False
         self.platform_integration_configured = False
         self.http: urllib3.PoolManager | urllib3.ProxyManager | None = None
         self.http_timeout = urllib3.Timeout(connect=REQUEST_CONNECT_TIMEOUT, read=REQUEST_READ_TIMEOUT)
@@ -315,6 +316,9 @@ class BcPlatformIntegration:
         try:
             self.skip_fixes = True  # no need to run fixes on CI integration
             repo_full_path, support_path, response = self.get_s3_role(self.repo_id)  # type: ignore
+            if not repo_full_path:
+                return
+
             self.bucket, self.repo_path = repo_full_path.split("/", 1)
 
             self.timestamp = self.repo_path.split("/")[-2]
@@ -359,7 +363,7 @@ class BcPlatformIntegration:
             logging.error("Received an error response during authentication")
             raise
 
-    def get_s3_role(self, repo_id: str) -> tuple[str, str | None, dict[str, Any]]:
+    def get_s3_role(self, repo_id: str) -> tuple[str | None, str | None, dict[str, Any]]:
         token = self.get_auth_token()
 
         if not self.http:
@@ -370,28 +374,34 @@ class BcPlatformIntegration:
         while ('Message' in response or 'message' in response):
             if response.get('Message') and response['Message'] == UNAUTHORIZED_MESSAGE:
                 raise BridgecrewAuthError()
-            if response.get('message') and ASSUME_ROLE_UNUATHORIZED_MESSAGE in response['message']:
+            elif response.get('message') and ASSUME_ROLE_UNUATHORIZED_MESSAGE in response['message']:
                 raise BridgecrewAuthError(
                     "Checkov got an unexpected authorization error that may not be due to your credentials. Please contact support.")
-            if response.get('message') and "cannot be found" in response['message']:
+            elif response.get('message') and "cannot be found" in response['message']:
                 self.loading_output("creating role")
                 response = self._get_s3_creds(repo_id, token)
-            if response.get('message') is None and response.get('Message') is None:
+            else:
                 if tries < 3:
                     tries += 1
                     response = self._get_s3_creds(repo_id, token)
                 else:
-                    raise BridgecrewAuthError(
-                        "Checkov got an unexpected error that may be due to backend issues. Please contact support.")
+                    logging.error(f'Checkov got an unexpected error that may be due to backend issues. The scan will continue, '
+                                  f'but results will not be sent to the platform. Please contact support for assistance.')
+                    logging.error(f'Error from platform: {response.get("message") or response.get("Message")}')
+                    self.s3_setup_failed = True
+                    return None, None, response
         repo_full_path = response["path"]
         support_path = response.get("supportPath")
         return repo_full_path, support_path, response
 
     def _get_s3_creds(self, repo_id: str, token: str) -> dict[str, Any]:
+        logging.debug(f'Getting S3 upload credentials from {self.integrations_api_url}')
         request = self.http.request("POST", self.integrations_api_url,  # type:ignore[union-attr]
                                     body=json.dumps({"repoId": repo_id, "support": self.support_flag_enabled}),
                                     headers=merge_dicts({"Authorization": token, "Content-Type": "application/json"},
                                                         get_user_agent_header()))
+        logging.debug(f'Request ID: {request.headers.get("x-amzn-requestid")}')
+        logging.debug(f'Trace ID: {request.headers.get("x-amzn-trace-id")}')
         if request.status == 403:
             error_message = get_auth_error_message(request.status, self.is_prisma_integration(), True)
             raise BridgecrewAuthError(error_message)
@@ -422,7 +432,7 @@ class BcPlatformIntegration:
         """
         excluded_paths = excluded_paths if excluded_paths is not None else []
 
-        if not self.use_s3_integration:
+        if not self.use_s3_integration or self.s3_setup_failed:
             return
         files_to_persist: List[FileToPersist] = []
         if files:
@@ -451,7 +461,7 @@ class BcPlatformIntegration:
         self.persist_files(files_to_persist)
 
     def persist_git_configuration(self, root_dir: str | Path, git_config_folders: list[str]) -> None:
-        if not self.use_s3_integration:
+        if not self.use_s3_integration or self.s3_setup_failed:
             return
         files_to_persist: list[FileToPersist] = []
 
@@ -476,7 +486,7 @@ class BcPlatformIntegration:
         Persist checkov's scan result into bridgecrew's platform.
         :param scan_reports: List of checkov scan reports
         """
-        if not self.use_s3_integration or not self.s3_client:
+        if not self.use_s3_integration or not self.s3_client or self.s3_setup_failed:
             return
         if not self.bucket or not self.repo_path:
             logging.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
@@ -492,7 +502,7 @@ class BcPlatformIntegration:
         persist_checks_results(reduced_scan_reports, self.s3_client, self.bucket, self.repo_path)
 
     async def persist_reachability_alias_mapping(self, alias_mapping: Dict[str, Any]) -> None:
-        if not self.use_s3_integration or not self.s3_client:
+        if not self.use_s3_integration or not self.s3_client or self.s3_setup_failed:
             return
         if not self.bucket or not self.repo_path:
             logging.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
@@ -559,7 +569,7 @@ class BcPlatformIntegration:
         return s3_path
 
     def persist_run_metadata(self, run_metadata: dict[str, str | list[str]]) -> None:
-        if not self.use_s3_integration or not self.s3_client:
+        if not self.use_s3_integration or not self.s3_client or self.s3_setup_failed:
             return
         if not self.bucket or not self.repo_path:
             logging.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
@@ -571,7 +581,7 @@ class BcPlatformIntegration:
             persist_run_metadata(run_metadata, self.s3_client, self.support_bucket, self.support_repo_path, False)
 
     def persist_logs_stream(self, logs_stream: StringIO) -> None:
-        if not self.use_s3_integration or not self.s3_client:
+        if not self.use_s3_integration or not self.s3_client or self.s3_setup_failed:
             return
         if not self.support_bucket or not self.support_repo_path:
             logging.error(
@@ -582,7 +592,7 @@ class BcPlatformIntegration:
         persist_logs_stream(logs_stream, self.s3_client, self.support_bucket, log_path)
 
     def persist_graphs(self, graphs: dict[str, list[tuple[LibraryGraph, Optional[str]]]], absolute_root_folder: str = '') -> None:
-        if not self.use_s3_integration or not self.s3_client:
+        if not self.use_s3_integration or not self.s3_client or self.s3_setup_failed:
             return
         if not self.bucket or not self.repo_path:
             logging.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
@@ -591,7 +601,7 @@ class BcPlatformIntegration:
                        absolute_root_folder=absolute_root_folder)
 
     def persist_resource_subgraph_maps(self, resource_subgraph_maps: dict[str, dict[str, str]]) -> None:
-        if not self.use_s3_integration or not self.s3_client:
+        if not self.use_s3_integration or not self.s3_client or self.s3_setup_failed:
             return
         if not self.bucket or not self.repo_path:
             logging.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
@@ -605,7 +615,7 @@ class BcPlatformIntegration:
         """
         try_num = 0
         while try_num < MAX_RETRIES:
-            if not self.use_s3_integration:
+            if not self.use_s3_integration or self.s3_setup_failed:
                 return None
 
             request = None
@@ -754,6 +764,8 @@ class BcPlatformIntegration:
             url = self.get_run_config_url()
             logging.debug(f'Platform run config URL: {url}')
             request = self.http.request("GET", url, headers=headers)  # type:ignore[no-untyped-call]
+            logging.debug(f'Request ID: {request.headers.get("x-amzn-requestid")}')
+            logging.debug(f'Trace ID: {request.headers.get("x-amzn-trace-id")}')
             if request.status != 200:
                 error_message = get_auth_error_message(request.status, self.is_prisma_integration(), False)
                 logging.error(error_message)

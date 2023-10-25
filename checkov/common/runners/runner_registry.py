@@ -390,7 +390,7 @@ class RunnerRegistry:
         for report in scan_reports:
             if not report.is_empty():
                 if "json" in config.output:
-                    report_jsons.append(report.get_dict(is_quiet=config.quiet, url=url))
+                    report_jsons.append(report.get_dict(is_quiet=config.quiet, url=url, s3_setup_failed=bc_integration.s3_setup_failed))
                 if "junitxml" in config.output:
                     junit_reports.append(report)
                 if "github_failed_only" in config.output:
@@ -477,8 +477,11 @@ class RunnerRegistry:
 
                 del output_formats["sarif"]
 
-                if "cli" not in config.output and url:
-                    print(f"More details: {url}")
+                if "cli" not in config.output:
+                    if url:
+                        print(f"More details: {url}")
+                    elif bc_integration.s3_setup_failed:
+                        print("An error occurred uploading results to the platform. A details URL is not available for this run.")
                 if CONSOLE_OUTPUT in output_formats.values():
                     print(OUTPUT_DELIMITER)
 
@@ -617,6 +620,8 @@ class RunnerRegistry:
                 print(output)
             if url:
                 print(f"More details: {url}")
+            elif bc_integration.s3_setup_failed:
+                print("An error occurred uploading results to the platform. A details URL is not available for this run.")
 
             if CONSOLE_OUTPUT in output_formats.values():
                 print(OUTPUT_DELIMITER)

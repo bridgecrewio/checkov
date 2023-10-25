@@ -97,9 +97,11 @@ class Report:
     def get_all_records(self) -> List[Record]:
         return self.failed_checks + self.passed_checks + self.skipped_checks
 
-    def get_dict(self, is_quiet: bool = False, url: str | None = None, full_report: bool = False) -> dict[str, Any]:
-        if not url:
+    def get_dict(self, is_quiet: bool = False, url: str | None = None, full_report: bool = False, s3_setup_failed: bool = False) -> dict[str, Any]:
+        if not url and not s3_setup_failed:
             url = "Add an api key '--bc-api-key <api-key>' to see more detailed insights via https://bridgecrew.cloud"
+        elif s3_setup_failed:
+            url = "An error occurred uploading results to the platform. A details URL is not available for this run."
         if is_quiet:
             return {
                 "check_type": self.check_type,
