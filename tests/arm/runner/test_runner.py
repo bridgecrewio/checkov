@@ -166,7 +166,7 @@ class TestRunnerValid(unittest.TestCase):
                     ["Microsoft.Web/sites"]
                 )
 
-            def scan_resource_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
+            def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
                 return CheckResult.FAILED
 
         check = AnyFailingCheck()
@@ -195,7 +195,7 @@ class TestRunnerValid(unittest.TestCase):
                     ["Microsoft.Web/sites"]
                 )
 
-            def scan_resource_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
+            def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
                 return CheckResult.FAILED
 
         check = AnyFailingCheck()
@@ -227,7 +227,7 @@ class TestRunnerValid(unittest.TestCase):
                     ["Microsoft.Web/sites"]
                 )
 
-            def scan_resource_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
+            def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
                 return CheckResult.FAILED
 
         check = AnyFailingCheck()
@@ -258,7 +258,7 @@ class TestRunnerValid(unittest.TestCase):
                     ["Microsoft.Web/sites"]
                 )
 
-            def scan_resource_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
+            def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
                 return CheckResult.FAILED
 
         check = AnyFailingCheck()
@@ -289,7 +289,7 @@ class TestRunnerValid(unittest.TestCase):
                     ["Microsoft.Web/sites"]
                 )
 
-            def scan_resource_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
+            def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
                 return CheckResult.FAILED
 
         check = AnyFailingCheck()

@@ -23,7 +23,7 @@ class GithubSSO(BaseGithubCheck):
             block_type=BlockType.DOCUMENT
         )
 
-    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult:  # type:ignore[override]
+    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult:
         if org_security_schema.validate(conf):
             jsonpath_expression = parse("$..{}".format(self.get_evaluated_keys()[0].replace("/", ".")))
             if len(jsonpath_expression.find(conf)) > 0:

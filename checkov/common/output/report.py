@@ -22,6 +22,7 @@ from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME
 from checkov.common.util.consts import PARSE_ERROR_FAIL_FLAG, CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
 from checkov.common.util.json_utils import CustomJSONEncoder
 from checkov.runner_filter import RunnerFilter
+from checkov.sast.consts import POLICIES_ERRORS, POLICIES_ERRORS_COUNT, ENGINE_NAME, SOURCE_FILES_COUNT, POLICY_COUNT
 
 from checkov.sca_package_2.output import create_cli_output as create_sca_package_cli_output_v2
 
@@ -283,7 +284,7 @@ class Report:
                 summary["parsing_errors"],
             )
         else:
-            if self.check_type == CheckType.SCA_PACKAGE:
+            if self.check_type == CheckType.SCA_PACKAGE or self.check_type.lower().startswith(CheckType.SAST):
                 message = f"\nFailed checks: {summary['failed']}, Skipped checks: {summary['skipped']}\n\n"
             else:
                 message = f"\nPassed checks: {summary['passed']}, Failed checks: {summary['failed']}, Skipped checks: {summary['skipped']}\n\n"
@@ -301,6 +302,13 @@ class Report:
                 output_data += create_3d_policy_cli_output(self.failed_checks, self.skipped_checks)  # type:ignore[arg-type]
 
         else:
+            if self.check_type.lower().startswith(CheckType.SAST):
+                output_data += colored(f"SAST engine: {str(summary.get(ENGINE_NAME, '')).title()}, "
+                                       f"Source code files scanned: {summary.get(SOURCE_FILES_COUNT, -1)}, "
+                                       f"Policies found: {summary.get(POLICY_COUNT, -1)}\n\n", "cyan")
+                policies_errors: str = str(summary.get(POLICIES_ERRORS, ""))
+                if policies_errors:
+                    output_data += colored(f"Policy parsing failures ({summary.get(POLICIES_ERRORS_COUNT)}):\n{policies_errors}\n\n", "red")
             if not is_quiet:
                 for record in self.passed_checks:
                     output_data += record.to_string(compact=is_compact, use_bc_ids=use_bc_ids)
