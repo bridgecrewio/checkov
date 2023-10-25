@@ -511,7 +511,7 @@ class BcPlatformIntegration:
         if not reachability_report:
             return
         for lang, report in reachability_report.items():
-            persist_reachability_results(f'sast_{lang.value}', report, self.s3_client, self.bucket, self.repo_path)
+            persist_reachability_results(f'sast_{lang}', {lang: report}, self.s3_client, self.bucket, self.repo_path)
 
     def persist_image_scan_results(self, report: dict[str, Any] | None, file_path: str, image_name: str, branch: str) -> None:
         if not self.s3_client:

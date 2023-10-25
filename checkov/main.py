@@ -759,7 +759,7 @@ class Checkov:
 
         formated_report = {}
         for lang, repos_data in result.items():
-            formated_report[lang] = []
+            formated_report[lang.value] = []
             for repo_name, files_data in repos_data.items():
                 new_repo = {'Name': repo_name, 'Files': []}
                 for file_path, packages_data in files_data['files'].items():
@@ -771,7 +771,7 @@ class Checkov:
                             new_package['Functions'].append(new_func)
                         new_file['Packages'].append(new_package)
                     new_repo['Files'].append(new_file)
-                formated_report[lang].append(new_repo)
+                formated_report[lang.value].append(new_repo)
         self.sast_data.set_reachability_report(formated_report)
 
     def print_results(
