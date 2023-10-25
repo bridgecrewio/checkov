@@ -2,6 +2,7 @@ from typing import Any, Dict, Union, List, Optional
 
 from checkov.common.output.report import Report
 from checkov.sast.consts import POLICIES_ERRORS, POLICIES_ERRORS_COUNT, SOURCE_FILES_COUNT, POLICY_COUNT, SastLanguages
+from abc import abstractmethod
 
 
 class SastReport(Report):
@@ -33,6 +34,25 @@ class SastReport(Report):
             base_summary[POLICY_COUNT] = policy_count
 
         return base_summary
+    
+    @abstractmethod
+    def get_formated_reachability_report(reachability_report_dicts: List[Dict[str, Any]]) -> Dict[str, Any]:
+        formated_report = {}
+        for lang, repos_data in reachability_report_dicts.items():
+            formated_report[lang.value] = []
+            for repo_name, files_data in repos_data.items():
+                new_repo = {'Name': repo_name, 'Files': []}
+                for file_path, packages_data in files_data['files'].items():
+                    new_file = {'Path': file_path, 'Packages': []}
+                    for package_name, package_data in packages_data['packages'].items():
+                        new_package = {'Name': package_name, 'Alias': package_data['alias'], 'Functions': []}
+                        for func in package_data['functions']:
+                            new_func = {'Name': func['name'], 'Alias': func['alias'], 'LineNumber': func['line_number'], 'CodeBlock': [func['code_block']]}
+                            new_package['Functions'].append(new_func)
+                        new_file['Packages'].append(new_package)
+                    new_repo['Files'].append(new_file)
+                formated_report[lang.value].append(new_repo)
+        return formated_report
 
 
 class SastData:
