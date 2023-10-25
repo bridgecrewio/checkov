@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # In order to run this script set the following environment variables:
 # BC_API_URL - your API url.
