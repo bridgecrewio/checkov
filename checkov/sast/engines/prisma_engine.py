@@ -169,7 +169,7 @@ class PrismaEngine(SastEngine):
                        report_reachability: bool = False,
                        remove_default_policies: bool = False) -> Union[List[Report], SastPolicies]:
 
-        validate_params(languages, source_codes, policies, list_policies)
+        validate_params(languages, source_codes, list_policies)
 
         if bc_integration.bc_source:
             name = bc_integration.bc_source.name
@@ -348,16 +348,12 @@ class PrismaEngine(SastEngine):
 
 def validate_params(languages: Set[SastLanguages],
                     source_codes: List[str],
-                    policies: List[str],
                     list_policies: bool) -> None:
     if list_policies:
         return
 
     if len(source_codes) == 0:
         raise Exception('must provide source code file or dir for sast runner')
-
-    if len(policies) == 0:
-        raise Exception('must provide policy file or dir for sast runner')
 
     if len(languages) == 0:
         raise Exception('must provide a language for sast runner')
