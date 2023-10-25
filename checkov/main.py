@@ -683,7 +683,26 @@ class Checkov:
 
         finally:
             if bc_integration.support_flag_enabled:
-                bc_integration.persist_logs_stream(logs_stream)
+                if bc_integration.s3_setup_failed:
+                    print_to_stderr = os.getenv('CKV_STDERR_DEBUG', 'FALSE').upper() == 'TRUE'
+                    log_level = os.getenv('LOG_LEVEL', '').upper()
+                    if log_level == 'DEBUG':
+                        print('Unable to upload support logs. However, LOG_LEVEL is already set to DEBUG, so debug logs are available locally.')
+                    elif print_to_stderr:
+                        print('Unable to upload support logs - CKV_STDERR_DEBUG is TRUE, printing to stderr.')
+                        print(logs_stream.getvalue(), file=sys.stderr)
+                    else:
+                        # default to writing to a file - if they are using the support flag they probably are not excited
+                        # to get debug logs from stderr (but they also might not be able to access a local file if it
+                        # is in CI/CD, so there is not a good approach here)
+                        print('Unable to upload support logs - saving debug logs to ./checkov_debug.log. To print the debug '
+                              'logs to stderr instead, set the CKV_STDERR_DEBUG environment variable to TRUE, and re-run. '
+                              'Note that this will result in the scan results being printed, followed by all logs.')
+                        with open('./checkov_debug.log', 'w') as fp:
+                            logs_stream.seek(0)
+                            shutil.copyfileobj(logs_stream, fp)
+                else:
+                    bc_integration.persist_logs_stream(logs_stream)
 
     def exit_run(self) -> None:
         exit(0) if self.config.no_fail_on_crash else exit(2)
