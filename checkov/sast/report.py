@@ -34,11 +34,11 @@ class SastReport(Report):
             base_summary[POLICY_COUNT] = policy_count
 
         return base_summary
-    
+
     @abstractmethod
-    def get_formated_reachability_report(reachability_report_dicts: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def get_formated_reachability_report(reachability_report_dict: Dict[str, Any]) -> Dict[str, Any]:
         formated_report = {}
-        for lang, repos_data in reachability_report_dicts.items():
+        for lang, repos_data in reachability_report_dict.items():
             formated_report[lang.value] = []
             for repo_name, files_data in repos_data.items():
                 new_repo = {'Name': repo_name, 'Files': []}
