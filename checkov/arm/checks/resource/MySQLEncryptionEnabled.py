@@ -13,7 +13,7 @@ class MySQLEncryptionEnabled(BaseResourceCheck):
         categories = (CheckCategories.ENCRYPTION,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult:
+    def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
         properties = conf.get("properties")
         if properties and isinstance(properties, dict):
             self.evaluated_keys = ["properties/dataencryption"]

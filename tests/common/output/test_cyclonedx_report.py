@@ -40,10 +40,9 @@ def test_valid_cyclonedx_bom():
     assert component.purl.version.startswith('sha1:')
     assert component.type == ComponentType.APPLICATION
 
-    vulnerabilities = next(iter(cyclonedx.bom.components)).get_vulnerabilities()
-    assert len(vulnerabilities) == 6
+    assert len(cyclonedx.bom.vulnerabilities) == 6
     # doesn't matter which vulnerability, they are all unknown for runs without platform connection
-    assert next(iter(next(iter(vulnerabilities)).ratings)).severity == VulnerabilitySeverity.UNKNOWN
+    assert next(iter(next(iter(cyclonedx.bom.vulnerabilities)).ratings)).severity == VulnerabilitySeverity.UNKNOWN
 
     assert "http://cyclonedx.org/schema/bom/1.4" in output
 
@@ -115,11 +114,10 @@ def test_valid_cyclonedx_image_bom():
     assert package_component.type == ComponentType.LIBRARY
     assert package_component.version == "7.74.0-1.3+deb11u1"
     assert len(package_component.licenses) == 1
-    assert next(iter(package_component.licenses)).license.name == "BSD-3-Clause"
+    assert next(iter(package_component.licenses)).name == "BSD-3-Clause"
 
-    vulnerabilities = package_component.get_vulnerabilities()
-    assert len(vulnerabilities) == 1
-    assert next(iter(next(iter(vulnerabilities)).ratings)).severity == VulnerabilitySeverity.CRITICAL
+    assert len(cyclonedx.bom.vulnerabilities) == 1
+    assert next(iter(next(iter(cyclonedx.bom.vulnerabilities)).ratings)).severity == VulnerabilitySeverity.CRITICAL
 
     image_purl = PackageURL(
         name='Dockerfile',
@@ -131,7 +129,7 @@ def test_valid_cyclonedx_image_bom():
         name='acme/repo//ubuntu:latest',
         purl=image_purl,
         group=None,
-        component_type=ComponentType.CONTAINER,
+        type=ComponentType.CONTAINER,
         version=''
     )
     assert cyclonedx.bom.has_component(image_component)
@@ -213,7 +211,7 @@ def test_create_schema_version_1_3(mocker: MockerFixture):
 
     # then
     assert len(cyclonedx.bom.components) == 1
-    assert len(next(iter(cyclonedx.bom.components)).get_vulnerabilities()) == 6
+    assert len(cyclonedx.bom.vulnerabilities) == 6
 
     assert "http://cyclonedx.org/schema/bom/1.3" in output
 
