@@ -83,7 +83,8 @@ prepare_data
 
 #Run integration tests.
 echo "running integration tests"
-pytest checkov/sast_integration_tests
+cd checkov
+pytest sast_integration_tests
 
 deactivate
 
