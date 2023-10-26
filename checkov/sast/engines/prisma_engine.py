@@ -34,8 +34,9 @@ from checkov.sast.report import SastReport
 logger = logging.getLogger(__name__)
 
 REPORT_PARSING_ERRORS = "report_parsing_errors"
-SAST_CORE_FILENAME_PATTERN = re.compile(r"(\d+_\d+_\d+)_library\.(so|dll|dylib)$")
-SAST_CORE_URL_PATTERN = re.compile(r".*/(?P<name>v?\d+_\d+_\d+_library\.(so|dll|dylib))\?.*")
+FILE_NAME_PATTERN = re.compile(r"(\d+_\d+_\d+)_library\.(so|dll|dylib)")
+SAST_CORE_FILENAME_PATTERN = re.compile(rf"{FILE_NAME_PATTERN.pattern}$")
+SAST_CORE_URL_PATTERN = re.compile(rf".*/(?P<name>v?{FILE_NAME_PATTERN.pattern})\?.*")
 
 
 class PrismaEngine(SastEngine):
