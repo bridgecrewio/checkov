@@ -34,6 +34,8 @@ from checkov.sast.report import SastReport
 logger = logging.getLogger(__name__)
 
 REPORT_PARSING_ERRORS = "report_parsing_errors"
+SAST_CORE_FILENAME_PATTERN = re.compile(r"(\d+_\d+_\d+)_library\.(so|dll|dylib)$")
+SAST_CORE_URL_PATTERN = re.compile(r".*/(?P<name>v?\d+_\d+_\d+_library\.(so|dll|dylib))\?.*")
 
 
 class PrismaEngine(SastEngine):
@@ -111,7 +113,7 @@ class PrismaEngine(SastEngine):
                 now = datetime.now().timestamp()
                 diff = datetime.fromtimestamp(now) - datetime.fromtimestamp(creation_time)
                 if diff.days < 1:
-                    match = re.match(r"(\d+_\d+_\d+)_library\.(so|dll|dylib)", latest_file)
+                    match = re.search(SAST_CORE_FILENAME_PATTERN, latest_file)
                     if match:
                         current_version = match.groups()[0]
 
@@ -142,7 +144,7 @@ class PrismaEngine(SastEngine):
             if response.status_code == 304:
                 return True
 
-            match = re.match(r'.*\/(?P<name>v?\d+_\d+_\d+_library\.(so|dll|dylib))\?.*', response.url)
+            match = re.match(SAST_CORE_URL_PATTERN, response.url)
             if match:
                 new_name = match.group('name')
                 cli_file_name_path = self.prisma_sast_dir_path / new_name
