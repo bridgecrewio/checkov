@@ -27,6 +27,7 @@ const FIND_CODE_INSIDE_BRACES_OR_AFTER_COMMA = /^.*\{[^}]*code[^}]*\}.*|.*,.*cod
 const FSTRING_PATTERN = /f(["'])(.*?{.*?}.*?)(\1)/;
 const SUPPORTED_EXTENSIONS = ['.py'];
 const EXCLUDED_FILES = ['__init__.py', 'dangerfile.ts'];
+const IGNORE_COMMENT = '# danger:ignore'
 
 function varMayContainData(varString) {
   if (IGNORE_VAR.includes(varString)) return false;
@@ -60,7 +61,7 @@ async function failIfLoggingLineContainsSensitiveData() {
       const removedLinesLength = fileDiff.removed.split('\n');
       const allLines = [...addedLinesLength, ...removedLinesLength];
       for (let line of allLines) {
-        if (FIND_LOGGING_LEVEL_PY.test(line) && FSTRING_PATTERN.test(line) && !line.includes(PY_MASK_STR)) {
+        if (FIND_LOGGING_LEVEL_PY.test(line) && FSTRING_PATTERN.test(line) && !line.includes(PY_MASK_STR) && !line.includes(IGNORE_COMMENT)) {
           if (FIND_CODE_INSIDE_BRACES_OR_AFTER_COMMA.test(line)) {
             const varsInLog = line.match(VAR_IN_LOG) || line.match(VAR_IN_FUNC)?.[1].split(',').slice(1) || [];
             for (const varString of varsInLog) {

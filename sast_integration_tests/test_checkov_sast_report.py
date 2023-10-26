@@ -1,8 +1,6 @@
 import json
 import os
 
-import pytest
-
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
 
@@ -16,7 +14,6 @@ def test_sast_java() -> None:
     validate_report(os.path.abspath(report_path))
 
 
-@pytest.mark.skip(reason="No JavaScript policies implemented yet")
 def test_sast_javascript() -> None:
     report_path = os.path.join(current_dir, '..', 'checkov_report_sast_javascript.json')
     validate_report(os.path.abspath(report_path))
