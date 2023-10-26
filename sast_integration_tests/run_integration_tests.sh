@@ -29,8 +29,8 @@ clone_repositories () {
   git clone https://github.com/pallets/flask
   echo Clone WebGoat - Java repo for SAST
   git clone https://github.com/WebGoat/WebGoat
-#  echo Clone axios - JavaScript repo for SAST
-#  git clone https://github.com/axios/axios
+  echo Clone axios - JavaScript repo for SAST
+  git clone https://github.com/axios/axios
 }
 
 
@@ -83,7 +83,7 @@ prepare_data
 
 #Run integration tests.
 echo "running integration tests"
-pytest sast_integration_tests
+pytest checkov/sast_integration_tests
 
 deactivate
 
