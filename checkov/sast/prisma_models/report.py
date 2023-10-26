@@ -4,7 +4,7 @@ from checkov.sast.consts import SastLanguages
 
 
 class Profiler(BaseModel):
-    duration: str  # noqa: CCE003
+    duration: int  # noqa: CCE003
     memory: int  # noqa: CCE003
 
 
@@ -27,22 +27,14 @@ class MatchLocation(BaseModel):
     code_block: str  # noqa: CCE003
 
 
-class MatchMetavariable(BaseModel):
-    path: Optional[str]  # noqa: CCE003
-    start: Optional[Point]  # noqa: CCE003
-    end: Optional[Point]  # noqa: CCE003
-    data_flow: Optional[List[Flow]]  # noqa: CCE003
-    code_block: Optional[str]  # noqa: CCE003
-
-
 class DataFlow(BaseModel):
     data_flow: List[Flow]  # noqa: CCE003
 
 
 class MatchMetadata(BaseModel):
-    metavariables: Dict[str, MatchMetavariable]  # noqa: CCE003
+    metavariables: Dict[str, DataFlow]  # noqa: CCE003
     variables: Dict[str, Any]  # noqa: CCE003
-    taint_mode: Optional[DataFlow]  # noqa: CCE003
+    taint_mode: Optional[DataFlow] = None  # noqa: CCE003
 
 
 class Match(BaseModel):
