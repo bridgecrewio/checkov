@@ -7,7 +7,7 @@ import platform
 import re
 import stat
 from pathlib import Path
-from typing import Optional, List, Set, Union, Dict, Any
+from typing import Optional, List, Set, Union, Dict, Any, Tuple, cast
 
 from cachetools import cached, TTLCache
 from pydantic import ValidationError
@@ -15,7 +15,7 @@ from pydantic import ValidationError
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.platform_key import bridgecrew_dir
-from checkov.common.bridgecrew.severities import get_severity
+from checkov.common.bridgecrew.severities import get_severity, Severity, Severities, BcSeverities
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.report import Report
 from checkov.common.sca.reachability.sast_contract.data_fetcher_sast_lib import SastReachabilityDataFetcher
@@ -43,17 +43,40 @@ class PrismaEngine(SastEngine):
         self.prisma_sast_dir_path = Path(bridgecrew_dir) / "sast"
         self.sast_platform_base_path = "api/v1/sast"
 
+    def get_check_thresholds(self, registry: Registry) -> Tuple[Severity, Severity]:
+        """
+        Returns a tuple of check threshold and skip check threshold..
+
+        If a severity was specified in --check and / or --skip-check, then return a tuple of those values (these override enforcement rules).
+        Else if enforcement rules are enabled, return a tuple of the enforcement rule's SAST soft fail threshold and NONE.
+        Else return a tuple of NONE, NONE
+        """
+        none = Severities[BcSeverities.NONE]
+
+        check_threshold: Optional[Severity] = registry.runner_filter.check_threshold  # type:ignore[union-attr] # not null
+        skip_check_threshold: Optional[Severity] = registry.runner_filter.skip_check_threshold  # type:ignore[union-attr] # not null
+        enforcement_threshold: Optional[Severity] = cast(Severity, registry.runner_filter.enforcement_rule_configs[self.check_type]) if registry.runner_filter.use_enforcement_rules else None  # type:ignore[union-attr] # not null
+
+        return (check_threshold or none, skip_check_threshold or none) if (check_threshold or skip_check_threshold) else \
+            (enforcement_threshold, none) if enforcement_threshold else \
+            (none, none)
+
     def get_reports(self, targets: List[str], registry: Registry, languages: Set[SastLanguages]) -> List[Report]:
         if not bc_integration.bc_api_key:
-            logging.info("The --bc-api-key flag needs to be set to run Sast prisma scanning")
+            logging.info("The --bc-api-key flag needs to be set to run SAST Prisma Cloud scanning")
             return []
 
-        self.setup_sast_artifact()
+        status = self.setup_sast_artifact()
+        if not status:
+            return []
+
         prisma_lib_path = self.get_sast_artifact()
         if not prisma_lib_path:
             return []
 
         self.lib_path = str(prisma_lib_path)
+
+        check_threshold, skip_check_threshold = self.get_check_thresholds(registry)
 
         library_input: LibraryInput = {
             'languages': languages,
@@ -61,6 +84,8 @@ class PrismaEngine(SastEngine):
             'policies': registry.checks_dirs_path,
             'checks': registry.runner_filter.checks if registry.runner_filter else [],
             'skip_checks': registry.runner_filter.skip_checks if registry.runner_filter else [],
+            'check_threshold': check_threshold,
+            'skip_check_threshold': skip_check_threshold,
             'skip_path': registry.runner_filter.excluded_paths if registry.runner_filter else [],
             'report_imports': registry.runner_filter.report_sast_imports if registry.runner_filter else False,
             'remove_default_policies': registry.runner_filter.remove_default_sast_policies if registry.runner_filter else False,
@@ -105,10 +130,14 @@ class PrismaEngine(SastEngine):
             headers = bc_integration.get_default_headers("GET")
             headers["X-Client-Sast-Version"] = current_version
             headers["X-Required-Sast-Version"] = "latest"  # or ant version seperated with _
-            response = request_wrapper("GET",
-                                       f"{bc_integration.api_url}/{self.sast_platform_base_path}/{os_type}/{machine}/artifacts",
-                                       headers=headers,
-                                       should_call_raise_for_status=True)
+
+            # don't use the 'should_call_raise_for_status' parameter for now, because it logs errors messages
+            response = request_wrapper(
+                method="GET",
+                url=f"{bc_integration.api_url}/{self.sast_platform_base_path}/{os_type}/{machine}/artifacts",
+                headers=headers,
+            )
+            response.raise_for_status()
 
             if response.status_code == 304:
                 return True
@@ -157,12 +186,14 @@ class PrismaEngine(SastEngine):
                        checks: List[str],
                        skip_checks: List[str],
                        skip_path: List[str],
+                       check_threshold: Severity,
+                       skip_check_threshold: Severity,
                        list_policies: bool = False,
                        report_imports: bool = True,
                        report_reachability: bool = False,
                        remove_default_policies: bool = False) -> Union[List[Report], SastPolicies]:
 
-        validate_params(languages, source_codes, policies, list_policies)
+        validate_params(languages, source_codes, list_policies)
 
         if bc_integration.bc_source:
             name = bc_integration.bc_source.name
@@ -183,6 +214,8 @@ class PrismaEngine(SastEngine):
                 "checks": checks,
                 "skip_checks": skip_checks,
                 "skip_path": skip_path,
+                "check_threshold": str(check_threshold),
+                "skip_check_threshold": str(skip_check_threshold),
                 "list_policies": list_policies,
                 "report_imports": report_imports,
                 "remove_default_policies": remove_default_policies,
@@ -331,6 +364,8 @@ class PrismaEngine(SastEngine):
             'policies': [],
             'checks': [],
             'skip_checks': [],
+            'check_threshold': Severities[BcSeverities.NONE],
+            'skip_check_threshold': Severities[BcSeverities.NONE],
             'skip_path': [],
             'report_imports': False,
             'report_reachability': False
@@ -341,16 +376,12 @@ class PrismaEngine(SastEngine):
 
 def validate_params(languages: Set[SastLanguages],
                     source_codes: List[str],
-                    policies: List[str],
                     list_policies: bool) -> None:
     if list_policies:
         return
 
     if len(source_codes) == 0:
         raise Exception('must provide source code file or dir for sast runner')
-
-    if len(policies) == 0:
-        raise Exception('must provide policy file or dir for sast runner')
 
     if len(languages) == 0:
         raise Exception('must provide a language for sast runner')

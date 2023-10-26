@@ -1,6 +1,33 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/2.5.18...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.0.7...HEAD)
+
+## [3.0.7](https://github.com/bridgecrewio/checkov/compare/3.0.4...3.0.7) - 2023-10-25
+
+### Bug Fix
+
+- **secrets:** fix secret FP of client_secret_setting_name - [#5679](https://github.com/bridgecrewio/checkov/pull/5679)
+
+### Platform
+
+- **general:** Add SAST enforcement rules and check severity thresholds - [#5684](https://github.com/bridgecrewio/checkov/pull/5684)
+- **general:** do not get fixes for on prem integrations - [#5668](https://github.com/bridgecrewio/checkov/pull/5668)
+
+## [3.0.4](https://github.com/bridgecrewio/checkov/compare/2.5.18...3.0.4) - 2023-10-24
+
+### Breaking Change
+
+- **general:** remove level up flow - [#5677](https://github.com/bridgecrewio/checkov/pull/5677)
+- **general:** remove multi_signature and adjust base check classes - [#5645](https://github.com/bridgecrewio/checkov/pull/5645)
+- **general:** v3 release - [#5681](https://github.com/bridgecrewio/checkov/pull/5681)
+
+### Bug Fix
+
+- **sast:** fix error logs coming from SAST - [#5685](https://github.com/bridgecrewio/checkov/pull/5685)
+
+### Documentation
+
+- **general:** add BC token deprecation notice and v3 migration guide - [#5644](https://github.com/bridgecrewio/checkov/pull/5644)
 
 ## [2.5.18](https://github.com/bridgecrewio/checkov/compare/2.5.15...2.5.18) - 2023-10-22
 

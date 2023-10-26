@@ -305,7 +305,6 @@ def test_sarif_output(sca_image_report_scope_function):
     assert sarif_output == expected_sarif_json
 
 
-@pytest.mark.skipif(sys.version_info < (3, 8), reason="attribute ordering is different in Python 3.7")
 def test_get_junit_xml_string(sca_image_report):
     # given
     test_suites = [sca_image_report.get_test_suite()]
@@ -372,87 +371,6 @@ def test_get_junit_xml_string(sca_image_report):
             "\t\t\t",
             "\t\t\t",
             '\t\t\t<skipped type="skipped" message="CVE-2022-1586 is skipped"/>',
-            "\t\t\t",
-            "\t\t",
-            "\t\t</testcase>",
-            "\t\t",
-            "\t",
-            "\t</testsuite>",
-            "\t",
-            "",
-            "</testsuites>",
-            ""
-        ]
-    )
-
-
-@pytest.mark.skipif(sys.version_info >= (3, 8), reason="attribute ordering is different in Python 3.7")
-def test_get_junit_xml_string_py37(sca_image_report):
-    # given
-    test_suites = [sca_image_report.get_test_suite()]
-
-    #  when
-    junit_xml_output = sca_image_report.get_junit_xml_string(test_suites)
-
-    # then
-    assert xml.dom.minidom.parseString(junit_xml_output).toprettyxml() == "\n".join(
-        [
-            '<?xml version="1.0" ?>',
-            '<testsuites disabled="0" errors="0" failures="3" tests="5" time="0.0">',
-            "\t",
-            "\t",
-            '\t<testsuite disabled="0" errors="0" failures="3" name="sca_image scan" skipped="1" tests="5" time="0">',
-            "\t\t",
-            "\t\t",
-            '\t\t<testcase classname="/path/to/Dockerfile (sha256:123456).path/to/Dockerfile (sha256:123456).pcre2" file="/path/to/Dockerfile (sha256:123456)" name="[NONE][BC_LIC_1] SCA license"/>',
-            "\t\t",
-            "\t\t",
-            '\t\t<testcase classname="/path/to/Dockerfile (sha256:123456).path/to/Dockerfile (sha256:123456).perl" file="/path/to/Dockerfile (sha256:123456)" name="[NONE][BC_LIC_1] SCA license">',
-            "\t\t\t",
-            "\t\t\t",
-            '\t\t\t<failure message="SCA license" type="failure">',
-            "Resource: path/to/Dockerfile (sha256:123456).perl",
-            "File: /path/to/Dockerfile (sha256:123456): 0-0",
-            "Guideline: None",
-            "",
-            "\t\t0 | perl: 5.34.0-3ubuntu1</failure>",
-            "\t\t\t",
-            "\t\t",
-            "\t\t</testcase>",
-            "\t\t",
-            "\t\t",
-            '\t\t<testcase classname="/path/to/Dockerfile (sha256:123456).path/to/Dockerfile (sha256:123456).perl" file="/path/to/Dockerfile (sha256:123456)" name="[MEDIUM][CKV_CVE_2020_16156] SCA package scan">',
-            "\t\t\t",
-            "\t\t\t",
-            '\t\t\t<failure message="SCA package scan" type="failure">',
-            "Resource: path/to/Dockerfile (sha256:123456).perl",
-            "File: /path/to/Dockerfile (sha256:123456): 0-0",
-            "Guideline: None",
-            "",
-            "\t\t0 | perl: 5.34.0-3ubuntu1</failure>",
-            "\t\t\t",
-            "\t\t",
-            "\t\t</testcase>",
-            "\t\t",
-            "\t\t",
-            '\t\t<testcase classname="/path/to/Dockerfile (sha256:123456).path/to/Dockerfile (sha256:123456).pcre2" file="/path/to/Dockerfile (sha256:123456)" name="[LOW][CKV_CVE_2022_1587] SCA package scan">',
-            "\t\t\t",
-            "\t\t\t",
-            '\t\t\t<failure message="SCA package scan" type="failure">',
-            "Resource: path/to/Dockerfile (sha256:123456).pcre2",
-            "File: /path/to/Dockerfile (sha256:123456): 0-0",
-            "Guideline: None",
-            "",
-            "\t\t0 | pcre2: 10.39-3build1</failure>",
-            "\t\t\t",
-            "\t\t",
-            "\t\t</testcase>",
-            "\t\t",
-            "\t\t",
-            '\t\t<testcase classname="/path/to/Dockerfile (sha256:123456).path/to/Dockerfile (sha256:123456).pcre2" file="/path/to/Dockerfile (sha256:123456)" name="[LOW][CKV_CVE_2022_1586] SCA package scan">',
-            "\t\t\t",
-            "\t\t\t",
-            '\t\t\t<skipped message="CVE-2022-1586 is skipped" type="skipped"/>',
             "\t\t\t",
             "\t\t",
             "\t\t</testcase>",
