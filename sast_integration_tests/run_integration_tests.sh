@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # In order to run this script set the following environment variables:
 # BC_API_URL - your API url.
@@ -28,8 +29,8 @@ clone_repositories () {
   git clone https://github.com/pallets/flask
   echo Clone WebGoat - Java repo for SAST
   git clone https://github.com/WebGoat/WebGoat
-  echo Clone axios - JavaScript repo for SAST
-  git clone https://github.com/axios/axios
+#  echo Clone axios - JavaScript repo for SAST
+#  git clone https://github.com/axios/axios
 }
 
 
