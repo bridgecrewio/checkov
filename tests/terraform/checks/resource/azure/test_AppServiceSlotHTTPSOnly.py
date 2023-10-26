@@ -20,8 +20,8 @@ class TestAppServiceSlotHTTPSOnly(unittest.TestCase):
 
         passing_resources = {
             "azurerm_app_service_slot.pass",
-            "azurerm_linux_web_app_slot.pass"
-            "azurerm_windows_web_app_slot.pass"
+            "azurerm_linux_web_app_slot.pass",
+            "azurerm_windows_web_app_slot.pass",
         }
         failing_resources = {
             "azurerm_app_service_slot.fail",
