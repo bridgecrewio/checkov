@@ -5,7 +5,7 @@ from typing import List, Any
 
 class DatabricksWorkspaceIsNotPublic(BaseResourceNegativeValueCheck):
     def __init__(self):
-        name = "Ensure that databricks workspace has not public"
+        name = "Ensure that databricks workspace is not public"
         id = "CKV_AZURE_158"
         supported_resources = ['azurerm_databricks_workspace']
         categories = [CheckCategories.NETWORKING]
