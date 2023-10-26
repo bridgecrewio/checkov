@@ -6,16 +6,21 @@ class AppServiceSlotMinTLS(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure the App service slot is using the latest version of TLS encryption"
         id = "CKV_AZURE_154"
-        supported_resources = ['azurerm_app_service_slot']
+        supported_resources = ["azurerm_app_service_slot", "azurerm_linux_web_app_slot", "azurerm_windows_web_app_slot"]
         categories = [CheckCategories.NETWORKING]
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,
-                         missing_block_result=CheckResult.PASSED)
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_resources=supported_resources,
+            missing_block_result=CheckResult.PASSED,
+        )
 
     def get_inspected_key(self):
         return "site_config/[0]/min_tls_version/[0]"
 
     def get_expected_value(self):
-        return '1.2'
+        return "1.2"
 
 
 check = AppServiceSlotMinTLS()
