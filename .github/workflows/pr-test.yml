@@ -146,8 +146,8 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: [ "3.8" ]
-        os: [ ubuntu-latest, macos-latest]
+        python: ["3.8", "3.11"]
+        os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
@@ -170,8 +170,8 @@ jobs:
           bash -c 'pipenv run pip install dist/checkov-*.whl'
       - name: Clone flask - Python repo for SAST
         run: git clone https://github.com/pallets/flask
-      - name: Clone jenkins - Java repo for SAST
-        run: git clone https://github.com/jenkinsci/jenkins
+      - name: Clone WebGoat - Java repo for SAST
+        run: git clone https://github.com/WebGoat/WebGoat
       - name: Clone axios - JavaScript repo for SAST
         run: git clone https://github.com/axios/axios
       - name: Create checkov reports
@@ -192,8 +192,8 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: [ "3.8" ]
-        os: [ ubuntu-latest, macos-latest]
+        python: ["3.8", "3.11"]
+        os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
