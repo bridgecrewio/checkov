@@ -4,7 +4,7 @@ from checkov.sast.consts import SastLanguages
 
 
 class Profiler(BaseModel):
-    duration: int  # noqa: CCE003
+    duration: Union[str, int]  # noqa: CCE003
     memory: int  # noqa: CCE003
 
 

@@ -755,7 +755,8 @@ class Checkov:
             if rep.sast_reachability:
                 result[rep.language] = {**result[rep.language], **serialize_reachability_report(rep.sast_reachability)}
 
-        self.sast_data.set_reachability_report(result)
+        formated_report = SastReport.get_formated_reachability_report(result)
+        self.sast_data.set_reachability_report(formated_report)
 
     def print_results(
             self,

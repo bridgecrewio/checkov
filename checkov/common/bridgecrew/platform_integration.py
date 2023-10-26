@@ -54,7 +54,6 @@ from checkov.common.util.http_utils import (
     REQUEST_RETRIES,
 )
 from checkov.common.util.type_forcers import convert_prisma_policy_filter_to_dict, convert_str_to_bool
-from checkov.sast.consts import SastLanguages
 from checkov.version import version as checkov_version
 
 if TYPE_CHECKING:
@@ -508,11 +507,11 @@ class BcPlatformIntegration:
             new_report = {'imports': {lang.value: assets}}
             persist_assets_results(f'sast_{lang.value}', new_report, self.s3_client, self.bucket, self.repo_path)
 
-    def persist_reachability_scan_results(self, reachability_report: Optional[Dict[SastLanguages, Any]]) -> None:
+    def persist_reachability_scan_results(self, reachability_report: Optional[Dict[str, Any]]) -> None:
         if not reachability_report:
             return
         for lang, report in reachability_report.items():
-            persist_reachability_results(f'sast_{lang.value}', report, self.s3_client, self.bucket, self.repo_path)
+            persist_reachability_results(f'sast_{lang}', {lang: report}, self.s3_client, self.bucket, self.repo_path)
 
     def persist_image_scan_results(self, report: dict[str, Any] | None, file_path: str, image_name: str, branch: str) -> None:
         if not self.s3_client:
