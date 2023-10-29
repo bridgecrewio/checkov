@@ -40,8 +40,6 @@ delete_repositories () {
 
 delete_reports () {
   rm -r checkov_report*
-  rm results.sarif
-  rm checkov_checks_list.txt
 }
 
 #set_env_vars
@@ -83,7 +81,6 @@ prepare_data
 
 #Run integration tests.
 echo "running integration tests"
-cd checkov
 pytest sast_integration_tests
 
 deactivate
