@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.0.12...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.0.13...HEAD)
+
+## [3.0.13](https://github.com/bridgecrewio/checkov/compare/3.0.12...3.0.13) - 2023-10-29
+
+### Bug Fix
+
+- **sast:** comment out SAST JS integration test - [#5697](https://github.com/bridgecrewio/checkov/pull/5697)
 
 ## [3.0.12](https://github.com/bridgecrewio/checkov/compare/3.0.7...3.0.12) - 2023-10-26
 
