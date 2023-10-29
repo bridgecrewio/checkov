@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # In order to run this script set the following environment variables:
 # BC_API_URL - your API url.
@@ -39,8 +40,6 @@ delete_repositories () {
 
 delete_reports () {
   rm -r checkov_report*
-  rm results.sarif
-  rm checkov_checks_list.txt
 }
 
 #set_env_vars
