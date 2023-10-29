@@ -35,3 +35,18 @@ def test_CKV_AWS_20_S3PublicACLRead():
 
 def test_CKV_AWS_55_S3IgnorePublicACLs():
     run_check(lang='python', check_name="S3IgnorePublicACLs")
+
+def test_CKV_AWS_56_S3RestrictPublicBuckets():
+    run_check(lang='python', check_name="S3RestrictPublicBuckets")
+
+def test_CKV_AWS_53_S3BlockPublicACLs():
+    run_check(lang='python', check_name="S3BlockPublicACLs")
+
+def test_CKV_AWS_57_S3PublicACLWrite():
+    run_check(lang='python', check_name="S3PublicACLWrite")
+
+def test_CKV_AWS_115_LambdaFunctionLevelConcurrentExecutionLimit():
+    run_check(lang='python', check_name="LambdaFunctionLevelConcurrentExecutionLimit")
+
+def test_CKV_AWS_116_LambdaDLQConfigured():
+    run_check(lang='python', check_name="LambdaDLQConfigured")
