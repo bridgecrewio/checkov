@@ -464,7 +464,7 @@ class CycloneDX:
                 ),
                 ExternalReference(
                     type=ExternalReferenceType.SOCIAL,
-                    url=XsUri("https://twitter.com/prisma_cloud"),
+                    url=XsUri("https://twitter.com/bridgecrewio"),
                 ),
                 ExternalReference(
                     type=ExternalReferenceType.VCS,
