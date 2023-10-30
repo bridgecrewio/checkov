@@ -12,7 +12,7 @@ banner = r"""
  | (__| | | |  __/ (__|   < (_) \ V / 
   \___|_| |_|\___|\___|_|\_\___/ \_/  
                                       
-By Prisma Cloud | version: {} """.format(version)
+By bridgecrew.io | version: {} """.format(version)
 
 new_version = check_for_update("checkov", version)
 if new_version:

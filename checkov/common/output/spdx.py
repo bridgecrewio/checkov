@@ -49,7 +49,7 @@ class SPDX:
             document_namespace=f"https://spdx.org/spdxdocs/{DOCUMENT_NAME}-{version}-{uuid4()}",
             creators=[
                 Actor(ActorType.TOOL, "checkov"),
-                Actor(ActorType.ORGANIZATION, "prisma_cloud", "prismacloud.io"),
+                Actor(ActorType.ORGANIZATION, "bridgecrew", "meet@bridgecrew.io"),
             ],
             created=datetime.now(timezone.utc),
         )

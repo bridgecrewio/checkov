@@ -36,7 +36,7 @@ class Sarif:
     def __init__(self, reports: list[Report], tool: str | None) -> None:
         self.reports = reports
         self.rule_index_map: "dict[str, int]" = {}
-        self.tool = tool if tool else "Prisma Cloud"
+        self.tool = tool if tool else "Bridgecrew"
 
         self.json = self.create_json()
 
@@ -48,7 +48,7 @@ class Sarif:
         }
 
     def _create_runs(self) -> list[dict[str, Any]]:
-        information_uri = "https://docs.prismacloud.io" if self.tool.lower() == "prisma_cloud" else "https://checkov.io"
+        information_uri = "https://docs.bridgecrew.io" if self.tool.lower() == "bridgecrew" else "https://checkov.io"
         rules = self._create_rules()  # needs to be invoked before _create_results()
         results = self._create_results()
 
@@ -60,7 +60,7 @@ class Sarif:
                         "version": version,
                         "informationUri": information_uri,
                         "rules": rules,
-                        "organization": "prisma_cloud",
+                        "organization": "bridgecrew",
                     }
                 },
                 "results": results,
