@@ -72,7 +72,7 @@ class CycloneDX:
             # Unable to determine current version of 'checkov'
             version = "UNKNOWN"
 
-        this_tool = Tool(vendor="bridgecrew", name="checkov", version=version)
+        this_tool = Tool(vendor="prisma_cloud", name="checkov", version=version)
         self.update_tool_external_references(this_tool)
         bom.metadata.tools.add(this_tool)
 

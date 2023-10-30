@@ -19,7 +19,7 @@ checkov -d . --openai-api-key sk-...
  | (__| | | |  __/ (__|   < (_) \ V / 
   \___|_| |_|\___|\___|_|\_\___/ \_/  
                                       
-By bridgecrew.io | version: 2.3.128
+By Prisma Cloud | version: 3.0.1
 
 WARNING: About to request 5 enhanced guidelines and it may take up to 15s.
 Found 100 failed checks and will provide enhanced guidelines for 5. To add enhanced guidelines for more findings,
@@ -30,7 +30,7 @@ Check: CKV_AWS_211: "Ensure RDS uses a modern CaCert"
 	PASSED for resource: aws_db_instance.pass
 	Severity: LOW
 	File: /main.tf:25-38
-	Guide: https://docs.bridgecrew.io/docs/ensure-aws-rds-uses-a-modern-cacert
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-aws-rds-uses-a-modern-cacert
 Check: CKV_AWS_16: "Ensure all data stored in the RDS is securely encrypted at rest"
 	FAILED for resource: aws_db_instance.pass
 	Severity: MEDIUM
@@ -73,7 +73,7 @@ Check: CKV_AWS_16: "Ensure all data stored in the RDS is securely encrypted at r
 	         
 	         With this change, the RDS instance will be encrypted at rest, and will comply with the checkov policy.
 	File: /main.tf:25-38
-	Guide: https://docs.bridgecrew.io/docs/general_4
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/general-4
 
 		25 | resource "aws_db_instance" "pass" {
 		26 |   allocated_storage    = 10

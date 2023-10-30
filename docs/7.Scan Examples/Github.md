@@ -29,14 +29,14 @@ Full list of github organization and repository settings related checks can be f
 {
     "data": {
         "organization": {
-            "name": "Bridgecrew",
-            "login": "bridgecrewio",
+            "name": "Prisma",
+            "login": "prismaio",
             "description": "Secure public cloud infrastructure",
             "ipAllowListEnabledSetting": "ENABLED",
             "ipAllowListForInstalledAppsEnabledSetting": "ENABLED",
             "requiresTwoFactorAuthentication": false,
             "samlIdentityProvider": {
-                "ssoUrl": "https://bridgecrew.okta.com/app/githubcloud/foo/sso/saml"
+                "ssoUrl": "https://prisma.okta.com/app/githubcloud/foo/sso/saml"
             }
         }
     }
@@ -89,7 +89,7 @@ checkov -d . --framework github_configuration
  | (__| | | |  __/ (__|   < (_) \ V / 
   \___|_| |_|\___|\___|_|\_\___/ \_/  
                                       
-By bridgecrew.io | version: 2.0.707 
+By Prisma Cloud | version: 2.0.707 
 
 github_configuration scan results:
 
@@ -109,14 +109,14 @@ Check: CKV_GITHUB_1: "Ensure GitHub organization security settings require 2FA"
 
 		2  |     "data": {
 		3  |         "organization": {
-		4  |             "name": "Bridgecrew",
-		5  |             "login": "bridgecrewio",
+		4  |             "name": "Prisma",
+		5  |             "login": "prismaio",
 		6  |             "description": "Secure public cloud infrastructure",
 		7  |             "ipAllowListEnabledSetting": "ENABLED",
 		8  |             "ipAllowListForInstalledAppsEnabledSetting": "ENABLED",
 		9  |             "requiresTwoFactorAuthentication": false,
 		10 |             "samlIdentityProvider": {
-		11 |                                 "ssoUrl": "https://bridgecrew.okta.com/app/githubcloud/foo/sso/saml"
+		11 |                                 "ssoUrl": "https://prisma.okta.com/app/githubcloud/foo/sso/saml"
 		12 |             }
 		13 |         }
 		14 |     }

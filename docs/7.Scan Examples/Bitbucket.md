@@ -19,7 +19,7 @@ Full list of bitbucket organization and repository settings related checks can b
 | CI_SERVER_URL   | "https://api.bitbucket.com/" |  |
 | APP_PASSWORD   |  | Bitbucket personal access token to be used to fetch Bitbucket configuration |
 | BITBUCKET_USERNAME |  | Bitbucket username (not email) |
-| BITBUCKET_REPO_FULL_NAME |  | workspace/repository, for example bridgecrewio/terragoat |
+| BITBUCKET_REPO_FULL_NAME |  | workspace/repository, for example prisma/terragoat |
 
 ### Example branch restrictions configuration
 
@@ -135,7 +135,7 @@ check = MergeRequestRequiresApproval()
 #configure bitbucket personal access token
 export APP_PASSWORD="ghp_abc"
 export BITBUCKET_USERNAME="username"
-export BITBUCKET_REPO_FULL_NAME="bridgecrewio/terragoat"
+export BITBUCKET_REPO_FULL_NAME="prisma/terragoat"
 
 checkov -d . --framework bitbucket_configuration
 ```

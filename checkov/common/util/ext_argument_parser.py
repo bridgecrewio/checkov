@@ -355,7 +355,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
         )
         self.add(
             "--skip-download",
-            help="Do not download any data from Bridgecrew. This will omit doc links, severities, etc., as well as "
+            help="Do not download any data from Prisma Cloud. This will omit doc links, severities, etc., as well as "
                  "custom policies and suppressions if using an API token. Note: it will prevent BC platform IDs from "
                  "being available in Checkov.",
             action="store_true",

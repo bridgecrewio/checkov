@@ -99,7 +99,7 @@ class Report:
 
     def get_dict(self, is_quiet: bool = False, url: str | None = None, full_report: bool = False, s3_setup_failed: bool = False) -> dict[str, Any]:
         if not url and not s3_setup_failed:
-            url = "Add an api key '--bc-api-key <api-key>' to see more detailed insights via https://bridgecrew.cloud"
+            url = "Add an api key '--bc-api-key <api-key>' to see more detailed insights via Prisma Cloud"
         elif s3_setup_failed:
             url = S3_UPLOAD_DETAILS_MESSAGE
         if is_quiet:
