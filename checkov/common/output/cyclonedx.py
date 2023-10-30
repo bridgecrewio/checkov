@@ -100,12 +100,8 @@ class CycloneDX:
                     continue
                 component = self.create_component(check_type=report.check_type, resource=check)
 
-                if bom.has_component(component=component):
-                    component = (
-                        bom.get_component_by_purl(  # type:ignore[assignment]  # the previous line checks, if exists
-                            purl=component.purl
-                        )
-                    )
+                if existing_component := bom.get_component_by_purl(purl=component.purl):
+                    component = existing_component
                 else:
                     bom.components.add(component)
 
@@ -121,7 +117,7 @@ class CycloneDX:
             for resource in sorted(report.extra_resources):
                 component = self.create_component(check_type=report.check_type, resource=resource)
 
-                if not bom.has_component(component=component):
+                if not bom.get_component_by_purl(purl=component.purl):
                     bom.components.add(component)
 
             if is_image_report:
