@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.0.14...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.0.15...HEAD)
+
+## [3.0.15](https://github.com/bridgecrewio/checkov/compare/3.0.14...3.0.15) - 2023-10-31
+
+### Bug Fix
+
+- **general:** fix duplicate components in CycloneDX report - [#5705](https://github.com/bridgecrewio/checkov/pull/5705)
 
 ## [3.0.14](https://github.com/bridgecrewio/checkov/compare/3.0.13...3.0.14) - 2023-10-30
 
