@@ -89,6 +89,14 @@ class Runner(BaseRunner[None, None, None]):
         if scan_results is not None:
             logging.info(f"SCA package scanning successfully scanned {len(scan_results)} files")
 
+        cve_for_axios = {'severity': 'high', 'riskFactors': {'High severity': {}, 'DoS - High': {}, 'Has fix': {}, 'Attack complexity: low': {}}, 'cveId': 'CVE-2023-30534', 'link': 'https://nvd.nist.gov/vuln/detail/CVE-2023-30533', 'description': 'SheetJS Community Edition before 0.19.3 allows Prototype Pollution via a crafted file. In other words. 0.19.2 and earlier are affected, whereas 0.19.3 and later are unaffected.', 'packageVersion': '1.6.0', 'vector': 'CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H', 'packageName': 'axios', 'publishedDate': '2023-04-24T08:15:00Z', 'cvss': 7.8, 'status': 'fixed in 0.19.3', 'fixedVersion': '0.19.3', 'fixCode': '    "xlsx": "0.19.3",', 'fixCommand': {'msg': 'To bump to the fixed version 0.19.3, please run command', 'cmds': ['`npm i xlsx@0.19.3`'], 'manualCodeFix': False}, 'riskFactorsV2': {'Severity': 'High', 'HasFix': True, 'DoS': False, 'AttackComplexity': 'low'}}
+        cve_for_lodash = {'severity': 'high', 'riskFactors': {'High severity': {}, 'DoS - High': {}, 'Has fix': {}, 'Attack complexity: low': {}}, 'cveId': 'CVE-2023-30535', 'link': 'https://nvd.nist.gov/vuln/detail/CVE-2023-30533', 'description': 'SheetJS Community Edition before 0.19.3 allows Prototype Pollution via a crafted file. In other words. 0.19.2 and earlier are affected, whereas 0.19.3 and later are unaffected.', 'packageVersion': '4.17.21', 'vector': 'CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H', 'packageName': 'lodash', 'publishedDate': '2023-04-24T08:15:00Z', 'cvss': 7.8, 'status': 'fixed in 0.19.3', 'fixedVersion': '0.19.3', 'fixCode': '    "xlsx": "0.19.3",', 'fixCommand': {'msg': 'To bump to the fixed version 0.19.3, please run command', 'cmds': ['`npm i xlsx@0.19.3`'], 'manualCodeFix': False}, 'riskFactorsV2': {'Severity': 'High', 'HasFix': True, 'DoS': False, 'AttackComplexity': 'low'}}
+        scan_results['/package.json']['vulnerabilities'].extend([cve_for_axios, cve_for_lodash])
+        for package in scan_results['/package.json']['packages']:
+            if package['name'] == 'axios' and package['version'] == '1.6.0':
+                package['cves_index'] = [len(scan_results['/package.json']['vulnerabilities']) - 2]
+            if package['name'] == 'lodash' and package['version'] == '4.17.21':
+                package['cves_index'] = [len(scan_results['/package.json']['vulnerabilities']) - 1]
         return scan_results, self._get_s3_file_key_to_abs_path(uploaded_files)
 
     def run(
