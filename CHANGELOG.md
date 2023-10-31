@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.0.13...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.0.14...HEAD)
+
+## [3.0.14](https://github.com/bridgecrewio/checkov/compare/3.0.13...3.0.14) - 2023-10-30
+
+### Bug Fix
+
+- **general:** address python 3.12 SyntaxWarning - [#5699](https://github.com/bridgecrewio/checkov/pull/5699)
+- **terraform:** fix variable rendering for foreach resources with dot included names - [#5701](https://github.com/bridgecrewio/checkov/pull/5701)
 
 ## [3.0.13](https://github.com/bridgecrewio/checkov/compare/3.0.12...3.0.13) - 2023-10-29
 
