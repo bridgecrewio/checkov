@@ -169,7 +169,6 @@ class VulnerabilitiesIntegration(BaseIntegrationFeature):
     ) -> None:
         for cve_check in current_cves:
             if cve_check.vulnerability_details:
-                package_name = cve_check.vulnerability_details.get('package_name', '')
                 is_package_used = self._is_package_used_for_cve(cve_check, sast_files_by_packages_map)
                 cve_check.vulnerability_details.get('risk_factors', {})['IsUsed'] = is_package_used
 
