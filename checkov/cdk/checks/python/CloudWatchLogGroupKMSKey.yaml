@@ -8,6 +8,6 @@ scope:
   languages:
     - python
 definition:
-  pattern: aws_cdk.aws_logs.logGroup(<ANY>)
+  pattern: aws_cdk.aws_logs.LogGroup(<ANY>)
   conditions:
-    - not_pattern: aws_cdk.aws_logs.logGroup(<ANY>, kms_key=$KEY, <ANY>)
+    - not_pattern: aws_cdk.aws_logs.LogGroup(<ANY>, kms_key=$KEY, <ANY>)

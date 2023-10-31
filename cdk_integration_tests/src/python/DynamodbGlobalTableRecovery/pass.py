@@ -11,8 +11,10 @@ class DynamoDBGlobalTableStack(core.Stack):
             replication_group=[{"region_name": "us-east-1"}, {"region_name": "us-west-2"}],
             table_name="MyGlobalTable",
             replicas=[
-                point_in_time_recovery_specification=dynamodb.CfnGlobalTable.PointInTimeRecoverySpecificationProperty(
-                    point_in_time_recovery_enabled=True
+                dynamodb.CfnGlobalTable.ReplicaSpecificationProperty(
+                    point_in_time_recovery_specification=dynamodb.CfnGlobalTable.PointInTimeRecoverySpecificationProperty(
+                        point_in_time_recovery_enabled=True
+                    )
                 )
             ]
         )
