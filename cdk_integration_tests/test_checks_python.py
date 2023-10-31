@@ -50,3 +50,48 @@ def test_CKV_AWS_115_LambdaFunctionLevelConcurrentExecutionLimit():
 
 def test_CKV_AWS_116_LambdaDLQConfigured():
     run_check(lang='python', check_name="LambdaDLQConfigured")
+
+def test_CKV_AWS_28_DynamodbRecovery():
+    run_check(lang='python', check_name="DynamodbRecovery")
+
+def test_CKV_AWS_158_CloudWatchLogGroupKMSKey():
+    run_check(lang='python', check_name="CloudWatchLogGroupKMSKey")
+
+def test_CKV_AWS_3_EBSEncryption():
+    run_check(lang='python', check_name="EBSEncryption")
+
+def test_CKV_AWS_120_APIGatewayCacheEnable():
+    run_check(lang='python', check_name="APIGatewayCacheEnable")
+
+def test_CKV_AWS_163_ECRImageScanning():
+    run_check(lang='python', check_name="ECRImageScanning")
+
+def test_CKV_AWS_51_ECRImmutableTags():
+    run_check(lang='python', check_name="ECRImmutableTags")
+
+def test_CKV_AWS_44_NeptuneClusterStorageEncrypted():
+    run_check(lang='python', check_name="NeptuneClusterStorageEncrypted")
+
+def test_CKV_AWS_166_BackupVaultEncrypted():
+    run_check(lang='python', check_name="BackupVaultEncrypted")
+
+def test_CKV_AWS_74_DocDBEncryption():
+    run_check(lang='python', check_name="DocDBEncryption")
+
+def test_CKV_AWS_47_DAXEncryption():
+    run_check(lang='python', check_name="DAXEncryption")
+
+def test_CKV_AWS_156_WorkspaceRootVolumeEncrypted():
+    run_check(lang='python', check_name="WorkspaceRootVolumeEncrypted")
+
+def test_CKV_AWS_155_WorkspaceUserVolumeEncrypted():
+    run_check(lang='python', check_name="WorkspaceUserVolumeEncrypted")
+
+def test_CKV_AWS_165_DynamodbGlobalTableRecovery():
+    run_check(lang='python', check_name="DynamodbGlobalTableRecovery")
+
+def test_CKV_AWS_27_SQSQueueEncryption():
+    run_check(lang='python', check_name="SQSQueueEncryption")
+
+def test_CKV_AWS_195_GlueSecurityConfigurationEnabled():
+    run_check(lang='python', check_name="GlueSecurityConfigurationEnabled")
