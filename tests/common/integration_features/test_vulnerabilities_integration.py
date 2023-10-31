@@ -10,6 +10,7 @@ from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME
 from checkov.common.output.report import Report
 from checkov.sast.consts import SastLanguages
 from checkov.sast.report import SastReport
+from checkov.sast.prisma_models.report import Package, File, Function
 
 
 class TestVulnerabilitiesIntegration(unittest.TestCase):
@@ -192,6 +193,21 @@ class TestVulnerabilitiesIntegration(unittest.TestCase):
         expected = f"{NORMALIZE_PREFIX}asd"
         result = vul_integration.normalize_package_name(original)
         self.assertTrue(result, expected)
+
+    def test_create_reachable_data_by_package_map(self):
+        filtered_reachability_entries = [('/index.js', File(packages={'axios': Package(alias='ax', functions=[Function(name='trim', alias='hopa', line_number=4, code_block='hopa()')]), 'lodash': Package(alias='', functions=[Function(name='template', alias='', line_number=1, code_block='template()'), Function(name='toNumber', alias='', line_number=4, code_block='hopa()')])}))]
+        instance = BcPlatformIntegration()
+        vul_integration = VulnerabilitiesIntegration(instance)
+        reachable_data_by_package_map = vul_integration.create_reachable_data_by_package_map(filtered_reachability_entries)
+        assert reachable_data_by_package_map == {
+            'axios': [
+                Function(name='trim', alias='hopa', line_number=4, code_block='hopa()')
+            ],
+            'lodash': [
+                Function(name='template', alias='', line_number=1, code_block='template()'),
+                Function(name='toNumber', alias='', line_number=4, code_block='hopa()')
+            ]
+        }
 
 
 if __name__ == '__main__':
