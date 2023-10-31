@@ -95,3 +95,9 @@ def test_CKV_AWS_27_SQSQueueEncryption():
 
 def test_CKV_AWS_195_GlueSecurityConfigurationEnabled():
     run_check(lang='python', check_name="GlueSecurityConfigurationEnabled")
+
+def test_CKV_AWS_30_ElasticacheReplicationGroupEncryptionAtTransit():
+    run_check(lang='python', check_name="ElasticacheReplicationGroupEncryptionAtTransit")
+
+def test_CKV_AWS_68_WAFEnabled():
+    run_check(lang='python', check_name="WAFEnabled")
