@@ -154,8 +154,7 @@ jobs:
       - name: Create checkov reports
         env:
           LOG_LEVEL: INFO
-          BC_API_KEY: ${{ secrets.PRISMA_KEY }}
-          PRISMA_API_URL: ${{ secrets.PRISMA_API_URL }}
+          BC_API_KEY: ${{ secrets.BC_API_KEY }}
         run: bash -c './sast_integration_tests/prepare_data.sh'
       - name: Run integration tests
         run: |
