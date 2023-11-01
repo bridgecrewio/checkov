@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from checkov.common.sast.consts import SastLanguages
 from checkov.sast.report import SastData, SastReport
-from checkov.sast.consts import SastLanguages
 from checkov.sast.prisma_models.report import Function, Repositories, File, Package
 
 
