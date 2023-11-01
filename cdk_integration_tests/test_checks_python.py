@@ -124,3 +124,9 @@ def test_CKV_AWS_30_ElasticacheReplicationGroupEncryptionAtTransit():
 def test_CKV_AWS_68_WAFEnabled():
     run_check(lang='python', check_name="WAFEnabled")
 
+
+def test_CKV_AWS_64_RedshiftClusterEncryption():
+    run_check(lang='python', check_name="RedshiftClusterEncryption")
+
+
+
