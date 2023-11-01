@@ -157,7 +157,7 @@ class VulnerabilitiesIntegration(BaseIntegrationFeature):
         normalize_package_name = self.normalize_package_name(package_name)
         return package_name in sast_files_by_packages_map or normalize_package_name in sast_files_by_packages_map
 
-    def _is_reachable_function_for_cve(self, cve_check: Record, sast_reachable_data_by_packages_map: Dict[str, List[str]]) -> bool:
+    def _is_reachable_function_for_cve(self, cve_check: Record, sast_reachable_data_by_packages_map: Dict[str, Dict[str, List[str]]]) -> bool:
         package_name = cve_check.vulnerability_details.get('package_name', '')
         return package_name in sast_reachable_data_by_packages_map
 
@@ -165,7 +165,7 @@ class VulnerabilitiesIntegration(BaseIntegrationFeature):
             self,
             current_cves: List[Record],
             sast_files_by_packages_map: Dict[str, List[str]],
-            sast_reachable_data_by_packages_map: Dict[str, List[str]]
+            sast_reachable_data_by_packages_map: Dict[str, Dict[str, List[str]]]
     ) -> None:
         for cve_check in current_cves:
             if cve_check.vulnerability_details:

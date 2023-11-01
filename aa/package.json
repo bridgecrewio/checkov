@@ -1,0 +1,60 @@
+{
+  "author": "Chintan Golakiya",
+  "bugs": {
+    "url": "https://github.com//backend/issues"
+  },
+  "alias": {
+    "ax": "axios"
+  },
+  "dependencies": {
+    "app-root-path": "3.1.0",
+    "bcrypt": "5.1.0",
+    "bcryptjs": "2.4.3",
+    "body-parser": "1.20.2",
+    "config": "3.3.9",
+    "cors": "2.8.5",
+    "exceljs": "4.3.0",
+    "express": "^4.17.1",
+    "express-fileupload": "^1.1.5",
+    "express-session": "^1.17.3",
+    "express-validator": "^5.3.1",
+    "helmet": "6.1.5",
+    "http-errors": "2.0.0",
+    "mongoose": "5.6.0",
+    "morgan": "1.10.0",
+    "multer": "1.4.5-lts.1",
+    "nodemailer": "6.9.1",
+    "passport": "0.6.0",
+    "passport-jwt": "4.0.1",
+    "passport-local": "1.0.0",
+    "lodash": "4.17.21",
+    "xlsx": "0.18.5",
+    "axios": "*"
+  },
+  "description": "backend logic of the project using Mongo DB, Node js",
+  "devDependencies": {
+    "jest": "29.5.0",
+    "supertest": "6.3.3"
+  },
+  "homepage": "https://github.com//backend#readme",
+  "jest": {
+    "testPathIgnorePatterns": [
+      "models",
+      "routes",
+      "schemas",
+      "services"
+    ]
+  },
+  "license": "MIT",
+  "main": "index.js",
+  "name": "examportalbackend",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com//backend.git"
+  },
+  "scripts": {
+    "start": "nodemon",
+    "test": "jest"
+  },
+  "version": "1.0.0"
+}
