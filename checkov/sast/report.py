@@ -1,3 +1,4 @@
+import logging
 from typing import Any, Dict, Union, List, Optional
 
 from checkov.common.output.report import Report
@@ -76,3 +77,25 @@ class SastData:
                 if current_imports:
                     sast_imports_report[report.language][file_name] = {'all': current_imports}
         return {"imports": sast_imports_report}
+
+    @staticmethod
+    def get_sast_reachability_report(scan_reports: List[SastReport]) -> Dict[str, Any]:
+        first_found_repo_name = None
+        sast_reachability_report: Dict[SastLanguages, Any] = {}
+        for report in scan_reports:
+            sast_reachability_report[report.language] = {}
+        for report in scan_reports:
+            for repo_name, repo_data in report.sast_reachability.items():
+
+                # validating we are dealing only with one repo, as it happens for imports report
+                if first_found_repo_name:
+                    if repo_name != first_found_repo_name:
+                        logging.error(f'[get_sast_reachability_report] - found more than one repository in '
+                                      f'the scan reports. {scan_reports}')
+                        return {"reachability": {}}
+                else:
+                    first_found_repo_name = repo_name
+
+                for file_name, file_data in repo_data.files.items():
+                    sast_reachability_report[report.language][file_name] = file_data
+        return {"reachability": sast_reachability_report}
