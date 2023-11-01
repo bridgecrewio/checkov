@@ -1,0 +1,20 @@
+dev-seceng-1: itai55
+sca-package
+PYTHONUNBUFFERED=1 LOG_LEVEL=INFO BC_API_URL=https://sqydlxtxo5.execute-api.us-west-2.amazonaws.com/v1 PYTHONPATH=/Users/ipeleg/Work/checkov ~/.local/share/virtualenvs/checkov-JG9prJxC/bin/python ./main.py -d /Users/ipeleg/Work/supplygoat/ --framework sca_package --bc-api-key e42de053-bf8e-4d50-b97a-724bff57c039 --repo-id itai_test/test_sca_package
+PYTHONUNBUFFERED=1 LOG_LEVEL=DEBUG BC_API_URL=https://sqydlxtxo5.execute-api.us-west-2.amazonaws.com/v1 PYTHONPATH=/Users/ipeleg/Work/checkov ~/.local/share/virtualenvs/checkov-JG9prJxC/bin/python ./checkov/main.py -d /Users/ipeleg/Work/jiras/BCE-23479_bad_go_path/test_repo --framework sca_package --bc-api-key d1f4f50a-265c-45c0-ada7-e44ea18fdab8 --repo-id itai_test/test_repo
+sca-image:
+PYTHONUNBUFFERED=1 LOG_LEVEL=INFO BC_API_URL=https://sqydlxtxo5.execute-api.us-west-2.amazonaws.com/v1 PYTHONPATH=/Users/ipeleg/Work/checkov ~/.local/share/virtualenvs/checkov-JG9prJxC/bin/python ./main.py --framework sca_image --docker-image sha256:5631e03f65b04978eb0b8c919fd1ac567e641427fc29e6fdfcc0d425c83f9cbe --dockerfile-path /Users/ipeleg/Work/checkov/integration_tests/example_dokcerfile/Dockerfile --bc-api-key e42de053-bf8e-4d50-b97a-724bff57c039 --repo-id itai_test/test_sca_image
+
+
+prod:
+sca-package
+PYTHONUNBUFFERED=1 LOG_LEVEL=INFO PYTHONPATH=/Users/ipeleg/Work/checkov ~/.local/share/virtualenvs/checkov-JG9prJxC/bin/python ./main.py -d /Users/ipeleg/Work/supplygoat/ --framework sca_package --bc-api-key c7da69e5-62e9-4d10-b637-d3d394a0e86c --repo-id itai_test/test_package
+PYTHONUNBUFFERED=1 LOG_LEVEL=INFO PYTHONPATH=/Users/ipeleg/Work/checkov ~/.local/share/virtualenvs/checkov-JG9prJxC/bin/python ./checkov/main.py -d /Users/ipeleg/Work/jiras/BCE-23479_bad_go_path/test_repo --framework sca_package --bc-api-key 078c4db7-5aff-4f60-b776-8f88e93cae56 --repo-id itai_test/test_repo
+
+sast-reachability:
+PYTHONUNBUFFERED=1 CKV_ENABLE_SCA_INTEGRATE_SAST=True CKV_ENABLE_UPLOAD_SAST_IMPORTS=True LOG_LEVEL=INFO PYTHONPATH=/Users/ipeleg/Work/checkov ~/.local/share/virtualenvs/checkov-JG9prJxC/bin/python ~/Work/checkov/checkov/main.py -d /Users/ipeleg/Work/git_repos/sca_sast_test  --bc-api-key 078c4db7-5aff-4f60-b776-8f88e93cae56 --repo-id itai_test/sca_sast_test
+
+sca-image:
+PYTHONUNBUFFERED=1 LOG_LEVEL=INFO PYTHONPATH=/Users/ipeleg/Work/checkov ~/.local/share/virtualenvs/checkov-JG9prJxC/bin/python ./main.py --framework sca_image --docker-image sha256:ca045cdaa16ba170a05699378922595230d4ec1b69d35815701ff568aad2b807 --dockerfile-path /Users/ipeleg/Work/checkov/integration_tests/example_dokcerfile/Dockerfile --bc-api-key c7da69e5-62e9-4d10-b637-d3d394a0e86c --repo-id itai_test/test_sca_image_22
+
+PYTHONUNBUFFERED=1 LOG_LEVEL=INFO PYTHONPATH=/Users/ipeleg/Work/checkov ~/.local/share/virtualenvs/checkov-JG9prJxC/bin/python ./checkov/main.py -d /Users/ipeleg/Work/jiras/BCE-23479_bad_go_path/test_repo --framework sca_package --bc-api-key 078c4db7-5aff-4f60-b776-8f88e93cae56 --repo-id itai_test/test_repo
