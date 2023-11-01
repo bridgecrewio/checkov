@@ -152,13 +152,13 @@ class VulnerabilitiesIntegration(BaseIntegrationFeature):
     enrich each CVE with the risk factor of IsUsed - which means there is a file the use the package of that CVE
     '''
 
-    def _is_package_used_for_cve(self, cve_check: Record, sast_files_by_packages_map: Dict[str, List[str]]) -> bool:
-        package_name = cve_check.vulnerability_details.get('package_name', '')
+    def _is_package_used_for_cve(self, cve_vulnerability_details: Dict[str, Any], sast_files_by_packages_map: Dict[str, List[str]]) -> bool:
+        package_name = cve_vulnerability_details.get('package_name', '')
         normalize_package_name = self.normalize_package_name(package_name)
         return package_name in sast_files_by_packages_map or normalize_package_name in sast_files_by_packages_map
 
-    def _is_reachable_function_for_cve(self, cve_check: Record, sast_reachable_data_by_packages_map: Dict[str, Dict[str, List[str]]]) -> bool:
-        package_name = cve_check.vulnerability_details.get('package_name', '')
+    def _is_reachable_function_for_cve(self, cve_vulnerability_details: Dict[str, Any], sast_reachable_data_by_packages_map: Dict[str, Dict[str, List[str]]]) -> bool:
+        package_name = cve_vulnerability_details.get('package_name', '')
         return package_name in sast_reachable_data_by_packages_map
 
     def enrich_cves_with_sast_data(
@@ -169,10 +169,10 @@ class VulnerabilitiesIntegration(BaseIntegrationFeature):
     ) -> None:
         for cve_check in current_cves:
             if cve_check.vulnerability_details:
-                is_package_used = self._is_package_used_for_cve(cve_check, sast_files_by_packages_map)
+                is_package_used = self._is_package_used_for_cve(cve_check.vulnerability_details, sast_files_by_packages_map)
                 cve_check.vulnerability_details.get('risk_factors', {})['IsUsed'] = is_package_used
 
-                is_reachable_function = self._is_reachable_function_for_cve(cve_check, sast_reachable_data_by_packages_map)
+                is_reachable_function = self._is_reachable_function_for_cve(cve_check.vulnerability_details, sast_reachable_data_by_packages_map)
                 cve_check.vulnerability_details.get('risk_factors', {})['ReachableFunction'] = is_reachable_function
 #######################################################################################################################
 
