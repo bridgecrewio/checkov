@@ -202,12 +202,11 @@ class ExtArgumentParser(configargparse.ArgumentParser):
         self.add(
             "--include-all-checkov-policies",
             action="store_true",
-            help="When running with an API key, Checkov will omit any policies that do not exist "
-                 "in the Bridgecrew or Prisma Cloud platform, except for local custom policies loaded with the "
-                 "--external-check flags. Use this key to include policies that only exist in Checkov in the scan. "
-                 "Note that this will make the local CLI results different from the results you see in the "
-                 "platform. Has no effect if you are not using an API key. Use the --check option to explicitly "
-                 "include checks by ID even if they are not in the platform, without using this flag.",
+            help="When running with an API key, Checkov will omit any policies that do not exist in Prisma Cloud platform, "
+                 "except for local custom policies loaded with the --external-check flags. Use this key to include policies "
+                 "that only exist in Checkov in the scan. Note that this will make the local CLI results different from the "
+                 "results you see in the platform. Has no effect if you are not using an API key. Use the --check option to "
+                 "explicitly include checks by ID even if they are not in the platform, without using this flag.",
         )
         self.add(
             "--quiet",
