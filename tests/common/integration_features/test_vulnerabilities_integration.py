@@ -200,13 +200,17 @@ class TestVulnerabilitiesIntegration(unittest.TestCase):
         vul_integration = VulnerabilitiesIntegration(instance)
         reachable_data_by_package_map = vul_integration.create_reachable_data_by_package_map(filtered_reachability_entries)
         assert reachable_data_by_package_map == {
-            'axios': [
-                Function(name='trim', alias='hopa', line_number=4, code_block='hopa()')
-            ],
-            'lodash': [
-                Function(name='template', alias='', line_number=1, code_block='template()'),
-                Function(name='toNumber', alias='', line_number=4, code_block='hopa()')
-            ]
+            'axios': {
+                '/index.js': [
+                    Function(name='trim', alias='hopa', line_number=4, code_block='hopa()')
+                ]
+            },
+            'lodash': {
+                '/index.js': [
+                    Function(name='template', alias='', line_number=1, code_block='template()'),
+                    Function(name='toNumber', alias='', line_number=4, code_block='hopa()')
+                ]
+            }
         }
 
 

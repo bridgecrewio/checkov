@@ -83,7 +83,7 @@ class VulnerabilitiesIntegration(BaseIntegrationFeature):
             # Extract Sast data from Sast report filtered by the language
             imports_entries = sast_imports_report.get('imports', {}).get(lang, {}).items()
             filtered_imports_entries = [(code_file_path, sast_data) for code_file_path, sast_data in imports_entries if
-                                self.is_deeper_or_equal_level(sca_file_path, code_file_path)]
+                                        self.is_deeper_or_equal_level(sca_file_path, code_file_path)]
 
             reachability_entries = sast_reacability_report.get('reachability', {}).get(lang, {}).items()
             filtered_reachability_entries = [(code_file_path, sast_data) for code_file_path, sast_data in
@@ -139,12 +139,12 @@ class VulnerabilitiesIntegration(BaseIntegrationFeature):
 
         return sast_files_by_packages_map
 
-    def create_reachable_data_by_package_map(self, filtered_reachability_entries: List[Tuple[Any, Any]]) -> Dict[str, List[str]]:
-        reachable_data_by_packages_map: Dict[str, List[str]] = defaultdict(list)
+    def create_reachable_data_by_package_map(self, filtered_reachability_entries: List[Tuple[Any, Any]]) -> Dict[str, Dict[str, List[str]]]:
+        reachable_data_by_packages_map: Dict[str, Dict[str, List[str]]] = defaultdict(dict)
         for code_file_path, file_data in filtered_reachability_entries:
             packages = file_data.packages
             for package_name, package_data in packages.items():
-                reachable_data_by_packages_map[package_name] = package_data.functions
+                reachable_data_by_packages_map[package_name][code_file_path] = package_data.functions
         return reachable_data_by_packages_map
 
 #######################################################################################################################
