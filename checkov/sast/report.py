@@ -47,7 +47,7 @@ class SastReport(Report):
                     for package_name, package_data in packages_data['packages'].items():
                         new_package = {'Name': package_name, 'Alias': package_data['alias'], 'Functions': []}
                         for func in package_data['functions']:
-                            new_func = {'Name': func['name'], 'Alias': func['alias'], 'LineNumber': func['line_number'], 'CodeBlock': [func['code_block']], 'CveId': func.get('CveId', '')}
+                            new_func = {'Name': func['name'], 'Alias': func['alias'], 'LineNumber': func['line_number'], 'CodeBlock': [func['code_block']], 'CveId': func.get('cve_id', '')}
                             new_package['Functions'].append(new_func)
                         new_file['Packages'].append(new_package)
                     new_repo['Files'].append(new_file)
