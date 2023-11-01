@@ -57,6 +57,7 @@ class Function(BaseModel):
     alias: str  # noqa: CCE003
     line_number: int  # noqa: CCE003
     code_block: str  # noqa: CCE003
+    cve_id: Optional[str]  # noqa: CCE003
 
     def to_dict(self) -> Dict[str, Any]:
         return self.__dict__
