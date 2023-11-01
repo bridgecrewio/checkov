@@ -124,3 +124,58 @@ def test_CKV_AWS_30_ElasticacheReplicationGroupEncryptionAtTransit():
 def test_CKV_AWS_68_WAFEnabled():
     run_check(lang='python', check_name="WAFEnabled")
 
+
+def test_CKV_AWS_64_RedshiftClusterEncryption():
+    run_check(lang='python', check_name="RedshiftClusterEncryption")
+
+
+def test_CKV_AWS_29_ElasticacheReplicationGroupEncryptionAtRest():
+    run_check(lang='python', check_name="ElasticacheReplicationGroupEncryptionAtRest")
+
+
+def test_CKV_AWS_43_KinesisStreamEncryptionType():
+    run_check(lang='python', check_name="KinesisStreamEncryptionType")
+
+
+def test_CKV_AWS_42_EFSEncryptionEnabled():
+    run_check(lang='python', check_name="EFSEncryptionEnabled")
+
+
+def test_CKV_AWS_193_AppSyncLogging():
+    run_check(lang='python', check_name="AppSyncLogging")
+
+
+def test_CKV_AWS_194_AppSyncFieldLevelLogs():
+    run_check(lang='python', check_name="AppSyncFieldLevelLogs")
+
+
+def test_CKV_AWS_104_DocDBAuditLogs():
+    run_check(lang='python', check_name="DocDBAuditLogs")
+
+
+def test_CKV_AWS_82_AthenaWorkgroupConfiguration():
+    run_check(lang='python', check_name="AthenaWorkgroupConfiguration")
+
+
+def test_CKV_AWS_17_RDSPubliclyAccessible():
+    run_check(lang='python', check_name="RDSPubliclyAccessible")
+
+
+def test_CKV_AWS_87_RedshiftClusterPubliclyAccessible():
+    run_check(lang='python', check_name="RedshiftClusterPubliclyAccessible")
+
+
+def test_CKV_AWS_69_AmazonMQBrokerPublicAccess():
+    run_check(lang='python', check_name="AmazonMQBrokerPublicAccess")
+
+
+def test_CKV_AWS_118_RDSEnhancedMonitorEnabled():
+    run_check(lang='python', check_name="RDSEnhancedMonitorEnabled")
+
+
+def test_CKV_AWS_40_IAMPolicyAttachedToGroupOrRoles():
+    run_check(lang='python', check_name="IAMPolicyAttachedToGroupOrRoles")
+
+
+def test_CKV_AWS_36_CloudTrailLogValidation():
+    run_check(lang='python', check_name="CloudTrailLogValidation.yaml")
