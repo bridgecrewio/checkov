@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Optional, Dict
 
-from checkov.sast.consts import SastLanguages
+from checkov.common.sast.consts import SastLanguages
 
 
 class ScaPackageFile(Enum):

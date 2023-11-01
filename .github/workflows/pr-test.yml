@@ -156,7 +156,6 @@ jobs:
           python-version: ${{ matrix.python }}
           cache: "pipenv"
           cache-dependency-path: "Pipfile.lock"
-      - uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65  # v4
       - name: Install pipenv
         run: |
           python -m pip install --no-cache-dir --upgrade pipenv
@@ -177,13 +176,15 @@ jobs:
       - name: Create checkov reports
         env:
           LOG_LEVEL: INFO
-          BC_API_KEY: ${{ secrets.BC_API_KEY }}
+          BC_API_KEY: ${{ secrets.PRISMA_KEY }}
+          PRISMA_API_URL: ${{ secrets.PRISMA_API_URL }}
         if: env.BC_API_KEY != null
         run: bash -c './sast_integration_tests/prepare_data.sh'
       - name: Run integration tests
         env:
           LOG_LEVEL: INFO
-          BC_API_KEY: ${{ secrets.BC_API_KEY }}
+          BC_API_KEY: ${{ secrets.PRISMA_KEY }}
+          PRISMA_API_URL: ${{ secrets.PRISMA_API_URL }}
         if: env.BC_API_KEY != null
         run: |
           pipenv run pytest sast_integration_tests
@@ -202,7 +203,6 @@ jobs:
           python-version: ${{ matrix.python }}
           cache: "pipenv"
           cache-dependency-path: "Pipfile.lock"
-      - uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65  # v4
       - name: Install pipenv
         run: |
           python -m pip install --no-cache-dir --upgrade pipenv
@@ -217,13 +217,15 @@ jobs:
       - name: Create checkov reports
         env:
           LOG_LEVEL: INFO
-          BC_API_KEY: ${{ secrets.BC_API_KEY }}
+          BC_API_KEY: ${{ secrets.PRISMA_KEY }}
+          PRISMA_API_URL: ${{ secrets.PRISMA_API_URL }}
         if: env.BC_API_KEY != null
         run: bash -c './cdk_integration_tests/prepare_data.sh'
       - name: Run integration tests
         env:
           LOG_LEVEL: INFO
-          BC_API_KEY: ${{ secrets.BC_API_KEY }}
+          BC_API_KEY: ${{ secrets.PRISMA_KEY }}
+          PRISMA_API_URL: ${{ secrets.PRISMA_API_URL }}
         if: env.BC_API_KEY != null
         run: |
           pipenv run pytest cdk_integration_tests

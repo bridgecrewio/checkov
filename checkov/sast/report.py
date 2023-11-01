@@ -1,7 +1,7 @@
 from typing import Any, Dict, Union, List, Optional
 
 from checkov.common.output.report import Report
-from checkov.sast.consts import POLICIES_ERRORS, POLICIES_ERRORS_COUNT, SOURCE_FILES_COUNT, POLICY_COUNT, SastLanguages
+from checkov.common.sast.consts import POLICIES_ERRORS, POLICIES_ERRORS_COUNT, SOURCE_FILES_COUNT, POLICY_COUNT, SastLanguages
 
 
 class SastReport(Report):

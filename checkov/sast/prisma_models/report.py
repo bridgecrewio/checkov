@@ -1,6 +1,7 @@
 from typing import Dict, List, Any, Optional, Union
 from pydantic import BaseModel
-from checkov.sast.consts import SastLanguages
+
+from checkov.common.sast.consts import SastLanguages
 
 
 class Profiler(BaseModel):
