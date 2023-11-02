@@ -418,6 +418,15 @@ class TestYamlPolicies(unittest.TestCase):
     def test_AWS_private_MWAA_environment(self):
         self.go("AWS_private_MWAA_environment")
 
+    def test_AzureStorageAccConfigSharedKeyAuth(self):
+        self.go("AzureStorageAccConfigSharedKeyAuth")
+
+    def test_AzureStorageAccConfig_SAS_expirePolicy(self):
+        self.go("AzureStorageAccConfig_SAS_expirePolicy")
+
+    def test_AzureVMconfigPublicIP_SerialConsoleAccess(self):
+        self.go("AzureVMconfigPublicIP_SerialConsoleAccess")
+
     def test_registry_load(self):
         registry = Registry(parser=GraphCheckParser(), checks_dir=str(
             Path(__file__).parent.parent.parent.parent.parent / "checkov" / "terraform" / "checks" / "graph_checks"))

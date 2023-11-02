@@ -394,3 +394,34 @@ def get_attribute_is_leaf(vertex: TerraformBlock) -> Dict[str, bool]:
         if other in attribute_is_leaf:
             attribute_is_leaf[other] = False
     return attribute_is_leaf
+
+
+def join_double_quote_surrounded_dot_split(str_parts: list[str]) -> list[str]:
+    """Joins back split strings which enclosed a dot by double quotes
+
+    ex.
+
+    ['google_project_iam_binding', 'role["roles/logging', 'admin"]'] -> ['google_project_iam_binding', 'role["roles/logging.admin"]']
+
+    If someone finds a better solution feel free to replace it!
+    """
+
+    new_str_parts = []
+    joined_str_parts: list[str] = []
+    for part in str_parts:
+        if not joined_str_parts:
+            if '"' not in part:
+                new_str_parts.append(part)
+            elif part.count('"') >= 2:
+                new_str_parts.append(part)
+            else:
+                joined_str_parts.append(part)
+            continue
+
+        joined_str_parts.append(part)
+
+        if '"' in part:
+            new_str_parts.append(".".join(joined_str_parts))
+            joined_str_parts = []
+
+    return new_str_parts

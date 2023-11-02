@@ -24,7 +24,7 @@ class GithubDisallowInactiveBranch60Days(BaseGithubCheck):
             block_type=BlockType.DOCUMENT,
         )
 
-    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult:  # type:ignore[override]
+    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult:
         if branch_schema.validate(conf):
             evaluated_key = self.get_evaluated_keys()[0].replace("/", ".")
             jsonpath_expression = parse(f"$..{evaluated_key}")

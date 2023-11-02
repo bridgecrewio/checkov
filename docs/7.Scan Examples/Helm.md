@@ -50,7 +50,7 @@ in the example below, we can see the difference between the default `gocd` versi
 
 
 ```
-checkov -d ./testdir/gocd --framework helm --no-guide --quiet --compact -c CKV_K8S_15
+checkov -d ./testdir/gocd --framework helm --quiet --compact -c CKV_K8S_15
 
 helm scan results:
 
@@ -71,7 +71,7 @@ Check: CKV_K8S_15: "Image Pull Policy should be Always"
 
 
 ```
-checkov -d ./testdir/gocd --framework helm --no-guide --quiet --compact --var-file ./testdir/gocd.yaml -c CKV_K8S_15
+checkov -d ./testdir/gocd --framework helm --quiet --compact --var-file ./testdir/gocd.yaml -c CKV_K8S_15
 
 helm scan results:
 

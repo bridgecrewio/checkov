@@ -1,5 +1,4 @@
 ---
 # Test comment.
 framework: terraform
-no-guide: true
 output: json

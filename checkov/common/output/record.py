@@ -24,6 +24,7 @@ OUTPUT_CODE_LINE_LIMIT = force_int(os.getenv('CHECKOV_OUTPUT_CODE_LINE_LIMIT')) 
 
 SCA_PACKAGE_SCAN_CHECK_NAME = "SCA package scan"
 SCA_LICENSE_CHECK_NAME = "SCA license"
+PLACEHOLDER_LINE = "...\n"
 
 
 class Record:
@@ -126,6 +127,8 @@ class Record:
             spaces = " " * (last_line_number_len - len(str(line_num)))
             if line.lstrip().startswith("#"):
                 code_output.append(f"\t\t{color_codes[0]}{line_num}{spaces} | {line}")
+            elif line.lstrip() == PLACEHOLDER_LINE:
+                code_output.append(f"\t\t{line}")
             else:
                 code_output.append(f"\t\t{color_codes[0]}{line_num}{spaces} | {color_codes[1]}{line}")
         return "".join(code_output)
