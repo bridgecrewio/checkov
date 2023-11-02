@@ -7,7 +7,7 @@ class AKSOnlyCriticalPodsOnSystemNodes(BaseResourceValueCheck):
         """
         Microsoft recommends to isolate critical system pods from application pods
         to prevent misconfigured or rogue application pods from accidentally killing system pods.
-        
+
         This can be enforced by creating a dedicated system node pool with the CriticalAddonsOnly=true:NoSchedule taint
         to prevent application pods from being scheduled on system node pools.
         """
@@ -19,5 +19,6 @@ class AKSOnlyCriticalPodsOnSystemNodes(BaseResourceValueCheck):
 
     def get_inspected_key(self) -> str:
         return "default_node_pool/[0]/only_critical_addons_enabled"
+
 
 check = AKSOnlyCriticalPodsOnSystemNodes()
