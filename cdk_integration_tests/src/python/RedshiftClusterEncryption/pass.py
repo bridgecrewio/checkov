@@ -12,7 +12,7 @@ class RedshiftClusterStack(core.Stack):
             "MyRedshiftCluster",
             cluster_identifier="my-redshift-cluster",
             master_username="admin",
-            master_user_password="MySecurePassword123",  # Replace with your secure password
+            master_user_password="MySecurePassword123",  # checkov:skip=CKV_SECRET_6 test secret
             node_type="dc2.large",
             cluster_type="single-node",
             encrypted=True  # Enable encryption
