@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 from collections import defaultdict
-from typing import TYPE_CHECKING, Optional, List, Dict, Any, Tuple
+from typing import TYPE_CHECKING, Optional, List, Dict, Any, Tuple, Set
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
@@ -94,11 +94,11 @@ class VulnerabilitiesIntegration(BaseIntegrationFeature):
                 continue
 
             # Create maps with the relevant structure for the enrichment step
-            sast_files_by_packages_map = self.create_file_by_package_map(filtered_imports_entries)
-            sast_reachable_data_by_packages_map = self.create_reachable_data_by_package_map(filtered_reachability_entries)
+            sast_files_by_package_map = self.create_file_by_package_map(filtered_imports_entries)
+            sast_reachable_cves_by_package_map = self.create_reachable_cves_by_package_map(filtered_reachability_entries)
 
             # Enrich the CVEs
-            self.enrich_cves_with_sast_data(current_cves, sast_files_by_packages_map, sast_reachable_data_by_packages_map)
+            self.enrich_cves_with_sast_data(current_cves, sast_files_by_package_map, sast_reachable_cves_by_package_map)
 
     '''
     Each SCA report check has file_path, we want to getter same file_path so we won't have to calculate SAST language more then once
@@ -139,40 +139,41 @@ class VulnerabilitiesIntegration(BaseIntegrationFeature):
 
         return sast_files_by_packages_map
 
-    def create_reachable_data_by_package_map(self, filtered_reachability_entries: List[Tuple[Any, Any]]) -> Dict[str, Dict[str, List[str]]]:
-        reachable_data_by_packages_map: Dict[str, Dict[str, List[str]]] = defaultdict(dict)
+    def create_reachable_cves_by_package_map(self, filtered_reachability_entries: List[Tuple[Any, Any]]) -> Dict[str, Set[str]]:
+        reachable_cves_by_packages_map: Dict[str, Set[str]] = defaultdict(set)
         for code_file_path, file_data in filtered_reachability_entries:
             packages = file_data.packages
             for package_name, package_data in packages.items():
-                reachable_data_by_packages_map[package_name][code_file_path] = package_data.functions
-        return reachable_data_by_packages_map
+                for function_item in package_data.functions:
+                    reachable_cves_by_packages_map[package_name].add(function_item.cve_id)
+        return reachable_cves_by_packages_map
 
 #######################################################################################################################
     '''
     enrich each CVE with the risk factor of IsUsed - which means there is a file the use the package of that CVE
     '''
 
-    def _is_package_used_for_cve(self, cve_vulnerability_details: Dict[str, Any], sast_files_by_packages_map: Dict[str, List[str]]) -> bool:
+    def _is_package_used_for_cve(self, cve_vulnerability_details: Dict[str, Any], sast_files_by_package_map: Dict[str, List[str]]) -> bool:
         package_name = cve_vulnerability_details.get('package_name', '')
         normalize_package_name = self.normalize_package_name(package_name)
-        return package_name in sast_files_by_packages_map or normalize_package_name in sast_files_by_packages_map
+        return package_name in sast_files_by_package_map or normalize_package_name in sast_files_by_package_map
 
-    def _is_reachable_function_for_cve(self, cve_vulnerability_details: Dict[str, Any], sast_reachable_data_by_packages_map: Dict[str, Dict[str, List[str]]]) -> bool:
+    def _is_reachable_function_for_cve(self, cve_vulnerability_details: Dict[str, Any], sast_reachable_cves_by_package_map: Dict[str, Set[str]]) -> bool:
         package_name = cve_vulnerability_details.get('package_name', '')
-        return package_name in sast_reachable_data_by_packages_map
+        return cve_vulnerability_details.get('id') in sast_reachable_cves_by_package_map.get(package_name, set())
 
     def enrich_cves_with_sast_data(
             self,
             current_cves: List[Record],
-            sast_files_by_packages_map: Dict[str, List[str]],
-            sast_reachable_data_by_packages_map: Dict[str, Dict[str, List[str]]]
+            sast_files_by_package_map: Dict[str, List[str]],
+            sast_reachable_cves_by_package_map: Dict[str, Set[str]]
     ) -> None:
         for cve_check in current_cves:
             if cve_check.vulnerability_details:
-                is_package_used = self._is_package_used_for_cve(cve_check.vulnerability_details, sast_files_by_packages_map)
+                is_package_used = self._is_package_used_for_cve(cve_check.vulnerability_details, sast_files_by_package_map)
                 cve_check.vulnerability_details.get('risk_factors', {})['IsUsed'] = is_package_used
 
-                is_reachable_function = self._is_reachable_function_for_cve(cve_check.vulnerability_details, sast_reachable_data_by_packages_map)
+                is_reachable_function = self._is_reachable_function_for_cve(cve_check.vulnerability_details, sast_reachable_cves_by_package_map)
                 cve_check.vulnerability_details.get('risk_factors', {})['ReachableFunction'] = is_reachable_function
 #######################################################################################################################
 
