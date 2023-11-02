@@ -178,4 +178,12 @@ def test_CKV_AWS_40_IAMPolicyAttachedToGroupOrRoles():
 
 
 def test_CKV_AWS_36_CloudTrailLogValidation():
-    run_check(lang='python', check_name="CloudTrailLogValidation.yaml")
+    run_check(lang='python', check_name="CloudTrailLogValidation")
+
+
+def test_CKV_AWS_83_ElasticsearchDomainEnforceHTTPS():
+    run_check(lang='python', check_name="ElasticsearchDomainEnforceHTTPS")
+
+
+def test_CKV_AWS_76_APIGatewayAccessLogging():
+    run_check(lang='python', check_name="APIGatewayAccessLogging")
