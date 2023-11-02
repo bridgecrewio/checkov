@@ -26,7 +26,6 @@ class PostgreSQLServerLogConnectionsEnabled(BaseResourceCheck):
                                 conf["properties"]["value"].lower() == "on":
                             return CheckResult.PASSED
                     return CheckResult.FAILED
-                # If name not connection_throttling - don't report (neither pass nor fail)
             elif conf["type"] == "configurations":
                 if "name" in conf and conf["name"] == "log_connections":
                     if "parent_type" in conf:
@@ -36,9 +35,11 @@ class PostgreSQLServerLogConnectionsEnabled(BaseResourceCheck):
                                         conf["properties"]["value"].lower() == "on":
                                     return CheckResult.PASSED
                     return CheckResult.FAILED
-                # If name not connection_throttling - don't report (neither pass nor fail)
         else:
             return CheckResult.FAILED
+
+        # If name not connection_throttling - don't report (neither pass nor fail)
+        return CheckResult.UNKNOWN
 
 
 check = PostgreSQLServerLogConnectionsEnabled()

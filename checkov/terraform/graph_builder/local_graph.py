@@ -27,7 +27,9 @@ from checkov.terraform.graph_builder.graph_components.module import Module
 from checkov.terraform.graph_builder.utils import (
     get_attribute_is_leaf,
     get_referenced_vertices_in_value,
-    attribute_has_nested_attributes, remove_index_pattern_from_str,
+    attribute_has_nested_attributes,
+    remove_index_pattern_from_str,
+    join_double_quote_surrounded_dot_split,
 )
 from checkov.terraform.graph_builder.utils import is_local_path
 from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
@@ -609,9 +611,11 @@ def update_dictionary_attribute(
 
 
 def update_dictionary_attribute(
-        config: Union[List[Any], Dict[str, Any]], key_to_update: str, new_value: Any, dynamic_blocks: bool = False
+    config: Union[List[Any], Dict[str, Any]], key_to_update: str, new_value: Any, dynamic_blocks: bool = False
 ) -> Union[List[Any], Dict[str, Any]]:
     key_parts = key_to_update.split(".")
+    if '"' in key_to_update:
+        key_parts = join_double_quote_surrounded_dot_split(str_parts=key_parts)
 
     if isinstance(config, dict) and isinstance(key_parts, list):
         key = key_parts[0]
@@ -624,17 +628,21 @@ def update_dictionary_attribute(
                 config[key] = to_list(new_value) if dynamic_blocks else new_value
                 return config
             else:
-                config[key] = update_dictionary_attribute(inner_config, ".".join(key_parts[1:]), new_value, dynamic_blocks=dynamic_blocks)
+                config[key] = update_dictionary_attribute(
+                    inner_config, ".".join(key_parts[1:]), new_value, dynamic_blocks=dynamic_blocks
+                )
         else:
             for key in config:
-                config[key] = update_dictionary_attribute(config[key], key_to_update, new_value, dynamic_blocks=dynamic_blocks)
+                config[key] = update_dictionary_attribute(
+                    config[key], key_to_update, new_value, dynamic_blocks=dynamic_blocks
+                )
     if isinstance(config, list):
         return update_list_attribute(
             config=config,
             key_parts=key_parts,
             key_to_update=key_to_update,
             new_value=new_value,
-            dynamic_blocks=dynamic_blocks
+            dynamic_blocks=dynamic_blocks,
         )
     return config
 

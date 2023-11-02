@@ -1,0 +1,7 @@
+pass:
+  - "azurerm_storage_account.pass_1"
+  - "azurerm_storage_account.pass_2"
+  - "azurerm_storage_account.pass_3"
+fail:
+  - "azurerm_storage_account.fail_1"
+  - "azurerm_storage_account.fail_2"
