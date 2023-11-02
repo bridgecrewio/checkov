@@ -141,7 +141,7 @@ class VulnerabilitiesIntegration(BaseIntegrationFeature):
 
     def create_reachable_cves_by_package_map(self, filtered_reachability_entries: List[Tuple[Any, Any]]) -> Dict[str, Set[str]]:
         reachable_cves_by_packages_map: Dict[str, Set[str]] = defaultdict(set)
-        for code_file_path, file_data in filtered_reachability_entries:
+        for _, file_data in filtered_reachability_entries:
             packages = file_data.packages
             for package_name, package_data in packages.items():
                 for function_item in package_data.functions:
