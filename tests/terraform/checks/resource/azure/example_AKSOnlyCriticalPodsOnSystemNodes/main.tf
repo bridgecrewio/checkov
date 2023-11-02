@@ -4,6 +4,7 @@ resource "azurerm_kubernetes_cluster" "pass" {
   default_node_pool {
     name                         = "defaultpool"
     only_critical_addons_enabled = true
+  }
 }
 
 resource "azurerm_kubernetes_cluster" "fail1" {
@@ -11,6 +12,7 @@ resource "azurerm_kubernetes_cluster" "fail1" {
   
   default_node_pool {
     name                         = "defaultpool"
+  }
 }
 
 resource "azurerm_kubernetes_cluster" "fail2" {
@@ -19,6 +21,7 @@ resource "azurerm_kubernetes_cluster" "fail2" {
   default_node_pool {
     name                         = "defaultpool"
     only_critical_addons_enabled = false
+  }
 }
 
 resource "azurerm_kubernetes_cluster" "fail3" {
