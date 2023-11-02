@@ -12,16 +12,16 @@ def _create_sast_reports_for_test_get_sast_reachability_report_with_one_report()
         'repo_1': Repositories(files={
             '/index.js': File(packages={
                 'axios': Package(alias='ax', functions=[
-                    Function(name='trim', alias='hopa', line_number=4, code_block='hopa()')
+                    Function(name='trim', alias='hopa', line_number=4, code_block='hopa()', cve_id='cve-11')
                 ]),
                 'lodash': Package(alias='', functions=[
-                    Function(name='template', alias='', line_number=1, code_block='template()'),
-                    Function(name='toNumber', alias='', line_number=4, code_block='hopa()')
+                    Function(name='template', alias='', line_number=1, code_block='template()', cve_id='cve-11'),
+                    Function(name='toNumber', alias='', line_number=4, code_block='hopa()', cve_id='cve-11')
                 ])
             }),
             '/main.js': File(packages={
                 'axios': Package(alias='ax', functions=[
-                    Function(name='trim', alias='hi', line_number=4, code_block='hi()')
+                    Function(name='trim', alias='hi', line_number=4, code_block='hi()', cve_id='cve-11')
                 ])
             })
         })
@@ -37,16 +37,16 @@ def test_get_sast_reachability_report_with_one_report():
             SastLanguages.JAVASCRIPT: {
                 '/index.js': File(packages={
                     'axios': Package(alias='ax', functions=[
-                        Function(name='trim', alias='hopa', line_number=4, code_block='hopa()')
+                        Function(name='trim', alias='hopa', line_number=4, code_block='hopa()', cve_id='cve-11')
                     ]),
                     'lodash': Package(alias='', functions=[
-                        Function(name='template', alias='', line_number=1, code_block='template()'),
-                        Function(name='toNumber', alias='', line_number=4, code_block='hopa()')
+                        Function(name='template', alias='', line_number=1, code_block='template()', cve_id='cve-11'),
+                        Function(name='toNumber', alias='', line_number=4, code_block='hopa()', cve_id='cve-11')
                     ])
                 }),
                 '/main.js': File(packages={
                     'axios': Package(alias='ax', functions=[
-                        Function(name='trim', alias='hi', line_number=4, code_block='hi()')
+                        Function(name='trim', alias='hi', line_number=4, code_block='hi()', cve_id='cve-11')
                     ])
                 })
             }

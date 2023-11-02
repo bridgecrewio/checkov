@@ -195,20 +195,20 @@ class TestVulnerabilitiesIntegration(unittest.TestCase):
         self.assertTrue(result, expected)
 
     def test_create_reachable_data_by_package_map(self):
-        filtered_reachability_entries = [('/index.js', File(packages={'axios': Package(alias='ax', functions=[Function(name='trim', alias='hopa', line_number=4, code_block='hopa()')]), 'lodash': Package(alias='', functions=[Function(name='template', alias='', line_number=1, code_block='template()'), Function(name='toNumber', alias='', line_number=4, code_block='hopa()')])}))]
+        filtered_reachability_entries = [('/index.js', File(packages={'axios': Package(alias='ax', functions=[Function(name='trim', alias='hopa', line_number=4, code_block='hopa()', cve_id='cve-11')]), 'lodash': Package(alias='', functions=[Function(name='template', alias='', line_number=1, code_block='template()', cve_id='cve-11'), Function(name='toNumber', alias='', line_number=4, code_block='hopa()', cve_id='cve-11')])}))]
         instance = BcPlatformIntegration()
         vul_integration = VulnerabilitiesIntegration(instance)
         reachable_data_by_package_map = vul_integration.create_reachable_data_by_package_map(filtered_reachability_entries)
         assert reachable_data_by_package_map == {
             'axios': {
                 '/index.js': [
-                    Function(name='trim', alias='hopa', line_number=4, code_block='hopa()')
+                    Function(name='trim', alias='hopa', line_number=4, code_block='hopa()', cve_id="cve-11")
                 ]
             },
             'lodash': {
                 '/index.js': [
-                    Function(name='template', alias='', line_number=1, code_block='template()'),
-                    Function(name='toNumber', alias='', line_number=4, code_block='hopa()')
+                    Function(name='template', alias='', line_number=1, code_block='template()', cve_id="cve-11"),
+                    Function(name='toNumber', alias='', line_number=4, code_block='hopa()', cve_id="cve-11")
                 ]
             }
         }
