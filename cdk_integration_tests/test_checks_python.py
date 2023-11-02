@@ -187,3 +187,7 @@ def test_CKV_AWS_83_ElasticsearchDomainEnforceHTTPS():
 
 def test_CKV_AWS_76_APIGatewayAccessLogging():
     run_check(lang='python', check_name="APIGatewayAccessLogging")
+
+
+def test_CKV_AWS_117_LambdaInVPC():
+    run_check(lang='python', check_name="LambdaInVPC")
