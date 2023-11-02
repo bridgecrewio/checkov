@@ -18,12 +18,12 @@ from checkov.common.bridgecrew.platform_key import bridgecrew_dir
 from checkov.common.bridgecrew.severities import get_severity, Severity, Severities, BcSeverities
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.report import Report
+from checkov.common.sast.consts import SastLanguages
 from checkov.common.sca.reachability.sast_contract.data_fetcher_sast_lib import SastReachabilityDataFetcher
 from checkov.common.typing import _CheckResult
 from checkov.common.util.http_utils import request_wrapper
 from checkov.sast.checks_infra.base_registry import Registry
 from checkov.sast.common import get_code_block_from_start, get_data_flow_code_block
-from checkov.sast.consts import SastLanguages
 from checkov.sast.engines.base_engine import SastEngine
 from checkov.sast.prisma_models.library_input import LibraryInput
 from checkov.sast.prisma_models.policies_list import SastPolicies
