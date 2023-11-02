@@ -110,6 +110,23 @@ def load_yaml_data(source_file_name: str | Path, dir_path: str | Path) -> Any:
     return json.loads(json.dumps(expected_data))
 
 
+def get_expected_results_by_file_name(test_dir: str | Path) -> (list[str], list[str]):
+    if not os.path.exists(test_dir):
+        return None
+    expected_fail = []
+    expected_pass = []
+    for root, d_names, f_names in os.walk(test_dir):
+        for file in f_names:
+            if file.startswith('fail'):
+                expected_fail.append(file)
+            elif file.startswith('pass'):
+                expected_pass.append(file)
+            else:
+                raise NameError('yaml test files should start with eiter pass / fail')
+
+    return (expected_fail, expected_pass)
+
+
 def get_policy_results(root_folder, policy):
     check_id = policy['metadata']['id']
     graph_runner = Runner()

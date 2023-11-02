@@ -18,23 +18,19 @@ class LambdaEnvironmentEncryptionSettings(BaseResourceCheck):
         # check that if I have env vars I have a KMS key
         if len(conf.get("environment", [])):
             if "kms_key_arn" in conf:
-                if conf["kms_key_arn"] == [""]:
-                    self.evaluated_keys = ["environment/kms_key_arn"]
+                if conf.get("kms_key_arn") == [""]:
                     return CheckResult.FAILED
                 return CheckResult.PASSED
-            self.evaluated_keys = ["environment"]
             return CheckResult.FAILED
 
         # no env vars so should be no key as that causes state mismatch
-        if "kms_key_arn" in conf:
-            if not len(conf["kms_key_arn"]):
-                return CheckResult.PASSED
+        if "kms_key_arn" in conf and len(conf["kms_key_arn"]):
             return CheckResult.FAILED
         # neither env vars nor kms key
         return CheckResult.UNKNOWN
 
     def get_evaluated_keys(self) -> list[str]:
-        return ["environment/[0]/variables"]
+        return ["kms_key_arn"]
 
 
 check = LambdaEnvironmentEncryptionSettings()

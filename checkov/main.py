@@ -6,43 +6,46 @@ import itertools
 import json
 import logging
 import os
+import platform
 import shutil
 import signal
 import sys
-import platform
 from collections import defaultdict
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal, Optional
+from typing import TYPE_CHECKING, Any, Dict, Literal, Optional, List
 
 import argcomplete
 import configargparse
 from urllib3.exceptions import MaxRetryError
 
 import checkov.logging_init  # noqa  # should be imported before the others to ensure correct logging setup
-
 from checkov.ansible.runner import Runner as ansible_runner
 from checkov.argo_workflows.runner import Runner as argo_workflows_runner
 from checkov.arm.runner import Runner as arm_runner
 from checkov.azure_pipelines.runner import Runner as azure_pipelines_runner
+from checkov.bicep.runner import Runner as bicep_runner
 from checkov.bitbucket.runner import Runner as bitbucket_configuration_runner
 from checkov.bitbucket_pipelines.runner import Runner as bitbucket_pipelines_runner
+from checkov.cdk.runner import CdkRunner
+from checkov.circleci_pipelines.runner import Runner as circleci_pipelines_runner
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.bc_source import SourceTypes, BCSourceType, get_source_type, SourceType
+from checkov.common.bridgecrew.check_type import checkov_runners, CheckType
+from checkov.common.bridgecrew.integration_features.features.custom_policies_integration import \
+    integration as custom_policies_integration
+from checkov.common.bridgecrew.integration_features.features.licensing_integration import \
+    integration as licensing_integration
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
     integration as policy_metadata_integration
 from checkov.common.bridgecrew.integration_features.features.repo_config_integration import \
     integration as repo_config_integration
 from checkov.common.bridgecrew.integration_features.features.suppressions_integration import \
     integration as suppressions_integration
-from checkov.common.bridgecrew.integration_features.features.custom_policies_integration import \
-    integration as custom_policies_integration
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.common.bridgecrew.integration_features.features.licensing_integration import integration as licensing_integration
 from checkov.common.bridgecrew.severities import BcSeverities
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.output.baseline import Baseline
-from checkov.common.bridgecrew.check_type import checkov_runners, CheckType
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.common.typing import LibraryGraph
@@ -50,7 +53,7 @@ from checkov.common.util import prompt
 from checkov.common.util.banner import banner as checkov_banner, tool as checkov_tool
 from checkov.common.util.config_utils import get_default_config_paths
 from checkov.common.util.consts import CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
-from checkov.common.util.ext_argument_parser import ExtArgumentParser
+from checkov.common.util.ext_argument_parser import ExtArgumentParser, flatten_csv
 from checkov.common.util.runner_dependency_handler import RunnerDependencyHandler
 from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.contributor_metrics import report_contributor_metrics
@@ -64,7 +67,13 @@ from checkov.helm.runner import Runner as helm_runner
 from checkov.json_doc.runner import Runner as json_runner
 from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.kustomize.runner import Runner as kustomize_runner
+from checkov.logging_init import log_stream as logs_stream
+from checkov.openapi.runner import Runner as openapi_runner
 from checkov.runner_filter import RunnerFilter
+from checkov.sast.consts import SastLanguages
+from checkov.sast.prisma_models.report import serialize_reachability_report
+from checkov.sast.report import SastData, SastReport
+from checkov.sast.runner import Runner as sast_runner
 from checkov.sca_image.runner import Runner as sca_image_runner
 from checkov.sca_package.runner import Runner as sca_package_runner
 from checkov.sca_package_2.runner import Runner as sca_package_runner_2
@@ -75,10 +84,6 @@ from checkov.terraform.runner import Runner as tf_graph_runner
 from checkov.terraform_json.runner import TerraformJsonRunner
 from checkov.version import version
 from checkov.yaml_doc.runner import Runner as yaml_runner
-from checkov.bicep.runner import Runner as bicep_runner
-from checkov.openapi.runner import Runner as openapi_runner
-from checkov.circleci_pipelines.runner import Runner as circleci_pipelines_runner
-from checkov.logging_init import log_stream as logs_stream
 
 if TYPE_CHECKING:
     from checkov.common.output.report import Report
@@ -119,6 +124,8 @@ DEFAULT_RUNNERS = [
     azure_pipelines_runner(),
     ansible_runner(),
     TerraformJsonRunner(),
+    sast_runner(),
+    CdkRunner(),
 ]
 
 
@@ -126,12 +133,13 @@ class Checkov:
     def __init__(self, argv: list[str] = sys.argv[1:]) -> None:
         self.config: "Namespace"  # set in 'parse_config()'
         self.parser: "ExtArgumentParser"  # set in 'parse_config()'
-        self.runners = DEFAULT_RUNNERS
+        self.runners = DEFAULT_RUNNERS.copy()
         self.scan_reports: "list[Report]" = []
         self.run_metadata: dict[str, str | list[str]] = {}
         self.graphs: dict[str, list[tuple[LibraryGraph, Optional[str]]]] = {}
         self.resource_subgraph_maps: dict[str, dict[str, str]] = {}
         self.url: str | None = None
+        self.sast_data: SastData = SastData()
 
         self.parse_config(argv=argv)
 
@@ -169,23 +177,7 @@ class Checkov:
         self.normalize_config()
 
     def normalize_config(self) -> None:
-        if self.config.no_guide:
-            logger.warning(
-                '--no-guide is deprecated and will be removed in a future release. Use --skip-download instead'
-            )
-            self.config.skip_download = True
-        if self.config.skip_suppressions:
-            logger.warning(
-                '--skip-suppressions is deprecated and will be removed in a future release. Use --skip-download instead'
-            )
-            self.config.skip_download = True
-        if self.config.skip_policy_download:
-            logger.warning(
-                '--skip-policy-download is deprecated and will be removed in a future release. Use --skip-download instead'
-            )
-            self.config.skip_download = True
-
-        elif not self.config.bc_api_key and not self.config.include_all_checkov_policies:
+        if not self.config.bc_api_key and not self.config.include_all_checkov_policies:
             # makes it easier to pick out policies later if we can just always rely on this flag without other context
             logger.debug('No API key present; setting include_all_checkov_policies to True')
             self.config.include_all_checkov_policies = True
@@ -193,10 +185,25 @@ class Checkov:
         if self.config.use_enforcement_rules and not self.config.bc_api_key:
             self.parser.error('Must specify an API key with --use-enforcement-rules')
 
+        if self.config.bc_api_key and not self.config.repo_id:
+            self.parser.error('--repo-id is required when using a platform API key')
+
         if self.config.policy_metadata_filter and not (self.config.bc_api_key and self.config.prisma_api_url):
             logger.warning(
                 '--policy-metadata-filter flag was used without a Prisma Cloud API key. Policy filtering will be skipped.'
             )
+
+        logging.debug('Normalizing --framework')
+        self.config.framework = self.normalize_framework_arg(self.config.framework, handle_all=True)
+        logging.debug(f'Normalized --framework value: {self.config.framework}')
+
+        logging.debug('Normalizing --skip-framework')
+        self.config.skip_framework = self.normalize_framework_arg(self.config.skip_framework)
+        logging.debug(f'Normalized --skip-framework value: {self.config.skip_framework}')
+
+        duplicate_frameworks = set(self.config.skip_framework).intersection(self.config.framework)
+        if duplicate_frameworks:
+            self.parser.error(f'Frameworks listed for both --framework and --skip-framework: {", ".join(duplicate_frameworks)}')
 
         # Parse mask into json with default dict. If self.config.mask is empty list, default dict will be assigned
         self._parse_mask_to_resource_attributes_to_omit()
@@ -204,6 +211,30 @@ class Checkov:
         if self.config.file:
             # it is passed as a list of lists
             self.config.file = list(itertools.chain.from_iterable(self.config.file))
+
+    def normalize_framework_arg(self, raw_framework_arg: List[List[str]], handle_all: bool = False) -> List[str]:
+        # frameworks come as arrays of arrays, e.g. --framework terraform arm --framework bicep,cloudformation
+        # becomes: [['terraform', 'arm'], ['bicep,cloudformation']]
+        # we'll collapse it into a single array (which is how it was before checkov3)
+
+        if raw_framework_arg:
+            logging.debug(f'Raw framework value: {raw_framework_arg}')
+            frameworks = flatten_csv(raw_framework_arg)
+            logging.debug(f'Flattened frameworks: {frameworks}')
+            if handle_all and 'all' in frameworks:
+                return ['all']
+            else:
+                invalid = list(filter(lambda f: f not in checkov_runners, frameworks))
+                if invalid:
+                    self.parser.error(f'Invalid frameworks specified: {", ".join(invalid)}.{os.linesep}'
+                                      f'Valid values are: {", ".join(checkov_runners + ["all"] if handle_all else [])}')
+                return frameworks
+        elif handle_all:
+            logging.debug('No framework specified; setting to `all`')
+            return ['all']
+        else:
+            logging.debug('No framework specified; setting to none')
+            return []
 
     def run(self, banner: str = checkov_banner, tool: str = checkov_tool, source_type: SourceType | None = None) -> int | None:
         self.run_metadata = {
@@ -296,7 +327,9 @@ class Checkov:
                 repo_root_for_plan_enrichment=self.config.repo_root_for_plan_enrichment,
                 resource_attr_to_omit=self.config.mask,
                 enable_git_history_secret_scan=self.config.scan_secrets_history,
-                git_history_timeout=self.config.secrets_history_timeout
+                git_history_timeout=self.config.secrets_history_timeout,
+                report_sast_imports=bool(convert_str_to_bool(os.getenv('CKV_ENABLE_UPLOAD_SAST_IMPORTS', False))),
+                report_sast_reachability=bool(convert_str_to_bool(os.getenv('CKV_ENABLE_UPLOAD_SAST_REACHABILITY', False)))
             )
 
             source_env_val = os.getenv('BC_SOURCE', 'cli')
@@ -362,7 +395,7 @@ class Checkov:
                 try:
                     bc_integration.bc_api_key = self.config.bc_api_key
                     bc_integration.setup_bridgecrew_credentials(repo_id=self.config.repo_id,
-                                                                skip_fixes=self.config.skip_fixes,
+                                                                skip_fixes=False,  # will be set to True if this run is not eligible for fixes
                                                                 skip_download=self.config.skip_download,
                                                                 source=source,
                                                                 source_version=source_version,
@@ -496,10 +529,13 @@ class Checkov:
                     if bc_integration.is_integration_configured() \
                             and bc_integration.bc_source \
                             and bc_integration.bc_source.upload_results \
-                            and not self.config.skip_results_upload:
+                            and not self.config.skip_results_upload \
+                            and not bc_integration.s3_setup_failed:
                         included_paths = [self.config.external_modules_download_path]
                         for r in runner_registry.runners:
                             included_paths.extend(r.included_paths())
+                        self.save_sast_assets_data(self.scan_reports)
+                        self.save_sast_reachability_data(self.scan_reports)
                         self.upload_results(
                             root_folder=root_folder,
                             absolute_root_folder=absolute_root_folder,
@@ -561,16 +597,21 @@ class Checkov:
 
                 integration_feature_registry.run_post_runner(self.scan_reports[0])
 
-                if not self.config.skip_results_upload:
-                    bc_integration.persist_repository(os.path.dirname(self.config.dockerfile_path), files=files)
-                    bc_integration.persist_scan_results(self.scan_reports)
-                    bc_integration.persist_image_scan_results(sca_runner.raw_report, self.config.dockerfile_path,
-                                                              self.config.docker_image,
-                                                              self.config.branch)
+                if not self.config.skip_results_upload and not bc_integration.s3_setup_failed:
+                    try:
+                        if not bc_integration.on_prem:
+                            bc_integration.persist_repository(os.path.dirname(self.config.dockerfile_path), files=files)
+                        bc_integration.persist_scan_results(self.scan_reports)
+                        bc_integration.persist_image_scan_results(sca_runner.raw_report, self.config.dockerfile_path,
+                                                                  self.config.docker_image,
+                                                                  self.config.branch)
 
-                    bc_integration.persist_run_metadata(self.run_metadata)
-                    # there is no graph to persist
-                    self.url = self.commit_repository()
+                        bc_integration.persist_run_metadata(self.run_metadata)
+                        # there is no graph to persist
+                        self.url = self.commit_repository()
+                    except Exception:
+                        logging.error('An error occurred while uploading scan results to the platform', exc_info=True)
+                        bc_integration.s3_setup_failed = True
 
                 should_run_contributor_metrics = bc_integration.bc_api_key and self.config.repo_id and self.config.prisma_api_url
                 logger.debug(f"Should run contributor metrics report: {should_run_contributor_metrics}")
@@ -607,11 +648,14 @@ class Checkov:
                 if bc_integration.is_integration_configured() \
                         and bc_integration.bc_source \
                         and bc_integration.bc_source.upload_results \
-                        and not self.config.skip_results_upload:
+                        and not self.config.skip_results_upload \
+                        and not bc_integration.s3_setup_failed:
                     files = [os.path.abspath(file) for file in self.config.file]
                     root_folder = os.path.split(os.path.commonprefix(files))[0]
                     absolute_root_folder = os.path.abspath(root_folder)
 
+                    self.save_sast_assets_data(self.scan_reports)
+                    self.save_sast_reachability_data(self.scan_reports)
                     self.upload_results(
                         root_folder=root_folder,
                         absolute_root_folder=absolute_root_folder,
@@ -637,8 +681,6 @@ class Checkov:
                 return exit_code
             elif not self.config.quiet:
                 print(f"{banner}")
-
-                bc_integration.onboarding()
             return None
         except BaseException:
             logging.error("Exception traceback:", exc_info=True)
@@ -646,7 +688,26 @@ class Checkov:
 
         finally:
             if bc_integration.support_flag_enabled:
-                bc_integration.persist_logs_stream(logs_stream)
+                if bc_integration.s3_setup_failed:
+                    print_to_stderr = os.getenv('CKV_STDERR_DEBUG', 'FALSE').upper() == 'TRUE'
+                    log_level = os.getenv('LOG_LEVEL', '')
+                    if log_level == 'DEBUG':
+                        print('Unable to upload support logs. However, LOG_LEVEL is already set to DEBUG, so debug logs are available locally.')
+                    elif print_to_stderr:
+                        print('Unable to upload support logs - CKV_STDERR_DEBUG is TRUE, printing to stderr.')
+                        print(logs_stream.getvalue(), file=sys.stderr)
+                    else:
+                        # default to writing to a file - if they are using the support flag they probably are not excited
+                        # to get debug logs from stderr (but they also might not be able to access a local file if it
+                        # is in CI/CD, so there is not a good approach here)
+                        print('Unable to upload support logs - saving debug logs to ./checkov_debug.log. To print the debug '
+                              'logs to stderr instead, set the CKV_STDERR_DEBUG environment variable to TRUE, and re-run. '
+                              'Note that this will result in the scan results being printed, followed by all logs.')
+                        with open('./checkov_debug.log', 'w') as fp:
+                            logs_stream.seek(0)
+                            shutil.copyfileobj(logs_stream, fp)
+                else:
+                    bc_integration.persist_logs_stream(logs_stream)
 
     def exit_run(self) -> None:
         exit(0) if self.config.no_fail_on_crash else exit(2)
@@ -679,25 +740,53 @@ class Checkov:
     ) -> None:
         """Upload scan results and other relevant files"""
 
-        scan_reports_to_upload = self.scan_reports
-        if not bc_integration.on_prem:
-            bc_integration.persist_repository(
-                root_dir=root_folder,
-                files=files,
-                excluded_paths=excluded_paths,
-                included_paths=included_paths,
-            )
-            if git_configuration_folders:
-                bc_integration.persist_git_configuration(os.getcwd(), git_configuration_folders)
-            if sca_supported_ir_report:
-                scan_reports_to_upload = [report for report in self.scan_reports if report.check_type != 'sca_image']
-                scan_reports_to_upload.append(sca_supported_ir_report)
-        bc_integration.persist_scan_results(scan_reports_to_upload)
-        bc_integration.persist_run_metadata(self.run_metadata)
-        if bc_integration.enable_persist_graphs:
-            bc_integration.persist_graphs(self.graphs, absolute_root_folder=absolute_root_folder)
-            bc_integration.persist_resource_subgraph_maps(self.resource_subgraph_maps)
-        self.url = self.commit_repository()
+        try:
+            scan_reports_to_upload = self.scan_reports
+            if not bc_integration.on_prem:
+                bc_integration.persist_repository(
+                    root_dir=root_folder,
+                    files=files,
+                    excluded_paths=excluded_paths,
+                    included_paths=included_paths,
+                )
+                if git_configuration_folders:
+                    bc_integration.persist_git_configuration(os.getcwd(), git_configuration_folders)
+                if sca_supported_ir_report:
+                    scan_reports_to_upload = [report for report in self.scan_reports if report.check_type != 'sca_image']
+                    scan_reports_to_upload.append(sca_supported_ir_report)
+            bc_integration.persist_scan_results(scan_reports_to_upload)
+            bc_integration.persist_assets_scan_results(self.sast_data.imports_data)
+            bc_integration.persist_reachability_scan_results(self.sast_data.reachability_report)
+            bc_integration.persist_run_metadata(self.run_metadata)
+            if bc_integration.enable_persist_graphs:
+                bc_integration.persist_graphs(self.graphs, absolute_root_folder=absolute_root_folder)
+                bc_integration.persist_resource_subgraph_maps(self.resource_subgraph_maps)
+            self.url = self.commit_repository()
+        except Exception:
+            logging.error('An error occurred while uploading scan results to the platform', exc_info=True)
+            bc_integration.s3_setup_failed = True
+
+    def save_sast_assets_data(self, scan_reports: List[Report]) -> None:
+        if not bool(convert_str_to_bool(os.getenv('CKV_ENABLE_UPLOAD_SAST_IMPORTS', False))):
+            return
+        sast_report = [scan_report for scan_report in scan_reports if isinstance(scan_report, SastReport)]
+        sast_imports_report = self.sast_data.get_sast_import_report(sast_report)
+        self.sast_data.set_imports_data(sast_imports_report)
+
+    def save_sast_reachability_data(self, scan_reports: List[Report]) -> None:
+        if not bool(convert_str_to_bool(os.getenv('CKV_ENABLE_UPLOAD_SAST_REACHABILITY', False))):
+            return
+        sast_report = [scan_report for scan_report in scan_reports if isinstance(scan_report, SastReport)]
+        result: Dict[SastLanguages, Any] = {}
+        for rep in sast_report:
+            if rep.sast_reachability:
+                result[rep.language] = {}
+        for rep in sast_report:
+            if rep.sast_reachability:
+                result[rep.language] = {**result[rep.language], **serialize_reachability_report(rep.sast_reachability)}
+
+        formated_report = SastReport.get_formated_reachability_report(result)
+        self.sast_data.set_reachability_report(formated_report)
 
     def print_results(
             self,

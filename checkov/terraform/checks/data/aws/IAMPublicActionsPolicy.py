@@ -13,7 +13,7 @@ class IAMPublicActionsPolicy(BaseDataCheck):
         categories = [CheckCategories.IAM]
         super().__init__(name=name, id=id, categories=categories, supported_data=supported_data)
 
-    def scan_data_conf(self, conf: Dict[str, List[Any]], entity_type: str) -> CheckResult:
+    def scan_data_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
         statements = force_list(conf.get('statement'))
         for statement in statements:
             if isinstance(statement, dict):
