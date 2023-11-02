@@ -1,6 +1,9 @@
+from __future__ import annotations
+
+from typing import Any
+
 from checkov.common.models.enums import CheckCategories
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
-from typing import Any
 
 
 class RedisCacheStandardReplicationEnabled(BaseResourceValueCheck):
