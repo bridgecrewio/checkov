@@ -167,8 +167,12 @@ class RunnerRegistry:
                 for runner in invalid_runners:
                     logging.log(level, f'The framework "{runner.check_type}" is part of the "{self.licensing_integration.get_subscription_for_runner(runner.check_type).name}" module, which is not enabled in the platform')
 
-            parallel_runner_results = parallel_runner.run_function(func=_parallel_run, items=valid_runners,
-                                                                   group_size=1)
+            parallel_runner_results = parallel_runner.run_function(
+                func=_parallel_run,
+                items=valid_runners,
+                group_size=1,
+            )
+
             reports = []
             full_check_type_to_graph = {}
             full_check_type_to_resource_subgraph_map = {}
