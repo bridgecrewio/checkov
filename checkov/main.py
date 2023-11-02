@@ -48,6 +48,7 @@ from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.output.baseline import Baseline
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.runners.runner_registry import RunnerRegistry
+from checkov.common.sast.consts import SastLanguages
 from checkov.common.typing import LibraryGraph
 from checkov.common.util import prompt
 from checkov.common.util.banner import banner as checkov_banner, tool as checkov_tool
@@ -70,7 +71,6 @@ from checkov.kustomize.runner import Runner as kustomize_runner
 from checkov.logging_init import log_stream as logs_stream
 from checkov.openapi.runner import Runner as openapi_runner
 from checkov.runner_filter import RunnerFilter
-from checkov.sast.consts import SastLanguages
 from checkov.sast.prisma_models.report import serialize_reachability_report
 from checkov.sast.report import SastData, SastReport
 from checkov.sast.runner import Runner as sast_runner

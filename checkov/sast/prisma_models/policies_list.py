@@ -1,7 +1,7 @@
 from typing import Dict, Any, List, Union
 from pydantic import BaseModel, create_model
 
-from checkov.sast.consts import SastLanguages
+from checkov.common.sast.consts import SastLanguages
 
 
 class SastPolicyMetadataEntry(BaseModel):

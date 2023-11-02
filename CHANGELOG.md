@@ -1,6 +1,31 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.0.12...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.0.16...HEAD)
+
+## [3.0.16](https://github.com/bridgecrewio/checkov/compare/3.0.15...3.0.16) - 2023-11-01
+
+### Feature
+
+- **sca:** Extending reachability post-runner in checkov and enriching cves with ReachableFunction data - [#5707](https://github.com/bridgecrewio/checkov/pull/5707)
+
+## [3.0.15](https://github.com/bridgecrewio/checkov/compare/3.0.14...3.0.15) - 2023-10-31
+
+### Bug Fix
+
+- **general:** fix duplicate components in CycloneDX report - [#5705](https://github.com/bridgecrewio/checkov/pull/5705)
+
+## [3.0.14](https://github.com/bridgecrewio/checkov/compare/3.0.13...3.0.14) - 2023-10-30
+
+### Bug Fix
+
+- **general:** address python 3.12 SyntaxWarning - [#5699](https://github.com/bridgecrewio/checkov/pull/5699)
+- **terraform:** fix variable rendering for foreach resources with dot included names - [#5701](https://github.com/bridgecrewio/checkov/pull/5701)
+
+## [3.0.13](https://github.com/bridgecrewio/checkov/compare/3.0.12...3.0.13) - 2023-10-29
+
+### Bug Fix
+
+- **sast:** comment out SAST JS integration test - [#5697](https://github.com/bridgecrewio/checkov/pull/5697)
 
 ## [3.0.12](https://github.com/bridgecrewio/checkov/compare/3.0.7...3.0.12) - 2023-10-26
 
