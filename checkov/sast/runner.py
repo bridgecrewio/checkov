@@ -7,9 +7,9 @@ import sys
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import BaseRunner
+from checkov.common.sast.consts import SUPPORT_FILE_EXT, FILE_EXT_TO_SAST_LANG
 from checkov.runner_filter import RunnerFilter
 from checkov.sast.checks_infra.base_registry import Registry
-from checkov.sast.consts import SUPPORT_FILE_EXT, FILE_EXT_TO_SAST_LANG
 from checkov.sast.engines.prisma_engine import PrismaEngine
 
 from typing import List, Optional

@@ -1,8 +1,8 @@
 from abc import abstractmethod, ABC
 from typing import List, Set
 from checkov.common.output.report import Report
+from checkov.common.sast.consts import SastLanguages
 from checkov.sast.checks_infra.base_registry import Registry
-from checkov.sast.consts import SastLanguages
 
 
 class SastEngine(ABC):

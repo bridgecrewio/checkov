@@ -8,7 +8,7 @@ from checkov.common.bridgecrew.integration_features.features.vulnerabilities_int
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
 from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME
 from checkov.common.output.report import Report
-from checkov.sast.consts import SastLanguages
+from checkov.common.sast.consts import SastLanguages
 from checkov.sast.report import SastReport
 from checkov.sast.prisma_models.report import Package, File, Function
 

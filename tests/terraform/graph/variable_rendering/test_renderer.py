@@ -179,6 +179,10 @@ class TestRenderer(TestCase):
 
     @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_graph_rendering_order(self):
+        # reset cache
+        from checkov.terraform.module_loading.registry import module_loader_registry
+        module_loader_registry.reset_module_content_cache()
+
         resource_path = os.path.join(TEST_DIRNAME, "..", "resources", "module_rendering", "example")
         graph_manager = TerraformGraphManager('m', ['m'])
         local_graph, tf_def = graph_manager.build_graph_from_source_directory(resource_path, render_variables=True)
