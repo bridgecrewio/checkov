@@ -1,0 +1,24 @@
+metadata:
+  id: "CKV2_IBM_1"
+  name: "Ensure application load balancer for VPC is private (disable public access)"
+  category: "GENERAL_SECURITY"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types: "ibm_is_lb"
+      attribute: "profile"
+      operator: "not_exists"
+      # For Application Load Balancer, profile is not a required attribute.
+      # Reference: https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/resources/is_lb#profile
+
+    - cond_type: "attribute"
+      resource_types: "ibm_is_lb"
+      attribute: "type"
+      operator: "exists"
+
+    - cond_type: "attribute"
+      resource_types: "ibm_is_lb"
+      attribute: "type"
+      operator: "equals_ignore_case"
+      value: "private"
