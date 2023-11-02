@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from typing import Any
 
 from checkov.common.models.enums import CheckCategories
 from checkov.arm.base_resource_negative_value_check import BaseResourceNegativeValueCheck
@@ -16,8 +17,8 @@ class SynapseWorkspaceEnablesManagedVirtualNetworks(BaseResourceNegativeValueChe
     def get_inspected_key(self) -> str:
         return 'properties/managedVirtualNetwork'
 
-    def get_forbidden_values(self) -> str:
-        return "default"
+    def get_forbidden_values(self) -> list[Any]:
+        return ["default"]
 
 
 check = SynapseWorkspaceEnablesManagedVirtualNetworks()
