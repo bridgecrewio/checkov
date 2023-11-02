@@ -209,7 +209,10 @@ class TestVulnerabilitiesIntegration(unittest.TestCase):
         instance = BcPlatformIntegration()
         vul_integration = VulnerabilitiesIntegration(instance)
         reachable_data_by_package_map = vul_integration.create_reachable_cves_by_package_map(filtered_reachability_entries)
-        assert reachable_data_by_package_map == {'axios': {'cve-11'}, 'lodash': {'cve-12', 'cve-13'}}
+        assert reachable_data_by_package_map == {
+            'axios': {'cve-11'},
+            'lodash': {'cve-12', 'cve-13'}
+        }
 
 
 if __name__ == '__main__':
