@@ -1,0 +1,20 @@
+metadata:
+  version: '0.1'
+  id: CKV_SAST_1
+  name: 'superuser port'
+  severity: LOW
+  cwe: 'CWE-289: Authentication Bypass by Alternate Name'
+  category: sast
+  guidelines: module setting superuser port
+scope:
+  languages:
+    - python
+definition:
+  and:
+    - cond_type: pattern
+      operator: equals
+      value: set_port($ARG)
+    - cond_type: variable
+      variable: $ARG
+      operator: less_than
+      value: 1024

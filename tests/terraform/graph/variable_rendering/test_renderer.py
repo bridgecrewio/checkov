@@ -179,6 +179,10 @@ class TestRenderer(TestCase):
 
     @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
     def test_graph_rendering_order(self):
+        # reset cache
+        from checkov.terraform.module_loading.registry import module_loader_registry
+        module_loader_registry.reset_module_content_cache()
+
         resource_path = os.path.join(TEST_DIRNAME, "..", "resources", "module_rendering", "example")
         graph_manager = TerraformGraphManager('m', ['m'])
         local_graph, tf_def = graph_manager.build_graph_from_source_directory(resource_path, render_variables=True)
@@ -485,3 +489,26 @@ class TestRenderer(TestCase):
                 'dynamic'][1]['authorized_networks']['content'][0]['value']
             # TODO - for now we don't support multiple dynamic blocks - the value_block_1 and value_block_2 needs to be diffrent and not overide each other
             assert not value_block_1 != value_block_2
+
+
+    def test_foreach_with_tfvars(self):
+        # given
+        resources_dir = Path(TEST_DIRNAME) / "resources/foreach_examples/foreach_tfvars"
+        graph_manager = TerraformGraphManager("m", ["m"])
+
+        # when
+        local_graph, _ = graph_manager.build_graph_from_source_directory(str(resources_dir), render_variables=True)
+
+        # then
+        resource = local_graph.vertices[local_graph.vertices_by_block_type["resource"][0]]
+        self.assertDictEqual(
+            resource.config["google_project_iam_binding"]['role["roles/run.developer"]'],
+            {
+                "__address__": 'google_project_iam_binding.role["roles/run.developer"]',
+                "__end_line__": 19,
+                "__start_line__": 11,
+                "members": [["user:captain.america@marvel.com"]],
+                "project": ["avengers"],  # this is important it is correctly rendered
+                "role": ["roles/run.developer"],
+            },
+        )
