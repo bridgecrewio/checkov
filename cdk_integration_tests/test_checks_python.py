@@ -127,6 +127,3 @@ def test_CKV_AWS_68_WAFEnabled():
 
 def test_CKV_AWS_64_RedshiftClusterEncryption():
     run_check(lang='python', check_name="RedshiftClusterEncryption")
-
-
-
