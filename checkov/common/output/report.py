@@ -19,10 +19,10 @@ from checkov.common.models.enums import CheckResult, ErrorStatus
 from checkov.common.output.ai import OpenAi
 from checkov.common.typing import _ExitCodeThresholds, _ScaExitCodeThresholds
 from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME
+from checkov.common.sast.consts import POLICIES_ERRORS, POLICIES_ERRORS_COUNT, ENGINE_NAME, SOURCE_FILES_COUNT, POLICY_COUNT
 from checkov.common.util.consts import PARSE_ERROR_FAIL_FLAG, CHECKOV_RUN_SCA_PACKAGE_SCAN_V2, S3_UPLOAD_DETAILS_MESSAGE
 from checkov.common.util.json_utils import CustomJSONEncoder
 from checkov.runner_filter import RunnerFilter
-from checkov.sast.consts import POLICIES_ERRORS, POLICIES_ERRORS_COUNT, ENGINE_NAME, SOURCE_FILES_COUNT, POLICY_COUNT
 
 from checkov.sca_package_2.output import create_cli_output as create_sca_package_cli_output_v2
 

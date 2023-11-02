@@ -8,19 +8,19 @@ from typing import Any, Set, Optional, Union, List, TYPE_CHECKING, Dict, Default
 import re
 
 from checkov.common.bridgecrew.check_type import CheckType
-from checkov.sast.checks_infra.base_check import BaseSastCheck
 from checkov.common.secrets.consts import ValidationStatus
 
 from checkov.common.bridgecrew.code_categories import CodeCategoryMapping, CodeCategoryConfiguration, CodeCategoryType
 from checkov.common.bridgecrew.severities import Severity, Severities
+from checkov.common.sast.consts import SastLanguages
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list
-from checkov.sast.consts import SastLanguages
 from checkov.common.util.str_utils import convert_to_seconds
 
 if TYPE_CHECKING:
     from checkov.common.checks.base_check import BaseCheck
     from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
+    from checkov.sast.checks_infra.base_check import BaseSastCheck
 
 
 class RunnerFilter(object):

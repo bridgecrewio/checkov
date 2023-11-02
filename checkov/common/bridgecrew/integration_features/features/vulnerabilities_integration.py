@@ -8,8 +8,8 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.output.record import SCA_PACKAGE_SCAN_CHECK_NAME, Record
+from checkov.common.sast.consts import SastLanguages
 from checkov.common.util.type_forcers import convert_str_to_bool
-from checkov.sast.consts import SastLanguages
 from checkov.sast.report import SastData, SastReport
 from checkov.common.sca.consts import get_package_by_str, ScaPackageFile, sca_package_to_sast_lang_map
 
@@ -53,12 +53,13 @@ class VulnerabilitiesIntegration(BaseIntegrationFeature):
                 not bool(convert_str_to_bool(os.getenv('CKV_ENABLE_SCA_INTEGRATE_SAST', False))):
             return
 
-        # Extract SAST imports report
+        # Extract SAST imports report and reachability report
         sast_reports = [scan_report for scan_report in merged_reports if isinstance(scan_report, SastReport)]
         if not len(sast_reports):
             return
 
         sast_imports_report = SastData.get_sast_import_report(sast_reports)
+        sast_reacability_report = SastData.get_sast_reachability_report(sast_reports)
 
         # Extract SCA packages report
         sca_packages_report = [scan_report for scan_report in merged_reports if
@@ -80,18 +81,24 @@ class VulnerabilitiesIntegration(BaseIntegrationFeature):
             lang = self.get_sast_lang_by_file_path(sca_file_path)
 
             # Extract Sast data from Sast report filtered by the language
-            entries = sast_imports_report.get('imports', {}).get(lang, {}).items()
-            filtered_entries = [(code_file_path, sast_data) for code_file_path, sast_data in entries if
-                                self.is_deeper_or_equal_level(sca_file_path, code_file_path)]
+            imports_entries = sast_imports_report.get('imports', {}).get(lang, {}).items()
+            filtered_imports_entries = [(code_file_path, sast_data) for code_file_path, sast_data in imports_entries if
+                                        self.is_deeper_or_equal_level(sca_file_path, code_file_path)]
 
-            if not len(filtered_entries):
+            reachability_entries = sast_reacability_report.get('reachability', {}).get(lang, {}).items()
+            filtered_reachability_entries = [(code_file_path, sast_data) for code_file_path, sast_data in
+                                             reachability_entries if self.is_deeper_or_equal_level(sca_file_path,
+                                                                                                   code_file_path)]
+
+            if not len(filtered_imports_entries) and not len(filtered_reachability_entries):
                 continue
 
-            # Create map with the relevant structure for the enrichment step
-            sast_files_by_packages_map = self.create_file_by_package_map(filtered_entries)
+            # Create maps with the relevant structure for the enrichment step
+            sast_files_by_packages_map = self.create_file_by_package_map(filtered_imports_entries)
+            sast_reachable_data_by_packages_map = self.create_reachable_data_by_package_map(filtered_reachability_entries)
 
             # Enrich the CVEs
-            self.enrich_cves_with_sast_data(current_cves, sast_files_by_packages_map)
+            self.enrich_cves_with_sast_data(current_cves, sast_files_by_packages_map, sast_reachable_data_by_packages_map)
 
     '''
     Each SCA report check has file_path, we want to getter same file_path so we won't have to calculate SAST language more then once
@@ -132,19 +139,42 @@ class VulnerabilitiesIntegration(BaseIntegrationFeature):
 
         return sast_files_by_packages_map
 
+    def create_reachable_data_by_package_map(self, filtered_reachability_entries: List[Tuple[Any, Any]]) -> Dict[str, Dict[str, List[str]]]:
+        reachable_data_by_packages_map: Dict[str, Dict[str, List[str]]] = defaultdict(dict)
+        for code_file_path, file_data in filtered_reachability_entries:
+            packages = file_data.packages
+            for package_name, package_data in packages.items():
+                reachable_data_by_packages_map[package_name][code_file_path] = package_data.functions
+        return reachable_data_by_packages_map
+
+#######################################################################################################################
     '''
     enrich each CVE with the risk factor of IsUsed - which means there is a file the use the package of that CVE
     '''
 
-    def enrich_cves_with_sast_data(self, current_cves: List[Record], sast_files_by_packages_map: Dict[str, List[str]]) -> None:
+    def _is_package_used_for_cve(self, cve_vulnerability_details: Dict[str, Any], sast_files_by_packages_map: Dict[str, List[str]]) -> bool:
+        package_name = cve_vulnerability_details.get('package_name', '')
+        normalize_package_name = self.normalize_package_name(package_name)
+        return package_name in sast_files_by_packages_map or normalize_package_name in sast_files_by_packages_map
+
+    def _is_reachable_function_for_cve(self, cve_vulnerability_details: Dict[str, Any], sast_reachable_data_by_packages_map: Dict[str, Dict[str, List[str]]]) -> bool:
+        package_name = cve_vulnerability_details.get('package_name', '')
+        return package_name in sast_reachable_data_by_packages_map
+
+    def enrich_cves_with_sast_data(
+            self,
+            current_cves: List[Record],
+            sast_files_by_packages_map: Dict[str, List[str]],
+            sast_reachable_data_by_packages_map: Dict[str, Dict[str, List[str]]]
+    ) -> None:
         for cve_check in current_cves:
             if cve_check.vulnerability_details:
-                package_name = cve_check.vulnerability_details.get('package_name', '')
-                normalize_package_name = self.normalize_package_name(package_name)
-                cve_check.vulnerability_details.get('risk_factors', {})['IsUsed'] = False
+                is_package_used = self._is_package_used_for_cve(cve_check.vulnerability_details, sast_files_by_packages_map)
+                cve_check.vulnerability_details.get('risk_factors', {})['IsUsed'] = is_package_used
 
-                if package_name in sast_files_by_packages_map or normalize_package_name in sast_files_by_packages_map:
-                    cve_check.vulnerability_details.get('risk_factors', {})['IsUsed'] = True
+                is_reachable_function = self._is_reachable_function_for_cve(cve_check.vulnerability_details, sast_reachable_data_by_packages_map)
+                cve_check.vulnerability_details.get('risk_factors', {})['ReachableFunction'] = is_reachable_function
+#######################################################################################################################
 
     '''
     we want to consider sast info only on files that are on the same level of the SCA file or deeper.
