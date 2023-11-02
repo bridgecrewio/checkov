@@ -44,3 +44,27 @@ cfn_stage = apigateway.CfnStage(self, "MyCfnStage",
         "variables_key": "variables"
     }
 )
+
+from aws_cdk import core
+from aws_cdk import aws_serverless as serverless
+
+class ServerlessApiWithAccessLogStack(core.Stack):
+
+    def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
+        super().__init__(scope, id, **kwargs)
+
+        # Create a Serverless API
+        serverless.Api(
+            self, "MyApi",
+            default_stage={
+                "stage_name": "prod",
+                "access_log_setting": serverless.AccessLogSetting(
+                    destination_arn="arn:aws:logs:us-east-1:123456789012:log-group/MyLogGroup",
+                    format=serverless.AccessLogFormat.json_with_standard_fields()
+                )
+            }
+        )
+
+app = core.App()
+ServerlessApiWithAccessLogStack(app, "ServerlessApiWithAccessLogStack")
+app.synth()

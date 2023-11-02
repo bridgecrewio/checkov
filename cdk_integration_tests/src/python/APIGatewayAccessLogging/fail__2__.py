@@ -23,3 +23,27 @@ class ElastiCacheReplicationGroupStack(core.Stack):
 app = core.App()
 ElastiCacheReplicationGroupStack(app, "ElastiCacheReplicationGroupStack")
 app.synth()
+
+
+from aws_cdk import core
+from aws_cdk import aws_serverless as serverless
+
+class ServerlessApiWithAccessLogStack(core.Stack):
+
+    def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
+        super().__init__(scope, id, **kwargs)
+
+        # Create a Serverless API
+        serverless.Api(
+            self, "MyApi",
+            default_stage={
+                "stage_name": "prod",
+                "access_log_setting": serverless.AccessLogSetting(
+                    format=serverless.AccessLogFormat.json_with_standard_fields()
+                )
+            }
+        )
+
+app = core.App()
+ServerlessApiWithAccessLogStack(app, "ServerlessApiWithAccessLogStack")
+app.synth()
