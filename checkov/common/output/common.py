@@ -65,3 +65,11 @@ def get_package_name_with_lines(package_name: str, lines: list[int] | None) -> s
     if lines and validate_lines(lines):
         return f"{package_name} [{lines[0]}-{lines[1]}]"
     return package_name
+
+
+def get_reachability_output_indication(cve_reachability_risk_factors: dict[str, bool]) -> str:
+    if cve_reachability_risk_factors.get("ReachableFunction"):
+        return "Reachable Function"
+    if cve_reachability_risk_factors.get("IsUsed"):
+        return "Package Used"
+    return ""
