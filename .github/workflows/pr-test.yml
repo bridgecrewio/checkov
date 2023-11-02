@@ -156,7 +156,6 @@ jobs:
           python-version: ${{ matrix.python }}
           cache: "pipenv"
           cache-dependency-path: "Pipfile.lock"
-      - uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65  # v4
       - name: Install pipenv
         run: |
           python -m pip install --no-cache-dir --upgrade pipenv
@@ -202,7 +201,6 @@ jobs:
           python-version: ${{ matrix.python }}
           cache: "pipenv"
           cache-dependency-path: "Pipfile.lock"
-      - uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65  # v4
       - name: Install pipenv
         run: |
           python -m pip install --no-cache-dir --upgrade pipenv

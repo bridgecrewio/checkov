@@ -1,24 +1,23 @@
-from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.arm.base_resource_check import BaseResourceCheck
+from typing import Any
 
-# https://docs.microsoft.com/en-us/azure/templates/microsoft.web/2019-08-01/sites
+from checkov.arm.base_resource_value_check import BaseResourceValueCheck
+from checkov.common.models.enums import CheckCategories
 
 
-class AppServiceHttps20Enabled(BaseResourceCheck):
-    def __init__(self):
+class AppServiceHttps20Enabled(BaseResourceValueCheck):
+    def __init__(self) -> None:
         name = "Ensure that 'HTTP Version' is the latest if used to run the web app"
         id = "CKV_AZURE_18"
-        supported_resources = ["Microsoft.Web/sites"]
-        categories = [CheckCategories.NETWORKING]
+        supported_resources = ("Microsoft.Web/sites",)
+        categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
-        properties = conf.get("properties")
-        if isinstance(properties, dict):
-            site_config = properties.get("siteConfig")
-            if isinstance(site_config, dict) and site_config.get("http20Enabled"):
-                return CheckResult.PASSED
-        return CheckResult.FAILED
+    def get_inspected_key(self) -> str:
+        # https://docs.microsoft.com/en-us/azure/templates/microsoft.web/2019-08-01/sites
+        return "properties/siteConfig/http20Enabled"
+
+    def get_expected_value(self) -> Any:
+        return "true"
 
 
 check = AppServiceHttps20Enabled()
