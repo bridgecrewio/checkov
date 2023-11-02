@@ -17,7 +17,7 @@ class RedisCacheStandardReplicationEnabled(BaseResourceValueCheck):
         Open-source Redis allows only one server to handle data write requests.
         """
         name = "Standard Replication should be enabled"
-        id = "CKV_AZURE_228"
+        id = "CKV_AZURE_230"
         supported_resources = ("azurerm_redis_cache",)
         categories = (CheckCategories.BACKUP_AND_RECOVERY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
