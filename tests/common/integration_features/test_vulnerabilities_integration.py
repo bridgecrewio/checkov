@@ -194,23 +194,24 @@ class TestVulnerabilitiesIntegration(unittest.TestCase):
         result = vul_integration.normalize_package_name(original)
         self.assertTrue(result, expected)
 
-    def test_create_reachable_data_by_package_map(self):
-        filtered_reachability_entries = [('/index.js', File(packages={'axios': Package(alias='ax', functions=[Function(name='trim', alias='hopa', line_number=4, code_block='hopa()', cve_id='cve-11')]), 'lodash': Package(alias='', functions=[Function(name='template', alias='', line_number=1, code_block='template()', cve_id='cve-11'), Function(name='toNumber', alias='', line_number=4, code_block='hopa()', cve_id='cve-11')])}))]
+    def test_create_reachable_cves_by_package_map(self):
+        filtered_reachability_entries = [
+            ('/index.js', File(packages={
+                'axios': Package(alias='ax', functions=[
+                    Function(name='trim', alias='hopa', line_number=4, code_block='hopa()', cve_id='cve-11')
+                ]),
+                'lodash': Package(alias='', functions=[
+                    Function(name='template', alias='', line_number=1, code_block='template()', cve_id='cve-12'),
+                    Function(name='toNumber', alias='', line_number=4, code_block='hopa()', cve_id='cve-13')
+                ])
+            }))
+        ]
         instance = BcPlatformIntegration()
         vul_integration = VulnerabilitiesIntegration(instance)
-        reachable_data_by_package_map = vul_integration.create_reachable_data_by_package_map(filtered_reachability_entries)
+        reachable_data_by_package_map = vul_integration.create_reachable_cves_by_package_map(filtered_reachability_entries)
         assert reachable_data_by_package_map == {
-            'axios': {
-                '/index.js': [
-                    Function(name='trim', alias='hopa', line_number=4, code_block='hopa()', cve_id="cve-11")
-                ]
-            },
-            'lodash': {
-                '/index.js': [
-                    Function(name='template', alias='', line_number=1, code_block='template()', cve_id="cve-11"),
-                    Function(name='toNumber', alias='', line_number=4, code_block='hopa()', cve_id="cve-11")
-                ]
-            }
+            'axios': {'cve-11'},
+            'lodash': {'cve-12', 'cve-13'}
         }
 
 
