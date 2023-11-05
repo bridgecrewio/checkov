@@ -16,7 +16,7 @@ class PeerClientCertAuthTrue(BaseK8Check):
 
     def scan_spec_conf(self, conf: dict[str, Any]) -> CheckResult:
         if conf.get("metadata", {}).get("name") == "etcd":
-            containers = conf.get("spec",{}).get("containers")
+            containers = conf.get("spec", {}).get("containers")
             if containers:
                 for container in containers:
                     if container.get("args") is not None:
