@@ -1,0 +1,16 @@
+---
+metadata:
+  name: "Ensure something important"
+  id: "ActionNotWithin"
+  category: "IAM"
+  extensions:
+    - IAM_ACTION_EXPANSION
+definition:
+  or:
+    - cond_type: "attribute"
+      resource_types:
+        - "data.aws_iam_policy_document"
+      attribute: "statement[?(@.effect == Allow)].actions[*]"
+      operator: "jsonpath_not_within"
+      value:
+       - "s3:DescribeJob"

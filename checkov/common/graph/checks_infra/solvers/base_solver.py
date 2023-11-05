@@ -6,7 +6,8 @@ from typing import Tuple, List, Dict, Any, TYPE_CHECKING
 from checkov.common.graph.checks_infra.enums import SolverType
 
 if TYPE_CHECKING:
-    from networkx import DiGraph
+    from checkov.common.typing import LibraryGraph
+    from checkov.common.models.enums import GraphCheckExtension
 
 
 class BaseSolver:
@@ -14,6 +15,9 @@ class BaseSolver:
 
     def __init__(self, solver_type: SolverType) -> None:
         self.solver_type = solver_type
+        # holds a list of features, which extend the original capabilities
+        # currently used by BaseAttributeSolver only
+        self.extensions: list[GraphCheckExtension] = []
 
     @abstractmethod
     def get_operation(self, *args: Any, **kwargs: Any) -> Any:
@@ -24,7 +28,7 @@ class BaseSolver:
         raise NotImplementedError()
 
     @abstractmethod
-    def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
+    def run(self, graph_connector: LibraryGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         raise NotImplementedError()
 
     @staticmethod

@@ -300,13 +300,16 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_KubernetesDefinitions, _Kub
         May have K8S graph adjacencies, but will not be in the self.context map of objects.
         (Consider them 'virtual' objects created for the sake of graph lookups)
         """
+        if not self.context:
+            # typically shouldn't happen
+            return {}
 
         entity_context: _EntityContext = {}
 
         if PARENT_RESOURCE_ID_KEY_NAME in entity:
             if entity[CustomAttributes.RESOURCE_TYPE] == "Pod":
                 # self.context not being None is checked in the caller method
-                entity_context = self.context[entity_file_path][entity[PARENT_RESOURCE_ID_KEY_NAME]]  # type:ignore[index]
+                entity_context = self.context[entity_file_path][entity[PARENT_RESOURCE_ID_KEY_NAME]]
             else:
                 logging.info(
                     "Unsupported nested resource type for Kubernetes graph edges. "
@@ -315,7 +318,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_KubernetesDefinitions, _Kub
         else:
             entity_id = entity[CustomAttributes.ID]
             # self.context not being None is checked in the caller method
-            entity_context = self.context[entity_file_path][entity_id]  # type:ignore[index]
+            entity_context = self.context[entity_file_path][entity_id]
 
         return entity_context
 

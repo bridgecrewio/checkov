@@ -13,7 +13,7 @@ A YAML-based custom policy for Checkov consists of sections for the **Metadata**
 
 ![](policy-definition.png)
 
-**Metadata**
+## Metadata
 
 The Metadata includes:
 
@@ -21,6 +21,7 @@ The Metadata includes:
 * ID - `CKV2_<provider>_<number>`
 * Category
 * Guideline (optional)
+* Extensions (optional)
 
 The possible values for category are:
 
@@ -43,6 +44,70 @@ metadata:
   name: "Ensure bucket has versioning and owner tag"
   category: "BACKUP_AND_RECOVERY"
   guideline: "https://docs.bridgecrew.io/docs/ckv2_custom_1"
+```
+
+### Extensions
+
+Extensions offer a way to enrich the data of the original resource to support use cases, which are not possible with given data.
+
+Available extensions:
+
+* IAM_ACTION_EXPANSION (enabled by default)
+
+To enable an extension add following part to the metadata block
+
+```yaml
+metadata:
+  id: "CKV2_CUSTOM_1"
+  ...
+  extensions:
+    - IAM_ACTION_EXPANSION
+```
+
+To disable all extensions add following part to the metadata block
+
+```yaml
+metadata:
+  id: "CKV2_CUSTOM_1"
+  ...
+  extensions: []
+```
+
+#### IAM_ACTION_EXPANSION extension
+
+By enabling the IAM_ACTION_EXPANSION extension additional data is added to the `Action` field of AWS Terraform resources.
+Every action with a `*` wildcard will be expanded to the actual actions to give the possibility to query easily for precise permission names.
+
+Ex.
+
+```hcl
+data "aws_iam_policy_document" "example" {
+  statement {
+    sid    = "IAMCreate"
+    effect = "Allow"
+
+    actions = [
+      "iam:CreateP*"
+    ]
+  }
+}
+```
+
+Will result in-memory to
+
+```hcl
+data "aws_iam_policy_document" "example" {
+  statement {
+    sid    = "IAMCreate"
+    effect = "Allow"
+
+    actions = [
+      "iam:CreateP*",
+      "iam:CreatePolicy",
+      "iam:CreatePolicyVersion"
+    ]
+  }
+}
 ```
 
 ## Policy Definition

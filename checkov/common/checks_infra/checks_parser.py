@@ -194,6 +194,9 @@ class GraphCheckParser(BaseGraphCheckParser):
         check.frameworks = raw_check.get("metadata", {}).get("frameworks", [])
         check.guideline = raw_check.get("metadata", {}).get("guideline")
         check.check_path = kwargs.get("check_path", "")
+        extensions = raw_check.get("metadata", {}).get("extensions", None)
+        if extensions is not None:
+            check.extensions = extensions
         solver = self.get_check_solver(check)
         check.set_solver(solver)
 
@@ -282,9 +285,11 @@ class GraphCheckParser(BaseGraphCheckParser):
         if check.sub_checks:
             sub_solvers = []
             for sub_solver in check.sub_checks:
+                # set extensions
+                sub_solver.extensions = check.extensions
                 sub_solvers.append(self.get_check_solver(sub_solver))
 
-        type_to_solver = {
+        type_to_solver: dict[SolverType | None, BaseSolver | None] = {
             SolverType.COMPLEX_CONNECTION: operator_to_complex_connection_solver_classes.get(
                 check.operator, lambda *args: None
             )(sub_solvers, check.operator),
@@ -300,9 +305,13 @@ class GraphCheckParser(BaseGraphCheckParser):
             ),
         }
 
-        solver = type_to_solver.get(check.type)  # type:ignore[arg-type]  # if not str will return None
+        solver = type_to_solver.get(check.type)
         if not solver:
             raise NotImplementedError(f"solver type {check.type} with operator {check.operator} is not supported")
+
+        # set extensions
+        solver.extensions = check.extensions
+
         return solver
 
 
