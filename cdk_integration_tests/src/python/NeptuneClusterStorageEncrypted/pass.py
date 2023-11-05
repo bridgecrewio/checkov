@@ -13,7 +13,7 @@ class MyNeptuneStack(core.Stack):
             engine="neptune",
             db_cluster_identifier="my-neptune-cluster",
             master_username="admin",
-            master_user_password="mypassword",
+            master_user_password="mypassword", # checkov:skip=CKV_SECRET_6 test secret
             storage_encrypted=True,  # Enable storage encryption
             port=8182,  # Specify the port as needed
             availability_zones=["us-east-1a", "us-east-1b"],  # Specify the availability zones
@@ -31,7 +31,7 @@ class MyNeptuneStack2(core.Stack):
             engine=neptune.DatabaseClusterEngine.NEPTUNE,
             master_user=neptune.Login(
                 username="admin",
-                password="mypassword",
+                password="mypassword", # checkov:skip=CKV_SECRET_6 test secret
             ),
             default_database_name="mydb",
             storage_encrypted=True,  # Enable storage encryption

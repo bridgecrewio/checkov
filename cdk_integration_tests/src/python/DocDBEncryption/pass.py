@@ -12,7 +12,7 @@ class MyDocDBClusterStack(core.Stack):
             "MyDocDBCluster",
             db_cluster_identifier="my-docdb-cluster",
             master_username="admin",
-            master_user_password="mypassword",
+            master_user_password="mypassword", # checkov:skip=CKV_SECRET_6 test secret
             storage_encrypted=True,  # Enable storage encryption
             availability_zones=["us-east-1a", "us-east-1b"],  # Specify the availability zones
             port=27017,  # Specify the port as needed
