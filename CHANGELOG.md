@@ -1,6 +1,18 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.0.19...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.0.21...HEAD)
+
+## [3.0.21](https://github.com/bridgecrewio/checkov/compare/3.0.19...3.0.21) - 2023-11-05
+
+### Feature
+
+- **terraform:** Ensure App Service Environment is zone redundant - [#5662](https://github.com/bridgecrewio/checkov/pull/5662)
+- **terraform:** Ensure that Standard Replication is enabled - [#5649](https://github.com/bridgecrewio/checkov/pull/5649)
+
+### Bug Fix
+
+- **sca:** Setting only relevant cves for the extracted reachable functions with risk factor of ReachableFunction as True - [#5715](https://github.com/bridgecrewio/checkov/pull/5715)
+- **terraform:** CKV_AWS_208 valid Amazon MQ versions - [#5653](https://github.com/bridgecrewio/checkov/pull/5653)
 
 ## [3.0.19](https://github.com/bridgecrewio/checkov/compare/3.0.16...3.0.19) - 2023-11-02
 
