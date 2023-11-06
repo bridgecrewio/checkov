@@ -35,10 +35,3 @@ class BaseK8Check(BaseCheck):
     def scan_spec_conf(self, conf: Dict[str, Any]) -> CheckResult:
         """Return result of Kubernetes object check."""
         raise NotImplementedError()
-
-    @staticmethod
-    def get_inner_entry(conf: Dict[str, Any], entry_name: str) -> Dict[str, Any]:
-        spec = {}
-        if conf.get("spec") and isinstance(conf["spec"], dict) and conf.get("spec").get("template"):
-            spec = conf.get("spec").get("template").get(entry_name, {})
-        return spec
