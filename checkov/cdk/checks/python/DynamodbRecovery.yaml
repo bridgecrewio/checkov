@@ -1,0 +1,13 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_28
+  name: Ensure Dynamodb point in time recovery (backup) is enabled
+  category: BACKUP_AND_RECOVERY
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.aws_dynamodb.Table(<ANY>)
+  conditions:
+    - not_pattern: aws_cdk.aws_dynamodb.Table(<ANY>, point_in_time_recovery=True , <ANY>)
