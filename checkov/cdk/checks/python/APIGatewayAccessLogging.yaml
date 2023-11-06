@@ -19,9 +19,9 @@ definition:
               aws_cdk.aws_apigateway.CfnStage(<ANY>, access_log_setting=$P, <ANY>)
       - pattern: aws_cdk.aws_serverless.Api(<ANY>)
         conditions:
-          - not_pattern: | 
-              aws_cdk.aws_serverless.Api(<ANY>, default_stage={"access_log_setting": aws_cdk.aws_serverless.AccessLogSetting(<ANY>, destination_arn=<ANY> , <ANY>)} , <ANY>)
+          - not_pattern: |
+              aws_cdk.aws_serverless.Api(<ANY>, default_stage={<ANY>, "access_log_setting": aws_cdk.aws_serverless.AccessLogSetting(<ANY>, destination_arn=$ARG,<ANY>), <ANY>} , <ANY>)
           - not_pattern: |
               $P = aws_cdk.aws_serverless.AccessLogSetting(<ANY>, destination_arn=$ARG , <ANY>)
               <ANY>
-              aws_cdk.aws_serverless.Api(<ANY>, default_stage={"access_log_setting": $P}, <ANY>)
+              aws_cdk.aws_serverless.Api(<ANY>, default_stage={<ANY>, "access_log_setting": $P, <ANY>}, <ANY>)
