@@ -12,7 +12,7 @@ class AKSOnlyCriticalPodsOnSystemNodes(BaseResourceValueCheck):
         to prevent application pods from being scheduled on system node pools.
         """
         name = "Ensure that only critical system pods run on system nodes"
-        id = "CKV_AZURE_229"
+        id = "CKV_AZURE_232"
         supported_resources = ("azurerm_kubernetes_cluster",)
         categories = (CheckCategories.KUBERNETES,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
