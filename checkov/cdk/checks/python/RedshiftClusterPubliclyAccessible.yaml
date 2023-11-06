@@ -8,4 +8,4 @@ scope:
   languages:
     - python
 definition:
-  pattern: ws_cdk.aws_redshift.CfnCluster(<ANY>, publicly_accessible=True , <ANY>)
+  pattern: aws_cdk.aws_redshift.CfnCluster(<ANY>, publicly_accessible=True , <ANY>)

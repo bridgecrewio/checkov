@@ -15,7 +15,7 @@ class AppSyncStack(core.Stack):
             log_config=appsync.CfnGraphQLApi.LogConfigProperty(
                 cloud_watch_logs_role_arn="cloudWatchLogsRoleArn",
                 exclude_verbose_content=False,
-                field_log_level="fieldLogLevel"
+                field_log_level=appsync.FieldLogLevel.ALL
             ),
         )
 

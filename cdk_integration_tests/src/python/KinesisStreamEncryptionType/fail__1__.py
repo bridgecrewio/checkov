@@ -13,7 +13,7 @@ class KinesisStreamStack(core.Stack):
             name="my-kinesis-stream",
             shard_count=2,  # The number of shards in the stream
             stream_encryption={
-                "encryption_type": "ABC",  # Use KMS encryption
+                "encryption_type": "ABC",
                 "key_id": "YOUR_KMS_KEY_ID"  # Replace with your KMS key ID
             }
         )

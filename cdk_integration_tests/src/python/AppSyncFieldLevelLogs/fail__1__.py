@@ -13,8 +13,8 @@ class AppSyncStack(core.Stack):
             name="MyAppSyncAPI",
             authentication_type="API_KEY",  # You can change the authentication type
             log_config=appsync.CfnGraphQLApi.LogConfigProperty(
+                cloud_watch_logs_role_arn="cloudWatchLogsRoleArn",
                 exclude_verbose_content=False,
-                field_log_level="fieldLogLevel"
             ),
         )
 

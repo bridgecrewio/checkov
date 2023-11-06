@@ -10,4 +10,4 @@ scope:
 definition:
   pattern: aws_cdk.aws_kinesis.CfnStream(<ANY>)
   conditions:
-    - not_pattern: 'aws_cdk.aws_kinesis.CfnStream(<ANY>, stream_encryption={<ANY>, "encryption_type": "KMS" , <ANY>} , <ANY>)'
+    - not_pattern: 'aws_cdk.aws_kinesis.CfnStream(<ANY>, stream_encryption={"encryption_type": "KMS"} , <ANY>)'
