@@ -15,7 +15,7 @@ definition:
           - not_pattern: aws_cdk.aws_lambda.Function(<ANY>, dead_letter_queue=$ARG, <ANY>)
       - pattern: aws_cdk.aws_lambda.CfnFunction(<ANY>)
         conditions:
-          - not_pattern: aws_cdk.aws_lambda.CfnFunction(<ANY>, dead_letter_config={<ANY>}, <ANY>)
+          - not_pattern: aws_cdk.aws_lambda.CfnFunction(<ANY>, dead_letter_config=$ARG, <ANY>)
       - pattern: aws_cdk.aws_sam.CfnFunction(<ANY>)
         conditions:
-          - not_pattern: aws_cdk.aws_sam.CfnFunction(<ANY>, dead_letter_queue=aws_cdk.aws_sam.CfnFunction.DeadLetterQueueProperty(<ANY>), <ANY>)
+          - not_pattern: aws_cdk.aws_sam.CfnFunction(<ANY>, dead_letter_queue=$ARG, <ANY>)

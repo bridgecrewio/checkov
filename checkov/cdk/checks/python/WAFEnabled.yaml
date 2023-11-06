@@ -10,4 +10,4 @@ scope:
 definition:
   pattern: aws_cdk.aws_cloudfront.CfnDistribution(<ANY>)
   conditions:
-    - not_pattern: 'aws_cdk.aws_cloudfront.CfnDistribution(<ANY>, distribution_config={<ANY>, "webAclId": <ANY> , <ANY>} , <ANY>)'
+    - not_pattern: 'aws_cdk.aws_cloudfront.CfnDistribution(<ANY>, distribution_config={"webAclId": $ARG} , <ANY>)'
