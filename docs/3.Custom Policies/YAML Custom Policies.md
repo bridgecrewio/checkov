@@ -21,6 +21,7 @@ The Metadata includes:
 * ID - `CKV2_<provider>_<number>`
 * Category
 * Guideline (optional)
+* Severity (optional)
 
 The possible values for category are:
 
@@ -43,6 +44,7 @@ metadata:
   name: "Ensure bucket has versioning and owner tag"
   category: "BACKUP_AND_RECOVERY"
   guideline: "https://docs.bridgecrew.io/docs/ckv2_custom_1"
+  severity: "MEDIUM"
 ```
 
 ## Policy Definition
