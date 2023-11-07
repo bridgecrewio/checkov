@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from checkov.common.models.enums import CheckCategories, CheckResult
+from checkov.common.util.data_structures_utils import find_in_dict
 from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
 
 
@@ -35,18 +36,10 @@ class ShareHostPID(BaseK8Check):
             if "spec" in conf:
                 spec = conf["spec"]
         elif conf["kind"] == "CronJob":
-            spec = conf.get("spec")
-            if spec:
-                job_template = spec.get("jobTemplate")
-                if job_template:
-                    job_template_spec = job_template.get("spec")
-                    if job_template_spec:
-                        template = job_template_spec.get("template")
-                        if template:
-                            if "spec" in template:
-                                spec = template["spec"]
+            inner_spec = find_in_dict(input_dict=conf, key_path="spec/jobTemplate/spec/template/spec")
+            spec = inner_spec if inner_spec else spec
         else:
-            inner_spec = self.get_inner_entry(conf, "spec")
+            inner_spec = find_in_dict(input_dict=conf, key_path="spec/template/spec")
             spec = inner_spec if inner_spec else spec
         if spec:
             if "hostPID" in spec:

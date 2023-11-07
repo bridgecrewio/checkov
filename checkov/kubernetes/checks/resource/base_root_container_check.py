@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 from abc import abstractmethod
 from typing import Dict, Any, Optional
 
 from checkov.common.models.enums import CheckCategories, CheckResult
+from checkov.common.util.data_structures_utils import find_in_dict
 from checkov.kubernetes.checks.resource.base_spec_check import BaseK8Check
 from checkov.kubernetes.checks.resource.registry import registry
 
@@ -33,21 +36,15 @@ class BaseK8sRootContainerCheck(BaseK8Check):
             if "spec" in conf:
                 spec = conf["spec"]
         elif conf['kind'] == 'CronJob':
-            if "spec" in conf and \
-                    isinstance(conf["spec"], dict) and \
-                    "jobTemplate" in conf["spec"] and \
-                    "spec" in conf["spec"]["jobTemplate"] and \
-                    conf["spec"]["jobTemplate"]["spec"] and \
-                    "template" in conf["spec"]["jobTemplate"]["spec"] and \
-                    "spec" in conf["spec"]["jobTemplate"]["spec"]["template"]:
-                spec = conf["spec"]["jobTemplate"]["spec"]["template"]["spec"]
+            inner_spec = find_in_dict(input_dict=conf, key_path="spec/jobTemplate/spec/template/spec")
+            spec = inner_spec if inner_spec else spec
         else:
-            inner_spec = self.get_inner_entry(conf, "spec")
+            inner_spec = find_in_dict(input_dict=conf, key_path="spec/template/spec")
             spec = inner_spec if inner_spec else spec
         return spec
 
     @staticmethod
-    def check_runAsNonRoot(spec):
+    def check_runAsNonRoot(spec: dict[str, Any]) -> str:
         if not isinstance(spec, dict):
             return "ABSENT"
         security_context = spec.get("securityContext")
