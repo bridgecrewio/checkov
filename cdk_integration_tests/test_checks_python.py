@@ -1,129 +1,141 @@
-from cdk_integration_tests.utils import run_check
+from typing import Dict, Any, List
 
+import pytest
 
-def test_CKV_AWS_18_S3BucketLogging():
-    run_check(lang='python', check_name="S3BucketLogging")
+from cdk_integration_tests.utils import run_check, load_failed_checks_from_file
 
+LANGUAGE = 'python'
 
-def test_CKV_AWS_19_S3BucketEncryption():
-    run_check(lang='python', check_name="S3BucketEncryption")
 
+@pytest.fixture(scope="session", autouse=True)
+def failed_checks() -> Dict[str, List[Dict[str, Any]]]:
+    report_failed_checks = load_failed_checks_from_file(LANGUAGE)
+    yield report_failed_checks
 
-def test_CKV_AWS_21_S3BucketVersioning():
-    run_check(lang='python', check_name="S3BucketVersioning")
 
+def test_CKV_AWS_18_S3BucketLogging(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_18")
 
-def test_CKV_AWS_145_S3BucketKMSEncryption():
-    run_check(lang='python', check_name="S3BucketKMSEncryption")
 
+def test_CKV_AWS_19_S3BucketEncryption(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_19")
 
-def test_CKV2_AWS_6_S3BucketPublicAccessBlock():
-    run_check(lang='python', check_name="S3BucketPublicAccessBlock")
 
+def test_CKV_AWS_21_S3BucketVersioning(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_21")
 
-def test_CKV_AWS_54_S3BlockPublicPolicy():
-    run_check(lang='python', check_name="S3BlockPublicPolicy")
 
+def test_CKV_AWS_145_S3BucketKMSEncryption(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_145")
 
-def test_CKV_AWS_26_SNSTopicEncryption():
-    run_check(lang='python', check_name="SNSTopicEncryption")
 
+def test_CKV2_AWS_6_S3BucketPublicAccessBlock(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV2_AWS_6")
 
-def test_CKV_AWS_20_S3PublicACLRead():
-    run_check(lang='python', check_name="S3PublicACLRead")
 
+def test_CKV_AWS_54_S3BlockPublicPolicy(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_54")
 
-def test_CKV_AWS_55_S3IgnorePublicACLs():
-    run_check(lang='python', check_name="S3IgnorePublicACLs")
 
+def test_CKV_AWS_26_SNSTopicEncryption(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_26")
 
-def test_CKV_AWS_56_S3RestrictPublicBuckets():
-    run_check(lang='python', check_name="S3RestrictPublicBuckets")
 
+def test_CKV_AWS_20_S3PublicACLRead(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_20")
 
-def test_CKV_AWS_53_S3BlockPublicACLs():
-    run_check(lang='python', check_name="S3BlockPublicACLs")
 
+def test_CKV_AWS_55_S3IgnorePublicACLs(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_55")
 
-def test_CKV_AWS_57_S3PublicACLWrite():
-    run_check(lang='python', check_name="S3PublicACLWrite")
 
+def test_CKV_AWS_56_S3RestrictPublicBuckets(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_56")
 
-def test_CKV_AWS_115_LambdaFunctionLevelConcurrentExecutionLimit():
-    run_check(lang='python', check_name="LambdaFunctionLevelConcurrentExecutionLimit")
 
+def test_CKV_AWS_53_S3BlockPublicACLs(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_53")
 
-def test_CKV_AWS_116_LambdaDLQConfigured():
-    run_check(lang='python', check_name="LambdaDLQConfigured")
 
+def test_CKV_AWS_57_S3PublicACLWrite(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_57")
 
-def test_CKV_AWS_28_DynamodbRecovery():
-    run_check(lang='python', check_name="DynamodbRecovery")
 
+def test_CKV_AWS_115_LambdaFunctionLevelConcurrentExecutionLimit(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_115")
 
-def test_CKV_AWS_158_CloudWatchLogGroupKMSKey():
-    run_check(lang='python', check_name="CloudWatchLogGroupKMSKey")
 
+def test_CKV_AWS_116_LambdaDLQConfigured(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_116")
 
-def test_CKV_AWS_3_EBSEncryption():
-    run_check(lang='python', check_name="EBSEncryption")
 
+def test_CKV_AWS_28_DynamodbRecovery(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_28")
 
-def test_CKV_AWS_120_APIGatewayCacheEnable():
-    run_check(lang='python', check_name="APIGatewayCacheEnable")
 
+def test_CKV_AWS_158_CloudWatchLogGroupKMSKey(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_158")
 
-def test_CKV_AWS_163_ECRImageScanning():
-    run_check(lang='python', check_name="ECRImageScanning")
 
+def test_CKV_AWS_3_EBSEncryption(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_3")
 
-def test_CKV_AWS_51_ECRImmutableTags():
-    run_check(lang='python', check_name="ECRImmutableTags")
 
+def test_CKV_AWS_120_APIGatewayCacheEnable(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_120")
 
-def test_CKV_AWS_44_NeptuneClusterStorageEncrypted():
-    run_check(lang='python', check_name="NeptuneClusterStorageEncrypted")
 
+def test_CKV_AWS_163_ECRImageScanning(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_163")
 
-def test_CKV_AWS_166_BackupVaultEncrypted():
-    run_check(lang='python', check_name="BackupVaultEncrypted")
 
+def test_CKV_AWS_51_ECRImmutableTags(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_51")
 
-def test_CKV_AWS_74_DocDBEncryption():
-    run_check(lang='python', check_name="DocDBEncryption")
 
+def test_CKV_AWS_44_NeptuneClusterStorageEncrypted(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_44")
 
-def test_CKV_AWS_47_DAXEncryption():
-    run_check(lang='python', check_name="DAXEncryption")
 
+def test_CKV_AWS_166_BackupVaultEncrypted(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_166")
 
-def test_CKV_AWS_156_WorkspaceRootVolumeEncrypted():
-    run_check(lang='python', check_name="WorkspaceRootVolumeEncrypted")
 
+def test_CKV_AWS_74_DocDBEncryption(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_74")
 
-def test_CKV_AWS_155_WorkspaceUserVolumeEncrypted():
-    run_check(lang='python', check_name="WorkspaceUserVolumeEncrypted")
 
+def test_CKV_AWS_47_DAXEncryption(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_47")
 
-def test_CKV_AWS_165_DynamodbGlobalTableRecovery():
-    run_check(lang='python', check_name="DynamodbGlobalTableRecovery")
 
+def test_CKV_AWS_156_WorkspaceRootVolumeEncrypted(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_156")
 
-def test_CKV_AWS_27_SQSQueueEncryption():
-    run_check(lang='python', check_name="SQSQueueEncryption")
 
+def test_CKV_AWS_155_WorkspaceUserVolumeEncrypted(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_155")
 
-def test_CKV_AWS_195_GlueSecurityConfigurationEnabled():
-    run_check(lang='python', check_name="GlueSecurityConfigurationEnabled")
 
+def test_CKV_AWS_165_DynamodbGlobalTableRecovery(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_165")
 
-def test_CKV_AWS_30_ElasticacheReplicationGroupEncryptionAtTransit():
-    run_check(lang='python', check_name="ElasticacheReplicationGroupEncryptionAtTransit")
 
+def test_CKV_AWS_27_SQSQueueEncryption(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_27")
 
-def test_CKV_AWS_68_WAFEnabled():
-    run_check(lang='python', check_name="WAFEnabled")
 
+def test_CKV_AWS_195_GlueSecurityConfigurationEnabled(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_195")
 
-def test_CKV_AWS_64_RedshiftClusterEncryption():
-    run_check(lang='python', check_name="RedshiftClusterEncryption")
+
+def test_CKV_AWS_30_ElasticacheReplicationGroupEncryptionAtTransit(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_30")
+
+
+def test_CKV_AWS_68_WAFEnabled(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_68")
+
+
+def test_CKV_AWS_64_RedshiftClusterEncryption(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_64")

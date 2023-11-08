@@ -18,18 +18,10 @@ set_env_vars() {
 }
 
 prepare_data () {
-  for file in "checkov/cdk/checks/python"/*; do
-  # Ensure it's a regular file (not a directory or symlink, etc.)
-    if [ -f "$file" ]; then
-        basename=$(basename -- "$file")
-        filename="${basename%.*}"
-        # create a report for this check
-        echo "creating report for check: $filename"
-        python checkov/main.py -s --framework cdk -o json \
-          -d "cdk_integration_tests/src/python/$filename" \
-          --external-checks-dir "checkov/cdk/checks/python/$filename.yaml" > "checkov_report_cdk_python_$filename.json"
-    fi
-done
+  echo "creating report for CDK python"
+  python checkov/main.py -s --framework cdk --repo-id prisma/cdk -o json \
+    -d "cdk_integration_tests/src/python" \
+    --external-checks-dir "checkov/cdk/checks/python/" > "checkov_report_cdk_python.json"
 
 }
 

@@ -1,12 +1,30 @@
 import json
 import os
+from typing import List, Dict, Any
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
 
-def run_check(lang: str, check_name: str) -> None:
-    report_path = os.path.join(current_dir, '..', f'checkov_report_cdk_{lang}_{check_name}.json')
-    validate_report(os.path.abspath(report_path))
+def load_failed_checks_from_file(lang: str) -> Dict[str, List[Dict[str, Any]]]:
+    report_path = os.path.join(current_dir, '..', f'checkov_report_cdk_{lang}.json')
+    with open(report_path) as f:
+        data = f.read()
+        report = json.loads(data)
+        assert report is not None
+        results = report.get("results", {})
+        failed_checks = results.get("failed_checks")
+        results = {}
+        for check in failed_checks:
+            check_id = check['check_id']
+            if not results.get(check_id):
+                results[check_id] = []
+            results[check_id].append(check)
+        return results
+
+
+def run_check(check_results: Dict[str, List[Dict[str, Any]]], check_id: str) -> None:
+    results_for_check_id = check_results.get(check_id)
+    assert results_for_check_id
 
 
 def validate_report(report_path: str) -> None:
