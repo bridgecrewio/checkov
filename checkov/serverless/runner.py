@@ -288,7 +288,7 @@ class Runner(BaseRunner):
 
 def get_files_definitions(files: List[str], filepath_fn=None) \
         -> Tuple[Dict[str, DictNode], Dict[str, List[Tuple[int, str]]]]:
-    results = parallel_runner.run_function(func=parse, items=files)
+    results = parallel_runner.run_function(lambda f: (f, parse(f)), files)
     definitions = {}
     definitions_raw = {}
     for file, result in results:

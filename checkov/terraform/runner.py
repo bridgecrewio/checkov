@@ -66,7 +66,6 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
         runner_filter: RunnerFilter | None = None,
         collect_skip_comments: bool = True,
     ) -> Report | list[Report]:
-        bc_integration.bc_api_key
         runner_filter = runner_filter or RunnerFilter()
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()
