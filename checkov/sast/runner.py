@@ -2,22 +2,19 @@ from __future__ import annotations
 
 import logging
 import os
-import pathlib
 import sys
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import BaseRunner
+from checkov.common.sast.consts import SUPPORT_FILE_EXT, FILE_EXT_TO_SAST_LANG
 from checkov.runner_filter import RunnerFilter
 from checkov.sast.checks_infra.base_registry import Registry
-from checkov.sast.consts import SUPPORT_FILE_EXT, FILE_EXT_TO_SAST_LANG
 from checkov.sast.engines.prisma_engine import PrismaEngine
 
 from typing import List, Optional
 
 logger = logging.getLogger(__name__)
-
-CHECKS_DIR = (os.path.join(pathlib.Path(__file__).parent.resolve(), 'checks'))
 
 
 class Runner(BaseRunner[None, None, None]):
@@ -25,7 +22,7 @@ class Runner(BaseRunner[None, None, None]):
 
     def __init__(self) -> None:
         super().__init__(file_extensions=["." + a for a in FILE_EXT_TO_SAST_LANG.keys()])
-        self.registry = Registry(checks_dir=CHECKS_DIR)
+        self.registry = Registry()
         self.engine = PrismaEngine()  # noqa: disallow-untyped-calls
 
     def should_scan_file(self, file: str) -> bool:

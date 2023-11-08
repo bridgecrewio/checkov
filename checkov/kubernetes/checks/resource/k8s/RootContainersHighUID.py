@@ -21,7 +21,7 @@ class RootContainersHighUID(BaseK8sRootContainerCheck):
 
         # Collect results
         if spec and isinstance(spec, dict):
-            results = {"pod": {}, "container": []}
+            results: dict[str, Any] = {"pod": {}, "container": []}
             results["pod"]["runAsUser"] = self.check_runAsUser(spec, 10000)
 
             containers = spec.get("containers", [])

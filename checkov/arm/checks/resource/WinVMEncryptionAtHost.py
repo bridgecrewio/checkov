@@ -3,7 +3,7 @@ from checkov.arm.base_resource_value_check import BaseResourceValueCheck
 
 
 class WinVMEncryptionAtHost(BaseResourceValueCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         """
         If enabled, all the disks (including the temp disk) attached to this Virtual Machine will be encrypted
 
@@ -13,11 +13,11 @@ class WinVMEncryptionAtHost(BaseResourceValueCheck):
         """
         name = "Ensure Windows VM enables encryption"
         id = "CKV_AZURE_151"
-        supported_resources = ['Microsoft.Compute/virtualMachines']
-        categories = [CheckCategories.ENCRYPTION]
+        supported_resources = ("Microsoft.Compute/virtualMachines",)
+        categories = (CheckCategories.ENCRYPTION,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def get_inspected_key(self):
+    def get_inspected_key(self) -> str:
         return "properties/securityProfile/encryptionAtHost"
 
 

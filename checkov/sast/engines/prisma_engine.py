@@ -18,12 +18,12 @@ from checkov.common.bridgecrew.platform_key import bridgecrew_dir
 from checkov.common.bridgecrew.severities import get_severity, Severity, Severities, BcSeverities
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.report import Report
+from checkov.common.sast.consts import SastLanguages
 from checkov.common.sca.reachability.sast_contract.data_fetcher_sast_lib import SastReachabilityDataFetcher
 from checkov.common.typing import _CheckResult
 from checkov.common.util.http_utils import request_wrapper
 from checkov.sast.checks_infra.base_registry import Registry
 from checkov.sast.common import get_code_block_from_start, get_data_flow_code_block
-from checkov.sast.consts import SastLanguages
 from checkov.sast.engines.base_engine import SastEngine
 from checkov.sast.prisma_models.library_input import LibraryInput
 from checkov.sast.prisma_models.policies_list import SastPolicies
@@ -34,6 +34,9 @@ from checkov.sast.report import SastReport
 logger = logging.getLogger(__name__)
 
 REPORT_PARSING_ERRORS = "report_parsing_errors"
+FILE_NAME_PATTERN = re.compile(r"(\d+_\d+_\d+)_library\.(so|dll|dylib)")
+SAST_CORE_FILENAME_PATTERN = re.compile(rf"{FILE_NAME_PATTERN.pattern}$")
+SAST_CORE_URL_PATTERN = re.compile(rf".*/(?P<name>v?{FILE_NAME_PATTERN.pattern})\?.*")
 
 
 class PrismaEngine(SastEngine):
@@ -111,7 +114,7 @@ class PrismaEngine(SastEngine):
                 now = datetime.now().timestamp()
                 diff = datetime.fromtimestamp(now) - datetime.fromtimestamp(creation_time)
                 if diff.days < 1:
-                    match = re.match(r"(\d+_\d+_\d+)_library\.(so|dll|dylib)", latest_file)
+                    match = re.search(SAST_CORE_FILENAME_PATTERN, latest_file)
                     if match:
                         current_version = match.groups()[0]
 
@@ -142,7 +145,7 @@ class PrismaEngine(SastEngine):
             if response.status_code == 304:
                 return True
 
-            match = re.match(r'.*\/(?P<name>v?\d+_\d+_\d+_library\.(so|dll|dylib))\?.*', response.url)
+            match = re.match(SAST_CORE_URL_PATTERN, response.url)
             if match:
                 new_name = match.group('name')
                 cli_file_name_path = self.prisma_sast_dir_path / new_name
@@ -193,7 +196,7 @@ class PrismaEngine(SastEngine):
                        report_reachability: bool = False,
                        remove_default_policies: bool = False) -> Union[List[Report], SastPolicies]:
 
-        validate_params(languages, source_codes, policies, list_policies)
+        validate_params(languages, source_codes, list_policies)
 
         if bc_integration.bc_source:
             name = bc_integration.bc_source.name
@@ -376,16 +379,12 @@ class PrismaEngine(SastEngine):
 
 def validate_params(languages: Set[SastLanguages],
                     source_codes: List[str],
-                    policies: List[str],
                     list_policies: bool) -> None:
     if list_policies:
         return
 
     if len(source_codes) == 0:
         raise Exception('must provide source code file or dir for sast runner')
-
-    if len(policies) == 0:
-        raise Exception('must provide policy file or dir for sast runner')
 
     if len(languages) == 0:
         raise Exception('must provide a language for sast runner')

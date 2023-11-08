@@ -4,8 +4,8 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 
 ENGINE_VERSION_PATTERN = re.compile(r"(\d+\.\d+.\d+)")
 ENGINE_VERSION_SHORT_PATTERN = re.compile(r"(\d+\.\d+)")
-MINIMUM_ACTIVEMQ_VERSION = 5.16
-MINIMUM_RABBITMQ_VERSION = 3.8
+MINIMUM_ACTIVEMQ_VERSION = 5.17
+MINIMUM_RABBITMQ_VERSION = 3.11
 
 
 class MQBrokerVersion(BaseResourceCheck):

@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import os
 from packaging import version as packaging_version
+from pathlib import Path
 
 from checkov.common.bridgecrew.severities import BcSeverities, Severities
 from checkov.common.models.enums import CheckResult, ScanDataFormat
-from checkov.common.sca.commons import get_package_alias
 from checkov.common.sca.output import create_report_cve_record, create_report_license_record
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package_2.output import (
@@ -15,7 +16,9 @@ from checkov.sca_package_2.output import (
 )
 from tests.sca_package_2.conftest import get_vulnerabilities_details_package_json, get_vulnerabilities_details, \
     get_vulnerabilities_details_no_deps, get_vulnerabilities_details_package_lock_json, \
-    create_cli_license_violations_table_wrapper, create_cli_output_wrapper
+    create_cli_license_violations_table_wrapper, create_cli_output_wrapper, get_vulnerabilities_details_is_used_packages
+
+CLI_OUTPUTS_DIR = Path(__file__).parent / "outputs" / "cli_outputs"
 
 
 def test_create_report_cve_record():
@@ -847,3 +850,28 @@ def test_create_cli_table_for_package_with_diff_CVEs():
         '\t│ └─ uglify-js         │ CVE-2015-8858        │ HIGH                 │ 2.4.24               │                      │                      │                      │\n',
         '\t│                      │ PRISMA-2021-0169     │ MEDIUM               │                      │                      │                      │                      │\n',
         '\t└──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┘\n'])
+
+
+def test_create_cli_table_for_package_with_reachability_data():
+    # given
+    rootless_file_path = "requirements.txt"
+    file_abs_path = "/path/to/requirements.txt"
+    check_class = "checkov.sca_package_2.scanner.Scanner"
+    # when
+    cves_records = [
+        create_report_cve_record(
+            rootless_file_path=rootless_file_path,
+            file_abs_path=file_abs_path,
+            check_class=check_class,
+            vulnerability_details=details,
+            licenses='Unknown',
+            package={'package_registry': "https://registry.npmjs.org/", 'is_private_registry': False},
+            root_package={'name': details["packageName"], 'version': details["packageVersion"]},
+            used_private_registry=False
+        )
+        for details in get_vulnerabilities_details_is_used_packages()
+    ]
+    cli_output = create_cli_output(True, cves_records)
+    with open(os.path.join(CLI_OUTPUTS_DIR, "test_create_cli_table_for_package_with_reachability_data.txt")) as f:
+        expected_cli_output = f.read()
+    assert expected_cli_output == cli_output

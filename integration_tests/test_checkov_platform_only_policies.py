@@ -13,7 +13,7 @@ class TestCheckovPlatformOnlyPolicies(unittest.TestCase):
 
     def test_no_ckv_ids_api_key(self):
         checks_list_path = current_dir.parent / 'checkov_checks_list.txt'
-        if sys.version_info[1] == 7 and platform.system() == 'Linux':
+        if sys.version_info[1] == 8 and platform.system() == 'Linux':
             with open(checks_list_path, encoding='utf-8') as f:
                 for i, line in enumerate(f):
                     if i in [0, 1]:

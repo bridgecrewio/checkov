@@ -52,24 +52,23 @@ class Seccomp(BaseK8Check):
             if security_profile:
                 return CheckResult.PASSED if security_profile == 'RuntimeDefault' else CheckResult.FAILED
 
-            metadata = self.get_inner_entry(conf, "metadata")
+            metadata = find_in_dict(input_dict=conf, key_path="spec/template/metadata")
             if not metadata and "metadata" in conf:
                 metadata = conf["metadata"]
         elif conf['kind'] == 'CronJob':
-            if "spec" in conf:
-                if isinstance(conf["spec"], dict) and "jobTemplate" in conf["spec"]:
-                    if "spec" in conf["spec"]["jobTemplate"]:
-                        if conf["spec"]["jobTemplate"]["spec"] and "template" in conf["spec"]["jobTemplate"]["spec"]:
-                            if "metadata" in conf["spec"]["jobTemplate"]["spec"]["template"]:
-                                metadata = conf["spec"]["jobTemplate"]["spec"]["template"]["metadata"]
-                            elif "spec" in conf["spec"]["jobTemplate"]["spec"]["template"]:
-                                if "metadata" in conf["spec"]["jobTemplate"]["spec"]["template"]["spec"]:
-                                    metadata = conf["spec"]["jobTemplate"]["spec"]["template"]["spec"]["metadata"]
-                                elif "securityContext" in conf["spec"]["jobTemplate"]["spec"]["template"]["spec"]:
-                                    security_profile = conf["spec"]["jobTemplate"]["spec"]["template"]["spec"]["securityContext"].get("seccompProfile", {}).get("type")
-                                    return CheckResult.PASSED if security_profile == 'RuntimeDefault' else CheckResult.FAILED
+            inner_template = find_in_dict(input_dict=conf, key_path="spec/jobTemplate/spec/template")
+            if inner_template and isinstance(inner_template, dict):
+                if "metadata" in inner_template:
+                    metadata = inner_template["metadata"]
+                elif "spec" in inner_template:
+                    inner_spec = inner_template["spec"]
+                    if "metadata" in inner_spec:
+                        metadata = inner_spec["metadata"]
+                    elif "securityContext" in inner_spec:
+                        security_profile = inner_spec["securityContext"].get("seccompProfile", {}).get("type")
+                        return CheckResult.PASSED if security_profile == 'RuntimeDefault' else CheckResult.FAILED
         else:
-            inner_metadata = self.get_inner_entry(conf, "metadata")
+            inner_metadata = find_in_dict(input_dict=conf, key_path="spec/template/metadata")
             metadata = inner_metadata if inner_metadata else metadata
 
         if metadata:
