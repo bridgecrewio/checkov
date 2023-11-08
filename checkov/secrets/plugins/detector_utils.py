@@ -108,7 +108,13 @@ FOLLOWED_BY_EQUAL_VALUE_SECRET_REGEX = re.compile(
     flags=re.IGNORECASE,
 )
 
-ALLOW_LIST = ('secretsmanager', "secretName", "secret_name", "creation_token")  # can add more keys like that
+ALLOW_LIST = (  # can add more keys like that
+    'secretsmanager',
+    "secretName",
+    "secret_name",
+    "creation_token",
+    "client_secret_setting_name",
+)
 ALLOW_LIST_REGEX = r'|'.join(ALLOW_LIST)
 # Support for suffix of function name i.e "secretsmanager:GetSecretValue"
 CAMEL_CASE_NAMES = r'[A-Z]([A-Z0-9]*[a-z][a-z0-9]*[A-Z]|[a-z0-9]*[A-Z][A-Z0-9]*[a-z])[A-Za-z0-9]*'

@@ -7,7 +7,7 @@ from checkov.arm.base_resource_check import BaseResourceCheck
 
 
 class SecurityCenterStandardPricing(BaseResourceCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         # https://docs.microsoft.com/en-us/azure/templates/microsoft.security/securitycontacts
         name = "Ensure that standard pricing tier is selected"
         id = "CKV_AZURE_19"

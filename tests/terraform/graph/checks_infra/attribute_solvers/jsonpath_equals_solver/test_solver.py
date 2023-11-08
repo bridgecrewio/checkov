@@ -39,3 +39,12 @@ class TestJsonpathEqualsSolver(TestBaseSolver):
         expected_results = {check_id: {"should_pass": should_pass, "should_fail": should_fail}}
 
         self.run_test(root_folder=root_folder, expected_results=expected_results, check_id=check_id)
+
+    def test_jsonpath_equals_ecs_with_merge(self):
+        root_folder = '../../../resources/ecs_with_merge'
+        check_id = "CUSTOM_003"
+        should_pass = ['aws_ecs_task_definition.service01']
+        should_fail = ['aws_ecs_task_definition.service02']
+        expected_results = {check_id: {"should_pass": should_pass, "should_fail": should_fail}}
+
+        self.run_test(root_folder=root_folder, expected_results=expected_results, check_id=check_id)
