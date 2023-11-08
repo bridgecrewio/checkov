@@ -337,7 +337,7 @@ class BcPlatformIntegration:
             )
 
             if self.support_flag_enabled:
-                self.support_bucket, self.support_repo_path = support_path.split("/", 1)
+                self.support_bucket, self.support_repo_path = cast(str, support_path).split("/", 1)
 
             self.use_s3_integration = True
         except MaxRetryError:
@@ -568,9 +568,9 @@ class BcPlatformIntegration:
         if not self.bucket or not self.repo_path:
             logging.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
             return
-        persist_run_metadata(run_metadata, self.s3_client, self.bucket, self.repo_path, True)
+        persist_run_metadata(run_metadata, self.s3_client, self.bucket, self.repo_path, True)\
         logging.debug(f'Also uploading run_metadata.json to support location: {self.support_repo_path}')
-        persist_run_metadata(run_metadata, self.s3_client, self.support_bucket, self.support_repo_path, False)
+        persist_run_metadata(run_metadata, self.s3_client, cast(str, self.support_bucket), cast(str, self.support_repo_path), False)
 
     def persist_logs_stream(self, logs_stream: StringIO) -> None:
         if not self.use_s3_integration or not self.s3_client or self.s3_setup_failed:
