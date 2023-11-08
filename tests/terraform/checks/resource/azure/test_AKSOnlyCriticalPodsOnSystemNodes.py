@@ -1,33 +1,29 @@
+import os
 import unittest
-from pathlib import Path
 
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.resource.azure.AppServiceSlotHTTPSOnly import check
 from checkov.terraform.runner import Runner
+from checkov.terraform.checks.resource.azure.AKSOnlyCriticalPodsOnSystemNodes import check
 
 
-class TestAppServiceSlotHTTPSOnly(unittest.TestCase):
-
+class TestAKSOnlyCriticalPodsOnSystemNodes(unittest.TestCase):
     def test(self):
-        # given
-        test_files_dir = Path(__file__).parent / "example_AppServiceSlotHTTPSOnly"
+        runner = Runner()
+        current_dir = os.path.dirname(os.path.realpath(__file__))
 
-        # when
-        report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
-
-        # then
+        test_files_dir = os.path.join(current_dir, "example_AKSOnlyCriticalPodsOnSystemNodes")
+        report = runner.run(root_folder=test_files_dir,
+                            runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
 
         passing_resources = {
-            "azurerm_app_service_slot.pass",
-            "azurerm_linux_web_app_slot.pass",
-            "azurerm_windows_web_app_slot.pass",
+            'azurerm_kubernetes_cluster.pass',
         }
         failing_resources = {
-            "azurerm_app_service_slot.fail",
-            "azurerm_app_service_slot.fail2",
-            "azurerm_linux_web_app_slot.fail",
-            "azurerm_windows_web_app_slot.fail",
+            'azurerm_kubernetes_cluster.fail1',
+            'azurerm_kubernetes_cluster.fail2',
+            'azurerm_kubernetes_cluster.fail3',
+            'azurerm_kubernetes_cluster.fail4',
         }
         skipped_resources = {}
 
@@ -37,7 +33,7 @@ class TestAppServiceSlotHTTPSOnly(unittest.TestCase):
         self.assertEqual(summary['passed'], len(passing_resources))
         self.assertEqual(summary['failed'], len(failing_resources))
         self.assertEqual(summary['skipped'], len(skipped_resources))
-        self.assertEqual(summary["parsing_errors"], 0)
+        self.assertEqual(summary['parsing_errors'], 0)
 
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)

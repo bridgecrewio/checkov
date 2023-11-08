@@ -26,6 +26,23 @@ resource "azurerm_app_service_slot" "fail" {
 }
 
 
+resource "azurerm_linux_web_app_slot" "fail" {
+  name           = "fail-slot"
+  app_service_id = azurerm_linux_web_app.fail.id
+  https_only     = false
+
+  site_config {}
+}
+
+resource "azurerm_windows_web_app_slot" "fail" {
+  name           = "fail-slot"
+  app_service_id = azurerm_windows_web_app.fail.id
+  https_only     = false
+  
+  site_config {}
+}
+
+
 resource "azurerm_app_service_slot" "fail2" {
   name                = random_id.server.hex
   app_service_name    = azurerm_app_service.example.name
@@ -76,4 +93,20 @@ resource "azurerm_app_service_slot" "pass" {
     type  = "SQLServer"
     value = "Server=some-server.mydomain.com;Integrated Security=SSPI"
   }
+}
+
+resource "azurerm_linux_web_app_slot" "pass" {
+  name           = "pass-slot"
+  app_service_id = azurerm_linux_web_app.pass.id
+  https_only     = true
+
+  site_config {}
+}
+
+resource "azurerm_windows_web_app_slot" "pass" {
+  name           = "pass-slot"
+  app_service_id = azurerm_windows_web_app.pass.id
+  https_only     = true
+  
+  site_config {}
 }
