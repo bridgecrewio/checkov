@@ -31,6 +31,7 @@ prepare_data () {
     fi
 done
 
+
 }
 
 delete_reports () {
