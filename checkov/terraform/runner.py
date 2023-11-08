@@ -8,6 +8,7 @@ from typing import Any, TYPE_CHECKING, Optional
 from typing_extensions import TypeAlias  # noqa[TC002]
 
 from checkov.common.bridgecrew.check_type import CheckType
+from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.output.extra_resource import ExtraResource
@@ -65,6 +66,7 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
         runner_filter: RunnerFilter | None = None,
         collect_skip_comments: bool = True,
     ) -> Report | list[Report]:
+        bc_integration.bc_api_key
         runner_filter = runner_filter or RunnerFilter()
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()
@@ -162,17 +164,7 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
             # just make sure it is not 'None'
             self.definitions = {}
 
-        def parse_file(file: str) -> tuple[str, dict[str, Any] | None, dict[str, Exception]] | None:
-            if not (file.endswith(".tf") or file.endswith(".hcl")):
-                return None
-            file_parsing_errors: dict[str, Exception] = {}
-            parse_result = self.parser.parse_file(file=file, parsing_errors=file_parsing_errors)
-            # the exceptions type can un-pickleable so we need to cast them to Exception
-            for path, e in file_parsing_errors.items():
-                file_parsing_errors[path] = Exception(e.__repr__())
-            return file, parse_result, file_parsing_errors
-
-        results = parallel_runner.run_function(parse_file, files)
+        results = parallel_runner.run_function(self.parse_file, files)
         for result in results:
             if result:
                 file, parse_result, file_parsing_errors = result
@@ -180,6 +172,16 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
                     self.definitions[TFDefinitionKey(file_path=file)] = parse_result
                 if file_parsing_errors:
                     parsing_errors.update(file_parsing_errors)
+
+    def parse_file(self, file: str) -> tuple[str, dict[str, Any] | None, dict[str, Exception]] | None:
+        if not (file.endswith(".tf") or file.endswith(".hcl")):
+            return None
+        file_parsing_errors: dict[str, Exception] = {}
+        parse_result = self.parser.parse_file(file=file, parsing_errors=file_parsing_errors)
+        # the exceptions type can un-pickleable so we need to cast them to Exception
+        for path, e in file_parsing_errors.items():
+            file_parsing_errors[path] = Exception(e.__repr__())
+        return file, parse_result, file_parsing_errors
 
     def _update_definitions_and_breadcrumbs(
         self, local_graphs: list[tuple[Optional[str], TerraformLocalGraph]], report: Report, root_folder: str

@@ -12,6 +12,7 @@ from json import JSONDecodeError
 from os import path
 from pathlib import Path
 from time import sleep
+from types import MethodType
 from typing import List, Dict, TYPE_CHECKING, Any, cast, Optional, Union
 from urllib.parse import urlparse
 
@@ -127,6 +128,42 @@ class BcPlatformIntegration:
         self.ca_certificate: str | None = None
         self.no_cert_verify: bool = False
         self.on_prem: bool = False
+
+    def init_instance(self, platform_integration_data: dict[str, Any]) -> None:
+        """This is mainly used for recreating the instance without interacting with the platform again"""
+
+        bc_integration.bc_api_url = platform_integration_data["bc_api_url"]
+        bc_integration.bc_api_key = platform_integration_data["bc_api_key"]
+        bc_integration.bc_source = platform_integration_data["bc_source"]
+        bc_integration.bc_source_version = platform_integration_data["bc_source_version"]
+        bc_integration.cicd_details = platform_integration_data["cicd_details"]
+        bc_integration.prisma_api_url = platform_integration_data["prisma_api_url"]
+        bc_integration.repo_branch = platform_integration_data["repo_branch"]
+        bc_integration.repo_id = platform_integration_data["repo_id"]
+        bc_integration.repo_path = platform_integration_data["repo_path"]
+        bc_integration.timestamp = platform_integration_data["timestamp"]
+        bc_integration.setup_api_urls()
+        # 'mypy' doesn't like, when you try to override an instance method
+        bc_integration.get_auth_token = MethodType(lambda: platform_integration_data["get_auth_token"], bc_integration)  # type:ignore[method-assign]
+
+    def generate_instance_data(self) -> dict[str, Any]:
+        """This output is used to re-initialize the instance and should be kept in sync with 'init_instance()'"""
+
+        return {
+            # 'api_url' will be set by invoking 'setup_api_urls()'
+            "bc_api_url": bc_integration.bc_api_url,
+            "bc_api_key": bc_integration.bc_api_key,
+            "bc_source": bc_integration.bc_source,
+            "bc_source_version": bc_integration.bc_source_version,
+            "cicd_details": bc_integration.cicd_details,
+            "prisma_api_url": bc_integration.prisma_api_url,
+            "repo_branch": bc_integration.repo_branch,
+            "repo_id": bc_integration.repo_id,
+            "repo_path": bc_integration.repo_path,
+            "timestamp": bc_integration.timestamp,
+            # will be overriden with a simple lambda expression
+            "get_auth_token": bc_integration.get_auth_token() if bc_integration.bc_api_key else ""
+        }
 
     def set_bc_api_url(self, new_url: str) -> None:
         self.bc_api_url = normalize_bc_url(new_url)

@@ -26,7 +26,7 @@ from checkov.common.bridgecrew.integration_features.integration_feature_registry
 from checkov.common.bridgecrew.platform_errors import ModuleNotEnabledError
 from checkov.common.bridgecrew.severities import Severities
 from checkov.common.images.image_referencer import ImageReferencer
-from checkov.common.models.enums import ErrorStatus
+from checkov.common.models.enums import ErrorStatus, ParallelizationType
 from checkov.common.output.csv import CSVSBOM
 from checkov.common.output.cyclonedx import CycloneDX
 from checkov.common.output.gitlab_sast import GitLabSast
@@ -124,30 +124,18 @@ class RunnerRegistry:
                 # This is the only runner, so raise a clear indication of failure
                 raise ModuleNotEnabledError(f'The framework "{runner_check_type}" is part of the "{self.licensing_integration.get_subscription_for_runner(runner_check_type).name}" module, which is not enabled in the platform')
         else:
-            def _parallel_run(runner: _BaseRunner) -> tuple[Report | list[Report], str | None, Optional[list[tuple[LibraryGraph, Optional[str]]]], Optional[dict[str, str]]]:
-                report = runner.run(
-                    root_folder=root_folder,
-                    external_checks_dir=external_checks_dir,
-                    files=files,
-                    runner_filter=self.runner_filter,
-                    collect_skip_comments=collect_skip_comments,
-                )
-                if report is None:
-                    # this only happens, when an uncaught exception inside the runner occurs
-                    logging.error(f"Failed to create report for {runner.check_type} framework")
-                    report = Report(check_type=runner.check_type)
-
-                if runner.graph_manager:
-                    return report, runner.check_type, self.extract_graphs_from_runner(runner), \
-                        runner.resource_subgraph_map
-                return report, None, None, None
-
             valid_runners = []
             invalid_runners = []
+            platform_integration_data = None
+
+            if parallel_runner.type == ParallelizationType.SPAWN:
+                platform_integration_data = bc_integration.generate_instance_data()
 
             for runner in self.runners:
                 if self.licensing_integration.is_runner_valid(runner.check_type):
-                    valid_runners.append(runner)
+                    valid_runners.append(
+                        (runner, root_folder, external_checks_dir, files, self.runner_filter, collect_skip_comments, platform_integration_data)
+                    )
                 else:
                     invalid_runners.append(runner)
 
@@ -776,3 +764,33 @@ class RunnerRegistry:
         elif runner.graph_manager:
             return [(runner.graph_manager.get_reader_endpoint(), None)]
         return []
+
+
+def _parallel_run(
+    runner: _BaseRunner,
+    root_folder: str | None = None,
+    external_checks_dir: list[str] | None = None,
+    files: list[str] | None = None,
+    runner_filter: RunnerFilter | None = None,
+    collect_skip_comments: bool = True,
+    platform_integration_data: dict[str, Any] | None = None,
+) -> tuple[Report | list[Report], str | None, list[tuple[LibraryGraph, str | None]] | None, dict[str, str] | None]:
+    if platform_integration_data:
+        # only happens for 'ParallelizationType.SPAWN'
+        bc_integration.init_instance(platform_integration_data=platform_integration_data)
+
+    report = runner.run(
+        root_folder=root_folder,
+        external_checks_dir=external_checks_dir,
+        files=files,
+        runner_filter=runner_filter,
+        collect_skip_comments=collect_skip_comments,
+    )
+    if report is None:
+        # this only happens, when an uncaught exception inside the runner occurs
+        logging.error(f"Failed to create report for {runner.check_type} framework")
+        report = Report(check_type=runner.check_type)
+
+    if runner.graph_manager:
+        return report, runner.check_type, RunnerRegistry.extract_graphs_from_runner(runner), runner.resource_subgraph_map
+    return report, None, None, None

@@ -30,15 +30,17 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
     def import_registry(self) -> BaseCheckRegistry:
         return registry
 
+    @staticmethod
     def _parse_file(
-        self, f: str, file_content: str | None = None
+        f: str, file_content: str | None = None
     ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
-        if self.is_workflow_file(f):
-            return super()._parse_file(f=f, file_content=file_content)
+        if Runner.is_workflow_file(f):
+            return YamlRunner._parse_file(f=f, file_content=file_content)
 
         return None
 
-    def is_workflow_file(self, file_path: str) -> bool:
+    @staticmethod
+    def is_workflow_file(file_path: str) -> bool:
         """
         :return: True if the file mentioned is in the gitlab workflow name .gitlab-ci.yml. Otherwise: False
         """

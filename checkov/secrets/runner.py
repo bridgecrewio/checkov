@@ -331,11 +331,11 @@ class Runner(BaseRunner[None, None, None]):
     def _scan_files(files_to_scan: list[str], secrets: SecretsCollection, pbar: ProgressBar) -> None:
         # implemented the scan function like secrets.scan_files
         base_path = secrets.root
-        results = parallel_runner.run_function(
-            func=lambda f: Runner._safe_scan(f, base_path),
-            items=files_to_scan,
-            run_multiprocess=os.getenv("RUN_SECRETS_MULTIPROCESS", "").lower() == "true"
-        )
+        items = [
+            (file, base_path)
+            for file in files_to_scan
+        ]
+        results = parallel_runner.run_function(func=Runner._safe_scan, items=items)
 
         for filename, secrets_results in results:
             pbar.set_additional_data({'Current File Scanned': str(filename)})
