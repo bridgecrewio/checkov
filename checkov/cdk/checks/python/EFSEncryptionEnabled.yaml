@@ -1,8 +1,8 @@
 metadata:
   version: 0.2
   approach: define failing
-  id: CKV_AWS_29
-  name: Ensure all data stored in the Elasticache Replication Group is securely encrypted at rest
+  id: CKV_AWS_42
+  name: Ensure EFS is securely encrypted
   category: ENCRYPTION
 scope:
   languages:

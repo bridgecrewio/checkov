@@ -1,13 +1,14 @@
 metadata:
   version: 0.2
   approach: define failing
-  id: CKV_AWS_51
-  name: Ensure ECR Image Tags are immutable
-  category: GENERAL_SECURITY
+  id: CKV_AWS_43
+  name: Ensure Kinesis Stream is securely encrypted
+  category: ENCRYPTION
 scope:
   languages:
     - python
 definition:
   pattern: aws_cdk.aws_kinesis.CfnStream(<ANY>)
   conditions:
-    - not_pattern: 'aws_cdk.aws_kinesis.CfnStream(<ANY>, stream_encryption={"encryption_type": "KMS"} , <ANY>)'
+    - not_pattern: |
+        aws_cdk.aws_kinesis.CfnStream(<ANY>, stream_encryption={<ANY>, "encryption_type": "KMS", <ANY>} , <ANY>)
