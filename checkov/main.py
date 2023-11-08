@@ -48,6 +48,7 @@ from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.output.baseline import Baseline
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.runners.runner_registry import RunnerRegistry
+from checkov.common.sast.consts import SastLanguages
 from checkov.common.typing import LibraryGraph
 from checkov.common.util import prompt
 from checkov.common.util.banner import banner as checkov_banner, tool as checkov_tool
@@ -70,7 +71,6 @@ from checkov.kustomize.runner import Runner as kustomize_runner
 from checkov.logging_init import log_stream as logs_stream
 from checkov.openapi.runner import Runner as openapi_runner
 from checkov.runner_filter import RunnerFilter
-from checkov.sast.consts import SastLanguages
 from checkov.sast.prisma_models.report import serialize_reachability_report
 from checkov.sast.report import SastData, SastReport
 from checkov.sast.runner import Runner as sast_runner
@@ -185,7 +185,7 @@ class Checkov:
         if self.config.use_enforcement_rules and not self.config.bc_api_key:
             self.parser.error('Must specify an API key with --use-enforcement-rules')
 
-        if self.config.bc_api_key and not self.config.repo_id:
+        if self.config.bc_api_key and not self.config.repo_id and not self.config.list:
             self.parser.error('--repo-id is required when using a platform API key')
 
         if self.config.policy_metadata_filter and not (self.config.bc_api_key and self.config.prisma_api_url):

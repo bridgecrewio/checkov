@@ -5,7 +5,7 @@ from collections import defaultdict
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.code_categories import CodeCategoryType, CodeCategoryConfiguration
 from checkov.common.bridgecrew.severities import Severities, BcSeverities, Severity
-from checkov.sast.consts import SastLanguages
+from checkov.common.sast.consts import SastLanguages
 from checkov.main import Checkov
 from checkov.runner_filter import RunnerFilter
 

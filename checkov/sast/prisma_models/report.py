@@ -1,6 +1,7 @@
 from typing import Dict, List, Any, Optional, Union
 from pydantic import BaseModel
-from checkov.sast.consts import SastLanguages
+
+from checkov.common.sast.consts import SastLanguages
 
 
 class Profiler(BaseModel):
@@ -56,6 +57,7 @@ class Function(BaseModel):
     alias: str  # noqa: CCE003
     line_number: int  # noqa: CCE003
     code_block: str  # noqa: CCE003
+    cve_id: Optional[str]  # noqa: CCE003
 
     def to_dict(self) -> Dict[str, Any]:
         return self.__dict__

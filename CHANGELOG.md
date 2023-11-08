@@ -1,6 +1,56 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.0.14...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.0.25...HEAD)
+
+## [3.0.25](https://github.com/bridgecrewio/checkov/compare/3.0.24...3.0.25) - 2023-11-07
+
+### Bug Fix
+
+- **general:** do not require a repo ID when using an API key and --list - [#5726](https://github.com/bridgecrewio/checkov/pull/5726)
+
+## [3.0.24](https://github.com/bridgecrewio/checkov/compare/3.0.21...3.0.24) - 2023-11-06
+
+### Feature
+
+- **sast:** add new python CDK policies - [#5706](https://github.com/bridgecrewio/checkov/pull/5706)
+- **terraform:** Ensure that only critical system pods run on system nodes - [#5665](https://github.com/bridgecrewio/checkov/pull/5665)
+
+## [3.0.21](https://github.com/bridgecrewio/checkov/compare/3.0.19...3.0.21) - 2023-11-05
+
+### Feature
+
+- **terraform:** Ensure App Service Environment is zone redundant - [#5662](https://github.com/bridgecrewio/checkov/pull/5662)
+- **terraform:** Ensure that Standard Replication is enabled - [#5649](https://github.com/bridgecrewio/checkov/pull/5649)
+
+### Bug Fix
+
+- **sca:** Setting only relevant cves for the extracted reachable functions with risk factor of ReachableFunction as True - [#5715](https://github.com/bridgecrewio/checkov/pull/5715)
+- **terraform:** CKV_AWS_208 valid Amazon MQ versions - [#5653](https://github.com/bridgecrewio/checkov/pull/5653)
+
+## [3.0.19](https://github.com/bridgecrewio/checkov/compare/3.0.16...3.0.19) - 2023-11-02
+
+### Feature
+
+- **sca:** adjusting the cli-output to support indicating of reachable functions  - [#5713](https://github.com/bridgecrewio/checkov/pull/5713)
+- **terraform:** Adding YAML based build time policies for corresponding PC runtime policies - [#5637](https://github.com/bridgecrewio/checkov/pull/5637)
+- **terraform:** bigtable deletion protection [depends on #5625] - [#5626](https://github.com/bridgecrewio/checkov/pull/5626)
+- **terraform:** drop and deletion checks for spanner - [#5625](https://github.com/bridgecrewio/checkov/pull/5625)
+
+### Bug Fix
+
+- **sast:** add cveid to reachability report - [#5708](https://github.com/bridgecrewio/checkov/pull/5708)
+
+## [3.0.16](https://github.com/bridgecrewio/checkov/compare/3.0.15...3.0.16) - 2023-11-01
+
+### Feature
+
+- **sca:** Extending reachability post-runner in checkov and enriching cves with ReachableFunction data - [#5707](https://github.com/bridgecrewio/checkov/pull/5707)
+
+## [3.0.15](https://github.com/bridgecrewio/checkov/compare/3.0.14...3.0.15) - 2023-10-31
+
+### Bug Fix
+
+- **general:** fix duplicate components in CycloneDX report - [#5705](https://github.com/bridgecrewio/checkov/pull/5705)
 
 ## [3.0.14](https://github.com/bridgecrewio/checkov/compare/3.0.13...3.0.14) - 2023-10-30
 

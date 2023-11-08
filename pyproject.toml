@@ -8,6 +8,7 @@ line-length = 120
 
 [tool.importlinter]
 root_package = "checkov"
+exclude_type_checking_imports = true
 
 [[tool.importlinter.contracts]]
 name = "common forbidden to import other modules"
@@ -23,6 +24,7 @@ forbidden_modules = [
     "checkov.bicep",
     "checkov.bitbucket",
     "checkov.bitbucket_pipelines",
+    "checkov.cdk",
     "checkov.circleci_pipelines",
     "checkov.cloudformation",
     "checkov.dockerfile",
@@ -37,6 +39,7 @@ forbidden_modules = [
     "checkov.kustomize",
     "checkov.openapi",
     "checkov.policies_3d",
+    "checkov.sast",
     "checkov.sca_image",
     "checkov.sca_package",
     "checkov.sca_package_2",
@@ -49,11 +52,8 @@ forbidden_modules = [
 ignore_imports = [
     "checkov.common.util.json_utils -> checkov.terraform.modules.module_objects", # needed for JSON serialization
 
-    "checkov.common.bridgecrew.platform_integration -> checkov.secrets.coordinator", # type hint
-    "checkov.common.graph.graph_manager -> checkov.terraform.tf_parser", # type hint
-    "checkov.common.typing -> checkov.terraform.modules.module_objects", # type hint
-
     "checkov.common.bridgecrew.integration_features.features.policies_3d_integration -> checkov.policies_3d.*", # considering what to do
+    "checkov.common.bridgecrew.integration_features.features.vulnerabilities_integration -> checkov.sast.report", # considering what to do
     "checkov.common.runners.base_post_runner -> checkov.policies_3d.checks_infra.base_check", # considering what to do
 
     "checkov.common.runners.runner_registry -> checkov.terraform.context_parsers.registry", # move runner_registry to a different place
@@ -80,6 +80,16 @@ source_modules = [
 forbidden_modules = [
     "checkov.helm",
     "checkov.kustomize",
+]
+
+[[tool.importlinter.contracts]]
+name = "sast forbidden to import its children"
+type = "forbidden"
+source_modules = [
+    "checkov.sast",
+]
+forbidden_modules = [
+    "checkov.cdk",
 ]
 
 [[tool.importlinter.contracts]]

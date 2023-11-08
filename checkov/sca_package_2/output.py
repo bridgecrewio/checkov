@@ -11,13 +11,13 @@ from prettytable import PrettyTable, SINGLE_BORDER
 from checkov.common.bridgecrew.severities import BcSeverities
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME, SCA_LICENSE_CHECK_NAME
-from checkov.common.output.common import get_package_name_with_lines, validate_lines
+from checkov.common.output.common import get_package_name_with_lines, validate_lines, get_reachability_output_indication
 from checkov.common.packaging import version as packaging_version
 from checkov.common.sca.commons import UNFIXABLE_VERSION, get_package_alias
 from checkov.common.typing import _LicenseStatusWithLines
 from checkov.common.output.common import compare_table_items_severity
 
-REACHABILITY_RISK_FACTORS_KEYS = ["IsUsed"]
+REACHABILITY_RISK_FACTORS_KEYS = ["IsUsed", "ReachableFunction"]
 
 
 @dataclass
@@ -151,14 +151,11 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                         lines_details_found_cves = True
 
                     risk_factors = {} if not record.vulnerability_details or not record.vulnerability_details.get("risk_factors", {}) else record.vulnerability_details.get("risk_factors", {})
-                    if risk_factors.get("IsUsed"):
-                        cve_count.used += 1
 
-                    reachability_risk_factors_tmp = {}
-                    if record.vulnerability_details is not None:
-                        reachability_risk_factors_tmp = {key: value for key, value in
-                                                         risk_factors.items()
-                                                         if key in REACHABILITY_RISK_FACTORS_KEYS}
+                    reachability_risk_factors_tmp = {key: value for key, value in risk_factors.items()
+                                                     if key in REACHABILITY_RISK_FACTORS_KEYS}
+                    if any([value for value in reachability_risk_factors_tmp.values()]):
+                        cve_count.used += 1
 
                     package_cves_details_map[root_package_alias].setdefault("cves", []).append(
                         {
@@ -392,7 +389,7 @@ def create_package_overview_table_part(
             package_alias = get_package_alias(package_name, package_version)
             is_root = package_alias == root_package_alias
             is_public_overview = "(Public)" if cve['is_private_fix'] is False else ""
-            reachability = "Package Used" if cve.get('reachability_risk_factors', {}).get("IsUsed", False) else ""
+            reachability = get_reachability_output_indication(cve.get('reachability_risk_factors', {}))
             compliant_version_overview = ""
             if cve_idx == 0:
                 cur_compliant_version = compliant_version + is_public_overview if compliant_version and compliant_version != UNFIXABLE_VERSION else compliant_version
