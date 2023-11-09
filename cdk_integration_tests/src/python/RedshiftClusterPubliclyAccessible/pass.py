@@ -14,7 +14,7 @@ class RedshiftStack(core.Stack):
             node_type="dc2.large",
             publicly_accessible=False,  # Set PubliclyAccessible to False
             master_username="admin",
-            master_user_password="MyPassword123",
+            master_user_password="MyPassword123", # checkov:skip=CKV_SECRET_6 test secret
         )
 
 app = core.App()

@@ -22,13 +22,15 @@ def load_failed_checks_from_file(lang: str) -> Dict[str, List[Dict[str, Any]]]:
             results[check_id].append(check)
         return results
 
+
 def is_policy_with_correct_check_id(check_id: str, language: str, policy_name: str) -> bool:
-    path = os.path.join(current_dir, '..', 'checkov', 'cdk', 'checks', language,  policy_name + ".yaml")
+    path = os.path.join(current_dir, '..', 'checkov', 'cdk', 'checks', language, policy_name + ".yaml")
     with open(path, 'r') as file:
         data = yaml.safe_load(file)
     if 'metadata' in data and 'id' in data['metadata'] and data['metadata']['id'] == check_id:
         return True
     return False
+
 
 def run_check(check_results: Dict[str, List[Dict[str, Any]]], check_id: str, policy_name: str, language: str) -> None:
     assert is_policy_with_correct_check_id(check_id, language, policy_name)
