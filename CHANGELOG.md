@@ -1,6 +1,22 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.0.24...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.0.28...HEAD)
+
+## [3.0.28](https://github.com/bridgecrewio/checkov/compare/3.0.25...3.0.28) - 2023-11-08
+
+### Bug Fix
+
+- **terraform:** Adding both azurerm_linux_web_app_slot & azurerm_windows_web_app_slot in scope of the test CKV_AZURE_153 - [#5687](https://github.com/bridgecrewio/checkov/pull/5687)
+
+### Documentation
+
+- **general:** Switch references to Bridgecrew with Prisma Cloud - [#5704](https://github.com/bridgecrewio/checkov/pull/5704)
+
+## [3.0.25](https://github.com/bridgecrewio/checkov/compare/3.0.24...3.0.25) - 2023-11-07
+
+### Bug Fix
+
+- **general:** do not require a repo ID when using an API key and --list - [#5726](https://github.com/bridgecrewio/checkov/pull/5726)
 
 ## [3.0.24](https://github.com/bridgecrewio/checkov/compare/3.0.21...3.0.24) - 2023-11-06
 

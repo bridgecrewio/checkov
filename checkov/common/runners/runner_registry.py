@@ -395,7 +395,7 @@ class RunnerRegistry:
         for report in scan_reports:
             if not report.is_empty():
                 if "json" in config.output:
-                    report_jsons.append(report.get_dict(is_quiet=config.quiet, url=url, s3_setup_failed=bc_integration.s3_setup_failed))
+                    report_jsons.append(report.get_dict(is_quiet=config.quiet, url=url, s3_setup_failed=bc_integration.s3_setup_failed, support_path=bc_integration.support_repo_path))
                 if "junitxml" in config.output:
                     junit_reports.append(report)
                 if "github_failed_only" in config.output:
@@ -452,6 +452,7 @@ class RunnerRegistry:
                 output_format="cli",
                 output=cli_output,
                 url=url,
+                support_path=bc_integration.support_repo_path
             )
 
             # Remove colors from the cli output
@@ -487,6 +488,8 @@ class RunnerRegistry:
                         print(f"More details: {url}")
                     elif bc_integration.s3_setup_failed:
                         print(S3_UPLOAD_DETAILS_MESSAGE)
+                    if bc_integration.support_repo_path:
+                        print(f"\nPath for uploaded logs (give this to support if raising an issue): {bc_integration.support_repo_path}")
                 if CONSOLE_OUTPUT in output_formats.values():
                     print(OUTPUT_DELIMITER)
 
@@ -613,7 +616,7 @@ class RunnerRegistry:
         exit_code = 1 if 1 in exit_codes else 0
         return cast(Literal[0, 1], exit_code)
 
-    def _print_to_console(self, output_formats: dict[str, str], output_format: str, output: str, url: str | None = None) -> None:
+    def _print_to_console(self, output_formats: dict[str, str], output_format: str, output: str, url: str | None = None, support_path: str | None = None) -> None:
         """Prints the output to console, if needed"""
         output_dest = output_formats[output_format]
         if output_dest == CONSOLE_OUTPUT:
@@ -627,6 +630,9 @@ class RunnerRegistry:
                 print(f"More details: {url}")
             elif bc_integration.s3_setup_failed:
                 print(S3_UPLOAD_DETAILS_MESSAGE)
+
+            if support_path:
+                print(f"\nPath for uploaded logs (give this to support if raising an issue): {support_path}")
 
             if CONSOLE_OUTPUT in output_formats.values():
                 print(OUTPUT_DELIMITER)

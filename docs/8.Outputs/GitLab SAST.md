@@ -22,7 +22,7 @@ A typical output looks like this
       "name": "Checkov",
       "url": "https://www.checkov.io/",
       "vendor": {
-        "name": "Bridgecrew"
+        "name": "Prisma Cloud"
       },
       "version": "2.2.281"
     },
@@ -31,7 +31,7 @@ A typical output looks like this
       "name": "Checkov",
       "url": "https://www.checkov.io/",
       "vendor": {
-        "name": "Bridgecrew"
+        "name": "Prisma Cloud"
       },
       "version": "2.2.281"
     },
@@ -45,13 +45,13 @@ A typical output looks like this
         {
           "name": "CKV_AWS_18",
           "type": "checkov",
-          "url": "https://docs.bridgecrew.io/docs/s3_13-enable-logging",
+          "url": "https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3_13-enable-logging",
           "value": "CKV_AWS_18"
         }
       ],
       "links": [
         {
-          "url": "https://docs.bridgecrew.io/docs/s3_13-enable-logging"
+          "url": "https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3_13-enable-logging"
         }
       ],
       "location": {
@@ -70,13 +70,13 @@ A typical output looks like this
         {
           "name": "CKV2_AWS_6",
           "type": "checkov",
-          "url": "https://docs.bridgecrew.io/docs/s3-bucket-should-have-public-access-blocks-defaults-to-false-if-the-public-access-block-is-not-attached",
+          "url": "https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3-bucket-should-have-public-access-blocks-defaults-to-false-if-the-public-access-block-is-not-attached",
           "value": "CKV2_AWS_6"
         }
       ],
       "links": [
         {
-          "url": "https://docs.bridgecrew.io/docs/s3-bucket-should-have-public-access-blocks-defaults-to-false-if-the-public-access-block-is-not-attached"
+          "url": "https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3-bucket-should-have-public-access-blocks-defaults-to-false-if-the-public-access-block-is-not-attached"
         }
       ],
       "location": {

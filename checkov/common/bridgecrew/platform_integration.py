@@ -336,13 +336,8 @@ class BcPlatformIntegration:
                 config=config,
             )
 
-            if support_path:
-                self.support_bucket, self.support_repo_path = support_path.split("/", 1)
-            elif self.support_flag_enabled:
-                logging.debug(
-                    '--support was used, but we did not get a support file upload path in the platform response. Using the old location.')
-                self.support_bucket = self.bucket
-                self.support_repo_path = self.repo_path
+            if self.support_flag_enabled:
+                self.support_bucket, self.support_repo_path = cast(str, support_path).split("/", 1)
 
             self.use_s3_integration = True
         except MaxRetryError:
@@ -574,9 +569,8 @@ class BcPlatformIntegration:
             logging.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
             return
         persist_run_metadata(run_metadata, self.s3_client, self.bucket, self.repo_path, True)
-        # only upload it if we did not fall back to use the same location
-        if self.support_bucket and self.support_repo_path and self.support_repo_path != self.repo_path:
-            logging.debug('Also uploading run_metadata.json to support location')
+        if self.support_bucket and self.support_repo_path:
+            logging.debug(f'Also uploading run_metadata.json to support location: {self.support_bucket}/{self.support_repo_path}')
             persist_run_metadata(run_metadata, self.s3_client, self.support_bucket, self.support_repo_path, False)
 
     def persist_logs_stream(self, logs_stream: StringIO) -> None:
@@ -586,9 +580,7 @@ class BcPlatformIntegration:
             logging.error(
                 f"Something went wrong with the log upload location: bucket {self.support_bucket}, repo path {self.support_repo_path}")
             return
-        # use checkov_results if we fall back to using the same location
-        log_path = f'{self.support_repo_path}/checkov_results' if self.support_repo_path == self.repo_path else self.support_repo_path
-        persist_logs_stream(logs_stream, self.s3_client, self.support_bucket, log_path)
+        persist_logs_stream(logs_stream, self.s3_client, self.support_bucket, self.support_repo_path)
 
     def persist_graphs(self, graphs: dict[str, list[tuple[LibraryGraph, Optional[str]]]], absolute_root_folder: str = '') -> None:
         if not self.use_s3_integration or not self.s3_client or self.s3_setup_failed:
