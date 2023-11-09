@@ -8,7 +8,6 @@ from typing import Any, TYPE_CHECKING, Optional
 from typing_extensions import TypeAlias  # noqa[TC002]
 
 from checkov.common.bridgecrew.check_type import CheckType
-from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.output.extra_resource import ExtraResource

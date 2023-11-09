@@ -112,7 +112,7 @@ def load_tf_modules(
 
     downloadable_modules = [
         (module_loader_registry, m)
-        for m in {m.address: m for m in replaced_modules if should_download_module(m.module_link)}.values()
+        for m in replaced_modules if should_download_module(m.module_link)
     ]
 
     if run_parallel:
@@ -120,31 +120,30 @@ def load_tf_modules(
     else:
         logging.info(f"Starting download of modules of length {len(replaced_modules)}")
         for m in downloadable_modules:
-            success = _download_module(m)
+            success = _download_module(*m)
             if not success and stop_on_failure:
                 logging.info(f"Stopping downloading of modules due to failed attempt on {m[1].address}")
                 break
 
 
-def _download_module(args: tuple[ModuleLoaderRegistry, ModuleDownload]) -> bool:
-    ml_registry, m = args
-    logging.info(f'Downloading module {m.address}')
+def _download_module(ml_registry: ModuleLoaderRegistry, module_download: ModuleDownload) -> bool:
+    logging.info(f'Downloading module {module_download.address}')
     try:
         content = ml_registry.load(
-            current_dir=m.source_dir,
-            source=m.module_link,
-            source_version="latest" if not m.version else m.version,
-            module_address=m.address,
-            tf_managed=m.tf_managed,
+            current_dir=module_download.source_dir,
+            source=module_download.module_link,
+            source_version="latest" if not module_download.version else module_download.version,
+            module_address=module_download.address,
+            tf_managed=module_download.tf_managed,
         )
         if content is None or not content.loaded():
-            log_message = f'Failed to download module {m.address}'
+            log_message = f'Failed to download module {module_download.address}'
             if not ml_registry.download_external_modules:
                 log_message += ' (for external modules, the --download-external-modules flag is required)'
             logging.warning(log_message)
             return False
     except Exception as e:
-        logging.warning(f"Unable to load module ({m.address}): {e}")
+        logging.warning(f"Unable to load module ({module_download.address}): {e}")
         return False
 
     return True

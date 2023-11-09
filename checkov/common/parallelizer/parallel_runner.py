@@ -33,9 +33,10 @@ class ParallelRunner:
             # PYCHARM_HOSTED env variable equals 1 when debugging via jetbrains IDE.
             # To prevent JetBrains IDE from crashing on debug run sequentially
             self.type = ParallelizationType.NONE
-        elif self.os == "Windows" and self.type == ParallelizationType.FORK:
+        elif self.os == "Windows":
             # 'fork' mode is not supported on 'Windows'
-            self.type = ParallelizationType.SPAWN
+            # 'spawn' mode results in a strange error, which needs to be investigated on an actual Windows machine
+            self.type = ParallelizationType.THREAD
 
     def run_function(
         self,
@@ -110,7 +111,11 @@ class ParallelRunner:
             f"Running function {func.__code__.co_filename.replace('.py', '')}.{func.__name__} with parallelization type 'spawn'"
         )
         with Pool(processes=self.workers_number, context=multiprocessing.get_context("spawn")) as p:
-            return p.starmap(func, items, chunksize=group_size)
+            if items and isinstance(items[0], tuple):
+                # need to use 'starmap' to pass multiple arguments to the target function
+                return p.starmap(func, items, chunksize=group_size)
+
+            return p.map(func, items, chunksize=group_size)
 
     def _run_function_multithreaded(self, func: Callable[[Any], _T], items: List[Any]) -> Iterator[_T]:
         logging.debug(
