@@ -144,7 +144,7 @@ class BcPlatformIntegration:
         self.timestamp = platform_integration_data["timestamp"]
         self.setup_api_urls()
         # 'mypy' doesn't like, when you try to override an instance method
-        self.get_auth_token = MethodType(lambda: platform_integration_data["get_auth_token"], self)  # type:ignore[method-assign]
+        self.get_auth_token = MethodType(lambda _=None: platform_integration_data["get_auth_token"], self)  # type:ignore[method-assign]
 
     def generate_instance_data(self) -> dict[str, Any]:
         """This output is used to re-initialize the instance and should be kept in sync with 'init_instance()'"""
