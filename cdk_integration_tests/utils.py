@@ -1,6 +1,7 @@
 import json
 import os
 from typing import List, Dict, Any
+import yaml
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -22,7 +23,17 @@ def load_failed_checks_from_file(lang: str) -> Dict[str, List[Dict[str, Any]]]:
         return results
 
 
-def run_check(check_results: Dict[str, List[Dict[str, Any]]], check_id: str) -> None:
+def is_policy_with_correct_check_id(check_id: str, language: str, policy_name: str) -> bool:
+    path = os.path.join(current_dir, '..', 'checkov', 'cdk', 'checks', language, policy_name + ".yaml")
+    with open(path, 'r') as file:
+        data = yaml.safe_load(file)
+    if 'metadata' in data and 'id' in data['metadata'] and data['metadata']['id'] == check_id:
+        return True
+    return False
+
+
+def run_check(check_results: Dict[str, List[Dict[str, Any]]], check_id: str, policy_name: str, language: str) -> None:
+    assert is_policy_with_correct_check_id(check_id, language, policy_name)
     results_for_check_id = check_results.get(check_id)
     assert results_for_check_id
 
