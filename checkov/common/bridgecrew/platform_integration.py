@@ -569,8 +569,9 @@ class BcPlatformIntegration:
             logging.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
             return
         persist_run_metadata(run_metadata, self.s3_client, self.bucket, self.repo_path, True)
-        logging.debug(f'Also uploading run_metadata.json to support location: {self.support_repo_path}')
-        persist_run_metadata(run_metadata, self.s3_client, cast(str, self.support_bucket), cast(str, self.support_repo_path), False)
+        if self.support_bucket and self.support_repo_path:
+            logging.debug(f'Also uploading run_metadata.json to support location: {self.support_bucket}/{self.support_repo_path}')
+            persist_run_metadata(run_metadata, self.s3_client, cast(str, self.support_bucket), cast(str, self.support_repo_path), False)
 
     def persist_logs_stream(self, logs_stream: StringIO) -> None:
         if not self.use_s3_integration or not self.s3_client or self.s3_setup_failed:
