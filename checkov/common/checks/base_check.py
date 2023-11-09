@@ -6,6 +6,7 @@ from abc import abstractmethod, ABC
 from collections.abc import Iterable
 from typing import List, Dict, Any, Optional
 
+from checkov.runner_filter import RunnerFilter
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.typing import _SkippedCheck, _CheckResult
 from checkov.common.util.type_forcers import force_list
@@ -51,6 +52,7 @@ class BaseCheck(ABC):
         entity_name: str,
         entity_type: str,
         skip_info: _SkippedCheck,
+        runner_filter: RunnerFilter
     ) -> _CheckResult:
         self.details = []
         check_result: _CheckResult = {}
@@ -64,6 +66,7 @@ class BaseCheck(ABC):
             try:
                 self.evaluated_keys = []
                 self.entity_path = f"{scanned_file}:{entity_type}:{entity_name}"
+                entity_configuration['runner_filter_all_graphs'] = runner_filter.all_graphs
                 check_result["result"] = self.scan_entity_conf(entity_configuration, entity_type)
                 check_result["evaluated_keys"] = self.get_evaluated_keys()
                 self.logger.debug(

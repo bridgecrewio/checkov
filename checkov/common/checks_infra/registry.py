@@ -39,6 +39,7 @@ class Registry(BaseRegistry):
         self._load_checks_from_dir(self.checks_dir, False)
 
     def _load_checks_from_dir(self, directory: str, external_check: bool) -> None:
+        # info ankur YAML here external checks are being loaded
         dir = os.path.expanduser(directory)
         self.logger.debug(f"Loading external checks from {dir}")
         for root, d_names, f_names in os.walk(dir):

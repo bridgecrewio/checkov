@@ -134,7 +134,7 @@ class BaseCheckRegistry:
                     report_type=report_type or self.report_type,
                     file_origin_paths=[scanned_file]
             ):
-                result = self.run_check(check, entity_configuration, entity_name, entity_type, scanned_file, skip_info)
+                result = self.run_check(check, entity_configuration, entity_name, entity_type, scanned_file, skip_info, runner_filter)
                 results[check] = result
         return results
 
@@ -146,6 +146,7 @@ class BaseCheckRegistry:
         entity_type: str,
         scanned_file: str,
         skip_info: _SkippedCheck,
+        runner_filter: RunnerFilter
     ) -> _CheckResult:
         self.logger.debug("Running check: {} on file {}".format(check.name, scanned_file))
         try:
@@ -155,6 +156,7 @@ class BaseCheckRegistry:
                 entity_name=entity_name,
                 entity_type=entity_type,
                 skip_info=skip_info,
+                runner_filter=runner_filter,
             )
             return result
         except Exception:
@@ -183,6 +185,7 @@ class BaseCheckRegistry:
         Log an error when the directory does not contains an __init__.py or
         when a .py file has syntax error
         """
+        # info ankur PYTHON checks are loaded here
         directory = os.path.expanduser(directory)
         self.logger.debug(f"Loading external checks from {directory}")
         for root, _, _ in os.walk(directory):
