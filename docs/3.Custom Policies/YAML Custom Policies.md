@@ -42,7 +42,7 @@ metadata:
   id: "CKV2_CUSTOM_1"
   name: "Ensure bucket has versioning and owner tag"
   category: "BACKUP_AND_RECOVERY"
-  guideline: "https://docs.bridgecrew.io/docs/ckv2_custom_1"
+  guideline: "https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ckv2_custom_1"
 ```
 
 ## Policy Definition
@@ -70,7 +70,7 @@ A policy definition may include any block (**Attribute**, **Connection state**, 
 
 An **Attribute Block** in a policy's definition indicates that a resource will be non-compliant if a certain configuration attribute does not have a specified value or if it exists/doesn't exist.
 
-Bridgecrew's custom policies in code utilize the Terraform attribute library and syntax. These policies are checked during scans of both build-time and runtime resources and for all supported cloud providers.
+Prisma Cloud's custom policies in code utilize the Terraform attribute library and syntax. These policies are checked during scans of both build-time and runtime resources and for all supported cloud providers.
 
 ### Attribute Block Example
 
@@ -254,7 +254,7 @@ definition:
 
 ## Using AND/OR Logic
 
-The Bridgecrew platform allows you to combine definition blocks using AND/OR operators.
+The Prisma Cloud platform allows you to combine definition blocks using AND/OR operators.
 
 * The top-level logical operator is the first key below \"definition\" (and not an item in a collection). Most policies will start with an `and` or `or` key here, with multiple conditions nested within that.
 * Filter blocks apply (only) to the top-level and constitute an AND condition. For example, if you'd like to indicate a requirement for a Connection State between types of resources, but only within a certain subset of all of those resources.
