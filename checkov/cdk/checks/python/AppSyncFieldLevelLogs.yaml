@@ -10,13 +10,13 @@ scope:
 definition:
   pattern: aws_cdk.aws_appsync.CfnGraphQLApi(<ANY>)
   conditions:
-    - not_pattern: aws_cdk.aws_appsync.CfnGraphQLApi(<ANY>, log_config=aws_cdk.aws_appsync.CfnGraphQLApi.LogConfigProperty(<ANY>, field_log_level=aws_cdk.aws_appsync.FieldLogLevel.ERRORS , <ANY>) , <ANY>)
-    - not_pattern: aws_cdk.aws_appsync.CfnGraphQLApi(<ANY>, log_config=aws_cdk.aws_appsync.CfnGraphQLApi.LogConfigProperty(<ANY>, field_log_level=aws_cdk.aws_appsync.FieldLogLevel.ALL , <ANY>) , <ANY>)
+    - not_pattern:
+        source: aws_cdk.aws_appsync.CfnGraphQLApi.LogConfigProperty(<ANY>, field_log_level=aws_cdk.aws_appsync.FieldLogLevel.$ARG , <ANY>)
+        sink: aws_cdk.aws_appsync.CfnGraphQLApi(<ANY>, log_config=$LOG , <ANY>)
+    - not_pattern: aws_cdk.aws_appsync.CfnGraphQLApi(<ANY>, log_config=aws_cdk.aws_appsync.CfnGraphQLApi.LogConfigProperty(<ANY>, field_log_level=aws_cdk.aws_appsync.FieldLogLevel.$ARG , <ANY>) , <ANY>)
     - not_pattern: |
-        $LOG = aws_cdk.aws_appsync.CfnGraphQLApi.LogConfigProperty(<ANY>, field_log_level=aws_cdk.aws_appsync.FieldLogLevel.ERRORS , <ANY>)
+        $LOG = aws_cdk.aws_appsync.CfnGraphQLApi.LogConfigProperty(<ANY>, field_log_level=aws_cdk.aws_appsync.FieldLogLevel.$ARG , <ANY>)
         <ANY>
         aws_cdk.aws_appsync.CfnGraphQLApi(<ANY>, log_config=$LOG , <ANY>)
-    - not_pattern: |
-        $LOG = aws_cdk.aws_appsync.CfnGraphQLApi.LogConfigProperty(<ANY>, field_log_level=aws_cdk.aws_appsync.FieldLogLevel.ALL , <ANY>)
-        <ANY>
-        aws_cdk.aws_appsync.CfnGraphQLApi(<ANY>, log_config=$LOG , <ANY>)
+    - metavariable: $ARG
+      regex: (ERRORS|ALL)
