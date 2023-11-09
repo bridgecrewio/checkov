@@ -19,6 +19,7 @@ resource "azurerm_mysql_server" "pass" {
   resource_group_name = var.resource_group_name
 
   administrator_login          = "pud"
+  # checkov:skip=CKV_SECRET_6 test secret
   administrator_login_password = "P@ssw0rd@1"
 
   sku_name   = "GP_Gen5_4"
@@ -57,6 +58,7 @@ resource "azurerm_mysql_server" "fail" {
   resource_group_name = var.resource_group_name
 
   administrator_login          = "pud"
+  # checkov:skip=CKV_SECRET_6 test secret
   administrator_login_password = "P@ssw0rd@1"
 
   sku_name   = "GP_Gen5_4"
