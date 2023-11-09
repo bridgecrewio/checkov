@@ -12,4 +12,4 @@ definition:
   conditions:
     - not_pattern: aws_cdk.aws_rds.DatabaseInstance(<ANY>, monitoring_interval=$COUNT , <ANY>)
     - metavariable: $COUNT
-      comparison: $COUNT <= 60
+      comparison: $COUNT != 0
