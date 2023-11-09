@@ -80,7 +80,8 @@ jobs:
           pipenv --rm || true
           pipenv --python ${{ matrix.python }}
           pipenv install --dev -v
-          pipenv run pip install redefine --index-url https://pip.redefine.dev
+          # pinning it for now, because of some weird socket issue
+          pipenv run pip install redefine==0.19.9 --index-url https://pip.redefine.dev
       - name: Unit tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
