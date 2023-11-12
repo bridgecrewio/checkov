@@ -8,12 +8,11 @@ from typing import TYPE_CHECKING, Callable, Any, Mapping, Generator
 
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.images.image_referencer import Image
-from checkov.common.typing import LibraryGraph
+from checkov.common.typing import LibraryGraph, _RustworkxGraph
 
 if TYPE_CHECKING:
     import networkx
     import igraph
-    import rustworkx
     from typing_extensions import TypeAlias
 
 _ExtractImagesCallableAlias: TypeAlias = Callable[["dict[str, Any]"], "list[str]"]
@@ -52,7 +51,7 @@ class GraphImageReferencerProvider:
 
         return self.graph_connector.subgraph(resource_nodes)
 
-    def extract_nodes_rustworkx(self) -> rustworkx.PyDiGraph[Any, Any]:
+    def extract_nodes_rustworkx(self) -> _RustworkxGraph:
         resource_nodes = [
             index
             for index, node in self.graph_connector.nodes()
@@ -78,7 +77,7 @@ class GraphImageReferencerProvider:
             for _, resource in graph.nodes(data=True):
                 yield resource
 
-        def extract_resource_rustworkx(graph: rustworkx.PyDiGraph[Any, Any]) -> Generator[dict[str, Any], None, None]:
+        def extract_resource_rustworkx(graph: _RustworkxGraph) -> Generator[dict[str, Any], None, None]:
             for _, resource in graph.nodes():
                 yield resource
 

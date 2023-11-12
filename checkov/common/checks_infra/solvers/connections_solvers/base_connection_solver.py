@@ -42,7 +42,7 @@ class BaseConnectionSolver(BaseSolver):
 
         return self.get_operation(subgraph)
 
-    def is_associated_edge(self, origin_type: str, destination_type: str) -> bool:
+    def is_associated_edge(self, origin_type: str | None, destination_type: str | None) -> bool:
         return (origin_type in self.resource_types and destination_type in self.connected_resources_types) or (
             origin_type in self.connected_resources_types and destination_type in self.resource_types
         )

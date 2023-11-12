@@ -54,8 +54,8 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self.relative_paths_cache: dict[tuple[str, str], str] = {}
         self.abspath_cache: Dict[str, str] = {}
         self.dirname_cache: Dict[str, str] = {}
-        self.vertices_by_module_dependency_by_name: Dict[TFModule | None, Dict[str, Dict[str, List[int]]]] = defaultdict(partial(defaultdict, partial(defaultdict, list)))  # type:ignore[arg-type]
-        self.vertices_by_module_dependency: Dict[TFModule | None, Dict[str, List[int]]] = defaultdict(partial(defaultdict, list))  # type:ignore[arg-type]
+        self.vertices_by_module_dependency_by_name: Dict[TFModule | None, Dict[str, Dict[str, List[int]]]] = defaultdict(partial(defaultdict, partial(defaultdict, list)))
+        self.vertices_by_module_dependency: Dict[TFModule | None, Dict[str, List[int]]] = defaultdict(partial(defaultdict, list))
         self.enable_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_FOREACH_HANDLING', 'True'))
         self.enable_modules_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_MODULES_FOREACH_HANDLING', 'True'))
         self.foreach_blocks: Dict[str, List[int]] = {BlockType.RESOURCE: [], BlockType.MODULE: []}
@@ -125,10 +125,10 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
     def _arrange_graph_data(self) -> None:
         # reset all the relevant data
         self.vertices_by_block_type = defaultdict(list)
-        self.vertices_block_name_map = defaultdict(partial(defaultdict, list))  # type:ignore[arg-type]
+        self.vertices_block_name_map = defaultdict(partial(defaultdict, list))
         self.map_path_to_module = {}
-        self.vertices_by_module_dependency = defaultdict(partial(defaultdict, list))  # type:ignore[arg-type]
-        self.vertices_by_module_dependency_by_name = defaultdict(partial(defaultdict, partial(defaultdict, list)))  # type:ignore[arg-type]
+        self.vertices_by_module_dependency = defaultdict(partial(defaultdict, list))
+        self.vertices_by_module_dependency_by_name = defaultdict(partial(defaultdict, partial(defaultdict, list)))
         self.edges = []
         for i in range(len(self.vertices)):
             self.out_edges[i] = []

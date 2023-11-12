@@ -106,7 +106,7 @@ setup(
         "schema",
         "requests>=2.27.0",
         "yarl",
-        "openai",
+        "openai<1.0.0",
         "spdx-tools>=0.8.0,<0.9.0",
         "license-expression",
         "rustworkx",
