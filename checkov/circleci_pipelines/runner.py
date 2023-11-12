@@ -31,15 +31,17 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
     def included_paths(self) -> list[str]:
         return [".circleci"]
 
+    @staticmethod
     def _parse_file(
-        self, f: str, file_content: str | None = None
+        f: str, file_content: str | None = None
     ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
-        if self.is_workflow_file(f):
-            return super()._parse_file(f)
+        if Runner.is_workflow_file(f):
+            return YamlRunner._parse_file(f)
 
         return None
 
-    def is_workflow_file(self, file_path: str) -> bool:
+    @staticmethod
+    def is_workflow_file(file_path: str) -> bool:
         """
         :return: True if the file mentioned is named config.yml/yaml in .circleci dir from included_paths(). Otherwise: False
         """
