@@ -128,9 +128,12 @@ class BcPlatformIntegration:
         self.ca_certificate: str | None = None
         self.no_cert_verify: bool = False
         self.on_prem: bool = False
+        self.daemon_process = False  # set to 'True' when running in multiprocessing 'spawn' mode
 
     def init_instance(self, platform_integration_data: dict[str, Any]) -> None:
         """This is mainly used for recreating the instance without interacting with the platform again"""
+
+        self.daemon_process = True
 
         self.bc_api_url = platform_integration_data["bc_api_url"]
         self.bc_api_key = platform_integration_data["bc_api_key"]
@@ -377,6 +380,7 @@ class BcPlatformIntegration:
                 self.support_bucket, self.support_repo_path = cast(str, support_path).split("/", 1)
 
             self.use_s3_integration = True
+            self.platform_integration_configured = True
         except MaxRetryError:
             logging.error("An SSL error occurred connecting to the platform. If you are on a VPN, please try "
                           "disabling it and re-running the command.", exc_info=True)

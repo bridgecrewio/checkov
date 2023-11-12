@@ -63,7 +63,7 @@ class Runner(BaseRunner[None, None, None]):
 
         if not bc_integration.timestamp and bc_integration.bc_source and not bc_integration.bc_source.upload_results:
             bc_integration.set_s3_integration()
-        if not bc_integration.credentials:
+        if bc_integration.daemon_process:
             # only happens for 'ParallelizationType.SPAWN'
             bc_integration.setup_http_manager()
             bc_integration.set_s3_integration()
