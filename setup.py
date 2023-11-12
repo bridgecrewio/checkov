@@ -65,7 +65,7 @@ setup(
         ]
     },
     install_requires=[
-        "bc-python-hcl2==0.3.51",
+        "bc-python-hcl2==0.4.1",
         "bc-detect-secrets==1.4.30",
         "bc-jsonpath-ng==1.5.9",
         "tabulate",
@@ -110,7 +110,7 @@ setup(
         "spdx-tools>=0.8.0,<0.9.0",
         "license-expression",
         "rustworkx",
-        "pydantic"
+        "pydantic",
     ],
     dependency_links=[],  # keep it empty, needed for pipenv-setup
     license="Apache License 2.0",

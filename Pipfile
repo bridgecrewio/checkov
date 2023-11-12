@@ -43,7 +43,7 @@ boto3-stubs-lite = {extras = ["s3"], version = "*"}
 #
 # REMINDER: Update "install_requires" deps on setup.py when changing
 #
-bc-python-hcl2 = "==0.3.51"
+bc-python-hcl2 = "==0.4.1"
 bc-detect-secrets = "==1.4.30"
 bc-jsonpath-ng = "==1.5.9"
 tabulate = "*"
