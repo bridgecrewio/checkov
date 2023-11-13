@@ -32,8 +32,15 @@ if TYPE_CHECKING:
     from aiohttp import ClientSession
     from checkov.common.output.common import SCADetails
     from checkov.common.output.report import Report
-    from checkov.common.typing import _LicenseStatus, _CheckResult, _ScaSuppressions, _ScaSuppressionsMaps, \
-    _SuppressedCves, _SuppressedLicenses, _ImageReferencerLicenseStatus
+    from checkov.common.typing import (
+        _LicenseStatus,
+        _CheckResult,
+        _ScaSuppressions,
+        _ScaSuppressionsMaps,
+        _SuppressedCves,
+        _SuppressedLicenses,
+        _ImageReferencerLicenseStatus,
+    )
 
 
 def create_report_license_record(
