@@ -617,7 +617,7 @@ class TFParser:
         explicit_var_files_to_data = self._load_files(explicit_var_files)
         # it's possible that os.scandir returned the var files in a different order than they were specified
         if vars_files:
-            for var_file, data in sorted(explicit_var_files_to_data, key=lambda x: vars_files.index(x[0])):  # type:ignore[union-attr]  # false-positive
+            for var_file, data in sorted(explicit_var_files_to_data, key=lambda x: vars_files.index(x[0])):
                 if data:
                     self.external_variables_data.extend([(k, v, var_file) for k, v in data.items()])
 
