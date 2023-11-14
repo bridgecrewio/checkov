@@ -24,6 +24,10 @@ class LambdaEnvironmentCredentials(BaseResourceCheck):
                 variables = environment.get("Variables")
                 if variables and isinstance(variables, dict):
                     for var_name, value in variables.items():
+                        if isinstance(value, dict):
+                            # if it is a resolved instrinsic function like !Ref: xyz, then it can't be a secret
+                            continue
+
                         secrets = get_secrets_from_string(str(value), AWS, GENERAL)
                         if secrets:
                             self.evaluated_keys = [f"Properties/Environment/Variables/{var_name}"]

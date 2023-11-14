@@ -15,7 +15,7 @@
 						<url>https://pypi.org/project/cyclonedx-python-lib/</url>
 					</reference>
 					<reference type="documentation">
-						<url>https://cyclonedx.github.io/cyclonedx-python-lib/</url>
+						<url>https://cyclonedx-python-library.readthedocs.io/</url>
 					</reference>
 					<reference type="issue-tracker">
 						<url>https://github.com/CycloneDX/cyclonedx-python-lib/issues</url>
@@ -30,7 +30,7 @@
 						<url>https://github.com/CycloneDX/cyclonedx-python-lib</url>
 					</reference>
 					<reference type="website">
-						<url>https://cyclonedx.org</url>
+						<url>https://github.com/CycloneDX/cyclonedx-python-lib/#readme</url>
 					</reference>
 				</externalReferences>
 			</tool>
