@@ -12,6 +12,7 @@ from json import JSONDecodeError
 from os import path
 from pathlib import Path
 from time import sleep
+from types import MethodType
 from typing import List, Dict, TYPE_CHECKING, Any, cast, Optional, Union
 from urllib.parse import urlparse
 
@@ -127,6 +128,45 @@ class BcPlatformIntegration:
         self.ca_certificate: str | None = None
         self.no_cert_verify: bool = False
         self.on_prem: bool = False
+        self.daemon_process = False  # set to 'True' when running in multiprocessing 'spawn' mode
+
+    def init_instance(self, platform_integration_data: dict[str, Any]) -> None:
+        """This is mainly used for recreating the instance without interacting with the platform again"""
+
+        self.daemon_process = True
+
+        self.bc_api_url = platform_integration_data["bc_api_url"]
+        self.bc_api_key = platform_integration_data["bc_api_key"]
+        self.bc_source = platform_integration_data["bc_source"]
+        self.bc_source_version = platform_integration_data["bc_source_version"]
+        self.cicd_details = platform_integration_data["cicd_details"]
+        self.prisma_api_url = platform_integration_data["prisma_api_url"]
+        self.repo_branch = platform_integration_data["repo_branch"]
+        self.repo_id = platform_integration_data["repo_id"]
+        self.repo_path = platform_integration_data["repo_path"]
+        self.timestamp = platform_integration_data["timestamp"]
+        self.setup_api_urls()
+        # 'mypy' doesn't like, when you try to override an instance method
+        self.get_auth_token = MethodType(lambda _=None: platform_integration_data["get_auth_token"], self)  # type:ignore[method-assign]
+
+    def generate_instance_data(self) -> dict[str, Any]:
+        """This output is used to re-initialize the instance and should be kept in sync with 'init_instance()'"""
+
+        return {
+            # 'api_url' will be set by invoking 'setup_api_urls()'
+            "bc_api_url": self.bc_api_url,
+            "bc_api_key": self.bc_api_key,
+            "bc_source": self.bc_source,
+            "bc_source_version": self.bc_source_version,
+            "cicd_details": self.cicd_details,
+            "prisma_api_url": self.prisma_api_url,
+            "repo_branch": self.repo_branch,
+            "repo_id": self.repo_id,
+            "repo_path": self.repo_path,
+            "timestamp": self.timestamp,
+            # will be overriden with a simple lambda expression
+            "get_auth_token": self.get_auth_token() if self.bc_api_key else ""
+        }
 
     def set_bc_api_url(self, new_url: str) -> None:
         self.bc_api_url = normalize_bc_url(new_url)
@@ -336,15 +376,11 @@ class BcPlatformIntegration:
                 config=config,
             )
 
-            if support_path:
-                self.support_bucket, self.support_repo_path = support_path.split("/", 1)
-            elif self.support_flag_enabled:
-                logging.debug(
-                    '--support was used, but we did not get a support file upload path in the platform response. Using the old location.')
-                self.support_bucket = self.bucket
-                self.support_repo_path = self.repo_path
+            if self.support_flag_enabled:
+                self.support_bucket, self.support_repo_path = cast(str, support_path).split("/", 1)
 
             self.use_s3_integration = True
+            self.platform_integration_configured = True
         except MaxRetryError:
             logging.error("An SSL error occurred connecting to the platform. If you are on a VPN, please try "
                           "disabling it and re-running the command.", exc_info=True)
@@ -574,9 +610,8 @@ class BcPlatformIntegration:
             logging.error(f"Something went wrong: bucket {self.bucket}, repo path {self.repo_path}")
             return
         persist_run_metadata(run_metadata, self.s3_client, self.bucket, self.repo_path, True)
-        # only upload it if we did not fall back to use the same location
-        if self.support_bucket and self.support_repo_path and self.support_repo_path != self.repo_path:
-            logging.debug('Also uploading run_metadata.json to support location')
+        if self.support_bucket and self.support_repo_path:
+            logging.debug(f'Also uploading run_metadata.json to support location: {self.support_bucket}/{self.support_repo_path}')
             persist_run_metadata(run_metadata, self.s3_client, self.support_bucket, self.support_repo_path, False)
 
     def persist_logs_stream(self, logs_stream: StringIO) -> None:
@@ -586,9 +621,7 @@ class BcPlatformIntegration:
             logging.error(
                 f"Something went wrong with the log upload location: bucket {self.support_bucket}, repo path {self.support_repo_path}")
             return
-        # use checkov_results if we fall back to using the same location
-        log_path = f'{self.support_repo_path}/checkov_results' if self.support_repo_path == self.repo_path else self.support_repo_path
-        persist_logs_stream(logs_stream, self.s3_client, self.support_bucket, log_path)
+        persist_logs_stream(logs_stream, self.s3_client, self.support_bucket, self.support_repo_path)
 
     def persist_graphs(self, graphs: dict[str, list[tuple[LibraryGraph, Optional[str]]]], absolute_root_folder: str = '') -> None:
         if not self.use_s3_integration or not self.s3_client or self.s3_setup_failed:

@@ -97,11 +97,12 @@ class Report:
     def get_all_records(self) -> List[Record]:
         return self.failed_checks + self.passed_checks + self.skipped_checks
 
-    def get_dict(self, is_quiet: bool = False, url: str | None = None, full_report: bool = False, s3_setup_failed: bool = False) -> dict[str, Any]:
+    def get_dict(self, is_quiet: bool = False, url: str | None = None, full_report: bool = False, s3_setup_failed: bool = False, support_path: str | None = None) -> dict[str, Any]:
         if not url and not s3_setup_failed:
             url = "Add an api key '--bc-api-key <api-key>' to see more detailed insights via https://bridgecrew.cloud"
         elif s3_setup_failed:
             url = S3_UPLOAD_DETAILS_MESSAGE
+
         if is_quiet:
             return {
                 "check_type": self.check_type,
@@ -121,7 +122,7 @@ class Report:
                 "image_cached_results": [res.__dict__ for res in self.image_cached_results]
             }
         else:
-            return {
+            result = {
                 "check_type": self.check_type,
                 "results": {
                     "passed_checks": [check.__dict__ for check in self.passed_checks],
@@ -132,6 +133,11 @@ class Report:
                 "summary": self.get_summary(),
                 "url": url,
             }
+
+            if support_path:
+                result["support_path"] = support_path
+
+            return result
 
     def get_exit_code(self, exit_code_thresholds: Union[_ExitCodeThresholds, _ScaExitCodeThresholds]) -> int:
         """

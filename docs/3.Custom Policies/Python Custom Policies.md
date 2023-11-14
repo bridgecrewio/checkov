@@ -19,7 +19,7 @@ Specify a `name`, `ID`, `relevant resources` and `categories`.
 | Parameter                         | Description                                                                                                                                                                                                                    | Example/Comments                                                                                                                                                                               |
 |-----------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | ``name``                          | A new policy's unique purpose. It should ideally specify the positive desired outcome of the policy.                                                                                                                           |                                                                                                                                                                                                |
-| ``id``                            | A mandatory unique identifier of a policy. Native policies written by Bridgecrew contributors will follow the following convention: ``CKV_providerType_serialNumber``                                                          | `CKV_AWS_9` , `CKV_GCP_12`                                                                                                                                                                                                     |
+| ``id``                            | A mandatory unique identifier of a policy. Native policies written by Prisma Cloud contributors will follow the following convention: ``CKV_providerType_serialNumber``                                                          | `CKV_AWS_9` , `CKV_GCP_12`                                                                                                                                                                                                     |
 | ``supported_resources``           | Infrastructure objects, as described in the scanned IaC's language. This usually contains one specific resource block. If you support multiple resources, you can use `*` to match any type of entity in that specific domain. | `*` use depends on which check base class you extend; see note below table. `?ws_*` will match anything where the second character is a `'w'`, the third is a `'s'` and the fourth is a `'_'`. |
 | ``categories``                    | Categorization of a scan. Usually used to produce compliance reports, pipeline analytics and infrastructure health metrics, etc.                                                                                               |                                                                                                                                                                                                |
 | ``guideline``                     | (Optional) Add extra info to help the user to solve the issue.                                                                                                                                                                 | This is not needed                                                                                                                                                                             |
@@ -287,7 +287,7 @@ class S3PCIPrivateACL(BaseResourceCheck):
         supported_resources = ("aws_s3_bucket",)
         # CheckCategories are defined in models/enums.py
         categories = (CheckCategories.BACKUP_AND_RECOVERY,)
-        guideline = "Follow the link to get more info https://docs.bridgecrew.io/docs"
+        guideline = "Follow the link to get more info https://docs.prismacloud.io/en/enterprise-edition/policy-reference"
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources, guideline=guideline)
 
     def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
@@ -326,7 +326,7 @@ Verify the results:
 Check: "Ensure PCI Scope buckets has private ACL (enable public ACL for non-pci buckets)"
 	FAILED for resource: aws_s3_bucket.credit_cards_bucket
 	File: /main.tf:80-90
-	Guide: Follow the link to get more info https://docs.bridgecrew.io/docs
+	Guide: Follow the link to get more info https://docs.prismacloud.io/en/enterprise-edition/policy-reference
 
 		80 | resource "aws_s3_bucket" "credit_cards_bucket" {
 		81 |   region        = var.region

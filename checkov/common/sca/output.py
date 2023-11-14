@@ -32,8 +32,15 @@ if TYPE_CHECKING:
     from aiohttp import ClientSession
     from checkov.common.output.common import SCADetails
     from checkov.common.output.report import Report
-    from checkov.common.typing import _LicenseStatus, _CheckResult, _ScaSuppressions, _ScaSuppressionsMaps, \
-        _SuppressedCves, _SuppressedLicenses
+    from checkov.common.typing import (
+        _LicenseStatus,
+        _CheckResult,
+        _ScaSuppressions,
+        _ScaSuppressionsMaps,
+        _SuppressedCves,
+        _SuppressedLicenses,
+        _ImageReferencerLicenseStatus,
+    )
 
 
 def create_report_license_record(
@@ -673,8 +680,9 @@ def get_license_statuses(packages: list[dict[str, Any]]) -> list[_LicenseStatus]
     return []
 
 
-async def get_license_statuses_async(session: ClientSession, packages: list[dict[str, Any]], image_name: str) \
-        -> dict[str, str | list[_LicenseStatus]]:
+async def get_license_statuses_async(
+    session: ClientSession, packages: list[dict[str, Any]], image_name: str
+) -> _ImageReferencerLicenseStatus:
     """
     This is an async implementation of `get_license_statuses`. The only change is we're getting a session
     as an input, and the asyncio behavior is managed in the calling method.

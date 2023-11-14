@@ -737,7 +737,7 @@ def test_output_file_path_with_output_mapping(tmp_path: Path, capsys: CaptureFix
     runner_registry.print_reports(scan_reports=reports, config=config)
 
     # then
-    assert 'By bridgecrew.io' in capsys.readouterr().out
+    assert 'By Prisma Cloud' in capsys.readouterr().out
 
     assert json_file_path.exists()
     assert '"check_type": "terraform"' in json_file_path.read_text()

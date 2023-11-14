@@ -106,9 +106,18 @@ jobs:
           pipenv run pip install pyinstaller
       - name: Build executable
         run: pipenv run pyinstaller checkov.spec
+      - name: Windows - Test executable
+        if: matrix.os == 'windows-latest'
+        shell: bash
+        # make sure it doesn't crash
+        run: ./dist/checkov.exe -s -d tests/terraform/checks/resource/alicloud
       - name: Windows - zip artifact
         if: matrix.os == 'windows-latest'
         run: tar.exe -a -c -f checkov.zip dist\\checkov.exe
+      - name: Linux/Mac - Test executable
+        if: matrix.os != 'windows-latest'
+        # make sure it doesn't crash
+        run: ./dist/checkov -s -d tests/terraform/checks/resource/alicloud
       - name: Linux/Mac - zip artifact
         if: matrix.os != 'windows-latest'
         run: zip checkov.zip dist/checkov

@@ -77,7 +77,7 @@ checkov -d . --framework openapi
  | (__| | | |  __/ (__|   < (_) \ V / 
   \___|_| |_|\___|\___|_|\_\___/ \_/  
                                       
-By bridgecrew.io | version: 2.0.1050
+By Prisma Cloud | version: x.x.x 
 
 
 openapi scan results:
