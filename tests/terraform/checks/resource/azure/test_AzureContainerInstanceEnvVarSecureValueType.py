@@ -17,11 +17,13 @@ class TestAzureContainerInstanceEnvVarSecureValueType(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            'azurerm_container_group.pass',
+            'azurerm_container_group.pass_1',
+            'azurerm_container_group.pass_2',
+            'azurerm_container_group.pass_3',
         }
         failing_resources = {
             'azurerm_container_group.fail_1',
-            # 'azurerm_container_group.fail_2',
+            'azurerm_container_group.fail_2',
         }
         skipped_resources = {}
 
