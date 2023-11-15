@@ -1,6 +1,6 @@
 ---
 metadata:
-  id: CKV_AWS_333333
+  id: CKV_AWS_33
   name: "Ensure KMS key policy does not contain wildcard (*) principal"
   category: IAM
 definition:
