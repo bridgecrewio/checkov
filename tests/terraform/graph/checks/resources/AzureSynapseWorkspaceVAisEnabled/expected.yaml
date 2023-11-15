@@ -1,5 +1,5 @@
 pass:
-  - "resource: azurerm_synapse_workspace_vulnerability_assessment.va_pass"
+  - "azurerm_synapse_workspace_vulnerability_assessment.va_pass"
 
 fail:
   - "azurerm_synapse_workspace_vulnerability_assessment.va_fail_1"
