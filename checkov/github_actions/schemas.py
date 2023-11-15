@@ -1650,9 +1650,9 @@ gha_workflow = {
                                     "$ref": "#/definitions/types",
                                     "items": {
                                         "type": "string",
-                                        "enum": ["completed", "requested", "rerequested"]
+                                        "enum": ["completed"]
                                     },
-                                    "default": ["completed", "requested", "rerequested"]
+                                    "default": ["completed"]
                                 }
                             }
                         },
