@@ -899,8 +899,9 @@ class BcPlatformIntegration:
             else:
                 logging.warning("Skipping get prisma build policies. --policy-metadata-filter will not be applied.")
         except Exception:
+            response_message = f': {request.status} - {request.reason}' if request else ''
             logging.warning(
-                f"Failed to get prisma build policy metadata from {self.prisma_policies_url}: {request.status} - {request.reason}", exc_info=True)
+                f"Failed to get prisma build policy metadata from {self.prisma_policies_url}{response_message}", exc_info=True)
 
     def get_prisma_policy_filters(self) -> Dict[str, Dict[str, Any]]:
         request = None
@@ -923,8 +924,9 @@ class BcPlatformIntegration:
             logging.debug(f'Prisma filter suggestion response: {policy_filters}')
             return policy_filters
         except Exception:
+            response_message = f': {request.status} - {request.reason}' if request else ''
             logging.warning(
-                f"Failed to get prisma build policy metadata from {self.prisma_policy_filters_url}: {request.status} - {request.reason}", exc_info=True)
+                f"Failed to get prisma build policy metadata from {self.prisma_policy_filters_url}{response_message}", exc_info=True)
             return {}
 
     @staticmethod
