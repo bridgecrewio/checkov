@@ -17,7 +17,7 @@ Checkov is able to autodetect helm charts by the presence of a `Chart.yaml` file
  | (__| | | |  __/ (__|   < (_) \ V /
   \___|_| |_|\___|\___|_|\_\___/ \_/
 
-By bridgecrew.io | version: 2.0.587
+By Prisma Cloud | version: x.x.x 
 
 helm scan results:
 
@@ -26,7 +26,7 @@ Passed checks: 370, Failed checks: 90, Skipped checks: 0
 Check: CKV_K8S_27: "Do not expose the docker daemon socket to containers"
 	PASSED for resource: Deployment.RELEASE-NAME-nextcloud.default
 	File: /nextcloud/templates/deployment.yaml:3-107
-	Guide: https://docs.bridgecrew.io/docs/bc_k8s_26
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/kubernetes-policies/kubernetes-policy-index/bc-k8s-26
 
 
 ...
