@@ -1652,7 +1652,7 @@ gha_workflow = {
                                         "type": "string",
                                         "enum": ["completed"]
                                     },
-                                    "default": ["completed"]
+                                    "default": ["completed", "requested", "rerequested"]
                                 }
                             }
                         },
@@ -1820,21 +1820,6 @@ gha_workflow = {
                                         "enum": ["created", "edited", "deleted"]
                                     },
                                     "default": ["created", "edited", "deleted"]
-                                }
-                            }
-                        },
-                        "member": {
-                            "$comment": "https://help.github.com/en/github/automating-your-workflow-with-github-actions/events-that-trigger-workflows#member-event-member",
-                            "$ref": "#/definitions/eventObject",
-                            "description": "Runs your workflow anytime the member event occurs. More than one activity type triggers this event. For information about the REST API, see https://developer.github.com/v3/repos/collaborators/.",
-                            "properties": {
-                                "types": {
-                                    "$ref": "#/definitions/types",
-                                    "items": {
-                                        "type": "string",
-                                        "enum": ["added", "edited", "deleted"]
-                                    },
-                                    "default": ["added", "edited", "deleted"]
                                 }
                             }
                         },
