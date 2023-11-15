@@ -1579,6 +1579,11 @@ gha_workflow = {
             "description": "The name of your workflow. GitHub displays the names of your workflows on your repository's actions page. If you omit this field, GitHub sets the name to the workflow's filename.",
             "type": "string"
         },
+        "run-name": {
+            "$comment": "https://help.github.com/en/github/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions#run-name",
+            "description": "A name for your workflow run. You can use the name to filter job runs in the dashboard and in the REST API.",
+            "type": "string"
+        },
         "on": {
             "$comment": "https://help.github.com/en/github/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions#on",
             "description": "The name of the GitHub event that triggers the workflow. You can provide a single event string, array of events, array of event types, or an event configuration map that schedules a workflow or restricts the execution of a workflow to specific files, tags, or branch changes. For a list of available events, see https://help.github.com/en/github/automating-your-workflow-with-github-actions/events-that-trigger-workflows.",

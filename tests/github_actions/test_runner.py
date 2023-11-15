@@ -26,7 +26,7 @@ class TestRunnerValid(unittest.TestCase):
         # then
         self.assertEqual(len(report.failed_checks), 9)
         self.assertEqual(len(report.parsing_errors), 0)
-        self.assertEqual(len(report.passed_checks), 157)
+        self.assertEqual(len(report.passed_checks), 161)
         self.assertEqual(len(report.skipped_checks), 0)
 
     def test_runner_multi_file(self):
