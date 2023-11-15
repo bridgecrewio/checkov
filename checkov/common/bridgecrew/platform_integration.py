@@ -829,6 +829,9 @@ class BcPlatformIntegration:
             raise Exception(
                 "Tried to get prisma build policy metadata, "
                 "but the API key was missing or the integration was not set up")
+
+        request = None
+
         try:
             token = self.get_auth_token()
             headers = merge_dicts(get_prisma_auth_header(token), get_prisma_get_headers())
@@ -856,9 +859,10 @@ class BcPlatformIntegration:
                 logging.warning("Skipping get prisma build policies. --policy-metadata-filter will not be applied.")
         except Exception:
             logging.warning(
-                f"Failed to get prisma build policy metadata from {self.platform_run_config_url}", exc_info=True)
+                f"Failed to get prisma build policy metadata from {self.prisma_policies_url}: {request.status} - {request.reason}", exc_info=True)
 
     def get_prisma_policy_filters(self) -> Dict[str, Dict[str, Any]]:
+        request = None
         try:
             token = self.get_auth_token()
             headers = merge_dicts(get_prisma_auth_header(token), get_prisma_get_headers())
@@ -879,7 +883,7 @@ class BcPlatformIntegration:
             return policy_filters
         except Exception:
             logging.warning(
-                f"Failed to get prisma build policy metadata from {self.platform_run_config_url}", exc_info=True)
+                f"Failed to get prisma build policy metadata from {self.prisma_policy_filters_url}: {request.status} - {request.reason}", exc_info=True)
             return {}
 
     @staticmethod
