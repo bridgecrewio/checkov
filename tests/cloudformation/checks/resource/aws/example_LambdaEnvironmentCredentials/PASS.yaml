@@ -41,3 +41,18 @@ Resources:
       Description: Invoke a function during stack creation.
       TracingConfig:
         Mode: Active
+  UnresolvedEnv:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: nodejs12.x
+      Role: arn:aws:iam::123456789012:role/lambda-role
+      Handler: index.handler
+      Environment:
+        Variables:
+          MY_COOL_STATE_MACHINE: !Ref MySuperCoolFortyCharLongStateMachineeeee
+      Code:
+        ZipFile: |
+          print('hi')
+      Description: Invoke a function during stack creation.
+      TracingConfig:
+        Mode: Active

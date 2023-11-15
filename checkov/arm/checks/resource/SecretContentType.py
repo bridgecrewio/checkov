@@ -7,11 +7,11 @@ from checkov.arm.base_resource_value_check import BaseResourceValueCheck
 
 
 class SecretContentType(BaseResourceValueCheck):
-    def __init__(self):
-        name = "Ensure that key vault secrets have \"content_type\" set"
+    def __init__(self) -> None:
+        name = 'Ensure that key vault secrets have "content_type" set'
         id = "CKV_AZURE_114"
-        supported_resources = ['Microsoft.KeyVault/vaults/secrets']
-        categories = [CheckCategories.GENERAL_SECURITY]
+        supported_resources = ("Microsoft.KeyVault/vaults/secrets",)
+        categories = (CheckCategories.GENERAL_SECURITY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self) -> str:

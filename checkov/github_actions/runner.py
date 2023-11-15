@@ -54,10 +54,11 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
     def import_registry(self) -> BaseCheckRegistry:
         return registry
 
-    def _parse_file(self, f: str, file_content: str | None = None) -> \
+    @staticmethod
+    def _parse_file(f: str, file_content: str | None = None) -> \
             tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
         if is_workflow_file(f):
-            entity_schema: tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None = super()._parse_file(f)
+            entity_schema: tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None = YamlRunner._parse_file(f)
             if not entity_schema:
                 # Indicates that there was an exception/error while trying to read the file,
                 # hence no need to check the schema validity.

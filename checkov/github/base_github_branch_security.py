@@ -24,8 +24,7 @@ class BranchSecurity(BaseGithubCheck):
             block_type=BlockType.DOCUMENT,
         )
 
-    def scan_entity_conf(  # type:ignore[override]
-            self, conf: dict[str, Any], entity_type: str) -> CheckResult:
+    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> CheckResult:
         if branch_security_schema.validate(conf):
             evaluated_key = self.get_evaluated_keys()[0]
             jsonpath_expression = get_jsonpath_from_evaluated_key(evaluated_key)

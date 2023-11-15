@@ -1,0 +1,13 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_104
+  name: Ensure DocDB has audit logs enabled
+  category: LOGGING
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.aws_docdb.CfnDBClusterParameterGroup(<ANY>)
+  conditions:
+    - not_pattern: 'aws_cdk.aws_docdb.CfnDBClusterParameterGroup(<ANY>, parameters={<ANY>, "audit_logs": "enabled" , <ANY>} , <ANY>)'
