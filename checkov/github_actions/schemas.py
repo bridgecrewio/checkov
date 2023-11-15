@@ -1875,7 +1875,6 @@ gha_workflow = {
                                         "type": "string",
                                         "enum": [
                                             "created",
-                                            "updated",
                                             "closed",
                                             "reopened",
                                             "edited",
@@ -1884,7 +1883,6 @@ gha_workflow = {
                                     },
                                     "default": [
                                         "created",
-                                        "updated",
                                         "closed",
                                         "reopened",
                                         "edited",
