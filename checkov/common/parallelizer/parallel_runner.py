@@ -27,7 +27,7 @@ class ParallelRunner:
 
         custom_type = os.getenv("CHECKOV_PARALLELIZATION_TYPE")
         if custom_type:
-            self.type = custom_type
+            self.type = custom_type.lower()
 
         if not custom_type and os.getenv("PYCHARM_HOSTED") == "1":
             # PYCHARM_HOSTED env variable equals 1 when debugging via jetbrains IDE.
