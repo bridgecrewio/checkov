@@ -10,8 +10,7 @@ resource "azurerm_synapse_workspace" "synapse_ws_pass_1" {
   location                             = var.default_var
   storage_data_lake_gen2_filesystem_id = var.default_var
   sql_administrator_login              = "pudsqladminuser"
-  # checkov:skip=CKV_SECRET_6 test secret
-  sql_administrator_login_password     = "P@ssw0rd@1"
+  sql_administrator_login_password     = "P@ssw0rd@1" # checkov:skip=CKV_SECRET_80 test secret
 
   aad_admin {
     login     = "AzureAD Admin"
@@ -56,8 +55,7 @@ resource "azurerm_synapse_workspace" "synapse_ws_fail_1" {
   location                             = var.default_var
   storage_data_lake_gen2_filesystem_id = var.default_var
   sql_administrator_login              = "pudsqladminuser"
-  # checkov:skip=CKV_SECRET_6 test secret
-  sql_administrator_login_password     = "P@ssw0rd@1"
+  sql_administrator_login_password     = "P@ssw0rd@1" # checkov:skip=CKV_SECRET_80 test secret
 
   aad_admin {
     login     = "AzureAD Admin"
@@ -102,8 +100,7 @@ resource "azurerm_synapse_workspace" "synapse_ws_fail_2" {
   location                             = var.default_var
   storage_data_lake_gen2_filesystem_id = var.default_var
   sql_administrator_login              = "pudsqladminuser"
-  # checkov:skip=CKV_SECRET_6 test secret
-  sql_administrator_login_password     = "P@ssw0rd@1"
+  sql_administrator_login_password     = "P@ssw0rd@1" # checkov:skip=CKV_SECRET_80 test secret
 
   aad_admin {
     login     = "AzureAD Admin"
@@ -149,8 +146,7 @@ resource "azurerm_synapse_workspace" "synapse_ws_fail_3" {
   location                             = var.default_var
   storage_data_lake_gen2_filesystem_id = var.default_var
   sql_administrator_login              = "pudsqladminuser"
-  # checkov:skip=CKV_SECRET_6 test secret
-  sql_administrator_login_password     = "P@ssw0rd@1"
+  sql_administrator_login_password     = "P@ssw0rd@1" # checkov:skip=CKV_SECRET_80 test secret
 
   aad_admin {
     login     = "AzureAD Admin"
