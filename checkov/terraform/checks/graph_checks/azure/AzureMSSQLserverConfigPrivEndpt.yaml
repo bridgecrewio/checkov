@@ -1,6 +1,6 @@
 metadata:
   id: "CKV2_AZURE_45"
-  name: "Ensure Azure SQL server is configured with private endpoint"
+  name: "Ensure Microsoft SQL server is configured with private endpoint"
   category: "GENERAL_SECURITY"
 
 definition:
