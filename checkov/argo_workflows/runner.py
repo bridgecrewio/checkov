@@ -31,16 +31,18 @@ class Runner(YamlRunner, ImageReferencer):
     def import_registry(self) -> BaseCheckRegistry:
         return self.block_type_registries["template"]
 
+    @staticmethod
     def _parse_file(
-        self, f: str, file_content: str | None = None
+        f: str, file_content: str | None = None
     ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
-        content = self._get_workflow_file_content(file_path=f)
+        content = Runner._get_workflow_file_content(file_path=f)
         if content:
-            return super()._parse_file(f=f, file_content=content)
+            return YamlRunner._parse_file(f=f, file_content=content)
 
         return None
 
-    def _get_workflow_file_content(self, file_path: str) -> str | None:
+    @staticmethod
+    def _get_workflow_file_content(file_path: str) -> str | None:
         if not file_path.endswith((".yaml", ".yml")):
             return None
 

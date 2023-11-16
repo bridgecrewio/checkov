@@ -22,8 +22,9 @@ from checkov.common.graph.db_connectors.igraph.igraph_db_connector import Igraph
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.db_connectors.rustworkx.rustworkx_db_connector import RustworkxConnector
 from checkov.common.graph.graph_builder import CustomAttributes
-from checkov.common.models.enums import CheckCategories, CheckResult
+from checkov.common.models.enums import CheckCategories, CheckResult, ParallelizationType
 from checkov.common.output.report import Report
+from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_PREFIX, TERRAFORM_NESTED_MODULE_PATH_ENDING, \
     TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR
@@ -55,11 +56,13 @@ EXTERNAL_MODULES_DOWNLOAD_PATH = os.environ.get('EXTERNAL_MODULES_DIR', DEFAULT_
 class TestRunnerValid(unittest.TestCase):
     def setUp(self) -> None:
         self.orig_checks = resource_registry.checks
+        self.parallelization_type = parallel_runner.type
         self.db_connector = self.db_connector
         os.environ["CHECKOV_GRAPH_FRAMEWORK"] = self.graph
         os.environ["TF_SPLIT_GRAPH"] = self.tf_split_graph
 
     def tearDown(self):
+        parallel_runner.type = self.parallelization_type
         del os.environ["CHECKOV_GRAPH_FRAMEWORK"]
         del os.environ["TF_SPLIT_GRAPH"]
 
@@ -1706,6 +1709,31 @@ class TestRunnerValid(unittest.TestCase):
         entity_context = runner.get_entity_context_and_evaluations(entity_with_found_path)
         assert entity_context is not None
         assert entity_context['start_line'] == 1 and entity_context['end_line'] == 7
+
+
+    def test__parse_files(self):
+        for parallel_type in ParallelizationType:
+            if parallel_runner.os == "Windows" and parallel_type == ParallelizationType.FORK:
+                # fork doesn't wok on Windows
+                continue
+
+            with self.subTest(msg="with parallelization type", parallel_type=parallel_type):
+                # given
+                runner = Runner()
+                runner.definitions = {}
+
+                example_dir = Path(__file__).parent / "resources/example"
+                example_files = [str(file_path) for file_path in example_dir.rglob("*.tf")]
+                parsing_errors = {}
+
+                parallel_runner.type = parallel_type
+
+                # when
+                runner._parse_files(files=example_files, parsing_errors=parsing_errors)
+
+                # then
+                self.assertEqual(len(runner.definitions), 1)
+                self.assertEqual(len(parsing_errors), 1)
 
 
 if __name__ == '__main__':

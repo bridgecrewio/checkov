@@ -5,6 +5,7 @@ import os
 import sys
 
 from checkov.common.bridgecrew.check_type import CheckType
+from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import BaseRunner
 from checkov.common.sast.consts import SUPPORT_FILE_EXT, FILE_EXT_TO_SAST_LANG
@@ -45,6 +46,11 @@ class Runner(BaseRunner[None, None, None]):
         if not runner_filter:
             logger.warning('no runner filter')
             return [Report(self.check_type)]
+
+        if bc_integration.daemon_process:
+            # only happens for 'ParallelizationType.SPAWN'
+            bc_integration.setup_http_manager()
+            bc_integration.set_s3_integration()
 
         # registry get all the paths
         self.registry.set_runner_filter(runner_filter)
