@@ -443,7 +443,7 @@ class TestYamlPolicies(unittest.TestCase):
         self.go("AzureSynapseWorkspaceVAisEnabled")
 
     def test_IBM_AppLBforVPCisPrivate(self):
-        self.go("IBM_AppLBforVPCisPrivate")
+        self.go("IBM_LoadBalancerforVPCisPrivate")
 
     def test_IBM_VPCclassicAccessIsDisabled(self):
         self.go("IBM_VPCclassicAccessIsDisabled")

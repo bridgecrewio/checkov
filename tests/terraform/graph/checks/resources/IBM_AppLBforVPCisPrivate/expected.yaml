@@ -1,5 +1,0 @@
-pass:
-  - "ibm_is_lb.pass"
-fail:
-  - "ibm_is_lb.fail_1"
-  - "ibm_is_lb.fail_2"
