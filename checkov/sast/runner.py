@@ -50,7 +50,7 @@ class Runner(BaseRunner[None, None, None]):
         if bc_integration.daemon_process:
             # only happens for 'ParallelizationType.SPAWN'
             bc_integration.setup_http_manager()
-            bc_integration.set_s3_integration()
+            bc_integration.set_s3_client()
 
         # registry get all the paths
         self.registry.set_runner_filter(runner_filter)
