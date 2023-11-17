@@ -286,7 +286,7 @@ class Checkov:
 
             # set parallelization type for CLI runs to 'spawn' mode,
             # this can be adjusted by setting the env var CHECKOV_PARALLELIZATION_TYPE
-            parallel_runner.type = ParallelizationType.SPAWN
+            parallel_runner.type = ParallelizationType.THREAD if parallel_runner.os == "Windows" else ParallelizationType.SPAWN
 
             # bridgecrew uses both the urllib3 and requests libraries, while checkov uses the requests library.
             # Allow the user to specify a CA bundle to be used by both libraries.

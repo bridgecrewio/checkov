@@ -55,7 +55,11 @@ class ParallelRunner:
 
     def _run_function_multiprocess_fork(
         self, func: Callable[[Any], _T], items: List[Any], group_size: Optional[int]
-    ) -> Generator[_T, None, None]:
+    ) -> Generator[_T, None, Iterable[_T]]:
+        if multiprocessing.current_process().daemon:
+            # can't fork, when already inside a pool
+            return self._run_function_multithreaded(func, items)
+
         if not group_size:
             group_size = int(len(items) / self.workers_number) + 1
         groups_of_items = [items[i : i + group_size] for i in range(0, len(items), group_size)]
@@ -96,6 +100,8 @@ class ParallelRunner:
                     yield parent_conn.recv()
                 except EOFError:
                     pass
+
+        return []
 
     def _run_function_multiprocess_spawn(
         self, func: Callable[[Any], _T], items: list[Any], group_size: int | None
