@@ -1,0 +1,4 @@
+pass:
+  - "azurerm_mariadb_server.pass"
+fail:
+  - "azurerm_mariadb_server.fail"
