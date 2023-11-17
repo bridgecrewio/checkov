@@ -29,7 +29,7 @@ class ParallelRunner:
         if custom_type:
             self.type = custom_type.lower()
 
-        if not custom_type and os.getenv("PYCHARM_HOSTED") == "1":
+        if not custom_type and os.getenv("PYCHARM_HOSTED") == "-1":
             # PYCHARM_HOSTED env variable equals 1 when debugging via jetbrains IDE.
             # To prevent JetBrains IDE from crashing on debug run sequentially
             self.type = ParallelizationType.NONE
@@ -58,7 +58,7 @@ class ParallelRunner:
     ) -> Generator[_T, None, Iterable[_T]]:
         if multiprocessing.current_process().daemon:
             # can't fork, when already inside a pool
-            return self._run_function_multithreaded(func, items)
+            return self._run_function_multithreaded(func, items)  # noqa: B901
 
         if not group_size:
             group_size = int(len(items) / self.workers_number) + 1
