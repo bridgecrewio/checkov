@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Optional, TYPE_CHECKING
-from typing_extensions import TypedDict
+from typing import Optional, TYPE_CHECKING, TypedDict
 
 if TYPE_CHECKING:
     from detect_secrets.core.potential_secret import PotentialSecret

@@ -185,7 +185,10 @@ def request_wrapper(
             logging.exception("request_wrapper connection error")
             raise connection_error
         except requests.exceptions.HTTPError as http_error:
-            status_code = http_error.response.status_code
+            status_code = 520  # set unknown error, if http_error.response is None
+            if http_error.response is not None:
+                status_code = http_error.response.status_code
+
             logging.error(f"HTTP error on request {method}:{url},\ndata:\n{data}\njson:{json if log_json_body else 'Redacted'}\nheaders:{headers}")
             if (status_code >= 500 or status_code == 403) and i != request_max_tries - 1:
                 sleep_secs = sleep_between_request_tries * (i + 1)
@@ -208,16 +211,10 @@ async def aiohttp_client_session_wrapper(
     request_max_tries = int(os.getenv('REQUEST_MAX_TRIES', 3))
     sleep_between_request_tries = float(os.getenv('SLEEP_BETWEEN_REQUEST_TRIES', 1))
 
-    try:  # TODO: test again, when Python 3.11 is out
-        import aiodns  # type: ignore[import]  # noqa: F401
-        resolver: "aiohttp.abc.AbstractResolver" = aiohttp.AsyncResolver()
-    except ImportError:
-        resolver = aiohttp.ThreadedResolver()
-
     # adding retry mechanism for avoiding the next repeated unexpected issues:
     # 1. Gateway Timeout from the server
     # 2. ClientOSError
-    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(resolver=resolver)) as session:
+    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(resolver=aiohttp.AsyncResolver())) as session:
         for i in range(request_max_tries):
             logging.info(
                 f"[http_utils](aiohttp_client_session_wrapper) reporting attempt {i + 1} out of {request_max_tries}")

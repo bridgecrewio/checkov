@@ -36,7 +36,7 @@ markComment: >
   It will be closed in 14 days if no further activity occurs. 
   Commenting on this issue will remove the stale tag.
   If you want to talk through the issue or help us understand the priority and context, 
-  feel free to add a comment or join us in the Checkov slack channel at https://slack.bridgecrew.io
+  feel free to add a comment or join us in the Checkov slack channel at codifiedsecurity.slack.com
 
   Thanks! 
 
@@ -48,7 +48,7 @@ markComment: >
 closeComment: >
   Closing issue due to inactivity.
   If you feel this is in error, please re-open, or reach out to the community via slack:
-  https://slack.bridgecrew.io
+  codifiedsecurity.slack.com
   Thanks!
 
 # Limit the number of actions per hour, from 1-30. Default is 30

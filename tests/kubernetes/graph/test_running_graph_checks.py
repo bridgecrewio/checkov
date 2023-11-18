@@ -5,11 +5,12 @@ from pytest_mock import MockerFixture
 
 from checkov.kubernetes.runner import Runner
 from checkov.runner_filter import RunnerFilter
+from tests.graph_utils.utils import GRAPH_FRAMEWORKS
 
 RESOURCES_DIR = Path(__file__).parent / "resources"
 
 
-@pytest.mark.parametrize("graph_framework", ["NETWORKX", "IGRAPH"])
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
 def test_runner(mocker: MockerFixture, graph_framework):
     # given
     test_file_path = RESOURCES_DIR / "graph_check.yaml"

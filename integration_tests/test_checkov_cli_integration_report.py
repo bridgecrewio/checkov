@@ -21,7 +21,7 @@ class TestCheckovJsonReport(unittest.TestCase):
         self.validate_report(os.path.abspath(report_path))
 
     def validate_report(self, report_path, url_should_exist=True):
-        if sys.version_info[1] == 7 and platform.system() == 'Linux':
+        if sys.version_info[1] == 8 and platform.system() == 'Linux':
             platform_url_found = False
             with open(report_path) as f:
                 if 'More details: https://www.bridgecrew.cloud/projects?' in f.read():
@@ -30,7 +30,7 @@ class TestCheckovJsonReport(unittest.TestCase):
 
     def test_workflow_report_api_key(self):
         report_path = os.path.join(current_dir, '..', 'checkov_report_workflow_cve.json')
-        if sys.version_info[1] == 7 and platform.system() == 'Linux':
+        if sys.version_info[1] == 8 and platform.system() == 'Linux':
             with open(report_path, encoding='utf-8') as f:
                 reports = json.load(f)
                 self.assertGreaterEqual(len(reports), 2,
@@ -49,7 +49,7 @@ class TestCheckovJsonReport(unittest.TestCase):
 
     def test_bitbucket_pipelines_report_api_key(self):
         report_path = os.path.join(current_dir, '..', 'checkov_report_bitbucket_pipelines_cve.json')
-        if sys.version_info[1] == 7 and platform.system() == 'Linux':
+        if sys.version_info[1] == 8 and platform.system() == 'Linux':
             with open(report_path, encoding='utf-8') as f:
                 reports = json.load(f)
                 self.assertGreaterEqual(len(reports), 2,

@@ -22,7 +22,6 @@ from checkov.common.util.secrets import omit_secret_value_from_checks
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.output.report import Report, merge_reports
-from checkov.common.runners.base_runner import CHECKOV_CREATE_GRAPH
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.base_runner import BaseTerraformRunner
 from checkov.terraform.checks.data.registry import data_registry
@@ -117,15 +116,14 @@ class Runner(BaseTerraformRunner[_TerraformPlanDefinitions, _TerraformPlanContex
         if self.definitions is None or self.context is None:
             self.definitions, definitions_raw = create_definitions(root_folder, files, runner_filter, parsing_errors)
             self.context = build_definitions_context(self.definitions, definitions_raw)
-            if CHECKOV_CREATE_GRAPH:
-                self.tf_plan_local_graph = self.graph_manager.build_graph_from_definitions(self.definitions, render_variables=False)
-                for vertex in self.tf_plan_local_graph.vertices:
-                    if vertex.block_type == BlockType.RESOURCE:
-                        address = vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS)
-                        report.add_resource(f'{vertex.path}:{address}')
-                self.graph_manager.save_graph(self.tf_plan_local_graph)
-                if self._should_run_deep_analysis:
-                    tf_local_graph = self._create_terraform_graph(runner_filter)
+            self.tf_plan_local_graph = self.graph_manager.build_graph_from_definitions(self.definitions, render_variables=False)
+            for vertex in self.tf_plan_local_graph.vertices:
+                if vertex.block_type == BlockType.RESOURCE:
+                    address = vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS)
+                    report.add_resource(f'{vertex.path}:{address}')
+            self.graph_manager.save_graph(self.tf_plan_local_graph)
+            if self._should_run_deep_analysis:
+                tf_local_graph = self._create_terraform_graph(runner_filter)
 
         if external_checks_dir:
             for directory in external_checks_dir:
@@ -187,7 +185,7 @@ class Runner(BaseTerraformRunner[_TerraformPlanDefinitions, _TerraformPlanContex
             download_external_modules=runner_filter.download_external_modules
         )
         self.graph_manager = graph_manager
-        return tf_local_graph  # type:ignore[return-value]  # will be fixed after removing 'CHECKOV_CREATE_GRAPH'
+        return tf_local_graph
 
     def check_tf_definition(
         self, report: Report, root_folder: str, runner_filter: RunnerFilter, collect_skip_comments: bool = True

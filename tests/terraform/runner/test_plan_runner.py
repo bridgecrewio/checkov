@@ -16,6 +16,7 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import BcSeverities, Severities
 from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.graph.db_connectors.rustworkx.rustworkx_db_connector import RustworkxConnector
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform import TFDefinitionKey
@@ -25,7 +26,8 @@ from checkov.terraform.plan_runner import Runner, resource_registry
 
 @parameterized_class([
    {"db_connector": NetworkxConnector},
-   {"db_connector": IgraphConnector}
+   {"db_connector": IgraphConnector},
+    {"db_connector": RustworkxConnector},
 ])
 class TestRunnerValid(unittest.TestCase):
     @classmethod

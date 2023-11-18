@@ -4,6 +4,7 @@ import itertools
 import logging
 from datetime import datetime, timezone
 from io import StringIO
+from typing import TYPE_CHECKING
 from uuid import uuid4
 
 from license_expression import get_spdx_licensing
@@ -18,6 +19,11 @@ from checkov.common.output.record import SCA_PACKAGE_SCAN_CHECK_NAME, Record
 from checkov.common.output.cyclonedx_consts import SCA_CHECKTYPES
 from checkov.common.output.report import Report
 from checkov.version import version
+
+if TYPE_CHECKING:
+    from boolean import Expression as LicenseExpression
+    from spdx_tools.spdx.model import SpdxNoAssertion
+
 
 DOCUMENT_NAME = "checkov-sbom"
 SPDXREF = "SPDXRef-"
@@ -60,14 +66,16 @@ class SPDX:
     def validate_licenses(self, package: Package, license_: str) -> None:
         if license_ and license_ not in ["Unknown license", "NOT_FOUND", "Unknown"]:
             split_licenses = license_.split(",")
-            licenses = []
+            licenses: list[LicenseExpression | SpdxNoAssertion | SpdxNone] = []
 
             for lic in split_licenses:
                 lic = lic.strip('"')
                 try:
-                    licenses.append(get_spdx_licensing().parse(lic))
+                    license_expression = get_spdx_licensing().parse(lic)
+                    if license_expression is not None:
+                        licenses.append(license_expression)
                 except Exception as e:
-                    logging.info(f"error occured when trying to parse the license:{split_licenses} due to error {e}")
+                    logging.info(f"error occurred when trying to parse the license:{split_licenses} due to error {e}")
             package.license_info_from_files = licenses
 
     def create_package(self, check: Record | ExtraResource) -> Package:

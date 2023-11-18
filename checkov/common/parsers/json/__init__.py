@@ -43,17 +43,17 @@ def parse(
     try:
         return load(filename=filename, allow_nulls=allow_nulls, content=file_content)
     except DecodeError as e:
-        logging.debug(f'Got DecodeError parsing file {filename}', exc_info=True)
+        logging.debug(f"Got DecodeError parsing file {filename}", exc_info=True)
         error = e
     except json.JSONDecodeError as e:
         # Most parsing errors will get caught by the exception above. But, if the file
         # is totally empty, and perhaps in other specific cases, the json library will
         # not even begin parsing with our custom logic that throws the exception above,
         # and will fail with this exception instead.
-        logging.debug(f'Got JSONDecodeError parsing file {filename}', exc_info=True)
+        logging.debug(f"Got JSONDecodeError parsing file {filename}", exc_info=True)
         error = e
     except UnicodeDecodeError as e:
-        logging.debug(f'Got UnicodeDecodeError parsing file {filename}', exc_info=True)
+        logging.debug(f"Got UnicodeDecodeError parsing file {filename}", exc_info=True)
         error = e
 
     if error:

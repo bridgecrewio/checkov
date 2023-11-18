@@ -10,9 +10,9 @@ class TestConfigFile(unittest.TestCase):
                 '--compact', '--directory', 'test-dir', '--docker-image', 'sample-image', '--dockerfile-path',
                 'Dockerfile', '--download-external-modules', 'True', '--evaluate-variables', 'False',
                 '--external-checks-dir', 'sample-dir', '--external-checks-git', 'sample-github-url', '--file',
-                'sample.tf', '--framework', 'all', '--no-guide', '--output', 'cli', '--quiet', '--repo-id',
-                'bridgecrew/sample-repo', '--skip-check', 'CKV_DOCKER_3,CKV_DOCKER_2', '--skip-fixes',
-                '--skip-framework', 'dockerfile', '--skip-suppressions', '--soft-fail', '--branch', 'master',
+                'sample.tf', '--framework', 'all', '--output', 'cli', '--quiet', '--repo-id',
+                'bridgecrew/sample-repo', '--skip-check', 'CKV_DOCKER_3,CKV_DOCKER_2',
+                '--skip-framework', 'dockerfile', '--soft-fail', '--branch', 'master',
                 '--check', 'CKV_DOCKER_1']
         argv_parser = ExtArgumentParser(config_file_parser_class=configargparse.YAMLConfigFileParser)
         config_parser = ExtArgumentParser(

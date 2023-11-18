@@ -43,7 +43,7 @@ checkov -d . --framework argo_workflows
  | (__| | | |  __/ (__|   < (_) \ V / 
   \___|_| |_|\___|\___|_|\_\___/ \_/  
                                       
-By bridgecrew.io | version: 2.0.1210
+By Prisma Cloud | version: 2.0.1210
 
 
 argo_workflows scan results:

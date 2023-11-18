@@ -37,7 +37,7 @@ on https://github.com/bridgecrewio/detect-secrets repo:
  | (__| | | |  __/ (__|   < (_) \ V / 
   \___|_| |_|\___|\___|_|\_\___/ \_/  
                                       
-By bridgecrew.io | version: 2.3.172 
+By Prisma Cloud | version: 2.3.172 
 
 
 secrets scan results:
@@ -48,7 +48,7 @@ Check: CKV_SECRET_6: "Base64 High Entropy String"
 	FAILED for resource: 732a8470a9623e89355d477688afd7f8f4d55e03
 	Severity: LOW
 	File: /tests/plugins/azure_storage_key_test.py:12-13; Commit Added: 018c9d1ee2a152a82c612ee82c0cd952a4f3eae4
-	Guide: https://docs.bridgecrew.io/docs/git_secrets_6
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/secrets-policies/secrets-policy-index/git-secrets-6
 
 		12 | 'Accoun*********************************************************************************************',  # noqa: E501
 
@@ -56,7 +56,7 @@ Check: CKV_SECRET_6: "Base64 High Entropy String"
 	FAILED for resource: b57a3ad258d7674d2005a53aaa67460e25791f71
 	Severity: LOW
 	File: /tests/plugins/keyword_test.py:22-23; Commit Added: 01cde918f5f471cb0e03964db37f905e5bcdd1cf; Commit Removed: e01d818ad118b0b1fccb1cc9b406e7aa1539e242
-	Guide: https://docs.bridgecrew.io/docs/git_secrets_6
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/secrets-policies/secrets-policy-index/git-secrets-6
 
 		22 | 'PASSWORD = "ve********"'
 
@@ -64,7 +64,7 @@ Check: CKV_SECRET_2: "AWS Access Key"
 	FAILED for resource: d70eab08607a4d05faa2d0d6647206599e9abc65
 	Severity: LOW
 	File: /test_diff/test_data/add_sample.diff:10-11; Commit Added: 07d52374f6d1ccc8709069be43139a6ba7ae544b
-	Guide: https://docs.bridgecrew.io/docs/git_secrets_2
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/secrets-policies/secrets-policy-index/git-secrets-2
 	
 ...
 

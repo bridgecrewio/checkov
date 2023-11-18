@@ -5,9 +5,7 @@ import os
 from collections import defaultdict
 from functools import partial
 from pathlib import Path
-from typing import List, Optional, Union, Any, Dict, overload
-
-from typing_extensions import TypedDict
+from typing import List, Optional, Union, Any, Dict, overload, TypedDict
 
 import checkov.terraform.graph_builder.foreach.consts
 from checkov.common.graph.graph_builder import Edge
@@ -29,7 +27,9 @@ from checkov.terraform.graph_builder.graph_components.module import Module
 from checkov.terraform.graph_builder.utils import (
     get_attribute_is_leaf,
     get_referenced_vertices_in_value,
-    attribute_has_nested_attributes, remove_index_pattern_from_str,
+    attribute_has_nested_attributes,
+    remove_index_pattern_from_str,
+    join_double_quote_surrounded_dot_split,
 )
 from checkov.terraform.graph_builder.utils import is_local_path
 from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
@@ -54,8 +54,8 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self.relative_paths_cache: dict[tuple[str, str], str] = {}
         self.abspath_cache: Dict[str, str] = {}
         self.dirname_cache: Dict[str, str] = {}
-        self.vertices_by_module_dependency_by_name: Dict[TFModule | None, Dict[str, Dict[str, List[int]]]] = defaultdict(partial(defaultdict, partial(defaultdict, list)))  # type:ignore[arg-type]
-        self.vertices_by_module_dependency: Dict[TFModule | None, Dict[str, List[int]]] = defaultdict(partial(defaultdict, list))  # type:ignore[arg-type]
+        self.vertices_by_module_dependency_by_name: Dict[TFModule | None, Dict[str, Dict[str, List[int]]]] = defaultdict(partial(defaultdict, partial(defaultdict, list)))
+        self.vertices_by_module_dependency: Dict[TFModule | None, Dict[str, List[int]]] = defaultdict(partial(defaultdict, list))
         self.enable_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_FOREACH_HANDLING', 'True'))
         self.enable_modules_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_MODULES_FOREACH_HANDLING', 'True'))
         self.foreach_blocks: Dict[str, List[int]] = {BlockType.RESOURCE: [], BlockType.MODULE: []}
@@ -125,10 +125,10 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
     def _arrange_graph_data(self) -> None:
         # reset all the relevant data
         self.vertices_by_block_type = defaultdict(list)
-        self.vertices_block_name_map = defaultdict(partial(defaultdict, list))  # type:ignore[arg-type]
+        self.vertices_block_name_map = defaultdict(partial(defaultdict, list))
         self.map_path_to_module = {}
-        self.vertices_by_module_dependency = defaultdict(partial(defaultdict, list))  # type:ignore[arg-type]
-        self.vertices_by_module_dependency_by_name = defaultdict(partial(defaultdict, partial(defaultdict, list)))  # type:ignore[arg-type]
+        self.vertices_by_module_dependency = defaultdict(partial(defaultdict, list))
+        self.vertices_by_module_dependency_by_name = defaultdict(partial(defaultdict, partial(defaultdict, list)))
         self.edges = []
         for i in range(len(self.vertices)):
             self.out_edges[i] = []
@@ -611,9 +611,11 @@ def update_dictionary_attribute(
 
 
 def update_dictionary_attribute(
-        config: Union[List[Any], Dict[str, Any]], key_to_update: str, new_value: Any, dynamic_blocks: bool = False
+    config: Union[List[Any], Dict[str, Any]], key_to_update: str, new_value: Any, dynamic_blocks: bool = False
 ) -> Union[List[Any], Dict[str, Any]]:
     key_parts = key_to_update.split(".")
+    if '"' in key_to_update:
+        key_parts = join_double_quote_surrounded_dot_split(str_parts=key_parts)
 
     if isinstance(config, dict) and isinstance(key_parts, list):
         key = key_parts[0]
@@ -626,17 +628,21 @@ def update_dictionary_attribute(
                 config[key] = to_list(new_value) if dynamic_blocks else new_value
                 return config
             else:
-                config[key] = update_dictionary_attribute(inner_config, ".".join(key_parts[1:]), new_value, dynamic_blocks=dynamic_blocks)
+                config[key] = update_dictionary_attribute(
+                    inner_config, ".".join(key_parts[1:]), new_value, dynamic_blocks=dynamic_blocks
+                )
         else:
             for key in config:
-                config[key] = update_dictionary_attribute(config[key], key_to_update, new_value, dynamic_blocks=dynamic_blocks)
+                config[key] = update_dictionary_attribute(
+                    config[key], key_to_update, new_value, dynamic_blocks=dynamic_blocks
+                )
     if isinstance(config, list):
         return update_list_attribute(
             config=config,
             key_parts=key_parts,
             key_to_update=key_to_update,
             new_value=new_value,
-            dynamic_blocks=dynamic_blocks
+            dynamic_blocks=dynamic_blocks,
         )
     return config
 

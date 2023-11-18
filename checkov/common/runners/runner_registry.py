@@ -12,9 +12,7 @@ import sys
 from collections import defaultdict
 from collections.abc import Iterable
 from pathlib import Path
-from typing import List, Dict, Any, Optional, cast, TYPE_CHECKING, Type
-
-from typing_extensions import Literal
+from typing import List, Dict, Any, Optional, cast, TYPE_CHECKING, Type, Literal
 
 from checkov.common.bridgecrew.code_categories import CodeCategoryMapping, CodeCategoryType
 from checkov.common.bridgecrew.platform_integration import bc_integration
@@ -28,7 +26,7 @@ from checkov.common.bridgecrew.integration_features.integration_feature_registry
 from checkov.common.bridgecrew.platform_errors import ModuleNotEnabledError
 from checkov.common.bridgecrew.severities import Severities
 from checkov.common.images.image_referencer import ImageReferencer
-from checkov.common.models.enums import ErrorStatus
+from checkov.common.models.enums import ErrorStatus, ParallelizationType
 from checkov.common.output.csv import CSVSBOM
 from checkov.common.output.cyclonedx import CycloneDX
 from checkov.common.output.gitlab_sast import GitLabSast
@@ -37,9 +35,10 @@ from checkov.common.output.sarif import Sarif
 from checkov.common.output.spdx import SPDX
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
-from checkov.common.typing import _ExitCodeThresholds, _BaseRunner, _ScaExitCodeThresholds
+from checkov.common.typing import _ExitCodeThresholds, _BaseRunner, _ScaExitCodeThresholds, LibraryGraph
 from checkov.common.util import data_structures_utils
 from checkov.common.util.banner import tool as tool_name
+from checkov.common.util.consts import S3_UPLOAD_DETAILS_MESSAGE
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.json_utils import CustomJSONEncoder
 from checkov.common.util.secrets_omitter import SecretsOmitter
@@ -53,8 +52,6 @@ if TYPE_CHECKING:
     from checkov.common.output.baseline import Baseline
     from checkov.common.runners.base_runner import BaseRunner  # noqa
     from checkov.runner_filter import RunnerFilter
-    from igraph import Graph
-    from networkx import DiGraph
 
 CONSOLE_OUTPUT = "console"
 CHECK_BLOCK_TYPES = frozenset(["resource", "data", "provider", "module"])
@@ -97,7 +94,8 @@ class RunnerRegistry:
         self._check_type_to_report_map: dict[str, Report] = {}  # used for finding reports with the same check type
         self.licensing_integration = licensing_integration  # can be maniuplated by unit tests
         self.secrets_omitter_class = secrets_omitter_class
-        self.check_type_to_graph: dict[str, Graph | DiGraph] = {}
+        self.check_type_to_graph: dict[str, list[tuple[LibraryGraph, Optional[str]]]] = {}
+        self.check_type_to_resource_subgraph_map: dict[str, dict[str, str]] = {}
         for runner in runners:
             if isinstance(runner, image_runner):
                 runner.image_referencers = self.image_referencing_runners
@@ -126,29 +124,18 @@ class RunnerRegistry:
                 # This is the only runner, so raise a clear indication of failure
                 raise ModuleNotEnabledError(f'The framework "{runner_check_type}" is part of the "{self.licensing_integration.get_subscription_for_runner(runner_check_type).name}" module, which is not enabled in the platform')
         else:
-            def _parallel_run(runner: _BaseRunner) -> tuple[Report | list[Report], str | None, DiGraph | Graph | None]:
-                report = runner.run(
-                    root_folder=root_folder,
-                    external_checks_dir=external_checks_dir,
-                    files=files,
-                    runner_filter=self.runner_filter,
-                    collect_skip_comments=collect_skip_comments,
-                )
-                if report is None:
-                    # this only happens, when an uncaught exception inside the runner occurs
-                    logging.error(f"Failed to create report for {runner.check_type} framework")
-                    report = Report(check_type=runner.check_type)
-
-                if runner.graph_manager:
-                    return report, runner.check_type, runner.graph_manager.get_reader_endpoint()
-                return report, None, None
-
             valid_runners = []
             invalid_runners = []
+            platform_integration_data = None
+
+            if parallel_runner.type == ParallelizationType.SPAWN:
+                platform_integration_data = bc_integration.generate_instance_data()
 
             for runner in self.runners:
                 if self.licensing_integration.is_runner_valid(runner.check_type):
-                    valid_runners.append(runner)
+                    valid_runners.append(
+                        (runner, root_folder, external_checks_dir, files, self.runner_filter, collect_skip_comments, platform_integration_data)
+                    )
                 else:
                     invalid_runners.append(runner)
 
@@ -168,17 +155,26 @@ class RunnerRegistry:
                 for runner in invalid_runners:
                     logging.log(level, f'The framework "{runner.check_type}" is part of the "{self.licensing_integration.get_subscription_for_runner(runner.check_type).name}" module, which is not enabled in the platform')
 
-            parallel_runner_results = parallel_runner.run_function(func=_parallel_run, items=valid_runners,
-                                                                   group_size=1)
+            parallel_runner_results = parallel_runner.run_function(
+                func=_parallel_run,
+                items=valid_runners,
+                group_size=1,
+            )
+
             reports = []
             full_check_type_to_graph = {}
+            full_check_type_to_resource_subgraph_map = {}
             for result in parallel_runner_results:
                 if result is not None:
-                    report, check_type, graph = result
+                    report, check_type, graphs, resource_subgraph_map = result
                     reports.append(report)
-                    if check_type is not None and graph is not None:
-                        full_check_type_to_graph[check_type] = graph
+                    if check_type is not None:
+                        if graphs is not None:
+                            full_check_type_to_graph[check_type] = graphs
+                        if resource_subgraph_map is not None:
+                            full_check_type_to_resource_subgraph_map[check_type] = resource_subgraph_map
             self.check_type_to_graph = full_check_type_to_graph
+            self.check_type_to_resource_subgraph_map = full_check_type_to_resource_subgraph_map
 
         merged_reports = self._merge_reports(reports)
         if bc_integration.bc_api_key:
@@ -192,8 +188,11 @@ class RunnerRegistry:
             self._handle_report(scan_report, repo_root_for_plan_enrichment)
 
         if not self.check_type_to_graph:
-            self.check_type_to_graph = {runner.check_type: runner.graph_manager.get_reader_endpoint() for runner
+            self.check_type_to_graph = {runner.check_type: self.extract_graphs_from_runner(runner) for runner
                                         in self.runners if runner.graph_manager}
+        if not self.check_type_to_resource_subgraph_map:
+            self.check_type_to_resource_subgraph_map = {runner.check_type: runner.resource_subgraph_map for runner in
+                                                        self.runners if runner.resource_subgraph_map is not None}
         return self.scan_reports
 
     def _merge_reports(self, reports: Iterable[Report | list[Report]]) -> list[Report]:
@@ -384,7 +383,7 @@ class RunnerRegistry:
         for report in scan_reports:
             if not report.is_empty():
                 if "json" in config.output:
-                    report_jsons.append(report.get_dict(is_quiet=config.quiet, url=url))
+                    report_jsons.append(report.get_dict(is_quiet=config.quiet, url=url, s3_setup_failed=bc_integration.s3_setup_failed, support_path=bc_integration.support_repo_path))
                 if "junitxml" in config.output:
                     junit_reports.append(report)
                 if "github_failed_only" in config.output:
@@ -441,6 +440,7 @@ class RunnerRegistry:
                 output_format="cli",
                 output=cli_output,
                 url=url,
+                support_path=bc_integration.support_repo_path
             )
 
             # Remove colors from the cli output
@@ -471,8 +471,13 @@ class RunnerRegistry:
 
                 del output_formats["sarif"]
 
-                if "cli" not in config.output and url:
-                    print(f"More details: {url}")
+                if "cli" not in config.output:
+                    if url:
+                        print(f"More details: {url}")
+                    elif bc_integration.s3_setup_failed:
+                        print(S3_UPLOAD_DETAILS_MESSAGE)
+                    if bc_integration.support_repo_path:
+                        print(f"\nPath for uploaded logs (give this to support if raising an issue): {bc_integration.support_repo_path}")
                 if CONSOLE_OUTPUT in output_formats.values():
                     print(OUTPUT_DELIMITER)
 
@@ -599,7 +604,7 @@ class RunnerRegistry:
         exit_code = 1 if 1 in exit_codes else 0
         return cast(Literal[0, 1], exit_code)
 
-    def _print_to_console(self, output_formats: dict[str, str], output_format: str, output: str, url: str | None = None) -> None:
+    def _print_to_console(self, output_formats: dict[str, str], output_format: str, output: str, url: str | None = None, support_path: str | None = None) -> None:
         """Prints the output to console, if needed"""
         output_dest = output_formats[output_format]
         if output_dest == CONSOLE_OUTPUT:
@@ -611,6 +616,11 @@ class RunnerRegistry:
                 print(output)
             if url:
                 print(f"More details: {url}")
+            elif bc_integration.s3_setup_failed:
+                print(S3_UPLOAD_DETAILS_MESSAGE)
+
+            if support_path:
+                print(f"\nPath for uploaded logs (give this to support if raising an issue): {support_path}")
 
             if CONSOLE_OUTPUT in output_formats.values():
                 print(OUTPUT_DELIMITER)
@@ -750,3 +760,43 @@ class RunnerRegistry:
             git_org, git_repository = "", ""
 
         return git_org, git_repository
+
+    @staticmethod
+    def extract_graphs_from_runner(runner: _BaseRunner) -> list[tuple[LibraryGraph, Optional[str]]]:
+        # exist only for terraform
+        all_graphs = getattr(runner, 'all_graphs', None)
+        if all_graphs:
+            return all_graphs   # type:ignore[no-any-return]
+        elif runner.graph_manager:
+            return [(runner.graph_manager.get_reader_endpoint(), None)]
+        return []
+
+
+def _parallel_run(
+    runner: _BaseRunner,
+    root_folder: str | None = None,
+    external_checks_dir: list[str] | None = None,
+    files: list[str] | None = None,
+    runner_filter: RunnerFilter | None = None,
+    collect_skip_comments: bool = True,
+    platform_integration_data: dict[str, Any] | None = None,
+) -> tuple[Report | list[Report], str | None, list[tuple[LibraryGraph, str | None]] | None, dict[str, str] | None]:
+    if platform_integration_data:
+        # only happens for 'ParallelizationType.SPAWN'
+        bc_integration.init_instance(platform_integration_data=platform_integration_data)
+
+    report = runner.run(
+        root_folder=root_folder,
+        external_checks_dir=external_checks_dir,
+        files=files,
+        runner_filter=runner_filter,
+        collect_skip_comments=collect_skip_comments,
+    )
+    if report is None:
+        # this only happens, when an uncaught exception inside the runner occurs
+        logging.error(f"Failed to create report for {runner.check_type} framework")
+        report = Report(check_type=runner.check_type)
+
+    if runner.graph_manager:
+        return report, runner.check_type, RunnerRegistry.extract_graphs_from_runner(runner), runner.resource_subgraph_map
+    return report, None, None, None

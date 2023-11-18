@@ -1,6 +1,6 @@
-[![checkov](https://raw.githubusercontent.com/bridgecrewio/checkov/main/docs/web/images/checkov_by_bridgecrew.png)](#)
+[![checkov](https://raw.githubusercontent.com/bridgecrewio/checkov/main/docs/web/images/checkov_blue_logo.png)](#)
        
-[![Maintained by Bridgecrew.io](https://img.shields.io/badge/maintained%20by-bridgecrew.io-blueviolet)](https://bridgecrew.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov)
+[![Maintained by Prisma Cloud](https://img.shields.io/badge/maintained_by-Prisma_Cloud-blue)](https://prismacloud.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov)
 [![build status](https://github.com/bridgecrewio/checkov/workflows/build/badge.svg)](https://github.com/bridgecrewio/checkov/actions?query=workflow%3Abuild)
 [![security status](https://github.com/bridgecrewio/checkov/workflows/security/badge.svg)](https://github.com/bridgecrewio/checkov/actions?query=event%3Apush+branch%3Amaster+workflow%3Asecurity) 
 [![code_coverage](https://raw.githubusercontent.com/bridgecrewio/checkov/main/coverage.svg?sanitize=true)](https://github.com/bridgecrewio/checkov/actions?query=workflow%3Acoverage) 
@@ -10,7 +10,7 @@
 [![Terraform Version](https://img.shields.io/badge/tf-%3E%3D0.12.0-blue.svg)](#)
 [![Downloads](https://static.pepy.tech/badge/checkov)](https://pepy.tech/project/checkov)
 [![Docker Pulls](https://img.shields.io/docker/pulls/bridgecrew/checkov.svg)](https://hub.docker.com/r/bridgecrew/checkov)
-[![slack-community](https://img.shields.io/badge/Slack-4A154B?style=plastic&logo=slack&logoColor=white)](https://slack.bridgecrew.io/)
+[![slack-community](https://img.shields.io/badge/Slack-4A154B?style=plastic&logo=slack&logoColor=white)](https://codifiedsecurity.slack.com/)
  
 
 **Checkov** is a static code analysis tool for infrastructure as code (IaC) and also a software composition analysis (SCA) tool for images and open source packages.
@@ -19,15 +19,15 @@ It scans cloud infrastructure provisioned using [Terraform](https://terraform.io
 
 It performs [Software Composition Analysis (SCA) scanning](docs/7.Scan%20Examples/Sca.md) which is a scan of open source packages and images for Common Vulnerabilities and Exposures (CVEs).
  
-Checkov also powers [**Bridgecrew**](https://bridgecrew.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov), the developer-first platform that codifies and streamlines cloud security throughout the development lifecycle. Bridgecrew identifies, fixes, and prevents misconfigurations in cloud resources and infrastructure-as-code files. 
+Checkov also powers [**Prisma Cloud Application Security**](https://www.prismacloud.io/prisma/cloud/cloud-code-security/?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov), the developer-first platform that codifies and streamlines cloud security throughout the development lifecycle. Prisma Cloud identifies, fixes, and prevents misconfigurations in cloud resources and infrastructure-as-code files. 
 
-<a href="https://www.bridgecrew.cloud/login/signUp/?utm_campaign=checkov-github-repo&utm_source=github.com&utm_medium=get-started-button" title="Try_Bridgecrew">
-    <img src="https://dabuttonfactory.com/button.png?t=Try+Bridgecrew&f=Open+Sans-Bold&ts=26&tc=fff&hp=45&vp=20&c=round&bgt=unicolored&bgc=662eff" align="right" width="120">
+<a href="https://www.prismacloud.io/prisma/request-a-prisma-cloud-trial/?utm_campaign=checkov-github-repo&utm_source=github.com&utm_medium=get-started-button" title="Try_Prisma_Cloud">
+    <img src="https://dabuttonfactory.com/button.png?t=Try+Prisma+Cloud&f=Open+Sans-Bold&ts=26&tc=fff&hp=45&vp=20&c=round&bgt=unicolored&bgc=00c0e8" align="right" width="120">
 </a>
 
 
-<a href="https://docs.bridgecrew.io?utm_campaign=checkov-github-repo&utm_source=github.com&utm_medium=read-docs-button" title="Docs">
-    <img src="https://dabuttonfactory.com/button.png?t=Read+the+Docs&f=Open+Sans-Bold&ts=26&tc=fff&hp=45&vp=20&c=round&bgt=unicolored&bgc=662eff" align="right" width="120">
+<a href="https://docs.prismacloud.io/en/enterprise-edition/use-cases/secure-the-source/secure-the-source" title="Docs">
+    <img src="https://dabuttonfactory.com/button.png?t=Read+the+Docs&f=Open+Sans-Bold&ts=26&tc=fff&hp=45&vp=20&c=round&bgt=unicolored&bgc=00c0e8" align="right" width="120">
 </a>
 
 ## **Table of contents**
@@ -37,6 +37,7 @@ Checkov also powers [**Bridgecrew**](https://bridgecrew.io/?utm_source=github&ut
 - [Getting Started](#getting-started)
 - [Disclaimer](#disclaimer)
 - [Support](#support)
+- [Migration - v2 to v3](docs/1.Welcome/Migration.md)
 
  ## Features
 
@@ -46,11 +47,11 @@ Checkov also powers [**Bridgecrew**](https://bridgecrew.io/?utm_source=github&ut
  * Supports Context-awareness policies based on in-memory graph-based scanning.
  * Supports Python format for attribute policies and YAML format for both attribute and composite policies.
  * Detects [AWS credentials](docs/2.Basics/Scanning%20Credentials%20and%20Secrets.md) in EC2 Userdata, Lambda environment variables and Terraform providers.
- * [Identifies secrets](https://bridgecrew.io/blog/checkov-secrets-scanning-find-exposed-credentials-in-iac/) using regular expressions, keywords, and entropy based detection.
+ * [Identifies secrets](https://www.prismacloud.io/prisma/cloud/secrets-security) using regular expressions, keywords, and entropy based detection.
  * Evaluates [Terraform Provider](https://registry.terraform.io/browse/providers) settings to regulate the creation, management, and updates of IaaS, PaaS or SaaS managed through Terraform.
  * Policies support evaluation of [variables](docs/2.Basics/Handling%20Variables.md) to their optional default value.
  * Supports in-line [suppression](docs/2.Basics/Suppressing%20and%20Skipping%20Policies.md) of accepted risks or false-positives to reduce recurring scan failures. Also supports global skip from using CLI.
- * [Output](docs/2.Basics/Reviewing%20Scan%20Results.md) currently available as CLI, [CycloneDX](https://cyclonedx.org), JSON, JUnit XML, CSV, SARIF and github markdown and link to remediation [guides](https://docs.bridgecrew.io/docs/aws-policy-index).
+ * [Output](docs/2.Basics/Reviewing%20Scan%20Results.md) currently available as CLI, [CycloneDX](https://cyclonedx.org), JSON, JUnit XML, CSV, SARIF and github markdown and link to remediation [guides](https://docs.prismacloud.io/en/enterprise-edition/policy-reference/).
  
 ## Screenshots
 
@@ -123,12 +124,12 @@ terraform show -json tf.plan  > tf.json
 checkov -f tf.json
 ```
 Note: `terraform show` output file `tf.json` will be a single line. 
-For that reason all findings will be reported line number 0 by checkov
+For that reason all findings will be reported line number 0 by Checkov
 ```sh
 check: CKV_AWS_21: "Ensure all data stored in the S3 bucket have versioning enabled"
 	FAILED for resource: aws_s3_bucket.customer
 	File: /tf/tf.json:0-0
-	Guide: https://docs.bridgecrew.io/docs/s3_16-enable-versioning
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3-16-enable-versioning
   ```
 
 If you have installed `jq` you can convert json file into multiple lines with the following command:
@@ -141,7 +142,7 @@ checkov -f tf.json
 Check: CKV_AWS_21: "Ensure all data stored in the S3 bucket have versioning enabled"
 	FAILED for resource: aws_s3_bucket.customer
 	File: /tf/tf1.json:224-268
-	Guide: https://docs.bridgecrew.io/docs/s3_16-enable-versioning
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3-16-enable-versioning
 
 		225 |               "values": {
 		226 |                 "acceleration_status": "",
@@ -383,9 +384,9 @@ You can override the default set of directories to skip by setting the environme
 The console output is in colour by default, to switch to a monochrome output, set the environment variable:
 `ANSI_COLORS_DISABLED`
 
-#### VSCODE Extension
+#### VS Code Extension
 
-If you want to use checkov's within vscode, give a try to the vscode extension available at [vscode](https://marketplace.visualstudio.com/items?itemName=Bridgecrew.checkov)
+If you want to use Checkov within VS Code, give a try to the vscode extension available at [VS Code](https://marketplace.visualstudio.com/items?itemName=Bridgecrew.checkov)
 
 ### Configuration using a config file
 
@@ -402,7 +403,7 @@ checkov --config-file path/to/config.yaml
 ```
 Users can also create a config file using the `--create-config` command, which takes the current command line args and writes them out to a given path. For example:
 ```sh
-checkov --compact --directory test-dir --docker-image sample-image --dockerfile-path Dockerfile --download-external-modules True --external-checks-dir sample-dir --no-guide --quiet --repo-id bridgecrew/sample-repo --skip-check CKV_DOCKER_3,CKV_DOCKER_2 --skip-fixes --skip-framework dockerfile secrets --skip-suppressions --soft-fail --branch develop --check CKV_DOCKER_1 --create-config /Users/sample/config.yml
+checkov --compact --directory test-dir --docker-image sample-image --dockerfile-path Dockerfile --download-external-modules True --external-checks-dir sample-dir --quiet --repo-id prisma-cloud/sample-repo --skip-check CKV_DOCKER_3,CKV_DOCKER_2 --skip-framework dockerfile secrets --soft-fail --branch develop --check CKV_DOCKER_1 --create-config /Users/sample/config.yml
 ```
 Will create a `config.yaml` file which looks like this:
 ```yaml
@@ -421,18 +422,15 @@ external-checks-dir:
 external-modules-download-path: .external_modules 
 framework:
   - all 
-no-guide: true 
 output: cli 
 quiet: true 
-repo-id: bridgecrew/sample-repo 
+repo-id: prisma-cloud/sample-repo 
 skip-check: 
   - CKV_DOCKER_3 
   - CKV_DOCKER_2 
-skip-fixes: true 
 skip-framework:
   - dockerfile
   - secrets
-skip-suppressions: true 
 soft-fail: true
 ```
 
@@ -470,17 +468,15 @@ Looking to contribute new checks? Learn how to write a new check (AKA policy) [h
 
 ## Disclaimer
 `checkov` does not save, publish or share with anyone any identifiable customer information.  
-No identifiable customer information is used to query Bridgecrew's publicly accessible guides.
-`checkov` uses Bridgecrew's API to enrich the results with links to remediation guides.
-To skip this API call use the flag `--no-guide`.
+No identifiable customer information is used to query Prisma Cloud's publicly accessible guides.
+`checkov` uses Prisma Cloud's API to enrich the results with links to remediation guides.
+To skip this API call use the flag `--skip-download`.
 
 ## Support
 
-[Bridgecrew](https://bridgecrew.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov) builds and maintains Checkov to make policy-as-code simple and accessible. 
+[Prisma Cloud](https://www.prismacloud.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov) builds and maintains Checkov to make policy-as-code simple and accessible. 
 
-Start with our [Documentation](https://bridgecrewio.github.io/checkov/) for quick tutorials and examples.
-
-If you need direct support you can contact us at info@bridgecrew.io.
+Start with our [Documentation](https://www.checkov.io/1.Welcome/Quick%20Start.html) for quick tutorials and examples.
 
 ## Python Version Support
 We follow the official support cycle of Python and we use automated tests for all supported versions of Python. This means we currently support Python 3.7 - 3.11, inclusive. Note that Python 3.7 is reaching EOL on June 2023. After that time, we will have a short grace period where we will continue 3.7 support until September 2023, and then it will no longer be considered supported for Checkov. If you run into any issues with any non-EOL Python version, please open an Issue.

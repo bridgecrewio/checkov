@@ -138,14 +138,14 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
         return self.target_folder_path
 
     @staticmethod
-    def parse_helm_chart_details(chart_path: str) -> dict[str, Any] | None:
+    def parse_helm_chart_details(chart_path: str) -> tuple[str, dict[str, Any] | None]:
         with open(f"{chart_path}/Chart.yaml", 'r') as chartyaml:
             try:
                 chart_meta: dict[str, Any] = yaml.safe_load(chartyaml)
             except (yaml.YAMLError, UnicodeDecodeError):
                 logging.info(f"Failed to load chart metadata from {chart_path}/Chart.yaml.", exc_info=True)
-                return None
-        return chart_meta
+                return chart_path, None
+        return chart_path, chart_meta
 
     def check_system_deps(self) -> str | None:
         # Ensure local system dependancies are available and of the correct version.
@@ -237,7 +237,7 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
     def get_binary_output_from_directory(chart_dir: str, target_dir: str, helm_command: str,
                                          runner_filter: RunnerFilter, timeout: int = 3600) \
             -> tuple[bytes, tuple[str, dict[str, Any]]] | tuple[None, None]:
-        chart_meta = Runner.parse_helm_chart_details(chart_dir)
+        _, chart_meta = Runner.parse_helm_chart_details(chart_dir)
         chart_item = (chart_dir, chart_meta or {})
         return Runner.get_binary_output(chart_item, target_dir, helm_command, runner_filter, timeout)
 
@@ -340,8 +340,7 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
         root_folder: str | None, files: list[str] | None, runner_filter: RunnerFilter
     ) -> list[tuple[str, dict[str, Any]]]:
         chart_directories = find_chart_directories(root_folder, files, runner_filter.excluded_paths)
-        chart_dir_and_meta = list(parallel_runner.run_function(
-            lambda cd: (cd, Runner.parse_helm_chart_details(cd)), chart_directories))
+        chart_dir_and_meta = parallel_runner.run_function(func=Runner.parse_helm_chart_details, items=chart_directories)
         # remove parsing failures
         cleaned_chart_dir_and_meta = [(chart_dir, meta) for chart_dir, meta in chart_dir_and_meta if meta]
         return cleaned_chart_dir_and_meta
@@ -362,19 +361,12 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
         self.runner_filter = runner_filter
         self.target_folder_path = tempfile.mkdtemp()
         chart_dir_and_meta = Runner._get_chart_dir_and_meta(self.root_folder, files, runner_filter)
+        chart_items = [
+            (chart_item, self.root_folder, self.target_folder_path, self.helm_command, runner_filter)
+            for chart_item in chart_dir_and_meta
+        ]
 
-        list(
-            parallel_runner.run_function(
-                lambda cd: Runner._convert_chart_to_k8s(
-                    chart_item=cd,
-                    root_folder=self.root_folder,
-                    target_folder_path=self.target_folder_path,
-                    helm_command=self.helm_command,
-                    runner_filter=runner_filter,
-                ),
-                chart_dir_and_meta,
-            )
-        )
+        list(parallel_runner.run_function(func=Runner._convert_chart_to_k8s, items=chart_items))
         return Runner._get_processed_chart_dir_and_meta(chart_dir_and_meta, self.root_folder)
 
     def run(

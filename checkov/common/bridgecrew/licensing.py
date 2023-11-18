@@ -7,6 +7,7 @@ class CustomerSubscription(str, Enum):
     IAC = "IAC"
     SCA = "SCA"
     SECRETS = "SECRETS"
+    SAST = "SAST"
 
 
 class BillingPlan(str, Enum):
@@ -17,7 +18,8 @@ class BillingPlan(str, Enum):
 SubscriptionCategoryMapping = {
     CustomerSubscription.IAC: (CodeCategoryType.IAC, CodeCategoryType.BUILD_INTEGRITY),
     CustomerSubscription.SCA: (CodeCategoryType.LICENSES, CodeCategoryType.VULNERABILITIES),
-    CustomerSubscription.SECRETS: (CodeCategoryType.SECRETS,)
+    CustomerSubscription.SECRETS: (CodeCategoryType.SECRETS,),
+    CustomerSubscription.SAST: (CodeCategoryType.SAST,)
 }
 
 CategoryToSubscriptionMapping = {}
@@ -26,4 +28,4 @@ for sub, cats in SubscriptionCategoryMapping.items():
         CategoryToSubscriptionMapping[cat] = sub
 
 
-open_source_categories = [CodeCategoryType.IAC, CodeCategoryType.SECRETS, CodeCategoryType.BUILD_INTEGRITY]
+open_source_categories = [CodeCategoryType.IAC, CodeCategoryType.SECRETS, CodeCategoryType.BUILD_INTEGRITY, CodeCategoryType.SAST]

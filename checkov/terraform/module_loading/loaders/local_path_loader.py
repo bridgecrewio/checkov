@@ -24,6 +24,10 @@ class LocalPathLoader(ModuleLoader):
         pass
 
     def _is_matching_loader(self, module_params: ModuleParams) -> bool:
+        if module_params.tf_managed:
+            # Terraform managed modules are already downloaded and can be handled as local modules
+            return True
+
         if module_params.module_source.startswith(("./", "../", module_params.current_dir, "/")):
             return True
 
