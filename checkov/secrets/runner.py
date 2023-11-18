@@ -21,7 +21,7 @@ from checkov.common.output.secrets_record import SecretsRecord
 from checkov.common.util.http_utils import request_wrapper, DEFAULT_TIMEOUT
 from detect_secrets import SecretsCollection
 from detect_secrets.core import scan
-from detect_secrets.settings import transient_settings
+from detect_secrets.settings import transient_settings, get_settings
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
@@ -29,7 +29,7 @@ from checkov.common.bridgecrew.integration_features.features.policy_metadata_int
 from checkov.common.bridgecrew.severities import Severity
 from checkov.common.comment.enum import COMMENT_REGEX
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
-from checkov.common.models.enums import CheckResult
+from checkov.common.models.enums import CheckResult, ParallelizationType
 from checkov.common.output.report import Report
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
@@ -48,6 +48,7 @@ from checkov.secrets.utils import filter_excluded_paths, EXCLUDED_PATHS
 if TYPE_CHECKING:
     from checkov.common.util.tqdm_utils import ProgressBar
     from detect_secrets.core.potential_secret import PotentialSecret
+    from detect_secrets.settings import Settings
 
 SOURCE_CODE_EXTENSION = ['.py', '.js', '.properties', '.pem', '.php', '.xml', '.ts', '.env', '.java', '.rb',
                          'go', 'cs', '.txt']
@@ -331,8 +332,15 @@ class Runner(BaseRunner[None, None, None]):
     def _scan_files(files_to_scan: list[str], secrets: SecretsCollection, pbar: ProgressBar) -> None:
         # implemented the scan function like secrets.scan_files
         base_path = secrets.root
+        # only needed to set up for 'ParallelizationType.SPAWN' otherwise they will have default values
+        secrets_settings = None
+        customer_run_config = None
+        if parallel_runner.type == ParallelizationType.SPAWN:
+            secrets_settings = get_settings()
+            customer_run_config = bc_integration.customer_run_config_response
+
         items = [
-            (file, base_path)
+            (file, base_path, secrets_settings, customer_run_config)
             for file in files_to_scan
         ]
         results = parallel_runner.run_function(func=Runner._safe_scan, items=items)
@@ -344,7 +352,12 @@ class Runner(BaseRunner[None, None, None]):
             pbar.update()
 
     @staticmethod
-    def _safe_scan(file_path: str, base_path: str) -> tuple[str, list[PotentialSecret]]:
+    def _safe_scan(
+        file_path: str,
+        base_path: str,
+        secrets_settings: Settings | None = None,
+        customer_run_config: dict[str, Any] | None = None,
+    ) -> tuple[str, list[PotentialSecret]]:
         full_file_path = os.path.join(base_path, file_path)
         file_size = os.path.getsize(full_file_path)
         if file_size > MAX_FILE_SIZE > 0:
@@ -354,6 +367,12 @@ class Runner(BaseRunner[None, None, None]):
                 f'to 0 or {file_size + 1}'
             )
             return file_path, []
+
+        if secrets_settings:
+            # only happens for 'ParallelizationType.SPAWN'
+            get_settings().set(secrets_settings)
+            bc_integration.customer_run_config_response = customer_run_config
+
         try:
             start_time = datetime.datetime.now()
             file_results = [*scan.scan_file(full_file_path)]
