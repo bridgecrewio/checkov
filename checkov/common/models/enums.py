@@ -25,6 +25,7 @@ class CheckCategories(Enum):
     APPLICATION_SECURITY = 10
     SUPPLY_CHAIN = 11
     API_SECURITY = 12
+    SAST = 13
 
 
 class OutputFormat(Enum):
@@ -59,3 +60,14 @@ class ErrorStatus(IntEnum):
 class CheckFailLevel:
     WARNING = 'WARNING'
     ERROR = 'ERROR'
+
+
+class ParallelizationType(str, Enum):
+    FORK = "fork"
+    SPAWN = "spawn"
+    THREAD = "thread"
+    NONE = "none"
+
+    def __str__(self) -> str:
+        # needed, because of a Python 3.11 change
+        return self.value

@@ -3,6 +3,7 @@ from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 
 # Collect non-code file from dependencies (JSON files, YAML files etc)
 datas = collect_data_files('hcl2')
+datas += collect_data_files('license_expression')
 datas += collect_data_files('spdx')
 datas += collect_data_files('pycep')
 datas += collect_data_files('detect_secrets')

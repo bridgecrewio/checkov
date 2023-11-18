@@ -8,13 +8,13 @@ If you've already developed new checks we'd be happy to take a look at them and 
 
 ## Open an issue
 
-Checkov is an open source project maintained by [Bridgecrew](https://bridgecrew.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov). We have dedicated maintainers developing 
+Checkov is an open source project maintained by [Prisma Cloud by Palo Alto Networks](https://www.prismacloud.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov). We have dedicated maintainers developing 
 new content and adding more features. If you have a bug or an idea, start by opening an issue. Try to make it as 
 descriptive as possible. 
 
 ## Developing and contributing code
 
-Dedicated Bridgecrew maintainers are actively developing new content and adding more features. We would be delighted to 
+Dedicated Prisma Cloud maintainers are actively developing new content and adding more features. We would be delighted to 
 chat and look at your code. Here are a few guidelines we follow. Hopefully, these will ensure your contribution could 
 quickly be added to the project. 
 

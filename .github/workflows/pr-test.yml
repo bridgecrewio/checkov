@@ -18,9 +18,9 @@ jobs:
       pull-requests: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608  # v3
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
       - name: Install Node.js
-        uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d  # v3
+        uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65  # v4
         with:
           node-version: "16"
       - name: Install and run DangerJS
@@ -34,8 +34,8 @@ jobs:
     env:
       PYTHON_VERSION: "3.8"
     steps:
-      - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608  # v3
-      - uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1  # v4
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+      - uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236  # v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Install cfn-lint
@@ -58,9 +58,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608  # v3
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
       - name: Set up Python ${{ matrix.python }}
-        uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1  # v4
+        uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236  # v4
         with:
           python-version: ${{ matrix.python }}
           allow-prereleases: true
@@ -105,14 +105,14 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608  # v3
-      - uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1  # v4
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+      - uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236  # v4
         with:
           python-version: ${{ matrix.python }}
           allow-prereleases: true
           cache: "pipenv"
           cache-dependency-path: "Pipfile.lock"
-      - uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d  # v3
+      - uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65  # v4
       - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -157,19 +157,103 @@ jobs:
         run: |
           pipenv run pytest integration_tests -k 'not api_key'
 
+  sast-integration-tests:
+    strategy:
+      fail-fast: true
+      matrix:
+        python: ["3.8", "3.11"]
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+      - uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236  # v4
+        with:
+          python-version: ${{ matrix.python }}
+          cache: "pipenv"
+          cache-dependency-path: "Pipfile.lock"
+      - name: Install pipenv
+        run: |
+          python -m pip install --no-cache-dir --upgrade pipenv
+      - name: Build & install checkov package
+        run: |
+          # remove venv, if exists
+          pipenv --rm || true
+          pipenv --python ${{ matrix.python }}
+          pipenv run pip install pytest pytest-xdist
+          pipenv run python setup.py sdist bdist_wheel
+          bash -c 'pipenv run pip install dist/checkov-*.whl'
+      - name: Clone flask - Python repo for SAST
+        run: git clone https://github.com/pallets/flask
+      - name: Clone WebGoat - Java repo for SAST
+        run: git clone https://github.com/WebGoat/WebGoat
+      - name: Clone axios - JavaScript repo for SAST
+        run: git clone https://github.com/axios/axios
+      - name: Create checkov reports
+        env:
+          LOG_LEVEL: INFO
+          BC_API_KEY: ${{ secrets.BC_API_KEY }}
+        if: env.BC_API_KEY != null
+        run: bash -c './sast_integration_tests/prepare_data.sh'
+      - name: Run integration tests
+        env:
+          LOG_LEVEL: INFO
+          BC_API_KEY: ${{ secrets.BC_API_KEY }}
+        if: env.BC_API_KEY != null
+        run: |
+          pipenv run pytest sast_integration_tests
+
+  cdk-integration-tests:
+    strategy:
+      fail-fast: true
+      matrix:
+        python: ["3.8", "3.11"]
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+      - uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236  # v4
+        with:
+          python-version: ${{ matrix.python }}
+          cache: "pipenv"
+          cache-dependency-path: "Pipfile.lock"
+      - name: Install pipenv
+        run: |
+          python -m pip install --no-cache-dir --upgrade pipenv
+      - name: Build & install checkov package
+        run: |
+          # remove venv, if exists
+          pipenv --rm || true
+          pipenv --python ${{ matrix.python }}
+          pipenv run pip install pytest pytest-xdist
+          pipenv run python setup.py sdist bdist_wheel
+          bash -c 'pipenv run pip install dist/checkov-*.whl'
+      - name: Create checkov reports
+        env:
+          LOG_LEVEL: INFO
+          BC_API_KEY: ${{ secrets.BC_API_KEY }}
+        if: env.BC_API_KEY != null
+        run: bash -c './cdk_integration_tests/prepare_data.sh'
+      - name: Run integration tests
+        env:
+          LOG_LEVEL: INFO
+          BC_API_KEY: ${{ secrets.BC_API_KEY }}
+        if: env.BC_API_KEY != null
+        run: |
+          pipenv run pytest cdk_integration_tests
+
   performance-tests:
     env:
       PYTHON_VERSION: "3.8"
       working-directory: ./performance_tests
     runs-on: [self-hosted, public, linux, x64]
     steps:
-      - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608  # v3
-      - uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1  # v4
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+      - uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236  # v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: "pipenv"
           cache-dependency-path: "Pipfile.lock"
-      - uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d  # v3
+      - uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65  # v4
       - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -197,6 +281,16 @@ jobs:
       - name: Clone kubernetes-yaml-templates
         run: git clone https://github.com/dennyzhang/kubernetes-yaml-templates.git
         working-directory: ${{ env.working-directory }}
+# TODO: migrate to separate performance tests
+#      - name: Clone Python-Mini-Projects
+#        run: git clone https://github.com/alimoustafa2000/Python-Mini-Projects.git
+#        working-directory: ${{ env.working-directory }}
+#      - name: Clone NodeJs
+#        run: git clone https://github.com/harshitbansal373/NodeJs.git
+#        working-directory: ${{ env.working-directory }}
+#      - name: Clone Mini-Project-using-Java
+#        run: git clone https://github.com/ikanurfitriani/Mini-Project-using-Java.git
+#        working-directory: ${{ env.working-directory }}
       - name: Run performance tests
         run: |
           pipenv run pytest
@@ -208,8 +302,8 @@ jobs:
       PYTHON_VERSION: "3.8"
       WORKING_DIRECTORY: ./dogfood_tests
     steps:
-      - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608  # v3
-      - uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1  # v4
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+      - uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236  # v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: "pipenv"

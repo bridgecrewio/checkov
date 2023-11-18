@@ -30,7 +30,7 @@ checkov -d /checkov/integration_tests/example_workflow_file/.github/workflows/ -
  | (__| | | |  __/ (__|   < (_) \ V / 
   \___|_| |_|\___|\___|_|\_\___/ \_/  
                                       
-By bridgecrew.io | version: 2.0.1048 
+By Prisma Cloud | version: x.x.x
 
 github_actions scan results:
 
@@ -142,4 +142,4 @@ More details: https://www.bridgecrew.cloud/projects?repository=acme_cli_repo/wor
 ```
 
 ## What would be a good candidate?
-K8 manifests, helm charts, Serverless functions utilizing containers, and every other IaC manifest that can reference an image  
+Serverless functions utilizing containers, and every other IaC manifest that can reference an image  

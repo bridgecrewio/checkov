@@ -16,7 +16,7 @@ class FooExists(BaseYamlCheck):
             block_type=BlockType.DOCUMENT,
         )
 
-    def scan_entity_conf(self, conf):
+    def scan_entity_conf(self, conf, entity_type):
         if "foo" in conf:
             return CheckResult.PASSED
         return CheckResult.FAILED

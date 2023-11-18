@@ -31,7 +31,6 @@ resource "aws_keyspaces_table" "fail2" {
   encryption_specification {
     type="AWS_OWNED_KMS_KEY"
   }
-
 }
 
 
@@ -53,7 +52,6 @@ resource "aws_keyspaces_table" "fail3" {
     kms_key_identifier=aws_kms_key.example.arn
     type="AWS_OWNED_KMS_KEY"
   }
-
 }
 
 resource "aws_keyspaces_table" "pass" {
@@ -72,7 +70,6 @@ resource "aws_keyspaces_table" "pass" {
   }
   encryption_specification {
     kms_key_identifier=aws_kms_key.example.arn
-    type="CUSTOMER_MANAGED_KEY"
+    type="CUSTOMER_MANAGED_KMS_KEY"
   }
-
 }

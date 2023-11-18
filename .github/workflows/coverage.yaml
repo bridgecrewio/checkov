@@ -17,7 +17,7 @@ jobs:
     env:
       PYTHON_VERSION: "3.8"
     steps:
-      - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608  # v3
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
         with:
           token: ${{ secrets.GH_PAT_SECRET }}
       - name: Import GPG key
@@ -27,7 +27,7 @@ jobs:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
       - name: Set up Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1  # v4
+        uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236  # v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3

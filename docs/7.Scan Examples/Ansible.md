@@ -39,7 +39,7 @@ checkov -d . --framework ansible
  | (__| | | |  __/ (__|   < (_) \ V / 
   \___|_| |_|\___|\___|_|\_\___/ \_/  
                                       
-By bridgecrew.io | version: .2.258
+By Prisma Cloud | version: x.x.x
 
 
 ansible scan results:

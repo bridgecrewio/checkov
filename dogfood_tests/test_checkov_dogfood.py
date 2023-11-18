@@ -42,6 +42,7 @@ def test_all_frameworks_are_tested() -> None:
         CheckType.AZURE_PIPELINES,
         CheckType.BICEP,
         CheckType.BITBUCKET_PIPELINES,
+        CheckType.CDK,
         CheckType.CIRCLECI_PIPELINES,
         CheckType.CLOUDFORMATION,
         CheckType.DOCKERFILE,
@@ -51,6 +52,10 @@ def test_all_frameworks_are_tested() -> None:
         CheckType.KUBERNETES,
         CheckType.KUSTOMIZE,
         CheckType.OPENAPI,
+        CheckType.SAST,
+        CheckType.SAST_JAVA,
+        CheckType.SAST_PYTHON,
+        CheckType.SAST_JAVASCRIPT,
         CheckType.SECRETS,
         CheckType.SERVERLESS,
         CheckType.TERRAFORM,
@@ -86,6 +91,11 @@ def test_bicep_framework(caplog: LogCaptureFixture) -> None:
 
 def test_bitbucket_pipelines_framework(caplog: LogCaptureFixture) -> None:
     run_framework_test(caplog=caplog, framework=CheckType.BITBUCKET_PIPELINES)
+
+
+@pytest.mark.xfail(reason="locally it works, but in CI no results")
+def test_cdk_framework(caplog: LogCaptureFixture) -> None:
+    run_framework_test(caplog=caplog, framework=CheckType.CDK)
 
 
 def test_circleci_pipelines_framework(caplog: LogCaptureFixture) -> None:

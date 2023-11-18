@@ -36,7 +36,7 @@ Let's assume we're trying to create a new AWS resource Check to ensure all of ou
        | (__| | | |  __/ (__|   < (_) \ V /
         \___|_| |_|\___|\___|_|\_\___/ \_/
 
-      By bridgecrew.io | version: ...
+      By Prisma Cloud | version: ...
 
       What action would you like to take? (add) [add]: add
 
