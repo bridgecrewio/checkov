@@ -68,7 +68,7 @@ jobs:
           # remove venv, if exists
           pipenv --rm || true
           pipenv --python ${{ matrix.python }}
-          pipenv run pip install pytest pytest-xdist setuptools
+          pipenv run pip install pytest pytest-xdist setuptools wheel
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
       - name: Clone Terragoat - vulnerable terraform
@@ -142,7 +142,7 @@ jobs:
           # remove venv, if exists
           pipenv --rm || true
           pipenv --python ${{ matrix.python }}
-          pipenv run pip install pytest pytest-xdist setuptools
+          pipenv run pip install pytest pytest-xdist setuptools wheel
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
       - name: Clone flask - Python repo for SAST
