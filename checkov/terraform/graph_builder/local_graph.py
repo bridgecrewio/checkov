@@ -395,7 +395,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         return relative_vertex
 
     def _find_vertex_with_best_match(self, relevant_vertices_indexes: List[int], origin_path: str,
-                                             origin_vertex_index: Optional[int] = None) -> int:
+                                     origin_vertex_index: Optional[int] = None) -> int:
         vertex_index_with_longest_common_prefix = -1
         longest_common_prefix = ""
         for vertex_index in relevant_vertices_indexes:
