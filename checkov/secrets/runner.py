@@ -125,6 +125,11 @@ class Runner(BaseRunner[None, None, None]):
             {'name': 'EntropyKeywordCombinator', 'path': f'file://{current_dir}/plugins/entropy_keyword_combinator.py'}
         ]
 
+        if bc_integration.daemon_process:
+            # only happens for 'ParallelizationType.SPAWN'
+            bc_integration.setup_http_manager()
+            bc_integration.set_s3_client()
+
         # load runnable plugins
         customer_run_config = bc_integration.customer_run_config_response
         plugins_index = 0
