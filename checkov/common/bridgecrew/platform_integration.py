@@ -111,8 +111,8 @@ class BcPlatformIntegration:
         self.prisma_policies_url: str | None = None
         self.prisma_policy_filters_url: str | None = None
         self.setup_api_urls()
-        self.customer_run_config_response = None
-        self.prisma_policies_response = None
+        self.customer_run_config_response: dict[str, Any] | None = None
+        self.prisma_policies_response: list[dict[str, Any]] | None = None
         self.public_metadata_response = None
         self.use_s3_integration = False
         self.s3_setup_failed = False

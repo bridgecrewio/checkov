@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, TypeVar, Set, Union, TypedDict
+from typing import TYPE_CHECKING, Any, Callable, Dict, TypeVar, Set, Union, TypedDict, Protocol
 from typing_extensions import TypeAlias  # noqa[TC002]
 
 if TYPE_CHECKING:
@@ -142,3 +142,13 @@ class _EntityContext(TypedDict, total=False):
     code_lines: list[tuple[int, str]]
     skipped_checks: list[_SkippedCheck]
     origin_relative_path: str
+
+
+class _CoreCheck(Protocol):
+    name: str
+    id: str
+    bc_id: str | None
+    guideline: str | None
+    severity: Severity | None
+    bc_category: str | None
+    benchmarks: dict[str, list[str]]
