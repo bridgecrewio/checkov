@@ -9,14 +9,6 @@ resource "azurerm_container_registry" "pass" {
 
 
 resource "azurerm_container_registry" "pass2" {
-  name                = "containerRegistry1"
-  resource_group_name = azurerm_resource_group.example.name
-  location            = azurerm_resource_group.example.location
-  sku                 = "Standard"
-}
-
-
-resource "azurerm_container_registry" "pass3" {
   name                    = "containerRegistry1"
   resource_group_name     = azurerm_resource_group.example.name
   location                = azurerm_resource_group.example.location

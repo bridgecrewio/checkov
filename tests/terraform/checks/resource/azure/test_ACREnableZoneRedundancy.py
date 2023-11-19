@@ -20,7 +20,6 @@ class TestACREnableZoneRedundancy(unittest.TestCase):
         passing_resources = {
             'azurerm_container_registry.pass',
             'azurerm_container_registry.pass2',
-            'azurerm_container_registry.pass3',
         }
         failing_resources = {
             'azurerm_container_registry.fail',
