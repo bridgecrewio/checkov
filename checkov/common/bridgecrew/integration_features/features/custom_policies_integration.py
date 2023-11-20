@@ -48,7 +48,7 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
                 self.integration_feature_failures = True
                 return
 
-            policies: list[dict[str, Any]] = self.bc_integration.customer_run_config_response.get('customPolicies', [])
+            policies = self.bc_integration.customer_run_config_response.get('customPolicies')
             for policy in policies:
                 try:
                     logging.debug(f"Loading policy id: {policy.get('id')}")
