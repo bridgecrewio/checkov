@@ -111,8 +111,8 @@ class BcPlatformIntegration:
         self.prisma_policies_url: str | None = None
         self.prisma_policy_filters_url: str | None = None
         self.setup_api_urls()
-        self.customer_run_config_response: dict[str, Any] | None = None
-        self.prisma_policies_response: list[dict[str, Any]] | None = None
+        self.customer_run_config_response = None
+        self.prisma_policies_response = None
         self.public_metadata_response = None
         self.use_s3_integration = False
         self.s3_setup_failed = False
@@ -142,13 +142,11 @@ class BcPlatformIntegration:
         self.bucket = platform_integration_data["bucket"]
         self.cicd_details = platform_integration_data["cicd_details"]
         self.credentials = platform_integration_data["credentials"]
-        self.customer_run_config_response = platform_integration_data["customer_run_config_response"]
         self.platform_integration_configured = platform_integration_data["platform_integration_configured"]
         self.prisma_api_url = platform_integration_data["prisma_api_url"]
         self.repo_branch = platform_integration_data["repo_branch"]
         self.repo_id = platform_integration_data["repo_id"]
         self.repo_path = platform_integration_data["repo_path"]
-        self.skip_download = platform_integration_data["skip_download"]
         self.skip_fixes = platform_integration_data["skip_fixes"]
         self.timestamp = platform_integration_data["timestamp"]
         self.use_s3_integration = platform_integration_data["use_s3_integration"]
@@ -168,13 +166,11 @@ class BcPlatformIntegration:
             "bucket": self.bucket,
             "cicd_details": self.cicd_details,
             "credentials": self.credentials,
-            "customer_run_config_response": self.customer_run_config_response,
             "platform_integration_configured": self.platform_integration_configured,
             "prisma_api_url": self.prisma_api_url,
             "repo_branch": self.repo_branch,
             "repo_id": self.repo_id,
             "repo_path": self.repo_path,
-            "skip_download": self.skip_download,
             "skip_fixes": self.skip_fixes,
             "timestamp": self.timestamp,
             "use_s3_integration": self.use_s3_integration,
