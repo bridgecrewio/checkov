@@ -128,7 +128,9 @@ class Runner(BaseRunner[None, None, None]):
         if bc_integration.daemon_process:
             # only happens for 'ParallelizationType.SPAWN'
             bc_integration.setup_http_manager()
-            bc_integration.set_s3_client()
+            if bc_integration.bc_api_key:
+                # only initialize, if API key was used
+                bc_integration.set_s3_client()
 
         # load runnable plugins
         customer_run_config = bc_integration.customer_run_config_response
