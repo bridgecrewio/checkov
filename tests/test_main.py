@@ -4,10 +4,12 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+import pytest
 from _pytest.logging import LogCaptureFixture
 from typing_extensions import Literal
 
 from checkov import main
+from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner
 from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.main import DEFAULT_RUNNERS, Checkov
@@ -33,6 +35,14 @@ class CustomRunnerRegistry(RunnerRegistry):
     ) -> Literal[0, 1]:
         # result doesn't matter, just don't want it to print to console
         return 0
+
+
+@pytest.fixture(autouse=True)
+def keep_parallelization_type():
+    """Save and restore the original parallelization type"""
+    mode = parallel_runner.type
+    yield
+    parallel_runner.type = mode
 
 
 def test_run_with_outer_registry_and_framework_flag():
@@ -135,6 +145,8 @@ def test_run_with_severity_skip_filter_without_api_key(caplog: LogCaptureFixture
         "--framework", "terraform",
         "--skip-check", "MEDIUM",
     ]
+
+    parallel_runner
 
     # when
     ckv = Checkov()
