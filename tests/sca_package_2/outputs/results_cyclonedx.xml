@@ -1,12 +1,12 @@
 <?xml version="1.0" ?>
-<bom xmlns="http://cyclonedx.org/schema/bom/1.4" version="1" serialNumber="urn:uuid:bdc3a4d2-f93d-45a7-b870-778773b28fa8">
+<bom xmlns="http://cyclonedx.org/schema/bom/1.4" serialNumber="urn:uuid:7ca138a0-13f9-44ca-9c36-39f29c7b613e" version="1">
 	<metadata>
-		<timestamp>2023-10-18T09:44:16.243642+00:00</timestamp>
+		<timestamp>2023-10-12T21:48:30.103675+00:00</timestamp>
 		<tools>
 			<tool>
 				<vendor>CycloneDX</vendor>
 				<name>cyclonedx-python-lib</name>
-				<version>3.1.5</version>
+				<version>5.0.0</version>
 				<externalReferences>
 					<reference type="build-system">
 						<url>https://github.com/CycloneDX/cyclonedx-python-lib/actions</url>
@@ -15,7 +15,7 @@
 						<url>https://pypi.org/project/cyclonedx-python-lib/</url>
 					</reference>
 					<reference type="documentation">
-						<url>https://cyclonedx.github.io/cyclonedx-python-lib/</url>
+						<url>https://cyclonedx-python-library.readthedocs.io/</url>
 					</reference>
 					<reference type="issue-tracker">
 						<url>https://github.com/CycloneDX/cyclonedx-python-lib/issues</url>
@@ -30,14 +30,14 @@
 						<url>https://github.com/CycloneDX/cyclonedx-python-lib</url>
 					</reference>
 					<reference type="website">
-						<url>https://cyclonedx.org</url>
+						<url>https://github.com/CycloneDX/cyclonedx-python-lib/#readme</url>
 					</reference>
 				</externalReferences>
 			</tool>
 			<tool>
 				<vendor>bridgecrew</vendor>
 				<name>checkov</name>
-				<version>UNKNOWN</version>
+				<version>2.3.307</version>
 				<externalReferences>
 					<reference type="build-system">
 						<url>https://github.com/bridgecrewio/checkov/actions</url>
@@ -153,17 +153,17 @@
 		</component>
 	</components>
 	<dependencies>
-		<dependency ref="pkg:pypi/bridgecrewio/example/requirements.txt/django@1.2"/>
-		<dependency ref="pkg:pypi/bridgecrewio/example/requirements.txt/flask@0.6"/>
 		<dependency ref="pkg:golang/bridgecrewio/example/path/to/go.sum/github.com/dgrijalva/jwt-go@v3.2.0"/>
 		<dependency ref="pkg:golang/bridgecrewio/example/path/to/go.sum/github.com/miekg/dns@v1.1.41"/>
 		<dependency ref="pkg:golang/bridgecrewio/example/path/to/go.sum/github.com/prometheus/client_model@v0.0.0-20190129233127-fd36f4220a90"/>
 		<dependency ref="pkg:golang/bridgecrewio/example/path/to/go.sum/golang.org/x/crypto@v0.0.1"/>
-		<dependency ref="pkg:pypi/bridgecrewio/example/requirements.txt/requests@2.26.0"/>
 		<dependency ref="pkg:pypi/bridgecrewio/example/path/to/sub/requirements.txt/requests@2.26.0"/>
+		<dependency ref="pkg:pypi/bridgecrewio/example/requirements.txt/django@1.2"/>
+		<dependency ref="pkg:pypi/bridgecrewio/example/requirements.txt/flask@0.6"/>
+		<dependency ref="pkg:pypi/bridgecrewio/example/requirements.txt/requests@2.26.0"/>
 	</dependencies>
 	<vulnerabilities>
-		<vulnerability bom-ref="d572c120-f086-4d62-99e1-15978d879cb2">
+		<vulnerability bom-ref="86c28834-d275-47ba-8927-13a703ad1f88">
 			<id>CVE-2016-7401</id>
 			<source>
 				<url>https://nvd.nist.gov/vuln/detail/CVE-2016-7401</url>
@@ -188,57 +188,7 @@
 				</target>
 			</affects>
 		</vulnerability>
-		<vulnerability bom-ref="312b1ad9-b3f7-48e1-90ae-0a4e6963047d">
-			<id>CVE-2019-19844</id>
-			<source>
-				<url>https://nvd.nist.gov/vuln/detail/CVE-2019-19844</url>
-			</source>
-			<ratings>
-				<rating>
-					<source>
-						<url>https://nvd.nist.gov/vuln/detail/CVE-2019-19844</url>
-					</source>
-					<score>9.8</score>
-					<severity>critical</severity>
-					<method>CVSSv3</method>
-					<vector>AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H</vector>
-				</rating>
-			</ratings>
-			<description>Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover. A suitably crafted email address (that is equal to an existing user\'s email address after case transformation of Unicode characters) would allow an attacker to be sent a password reset token for the matched user account. (One mitigation in the new releases is to send password reset tokens only to the registered user email address.)</description>
-			<recommendation>Fixed in 1.11.27</recommendation>
-			<published>2019-12-18T20:15:00+01:00</published>
-			<affects>
-				<target>
-					<ref>pkg:pypi/bridgecrewio/example/requirements.txt/django@1.2</ref>
-				</target>
-			</affects>
-		</vulnerability>
-		<vulnerability bom-ref="4881c809-536b-4474-9570-64c16c2faf3e">
-			<id>CVE-2021-33203</id>
-			<source>
-				<url>https://nvd.nist.gov/vuln/detail/CVE-2021-33203</url>
-			</source>
-			<ratings>
-				<rating>
-					<source>
-						<url>https://nvd.nist.gov/vuln/detail/CVE-2021-33203</url>
-					</source>
-					<score>4.9</score>
-					<severity>medium</severity>
-					<method>CVSSv3</method>
-					<vector>AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:N/A:N</vector>
-				</rating>
-			</ratings>
-			<description>Django before 2.2.24, 3.x before 3.1.12, and 3.2.x before 3.2.4 has a potential directory traversal via django.contrib.admindocs. Staff members could use the TemplateDetailView view to check the existence of arbitrary files. Additionally, if (and only if) the default admindocs templates have been customized by application developers to also show file contents, then not only the existence but also the file contents would have been exposed. In other words, there is directory traversal outside of the template root directories.</description>
-			<recommendation>Fixed in 2.2.24</recommendation>
-			<published>2021-06-08T20:15:00+02:00</published>
-			<affects>
-				<target>
-					<ref>pkg:pypi/bridgecrewio/example/requirements.txt/django@1.2</ref>
-				</target>
-			</affects>
-		</vulnerability>
-		<vulnerability bom-ref="eab1abbd-ca63-4cdb-a8af-bc635963c7cf">
+		<vulnerability bom-ref="0a961cb2-71c5-42be-91e9-a27ee0ff5e07">
 			<id>CVE-2018-1000656</id>
 			<source>
 				<url>https://nvd.nist.gov/vuln/detail/CVE-2018-1000656</url>
@@ -263,7 +213,32 @@
 				</target>
 			</affects>
 		</vulnerability>
-		<vulnerability bom-ref="904615aa-9851-4bac-b34b-079e357a6c22">
+		<vulnerability bom-ref="3de8e4ed-0b19-4b02-a12b-7e57ab1feac4">
+			<id>CVE-2019-19844</id>
+			<source>
+				<url>https://nvd.nist.gov/vuln/detail/CVE-2019-19844</url>
+			</source>
+			<ratings>
+				<rating>
+					<source>
+						<url>https://nvd.nist.gov/vuln/detail/CVE-2019-19844</url>
+					</source>
+					<score>9.8</score>
+					<severity>critical</severity>
+					<method>CVSSv3</method>
+					<vector>AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H</vector>
+				</rating>
+			</ratings>
+			<description>Django before 1.11.27, 2.x before 2.2.9, and 3.x before 3.0.1 allows account takeover. A suitably crafted email address (that is equal to an existing user\'s email address after case transformation of Unicode characters) would allow an attacker to be sent a password reset token for the matched user account. (One mitigation in the new releases is to send password reset tokens only to the registered user email address.)</description>
+			<recommendation>Fixed in 1.11.27</recommendation>
+			<published>2019-12-18T20:15:00+01:00</published>
+			<affects>
+				<target>
+					<ref>pkg:pypi/bridgecrewio/example/requirements.txt/django@1.2</ref>
+				</target>
+			</affects>
+		</vulnerability>
+		<vulnerability bom-ref="3dc418f9-4fe8-4e1e-b342-accad1b05693">
 			<id>CVE-2020-26160</id>
 			<source>
 				<url>https://nvd.nist.gov/vuln/detail/CVE-2020-26160</url>
@@ -288,7 +263,7 @@
 				</target>
 			</affects>
 		</vulnerability>
-		<vulnerability bom-ref="23c97d96-7af7-49cc-963a-7a465625c237">
+		<vulnerability bom-ref="b4559405-6ef1-4732-a200-7f6ca78a1829">
 			<id>CVE-2020-29652</id>
 			<source>
 				<url>https://nvd.nist.gov/vuln/detail/CVE-2020-29652</url>
@@ -310,6 +285,31 @@
 			<affects>
 				<target>
 					<ref>pkg:golang/bridgecrewio/example/path/to/go.sum/golang.org/x/crypto@v0.0.1</ref>
+				</target>
+			</affects>
+		</vulnerability>
+		<vulnerability bom-ref="41e908aa-f843-4183-850c-f1a0141a59ef">
+			<id>CVE-2021-33203</id>
+			<source>
+				<url>https://nvd.nist.gov/vuln/detail/CVE-2021-33203</url>
+			</source>
+			<ratings>
+				<rating>
+					<source>
+						<url>https://nvd.nist.gov/vuln/detail/CVE-2021-33203</url>
+					</source>
+					<score>4.9</score>
+					<severity>medium</severity>
+					<method>CVSSv3</method>
+					<vector>AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:N/A:N</vector>
+				</rating>
+			</ratings>
+			<description>Django before 2.2.24, 3.x before 3.1.12, and 3.2.x before 3.2.4 has a potential directory traversal via django.contrib.admindocs. Staff members could use the TemplateDetailView view to check the existence of arbitrary files. Additionally, if (and only if) the default admindocs templates have been customized by application developers to also show file contents, then not only the existence but also the file contents would have been exposed. In other words, there is directory traversal outside of the template root directories.</description>
+			<recommendation>Fixed in 2.2.24</recommendation>
+			<published>2021-06-08T20:15:00+02:00</published>
+			<affects>
+				<target>
+					<ref>pkg:pypi/bridgecrewio/example/requirements.txt/django@1.2</ref>
 				</target>
 			</affects>
 		</vulnerability>

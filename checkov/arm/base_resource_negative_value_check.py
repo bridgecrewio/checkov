@@ -33,7 +33,7 @@ class BaseResourceNegativeValueCheck(BaseResourceCheck):
     def _is_variable_dependant(value: Any) -> bool:
         return bool(isinstance(value, str) and re.match(VARIABLE_DEPENDANT_REGEX, value))
 
-    def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:  # type:ignore[override]  # issue with multi_signature annotation
+    def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
         inspected_key = self.get_inspected_key()
         forbidden_values = self.get_forbidden_values()
         value = find_in_dict(conf, inspected_key)

@@ -1,0 +1,4 @@
+pass:
+  - "azurerm_mssql_server.pass"
+fail:
+  - "azurerm_mssql_server.fail"

@@ -41,12 +41,13 @@ class Runner(YamlRunner):
     def import_registry(self) -> BaseCheckRegistry:
         return registry
 
+    @staticmethod
     def _parse_file(
-        self, f: str, file_content: str | None = None
+        f: str, file_content: str | None = None
     ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
         content = get_relevant_file_content(file_path=f)
         if content:
-            return super()._parse_file(f=f, file_content=content)
+            return YamlRunner._parse_file(f=f, file_content=content)
 
         return None
 

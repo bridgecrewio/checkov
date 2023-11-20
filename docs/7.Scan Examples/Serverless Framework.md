@@ -62,7 +62,7 @@ checkov -d . --framework serverless
  | (__| | | |  __/ (__|   < (_) \ V / 
   \___|_| |_|\___|\___|_|\_\___/ \_/  
                                       
-By bridgecrew.io | version: 2.0.723 
+By Prisma Cloud | version: x.x.x 
 
 
 serverless scan results:
@@ -72,32 +72,32 @@ Passed checks: 5, Failed checks: 7, Skipped checks: 0
 Check: CKV_AWS_19: "Ensure the S3 bucket has server-side-encryption enabled"
    PASSED for resource: AWS::S3::Bucket.S3BucketPublicRead
    File:/serverless.yml:22-29
-   Guide: https://docs.bridgecrew.io/docs/s3_14-data-encrypted-at-rest
+   Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3-14-data-encrypted-at-rest
 
 Check: CKV_AWS_57: "Ensure the S3 bucket does not allow WRITE permissions to everyone"
    PASSED for resource: AWS::S3::Bucket.S3BucketPublicRead
    File:/serverless.yml:22-29
-   Guide: https://docs.bridgecrew.io/docs/s3_2-acl-write-permissions-everyone
+   Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3-2-acl-write-permissions-everyone
 
 Check: CKV_AWS_49: "Ensure no IAM policies documents allow "*" as a statement's actions"
    PASSED for resource: myFunc
    File:/serverless.yml:5-19
-   Guide: https://docs.bridgecrew.io/docs/bc_aws_iam_43
+   Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/bc_aws_iam_43
 
 Check: CKV_AWS_41: "Ensure no hard coded AWS access key and secret key exists in provider"
    PASSED for resource: myFunc
    File:/serverless.yml:5-19
-   Guide: https://docs.bridgecrew.io/docs/bc_aws_secrets_5
+   Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/bc_aws_secrets_5
 
 Check: CKV_AWS_1: "Ensure IAM policies that allow full "*-*" administrative privileges are not created"
    PASSED for resource: myFunc
    File:/serverless.yml:5-19
-   Guide: https://docs.bridgecrew.io/docs/iam_23
+   Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/iam_23
 
 Check: CKV_AWS_20: "Ensure the S3 bucket does not allow READ permissions to everyone"
    FAILED for resource: AWS::S3::Bucket.S3BucketPublicRead
    File:/serverless.yml:22-29
-   Guide: https://docs.bridgecrew.io/docs/s3_1-acl-read-permissions-everyone
+   Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3_1-acl-read-permissions-everyone
 
       22 |     S3BucketPublicRead:
       23 |       Type: AWS::S3::Bucket
@@ -111,7 +111,7 @@ Check: CKV_AWS_20: "Ensure the S3 bucket does not allow READ permissions to ever
 Check: CKV_AWS_18: "Ensure the S3 bucket has access logging enabled"
    FAILED for resource: AWS::S3::Bucket.S3BucketPublicRead
    File:/serverless.yml:22-29
-   Guide: https://docs.bridgecrew.io/docs/s3_13-enable-logging
+   Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3_13-enable-logging
 
       22 |     S3BucketPublicRead:
       23 |       Type: AWS::S3::Bucket
@@ -125,7 +125,7 @@ Check: CKV_AWS_18: "Ensure the S3 bucket has access logging enabled"
 Check: CKV_AWS_53: "Ensure S3 bucket has block public ACLS enabled"
    FAILED for resource: AWS::S3::Bucket.S3BucketPublicRead
    File:/serverless.yml:22-29
-   Guide: https://docs.bridgecrew.io/docs/bc_aws_s3_19
+   Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/bc_aws_s3_19
 
       22 |     S3BucketPublicRead:
       23 |       Type: AWS::S3::Bucket
@@ -139,7 +139,7 @@ Check: CKV_AWS_53: "Ensure S3 bucket has block public ACLS enabled"
 Check: CKV_AWS_54: "Ensure S3 bucket has block public policy enabled"
    FAILED for resource: AWS::S3::Bucket.S3BucketPublicRead
    File:/serverless.yml:22-29
-   Guide: https://docs.bridgecrew.io/docs/bc_aws_s3_20
+   Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/bc_aws_s3_20
 
       22 |     S3BucketPublicRead:
       23 |       Type: AWS::S3::Bucket
@@ -153,7 +153,7 @@ Check: CKV_AWS_54: "Ensure S3 bucket has block public policy enabled"
 Check: CKV_AWS_21: "Ensure the S3 bucket has versioning enabled"
    FAILED for resource: AWS::S3::Bucket.S3BucketPublicRead
    File:/serverless.yml:22-29
-   Guide: https://docs.bridgecrew.io/docs/s3_16-enable-versioning
+   Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3_16-enable-versioning
 
       22 |     S3BucketPublicRead:
       23 |       Type: AWS::S3::Bucket
@@ -167,7 +167,7 @@ Check: CKV_AWS_21: "Ensure the S3 bucket has versioning enabled"
 Check: CKV_AWS_55: "Ensure S3 bucket has ignore public ACLs enabled"
    FAILED for resource: AWS::S3::Bucket.S3BucketPublicRead
    File:/serverless.yml:22-29
-   Guide: https://docs.bridgecrew.io/docs/bc_aws_s3_21
+   Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/bc_aws_s3_21
 
       22 |     S3BucketPublicRead:
       23 |       Type: AWS::S3::Bucket
@@ -181,7 +181,7 @@ Check: CKV_AWS_55: "Ensure S3 bucket has ignore public ACLs enabled"
 Check: CKV_AWS_56: "Ensure S3 bucket has 'restrict_public_bucket' enabled"
    FAILED for resource: AWS::S3::Bucket.S3BucketPublicRead
    File:/serverless.yml:22-29
-   Guide: https://docs.bridgecrew.io/docs/bc_aws_s3_22
+   Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/bc_aws_s3_22
 
       22 |     S3BucketPublicRead:
       23 |       Type: AWS::S3::Bucket

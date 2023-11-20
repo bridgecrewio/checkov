@@ -143,7 +143,7 @@ class TestRunnerValid(unittest.TestCase):
                     guideline=custom_guideline_url
                 )
 
-            def scan_resource_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
+            def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
                 return CheckResult.FAILED
 
         AnyFailingCheck()
@@ -468,7 +468,7 @@ class TestRunnerValid(unittest.TestCase):
                     ["AWS::SQS::Queue"]
                 )
 
-            def scan_resource_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
+            def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
                 return CheckResult.FAILED
 
         check = AnyFailingCheck()
@@ -527,7 +527,7 @@ class TestRunnerValid(unittest.TestCase):
                     ["AWS::SQS::Queue"]
                 )
 
-            def scan_resource_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
+            def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
                 return CheckResult.FAILED
 
         check = AnyFailingCheck()
@@ -537,7 +537,7 @@ class TestRunnerValid(unittest.TestCase):
         checks_allowlist = ['MEDIUM']
         scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "fail.yaml")
         report = runner.run(None, files=[scan_file_path], external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework='cloudformation', checks=checks_allowlist))
+                            runner_filter=RunnerFilter(framework=['cloudformation'], checks=checks_allowlist))
 
         all_checks = report.failed_checks + report.passed_checks
         self.assertTrue(any(c.check_id == custom_check_id for c in all_checks))
@@ -557,7 +557,7 @@ class TestRunnerValid(unittest.TestCase):
                     ["AWS::SQS::Queue"]
                 )
 
-            def scan_resource_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
+            def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
                 return CheckResult.FAILED
 
         check = AnyFailingCheck()
@@ -567,7 +567,7 @@ class TestRunnerValid(unittest.TestCase):
         checks_denylist = ['MEDIUM']
         scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "fail.yaml")
         report = runner.run(None, files=[scan_file_path], external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework='cloudformation', skip_checks=checks_denylist))
+                            runner_filter=RunnerFilter(framework=['cloudformation'], skip_checks=checks_denylist))
 
         all_checks = report.failed_checks + report.passed_checks
         self.assertFalse(any(c.check_id == custom_check_id for c in all_checks))
@@ -587,7 +587,7 @@ class TestRunnerValid(unittest.TestCase):
                     ["AWS::SQS::Queue"]
                 )
 
-            def scan_resource_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
+            def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
                 return CheckResult.FAILED
 
         check = AnyFailingCheck()
@@ -597,7 +597,7 @@ class TestRunnerValid(unittest.TestCase):
         checks_denylist = ['MEDIUM']
         scan_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "resources", "fail.yaml")
         report = runner.run(None, files=[scan_file_path], external_checks_dir=None,
-                            runner_filter=RunnerFilter(framework='cloudformation', skip_checks=checks_denylist))
+                            runner_filter=RunnerFilter(framework=['cloudformation'], skip_checks=checks_denylist))
 
         all_checks = report.failed_checks + report.passed_checks
         self.assertTrue(any(c.check_id == custom_check_id for c in all_checks))

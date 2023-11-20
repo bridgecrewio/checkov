@@ -108,7 +108,7 @@ checkov -d . --framework gitlab_configuration
  | (__| | | |  __/ (__|   < (_) \ V / 
   \___|_| |_|\___|\___|_|\_\___/ \_/  
                                       
-By bridgecrew.io | version: 2.0.722 
+By Prisma Cloud | version: 2.0.722 
 
 
 gitlab_configuration scan results:

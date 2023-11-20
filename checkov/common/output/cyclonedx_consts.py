@@ -3,7 +3,7 @@ from __future__ import annotations
 from checkov.common.bridgecrew.severities import BcSeverities
 from cyclonedx.model.vulnerability import VulnerabilitySeverity
 from checkov.common.output.report import CheckType
-from cyclonedx.output import SchemaVersion
+from cyclonedx.schema import SchemaVersion
 
 SCA_CHECKTYPES = (CheckType.SCA_PACKAGE, CheckType.SCA_IMAGE)
 
