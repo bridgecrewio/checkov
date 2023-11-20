@@ -44,6 +44,7 @@ from checkov.common.bridgecrew.integration_features.features.suppressions_integr
 from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.severities import BcSeverities
+from checkov.common.cache.cache import file_cache
 from checkov.common.goget.github.get_git import GitGetter
 from checkov.common.models.enums import ParallelizationType
 from checkov.common.output.baseline import Baseline
@@ -257,6 +258,11 @@ class Checkov:
                 check = prompt.Check(resp.responses)
                 check.action()
                 return None
+
+            if self.config.no_cache is False:
+                # initialize cache, if not explicitly disabled
+                file_cache.enabled = True
+                file_cache.init_cache()
 
             # Check if --output value is None. If so, replace with ['cli'] for default cli output.
             if self.config.output is None:
@@ -693,6 +699,9 @@ class Checkov:
             raise
 
         finally:
+            if self.config.no_cache is False:
+                file_cache.sync_caches()
+
             if bc_integration.support_flag_enabled:
                 if bc_integration.s3_setup_failed:
                     print_to_stderr = os.getenv('CKV_STDERR_DEBUG', 'FALSE').upper() == 'TRUE'

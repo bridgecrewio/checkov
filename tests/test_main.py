@@ -146,8 +146,6 @@ def test_run_with_severity_skip_filter_without_api_key(caplog: LogCaptureFixture
         "--skip-check", "MEDIUM",
     ]
 
-    parallel_runner
-
     # when
     ckv = Checkov()
     ckv.parse_config(argv=argv)

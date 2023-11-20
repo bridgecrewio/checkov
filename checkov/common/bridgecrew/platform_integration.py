@@ -34,6 +34,7 @@ from checkov.common.bridgecrew.run_metadata.registry import registry
 from checkov.common.bridgecrew.wrapper import persist_assets_results, reduce_scan_reports, persist_checks_results, \
     enrich_and_persist_checks_metadata, checkov_results_prefix, persist_run_metadata, _put_json_object, \
     persist_logs_stream, persist_graphs, persist_resource_subgraph_maps, persist_reachability_results
+from checkov.common.cache.cache import ttl_cached
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILES, SCANNABLE_PACKAGE_FILES
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.typing import _CicdDetails, LibraryGraph
@@ -113,7 +114,7 @@ class BcPlatformIntegration:
         self.setup_api_urls()
         self.customer_run_config_response: dict[str, Any] | None = None
         self.prisma_policies_response: list[dict[str, Any]] | None = None
-        self.public_metadata_response = None
+        self.public_metadata_response: dict[str, Any] | None = None
         self.use_s3_integration = False
         self.s3_setup_failed = False
         self.platform_integration_configured = False
@@ -801,9 +802,15 @@ class BcPlatformIntegration:
             raise Exception(
                 "Tried to get customer run config, but the API key was missing or the integration was not set up")
 
+        self.customer_run_config_response = self._get_customer_run_config()
+
+    @ttl_cached(seconds=900, key="get_customer_run_config")  # 15 min
+    def _get_customer_run_config(self) -> dict[str, Any] | None:
+        """Sub-method of self.get_customer_run_config() to properly cache the result"""
+
         if not self.bc_source:
             logging.error("Source was not set")
-            return
+            return None
 
         try:
             token = self.get_auth_token()
@@ -813,7 +820,7 @@ class BcPlatformIntegration:
             self.setup_http_manager()
             if not self.http:
                 logging.error("HTTP manager was not correctly created")
-                return
+                return None
 
             platform_type = PRISMA_PLATFORM if self.is_prisma_integration() else BRIDGECREW_PLATFORM
 
@@ -826,9 +833,11 @@ class BcPlatformIntegration:
                 error_message = get_auth_error_message(request.status, self.is_prisma_integration(), False)
                 logging.error(error_message)
                 raise BridgecrewAuthError(error_message)
-            self.customer_run_config_response = json.loads(request.data.decode("utf8"))
+            customer_run_config: dict[str, Any] = json.loads(request.data.decode("utf8"))
 
             logging.debug(f"Got customer run config from {platform_type} platform")
+
+            return customer_run_config
         except Exception:
             logging.warning(f"Failed to get the customer run config from {self.platform_run_config_url}", exc_info=True)
             raise
@@ -976,13 +985,20 @@ class BcPlatformIntegration:
         if self.skip_download is True:
             logging.debug("Skipping checkov mapping and guidelines API call")
             return
+
+        self.public_metadata_response = self._get_public_run_config()
+
+    @ttl_cached(seconds=86400, key="get_public_run_config")  # 1 day
+    def _get_public_run_config(self) -> dict[str, Any] | None:
+        """Sub-method of self.get_public_run_config() to properly cache the result"""
+
         try:
             headers: dict[str, Any] = {}
 
             self.setup_http_manager()
             if not self.http:
                 logging.error("HTTP manager was not correctly created")
-                return
+                return None
 
             request = self.http.request("GET", self.guidelines_api_url, headers=headers)  # type:ignore[no-untyped-call]
             if request.status >= 300:
@@ -992,12 +1008,18 @@ class BcPlatformIntegration:
                     headers=headers,
                 )
 
-            self.public_metadata_response = json.loads(request.data.decode("utf8"))
+            public_run_config: dict[str, Any] = json.loads(request.data.decode("utf8"))
             platform_type = PRISMA_PLATFORM if self.is_prisma_integration() else BRIDGECREW_PLATFORM
             logging.debug(f"Got checkov mappings and guidelines from {platform_type} platform")
+
+            return public_run_config
         except Exception:
-            logging.warning(f"Failed to get the checkov mappings and guidelines from {self.guidelines_api_url}. Skips using BC_* IDs will not work.",
-                            exc_info=True)
+            logging.warning(
+                f"Failed to get the checkov mappings and guidelines from {self.guidelines_api_url}. Skips using BC_* IDs will not work.",
+                exc_info=True,
+            )
+
+        return None
 
     def get_report_to_platform(self, args: argparse.Namespace, scan_reports: list[Report]) -> None:
         if self.bc_api_key:

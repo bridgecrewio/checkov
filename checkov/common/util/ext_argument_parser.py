@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from io import StringIO
 from typing import Any, TYPE_CHECKING, cast, List
 
@@ -376,7 +377,9 @@ class ExtArgumentParser(configargparse.ArgumentParser):
         self.add(
             "--download-external-modules",
             help="download external terraform modules from public git repositories and terraform registry",
-            default=False,
+            action="store_true",
+            # default needs to be extract from the env var to properly work
+            default=convert_str_to_bool(os.getenv("DOWNLOAD_EXTERNAL_MODULES", False)),
             env_var="DOWNLOAD_EXTERNAL_MODULES",
         )
         self.add(
@@ -543,4 +546,13 @@ class ExtArgumentParser(configargparse.ArgumentParser):
             help="Add an OpenAI API key to enhance finding guidelines by sending violated policies and "
                  "resource code to OpenAI to request remediation guidance. This will use your OpenAI credits. "
                  "Set your number of findings that will receive enhanced guidelines using CKV_OPENAI_MAX_FINDINGS",
+        )
+        self.add(
+            "--no-cache",
+            action="store_true",
+            # default needs to be extract from the env var to properly work
+            default=convert_str_to_bool(os.getenv("CKV_NO_CACHE", False)),
+            env_var="CKV_NO_CACHE",
+            help="Disables caching of data to speedup scan time, default is set to False."
+                 "The cache location can be set via the env var CKV_CACHE_DIR=/tmp",
         )
