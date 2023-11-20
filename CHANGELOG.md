@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.0.38...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.0.40...HEAD)
+
+## [3.0.40](https://github.com/bridgecrewio/checkov/compare/3.0.38...3.0.40) - 2023-11-19
+
+### Bug Fix
+
+- **terraform_plan:** TF plan resources connection fix - [#5767](https://github.com/bridgecrewio/checkov/pull/5767)
 
 ## [3.0.38](https://github.com/bridgecrewio/checkov/compare/3.0.37...3.0.38) - 2023-11-16
 

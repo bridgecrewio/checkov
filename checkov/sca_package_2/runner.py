@@ -66,7 +66,7 @@ class Runner(BaseRunner[None, None, None]):
         if bc_integration.daemon_process:
             # only happens for 'ParallelizationType.SPAWN'
             bc_integration.setup_http_manager()
-            bc_integration.set_s3_integration()
+            bc_integration.set_s3_client()
 
         excluded_paths = {*ignored_directories}
         if runner_filter.excluded_paths:
