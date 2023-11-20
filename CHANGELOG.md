@@ -1,6 +1,24 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.0.36...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.0.40...HEAD)
+
+## [3.0.40](https://github.com/bridgecrewio/checkov/compare/3.0.38...3.0.40) - 2023-11-19
+
+### Bug Fix
+
+- **terraform_plan:** TF plan resources connection fix - [#5767](https://github.com/bridgecrewio/checkov/pull/5767)
+
+## [3.0.38](https://github.com/bridgecrewio/checkov/compare/3.0.37...3.0.38) - 2023-11-16
+
+### Feature
+
+- **terraform:** Adding YAML based build time policies for corresponding PC runtime policies - [#5714](https://github.com/bridgecrewio/checkov/pull/5714)
+
+## [3.0.37](https://github.com/bridgecrewio/checkov/compare/3.0.36...3.0.37) - 2023-11-15
+
+### Bug Fix
+
+- **terraform:** fix valid value for aws keyspaces_table encryption_specification type - [#5756](https://github.com/bridgecrewio/checkov/pull/5756)
 
 ## [3.0.36](https://github.com/bridgecrewio/checkov/compare/3.0.34...3.0.36) - 2023-11-14
 

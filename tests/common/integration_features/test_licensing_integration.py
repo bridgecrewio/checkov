@@ -95,7 +95,7 @@ class TestLicensingIntegration(unittest.TestCase):
         self.assertEqual(CodeCategoryMapping.get(CheckType.ARM), CodeCategoryType.IAC)
         self.assertEqual(CodeCategoryMapping.get(CheckType.AZURE_PIPELINES), CodeCategoryType.BUILD_INTEGRITY)
         self.assertEqual(CodeCategoryMapping.get(CheckType.BICEP), CodeCategoryType.IAC)
-        self.assertEqual(CodeCategoryMapping.get(CheckType.CDK), CodeCategoryType.IAC)
+        self.assertEqual(CodeCategoryMapping.get(CheckType.CDK), CodeCategoryType.SAST)
         self.assertEqual(CodeCategoryMapping.get(CheckType.CLOUDFORMATION), CodeCategoryType.IAC)
         self.assertEqual(CodeCategoryMapping.get(CheckType.DOCKERFILE), CodeCategoryType.IAC)
         self.assertEqual(CodeCategoryMapping.get(CheckType.GITHUB_CONFIGURATION), CodeCategoryType.BUILD_INTEGRITY)
@@ -124,7 +124,7 @@ class TestLicensingIntegration(unittest.TestCase):
         self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.ARM), CustomerSubscription.IAC)
         self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.AZURE_PIPELINES), CustomerSubscription.IAC)
         self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.BICEP), CustomerSubscription.IAC)
-        self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.CDK), CustomerSubscription.IAC)
+        self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.CDK), CustomerSubscription.SAST)
         self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.CLOUDFORMATION), CustomerSubscription.IAC)
         self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.DOCKERFILE), CustomerSubscription.IAC)
         self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.GITHUB_CONFIGURATION), CustomerSubscription.IAC)
@@ -147,7 +147,7 @@ class TestLicensingIntegration(unittest.TestCase):
         self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.ARGO_WORKFLOWS), CustomerSubscription.IAC)
         self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.SAST), CustomerSubscription.SAST)
 
-        self.assertEqual(open_source_categories, [CodeCategoryType.IAC, CodeCategoryType.SECRETS, CodeCategoryType.BUILD_INTEGRITY, CodeCategoryType.SAST])
+        self.assertEqual(open_source_categories, [CodeCategoryType.IAC, CodeCategoryType.SECRETS, CodeCategoryType.BUILD_INTEGRITY])
 
     def test_integration_valid(self):
         instance = BcPlatformIntegration()
@@ -185,7 +185,10 @@ class TestLicensingIntegration(unittest.TestCase):
 
         # IAC and secrets are valid, SCA is not
         for runner_check_type in checkov_runners:
-            self.assertEqual(licensing_integration.is_runner_valid(runner_check_type), runner_to_subscription_map[runner_check_type] != CustomerSubscription.SCA)
+            self.assertEqual(
+                licensing_integration.is_runner_valid(runner_check_type),
+                runner_to_subscription_map[runner_check_type] not in (CustomerSubscription.SCA, CustomerSubscription.SAST),
+            )
 
     def test_oss_mode_resource_plan(self):
         instance = BcPlatformIntegration()
@@ -268,7 +271,7 @@ class TestLicensingIntegration(unittest.TestCase):
         licensing_integration.pre_scan()
 
         for runner_check_type in checkov_runners:
-            if runner_check_type.startswith("sast"):  # todo: remove when sast will be active
+            if runner_check_type.startswith(("cdk", "sast")):  # todo: remove when sast will be active
                 continue
             self.assertFalse(licensing_integration.is_runner_valid(runner_check_type))
         self.assertFalse(licensing_integration.should_run_image_referencer())
@@ -288,7 +291,7 @@ class TestLicensingIntegration(unittest.TestCase):
             }
             licensing_integration.pre_scan()
             for runner_check_type in checkov_runners:
-                if runner_check_type.startswith("sast"):  # todo: remove when sast will be active
+                if runner_check_type.startswith(("cdk", "sast")):  # todo: remove when sast will be active
                     continue
                 self.assertEqual(licensing_integration.is_runner_valid(runner_check_type), runner_check_type in subscription_to_runner_map[CustomerSubscription(module)])
             self.assertEqual(licensing_integration.should_run_image_referencer(), module == 'SCA')

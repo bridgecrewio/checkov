@@ -225,7 +225,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                     else:
                         dest_node_index = self._find_vertex_index_relative_to_path(
                             vertex_reference.block_type, reference_name, vertex.path,
-                            source_module_object=source_module_object
+                            source_module_object=source_module_object, origin_vertex_index=origin_node_index
                         )
                     if dest_node_index > -1 and origin_node_index > -1:
                         self._create_edge_from_reference(attribute_key, origin_node_index, dest_node_index, sub_values,
@@ -372,6 +372,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         block_path: str,
         relative_module_idx: Optional[int] = None,
         source_module_object: Optional[TFModule] = None,
+        origin_vertex_index: Optional[int] = None,
     ) -> int:
         relative_vertices: list[int] = []
         if relative_module_idx is None:
@@ -390,10 +391,11 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         if len(relative_vertices) == 1:
             relative_vertex = relative_vertices[0]
         else:
-            relative_vertex = self._find_vertex_with_longest_path_match(relative_vertices, block_path)
+            relative_vertex = self._find_vertex_with_best_match(relative_vertices, block_path, origin_vertex_index)
         return relative_vertex
 
-    def _find_vertex_with_longest_path_match(self, relevant_vertices_indexes: List[int], origin_path: str) -> int:
+    def _find_vertex_with_best_match(self, relevant_vertices_indexes: List[int], origin_path: str,
+                                     origin_vertex_index: Optional[int] = None) -> int:
         vertex_index_with_longest_common_prefix = -1
         longest_common_prefix = ""
         for vertex_index in relevant_vertices_indexes:
@@ -402,6 +404,13 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             if len(common_prefix) > len(longest_common_prefix):
                 vertex_index_with_longest_common_prefix = vertex_index
                 longest_common_prefix = common_prefix
+            elif len(common_prefix) == len(longest_common_prefix) and origin_vertex_index:
+                vertex_module_name = vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS, '')
+                origin_module_name = self.vertices[origin_vertex_index].attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS, '')
+                if vertex_module_name.startswith(BlockType.MODULE) and origin_module_name.startswith(BlockType.MODULE):
+                    split_module_name = vertex_module_name.split('.')[1]
+                    if origin_module_name.startswith(f'{BlockType.MODULE}.{split_module_name}'):
+                        vertex_index_with_longest_common_prefix = vertex_index
         return vertex_index_with_longest_common_prefix
 
     def get_vertices_hash_codes_to_attributes_map(self) -> Dict[str, Dict[str, Any]]:
