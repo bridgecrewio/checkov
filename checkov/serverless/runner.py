@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import List, Dict, Tuple, Any
+from typing import List, Dict, Tuple
 
 from checkov.cloudformation import cfn_utils
 from checkov.cloudformation.context_parser import ContextParser as CfnContextParser
@@ -288,7 +288,7 @@ class Runner(BaseRunner):
 
 def get_files_definitions(files: List[str], filepath_fn=None) \
         -> Tuple[Dict[str, DictNode], Dict[str, List[Tuple[int, str]]]]:
-    results = parallel_runner.run_function(_parallel_parse, files)
+    results = parallel_runner.run_function(lambda f: (f, parse(f)), files)
     definitions = {}
     definitions_raw = {}
     for file, result in results:
@@ -297,8 +297,3 @@ def get_files_definitions(files: List[str], filepath_fn=None) \
             definitions[path], definitions_raw[path] = result
 
     return definitions, definitions_raw
-
-
-def _parallel_parse(f: str) -> tuple[str, tuple[dict[str, Any], list[tuple[int, str]]]]:
-    """Thin wrapper to return filename with parsed content"""
-    return f, parse(f)
