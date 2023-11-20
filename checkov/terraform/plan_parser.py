@@ -12,9 +12,10 @@ from checkov.common.util.type_forcers import force_list
 from checkov.terraform.context_parsers.tf_plan import parse
 
 SIMPLE_TYPES = (str, int, float, bool)
-TF_PLAN_RESOURCE_ADDRESS = "__address__"
+TF_PLAN_RESOURCE_ADDRESS = CustomAttributes.TF_RESOURCE_ADDRESS
 TF_PLAN_RESOURCE_CHANGE_ACTIONS = "__change_actions__"
 TF_PLAN_RESOURCE_CHANGE_KEYS = "__change_keys__"
+TF_PLAN_RESOURCE_PROVISIONERS = "provisioners"
 
 RESOURCE_TYPES_JSONIFY = {
     "aws_batch_job_definition": "container_properties",
@@ -25,6 +26,7 @@ RESOURCE_TYPES_JSONIFY = {
     "aws_iam_group_policy": "policy",
     "aws_iam_user_policy": "policy",
     "aws_ssoadmin_permission_set_inline_policy": "inline_policy",
+    "azurerm_portal_dashboard": "dashboard_properties",
 }
 
 
@@ -164,6 +166,10 @@ def _prepare_resource_block(
             resource_conf[TF_PLAN_RESOURCE_CHANGE_ACTIONS] = changes.get("change", {}).get("actions") or []
             resource_conf[TF_PLAN_RESOURCE_CHANGE_KEYS] = changes.get(TF_PLAN_RESOURCE_CHANGE_KEYS) or []
 
+        provisioners = conf.get(TF_PLAN_RESOURCE_PROVISIONERS) if conf else None
+        if provisioners:
+            resource_conf["provisioner"] = _get_provisioner(provisioners)
+
         resource_block[resource_type][resource.get("name", "default")] = resource_conf
         prepared = True
     return resource_block, block_type, prepared
@@ -233,7 +239,7 @@ def _get_module_call_resources(module_address: str, root_module_conf: dict[str, 
             continue
         root_module_conf = root_module_conf.get("module_calls", {}).get(module_name, {}).get("module", {})
 
-    return root_module_conf.get("resources", [])
+    return cast("list[dict[str, Any]]", root_module_conf.get("resources", []))
 
 
 def _get_resource_changes(template: dict[str, Any]) -> dict[str, dict[str, Any]]:
@@ -341,3 +347,15 @@ def _clean_simple_type_list(value_list: List[Any]) -> List[Any]:
             if lower_case_value == "false":
                 value_list[i] = False
     return value_list
+
+
+def _get_provisioner(input_data: List[Any]) -> List[Any]:
+    result = []
+    for item in input_data:
+        key = item['type']
+        command_value = item['expressions']['command']
+        if not isinstance(command_value, list):
+            command_value = [command_value]
+        transformed_item = {key: {'command': command_value}}
+        result.append(transformed_item)
+    return result

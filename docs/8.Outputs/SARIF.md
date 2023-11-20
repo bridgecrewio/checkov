@@ -35,7 +35,7 @@ A typical output looks like this
               "help": {
                 "text": "Ensure the S3 bucket has versioning enabled\nResource: aws_s3_bucket.operations"
               },
-              "helpUri": "https://docs.bridgecrew.io/docs/s3_16-enable-versioning",
+              "helpUri": "https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3-16-enable-versioning",
               "defaultConfiguration": {
                 "level": "error"
               },
@@ -53,14 +53,14 @@ A typical output looks like this
               "help": {
                 "text": "Ensure all data stored in the EBS is securely encrypted\nResource: aws_ebs_volume.web_host_storage"
               },
-              "helpUri": "https://docs.bridgecrew.io/docs/general_7",
+              "helpUri": "https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/general-7",
               "defaultConfiguration": {
                 "level": "error"
               },
               "properties": {"security-severity": 6.9}
             }
           ],
-          "organization": "bridgecrew"
+          "organization": "prisma"
         }
       },
       "results": [

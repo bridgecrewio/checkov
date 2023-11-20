@@ -155,9 +155,7 @@ Check: "S3 Bucket has an ACL defined which allows public access."
 
 ## Visualizing scan output
 
-In addition to the various formats for seeing scan results (for example, CLI), you can also visualize Checkov results with a quick integration with a free Bridgecrew account. Read more about [visualizing scan results in the Bridgecrew platform](https://www.checkov.io/2.Basics/Visualizing%20Checkov%20Output.html).
-
-![Visualizing Scan Output with Bridgecrew](visualizing-scan-results.gif)
+In addition to the various formats for seeing scan results (for example, CLI), you can also visualize Checkov results with a quick integration with a Prisma Cloud account. Read more about [visualizing scan results in Prisma Cloud](https://www.checkov.io/2.Basics/Visualizing%20Checkov%20Output.html).
 
 ## Integrations
 
@@ -175,4 +173,4 @@ You can integrate Checkov with:
 
 ## Add-ons
 
-To get real-time IaC scanning and in-line fixes directly from your IDE, check out the [Checkov Visual Studio Code extension](https://marketplace.visualstudio.com/items?itemName=Bridgecrew.checkov) and the [Checkov JetBrains Plugin](https://plugins.jetbrains.com/plugin/17721-checkov).
+To get real-time IaC scanning and in-line fixes directly from your IDE, check out the [Checkov Visual Studio Code extension](https://marketplace.visualstudio.com/items?itemName=Bridgecrew.checkov) and the [Checkov JetBrains Plugin](https://plugins.jetbrains.com/plugin/21907-prisma-cloud).

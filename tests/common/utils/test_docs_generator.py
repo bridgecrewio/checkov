@@ -2,7 +2,7 @@ import unittest
 
 from pytest_mock import MockerFixture
 
-from checkov.common.util.docs_generator import get_compare_key, get_check_link
+from checkov.docs_generator import get_compare_key, get_check_link
 
 
 class TestOutputSorting(unittest.TestCase):
@@ -84,7 +84,7 @@ def test_get_check_link_for_markdown(mocker: MockerFixture):
     # given
     abs_path = "/path/to/checkov/checkov/terraform/checks/resource/aws/LambdaXrayEnabled.py"
 
-    mocker.patch("checkov.common.util.docs_generator.CREATE_MARKDOWN_HYPERLINKS", return_value=True)
+    mocker.patch("checkov.docs_generator.CREATE_MARKDOWN_HYPERLINKS", return_value=True)
 
     # when
     link = get_check_link(absolute_path=abs_path)

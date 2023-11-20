@@ -12,6 +12,9 @@ class Severity:
     def __repr__(self) -> str:
         return self.name
 
+    def __str__(self) -> str:
+        return self.name
+
 
 @dataclass
 class BcSeverities:

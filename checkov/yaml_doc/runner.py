@@ -37,8 +37,9 @@ class Runner(ObjectRunner):
 
         return registry
 
+    @staticmethod
     def _parse_file(
-        self, f: str, file_content: str | None = None
+        f: str, file_content: str | None = None
     ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
         return parse(f, file_content)
 

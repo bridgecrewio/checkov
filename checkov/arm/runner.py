@@ -5,6 +5,8 @@ import os
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any, cast
 
+from typing_extensions import TypeAlias  # noqa[TC002]
+
 from checkov.arm.graph_builder.local_graph import ArmLocalGraph
 from checkov.arm.graph_manager import ArmGraphManager
 from checkov.arm.registry import arm_resource_registry, arm_parameter_registry
@@ -16,7 +18,7 @@ from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.bridgecrew.check_type import CheckType
-from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
+from checkov.common.runners.base_runner import BaseRunner
 from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.common.util.secrets import omit_secret_value_from_checks
 from checkov.runner_filter import RunnerFilter
@@ -28,8 +30,11 @@ if TYPE_CHECKING:
     from checkov.common.graph.checks_infra.registry import BaseRegistry
     from checkov.common.typing import LibraryGraphConnector, _CheckResult
 
+_ArmContext: TypeAlias = "dict[str, dict[str, Any]]"
+_ArmDefinitions: TypeAlias = "dict[str, dict[str, Any]]"
 
-class Runner(BaseRunner[ArmGraphManager]):
+
+class Runner(BaseRunner[_ArmDefinitions, _ArmContext, ArmGraphManager]):
     check_type = CheckType.ARM  # noqa: CCE003  # a static attribute
 
     def __init__(
@@ -51,8 +56,9 @@ class Runner(BaseRunner[ArmGraphManager]):
         self.graph_registry = get_graph_checks_registry(self.check_type)
 
         # need to check, how to support subclass differences
-        self.definitions: "dict[str, dict[str, Any]]" = {}  # type:ignore[assignment]
+        self.definitions: _ArmDefinitions = {}
         self.definitions_raw: "dict[str, list[tuple[int, str]]]" = {}
+        self.context: _ArmContext | None = None
         self.root_folder: "str | None" = None
 
     def run(
@@ -74,7 +80,7 @@ class Runner(BaseRunner[ArmGraphManager]):
             for directory in external_checks_dir:
                 arm_resource_registry.load_external_checks(directory)
 
-                if CHECKOV_CREATE_GRAPH and self.graph_registry:
+                if self.graph_registry:
                     self.graph_registry.load_external_checks(directory)
 
         if files:
@@ -86,9 +92,11 @@ class Runner(BaseRunner[ArmGraphManager]):
 
             files_list = get_scannable_file_paths(root_folder=root_folder, excluded_paths=runner_filter.excluded_paths)
 
-        self.definitions, self.definitions_raw = get_files_definitions(files_list, filepath_fn)
+        self.definitions, self.definitions_raw, parsing_errors = get_files_definitions(files_list, filepath_fn)
 
-        if CHECKOV_CREATE_GRAPH and self.graph_registry and self.graph_manager:
+        report.add_parsing_errors(parsing_errors)
+
+        if self.graph_registry and self.graph_manager:
             logging.info("Creating ARM graph")
             local_graph = self.graph_manager.build_graph_from_definitions(definitions=self.definitions)
             logging.info("Successfully created ARM graph")
@@ -101,7 +109,7 @@ class Runner(BaseRunner[ArmGraphManager]):
         self.add_python_check_results(report=report, runner_filter=runner_filter, root_folder=root_folder)
 
         # run graph checks
-        if CHECKOV_CREATE_GRAPH and self.graph_registry:
+        if self.graph_registry:
             self.add_graph_check_results(report=report, runner_filter=runner_filter)
 
         return report

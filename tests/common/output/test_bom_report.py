@@ -1,5 +1,7 @@
+import logging
 import os
 import io
+import sys
 from pathlib import Path
 from unittest.mock import patch
 from checkov.cloudformation.runner import Runner as cfn_runner
@@ -8,6 +10,9 @@ from checkov.common.util.banner import banner
 from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner as tf_runner
+
+logger = logging.getLogger()
+logger.level = logging.INFO
 
 
 class TestBomOutput:
@@ -20,10 +25,16 @@ class TestBomOutput:
         reports = runner_registry.run(root_folder=test_files_dir)
 
         with patch('sys.stdout', new=io.StringIO()) as captured_output:
-            runner_registry.print_iac_bom_reports(output_path=str(tmp_path),
-                                                  scan_reports=reports,
-                                                  output_types=['csv'],
-                                                  account_id="org/name")
+            try:
+                stream_handler = logging.StreamHandler(sys.stdout)
+                logger.addHandler(stream_handler)
+                runner_registry.print_iac_bom_reports(output_path=str(tmp_path),
+                                                      scan_reports=reports,
+                                                      output_types=['csv'],
+                                                      account_id="org/name")
+            finally:
+                logger.removeHandler(stream_handler)
+
         output = captured_output.getvalue()
         assert 'Persisting SBOM to' in output
         iac_file_path = tmp_path / 'results_iac.csv'

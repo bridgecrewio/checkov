@@ -21,7 +21,7 @@ from checkov.common.output.secrets_record import SecretsRecord
 from checkov.common.util.http_utils import request_wrapper, DEFAULT_TIMEOUT
 from detect_secrets import SecretsCollection
 from detect_secrets.core import scan
-from detect_secrets.settings import transient_settings
+from detect_secrets.settings import transient_settings, get_settings
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
@@ -29,7 +29,7 @@ from checkov.common.bridgecrew.integration_features.features.policy_metadata_int
 from checkov.common.bridgecrew.severities import Severity
 from checkov.common.comment.enum import COMMENT_REGEX
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
-from checkov.common.models.enums import CheckResult
+from checkov.common.models.enums import CheckResult, ParallelizationType
 from checkov.common.output.report import Report
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
@@ -37,7 +37,7 @@ from checkov.common.typing import _CheckResult
 from checkov.common.util.dockerfile import is_dockerfile
 from checkov.common.util.secrets import omit_secret_value_from_line
 from checkov.runner_filter import RunnerFilter
-from checkov.secrets.consts import ValidationStatus, VerifySecretsResult
+from checkov.common.secrets.consts import ValidationStatus, VerifySecretsResult
 from checkov.secrets.coordinator import EnrichedSecret, SecretsCoordinator
 from checkov.secrets.plugins.load_detectors import get_runnable_plugins
 from checkov.secrets.git_history_store import GitHistorySecretStore
@@ -48,6 +48,7 @@ from checkov.secrets.utils import filter_excluded_paths, EXCLUDED_PATHS
 if TYPE_CHECKING:
     from checkov.common.util.tqdm_utils import ProgressBar
     from detect_secrets.core.potential_secret import PotentialSecret
+    from detect_secrets.settings import Settings
 
 SOURCE_CODE_EXTENSION = ['.py', '.js', '.properties', '.pem', '.php', '.xml', '.ts', '.env', '.java', '.rb',
                          'go', 'cs', '.txt']
@@ -72,13 +73,16 @@ SECRET_TYPE_TO_ID = {
     'Twilio API Key': 'CKV_SECRET_18',
     'Hex High Entropy String': 'CKV_SECRET_19'
 }
+
+ENTROPY_CHECK_IDS = ('CKV_SECRET_6', 'CKV_SECRET_19', 'CKV_SECRET_80')
+
 CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 
 
 MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is default limit
 
 
-class Runner(BaseRunner[None]):
+class Runner(BaseRunner[None, None, None]):
     check_type = CheckType.SECRETS  # noqa: CCE003  # a static attribute
 
     def __init__(self, file_extensions: Iterable[str] | None = None, file_names: Iterable[str] | None = None):
@@ -120,6 +124,11 @@ class Runner(BaseRunner[None]):
             {'name': 'TwilioKeyDetector'},
             {'name': 'EntropyKeywordCombinator', 'path': f'file://{current_dir}/plugins/entropy_keyword_combinator.py'}
         ]
+
+        if bc_integration.daemon_process:
+            # only happens for 'ParallelizationType.SPAWN'
+            bc_integration.setup_http_manager()
+            bc_integration.set_s3_client()
 
         # load runnable plugins
         customer_run_config = bc_integration.customer_run_config_response
@@ -209,8 +218,8 @@ class Runner(BaseRunner[None]):
                 self.pbar.initiate(len(files_to_scan))
                 self._scan_files(files_to_scan, secrets, self.pbar)
                 self.pbar.close()
-            secrets_duplication: dict[str, bool] = {}
 
+            secret_records: dict[str, SecretsRecord] = {}
             for key, secret in secrets:
                 added_commit_hash, removed_commit_hash, code_line, added_by, removed_date, added_date = '', '', '', '', '', ''
                 if runner_filter.enable_git_history_secret_scan:
@@ -231,12 +240,11 @@ class Runner(BaseRunner[None]):
                     logging.info(
                         f"Removing secret due to UUID filtering: {hashlib.sha256(secret.secret_value.encode('utf-8')).hexdigest()}")
                     continue
-                if secret_key in secrets_duplication:
-                    logging.debug(
-                        f'Secret was filtered - secrets_duplication. line_number {secret.line_number}, check_id {check_id}')
-                    continue
-                else:
-                    secrets_duplication[secret_key] = True
+                if secret_key in secret_records.keys():
+                    if secret_records[secret_key].check_id in ENTROPY_CHECK_IDS and check_id not in ENTROPY_CHECK_IDS:
+                        secret_records.pop(secret_key)
+                    else:
+                        continue
                 bc_check_id = metadata_integration.get_bc_id(check_id)
                 if bc_check_id in secret_suppressions_id:
                     logging.debug(f'Secret was filtered - check {check_id} was suppressed')
@@ -275,7 +283,7 @@ class Runner(BaseRunner[None]):
                 # via 'load_secret_from_dict'
                 self.save_secret_to_coordinator(secret.secret_value, bc_check_id, resource, secret.line_number, result)
                 line_text_censored = omit_secret_value_from_line(cast(str, secret.secret_value), line_text)
-                report.add_record(SecretsRecord(
+                secret_records[secret_key] = SecretsRecord(
                     check_id=check_id,
                     bc_check_id=bc_check_id,
                     severity=severity,
@@ -284,7 +292,7 @@ class Runner(BaseRunner[None]):
                     code_block=[(secret.line_number, line_text_censored)],
                     file_path=relative_file_path,
                     file_line_range=[secret.line_number, secret.line_number + 1],
-                    resource=secret.secret_hash,
+                    resource=f'{added_commit_hash}:{secret.secret_hash}' if added_commit_hash else secret.secret_hash,
                     check_class="",
                     evaluations=None,
                     file_abs_path=os.path.abspath(secret.filename),
@@ -294,7 +302,9 @@ class Runner(BaseRunner[None]):
                     added_by=added_by,
                     removed_date=removed_date,
                     added_date=added_date
-                ))
+                )
+            for _, v in secret_records.items():
+                report.add_record(v)
 
             enriched_secrets_s3_path = bc_integration.persist_enriched_secrets(self.secrets_coordinator.get_secrets())
             if enriched_secrets_s3_path:
@@ -327,11 +337,18 @@ class Runner(BaseRunner[None]):
     def _scan_files(files_to_scan: list[str], secrets: SecretsCollection, pbar: ProgressBar) -> None:
         # implemented the scan function like secrets.scan_files
         base_path = secrets.root
-        results = parallel_runner.run_function(
-            func=lambda f: Runner._safe_scan(f, base_path),
-            items=files_to_scan,
-            run_multiprocess=os.getenv("RUN_SECRETS_MULTIPROCESS", "").lower() == "true"
-        )
+        # only needed to set up for 'ParallelizationType.SPAWN' otherwise they will have default values
+        secrets_settings = None
+        customer_run_config = None
+        if parallel_runner.type == ParallelizationType.SPAWN:
+            secrets_settings = get_settings()
+            customer_run_config = bc_integration.customer_run_config_response
+
+        items = [
+            (file, base_path, secrets_settings, customer_run_config)
+            for file in files_to_scan
+        ]
+        results = parallel_runner.run_function(func=Runner._safe_scan, items=items)
 
         for filename, secrets_results in results:
             pbar.set_additional_data({'Current File Scanned': str(filename)})
@@ -340,7 +357,12 @@ class Runner(BaseRunner[None]):
             pbar.update()
 
     @staticmethod
-    def _safe_scan(file_path: str, base_path: str) -> tuple[str, list[PotentialSecret]]:
+    def _safe_scan(
+        file_path: str,
+        base_path: str,
+        secrets_settings: Settings | None = None,
+        customer_run_config: dict[str, Any] | None = None,
+    ) -> tuple[str, list[PotentialSecret]]:
         full_file_path = os.path.join(base_path, file_path)
         file_size = os.path.getsize(full_file_path)
         if file_size > MAX_FILE_SIZE > 0:
@@ -350,6 +372,12 @@ class Runner(BaseRunner[None]):
                 f'to 0 or {file_size + 1}'
             )
             return file_path, []
+
+        if secrets_settings:
+            # only happens for 'ParallelizationType.SPAWN'
+            get_settings().set(secrets_settings)
+            bc_integration.customer_run_config_response = customer_run_config
+
         try:
             start_time = datetime.datetime.now()
             file_results = [*scan.scan_file(full_file_path)]

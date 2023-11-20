@@ -44,6 +44,12 @@ To adjust the download path you can leverage the flag `--external-modules-downlo
 checkov -d . --download-external-modules true --external-modules-download-path example/path
 ```
 
+> [!NOTE]
+> Be default, `checkov` will use the modules already downloaded by Terraform stored in `.terraform` folder. This only works for scans of the root folder, where also `terraform init` was executed. This behaviour can be disabled by setting the env var `CHECKOV_TERRAFORM_MANAGED_MODULES=False`
+> ```shell
+> CHECKOV_TERRAFORM_MANAGED_MODULES=False checkov -d .
+> ```
+
 ### Scanning Private Terraform Modules
 
 If you have modules stored in a private repository or a private Terraform registry (hosted on Terraform Cloud, Terraform Enterprise or a third-party provider like GitLab), you can grant Checkov access by providing access tokens as environment variables. This will enable Checkov to attempt to clone and scan those modules.

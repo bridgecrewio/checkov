@@ -14,6 +14,7 @@ definition:
       connected_resource_types:
         - aws_alb
         - aws_apprunner_vpc_connector
+        - aws_appstream_fleet
         - aws_batch_compute_environment
         - aws_cloudwatch_event_target
         - aws_codebuild_project
@@ -55,6 +56,6 @@ definition:
         - aws_transfer_server
         - aws_vpc_endpoint
         - aws_vpclattice_service_network_vpc_association
-      operator:  exists
+      operator: exists
       attribute: networking
       cond_type: connection

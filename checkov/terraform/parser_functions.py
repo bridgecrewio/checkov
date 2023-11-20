@@ -5,8 +5,14 @@ import logging
 from collections.abc import Hashable
 from typing import Dict, List, Union, Any, Callable
 
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.type_forcers import convert_str_to_bool
-from checkov.common.util.parser_utils import eval_string, split_merge_args, string_to_native, to_string
+from checkov.common.util.parser_utils import (
+    eval_string,
+    split_merge_args,
+    string_to_native,
+    to_string,
+)
 
 #
 # Functions defined in this file implement terraform functions.
@@ -120,7 +126,7 @@ def toset(original: str, **_: Any) -> set[Any] | str:
 
 def tomap(original: str, **_: Any) -> dict[Hashable, Any] | str:
     # https://www.terraform.io/docs/language/functions/tomap.html
-    original = original.replace(":", "=")     # converted to colons by parser #shrug
+    original = original.replace(":", "=")  # converted to colons by parser #shrug
 
     altered_value = eval_string(original)
     if altered_value is None or not isinstance(altered_value, dict):
@@ -135,7 +141,7 @@ def map(original: str, **_: Any) -> dict[Hashable, Any] | str:
     #       the issue, act like it's a list (to allow comma separation) and let the HCL
     #       parser deal with it. Then iterating the list is easy.
     converted_to_list = eval_string(f"[{original}]")
-    if converted_to_list is None or len(converted_to_list) & 1:       # none or odd number of args
+    if converted_to_list is None or len(converted_to_list) & 1:  # none or odd number of args
         return FUNCTION_FAILED
 
     return create_map(converted_to_list)
@@ -189,8 +195,13 @@ def handle_dynamic_values(conf: Dict[str, List[Any]], has_dynamic_block: bool = 
 
 
 def process_dynamic_values(conf: Dict[str, List[Any]]) -> bool:
+    dynamic_conf: Union[List[Any], Dict[str, List[Any]]] = conf.get("dynamic", {})
+
+    if not isinstance(dynamic_conf, list):
+        return False
+
     has_dynamic_block = False
-    for dynamic_element in conf.get("dynamic", {}):
+    for dynamic_element in dynamic_conf:
         if isinstance(dynamic_element, str):
             try:
                 dynamic_element = json.loads(dynamic_element)
@@ -199,7 +210,16 @@ def process_dynamic_values(conf: Dict[str, List[Any]]) -> bool:
 
         for element_name, element_value in dynamic_element.items():
             if "content" in element_value:
-                conf[element_name] = element_value["content"]
+                if element_name in conf:
+                    if not isinstance(conf[element_name], list):
+                        conf[element_name] = [conf[element_name]]
+                    if isinstance(element_value["content"], list):
+                        conf[element_name].extend(element_value["content"])
+                    else:
+                        conf[element_name].append(element_value["content"])
+
+                else:
+                    conf[element_name] = pickle_deepcopy(element_value["content"])
             else:
                 # this should be the result of a successful dynamic block rendering
                 # in some cases a whole dict is added, which doesn't have a list around it

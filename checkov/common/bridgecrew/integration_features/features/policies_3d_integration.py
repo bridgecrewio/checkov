@@ -64,7 +64,7 @@ class Policies3DIntegration(BaseIntegrationFeature):
                 self.integration_feature_failures = True
                 return None
 
-            policies: list[dict[str, Any]] | None = self.bc_integration.customer_run_config_response.get('Policies3D')
+            policies: list[dict[str, Any]] = self.bc_integration.customer_run_config_response.get('Policies3D', [])
             if not policies:
                 return None
 

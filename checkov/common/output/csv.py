@@ -41,10 +41,7 @@ FILE_NAME_CONTAINER_IMAGES = f"{date_now}_container_images.csv"
 FILE_NAME_IAC = f"{date_now}_iac.csv"
 HEADER_IAC = ["Resource", "Path", "Git Org", "Git Repository", "Misconfigurations", "Severity"]
 
-CTA_NO_API_KEY = (
-    "SCA, image and runtime findings are only available with Bridgecrew. Signup at "
-    "https://www.bridgecrew.cloud/login/signUp and add your API key to include those findings. "
-)
+CTA_NO_API_KEY = "SCA, image and runtime findings are only available with a Prisma Cloud subscription."
 
 
 class CSVSBOM:
@@ -199,7 +196,7 @@ class CSVSBOM:
         CSVSBOM.arrange_rows(rows)
 
         with open(file, "w", newline="") as f:
-            print(f"Persisting SBOM to {os.path.abspath(file)}")
+            logging.info(f"Persisting SBOM to {os.path.abspath(file)}")
             if is_api_key:
                 dict_writer = csv.DictWriter(f, fieldnames=header)
                 dict_writer.writeheader()

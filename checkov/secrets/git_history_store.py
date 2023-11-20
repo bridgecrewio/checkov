@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import logging
 from collections import defaultdict
-from typing import TYPE_CHECKING, Dict, List, Optional
-from typing_extensions import TypedDict
+from typing import TYPE_CHECKING, Dict, List, Optional, TypedDict
 
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.secrets import omit_secret_value_from_line
+from checkov.common.secrets.consts import GIT_HISTORY_NOT_BEEN_REMOVED
 from checkov.secrets.git_types import EnrichedPotentialSecretMetadata, EnrichedPotentialSecret, Commit, ADDED, REMOVED, \
-    GIT_HISTORY_OPTIONS, CommitDiff, GIT_HISTORY_NOT_BEEN_REMOVED
+    GIT_HISTORY_OPTIONS, CommitDiff
 
 if TYPE_CHECKING:
     from detect_secrets.core.potential_secret import PotentialSecret

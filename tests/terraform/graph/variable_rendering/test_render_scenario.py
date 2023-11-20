@@ -6,7 +6,7 @@ from unittest import mock
 
 import jmespath
 
-from checkov.common.util.json_utils import object_hook
+from checkov.common.util.json_utils import object_hook, CustomJSONEncoder
 from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_PREFIX, TERRAFORM_NESTED_MODULE_PATH_ENDING, \
     TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR, TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH
 from checkov.terraform.modules.module_objects import TFDefinitionKey
@@ -85,39 +85,17 @@ class TestRendererScenarios(TestCase):
         dir_name = 'nested_modules_instances_enable'
         resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../../parser/resources/parser_scenarios', dir_name))
 
-        from checkov.terraform.parser import Parser
-        parser = Parser()
-        tf_definitions = {}
-        parser.parse_directory(directory=resources_dir, out_definitions=tf_definitions)
+        from checkov.terraform.tf_parser import TFParser
+        parser = TFParser()
+        tf_definitions = parser.parse_directory(directory=resources_dir)
 
         with open(f'{resources_dir}/expected.json') as fp:
             expected = json.load(fp)
-        result, expected = json.dumps(tf_definitions, sort_keys=True), json.dumps(expected, sort_keys=True)
+        result, expected = json.dumps(tf_definitions, sort_keys=True, cls=CustomJSONEncoder), \
+            json.dumps(expected, sort_keys=True, cls=CustomJSONEncoder)
         result = result.replace(resources_dir, '')
         expected = expected.replace(resources_dir, '')
         assert result == expected
-
-    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "False"})
-    def test_nested_modules_instances_disable(self):
-        dir_name = 'nested_modules_instances_disable'
-        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../../parser/resources/parser_scenarios', dir_name))
-
-        from checkov.terraform.parser import Parser
-        parser = Parser()
-        tf_definitions = {}
-        parser.parse_directory(directory=resources_dir, out_definitions=tf_definitions)
-
-        with open(f'{resources_dir}/expected.json') as fp:
-            expected = json.load(fp)
-        result, expected = json.dumps(tf_definitions, sort_keys=True), json.dumps(expected, sort_keys=True)
-        result = result.replace(resources_dir, '')
-        expected = expected.replace(resources_dir, '')
-        assert result == expected
-
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
-    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "False"})
-    def test_module_matryoshka(self):
-        self.go("module_matryoshka")
 
     def test_module_matryoshka_nested_module_enable(self):
         self.go("module_matryoshka_nested_module_enable")
@@ -154,12 +132,6 @@ class TestRendererScenarios(TestCase):
 
     def test_doc_evaluations_verify(self):
         self.go("doc_evaluations_verify", replace_expected=True)
-
-    @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})
-    @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_NESTED_MODULES": "False"})
-    def test_bad_tf(self):
-        # Note: this hits the _clean_bad_definitions internal function
-        self.go("bad_tf")
 
     def test_bad_tf_nested_modules_enable(self):
         # Note: this hits the _clean_bad_definitions internal function

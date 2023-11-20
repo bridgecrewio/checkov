@@ -49,7 +49,7 @@ checkov -d . --framework azure_pipelines
  | (__| | | |  __/ (__|   < (_) \ V / 
   \___|_| |_|\___|\___|_|\_\___/ \_/  
                                       
-By bridgecrew.io | version: 2.1.236
+By Prisma Cloud | version: x.x.x
 
 
 azure_pipelines scan results:

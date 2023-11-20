@@ -53,10 +53,7 @@ class Registry(BaseCheckRegistry):
                     if isinstance(item, str):
                         item = self.set_lines_for_item(item)
                     if STARTLINE_MARK != item and ENDLINE_MARK != item:
-                        skip_info: "_SkippedCheck" = {}
-                        if skip_infos and skip_infos[0]:
-                            # multiple items could be found, so we need to skip the correct one(s)
-                            skip_info = ([skip for skip in skip_infos if item[STARTLINE_MARK] <= skip["line_number"] <= item[ENDLINE_MARK]] or [{}])[0]
+                        skip_info = self._collect_inline_suppression_in_array(item=item, skip_infos=skip_infos)
 
                         self.update_result(
                             check,
@@ -347,3 +344,27 @@ class Registry(BaseCheckRegistry):
                 break
 
         return item_dict
+
+    def _collect_inline_suppression_in_array(self, item: Any, skip_infos: list[_SkippedCheck]) -> _SkippedCheck:
+        if skip_infos and skip_infos[0]:
+            if isinstance(item, dict):
+                # multiple items could be found, so we need to skip the correct one(s)
+                skip_info = [
+                    skip for skip in skip_infos if item[STARTLINE_MARK] <= skip["line_number"] <= item[ENDLINE_MARK]
+                ]
+                if skip_info:
+                    return skip_info[0]
+            elif isinstance(item, list):
+                # depending on the check a list of uncomplaint items can be found and need to be correctly matched
+                for sub_item in item:
+                    if isinstance(sub_item, dict):
+                        # only one of the list items need to be matched
+                        skip_info = [
+                            skip
+                            for skip in skip_infos
+                            if sub_item[STARTLINE_MARK] <= skip["line_number"] <= sub_item[ENDLINE_MARK]
+                        ]
+                        if skip_info:
+                            return skip_info[0]
+
+        return {}  # nothing found

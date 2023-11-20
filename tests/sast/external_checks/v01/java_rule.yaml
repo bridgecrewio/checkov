@@ -1,0 +1,37 @@
+metadata:
+  version: '0.1'
+  id: seam-log-injection
+  severity: HIGH
+  name: seam log injection
+  category: sast
+  guidelines: >-
+    Seam Logging API support an expression language to introduce bean property to log messages.
+    The expression language can also be the source to unwanted code execution.
+    In this context, an expression is built with a dynamic value.
+    The source of the value(s) should be verified to avoid that unfiltered values fall into this risky
+    code evaluation.
+  cwe: "CWE-95: Improper Neutralization of Directives in Dynamically Evaluated Code ('Eval Injection')"
+  owasp: "A03:2021 - Injection"
+scope:
+  languages: [java]
+definition:
+  - cond_type: pattern
+    operator: equals
+    value: $LOG.$INFO($X + $Y,...)
+  - or:
+    - cond_type: filter
+      attribute: pattern
+      operator: within
+      value: |
+        import org.jboss.seam.log.Log
+        ...
+    - cond_type: filter
+      attribute: pattern
+      operator: within
+      value: |
+        org.jboss.seam.log.Log $LOG = ...
+        ...
+  - cond_type: variable
+    variable: $INFO
+    operator: regex_match
+    value: (debug|error|fatal|info|trace|warn)

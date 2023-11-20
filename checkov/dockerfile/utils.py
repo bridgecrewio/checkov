@@ -4,7 +4,7 @@ import logging
 import os
 from collections.abc import Iterable
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, Any
+from typing import TYPE_CHECKING, Callable, Any, Literal
 
 from dockerfile_parse.constants import COMMENT_INSTRUCTION
 
@@ -15,7 +15,6 @@ from checkov.dockerfile.parser import parse
 
 if TYPE_CHECKING:
     from dockerfile_parse.parser import _Instruction  # only in extra_stubs
-    from typing_extensions import Literal
 
 DOCKERFILE_STARTLINE: Literal["startline"] = "startline"
 DOCKERFILE_ENDLINE: Literal["endline"] = "endline"

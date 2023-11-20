@@ -49,11 +49,11 @@ class SuppressionsIntegration(BaseIntegrationFeature):
                 self.integration_feature_failures = True
                 return
 
-            suppressions: list[dict[str, str]] = self.bc_integration.customer_run_config_response['suppressions']
+            suppressions: list[dict[str, Any]] = self.bc_integration.customer_run_config_response.get('suppressions', [])
 
             for suppression in suppressions:
                 if suppression['policyId'] in metadata_integration.bc_to_ckv_id_mapping:
-                    suppression['checkovPolicyId'] = metadata_integration.get_ckv_id_from_bc_id(suppression['policyId'])  # type:ignore[assignment]  # existence check is done the line above
+                    suppression['checkovPolicyId'] = metadata_integration.get_ckv_id_from_bc_id(suppression['policyId'])
                 else:
                     suppression['checkovPolicyId'] = suppression['policyId']  # custom policy
 
@@ -166,7 +166,8 @@ class SuppressionsIntegration(BaseIntegrationFeature):
         elif type == 'Cves':
             if 'accountIds' not in suppression:
                 return False
-            if self.bc_integration.repo_id and self.bc_integration.source_id and self.bc_integration.source_id in suppression['accountIds']:
+            if self.bc_integration.repo_id and self.bc_integration.source_id and self.bc_integration.source_id in suppression['accountIds']\
+                    and suppression['cves']:
                 repo_name = self.bc_integration.repo_id.replace('\\', '/').split('/')[-1]
                 suppression_path = suppression['cves'][0]['id'].replace('\\', '/')
                 file_abs_path = record.file_abs_path.replace('\\', '/')

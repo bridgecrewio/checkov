@@ -18,7 +18,7 @@ performance_configurations = {
         'repo_name': 'terraform-aws-components',
         'threshold': {
             "Darwin": 19.0,
-            "Linux": 13.0,
+            "Linux": 8.0,
             "Windows": 15.0,
         }
     },
@@ -26,7 +26,7 @@ performance_configurations = {
         'repo_name': 'aws-cloudformation-templates',
         'threshold': {
             "Darwin": 350.0,
-            "Linux": 240.0,
+            "Linux": 170.0,
             "Windows": 300.0,
         }
     },
@@ -34,7 +34,7 @@ performance_configurations = {
         'repo_name': 'kubernetes-yaml-templates',
         'threshold': {
             "Darwin": 550.0,
-            "Linux": 280.0,
+            "Linux": 180.0,
             "Windows": 500.0,
         }
     }

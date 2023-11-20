@@ -10,6 +10,7 @@ from typing_extensions import Literal
 
 from checkov import main
 from checkov.common.cache.cache import file_cache
+from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner
 from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.main import DEFAULT_RUNNERS, Checkov
@@ -19,15 +20,6 @@ if TYPE_CHECKING:
     import argparse
     from checkov.common.output.baseline import Baseline
     from checkov.common.output.report import Report
-
-
-@pytest.fixture
-def enable_cache():
-    file_cache.enabled = True
-
-    yield
-
-    file_cache.enabled = False
 
 
 class CustomRunnerRegistry(RunnerRegistry):
@@ -44,6 +36,23 @@ class CustomRunnerRegistry(RunnerRegistry):
     ) -> Literal[0, 1]:
         # result doesn't matter, just don't want it to print to console
         return 0
+
+
+@pytest.fixture(autouse=True)
+def keep_parallelization_type():
+    """Save and restore the original parallelization type"""
+    mode = parallel_runner.type
+    yield
+    parallel_runner.type = mode
+
+
+@pytest.fixture
+def enable_cache():
+    file_cache.enabled = True
+
+    yield
+
+    file_cache.enabled = False
 
 
 def test_run_with_outer_registry_and_framework_flag():
@@ -87,7 +96,7 @@ def test_run():
     assert ckv.run_metadata["args"] and isinstance(ckv.run_metadata["args"], list)
 
     # check all runners were initialized, but only 2 were actually run
-    assert len(ckv.runners) == 28
+    assert len(ckv.runners) == 29
 
     assert len(ckv.scan_reports) == 2
     assert {report.check_type for report in ckv.scan_reports} == {"kubernetes", "terraform"}
@@ -103,6 +112,7 @@ def test_run_with_severity_filter_and_api_key(caplog: LogCaptureFixture):
         "--framework", "terraform",
         "--check", "MEDIUM",
         "--bc-api-key", "12345678-abcd-1234-abcd-123456789012",
+        "--repo-id", "acme/example",
         "--show-config",  # just set to terminate the run early enough
     ]
 

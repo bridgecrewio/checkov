@@ -67,7 +67,18 @@ def evaluate_terraform(input_str: Any, keep_interpolations: bool = True) -> Any:
     elif not keep_interpolations and second_evaluated_value == value_after_removing_interpolations:
         return value_before_removing_interpolations
     else:
+        second_evaluated_value = _eval_merge_as_list(second_evaluated_value)
         return second_evaluated_value
+
+
+def _eval_merge_as_list(eval_value: Any) -> Any:
+    """
+    Edge case for an eval in eval.
+    UT for this: test_jsonpath_equals_ecs_with_merge
+    """
+    if eval_value and isinstance(eval_value, list) and isinstance(eval_value[0], str) and eval_value[0].startswith('merge'):
+        return _try_evaluate(eval_value[0])
+    return eval_value
 
 
 def _try_evaluate(input_str: Union[str, bool]) -> Any:

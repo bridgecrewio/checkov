@@ -7,7 +7,6 @@ from checkov.common.graph.graph_builder.graph_components.attribute_names import 
 from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimmed_strings
 from checkov.common.graph.graph_builder.variable_rendering.breadcrumb_metadata import BreadcrumbMetadata
 from checkov.common.util.data_structures_utils import pickle_deepcopy
-from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 
 
 class Block:
@@ -85,10 +84,6 @@ class Block:
         base_attributes = self.get_base_attributes()
         self.get_origin_attributes(base_attributes)
 
-        if hasattr(self, "module_dependency") and hasattr(self, "module_dependency_num"):
-            base_attributes[CustomAttributes.MODULE_DEPENDENCY] = self.module_dependency
-            base_attributes[CustomAttributes.MODULE_DEPENDENCY_NUM] = self.module_dependency_num
-
         if self.changed_attributes:
             # add changed attributes only for calculating the hash
             base_attributes["changed_attributes"] = sorted(self.changed_attributes.keys())
@@ -97,28 +92,8 @@ class Block:
             sorted_breadcrumbs = dict(sorted(self.breadcrumbs.items()))
             base_attributes[CustomAttributes.RENDERING_BREADCRUMBS] = sorted_breadcrumbs
 
-        if hasattr(self, 'foreach_attrs'):
-            base_attributes[CustomAttributes.FOREACH_ATTRS] = self.foreach_attrs
-
-        if hasattr(self, 'source_module_object'):
-            base_attributes[CustomAttributes.SOURCE_MODULE_OBJECT] = self.source_module_object
-
         if add_hash:
             base_attributes[CustomAttributes.HASH] = calculate_hash(base_attributes)
-
-        if self.block_type == BlockType.DATA:
-            base_attributes[CustomAttributes.RESOURCE_TYPE] = f'data.{self.id.split(".")[0]}'
-
-        if self.block_type == BlockType.MODULE:
-            # since module names are user defined we are just setting 'module' as resource type for easier searching
-            base_attributes[CustomAttributes.RESOURCE_TYPE] = "module"
-
-        if self.block_type == BlockType.PROVIDER:
-            # provider_name is always a string, base_attributes needs better typing pipenv run mypy
-            provider_name = cast(str, base_attributes[CustomAttributes.BLOCK_NAME])
-            provider_type = provider_name.split(".")[0]
-            # ex: provider.aws
-            base_attributes[CustomAttributes.RESOURCE_TYPE] = f"provider.{provider_type}"
 
         if "changed_attributes" in base_attributes:
             # removed changed attributes if it was added previously for calculating hash.
@@ -144,7 +119,7 @@ class Block:
 
     def get_hash(self) -> str:
         attributes_dict = self.get_attribute_dict()
-        return attributes_dict.get(CustomAttributes.HASH, "")
+        return cast("str", attributes_dict.get(CustomAttributes.HASH, ""))
 
     def update_attribute(
         self,
@@ -251,7 +226,7 @@ class Block:
     def get_export_data(self) -> Dict[str, Union[bool, str]]:
         return {"type": self.block_type, "name": self.name, "path": self.path}
 
-    def get_base_attributes(self) -> Dict[str, Union[str, List[str], Dict[str, Any]]]:
+    def get_base_attributes(self) -> Dict[str, Any]:
         return {
             CustomAttributes.BLOCK_NAME: self.name,
             CustomAttributes.BLOCK_TYPE: self.block_type,
