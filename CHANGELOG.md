@@ -1,6 +1,26 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.0.40...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.4...HEAD)
+
+## [3.1.4](https://github.com/bridgecrewio/checkov/compare/3.0.40...3.1.4) - 2023-11-20
+
+### Breaking Change
+
+- **general:** set default parallelization type to spawn and leverage Terraform downloaded module by default - [#5760](https://github.com/bridgecrewio/checkov/pull/5760)
+
+### Feature
+
+- **terraform:** Ensure ACR is zone-redundant - [#5748](https://github.com/bridgecrewio/checkov/pull/5748)
+
+### Bug Fix
+
+- **general:** Revert parallelization commit - [#5777](https://github.com/bridgecrewio/checkov/pull/5777)
+- **sast:** remove SAST frameworks for OSS users - [#5773](https://github.com/bridgecrewio/checkov/pull/5773)
+- **secrets:** don't reinitialize the upload client without API key usage - [#5771](https://github.com/bridgecrewio/checkov/pull/5771)
+
+### Documentation
+
+- **general:** properly escape CLI flags in the CLI command docs - [#5768](https://github.com/bridgecrewio/checkov/pull/5768)
 
 ## [3.0.40](https://github.com/bridgecrewio/checkov/compare/3.0.38...3.0.40) - 2023-11-19
 
