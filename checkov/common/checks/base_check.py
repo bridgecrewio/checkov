@@ -4,12 +4,15 @@ import logging
 import os
 from abc import abstractmethod, ABC
 from collections.abc import Iterable
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, TYPE_CHECKING
 
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.typing import _SkippedCheck, _CheckResult
 from checkov.common.util.type_forcers import force_list
 from checkov.common.models.enums import CheckResult, CheckCategories, CheckFailLevel
+
+if TYPE_CHECKING:
+    from checkov.common.bridgecrew.severities import Severity
 
 
 class BaseCheck(ABC):
@@ -37,8 +40,8 @@ class BaseCheck(ABC):
         self.entity_type = ""
         self.guideline = guideline
         self.benchmarks: dict[str, list[str]] = {}
-        self.severity = None
-        self.bc_category = None
+        self.severity: Severity | None = None
+        self.bc_category: str | None = None
         if self.guideline:
             logging.debug(f'Found custom guideline for check {id}')
         self.details: List[str] = []

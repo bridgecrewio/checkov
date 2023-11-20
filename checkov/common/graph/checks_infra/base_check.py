@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 class BaseGraphCheck:
     def __init__(self) -> None:
         self.id = ""
-        self.bc_id = None
+        self.bc_id: str | None = None
         self.name = ""
         self.category = ""
         self.resource_types: List[str] = []

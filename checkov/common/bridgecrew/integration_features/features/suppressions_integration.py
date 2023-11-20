@@ -49,7 +49,7 @@ class SuppressionsIntegration(BaseIntegrationFeature):
                 self.integration_feature_failures = True
                 return
 
-            suppressions = self.bc_integration.customer_run_config_response.get('suppressions')
+            suppressions: list[dict[str, Any]] = self.bc_integration.customer_run_config_response.get('suppressions', [])
 
             for suppression in suppressions:
                 if suppression['policyId'] in metadata_integration.bc_to_ckv_id_mapping:
