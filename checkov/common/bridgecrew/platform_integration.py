@@ -802,6 +802,12 @@ class BcPlatformIntegration:
             raise Exception(
                 "Tried to get customer run config, but the API key was missing or the integration was not set up")
 
+        self.customer_run_config_response = self._get_customer_run_config()
+
+    @ttl_cached(seconds=900, key="get_customer_run_config")  # 15 min
+    def _get_customer_run_config(self) -> dict[str, Any] | None:
+        """Sub-method of self.get_customer_run_config() to properly cache the result"""
+
         if not self.bc_source:
             logging.error("Source was not set")
             return None
