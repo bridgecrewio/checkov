@@ -18,7 +18,7 @@ class PropHasValue(BaseJsonCheck):
             block_type=BlockType.OBJECT,
         )
 
-    def scan_entity_conf(self, conf):
+    def scan_entity_conf(self, conf, entity_type):
         if "prop" in conf and conf["prop"] == "value":
             return CheckResult.PASSED
         return CheckResult.FAILED

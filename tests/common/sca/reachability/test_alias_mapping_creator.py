@@ -1,5 +1,5 @@
 import os
-from checkov.common.sca.reachability.alias_mapping_creator import AliasMappingCreator
+from checkov.common.sca.reachability.package_alias_mapping.alias_mapping_creator import AliasMappingCreator
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 

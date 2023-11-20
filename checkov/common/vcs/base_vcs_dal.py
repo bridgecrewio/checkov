@@ -31,7 +31,6 @@ class BaseVCSDAL:
         self.http: urllib3.PoolManager | None = None
         self.http_timeout = urllib3.Timeout(connect=REQUEST_CONNECT_TIMEOUT, read=REQUEST_READ_TIMEOUT)
         self.http_retry = urllib3.Retry(REQUEST_RETRIES, redirect=3)
-        self.setup_http_manager(ca_certificate=os.getenv('BC_CA_BUNDLE', None))
         self.discover()
         self.setup_conf_dir()
 
@@ -88,6 +87,7 @@ class BaseVCSDAL:
         url_endpoint = f"{self.api_url}/{endpoint}"
         try:
             headers = self._headers()
+            self.setup_http_manager(ca_certificate=os.getenv('BC_CA_BUNDLE', None))
             if self.http:
                 request = self.http.request("GET", url_endpoint, headers=headers)  # type:ignore[no-untyped-call]
                 if request.status in allowed_status_codes:
@@ -114,6 +114,7 @@ class BaseVCSDAL:
 
         body = json.dumps({'query': query, 'variables': variables})
         try:
+            self.setup_http_manager(ca_certificate=os.getenv('BC_CA_BUNDLE', None))
             if self.http:
                 request = self.http.request("POST", self.graphql_api_url, body=body, headers=headers)  # type:ignore[no-untyped-call]
                 if request.status == 200:

@@ -1,0 +1,5 @@
+pass:
+  - "ibm_is_vpc.pass_1"
+  - "ibm_is_vpc.pass_2"
+fail:
+  - "ibm_is_vpc.fail"

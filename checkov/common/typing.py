@@ -23,8 +23,9 @@ _ScannerCallableAlias: TypeAlias = Callable[
 _Resource: TypeAlias = str
 _Attributes: TypeAlias = Set[str]
 ResourceAttributesToOmit: TypeAlias = Dict[_Resource, _Attributes]
-LibraryGraph: TypeAlias = "Union[DiGraph, Graph, PyDiGraph]"
-LibraryGraphConnector: TypeAlias = "Union[DBConnector[DiGraph], DBConnector[Graph], DBConnector[PyDiGraph]]"
+_RustworkxGraph: TypeAlias = "PyDiGraph[tuple[int, dict[str, Any]], dict[str, str | int]]"
+LibraryGraph: TypeAlias = "Union[DiGraph, Graph, _RustworkxGraph]"
+LibraryGraphConnector: TypeAlias = "Union[DBConnector[DiGraph], DBConnector[Graph], DBConnector[_RustworkxGraph]]"
 # TODO Remove this type and only use TFDefinitionKey
 TFDefinitionKeyType: TypeAlias = "Union[str, TFDefinitionKey]"
 
@@ -127,6 +128,11 @@ class _LicenseStatus(TypedDict):
 
 class _LicenseStatusWithLines(_LicenseStatus):
     lines: list[int] | None  # noqa: CCE003  # a static attribute
+
+
+class _ImageReferencerLicenseStatus(TypedDict):
+    image_name: str
+    licenses: list[_LicenseStatus]
 
 
 class _EntityContext(TypedDict, total=False):

@@ -43,15 +43,16 @@ class Runner(YamlRunner):
         # This is specific to how the IaC is broken into checkable subcomponents
         return self.block_type_registries["jobs"]
 
+    @staticmethod
     def _parse_file(
-        self, f: str, file_content: str | None = None
+        f: str, file_content: str | None = None
     ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
         # EDIT" add conditional here to ensure this file is something we should parse.
         # Below is this example for github actions
         # as the file is always located in a predictable path
         # There should always be a conditional otherwise you'll parse ALL files.
         if ".github/workflows/" in os.path.abspath(f):
-            return super()._parse_file(f)
+            return YamlRunner._parse_file(f)
 
         return None
 

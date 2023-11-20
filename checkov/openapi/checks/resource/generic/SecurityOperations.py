@@ -15,7 +15,7 @@ class SecurityOperations(BaseOpenapiCheck):
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_resources,
                          block_type=BlockType.DOCUMENT)
 
-    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:  # type:ignore[override]  # return type is different than the base class
+    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:
         self.evaluated_keys = ['security', 'paths']
 
         # Check if security field is present and not empty at the root level

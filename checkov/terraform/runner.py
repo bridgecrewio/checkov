@@ -162,17 +162,7 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
             # just make sure it is not 'None'
             self.definitions = {}
 
-        def parse_file(file: str) -> tuple[str, dict[str, Any] | None, dict[str, Exception]] | None:
-            if not (file.endswith(".tf") or file.endswith(".hcl")):
-                return None
-            file_parsing_errors: dict[str, Exception] = {}
-            parse_result = self.parser.parse_file(file=file, parsing_errors=file_parsing_errors)
-            # the exceptions type can un-pickleable so we need to cast them to Exception
-            for path, e in file_parsing_errors.items():
-                file_parsing_errors[path] = Exception(e.__repr__())
-            return file, parse_result, file_parsing_errors
-
-        results = parallel_runner.run_function(parse_file, files)
+        results = parallel_runner.run_function(self.parse_file, files)
         for result in results:
             if result:
                 file, parse_result, file_parsing_errors = result
@@ -180,6 +170,16 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
                     self.definitions[TFDefinitionKey(file_path=file)] = parse_result
                 if file_parsing_errors:
                     parsing_errors.update(file_parsing_errors)
+
+    def parse_file(self, file: str) -> tuple[str, dict[str, Any] | None, dict[str, Exception]] | None:
+        if not (file.endswith(".tf") or file.endswith(".hcl")):
+            return None
+        file_parsing_errors: dict[str, Exception] = {}
+        parse_result = self.parser.parse_file(file=file, parsing_errors=file_parsing_errors)
+        # the exceptions type can un-pickleable so we need to cast them to Exception
+        for path, e in file_parsing_errors.items():
+            file_parsing_errors[path] = Exception(e.__repr__())
+        return file, parse_result, file_parsing_errors
 
     def _update_definitions_and_breadcrumbs(
         self, local_graphs: list[tuple[Optional[str], TerraformLocalGraph]], report: Report, root_folder: str

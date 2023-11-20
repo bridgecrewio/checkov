@@ -9,6 +9,7 @@ class CheckType:
     AZURE_PIPELINES = "azure_pipelines"
     BICEP = "bicep"
     BITBUCKET_PIPELINES = "bitbucket_pipelines"
+    CDK = "cdk"
     CIRCLECI_PIPELINES = "circleci_pipelines"
     CLOUDFORMATION = "cloudformation"
     DOCKERFILE = "dockerfile"
@@ -30,8 +31,20 @@ class CheckType:
     TERRAFORM = "terraform"
     TERRAFORM_JSON = "terraform_json"
     TERRAFORM_PLAN = "terraform_plan"
+    SAST = 'sast'
+    SAST_PYTHON = 'sast_python'
+    SAST_JAVA = 'sast_java'
+    SAST_JAVASCRIPT = 'sast_javascript'
     POLICY_3D = "3d_policy"
+
+
+@dataclass
+class SastType:
+    SAST_PYTHON = 'sast_python'
+    SAST_JAVA = 'sast_java'
+    SAST_JAVASCRIPT = 'sast_javascript'
 
 
 # needs to be at the end
 checkov_runners = [value for attr, value in CheckType.__dict__.items() if not attr.startswith("__")]
+sast_types = [value for attr, value in SastType.__dict__.items() if not attr.startswith("__")]

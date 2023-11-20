@@ -16,7 +16,7 @@ class BarAndBazToggleIsTrue(BaseJsonCheck):
             block_type=BlockType.ARRAY
         )
 
-    def scan_entity_conf(self, conf):
+    def scan_entity_conf(self, conf, entity_type):
         if "toggle" in conf and conf["toggle"]:
             return CheckResult.PASSED
         return CheckResult.FAILED
