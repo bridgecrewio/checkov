@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
     from checkov.common.bridgecrew.severities import Severity
     from checkov.common.output.report import Report
-    from checkov.common.typing import _BaseRunner, _CoreCheck
+    from checkov.common.typing import _BaseRunner
 
 
 class PolicyMetadataIntegration(BaseIntegrationFeature):
@@ -46,7 +46,7 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
                 self.integration_feature_failures = True
                 return
 
-            all_checks: list[_CoreCheck] = BaseCheckRegistry.get_all_registered_checks()  # type:ignore[assignment]  # looks like a mypy bug
+            all_checks = BaseCheckRegistry.get_all_registered_checks()
 
             if self.config and self.config.framework and "all" not in self.config.framework:
                 registries = self.config.framework
@@ -73,7 +73,7 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
                     # fall back on plain severity if there is no PC severity
                     check.severity = get_severity(metadata.get(self.severity_key, metadata.get('severity')))
                     check.bc_category = metadata.get('category')
-                    check.benchmarks = metadata.get('benchmarks', {})
+                    check.benchmarks = metadata.get('benchmarks')
 
                     if use_prisma_metadata and metadata.get('descriptiveTitle'):
                         check.name = metadata['descriptiveTitle']
@@ -155,7 +155,7 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
                 if source_incident_id:
                     self.ckv_id_to_source_incident_id_mapping[custom_policy['id']] = source_incident_id
 
-    def _handle_customer_prisma_policy_metadata(self, prisma_policy_metadata: list[dict[str, Any]] | None) -> None:
+    def _handle_customer_prisma_policy_metadata(self, prisma_policy_metadata: list[dict[str, Any]]) -> None:
         if isinstance(prisma_policy_metadata, list):
             for metadata in prisma_policy_metadata:
                 logging.debug(f"Parsing filtered_policy_ids from metadata: {json.dumps(metadata)}")
