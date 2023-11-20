@@ -699,6 +699,9 @@ class Checkov:
             raise
 
         finally:
+            if self.config.no_cache is False:
+                file_cache.sync_caches()
+
             if bc_integration.support_flag_enabled:
                 if bc_integration.s3_setup_failed:
                     print_to_stderr = os.getenv('CKV_STDERR_DEBUG', 'FALSE').upper() == 'TRUE'

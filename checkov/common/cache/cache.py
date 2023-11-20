@@ -24,6 +24,10 @@ def ttl_cached(seconds: int, key: str) -> Callable[[Callable[P, T]], Callable[P,
     def decorator(func: Callable[P, T]) -> Callable[P, T]:
         @wraps(func)
         def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
+            if not file_cache.enabled:
+                # no need to further progress with caching
+                return func(*args, **kwargs)
+
             output = cast("T | None", file_cache.get_ttl_item(key=key))
             if output is not None:
                 return output
@@ -49,6 +53,9 @@ class FileCache:
         self._ttl_shelf: shelve.Shelf[Any] | None = None
         self._ttl_shelf_filename = os.path.join(env_vars_config.CACHE_DIR, "ttl_cache")
 
+        self._hits = 0
+        self._misses = 0
+
     def init_cache(self) -> None:
         # needs to be done separately, if someone decides not to use caching
         if self._ttl_shelf is None:
@@ -67,6 +74,7 @@ class FileCache:
         if ttl_value is not None:
             # check, if it maybe expired
             if ttl_value[0] > int(time.time()):
+                self._hits += 1
                 return ttl_value[1]
 
             del self._ttl_shelf[key]
@@ -78,8 +86,21 @@ class FileCache:
             return
 
         expires = int(time.time()) + ttl
+        self._misses += 1
         self._ttl_shelf[key] = (expires, value)
-        self._ttl_shelf.sync()
+
+    def sync_caches(self) -> None:
+        ttl_cache_size = "0"
+        if self._ttl_shelf is not None:
+            self._ttl_shelf.close()
+            ttl_cache_size = f"{os.stat(self._ttl_shelf_filename).st_size / 1024 ** 2:.2f}"  # in mb
+
+        if self.enabled:
+            logger.info(f"Cache stats - hits: {self._hits}, misses: {self._misses}, cache size: ttl cache size: {ttl_cache_size}mb")
+
+    def clear_caches(self) -> None:
+        if self._ttl_shelf is not None:
+            self._ttl_shelf.clear()
 
 
 file_cache = FileCache()
