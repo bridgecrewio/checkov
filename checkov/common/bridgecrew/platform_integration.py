@@ -139,12 +139,17 @@ class BcPlatformIntegration:
         self.bc_api_key = platform_integration_data["bc_api_key"]
         self.bc_source = platform_integration_data["bc_source"]
         self.bc_source_version = platform_integration_data["bc_source_version"]
+        self.bucket = platform_integration_data["bucket"]
         self.cicd_details = platform_integration_data["cicd_details"]
+        self.credentials = platform_integration_data["credentials"]
+        self.platform_integration_configured = platform_integration_data["platform_integration_configured"]
         self.prisma_api_url = platform_integration_data["prisma_api_url"]
         self.repo_branch = platform_integration_data["repo_branch"]
         self.repo_id = platform_integration_data["repo_id"]
         self.repo_path = platform_integration_data["repo_path"]
+        self.skip_fixes = platform_integration_data["skip_fixes"]
         self.timestamp = platform_integration_data["timestamp"]
+        self.use_s3_integration = platform_integration_data["use_s3_integration"]
         self.setup_api_urls()
         # 'mypy' doesn't like, when you try to override an instance method
         self.get_auth_token = MethodType(lambda _=None: platform_integration_data["get_auth_token"], self)  # type:ignore[method-assign]
@@ -158,12 +163,17 @@ class BcPlatformIntegration:
             "bc_api_key": self.bc_api_key,
             "bc_source": self.bc_source,
             "bc_source_version": self.bc_source_version,
+            "bucket": self.bucket,
             "cicd_details": self.cicd_details,
+            "credentials": self.credentials,
+            "platform_integration_configured": self.platform_integration_configured,
             "prisma_api_url": self.prisma_api_url,
             "repo_branch": self.repo_branch,
             "repo_id": self.repo_id,
             "repo_path": self.repo_path,
+            "skip_fixes": self.skip_fixes,
             "timestamp": self.timestamp,
+            "use_s3_integration": self.use_s3_integration,
             # will be overriden with a simple lambda expression
             "get_auth_token": self.get_auth_token() if self.bc_api_key else ""
         }
@@ -346,12 +356,6 @@ class BcPlatformIntegration:
         self.platform_integration_configured = True
 
     def set_s3_integration(self) -> None:
-        region = DEFAULT_REGION
-        use_accelerate_endpoint = True
-        if self.prisma_api_url == PRISMA_GOV_API_URL:
-            region = GOV_CLOUD_REGION
-            use_accelerate_endpoint = False
-
         try:
             self.skip_fixes = True  # no need to run fixes on CI integration
             repo_full_path, support_path, response = self.get_s3_role(self.repo_id)  # type: ignore
@@ -362,19 +366,8 @@ class BcPlatformIntegration:
 
             self.timestamp = self.repo_path.split("/")[-2]
             self.credentials = cast("dict[str, str]", response["creds"])
-            config = Config(
-                s3={
-                    "use_accelerate_endpoint": use_accelerate_endpoint,
-                }
-            )
-            self.s3_client = boto3.client(
-                "s3",
-                aws_access_key_id=self.credentials["AccessKeyId"],
-                aws_secret_access_key=self.credentials["SecretAccessKey"],
-                aws_session_token=self.credentials["SessionToken"],
-                region_name=region,
-                config=config,
-            )
+
+            self.set_s3_client()
 
             if self.support_flag_enabled:
                 self.support_bucket, self.support_repo_path = cast(str, support_path).split("/", 1)
@@ -388,14 +381,39 @@ class BcPlatformIntegration:
         except HTTPError:
             logging.error("Failed to get customer assumed role", exc_info=True)
             raise
-        except ClientError:
-            logging.error(f"Failed to initiate client with credentials {self.credentials}", exc_info=True)
-            raise
         except JSONDecodeError:
             logging.error(f"Response of {self.integrations_api_url} is not a valid JSON", exc_info=True)
             raise
         except BridgecrewAuthError:
             logging.error("Received an error response during authentication")
+            raise
+
+    def set_s3_client(self) -> None:
+        if not self.credentials:
+            raise ValueError("Credentials for client are not set")
+
+        region = DEFAULT_REGION
+        use_accelerate_endpoint = True
+        if self.prisma_api_url == PRISMA_GOV_API_URL:
+            region = GOV_CLOUD_REGION
+            use_accelerate_endpoint = False
+
+        try:
+            config = Config(
+                s3={
+                    "use_accelerate_endpoint": use_accelerate_endpoint,
+                }
+            )
+            self.s3_client = boto3.client(
+                "s3",
+                aws_access_key_id=self.credentials["AccessKeyId"],
+                aws_secret_access_key=self.credentials["SecretAccessKey"],
+                aws_session_token=self.credentials["SessionToken"],
+                region_name=region,
+                config=config,
+            )
+        except ClientError:
+            logging.error(f"Failed to initiate client with credentials {self.credentials}", exc_info=True)
             raise
 
     def get_s3_role(self, repo_id: str) -> tuple[str, str, dict[str, Any]] | tuple[None, None, dict[str, Any]]:
