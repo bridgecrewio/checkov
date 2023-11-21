@@ -1,7 +1,7 @@
 import os
-import mock
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
