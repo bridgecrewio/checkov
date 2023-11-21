@@ -1,5 +1,5 @@
 import logging
-import mock
+from unittest import mock
 
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 

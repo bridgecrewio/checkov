@@ -1,8 +1,8 @@
 import os
 from pathlib import Path
 from unittest import mock
+from unittest.mock import MagicMock
 
-from mock.mock import MagicMock
 from typing import Dict, Any, List
 from pytest_mock import MockerFixture
 
