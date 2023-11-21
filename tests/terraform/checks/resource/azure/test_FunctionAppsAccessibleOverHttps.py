@@ -1,53 +1,50 @@
 import unittest
+from pathlib import Path
 
-import hcl2
-
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.azure.FunctionAppsAccessibleOverHttps import check
-from checkov.common.models.enums import CheckResult
+from checkov.terraform.runner import Runner
 
 
 class TestFunctionAppsAccessibleOverHttps(unittest.TestCase):
+    def test(self):
+        test_files_dir = Path(__file__).parent / "example_FunctionAppAccessibleOverHttps"
 
-    def test_failure1(self):
-        hcl_res = hcl2.loads("""
-            resource "azurerm_app_service" "example" {
-              name                = "example-app-service"
-              location            = azurerm_resource_group.example.location
-              resource_group_name = azurerm_resource_group.example.name
-              app_service_plan_id = azurerm_app_service_plan.example.id
-              https_only          = false
-              }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_app_service']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
+        summary = report.get_summary()
 
-    def test_failure2(self):
-        hcl_res = hcl2.loads("""
-            resource "azurerm_app_service" "example" {
-              name                = "example-app-service"
-              location            = azurerm_resource_group.example.location
-              resource_group_name = azurerm_resource_group.example.name
-              app_service_plan_id = azurerm_app_service_plan.example.id
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_app_service']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        passing_resources = {
+            "azurerm_function_app.pass",
+            "azurerm_function_app_slot.pass",
+            "azurerm_linux_function_app.pass",
+            "azurerm_linux_function_app.pass2",
+            "azurerm_linux_function_app_slot.pass",
+            "azurerm_linux_function_app_slot.pass2",
+        }
+        failing_resources = {
+            "azurerm_function_app.fail",
+            "azurerm_function_app.fail2",
+            "azurerm_function_app_slot.fail",
+            "azurerm_function_app_slot.fail2",
+            "azurerm_linux_function_app.fail",
+            "azurerm_linux_function_app.fail2",
+            "azurerm_linux_function_app.fail3",
+            "azurerm_linux_function_app_slot.fail",
+            "azurerm_linux_function_app_slot.fail2",
+            "azurerm_linux_function_app_slot.fail3",
+        }
 
-    def test_success(self):
-        hcl_res = hcl2.loads("""
-            resource "azurerm_app_service" "example" {
-              name                = "example-app-service"
-              location            = azurerm_resource_group.example.location
-              resource_group_name = azurerm_resource_group.example.name
-              app_service_plan_id = azurerm_app_service_plan.example.id
-              https_only          = true
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['azurerm_app_service']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
+
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
+
 
 
 if __name__ == '__main__':
