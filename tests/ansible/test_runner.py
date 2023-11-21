@@ -6,8 +6,8 @@ from checkov.ansible.checks.registry import registry
 from checkov.ansible.runner import Runner
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
-from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.graph.db_connectors.rustworkx.rustworkx_db_connector import RustworkxConnector
 from checkov.runner_filter import RunnerFilter
 
 EXAMPLES_DIR = Path(__file__).parent / "examples"
@@ -21,7 +21,7 @@ def test_registry_has_type():
     "graph_connector",
     [
         NetworkxConnector,
-        IgraphConnector,
+        RustworkxConnector,
     ],
 )
 def test_runner_honors_enforcement_rules(graph_connector):
@@ -48,7 +48,7 @@ def test_runner_honors_enforcement_rules(graph_connector):
     "graph_connector",
     [
         NetworkxConnector,
-        IgraphConnector,
+        RustworkxConnector,
     ],
 )
 def test_runner_passing_check(graph_connector):
@@ -73,7 +73,7 @@ def test_runner_passing_check(graph_connector):
     "graph_connector",
     [
         NetworkxConnector,
-        IgraphConnector,
+        RustworkxConnector,
     ],
 )
 def test_runner_failing_check(graph_connector):
@@ -98,7 +98,7 @@ def test_runner_failing_check(graph_connector):
     "graph_connector",
     [
         NetworkxConnector,
-        IgraphConnector,
+        RustworkxConnector,
     ],
 )
 def test_runner_skipping_check(graph_connector):
@@ -134,7 +134,7 @@ def test_runner_skipping_check(graph_connector):
     "graph_connector",
     [
         NetworkxConnector,
-        IgraphConnector,
+        RustworkxConnector,
     ],
 )
 def test_runner_with_flat_tasks(graph_connector):
@@ -173,7 +173,7 @@ def test_runner_with_flat_tasks(graph_connector):
     "graph_connector",
     [
         NetworkxConnector,
-        IgraphConnector,
+        RustworkxConnector,
     ],
 )
 def test_runner_with_block(graph_connector):
@@ -214,7 +214,7 @@ def test_runner_with_block(graph_connector):
     "graph_connector",
     [
         NetworkxConnector,
-        IgraphConnector,
+        RustworkxConnector,
     ],
 )
 def test_runner_with_nested_blocks(graph_connector):
@@ -262,7 +262,7 @@ def test_runner_with_nested_blocks(graph_connector):
     "graph_connector",
     [
         NetworkxConnector,
-        IgraphConnector,
+        RustworkxConnector,
     ],
 )
 def test_runner_with_no_tasks(graph_connector):
@@ -285,7 +285,7 @@ def test_runner_with_no_tasks(graph_connector):
     "graph_connector",
     [
         NetworkxConnector,
-        IgraphConnector,
+        RustworkxConnector,
     ],
 )
 def test_get_resource(graph_connector):
@@ -342,7 +342,7 @@ def test_get_resource(graph_connector):
     "graph_connector",
     [
         NetworkxConnector,
-        IgraphConnector,
+        RustworkxConnector,
     ],
 )
 def test_get_resource_without_name(graph_connector):
