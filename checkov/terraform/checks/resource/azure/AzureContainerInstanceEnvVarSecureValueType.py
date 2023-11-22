@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import Any
 
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
@@ -14,7 +14,7 @@ class AzureContainerInstanceEnvVarSecureValueType(BaseResourceCheck):
         categories = (CheckCategories.GENERAL_SECURITY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
+    def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
 
         if any(container.get('secure_environment_variables') for container in
                conf.get('container') or conf.get('init_container')):

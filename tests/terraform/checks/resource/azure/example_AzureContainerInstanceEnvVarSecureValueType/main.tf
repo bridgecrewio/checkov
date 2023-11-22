@@ -32,8 +32,9 @@ resource "azurerm_container_group" "pass_1" {
     cpu    = "0.5"
     memory = "1.5"
 
+     # checkov:skip=CKV_SECRET_80 test secret
     secure_environment_variables = {
-      INIT_SECRET_VAR               = "secret_value"
+      INIT_SECRET_VAR               = "secret_value"  # checkov:skip=CKV_SECRET_80 test secret
     }
   }
 }
@@ -56,8 +57,9 @@ resource "azurerm_container_group" "pass_2" {
       INIT_PUBLIC_VAR = "public_value"
     }
 
+     # checkov:skip=CKV_SECRET_80 test secret
     secure_environment_variables = {
-      PUD_INIT_SECRET_VAR = "pud_secret_value"
+      PUD_INIT_SECRET_VAR = "pud_secret_value"  # checkov:skip=CKV_SECRET_80 test secret
     }
   }
 }
@@ -80,8 +82,9 @@ resource "azurerm_container_group" "pass_3" {
       INIT_PUBLIC_VAR             = "public_value"
     }
 
+     # checkov:skip=CKV_SECRET_80 test secret
     secure_environment_variables = {
-      PUD_INIT_SECRET_VAR               = "pud_secret_value"
+      PUD_INIT_SECRET_VAR               = "pud_secret_value"  # checkov:skip=CKV_SECRET_80 test secret
     }
   }
 
@@ -100,8 +103,9 @@ resource "azurerm_container_group" "pass_3" {
       MY_PUBLIC_VAR             = "public_value"
     }
 
+     # checkov:skip=CKV_SECRET_80 test secret
     secure_environment_variables = {
-      PUD_SECRET_VAR               = "secret_value"
+      PUD_SECRET_VAR               = "secret_value"  # checkov:skip=CKV_SECRET_80 test secret
     }
   }
 }
@@ -124,6 +128,7 @@ resource "azurerm_container_group" "fail_1" {
       INIT_PUBLIC_VAR = "public_value"
     }
 
+     # checkov:skip=CKV_SECRET_80 test secret
     secure_environment_variables = {
 
     }
@@ -145,7 +150,7 @@ resource "azurerm_container_group" "fail_2" {
     memory = 512
 
     environment_variables = {
-      PUD_INIT_PUBLIC_VAR = "public_value"
+      PUD_INIT_PUBLIC_VAR = "public_value"  # checkov:skip=CKV_SECRET_80 test secret
     }
   }
 }
