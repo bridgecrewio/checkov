@@ -228,7 +228,8 @@ jobs:
       - name: Calculate version
         run: |
           git fetch --tags --force
-          latest_tag="$(git describe --tags "$(git rev-list --tags --max-count=1)")"
+          # find the latest v3 tag, this needs to be adjusted after the next major release
+          latest_tag="$(git tag --sort=v:refname | grep "^3\." | tail -n 1)"
           echo "latest tag: $latest_tag"
           if [[ -z "${{ inputs.versionBump }}" ]]
           then
