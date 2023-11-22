@@ -88,10 +88,9 @@ class Runner(BaseRunner[_ObjectDefinitions, _ObjectContext, ObjectGraphManager])
                     self.map_file_path_to_gha_metadata_dict[file] = \
                         {"triggers": triggers, "workflow_name": workflow_name, "jobs": jobs}
 
+    @staticmethod
     @abstractmethod
-    def _parse_file(
-            self, f: str
-    ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
+    def _parse_file(f: str) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
         raise Exception("parser should be imported by deriving class")
 
     def run(

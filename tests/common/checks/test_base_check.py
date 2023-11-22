@@ -1,7 +1,7 @@
 import os
 import unittest
 
-import mock
+from unittest import mock
 from parameterized import parameterized
 
 from checkov.common.checks.base_check import BaseCheck
@@ -23,7 +23,7 @@ class TestCheckTypeNotInSignature(BaseCheck):
                          block_type=block_type)
 
     # noinspection PyMethodOverriding
-    def scan_entity_conf(self, conf):
+    def scan_entity_conf(self, conf, entity_type):
         """
         My documentation
         :param conf:
@@ -47,7 +47,7 @@ class TestCheckDetails(BaseCheck):
                          block_type=block_type)
 
     # noinspection PyMethodOverriding
-    def scan_entity_conf(self, conf):
+    def scan_entity_conf(self, conf, entity_type):
         """
         My documentation
         :param conf:
@@ -81,7 +81,7 @@ class TestBaseCheck(unittest.TestCase):
         """)
 
     def test_invalid_signature_is_detected(self):
-        with self.assertRaises(NotImplementedError) as context:
+        with self.assertRaises(TypeError) as context:
             class TestCheckUnknownSignature(BaseCheck):
 
                 def __init__(self):
@@ -93,15 +93,10 @@ class TestBaseCheck(unittest.TestCase):
                     super().__init__(name=name, id=id, categories=categories, supported_entities=supported_entities,
                                      block_type=block_type)
 
-                # noinspection PyMethodOverriding
-                def scan_entity_conf(self, conf, some_unexpected_parameter_123):
-                    return CheckResult.PASSED
-        self.assertIsInstance(context.exception, NotImplementedError)
-        self.assertEqual(
-            "The signature ((\'self\', \'conf\', \'some_unexpected_parameter_123\'), None, None) for scan_entity_conf "
-            "is not supported.",
-            context.exception.args[0]
-        )
+            TestCheckUnknownSignature()
+
+        self.assertIsInstance(context.exception, TypeError)
+        self.assertRegex(context.exception.args[0], r"Can't instantiate abstract class TestCheckUnknownSignature")
 
     def test_details_reinitializing_after_execution(self):
         check = TestCheckDetails()

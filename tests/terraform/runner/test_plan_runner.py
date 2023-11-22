@@ -4,11 +4,9 @@ import unittest
 from collections import defaultdict
 from copy import deepcopy
 from pathlib import Path
-
-
 from typing import Dict, Any
+from unittest import mock
 
-import mock
 from parameterized import parameterized_class
 
 # do not remove - prevents circular import

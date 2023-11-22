@@ -1,6 +1,6 @@
 import os
+from unittest import mock
 
-import mock
 import responses
 from checkov.common.models.enums import CheckResult
 

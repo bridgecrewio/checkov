@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Collection
-from typing import Union, Dict, Any, List
+from typing import Union, Dict, Any, List, cast
 
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 from checkov.common.graph.graph_builder.utils import calculate_hash, join_trimmed_strings
@@ -119,7 +119,7 @@ class Block:
 
     def get_hash(self) -> str:
         attributes_dict = self.get_attribute_dict()
-        return attributes_dict.get(CustomAttributes.HASH, "")
+        return cast("str", attributes_dict.get(CustomAttributes.HASH, ""))
 
     def update_attribute(
         self,

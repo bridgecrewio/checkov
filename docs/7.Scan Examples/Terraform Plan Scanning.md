@@ -29,7 +29,7 @@ checkov -f tf.json
 Check: CKV_AWS_21: "Ensure all data stored in the S3 bucket have versioning enabled"
 	FAILED for resource: aws_s3_bucket.customer
 	File: /tf/tf1.json:224-268
-	Guide: https://docs.bridgecrew.io/docs/s3_16-enable-versioning
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3-16-enable-versioning
 
 		225 |               "values": {
 		226 |                 "acceleration_status": "",

@@ -134,8 +134,8 @@ def test_app_service_linux_function_resources(mocker: MockerFixture, graph_frame
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
     assert len(tf_report.resources) == 2
-    assert len(tf_report.passed_checks) == 0
-    assert len(tf_report.failed_checks) == 2
+    assert len(tf_report.passed_checks) == 2
+    assert len(tf_report.failed_checks) == 4
     assert len(tf_report.skipped_checks) == 0
     assert len(tf_report.parsing_errors) == 0
 
@@ -182,7 +182,7 @@ def test_app_service_linux_web_resources(mocker: MockerFixture, graph_framework)
 
     assert len(tf_report.resources) == 2
     assert len(tf_report.passed_checks) == 4
-    assert len(tf_report.failed_checks) == 13
+    assert len(tf_report.failed_checks) == 14
     assert len(tf_report.skipped_checks) == 0
     assert len(tf_report.parsing_errors) == 0
 
@@ -271,7 +271,8 @@ def test_app_service_windows_web_resources(mocker: MockerFixture, graph_framewor
 
     assert len(tf_report.resources) == 2
     assert len(tf_report.passed_checks) == 4
-    assert len(tf_report.failed_checks) == 13
+    # Changed from 13 to 14 due to PR #5687
+    assert len(tf_report.failed_checks) == 14
     assert len(tf_report.skipped_checks) == 0
     assert len(tf_report.parsing_errors) == 0
 

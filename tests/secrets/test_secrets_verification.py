@@ -1,7 +1,8 @@
 from __future__ import annotations
-import os
 
-import mock
+import os
+from unittest import mock
+
 import pytest
 import responses
 

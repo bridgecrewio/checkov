@@ -1,11 +1,10 @@
 from abc import abstractmethod
 from collections.abc import Iterable
-from typing import Callable, Optional, Dict, Any
+from typing import Optional, Dict, Any
 
 from checkov.cloudformation.checks.resource.registry import cfn_registry
 from checkov.common.checks.base_check import BaseCheck
 from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.common.multi_signature import multi_signature
 
 
 class BaseResourceCheck(BaseCheck):
@@ -31,18 +30,8 @@ class BaseResourceCheck(BaseCheck):
     def scan_entity_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
         self.entity_type = entity_type
 
-        return self.scan_resource_conf(conf, entity_type)
+        return self.scan_resource_conf(conf)
 
-    @multi_signature()
     @abstractmethod
-    def scan_resource_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
+    def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
         raise NotImplementedError()
-
-    @classmethod
-    @scan_resource_conf.add_signature(args=["self", "conf"])
-    def _scan_resource_conf_self_conf(cls, wrapped: Callable[..., CheckResult]) -> Callable[..., CheckResult]:
-        def wrapper(self: BaseCheck, conf: Dict[str, Any], entity_type: Optional[str] = None) -> CheckResult:
-            # keep default argument for entity_type so old code, that doesn't set it, will work.
-            return wrapped(self, conf)
-
-        return wrapper

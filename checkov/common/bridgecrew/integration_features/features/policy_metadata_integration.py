@@ -4,6 +4,7 @@ import json
 import logging
 from typing import TYPE_CHECKING, Any, cast
 
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
 from checkov.common.bridgecrew.platform_integration import bc_integration
@@ -50,8 +51,10 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
 
             if self.config and self.config.framework and "all" not in self.config.framework:
                 registries = self.config.framework
+                if CheckType.TERRAFORM_PLAN in registries and CheckType.TERRAFORM not in registries:
+                    registries.append(CheckType.TERRAFORM)
             else:
-                registries = ('terraform', 'cloudformation', 'kubernetes', 'bicep', 'terraform_plan')
+                registries = (CheckType.TERRAFORM, CheckType.CLOUDFORMATION, CheckType.KUBERNETES, CheckType.BICEP, CheckType.TERRAFORM_PLAN)
 
             for r in registries:
                 registry = get_graph_checks_registry(r)

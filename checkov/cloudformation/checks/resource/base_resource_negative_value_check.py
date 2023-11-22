@@ -20,7 +20,7 @@ class BaseResourceNegativeValueCheck(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
         self.missing_block_result = missing_block_result
 
-    def scan_resource_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:
+    def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
         excluded_key = self.get_excluded_key()
         if excluded_key is not None:
             path_elements = excluded_key.split("/")

@@ -1,6 +1,6 @@
 import os
 from typing import Dict, Any
-from checkov.common.sca.reachability.nodejs.nodejs_alias_mapping_strategy import NodejsAliasMappingStrategy
+from checkov.common.sca.reachability.package_alias_mapping.nodejs.nodejs_alias_mapping_strategy import NodejsAliasMappingStrategy
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 
