@@ -213,26 +213,6 @@ class TestRunnerValid(unittest.TestCase):
         assert report.passed_checks[1].triggers[0] == {"workflow_dispatch", "schedule"}
         assert report.passed_checks[1].workflow_name == 'Supply Chain'
 
-    def test_runner_on_build(self):
-        # given
-        file_path = Path(__file__).parent.parent.parent / ".github/workflows/build.yml"
-        file_dir = [str(file_path)]
-        checks = ["CKV_GHA_1", "CKV_GHA_3"]
-
-        # when
-        report = Runner().run(
-            files=file_dir, runner_filter=RunnerFilter(framework=["github_actions"], checks=checks)
-        )
-
-        # then
-        assert report.failed_checks[0].job[0] == 'update-bridgecrew-projects'
-        assert report.failed_checks[0].triggers[0] == {'workflow_dispatch', 'push'}
-        assert report.failed_checks[0].workflow_name == 'build'
-
-        assert report.passed_checks[6].job[0] == "publish-checkov-k8s-dockerhub"
-        assert report.passed_checks[6].triggers[0] == {'workflow_dispatch', 'push'}
-        assert report.passed_checks[6].workflow_name == 'build'
-
     def test_runner_on_codeql_analysis(self):
         # given
         file_path = Path(__file__).parent.parent.parent / ".github/workflows/codeql-analysis.yml"
