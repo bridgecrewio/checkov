@@ -816,9 +816,18 @@ class BcPlatformIntegration:
             url = self.get_run_config_url()
             logging.debug(f'Platform run config URL: {url}')
             request = self.http.request("GET", url, headers=headers)  # type:ignore[no-untyped-call]
-            logging.debug(f'Request ID: {request.headers.get("x-amzn-requestid")}')
-            logging.debug(f'Trace ID: {request.headers.get("x-amzn-trace-id")}')
-            if request.status != 200:
+            request_id = request.headers.get("x-amzn-requestid")
+            trace_id = request.headers.get("x-amzn-trace-id")
+            logging.debug(f'Request ID: {request_id}')
+            logging.debug(f'Trace ID: {trace_id}')
+            if request.status == 500:
+                error_message = 'An unexpected backend error occurred getting the run configuration from the platform (status code 500). ' \
+                                'please contact support and provide debug logs and the values below. You may be able to use the --skip-download option ' \
+                                'to bypass this error, but this will prevent platform configurations (e.g., custom policies, suppressions) from ' \
+                                f'being used in the scan.\nRequest ID: {request_id}\nTrace ID: {trace_id}'
+                logging.error(error_message)
+                raise Exception(error_message)
+            elif request.status != 200:
                 error_message = get_auth_error_message(request.status, self.is_prisma_integration(), False)
                 logging.error(error_message)
                 raise BridgecrewAuthError(error_message)
