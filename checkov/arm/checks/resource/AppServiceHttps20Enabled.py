@@ -1,10 +1,14 @@
-from typing import List, Any
+from __future__ import annotations
 
-from checkov.arm.base_resource_value_check import BaseResourceValueCheck
-from checkov.common.models.enums import CheckCategories
+from typing import Any
+
+from checkov.arm.base_resource_check import BaseResourceCheck
+from checkov.common.models.enums import CheckResult, CheckCategories
 
 
-class AppServiceHttps20Enabled(BaseResourceValueCheck):
+class AppServiceHttps20Enabled(BaseResourceCheck):
+    # apiVersion = 2018-11-01 - http20Enabled is a string
+    # apiVersion > 2020-10-01  - http20Enabled is a boolean
     def __init__(self) -> None:
         name = "Ensure that 'HTTP Version' is the latest if used to run the web app"
         id = "CKV_AZURE_18"
@@ -12,12 +16,18 @@ class AppServiceHttps20Enabled(BaseResourceValueCheck):
         categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def get_inspected_key(self) -> str:
-        # https://docs.microsoft.com/en-us/azure/templates/microsoft.web/2019-08-01/sites
-        return "properties/siteConfig/http20Enabled"
-
-    def get_expected_values(self) -> List[Any]:
-        return [True, "true"]
+    def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
+        if "properties" in conf:
+            if "siteConfig" in conf["properties"]:
+                if "http20Enabled" in conf["properties"]["siteConfig"]:
+                    http_20_enabled = conf["properties"]["siteConfig"]["http20Enabled"]
+                    if "apiVersion" in conf:
+                        if conf["apiVersion"] == "2018-11-01":
+                            if isinstance(http_20_enabled, str) and str(http_20_enabled).lower() == "true":
+                                return CheckResult.PASSED
+                        elif isinstance(http_20_enabled, bool) and http_20_enabled:
+                            return CheckResult.PASSED
+        return CheckResult.FAILED
 
 
 check = AppServiceHttps20Enabled()
