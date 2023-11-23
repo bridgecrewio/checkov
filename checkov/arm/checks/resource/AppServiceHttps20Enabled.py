@@ -1,5 +1,3 @@
-from typing import List, Any
-
 from checkov.arm.base_resource_value_check import BaseResourceValueCheck
 from checkov.common.models.enums import CheckCategories
 
