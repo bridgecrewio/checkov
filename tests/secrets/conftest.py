@@ -17,7 +17,22 @@ def mock_bc_integration():
 @pytest.fixture
 def mock_metadata_integration():
     from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration
-    integration.get_bc_id = lambda ckv_id: 'BC_GIT_2' if ckv_id == 'CKV_SECRETS_2' else 'BC_GIT_6'
+
+    check_metadata = integration.check_metadata
+    integration.check_metadata = {
+        "CKV_SECRET_2": {
+            "id": "BC_GIT_2",
+            "checkovId": "CKV_SECRET_2",
+        },
+        "CKV_SECRET_6": {
+            "id": "BC_GIT_6",
+            "checkovId": "CKV_SECRET_6",
+        }
+    }
+
+    yield
+
+    integration.check_metadata = check_metadata
 
 
 @pytest.fixture

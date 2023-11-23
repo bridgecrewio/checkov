@@ -8,7 +8,7 @@ EXAMPLES_DIR = Path(__file__).parent / "examples"
 
 def test_run(sca_package_report_dt):
     # given
-    report = sca_package_report_dt
+    report = next(sca_package_report_dt)
     # then
     assert report.check_type == "sca_package"
 
