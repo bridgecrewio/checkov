@@ -1,3 +1,5 @@
+from typing import List, Any
+
 from checkov.arm.base_resource_value_check import BaseResourceValueCheck
 from checkov.common.models.enums import CheckCategories
 
@@ -13,6 +15,9 @@ class AppServiceHttps20Enabled(BaseResourceValueCheck):
     def get_inspected_key(self) -> str:
         # https://docs.microsoft.com/en-us/azure/templates/microsoft.web/2019-08-01/sites
         return "properties/siteConfig/http20Enabled"
+
+    def get_expected_values(self) -> List[Any]:
+        return [True, "true"]
 
 
 check = AppServiceHttps20Enabled()
