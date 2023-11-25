@@ -18,7 +18,7 @@ class AppServiceHttps20Enabled(BaseResourceCheck):
 
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
         if "properties" in conf:
-            if "siteConfig" in conf["properties"]:
+            if "siteConfig" in conf["properties"] and conf["properties"]["siteConfig"]:
                 if "http20Enabled" in conf["properties"]["siteConfig"]:
                     http_20_enabled = conf["properties"]["siteConfig"]["http20Enabled"]
                     if "apiVersion" in conf:
