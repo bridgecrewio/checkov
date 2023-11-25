@@ -1,7 +1,7 @@
 metadata:
   id: "CKV_PAN_16"
   name: "Ensure logging at session start is disabled within security policies except for troubleshooting and long lived GRE tunnels"
-  category: "NETWORKING"
+  category: "LOGGING"
 definition:
   # Logging config flag "log_start = true " is specified, defaults to false, which is a pass
   or:
