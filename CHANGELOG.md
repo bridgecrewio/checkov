@@ -1,6 +1,17 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.11...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.15...HEAD)
+
+## [3.1.15](https://github.com/bridgecrewio/checkov/compare/3.1.11...3.1.15) - 2023-11-26
+
+### Feature
+
+- **ansible:** add CKV_PAN_16 PAN-OS BPA Check for session log at start - [#5794](https://github.com/bridgecrewio/checkov/pull/5794)
+- **sast:** Add alias data to imports assets - [#5788](https://github.com/bridgecrewio/checkov/pull/5788)
+
+### Bug Fix
+
+- **bicep:** Update AppServiceHttps20Enabled to consider newer ApiVersion - [#5795](https://github.com/bridgecrewio/checkov/pull/5795)
 
 ## [3.1.11](https://github.com/bridgecrewio/checkov/compare/3.1.9...3.1.11) - 2023-11-23
 
