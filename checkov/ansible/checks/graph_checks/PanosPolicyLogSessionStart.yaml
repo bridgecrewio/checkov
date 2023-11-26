@@ -1,0 +1,18 @@
+metadata:
+  id: "CKV_PAN_16"
+  name: "Ensure logging at session start is disabled within security policies except for troubleshooting and long lived GRE tunnels"
+  category: "LOGGING"
+definition:
+  # Logging config flag "log_start = true " is specified, defaults to false, which is a pass
+  or:
+  - cond_type: attribute
+    resource_types:
+      - tasks.paloaltonetworks.panos.panos_security_rule
+    attribute: log_start
+    operator: not_equals_ignore_case
+    value: true
+  - cond_type: attribute
+    resource_types:
+      - tasks.paloaltonetworks.panos.panos_security_rule
+    attribute: log_start
+    operator: not_exists
