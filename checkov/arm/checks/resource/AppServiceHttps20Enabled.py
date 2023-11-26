@@ -4,6 +4,7 @@ from typing import Any
 
 from checkov.arm.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.common.util.data_structures_utils import find_in_dict
 
 
 class AppServiceHttps20Enabled(BaseResourceCheck):
@@ -18,12 +19,12 @@ class AppServiceHttps20Enabled(BaseResourceCheck):
 
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
         http_20_enabled = find_in_dict(conf, "properties/siteConfig/http20Enabled")
-                    if "apiVersion" in conf:
-                        if conf["apiVersion"] == "2018-11-01":
-                            if isinstance(http_20_enabled, str) and str(http_20_enabled).lower() == "true":
-                                return CheckResult.PASSED
-                        elif isinstance(http_20_enabled, bool) and http_20_enabled:
-                            return CheckResult.PASSED
+        if http_20_enabled and "apiVersion" in conf:
+            if conf["apiVersion"] == "2018-11-01":
+                if isinstance(http_20_enabled, str) and str(http_20_enabled).lower() == "true":
+                    return CheckResult.PASSED
+            elif isinstance(http_20_enabled, bool) and http_20_enabled:
+                return CheckResult.PASSED
         return CheckResult.FAILED
 
 
