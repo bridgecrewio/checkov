@@ -50,7 +50,7 @@ class ContextParser:
                 # Variable versioning (of /.) evaluated to value "True" in expression: enabled = ${var.versioning}
 
     @staticmethod
-    def extract_cf_resource_id(cf_resource: DictNode, cf_resource_name: StrNode) -> Optional[str]:
+    def extract_cf_resource_id(cf_resource: dict[str, Any], cf_resource_name: str) -> Optional[str]:
         if cf_resource_name == STARTLINE or cf_resource_name == ENDLINE:
             return None
         if "Type" not in cf_resource:
@@ -59,7 +59,7 @@ class ContextParser:
         return f"{cf_resource['Type']}.{cf_resource_name}"
 
     def extract_cf_resource_code_lines(
-        self, cf_resource: DictNode
+        self, cf_resource: dict[str, Any]
     ) -> Tuple[Optional[List[int]], Optional[List[Tuple[int, str]]]]:
         find_lines_result_set = set(self.find_lines(cf_resource, STARTLINE))
         if len(find_lines_result_set) >= 1:
@@ -96,7 +96,7 @@ class ContextParser:
         return code_lines[start:end]
 
     @staticmethod
-    def find_lines(node: Union[ListNode, DictNode], kv: str) -> Generator[int, None, None]:
+    def find_lines(node: Any, kv: str) -> Generator[int, None, None]:
         # Hack to allow running checkov on json templates
         # CF scripts that are parsed using the yaml mechanism have a magic STARTLINE and ENDLINE property
         # CF scripts that are parsed using the json mechnism use dicts that have a marker

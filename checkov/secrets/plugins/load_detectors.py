@@ -50,7 +50,7 @@ def add_detectors_from_condition_query(custom_detectors: List[Dict[str, Any]], c
     cond_type = condition_query['cond_type']
     if cond_type == 'secrets':
         value = condition_query['value']
-        if type(value) is str:
+        if isinstance(value, str):
             value = [value]
         for regex in value:
             parsed = True
@@ -69,7 +69,7 @@ def add_detectors_from_code(custom_detectors: List[Dict[str, Any]], code: str, s
             return True
 
         parsed = True
-        if type(code_dict['definition']['value']) is str:
+        if isinstance(code_dict['definition']['value'], str):
             code_dict['definition']['value'] = [code_dict['definition']['value']]
         for regex in code_dict['definition']['value']:
             add_to_custom_detectors(

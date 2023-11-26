@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import json
 import os
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Tuple, Optional, List
+from typing import Tuple, Optional, List, Any, Pattern, Callable
 
 import jmespath
 import logging
@@ -35,41 +36,44 @@ QUOTED_WORD_SYNTAX = re.compile(r"(?:('|\").*?\1)")
 FILE_LOCATION_PATTERN = re.compile(r'^file\(([^?%*:|"<>]+?)\)')
 
 
-def parse(filename):
+def parse(filename: str) -> tuple[dict[str, Any], list[tuple[int, str]]] | None:
     template = None
     template_lines = None
     try:
         (template, template_lines) = cfn_yaml.load(filename, cfn_yaml.ContentType.SLS)
         if not template or not is_checked_sls_template(template):
-            return
+            return None
     except IOError as e:
         if e.errno == 2:
             logger.error('Template file not found: %s', filename)
-            return
+            return None
         elif e.errno == 21:
             logger.error('Template references a directory, not a file: %s',
                          filename)
-            return
+            return None
         elif e.errno == 13:
             logger.error('Permission denied when accessing template file: %s',
                          filename)
-            return
+            return None
     except UnicodeDecodeError:
         logger.error('Cannot read file contents: %s', filename)
-        return
+        return None
     except CfnParseError:
         logger.warning(f"Failed to parse file {filename} because it isn't a valid template")
-        return
+        return None
     except YAMLError:
         logger.warning(f"Failed to parse file {filename} as a yaml")
-        return
+        return None
+
+    if template is None or template_lines is None:
+        return None
 
     process_variables(template, filename)
 
     return template, template_lines
 
 
-def is_checked_sls_template(template):
+def is_checked_sls_template(template: dict[str, Any]) -> bool:
     if template.__contains__('provider'):
         # Case provider is a dictionary
         if isinstance(template['provider'], DictNode):
@@ -83,25 +87,25 @@ def is_checked_sls_template(template):
     return False
 
 
-def template_contains_cfn_resources(template):
+def template_contains_cfn_resources(template: dict[str, Any]) -> bool:
     if template.__contains__(CFN_RESOURCES_TOKEN) and isinstance(template[CFN_RESOURCES_TOKEN], DictNode):
         if template[CFN_RESOURCES_TOKEN].get('Resources'):
             return True
     return False
 
 
-def template_contains_key(template, key):
+def template_contains_key(template: dict[str, Any], key: str) -> bool:
     if ContextParser.search_deep_keys(key, template, []):
         return True
     return False
 
 
-def process_variables(template, filename):
+def process_variables(template: dict[str, Any], filename: str) -> dict[str, Any]:
     """
 Modifies the template data in-place to resolve variables.
     """
 
-    file_data_cache = {}
+    file_data_cache: dict[str, dict[str, Any]] = {}
     service_file_directory = os.path.dirname(filename)
 
     var_pattern = jmespath.search("provider.variableSyntax", template)
@@ -139,7 +143,11 @@ Modifies the template data in-place to resolve variables.
     return template
 
 
-def process_variables_loop(template, var_pattern, param_lookup_function):
+def process_variables_loop(
+    template: dict[str, Any],
+    var_pattern: Pattern[str],
+    param_lookup_function: Callable[[str | None, str | None, str | None, str | None], Any],
+) -> bool:
     """
 Generic processing loop for variables.
     :param template:                The dictionary currently being processed. This function will
@@ -153,13 +161,17 @@ Generic processing loop for variables.
                                     4) fallback var location or value if type was None
     """
     # Generic loop for handling a source of key/value tuples (e.g., enumerate() or <dict>.items())
-    def process_items_helper(key_value_iterator, data_map):
+    def process_items_helper(key_value_iterator: Iterable[tuple[str, Any]], data_map: dict[str, Any]) -> bool:
         made_change = False
         for key, value in key_value_iterator:
             if isinstance(value, str):
                 altered_value = value
                 for match in var_pattern.finditer(value):
-                    var_type, var_loc, fallback_type, fallback_loc = _parse_var(match[1])
+                    parsed_var = _parse_var(match[1])
+                    if parsed_var is None:
+                        continue
+
+                    var_type, var_loc, fallback_type, fallback_loc = parsed_var
                     source_value = param_lookup_function(var_type, var_loc, fallback_type, fallback_loc)
 
                     # If we can't find a value, skip it
@@ -180,7 +192,7 @@ Generic processing loop for variables.
                 if process_variables_loop(value, var_pattern, param_lookup_function):
                     made_change = True
             elif isinstance(value, list):
-                if process_items_helper(enumerate(value), value):
+                if process_items_helper(enumerate(value), value):  # type:ignore[arg-type]
                     made_change = True
         return made_change
 
@@ -188,14 +200,14 @@ Generic processing loop for variables.
 
 
 def _load_var_data(
-    var_type,
-    var_location,
-    fallback_var_type,
-    fallback_var_location,
-    file_cache,
-    self_data_source,
-    service_file_directory
-):
+    var_type: str | None,
+    var_location: str | None,
+    fallback_var_type: str | None,
+    fallback_var_location: str | None,
+    file_cache: dict[str, dict[str, Any]],
+    self_data_source: dict[str, Any],
+    service_file_directory: str,
+) -> Any:
     """
 Load data based on the type/path (see param_lookup_function parameter of process_variables for more info).
 
@@ -212,7 +224,7 @@ Load data based on the type/path (see param_lookup_function parameter of process
     elif var_type == "self":
         value = _determine_variable_value_from_dict(self_data_source, var_location, None)
     elif var_type == "env":
-        value = _determine_variable_value_from_dict(os.environ, var_location, None)
+        value = _determine_variable_value_from_dict(dict(os.environ.items()), var_location, None)
     elif var_type.startswith("file("):
         match = FILE_LOCATION_PATTERN.match(var_type)
         if match is None:
@@ -226,7 +238,9 @@ Load data based on the type/path (see param_lookup_function parameter of process
     return value
 
 
-def _determine_variable_value_from_dict(source_dict, location_str, default):
+def _determine_variable_value_from_dict(
+    source_dict: dict[str, Any], location_str: str | None, default: str | None
+) -> Any:
     if location_str is None:
         return source_dict
 
@@ -245,13 +259,15 @@ def _determine_variable_value_from_dict(source_dict, location_str, default):
     return source_value
 
 
-def _self_var_data_lookup(group_dict, template):
+def _self_var_data_lookup(group_dict: dict[str, Any], template: dict[str, Any]) -> Any:
     location = group_dict["loc"]
     default = group_dict.get("default")
     return _determine_variable_value_from_dict(template, location, default)
 
 
-def _load_file_data(file_location, file_data_cache, service_file_directory):
+def _load_file_data(
+    file_location: str, file_data_cache: dict[str, dict[str, Any]], service_file_directory: str
+) -> dict[str, Any]:
     file_location = file_location.replace("~", str(Path.home()))
     file_location = file_location if os.path.isabs(file_location) else \
         os.path.join(service_file_directory, file_location)
@@ -266,8 +282,8 @@ def _load_file_data(file_location, file_data_cache, service_file_directory):
                     data = yaml.safe_load(f)
         except Exception:
             data = {}
-        file_data_cache[file_location] = data
-    return data
+        file_data_cache[file_location] = data or {}
+    return data or {}
 
 
 def _token_to_type_and_loc(token: str) -> Tuple[Optional[str], Optional[str]]:
@@ -285,7 +301,7 @@ def _token_to_type_and_loc(token: str) -> Tuple[Optional[str], Optional[str]]:
     return token[:index].strip(), token[index + 1 :].strip()
 
 
-def _parse_var(var_str):
+def _parse_var(var_str: str) -> tuple[str | None, str | None, str | None, str | None] | None:
     """
 Returns a tuple of the var type, var loc, fallback type and fallback loc. See docs for the
 param_lookup_function parameter of process_variables_loop for more info.
