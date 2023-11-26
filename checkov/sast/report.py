@@ -76,6 +76,8 @@ class SastData:
                 current_imports = all_data.get('all', [])
                 if current_imports:
                     sast_imports_report[report.language][file_name] = {'all': current_imports}
+                    aliases = all_data.get('aliases', {})
+                    sast_imports_report[report.language][file_name]['aliases'] = aliases
         return {"imports": sast_imports_report}
 
     @staticmethod
