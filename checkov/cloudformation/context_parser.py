@@ -4,10 +4,9 @@ import itertools
 import logging
 import operator
 from functools import reduce
-from typing import List, Tuple, Optional, Union, Generator, Any
+from typing import List, Tuple, Optional, Generator, Any
 
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
-from checkov.common.parsers.node import DictNode, StrNode, ListNode
 from checkov.common.typing import _SkippedCheck
 from checkov.common.util.suppression import collect_suppressions_for_context
 
@@ -115,7 +114,9 @@ class ContextParser:
                 yield node[kv]
 
     @staticmethod
-    def collect_skip_comments(entity_code_lines: List[Tuple[int, str]], resource_config: Optional[DictNode] = None) -> List[_SkippedCheck]:
+    def collect_skip_comments(
+        entity_code_lines: List[Tuple[int, str]], resource_config: dict[str, Any] | None = None
+    ) -> List[_SkippedCheck]:
         skipped_checks = collect_suppressions_for_context(code_lines=entity_code_lines)
 
         bc_id_mapping = metadata_integration.bc_to_ckv_id_mapping

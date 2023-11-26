@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Any
 
-from checkov.common.parsers.node import DictNode, ListNode, StrNode
 from checkov.serverless.parsers.parser import FUNCTIONS_TOKEN, PROVIDER_TOKEN, IAM_ROLE_STATEMENTS_TOKEN, \
     ENVIRONMENT_TOKEN, STACK_TAGS_TOKEN, TAGS_TOKEN
 from checkov.cloudformation.context_parser import ContextParser as CfnContextParser, STARTLINE, ENDLINE
@@ -67,9 +66,9 @@ class ContextParser(object):
                 if not isinstance(function_attribute, type(provider_attribute)):
                     # Do not enrich maps with strings etc
                     continue
-                if isinstance(template_function[dst_enriched_attribute], ListNode):
+                if isinstance(template_function[dst_enriched_attribute], list):
                     template_function[dst_enriched_attribute].extend(provider_attribute)
-                if isinstance(template_function[dst_enriched_attribute], DictNode):
+                if isinstance(template_function[dst_enriched_attribute], dict):
                     template_function[dst_enriched_attribute].update(provider_attribute)
             else:
                 template_function[dst_enriched_attribute] = provider_attribute
