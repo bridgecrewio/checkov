@@ -1,0 +1,6 @@
+pass:
+  - "tasks.paloaltonetworks.panos.panos_ipsec_profile.ipsec_pass_1"
+fail:
+  - "tasks.paloaltonetworks.panos.panos_ipsec_profile.ipsec_fail_1"
+evaluated_keys:
+  - "ah_authentication"

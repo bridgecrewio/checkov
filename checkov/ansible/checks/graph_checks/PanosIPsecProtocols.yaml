@@ -1,0 +1,10 @@
+metadata:
+  id: "CKV_PAN_13"
+  name: "Ensure IPsec profiles do not specify use of insecure protocols"
+  category: "NETWORKING"
+definition:
+  cond_type: attribute
+  resource_types:
+    - tasks.paloaltonetworks.panos.panos_ipsec_profile
+  attribute: ah_authentication
+  operator: not_exists
