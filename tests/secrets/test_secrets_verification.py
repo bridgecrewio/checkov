@@ -1,7 +1,8 @@
 from __future__ import annotations
-import os
 
-import mock
+import os
+from unittest import mock
+
 import pytest
 import responses
 
@@ -185,7 +186,7 @@ def test_runner_verify_secrets(mock_bc_integration, mock_metadata_integration):
     resource_id = '25910f981e85ca04baf359199dd0bd4a3ae738b6'
     verified_report = [
         {
-            "violationId": "BC_GIT_6",
+            "violationId": "BC_GIT_2",
             "resourceId": f"{rel_resource_path}:{resource_id}",
             "status": "Valid"
         }

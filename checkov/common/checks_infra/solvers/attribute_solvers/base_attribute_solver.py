@@ -247,6 +247,10 @@ class BaseAttributeSolver(BaseSolver):
     @staticmethod
     def _render_json_str(value_to_check: Any, attr: str, vertex: Dict[str, Any]) -> Any:
         if attr == 'policy' and vertex.get('resource_type', '').endswith('policy'):
+            if isinstance(value_to_check, dict):
+                # it was already properly loaded
+                return value_to_check
+
             try:
                 value_to_check = json.loads(value_to_check)
                 return value_to_check
