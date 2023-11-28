@@ -252,11 +252,13 @@ class TerraformBlock(Block):
             'name': self.name,
             'path': self.path,
             'source': self.source,
-            'source_module': list(self.source_module)
+            'source_module': list(self.source_module),
+            'source_module_object': self.source_module_object
         }
 
     @staticmethod
     def from_dict(data: dict[str, Any]) -> TerraformBlock:
+        from checkov.terraform import TFModule
         tf_block = TerraformBlock(name=data.get('name', ''), block_type=data.get('block_type', ''),
                                   config=data.get('config', {}), id=data.get('id', ''),
                                   path=data.get('path', ''), source=data.get('source', ''),
@@ -266,4 +268,5 @@ class TerraformBlock(Block):
         tf_block.breadcrumbs = data.get('breadcrumbs', {})
         tf_block.module_connections = data.get('module_connections', {})
         tf_block.source_module = data.get('source_module', set())
+        tf_block.source_module_object = TFModule.from_json(data.get('source_module_object'))
         return tf_block
