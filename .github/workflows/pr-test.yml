@@ -88,6 +88,9 @@ jobs:
             pipenv install --dev -v
           fi
 
+          # list all dependencies to get a better view about installed package versions
+          pipenv run pip list
+
           pipenv run pip install redefine --index-url https://pip.redefine.dev
       - name: Unit tests
         env:

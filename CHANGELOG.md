@@ -1,6 +1,29 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.9...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.17...HEAD)
+
+## [3.1.17](https://github.com/bridgecrewio/checkov/compare/3.1.15...3.1.17) - 2023-11-27
+
+### Feature
+
+- **ansible:** PAN-OS IPsec checks - [#5802](https://github.com/bridgecrewio/checkov/pull/5802)
+
+## [3.1.15](https://github.com/bridgecrewio/checkov/compare/3.1.11...3.1.15) - 2023-11-26
+
+### Feature
+
+- **ansible:** add CKV_PAN_16 PAN-OS BPA Check for session log at start - [#5794](https://github.com/bridgecrewio/checkov/pull/5794)
+- **sast:** Add alias data to imports assets - [#5788](https://github.com/bridgecrewio/checkov/pull/5788)
+
+### Bug Fix
+
+- **bicep:** Update AppServiceHttps20Enabled to consider newer ApiVersion - [#5795](https://github.com/bridgecrewio/checkov/pull/5795)
+
+## [3.1.11](https://github.com/bridgecrewio/checkov/compare/3.1.9...3.1.11) - 2023-11-23
+
+### Bug Fix
+
+- **general:** Policy metadata API fixes - [#5761](https://github.com/bridgecrewio/checkov/pull/5761)
 
 ## [3.1.9](https://github.com/bridgecrewio/checkov/compare/3.1.4...3.1.9) - 2023-11-21
 

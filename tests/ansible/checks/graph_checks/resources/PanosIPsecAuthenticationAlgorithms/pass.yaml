@@ -1,0 +1,41 @@
+---
+- name: Verify tests
+  hosts: all
+  connection: local
+  gather_facts: false
+
+  vars:
+    device:
+      ip_address: "{{ ip_address }}"
+      username: "{{ username | default(omit) }}"
+      password: "{{ password | default(omit) }}"
+      api_key: "{{ api_key | default(omit) }}"
+
+  tasks:
+    - name: ipsec_pass_1
+      paloaltonetworks.panos.panos_ipsec_profile:
+        provider: '{{ provider }}'
+        name: 'IPsec profile'
+        esp_encryption: ['aes-128-gcm']
+        esp_authentication: ['sha256'] # Acceptable authentication algorithm
+
+    - name: ipsec_pass_2
+      paloaltonetworks.panos.panos_ipsec_profile:
+        provider: '{{ provider }}'
+        name: 'IPsec profile'
+        esp_encryption: ['aes-128-gcm']
+        esp_authentication: ['sha384'] # Acceptable authentication algorithm
+
+    - name: ipsec_pass_3
+      paloaltonetworks.panos.panos_ipsec_profile:
+        provider: '{{ provider }}'
+        name: 'IPsec profile'
+        esp_encryption: ['aes-128-gcm']
+        esp_authentication: ['sha512'] # Acceptable authentication algorithm
+
+    - name: ipsec_pass_4
+      paloaltonetworks.panos.panos_ipsec_profile:
+        provider: '{{ provider }}'
+        name: 'IPsec profile'
+        esp_encryption: ['aes-128-gcm']
+        esp_authentication: ['sha384', 'sha512'] # Multiple acceptable authentication algorithms

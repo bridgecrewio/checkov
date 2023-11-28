@@ -204,7 +204,7 @@ class PrismaEngine(SastEngine):
             name = "unknown"
 
         reachability_data = None
-        if report_reachability:
+        if report_reachability or report_imports:
             # TODO - run sast-core per src
             for source_code in source_codes:
                 reachability_data = get_reachability_data(source_code)
