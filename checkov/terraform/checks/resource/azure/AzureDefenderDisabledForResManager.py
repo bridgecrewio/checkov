@@ -9,7 +9,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 class AzureDefenderDisabledForResManager(BaseResourceCheck):
     def __init__(self) -> None:
         name = "Ensure that Azure Defender for cloud is set to On for Resource Manager"
-        id = "CKV_AZURE_233"
+        id = "CKV_AZURE_234"
         supported_resources = ("azurerm_security_center_subscription_pricing",)
         categories = (CheckCategories.GENERAL_SECURITY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

@@ -9,7 +9,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 class AzureContainerInstanceEnvVarSecureValueType(BaseResourceCheck):
     def __init__(self) -> None:
         name = "Ensure that Azure container environment variables are configured with secure values only"
-        id = "CKV_AZURE_234"
+        id = "CKV_AZURE_235"
         supported_resources = ("azurerm_container_group",)
         categories = (CheckCategories.GENERAL_SECURITY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
