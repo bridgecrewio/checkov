@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Union, Dict, Any, List, Optional, Set, TYPE_CHECKING, cast
+from typing import Union, Dict, Any, List, Optional, Set, cast
 import dpath
 import re
 
@@ -11,9 +11,7 @@ from checkov.terraform.graph_builder.utils import INTERPOLATION_EXPR
 from checkov.common.graph.graph_builder.graph_components.blocks import Block
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
-
-if TYPE_CHECKING:
-    from checkov.terraform import TFModule
+from checkov.terraform.modules.module_objects import TFModule
 
 
 class TerraformBlock(Block):
@@ -252,7 +250,8 @@ class TerraformBlock(Block):
             'name': self.name,
             'path': self.path,
             'source': self.source,
-            'source_module': list(self.source_module)
+            'source_module': list(self.source_module),
+            'source_module_object': self.source_module_object
         }
 
     @staticmethod
@@ -266,4 +265,5 @@ class TerraformBlock(Block):
         tf_block.breadcrumbs = data.get('breadcrumbs', {})
         tf_block.module_connections = data.get('module_connections', {})
         tf_block.source_module = data.get('source_module', set())
+        tf_block.source_module_object = TFModule.from_json(data.get('source_module_object'))
         return tf_block
