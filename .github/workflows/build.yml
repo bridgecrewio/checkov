@@ -44,7 +44,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.8", "3.9", "3.10", "3.11"]
+        python: ["3.8", "3.9", "3.10", "3.11", "3.12"]
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -68,7 +68,7 @@ jobs:
           # remove venv, if exists
           pipenv --rm || true
           pipenv --python ${{ matrix.python }}
-          pipenv run pip install pytest pytest-xdist
+          pipenv run pip install pytest pytest-xdist setuptools wheel
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
       - name: Clone Terragoat - vulnerable terraform
@@ -125,7 +125,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.8", "3.11"]
+        python: ["3.8", "3.12"]
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     continue-on-error: true # for now it is ok to fail
@@ -142,7 +142,7 @@ jobs:
           # remove venv, if exists
           pipenv --rm || true
           pipenv --python ${{ matrix.python }}
-          pipenv run pip install pytest pytest-xdist
+          pipenv run pip install pytest pytest-xdist setuptools wheel
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
       - name: Clone flask - Python repo for SAST
@@ -228,7 +228,7 @@ jobs:
       - name: Calculate version
         run: |
           git fetch --tags --force
-          latest_tag="$(git describe --tags "$(git rev-list --tags --max-count=1)")"
+          latest_tag="$(git tag --sort=v:refname | tail -n 1)"
           echo "latest tag: $latest_tag"
           if [[ -z "${{ inputs.versionBump }}" ]]
           then

@@ -1,6 +1,61 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.0.40...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.17...HEAD)
+
+## [3.1.17](https://github.com/bridgecrewio/checkov/compare/3.1.15...3.1.17) - 2023-11-27
+
+### Feature
+
+- **ansible:** PAN-OS IPsec checks - [#5802](https://github.com/bridgecrewio/checkov/pull/5802)
+
+## [3.1.15](https://github.com/bridgecrewio/checkov/compare/3.1.11...3.1.15) - 2023-11-26
+
+### Feature
+
+- **ansible:** add CKV_PAN_16 PAN-OS BPA Check for session log at start - [#5794](https://github.com/bridgecrewio/checkov/pull/5794)
+- **sast:** Add alias data to imports assets - [#5788](https://github.com/bridgecrewio/checkov/pull/5788)
+
+### Bug Fix
+
+- **bicep:** Update AppServiceHttps20Enabled to consider newer ApiVersion - [#5795](https://github.com/bridgecrewio/checkov/pull/5795)
+
+## [3.1.11](https://github.com/bridgecrewio/checkov/compare/3.1.9...3.1.11) - 2023-11-23
+
+### Bug Fix
+
+- **general:** Policy metadata API fixes - [#5761](https://github.com/bridgecrewio/checkov/pull/5761)
+
+## [3.1.9](https://github.com/bridgecrewio/checkov/compare/3.1.4...3.1.9) - 2023-11-21
+
+### Bug Fix
+
+- **gha:** Update GitHub Actions Workflow Schema #5742 - [#5759](https://github.com/bridgecrewio/checkov/pull/5759)
+- **terraform_plan:** load terraform registry checks when using terraform plan - [#5778](https://github.com/bridgecrewio/checkov/pull/5778)
+- **terraform:** Ensure HTTPS in Azure Function App and App Slots - [#5766](https://github.com/bridgecrewio/checkov/pull/5766)
+
+### Platform
+
+- **general:** do not display an auth error when the runconfig endpoint returns a 500 - [#5779](https://github.com/bridgecrewio/checkov/pull/5779)
+
+## [3.1.4](https://github.com/bridgecrewio/checkov/compare/3.0.40...3.1.4) - 2023-11-20
+
+### Breaking Change
+
+- **general:** set default parallelization type to spawn and leverage Terraform downloaded module by default - [#5760](https://github.com/bridgecrewio/checkov/pull/5760)
+
+### Feature
+
+- **terraform:** Ensure ACR is zone-redundant - [#5748](https://github.com/bridgecrewio/checkov/pull/5748)
+
+### Bug Fix
+
+- **general:** Revert parallelization commit - [#5777](https://github.com/bridgecrewio/checkov/pull/5777)
+- **sast:** remove SAST frameworks for OSS users - [#5773](https://github.com/bridgecrewio/checkov/pull/5773)
+- **secrets:** don't reinitialize the upload client without API key usage - [#5771](https://github.com/bridgecrewio/checkov/pull/5771)
+
+### Documentation
+
+- **general:** properly escape CLI flags in the CLI command docs - [#5768](https://github.com/bridgecrewio/checkov/pull/5768)
 
 ## [3.0.40](https://github.com/bridgecrewio/checkov/compare/3.0.38...3.0.40) - 2023-11-19
 

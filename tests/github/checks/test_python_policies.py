@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-from freezegun import freeze_time
+from time_machine import travel
 
 from checkov.github.runner import Runner
 from checkov.runner_filter import RunnerFilter
@@ -45,7 +45,7 @@ def test_GithubRequire2Approvals():
     run_check(base_path=BASE_DIR / "branch_security", check="GithubRequire2Approvals")
 
 
-@freeze_time("2022-12-05")
+@travel("2022-12-05")
 def test_GithubDisallowInactiveBranch60Days():
     run_check(base_path=BASE_DIR / "branch_security", check="GithubDisallowInactiveBranch60Days")
 

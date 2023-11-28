@@ -45,9 +45,7 @@ from checkov.common.bridgecrew.integration_features.integration_feature_registry
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.severities import BcSeverities
 from checkov.common.goget.github.get_git import GitGetter
-from checkov.common.models.enums import ParallelizationType
 from checkov.common.output.baseline import Baseline
-from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.common.sast.consts import SastLanguages
@@ -89,6 +87,7 @@ from checkov.yaml_doc.runner import Runner as yaml_runner
 
 if TYPE_CHECKING:
     from checkov.common.output.report import Report
+    from checkov.common.runners.base_runner import BaseRunner
     from configargparse import Namespace
 
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
@@ -99,7 +98,7 @@ logger = logging.getLogger(__name__)
 add_resource_code_filter_to_logger(logger)
 
 # sca package runner added during the run method
-DEFAULT_RUNNERS = [
+DEFAULT_RUNNERS: "list[BaseRunner[Any, Any, Any]]" = [
     tf_graph_runner(),
     cfn_runner(),
     k8_runner(),
@@ -283,10 +282,6 @@ class Checkov:
                 else:
                     logger.debug('Using API key and not --include-all-checkov-policies - only running platform policies '
                                  '(this is the default behavior, and this message is just for debugging purposes)')
-
-            # set parallelization type for CLI runs to 'spawn' mode,
-            # this can be adjusted by setting the env var CHECKOV_PARALLELIZATION_TYPE
-            parallel_runner.type = ParallelizationType.THREAD if parallel_runner.os == "Windows" else ParallelizationType.SPAWN
 
             # bridgecrew uses both the urllib3 and requests libraries, while checkov uses the requests library.
             # Allow the user to specify a CA bundle to be used by both libraries.

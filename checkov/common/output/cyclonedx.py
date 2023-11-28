@@ -31,7 +31,7 @@ from cyclonedx.model.vulnerability import (
     VulnerabilitySeverity,
 )
 from cyclonedx.schema import OutputFormat
-from cyclonedx.output import get_instance
+from cyclonedx.output import make_outputter
 from packageurl import PackageURL
 
 from checkov.common.output.common import ImageDetails, format_string_to_licenses, validate_lines
@@ -417,7 +417,7 @@ class CycloneDX:
         schema_version = CYCLONE_SCHEMA_VERSION.get(
             os.getenv("CHECKOV_CYCLONEDX_SCHEMA_VERSION", ""), DEFAULT_CYCLONE_SCHEMA_VERSION
         )
-        output = get_instance(
+        output = make_outputter(
             bom=self.bom,
             output_format=output_format,
             schema_version=schema_version,

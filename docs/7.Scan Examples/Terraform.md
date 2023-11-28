@@ -45,9 +45,10 @@ checkov -d . --download-external-modules true --external-modules-download-path e
 ```
 
 > [!NOTE]
-> Be default, `checkov` will use the modules already downloaded by Terraform stored in `.terraform` folder. This only works for scans of the root folder, where also `terraform init` was executed. This behaviour can be disabled by setting the env var `CHECKOV_TERRAFORM_MANAGED_MODULES=False`
+> **Experimental**
+> By setting the env var `CHECKOV_EXPERIMENTAL_TERRAFORM_MANAGED_MODULES=True` instead of downloading external modules `checkov` will use the ones already downloaded by Terraform stored in `.terraform` folder. This only works for scans of the root folder, where also `terraform init` was executed.
 > ```shell
-> CHECKOV_TERRAFORM_MANAGED_MODULES=False checkov -d .
+> CHECKOV_EXPERIMENTAL_TERRAFORM_MANAGED_MODULES=True checkov -d .
 > ```
 
 ### Scanning Private Terraform Modules

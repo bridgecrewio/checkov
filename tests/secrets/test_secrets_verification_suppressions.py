@@ -1,6 +1,6 @@
 import os
+from unittest import mock
 
-import mock
 import responses
 from checkov.common.models.enums import CheckResult
 
@@ -15,7 +15,7 @@ def test_runner_verify_secrets_skip_invalid_suppressed(mock_bc_integration, mock
     resource_id = '25910f981e85ca04baf359199dd0bd4a3ae738b6'
     verified_report = [
         {
-            "violationId": "BC_GIT_6",
+            "violationId": "BC_GIT_2",
             "resourceId": f"{rel_resource_path}:{resource_id}",
             "status": "Invalid"
         }
@@ -57,7 +57,7 @@ def test_runner_verify_secrets_skip_all_no_effect(mock_bc_integration, mock_meta
     second_resource_id = 'd70eab08607a4d05faa2d0d6647206599e9abc65'
     verified_report = [
         {
-            "violationId": "BC_GIT_6",
+            "violationId": "BC_GIT_2",
             "resourceId": f"{rel_resource_path}:{resource_id}",
             "status": "Invalid"
         },

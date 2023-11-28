@@ -32,7 +32,6 @@ if TYPE_CHECKING:
 
 _ObjectContext: TypeAlias = "dict[str, dict[str, Any]]"
 _ObjectDefinitions: TypeAlias = "dict[str, dict[str, Any] | list[dict[str, Any]]]"
-_ParseFileResponse: TypeAlias = "tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None"
 
 
 class GhaMetadata(TypedDict):
@@ -72,7 +71,7 @@ class Runner(BaseRunner[_ObjectDefinitions, _ObjectContext, ObjectGraphManager])
             filename_fn: Callable[[str], str] | None = None,
     ) -> None:
         files_to_load = [filename_fn(file) if filename_fn else file for file in files_to_load]
-        results = parallel_runner.run_function(self._parallel_parse_files, files_to_load)
+        results = parallel_runner.run_function(lambda f: (f, self._parse_file(f)), files_to_load)
         for file_result_pair in results:
             if file_result_pair is None:
                 # this only happens, when an uncaught exception occurs
@@ -80,8 +79,8 @@ class Runner(BaseRunner[_ObjectDefinitions, _ObjectContext, ObjectGraphManager])
 
             file, result = file_result_pair
             if result:
-                (definition, self.definitions_raw[file]) = result
-                self.definitions[file] = definition
+                (self.definitions[file], self.definitions_raw[file]) = result
+                definition = result[0]
                 if self.check_type == CheckType.GITHUB_ACTIONS and isinstance(definition, dict):
                     workflow_name = definition.get('name', '')
                     triggers = self._get_triggers(definition)
@@ -89,13 +88,9 @@ class Runner(BaseRunner[_ObjectDefinitions, _ObjectContext, ObjectGraphManager])
                     self.map_file_path_to_gha_metadata_dict[file] = \
                         {"triggers": triggers, "workflow_name": workflow_name, "jobs": jobs}
 
-    def _parallel_parse_files(self, f: str) -> tuple[str, _ParseFileResponse]:
-        """Thin wrapper to return filename with parsed content"""
-        return f, self._parse_file(f)
-
     @staticmethod
     @abstractmethod
-    def _parse_file(f: str) -> _ParseFileResponse:
+    def _parse_file(f: str) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
         raise Exception("parser should be imported by deriving class")
 
     def run(

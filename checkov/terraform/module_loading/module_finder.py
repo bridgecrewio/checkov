@@ -150,7 +150,7 @@ def _download_module(ml_registry: ModuleLoaderRegistry, module_download: ModuleD
 
 
 def replace_terraform_managed_modules(path: str, found_modules: list[ModuleDownload]) -> list[ModuleDownload]:
-    """Replaces modules by Terraform managed ones to prevent additional downloading
+    """Replaces modules by Terraform managed ones to prevent addtional downloading
 
     It can't handle nested modules yet, ex.
     {
@@ -160,7 +160,7 @@ def replace_terraform_managed_modules(path: str, found_modules: list[ModuleDownl
     }
     """
 
-    if not convert_str_to_bool(os.getenv("CHECKOV_TERRAFORM_MANAGED_MODULES", True)):
+    if not convert_str_to_bool(os.getenv("CHECKOV_EXPERIMENTAL_TERRAFORM_MANAGED_MODULES", False)):
         return found_modules
 
     # file used by Terraform internally to map modules to the downloaded path
