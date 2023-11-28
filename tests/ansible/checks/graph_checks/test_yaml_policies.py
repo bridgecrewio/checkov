@@ -87,6 +87,9 @@ class TestYamlPolicies(TestYamlPoliciesBase):
     def test_PanosZoneUserIDIncludeACL(self):
         self.go("PanosZoneUserIDIncludeACL", local_graph_class=AnsibleLocalGraph)
 
+    def test_PanosPolicyLogSessionStart(self):
+        self.go("PanosPolicyLogSessionStart", local_graph_class=AnsibleLocalGraph)
+
     def test_registry_load(self):
         registry = self.get_checks_registry()
         self.assertGreater(len(registry.checks), 0)

@@ -1,4 +1,5 @@
-from mock.mock import MagicMock
+from unittest.mock import MagicMock
+
 from pytest_mock import MockerFixture
 
 from checkov.common.checks_infra.solvers.attribute_solvers.base_attribute_solver import BaseAttributeSolver
@@ -29,8 +30,8 @@ def test_get_cached_jsonpath_statement(mocker: MockerFixture):
     assert len(BaseAttributeSolver.jsonpath_parsed_statement_cache) == 1
 
     # patch jsonpath_ng.parse to be able to check it was really not called again and the cache was properly used
-    with mocker.patch("checkov.common.checks_infra.solvers.attribute_solvers.base_attribute_solver.parse", side_effect=jsonpath_parse_mock):
-        solver_2._get_cached_jsonpath_statement(statement=statement)
+    mocker.patch("checkov.common.checks_infra.solvers.attribute_solvers.base_attribute_solver.parse", side_effect=jsonpath_parse_mock)
+    solver_2._get_cached_jsonpath_statement(statement=statement)
 
     # then
     assert len(BaseAttributeSolver.jsonpath_parsed_statement_cache) == 1

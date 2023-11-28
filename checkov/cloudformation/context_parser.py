@@ -4,10 +4,9 @@ import itertools
 import logging
 import operator
 from functools import reduce
-from typing import List, Tuple, Optional, Union, Generator, Any
+from typing import List, Tuple, Optional, Generator, Any
 
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
-from checkov.common.parsers.node import DictNode, StrNode, ListNode
 from checkov.common.typing import _SkippedCheck
 from checkov.common.util.suppression import collect_suppressions_for_context
 
@@ -50,7 +49,7 @@ class ContextParser:
                 # Variable versioning (of /.) evaluated to value "True" in expression: enabled = ${var.versioning}
 
     @staticmethod
-    def extract_cf_resource_id(cf_resource: DictNode, cf_resource_name: StrNode) -> Optional[str]:
+    def extract_cf_resource_id(cf_resource: dict[str, Any], cf_resource_name: str) -> Optional[str]:
         if cf_resource_name == STARTLINE or cf_resource_name == ENDLINE:
             return None
         if "Type" not in cf_resource:
@@ -59,7 +58,7 @@ class ContextParser:
         return f"{cf_resource['Type']}.{cf_resource_name}"
 
     def extract_cf_resource_code_lines(
-        self, cf_resource: DictNode
+        self, cf_resource: dict[str, Any]
     ) -> Tuple[Optional[List[int]], Optional[List[Tuple[int, str]]]]:
         find_lines_result_set = set(self.find_lines(cf_resource, STARTLINE))
         if len(find_lines_result_set) >= 1:
@@ -96,7 +95,7 @@ class ContextParser:
         return code_lines[start:end]
 
     @staticmethod
-    def find_lines(node: Union[ListNode, DictNode], kv: str) -> Generator[int, None, None]:
+    def find_lines(node: Any, kv: str) -> Generator[int, None, None]:
         # Hack to allow running checkov on json templates
         # CF scripts that are parsed using the yaml mechanism have a magic STARTLINE and ENDLINE property
         # CF scripts that are parsed using the json mechnism use dicts that have a marker
@@ -115,7 +114,9 @@ class ContextParser:
                 yield node[kv]
 
     @staticmethod
-    def collect_skip_comments(entity_code_lines: List[Tuple[int, str]], resource_config: Optional[DictNode] = None) -> List[_SkippedCheck]:
+    def collect_skip_comments(
+        entity_code_lines: List[Tuple[int, str]], resource_config: dict[str, Any] | None = None
+    ) -> List[_SkippedCheck]:
         skipped_checks = collect_suppressions_for_context(code_lines=entity_code_lines)
 
         bc_id_mapping = metadata_integration.bc_to_ckv_id_mapping

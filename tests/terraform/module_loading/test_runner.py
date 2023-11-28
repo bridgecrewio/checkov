@@ -31,8 +31,8 @@ def test_runner_with_tf_managed_modules():
     assert failed_resources == expected_failed_resources
 
 
-# keeping the test as long as the env var exists
-@mock.patch.dict(os.environ, {"CHECKOV_TERRAFORM_MANAGED_MODULES": "False"})
+# test can be removed after setting this flow as default
+@mock.patch.dict(os.environ, {"CHECKOV_EXPERIMENTAL_TERRAFORM_MANAGED_MODULES": "False"})
 def test_runner_without_tf_managed_modules():
     # given
     root_dir = Path(__file__).parent / "data/tf_managed_modules"

@@ -62,6 +62,8 @@ class TestRunnerValid(unittest.TestCase):
         os.environ["TF_SPLIT_GRAPH"] = self.tf_split_graph
 
     def tearDown(self):
+        parser_registry.context = {}
+        resource_registry.checks = self.orig_checks
         parallel_runner.type = self.parallelization_type
         del os.environ["CHECKOV_GRAPH_FRAMEWORK"]
         del os.environ["TF_SPLIT_GRAPH"]
@@ -1342,6 +1344,10 @@ class TestRunnerValid(unittest.TestCase):
         self.assertTrue(any(r.check_id == 'BUCKET_EXISTS' and r.resource == 'aws_s3_bucket.unknown_simple' for r in
                             report.passed_checks))
 
+        # reset graph checks
+        runner.graph_registry.checks = []
+        runner.graph_registry.load_checks()
+
     def test_unrendered_nested_var(self):
         resources_dir = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), "resources", "unrendered_vars")
@@ -1381,6 +1387,10 @@ class TestRunnerValid(unittest.TestCase):
         self.assertTrue(any(
             r.check_id == 'COMPONENT_EQUALS' and r.resource == 'aws_s3_bucket.known_nested_fail' for r in
             report.failed_checks))
+
+        # reset graph checks
+        runner.graph_registry.checks = []
+        runner.graph_registry.load_checks()
 
     def test_no_duplicate_results(self):
         resources_path = os.path.join(
@@ -1636,10 +1646,6 @@ class TestRunnerValid(unittest.TestCase):
 
         all_checks = report.failed_checks + report.passed_checks
         self.assertTrue(any(c.check_id == custom_check_id for c in all_checks))
-
-    def tearDown(self):
-        parser_registry.context = {}
-        resource_registry.checks = self.orig_checks
 
     @parameterized.expand([
         (NetworkxConnector,),
