@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.17...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.18...HEAD)
+
+## [3.1.18](https://github.com/bridgecrewio/checkov/compare/3.1.17...3.1.18) - 2023-11-28
+
+### Bug Fix
+
+- **terraform:** Add source_module_object to blocks from_dict func - [#5806](https://github.com/bridgecrewio/checkov/pull/5806)
 
 ## [3.1.17](https://github.com/bridgecrewio/checkov/compare/3.1.15...3.1.17) - 2023-11-27
 
