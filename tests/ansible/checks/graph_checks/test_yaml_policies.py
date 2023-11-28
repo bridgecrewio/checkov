@@ -90,8 +90,8 @@ class TestYamlPolicies(TestYamlPoliciesBase):
     def test_PanosPolicyLogSessionStart(self):
         self.go("PanosPolicyLogSessionStart", local_graph_class=AnsibleLocalGraph)
 
-    def test_PanosPolicyNoSrcZoneAnyDstZoneAny(self):
-        self.go("PanosPolicyNoSrcZoneAnyDstZoneAny", local_graph_class=AnsibleLocalGraph)
+    def test_PanosPolicyNoSrcZoneAnyNoDstZoneAny(self):
+        self.go("PanosPolicyNoSrcZoneAnyNoDstZoneAny", local_graph_class=AnsibleLocalGraph)
 
     def test_registry_load(self):
         registry = self.get_checks_registry()
