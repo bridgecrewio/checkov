@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Union, Dict, Any, List, Optional, Set, TYPE_CHECKING, cast
+from typing import Union, Dict, Any, List, Optional, Set, cast
 import dpath
 import re
 
@@ -265,5 +265,5 @@ class TerraformBlock(Block):
         tf_block.breadcrumbs = data.get('breadcrumbs', {})
         tf_block.module_connections = data.get('module_connections', {})
         tf_block.source_module = data.get('source_module', set())
-        tf_block.source_module_object = TFModule.from_json(data.get('source_module_object')) if data.get('source_module_object') else None
+        tf_block.source_module_object = TFModule.from_json(data.get('source_module_object'))
         return tf_block
