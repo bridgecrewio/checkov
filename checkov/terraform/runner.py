@@ -396,6 +396,7 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
                 entity_evaluations = BaseVariableEvaluation.reduce_entity_evaluations(
                     variables_evaluations, entity_context_path
                 )
+            registry.graph = self.all_graphs[0][0]
             results = registry.scan(scanned_file, entity, skipped_checks, runner_filter)
             absolute_scanned_file_path = get_abs_path(full_file_path)
             # This duplicates a call at the start of scan, but adding this here seems better than kludging with some tuple return type

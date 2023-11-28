@@ -1,5 +1,8 @@
+from __future__ import annotations
+from typing import Any
+from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
-from checkov.common.models.enums import CheckCategories
+from checkov.common.models.enums import CheckCategories, CheckResult
 
 
 class RDSEncryption(BaseResourceValueCheck):
@@ -12,6 +15,16 @@ class RDSEncryption(BaseResourceValueCheck):
 
     def get_inspected_key(self):
         return "storage_encrypted"
+
+    def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
+        result = super().scan_resource_conf(conf=conf)
+        provider_name = conf.get("provider")
+        if provider_name and isinstance(provider_name, list):
+            providers = self.graph.vs.select(block_type__eq="provider")["attr"]
+            provider = next((prov for prov in providers if prov[CustomAttributes.BLOCK_NAME] == provider_name[0]), None)
+            if provider and provider.get("use_fips_endpoint") is True:
+                return result
+        return CheckResult.FAILED
 
 
 check = RDSEncryption()
