@@ -4,6 +4,14 @@ variable "pud_default_var" {
   default = "pud_default_value"
 }
 
+variable "secret-key" {
+  default = "secret-key"
+}
+
+variable "secret-value" {
+  default = "secret-value"
+}
+
 # Case 1: Pass: 'secure_environment_variables' exists in 'container' block
 
 resource "azurerm_container_group" "pass_1" {
@@ -53,8 +61,9 @@ resource "azurerm_container_group" "pass_2" {
     cpu    = 0.5
     memory = 512
 
+    # checkov:skip=CKV_SECRET_6 test secret
     environment_variables = {
-      INIT_PUBLIC_VAR = "public_value"
+      INIT_PUBLIC_VAR = "public_value" # checkov:skip=CKV_SECRET_6 test secret
     }
 
      # checkov:skip=CKV_SECRET_6 test secret
@@ -78,8 +87,9 @@ resource "azurerm_container_group" "pass_3" {
     cpu                    = 0.5
     memory                = 512
 
+    # checkov:skip=CKV_SECRET_6 test secret
     environment_variables = {
-      INIT_PUBLIC_VAR             = "public_value"
+      INIT_PUBLIC_VAR             = "public_value" # checkov:skip=CKV_SECRET_6 test secret
     }
 
      # checkov:skip=CKV_SECRET_6 test secret
@@ -99,8 +109,9 @@ resource "azurerm_container_group" "pass_3" {
       protocol              = "TCP"
     }
 
+    # checkov:skip=CKV_SECRET_6 test secret
     environment_variables = {
-      MY_PUBLIC_VAR             = "public_value"
+      MY_PUBLIC_VAR             = "public_value" # checkov:skip=CKV_SECRET_6 test secret
     }
 
      # checkov:skip=CKV_SECRET_6 test secret
@@ -124,8 +135,9 @@ resource "azurerm_container_group" "fail_1" {
     cpu    = 0.5
     memory = 512
 
+    # checkov:skip=CKV_SECRET_6 test secret
     environment_variables = {
-      INIT_PUBLIC_VAR = "public_value"
+      INIT_PUBLIC_VAR = "public_value" # checkov:skip=CKV_SECRET_6 test secret
     }
 
      # checkov:skip=CKV_SECRET_6 test secret
@@ -149,6 +161,7 @@ resource "azurerm_container_group" "fail_2" {
     cpu    = 0.5
     memory = 512
 
+    # checkov:skip=CKV_SECRET_6 test secret
     environment_variables = {
       PUD_INIT_PUBLIC_VAR = "public_value"  # checkov:skip=CKV_SECRET_6 test secret
     }
