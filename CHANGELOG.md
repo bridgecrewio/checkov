@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.18...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.19...HEAD)
+
+## [3.1.19](https://github.com/bridgecrewio/checkov/compare/3.1.18...3.1.19) - 2023-11-29
+
+### Feature
+
+- **sca:** Using alias data from assets.json for giving Package Used indication for aliased packages - [#5808](https://github.com/bridgecrewio/checkov/pull/5808)
 
 ## [3.1.18](https://github.com/bridgecrewio/checkov/compare/3.1.17...3.1.18) - 2023-11-28
 
