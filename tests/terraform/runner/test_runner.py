@@ -133,6 +133,29 @@ class TestRunnerValid(unittest.TestCase):
         report.print_console(is_quiet=True, is_compact=True)
         report.print_failed_github_md()
 
+    def test_py_graph_check(self):
+        if not self.db_connector == IgraphConnector:
+            return
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/resources/py_graph_check"
+        valid_dir_path_for_external_check = 'py_graph_check'
+        runner = Runner(db_connector=self.db_connector())
+        checks_allowlist = ['CKV_AWS_000']
+        report = runner.run(root_folder=valid_dir_path, external_checks_dir=[valid_dir_path_for_external_check],
+                            runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allowlist))
+        report_json = report.get_json()
+        self.assertIsInstance(report_json, str)
+        self.assertIsNotNone(report_json)
+        self.assertIsNotNone(report.get_test_suite())
+        assert len(report.failed_checks) == 2
+        assert len(report.passed_checks) == 2
+        failed_resources = [c.resource for c in report.failed_checks]
+        passed_resources = [c.resource for c in report.passed_checks]
+        assert 'aws_db_instance.storage_encrypted_enabled' in passed_resources
+        assert 'aws_db_instance.default_connected_to_provider_with_fips' in passed_resources
+        assert 'aws_db_instance.default' in failed_resources
+        assert 'aws_db_instance.disabled' in failed_resources
+
     def test_runner_passing_valid_tf(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
