@@ -398,9 +398,15 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
                 )
             registry.graph = None
             if self.all_graphs and isinstance(self.all_graphs, list):
-                graph_obj = self.all_graphs[0]
-                if graph_obj and isinstance(graph_obj, tuple):
-                    registry.graph = graph_obj[0]
+                if len(self.all_graphs) == 1:
+                    graph_obj = self.all_graphs[0]
+                    if graph_obj and isinstance(graph_obj, tuple):
+                        registry.graph = graph_obj[0]
+                else:
+                    for graph_obj in self.all_graphs:
+                        if isinstance(graph_obj, tuple) and scanned_file.startswith(graph_obj[1]):
+                            registry.graph = graph_obj[0]
+                            break
 
             results = registry.scan(scanned_file, entity, skipped_checks, runner_filter)
             absolute_scanned_file_path = get_abs_path(full_file_path)
