@@ -1,7 +1,7 @@
 metadata:
   id: "CKV2_IBM_4"
   name: "Ensure Multi-Factor Authentication (MFA) is enabled at the account level"
-  category: "GENERAL_SECURITY"
+  category: "IAM"
 
 definition:
   and:

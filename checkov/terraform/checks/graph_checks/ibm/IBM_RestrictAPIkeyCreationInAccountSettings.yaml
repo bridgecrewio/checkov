@@ -1,7 +1,7 @@
 metadata:
   id: "CKV2_IBM_3"
   name: "Ensure API key creation is restricted in account settings"
-  category: "GENERAL_SECURITY"
+  category: "IAM"
 
 definition:
   and:

@@ -1,7 +1,7 @@
 metadata:
   id: "CKV2_IBM_5"
   name: "Ensure Service ID creation is restricted in account settings"
-  category: "GENERAL_SECURITY"
+  category: "IAM"
 
 definition:
   and:
