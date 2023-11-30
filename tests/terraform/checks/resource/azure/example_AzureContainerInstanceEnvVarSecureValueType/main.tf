@@ -4,15 +4,13 @@ variable "pud_default_var" {
   default = "pud_default_value"
 }
 
-variable "secret-key" {
-  default = "secret-key"
+resource "random_string" "pud-random-str" {
+  length           = 10
+  special          = false
+  numeric = false
 }
 
-variable "secret-value" {
-  default = "secret-value"
-}
-
-# Case 1: Pass: 'secure_environment_variables' exists in 'container' block
+# Case 1: Pass: 'secure_environment_variables' exists in 'container' block and just 'environment_variables' doesn't exist
 
 resource "azurerm_container_group" "pass_1" {
   name                = "pud_pass_1_container"
@@ -35,19 +33,18 @@ resource "azurerm_container_group" "pass_1" {
   }
 
   container {
-    name   = "sidecar"
+    name   = "een_le_pa"
     image  = "mcr.microsoft.com/azuredocs/aci-tutorial-sidecar"
     cpu    = "0.5"
     memory = "1.5"
 
-     # checkov:skip=CKV_SECRET_6 test secret
     secure_environment_variables = {
-      INIT_SECRET_VAR               = "secret_value"  # checkov:skip=CKV_SECRET_6 test secret
+      SEC_CONT_PASS_1 = random_string.pud-random-str
     }
   }
 }
 
-# Case 2: Pass: 'secure_environment_variables' exists in 'init_container' block
+# case 2: Pass: No environment variables exists
 
 resource "azurerm_container_group" "pass_2" {
   name                = "pud_pass_2_container"
@@ -61,21 +58,37 @@ resource "azurerm_container_group" "pass_2" {
     cpu    = 0.5
     memory = 512
 
-    # checkov:skip=CKV_SECRET_6 test secret
+  }
+}
+
+# Case 3: Fail: 'environment_variables' exists in 'init_container' block
+
+resource "azurerm_container_group" "fail_1" {
+  name                = "pud_fail_1_container"
+  location            = "westus2"
+  resource_group_name = var.pud_default_var
+  os_type             = "Linux"
+
+  init_container {
+    name   = "init-container"
+    image  = "init-image:latest"
+    cpu    = 0.5
+    memory = 512
+
+
     environment_variables = {
-      INIT_PUBLIC_VAR = "public_value" # checkov:skip=CKV_SECRET_6 test secret
+      ENV_INIT_FAIL_1 = random_string.pud-random-str
     }
 
-     # checkov:skip=CKV_SECRET_6 test secret
     secure_environment_variables = {
-      PUD_INIT_SECRET_VAR = "pud_secret_value"  # checkov:skip=CKV_SECRET_6 test secret
+      SEC_INIT_FAIL_1 = random_string.pud-random-str
     }
   }
 }
 
-# Case 3: Pass: 'secure_environment_variables' exists in 'container' or 'init_container' blocks
+# Case 4: Fail: 'environment_variables' exists in 'container' block
 
-resource "azurerm_container_group" "pass_3" {
+resource "azurerm_container_group" "fail_2" {
   name                 = "pud_pass_2_container"
   location              = "westus2"
   resource_group_name    = var.pud_default_var
@@ -87,14 +100,8 @@ resource "azurerm_container_group" "pass_3" {
     cpu                    = 0.5
     memory                = 512
 
-    # checkov:skip=CKV_SECRET_6 test secret
-    environment_variables = {
-      INIT_PUBLIC_VAR             = "public_value" # checkov:skip=CKV_SECRET_6 test secret
-    }
-
-     # checkov:skip=CKV_SECRET_6 test secret
     secure_environment_variables = {
-      PUD_INIT_SECRET_VAR               = "pud_secret_value"  # checkov:skip=CKV_SECRET_6 test secret
+      SEC_INIT_FAIL_2               = random_string.pud-random-str
     }
   }
 
@@ -109,61 +116,9 @@ resource "azurerm_container_group" "pass_3" {
       protocol              = "TCP"
     }
 
-    # checkov:skip=CKV_SECRET_6 test secret
     environment_variables = {
-      MY_PUBLIC_VAR             = "public_value" # checkov:skip=CKV_SECRET_6 test secret
-    }
-
-     # checkov:skip=CKV_SECRET_6 test secret
-    secure_environment_variables = {
-      PUD_SECRET_VAR               = "secret_value"  # checkov:skip=CKV_SECRET_6 test secret
+      ENV_CONT_FAIL_2             = random_string.pud-random-str
     }
   }
 }
 
-# case 4: Fail: 'secure_environment_variables' exists BUT, it's empty
-
-resource "azurerm_container_group" "fail_1" {
-  name                = "pud_fail_1_container"
-  location            = "westus2"
-  resource_group_name = var.pud_default_var
-  os_type             = "Linux"
-
-  init_container {
-    name   = "init-container"
-    image  = "init-image:latest"
-    cpu    = 0.5
-    memory = 512
-
-    # checkov:skip=CKV_SECRET_6 test secret
-    environment_variables = {
-      INIT_PUBLIC_VAR = "public_value" # checkov:skip=CKV_SECRET_6 test secret
-    }
-
-     # checkov:skip=CKV_SECRET_6 test secret
-    secure_environment_variables = {
-
-    }
-  }
-}
-
-# case 5: Fail: 'secure_environment_variables' does NOT exist
-
-resource "azurerm_container_group" "fail_2" {
-  name                = "pud_fail_2_container"
-  location            = "westus2"
-  resource_group_name = var.pud_default_var
-  os_type             = "Linux"
-
-  init_container {
-    name   = "init-container"
-    image  = "init-image:latest"
-    cpu    = 0.5
-    memory = 512
-
-    # checkov:skip=CKV_SECRET_6 test secret
-    environment_variables = {
-      PUD_INIT_PUBLIC_VAR = "public_value"  # checkov:skip=CKV_SECRET_6 test secret
-    }
-  }
-}
