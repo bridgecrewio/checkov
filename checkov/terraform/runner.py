@@ -458,11 +458,11 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
             if len(self.all_graphs) == 1:
                 graph_obj = self.all_graphs[0]
                 if graph_obj and isinstance(graph_obj, tuple):
-                    registry.graph = graph_obj[0]
+                    registry.graph = graph_obj[0]  # type: ignore[assignment]
             else:
                 for graph_obj in self.all_graphs:
                     if isinstance(graph_obj, tuple) and isinstance(graph_obj[1], str) and scanned_file.startswith(graph_obj[1]):
-                        registry.graph = graph_obj[0]
+                        registry.graph = graph_obj[0]  # type: ignore[assignment]
                         break
 
     def get_entity_context_and_evaluations(self, entity: dict[str, Any]) -> dict[str, Any] | None:
