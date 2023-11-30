@@ -138,7 +138,7 @@ class TestRunnerValid(unittest.TestCase):
             return
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources/py_graph_check"
-        valid_dir_path_for_external_check = 'py_graph_check'
+        valid_dir_path_for_external_check = current_dir + '/py_graph_check'
         runner = Runner(db_connector=self.db_connector())
         checks_allowlist = ['CKV_AWS_000']
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=[valid_dir_path_for_external_check],
