@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.19...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.20...HEAD)
+
+## [3.1.20](https://github.com/bridgecrewio/checkov/compare/3.1.19...3.1.20) - 2023-11-30
+
+### Platform
+
+- **general:** handle the updated on prem response from the platform - [#5809](https://github.com/bridgecrewio/checkov/pull/5809)
 
 ## [3.1.19](https://github.com/bridgecrewio/checkov/compare/3.1.18...3.1.19) - 2023-11-29
 
