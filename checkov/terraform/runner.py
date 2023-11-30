@@ -404,7 +404,7 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
                         registry.graph = graph_obj[0]
                 else:
                     for graph_obj in self.all_graphs:
-                        if isinstance(graph_obj, tuple) and scanned_file.startswith(graph_obj[1]):
+                        if isinstance(graph_obj, tuple) and isinstance(graph_obj[1], str) and scanned_file.startswith(graph_obj[1]):
                             registry.graph = graph_obj[0]
                             break
 
