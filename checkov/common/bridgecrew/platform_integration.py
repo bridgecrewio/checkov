@@ -1202,7 +1202,9 @@ class BcPlatformIntegration:
 
     def setup_on_prem(self) -> None:
         if self.customer_run_config_response:
-            self.on_prem = self.customer_run_config_response.get('onPrem', False)
+            self.on_prem = self.customer_run_config_response.get('tenantConfig', {}).get('preventCodeUploads', False)
+            if self.on_prem:
+                logging.debug('On prem mode is enabled')
 
 
 bc_integration = BcPlatformIntegration()

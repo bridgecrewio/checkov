@@ -88,6 +88,7 @@ from checkov.yaml_doc.runner import Runner as yaml_runner
 
 if TYPE_CHECKING:
     from checkov.common.output.report import Report
+    from checkov.common.runners.base_runner import BaseRunner
     from configargparse import Namespace
 
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
@@ -98,7 +99,7 @@ logger = logging.getLogger(__name__)
 add_resource_code_filter_to_logger(logger)
 
 # sca package runner added during the run method
-DEFAULT_RUNNERS = [
+DEFAULT_RUNNERS: "list[BaseRunner[Any, Any, Any]]" = [
     tf_graph_runner(),
     cfn_runner(),
     k8_runner(),
