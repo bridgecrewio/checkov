@@ -13,7 +13,7 @@ from os import path
 from pathlib import Path
 from time import sleep
 from types import MethodType
-from typing import List, Dict, TYPE_CHECKING, Any, cast, Optional, Union
+from typing import List, Dict, TYPE_CHECKING, Any, Set, cast, Optional, Union
 from urllib.parse import urlparse
 
 import boto3
@@ -34,8 +34,9 @@ from checkov.common.bridgecrew.run_metadata.registry import registry
 from checkov.common.bridgecrew.wrapper import persist_assets_results, reduce_scan_reports, persist_checks_results, \
     enrich_and_persist_checks_metadata, checkov_results_prefix, persist_run_metadata, _put_json_object, \
     persist_logs_stream, persist_graphs, persist_resource_subgraph_maps, persist_reachability_results
-from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILES, SCANNABLE_PACKAGE_FILES
+from checkov.common.models.consts import SAST_SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILES, SCANNABLE_PACKAGE_FILES
 from checkov.common.runners.base_runner import filter_ignored_paths
+from checkov.common.sast.consts import SastLanguages
 from checkov.common.typing import _CicdDetails, LibraryGraph
 from checkov.common.util.consts import PRISMA_PLATFORM, BRIDGECREW_PLATFORM, CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
 from checkov.common.util.data_structures_utils import merge_dicts
@@ -55,6 +56,7 @@ from checkov.common.util.http_utils import (
     REQUEST_RETRIES,
 )
 from checkov.common.util.type_forcers import convert_prisma_policy_filter_to_dict, convert_str_to_bool
+from checkov.sast.report import SastReport
 from checkov.version import version as checkov_version
 
 if TYPE_CHECKING:
@@ -129,6 +131,7 @@ class BcPlatformIntegration:
         self.no_cert_verify: bool = False
         self.on_prem: bool = False
         self.daemon_process = False  # set to 'True' when running in multiprocessing 'spawn' mode
+        self.scan_dir = ''
 
     def init_instance(self, platform_integration_data: dict[str, Any]) -> None:
         """This is mainly used for recreating the instance without interacting with the platform again"""
@@ -474,6 +477,7 @@ class BcPlatformIntegration:
         files: list[str] | None = None,
         excluded_paths: list[str] | None = None,
         included_paths: list[str] | None = None,
+        sast_languages: Set[SastLanguages]| None = None
     ) -> None:
         """
         Persist the repository found on root_dir path to Bridgecrew's platform. If --file flag is used, only files
@@ -496,6 +500,12 @@ class BcPlatformIntegration:
                     continue
                 if file_extension in SUPPORTED_FILE_EXTENSIONS or f_name in SUPPORTED_FILES:
                     files_to_persist.append(FileToPersist(f, os.path.relpath(f, root_dir)))
+                if sast_languages:
+                    for framwork in sast_languages:
+                        if file_extension in SAST_SUPPORTED_FILE_EXTENSIONS[framwork]:
+                            files_to_persist.append(FileToPersist(f, os.path.relpath(f, root_dir)))
+                            break
+                
         else:
             for root_path, d_names, f_names in os.walk(root_dir):
                 # self.excluded_paths only contains the config fetched from the platform.
@@ -506,10 +516,15 @@ class BcPlatformIntegration:
                     _, file_extension = os.path.splitext(file_path)
                     if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 and file_extension in SCANNABLE_PACKAGE_FILES:
                         continue
+                    full_file_path = os.path.join(root_path, file_path)
+                    relative_file_path = os.path.relpath(full_file_path, root_dir)
                     if file_extension in SUPPORTED_FILE_EXTENSIONS or file_path in SUPPORTED_FILES or is_dockerfile(file_path):
-                        full_file_path = os.path.join(root_path, file_path)
-                        relative_file_path = os.path.relpath(full_file_path, root_dir)
                         files_to_persist.append(FileToPersist(full_file_path, relative_file_path))
+                    if sast_languages:
+                        for framwork in sast_languages:
+                            if file_extension in SAST_SUPPORTED_FILE_EXTENSIONS[framwork]:
+                                files_to_persist.append(FileToPersist(full_file_path, relative_file_path))
+                                break
 
         self.persist_files(files_to_persist)
 
@@ -534,6 +549,23 @@ class BcPlatformIntegration:
 
         self.persist_files(files_to_persist)
 
+    def persist_sast_checks_results(self, reports):
+        sast_scan_reports = {}
+        for report in reports:
+            if not isinstance(report, SastReport):
+                continue
+            for _, match_by_check in report.sast_report.rule_match.items():
+                for _, match in match_by_check.items():
+                    for m in match.matches:
+                        for dir in self.scan_dir:
+                            if not m.location.path.startswith(dir):
+                                continue
+                            m.location.path = m.location.path.replace(dir, self.repo_path)
+                            break
+
+                sast_scan_reports[report.check_type] = report.sast_report.model_dump(mode='json')
+        persist_checks_results(sast_scan_reports, self.s3_client, self.bucket, self.repo_path)
+
     def persist_scan_results(self, scan_reports: list[Report]) -> None:
         """
         Persist checkov's scan result into bridgecrew's platform.
@@ -553,6 +585,8 @@ class BcPlatformIntegration:
                                                                    self.repo_path, self.on_prem)
         dpath.merge(reduced_scan_reports, checks_metadata_paths)
         persist_checks_results(reduced_scan_reports, self.s3_client, self.bucket, self.repo_path)
+
+        self.persist_sast_checks_results(scan_reports)
 
     async def persist_reachability_alias_mapping(self, alias_mapping: Dict[str, Any]) -> None:
         if not self.use_s3_integration or not self.s3_client or self.s3_setup_failed:

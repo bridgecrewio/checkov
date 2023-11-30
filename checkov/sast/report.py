@@ -3,15 +3,17 @@ from typing import Any, Dict, Union, List, Optional
 
 from checkov.common.output.report import Report
 from checkov.common.sast.consts import POLICIES_ERRORS, POLICIES_ERRORS_COUNT, SOURCE_FILES_COUNT, POLICY_COUNT, SastLanguages
+from checkov.sast.prisma_models.report import PrismaReport
 
 
 class SastReport(Report):
-    def __init__(self, check_type: str, metadata: Dict[str, Optional[Union[str, int, List[str]]]], language: SastLanguages):
+    def __init__(self, check_type: str, metadata: Dict[str, Optional[Union[str, int, List[str]]]], language: SastLanguages, sast_report: PrismaReport=None):
         super().__init__(check_type)
         self.metadata = metadata
         self.language: SastLanguages = language
         self.sast_imports: Dict[str, Any] = {}
         self.sast_reachability: Dict[str, Any] = {}
+        self.sast_report: PrismaReport = sast_report
 
     def get_summary(self) -> Dict[str, Union[int, str]]:
         base_summary: Dict[str, Union[int, str]] = super().get_summary()
