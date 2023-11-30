@@ -299,6 +299,34 @@ class PrismaEngine(SastEngine):
             sast_report = PrismaReport(rule_match={lang: checks}, errors=prisma_report.errors, profiler=prisma_report.profiler,
                                               run_metadata=prisma_report.run_metadata, imports={}, reachability_report={})
             report = SastReport(f'{self.check_type.lower()}_{lang.value}', prisma_report.run_metadata, lang, sast_report)
+            for check_id, match_rule in checks.items():
+                check_name = match_rule.check_name
+                check_cwe = match_rule.check_cwe
+                check_owasp = "TBD"  # match.metadata.get('owasp')
+                check_result = _CheckResult(result=CheckResult.FAILED)
+                severity = get_severity(match_rule.severity)
+
+                for match in match_rule.matches:
+                    location = match.location
+                    file_abs_path = location.path
+                    file_path = file_abs_path.split('/')[-1]
+                    file_line_range = [location.start.row, location.end.row]
+
+                    if match.metadata.taint_mode is not None:
+                        code_block = get_data_flow_code_block(match.metadata.taint_mode.data_flow)
+                    else:
+                        split_code_block = [line + '\n' for line in location.code_block.split('\n')]
+                        code_block = get_code_block_from_start(split_code_block, location.start.row)
+
+                    record = SastRecord(check_id=check_id, check_name=check_name, resource="", evaluations={},
+                                        check_class="", check_result=check_result, code_block=code_block,
+                                        file_path=file_path, file_line_range=file_line_range,
+                                        file_abs_path=file_abs_path, severity=severity, cwe=check_cwe,
+                                        owasp=check_owasp, show_severity=True)
+                    report.add_record(record)
+            report_parsing_errors = prisma_report.errors.get(REPORT_PARSING_ERRORS)
+            if report_parsing_errors:
+                report.add_parsing_errors(report_parsing_errors)
             reports.append(report)
         for lang in prisma_report.imports:
             for report in reports:
