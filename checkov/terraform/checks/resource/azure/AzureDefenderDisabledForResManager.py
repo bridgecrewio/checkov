@@ -17,7 +17,7 @@ class AzureDefenderDisabledForResManager(BaseResourceCheck):
     def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
         return (
             CheckResult.PASSED
-            if conf.get("resource_type", [None])[0].lower() == "arm" and conf.get("tier", [None])[0].lower() == "standard"
+            if conf.get("resource_type", [""])[0].lower() == "arm" and conf.get("tier", [""])[0].lower() == "standard"
             else CheckResult.FAILED
         )
 

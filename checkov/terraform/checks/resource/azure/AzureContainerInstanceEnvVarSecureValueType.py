@@ -17,13 +17,9 @@ class AzureContainerInstanceEnvVarSecureValueType(BaseResourceCheck):
     def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
 
         for container in itertools.chain(conf.get('container', {}), conf.get('init_container', {})):
-            if "environment_variables" not in container:
-                if "secure_environment_variables" in container:
-                    return CheckResult.PASSED
-                elif "environment_variables" not in container and "secure_environment_variables" not in container:
-                    return CheckResult.PASSED
-            else:
+            if "environment_variables" in container:
                 return CheckResult.FAILED
+            return CheckResult.PASSED
 
 
 check = AzureContainerInstanceEnvVarSecureValueType()
