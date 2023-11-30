@@ -457,6 +457,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_IBM_RestrictAPIkeyCreationInAccountSettings(self):
         self.go("IBM_RestrictAPIkeyCreationInAccountSettings")
 
+    def test_IBM_DatabasesNWaccessRestrictedToSpecificIPrange(self):
+        self.go("IBM_DatabasesNWaccessRestrictedToSpecificIPrange")
+
     def test_registry_load(self):
         registry = Registry(parser=GraphCheckParser(), checks_dir=str(
             Path(__file__).parent.parent.parent.parent.parent / "checkov" / "terraform" / "checks" / "graph_checks"))
