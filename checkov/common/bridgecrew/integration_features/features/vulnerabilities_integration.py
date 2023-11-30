@@ -126,6 +126,11 @@ class VulnerabilitiesIntegration(BaseIntegrationFeature):
         for code_file_path, sast_data in filtered_entries:
             for package_name in sast_data['all']:
                 clean_package_name = package_name.strip("'")
+
+                # in case it is alias-name, getting the real one
+                if package_name in sast_data.get('aliases', {}):
+                    clean_package_name = sast_data['aliases'][package_name]
+
                 # Normalize package name
                 normalize_package_name = self.normalize_package_name(clean_package_name)
 

@@ -816,9 +816,18 @@ class BcPlatformIntegration:
             url = self.get_run_config_url()
             logging.debug(f'Platform run config URL: {url}')
             request = self.http.request("GET", url, headers=headers)  # type:ignore[no-untyped-call]
-            logging.debug(f'Request ID: {request.headers.get("x-amzn-requestid")}')
-            logging.debug(f'Trace ID: {request.headers.get("x-amzn-trace-id")}')
-            if request.status != 200:
+            request_id = request.headers.get("x-amzn-requestid")
+            trace_id = request.headers.get("x-amzn-trace-id")
+            logging.debug(f'Request ID: {request_id}')
+            logging.debug(f'Trace ID: {trace_id}')
+            if request.status == 500:
+                error_message = 'An unexpected backend error occurred getting the run configuration from the platform (status code 500). ' \
+                                'please contact support and provide debug logs and the values below. You may be able to use the --skip-download option ' \
+                                'to bypass this error, but this will prevent platform configurations (e.g., custom policies, suppressions) from ' \
+                                f'being used in the scan.\nRequest ID: {request_id}\nTrace ID: {trace_id}'
+                logging.error(error_message)
+                raise Exception(error_message)
+            elif request.status != 200:
                 error_message = get_auth_error_message(request.status, self.is_prisma_integration(), False)
                 logging.error(error_message)
                 raise BridgecrewAuthError(error_message)
@@ -888,6 +897,9 @@ class BcPlatformIntegration:
             raise Exception(
                 "Tried to get prisma build policy metadata, "
                 "but the API key was missing or the integration was not set up")
+
+        request = None
+
         try:
             token = self.get_auth_token()
             headers = merge_dicts(get_prisma_auth_header(token), get_prisma_get_headers())
@@ -914,10 +926,12 @@ class BcPlatformIntegration:
             else:
                 logging.warning("Skipping get prisma build policies. --policy-metadata-filter will not be applied.")
         except Exception:
+            response_message = f': {request.status} - {request.reason}' if request else ''
             logging.warning(
-                f"Failed to get prisma build policy metadata from {self.platform_run_config_url}", exc_info=True)
+                f"Failed to get prisma build policy metadata from {self.prisma_policies_url}{response_message}", exc_info=True)
 
     def get_prisma_policy_filters(self) -> Dict[str, Dict[str, Any]]:
+        request = None
         try:
             token = self.get_auth_token()
             headers = merge_dicts(get_prisma_auth_header(token), get_prisma_get_headers())
@@ -937,8 +951,9 @@ class BcPlatformIntegration:
             logging.debug(f'Prisma filter suggestion response: {policy_filters}')
             return policy_filters
         except Exception:
+            response_message = f': {request.status} - {request.reason}' if request else ''
             logging.warning(
-                f"Failed to get prisma build policy metadata from {self.platform_run_config_url}", exc_info=True)
+                f"Failed to get prisma build policy metadata from {self.prisma_policy_filters_url}{response_message}", exc_info=True)
             return {}
 
     @staticmethod

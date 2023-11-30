@@ -12,7 +12,6 @@ pytest-xdist = "*"
 pytest-asyncio = "*"
 pytest-cov = "*"
 pytest-mock = "*"
-mock = "*"
 coverage ="==5.5"
 coverage-badge = "*"
 bandit = "*"
@@ -36,7 +35,7 @@ dlint = "*"
 mypy = "*"
 flake8-bugbear = "*"
 parameterized = "*"
-freezegun = "*"
+time-machine = "*"
 boto3-stubs-lite = {extras = ["s3"], version = "*"}
 
 [packages]
@@ -45,7 +44,7 @@ boto3-stubs-lite = {extras = ["s3"], version = "*"}
 #
 bc-python-hcl2 = "==0.4.1"
 bc-detect-secrets = "==1.4.30"
-bc-jsonpath-ng = "==1.5.9"
+bc-jsonpath-ng = "==1.6.1"
 tabulate = "*"
 colorama="*"
 termcolor="*"
