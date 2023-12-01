@@ -8,7 +8,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 
 class AzureContainerInstanceEnvVarSecureValueType(BaseResourceCheck):
     def __init__(self) -> None:
-        name = "Ensure that Azure container environment variables are configured with secure values only"
+        name = "Ensure that Azure Virtual Machine scale sets Boot Diagnostics are Enabled"
         id = "CKV_AZURE_236"
         supported_resources = ("azurerm_linux_virtual_machine_scale_set","azurerm_windows_virtual_machine_scale_set",)
         categories = (CheckCategories.GENERAL_SECURITY,)
