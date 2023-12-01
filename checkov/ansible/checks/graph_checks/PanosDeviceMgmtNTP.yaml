@@ -1,0 +1,16 @@
+metadata:
+  id: "CKV_PAN_18"
+  name: "Ensure that the primary NTP server is configured under Device Management"
+  category: "NETWORKING"
+definition:
+  and:
+    - cond_type: attribute
+      resource_types:
+        - tasks.paloaltonetworks.panos.panos_mgtconfig
+      attribute: ntp_server_primary
+      operator: exists
+    - cond_type: attribute
+      resource_types:
+        - tasks.paloaltonetworks.panos.panos_mgtconfig
+      attribute: ntp_server_primary
+      operator: is_not_empty

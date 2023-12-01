@@ -1,0 +1,25 @@
+---
+- name: Verify tests
+  hosts: all
+  connection: local
+  gather_facts: false
+
+  vars:
+    device:
+      ip_address: "{{ ip_address }}"
+      username: "{{ username | default(omit) }}"
+      password: "{{ password | default(omit) }}"
+      api_key: "{{ api_key | default(omit) }}"
+
+  tasks:
+    - name: Security_rule_pass_1
+      paloaltonetworks.panos.panos_mgtconfig:
+        provider: '{{ provider }}'
+        login_banner: "This is a login banner"
+        hostname: "hostname1"
+        dns_server_primary: "1.1.1.1"
+        dns_server_secondary: "1.1.1.2"
+        panorama_primary: "1.1.1.3"
+        panorama_secondary: "1.1.1.4"
+        ntp_server_primary: "1.1.1.5"
+        ntp_server_secondary: "1.1.1.6"
