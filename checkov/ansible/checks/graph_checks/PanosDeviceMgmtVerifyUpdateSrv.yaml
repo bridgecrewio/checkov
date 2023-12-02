@@ -1,0 +1,12 @@
+metadata:
+  id: "CKV_PAN_20"
+  name: "Ensure verify update server is enabled under Device Management"
+  category: "NETWORKING"
+definition:
+  # Verify update server not set to true
+  cond_type: attribute
+  resource_types:
+    - tasks.paloaltonetworks.panos.panos_mgtconfig
+  attribute: verify_update_server
+  operator: not_equals
+  value: false

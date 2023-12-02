@@ -93,6 +93,9 @@ class TestYamlPolicies(TestYamlPoliciesBase):
     def test_PanosDeviceMgmtNTP(self):
         self.go("PanosDeviceMgmtNTP", local_graph_class=AnsibleLocalGraph)
 
+    def test_PanosDeviceMgmtVerifyUpdateSrv(self):
+        self.go("PanosDeviceMgmtVerifyUpdateSrv", local_graph_class=AnsibleLocalGraph)
+
     def test_registry_load(self):
         registry = self.get_checks_registry()
         self.assertGreater(len(registry.checks), 0)
