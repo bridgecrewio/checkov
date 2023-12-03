@@ -132,6 +132,7 @@ class BcPlatformIntegration:
         self.on_prem: bool = False
         self.daemon_process = False  # set to 'True' when running in multiprocessing 'spawn' mode
         self.scan_dir = ''
+        self.scan_file = ''
 
     def init_instance(self, platform_integration_data: dict[str, Any]) -> None:
         """This is mainly used for recreating the instance without interacting with the platform again"""
@@ -549,20 +550,30 @@ class BcPlatformIntegration:
 
         self.persist_files(files_to_persist)
 
-    def persist_sast_checks_results(self, reports):
+    def adjust_sast_match_location_path(self, match):
+        for dir in self.scan_dir:
+            if not match.location.path.startswith(dir):
+                continue
+            match.location.path = match.location.path.replace(dir, self.repo_path)
+            return
+        for file in self.scan_file:
+            if match.location.path != file:
+                continue
+            file_dir = '/'.join(match.location.path.split('/')[0:-1])
+            match.location.path = match.location.path.replace(file_dir, self.repo_path)
+            return
+
+    def persist_sast_scan_results(self, reports):
         sast_scan_reports = {}
         for report in reports:
             if not isinstance(report, SastReport):
                 continue
+            if not report.sast_report:
+                continue
             for _, match_by_check in report.sast_report.rule_match.items():
                 for _, match in match_by_check.items():
                     for m in match.matches:
-                        for dir in self.scan_dir:
-                            if not m.location.path.startswith(dir):
-                                continue
-                            m.location.path = m.location.path.replace(dir, self.repo_path)
-                            break
-
+                        self.adjust_sast_match_location_path(m)
                 sast_scan_reports[report.check_type] = report.sast_report.model_dump(mode='json')
         persist_checks_results(sast_scan_reports, self.s3_client, self.bucket, self.repo_path)
 
@@ -585,8 +596,6 @@ class BcPlatformIntegration:
                                                                    self.repo_path, self.on_prem)
         dpath.merge(reduced_scan_reports, checks_metadata_paths)
         persist_checks_results(reduced_scan_reports, self.s3_client, self.bucket, self.repo_path)
-
-        self.persist_sast_checks_results(scan_reports)
 
     async def persist_reachability_alias_mapping(self, alias_mapping: Dict[str, Any]) -> None:
         if not self.use_s3_integration or not self.s3_client or self.s3_setup_failed:
@@ -1102,6 +1111,7 @@ class BcPlatformIntegration:
         print(Style.BRIGHT + colored("Metadata upload complete", 'green',
                                      attrs=['bold']) + Style.RESET_ALL)
         self.persist_scan_results(scan_reports)
+        self.persist_sast_scan_results(scan_reports)
         print(Style.BRIGHT + colored("Report upload complete", 'green',
                                      attrs=['bold']) + Style.RESET_ALL)
         self.commit_repository(args.branch)
