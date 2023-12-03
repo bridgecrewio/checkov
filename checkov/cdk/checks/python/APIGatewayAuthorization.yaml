@@ -1,0 +1,14 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_59
+  name: Ensure there is no open access to back-end resources through API
+  category: GENERAL_SECURITY
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.aws_apigateway.Method(<ANY>, http_method=$ARG, <ANY>, authorization_type=aws_cdk.aws_apigateway.AuthorizationType.NONE, <ANY>, api_key_required=False)
+  conditions:
+    - metavariable: $ARG
+      not_regex: OPTIONS

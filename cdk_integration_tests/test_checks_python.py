@@ -203,3 +203,43 @@ def test_CKV_AWS_68_WAFEnabled(failed_checks):
 
 def test_CKV_AWS_64_RedshiftClusterEncryption(failed_checks):
     run_check(check_results=failed_checks, check_id="CKV_AWS_64", policy_name="RedshiftClusterEncryption", language="python")
+
+
+def test_CKV_AWS_78_CodeBuildProjectEncryption(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_78", policy_name="CodeBuildProjectEncryption", language="python")
+
+
+def test_CKV_AWS_31_ElasticacheReplicationGroupEncryptionAtTransitAuthToken(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_31", policy_name="lasticacheReplicationGroupEncryptionAtTransitAuthToken", language="python")
+
+
+def test_CKV_AWS_94_GlueDataCatalogEncryption(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_94", policy_name="GlueDataCatalogEncryption", language="python")
+
+
+def test_CKV_AWS_99_GlueSecurityConfiguration(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_99", policy_name="GlueSecurityConfiguration", language="python")
+
+
+def test_CKV_AWS_105_RedShiftSSL(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_105", policy_name="RedShiftSSL", language="python")
+
+
+def test_CKV_AWS_149_SecretManagerSecretEncrypted(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_149", policy_name="SecretManagerSecretEncrypted", language="python")
+
+
+def test_CKV_AWS_59_APIGatewayAuthorization(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_59", policy_name="APIGatewayAuthorization", language="python")
+
+
+def test_CKV_AWS_89_DMSReplicationInstancePubliclyAccessible(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_89", policy_name="DMSReplicationInstancePubliclyAccessible", language="python")
+
+
+def test_CKV_AWS_34_CloudfrontDistributionEncryption(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_34", policy_name="CloudfrontDistributionEncryption", language="python")
+
+
+def test_CKV_AWS_95_APIGatewayV2AccessLogging(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_95", policy_name="APIGatewayV2AccessLogging", language="python")
