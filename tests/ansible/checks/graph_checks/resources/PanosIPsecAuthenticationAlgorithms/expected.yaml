@@ -1,0 +1,17 @@
+pass:
+  - "tasks.paloaltonetworks.panos.panos_ipsec_profile.ipsec_pass_1"
+  - "tasks.paloaltonetworks.panos.panos_ipsec_profile.ipsec_pass_2"
+  - "tasks.paloaltonetworks.panos.panos_ipsec_profile.ipsec_pass_3"
+  - "tasks.paloaltonetworks.panos.panos_ipsec_profile.ipsec_pass_4"
+fail:
+  - "tasks.paloaltonetworks.panos.panos_ipsec_profile.ipsec_fail_1"
+  - "tasks.paloaltonetworks.panos.panos_ipsec_profile.ipsec_fail_2"
+  - "tasks.paloaltonetworks.panos.panos_ipsec_profile.ipsec_fail_3"
+  - "tasks.paloaltonetworks.panos.panos_ipsec_profile.ipsec_fail_4"
+  - "tasks.paloaltonetworks.panos.panos_ipsec_profile.ipsec_fail_5"
+  - "tasks.paloaltonetworks.panos.panos_ipsec_profile.ipsec_fail_6"
+  - "tasks.paloaltonetworks.panos.panos_ipsec_profile.ipsec_fail_7"
+  - "tasks.paloaltonetworks.panos.panos_ipsec_profile.ipsec_fail_8"
+  - "tasks.paloaltonetworks.panos.panos_ipsec_profile.ipsec_fail_9"
+evaluated_keys:
+  - "esp_authentication"
