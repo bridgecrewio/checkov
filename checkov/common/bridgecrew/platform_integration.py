@@ -478,7 +478,7 @@ class BcPlatformIntegration:
         files: list[str] | None = None,
         excluded_paths: list[str] | None = None,
         included_paths: list[str] | None = None,
-        sast_languages: Set[SastLanguages]| None = None
+        sast_languages: Set[SastLanguages] | None = None
     ) -> None:
         """
         Persist the repository found on root_dir path to Bridgecrew's platform. If --file flag is used, only files
@@ -506,7 +506,7 @@ class BcPlatformIntegration:
                         if file_extension in SAST_SUPPORTED_FILE_EXTENSIONS[framwork]:
                             files_to_persist.append(FileToPersist(f, os.path.relpath(f, root_dir)))
                             break
-                
+
         else:
             for root_path, d_names, f_names in os.walk(root_dir):
                 # self.excluded_paths only contains the config fetched from the platform.

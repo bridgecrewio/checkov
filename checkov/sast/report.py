@@ -7,7 +7,7 @@ from checkov.sast.prisma_models.report import PrismaReport
 
 
 class SastReport(Report):
-    def __init__(self, check_type: str, metadata: Dict[str, Optional[Union[str, int, List[str]]]], language: SastLanguages, sast_report: PrismaReport=None):
+    def __init__(self, check_type: str, metadata: Dict[str, Optional[Union[str, int, List[str]]]], language: SastLanguages, sast_report: PrismaReport = None):
         super().__init__(check_type)
         self.metadata = metadata
         self.language: SastLanguages = language

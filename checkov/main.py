@@ -13,7 +13,6 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Literal, Optional, List, Set
-from collections.abc import Iterable
 
 import argcomplete
 import configargparse

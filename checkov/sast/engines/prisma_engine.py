@@ -297,7 +297,7 @@ class PrismaEngine(SastEngine):
         reports: List[SastReport] = []
         for lang, checks in prisma_report.rule_match.items():
             sast_report = PrismaReport(rule_match={lang: checks}, errors=prisma_report.errors, profiler=prisma_report.profiler,
-                                              run_metadata=prisma_report.run_metadata, imports={}, reachability_report={})
+                                       run_metadata=prisma_report.run_metadata, imports={}, reachability_report={})
             report = SastReport(f'{self.check_type.lower()}_{lang.value}', prisma_report.run_metadata, lang, sast_report)
             for check_id, match_rule in checks.items():
                 check_name = match_rule.check_name
@@ -335,7 +335,7 @@ class PrismaEngine(SastEngine):
                     break
             else:
                 sast_report = PrismaReport(rule_match={lang: checks}, errors=prisma_report.errors, profiler=prisma_report.profiler,
-                                              run_metadata=prisma_report.run_metadata, imports={}, reachability_report={})
+                                           run_metadata=prisma_report.run_metadata, imports={}, reachability_report={})
                 report = SastReport(f'{self.check_type.lower()}_{lang.value}', prisma_report.run_metadata, lang, sast_report)
                 report.sast_imports = prisma_report.imports[lang]
                 reports.append(report)
@@ -347,7 +347,7 @@ class PrismaEngine(SastEngine):
                     break
             else:
                 sast_report = PrismaReport(rule_match={lang: checks}, errors=prisma_report.errors, profiler=prisma_report.profiler,
-                                              run_metadata=prisma_report.run_metadata, imports={}, reachability_report={})
+                                           run_metadata=prisma_report.run_metadata, imports={}, reachability_report={})
                 report = SastReport(f'{self.check_type.lower()}_{lang.value}', prisma_report.run_metadata, lang, sast_report)
                 report.sast_reachability = prisma_report.reachability_report[lang]
                 reports.append(report)
