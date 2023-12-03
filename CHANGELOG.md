@@ -1,6 +1,41 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.11...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.20...HEAD)
+
+## [3.1.20](https://github.com/bridgecrewio/checkov/compare/3.1.19...3.1.20) - 2023-11-30
+
+### Platform
+
+- **general:** handle the updated on prem response from the platform - [#5809](https://github.com/bridgecrewio/checkov/pull/5809)
+
+## [3.1.19](https://github.com/bridgecrewio/checkov/compare/3.1.18...3.1.19) - 2023-11-29
+
+### Feature
+
+- **sca:** Using alias data from assets.json for giving Package Used indication for aliased packages - [#5808](https://github.com/bridgecrewio/checkov/pull/5808)
+
+## [3.1.18](https://github.com/bridgecrewio/checkov/compare/3.1.17...3.1.18) - 2023-11-28
+
+### Bug Fix
+
+- **terraform:** Add source_module_object to blocks from_dict func - [#5806](https://github.com/bridgecrewio/checkov/pull/5806)
+
+## [3.1.17](https://github.com/bridgecrewio/checkov/compare/3.1.15...3.1.17) - 2023-11-27
+
+### Feature
+
+- **ansible:** PAN-OS IPsec checks - [#5802](https://github.com/bridgecrewio/checkov/pull/5802)
+
+## [3.1.15](https://github.com/bridgecrewio/checkov/compare/3.1.11...3.1.15) - 2023-11-26
+
+### Feature
+
+- **ansible:** add CKV_PAN_16 PAN-OS BPA Check for session log at start - [#5794](https://github.com/bridgecrewio/checkov/pull/5794)
+- **sast:** Add alias data to imports assets - [#5788](https://github.com/bridgecrewio/checkov/pull/5788)
+
+### Bug Fix
+
+- **bicep:** Update AppServiceHttps20Enabled to consider newer ApiVersion - [#5795](https://github.com/bridgecrewio/checkov/pull/5795)
 
 ## [3.1.11](https://github.com/bridgecrewio/checkov/compare/3.1.9...3.1.11) - 2023-11-23
 
