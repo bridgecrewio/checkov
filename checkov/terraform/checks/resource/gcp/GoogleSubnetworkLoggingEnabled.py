@@ -7,6 +7,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 # flow logs can't be enabled for subnetworks with the following purpose set
 PURPOSE_EXCEPTIONS = ["INTERNAL_HTTPS_LOAD_BALANCER", "REGIONAL_MANAGED_PROXY", "GLOBAL_MANAGED_PROXY"]
 
+
 class GoogleSubnetworkLoggingEnabled(BaseResourceValueCheck):
     def __init__(self) -> None:
         name = "Ensure that VPC Flow Logs is enabled for every subnet in a VPC Network"

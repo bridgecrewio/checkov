@@ -1,0 +1,8 @@
+Resource,Path,Git Org,Git Repository,Misconfigurations,Severity
+aws_s3_bucket.test,/main.tf,,,CKV2_AWS_61,
+aws_s3_bucket.test,/main.tf,,,CKV2_AWS_62,
+aws_s3_bucket.test,/main.tf,,,CKV_AWS_18,
+aws_s3_bucket.test,/main.tf,,,CKV2_AWS_6,
+aws_s3_bucket.test,/main.tf,,,CKV_AWS_21,
+aws_s3_bucket.test,/main.tf,,,CKV_AWS_144,
+aws_s3_bucket.test,/main.tf,,,CKV_AWS_145,
