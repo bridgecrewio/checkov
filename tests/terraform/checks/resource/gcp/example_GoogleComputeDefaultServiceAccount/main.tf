@@ -1,8 +1,8 @@
-resource "google_compute_instance" "fail1" {
-  name         = "test"
-  machine_type = "n1-standard-1"
-  zone         = "us-central1-a"
-}
+#resource "google_compute_instance" "fail1" {
+#  name         = "test"
+#  machine_type = "n1-standard-1"
+#  zone         = "us-central1-a"
+#}
 
 resource "google_compute_instance" "fail2" {
   name         = "test"

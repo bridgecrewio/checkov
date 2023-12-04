@@ -23,7 +23,6 @@ class TestGoogleComputeDefaultServiceAccount(unittest.TestCase):
             'google_compute_instance_from_template.pass4'
         }
         failing_resources = {
-            'google_compute_instance.fail1',
             'google_compute_instance.fail2',
             'google_compute_instance_from_template.fail3'
         }
