@@ -1,0 +1,5 @@
+pass:
+  - "ibm_iam_account_settings.pass"
+fail:
+  - "ibm_iam_account_settings.fail_1"
+  - "ibm_iam_account_settings.fail_2"

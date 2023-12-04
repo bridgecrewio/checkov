@@ -1,0 +1,93 @@
+---
+- name: Verify tests
+  hosts: all
+  connection: local
+  gather_facts: false
+
+  vars:
+    device:
+      ip_address: "{{ ip_address }}"
+      username: "{{ username | default(omit) }}"
+      password: "{{ password | default(omit) }}"
+      api_key: "{{ api_key | default(omit) }}"
+
+  tasks:
+    - name: Security_rule_fail_1
+      paloaltonetworks.panos.panos_security_rule:
+        provider: '{{ provider }}'
+        rule_name: 'Test rule'
+        source_zone: ['any']
+        destination_zone: ['any']
+        # Source and destination Zone are 'any'
+        source_ip: ['1.1.1.1']
+        destination_ip: ['2.2.2.2']
+        category: ['any']
+        application: ['ssl']
+        service: ['service-http', 'service-https']
+        description: "A nice rule"
+        action: 'allow'
+        log_setting: 'default'
+
+    - name: Security_rule_fail_2
+      paloaltonetworks.panos.panos_security_rule:
+        provider: '{{ provider }}'
+        rule_name: 'Test rule'
+        # source_zone: ['any']
+        # destination_zone: ['any']
+        # Source zone and destination zone are not provided, defaults to 'any'
+        source_ip: ['1.1.1.1']
+        destination_ip: ['2.2.2.2']
+        category: ['any']
+        application: ['ssl']
+        service: ['service-http', 'service-https']
+        description: "A nice rule"
+        action: 'allow'
+        log_setting: 'default'
+
+    - name: Security_rule_fail_3
+      paloaltonetworks.panos.panos_security_rule:
+        provider: '{{ provider }}'
+        rule_name: 'Test rule'
+        source_zone: ['any']
+        # destination_zone: ['any']
+        # Source Zone is 'any' and destination Zone is undefined and defaults to 'any'
+        source_ip: ['1.1.1.1']
+        destination_ip: ['2.2.2.2']
+        category: ['any']
+        application: ['ssl']
+        service: ['service-http', 'service-https']
+        description: "A nice rule"
+        action: 'allow'
+        log_setting: 'default'
+
+    - name: Security_rule_fail_4
+      paloaltonetworks.panos.panos_security_rule:
+        provider: '{{ provider }}'
+        rule_name: 'Test rule'
+        # source_zone: ['any']
+        destination_zone: ['any']
+        # Destination Zone is 'any' and source Zone is undefined and defaults to 'any'
+        source_ip: ['1.1.1.1']
+        destination_ip: ['2.2.2.2']
+        category: ['any']
+        application: ['ssl']
+        service: ['service-http', 'service-https']
+        description: "A nice rule"
+        action: 'allow'
+        log_setting: 'default'
+
+    - name: Security_rule_fail_5
+      paloaltonetworks.panos.panos_security_rule:
+        provider: '{{ provider }}'
+        rule_name: 'Test rule'
+        source_zone: ['']
+        destination_zone: ['']
+        # Source and destination Zone are empty
+        source_ip: ['1.1.1.1']
+        destination_ip: ['2.2.2.2']
+        category: ['any']
+        application: ['ssl']
+        service: ['service-http', 'service-https']
+        description: "A nice rule"
+        action: 'allow'
+        log_setting: 'default'
