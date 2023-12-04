@@ -1,0 +1,172 @@
+---
+- name: Verify tests
+  hosts: all
+  connection: local
+  gather_facts: false
+
+  vars:
+    device:
+      ip_address: "{{ ip_address }}"
+      username: "{{ username | default(omit) }}"
+      password: "{{ password | default(omit) }}"
+      api_key: "{{ api_key | default(omit) }}"
+
+  tasks:
+    - name: Security_rule_pass_1
+      paloaltonetworks.panos.panos_security_rule:
+        provider: '{{ provider }}'
+        rule_name: 'Test rule'
+        source_zone: ['outside']
+        destination_zone: ['inside']
+        # Source and destination Zone addresses provided
+        source_ip: ['1.1.1.1']
+        destination_ip: ['10.10.10.10']
+        category: ['any']
+        application: ['ssl']
+        service: ['service-http', 'service-https']
+        description: "A nice rule"
+        action: 'allow'
+        log_setting: 'default'
+
+    - name: Security_rule_pass_2
+      paloaltonetworks.panos.panos_security_rule:
+        provider: '{{ provider }}'
+        rule_name: 'Test rule'
+        source_zone: ['outside','b2b']
+        destination_zone: ['inside']
+        # Source and destination Zone provided, multiples
+        source_ip: ['1.1.1.1', '2.2.2.2']
+        destination_ip: ['10.10.10.10']
+        category: ['any']
+        application: ['ssl']
+        service: ['service-http', 'service-https']
+        description: "A nice rule"
+        action: 'allow'
+        log_setting: 'default'
+
+    - name: Security_rule_pass_3
+      paloaltonetworks.panos.panos_security_rule:
+        provider: '{{ provider }}'
+        rule_name: 'Test rule'
+        source_zone: ['outside']
+        destination_zone: ['inside','trusted']
+        # Source and destination zone addresses provided, multiples
+        source_ip: ['1.1.1.1']
+        destination_ip: ['10.10.10.10', '10.10.10.11']
+        category: ['any']
+        application: ['ssl']
+        service: ['service-http', 'service-https']
+        description: "A nice rule"
+        action: 'allow'
+        log_setting: 'default'
+
+    - name: Security_rule_pass_4
+      paloaltonetworks.panos.panos_security_rule:
+        provider: '{{ provider }}'
+        rule_name: 'Test rule'
+        source_zone: ['outside','b2b']
+        destination_zone: ['inside','trusted']
+        # Source and destination zone addresses provided, multiples
+        source_ip: ['1.1.1.1','2.2.2.2']
+        destination_ip: ['10.10.10.10', '10.10.10.11']
+        category: ['any']
+        application: ['ssl']
+        service: ['service-http', 'service-https']
+        description: "A nice rule"
+        action: 'allow'
+        log_setting: 'default'
+
+    - name: Security_rule_pass_5
+      paloaltonetworks.panos.panos_security_rule:
+        provider: '{{ provider }}'
+        rule_name: 'Test rule'
+        source_zone: ['outside']
+        destination_zone: ['any']  # Only destination zone is any, source zone is provided
+        source_ip: ['1.1.1.1']
+        destination_ip: ['10.10.10.10']
+        category: ['any']
+        application: ['ssl']
+        service: ['service-http', 'service-https']
+        description: "A nice rule"
+        action: 'allow'
+        log_setting: 'default'
+
+    - name: Security_rule_pass_6
+      paloaltonetworks.panos.panos_security_rule:
+        provider: '{{ provider }}'
+        rule_name: 'Test rule'
+        source_zone: ['outside']
+        # destination_zone: ['inside']
+        # Only destination zone is not provided (defaults to 'any'), source zone is provided
+        source_ip: ['1.1.1.1']
+        destination_ip: ['10.10.10.10']
+        category: ['any']
+        application: ['ssl']
+        service: ['service-http', 'service-https']
+        description: "A nice rule"
+        action: 'allow'
+        log_setting: 'default'
+
+    - name: Security_rule_pass_7
+      paloaltonetworks.panos.panos_security_rule:
+        provider: '{{ provider }}'
+        rule_name: 'Test rule'
+        source_zone: ['outside']
+        destination_zone: ['']
+        # Only destination zone is empty, source zone is provided
+        source_ip: ['1.1.1.1']
+        destination_ip: ['10.10.10.10']
+        category: ['any']
+        application: ['ssl']
+        service: ['service-http', 'service-https']
+        description: "A nice rule"
+        action: 'allow'
+        log_setting: 'default'
+
+    - name: Security_rule_pass_8
+      paloaltonetworks.panos.panos_security_rule:
+        provider: '{{ provider }}'
+        rule_name: 'Test rule'
+        source_zone: ['any']
+        destination_zone: ['inside']
+        # Only source zone is any, destination zone is provided
+        source_ip: ['1.1.1.1']
+        destination_ip: ['10.10.10.10']
+        category: ['any']
+        application: ['ssl']
+        service: ['service-http', 'service-https']
+        description: "A nice rule"
+        action: 'allow'
+        log_setting: 'default'
+
+    - name: Security_rule_pass_9
+      paloaltonetworks.panos.panos_security_rule:
+        provider: '{{ provider }}'
+        rule_name: 'Test rule'
+        # source_zone: ['outside']
+        destination_zone: ['inside']
+        # Only source zone is not provided (defaults to 'any'), destination zone is provided
+        source_ip: ['1.1.1.1']
+        destination_ip: ['10.10.10.10']
+        category: ['any']
+        application: ['ssl']
+        service: ['service-http', 'service-https']
+        description: "A nice rule"
+        action: 'allow'
+        log_setting: 'default'
+
+    - name: Security_rule_pass_10
+      paloaltonetworks.panos.panos_security_rule:
+        provider: '{{ provider }}'
+        rule_name: 'Test rule'
+        source_zone: ['']
+        destination_zone: ['inside']
+        # Only source zone is empty, destination zone is provided
+        source_ip: ['1.1.1.1']
+        destination_ip: ['10.10.10.10']
+        category: ['any']
+        application: ['ssl']
+        service: ['service-http', 'service-https']
+        description: "A nice rule"
+        action: 'allow'
+        log_setting: 'default'

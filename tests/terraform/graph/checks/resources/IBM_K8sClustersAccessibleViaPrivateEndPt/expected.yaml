@@ -1,0 +1,7 @@
+pass:
+  - "ibm_container_cluster.pass_1"
+  - "ibm_container_cluster.pass_2"
+fail:
+  - "ibm_container_cluster.fail_1"
+  - "ibm_container_cluster.fail_2"
+  - "ibm_container_cluster.fail_3"

@@ -1,0 +1,40 @@
+metadata:
+  id: "CKV_PAN_17"
+  name: "Ensure security rules do not have 'source_zone' and 'destination_zone' both containing values of 'any'"
+  category: "NETWORKING"
+definition:
+  or:
+  - and:
+    - cond_type: attribute
+      resource_types:
+        - tasks.paloaltonetworks.panos.panos_security_rule
+      attribute: source_zone
+      operator: exists
+    - cond_type: attribute
+      resource_types:
+        - tasks.paloaltonetworks.panos.panos_security_rule
+      attribute: source_zone
+      operator: is_not_empty
+    - cond_type: attribute
+      resource_types:
+        - tasks.paloaltonetworks.panos.panos_security_rule
+      attribute: source_zone
+      operator: not_equals_ignore_case
+      value: 'any'
+  - and:
+    - cond_type: attribute
+      resource_types:
+        - tasks.paloaltonetworks.panos.panos_security_rule
+      attribute: destination_zone
+      operator: exists
+    - cond_type: attribute
+      resource_types:
+        - tasks.paloaltonetworks.panos.panos_security_rule
+      attribute: destination_zone
+      operator: is_not_empty
+    - cond_type: attribute
+      resource_types:
+        - tasks.paloaltonetworks.panos.panos_security_rule
+      attribute: destination_zone
+      operator: not_equals_ignore_case
+      value: 'any'
