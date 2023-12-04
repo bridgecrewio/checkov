@@ -30,10 +30,6 @@ class GoogleComputeDefaultServiceAccount(BaseResourceCheck):
             return CheckResult.PASSED
         self.evaluated_keys = ['service_account/[0]/email', 'name']
         if 'service_account' not in conf:
-            if self.entity_type == 'google_compute_instance_template' and 'source_instance_template' in conf:
-                # the absence of service_account from a 'google_compute_instance_from_template' definition does not imply
-                # usage of the default service account.
-                return CheckResult.UNKNOWN
             return CheckResult.UNKNOWN
         return CheckResult.FAILED
 
