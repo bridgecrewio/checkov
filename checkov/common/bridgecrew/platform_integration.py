@@ -65,7 +65,6 @@ if TYPE_CHECKING:
     from checkov.secrets.coordinator import EnrichedSecret
     from mypy_boto3_s3.client import S3Client
     from typing_extensions import TypeGuard
-    from checkov.sast.report import SastReport
 
 SLEEP_SECONDS = 1
 
@@ -566,7 +565,7 @@ class BcPlatformIntegration:
     def persist_sast_scan_results(self, reports):
         sast_scan_reports = {}
         for report in reports:
-            if not isinstance(report, SastReport):
+            if not report.check_type.startswith('sast'):
                 continue
             if not report.sast_report:
                 continue
