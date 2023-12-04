@@ -573,7 +573,6 @@ class BcPlatformIntegration:
             for item in report:
                 BcPlatformIntegration.delete_code_block_from_sast_report(item)
 
-
     def persist_sast_scan_results(self, reports):
         sast_scan_reports = {}
         for report in reports:
