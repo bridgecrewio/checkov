@@ -3,7 +3,10 @@ from typing import Any, Dict, Union, List, Optional
 
 from checkov.common.output.report import Report
 from checkov.common.sast.consts import POLICIES_ERRORS, POLICIES_ERRORS_COUNT, SOURCE_FILES_COUNT, POLICY_COUNT, SastLanguages
-from checkov.sast.prisma_models.report import PrismaReport
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from checkov.sast.prisma_models.report import PrismaReport
 
 
 class SastReport(Report):
