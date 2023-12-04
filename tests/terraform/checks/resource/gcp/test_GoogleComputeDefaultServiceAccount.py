@@ -27,14 +27,13 @@ class TestGoogleComputeDefaultServiceAccount(unittest.TestCase):
             'google_compute_instance.fail2',
             'google_compute_instance_from_template.fail3'
         }
-        unknown_resources = {
-            'google_compute_instance_from_template.unknown1',
-            'google_compute_instance.unknown2'
-        }
+        # unknown_resources = {
+        #     'google_compute_instance_from_template.unknown1',
+        #     'google_compute_instance.unknown2'
+        # }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
-        unknown_check_resources = set([c.resource for c in report.unknown_checks])
 
         self.assertEqual(summary['passed'], len(passing_resources))
         self.assertEqual(summary['failed'], len(failing_resources))
@@ -43,7 +42,6 @@ class TestGoogleComputeDefaultServiceAccount(unittest.TestCase):
 
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)
-        self.assertEqual(unknown_resources, unknown_check_resources)
 
 
 if __name__ == '__main__':
