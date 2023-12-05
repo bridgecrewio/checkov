@@ -56,7 +56,6 @@ from checkov.common.util.http_utils import (
     REQUEST_RETRIES,
 )
 from checkov.common.util.type_forcers import convert_prisma_policy_filter_to_dict, convert_str_to_bool
-from checkov.sast.prisma_models.report import Match
 from checkov.version import version as checkov_version
 
 if TYPE_CHECKING:
@@ -66,6 +65,7 @@ if TYPE_CHECKING:
     from checkov.secrets.coordinator import EnrichedSecret
     from mypy_boto3_s3.client import S3Client
     from typing_extensions import TypeGuard
+    from checkov.sast.prisma_models.report import Match
 
 SLEEP_SECONDS = 1
 
