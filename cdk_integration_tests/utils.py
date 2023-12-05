@@ -13,7 +13,6 @@ def load_failed_checks_from_file(lang: str) -> Dict[str, List[Dict[str, Any]]]:
         print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
         print(data)
         print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
-        assert data == ''
         report = json.loads(data)
 
         assert report is not None
