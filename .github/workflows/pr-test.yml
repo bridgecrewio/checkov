@@ -94,7 +94,7 @@ jobs:
       - name: Get venv path
         id: get-venv
         run: |
-          echo "venv=$(pipenv --venv)" >> $GITHUB_OUTPUT
+          echo "venv=$(pipenv --venv)" >> "$GITHUB_OUTPUT"
 
       - name: Run Redefine.dev
         uses: redefinedev/redefine-action@main
