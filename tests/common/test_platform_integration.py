@@ -157,6 +157,39 @@ class TestBCApiUrl(unittest.TestCase):
                                                          valid_filters=mock_prisma_policy_filter_response()))
         self.assertFalse(instance.is_valid_policy_filter(policy_filter={'policy.label': ['A', 'B']}, valid_filters={}))
 
+    def test_setup_on_prem(self):
+        instance = BcPlatformIntegration()
+
+        instance.customer_run_config_response = None
+        instance.setup_on_prem()
+        self.assertFalse(instance.on_prem)
+
+        instance.customer_run_config_response = {}
+        instance.setup_on_prem()
+        self.assertFalse(instance.on_prem)
+
+        instance.customer_run_config_response = {
+            'tenantConfig': {}
+        }
+        instance.setup_on_prem()
+        self.assertFalse(instance.on_prem)
+
+        instance.customer_run_config_response = {
+            'tenantConfig': {
+                'preventCodeUploads': False
+            }
+        }
+        instance.setup_on_prem()
+        self.assertFalse(instance.on_prem)
+
+        instance.customer_run_config_response = {
+            'tenantConfig': {
+                'preventCodeUploads': True
+            }
+        }
+        instance.setup_on_prem()
+        self.assertTrue(instance.on_prem)
+
 
 def mock_customer_run_config():
     return {
