@@ -210,7 +210,7 @@ def test_CKV_AWS_78_CodeBuildProjectEncryption(failed_checks):
 
 
 def test_CKV_AWS_31_ElasticacheReplicationGroupEncryptionAtTransitAuthToken(failed_checks):
-    run_check(check_results=failed_checks, check_id="CKV_AWS_31", policy_name="lasticacheReplicationGroupEncryptionAtTransitAuthToken", language="python")
+    run_check(check_results=failed_checks, check_id="CKV_AWS_31", policy_name="ElasticacheReplicationGroupEncryptionAtTransitAuthToken", language="python")
 
 
 def test_CKV_AWS_94_GlueDataCatalogEncryption(failed_checks):
@@ -323,3 +323,4 @@ def test_CKV_AWS_88_EC2PublicIP(failed_checks):
 
 def test_CKV_AWS_8_LaunchConfigurationEBSEncryption(failed_checks):
     run_check(check_results=failed_checks, check_id="CKV_AWS_8", policy_name="LaunchConfigurationEBSEncryption", language="python")
+

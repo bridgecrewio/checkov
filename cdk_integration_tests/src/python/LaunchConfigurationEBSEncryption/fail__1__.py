@@ -11,7 +11,6 @@ class MyAutoScalingLaunchConfig(core.Stack):
             image_id='ami-12345678',  # Replace with your desired AMI ID
             instance_type='t2.micro',  # Replace with your desired instance type
             block_device_mappings=[{
-                'deviceName': '/dev/xvda',
                 'ebs': {
                     'encrypted': False
                 }

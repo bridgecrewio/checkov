@@ -17,8 +17,6 @@ class MyEC2InstanceStack(core.Stack):
             image_id='ami-12345678',  # Replace with your desired AMI ID
             instance_type='t2.micro',  # Replace with your desired instance type
             network_interfaces=[{
-                'deviceIndex': '0',
-                'subnet_id': vpc.public_subnets[0].subnet_id,
                 'associate_public_ip_address': True
             }]
             # Other properties for your EC2 Instance
@@ -38,7 +36,6 @@ class MyEC2LaunchTemplateStack(core.Stack):
             launch_template_name='my-launch-template',
             launch_template_data={
                 'network_interfaces': [{
-                    'deviceIndex': '0',
                     'associate_public_ip_address': True
                 }]
                 # Other properties for your Launch Template Data

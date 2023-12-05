@@ -10,7 +10,6 @@ class MyECSTaskDefinitionStack(core.Stack):
             self, 'MyTaskDefinition',
             volumes=[
                 {
-                    'name': 'efsVolume',
                     'efs_volume_configuration': {
                         'transit_encryption': 'DISABLED'
                     }
