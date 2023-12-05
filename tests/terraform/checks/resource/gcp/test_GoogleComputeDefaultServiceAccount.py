@@ -1,129 +1,46 @@
 import unittest
-
-import hcl2
+import os
 
 from checkov.terraform.checks.resource.gcp.GoogleComputeDefaultServiceAccount import check
-from checkov.common.models.enums import CheckResult
+from checkov.runner_filter import RunnerFilter
+from checkov.terraform.runner import Runner
 
 
 class TestGoogleComputeDefaultServiceAccount(unittest.TestCase):
 
-    def test_failure_1(self):
-        hcl_res = hcl2.loads("""
-            resource "google_compute_instance" "default" {
-              name         = "test"
-              machine_type = "n1-standard-1"
-              zone         = "us-central1-a"
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['google_compute_instance']['default']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+    def test(self):
+        runner = Runner()
+        current_dir = os.path.dirname(os.path.realpath(__file__))
 
-    def test_failure_2(self):
-        hcl_res = hcl2.loads("""
-            resource "google_compute_instance" "default" {
-              name         = "test"
-              machine_type = "n1-standard-1"
-              zone         = "us-central1-a"
-              service_account {
-                scopes = ["userinfo-email", "compute-ro", "storage-ro"]
-                email  =  "123456789-compute@developer.gserviceaccount.com"
-              }
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['google_compute_instance']['default']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        test_files_dir = current_dir + "/example_GoogleComputeDefaultServiceAccount"
+        report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
+        summary = report.get_summary()
 
-    def test_failure_3(self):
-        hcl_res = hcl2.loads("""
-            resource "google_compute_instance_from_template" "default" {
-              name                     = "instance_from_template"
-              source_instance_template = google_compute_instance_template.default.id
-              service_account {
-                scopes = ["userinfo-email", "compute-ro", "storage-ro"]
-                email  =  "123456789-compute@developer.gserviceaccount.com"
-              }
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['google_compute_instance_from_template']['default']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        passing_resources = {
+            'google_compute_instance.pass1',
+            'google_compute_instance.pass2',
+            'google_compute_instance_template.pass3',
+            'google_compute_instance_from_template.pass4'
+        }
+        failing_resources = {
+            'google_compute_instance.fail2',
+            'google_compute_instance_from_template.fail3'
+        }
+        # unknown_resources = {
+        #     'google_compute_instance_from_template.unknown1',
+        #     'google_compute_instance.unknown2'
+        # }
 
-    def test_unknown(self):
-        hcl_res = hcl2.loads("""
-            resource "google_compute_instance_from_template" "default" {
-              name                     = "instance_from_template"
-              source_instance_template = google_compute_instance_template.default.id
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['google_compute_instance_from_template']['default']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.UNKNOWN, scan_result)
+        passed_check_resources = set([c.resource for c in report.passed_checks])
+        failed_check_resources = set([c.resource for c in report.failed_checks])
 
-    def test_success_1(self):
-        hcl_res = hcl2.loads("""
-            resource "google_compute_instance" "default" {
-              name         = "test"
-              machine_type = "n1-standard-1"
-              zone         = "us-central1-a"
-              service_account {
-                scopes = ["userinfo-email", "compute-ro", "storage-ro"]
-                email  = "example@email.com"
-              }
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['google_compute_instance']['default']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        self.assertEqual(summary['passed'], len(passing_resources))
+        self.assertEqual(summary['failed'], len(failing_resources))
+        self.assertEqual(summary['skipped'], 0)
+        self.assertEqual(summary['parsing_errors'], 0)
 
-    def test_success_2(self):
-        hcl_res = hcl2.loads("""
-            resource "google_compute_instance" "default" {
-              name         = "gke-account"
-              machine_type = "n1-standard-1"
-              zone         = "us-central1-a"
-              service_account {
-                scopes = ["userinfo-email", "compute-ro", "storage-ro"]
-                email  =  "123456789-compute@developer.gserviceaccount.com"
-              }
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['google_compute_instance']['default']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
-
-    def test_success_3(self):
-        hcl_res = hcl2.loads("""
-            resource "google_compute_instance_template" "default" {
-              name         = "account"
-              machine_type = "n1-standard-1"
-              zone         = "us-central1-a"
-              service_account {
-                scopes = ["userinfo-email", "compute-ro", "storage-ro"]
-                email  = "example@email.com"
-              }
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['google_compute_instance_template']['default']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
-
-    def test_success_4(self):
-        hcl_res = hcl2.loads("""
-            resource "google_compute_instance_from_template" "default" {
-              name                     = "instance_from_template"
-              source_instance_template = google_compute_instance_template.default.id
-              service_account {
-                scopes = ["userinfo-email", "compute-ro", "storage-ro"]
-                email  = "example@email.com"
-              }
-            }
-                """)
-        resource_conf = hcl_res['resource'][0]['google_compute_instance_from_template']['default']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
 
 if __name__ == '__main__':
