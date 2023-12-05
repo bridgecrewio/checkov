@@ -9,4 +9,4 @@ scope:
     - python
 definition:
   pattern: |
-      aws_cdk.aws_autoscaling.CfnLaunchConfiguration(<ANY>, block_device_mappings=[<ANY>, {ebs:{'encrypted': False}} ,<ANY>] ,<ANY>)
+      aws_cdk.aws_autoscaling.CfnLaunchConfiguration(<ANY>, block_device_mappings=[<ANY>, {'ebs':{'encrypted': False}} ,<ANY>] ,<ANY>)
