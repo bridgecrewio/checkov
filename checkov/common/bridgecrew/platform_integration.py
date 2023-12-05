@@ -563,17 +563,17 @@ class BcPlatformIntegration:
             return
 
     @staticmethod
-    def delete_code_block_from_sast_report(report):
+    def _delete_code_block_from_sast_report(report: Dict[str, Any]):
         if isinstance(report, dict):
             for key, value in report.items():
                 if key == 'code_block':
                     report[key] = ''
-                BcPlatformIntegration.delete_code_block_from_sast_report(value)
+                BcPlatformIntegration._delete_code_block_from_sast_report(value)
         if isinstance(report, list):
             for item in report:
-                BcPlatformIntegration.delete_code_block_from_sast_report(item)
+                BcPlatformIntegration._delete_code_block_from_sast_report(item)
 
-    def persist_sast_scan_results(self, reports):
+    def persist_sast_scan_results(self, reports: List[Report]):
         sast_scan_reports = {}
         for report in reports:
             if not report.check_type.startswith('sast'):
@@ -586,7 +586,7 @@ class BcPlatformIntegration:
                         self.adjust_sast_match_location_path(m)
                 sast_scan_reports[report.check_type] = report.sast_report.model_dump(mode='json')
             if self.on_prem:
-                BcPlatformIntegration.delete_code_block_from_sast_report(sast_scan_reports)
+                BcPlatformIntegration._delete_code_block_from_sast_report(sast_scan_reports)
         persist_checks_results(sast_scan_reports, self.s3_client, self.bucket, self.repo_path)
 
     def persist_scan_results(self, scan_reports: list[Report]) -> None:
