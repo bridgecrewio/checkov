@@ -243,3 +243,83 @@ def test_CKV_AWS_34_CloudfrontDistributionEncryption(failed_checks):
 
 def test_CKV_AWS_95_APIGatewayV2AccessLogging(failed_checks):
     run_check(check_results=failed_checks, check_id="CKV_AWS_95", policy_name="APIGatewayV2AccessLogging", language="python")
+
+
+def test_CKV_AWS_86_CloudfrontDistributionLogging(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_86", policy_name="CloudfrontDistributionLogging", language="python")
+
+
+def test_CKV_AWS_90_DocDBTLS(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_90", policy_name="DocDBTLS", language="python")
+
+
+def test_CKV_AWS_174_CloudFrontTLS12(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_174", policy_name="CloudFrontTLS12", language="python")
+
+
+def test_CKV_AWS_71_RedshiftClusterLogging(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_71", policy_name="RedshiftClusterLogging", language="python")
+
+
+def test_CKV_AWS_92_ELBAccessLogs(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_92", policy_name="ELBAccessLogs", language="python")
+
+
+def test_CKV_AWS_67_CloudtrailMultiRegion(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_67", policy_name="CloudtrailMultiRegion", language="python")
+
+
+def test_CKV_AWS_91_ELBv2AccessLogs(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_91", policy_name="ELBv2AccessLogs", language="python")
+
+
+def test_CKV_AWS_164_TransferServerIsPublic(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_164", policy_name="TransferServerIsPublic", language="python")
+
+
+def test_CKV_AWS_97_ECSTaskDefinitionEFSVolumeEncryption(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_97", policy_name="ECSTaskDefinitionEFSVolumeEncryption", language="python")
+
+
+def test_CKV_AWS_123_VPCEndpointAcceptanceConfigured(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_123", policy_name="VPCEndpointAcceptanceConfigured", language="python")
+
+
+def test_CKV_AWS_35_CloudtrailEncryption(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_35", policy_name="CloudtrailEncryption", language="python")
+
+
+def test_CKV_AWS_154_RedshiftInEc2ClassicMode(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_154", policy_name="RedshiftInEc2ClassicMode", language="python")
+
+
+def test_CKV_AWS_84_ElasticsearchDomainLogging(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_84", policy_name="ElasticsearchDomainLogging", language="python")
+
+
+def test_CKV_AWS_136_ECRRepositoryEncrypted(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_136", policy_name="ECRRepositoryEncrypted", language="python")
+
+
+def test_CKV_AWS_66_CloudWatchLogGroupRetention(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_66", policy_name="CloudWatchLogGroupRetention", language="python")
+
+
+def test_CKV_AWS_5_ElasticsearchEncryption(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_5", policy_name="ElasticsearchEncryption", language="python")
+
+
+def test_CKV_AWS_73_APIGatewayXray(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_73", policy_name="APIGatewayXray", language="python")
+
+
+def test_CKV_AWS_6_ElasticsearchNodeToNodeEncryption(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_6", policy_name="ElasticsearchNodeToNodeEncryption", language="python")
+
+
+def test_CKV_AWS_88_EC2PublicIP(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_88", policy_name="EC2PublicIP", language="python")
+
+
+def test_CKV_AWS_8_LaunchConfigurationEBSEncryption(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_8", policy_name="LaunchConfigurationEBSEncryption", language="python")
