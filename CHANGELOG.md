@@ -1,6 +1,15 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.20...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.21...HEAD)
+
+## [3.1.21](https://github.com/bridgecrewio/checkov/compare/3.1.20...3.1.21) - 2023-12-04
+
+### Feature
+
+- **ansible:** add CKV_PAN_17 - Check for src and dst zone any - [#5803](https://github.com/bridgecrewio/checkov/pull/5803)
+- **sast:** sast enabled from integration - [#5780](https://github.com/bridgecrewio/checkov/pull/5780)
+- **terraform:** Adding Python based build time policies for corresponding PC runtime policies - [#5762](https://github.com/bridgecrewio/checkov/pull/5762)
+- **terraform:** Adding YAML based build time policies for corresponding PC runtime policies  - [#5810](https://github.com/bridgecrewio/checkov/pull/5810)
 
 ## [3.1.20](https://github.com/bridgecrewio/checkov/compare/3.1.19...3.1.20) - 2023-11-30
 

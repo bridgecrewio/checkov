@@ -448,6 +448,21 @@ class TestYamlPolicies(unittest.TestCase):
     def test_IBM_VPCclassicAccessIsDisabled(self):
         self.go("IBM_VPCclassicAccessIsDisabled")
 
+    def test_IBM_RestrictServiceIDCreationInAccountSettings(self):
+        self.go("IBM_RestrictServiceIDCreationInAccountSettings")
+
+    def test_IBM_EnableMFAatAccountLevel(self):
+        self.go("IBM_EnableMFAatAccountLevel")
+
+    def test_IBM_RestrictAPIkeyCreationInAccountSettings(self):
+        self.go("IBM_RestrictAPIkeyCreationInAccountSettings")
+
+    def test_IBM_DatabasesNWaccessRestrictedToSpecificIPrange(self):
+        self.go("IBM_DatabasesNWaccessRestrictedToSpecificIPrange")
+
+    def test_IBM_K8sClustersAccessibleViaPrivateEndPt(self):
+        self.go("IBM_K8sClustersAccessibleViaPrivateEndPt")
+
     def test_registry_load(self):
         registry = Registry(parser=GraphCheckParser(), checks_dir=str(
             Path(__file__).parent.parent.parent.parent.parent / "checkov" / "terraform" / "checks" / "graph_checks"))
