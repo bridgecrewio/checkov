@@ -743,7 +743,7 @@ class Checkov:
             included_paths: list[str] | None = None,
             git_configuration_folders: list[str] | None = None,
             sca_supported_ir_report: Report | None = None,
-            sast_languages: Set[SastLanguages] = None
+            sast_languages: Set[SastLanguages] | None = None
     ) -> None:
         """Upload scan results and other relevant files"""
 

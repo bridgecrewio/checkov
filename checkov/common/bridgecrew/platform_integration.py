@@ -56,6 +56,7 @@ from checkov.common.util.http_utils import (
     REQUEST_RETRIES,
 )
 from checkov.common.util.type_forcers import convert_prisma_policy_filter_to_dict, convert_str_to_bool
+from checkov.sast.prisma_models.report import Match
 from checkov.version import version as checkov_version
 
 if TYPE_CHECKING:
@@ -549,7 +550,7 @@ class BcPlatformIntegration:
 
         self.persist_files(files_to_persist)
 
-    def adjust_sast_match_location_path(self, match):
+    def adjust_sast_match_location_path(self, match: Match) -> None:
         for dir in self.scan_dir:
             if not match.location.path.startswith(dir):
                 continue
@@ -563,7 +564,7 @@ class BcPlatformIntegration:
             return
 
     @staticmethod
-    def _delete_code_block_from_sast_report(report: Dict[str, Any]):
+    def _delete_code_block_from_sast_report(report: Dict[str, Any]) -> None:
         if isinstance(report, dict):
             for key, value in report.items():
                 if key == 'code_block':
@@ -573,7 +574,7 @@ class BcPlatformIntegration:
             for item in report:
                 BcPlatformIntegration._delete_code_block_from_sast_report(item)
 
-    def persist_sast_scan_results(self, reports: List[Report]):
+    def persist_sast_scan_results(self, reports: List[Report]) -> None:
         sast_scan_reports = {}
         for report in reports:
             if not report.check_type.startswith('sast'):
