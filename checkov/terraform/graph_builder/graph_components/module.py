@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 from typing import List, Dict, Any, Set, Callable, Tuple, TYPE_CHECKING, cast
+from ast import literal_eval
 
 from checkov.common.typing import TFDefinitionKeyType
 from checkov.common.util.data_structures_utils import pickle_deepcopy
@@ -49,7 +50,7 @@ class Module:
 
     def to_dict(self) -> dict[str, Any]:
         return {
-            'external_modules_source_map': self.external_modules_source_map,
+            'external_modules_source_map': self._to_dict_external_modules_source_map(),
             'path': self.path,
             'customer_name': self.customer_name,
             'account_id': self.account_id,
@@ -63,7 +64,7 @@ class Module:
     @staticmethod
     def from_dict(module_dict: dict[str, Any]) -> Module:
         module = Module(source_dir=module_dict.get('source_dir', ''),
-                        external_modules_source_map=module_dict.get('external_modules_source_map', {})
+                        external_modules_source_map=Module._from_dict_external_modules_source_map(module_dict)
                         )
         module.blocks = [TerraformBlock.from_dict(block) for block in module_dict.get('blocks', [])]
         module.path = module_dict.get('path', '')
@@ -74,6 +75,13 @@ class Module:
         module.source_dir = module_dict.get('source_dir', '')
         module.render_dynamic_blocks_env_var = module_dict.get('render_dynamic_blocks_env_var', '')
         return module
+
+    def _to_dict_external_modules_source_map(self) -> dict[str, str]:
+        return {str(k_tuple): v for k_tuple, v in self.external_modules_source_map.items()}
+
+    @staticmethod
+    def _from_dict_external_modules_source_map(module_dict: dict[str, Any]) -> dict[tuple[str, str], Any]:
+        return {literal_eval(k_tuple): v for k_tuple, v in module_dict.get('external_modules_source_map', {}).items()}
 
     def add_blocks(
             self, block_type: str, blocks: List[Dict[str, Dict[str, Any]]], path: TFDefinitionKeyType, source: str

@@ -22,10 +22,13 @@ def report_contributor_metrics(repository: str, source: str,
     contributors_report_api_url = f"{bc_integration.api_url}/api/v2/contributors/report"
     if request_body:
         while number_of_attempts <= 4:
+            logging.debug(f'Uploading contributor metrics to {contributors_report_api_url}')
             response = request_wrapper(
                 "POST", contributors_report_api_url,
                 headers=bc_integration.get_default_headers("POST"), data=json.dumps(request_body)
             )
+            logging.debug(f'Request ID: {response.headers.get("x-amzn-requestid")}')
+            logging.debug(f'Trace ID: {response.headers.get("x-amzn-trace-id")}')
             if response.status_code < 300:
                 logging.debug(
                     f"Successfully uploaded contributor metrics with status: {response.status_code}. number of attempts: {number_of_attempts}")

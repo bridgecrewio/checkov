@@ -8,11 +8,12 @@ from typing import Union, List, Any, Dict, Optional, TYPE_CHECKING
 
 import igraph
 
+from checkov.common.typing import LibraryGraph
 from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH, \
     TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR
+from networkx import DiGraph
 
 if TYPE_CHECKING:
-    from networkx import DiGraph
     from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 
 from checkov.common.util.type_forcers import force_int
@@ -364,11 +365,25 @@ def get_file_path_to_referred_id_igraph(graph_object: igraph.Graph) -> dict[str,
     return file_path_to_module_id
 
 
-def setup_file_path_to_referred_id(graph_object: DiGraph | igraph.Graph) -> dict[str, str]:
+def get_file_path_to_referred_id_rustworkx(graph_object: DiGraph) -> dict[str, str]:
+    file_path_to_module_id = {}
+
+    modules = [node for index, node in graph_object.nodes() if
+               node.get(CustomAttributes.BLOCK_TYPE) == BlockType.MODULE]
+    for modules_data in modules:
+        for module_name, module_content in modules_data.get(CustomAttributes.CONFIG, {}).items():
+            for path in module_content.get("__resolved__", []):
+                file_path_to_module_id[path] = f"module.{module_name}"
+    return file_path_to_module_id
+
+
+def setup_file_path_to_referred_id(graph_object: LibraryGraph) -> dict[str, str]:
     if isinstance(graph_object, igraph.Graph):
         return get_file_path_to_referred_id_igraph(graph_object)
-    else:  # the default value of the graph framework is 'NETWORKX'
+    elif isinstance(graph_object, DiGraph):
         return get_file_path_to_referred_id_networkx(graph_object)
+    else:
+        return get_file_path_to_referred_id_rustworkx(graph_object)
 
 
 def get_attribute_is_leaf(vertex: TerraformBlock) -> Dict[str, bool]:
@@ -379,3 +394,34 @@ def get_attribute_is_leaf(vertex: TerraformBlock) -> Dict[str, bool]:
         if other in attribute_is_leaf:
             attribute_is_leaf[other] = False
     return attribute_is_leaf
+
+
+def join_double_quote_surrounded_dot_split(str_parts: list[str]) -> list[str]:
+    """Joins back split strings which enclosed a dot by double quotes
+
+    ex.
+
+    ['google_project_iam_binding', 'role["roles/logging', 'admin"]'] -> ['google_project_iam_binding', 'role["roles/logging.admin"]']
+
+    If someone finds a better solution feel free to replace it!
+    """
+
+    new_str_parts = []
+    joined_str_parts: list[str] = []
+    for part in str_parts:
+        if not joined_str_parts:
+            if '"' not in part:
+                new_str_parts.append(part)
+            elif part.count('"') >= 2:
+                new_str_parts.append(part)
+            else:
+                joined_str_parts.append(part)
+            continue
+
+        joined_str_parts.append(part)
+
+        if '"' in part:
+            new_str_parts.append(".".join(joined_str_parts))
+            joined_str_parts = []
+
+    return new_str_parts

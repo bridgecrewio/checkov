@@ -5,6 +5,8 @@ import os
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any
 
+from typing_extensions import TypeAlias  # noqa[TC002]
+
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.models.enums import CheckResult
 from checkov.common.typing import LibraryGraphConnector
@@ -15,7 +17,7 @@ from checkov.common.output.record import Record
 from checkov.common.output.report import Report
 from checkov.common.output.extra_resource import ExtraResource
 from checkov.common.bridgecrew.check_type import CheckType
-from checkov.common.runners.base_runner import BaseRunner, CHECKOV_CREATE_GRAPH
+from checkov.common.runners.base_runner import BaseRunner
 from checkov.common.util.consts import START_LINE, END_LINE
 from checkov.common.util.dockerfile import is_dockerfile
 from checkov.common.typing import _CheckResult
@@ -41,8 +43,11 @@ if TYPE_CHECKING:
     from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
     from checkov.common.images.image_referencer import Image
 
+_DockerfileContext: TypeAlias = "dict[str, dict[str, Any]]"
+_DockerfileDefinitions: TypeAlias = "dict[str, dict[str, list[_Instruction]]]"
 
-class Runner(ImageReferencerMixin["dict[str, dict[str, list[_Instruction]]]"], BaseRunner[DockerfileGraphManager]):
+
+class Runner(ImageReferencerMixin[_DockerfileDefinitions], BaseRunner[_DockerfileDefinitions, _DockerfileContext, DockerfileGraphManager]):
     check_type = CheckType.DOCKERFILE  # noqa: CCE003  # a static attribute
 
     def __init__(
@@ -61,8 +66,8 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, list[_Instruction]]]"], B
         )
         self.graph_registry = get_graph_checks_registry(self.check_type)
 
-        self.context: dict[str, dict[str, Any]] = {}
-        self.definitions: "dict[str, dict[str, list[_Instruction]]]" = {}  # type:ignore[assignment]  # need to check, how to support subclass differences
+        self.context: _DockerfileContext = {}
+        self.definitions: _DockerfileDefinitions = {}
         self.definitions_raw: "dict[str, list[str]]" = {}       # type:ignore[assignment]
         self.root_folder: str | None = None
 
@@ -90,7 +95,7 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, list[_Instruction]]]"], B
                 for directory in external_checks_dir:
                     registry.load_external_checks(directory)
 
-                    if CHECKOV_CREATE_GRAPH and self.graph_registry:
+                    if self.graph_registry:
                         self.graph_registry.load_external_checks(directory)
 
             if files:
@@ -106,7 +111,7 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, list[_Instruction]]]"], B
 
             self.context = build_definitions_context(definitions=self.definitions, definitions_raw=self.definitions_raw)
 
-            if CHECKOV_CREATE_GRAPH and self.graph_registry and self.graph_manager:
+            if self.graph_registry and self.graph_manager:
                 logging.info("Creating Dockerfile graph")
                 local_graph = self.graph_manager.build_graph_from_definitions(definitions=self.definitions)
                 logging.info("Successfully created Dockerfile graph")
@@ -119,7 +124,7 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, list[_Instruction]]]"], B
         self.add_python_check_results(report=report, runner_filter=runner_filter, root_folder=root_folder)
 
         # run graph checks
-        if CHECKOV_CREATE_GRAPH and self.graph_registry:
+        if self.graph_registry:
             self.add_graph_check_results(report=report, runner_filter=runner_filter, root_folder=root_folder)
 
         if runner_filter.run_image_referencer:

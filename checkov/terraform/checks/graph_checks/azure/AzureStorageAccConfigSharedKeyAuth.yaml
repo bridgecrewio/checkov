@@ -1,0 +1,17 @@
+metadata:
+  id: "CKV2_AZURE_40"
+  name: "Ensure storage account is not configured with Shared Key authorization"
+  category: "IAM"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types: "azurerm_storage_account"
+      attribute: "shared_access_key_enabled"
+      operator: "exists"
+
+    - cond_type: "attribute"
+      resource_types: "azurerm_storage_account"
+      attribute: "shared_access_key_enabled"
+      operator: "equals_ignore_case"
+      value: "false"

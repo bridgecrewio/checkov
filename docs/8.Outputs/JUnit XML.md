@@ -98,7 +98,7 @@ IaC
 <failure type="failure" message="Ensure all data stored in the S3 bucket have versioning enabled">
     Resource: aws_s3_bucket.example
     File: /main.tf: 6-9
-    Guideline: https://docs.bridgecrew.io/docs/s3_16-enable-versioning
+    Guideline: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3_16-enable-versioning
     
         6 | resource "aws_s3_bucket" "example" {
         7 |   # checkov:skip=CKV_AWS_18: logging not needed on a logging bucket
@@ -192,7 +192,7 @@ SCA
             <failure type="failure" message="Ensure all data stored in the S3 bucket have versioning enabled">
                 Resource: aws_s3_bucket.example
                 File: /main.tf: 6-9
-                Guideline: https://docs.bridgecrew.io/docs/s3_16-enable-versioning
+                Guideline: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3_16-enable-versioning
                 
                     6 | resource "aws_s3_bucket" "example" {
                     7 |   # checkov:skip=CKV_AWS_18: logging not needed on a logging bucket
@@ -204,7 +204,7 @@ SCA
             <failure type="failure" message="Ensure all data stored in the S3 bucket have versioning enabled">
                 Resource: aws_s3_bucket.example_2
                 File: /main.tf: 12-15
-                Guideline: https://docs.bridgecrew.io/docs/s3_16-enable-versioning
+                Guideline: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3_16-enable-versioning
                 
                     12 | resource "aws_s3_bucket" "example_2" {
                     13 |   # checkov:skip=CKV_AWS_18: logging not needed on a logging bucket

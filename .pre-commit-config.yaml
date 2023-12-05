@@ -1,10 +1,10 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v4.5.0
     hooks:
       - id: debug-statements
   - repo: https://github.com/PyCQA/flake8
-    rev: 6.0.0
+    rev: 6.1.0
     hooks:
       - id: flake8
         language_version: python3.9
@@ -18,7 +18,7 @@ repos:
       - id: teyit
         language_version: python3.9
   - repo: https://github.com/rhysd/actionlint
-    rev: v1.6.24
+    rev: v1.6.26
     hooks:
       - id: actionlint-docker
         # SC2129 - Consider using { cmd1; cmd2; } >> file instead of individual redirects.
@@ -33,7 +33,7 @@ repos:
         additional_dependencies:
           - vistir<0.7.0  # can be removed, when v4.0.0 of pipenv-setup comes out
   - repo: https://github.com/seddonym/import-linter  # checks the import dependencies between each other
-    rev: v1.10.0
+    rev: v1.12.1
     hooks:
       - id: import-linter
         language_version: python3.9

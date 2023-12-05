@@ -412,6 +412,57 @@ class TestYamlPolicies(unittest.TestCase):
     def test_AzureStorageAccountEnableSoftDelete(self):
             self.go("AzureStorageAccountEnableSoftDelete")
 
+    def test_AWSdisableS3ACL(self):
+        self.go("AWSdisableS3ACL")
+
+    def test_AWS_private_MWAA_environment(self):
+        self.go("AWS_private_MWAA_environment")
+
+    def test_AzureStorageAccConfigSharedKeyAuth(self):
+        self.go("AzureStorageAccConfigSharedKeyAuth")
+
+    def test_AzureStorageAccConfig_SAS_expirePolicy(self):
+        self.go("AzureStorageAccConfig_SAS_expirePolicy")
+
+    def test_AzureVMconfigPublicIP_SerialConsoleAccess(self):
+        self.go("AzureVMconfigPublicIP_SerialConsoleAccess")
+
+    def test_AzurePostgreSQLserverConfigPrivEndpt(self):
+        self.go("AzurePostgreSQLserverConfigPrivEndpt")
+
+    def test_AzureMariaDBserverConfigPrivEndpt(self):
+        self.go("AzureMariaDBserverConfigPrivEndpt")
+
+    def test_AzureMySQLserverConfigPrivEndpt(self):
+        self.go("AzureMySQLserverConfigPrivEndpt")
+
+    def test_AzureMSSQLserverConfigPrivEndpt(self):
+        self.go("AzureMSSQLserverConfigPrivEndpt")
+
+    def test_AzureSynapseWorkspaceVAisEnabled(self):
+        self.go("AzureSynapseWorkspaceVAisEnabled")
+
+    def test_IBM_AppLBforVPCisPrivate(self):
+        self.go("IBM_LoadBalancerforVPCisPrivate")
+
+    def test_IBM_VPCclassicAccessIsDisabled(self):
+        self.go("IBM_VPCclassicAccessIsDisabled")
+
+    def test_IBM_RestrictServiceIDCreationInAccountSettings(self):
+        self.go("IBM_RestrictServiceIDCreationInAccountSettings")
+
+    def test_IBM_EnableMFAatAccountLevel(self):
+        self.go("IBM_EnableMFAatAccountLevel")
+
+    def test_IBM_RestrictAPIkeyCreationInAccountSettings(self):
+        self.go("IBM_RestrictAPIkeyCreationInAccountSettings")
+
+    def test_IBM_DatabasesNWaccessRestrictedToSpecificIPrange(self):
+        self.go("IBM_DatabasesNWaccessRestrictedToSpecificIPrange")
+
+    def test_IBM_K8sClustersAccessibleViaPrivateEndPt(self):
+        self.go("IBM_K8sClustersAccessibleViaPrivateEndPt")
+
     def test_registry_load(self):
         registry = Registry(parser=GraphCheckParser(), checks_dir=str(
             Path(__file__).parent.parent.parent.parent.parent / "checkov" / "terraform" / "checks" / "graph_checks"))

@@ -5,6 +5,7 @@ from collections import defaultdict
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.code_categories import CodeCategoryType, CodeCategoryConfiguration
 from checkov.common.bridgecrew.severities import Severities, BcSeverities, Severity
+from checkov.common.sast.consts import SastLanguages
 from checkov.main import Checkov
 from checkov.runner_filter import RunnerFilter
 
@@ -450,10 +451,11 @@ class TestRunnerFilter(unittest.TestCase):
 
         enforcement_rule_configs = {
             CodeCategoryType.IAC: CodeCategoryConfiguration(CodeCategoryType.IAC, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.MEDIUM]),
+             CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
+            CodeCategoryType.SAST: CodeCategoryConfiguration(CodeCategoryType.SAST, Severities[BcSeverities.HIGH],Severities[BcSeverities.HIGH]),
             CodeCategoryType.BUILD_INTEGRITY: CodeCategoryConfiguration(CodeCategoryType.BUILD_INTEGRITY, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
             CodeCategoryType.LICENSES: CodeCategoryConfiguration(CodeCategoryType.LICENSES, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.VULNERABILITIES: CodeCategoryConfiguration(CodeCategoryType.VULNERABILITIES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH])
+            CodeCategoryType.VULNERABILITIES: CodeCategoryConfiguration(CodeCategoryType.VULNERABILITIES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH])
         }
 
         instance.apply_enforcement_rules(enforcement_rule_configs)
@@ -469,10 +471,11 @@ class TestRunnerFilter(unittest.TestCase):
 
         enforcement_rule_configs = {
             CodeCategoryType.IAC: CodeCategoryConfiguration(CodeCategoryType.IAC, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.MEDIUM]),
+            CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
+            CodeCategoryType.SAST: CodeCategoryConfiguration(CodeCategoryType.SAST, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.BUILD_INTEGRITY: CodeCategoryConfiguration(CodeCategoryType.BUILD_INTEGRITY, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
             CodeCategoryType.LICENSES: CodeCategoryConfiguration(CodeCategoryType.LICENSES, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.VULNERABILITIES: CodeCategoryConfiguration(CodeCategoryType.VULNERABILITIES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH])
+            CodeCategoryType.VULNERABILITIES: CodeCategoryConfiguration(CodeCategoryType.VULNERABILITIES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH])
         }
 
         instance.apply_enforcement_rules(enforcement_rule_configs)
@@ -494,10 +497,11 @@ class TestRunnerFilter(unittest.TestCase):
 
         enforcement_rule_configs = {
             CodeCategoryType.IAC: CodeCategoryConfiguration(CodeCategoryType.IAC, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.MEDIUM]),
+            CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
+            CodeCategoryType.SAST: CodeCategoryConfiguration(CodeCategoryType.SAST, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.BUILD_INTEGRITY: CodeCategoryConfiguration(CodeCategoryType.BUILD_INTEGRITY, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
             CodeCategoryType.LICENSES: CodeCategoryConfiguration(CodeCategoryType.LICENSES, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.VULNERABILITIES: CodeCategoryConfiguration(CodeCategoryType.VULNERABILITIES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH])
+            CodeCategoryType.VULNERABILITIES: CodeCategoryConfiguration(CodeCategoryType.VULNERABILITIES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH])
         }
 
         instance.apply_enforcement_rules(enforcement_rule_configs)
@@ -519,10 +523,11 @@ class TestRunnerFilter(unittest.TestCase):
 
         enforcement_rule_configs = {
             CodeCategoryType.IAC: CodeCategoryConfiguration(CodeCategoryType.IAC, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.MEDIUM]),
+            CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
+            CodeCategoryType.SAST: CodeCategoryConfiguration(CodeCategoryType.SAST, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.BUILD_INTEGRITY: CodeCategoryConfiguration(CodeCategoryType.BUILD_INTEGRITY, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
             CodeCategoryType.LICENSES: CodeCategoryConfiguration(CodeCategoryType.LICENSES, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.VULNERABILITIES: CodeCategoryConfiguration(CodeCategoryType.VULNERABILITIES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH])
+            CodeCategoryType.VULNERABILITIES: CodeCategoryConfiguration(CodeCategoryType.VULNERABILITIES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH])
         }
 
         instance.apply_enforcement_rules(enforcement_rule_configs)
@@ -543,10 +548,11 @@ class TestRunnerFilter(unittest.TestCase):
 
         enforcement_rule_configs = {
             CodeCategoryType.IAC: CodeCategoryConfiguration(CodeCategoryType.IAC, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.MEDIUM]),
+            CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
+            CodeCategoryType.SAST: CodeCategoryConfiguration(CodeCategoryType.SAST, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.BUILD_INTEGRITY: CodeCategoryConfiguration(CodeCategoryType.BUILD_INTEGRITY, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
             CodeCategoryType.LICENSES: CodeCategoryConfiguration(CodeCategoryType.LICENSES, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.VULNERABILITIES: CodeCategoryConfiguration(CodeCategoryType.VULNERABILITIES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH])
+            CodeCategoryType.VULNERABILITIES: CodeCategoryConfiguration(CodeCategoryType.VULNERABILITIES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH])
         }
 
         instance.apply_enforcement_rules(enforcement_rule_configs)
@@ -567,10 +573,11 @@ class TestRunnerFilter(unittest.TestCase):
 
         enforcement_rule_configs = {
             CodeCategoryType.IAC: CodeCategoryConfiguration(CodeCategoryType.IAC, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.MEDIUM]),
+            CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
+            CodeCategoryType.SAST: CodeCategoryConfiguration(CodeCategoryType.SAST, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.BUILD_INTEGRITY: CodeCategoryConfiguration(CodeCategoryType.BUILD_INTEGRITY, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
             CodeCategoryType.LICENSES: CodeCategoryConfiguration(CodeCategoryType.LICENSES, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.VULNERABILITIES: CodeCategoryConfiguration(CodeCategoryType.VULNERABILITIES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH])
+            CodeCategoryType.VULNERABILITIES: CodeCategoryConfiguration(CodeCategoryType.VULNERABILITIES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH])
         }
 
         instance.apply_enforcement_rules(enforcement_rule_configs)
@@ -597,10 +604,11 @@ class TestRunnerFilter(unittest.TestCase):
 
         enforcement_rule_configs = {
             CodeCategoryType.IAC: CodeCategoryConfiguration(CodeCategoryType.IAC, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.MEDIUM]),
+            CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
+            CodeCategoryType.SAST: CodeCategoryConfiguration(CodeCategoryType.SAST, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.BUILD_INTEGRITY: CodeCategoryConfiguration(CodeCategoryType.BUILD_INTEGRITY, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
             CodeCategoryType.LICENSES: CodeCategoryConfiguration(CodeCategoryType.LICENSES, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.VULNERABILITIES: CodeCategoryConfiguration(CodeCategoryType.VULNERABILITIES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH])
+            CodeCategoryType.VULNERABILITIES: CodeCategoryConfiguration(CodeCategoryType.VULNERABILITIES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH])
         }
 
         instance.apply_enforcement_rules(enforcement_rule_configs)
@@ -621,10 +629,11 @@ class TestRunnerFilter(unittest.TestCase):
 
         enforcement_rule_configs = {
             CodeCategoryType.IAC: CodeCategoryConfiguration(CodeCategoryType.IAC, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.MEDIUM]),
+            CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
+            CodeCategoryType.SAST: CodeCategoryConfiguration(CodeCategoryType.SAST, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.BUILD_INTEGRITY: CodeCategoryConfiguration(CodeCategoryType.BUILD_INTEGRITY, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
             CodeCategoryType.LICENSES: CodeCategoryConfiguration(CodeCategoryType.LICENSES, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.VULNERABILITIES: CodeCategoryConfiguration(CodeCategoryType.VULNERABILITIES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH])
+            CodeCategoryType.VULNERABILITIES: CodeCategoryConfiguration(CodeCategoryType.VULNERABILITIES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH])
         }
 
         instance.apply_enforcement_rules(enforcement_rule_configs)
@@ -647,7 +656,8 @@ class TestRunnerFilter(unittest.TestCase):
             CodeCategoryType.BUILD_INTEGRITY: CodeCategoryConfiguration(CodeCategoryType.BUILD_INTEGRITY, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.MEDIUM]),
             CodeCategoryType.LICENSES: CodeCategoryConfiguration(CodeCategoryType.LICENSES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.VULNERABILITIES: CodeCategoryConfiguration(CodeCategoryType.VULNERABILITIES, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.MEDIUM]),
-            CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH])
+            CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
+            CodeCategoryType.SAST: CodeCategoryConfiguration(CodeCategoryType.SAST, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH])
         }
 
         instance.apply_enforcement_rules(enforcement_rule_configs)
@@ -668,7 +678,8 @@ class TestRunnerFilter(unittest.TestCase):
             CodeCategoryType.BUILD_INTEGRITY: CodeCategoryConfiguration(CodeCategoryType.BUILD_INTEGRITY, Severities[BcSeverities.INFO], Severities[BcSeverities.INFO]),
             CodeCategoryType.LICENSES: CodeCategoryConfiguration(CodeCategoryType.LICENSES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.VULNERABILITIES: CodeCategoryConfiguration(CodeCategoryType.VULNERABILITIES, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.MEDIUM]),
-            CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.OFF], Severities[BcSeverities.OFF])
+            CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.OFF], Severities[BcSeverities.OFF]),
+            CodeCategoryType.SAST: CodeCategoryConfiguration(CodeCategoryType.SAST, Severities[BcSeverities.OFF], Severities[BcSeverities.OFF])
         }
 
         instance.apply_enforcement_rules(enforcement_rule_configs)
@@ -679,6 +690,7 @@ class TestRunnerFilter(unittest.TestCase):
             'azure_pipelines': Severities[BcSeverities.INFO],
             'bicep': Severities[BcSeverities.LOW],
             'bitbucket_pipelines': Severities[BcSeverities.INFO],
+            'cdk': Severities[BcSeverities.OFF],
             'circleci_pipelines': Severities[BcSeverities.INFO],
             'cloudformation': Severities[BcSeverities.LOW],
             'dockerfile': Severities[BcSeverities.LOW],
@@ -707,6 +719,10 @@ class TestRunnerFilter(unittest.TestCase):
             'terraform_json': Severities[BcSeverities.LOW],
             'terraform_plan': Severities[BcSeverities.LOW],
             '3d_policy': Severities[BcSeverities.LOW],
+            'sast': Severities[BcSeverities.OFF],
+            'sast_python': Severities[BcSeverities.OFF],
+            'sast_java': Severities[BcSeverities.OFF],
+            'sast_javascript': Severities[BcSeverities.OFF],
         }
         self.assertEqual(instance.enforcement_rule_configs, expected)
 
@@ -802,6 +818,25 @@ class TestRunnerFilter(unittest.TestCase):
 
         for k, v in combined_file_real_parsed_content.items():
             assert v == runner_filter.resource_attr_to_omit.get(k)
+
+    def test_get_sast_languages(self):
+        sast_langs = RunnerFilter.get_sast_languages(['sast'], [])
+        assert SastLanguages.PYTHON in sast_langs
+        assert SastLanguages.JAVA in sast_langs
+        assert SastLanguages.JAVASCRIPT in sast_langs
+        sast_langs = RunnerFilter.get_sast_languages(['sast_python'], [])
+        assert SastLanguages.PYTHON in sast_langs
+        sast_langs = RunnerFilter.get_sast_languages(['sast_python', 'sast_javascript'], [])
+        assert SastLanguages.PYTHON in sast_langs
+        assert SastLanguages.JAVASCRIPT in sast_langs
+        sast_langs = RunnerFilter.get_sast_languages(['all'], [])
+        assert all(lang in sast_langs for lang in SastLanguages)
+
+        # skip
+        sast_langs = RunnerFilter.get_sast_languages(['all'], ['sast_python', 'sast_javascript'])
+        assert SastLanguages.JAVA in sast_langs
+        assert SastLanguages.PYTHON not in sast_langs
+        assert SastLanguages.JAVASCRIPT not in sast_langs
 
     def test_scan_secrets_history_limits_to_secrets_framework(self):
         # when

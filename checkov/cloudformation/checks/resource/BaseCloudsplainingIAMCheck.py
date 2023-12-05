@@ -11,7 +11,6 @@ from cloudsplaining.scan.policy_document import PolicyDocument
 
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.common.multi_signature import multi_signature
 from checkov.cloudformation.checks.utils.iam_cloudformation_document_to_policy_converter import \
     convert_cloudformation_conf_to_iam_policy
 
@@ -77,7 +76,6 @@ class BaseCloudsplainingIAMCheck(BaseResourceCheck):
                     return CheckResult.UNKNOWN
             return CheckResult.PASSED
 
-    @multi_signature()
     @abstractmethod
     def cloudsplaining_analysis(self, policy: PolicyDocument) -> list[str]:
         raise NotImplementedError()

@@ -1,5 +1,6 @@
+import os
 from pathlib import Path
-from mock.mock import MagicMock
+from unittest.mock import MagicMock
 
 from pytest_mock import MockerFixture
 from packaging import version as packaging_version
@@ -74,40 +75,48 @@ def test_upload_scannable_files_exclude_go_and_requirements():
 
 
 def test_upload_scannable_files_file_config():
-    # when
-    input_output_paths = Runner().upload_package_files(
-        root_path=None,
-        files=[
-            str(EXAMPLES_DIR / 'requirements.txt'),
-            str(EXAMPLES_DIR / 'go.sum'),
-            str(EXAMPLES_DIR / 'package-lock.json'),
-            str(EXAMPLES_DIR / 'package.json'),
-            str(EXAMPLES_DIR / 'go.mod'),
-            str(EXAMPLES_DIR / 'Microsoft.NET.Sdk.csproj')
-        ],
-        excluded_paths=set(),
-        excluded_file_names=set()
-    )
-    # expected
-    expected_output = {
-        FileToPersist(full_file_path=str(EXAMPLES_DIR / 'requirements.txt'),
-                      s3_file_key='requirements.txt'),
-        FileToPersist(full_file_path=str(EXAMPLES_DIR / 'go.sum'),
-                      s3_file_key='go.sum'),
-        FileToPersist(full_file_path=str(EXAMPLES_DIR / 'package-lock.json'),
-                      s3_file_key='package-lock.json'),
-        FileToPersist(full_file_path=str(EXAMPLES_DIR / 'package.json'),
-                      s3_file_key='package.json'),
-        FileToPersist(full_file_path=str(EXAMPLES_DIR / 'go.mod'),
-                      s3_file_key='go.mod'),
-        FileToPersist(full_file_path=str(EXAMPLES_DIR / 'Microsoft.NET.Sdk.csproj'),
-                      s3_file_key='Microsoft.NET.Sdk.csproj')
-    }
+    origin_cwd = os.getcwd()
+    try:
+        # setup
+        os.chdir(str(Path(__file__).parent))
 
-    # then
-    assert len(input_output_paths) == 6
+        # when
+        input_output_paths = Runner().upload_package_files(
+            root_path=None,
+            files=[
+                str(EXAMPLES_DIR / 'requirements.txt'),
+                str(EXAMPLES_DIR / 'go.sum'),
+                str(EXAMPLES_DIR / 'package-lock.json'),
+                str(EXAMPLES_DIR / 'package.json'),
+                str(EXAMPLES_DIR / 'go.mod'),
+                str(EXAMPLES_DIR / 'Microsoft.NET.Sdk.csproj')
+            ],
+            excluded_paths=set(),
+            excluded_file_names=set()
+        )
+        # expected (paths are in related to the test-working-dir)
+        expected_output = {
+            FileToPersist(full_file_path=str(EXAMPLES_DIR / 'requirements.txt'),
+                          s3_file_key='examples/requirements.txt'),
+            FileToPersist(full_file_path=str(EXAMPLES_DIR / 'go.sum'),
+                          s3_file_key='examples/go.sum'),
+            FileToPersist(full_file_path=str(EXAMPLES_DIR / 'package-lock.json'),
+                          s3_file_key='examples/package-lock.json'),
+            FileToPersist(full_file_path=str(EXAMPLES_DIR / 'package.json'),
+                          s3_file_key='examples/package.json'),
+            FileToPersist(full_file_path=str(EXAMPLES_DIR / 'go.mod'),
+                          s3_file_key='examples/go.mod'),
+            FileToPersist(full_file_path=str(EXAMPLES_DIR / 'Microsoft.NET.Sdk.csproj'),
+                          s3_file_key='examples/Microsoft.NET.Sdk.csproj')
+        }
 
-    assert set(input_output_paths) == expected_output
+        # then
+        assert len(input_output_paths) == 6
+
+        assert set(input_output_paths) == expected_output
+    finally:
+        # teardown
+        os.chdir(origin_cwd)
 
 
 def test_run(sca_package_2_report):
@@ -135,7 +144,7 @@ def test_run(sca_package_2_report):
     assert cve_record is not None
     assert cve_record.bc_check_id == "BC_CVE_2020_29652"
     assert cve_record.check_id == "CKV_CVE_2020_29652"
-    assert cve_record.check_class == "mock.mock.MagicMock"  # not the real one
+    assert cve_record.check_class == "unittest.mock.MagicMock"  # not the real one
     assert cve_record.check_name == "SCA package scan"
     assert cve_record.check_result == {"result": CheckResult.FAILED}
     assert cve_record.code_block == [(0, "golang.org/x/crypto: v0.0.1")]

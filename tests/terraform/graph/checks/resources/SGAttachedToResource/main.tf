@@ -18,6 +18,29 @@ resource "aws_apprunner_vpc_connector" "pass_app_runner" {
   security_groups    = [aws_security_group.pass_app_runner.id]
 }
 
+# App Stream Fleet
+
+resource "aws_security_group" "pass_appstream_fleet" {
+  ingress {
+    description = "TLS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_appstream_fleet" "pass_appstream_fleet" {
+  name          = "name"
+  instance_type = "stream.standard.large"
+  compute_capacity {
+    desired_instances = 1
+  }
+  vpc_config {
+    security_groups_ids = [aws_security_group.pass_appstream_fleet.id]
+  }
+}
+
 # Batch
 
 resource "aws_security_group" "pass_batch" {
@@ -674,7 +697,7 @@ resource "aws_quicksight_vpc_connection" "pass_quicksight" {
   name               = "Example Connection"
   role_arn           = "aws_iam_role.vpc_connection_role.arn"
   security_group_ids = [aws_security_group.pass_quicksight.id]
-  subnet_ids = ["subnet-00000000000000000"]
+  subnet_ids         = ["subnet-00000000000000000"]
 }
 
 # RDS

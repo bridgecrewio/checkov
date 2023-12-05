@@ -1,0 +1,13 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  DocDBDefault:
+    Type: AWS::DocDB::DBCluster
+    Properties:
+      MasterUsername: name
+      MasterUserPassword: password
+  DocDBNotAdequate:
+    Type: AWS::DocDB::DBCluster
+    Properties:
+      MasterUsername: name
+      MasterUserPassword: password
+      BackupRetentionPeriod: 3

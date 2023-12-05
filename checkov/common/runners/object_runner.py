@@ -7,8 +7,8 @@ import platform
 from abc import abstractmethod
 from collections.abc import Iterable
 from pathlib import Path
-from typing import Any, TYPE_CHECKING, Callable
-from typing_extensions import TypedDict
+from typing import Any, TYPE_CHECKING, Callable, TypedDict
+from typing_extensions import TypeAlias  # noqa[TC002]
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
 from checkov.common.models.enums import CheckResult
@@ -18,7 +18,7 @@ from checkov.common.output.github_actions_record import GithubActionsRecord
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report, CheckType
 from checkov.common.parallelizer.parallel_runner import parallel_runner
-from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths, CHECKOV_CREATE_GRAPH
+from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.common.runners.graph_manager import ObjectGraphManager
 from checkov.common.typing import _CheckResult
 from checkov.common.util.consts import START_LINE, END_LINE
@@ -30,6 +30,9 @@ if TYPE_CHECKING:
     from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
     from checkov.common.runners.graph_builder.local_graph import ObjectLocalGraph
 
+_ObjectContext: TypeAlias = "dict[str, dict[str, Any]]"
+_ObjectDefinitions: TypeAlias = "dict[str, dict[str, Any] | list[dict[str, Any]]]"
+
 
 class GhaMetadata(TypedDict):
     triggers: set[str]
@@ -37,7 +40,7 @@ class GhaMetadata(TypedDict):
     jobs: dict[int, str]
 
 
-class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs to replaced
+class Runner(BaseRunner[_ObjectDefinitions, _ObjectContext, ObjectGraphManager]):
     def __init__(
         self,
         db_connector: LibraryGraphConnector | None = None,
@@ -46,8 +49,9 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
         graph_manager: ObjectGraphManager | None = None,
     ) -> None:
         super().__init__()
-        self.definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] = {}
+        self.definitions: _ObjectDefinitions = {}
         self.definitions_raw: dict[str, list[tuple[int, str]]] = {}
+        self.context: _ObjectContext | None = None
         self.map_file_path_to_gha_metadata_dict: dict[str, GhaMetadata] = {}
         self.root_folder: str | None = None
 
@@ -84,10 +88,9 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
                     self.map_file_path_to_gha_metadata_dict[file] = \
                         {"triggers": triggers, "workflow_name": workflow_name, "jobs": jobs}
 
+    @staticmethod
     @abstractmethod
-    def _parse_file(
-            self, f: str
-    ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
+    def _parse_file(f: str) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
         raise Exception("parser should be imported by deriving class")
 
     def run(
@@ -117,7 +120,7 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
             for directory in external_checks_dir:
                 registry.load_external_checks(directory)
 
-                if CHECKOV_CREATE_GRAPH and self.graph_registry:
+                if self.graph_registry:
                     self.graph_registry.load_external_checks(directory)
 
         if not self.context or not self.definitions:
@@ -135,7 +138,7 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
 
             self.context = self.build_definitions_context(definitions=self.definitions, definitions_raw=self.definitions_raw)
 
-            if CHECKOV_CREATE_GRAPH and self.graph_registry and self.graph_manager:
+            if self.graph_registry and self.graph_manager:
                 logging.info(f"Creating {self.source} graph")
                 local_graph = self.graph_manager.build_graph_from_definitions(
                     definitions=self.definitions, graph_class=self.graph_class  # type:ignore[arg-type]  # the paths are just `str`
@@ -154,7 +157,7 @@ class Runner(BaseRunner[ObjectGraphManager]):  # if a graph is added, Any needs 
         self.add_python_check_results(report=report, registry=registry, runner_filter=runner_filter, root_folder=root_folder)
 
         # run graph checks
-        if CHECKOV_CREATE_GRAPH and self.graph_registry:
+        if self.graph_registry:
             self.add_graph_check_results(report=report, runner_filter=runner_filter)
 
         return report

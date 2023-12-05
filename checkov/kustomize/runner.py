@@ -27,10 +27,9 @@ from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.kubernetes.kubernetes_utils import create_check_result, get_resource_id, calculate_code_lines, \
     PARENT_RESOURCE_ID_KEY_NAME
-from checkov.kubernetes.runner import Runner as K8sRunner
-from checkov.kubernetes.runner import _get_entity_abs_path
+from checkov.kubernetes.runner import Runner as K8sRunner, _get_entity_abs_path, _KubernetesContext, _KubernetesDefinitions
 from checkov.kustomize.image_referencer.manager import KustomizeImageReferencerManager
-from checkov.kustomize.utils import get_kustomize_version
+from checkov.kustomize.utils import get_kustomize_version, get_kubectl_version
 from checkov.runner_filter import RunnerFilter
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.typing import LibraryGraphConnector
@@ -65,7 +64,7 @@ class K8sKustomizeRunner(K8sRunner):
 
     def set_external_data(
         self,
-        definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None,
+        definitions: _KubernetesDefinitions | None,
         context: dict[str, dict[str, Any]] | None,
         breadcrumbs: dict[str, dict[str, Any]] | None,
         report_mutator_data: dict[str, dict[str, Any]] | None = None,
@@ -354,7 +353,7 @@ class K8sKustomizeRunner(K8sRunner):
         return images
 
 
-class Runner(BaseRunner["KubernetesGraphManager"]):
+class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesGraphManager"]):
     kustomize_command = 'kustomize'  # noqa: CCE003  # a static attribute
     kubectl_command = 'kubectl'  # noqa: CCE003  # a static attribute
     check_type = CheckType.KUSTOMIZE  # noqa: CCE003  # a static attribute
@@ -452,22 +451,13 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
         logging.info(f"Checking necessary system dependancies for {self.check_type} checks.")
 
         if shutil.which(self.kubectl_command) is not None:
-            try:
-                proc = subprocess.run([self.kubectl_command, 'version', '--client=true'], capture_output=True)  # nosec
-                version_output = proc.stdout.decode("utf-8")
-
-                if "Client Version:" in version_output:
-                    kubectl_version_major = version_output.split('\n')[0].split('Major:\"')[1].split('"')[0]
-                    kubectl_version_minor = version_output.split('\n')[0].split('Minor:\"')[1].split('"')[0]
-                    kubectl_version = float(f"{kubectl_version_major}.{kubectl_version_minor}")
-                    if kubectl_version >= 1.14:
-                        logging.info(f"Found working version of {self.check_type} dependancy {self.kubectl_command}: {kubectl_version}")
-                        self.templateRendererCommand = self.kubectl_command
-                        return None
-
-            except Exception:
-                logging.debug(f"An error occured testing the {self.kubectl_command} command:", exc_info=True)
-
+            kubectl_version = get_kubectl_version(kubectl_command=self.kubectl_command)
+            if kubectl_version and kubectl_version >= 1.14:
+                logging.info(f"Found working version of {self.check_type} dependancy {self.kubectl_command}: {kubectl_version}")
+                self.templateRendererCommand = self.kubectl_command
+                return None
+            else:
+                return self.check_type
         elif shutil.which(self.kustomize_command) is not None:
             kustomize_version = get_kustomize_version(kustomize_command=self.kustomize_command)
             if kustomize_version:
@@ -482,30 +472,31 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
             logging.info(f"Could not find usable tools locally to process {self.check_type} checks. Framework will be disabled for this run.")
             return self.check_type
 
-        return None
-
-    def _handle_overlay_case(self, file_path: str) -> None:
+    def _handle_overlay_case(self, file_path: str,
+                             kustomizeProcessedFolderAndMeta: dict[str, dict[str, Any]] | None = None) -> None:
+        if kustomizeProcessedFolderAndMeta is None:
+            kustomizeProcessedFolderAndMeta = self.kustomizeProcessedFolderAndMeta
         for parent in pathlib.Path(file_path).parents:
             for potentialBase in self.potentialBases:
                 pathlib_base_object = pathlib.Path(potentialBase)
                 potential_base_path = pathlib_base_object.parents[1]
                 if parent == potential_base_path.resolve():
-                    self.kustomizeProcessedFolderAndMeta[file_path]['calculated_bases'] = str(pathlib_base_object.parent)
+                    kustomizeProcessedFolderAndMeta[file_path]['calculated_bases'] = str(pathlib_base_object.parent)
         try:
-            relativeToFullPath = f"{file_path}/{self.kustomizeProcessedFolderAndMeta[file_path]['referenced_bases'][0]}"
-            if pathlib.Path(self.kustomizeProcessedFolderAndMeta[file_path]['calculated_bases']) == pathlib.Path(relativeToFullPath).resolve():
-                self.kustomizeProcessedFolderAndMeta[file_path]['validated_base'] = str(pathlib.Path(self.kustomizeProcessedFolderAndMeta[file_path]['calculated_bases']))
-                checkov_kustomize_env_name_by_path = str(pathlib.Path(file_path).relative_to(pathlib.Path(self.kustomizeProcessedFolderAndMeta[file_path]['calculated_bases']).parent))
-                self.kustomizeProcessedFolderAndMeta[file_path]['overlay_name'] = checkov_kustomize_env_name_by_path
-                logging.debug(f"Overlay based on {self.kustomizeProcessedFolderAndMeta[file_path]['validated_base']}, naming overlay {checkov_kustomize_env_name_by_path} for Checkov Results.")
+            relativeToFullPath = f"{file_path}/{kustomizeProcessedFolderAndMeta[file_path]['referenced_bases'][0]}"
+            if pathlib.Path(kustomizeProcessedFolderAndMeta[file_path]['calculated_bases']) == pathlib.Path(relativeToFullPath).resolve():
+                kustomizeProcessedFolderAndMeta[file_path]['validated_base'] = str(pathlib.Path(kustomizeProcessedFolderAndMeta[file_path]['calculated_bases']))
+                checkov_kustomize_env_name_by_path = str(pathlib.Path(file_path).relative_to(pathlib.Path(kustomizeProcessedFolderAndMeta[file_path]['calculated_bases']).parent))
+                kustomizeProcessedFolderAndMeta[file_path]['overlay_name'] = checkov_kustomize_env_name_by_path
+                logging.debug(f"Overlay based on {kustomizeProcessedFolderAndMeta[file_path]['validated_base']}, naming overlay {checkov_kustomize_env_name_by_path} for Checkov Results.")
             else:
                 checkov_kustomize_env_name_by_path = pathlib.Path(file_path).stem
-                self.kustomizeProcessedFolderAndMeta[file_path]['overlay_name'] = checkov_kustomize_env_name_by_path
+                kustomizeProcessedFolderAndMeta[file_path]['overlay_name'] = checkov_kustomize_env_name_by_path
                 logging.debug(f"Could not confirm base dir for Kustomize overlay/env. Using {checkov_kustomize_env_name_by_path} for Checkov Results.")
 
         except KeyError:
             checkov_kustomize_env_name_by_path = pathlib.Path(file_path).stem
-            self.kustomizeProcessedFolderAndMeta[file_path]['overlay_name'] = checkov_kustomize_env_name_by_path
+            kustomizeProcessedFolderAndMeta[file_path]['overlay_name'] = checkov_kustomize_env_name_by_path
             logging.debug(f"Could not confirm base dir for Kustomize overlay/env. Using {checkov_kustomize_env_name_by_path} for Checkov Results.")
 
     @staticmethod
@@ -553,12 +544,15 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
             line_num += 1
         return cur_writer
 
-    def _get_kubectl_output(self, filePath: str, template_renderer_command: str, source_type: str | None) -> bytes:
+    def _get_kubectl_output(self, filePath: str, template_renderer_command: str, source_type: str | None) -> bytes | None:
         # Template out the Kustomizations to Kubernetes YAML
         if template_renderer_command == "kubectl":
             template_render_command_options = "kustomize"
-        if template_renderer_command == "kustomize":
+        elif template_renderer_command == "kustomize":
             template_render_command_options = "build"
+        else:
+            logging.error(f"Template renderer command has an invalid value: {template_renderer_command}")
+            return None
 
         add_origin_annotations_return_code = None
 
@@ -602,6 +596,16 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
 
         return env_or_base_path_prefix
 
+    def get_binary_output_from_directory(
+            self,
+            file_path: str,
+            template_renderer_command: str,
+    ) -> tuple[bytes, str] | tuple[None, None]:
+        kustomizeProcessedFolderAndMeta = {file_path: self._parseKustomization(file_path)}
+        if kustomizeProcessedFolderAndMeta[file_path].get('type') == 'overlay':
+            self._handle_overlay_case(file_path, kustomizeProcessedFolderAndMeta)
+        return self.get_binary_output(file_path, kustomizeProcessedFolderAndMeta, template_renderer_command)
+
     def get_binary_output(
         self,
         file_path: str,
@@ -612,6 +616,9 @@ class Runner(BaseRunner["KubernetesGraphManager"]):
         logging.debug(f"Kustomization at {file_path} likley a {source_type}")
         try:
             output = self._get_kubectl_output(file_path, template_renderer_command, source_type)
+            if output is None:
+                return None, None
+
             return output, file_path
         except Exception:
             logging.warning(f"Error building Kustomize output at dir: {file_path}.", exc_info=True)

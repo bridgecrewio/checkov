@@ -42,6 +42,7 @@ def test_all_frameworks_are_tested() -> None:
         CheckType.AZURE_PIPELINES,
         CheckType.BICEP,
         CheckType.BITBUCKET_PIPELINES,
+        CheckType.CDK,
         CheckType.CIRCLECI_PIPELINES,
         CheckType.CLOUDFORMATION,
         CheckType.DOCKERFILE,
@@ -51,6 +52,10 @@ def test_all_frameworks_are_tested() -> None:
         CheckType.KUBERNETES,
         CheckType.KUSTOMIZE,
         CheckType.OPENAPI,
+        CheckType.SAST,
+        CheckType.SAST_JAVA,
+        CheckType.SAST_PYTHON,
+        CheckType.SAST_JAVASCRIPT,
         CheckType.SECRETS,
         CheckType.SERVERLESS,
         CheckType.TERRAFORM,
@@ -69,7 +74,9 @@ def test_argo_workflows_framework(caplog: LogCaptureFixture) -> None:
 
 
 def test_arm_framework(caplog: LogCaptureFixture) -> None:
-    run_framework_test(caplog=caplog, framework=CheckType.ARM)
+    excluded_paths = ["arm/parser/examples/json/with_comments.json$"]
+
+    run_framework_test(caplog=caplog, framework=CheckType.ARM, excluded_paths=excluded_paths)
 
 
 def test_azure_pipelines_framework(caplog: LogCaptureFixture) -> None:
@@ -84,6 +91,11 @@ def test_bicep_framework(caplog: LogCaptureFixture) -> None:
 
 def test_bitbucket_pipelines_framework(caplog: LogCaptureFixture) -> None:
     run_framework_test(caplog=caplog, framework=CheckType.BITBUCKET_PIPELINES)
+
+
+@pytest.mark.xfail(reason="locally it works, but in CI no results")
+def test_cdk_framework(caplog: LogCaptureFixture) -> None:
+    run_framework_test(caplog=caplog, framework=CheckType.CDK)
 
 
 def test_circleci_pipelines_framework(caplog: LogCaptureFixture) -> None:
@@ -158,6 +170,7 @@ def test_terraform_json_framework(caplog: LogCaptureFixture) -> None:
 
 def test_terraform_plan_framework(caplog: LogCaptureFixture) -> None:
     excluded_paths = [
+        "arm/parser/examples/json/with_comments.json$",
         "cloudformation/parser/fail.json$",
         "cloudformation/parser/success_triple_quotes_string.json$",
         "cloudformation/runner/resources/invalid.json$",

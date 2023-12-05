@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, TypeVar, Set, Union
-from typing_extensions import TypeAlias, TypedDict
+from typing import TYPE_CHECKING, Any, Callable, Dict, TypeVar, Set, Union, TypedDict
+from typing_extensions import TypeAlias  # noqa[TC002]
 
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.severities import Severity
@@ -11,9 +11,10 @@ if TYPE_CHECKING:
     from checkov.common.runners.base_runner import BaseRunner  # noqa
     from networkx import DiGraph
     from igraph import Graph
+    from rustworkx import PyDiGraph
     from checkov.terraform.modules.module_objects import TFDefinitionKey
 
-_BaseRunner = TypeVar("_BaseRunner", bound="BaseRunner[Any]")
+_BaseRunner = TypeVar("_BaseRunner", bound="BaseRunner[Any, Any, Any]")
 
 _ScannerCallableAlias: TypeAlias = Callable[
     [str, "BaseCheck", "list[_SkippedCheck]", "dict[str, Any]", str, str, "dict[str, Any]"], None
@@ -22,8 +23,9 @@ _ScannerCallableAlias: TypeAlias = Callable[
 _Resource: TypeAlias = str
 _Attributes: TypeAlias = Set[str]
 ResourceAttributesToOmit: TypeAlias = Dict[_Resource, _Attributes]
-LibraryGraph: TypeAlias = "Union[DiGraph, Graph]"
-LibraryGraphConnector: TypeAlias = "Union[DBConnector[DiGraph], DBConnector[Graph]]"
+_RustworkxGraph: TypeAlias = "PyDiGraph[tuple[int, dict[str, Any]], dict[str, str | int]]"
+LibraryGraph: TypeAlias = "Union[DiGraph, Graph, _RustworkxGraph]"
+LibraryGraphConnector: TypeAlias = "Union[DBConnector[DiGraph], DBConnector[Graph], DBConnector[_RustworkxGraph]]"
 # TODO Remove this type and only use TFDefinitionKey
 TFDefinitionKeyType: TypeAlias = "Union[str, TFDefinitionKey]"
 
@@ -126,6 +128,11 @@ class _LicenseStatus(TypedDict):
 
 class _LicenseStatusWithLines(_LicenseStatus):
     lines: list[int] | None  # noqa: CCE003  # a static attribute
+
+
+class _ImageReferencerLicenseStatus(TypedDict):
+    image_name: str
+    licenses: list[_LicenseStatus]
 
 
 class _EntityContext(TypedDict, total=False):

@@ -81,7 +81,7 @@ CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is default limit
 
 
-class Runner(BaseRunner[None]):
+class Runner(BaseRunner[None, None, None]):
     check_type = CheckType.SECRETS  # noqa: CCE003  # a static attribute
 
     def __init__(self, file_extensions: Iterable[str] | None = None, file_names: Iterable[str] | None = None):
@@ -286,7 +286,7 @@ class Runner(BaseRunner[None]):
                     code_block=[(secret.line_number, line_text_censored)],
                     file_path=relative_file_path,
                     file_line_range=[secret.line_number, secret.line_number + 1],
-                    resource=secret.secret_hash,
+                    resource=f'{added_commit_hash}:{secret.secret_hash}' if added_commit_hash else secret.secret_hash,
                     check_class="",
                     evaluations=None,
                     file_abs_path=os.path.abspath(secret.filename),
@@ -331,11 +331,11 @@ class Runner(BaseRunner[None]):
     def _scan_files(files_to_scan: list[str], secrets: SecretsCollection, pbar: ProgressBar) -> None:
         # implemented the scan function like secrets.scan_files
         base_path = secrets.root
-        results = parallel_runner.run_function(
-            func=lambda f: Runner._safe_scan(f, base_path),
-            items=files_to_scan,
-            run_multiprocess=os.getenv("RUN_SECRETS_MULTIPROCESS", "").lower() == "true"
-        )
+        items = [
+            (file, base_path)
+            for file in files_to_scan
+        ]
+        results = parallel_runner.run_function(func=Runner._safe_scan, items=items)
 
         for filename, secrets_results in results:
             pbar.set_additional_data({'Current File Scanned': str(filename)})

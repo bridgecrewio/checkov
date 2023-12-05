@@ -1,16 +1,13 @@
 from unittest import mock
 
-import igraph
 import pytest
-from networkx import DiGraph
-
-from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.kubernetes.image_referencer.manager import KubernetesImageReferencerManager
 from checkov.common.images.image_referencer import Image
-from checkov.kubernetes.runner import Runner as KubernetesRunner
+from tests.graph_utils.utils import set_graph_by_graph_framework, GRAPH_FRAMEWORKS, \
+    add_vertices_to_graph_by_graph_framework
 
 
-@pytest.mark.parametrize("graph_framework", ['NETWORKX', 'IGRAPH'])
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
 def test_extract_images_from_resources(graph_framework):
     # given
     resource = {
@@ -27,18 +24,8 @@ def test_extract_images_from_resources(graph_framework):
         },
         "resource_type": "Pod",
     }
-    if graph_framework == 'IGRAPH':
-        graph = igraph.Graph()
-        graph.add_vertex(
-            name='1',
-            block_type_='resource',
-            resource_type=resource[
-                CustomAttributes.RESOURCE_TYPE] if CustomAttributes.RESOURCE_TYPE in resource else None,
-            attr=resource,
-        )
-    else:
-        graph = DiGraph()
-        graph.add_node(1, **resource)
+    graph = set_graph_by_graph_framework(graph_framework)
+    add_vertices_to_graph_by_graph_framework(graph_framework, resource, graph)
 
     # when
     with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': graph_framework}):
@@ -56,8 +43,8 @@ def test_extract_images_from_resources(graph_framework):
     ]
 
 
-@pytest.fixture()
-def graph_resource_with_containers_and_init_containers():
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
+def test_no_duplications_while_extracting_image_names(graph_framework):
     resource = {
         "file_path_": "/pod.yaml",
         "__endline__": 16,
@@ -78,20 +65,11 @@ def graph_resource_with_containers_and_init_containers():
         },
         "resource_type": "Pod",
     }
-    graph = igraph.Graph()
-    graph.add_vertex(
-        name='duplicated_image',
-        block_type_='resource',
-        resource_type=resource[
-            CustomAttributes.RESOURCE_TYPE] if CustomAttributes.RESOURCE_TYPE in resource else None,
-        attr=resource,
-    )
-    return graph
-
-
-def test_no_duplications_while_extracting_image_names(graph_resource_with_containers_and_init_containers: igraph.Graph):
-    manager = KubernetesImageReferencerManager(graph_connector=graph_resource_with_containers_and_init_containers)
-    images = manager.extract_images_from_resources()
+    graph = set_graph_by_graph_framework(graph_framework)
+    add_vertices_to_graph_by_graph_framework(graph_framework, resource, graph, 1, 'duplicated_image')
+    with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': graph_framework}):
+        manager = KubernetesImageReferencerManager(graph_connector=graph)
+        images = manager.extract_images_from_resources()
     assert len(images) == 1
     image = images[0]
     assert image.name == 'nginx'

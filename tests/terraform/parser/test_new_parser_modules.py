@@ -202,3 +202,18 @@ class TestParserInternals(unittest.TestCase):
         directory = os.path.join(self.resources_dir, "parser_tfvars")
         module, tf_definitions = parser.parse_hcl_module(source_dir=directory, source='terraform')
         assert module
+
+    def test_backtrack_module(self):
+        # given
+        directory = os.path.join(self.resources_dir, "parse_backtrack_module/example")
+
+        # when
+        module, tf_definitions = TFParser().parse_hcl_module(
+            source_dir=directory,
+            source="terraform",
+            download_external_modules=False,  # important to keep it 'False'
+        )
+
+        # then
+        assert module
+        assert len(tf_definitions) == 2  # need to be 2 files (the module reference and the actual module content)

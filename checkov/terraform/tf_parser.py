@@ -5,14 +5,14 @@ import logging
 import os
 from collections import defaultdict
 from pathlib import Path
-from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, cast, TYPE_CHECKING
+from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, cast, TYPE_CHECKING, overload
 
-import deep_merge
 import hcl2
 
 from checkov.common.runners.base_runner import filter_ignored_paths, IGNORE_HIDDEN_DIRECTORY_ENV
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
 from checkov.common.util.data_structures_utils import pickle_deepcopy
+from checkov.common.util.deep_merge import pickle_deep_merge
 from checkov.common.util.type_forcers import force_list
 from checkov.common.variables.context import EvaluationContext
 from checkov.terraform import validate_malformed_definitions, clean_bad_definitions
@@ -241,10 +241,15 @@ class TFParser:
                         resolved_loc_list = self.module_to_resolved[current_nested_data]
                     self.module_to_resolved[current_nested_data] = resolved_loc_list
 
-                    specified_vars = {k: v[0] if isinstance(v, list) and v else v for k, v in module_call_data.items()
-                                      if k != "source" and k != "version"}
-                    skipped_a_module = self.should_skip_a_module(specified_vars, ignore_unresolved_params)
-                    if skipped_a_module:
+                    specified_vars = {
+                        k: v[0] if isinstance(v, list) and v else v
+                        for k, v in module_call_data.items()
+                        if k != "source" and k != "version"
+                    }
+                    skip_module = self.should_skip_a_module(specified_vars, ignore_unresolved_params)
+                    if skip_module:
+                        # keep module skip info till the end
+                        skipped_a_module = True
                         continue
 
                     version = self.get_module_version(module_call_data)
@@ -294,7 +299,7 @@ class TFParser:
                                 resolved_loc_list.append(new_key)
 
                         if all_module_definitions:
-                            deep_merge.merge(all_module_definitions, module_definitions)
+                            pickle_deep_merge(all_module_definitions, module_definitions)
                         else:
                             all_module_definitions = module_definitions
 
@@ -303,7 +308,7 @@ class TFParser:
                         logging.warning(f"Unable to load module - source: {source}, version: {version}, error: {str(e)}")
 
         if all_module_definitions:
-            deep_merge.merge(self.out_definitions, all_module_definitions)
+            pickle_deep_merge(self.out_definitions, all_module_definitions)
         return skipped_a_module
 
     def parse_hcl_module(
@@ -316,8 +321,7 @@ class TFParser:
         excluded_paths: list[str] | None = None,
         vars_files: list[str] | None = None,
         external_modules_content_cache: dict[str, ModuleContent | None] | None = None,
-        create_graph: bool = True,
-    ) -> tuple[Module | None, dict[TFDefinitionKey, dict[str, Any]]]:
+    ) -> tuple[Module, dict[TFDefinitionKey, dict[str, Any]]]:
         tf_definitions = self.parse_directory(
             directory=source_dir, out_evaluations_context={},
             out_parsing_errors=parsing_errors if parsing_errors is not None else {},
@@ -328,9 +332,7 @@ class TFParser:
         tf_definitions = clean_parser_types(tf_definitions)
         tf_definitions = serialize_definitions(tf_definitions)
 
-        module = None
-        if create_graph:
-            module, tf_definitions = self.parse_hcl_module_from_tf_definitions(tf_definitions, source_dir, source)
+        module, tf_definitions = self.parse_hcl_module_from_tf_definitions(tf_definitions, source_dir, source)
 
         return module, tf_definitions
 
@@ -344,7 +346,6 @@ class TFParser:
         excluded_paths: list[str] | None = None,
         vars_files: list[str] | None = None,
         external_modules_content_cache: dict[str, ModuleContent | None] | None = None,
-        create_graph: bool = True,
     ) -> list[tuple[Module, list[dict[TFDefinitionKey, dict[str, Any]]]]]:
         """
         This function is similar to parse_hcl_module, except that it creates a list of tuples instead of a single tuple.
@@ -364,10 +365,9 @@ class TFParser:
         dirs_to_definitions = self.create_definition_by_dirs(tf_definitions)
 
         modules_and_definitions_tuple: list[tuple[Module, list[dict[TFDefinitionKey, dict[str, Any]]]]] = []
-        if create_graph:
-            for source_path, definitions in dirs_to_definitions.items():
-                module, parsed_tf_definitions = self.parse_hcl_module_from_multi_tf_definitions(definitions, source_path, source)
-                modules_and_definitions_tuple.append((module, parsed_tf_definitions))
+        for source_path, definitions in dirs_to_definitions.items():
+            module, parsed_tf_definitions = self.parse_hcl_module_from_multi_tf_definitions(definitions, source_path, source)
+            modules_and_definitions_tuple.append((module, parsed_tf_definitions))
 
         return modules_and_definitions_tuple
 
@@ -429,12 +429,30 @@ class TFParser:
 
         return None
 
+    @overload
     def parse_hcl_module_from_tf_definitions(
         self,
-        tf_definitions: Dict[TFDefinitionKey, Dict[str, Any]],
+        tf_definitions: dict[str, dict[str, Any]],
         source_dir: str,
         source: str,
-    ) -> Tuple[Module, Dict[TFDefinitionKey, Dict[str, Any]]]:
+    ) -> tuple[Module, dict[str, dict[str, Any]]]:
+        ...
+
+    @overload
+    def parse_hcl_module_from_tf_definitions(
+        self,
+        tf_definitions: dict[TFDefinitionKey, dict[str, Any]],
+        source_dir: str,
+        source: str,
+    ) -> tuple[Module, dict[TFDefinitionKey, dict[str, Any]]]:
+        ...
+
+    def parse_hcl_module_from_tf_definitions(
+        self,
+        tf_definitions: dict[str, dict[str, Any]] | dict[TFDefinitionKey, dict[str, Any]],
+        source_dir: str,
+        source: str,
+    ) -> tuple[Module, dict[str, dict[str, Any]] | dict[TFDefinitionKey, dict[str, Any]]]:
         module = self.get_new_module(
             source_dir=source_dir,
             external_modules_source_map=self.external_modules_source_map,
@@ -599,7 +617,7 @@ class TFParser:
         explicit_var_files_to_data = self._load_files(explicit_var_files)
         # it's possible that os.scandir returned the var files in a different order than they were specified
         if vars_files:
-            for var_file, data in sorted(explicit_var_files_to_data, key=lambda x: vars_files.index(x[0])):  # type:ignore[union-attr]  # false-positive
+            for var_file, data in sorted(explicit_var_files_to_data, key=lambda x: vars_files.index(x[0])):
                 if data:
                     self.external_variables_data.extend([(k, v, var_file) for k, v in data.items()])
 

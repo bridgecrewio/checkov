@@ -27,7 +27,7 @@ class ArmGraphManager(GraphManager[ArmLocalGraph, "dict[str, dict[str, Any]]"]):
     ) -> tuple[ArmLocalGraph, dict[str, dict[str, Any]]]:
         file_paths = get_scannable_file_paths(root_folder=source_dir, excluded_paths=excluded_paths)
         filepath_fn = lambda f: f"/{os.path.relpath(f, os.path.commonprefix((source_dir, f)))}"
-        definitions, _ = get_files_definitions(files=file_paths, filepath_fn=filepath_fn)
+        definitions, _, _ = get_files_definitions(files=file_paths, filepath_fn=filepath_fn)
 
         local_graph = self.build_graph_from_definitions(definitions=definitions)
 

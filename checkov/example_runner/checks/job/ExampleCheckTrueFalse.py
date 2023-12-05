@@ -51,7 +51,7 @@ class ExampleCheckTrueFalse(BaseExampleRunnerJobCheck):
             block_type=BlockType.ARRAY,
         )
 
-    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:  # type:ignore[override]  # return type is different than the base class
+    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:
         # The block type is passed as a data structure.
         # Add logic to parse the structure for the misconfig
         # Remember to always return a PASSED or FAILED.

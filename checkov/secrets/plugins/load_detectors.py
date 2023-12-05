@@ -50,7 +50,7 @@ def add_detectors_from_condition_query(custom_detectors: List[Dict[str, Any]], c
     cond_type = condition_query['cond_type']
     if cond_type == 'secrets':
         value = condition_query['value']
-        if type(value) is str:
+        if isinstance(value, str):
             value = [value]
         for regex in value:
             parsed = True
@@ -63,21 +63,24 @@ def add_detectors_from_code(custom_detectors: List[Dict[str, Any]], code: str, s
                             check_id: str) -> bool:
     parsed = False
     code_dict = yaml.safe_load(code)
-    if 'definition' in code_dict:
-        if 'value' in code_dict['definition'] and 'is_runnable' not in code_dict['definition']:
-            parsed = True
-            if type(code_dict['definition']['value']) is str:
-                code_dict['definition']['value'] = [code_dict['definition']['value']]
-            for regex in code_dict['definition']['value']:
-                add_to_custom_detectors(
-                    custom_detectors,
-                    secret_policy['title'],
-                    check_id,
-                    regex,
-                    secret_policy['isCustom'],
-                    code_dict['definition'].get("multiline", False),
-                    code_dict['definition'].get("supported_files", [])
-                )
+    if 'definition' in code_dict and 'value' in code_dict['definition']:
+        if 'is_runnable' in code_dict['definition']:
+            # runnable detectors are parsed separately in 'get_runnable_plugins()'
+            return True
+
+        parsed = True
+        if isinstance(code_dict['definition']['value'], str):
+            code_dict['definition']['value'] = [code_dict['definition']['value']]
+        for regex in code_dict['definition']['value']:
+            add_to_custom_detectors(
+                custom_detectors,
+                secret_policy['title'],
+                check_id,
+                regex,
+                secret_policy['isCustom'],
+                code_dict['definition'].get("multiline", False),
+                code_dict['definition'].get("supported_files", [])
+            )
     return parsed
 
 

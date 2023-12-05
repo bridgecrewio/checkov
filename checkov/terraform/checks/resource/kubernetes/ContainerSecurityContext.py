@@ -34,7 +34,7 @@ class ContainerSecurityContext(BaseResourceCheck):
             containers = spec.get("container")
 
             for idx, container in enumerate(containers):
-                if type(container) != dict:
+                if not isinstance(container, dict):
                     return CheckResult.UNKNOWN
                 if not container.get("security_context"):
                     self.evaluated_keys = [f'{evaluated_keys_path}/[0]/container/[{idx}]/security_context']

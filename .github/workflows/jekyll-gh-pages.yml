@@ -27,11 +27,11 @@ jobs:
     runs-on: [self-hosted, public, linux, x64]
     steps:
       - name: Checkout
-        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
       - name: Setup Pages
         uses: actions/configure-pages@f156874f8191504dae5b037505266ed5dda6c382  # v3
       - name: Build with Jekyll
-        uses: actions/jekyll-build-pages@058068233b22675635bdf8dfa178d6ae77f12694  # v1
+        uses: actions/jekyll-build-pages@e4ef22193c23ea849fc3fea6dbce69da1ee65b6d  # v1
         with:
           source: ./docs
           destination: ./_site

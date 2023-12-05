@@ -6,9 +6,10 @@ from pytest_mock import MockerFixture
 import os
 from checkov.kustomize.runner import Runner
 from checkov.runner_filter import RunnerFilter
+from tests.graph_utils.utils import GRAPH_FRAMEWORKS
 
 
-@pytest.mark.parametrize("graph_framework", ["NETWORKX", "IGRAPH"])
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
 def test_runner(mocker: MockerFixture, graph_framework):
     scan_dir_path = Path(__file__).parent / "resources" / "example_checks"
     dir_rel_path = os.path.realpath(scan_dir_path).replace('\\', '/')

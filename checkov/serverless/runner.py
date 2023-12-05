@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Callable, Any
 
 from checkov.cloudformation import cfn_utils
 from checkov.cloudformation.context_parser import ContextParser as CfnContextParser
@@ -45,7 +45,7 @@ SINGLE_ITEM_SECTIONS = [
 ]
 
 
-class Runner(BaseRunner):
+class Runner(BaseRunner[None, None, None]):
     check_type = CheckType.SERVERLESS  # noqa: CCE003  # a static attribute
 
     def __init__(self) -> None:
@@ -122,7 +122,7 @@ class Runner(BaseRunner):
                     logging.debug(f"Template Dump for {sls_file}: {sls_file_data}")
                     cf_context_parser.evaluate_default_refs()
                     for resource_name, resource in cf_sub_resources.items():
-                        if not isinstance(resource, DictNode):
+                        if not isinstance(resource, dict):
                             continue
                         cf_resource_id = cf_context_parser.extract_cf_resource_id(resource, resource_name)
                         if not cf_resource_id:
@@ -134,11 +134,11 @@ class Runner(BaseRunner):
                         if entity_lines_range and entity_code_lines:
                             skipped_checks = CfnContextParser.collect_skip_comments(entity_code_lines)
                             # TODO - Variable Eval Message!
-                            variable_evaluations = {}
+                            variable_evaluations: dict[str, Any] = {}
 
-                            entity = {resource_name: resource}
-                            results = cfn_registry.scan(sls_file, entity, skipped_checks, runner_filter)
-                            tags = cfn_utils.get_resource_tags(entity, cfn_registry)
+                            entity_dict = {resource_name: resource}
+                            results = cfn_registry.scan(sls_file, entity_dict, skipped_checks, runner_filter)
+                            tags = cfn_utils.get_resource_tags(entity_dict, cfn_registry)
                             if results:
                                 for check, check_result in results.items():
                                     censored_code_lines = omit_secret_value_from_checks(
@@ -186,7 +186,7 @@ class Runner(BaseRunner):
                             sls_context_parser.enrich_function_with_provider(item_name)
                         entity = EntityDetails(sls_context_parser.provider_type, item_content)
                         results = registry.scan(sls_file, entity, skipped_checks, runner_filter)
-                        tags = cfn_utils.get_resource_tags(entity, registry)
+                        tags = cfn_utils.get_resource_tags(entity, registry)  # type:ignore[arg-type]
                         if results:
                             for check, check_result in results.items():
                                 censored_code_lines = omit_secret_value_from_checks(
@@ -221,26 +221,34 @@ class Runner(BaseRunner):
                 if not entity_lines_range:
                     entity_lines_range, entity_code_lines = sls_context_parser.extract_code_lines(sls_file_data)
 
-                skipped_checks = CfnContextParser.collect_skip_comments(entity_code_lines)
+                skipped_checks = CfnContextParser.collect_skip_comments(entity_code_lines or [])
                 variable_evaluations = {}
                 entity = EntityDetails(sls_context_parser.provider_type, item_content)
                 results = registry.scan(sls_file, entity, skipped_checks, runner_filter)
-                tags = cfn_utils.get_resource_tags(entity, registry)
+                tags = cfn_utils.get_resource_tags(entity, registry)  # type:ignore[arg-type]
                 if results:
                     for check, check_result in results.items():
                         censored_code_lines = omit_secret_value_from_checks(
                             check=check,
                             check_result=check_result,
-                            entity_code_lines=entity_code_lines,
+                            entity_code_lines=entity_code_lines or [],
                             entity_config=item_content,
                             resource_attributes_to_omit=runner_filter.resource_attr_to_omit
                         )
-                        record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
-                                        code_block=censored_code_lines, file_path=sls_file,
-                                        file_line_range=entity_lines_range,
-                                        resource=token, evaluations=variable_evaluations,
-                                        check_class=check.__class__.__module__, file_abs_path=file_abs_path,
-                                        entity_tags=tags, severity=check.severity)
+                        record = Record(
+                            check_id=check.id,
+                            check_name=check.name,
+                            check_result=check_result,
+                            code_block=censored_code_lines,
+                            file_path=sls_file,
+                            file_line_range=entity_lines_range or [0, 0],
+                            resource=token,
+                            evaluations=variable_evaluations,
+                            check_class=check.__class__.__module__,
+                            file_abs_path=file_abs_path,
+                            entity_tags=tags,
+                            severity=check.severity,
+                        )
                         record.set_guideline(check.guideline)
                         report.add_record(record=record)
                 else:
@@ -256,11 +264,11 @@ class Runner(BaseRunner):
             # NOTE: Ignore code content, no point in showing (could be long)
             entity_lines_range, entity_code_lines = sls_context_parser.extract_code_lines(sls_file_data)
             if entity_lines_range:
-                skipped_checks = CfnContextParser.collect_skip_comments(entity_code_lines)
+                skipped_checks = CfnContextParser.collect_skip_comments(entity_code_lines or [])
                 variable_evaluations = {}
                 entity = EntityDetails(sls_context_parser.provider_type, sls_file_data)
                 results = complete_registry.scan(sls_file, entity, skipped_checks, runner_filter)
-                tags = cfn_utils.get_resource_tags(entity, complete_registry)
+                tags = cfn_utils.get_resource_tags(entity, complete_registry)  # type:ignore[arg-type]
                 if results:
                     for check, check_result in results.items():
                         record = Record(check_id=check.id, check_name=check.name, check_result=check_result,
@@ -286,9 +294,10 @@ class Runner(BaseRunner):
         return report
 
 
-def get_files_definitions(files: List[str], filepath_fn=None) \
-        -> Tuple[Dict[str, DictNode], Dict[str, List[Tuple[int, str]]]]:
-    results = parallel_runner.run_function(lambda f: (f, parse(f)), files)
+def get_files_definitions(
+    files: List[str], filepath_fn: Callable[[str], str] | None = None
+) -> Tuple[Dict[str, dict[str, Any]], Dict[str, List[Tuple[int, str]]]]:
+    results = parallel_runner.run_function(_parallel_parse, files)
     definitions = {}
     definitions_raw = {}
     for file, result in results:
@@ -297,3 +306,8 @@ def get_files_definitions(files: List[str], filepath_fn=None) \
             definitions[path], definitions_raw[path] = result
 
     return definitions, definitions_raw
+
+
+def _parallel_parse(f: str) -> tuple[str, tuple[dict[str, Any], list[tuple[int, str]]] | None]:
+    """Thin wrapper to return filename with parsed content"""
+    return f, parse(f)

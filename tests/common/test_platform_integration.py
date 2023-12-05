@@ -9,7 +9,7 @@ from checkov.common.bridgecrew.integration_features.features.policy_metadata_int
     PolicyMetadataIntegration
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
-from checkov.terraform.checks.resource.registry import resource_registry as tf_registry
+from checkov.common.checks.base_check_registry import BaseCheckRegistry
 
 
 class TestBCApiUrl(unittest.TestCase):
@@ -101,9 +101,10 @@ class TestBCApiUrl(unittest.TestCase):
         metadata_integration = PolicyMetadataIntegration(instance)
         metadata_integration.bc_integration = instance
         metadata_integration.pre_scan()
-        check_same_severity = tf_registry.get_check_by_id('CKV_AWS_15')
-        check_different_severity = tf_registry.get_check_by_id('CKV_AWS_40')
-        check_no_desc_title = tf_registry.get_check_by_id('CKV_AWS_53')
+        all_checks = BaseCheckRegistry.get_all_registered_checks()
+        check_same_severity = next((check for check in all_checks if check.id == "CKV_AWS_15"), None)
+        check_different_severity = next((check for check in all_checks if check.id == "CKV_AWS_40"), None)
+        check_no_desc_title = next((check for check in all_checks if check.id == "CKV_AWS_53"), None)
 
         self.assertEqual(check_same_severity.name, 'Ensure IAM password policy requires at least one uppercase letter')
         self.assertEqual(check_same_severity.severity, Severities[BcSeverities.INFO])
@@ -117,16 +118,17 @@ class TestBCApiUrl(unittest.TestCase):
         metadata_integration = PolicyMetadataIntegration(instance)
         metadata_integration.bc_integration = instance
         metadata_integration.pre_scan()
-        check_same_severity = tf_registry.get_check_by_id('CKV_AWS_15')
-        check_different_severity = tf_registry.get_check_by_id('CKV_AWS_40')
-        check_no_desc_title = tf_registry.get_check_by_id('CKV_AWS_53')
+        all_checks = BaseCheckRegistry.get_all_registered_checks()
+        check_same_severity = next((check for check in all_checks if check.id == "CKV_AWS_15"), None)
+        check_different_severity = next((check for check in all_checks if check.id == "CKV_AWS_40"), None)
+        check_no_desc_title = next((check for check in all_checks if check.id == "CKV_AWS_53"), None)
 
         self.assertEqual(check_same_severity.name, 'AWS IAM password policy does not have an uppercase character')
         self.assertEqual(check_different_severity.name, 'AWS IAM policy attached to users')
         self.assertEqual(check_no_desc_title.name, 'Ensure S3 bucket has block public ACLS enabled')
         self.assertEqual(check_same_severity.severity, Severities[BcSeverities.INFO])
         self.assertEqual(check_different_severity.severity, Severities[BcSeverities.HIGH])
-        self.assertEqual(check_different_severity.severity, Severities[BcSeverities.HIGH])
+        self.assertEqual(check_no_desc_title.severity, None)
 
     def test_should_upload(self):
         self.assertFalse(get_source_type('vscode').upload_results)
@@ -154,6 +156,39 @@ class TestBCApiUrl(unittest.TestCase):
         self.assertFalse(instance.is_valid_policy_filter(policy_filter={},
                                                          valid_filters=mock_prisma_policy_filter_response()))
         self.assertFalse(instance.is_valid_policy_filter(policy_filter={'policy.label': ['A', 'B']}, valid_filters={}))
+
+    def test_setup_on_prem(self):
+        instance = BcPlatformIntegration()
+
+        instance.customer_run_config_response = None
+        instance.setup_on_prem()
+        self.assertFalse(instance.on_prem)
+
+        instance.customer_run_config_response = {}
+        instance.setup_on_prem()
+        self.assertFalse(instance.on_prem)
+
+        instance.customer_run_config_response = {
+            'tenantConfig': {}
+        }
+        instance.setup_on_prem()
+        self.assertFalse(instance.on_prem)
+
+        instance.customer_run_config_response = {
+            'tenantConfig': {
+                'preventCodeUploads': False
+            }
+        }
+        instance.setup_on_prem()
+        self.assertFalse(instance.on_prem)
+
+        instance.customer_run_config_response = {
+            'tenantConfig': {
+                'preventCodeUploads': True
+            }
+        }
+        instance.setup_on_prem()
+        self.assertTrue(instance.on_prem)
 
 
 def mock_customer_run_config():

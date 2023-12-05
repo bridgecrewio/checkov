@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Tuple, List, Any, Dict, Optional, Callable
-
-from typing_extensions import TypedDict
+from typing import TYPE_CHECKING, Tuple, List, Any, Dict, Optional, Callable, TypedDict
 
 from checkov.cloudformation.graph_builder.graph_components.block_types import BlockType
 from checkov.cloudformation.graph_builder.utils import get_referenced_vertices_in_value, find_all_interpolations

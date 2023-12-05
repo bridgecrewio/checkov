@@ -36,8 +36,9 @@ class Runner(ObjectRunner):
         from checkov.json_doc.registry import registry
         return registry
 
+    @staticmethod
     def _parse_file(
-        self, f: str, file_content: str | None = None
+        f: str, file_content: str | None = None
     ) -> tuple[dict[str, Any] | list[dict[str, Any]], list[tuple[int, str]]] | None:
         if not f.endswith(".json"):
             return None

@@ -32,3 +32,9 @@ resource "google_kms_crypto_key" "asymmetric" {
   key_ring = "google_kms_key_ring.keyring.id"
   purpose  = "ASYMMETRIC_SIGN"
 }
+
+resource "google_kms_crypto_key" "fail" {
+  name            = "crypto-key-example"
+  key_ring        = "google_kms_key_ring.keyring.id"
+  rotation_period = 90
+}

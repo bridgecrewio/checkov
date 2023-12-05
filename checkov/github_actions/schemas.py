@@ -1579,6 +1579,11 @@ gha_workflow = {
             "description": "The name of your workflow. GitHub displays the names of your workflows on your repository's actions page. If you omit this field, GitHub sets the name to the workflow's filename.",
             "type": "string"
         },
+        "run-name": {
+            "$comment": "https://help.github.com/en/github/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions#run-name",
+            "description": "A name for your workflow run. You can use the name to filter job runs in the dashboard and in the REST API.",
+            "type": "string"
+        },
         "on": {
             "$comment": "https://help.github.com/en/github/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions#on",
             "description": "The name of the GitHub event that triggers the workflow. You can provide a single event string, array of events, array of event types, or an event configuration map that schedules a workflow or restricts the execution of a workflow to specific files, tags, or branch changes. For a list of available events, see https://help.github.com/en/github/automating-your-workflow-with-github-actions/events-that-trigger-workflows.",
@@ -1645,7 +1650,7 @@ gha_workflow = {
                                     "$ref": "#/definitions/types",
                                     "items": {
                                         "type": "string",
-                                        "enum": ["completed", "requested", "rerequested"]
+                                        "enum": ["completed"]
                                     },
                                     "default": ["completed", "requested", "rerequested"]
                                 }
@@ -1818,21 +1823,6 @@ gha_workflow = {
                                 }
                             }
                         },
-                        "member": {
-                            "$comment": "https://help.github.com/en/github/automating-your-workflow-with-github-actions/events-that-trigger-workflows#member-event-member",
-                            "$ref": "#/definitions/eventObject",
-                            "description": "Runs your workflow anytime the member event occurs. More than one activity type triggers this event. For information about the REST API, see https://developer.github.com/v3/repos/collaborators/.",
-                            "properties": {
-                                "types": {
-                                    "$ref": "#/definitions/types",
-                                    "items": {
-                                        "type": "string",
-                                        "enum": ["added", "edited", "deleted"]
-                                    },
-                                    "default": ["added", "edited", "deleted"]
-                                }
-                            }
-                        },
                         "merge_group": {
                             "$comment": "https://help.github.com/en/github/automating-your-workflow-with-github-actions/events-that-trigger-workflows#merge_group",
                             "$ref": "#/definitions/eventObject",
@@ -1885,7 +1875,6 @@ gha_workflow = {
                                         "type": "string",
                                         "enum": [
                                             "created",
-                                            "updated",
                                             "closed",
                                             "reopened",
                                             "edited",
@@ -1894,7 +1883,6 @@ gha_workflow = {
                                     },
                                     "default": [
                                         "created",
-                                        "updated",
                                         "closed",
                                         "reopened",
                                         "edited",

@@ -83,7 +83,6 @@ class CustomRegexDetector(RegexBasedDetector):
             **kwargs
         )
 
-        # ToDo: Comment out once fix performence #  type: ignore
         if filename not in self._analyzed_files:
             self._analyzed_files.add(filename)
             # We only want to read file if: there is regex supporting it & file size is not over MAX_FILE_SIZE
