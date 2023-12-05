@@ -1,0 +1,17 @@
+metadata:
+  id: "CKV_PAN_21"
+  name: "Ensure that a Login Banner is configured under Device Management"
+  category: "NETWORKING"
+definition:
+  # Verify login banner is set
+  and:
+    - cond_type: attribute
+      resource_types:
+        - tasks.paloaltonetworks.panos.panos_mgtconfig
+      attribute: login_banner
+      operator: exists
+    - cond_type: attribute
+      resource_types:
+        - tasks.paloaltonetworks.panos.panos_mgtconfig
+      attribute: login_banner
+      operator: is_not_empty
