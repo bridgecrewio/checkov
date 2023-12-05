@@ -81,6 +81,7 @@ class RunnerRegistry:
         tool: str = tool_name,
         secrets_omitter_class: Type[SecretsOmitter] = SecretsOmitter,
     ) -> None:
+
         self.logger = logging.getLogger(__name__)
         add_resource_code_filter_to_logger(self.logger)
         self.runner_filter = runner_filter
