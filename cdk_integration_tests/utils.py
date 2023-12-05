@@ -11,9 +11,13 @@ def load_failed_checks_from_file(lang: str) -> Dict[str, List[Dict[str, Any]]]:
     with open(report_path) as f:
         data = f.read()
         report = json.loads(data)
+        print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+        print(data)
+        print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
         assert report is not None
         results = report.get("results", {})
         failed_checks = results.get("failed_checks")
+        
         results = {}
         for check in failed_checks:
             check_id = check['check_id']
