@@ -1,0 +1,29 @@
+metadata:
+  id: "CKV2_IBM_7"
+  name: "Ensure Kubernetes clusters are accessible by using private endpoint and NOT public endpoint"
+  category: "NETWORKING"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types: "ibm_container_cluster"
+      attribute: "private_service_endpoint"
+      operator: "exists"
+
+    - cond_type: "attribute"
+      resource_types: "ibm_container_cluster"
+      attribute: "private_service_endpoint"
+      operator: "equals_ignore_case"
+      value: "True"
+
+    - or:
+        - cond_type: "attribute"
+          resource_types: "ibm_container_cluster"
+          attribute: "public_service_endpoint"
+          operator: "not_exists"
+
+        - cond_type: "attribute"
+          resource_types: "ibm_container_cluster"
+          attribute: "public_service_endpoint"
+          operator: "not_equals_ignore_case"
+          value: "True"
