@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from checkov.common.sast.consts import SastLanguages
 from checkov.sast.report import SastData, SastReport
-from checkov.sast.prisma_models.report import Function, Repositories, File, Package
+from checkov.sast.prisma_models.report import Function, PrismaReport, Repositories, File, Package
 
 
 def _create_sast_reports_for_test_get_sast_reachability_report_with_one_report() -> list[SastReport]:
     # we don't care about the init's params, except for the sast-language
-    report1 = SastReport('', {}, SastLanguages.JAVASCRIPT)
+    report1 = SastReport('', {}, SastLanguages.JAVASCRIPT, PrismaReport())
     report1.sast_reachability = {
         'repo_1': Repositories(files={
             '/index.js': File(packages={
