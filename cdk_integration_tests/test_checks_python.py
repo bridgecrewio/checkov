@@ -203,3 +203,23 @@ def test_CKV_AWS_68_WAFEnabled(failed_checks):
 
 def test_CKV_AWS_64_RedshiftClusterEncryption(failed_checks):
     run_check(check_results=failed_checks, check_id="CKV_AWS_64", policy_name="RedshiftClusterEncryption", language="python")
+
+
+def test_CKV_AWS_45_LambdaEnvironmentCredentials(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_45", policy_name="LambdaEnvironmentCredentials", language="python")
+
+
+def test_CKV_AWS_58_EKSSecretsEncryption(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_58", policy_name="EKSSecretsEncryption", language="python")
+
+
+def test_CKV_AWS_65_ECSClusterContainerInsights(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_65", policy_name="ECSClusterContainerInsights", language="python")
+
+
+def test_CKV_AWS_131_ALBDropHttpHeaders(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_131", policy_name="ALBDropHttpHeaders", language="python")
+
+
+def test_CKV_AWS_2_ALBListenerHTTPS(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_2", policy_name="ALBListenerHTTPS", language="python")
