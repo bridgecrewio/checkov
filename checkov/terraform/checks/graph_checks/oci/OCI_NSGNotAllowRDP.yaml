@@ -48,11 +48,17 @@ definition:
           operator: "not_equals"
           value: 3389
 
-        - cond_type: "attribute"
-          resource_types: "oci_core_network_security_group_security_rule"
-          attribute: "tcp_options.destination_port_range.min"
-          operator: "greater_than"
-          value: 3389
+        - or: 
+            - cond_type: "attribute"
+              resource_types: "oci_core_network_security_group_security_rule"
+              attribute: "tcp_options.destination_port_range.min"
+              operator: "greater_than"
+              value: 3389
+            - cond_type: "attribute"
+              resource_types: "oci_core_network_security_group_security_rule"
+              attribute: "tcp_options.destination_port_range.max"
+              operator: "less_than"
+              value: 3389
 
     - and:
         - cond_type: "attribute"
@@ -61,8 +67,14 @@ definition:
           operator: "not_equals"
           value: 3389
 
-        - cond_type: "attribute"
-          resource_types: "oci_core_network_security_group_security_rule"
-          attribute: "udp_options.destination_port_range.min"
-          operator: "greater_than"
-          value: 3389
+        - or:
+            - cond_type: "attribute"
+              resource_types: "oci_core_network_security_group_security_rule"
+              attribute: "udp_options.destination_port_range.min"
+              operator: "greater_than"
+              value: 3389
+            - cond_type: "attribute"
+              resource_types: "oci_core_network_security_group_security_rule"
+              attribute: "udp_options.destination_port_range.max"
+              operator: "less_than"
+              value: 3389
