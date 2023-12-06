@@ -164,7 +164,7 @@ class TestRunnerValid(unittest.TestCase):
         check_path = '/py_graph_check_rustworkx'
         valid_dir_path_for_external_check = current_dir + check_path
         runner = Runner(db_connector=self.db_connector())
-        checks_allowlist = ['CKV_AWS_001']
+        checks_allowlist = ['1']
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=[valid_dir_path_for_external_check],
                             runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allowlist))
         report_json = report.get_json()

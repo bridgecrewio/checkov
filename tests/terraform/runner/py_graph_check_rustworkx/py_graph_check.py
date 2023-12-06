@@ -8,7 +8,7 @@ from checkov.common.models.enums import CheckCategories, CheckResult
 class RDSEncryption(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure all data stored in the RDS is securely encrypted at rest"
-        id = "CKV_AWS_001"
+        id = "1"
         supported_resources = ['aws_db_instance']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
