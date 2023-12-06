@@ -92,3 +92,21 @@ resource "oci_core_network_security_group_security_rule" "fail_2" {
 }
 
 
+resource "oci_core_network_security_group_security_rule" "pass_3" {
+  count = (var.nsg_id == "" ? 1:0)
+
+  network_security_group_id = oci_core_network_security_group.network_security_group[0].id
+  direction = "EGRESS"
+  protocol = "6" #tcp
+
+  description = "rule_allow_22_e_within"
+  destination = oci_core_network_security_group.network_security_group[0].id
+  destination_type = "NETWORK_SECURITY_GROUP"
+
+  tcp_options {
+    destination_port_range {
+      max = 22
+      min = 22
+    }
+  }
+}

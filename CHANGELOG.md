@@ -1,6 +1,24 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.20...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.24...HEAD)
+
+## [3.1.24](https://github.com/bridgecrewio/checkov/compare/3.1.21...3.1.24) - 2023-12-05
+
+### Bug Fix
+
+- **sca:** Update the log level of specific logs - [#5828](https://github.com/bridgecrewio/checkov/pull/5828)
+- **terraform:** CKV_GCP_26 Added additional google_compute_subnetwork purposes that do not support flow logs - [#5812](https://github.com/bridgecrewio/checkov/pull/5812)
+- **terraform:** Fix CKV_GCP_30 for unknown service account - [#5818](https://github.com/bridgecrewio/checkov/pull/5818)
+- **terraform:** Fixed to_dict of terraform block regarding source_module_object - [#5822](https://github.com/bridgecrewio/checkov/pull/5822)
+
+## [3.1.21](https://github.com/bridgecrewio/checkov/compare/3.1.20...3.1.21) - 2023-12-04
+
+### Feature
+
+- **ansible:** add CKV_PAN_17 - Check for src and dst zone any - [#5803](https://github.com/bridgecrewio/checkov/pull/5803)
+- **sast:** sast enabled from integration - [#5780](https://github.com/bridgecrewio/checkov/pull/5780)
+- **terraform:** Adding Python based build time policies for corresponding PC runtime policies - [#5762](https://github.com/bridgecrewio/checkov/pull/5762)
+- **terraform:** Adding YAML based build time policies for corresponding PC runtime policies  - [#5810](https://github.com/bridgecrewio/checkov/pull/5810)
 
 ## [3.1.20](https://github.com/bridgecrewio/checkov/compare/3.1.19...3.1.20) - 2023-11-30
 
