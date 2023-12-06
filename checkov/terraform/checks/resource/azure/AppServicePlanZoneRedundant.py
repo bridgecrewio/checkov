@@ -9,7 +9,6 @@ class AppServicePlanZoneRedundant(BaseResourceValueCheck):
         """
         To enhance the resiliency and reliability of business-critical workloads,
         it's recommended to deploy new App Service Plans with zone-redundancy.
-
         There's no additional cost associated with enabling availability zones.
         Pricing for a zone redundant App Service is the same as a single zone App Service.
         """
