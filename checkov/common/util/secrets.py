@@ -3,6 +3,7 @@ from __future__ import annotations
 import itertools
 import json
 import logging
+import random
 import re
 from typing import Any, TYPE_CHECKING
 
@@ -133,7 +134,7 @@ def omit_secret_value_from_line(secret: str | None, line_text: str) -> str:
             return line_text
 
     censored_line = f'{line_text[:secret_index + secret_len_to_expose]}' \
-                    f'{"*" * (secret_length - secret_len_to_expose)}' \
+                    f'{"*" * (random.randint(5, 10))}' \
                     f'{line_text[secret_index + secret_length:]}'
     return censored_line
 
