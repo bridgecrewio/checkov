@@ -73,6 +73,7 @@ class PrismaEngine(SastEngine):
         if not status:
             return []
 
+
         prisma_lib_path = self.get_sast_artifact()
         if not prisma_lib_path:
             return []
