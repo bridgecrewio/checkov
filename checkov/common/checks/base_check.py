@@ -39,6 +39,7 @@ class BaseCheck(ABC):
         self.benchmarks: dict[str, list[str]] = {}
         self.severity = None
         self.bc_category = None
+        self.graph = None
         if self.guideline:
             logging.debug(f'Found custom guideline for check {id}')
         self.details: List[str] = []
