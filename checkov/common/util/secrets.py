@@ -133,8 +133,10 @@ def omit_secret_value_from_line(secret: str | None, line_text: str) -> str:
         except ValueError:
             return line_text
 
+    random_obfuscation_len = (random.randint(5, 10))  # nosec
+
     censored_line = f'{line_text[:secret_index + secret_len_to_expose]}' \
-                    f'{"*" * (random.randint(5, 10))}' \
+                    f'{"*" * random_obfuscation_len}' \
                     f'{line_text[secret_index + secret_length:]}'
     return censored_line
 
