@@ -1,6 +1,22 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.21...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.26...HEAD)
+
+## [3.1.26](https://github.com/bridgecrewio/checkov/compare/3.1.24...3.1.26) - 2023-12-06
+
+### Bug Fix
+
+- **general:** check both path types for suppression - [#5834](https://github.com/bridgecrewio/checkov/pull/5834)
+- **terraform:** Fix range issue in OCI RDP check - [#5832](https://github.com/bridgecrewio/checkov/pull/5832)
+
+## [3.1.24](https://github.com/bridgecrewio/checkov/compare/3.1.21...3.1.24) - 2023-12-05
+
+### Bug Fix
+
+- **sca:** Update the log level of specific logs - [#5828](https://github.com/bridgecrewio/checkov/pull/5828)
+- **terraform:** CKV_GCP_26 Added additional google_compute_subnetwork purposes that do not support flow logs - [#5812](https://github.com/bridgecrewio/checkov/pull/5812)
+- **terraform:** Fix CKV_GCP_30 for unknown service account - [#5818](https://github.com/bridgecrewio/checkov/pull/5818)
+- **terraform:** Fixed to_dict of terraform block regarding source_module_object - [#5822](https://github.com/bridgecrewio/checkov/pull/5822)
 
 ## [3.1.21](https://github.com/bridgecrewio/checkov/compare/3.1.20...3.1.21) - 2023-12-04
 
