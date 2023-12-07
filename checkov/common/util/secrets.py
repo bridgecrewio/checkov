@@ -3,7 +3,6 @@ from __future__ import annotations
 import itertools
 import json
 import logging
-import random
 import re
 from typing import Any, TYPE_CHECKING
 
@@ -22,6 +21,9 @@ AZURE = 'azure'
 GCP = 'gcp'
 GENERAL = 'general'
 ALL = 'all'
+
+GENERIC_OBFUSCATION_LENGTH = 10
+
 
 # Taken from various git-secrets forks that add Azure and GCP support to base AWS.
 # The groups here are the result of running git secrets --register-[aws|azure|gcp]
@@ -133,10 +135,8 @@ def omit_secret_value_from_line(secret: str | None, line_text: str) -> str:
         except ValueError:
             return line_text
 
-    random_obfuscation_len = (random.randint(5, 10))  # nosec
-
     censored_line = f'{line_text[:secret_index + secret_len_to_expose]}' \
-                    f'{"*" * random_obfuscation_len}' \
+                    f'{"*" * GENERIC_OBFUSCATION_LENGTH}' \
                     f'{line_text[secret_index + secret_length:]}'
     return censored_line
 
