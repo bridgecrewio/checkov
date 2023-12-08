@@ -11,7 +11,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 
 class IBM_VirtualServersForVPCInstanceIPspoofingDisabled(BaseResourceCheck):
     def __init__(self) -> None:
-        name = "Ensure that Azure Virtual Machine scale sets Boot Diagnostics are Enabled"
+        name = "Ensure that Virtual Servers for VPC instance has interface with IP-spoofing disabled"
         id = "CKV2_IBM_8"
         supported_resources = ("ibm_is_instance",)
         categories = (CheckCategories.GENERAL_SECURITY,)
