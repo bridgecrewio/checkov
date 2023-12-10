@@ -22,6 +22,9 @@ GCP = 'gcp'
 GENERAL = 'general'
 ALL = 'all'
 
+GENERIC_OBFUSCATION_LENGTH = 10
+
+
 # Taken from various git-secrets forks that add Azure and GCP support to base AWS.
 # The groups here are the result of running git secrets --register-[aws|azure|gcp]
 # https://github.com/awslabs/git-secrets
@@ -133,7 +136,7 @@ def omit_secret_value_from_line(secret: str | None, line_text: str) -> str:
             return line_text
 
     censored_line = f'{line_text[:secret_index + secret_len_to_expose]}' \
-                    f'{"*" * (secret_length - secret_len_to_expose)}' \
+                    f'{"*" * GENERIC_OBFUSCATION_LENGTH}' \
                     f'{line_text[secret_index + secret_length:]}'
     return censored_line
 

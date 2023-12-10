@@ -1,6 +1,19 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.24...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.27...HEAD)
+
+## [3.1.27](https://github.com/bridgecrewio/checkov/compare/3.1.26...3.1.27) - 2023-12-07
+
+### Feature
+
+- **secrets:** used 10 characters in secret violation - [#5835](https://github.com/bridgecrewio/checkov/pull/5835)
+
+## [3.1.26](https://github.com/bridgecrewio/checkov/compare/3.1.24...3.1.26) - 2023-12-06
+
+### Bug Fix
+
+- **general:** check both path types for suppression - [#5834](https://github.com/bridgecrewio/checkov/pull/5834)
+- **terraform:** Fix range issue in OCI RDP check - [#5832](https://github.com/bridgecrewio/checkov/pull/5832)
 
 ## [3.1.24](https://github.com/bridgecrewio/checkov/compare/3.1.21...3.1.24) - 2023-12-05
 
