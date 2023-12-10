@@ -223,3 +223,19 @@ def test_CKV_AWS_131_ALBDropHttpHeaders(failed_checks):
 
 def test_CKV_AWS_2_ALBListenerHTTPS(failed_checks):
     run_check(check_results=failed_checks, check_id="CKV_AWS_2", policy_name="ALBListenerHTTPS", language="python")
+
+
+def test_CKV_AWS_23_SecurityGroupRuleDescription(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_23", policy_name="SecurityGroupRuleDescription", language="python")
+
+
+def test_CKV_AWS_173_LambdaEnvironmentEncryptionSettings(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_173", policy_name="LambdaEnvironmentEncryptionSettings", language="python")
+
+
+def test_CKV_AWS_157_RDSMultiAZEnabled(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_157", policy_name="RDSMultiAZEnabled", language="python")
+
+
+def test_CKV_AWS_96_AuroraEncryption(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_96", policy_name="AuroraEncryption", language="python")
