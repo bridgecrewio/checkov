@@ -13,7 +13,7 @@ class SastReport(Report):
         self.language: SastLanguages = language
         self.sast_imports: Dict[str, Any] = {}
         self.sast_reachability: Dict[str, Any] = {}
-        self.sast_report: PrismaReport = sast_report
+        self.sast_report: Optional[PrismaReport] = sast_report
 
     def get_summary(self) -> Dict[str, Union[int, str]]:
         base_summary: Dict[str, Union[int, str]] = super().get_summary()
