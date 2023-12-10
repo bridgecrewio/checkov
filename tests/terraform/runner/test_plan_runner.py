@@ -227,6 +227,26 @@ class TestRunnerValid(unittest.TestCase):
         all_checks = report.failed_checks + report.passed_checks
         self.assertTrue(any(c.check_id == custom_check_id for c in all_checks))
 
+    def test_plan_runner_with_empty_vpc_connection(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_plan_path = current_dir + "/resources/plan/tfplan.json"
+        runner = Runner()
+        runner.graph_registry.checks = []
+        report = runner.run(
+            root_folder=None,
+            files=[valid_plan_path],
+            external_checks_dir=None,
+            runner_filter=RunnerFilter(framework=["all"]),
+        )
+        report_json = report.get_json()
+        self.assertIsInstance(report_json, str)
+        self.assertIsNotNone(report_json)
+        self.assertIsNotNone(report.get_test_suite())
+        self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
+        self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
+
+        self.assertEqual(report.get_summary()["failed"], 106)
+
     def test_runner_child_modules(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_plan_path = current_dir + "/resources/plan_with_child_modules/tfplan.json"
@@ -817,7 +837,7 @@ class TestRunnerValid(unittest.TestCase):
             self.assertIn(check.resource, valid_resources_ids)
 
         self.assertEqual(len(report.resources), 3)
-        
+
     def test_plan_resources_created_by_modules(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_plan_path = current_dir + "/extra_tf_plan_checks/modules.json"
@@ -828,12 +848,12 @@ class TestRunnerValid(unittest.TestCase):
         )
         passed_checks_CKV2_GCP_12 = [check for check in report.passed_checks if check.check_id == 'CKV2_GCP_12']
         passed_checks_CKV_GCP_88 = [check for check in report.passed_checks if check.check_id == 'CKV_GCP_88']
-        
+
         assert passed_checks_CKV2_GCP_12[0].resource == 'module.achia_test_valid_443.google_compute_firewall.custom[0]'
         assert passed_checks_CKV2_GCP_12[1].resource == 'module.achia_test_valid_ports.google_compute_firewall.custom[0]'
         assert passed_checks_CKV2_GCP_12[2].resource == 'module.achia_test_violating_no_ports.google_compute_firewall.custom[0]'
         assert passed_checks_CKV2_GCP_12[3].resource == 'module.achia_test_violating_port.google_compute_firewall.custom[0]'
-        
+
         assert passed_checks_CKV_GCP_88[0].resource == 'module.achia_test_valid_443.google_compute_firewall.custom[0]'
         assert passed_checks_CKV_GCP_88[1].resource == 'module.achia_test_valid_ports.google_compute_firewall.custom[0]'
         assert passed_checks_CKV_GCP_88[2].resource == 'module.achia_test_violating_no_ports.google_compute_firewall.custom[0]'
