@@ -39,8 +39,11 @@ class MatchMetadata(BaseModel):
 
 
 class Match(BaseModel):
+    exact_hash: str  # noqa: CCE003
+    structure_hash: str  # noqa: CCE003
     location: MatchLocation  # noqa: CCE003
     metadata: MatchMetadata  # noqa: CCE003
+    minimized_ast: str  # noqa: CCE003
 
 
 class RuleMatch(BaseModel):
