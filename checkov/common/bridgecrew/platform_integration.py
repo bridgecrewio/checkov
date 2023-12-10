@@ -559,8 +559,8 @@ class BcPlatformIntegration:
         for file in self.scan_file:
             if match.location.path != file:
                 continue
-            file_dir = '/'.join(match.location.path.split('/')[0:-1])  # type: ignore
-            match.location.path = match.location.path.replace(file_dir, self.repo_path)
+            file_dir = '/'.join(match.location.path.split('/')[0:-1])
+            match.location.path = match.location.path.replace(file_dir, self.repo_path)  # type: ignore
             return
 
     @staticmethod
@@ -579,16 +579,16 @@ class BcPlatformIntegration:
         for report in reports:
             if not report.check_type.startswith('sast'):
                 continue
-            if not report.sast_report:
+            if not report.sast_report:  # type: ignore
                 continue
-            for _, match_by_check in report.sast_report.rule_match.items():
+            for _, match_by_check in report.sast_report.rule_match.items():  # type: ignore
                 for _, match in match_by_check.items():
                     for m in match.matches:
                         self.adjust_sast_match_location_path(m)
-                sast_scan_reports[report.check_type] = report.sast_report.model_dump(mode='json')
+                sast_scan_reports[report.check_type] = report.sast_report.model_dump(mode='json')  # type: ignore
             if self.on_prem:
                 BcPlatformIntegration._delete_code_block_from_sast_report(sast_scan_reports)
-        persist_checks_results(sast_scan_reports, self.s3_client, self.bucket, self.repo_path)
+        persist_checks_results(sast_scan_reports, self.s3_client, self.bucket, self.repo_path)  # type: ignore
 
     def persist_scan_results(self, scan_reports: list[Report]) -> None:
         """
