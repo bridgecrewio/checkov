@@ -131,8 +131,8 @@ class BcPlatformIntegration:
         self.no_cert_verify: bool = False
         self.on_prem: bool = False
         self.daemon_process = False  # set to 'True' when running in multiprocessing 'spawn' mode
-        self.scan_dir = ''
-        self.scan_file = ''
+        self.scan_dir: List[str] = []
+        self.scan_file: List[str] = []
 
     def init_instance(self, platform_integration_data: dict[str, Any]) -> None:
         """This is mainly used for recreating the instance without interacting with the platform again"""
@@ -554,12 +554,12 @@ class BcPlatformIntegration:
         for dir in self.scan_dir:
             if not match.location.path.startswith(dir):
                 continue
-            match.location.path = match.location.path.replace(dir, self.repo_path)
+            match.location.path = match.location.path.replace(dir, self.repo_path)  # type: ignore
             return
         for file in self.scan_file:
             if match.location.path != file:
                 continue
-            file_dir = '/'.join(match.location.path.split('/')[0:-1])
+            file_dir = '/'.join(match.location.path.split('/')[0:-1])  # type: ignore
             match.location.path = match.location.path.replace(file_dir, self.repo_path)
             return
 
