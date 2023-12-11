@@ -65,7 +65,7 @@ setup(
         ]
     },
     install_requires=[
-        "bc-python-hcl2==0.4.1",
+        "bc-python-hcl2==0.4.2",
         "bc-detect-secrets==1.4.30",
         "bc-jsonpath-ng==1.6.1",
         "tabulate",
