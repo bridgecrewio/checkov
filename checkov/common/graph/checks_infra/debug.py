@@ -52,7 +52,7 @@ def attribute_block(
     )
     color = "green" if status == "passed" else "red"
 
-    print("\nEvaluated block:\n")
+    print("\nEvaluated block: \n")
     print(colored(yaml.dump([attribute_block_conf], sort_keys=False), "blue"))
     print("and got:")
     print(colored(f'\nResource "{resource[CustomAttributes.ID]}" {status}:', color))
