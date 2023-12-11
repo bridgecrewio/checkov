@@ -334,7 +334,7 @@ class PrismaEngine(SastEngine):
                     report.sast_imports = prisma_report.imports[lang]
                     break
             else:
-                sast_report = PrismaReport(rule_match={lang: checks}, errors=prisma_report.errors, profiler=prisma_report.profiler,
+                sast_report = PrismaReport(rule_match={lang: {}}, errors=prisma_report.errors, profiler=prisma_report.profiler,
                                            run_metadata=prisma_report.run_metadata, imports={}, reachability_report={})
                 report = SastReport(f'{self.check_type.lower()}_{lang.value}', prisma_report.run_metadata, lang, sast_report)
                 report.sast_imports = prisma_report.imports[lang]
@@ -346,7 +346,7 @@ class PrismaEngine(SastEngine):
                     report.sast_reachability = prisma_report.reachability_report[lang]
                     break
             else:
-                sast_report = PrismaReport(rule_match={lang: checks}, errors=prisma_report.errors, profiler=prisma_report.profiler,
+                sast_report = PrismaReport(rule_match={lang: {}}, errors=prisma_report.errors, profiler=prisma_report.profiler,
                                            run_metadata=prisma_report.run_metadata, imports={}, reachability_report={})
                 report = SastReport(f'{self.check_type.lower()}_{lang.value}', prisma_report.run_metadata, lang, sast_report)
                 report.sast_reachability = prisma_report.reachability_report[lang]

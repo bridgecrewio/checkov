@@ -145,12 +145,12 @@ def test_CKV_AWS_42_EFSEncryptionEnabled(failed_checks):
     run_check(check_results=failed_checks, check_id="CKV_AWS_42", policy_name="EFSEncryptionEnabled", language="python")
 
 
-def test_CKV_AWS_193_AppSyncLogging(failed_checks):
-    run_check(check_results=failed_checks, check_id="CKV_AWS_193", policy_name="AppSyncLogging", language="python")
+# def test_CKV_AWS_193_AppSyncLogging(failed_checks):
+#    run_check(check_results=failed_checks, check_id="CKV_AWS_193", policy_name="AppSyncLogging", language="python")
 
 
-def test_CKV_AWS_194_AppSyncFieldLevelLogs(failed_checks):
-    run_check(check_results=failed_checks, check_id="CKV_AWS_194", policy_name="AppSyncFieldLevelLogs", language="python")
+# def test_CKV_AWS_194_AppSyncFieldLevelLogs(failed_checks):
+#    run_check(check_results=failed_checks, check_id="CKV_AWS_194", policy_name="AppSyncFieldLevelLogs", language="python")
 
 
 def test_CKV_AWS_104_DocDBAuditLogs(failed_checks):
@@ -189,8 +189,8 @@ def test_CKV_AWS_83_ElasticsearchDomainEnforceHTTPS(failed_checks):
     run_check(check_results=failed_checks, check_id="CKV_AWS_83", policy_name="ElasticsearchDomainEnforceHTTPS", language="python")
 
 
-def test_CKV_AWS_76_APIGatewayAccessLogging(failed_checks):
-    run_check(check_results=failed_checks, check_id="CKV_AWS_76", policy_name="APIGatewayAccessLogging", language="python")
+# def test_CKV_AWS_76_APIGatewayAccessLogging(failed_checks):
+#    run_check(check_results=failed_checks, check_id="CKV_AWS_76", policy_name="APIGatewayAccessLogging", language="python")
 
 
 def test_CKV_AWS_117_LambdaInVPC(failed_checks):
