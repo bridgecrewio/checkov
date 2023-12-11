@@ -457,12 +457,11 @@
         },
         "cyclonedx-python-lib": {
             "hashes": [
-                "sha256:215a636a4e77385d2cf4c6c9801c9bad4791849634f2c6daa45ab2c6cb0a85f6",
-                "sha256:2989db0cd8bb4c0c442423d71ed7a84ae059e16a2d0f932cc4bf92da7385cdb3"
+                "sha256:1b43065205cdc53490c825fcfbda73142b758aa40ca169c968e342e88d06734f",
+                "sha256:b9ebf2c0520721d2f8ee16aadc2bbb9d4e015862c84ab1691a49b177f3014d99"
             ],
             "index": "pypi",
-            "markers": "python_version >= '3.8' and python_version < '4.0'",
-            "version": "==5.1.1"
+            "version": "==5.2.0"
         },
         "decorator": {
             "hashes": [
