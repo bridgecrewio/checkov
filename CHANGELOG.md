@@ -1,6 +1,16 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.27...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.29...HEAD)
+
+## [3.1.29](https://github.com/bridgecrewio/checkov/compare/3.1.27...3.1.29) - 2023-12-10
+
+### Feature
+
+- **terraform:** fix for check VPCPeeringRouteTableOverlyPermissive and add tests - [#5837](https://github.com/bridgecrewio/checkov/pull/5837)
+
+### Bug Fix
+
+- **sast:** fix sast report format - [#5811](https://github.com/bridgecrewio/checkov/pull/5811)
 
 ## [3.1.27](https://github.com/bridgecrewio/checkov/compare/3.1.26...3.1.27) - 2023-12-07
 
