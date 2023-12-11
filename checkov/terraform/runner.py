@@ -8,6 +8,7 @@ from typing import Any, TYPE_CHECKING, Optional
 from typing_extensions import TypeAlias  # noqa[TC002]
 
 from checkov.common.bridgecrew.check_type import CheckType
+from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.output.extra_resource import ExtraResource
@@ -396,6 +397,7 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
                 entity_evaluations = BaseVariableEvaluation.reduce_entity_evaluations(
                     variables_evaluations, entity_context_path
                 )
+            self._assign_correct_graph_to_registry(registry, scanned_file)
             results = registry.scan(scanned_file, entity, skipped_checks, runner_filter)
             absolute_scanned_file_path = get_abs_path(full_file_path)
             # This duplicates a call at the start of scan, but adding this here seems better than kludging with some tuple return type
@@ -449,6 +451,19 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
                             resource=entity_id,
                         )
                     )
+
+    def _assign_correct_graph_to_registry(self, registry: BaseCheckRegistry, scanned_file: str) -> None:
+        registry.graph = None
+        if self.all_graphs and isinstance(self.all_graphs, list):
+            if len(self.all_graphs) == 1:
+                graph_obj = self.all_graphs[0]
+                if graph_obj and isinstance(graph_obj, tuple):
+                    registry.graph = graph_obj[0]  # type: ignore[assignment]
+            else:
+                for graph_obj in self.all_graphs:
+                    if isinstance(graph_obj, tuple) and isinstance(graph_obj[1], str) and scanned_file.startswith(graph_obj[1]):
+                        registry.graph = graph_obj[0]  # type: ignore[assignment]
+                        break
 
     def get_entity_context_and_evaluations(self, entity: dict[str, Any]) -> dict[str, Any] | None:
         block_type = entity[CustomAttributes.BLOCK_TYPE]
