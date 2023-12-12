@@ -16,6 +16,7 @@ set_env_vars() {
   export BC_KEY_KEY=""
   export LOG_LEVEL=DEBUG
   export BC_API_URL="https://www.bridgecrew.cloud"
+  export SAVE_SAST_REPORT_LOCALLY=TRUE
 }
 
 prepare_data () {

@@ -19,6 +19,21 @@ def test_sast_javascript() -> None:
     validate_report(os.path.abspath(report_path))
 
 
+def test_sast_platform_report_python() -> None:
+    report_path = '/tmp/python_sast_report.json'
+    validate_report(os.path.abspath(report_path))
+
+
+def test_sast_platform_report_java() -> None:
+    report_path = '/tmp/java_sast_report.json'
+    validate_report(os.path.abspath(report_path))
+
+
+def test_sast_platform_report_javascript() -> None:   
+    report_path = '/tmp/javascript_sast_report.json'
+    validate_report(os.path.abspath(report_path))
+
+
 def validate_report(report_path: str) -> None:
     with open(report_path) as f:
         data = f.read()
@@ -35,3 +50,10 @@ def validate_report(report_path: str) -> None:
         summary = report.get("summary")
         assert summary.get("passed") == 0
         assert summary.get("failed") > 0
+
+
+def validate_plaform_report(report_path: str) -> None:
+    with open(report_path) as f:
+        data = f.read()
+        report = json.loads(data)
+        assert report is None
