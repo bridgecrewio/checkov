@@ -16,7 +16,10 @@ set_env_vars() {
   export BC_KEY_KEY=""
   export LOG_LEVEL=DEBUG
   export BC_API_URL="https://www.bridgecrew.cloud"
-  export SAVE_SAST_REPORT_LOCALLY=TRUE
+}
+
+set_env_var_sast_repot() {
+  export SAVE_SAST_REPORT_LOCALLY="TRUE"
 }
 
 prepare_data () {
@@ -44,6 +47,8 @@ delete_reports () {
 }
 
 #set_env_vars
+
+set_env_var_sast_repot
 
 echo $BC_API_KEY
 if [[ -z "BC_API_KEY" ]]; then
