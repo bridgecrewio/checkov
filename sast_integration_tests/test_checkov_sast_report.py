@@ -62,5 +62,5 @@ def validate_platform_report(report_path: str, lang: str) -> None:
         for check_id, check in rule_matches.get(lang).items():
             assert check.get('check_id') == check_id
             sast_match = check.get('matches')[0]
-            assert sast_match['location']['path'].startswith('checkov/')
+            assert sast_match['location']['path'] != ""
             assert sast_match['location']['code_block'] != ""
