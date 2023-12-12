@@ -29,7 +29,7 @@ def test_sast_platform_report_java() -> None:
     validate_plaform_report(os.path.abspath(report_path))
 
 
-def test_sast_platform_report_javascript() -> None:   
+def test_sast_platform_report_javascript() -> None:
     report_path = '/tmp/sast_javascript_report.json'
     validate_plaform_report(os.path.abspath(report_path))
 

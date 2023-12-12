@@ -596,7 +596,7 @@ class BcPlatformIntegration:
                 sast_scan_reports[report.check_type] = report.sast_report.model_dump(mode='json')  # type: ignore
             if self.on_prem:
                 BcPlatformIntegration._delete_code_block_from_sast_report(sast_scan_reports)
-        
+
         if os.getenv('SAVE_SAST_REPORT_LOCALLY'):
             self.save_sast_report_locally(sast_scan_reports)
 
