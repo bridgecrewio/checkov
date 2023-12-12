@@ -102,7 +102,6 @@ jobs:
           auth: ${{ secrets.REDEFINE_AUTH }}
           python-venv-path: ${{ steps.get-venv.outputs.venv }}
           testing-framework: pytest
-          # mode is "discover" if github.ref is "refs/heads/main" otherwise it's the value of inputs.redefine-mode
           mode: fail-fast
           time-limit: 30  # approx 15% of the run time
           config-args: matrix_value=${{ matrix.python }}
