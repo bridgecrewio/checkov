@@ -20,17 +20,17 @@ def test_sast_javascript() -> None:
 
 
 def test_sast_platform_report_python() -> None:
-    report_path = '/tmp/python_sast_report.json'
+    report_path = '/tmp/sast_python_report.json'
     validate_plaform_report(os.path.abspath(report_path))
 
 
 def test_sast_platform_report_java() -> None:
-    report_path = '/tmp/java_sast_report.json'
+    report_path = '/tmp/sast_java_report.json'
     validate_plaform_report(os.path.abspath(report_path))
 
 
 def test_sast_platform_report_javascript() -> None:   
-    report_path = '/tmp/javascript_sast_report.json'
+    report_path = '/tmp/sast_javascript_report.json'
     validate_plaform_report(os.path.abspath(report_path))
 
 

@@ -577,7 +577,7 @@ class BcPlatformIntegration:
     @staticmethod
     def save_sast_report_locally(sast_scan_reports: Dict[str, Dict[str, Any]]):
         for lang, report in sast_scan_reports.items():
-            filename = f'{lang}_sast_report.json'
+            filename = f'{lang}_report.json'
             new_file = open(f"/tmp/{filename}", "w")
             new_file.write(json.dumps(report))
             os.close(new_file)
