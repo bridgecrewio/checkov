@@ -56,4 +56,6 @@ def validate_plaform_report(report_path: str) -> None:
     with open(report_path) as f:
         data = f.read()
         report = json.loads(data)
-        assert report is None
+        assert report is not None
+        rule_matchs = report.get("rule_match")
+        assert rule_matchs is not None
