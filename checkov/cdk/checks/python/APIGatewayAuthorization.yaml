@@ -8,7 +8,14 @@ scope:
   languages:
     - python
 definition:
-  pattern: aws_cdk.aws_apigateway.Method(<ANY>, http_method=$ARG, <ANY>, authorization_type=aws_cdk.aws_apigateway.AuthorizationType.NONE, <ANY>, api_key_required=False)
+  patterns:
+    or:
+      - pattern: aws_cdk.aws_apigateway.Method(<ANY>, http_method=$ARG, <ANY>, authorization_type=aws_cdk.aws_apigateway.AuthorizationType.NONE, <ANY>, api_key_required=False, <ANY>)
+      - pattern: aws_cdk.aws_apigateway.Method(<ANY>, http_method=$ARG, <ANY>, api_key_required=False, <ANY>, authorization_type=aws_cdk.aws_apigateway.AuthorizationType.NONE, <ANY>)
+      - pattern: aws_cdk.aws_apigateway.Method(<ANY>, authorization_type=aws_cdk.aws_apigateway.AuthorizationType.NONE, <ANY>, http_method=$ARG, <ANY>, api_key_required=False, <ANY>)
+      - pattern: aws_cdk.aws_apigateway.Method(<ANY>, authorization_type=aws_cdk.aws_apigateway.AuthorizationType.NONE, <ANY>, api_key_required=False, <ANY>, http_method=$ARG, <ANY>)
+      - pattern: aws_cdk.aws_apigateway.Method(<ANY>, api_key_required=False, <ANY>, authorization_type=aws_cdk.aws_apigateway.AuthorizationType.NONE, <ANY>, http_method=$ARG, <ANY>)
+      - pattern: aws_cdk.aws_apigateway.Method(<ANY>, api_key_required=False, <ANY>, http_method=$ARG, <ANY>, authorization_type=aws_cdk.aws_apigateway.AuthorizationType.NONE, <ANY>)
   conditions:
     - metavariable: $ARG
       not_regex: OPTIONS

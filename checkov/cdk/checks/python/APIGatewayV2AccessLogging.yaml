@@ -8,11 +8,8 @@ scope:
   languages:
     - python
 definition:
-  patterns:
-    or:
-      - pattern: aws_cdk.aws_apigatewayv2.CfnStage(<ANY>)
-        conditions:
-          - not_pattern: aws_cdk.aws_apigatewayv2.CfnStage(<ANY>, access_log_settings=aws_cdk.aws_apigatewayv2.CfnStage.AccessLogSettingsProperty(<ANY>, destination_arn=$ARG ,<ANY>) ,<ANY>)
-      - pattern: aws_cdk.aws_apigatewayv2.CfnApi(<ANY>)
-        conditions:
-          - not_pattern: aws_cdk.aws_apigatewayv2.CfnApi(<ANY>, access_log_settings=aws_cdk.aws_apigatewayv2.CfnApi.AccessLogSettingsProperty(<ANY>, destination_arn=$ARG ,<ANY>) ,<ANY>)
+  pattern: aws_cdk.aws_apigatewayv2.$FUNC(<ANY>)
+  conditions:
+    - not_pattern: aws_cdk.aws_apigatewayv2.$FUNC(<ANY>, access_log_settings=aws_cdk.aws_apigatewayv2.$FUNC.AccessLogSettingsProperty(<ANY>, destination_arn=$ARG ,<ANY>) ,<ANY>)
+    - metavariable: $FUNC
+      regex: (CfnStage|CfnApi)

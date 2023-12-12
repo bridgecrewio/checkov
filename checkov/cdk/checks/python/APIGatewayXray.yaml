@@ -8,11 +8,8 @@ scope:
   languages:
     - python
 definition:
-  patterns:
-    or:
-      - pattern: aws_cdk.aws_apigateway.CfnStage(<ANY>)
-        conditions:
-          - not_pattern: aws_cdk.aws_apigateway.CfnStage(<ANY>, tracing_enabled=True , <ANY>)
-      - pattern: aws_cdk.aws_apigateway2.CfnStage(<ANY>)
-        conditions:
-          - not_pattern: aws_cdk.aws_apigateway2.CfnStage(<ANY>, tracing_enabled=True , <ANY>)
+  pattern: aws_cdk.$MOD.CfnStage(<ANY>)
+  conditions:
+    - not_pattern: aws_cdk.$MOD.CfnStage(<ANY>, tracing_enabled=True , <ANY>)
+    - metavariable: $MOD
+      regex: (aws_apigateway|aws_apigateway2)
