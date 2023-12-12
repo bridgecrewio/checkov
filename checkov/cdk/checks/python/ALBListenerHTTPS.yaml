@@ -16,4 +16,4 @@ definition:
     - not_pattern: aws_cdk.aws_elasticloadbalancingv2.CfnListener(<ANY>, protocol='UDP', <ANY>)
     - not_pattern: aws_cdk.aws_elasticloadbalancingv2.CfnListener(<ANY>, protocol='TCP_UDP', <ANY>)
     - not_pattern: |
-        aws_cdk_aws_elasticloadbalancingv2.CfnListener(<ANY>, default_actions=[{'type': 'redirect', 'redirectConfig':{'protocol': 'HTTPS'}} , <ANY>] , <ANY>)
+        aws_cdk.aws_elasticloadbalancingv2.CfnListener(<ANY>, default_actions=[<ANY>, {'type': 'redirect', 'redirectConfig':{'protocol': 'HTTPS'}} , <ANY>] , <ANY>)
