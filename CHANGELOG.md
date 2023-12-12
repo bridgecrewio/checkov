@@ -1,6 +1,51 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.21...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.33...HEAD)
+
+## [3.1.33](https://github.com/bridgecrewio/checkov/compare/3.1.29...3.1.33) - 2023-12-11
+
+### Feature
+
+- **general:** anchor cyclonedx to last non breaking version - [#5846](https://github.com/bridgecrewio/checkov/pull/5846)
+- **general:** Revert pipfile lock changes - [#5848](https://github.com/bridgecrewio/checkov/pull/5848)
+- **sast:** add back commented checks - [#5851](https://github.com/bridgecrewio/checkov/pull/5851)
+
+### Bug Fix
+
+- **sast:** fix reachability with no regular matches - [#5847](https://github.com/bridgecrewio/checkov/pull/5847)
+- **sca:** not printing reachability data for lines without cves - [#5849](https://github.com/bridgecrewio/checkov/pull/5849)
+
+## [3.1.29](https://github.com/bridgecrewio/checkov/compare/3.1.27...3.1.29) - 2023-12-10
+
+### Feature
+
+- **terraform:** fix for check VPCPeeringRouteTableOverlyPermissive and add tests - [#5837](https://github.com/bridgecrewio/checkov/pull/5837)
+
+### Bug Fix
+
+- **sast:** fix sast report format - [#5811](https://github.com/bridgecrewio/checkov/pull/5811)
+
+## [3.1.27](https://github.com/bridgecrewio/checkov/compare/3.1.26...3.1.27) - 2023-12-07
+
+### Feature
+
+- **secrets:** used 10 characters in secret violation - [#5835](https://github.com/bridgecrewio/checkov/pull/5835)
+
+## [3.1.26](https://github.com/bridgecrewio/checkov/compare/3.1.24...3.1.26) - 2023-12-06
+
+### Bug Fix
+
+- **general:** check both path types for suppression - [#5834](https://github.com/bridgecrewio/checkov/pull/5834)
+- **terraform:** Fix range issue in OCI RDP check - [#5832](https://github.com/bridgecrewio/checkov/pull/5832)
+
+## [3.1.24](https://github.com/bridgecrewio/checkov/compare/3.1.21...3.1.24) - 2023-12-05
+
+### Bug Fix
+
+- **sca:** Update the log level of specific logs - [#5828](https://github.com/bridgecrewio/checkov/pull/5828)
+- **terraform:** CKV_GCP_26 Added additional google_compute_subnetwork purposes that do not support flow logs - [#5812](https://github.com/bridgecrewio/checkov/pull/5812)
+- **terraform:** Fix CKV_GCP_30 for unknown service account - [#5818](https://github.com/bridgecrewio/checkov/pull/5818)
+- **terraform:** Fixed to_dict of terraform block regarding source_module_object - [#5822](https://github.com/bridgecrewio/checkov/pull/5822)
 
 ## [3.1.21](https://github.com/bridgecrewio/checkov/compare/3.1.20...3.1.21) - 2023-12-04
 

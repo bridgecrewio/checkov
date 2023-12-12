@@ -13,7 +13,7 @@ from os import path
 from pathlib import Path
 from time import sleep
 from types import MethodType
-from typing import List, Dict, TYPE_CHECKING, Any, cast, Optional, Union
+from typing import List, Dict, TYPE_CHECKING, Any, Set, cast, Optional, Union
 from urllib.parse import urlparse
 
 import boto3
@@ -34,8 +34,9 @@ from checkov.common.bridgecrew.run_metadata.registry import registry
 from checkov.common.bridgecrew.wrapper import persist_assets_results, reduce_scan_reports, persist_checks_results, \
     enrich_and_persist_checks_metadata, checkov_results_prefix, persist_run_metadata, _put_json_object, \
     persist_logs_stream, persist_graphs, persist_resource_subgraph_maps, persist_reachability_results
-from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILES, SCANNABLE_PACKAGE_FILES
+from checkov.common.models.consts import SAST_SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILES, SCANNABLE_PACKAGE_FILES
 from checkov.common.runners.base_runner import filter_ignored_paths
+from checkov.common.sast.consts import SastLanguages
 from checkov.common.typing import _CicdDetails, LibraryGraph
 from checkov.common.util.consts import PRISMA_PLATFORM, BRIDGECREW_PLATFORM, CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
 from checkov.common.util.data_structures_utils import merge_dicts
@@ -64,6 +65,7 @@ if TYPE_CHECKING:
     from checkov.secrets.coordinator import EnrichedSecret
     from mypy_boto3_s3.client import S3Client
     from typing_extensions import TypeGuard
+    from checkov.sast.prisma_models.report import Match
 
 SLEEP_SECONDS = 1
 
@@ -129,6 +131,8 @@ class BcPlatformIntegration:
         self.no_cert_verify: bool = False
         self.on_prem: bool = False
         self.daemon_process = False  # set to 'True' when running in multiprocessing 'spawn' mode
+        self.scan_dir: List[str] = []
+        self.scan_file: List[str] = []
 
     def init_instance(self, platform_integration_data: dict[str, Any]) -> None:
         """This is mainly used for recreating the instance without interacting with the platform again"""
@@ -474,6 +478,7 @@ class BcPlatformIntegration:
         files: list[str] | None = None,
         excluded_paths: list[str] | None = None,
         included_paths: list[str] | None = None,
+        sast_languages: Set[SastLanguages] | None = None
     ) -> None:
         """
         Persist the repository found on root_dir path to Bridgecrew's platform. If --file flag is used, only files
@@ -496,6 +501,12 @@ class BcPlatformIntegration:
                     continue
                 if file_extension in SUPPORTED_FILE_EXTENSIONS or f_name in SUPPORTED_FILES:
                     files_to_persist.append(FileToPersist(f, os.path.relpath(f, root_dir)))
+                if sast_languages:
+                    for framwork in sast_languages:
+                        if file_extension in SAST_SUPPORTED_FILE_EXTENSIONS[framwork]:
+                            files_to_persist.append(FileToPersist(f, os.path.relpath(f, root_dir)))
+                            break
+
         else:
             for root_path, d_names, f_names in os.walk(root_dir):
                 # self.excluded_paths only contains the config fetched from the platform.
@@ -506,10 +517,15 @@ class BcPlatformIntegration:
                     _, file_extension = os.path.splitext(file_path)
                     if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 and file_extension in SCANNABLE_PACKAGE_FILES:
                         continue
+                    full_file_path = os.path.join(root_path, file_path)
+                    relative_file_path = os.path.relpath(full_file_path, root_dir)
                     if file_extension in SUPPORTED_FILE_EXTENSIONS or file_path in SUPPORTED_FILES or is_dockerfile(file_path):
-                        full_file_path = os.path.join(root_path, file_path)
-                        relative_file_path = os.path.relpath(full_file_path, root_dir)
                         files_to_persist.append(FileToPersist(full_file_path, relative_file_path))
+                    if sast_languages:
+                        for framwork in sast_languages:
+                            if file_extension in SAST_SUPPORTED_FILE_EXTENSIONS[framwork]:
+                                files_to_persist.append(FileToPersist(full_file_path, relative_file_path))
+                                break
 
         self.persist_files(files_to_persist)
 
@@ -533,6 +549,46 @@ class BcPlatformIntegration:
                         files_to_persist.append(FileToPersist(full_file_path, relative_file_path))
 
         self.persist_files(files_to_persist)
+
+    def adjust_sast_match_location_path(self, match: Match) -> None:
+        for dir in self.scan_dir:
+            if not match.location.path.startswith(dir):
+                continue
+            match.location.path = match.location.path.replace(dir, self.repo_path)  # type: ignore
+            return
+        for file in self.scan_file:
+            if match.location.path != file:
+                continue
+            file_dir = '/'.join(match.location.path.split('/')[0:-1])
+            match.location.path = match.location.path.replace(file_dir, self.repo_path)  # type: ignore
+            return
+
+    @staticmethod
+    def _delete_code_block_from_sast_report(report: Dict[str, Any]) -> None:
+        if isinstance(report, dict):
+            for key, value in report.items():
+                if key == 'code_block':
+                    report[key] = ''
+                BcPlatformIntegration._delete_code_block_from_sast_report(value)
+        if isinstance(report, list):
+            for item in report:
+                BcPlatformIntegration._delete_code_block_from_sast_report(item)
+
+    def persist_sast_scan_results(self, reports: List[Report]) -> None:
+        sast_scan_reports = {}
+        for report in reports:
+            if not report.check_type.startswith('sast'):
+                continue
+            if not report.sast_report:  # type: ignore
+                continue
+            for _, match_by_check in report.sast_report.rule_match.items():  # type: ignore
+                for _, match in match_by_check.items():
+                    for m in match.matches:
+                        self.adjust_sast_match_location_path(m)
+                sast_scan_reports[report.check_type] = report.sast_report.model_dump(mode='json')  # type: ignore
+            if self.on_prem:
+                BcPlatformIntegration._delete_code_block_from_sast_report(sast_scan_reports)
+        persist_checks_results(sast_scan_reports, self.s3_client, self.bucket, self.repo_path)  # type: ignore
 
     def persist_scan_results(self, scan_reports: list[Report]) -> None:
         """
@@ -1068,6 +1124,7 @@ class BcPlatformIntegration:
         print(Style.BRIGHT + colored("Metadata upload complete", 'green',
                                      attrs=['bold']) + Style.RESET_ALL)
         self.persist_scan_results(scan_reports)
+        self.persist_sast_scan_results(scan_reports)
         print(Style.BRIGHT + colored("Report upload complete", 'green',
                                      attrs=['bold']) + Style.RESET_ALL)
         self.commit_repository(args.branch)
