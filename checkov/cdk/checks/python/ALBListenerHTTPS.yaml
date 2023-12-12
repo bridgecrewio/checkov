@@ -1,7 +1,7 @@
 metadata:
   version: 0.2
   approach: define failing
-  id: CKV_AWS_42
+  id: CKV_AWS_2
   name: Ensure EFS is securely encrypted
   category: ENCRYPTION
 scope:
