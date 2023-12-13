@@ -18,6 +18,10 @@ set_env_vars() {
   export BC_API_URL="https://www.bridgecrew.cloud"
 }
 
+set_env_vars_local_sast_report() {
+  export SAVE_SAST_REPORT_LOCALLY=TRUE
+}
+
 prepare_data () {
   python checkov/main.py -s --framework sast_python -d repositories/flask --repo-id cli/flask -o json > checkov_report_sast_python.json
   python checkov/main.py -s --framework sast_java -d repositories/WebGoat --repo-id cli/WebGoat -o json > checkov_report_sast_java.json
@@ -43,6 +47,8 @@ delete_reports () {
 }
 
 #set_env_vars
+
+set_env_vars_local_sast_report
 
 echo $BC_API_KEY
 if [[ -z "BC_API_KEY" ]]; then
