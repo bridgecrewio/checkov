@@ -1,5 +1,7 @@
 import re
 
+from checkov.common.sast.consts import SastLanguages
+
 SUPPORTED_FILE_EXTENSIONS = [".tf", ".yml", ".yaml", ".json", ".template", ".bicep", ".hcl"]
 SUPPORTED_PACKAGE_FILES = {
     "bower.json",
@@ -21,6 +23,12 @@ DEPENDENCY_TREE_SUPPORTED_FILES = {"yarn.lock", "Gemfile", "Gemfile.lock", "go.m
 SCANNABLE_PACKAGE_FILES_EXTENSIONS = {".csproj"}
 
 SCANNABLE_PACKAGE_FILES = SUPPORTED_PACKAGE_FILES | DEPENDENCY_TREE_SUPPORTED_FILES
+
+SAST_SUPPORTED_FILE_EXTENSIONS = {
+    SastLanguages.JAVA: ['.java'],
+    SastLanguages.JAVASCRIPT: ['.js'],
+    SastLanguages.PYTHON: ['.py']
+}
 
 ANY_VALUE = "CKV_ANY"
 DOCKER_IMAGE_REGEX = re.compile(r'(?:[^\s\/]+\/)?([^\s:]+):?([^\s]*)')

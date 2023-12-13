@@ -1,6 +1,35 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.27...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.34...HEAD)
+
+## [3.1.34](https://github.com/bridgecrewio/checkov/compare/3.1.33...3.1.34) - 2023-12-12
+
+### Feature
+
+- **terraform:** Used parallel run to run all split_graph iterations - [#5840](https://github.com/bridgecrewio/checkov/pull/5840)
+
+## [3.1.33](https://github.com/bridgecrewio/checkov/compare/3.1.29...3.1.33) - 2023-12-11
+
+### Feature
+
+- **general:** anchor cyclonedx to last non breaking version - [#5846](https://github.com/bridgecrewio/checkov/pull/5846)
+- **general:** Revert pipfile lock changes - [#5848](https://github.com/bridgecrewio/checkov/pull/5848)
+- **sast:** add back commented checks - [#5851](https://github.com/bridgecrewio/checkov/pull/5851)
+
+### Bug Fix
+
+- **sast:** fix reachability with no regular matches - [#5847](https://github.com/bridgecrewio/checkov/pull/5847)
+- **sca:** not printing reachability data for lines without cves - [#5849](https://github.com/bridgecrewio/checkov/pull/5849)
+
+## [3.1.29](https://github.com/bridgecrewio/checkov/compare/3.1.27...3.1.29) - 2023-12-10
+
+### Feature
+
+- **terraform:** fix for check VPCPeeringRouteTableOverlyPermissive and add tests - [#5837](https://github.com/bridgecrewio/checkov/pull/5837)
+
+### Bug Fix
+
+- **sast:** fix sast report format - [#5811](https://github.com/bridgecrewio/checkov/pull/5811)
 
 ## [3.1.27](https://github.com/bridgecrewio/checkov/compare/3.1.26...3.1.27) - 2023-12-07
 
