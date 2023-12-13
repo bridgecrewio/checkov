@@ -1,6 +1,6 @@
 [tool.bandit]
 exclude_dirs = [
-    "tests","cdk_integration_tests/src/python","checkov/cdk/checks/python"
+    "tests"
 ]
 
 [tool.black]
