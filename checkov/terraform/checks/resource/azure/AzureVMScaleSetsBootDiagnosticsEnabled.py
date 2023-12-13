@@ -23,4 +23,3 @@ class AzureContainerInstanceEnvVarSecureValueType(BaseResourceCheck):
 
 
 check = AzureContainerInstanceEnvVarSecureValueType()
-
