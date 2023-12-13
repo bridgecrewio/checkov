@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.33...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.34...HEAD)
+
+## [3.1.34](https://github.com/bridgecrewio/checkov/compare/3.1.33...3.1.34) - 2023-12-12
+
+### Feature
+
+- **terraform:** Used parallel run to run all split_graph iterations - [#5840](https://github.com/bridgecrewio/checkov/pull/5840)
 
 ## [3.1.33](https://github.com/bridgecrewio/checkov/compare/3.1.29...3.1.33) - 2023-12-11
 
