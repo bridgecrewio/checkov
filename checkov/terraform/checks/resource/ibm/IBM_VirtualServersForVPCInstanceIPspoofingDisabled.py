@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import itertools
 from typing import Any
 
 from checkov.common.util.type_forcers import force_list
