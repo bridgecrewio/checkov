@@ -204,7 +204,7 @@ class PrismaEngine(SastEngine):
             name = "unknown"
 
         reachability_data = None
-        if report_reachability:
+        if report_reachability or report_imports:
             # TODO - run sast-core per src
             for source_code in source_codes:
                 reachability_data = get_reachability_data(source_code)
@@ -296,7 +296,9 @@ class PrismaEngine(SastEngine):
         logging.debug(prisma_report.profiler)
         reports: List[SastReport] = []
         for lang, checks in prisma_report.rule_match.items():
-            report = SastReport(f'{self.check_type.lower()}_{lang.value}', prisma_report.run_metadata, lang)
+            sast_report = PrismaReport(rule_match={lang: checks}, errors=prisma_report.errors, profiler=prisma_report.profiler,
+                                       run_metadata=prisma_report.run_metadata, imports={}, reachability_report={})
+            report = SastReport(f'{self.check_type.lower()}_{lang.value}', prisma_report.run_metadata, lang, sast_report)
             for check_id, match_rule in checks.items():
                 check_name = match_rule.check_name
                 check_cwe = match_rule.check_cwe
@@ -326,14 +328,15 @@ class PrismaEngine(SastEngine):
             if report_parsing_errors:
                 report.add_parsing_errors(report_parsing_errors)
             reports.append(report)
-
         for lang in prisma_report.imports:
             for report in reports:
                 if report.language == lang:
                     report.sast_imports = prisma_report.imports[lang]
                     break
             else:
-                report = SastReport(f'{self.check_type.lower()}_{lang.value}', prisma_report.run_metadata, lang)
+                sast_report = PrismaReport(rule_match={lang: {}}, errors=prisma_report.errors, profiler=prisma_report.profiler,
+                                           run_metadata=prisma_report.run_metadata, imports={}, reachability_report={})
+                report = SastReport(f'{self.check_type.lower()}_{lang.value}', prisma_report.run_metadata, lang, sast_report)
                 report.sast_imports = prisma_report.imports[lang]
                 reports.append(report)
 
@@ -343,7 +346,9 @@ class PrismaEngine(SastEngine):
                     report.sast_reachability = prisma_report.reachability_report[lang]
                     break
             else:
-                report = SastReport(f'{self.check_type.lower()}_{lang.value}', prisma_report.run_metadata, lang)
+                sast_report = PrismaReport(rule_match={lang: {}}, errors=prisma_report.errors, profiler=prisma_report.profiler,
+                                           run_metadata=prisma_report.run_metadata, imports={}, reachability_report={})
+                report = SastReport(f'{self.check_type.lower()}_{lang.value}', prisma_report.run_metadata, lang, sast_report)
                 report.sast_reachability = prisma_report.reachability_report[lang]
                 reports.append(report)
         return reports

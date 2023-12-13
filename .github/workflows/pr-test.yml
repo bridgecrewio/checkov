@@ -35,7 +35,7 @@ jobs:
       PYTHON_VERSION: "3.8"
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
-      - uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236  # v4
+      - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c  # v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Install cfn-lint
@@ -54,15 +54,16 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.8", "3.9", "3.10", "3.11"]
+        python: ["3.8", "3.9", "3.10", "3.11", "3.12"]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
       - name: Set up Python ${{ matrix.python }}
-        uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236  # v4
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c  # v4
         with:
           python-version: ${{ matrix.python }}
+          allow-prereleases: true
           cache: "pipenv"
           cache-dependency-path: "Pipfile.lock"
       - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
@@ -79,29 +80,50 @@ jobs:
           # remove venv, if exists
           pipenv --rm || true
           pipenv --python ${{ matrix.python }}
-          pipenv install --dev -v
-          pipenv run pip install redefine --index-url https://pip.redefine.dev
+
+          if [ '${{ matrix.python }}' == '3.12' ]; then
+            # needed for numpy
+            pipenv install --skip-lock --dev -v
+          else
+            pipenv install --dev -v
+          fi
+
+          # list all dependencies to get a better view about installed package versions
+          pipenv run pip list
+
+      - name: Get venv path
+        id: get-venv
+        run: |
+          echo "venv=$(pipenv --venv)" >> "$GITHUB_OUTPUT"
+
+      - name: Run Redefine.dev
+        uses: redefinedev/redefine-action@main
+        with:
+          auth: ${{ secrets.REDEFINE_AUTH }}
+          python-venv-path: ${{ steps.get-venv.outputs.venv }}
+          testing-framework: pytest
+          # mode is "discover" if github.ref is "refs/heads/main" otherwise it's the value of inputs.redefine-mode
+          mode: discover
+          config-args: matrix_value=${{ matrix.python }}
+
       - name: Unit tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REDEFINE_AUTH: ${{ secrets.REDEFINE_AUTH }}
-        run: |
-          pipenv run redefine config set stable_branch=main matrix_value=${{ matrix.python }}
-          pipenv run redefine start --pytest --discover
-          pipenv run python -m pytest tests
+        run: pipenv run python -m pytest tests
 
   integration-tests:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.8", "3.9", "3.10", "3.11"]
+        python: ["3.8", "3.9", "3.10", "3.11", "3.12"]
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
-      - uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236  # v4
+      - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c  # v4
         with:
           python-version: ${{ matrix.python }}
+          allow-prereleases: true
           cache: "pipenv"
           cache-dependency-path: "Pipfile.lock"
       - uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65  # v4
@@ -116,11 +138,12 @@ jobs:
         run: |
           python -m pip install --no-cache-dir --upgrade pipenv
       - name: Build & install checkov package
+        shell: bash
         run: |
           # remove venv, if exists
           pipenv --rm || true
           pipenv --python ${{ matrix.python }}
-          pipenv run pip install pytest pytest-xdist
+          pipenv run pip install pytest pytest-xdist setuptools wheel
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
       - name: Clone Terragoat - vulnerable terraform
@@ -146,14 +169,15 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.8", "3.11"]
+        python: ["3.8", "3.12"]
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
-      - uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236  # v4
+      - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c  # v4
         with:
           python-version: ${{ matrix.python }}
+          allow-prereleases: true
           cache: "pipenv"
           cache-dependency-path: "Pipfile.lock"
       - name: Install pipenv
@@ -164,7 +188,7 @@ jobs:
           # remove venv, if exists
           pipenv --rm || true
           pipenv --python ${{ matrix.python }}
-          pipenv run pip install pytest pytest-xdist
+          pipenv run pip install pytest pytest-xdist setuptools wheel
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
       - name: Clone flask - Python repo for SAST
@@ -191,14 +215,15 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python: ["3.8", "3.11"]
+        python: ["3.8", "3.12"]
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
-      - uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236  # v4
+      - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c  # v4
         with:
           python-version: ${{ matrix.python }}
+          allow-prereleases: true
           cache: "pipenv"
           cache-dependency-path: "Pipfile.lock"
       - name: Install pipenv
@@ -209,7 +234,7 @@ jobs:
           # remove venv, if exists
           pipenv --rm || true
           pipenv --python ${{ matrix.python }}
-          pipenv run pip install pytest pytest-xdist
+          pipenv run pip install pytest pytest-xdist setuptools wheel
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
       - name: Create checkov reports
@@ -233,7 +258,7 @@ jobs:
     runs-on: [self-hosted, public, linux, x64]
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
-      - uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236  # v4
+      - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c  # v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: "pipenv"
@@ -253,7 +278,7 @@ jobs:
           # remove venv, if exists
           pipenv --rm || true
           pipenv --python ${{ env.PYTHON_VERSION }}
-          # 'py' package is used in 'pytest-benchmark', but 'pytest' removed it in their latest version         
+          # 'py' package is used in 'pytest-benchmark', but 'pytest' removed it in their latest version
           pipenv run pip install pytest pytest-benchmark py
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'
@@ -288,7 +313,7 @@ jobs:
       WORKING_DIRECTORY: ./dogfood_tests
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
-      - uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236  # v4
+      - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c  # v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: "pipenv"
@@ -307,7 +332,7 @@ jobs:
         run: |
           # remove venv, if exists
           pipenv --rm || true
-          pipenv --python ${{ env.PYTHON_VERSION }}     
+          pipenv --python ${{ env.PYTHON_VERSION }}
           pipenv run pip install pytest pytest-xdist
           pipenv run python setup.py sdist bdist_wheel
           bash -c 'pipenv run pip install dist/checkov-*.whl'

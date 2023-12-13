@@ -12,7 +12,7 @@ import signal
 import sys
 from collections import defaultdict
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, Literal, Optional, List
+from typing import TYPE_CHECKING, Any, Dict, Literal, Optional, List, Set
 
 import argcomplete
 import configargparse
@@ -87,6 +87,7 @@ from checkov.yaml_doc.runner import Runner as yaml_runner
 
 if TYPE_CHECKING:
     from checkov.common.output.report import Report
+    from checkov.common.runners.base_runner import BaseRunner
     from configargparse import Namespace
 
 signal.signal(signal.SIGINT, lambda x, y: sys.exit(''))
@@ -97,7 +98,7 @@ logger = logging.getLogger(__name__)
 add_resource_code_filter_to_logger(logger)
 
 # sca package runner added during the run method
-DEFAULT_RUNNERS = [
+DEFAULT_RUNNERS: "list[BaseRunner[Any, Any, Any]]" = [
     tf_graph_runner(),
     cfn_runner(),
     k8_runner(),
@@ -508,6 +509,7 @@ class Checkov:
 
             if self.config.directory:
                 exit_codes = []
+                bc_integration.scan_dir = self.config.directory
                 for root_folder in self.config.directory:
                     absolute_root_folder = os.path.abspath(root_folder)
                     if not os.path.exists(root_folder):
@@ -543,6 +545,7 @@ class Checkov:
                             included_paths=included_paths,
                             git_configuration_folders=git_configuration_folders,
                             sca_supported_ir_report=runner_registry.sca_supported_ir_report,
+                            sast_languages=runner_filter.sast_languages
                         )
 
                     if self.config.create_baseline:
@@ -600,8 +603,9 @@ class Checkov:
                 if not self.config.skip_results_upload and not bc_integration.s3_setup_failed:
                     try:
                         if not bc_integration.on_prem:
-                            bc_integration.persist_repository(os.path.dirname(self.config.dockerfile_path), files=files)
+                            bc_integration.persist_repository(os.path.dirname(self.config.dockerfile_path), files=files, sast_languages=runner_filter.sast_languages)
                         bc_integration.persist_scan_results(self.scan_reports)
+                        bc_integration.persist_sast_scan_results(self.scan_reports)
                         bc_integration.persist_image_scan_results(sca_runner.raw_report, self.config.dockerfile_path,
                                                                   self.config.docker_image,
                                                                   self.config.branch)
@@ -624,6 +628,7 @@ class Checkov:
                 exit_code = self.print_results(runner_registry=runner_registry, url=self.url)
                 return exit_code
             elif self.config.file:
+                bc_integration.scan_file = self.config.file
                 runner_registry.filter_runners_for_files(self.config.file)
                 self.scan_reports = runner_registry.run(
                     external_checks_dir=external_checks_dir,
@@ -662,6 +667,7 @@ class Checkov:
                         files=files,
                         excluded_paths=runner_filter.excluded_paths,
                         git_configuration_folders=git_configuration_folders,
+                        sast_languages=runner_filter.sast_languages
                     )
 
                 should_run_contributor_metrics = bc_integration.bc_api_key and self.config.repo_id and self.config.prisma_api_url
@@ -737,6 +743,7 @@ class Checkov:
             included_paths: list[str] | None = None,
             git_configuration_folders: list[str] | None = None,
             sca_supported_ir_report: Report | None = None,
+            sast_languages: Set[SastLanguages] | None = None
     ) -> None:
         """Upload scan results and other relevant files"""
 
@@ -748,6 +755,7 @@ class Checkov:
                     files=files,
                     excluded_paths=excluded_paths,
                     included_paths=included_paths,
+                    sast_languages=sast_languages
                 )
                 if git_configuration_folders:
                     bc_integration.persist_git_configuration(os.getcwd(), git_configuration_folders)
@@ -755,6 +763,7 @@ class Checkov:
                     scan_reports_to_upload = [report for report in self.scan_reports if report.check_type != 'sca_image']
                     scan_reports_to_upload.append(sca_supported_ir_report)
             bc_integration.persist_scan_results(scan_reports_to_upload)
+            bc_integration.persist_sast_scan_results(scan_reports_to_upload)
             bc_integration.persist_assets_scan_results(self.sast_data.imports_data)
             bc_integration.persist_reachability_scan_results(self.sast_data.reachability_report)
             bc_integration.persist_run_metadata(self.run_metadata)
