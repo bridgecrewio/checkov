@@ -241,14 +241,14 @@ jobs:
           bash -c 'pipenv run pip install dist/checkov-*.whl'
       - name: Create checkov reports
         env:
-          LOG_LEVEL: DEBUG
+          LOG_LEVEL: INFO
           BC_API_KEY: ${{ secrets.PRISMA_KEY_API2 }}
           PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
         if: env.BC_API_KEY != null
         run: bash -c './cdk_integration_tests/prepare_data.sh'
       - name: Run integration tests
         env:
-          LOG_LEVEL: DEBUG
+          LOG_LEVEL: INFO
           BC_API_KEY: ${{ secrets.PRISMA_KEY_API2 }}
           PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
         if: env.BC_API_KEY != null
