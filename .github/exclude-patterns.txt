@@ -34,4 +34,5 @@ tests/terraform/runner/tf_plan_skip_check_regex/resource/.*
 tests/terraform/runner/tfplan2.json
 .*Scans.md
 .*Pipfile.lock
-cdk_integration_tests/src/python
+cdk_integration_tests/src/python/.*
+checkov/cdk/checks/python/.*
