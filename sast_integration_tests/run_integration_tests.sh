@@ -19,9 +19,9 @@ set_env_vars() {
 }
 
 prepare_data () {
-  python checkov/main.py -s --framework sast_python -d repositories/flask --repo-id cli/flask -o json > checkov_report_sast_python.json
-  python checkov/main.py -s --framework sast_java -d repositories/WebGoat --repo-id cli/WebGoat -o json > checkov_report_sast_java.json
-  python checkov/main.py -s --framework sast_javascript -d repositories/axios --repo-id cli/axios -o json > checkov_report_sast_javascript.json
+  python checkov/main.py -s --framework sast_python -d repositories/flask --repo-id checkov_integration_test/flask -o json > checkov_report_sast_python.json
+  python checkov/main.py -s --framework sast_java -d repositories/WebGoat --repo-id checkov_integration_test/WebGoat -o json > checkov_report_sast_java.json
+  python checkov/main.py -s --framework sast_javascript -d repositories/axios --repo-id checkov_integration_test/axios -o json > checkov_report_sast_javascript.json
 }
 
 clone_repositories () {
