@@ -404,7 +404,7 @@ def create_package_overview_table_part(
                             cve["root_package_version"],
                             "",
                             cur_compliant_version,
-                            reachability
+                            ""
                         ]
                     )
                 else:

@@ -49,7 +49,6 @@ class LicensingIntegration(BaseIntegrationFeature):
             self.open_source_only = False
             # the API will return True for all modules if they are on resource mode, so we don't actually need the billing plan explicitly here
             self.enabled_modules = [CustomerSubscription(m) for m, e in license_details.get(MODULES_KEY).items() if e]
-            self.enabled_modules.append(CustomerSubscription.SAST)  # TODO: Remove after we have a SAST module
 
     def is_runner_valid(self, runner_check_type: str) -> bool:
         logging.debug(f'Checking if {runner_check_type} is valid for license')

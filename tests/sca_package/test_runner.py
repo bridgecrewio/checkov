@@ -1,6 +1,6 @@
 from pathlib import Path
+from unittest.mock import MagicMock
 
-from mock.mock import MagicMock
 from packaging import version as packaging_version
 from pytest_mock import MockerFixture
 
@@ -38,7 +38,7 @@ def test_run(sca_package_report):
     assert cve_record is not None
     assert cve_record.bc_check_id == "BC_CVE_2020_29652"
     assert cve_record.check_id == "CKV_CVE_2020_29652"
-    assert cve_record.check_class == "mock.mock.MagicMock"  # not the real one
+    assert cve_record.check_class == "unittest.mock.MagicMock"  # not the real one
     assert cve_record.check_name == "SCA package scan"
     assert cve_record.check_result == {"result": CheckResult.FAILED}
     assert cve_record.code_block == [(0, "golang.org/x/crypto: v0.0.1")]
@@ -190,7 +190,7 @@ def test_prepare_and_scan(mocker: MockerFixture, scan_result):
 
     # then
     assert real_result is not None
-    assert runner._check_class == 'mock.mock.MagicMock'
+    assert runner._check_class == 'unittest.mock.MagicMock'
     assert runner._code_repo_path == EXAMPLES_DIR
 
 

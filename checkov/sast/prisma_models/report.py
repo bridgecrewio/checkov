@@ -39,8 +39,11 @@ class MatchMetadata(BaseModel):
 
 
 class Match(BaseModel):
+    exact_hash: str  # noqa: CCE003
+    structure_hash: str  # noqa: CCE003
     location: MatchLocation  # noqa: CCE003
     metadata: MatchMetadata  # noqa: CCE003
+    minimized_ast: str  # noqa: CCE003
 
 
 class RuleMatch(BaseModel):
@@ -81,7 +84,7 @@ class PrismaReport(BaseModel):
     errors: Dict[str, List[str]]  # noqa: CCE003
     profiler: Dict[str, Profiler]  # noqa: CCE003
     run_metadata: Dict[str, Optional[Union[str, int, List[str]]]]  # noqa: CCE003
-    imports: Dict[SastLanguages, Dict[str, Dict[str, List[str]]]]  # noqa: CCE003
+    imports: Dict[SastLanguages, Dict[str, Dict[str, Union[List[str], Dict[str, str]]]]]  # noqa: CCE003
     reachability_report: Dict[SastLanguages, Dict[str, Repositories]]   # noqa: CCE003
 
 

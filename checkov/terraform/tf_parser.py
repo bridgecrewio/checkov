@@ -9,6 +9,7 @@ from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, cas
 
 import hcl2
 
+from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import filter_ignored_paths, IGNORE_HIDDEN_DIRECTORY_ENV
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
 from checkov.common.util.data_structures_utils import pickle_deepcopy
@@ -364,10 +365,11 @@ class TFParser:
 
         dirs_to_definitions = self.create_definition_by_dirs(tf_definitions)
 
-        modules_and_definitions_tuple: list[tuple[Module, list[dict[TFDefinitionKey, dict[str, Any]]]]] = []
-        for source_path, definitions in dirs_to_definitions.items():
-            module, parsed_tf_definitions = self.parse_hcl_module_from_multi_tf_definitions(definitions, source_path, source)
-            modules_and_definitions_tuple.append((module, parsed_tf_definitions))
+        definitions_dir_and_source_iterable = [(definitions, source_path, source) for source_path, definitions in
+                                               dirs_to_definitions.items()]
+        modules_and_definitions_tuple: list[tuple[Module, list[dict[TFDefinitionKey, dict[str, Any]]]]] =\
+            list(parallel_runner.run_function(self.parse_hcl_module_from_multi_tf_definitions,
+                                              definitions_dir_and_source_iterable))
 
         return modules_and_definitions_tuple
 
