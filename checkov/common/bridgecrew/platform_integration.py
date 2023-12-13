@@ -574,6 +574,13 @@ class BcPlatformIntegration:
             for item in report:
                 BcPlatformIntegration._delete_code_block_from_sast_report(item)
 
+    @staticmethod
+    def save_sast_report_locally(sast_scan_reports: Dict[str, Dict[str, Any]]) -> None:
+        for lang, report in sast_scan_reports.items():
+            filename = f'{lang}_report.json'
+            with open(f"/tmp/{filename}", 'w') as f:  # nosec
+                f.write(json.dumps(report))
+
     def persist_sast_scan_results(self, reports: List[Report]) -> None:
         sast_scan_reports = {}
         for report in reports:
@@ -588,6 +595,10 @@ class BcPlatformIntegration:
                 sast_scan_reports[report.check_type] = report.sast_report.model_dump(mode='json')  # type: ignore
             if self.on_prem:
                 BcPlatformIntegration._delete_code_block_from_sast_report(sast_scan_reports)
+
+        if os.getenv('SAVE_SAST_REPORT_LOCALLY'):
+            self.save_sast_report_locally(sast_scan_reports)
+
         persist_checks_results(sast_scan_reports, self.s3_client, self.bucket, self.repo_path)  # type: ignore
 
     def persist_scan_results(self, scan_reports: list[Report]) -> None:
