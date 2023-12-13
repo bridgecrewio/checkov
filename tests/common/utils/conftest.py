@@ -87,8 +87,8 @@ def aws_provider_lines_without_secrets():
     return [(7, 'provider "aws" {\n'),
             (8, '  alias      = "plain_text_access_keys_provider"\n'),
             (9, '  region     = "us-west-1"\n'),
-            (10, '  access_key = "AKIAI***************"\n'),
-            (11, '  secret_key = "wJalrX**********************************"\n'),
+            (10, '  access_key = "AKIAI**********"\n'),
+            (11, '  secret_key = "wJalrX**********"\n'),
             (12, '}\n')]
 
 
@@ -148,7 +148,7 @@ def tfplan_resource_lines_without_secrets():
             (44, '                                "tags":\n'),
             (45, '                                {},\n'),
             (46, '                                "timeouts": null,\n'),
-            (47, '                                "value": "IClnje**************************************",\n'),
+            (47, '                                "value": "IClnje**********",\n'),
             (48, '                                "version": "123d0b12ab123c123456ab123e120bc1",\n'),
             (49,
              '                                "versionless_id": "https://test-123-abcdse-02.vault.azure.net/secrets/test-123-abcdse-02"\n')]

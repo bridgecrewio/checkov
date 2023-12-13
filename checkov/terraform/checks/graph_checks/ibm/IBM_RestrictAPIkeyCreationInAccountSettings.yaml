@@ -1,0 +1,18 @@
+metadata:
+  id: "CKV2_IBM_3"
+  name: "Ensure API key creation is restricted in account settings"
+  category: "IAM"
+
+definition:
+  and:
+
+    - cond_type: "attribute"
+      resource_types: "ibm_iam_account_settings"
+      attribute: "restrict_create_platform_apikey"
+      operator: "exists"
+
+    - cond_type: "attribute"
+      resource_types: "ibm_iam_account_settings"
+      attribute: "restrict_create_platform_apikey"
+      operator: "equals_ignore_case"
+      value: "RESTRICTED"

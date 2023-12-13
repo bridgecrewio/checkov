@@ -13,6 +13,7 @@ from checkov.common.bridgecrew.integration_features.features.policy_metadata_int
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import SCA_PACKAGE_SCAN_CHECK_NAME
+from checkov.common.util.file_utils import convert_to_unix_path
 
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
@@ -140,7 +141,8 @@ class SuppressionsIntegration(BaseIntegrationFeature):
         elif type == 'Resources':
             for resource in suppression['resources']:
                 if self.bc_integration.repo_matches(resource['accountId']) \
-                        and resource['resourceId'] == f'{record.repo_file_path}:{record.resource}':
+                        and (resource['resourceId'] == f'{record.repo_file_path}:{record.resource}'
+                             or resource['resourceId'] == f'{convert_to_unix_path(record.file_path)}:{record.resource}'):
                     return True
             return False
         elif type == 'Tags':
