@@ -1,0 +1,13 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_157
+  name: Ensure that RDS instances have Multi-AZ enabled
+  category: NETWORKING
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.aws_rds.CfnDBInstance(<ANY>)
+  conditions:
+    - not_pattern: aws_cdk.aws_rds.CfnDBInstance(<ANY>, multi_az=True ,<ANY>)
