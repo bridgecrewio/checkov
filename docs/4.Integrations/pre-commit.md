@@ -103,7 +103,12 @@ When using the `diff` or `secrets` hooks, the last argument _must_ be `-f` due t
           - '-f' # required and must come last
 ```
 
+By default, the container based pre-commit hooks use the `latest` tag. This can be overridden by declaring the version number in the entry field in the pre-commit config.
 
+```yaml
+    hooks:
+      - id: checkov_container
+        entry: bridgecrew/checkov:2.4.2 -d .
 ## Diff scanning pre-commit hook
 
 To let `checkov` only scan the changed files choose the `checkov_diff` hook, which scans against all frameworks:
