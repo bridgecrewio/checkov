@@ -251,7 +251,7 @@ class TerraformBlock(Block):
             'path': self.path,
             'source': self.source,
             'source_module': list(self.source_module),
-            'source_module_object': self.source_module_object
+            'source_module_object': dict(self.source_module_object) if self.source_module_object else None
         }
 
     @staticmethod
