@@ -1,6 +1,18 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.34...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.38...HEAD)
+
+## [3.1.38](https://github.com/bridgecrewio/checkov/compare/3.1.34...3.1.38) - 2023-12-13
+
+### Feature
+
+- **sast:** add integration test platform report - [#5856](https://github.com/bridgecrewio/checkov/pull/5856)
+- **sast:** python Cdk policies batch 3 - [#5820](https://github.com/bridgecrewio/checkov/pull/5820)
+- **sast:** python Cdk policies batch 4 - [#5857](https://github.com/bridgecrewio/checkov/pull/5857)
+
+### Bug Fix
+
+- **sast:** add save local sast report to run integration script - [#5863](https://github.com/bridgecrewio/checkov/pull/5863)
 
 ## [3.1.34](https://github.com/bridgecrewio/checkov/compare/3.1.33...3.1.34) - 2023-12-12
 
