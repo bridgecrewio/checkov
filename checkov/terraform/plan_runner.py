@@ -274,7 +274,7 @@ class Runner(BaseTerraformRunner[_TerraformPlanDefinitions, _TerraformPlanContex
 
     def _assign_graph_to_registry(self, registry: BaseCheckRegistry) -> None:
         try:
-            registry.graph = self.graph_manager.db_connector.graph  # type: ignore[assignment]
+            registry.graph = self.graph_manager.db_connector.graph  # type: ignore
         except Exception as e:
             logging.debug(f'fail to assign graph to the registry, err: {e}')
             registry.graph = None
