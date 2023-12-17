@@ -239,6 +239,7 @@ class Runner(BaseTerraformRunner[_TerraformPlanDefinitions, _TerraformPlanContex
                 entity_address = entity_context['address']
                 _, _, entity_config = registry.extract_entity_details(entity)
 
+                registry.graph = self.graph_manager.db_connector.graph
                 results = registry.scan(scanned_file, entity, [], runner_filter, report_type=CheckType.TERRAFORM_PLAN)
                 for check, check_result in results.items():
                     if check.id in TF_LIFECYCLE_CHECK_IDS:
