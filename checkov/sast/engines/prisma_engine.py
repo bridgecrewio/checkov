@@ -64,13 +64,14 @@ class PrismaEngine(SastEngine):
             (enforcement_threshold, none) if enforcement_threshold else \
             (none, none)
 
+    @staticmethod
     def get_cdk_policies_path(languages: Set[SastLanguages]) -> List[str]:
-        
+        policies: List[str] = []
         for lang in languages:
             if lang == SastLanguages.PYTHON:
-
-                
-
+                cdk_path = f'{os.getcwd()}/checkov/cdk/checks/{lang.value}'
+                policies.append(cdk_path)
+        return policies
 
     def get_reports(self, targets: List[str], registry: Registry, languages: Set[SastLanguages]) -> List[Report]:
         if not bc_integration.bc_api_key:
@@ -89,8 +90,8 @@ class PrismaEngine(SastEngine):
 
         check_threshold, skip_check_threshold = self.get_check_thresholds(registry)
 
-        if 
-        cdk_policies = ''
+        
+        cdk_policies = self.get_cdk_policies_path(languages=languages)
 
         policies =  registry.checks_dirs_path + cdk_policies
 
