@@ -40,7 +40,7 @@ class TestRunnerValid(unittest.TestCase):
         valid_dir_path = current_dir + "/resources/py_graph_check_tf_plan"
         valid_dir_path_for_external_check = current_dir + '/py_check_tf_plan'
         runner = Runner(db_connector=self.db_connector())
-        checks_allowlist = ['CKV_AWS_111']
+        checks_allowlist = ['CKV_AWS_99999']
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=[valid_dir_path_for_external_check],
                             runner_filter=RunnerFilter(framework=["terraform_plan"], checks=checks_allowlist))
         assert len(report.passed_checks) == 3

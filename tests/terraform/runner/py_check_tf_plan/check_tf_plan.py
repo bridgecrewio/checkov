@@ -7,7 +7,7 @@ from checkov.common.models.enums import CheckCategories, CheckResult
 class JustForTest(BaseResourceValueCheck):
     def __init__(self):
         name = "Just for test (Like CKV2_GCP_18)"
-        id = "CKV_AWS_111"
+        id = "CKV_AWS_99999"
         supported_resources = ['google_compute_network']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
