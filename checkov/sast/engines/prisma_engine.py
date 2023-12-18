@@ -90,8 +90,9 @@ class PrismaEngine(SastEngine):
 
         check_threshold, skip_check_threshold = self.get_check_thresholds(registry)
 
-        
-        cdk_policies = self.get_cdk_policies_path(languages=languages)
+        cdk_policies = []
+        if registry.report_type == 'cdk':
+            cdk_policies = self.get_cdk_policies_path(languages=languages)
 
         policies =  registry.checks_dirs_path + cdk_policies
 
@@ -108,8 +109,11 @@ class PrismaEngine(SastEngine):
             'remove_default_policies': registry.runner_filter.remove_default_sast_policies if registry.runner_filter else False,
             'report_reachability': registry.runner_filter.report_sast_reachability if registry.runner_filter else False,
         }
-        prisma_result = self.run_go_library(**library_input)
 
+        if registry.report_type == 'cdk':
+            library_input['remove_default_policies'] = True
+
+        prisma_result = self.run_go_library(**library_input)
         return prisma_result
 
     def setup_sast_artifact(self) -> bool:
