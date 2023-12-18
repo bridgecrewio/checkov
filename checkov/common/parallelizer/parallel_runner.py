@@ -33,7 +33,7 @@ class ParallelRunner:
             # PYCHARM_HOSTED env variable equals 1 when debugging via jetbrains IDE.
             # To prevent JetBrains IDE from crashing on debug run sequentially
             self.type = ParallelizationType.NONE
-        elif self.os == "Windows":
+        elif self.type in ["fork", "spawn"] and self.os == "Windows":
             # 'fork' mode is not supported on 'Windows'
             # 'spawn' mode results in a strange error, which needs to be investigated on an actual Windows machine
             self.type = ParallelizationType.THREAD
