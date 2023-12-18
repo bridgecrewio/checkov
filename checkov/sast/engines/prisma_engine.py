@@ -64,15 +64,6 @@ class PrismaEngine(SastEngine):
             (enforcement_threshold, none) if enforcement_threshold else \
             (none, none)
 
-    @staticmethod
-    def get_cdk_policies_path(languages: Set[SastLanguages]) -> List[str]:
-        policies: List[str] = []
-        for lang in languages:
-            if lang == SastLanguages.PYTHON:
-                cdk_path = f'{os.getcwd()}/checkov/cdk/checks/{lang.value}'
-                policies.append(cdk_path)
-        return policies
-
     def get_reports(self, targets: List[str], registry: Registry, languages: Set[SastLanguages]) -> List[Report]:
         if not bc_integration.bc_api_key:
             logging.info("The --bc-api-key flag needs to be set to run SAST Prisma Cloud scanning")
@@ -90,11 +81,7 @@ class PrismaEngine(SastEngine):
 
         check_threshold, skip_check_threshold = self.get_check_thresholds(registry)
 
-        cdk_policies = []
-        if registry.report_type == 'cdk':
-            cdk_policies = self.get_cdk_policies_path(languages=languages)
-
-        policies =  registry.checks_dirs_path + cdk_policies
+        policies =  registry.checks_dirs_path
 
         library_input: LibraryInput = {
             'languages': languages,
@@ -109,9 +96,6 @@ class PrismaEngine(SastEngine):
             'remove_default_policies': registry.runner_filter.remove_default_sast_policies if registry.runner_filter else False,
             'report_reachability': registry.runner_filter.report_sast_reachability if registry.runner_filter else False,
         }
-
-        if registry.report_type == 'cdk':
-            library_input['remove_default_policies'] = True
 
         prisma_result = self.run_go_library(**library_input)
         return prisma_result
