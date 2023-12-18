@@ -16,8 +16,7 @@ class AzureContainerInstanceEnvVarSecureValueType(BaseResourceCheck):
     def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
         boot_diag_blocks = conf.get("boot_diagnostics")
         if boot_diag_blocks is not None:
-            for _all_blocks in boot_diag_blocks:
-                return CheckResult.PASSED
+            return CheckResult.PASSED
         else:
             return CheckResult.FAILED
 
