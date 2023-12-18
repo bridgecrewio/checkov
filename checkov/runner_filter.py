@@ -48,7 +48,7 @@ class RunnerFilter(object):
             filtered_policy_ids: Optional[List[str]] = None,
             show_progress_bar: Optional[bool] = True,
             run_image_referencer: bool = False,
-            enable_secret_scan_all_files: bool = False,
+            enable_secret_scan_all_files: bool = True,
             block_list_secret_scan: Optional[List[str]] = None,
             deep_analysis: bool = False,
             repo_root_for_plan_enrichment: Optional[List[str]] = None,
