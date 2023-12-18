@@ -477,7 +477,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
         )
         self.add(
             "--enable-secret-scan-all-files",
-            default=False,
+            default=True,
             env_var="CKV_SECRETS_SCAN_ENABLE_ALL",
             action="store_true",
             help="enable secret scan for all files",
