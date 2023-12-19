@@ -13,6 +13,7 @@ from collections import defaultdict
 from collections.abc import Iterable
 from pathlib import Path
 from typing import List, Dict, Any, Optional, cast, TYPE_CHECKING, Type, Literal
+from checkov.common.bridgecrew.check_type import CheckType
 
 from checkov.common.bridgecrew.code_categories import CodeCategoryMapping, CodeCategoryType
 from checkov.common.bridgecrew.platform_integration import bc_integration
@@ -155,6 +156,8 @@ class RunnerRegistry:
                 for runner in invalid_runners:
                     logging.log(level, f'The framework "{runner.check_type}" is part of the "{self.licensing_integration.get_subscription_for_runner(runner.check_type).name}" module, which is not enabled in the platform')
 
+            valid_runners = self._merge_runners(valid_runners)
+
             parallel_runner_results = parallel_runner.run_function(
                 func=_parallel_run,
                 items=valid_runners,
@@ -194,6 +197,27 @@ class RunnerRegistry:
             self.check_type_to_resource_subgraph_map = {runner.check_type: runner.resource_subgraph_map for runner in
                                                         self.runners if runner.resource_subgraph_map is not None}
         return self.scan_reports
+
+    def _merge_runners(self, runners: list[_BaseRunner]) -> list[_BaseRunner]:
+        sast_runner = None
+        cdk_runner = None
+        merged_runners = []
+        for runner in runners:
+            if runner[0].check_type == CheckType.CDK:
+                cdk_runner = runner
+                continue
+            if runner[0].check_type == CheckType.SAST:
+                merged_runners.append(runner)
+                sast_runner = runner
+                continue
+            merged_runners.append(runner)
+        
+        if cdk_runner:
+            if sast_runner:
+                sast_runner[0].run_cdk = True
+            else:
+                merged_runners.append(cdk_runner)
+        return merged_runners
 
     def _merge_reports(self, reports: Iterable[Report | list[Report]]) -> list[Report]:
         """Merges reports with the same check_type"""

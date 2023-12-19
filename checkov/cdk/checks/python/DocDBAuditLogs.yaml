@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_104
   name: Ensure DocDB has audit logs enabled
   category: LOGGING
+  framework: CDK
 scope:
   languages:
     - python

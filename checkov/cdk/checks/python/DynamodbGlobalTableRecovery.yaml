@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_165
   name: Ensure Dynamodb global table point in time recovery (backup) is enabled
   category: BACKUP_AND_RECOVERY
+  framework: CDK
 scope:
   languages:
     - python

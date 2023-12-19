@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_30
   name: Ensure all data stored in the Elasticache Replication Group is securely encrypted at transit
   category: ENCRYPTION
+  framework: CDK
 scope:
   languages:
     - python

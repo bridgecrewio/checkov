@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_94
   name: Ensure Glue Data Catalog Encryption is enabled
   category: LOGGING
+  framework: CDK
 scope:
   languages:
     - python

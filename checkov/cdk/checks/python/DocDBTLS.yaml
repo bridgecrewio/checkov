@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_90
   name: Ensure DocDB TLS is not disabled
   category: ENCRYPTION
+  framework: CDK
 scope:
   languages:
     - python

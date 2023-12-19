@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_51
   name: Ensure ECR Image Tags are immutable
   category: GENERAL_SECURITY
+  framework: CDK
 scope:
   languages:
     - python

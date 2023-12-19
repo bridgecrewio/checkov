@@ -25,6 +25,7 @@ class Runner(BaseRunner[None, None, None]):
         super().__init__(file_extensions=["." + a for a in FILE_EXT_TO_SAST_LANG.keys()])
         self.registry = Registry()
         self.engine = PrismaEngine()  # noqa: disallow-untyped-calls
+        self.run_cdk = False
 
     def should_scan_file(self, file: str) -> bool:
         for extensions in SUPPORT_FILE_EXT.values():

@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_34
   name: Ensure cloudfront distribution ViewerProtocolPolicy is set to HTTPS
   category: ENCRYPTION
+  framework: CDK
 scope:
   languages:
     - python
