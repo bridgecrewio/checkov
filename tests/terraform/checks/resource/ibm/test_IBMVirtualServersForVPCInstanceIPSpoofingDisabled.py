@@ -1,17 +1,18 @@
+import logging
 import os
 import unittest
 
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner
-from checkov.terraform.checks.resource.ibm.IBM_VirtualServersForVPCInstanceIPspoofingDisabled import check
+from checkov.terraform.checks.resource.ibm.IBMVirtualServersForVPCInstanceIPSpoofingDisabled import check
 
 
-class IBM_VirtualServersForVPCInstanceIPspoofingDisabled(unittest.TestCase):
+class IBMVirtualServersForVPCInstanceIPSpoofingDisabled(unittest.TestCase):
     def test(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
-        test_files_dir = os.path.join(current_dir, "example_IBM_VirtualServersForVPCInstanceIPspoofingDisabled")
+        test_files_dir = os.path.join(current_dir, "example_IBMVirtualServersForVPCInstanceIPSpoofingDisabled")
         report = runner.run(root_folder=test_files_dir,
                             runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
@@ -21,8 +22,8 @@ class IBM_VirtualServersForVPCInstanceIPspoofingDisabled(unittest.TestCase):
             "ibm_is_instance.pass_2",
         }
         failing_resources = {
-            "ibm_is_instance.fail_1"
-            "ibm_is_instance.fail_2"
+            "ibm_is_instance.fail_1",
+            "ibm_is_instance.fail_2",
             "ibm_is_instance.fail_3"
         }
         skipped_resources = {}
