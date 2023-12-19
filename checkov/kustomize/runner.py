@@ -2,10 +2,8 @@ from __future__ import annotations
 
 import io
 import logging
-import multiprocessing
 import os
 import pathlib
-import platform
 import shutil
 import subprocess  # nosec
 import tempfile
@@ -23,7 +21,6 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
 from checkov.common.typing import _CheckResult, _EntityContext
 from checkov.common.util.consts import START_LINE, END_LINE
-from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.kubernetes.kubernetes_utils import create_check_result, get_resource_id, calculate_code_lines, \
     PARENT_RESOURCE_ID_KEY_NAME
@@ -674,48 +671,22 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
             if self.kustomizeProcessedFolderAndMeta[file_path].get('type') == 'overlay':
                 self._handle_overlay_case(file_path)
 
-        if platform.system() == 'Windows':
-            if not self.templateRendererCommand:
-                logging.error("The 'templateRendererCommand' was not set correctly")
-                return
-
-            shared_kustomize_file_mappings: dict[str, str] = {}
-            for file_path in self.kustomizeProcessedFolderAndMeta:
-                self._run_kustomize_parser(
-                    file_path=file_path,
-                    shared_kustomize_file_mappings=shared_kustomize_file_mappings,
-                    kustomize_processed_folder_and_meta=self.kustomizeProcessedFolderAndMeta,
-                    template_renderer_command=self.templateRendererCommand,
-                    target_folder_path=self.target_folder_path,
-                )
-            self.kustomizeFileMappings = shared_kustomize_file_mappings
+        if not self.templateRendererCommand:
+            logging.error("The 'templateRendererCommand' was not set correctly")
             return
 
-        manager = multiprocessing.Manager()
-        # make sure we have new dict
-        shared_kustomize_file_mappings = pickle_deepcopy(manager.dict())  # type:ignore[arg-type]  # works with DictProxy
-        shared_kustomize_file_mappings.clear()
-
-        jobs = []
-        for filePath in self.kustomizeProcessedFolderAndMeta:
-            p = multiprocessing.Process(
-                target=self._run_kustomize_parser,
-                args=(
-                    filePath,
-                    shared_kustomize_file_mappings,
-                    self.kustomizeProcessedFolderAndMeta,
-                    self.templateRendererCommand,
-                    self.target_folder_path
-                )
+        shared_kustomize_file_mappings: dict[str, str] = {}
+        for file_path in self.kustomizeProcessedFolderAndMeta:
+            self._run_kustomize_parser(
+                file_path=file_path,
+                shared_kustomize_file_mappings=shared_kustomize_file_mappings,
+                kustomize_processed_folder_and_meta=self.kustomizeProcessedFolderAndMeta,
+                template_renderer_command=self.templateRendererCommand,
+                target_folder_path=self.target_folder_path,
             )
-            jobs.append(p)
-            p.start()
-
-        for proc in jobs:
-            proc.join()
-
-        self.kustomizeFileMappings = dict(shared_kustomize_file_mappings)
-
+        self.kustomizeFileMappings = shared_kustomize_file_mappings
+        return
+        
     def run(
         self,
         root_folder: str | None,

@@ -19,7 +19,7 @@ _T = TypeVar("_T")
 
 class ParallelRunner:
     def __init__(
-        self, workers_number: int | None = None, parallelization_type: ParallelizationType = ParallelizationType.FORK
+        self, workers_number: int | None = None, parallelization_type: ParallelizationType = ParallelizationType.SPAWN
     ) -> None:
         self.workers_number = (workers_number if workers_number else os.cpu_count()) or 1
         self.os = platform.system()
@@ -37,6 +37,9 @@ class ParallelRunner:
             # 'fork' mode is not supported on 'Windows'
             # 'spawn' mode results in a strange error, which needs to be investigated on an actual Windows machine
             self.type = ParallelizationType.THREAD
+        elif self.os == "Darwin":
+            # 'fork' mode is not working well on mac because mac has security issue with forking processes.
+            self.type = ParallelizationType.SPAWN
 
     def run_function(
         self,
@@ -56,6 +59,12 @@ class ParallelRunner:
     def _run_function_multiprocess_fork(
         self, func: Callable[[Any], _T], items: List[Any], group_size: Optional[int]
     ) -> Generator[_T, None, None]:
+        if multiprocessing.current_process().daemon:
+            # can't fork, when already inside a pool
+            for result in self._run_function_multithreaded(func, items):
+                yield result
+            return
+        
         if not group_size:
             group_size = int(len(items) / self.workers_number) + 1
         groups_of_items = [items[i : i + group_size] for i in range(0, len(items), group_size)]
@@ -100,7 +109,10 @@ class ParallelRunner:
     def _run_function_multiprocess_spawn(
         self, func: Callable[[Any], _T], items: list[Any], group_size: int | None
     ) -> Iterable[_T]:
-        if multiprocessing.current_process().daemon:
+        logging.debug(
+            f"my status is {multiprocessing.current_process()}"
+        )
+        if multiprocessing.current_process().daemon or multiprocessing.current_process().name != 'MainProcess':
             # can't create a new pool, when already inside a pool
             return self._run_function_multithreaded(func, items)
 
@@ -112,6 +124,9 @@ class ParallelRunner:
         )
         with Pool(processes=self.workers_number, context=multiprocessing.get_context("spawn")) as p:
             if items and isinstance(items[0], tuple):
+                # error because kustimize - 15 is creating it's own process
+                # items.pop(15)
+                # items = items[15:16]
                 # need to use 'starmap' to pass multiple arguments to the target function
                 return p.starmap(func, items, chunksize=group_size)
 
