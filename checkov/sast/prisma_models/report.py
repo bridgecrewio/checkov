@@ -36,6 +36,7 @@ class MatchMetadata(BaseModel):
     metavariables: Dict[str, DataFlow]  # noqa: CCE003
     variables: Dict[str, Any]  # noqa: CCE003
     taint_mode: Optional[DataFlow] = None  # noqa: CCE003
+    framework: Optional[str] = None
 
 
 class Match(BaseModel):

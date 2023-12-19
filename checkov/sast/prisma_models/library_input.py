@@ -22,3 +22,4 @@ class LibraryInput(TypedDict):
     report_imports: bool
     remove_default_policies: NotRequired[bool]
     report_reachability: bool
+    cdk_languages: List[SastLanguages]

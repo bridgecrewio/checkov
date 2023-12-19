@@ -36,6 +36,7 @@ from checkov.common.output.sarif import Sarif
 from checkov.common.output.spdx import SPDX
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
+from checkov.common.sast.consts import SastLanguages
 from checkov.common.typing import _ExitCodeThresholds, _BaseRunner, _ScaExitCodeThresholds, LibraryGraph
 from checkov.common.util import data_structures_utils
 from checkov.common.util.banner import tool as tool_name
@@ -211,10 +212,10 @@ class RunnerRegistry:
                 sast_runner = runner
                 continue
             merged_runners.append(runner)
-        
+
         if cdk_runner:
             if sast_runner:
-                sast_runner[0].run_cdk = True
+                sast_runner[0].cdk_langs.add(SastLanguages.PYTHON)
             else:
                 merged_runners.append(cdk_runner)
         return merged_runners

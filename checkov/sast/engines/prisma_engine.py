@@ -64,7 +64,7 @@ class PrismaEngine(SastEngine):
             (enforcement_threshold, none) if enforcement_threshold else \
             (none, none)
 
-    def get_reports(self, targets: List[str], registry: Registry, languages: Set[SastLanguages]) -> List[Report]:
+    def get_reports(self, targets: List[str], registry: Registry, languages: Set[SastLanguages], cdk_languages: Set[SastLanguages]) -> List[Report]:
         if not bc_integration.bc_api_key:
             logging.info("The --bc-api-key flag needs to be set to run SAST Prisma Cloud scanning")
             return []
@@ -93,6 +93,7 @@ class PrismaEngine(SastEngine):
             'report_imports': registry.runner_filter.report_sast_imports if registry.runner_filter else False,
             'remove_default_policies': registry.runner_filter.remove_default_sast_policies if registry.runner_filter else False,
             'report_reachability': registry.runner_filter.report_sast_reachability if registry.runner_filter else False,
+            'cdk_languages': cdk_languages
         }
         prisma_result = self.run_go_library(**library_input)
 
@@ -194,7 +195,8 @@ class PrismaEngine(SastEngine):
                        list_policies: bool = False,
                        report_imports: bool = True,
                        report_reachability: bool = False,
-                       remove_default_policies: bool = False) -> Union[List[Report], SastPolicies]:
+                       remove_default_policies: bool = False,
+                       cdk_languages: Optional[Set[SastLanguages]] = None) -> Union[List[Report], SastPolicies]:
 
         validate_params(languages, source_codes, list_policies)
 
@@ -223,7 +225,8 @@ class PrismaEngine(SastEngine):
                 "report_imports": report_imports,
                 "remove_default_policies": remove_default_policies,
                 "report_reachability": report_reachability,
-                "reachability_data": reachability_data
+                "reachability_data": reachability_data,
+                "cdk_languages": [a.value for a in cdk_languages]
             },
             "auth": {
                 "api_key": bc_integration.get_auth_token(),

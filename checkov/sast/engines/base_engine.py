@@ -7,5 +7,5 @@ from checkov.sast.checks_infra.base_registry import Registry
 
 class SastEngine(ABC):
     @abstractmethod
-    def get_reports(self, targets: List[str], registry: Registry, languages: Set[SastLanguages]) -> List[Report]:
+    def get_reports(self, targets: List[str], registry: Registry, languages: Set[SastLanguages], cdk_languages: Set[SastLanguages]) -> List[Report]:
         pass
