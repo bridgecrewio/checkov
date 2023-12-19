@@ -22,7 +22,7 @@ resource "azurerm_security_center_subscription_pricing" "pass_2" {
 
 # Case 4: Pass as policy should only check if the resource_type is "Arm"
 
-resource "azurerm_security_center_subscription_pricing" "pass3" {
+resource "azurerm_security_center_subscription_pricing" "pass_3" {
   tier          = "Free"
   resource_type = "VirtualMachine"
 }
