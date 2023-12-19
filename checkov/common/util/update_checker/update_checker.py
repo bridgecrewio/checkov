@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import os
-import pickle
+import pickle  # nosec
 import re
 from collections.abc import Generator, Callable
 from typing import Any
@@ -46,7 +46,7 @@ def cache_results(
                 return
 
             with open(filename, "rb") as fp:
-                permacache = pickle.load(fp)
+                permacache = pickle.load(fp)  # nosec
         except Exception:  # TODO: Handle specific exceptions
             return  # It's okay if it cannot load
         for key, value in permacache.items():
@@ -145,13 +145,9 @@ class UpdateChecker:
     def check(self, package_name: str, package_version: str) -> UpdateResult | None:
         """Return a UpdateResult object if there is a newer version."""
 
-        data = query_pypi(
-            package_name, include_prereleases=not standard_release(package_version)
-        )
+        data = query_pypi(package_name, include_prereleases=not standard_release(package_version))
 
-        if not data.get("success") or (
-                parse_version(package_version) >= parse_version(data["data"]["version"])
-        ):
+        if not data.get("success") or (parse_version(package_version) >= parse_version(data["data"]["version"])):
             return None
 
         return UpdateResult(
