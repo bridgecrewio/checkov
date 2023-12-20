@@ -31,7 +31,7 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.bridgecrew.platform_key import read_key
 from checkov.common.bridgecrew.run_metadata.registry import registry
-from checkov.common.bridgecrew.wrapper import persist_assets_results, reduce_scan_reports, persist_checks_results, \
+from checkov.common.bridgecrew.wrapper import CDK_FRAMEWORK_PREFIX, persist_assets_results, reduce_scan_reports, persist_checks_results, \
     enrich_and_persist_checks_metadata, checkov_results_prefix, persist_run_metadata, _put_json_object, \
     persist_logs_stream, persist_graphs, persist_resource_subgraph_maps, persist_reachability_results
 from checkov.common.models.consts import SAST_SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILES, SCANNABLE_PACKAGE_FILES
@@ -604,11 +604,11 @@ class BcPlatformIntegration:
     def persist_cdk_scan_results(self, reports: List[Report]) -> None:
         cdk_scan_reports = {}
         for report in reports:
-            if not report.check_type.startswith('cdk'):
+            if not report.check_type.startswith(CDK_FRAMEWORK_PREFIX):
                 continue
             if not report.cdk_report:  # type: ignore
                 continue
-            for _, match_by_check in report.cdk_report.rule_match.items():  # type: ignore
+            for match_by_check in report.cdk_report.rule_match.values():  # type: ignore
                 for _, match in match_by_check.items():
                     for m in match.matches:
                         self.adjust_sast_match_location_path(m)

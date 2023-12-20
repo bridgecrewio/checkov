@@ -16,9 +16,10 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.platform_key import bridgecrew_dir
 from checkov.common.bridgecrew.severities import get_severity, Severity, Severities, BcSeverities
+from checkov.common.bridgecrew.wrapper import CDK_FRAMEWORK_PREFIX
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.report import Report
-from checkov.common.sast.consts import SastLanguages
+from checkov.common.sast.consts import CDKLanguages, SastLanguages
 from checkov.common.sca.reachability.sast_contract.data_fetcher_sast_lib import SastReachabilityDataFetcher
 from checkov.common.typing import _CheckResult
 from checkov.common.util.http_utils import request_wrapper
@@ -65,7 +66,7 @@ class PrismaEngine(SastEngine):
             (enforcement_threshold, none) if enforcement_threshold else \
             (none, none)
 
-    def get_reports(self, targets: List[str], registry: Registry, languages: Set[SastLanguages], cdk_languages: List[SastLanguages]) -> List[Report]:
+    def get_reports(self, targets: List[str], registry: Registry, languages: Set[SastLanguages], cdk_languages: List[CDKLanguages]) -> List[Report]:
         if not bc_integration.bc_api_key:
             logging.info("The --bc-api-key flag needs to be set to run SAST Prisma Cloud scanning")
             return []
@@ -366,7 +367,7 @@ class PrismaEngine(SastEngine):
             for lang, rule_matches in report.sast_report.rule_match.items():
                 sast_rule_matches: Dict[str, RuleMatch] = {}
                 for policy_id, rule_match in rule_matches.items():
-                    if rule_match.metadata.framework != 'CDK':
+                    if rule_match.metadata.framework != CDK_FRAMEWORK_PREFIX:
                         sast_rule_matches[policy_id] = rule_match
                         continue
                     if lang not in [c.language for c in cdk_reports]:
@@ -374,7 +375,7 @@ class PrismaEngine(SastEngine):
                                                   profiler=report.sast_report.profiler,
                                                   run_metadata=report.sast_report.run_metadata,
                                                   imports={}, reachability_report={})
-                        new_report = CDKReport(f'cdk_{lang.value}', report.sast_report.run_metadata, lang, new_cdk_report)
+                        new_report = CDKReport(f'{CDK_FRAMEWORK_PREFIX}_{lang.value}', report.sast_report.run_metadata, lang, new_cdk_report)
                         cdk_reports.append(new_report)
                     for cdk_report in cdk_reports:
                         if cdk_report.language == lang:
