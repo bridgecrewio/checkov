@@ -20,15 +20,11 @@ _T = TypeVar("_T")
 
 class ParallelRunner:
     def __init__(
-        self, workers_number: int | None = None, parallelization_type: ParallelizationType | None = None
+        self, workers_number: int | None = None
     ) -> None:
         self.workers_number = (workers_number if workers_number else os.cpu_count()) or 1
         self.os = platform.system()
         self.type: str | ParallelizationType = self.get_default_parallelization_type(self.os)
-
-        # ability to override the parallelization_type for specific methods
-        if parallelization_type:
-            self.type = parallelization_type
 
         # ability to override the parallelization_type all over via env param
         custom_type = os.getenv("CHECKOV_PARALLELIZATION_TYPE")
@@ -37,27 +33,42 @@ class ParallelRunner:
 
     """
     there are 2 valid options for parallalization type via forking a processes:
-    1. fork - has good performance but some os like macOS can have security issues, so not a good choice
+    1. fork - has good performance but some os like macOS can have security issues, we can't fully remove it because some code like secret scanning is not supporting it
     2. spawn - safer then fork and more compatible with various libraries, especially those that aren't fork-safe. It's the default on Windows.
                spawn is not working on an frozen executable, so need to validate this case
     """
 
-    def get_default_parallelization_type(self, operation_system: str) -> str | ParallelizationType:
+    def get_default_parallelization_type(self) -> str | ParallelizationType:
         if os.getenv("PYCHARM_HOSTED") == "1":
             # PYCHARM_HOSTED env variable equals 1 when debugging via jetbrains IDE.
             # To prevent JetBrains IDE from crashing on debug run sequentially
             type = ParallelizationType.NONE
-        elif operation_system == "Windows":
+        elif self.os == "Windows":
             # 'fork' mode is not supported on 'Windows'
             # 'spawn' mode results in a strange error, which needs to be investigated on an actual Windows machine
             type = ParallelizationType.THREAD
-        elif operation_system == "Darwin":
+        elif self.os == "Darwin":
+            # 'fork' mode is not supported on 'Darwin'
             type = ParallelizationType.SPAWN
         else:
             type = ParallelizationType.FORK
         if type == ParallelizationType.SPAWN and getattr(sys, 'frozen', False):
             # if application is running from a frozen executable, spawn mode is not supported
             type = ParallelizationType.THREAD
+        return type
+    
+    def get_type_for_run_function(self, parallelization_type: ParallelizationType | None = None) -> str | ParallelizationType:
+        type = self.type
+        custom_type = os.getenv("CHECKOV_PARALLELIZATION_TYPE")
+        if custom_type:
+            # env param is the strongest override option
+            type = custom_type
+        elif self.os == 'Windows':
+            # windows is a special case where we don't want to be able to change, only via env param
+            type = self.type
+        elif parallelization_type:
+            # a specific method can change the way of parallelization_type
+            type = parallelization_type
         return type
 
     def run_function(
@@ -67,9 +78,9 @@ class ParallelRunner:
         group_size: Optional[int] = None,
         parallelization_type: ParallelizationType | None = None
     ) -> Iterable[_T]:
-        type = self.type
-        if parallelization_type:
-            type = parallelization_type
+        # choose the right type for execution
+        type = self.get_type_for_run_function(parallelization_type)
+
         if type == ParallelizationType.THREAD:
             return self._run_function_multithreaded(func, items)
         elif type == ParallelizationType.FORK:
