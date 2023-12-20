@@ -8,6 +8,7 @@ from typing import Type, Optional, Any, cast
 
 from typing_extensions import TypeAlias  # noqa[TC002]
 
+from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.graph.checks_infra.registry import BaseRegistry
 from checkov.common.typing import LibraryGraphConnector, TFDefinitionKeyType
 from checkov.common.graph.graph_builder.consts import GraphSource
@@ -239,6 +240,7 @@ class Runner(BaseTerraformRunner[_TerraformPlanDefinitions, _TerraformPlanContex
                 entity_address = entity_context['address']
                 _, _, entity_config = registry.extract_entity_details(entity)
 
+                self._assign_graph_to_registry(registry)
                 results = registry.scan(scanned_file, entity, [], runner_filter, report_type=CheckType.TERRAFORM_PLAN)
                 for check, check_result in results.items():
                     if check.id in TF_LIFECYCLE_CHECK_IDS:
@@ -269,6 +271,14 @@ class Runner(BaseTerraformRunner[_TerraformPlanDefinitions, _TerraformPlanContex
                     )
                     record.set_guideline(check.guideline)
                     report.add_record(record=record)
+
+    def _assign_graph_to_registry(self, registry: BaseCheckRegistry) -> None:
+        try:
+            registry.graph = self.graph_manager.db_connector.graph  # type: ignore
+        except Exception as e:
+            logging.debug(f'fail to assign graph to the registry, err: {e}')
+            registry.graph = None
+            return
 
     def get_entity_context_and_evaluations(self, entity: dict[str, Any]) -> dict[str, Any] | None:
         if not self.context:
