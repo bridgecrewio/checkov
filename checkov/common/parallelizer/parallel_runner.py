@@ -38,7 +38,7 @@ class ParallelRunner:
     """
     there are 2 valid options for parallalization type via forking a processes:
     1. fork - has good performance but some os like macOS can have security issues, so not a good choice
-    2. spawn - safer then spawn and more compatible with various libraries, especially those that aren't fork-safe. It's the default on Windows.
+    2. spawn - safer then fork and more compatible with various libraries, especially those that aren't fork-safe. It's the default on Windows.
                spawn is not working on an frozen executable, so need to validate this case
     """
 
