@@ -686,7 +686,7 @@ class Runner(BaseRunner[_KubernetesDefinitions, _KubernetesContext, "KubernetesG
             )
         self.kustomizeFileMappings = shared_kustomize_file_mappings
         return
-        
+    
     def run(
         self,
         root_folder: str | None,
