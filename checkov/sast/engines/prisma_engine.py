@@ -357,10 +357,10 @@ class PrismaEngine(SastEngine):
                 report.sast_reachability = prisma_report.reachability_report[lang]
                 reports.append(report)
 
-        all_report = self.get_all_reports(reports)
+        all_report = self.split_sast_cdk_reports(reports)
         return all_report
     
-    def get_all_reports(self, sast_reports: List[Union[SastReport, CDKReport]]):
+    def split_sast_cdk_reports(self, sast_reports: List[SastReport]) -> List[Union[SastReport, CDKReport]]:
         cdk_reports: List[CDKReport] = []
         for report in sast_reports:
             for lang, rule_matches in report.sast_report.rule_match.items():
@@ -391,31 +391,36 @@ class PrismaEngine(SastEngine):
                     report.sast_report.rule_match[lang] = sast_rule_matches
                 else:
                     report.sast_report.rule_match = {}
+                self._update_sast_report_checks(report, cdk_reports)
 
-                sast_failed_checks = []
-                sast_skiped_checks = []
+        return self._get_all_reports()
 
-                for fail_check in report.failed_checks:
-                    for cdk_report in cdk_reports:
-                        if report.language == cdk_report.language and fail_check.check_id not in [f.check_id for f in cdk_report.failed_checks]:
-                            sast_failed_checks.append(fail_check)
-                            break
-                    else:
-                        sast_failed_checks = report.failed_checks
-                        break
+    def _update_sast_report_checks(self, report: SastReport, cdk_reports: List[CDKReport]) -> None:
+        sast_failed_checks = []
+        sast_skiped_checks = []
 
-                for skip_check in report.skipped_checks:
-                    for cdk_report in cdk_reports:
-                        if report.language == cdk_report.language and skip_check.check_id not in [s.check_id for s in cdk_report.skipped_checks]:
-                            sast_skiped_checks.append(skip_check)
-                            break
-                    else:
-                        sast_skiped_checks = report.skipped_checks
-                        break
-                
-                report.failed_checks = sast_failed_checks
-                report.skipped_checks = sast_skiped_checks
+        for fail_check in report.failed_checks:
+            for cdk_report in cdk_reports:
+                if report.language == cdk_report.language and fail_check.check_id not in [f.check_id for f in cdk_report.failed_checks]:
+                    sast_failed_checks.append(fail_check)
+                    break
+            else:
+                sast_failed_checks = report.failed_checks
+                break
 
+        for skip_check in report.skipped_checks:
+            for cdk_report in cdk_reports:
+                if report.language == cdk_report.language and skip_check.check_id not in [s.check_id for s in cdk_report.skipped_checks]:
+                    sast_skiped_checks.append(skip_check)
+                    break
+            else:
+                sast_skiped_checks = report.skipped_checks
+                break
+        
+        report.failed_checks = sast_failed_checks
+        report.skipped_checks = sast_skiped_checks 
+    
+    def _get_all_reports(self, sast_reports: List[SastReport], cdk_reports: List[CDKReport]) -> List[Union[SastReport, CDKReport]]:
         all_reports = []
         for report in sast_reports + cdk_reports:
             if report.check_type.startswith('cdk'):
