@@ -13,10 +13,8 @@ class GKEUseCosImage(BaseResourceCheck):
     def scan_resource_conf(self, conf):
         """
         CKV_GCP_22
-        error creating NodePool: googleapi: Error 400: Creation of node pools using node images based on Docker
+        This a legacy check, Creation of node pools using node images based on Docker
         container runtimes is not supported in GKE v1.24+ clusters as Dockershim has been removed in Kubernetes v1.24.
-
-        image_type   = "COS"
         """
         if conf.get('version') and isinstance(conf.get('version'), list):
             raw = conf.get('version')[0]
