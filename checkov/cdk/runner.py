@@ -6,6 +6,7 @@ from pathlib import Path
 from checkov.cdk.checks_infra.base_registry import BaseCdkRegistry
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.output.report import Report
+from checkov.common.sast.consts import SastLanguages
 from checkov.sast.runner import Runner as SastRunner
 from checkov.runner_filter import RunnerFilter
 
@@ -31,6 +32,8 @@ class CdkRunner(SastRunner):
     ) -> list[Report]:
         runner_filter = runner_filter or RunnerFilter()
         runner_filter.remove_default_sast_policies = True
+        # TODO - add more langs
+        self.cdk_langs = [SastLanguages.PYTHON]
         reports = super().run(
             root_folder=root_folder,
             external_checks_dir=external_checks_dir,

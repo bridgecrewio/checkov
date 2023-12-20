@@ -11,6 +11,7 @@ from typing import Optional, List, Set, Union, Dict, Any, Tuple, cast
 
 from cachetools import cached, TTLCache
 from pydantic import ValidationError
+from checkov.cdk.report import CDKReport
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.platform_integration import bc_integration
@@ -27,7 +28,7 @@ from checkov.sast.common import get_code_block_from_start, get_data_flow_code_bl
 from checkov.sast.engines.base_engine import SastEngine
 from checkov.sast.prisma_models.library_input import LibraryInput
 from checkov.sast.prisma_models.policies_list import SastPolicies
-from checkov.sast.prisma_models.report import PrismaReport, create_empty_report
+from checkov.sast.prisma_models.report import PrismaReport, RuleMatch, create_empty_report
 from checkov.sast.record import SastRecord
 from checkov.sast.report import SastReport
 
@@ -64,7 +65,7 @@ class PrismaEngine(SastEngine):
             (enforcement_threshold, none) if enforcement_threshold else \
             (none, none)
 
-    def get_reports(self, targets: List[str], registry: Registry, languages: Set[SastLanguages], cdk_languages: Set[SastLanguages]) -> List[Report]:
+    def get_reports(self, targets: List[str], registry: Registry, languages: Set[SastLanguages], cdk_languages: List[SastLanguages]) -> List[Report]:
         if not bc_integration.bc_api_key:
             logging.info("The --bc-api-key flag needs to be set to run SAST Prisma Cloud scanning")
             return []
@@ -331,6 +332,7 @@ class PrismaEngine(SastEngine):
             if report_parsing_errors:
                 report.add_parsing_errors(report_parsing_errors)
             reports.append(report)
+
         for lang in prisma_report.imports:
             for report in reports:
                 if report.language == lang:
@@ -354,8 +356,78 @@ class PrismaEngine(SastEngine):
                 report = SastReport(f'{self.check_type.lower()}_{lang.value}', prisma_report.run_metadata, lang, sast_report)
                 report.sast_reachability = prisma_report.reachability_report[lang]
                 reports.append(report)
-        return reports
 
+        all_report = self.get_all_reports(reports)
+        return all_report
+    
+    def get_all_reports(self, sast_reports: List[Union[SastReport, CDKReport]]):
+        cdk_reports: List[CDKReport] = []
+        for report in sast_reports:
+            for lang, rule_matches in report.sast_report.rule_match.items():
+                sast_rule_matches: Dict[str, RuleMatch] = {}
+                for policy_id, rule_match in rule_matches.items():
+                    if rule_match.metadata.framework != 'CDK':
+                        sast_rule_matches[policy_id] = rule_match
+                        continue
+                    if lang not in [c.language for c in cdk_reports]:
+                        new_cdk_report = PrismaReport(rule_match={lang: {}}, errors=report.sast_report.errors,
+                                                  profiler=report.sast_report.profiler,
+                                                  run_metadata=report.sast_report.run_metadata,
+                                                  imports={}, reachability_report={})
+                        new_report = CDKReport(f'cdk_{lang.value}', report.sast_report.run_metadata, lang, new_cdk_report)
+                        cdk_reports.append(new_report)
+                    for cdk_report in cdk_reports:
+                        if cdk_report.language == lang:
+                            cdk_report.cdk_report.rule_match[lang][policy_id] = rule_match
+                            for failed_check in report.failed_checks:
+                                if failed_check.check_id == policy_id:
+                                    cdk_report.failed_checks.append(failed_check)
+                                
+                            for skiped_check in report.skipped_checks:
+                                if skiped_check.check_id == policy_id:
+                                    cdk_report.skipped_checks.append(skiped_check)
+                            break
+                if sast_rule_matches:
+                    report.sast_report.rule_match[lang] = sast_rule_matches
+                else:
+                    report.sast_report.rule_match = {}
+
+                sast_failed_checks = []
+                sast_skiped_checks = []
+
+                for fail_check in report.failed_checks:
+                    for cdk_report in cdk_reports:
+                        if report.language == cdk_report.language and fail_check.check_id not in [f.check_id for f in cdk_report.failed_checks]:
+                            sast_failed_checks.append(fail_check)
+                            break
+                    else:
+                        sast_failed_checks = report.failed_checks
+                        break
+
+                for skip_check in report.skipped_checks:
+                    for cdk_report in cdk_reports:
+                        if report.language == cdk_report.language and skip_check.check_id not in [s.check_id for s in cdk_report.skipped_checks]:
+                            sast_skiped_checks.append(skip_check)
+                            break
+                    else:
+                        sast_skiped_checks = report.skipped_checks
+                        break
+                
+                report.failed_checks = sast_failed_checks
+                report.skipped_checks = sast_skiped_checks
+
+        all_reports = []
+        for report in sast_reports + cdk_reports:
+            if report.check_type.startswith('cdk'):
+                if report.cdk_report.rule_match:
+                    all_reports.append(report)
+                    continue
+            if report.check_type.startswith('sast'):
+                if report.sast_report.rule_match:
+                    all_reports.append(report)
+                    continue
+        return all_reports
+    
     def get_policies(self, languages: Set[SastLanguages]) -> SastPolicies:
         if not bc_integration.bc_api_key:
             logging.info("The --bc-api-key flag needs to be set to run Sast prisma scanning")

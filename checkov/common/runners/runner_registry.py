@@ -215,7 +215,8 @@ class RunnerRegistry:
 
         if cdk_runner:
             if sast_runner:
-                sast_runner[0].cdk_langs.add(SastLanguages.PYTHON)
+                # TODO - add more langs
+                sast_runner[0].cdk_langs = [SastLanguages.PYTHON]
             else:
                 merged_runners.append(cdk_runner)
         return merged_runners

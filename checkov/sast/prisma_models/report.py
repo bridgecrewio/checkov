@@ -36,7 +36,6 @@ class MatchMetadata(BaseModel):
     metavariables: Dict[str, DataFlow]  # noqa: CCE003
     variables: Dict[str, Any]  # noqa: CCE003
     taint_mode: Optional[DataFlow] = None  # noqa: CCE003
-    framework: Optional[str] = None
 
 
 class Match(BaseModel):
@@ -46,6 +45,9 @@ class Match(BaseModel):
     metadata: MatchMetadata  # noqa: CCE003
     minimized_ast: str  # noqa: CCE003
 
+class RuleMatchMetadata(BaseModel):
+    framework: Optional[str] = '' # noqa: CCE003
+
 
 class RuleMatch(BaseModel):
     check_id: str  # noqa: CCE003
@@ -54,6 +56,7 @@ class RuleMatch(BaseModel):
     check_owasp: Optional[Union[List[str], str]]  # noqa: CCE003
     severity: str  # noqa: CCE003
     matches: List[Match]  # noqa: CCE003
+    metadata: Optional[RuleMatchMetadata] = None  # noqa: CCE003
 
 
 class Function(BaseModel):

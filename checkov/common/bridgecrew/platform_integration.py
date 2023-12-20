@@ -601,6 +601,23 @@ class BcPlatformIntegration:
 
         persist_checks_results(sast_scan_reports, self.s3_client, self.bucket, self.repo_path)  # type: ignore
 
+    def persist_cdk_scan_results(self, reports: List[Report]) -> None:
+        cdk_scan_reports = {}
+        for report in reports:
+            if not report.check_type.startswith('cdk'):
+                continue
+            if not report.cdk_report:  # type: ignore
+                continue
+            for _, match_by_check in report.cdk_report.rule_match.items():  # type: ignore
+                for _, match in match_by_check.items():
+                    for m in match.matches:
+                        self.adjust_sast_match_location_path(m)
+                cdk_scan_reports[report.check_type] = report.cdk_report.model_dump(mode='json')  # type: ignore
+            if self.on_prem:
+                BcPlatformIntegration._delete_code_block_from_sast_report(cdk_scan_reports)
+
+        persist_checks_results(cdk_scan_reports, self.s3_client, self.bucket, self.repo_path)  # type: ignore
+    
     def persist_scan_results(self, scan_reports: list[Report]) -> None:
         """
         Persist checkov's scan result into bridgecrew's platform.
@@ -1136,6 +1153,7 @@ class BcPlatformIntegration:
                                      attrs=['bold']) + Style.RESET_ALL)
         self.persist_scan_results(scan_reports)
         self.persist_sast_scan_results(scan_reports)
+        self.persist_cdk_scan_results(scan_reports)
         print(Style.BRIGHT + colored("Report upload complete", 'green',
                                      attrs=['bold']) + Style.RESET_ALL)
         self.commit_repository(args.branch)
