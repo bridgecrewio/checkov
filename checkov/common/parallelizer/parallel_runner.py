@@ -24,7 +24,7 @@ class ParallelRunner:
     ) -> None:
         self.workers_number = (workers_number if workers_number else os.cpu_count()) or 1
         self.os = platform.system()
-        self.type: str | ParallelizationType = self.get_default_parallalization_type(self.os)
+        self.type: str | ParallelizationType = self.get_default_parallelization_type(self.os)
 
         # ability to override the parallelization_type for specific methods
         if parallelization_type:
@@ -42,8 +42,7 @@ class ParallelRunner:
                spawn is not working on an frozen executable, so need to validate this case
     """
 
-    def get_default_parallalization_type(self, operation_system: str) -> str | ParallelizationType:
-        type: str | ParallelizationType = ParallelizationType.NONE
+    def get_default_parallelization_type(self, operation_system: str) -> str | ParallelizationType:
         if os.getenv("PYCHARM_HOSTED") == "1":
             # PYCHARM_HOSTED env variable equals 1 when debugging via jetbrains IDE.
             # To prevent JetBrains IDE from crashing on debug run sequentially
@@ -55,8 +54,10 @@ class ParallelRunner:
         elif getattr(sys, 'frozen', False):
             # if application is running from a frozen executable, spawn mode is not supported
             type = ParallelizationType.THREAD
-        else:
+        elif operation_system == "Darwin":
             type = ParallelizationType.SPAWN
+        else:
+            type = ParallelizationType.FORK
         return type
 
     def run_function(
