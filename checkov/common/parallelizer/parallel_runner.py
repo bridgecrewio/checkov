@@ -24,7 +24,7 @@ class ParallelRunner:
     ) -> None:
         self.workers_number = (workers_number if workers_number else os.cpu_count()) or 1
         self.os = platform.system()
-        self.type: str | ParallelizationType = self.get_default_parallelization_type(self.os)
+        self.type: str | ParallelizationType = self.get_default_parallelization_type()
 
         # ability to override the parallelization_type all over via env param
         custom_type = os.getenv("CHECKOV_PARALLELIZATION_TYPE")
