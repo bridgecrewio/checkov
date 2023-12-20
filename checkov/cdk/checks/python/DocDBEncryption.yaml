@@ -4,7 +4,7 @@ metadata:
   id: CKV_AWS_74
   name: Ensure DocDB is encrypted at rest (default is unencrypted)
   category: ENCRYPTION
-  framework: CDK
+  framework: cdk
 scope:
   languages:
     - python

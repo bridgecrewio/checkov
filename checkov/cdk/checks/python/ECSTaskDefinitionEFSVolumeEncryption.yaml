@@ -4,7 +4,7 @@ metadata:
   id: CKV_AWS_97
   name: Ensure Encryption in transit is enabled for EFS volumes in ECS Task definitions
   category: ENCRYPTION
-  framework: CDK
+  framework: cdk
 scope:
   languages:
     - python

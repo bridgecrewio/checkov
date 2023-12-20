@@ -4,7 +4,7 @@ metadata:
   id: CKV_AWS_99
   name: Ensure Glue Security Configuration Encryption is enabled
   category: LOGGING
-  framework: CDK
+  framework: cdk
 scope:
   languages:
     - python

@@ -4,7 +4,7 @@ metadata:
   id: CKV_AWS_91
   name: Ensure the ELBv2 (Application/Network) has access logging enabled
   category: LOGGING
-  framework: CDK
+  framework: cdk
 scope:
   languages:
     - python

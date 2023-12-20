@@ -4,7 +4,7 @@ metadata:
   id: CKV_AWS_95
   name: Ensure API Gateway V2 has Access Logging enabled
   category: LOGGING
-  framework: CDK
+  framework: cdk
 scope:
   languages:
     - python

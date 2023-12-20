@@ -4,7 +4,7 @@ metadata:
   id: CKV_AWS_88
   name: EC2 instance should not have public IP.
   category: NETWORKING
-  framework: CDK
+  framework: cdk
 scope:
   languages:
     - python

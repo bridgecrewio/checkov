@@ -4,7 +4,7 @@ metadata:
   id: CKV_AWS_163
   name: Ensure ECR image scanning on push is enabled
   category: GENERAL_SECURITY
-  framework: CDK
+  framework: cdk
 scope:
   languages:
     - python

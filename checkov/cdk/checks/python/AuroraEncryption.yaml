@@ -4,7 +4,7 @@ metadata:
   id: CKV_AWS_96
   name: Ensure all data stored in Aurora is securely encrypted at rest
   category: ENCRYPTION
-  framework: CDK
+  framework: cdk
 scope:
   languages:
     - python
