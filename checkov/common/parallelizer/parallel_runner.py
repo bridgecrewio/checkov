@@ -51,13 +51,13 @@ class ParallelRunner:
             # 'fork' mode is not supported on 'Windows'
             # 'spawn' mode results in a strange error, which needs to be investigated on an actual Windows machine
             type = ParallelizationType.THREAD
-        elif getattr(sys, 'frozen', False):
-            # if application is running from a frozen executable, spawn mode is not supported
-            type = ParallelizationType.THREAD
         elif operation_system == "Darwin":
             type = ParallelizationType.SPAWN
         else:
             type = ParallelizationType.FORK
+        if type == ParallelizationType.SPAWN and getattr(sys, 'frozen', False):
+            # if application is running from a frozen executable, spawn mode is not supported
+            type = ParallelizationType.THREAD
         return type
 
     def run_function(
@@ -65,12 +65,17 @@ class ParallelRunner:
         func: Callable[..., _T],
         items: List[Any],
         group_size: Optional[int] = None,
+        parallelization_type: ParallelizationType | None = None
     ) -> Iterable[_T]:
-        if self.type == ParallelizationType.THREAD:
+        type = self.type
+        if parallelization_type:
+            type = parallelization_type
+        
+        if type == ParallelizationType.THREAD:
             return self._run_function_multithreaded(func, items)
-        elif self.type == ParallelizationType.FORK:
+        elif type == ParallelizationType.FORK:
             return self._run_function_multiprocess_fork(func, items, group_size)
-        elif self.type == ParallelizationType.SPAWN:
+        elif type == ParallelizationType.SPAWN:
             return self._run_function_multiprocess_spawn(func, items, group_size)
         else:
             return self._run_function_sequential(func, items)

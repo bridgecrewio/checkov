@@ -29,7 +29,7 @@ from checkov.common.bridgecrew.integration_features.features.policy_metadata_int
 from checkov.common.bridgecrew.severities import Severity
 from checkov.common.comment.enum import COMMENT_REGEX
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
-from checkov.common.models.enums import CheckResult
+from checkov.common.models.enums import CheckResult, ParallelizationType
 from checkov.common.output.report import Report
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.runners.base_runner import BaseRunner, filter_ignored_paths
@@ -335,7 +335,7 @@ class Runner(BaseRunner[None, None, None]):
             (file, base_path)
             for file in files_to_scan
         ]
-        results = parallel_runner.run_function(func=Runner._safe_scan, items=items)
+        results = parallel_runner.run_function(func=Runner._safe_scan, items=items, parallelization_type=ParallelizationType.FORK)
 
         for filename, secrets_results in results:
             pbar.set_additional_data({'Current File Scanned': str(filename)})
