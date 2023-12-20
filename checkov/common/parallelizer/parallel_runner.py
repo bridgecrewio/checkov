@@ -70,7 +70,6 @@ class ParallelRunner:
         type = self.type
         if parallelization_type:
             type = parallelization_type
-
         if type == ParallelizationType.THREAD:
             return self._run_function_multithreaded(func, items)
         elif type == ParallelizationType.FORK:
@@ -136,7 +135,7 @@ class ParallelRunner:
         logging.debug(
             f"my status is {multiprocessing.current_process()}"
         )
-        if multiprocessing.current_process().daemon or multiprocessing.current_process().name != 'MainProcess':
+        if multiprocessing.current_process().daemon:
             # can't create a new pool, when already inside a pool
             return self._run_function_multithreaded(func, items)
 

@@ -7,6 +7,7 @@ import platform
 from typing import TYPE_CHECKING, Optional, List, Tuple
 
 from detect_secrets.core import scan
+from checkov.common.models.enums import ParallelizationType
 
 from checkov.common.util.stopit import ThreadingTimeout, SignalTimeout, TimeoutException
 from checkov.common.util.decorators import time_it
@@ -180,7 +181,7 @@ class GitHistoryScanner:
         return commits_diff
 
     def _run_scan_parallel(self, commits_diff: List[Commit]) -> None:
-        results = parallel_runner.run_function(GitHistoryScanner._run_scan_one_bulk, commits_diff)
+        results = parallel_runner.run_function(GitHistoryScanner._run_scan_one_bulk, commits_diff, parallelization_type=ParallelizationType.FORK)
 
         for result in results:
             if result:
