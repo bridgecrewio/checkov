@@ -11,7 +11,6 @@ from typing import Optional, List, Set, Union, Dict, Any, Tuple, cast
 
 from cachetools import cached, TTLCache
 from pydantic import ValidationError
-from checkov.cdk.report import CDKReport
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.platform_integration import bc_integration
@@ -31,6 +30,7 @@ from checkov.sast.prisma_models.policies_list import SastPolicies
 from checkov.sast.prisma_models.report import PrismaReport, RuleMatch, create_empty_report
 from checkov.sast.record import SastRecord
 from checkov.sast.report import SastReport
+from checkov.cdk.report import CDKReport
 
 logger = logging.getLogger(__name__)
 
@@ -393,29 +393,27 @@ class PrismaEngine(SastEngine):
                     report.sast_report.rule_match = {}
                 self._update_sast_report_checks(report, cdk_reports)
 
-        return self._get_all_reports()
+        return self._get_all_reports(sast_reports, cdk_reports)
 
     def _update_sast_report_checks(self, report: SastReport, cdk_reports: List[CDKReport]) -> None:
         sast_failed_checks = []
         sast_skiped_checks = []
 
-        for fail_check in report.failed_checks:
-            for cdk_report in cdk_reports:
+        if report.language not in [c.language for c in cdk_reports]:
+            report.failed_checks = report.failed_checks
+            report.skipped_checks = report.skipped_checks 
+            return
+
+        for cdk_report in cdk_reports:
+            for fail_check in report.failed_checks:
                 if report.language == cdk_report.language and fail_check.check_id not in [f.check_id for f in cdk_report.failed_checks]:
                     sast_failed_checks.append(fail_check)
                     break
-            else:
-                sast_failed_checks = report.failed_checks
-                break
 
-        for skip_check in report.skipped_checks:
-            for cdk_report in cdk_reports:
+            for skip_check in report.skipped_checks:
                 if report.language == cdk_report.language and skip_check.check_id not in [s.check_id for s in cdk_report.skipped_checks]:
                     sast_skiped_checks.append(skip_check)
                     break
-            else:
-                sast_skiped_checks = report.skipped_checks
-                break
         
         report.failed_checks = sast_failed_checks
         report.skipped_checks = sast_skiped_checks 
