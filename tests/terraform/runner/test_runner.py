@@ -381,6 +381,9 @@ class TestRunnerValid(unittest.TestCase):
                 # CKV_AWS_299 was deleted because AWS doesn't support it and seems to be a bug in Terraform.
                 # https://github.com/hashicorp/terraform-provider-aws/issues/31821
                 continue
+            if f'CKV_AWS_{i}' == 'CKV_AWS_188':
+                # CKV_AWS_188 was deleted because it duplicated CKV_AWS_142
+                continue
             self.assertIn(f'CKV_AWS_{i}', aws_checks, msg=f'The new AWS violation should have the ID "CKV_AWS_{i}"')
 
         gcp_checks = sorted(
