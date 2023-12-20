@@ -56,7 +56,7 @@ class ParallelRunner:
             # if application is running from a frozen executable, spawn mode is not supported
             type = ParallelizationType.THREAD
         return type
-    
+
     def get_type_for_run_function(self, parallelization_type: ParallelizationType | None = None) -> str | ParallelizationType:
         type = self.type
         custom_type = os.getenv("CHECKOV_PARALLELIZATION_TYPE")
