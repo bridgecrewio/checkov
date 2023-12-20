@@ -57,9 +57,7 @@ class BaseAnsibleTaskCheck(BaseCheck):
 
         registry.register(self)
 
-    def scan_entity_conf(  # type:ignore[override]  # multi_signature decorator is problematic
-        self, conf: dict[str, Any], entity_type: str
-    ) -> tuple[CheckResult, dict[str, Any]]:
+    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:
         self.entity_type = entity_type
         self.entity_conf = conf
 

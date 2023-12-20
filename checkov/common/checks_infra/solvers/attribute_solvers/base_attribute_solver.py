@@ -96,7 +96,7 @@ class BaseAttributeSolver(BaseSolver):
         for attr in attr_parts:
             attr_to_check = f'{attr_to_check}.{attr}' if attr_to_check else attr
             value_to_check = vertex.get(attr_to_check)
-            value_to_check = self._render_json_str(value_to_check)
+            value_to_check = self._render_json_str(value_to_check, attr, vertex)
 
             # we can only check is_attribute_value_check when evaluating the full attribute
             # for example, if we have a policy that says "tags.component exists", and tags = local.tags, then
@@ -245,31 +245,17 @@ class BaseAttributeSolver(BaseSolver):
         return False
 
     @staticmethod
-    def _render_json_str(value_to_check: Any) -> Any:
-        """
-        Tries to render objects containing json dict, for example:
-        - resource "aws_iam_policy" "example1" {
-            policy == <<POLICY
-                {
-                ... json-data
-                }
-            POLICY
-        }
-        - resource "aws_emr_security_configuration" "example2" {
-            configuration = <<EOF
-                {
-                ... json-data
-                }
-            EOF
-        }
-        """
-        try:
-            # Check if the value looks like a json object, and if it is try to parse it
-            if isinstance(value_to_check, str) and value_to_check.strip().startswith('{'):
+    def _render_json_str(value_to_check: Any, attr: str, vertex: Dict[str, Any]) -> Any:
+        if attr == 'policy' and vertex.get('resource_type', '').endswith('policy'):
+            if isinstance(value_to_check, dict):
+                # it was already properly loaded
+                return value_to_check
+
+            try:
                 value_to_check = json.loads(value_to_check)
                 return value_to_check
-        except Exception as e:
-            logging.info(f'cant parse policy str to object, {str(e)}')
+            except Exception as e:
+                logging.info(f'cant parse policy str to object, {str(e)}')
         return value_to_check
 
     def _get_cached_jsonpath_statement(self, statement: str) -> JSONPath:

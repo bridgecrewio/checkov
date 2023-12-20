@@ -34,9 +34,9 @@ jobs:
       security-events: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608  # v3
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
       - name: Set up Python
-        uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236  # v4
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c  # v4
         with:
           python-version: '3.10'
       - name: Setup python for CodeQL
@@ -54,12 +54,12 @@ jobs:
           pipenv lock -r > requirements.txt
           pip install -r requirements.txt
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@0116bc2df50751f9724a2e35ef1f24d22f90e4e1  # v2
+        uses: github/codeql-action/init@c0d1daa7f7e14667747d73a7dbbe8c074bc8bfe2  # v2
         with:
           languages: python
           setup-python-dependencies: false
           config-file: ./.github/codeql-config.yml
       - name: Autobuild
-        uses: github/codeql-action/autobuild@0116bc2df50751f9724a2e35ef1f24d22f90e4e1  # v2
+        uses: github/codeql-action/autobuild@c0d1daa7f7e14667747d73a7dbbe8c074bc8bfe2  # v2
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@0116bc2df50751f9724a2e35ef1f24d22f90e4e1  # v2
+        uses: github/codeql-action/analyze@c0d1daa7f7e14667747d73a7dbbe8c074bc8bfe2  # v2

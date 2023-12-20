@@ -882,9 +882,28 @@ class TestSuppressionsIntegration(unittest.TestCase):
                          check_class=None, file_abs_path='.', entity_tags=None)
         record3.repo_file_path = '/terraform/aws/s3.tf'
 
+        # cases for when the CWD of the process is outside the repo
+        record4 = Record(check_id='CKV_AWS_18', check_name=None, check_result=None,
+                         code_block=None, file_path=None,
+                         file_line_range=None,
+                         resource='aws_s3_bucket.operations', evaluations=None,
+                         check_class=None, file_abs_path='.', entity_tags=None)
+        record4.file_path = '/terraform/aws/s3.tf'
+        record4.repo_file_path = '/some/abs/path/to/terraform/aws/s3.tf'
+
+        record5 = Record(check_id='CKV_AWS_18', check_name=None, check_result=None,
+                         code_block=None, file_path=None,
+                         file_line_range=None,
+                         resource='aws_s3_bucket.operations', evaluations=None,
+                         check_class=None, file_abs_path='.', entity_tags=None)
+        record5.file_path = '\\terraform\\aws\\s3.tf'
+        record5.repo_file_path = '/some/abs/path/to/terraform/aws/s3.tf'
+
         self.assertTrue(suppressions_integration._check_suppression(record1, suppression))
         self.assertFalse(suppressions_integration._check_suppression(record2, suppression))
         self.assertFalse(suppressions_integration._check_suppression(record3, suppression))
+        self.assertTrue(suppressions_integration._check_suppression(record4, suppression))
+        self.assertTrue(suppressions_integration._check_suppression(record5, suppression))
 
     def test_resource_suppression_cli_repo(self):
         instance = BcPlatformIntegration()

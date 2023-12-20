@@ -15,11 +15,12 @@ from cyclonedx.model import (
     sha1sum,
     HashAlgorithm,
     HashType,
-    LicenseChoice,
-    License, Property,
+    Property,
+    Tool,
 )
-from cyclonedx.model.bom import Bom, Tool
+from cyclonedx.model.bom import Bom
 from cyclonedx.model.component import Component, ComponentType
+from cyclonedx.model.license import DisjunctiveLicense
 from cyclonedx.model.vulnerability import (
     Vulnerability,
     VulnerabilityAdvisory,
@@ -29,10 +30,11 @@ from cyclonedx.model.vulnerability import (
     VulnerabilityScoreSource,
     VulnerabilitySeverity,
 )
-from cyclonedx.output import get_instance, OutputFormat
+from cyclonedx.schema import OutputFormat
+from cyclonedx.output import make_outputter
 from packageurl import PackageURL
 
-from checkov.common.output.common import format_string_to_licenses, validate_lines, ImageDetails
+from checkov.common.output.common import ImageDetails, format_string_to_licenses, validate_lines
 from checkov.common.output.report import CheckType
 from checkov.common.output.cyclonedx_consts import (
     SCA_CHECKTYPES,
@@ -98,19 +100,15 @@ class CycloneDX:
                     continue
                 component = self.create_component(check_type=report.check_type, resource=check)
 
-                if bom.has_component(component=component):
-                    component = (
-                        bom.get_component_by_purl(  # type:ignore[assignment]  # the previous line checks, if exists
-                            purl=component.purl
-                        )
-                    )
+                if existing_component := bom.get_component_by_purl(purl=component.purl):
+                    component = existing_component
+                else:
+                    bom.components.add(component)
 
                 vulnerability = self.create_vulnerability(
                     check_type=report.check_type, resource=check, component=component
                 )
-
-                component.add_vulnerability(vulnerability)
-                bom.components.add(component)
+                bom.vulnerabilities.add(vulnerability)
 
                 if is_image_report:
                     if check.file_path not in image_resources_for_image_components:
@@ -119,7 +117,7 @@ class CycloneDX:
             for resource in sorted(report.extra_resources):
                 component = self.create_component(check_type=report.check_type, resource=resource)
 
-                if not bom.has_component(component=component):
+                if not bom.get_component_by_purl(purl=component.purl):
                     bom.components.add(component)
 
             if is_image_report:
@@ -165,11 +163,11 @@ class CycloneDX:
             version=f"sha1:{sha1_hash}",
             hashes=[
                 HashType(
-                    algorithm=HashAlgorithm.SHA_1,
-                    hash_value=sha1_hash,
+                    alg=HashAlgorithm.SHA_1,
+                    content=sha1_hash,
                 )
             ],
-            component_type=ComponentType.APPLICATION,
+            type=ComponentType.APPLICATION,
             purl=purl,
         )
         return component
@@ -225,12 +223,12 @@ class CycloneDX:
                 package_name = resource.vulnerability_details["package_name"]
 
         # add licenses, if exists
-        license_choices = None
+        disjunctive_licenses = None
         licenses = resource.vulnerability_details.get("licenses")
 
         if licenses:
-            license_choices = [
-                LicenseChoice(license_=License(license_name=license)) for license in format_string_to_licenses(licenses)
+            disjunctive_licenses = [
+                DisjunctiveLicense(name=license) for license in format_string_to_licenses(licenses)
             ]
 
         purl = PackageURL(
@@ -252,12 +250,11 @@ class CycloneDX:
             group=package_group,
             name=package_name,
             version=package_version,
-            component_type=ComponentType.LIBRARY,
-            licenses=license_choices,
+            type=ComponentType.LIBRARY,
+            licenses=disjunctive_licenses,
             purl=purl,
             properties=properties
         )
-
         return component
 
     def create_image_component(self, resource: Record, bom: Bom) -> None:
@@ -272,7 +269,7 @@ class CycloneDX:
         bom.components.add(
             Component(
                 bom_ref=str(image_purl),
-                component_type=ComponentType.CONTAINER,
+                type=ComponentType.CONTAINER,
                 name=f"{self.repo_id}/{image_id}",
                 version="",
                 purl=image_purl,
@@ -333,7 +330,7 @@ class CycloneDX:
                 )
             ],
             description=f"Resource: {resource.resource}. {resource.check_name}",
-            affects_targets=[BomTarget(ref=component.bom_ref.value)],
+            affects=[BomTarget(ref=component.bom_ref.value)],
             advisories=advisories,
         )
         return vulnerability
@@ -380,7 +377,7 @@ class CycloneDX:
         source = None
         source_url = resource.vulnerability_details.get("link")
         if source_url:
-            source = VulnerabilitySource(url=source_url)
+            source = VulnerabilitySource(url=XsUri(source_url))
         method = None
         vector = resource.vulnerability_details["vector"]
 
@@ -404,7 +401,7 @@ class CycloneDX:
             description=resource.vulnerability_details.get("description"),
             recommendation=fix_version,
             published=datetime.fromisoformat(resource.vulnerability_details["published_date"].replace("Z", "")),
-            affects_targets=[BomTarget(ref=component.bom_ref.value)],
+            affects=[BomTarget(ref=component.bom_ref.value)],
         )
         return vulnerability
 
@@ -420,7 +417,7 @@ class CycloneDX:
         schema_version = CYCLONE_SCHEMA_VERSION.get(
             os.getenv("CHECKOV_CYCLONEDX_SCHEMA_VERSION", ""), DEFAULT_CYCLONE_SCHEMA_VERSION
         )
-        output = get_instance(
+        output = make_outputter(
             bom=self.bom,
             output_format=output_format,
             schema_version=schema_version,
@@ -442,35 +439,35 @@ class CycloneDX:
         tool.external_references.update(
             [
                 ExternalReference(
-                    reference_type=ExternalReferenceType.BUILD_SYSTEM,
+                    type=ExternalReferenceType.BUILD_SYSTEM,
                     url=XsUri("https://github.com/bridgecrewio/checkov/actions"),
                 ),
                 ExternalReference(
-                    reference_type=ExternalReferenceType.DISTRIBUTION,
+                    type=ExternalReferenceType.DISTRIBUTION,
                     url=XsUri("https://pypi.org/project/checkov/"),
                 ),
                 ExternalReference(
-                    reference_type=ExternalReferenceType.DOCUMENTATION,
+                    type=ExternalReferenceType.DOCUMENTATION,
                     url=XsUri("https://www.checkov.io/1.Welcome/What%20is%20Checkov.html"),
                 ),
                 ExternalReference(
-                    reference_type=ExternalReferenceType.ISSUE_TRACKER,
+                    type=ExternalReferenceType.ISSUE_TRACKER,
                     url=XsUri("https://github.com/bridgecrewio/checkov/issues"),
                 ),
                 ExternalReference(
-                    reference_type=ExternalReferenceType.LICENSE,
+                    type=ExternalReferenceType.LICENSE,
                     url=XsUri("https://github.com/bridgecrewio/checkov/blob/master/LICENSE"),
                 ),
                 ExternalReference(
-                    reference_type=ExternalReferenceType.SOCIAL,
+                    type=ExternalReferenceType.SOCIAL,
                     url=XsUri("https://twitter.com/bridgecrewio"),
                 ),
                 ExternalReference(
-                    reference_type=ExternalReferenceType.VCS,
+                    type=ExternalReferenceType.VCS,
                     url=XsUri("https://github.com/bridgecrewio/checkov"),
                 ),
                 ExternalReference(
-                    reference_type=ExternalReferenceType.WEBSITE,
+                    type=ExternalReferenceType.WEBSITE,
                     url=XsUri("https://www.checkov.io/"),
                 ),
             ]

@@ -6,7 +6,7 @@ import json
 import itertools
 from concurrent import futures
 from io import StringIO
-from typing import Any, TYPE_CHECKING, Optional
+from typing import Any, TYPE_CHECKING, Optional, Dict
 from collections import defaultdict
 
 import dpath
@@ -44,6 +44,8 @@ FILE_NAME_NETWORKX = 'graph_networkx.json'
 FILE_NAME_IGRAPH = 'graph_igraph.json'
 FILE_NAME_RUSTWORKX = 'graph_rustworkx.json'
 
+SAST_FRAMEWORK_PREFIX = 'sast'
+
 
 def _is_scanned_file(file: str) -> bool:
     file_ending = os.path.splitext(file)[1]
@@ -80,6 +82,8 @@ def reduce_scan_reports(scan_reports: list[Report], on_prem: Optional[bool] = Fa
     reduced_scan_reports: dict[str, _ReducedScanReport] = {}
     for report in scan_reports:
         check_type = report.check_type
+        if check_type.startswith(SAST_FRAMEWORK_PREFIX):
+            continue
         reduced_keys = secrets_check_reduced_keys if check_type == CheckType.SECRETS else check_reduced_keys
         if on_prem:
             reduced_keys = tuple(k for k in reduced_keys if k != 'code_block')
@@ -99,6 +103,24 @@ def reduce_scan_reports(scan_reports: list[Report], on_prem: Optional[bool] = Fa
                 "image_cached_results": report.image_cached_results
         }
     return reduced_scan_reports
+
+
+def persist_assets_results(check_type: str, assets_report: Dict[str, Any], s3_client: Optional[S3Client],
+                           bucket: Optional[str], full_repo_object_key: Optional[str]) -> str:
+    if not s3_client or not bucket or not full_repo_object_key:
+        return ''
+    check_result_object_path = f'{full_repo_object_key}/{checkov_results_prefix}/{check_type}/assets.json'
+    _put_json_object(s3_client, assets_report, bucket, check_result_object_path)
+    return check_result_object_path
+
+
+def persist_reachability_results(check_type: str, reachability_report: Dict[str, Any], s3_client: Optional[S3Client],
+                                 bucket: Optional[str], full_repo_object_key: Optional[str]) -> str:
+    if not s3_client or not bucket or not full_repo_object_key:
+        return ''
+    check_result_object_path = f'{full_repo_object_key}/{checkov_results_prefix}/{check_type}/reachability_report.json'
+    _put_json_object(s3_client, reachability_report, bucket, check_result_object_path)
+    return check_result_object_path
 
 
 def persist_checks_results(
@@ -149,6 +171,8 @@ def enrich_and_persist_checks_metadata(
     checks_metadata_paths: dict[str, dict[str, str]] = {}
     for scan_report in scan_reports:
         check_type = scan_report.check_type
+        if check_type.startswith(SAST_FRAMEWORK_PREFIX):
+            continue
         checks_metadata_object = _extract_checks_metadata(scan_report, full_repo_object_key, on_prem)
         checks_metadata_object_path = f'{full_repo_object_key}/{checkov_results_prefix}/{check_type}/checks_metadata.json'
         dpath.new(checks_metadata_paths, f"{check_type}/checks_metadata_path", checks_metadata_object_path)

@@ -21,11 +21,16 @@ class TestFixesIntegration(unittest.TestCase):
         instance = BcPlatformIntegration()
         instance.skip_fixes = False
         instance.platform_integration_configured = True
+        instance.on_prem = False
 
         fixes_integration = FixesIntegration(instance)
 
         self.assertTrue(fixes_integration.is_valid())
 
+        instance.on_prem = True
+        self.assertFalse(fixes_integration.is_valid())
+
+        instance.on_prem = False
         instance.skip_fixes = True
         self.assertFalse(fixes_integration.is_valid())
 

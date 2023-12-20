@@ -16,7 +16,7 @@ class ClearTestAPIKey(BaseOpenapiCheck):
         super().__init__(name=name, id=id, categories=categories, supported_entities=supported_resources,
                          block_type=BlockType.DOCUMENT)
 
-    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:  # type:ignore[override]  # return type is different than the base class
+    def scan_entity_conf(self, conf: dict[str, Any], entity_type: str) -> tuple[CheckResult, dict[str, Any]]:
         schemes = conf.get("schemes")
         if schemes and isinstance(schemes, list):
             if "http" not in schemes and "ws" not in schemes:

@@ -1,4 +1,5 @@
 name: CI
+run-name: "Setting run name ${{ github.ref_name }}"
 
 # Controls when the workflow will run
 on:

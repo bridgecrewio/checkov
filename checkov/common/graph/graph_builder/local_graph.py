@@ -24,7 +24,7 @@ class LocalGraph(Generic[_Block]):
         self.out_edges: Dict[int, List[Edge]] = defaultdict(list)  # map between vertex index and the edges exiting it
         self.vertices_by_block_type: Dict[str, List[int]] = defaultdict(list)
         self.vertex_hash_cache: Dict[int, str] = defaultdict(str)
-        self.vertices_block_name_map: Dict[str, Dict[str, List[int]]] = defaultdict(partial(defaultdict, list))  # type:ignore[arg-type]
+        self.vertices_block_name_map: Dict[str, Dict[str, List[int]]] = defaultdict(partial(defaultdict, list))
         self._graph_resource_encryption_manager = GraphResourcesEncryptionManager()
 
     @abstractmethod

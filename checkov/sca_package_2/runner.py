@@ -56,13 +56,17 @@ class Runner(BaseRunner[None, None, None]):
 
         if bc_integration.bc_source and bc_integration.bc_source.name in IDEsSourceTypes \
                 and not bc_integration.is_prisma_integration():
-            logging.info("The --bc-api-key flag needs to be set to a Prisma token for SCA scan for vscode or jetbrains extention")
+            logging.info("The --bc-api-key flag needs to be set to a Prisma token for SCA scan for vscode or jetbrains extension")
             return {}, dict()  # should just return an empty result
 
         self._code_repo_path = Path(root_folder) if root_folder else None
 
         if not bc_integration.timestamp and bc_integration.bc_source and not bc_integration.bc_source.upload_results:
             bc_integration.set_s3_integration()
+        if bc_integration.daemon_process:
+            # only happens for 'ParallelizationType.SPAWN'
+            bc_integration.setup_http_manager()
+            bc_integration.set_s3_client()
 
         excluded_paths = {*ignored_directories}
         if runner_filter.excluded_paths:

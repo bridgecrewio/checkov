@@ -24,6 +24,7 @@ OUTPUT_CODE_LINE_LIMIT = force_int(os.getenv('CHECKOV_OUTPUT_CODE_LINE_LIMIT')) 
 
 SCA_PACKAGE_SCAN_CHECK_NAME = "SCA package scan"
 SCA_LICENSE_CHECK_NAME = "SCA license"
+PLACEHOLDER_LINE = "...\n"
 
 
 class Record:
@@ -126,6 +127,8 @@ class Record:
             spaces = " " * (last_line_number_len - len(str(line_num)))
             if line.lstrip().startswith("#"):
                 code_output.append(f"\t\t{color_codes[0]}{line_num}{spaces} | {line}")
+            elif line.lstrip() == PLACEHOLDER_LINE:
+                code_output.append(f"\t\t{line}")
             else:
                 code_output.append(f"\t\t{color_codes[0]}{line_num}{spaces} | {color_codes[1]}{line}")
         return "".join(code_output)
@@ -211,7 +214,7 @@ class Record:
         caller_file_details = self.get_caller_file_details_string(self.caller_file_path, self.caller_file_line_range)
         evaluation_message = self.get_evaluation_string(self.evaluations, self.code_block)
 
-        status_message = colored("\t{} for resource: {}\n".format(status, self.resource), status_color)
+        status_message = colored("\t{} for resource: {}\n".format(status, self.resource), status_color)  # type: ignore
 
         if self.check_result["result"] == CheckResult.FAILED and code_lines and not compact:
             return f"{check_message}{status_message}{severity_message}{detail}{file_details}{caller_file_details}{guideline_message}{code_lines}{evaluation_message}"

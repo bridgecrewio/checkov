@@ -22,6 +22,9 @@ GCP = 'gcp'
 GENERAL = 'general'
 ALL = 'all'
 
+GENERIC_OBFUSCATION_LENGTH = 10
+
+
 # Taken from various git-secrets forks that add Azure and GCP support to base AWS.
 # The groups here are the result of running git secrets --register-[aws|azure|gcp]
 # https://github.com/awslabs/git-secrets
@@ -67,7 +70,7 @@ _patterns = {k: [re.compile(p, re.DOTALL) for p in v] for k, v in _secrets_regex
 # now combine all the compiled patterns into one long list
 _patterns['all'] = list(itertools.chain.from_iterable(_patterns.values()))
 
-_hash_patterns = list(map(lambda regex: re.compile(regex, re.IGNORECASE), ['^[a-f0-9]{32}$', '^[a-f0-9]{40}$']))
+_hash_patterns = [re.compile(regex, re.IGNORECASE) for regex in ('^[a-f0-9]{32}$', '^[a-f0-9]{40}$')]
 
 
 def is_hash(s: str) -> bool:
@@ -96,13 +99,13 @@ def string_has_secrets(s: str, *categories: str) -> bool:
     :return:
     """
 
+    if is_hash(s):
+        return False
+
     # set a default if no category is provided; or, if categories were provided and they include 'all', then just set it
     # explicitly so we don't do any duplication
     if not categories or "all" in categories:
         categories = ("all",)
-
-    if is_hash(s):
-        return False
 
     for c in categories:
         if any([pattern.search(s) for pattern in _patterns[c]]):
@@ -133,7 +136,7 @@ def omit_secret_value_from_line(secret: str | None, line_text: str) -> str:
             return line_text
 
     censored_line = f'{line_text[:secret_index + secret_len_to_expose]}' \
-                    f'{"*" * (secret_length - secret_len_to_expose)}' \
+                    f'{"*" * GENERIC_OBFUSCATION_LENGTH}' \
                     f'{line_text[secret_index + secret_length:]}'
     return censored_line
 
@@ -229,18 +232,14 @@ def omit_secret_value_from_graph_checks(
 def get_secrets_from_string(s: str, *categories: str) -> list[str]:
     # set a default if no category is provided; or, if categories were provided and they include 'all', then just set it
     # explicitly so we don't do any duplication
+    if is_hash(s):
+        return []
+
     if not categories or "all" in categories:
         categories = ("all",)
 
-    if is_hash(s):
-        return list()
-
     secrets: list[str] = []
     for c in categories:
-        matches: list[str] = []
         for pattern in _patterns[c]:
-            _matches = re.finditer(pattern, s)
-            matches.extend([str(match.group()) for match in _matches])
-        if matches:
-            secrets.extend(matches)
+            secrets.extend(str(match.group()) for match in pattern.finditer(s))
     return secrets

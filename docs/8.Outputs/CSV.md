@@ -16,14 +16,14 @@ A CSV output would generate 3 output files:
 ###iac.csv
 | Resource                 | Path                      | Git Org       | Git Repository  | Misconfigurations  | Severity  |
 |:-------------------------|:--------------------------|:--------------|:----------------|:-------------------|:----------|
-| aws_db_instance.default  | /terraform/aws/db-app.tf  | bridgecrewio  | terragoat       | CKV_AWS_161        | MEDIUM    |
+| aws_db_instance.default  | /terraform/aws/db-app.tf  | prisma        | terragoat       | CKV_AWS_161        | MEDIUM    |
 
 ###oss_packages.csv
 | Package  | Version  | Path                                            | Git Org       | Git Repository  | Vulnerability   | Severity  | Licenses  |
 |:---------|:---------|:------------------------------------------------|:--------------|:----------------|:----------------|:----------|:----------|
-| xmldom   | 0.5.0    | /packages/node/twistcli-test/package-lock.json  | bridgecrewio  | terragoat       | CVE-2021-32796  | MEDIUM    |
+| xmldom   | 0.5.0    | /packages/node/twistcli-test/package-lock.json  | prisma        | terragoat       | CVE-2021-32796  | MEDIUM    |
 
 ###container_images.csv
 | Package  | Version  | Path                             | Git Org       | Git Repository  | Vulnerability   | Severity  | Licenses  |
 |:---------|:---------|:---------------------------------|:--------------|:----------------|:----------------|:----------|:----------|
-| xmldom   | 0.5.0    | /Dockerfile  (sha256:6a353e22ce) | bridgecrewio  | terragoat       | CVE-2021-32796  | MEDIUM    |
+| xmldom   | 0.5.0    | /Dockerfile  (sha256:6a353e22ce) | prisma        | terragoat       | CVE-2021-32796  | MEDIUM    |

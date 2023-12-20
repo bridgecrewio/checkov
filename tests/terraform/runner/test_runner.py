@@ -22,8 +22,9 @@ from checkov.common.graph.db_connectors.igraph.igraph_db_connector import Igraph
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.db_connectors.rustworkx.rustworkx_db_connector import RustworkxConnector
 from checkov.common.graph.graph_builder import CustomAttributes
-from checkov.common.models.enums import CheckCategories, CheckResult
+from checkov.common.models.enums import CheckCategories, CheckResult, ParallelizationType
 from checkov.common.output.report import Report
+from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_PREFIX, TERRAFORM_NESTED_MODULE_PATH_ENDING, \
     TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR
@@ -55,11 +56,15 @@ EXTERNAL_MODULES_DOWNLOAD_PATH = os.environ.get('EXTERNAL_MODULES_DIR', DEFAULT_
 class TestRunnerValid(unittest.TestCase):
     def setUp(self) -> None:
         self.orig_checks = resource_registry.checks
+        self.parallelization_type = parallel_runner.type
         self.db_connector = self.db_connector
         os.environ["CHECKOV_GRAPH_FRAMEWORK"] = self.graph
         os.environ["TF_SPLIT_GRAPH"] = self.tf_split_graph
 
     def tearDown(self):
+        parser_registry.context = {}
+        resource_registry.checks = self.orig_checks
+        parallel_runner.type = self.parallelization_type
         del os.environ["CHECKOV_GRAPH_FRAMEWORK"]
         del os.environ["TF_SPLIT_GRAPH"]
 
@@ -127,6 +132,29 @@ class TestRunnerValid(unittest.TestCase):
         report.print_console(is_quiet=True)
         report.print_console(is_quiet=True, is_compact=True)
         report.print_failed_github_md()
+
+    def test_py_graph_check(self):
+        if not self.db_connector == IgraphConnector:
+            return
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/resources/py_graph_check"
+        valid_dir_path_for_external_check = current_dir + '/py_graph_check'
+        runner = Runner(db_connector=self.db_connector())
+        checks_allowlist = ['CKV_AWS_000']
+        report = runner.run(root_folder=valid_dir_path, external_checks_dir=[valid_dir_path_for_external_check],
+                            runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allowlist))
+        report_json = report.get_json()
+        self.assertIsInstance(report_json, str)
+        self.assertIsNotNone(report_json)
+        self.assertIsNotNone(report.get_test_suite())
+        assert len(report.failed_checks) == 2
+        assert len(report.passed_checks) == 2
+        failed_resources = [c.resource for c in report.failed_checks]
+        passed_resources = [c.resource for c in report.passed_checks]
+        assert 'aws_db_instance.storage_encrypted_enabled' in passed_resources
+        assert 'aws_db_instance.default_connected_to_provider_with_fips' in passed_resources
+        assert 'aws_db_instance.default' in failed_resources
+        assert 'aws_db_instance.disabled' in failed_resources
 
     def test_runner_passing_valid_tf(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -1339,6 +1367,10 @@ class TestRunnerValid(unittest.TestCase):
         self.assertTrue(any(r.check_id == 'BUCKET_EXISTS' and r.resource == 'aws_s3_bucket.unknown_simple' for r in
                             report.passed_checks))
 
+        # reset graph checks
+        runner.graph_registry.checks = []
+        runner.graph_registry.load_checks()
+
     def test_unrendered_nested_var(self):
         resources_dir = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), "resources", "unrendered_vars")
@@ -1378,6 +1410,10 @@ class TestRunnerValid(unittest.TestCase):
         self.assertTrue(any(
             r.check_id == 'COMPONENT_EQUALS' and r.resource == 'aws_s3_bucket.known_nested_fail' for r in
             report.failed_checks))
+
+        # reset graph checks
+        runner.graph_registry.checks = []
+        runner.graph_registry.load_checks()
 
     def test_no_duplicate_results(self):
         resources_path = os.path.join(
@@ -1634,10 +1670,6 @@ class TestRunnerValid(unittest.TestCase):
         all_checks = report.failed_checks + report.passed_checks
         self.assertTrue(any(c.check_id == custom_check_id for c in all_checks))
 
-    def tearDown(self):
-        parser_registry.context = {}
-        resource_registry.checks = self.orig_checks
-
     @parameterized.expand([
         (NetworkxConnector,),
         (IgraphConnector,),
@@ -1706,6 +1738,31 @@ class TestRunnerValid(unittest.TestCase):
         entity_context = runner.get_entity_context_and_evaluations(entity_with_found_path)
         assert entity_context is not None
         assert entity_context['start_line'] == 1 and entity_context['end_line'] == 7
+
+
+    def test__parse_files(self):
+        for parallel_type in ParallelizationType:
+            if parallel_runner.os == "Windows" and parallel_type == ParallelizationType.FORK:
+                # fork doesn't wok on Windows
+                continue
+
+            with self.subTest(msg="with parallelization type", parallel_type=parallel_type):
+                # given
+                runner = Runner()
+                runner.definitions = {}
+
+                example_dir = Path(__file__).parent / "resources/example"
+                example_files = [str(file_path) for file_path in example_dir.rglob("*.tf")]
+                parsing_errors = {}
+
+                parallel_runner.type = parallel_type
+
+                # when
+                runner._parse_files(files=example_files, parsing_errors=parsing_errors)
+
+                # then
+                self.assertEqual(len(runner.definitions), 1)
+                self.assertEqual(len(parsing_errors), 1)
 
 
 if __name__ == '__main__':

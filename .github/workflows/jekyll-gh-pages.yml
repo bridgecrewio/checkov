@@ -27,11 +27,11 @@ jobs:
     runs-on: [self-hosted, public, linux, x64]
     steps:
       - name: Checkout
-        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608  # v3
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
       - name: Setup Pages
         uses: actions/configure-pages@f156874f8191504dae5b037505266ed5dda6c382  # v3
       - name: Build with Jekyll
-        uses: actions/jekyll-build-pages@058068233b22675635bdf8dfa178d6ae77f12694  # v1
+        uses: actions/jekyll-build-pages@e4ef22193c23ea849fc3fea6dbce69da1ee65b6d  # v1
         with:
           source: ./docs
           destination: ./_site
@@ -48,4 +48,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@9dbe3824824f8a1377b8e298bafde1a50ede43e5  # v2
+        uses: actions/deploy-pages@13b55b33dd8996121833dbc1db458c793a334630  # v2

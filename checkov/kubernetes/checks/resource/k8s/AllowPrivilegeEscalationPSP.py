@@ -33,5 +33,7 @@ class AllowPrivilegeEscalationPSP(BaseK8Check):
             else:
                 return CheckResult.FAILED
 
+        return CheckResult.UNKNOWN
+
 
 check = AllowPrivilegeEscalationPSP()

@@ -179,7 +179,7 @@ $ checkov -f cdk.out/AppStack.template.json
  | (__| | | |  __/ (__|   < (_) \ V / 
   \___|_| |_|\___|\___|_|\_\___/ \_/  
                                       
-By bridgecrew.io | version: 2.0.727
+By Prisma Cloud | version: 3.0.1
 
 cloudformation scan results:
 
@@ -191,7 +191,7 @@ Check: CKV_AWS_18: "Ensure the S3 bucket has access logging enabled"
         SKIPPED for resource: AWS::S3::Bucket.MyBucketF68F3FF0
         Suppress comment: Ensure the S3 bucket has access logging enabled
         File: /../anton/cfn.json:3-22
-        Guide: https://docs.bridgecrew.io/docs/s3_13-enable-logging
+        Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/s3-policies/s3-13-enable-logging
 
 
 ```
@@ -349,7 +349,7 @@ checkov -d . --skip-check kube-system
 
 # Platform enforcement rules
 
-Checkov can download [enforcement rules](https://docs.bridgecrew.io/docs/enforcement) that you configure in the Bridgecrew or Prisma Cloud platform. This allows you to centralize the failure and check threshold configurations, instead of defining them in each pipeline.
+Checkov can download [enforcement rules](https://docs.prismacloud.io/en/enterprise-edition/content-collections/application-security/risk-management/monitor-and-manage-code-build/enforcement) that you configure in Prisma Cloud. This allows you to centralize the failure and check threshold configurations, instead of defining them in each pipeline.
 
 To use enforcement rules, use the `--use-enforcement-rules` flag along with a platform API key.
 

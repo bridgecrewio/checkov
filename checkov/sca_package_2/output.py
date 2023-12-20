@@ -11,11 +11,13 @@ from prettytable import PrettyTable, SINGLE_BORDER
 from checkov.common.bridgecrew.severities import BcSeverities
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME, SCA_LICENSE_CHECK_NAME
-from checkov.common.output.common import get_package_name_with_lines, validate_lines
+from checkov.common.output.common import get_package_name_with_lines, validate_lines, get_reachability_output_indication
 from checkov.common.packaging import version as packaging_version
 from checkov.common.sca.commons import UNFIXABLE_VERSION, get_package_alias
 from checkov.common.typing import _LicenseStatusWithLines
 from checkov.common.output.common import compare_table_items_severity
+
+REACHABILITY_RISK_FACTORS_KEYS = ["IsUsed", "ReachableFunction"]
 
 
 @dataclass
@@ -26,6 +28,7 @@ class CveCount:
     medium: int = 0
     low: int = 0
     skipped: int = 0
+    used: int = 0
     has_fix: int = 0
     to_fix: int = 0
     fixable: bool = True
@@ -38,6 +41,7 @@ class CveCount:
             f"medium: {self.medium}",
             f"low: {self.low}",
             f"skipped: {self.skipped}",
+            f"Total Packages Used: {self.used}",
         ]
 
 
@@ -141,9 +145,17 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                             parsed_version = packaging_version.parse(root_package_fix_version.strip())
                             fix_versions_lists.append([parsed_version])
 
-                    root_package_lines = validate_lines(record.vulnerability_details.get("root_package_file_line_range"))
+                    root_package_lines = validate_lines(
+                        record.vulnerability_details.get("root_package_file_line_range"))
                     if lines or root_package_lines:
                         lines_details_found_cves = True
+
+                    risk_factors = {} if not record.vulnerability_details or not record.vulnerability_details.get("risk_factors", {}) else record.vulnerability_details.get("risk_factors", {})
+
+                    reachability_risk_factors_tmp = {key: value for key, value in risk_factors.items()
+                                                     if key in REACHABILITY_RISK_FACTORS_KEYS}
+                    if any([value for value in reachability_risk_factors_tmp.values()]):
+                        cve_count.used += 1
 
                     package_cves_details_map[root_package_alias].setdefault("cves", []).append(
                         {
@@ -158,7 +170,8 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                             "package_version": package_version,
                             "lines": lines,
                             "root_package_lines": root_package_lines,
-                            "is_private_fix": record.vulnerability_details.get("is_private_fix")
+                            "is_private_fix": record.vulnerability_details.get("is_private_fix"),
+                            "reachability_risk_factors": reachability_risk_factors_tmp
                         }
                     )
                 elif record.check_name == SCA_LICENSE_CHECK_NAME:
@@ -265,8 +278,8 @@ def create_cli_license_violations_table(file_path: str,
 
 def create_cli_cves_table(file_path: str, cve_count: CveCount, package_details_map: Dict[str, Dict[str, Any]],
                           lines_details_found: bool) -> str:
-    columns = 6
-    table_width = 136
+    columns = 7
+    table_width = 159
     column_width = int(table_width / columns)
 
     cve_table_lines = create_cve_summary_table_part(
@@ -320,7 +333,9 @@ def create_fixable_cve_summary_table_part(
         table_width: int, column_count: int, cve_count: CveCount, vulnerable_packages: bool
 ) -> List[str]:
     fixable_table = PrettyTable(
-        header=False, min_table_width=table_width + column_count / 2, max_table_width=table_width + column_count / 2
+        header=False,
+        min_table_width=table_width + column_count - 4,
+        max_table_width=table_width + column_count - 4
     )
     fixable_table.set_style(SINGLE_BORDER)
     if cve_count.fixable:
@@ -353,6 +368,7 @@ def create_package_overview_table_part(
         "Current version",
         "Root fixed version",
         "Compliant version",
+        "Reachability"
     ]
     for package_idx, (root_package_alias, details) in enumerate(package_details_map.items()):
         if package_idx > 0:
@@ -360,7 +376,8 @@ def create_package_overview_table_part(
             package_table.header = False
             package_table.clear_rows()
 
-        details["cves"].sort(key=lambda x: ("" if x["root_package_name"] == x['package_name'] else x['package_name'], x['package_version']))
+        details["cves"].sort(key=lambda x: (
+            "" if x["root_package_name"] == x['package_name'] else x['package_name'], x['package_version']))
 
         last_package_alias = get_package_alias(details['cves'][-1]['package_name'],
                                                details['cves'][-1]['package_version'])
@@ -372,11 +389,13 @@ def create_package_overview_table_part(
             package_alias = get_package_alias(package_name, package_version)
             is_root = package_alias == root_package_alias
             is_public_overview = "(Public)" if cve['is_private_fix'] is False else ""
+            reachability = get_reachability_output_indication(cve.get('reachability_risk_factors', {}))
             compliant_version_overview = ""
             if cve_idx == 0:
                 cur_compliant_version = compliant_version + is_public_overview if compliant_version and compliant_version != UNFIXABLE_VERSION else compliant_version
                 if not is_root:  # no cves on root package
-                    package_name_col_val = get_package_name_with_lines(cve["root_package_name"], cve.get("root_package_lines"))
+                    package_name_col_val = get_package_name_with_lines(cve["root_package_name"],
+                                                                       cve.get("root_package_lines"))
                     package_table.add_row(
                         [
                             package_name_col_val,
@@ -385,6 +404,7 @@ def create_package_overview_table_part(
                             cve["root_package_version"],
                             "",
                             cur_compliant_version,
+                            ""
                         ]
                     )
                 else:
@@ -421,7 +441,8 @@ def create_package_overview_table_part(
                     cve["severity"],
                     package_version if is_sub_dep_changed else "",
                     fix_version_overview,
-                    compliant_version_overview
+                    compliant_version_overview,
+                    reachability
                 ]
             )
 

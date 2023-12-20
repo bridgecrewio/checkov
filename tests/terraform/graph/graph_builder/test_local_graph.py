@@ -1,9 +1,7 @@
 import os
 from pathlib import Path
 from unittest import TestCase
-
-import mock
-import json
+from unittest import mock
 
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import EncryptionValues, EncryptionTypes
