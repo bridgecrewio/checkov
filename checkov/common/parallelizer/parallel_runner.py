@@ -70,7 +70,7 @@ class ParallelRunner:
         type = self.type
         if parallelization_type:
             type = parallelization_type
-        
+
         if type == ParallelizationType.THREAD:
             return self._run_function_multithreaded(func, items)
         elif type == ParallelizationType.FORK:
