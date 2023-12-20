@@ -1,6 +1,16 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.38...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.40...HEAD)
+
+## [3.1.40](https://github.com/bridgecrewio/checkov/compare/3.1.38...3.1.40) - 2023-12-19
+
+### Feature
+
+- **terraform_plan:** Add PY graph checks for tf plan - [#5875](https://github.com/bridgecrewio/checkov/pull/5875)
+
+### Bug Fix
+
+- **terraform:** Remove CKV_AWS_188 as dupe - [#5884](https://github.com/bridgecrewio/checkov/pull/5884)
 
 ## [3.1.38](https://github.com/bridgecrewio/checkov/compare/3.1.34...3.1.38) - 2023-12-13
 
