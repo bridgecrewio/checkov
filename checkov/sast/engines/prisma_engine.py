@@ -198,7 +198,7 @@ class PrismaEngine(SastEngine):
                        report_imports: bool = True,
                        report_reachability: bool = False,
                        remove_default_policies: bool = False,
-                       cdk_languages: Optional[List[CDKLanguages]] = None) -> Union[List[Report], SastPolicies]:
+                       cdk_languages: List[CDKLanguages] = []) -> Union[List[Report], SastPolicies]:
 
         validate_params(languages, source_codes, list_policies)
 
@@ -464,7 +464,8 @@ class PrismaEngine(SastEngine):
             'skip_check_threshold': Severities[BcSeverities.NONE],
             'skip_path': [],
             'report_imports': False,
-            'report_reachability': False
+            'report_reachability': False,
+            'cdk_languages': []
         }
         prisma_result = self.run_go_library(**library_input)
         return prisma_result
