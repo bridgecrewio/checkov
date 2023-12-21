@@ -12,7 +12,7 @@ import sys
 from collections import defaultdict
 from collections.abc import Iterable
 from pathlib import Path
-from typing import List, Dict, Any, Optional, cast, TYPE_CHECKING, Type, Literal
+from typing import List, Dict, Any, Optional, Tuple, cast, TYPE_CHECKING, Type, Literal
 from checkov.common.bridgecrew.check_type import CheckType
 
 from checkov.common.bridgecrew.code_categories import CodeCategoryMapping, CodeCategoryType
@@ -199,7 +199,7 @@ class RunnerRegistry:
                                                         self.runners if runner.resource_subgraph_map is not None}
         return self.scan_reports
 
-    def _merge_runners(self, runners: list[_BaseRunner]) -> list[_BaseRunner]:
+    def _merge_runners(self, runners: list[Tuple[Any]]) -> list[_BaseRunner]:
         sast_runner = None
         cdk_runner = None
         merged_runners = []
