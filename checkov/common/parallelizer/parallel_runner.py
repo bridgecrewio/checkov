@@ -143,9 +143,6 @@ class ParallelRunner:
     def _run_function_multiprocess_spawn(
         self, func: Callable[[Any], _T], items: list[Any], group_size: int | None
     ) -> Iterable[_T]:
-        logging.debug(
-            f"my status is {multiprocessing.current_process()}"
-        )
         if multiprocessing.current_process().daemon:
             # can't create a new pool, when already inside a pool
             return self._run_function_multithreaded(func, items)
@@ -158,9 +155,6 @@ class ParallelRunner:
         )
         with Pool(processes=self.workers_number, context=multiprocessing.get_context("spawn")) as p:
             if items and isinstance(items[0], tuple):
-                # error because kustimize - 15 is creating it's own process
-                # items.pop(15)
-                # items = items[15:16]
                 # need to use 'starmap' to pass multiple arguments to the target function
                 return p.starmap(func, items, chunksize=group_size)
 
