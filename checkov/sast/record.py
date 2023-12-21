@@ -8,6 +8,7 @@ from checkov.common.output.record import Record
 from checkov.common.typing import _CheckResult
 from checkov.sast.prisma_models.report import Flow
 
+
 class SastRecord(Record):
     def __init__(self,
                  check_id: str,
@@ -45,7 +46,6 @@ class SastRecord(Record):
         self.owasp = owasp
         self.show_severity = show_severity
         self.dataflow = data_flow
-
 
     def to_string(self, compact: bool = False, use_bc_ids: bool = False) -> str:
         status = ""
