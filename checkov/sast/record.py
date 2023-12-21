@@ -6,7 +6,7 @@ from checkov.common.bridgecrew.severities import Severity
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
 from checkov.common.typing import _CheckResult
-
+from checkov.sast.prisma_models.report import Flow
 
 class SastRecord(Record):
     def __init__(self,
@@ -14,6 +14,7 @@ class SastRecord(Record):
                  check_name: str,
                  check_result: _CheckResult,
                  code_block: List[Tuple[int, str]],
+                 data_flow: List[Flow],
                  file_path: str,
                  file_line_range: List[int],
                  resource: str,
@@ -43,6 +44,7 @@ class SastRecord(Record):
         self.cwe = cwe
         self.owasp = owasp
         self.show_severity = show_severity
+        self.dataflow = data_flow
 
     def to_string(self, compact: bool = False, use_bc_ids: bool = False) -> str:
         status = ""
