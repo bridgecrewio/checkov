@@ -296,7 +296,7 @@ class PrismaEngine(SastEngine):
                 logging.error(d.get('errors'))
             return {}
 
-    def create_report(self, prisma_report: PrismaReport) -> List[SastReport]:
+    def create_report(self, prisma_report: PrismaReport) -> List[Union[SastReport, CDKReport]]:
         logging.debug("Printing Prisma-SAST profiling data")
         logging.debug(prisma_report.profiler)
         reports: List[SastReport] = []
@@ -358,16 +358,16 @@ class PrismaEngine(SastEngine):
                 report.sast_reachability = prisma_report.reachability_report[lang]
                 reports.append(report)
 
-        all_report = self.split_sast_cdk_reports(reports)
+        all_report = self._split_sast_cdk_reports(reports)
         return all_report
     
-    def split_sast_cdk_reports(self, sast_reports: List[SastReport]) -> List[Union[SastReport, CDKReport]]:
+    def _split_sast_cdk_reports(self, sast_reports: List[SastReport]) -> List[Union[SastReport, CDKReport]]:
         cdk_reports: List[CDKReport] = []
         for report in sast_reports:
             for lang, rule_matches in report.sast_report.rule_match.items():
                 sast_rule_matches: Dict[str, RuleMatch] = {}
                 for policy_id, rule_match in rule_matches.items():
-                    if rule_match.metadata.framework != CDK_FRAMEWORK_PREFIX:
+                    if rule_match.metadata.framework != CDK_FRAMEWORK_PREFIX:  # type: ignore
                         sast_rule_matches[policy_id] = rule_match
                         continue
                     self._update_cdk_report(lang, cdk_reports, report, policy_id, rule_match)
