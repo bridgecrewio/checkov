@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 CDK_CHECKS_DIR_PATH = f'{os.getcwd()}/checkov/{CDK_FRAMEWORK_PREFIX}/checks'
 
+
 class Registry(BaseCheckRegistry):
     def __init__(self, checks_dir: str | None = None) -> None:
         super().__init__(report_type=CheckType.SAST)

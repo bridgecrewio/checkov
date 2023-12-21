@@ -440,7 +440,7 @@ class PrismaEngine(SastEngine):
                     all_reports.append(report)
                     continue
         return all_reports
-    
+
     def get_policies(self, languages: Set[SastLanguages]) -> SastPolicies:
         if not bc_integration.bc_api_key:
             logging.info("The --bc-api-key flag needs to be set to run Sast prisma scanning")
