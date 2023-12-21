@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_155
   name: Ensure that Workspace user volumes are encrypted
   category: ENCRYPTION
+  framework: cdk
 scope:
   languages:
     - python

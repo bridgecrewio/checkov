@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_173
   name: Check encryption settings for Lambda environmental variable
   category: Encryption
+  framework: cdk
 scope:
   languages:
     - python

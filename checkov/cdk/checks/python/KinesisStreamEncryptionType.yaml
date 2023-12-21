@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_43
   name: Ensure Kinesis Stream is securely encrypted
   category: ENCRYPTION
+  framework: cdk
 scope:
   languages:
     - python

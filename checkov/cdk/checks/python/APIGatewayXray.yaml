@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_73
   name: Ensure API Gateway has X-Ray Tracing enabled
   category: LOGGING
+  framework: cdk
 scope:
   languages:
     - python

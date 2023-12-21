@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_64
   name: Ensure all data stored in the Redshift cluster is securely encrypted at rest
   category: ENCRYPTION
+  framework: cdk
 scope:
   languages:
     - python

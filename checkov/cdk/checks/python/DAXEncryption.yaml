@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_47
   name: Ensure DAX is encrypted at rest (default is unencrypted)
   category: ENCRYPTION
+  framework: cdk
 scope:
   languages:
     - python

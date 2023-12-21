@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_131
   name: Ensure that ALB drops HTTP headers
   category: NETWORKING
+  framework: cdk
 scope:
   languages:
     - python

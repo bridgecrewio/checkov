@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_105
   name: Ensure Redshift uses SSL
   category: ENCRYPTION
+  framework: cdk
 scope:
   languages:
     - python
