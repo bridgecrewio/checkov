@@ -12,7 +12,7 @@ import sys
 from collections import defaultdict
 from collections.abc import Iterable
 from pathlib import Path
-from typing import List, Dict, Any, Optional, Tuple, cast, TYPE_CHECKING, Type, Literal
+from typing import List, Dict, Any, Optional, cast, TYPE_CHECKING, Type, Literal
 from checkov.common.bridgecrew.check_type import CheckType
 
 from checkov.common.bridgecrew.code_categories import CodeCategoryMapping, CodeCategoryType
@@ -36,7 +36,7 @@ from checkov.common.output.sarif import Sarif
 from checkov.common.output.spdx import SPDX
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
-from checkov.common.sast.consts import CDKLanguages, SastLanguages
+from checkov.common.sast.consts import CDKLanguages
 from checkov.common.typing import _ExitCodeThresholds, _BaseRunner, _ScaExitCodeThresholds, LibraryGraph
 from checkov.common.util import data_structures_utils
 from checkov.common.util.banner import tool as tool_name

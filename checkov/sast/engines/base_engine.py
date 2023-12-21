@@ -1,5 +1,5 @@
 from abc import abstractmethod, ABC
-from typing import List, Optional, Set
+from typing import List, Set
 from checkov.common.output.report import Report
 from checkov.common.sast.consts import CDKLanguages, SastLanguages
 from checkov.sast.checks_infra.base_registry import Registry

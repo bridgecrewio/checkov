@@ -8,12 +8,12 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import BaseRunner
-from checkov.common.sast.consts import SUPPORT_FILE_EXT, FILE_EXT_TO_SAST_LANG, CDKLanguages, SastLanguages
+from checkov.common.sast.consts import SUPPORT_FILE_EXT, FILE_EXT_TO_SAST_LANG, CDKLanguages
 from checkov.runner_filter import RunnerFilter
 from checkov.sast.checks_infra.base_registry import CDK_CHECKS_DIR_PATH, Registry
 from checkov.sast.engines.prisma_engine import PrismaEngine
 
-from typing import List, Optional, Set
+from typing import List, Optional
 
 logger = logging.getLogger(__name__)
 

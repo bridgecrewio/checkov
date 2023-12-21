@@ -45,8 +45,9 @@ class Match(BaseModel):
     metadata: MatchMetadata  # noqa: CCE003
     minimized_ast: str  # noqa: CCE003
 
+
 class RuleMatchMetadata(BaseModel):
-    framework: Optional[str] = '' # noqa: CCE003
+    framework: Optional[str] = ''  # noqa: CCE003
 
 
 class RuleMatch(BaseModel):

@@ -617,7 +617,7 @@ class BcPlatformIntegration:
                 BcPlatformIntegration._delete_code_block_from_sast_report(cdk_scan_reports)
 
         persist_checks_results(cdk_scan_reports, self.s3_client, self.bucket, self.repo_path)  # type: ignore
-    
+
     def persist_scan_results(self, scan_reports: list[Report]) -> None:
         """
         Persist checkov's scan result into bridgecrew's platform.
