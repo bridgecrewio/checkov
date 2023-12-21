@@ -14,7 +14,7 @@ class SastRecord(Record):
                  check_name: str,
                  check_result: _CheckResult,
                  code_block: List[Tuple[int, str]],
-                 data_flow: List[Flow],
+                 data_flow: List[Tuple[int, str]],
                  file_path: str,
                  file_line_range: List[int],
                  resource: str,
@@ -45,6 +45,7 @@ class SastRecord(Record):
         self.owasp = owasp
         self.show_severity = show_severity
         self.dataflow = data_flow
+
 
     def to_string(self, compact: bool = False, use_bc_ids: bool = False) -> str:
         status = ""
