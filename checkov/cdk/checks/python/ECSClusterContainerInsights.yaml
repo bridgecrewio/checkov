@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_65
   name: Ensure container insights are enabled on ECS cluster
   category: LOGGING
+  framework: cdk
 scope:
   languages:
     - python

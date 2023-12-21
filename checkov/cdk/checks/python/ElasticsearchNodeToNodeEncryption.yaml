@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_6
   name: Ensure all Elasticsearch has node-to-node encryption enabled
   category: ENCRYPTION
+  framework: cdk
 scope:
   languages:
     - python

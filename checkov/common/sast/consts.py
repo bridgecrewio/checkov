@@ -16,6 +16,18 @@ class SastLanguages(Enum):
     JAVASCRIPT = 'javascript'
 
 
+class CDKLanguages(Enum):
+    @classmethod
+    def list(cls) -> List[Any]:
+        return list(map(lambda c: c.value, cls))
+
+    @classmethod
+    def set(cls) -> Set["CDKLanguages"]:
+        return set(cls)
+
+    PYTHON = 'python'
+
+
 class BqlVersion(str, Enum):
     def __str__(self) -> str:
         return self.value

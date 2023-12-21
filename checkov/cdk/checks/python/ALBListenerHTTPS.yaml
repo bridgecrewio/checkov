@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_2
   name: Ensure EFS is securely encrypted
   category: ENCRYPTION
+  framework: cdk
 scope:
   languages:
     - python

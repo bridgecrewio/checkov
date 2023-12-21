@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_59
   name: Ensure there is no open access to back-end resources through API
   category: GENERAL_SECURITY
+  framework: cdk
 scope:
   languages:
     - python

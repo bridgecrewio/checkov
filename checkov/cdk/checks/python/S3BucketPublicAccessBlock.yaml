@@ -3,6 +3,7 @@ metadata:
   id: CKV2_AWS_6
   name: Ensure that S3 bucket has a Public Access block
   category: NETWORKING
+  framework: cdk
 scope:
   languages:
     - python
