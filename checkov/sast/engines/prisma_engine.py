@@ -381,7 +381,7 @@ class PrismaEngine(SastEngine):
         return self._get_all_reports(sast_reports, cdk_reports)
 
     @staticmethod
-    def _update_cdk_report(lang: SastLanguages, cdk_reports: List[CDKReport], sast_report: SastReport, policy_id: str, rule_match: RuleMatch):
+    def _update_cdk_report(lang: SastLanguages, cdk_reports: List[CDKReport], sast_report: SastReport, policy_id: str, rule_match: RuleMatch) -> None:
         if lang not in [c.language for c in cdk_reports]:
             new_cdk_report = PrismaReport(rule_match={lang: {}}, errors=sast_report.sast_report.errors,
                                           profiler=sast_report.sast_report.profiler,
@@ -422,7 +422,7 @@ class PrismaEngine(SastEngine):
         report.skipped_checks = sast_skiped_checks 
 
     @staticmethod
-    def _get_sast_check(sast_report: SastReport, cdk_report: CDKReport, sast_report_checks: List[Any]):
+    def _get_sast_check(sast_report: SastReport, cdk_report: CDKReport, sast_report_checks: List[Any]) -> Any:
         for check in sast_report_checks:
             if sast_report.language == cdk_report.language and check.check_id not in [s.check_id for s in cdk_report.skipped_checks]:
                 return check

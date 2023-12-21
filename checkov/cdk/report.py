@@ -5,11 +5,11 @@ from checkov.common.sast.consts import POLICIES_ERRORS, POLICIES_ERRORS_COUNT, S
 from checkov.sast.prisma_models.report import PrismaReport
 
 class CDKReport(Report):
-    def __init__(self, check_type: str, metadata: Dict[str, Optional[Union[str, int, List[str]]]], language: SastLanguages, cdk_report: Optional[PrismaReport] = None):
+    def __init__(self, check_type: str, metadata: Dict[str, Optional[Union[str, int, List[str]]]], language: SastLanguages, cdk_report: PrismaReport):
         super().__init__(check_type)
         self.metadata = metadata
         self.language: SastLanguages = language
-        self.cdk_report: Optional[PrismaReport] = cdk_report
+        self.cdk_report: PrismaReport = cdk_report
 
     def get_summary(self) -> Dict[str, Union[int, str]]:
         base_summary: Dict[str, Union[int, str]] = super().get_summary()
