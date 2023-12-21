@@ -199,7 +199,7 @@ class RunnerRegistry:
                                                         self.runners if runner.resource_subgraph_map is not None}
         return self.scan_reports
 
-    def _merge_runners(self, runners: list[Tuple[Any]]) -> list[_BaseRunner]:
+    def _merge_runners(self, runners: Any) -> list[_BaseRunner]:
         sast_runner = None
         cdk_runner = None
         merged_runners = []

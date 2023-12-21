@@ -66,7 +66,7 @@ class PrismaEngine(SastEngine):
             (enforcement_threshold, none) if enforcement_threshold else \
             (none, none)
 
-    def get_reports(self, targets: List[str], registry: Registry, languages: Set[SastLanguages], cdk_languages: Optional[List[CDKLanguages]]) -> List[Report]:
+    def get_reports(self, targets: List[str], registry: Registry, languages: Set[SastLanguages], cdk_languages: List[CDKLanguages]) -> List[Report]:
         if not bc_integration.bc_api_key:
             logging.info("The --bc-api-key flag needs to be set to run SAST Prisma Cloud scanning")
             return []
@@ -432,11 +432,11 @@ class PrismaEngine(SastEngine):
         all_reports = []
         for report in sast_reports + cdk_reports:
             if report.check_type.startswith('cdk'):
-                if report.cdk_report.rule_match:
+                if report.cdk_report.rule_match:  # type: ignore
                     all_reports.append(report)
                     continue
             if report.check_type.startswith('sast'):
-                if report.sast_report.rule_match:
+                if report.sast_report.rule_match:  # type: ignore
                     all_reports.append(report)
                     continue
         return all_reports
