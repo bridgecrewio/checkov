@@ -370,24 +370,8 @@ class PrismaEngine(SastEngine):
                     if rule_match.metadata.framework != CDK_FRAMEWORK_PREFIX:
                         sast_rule_matches[policy_id] = rule_match
                         continue
-                    if lang not in [c.language for c in cdk_reports]:
-                        new_cdk_report = PrismaReport(rule_match={lang: {}}, errors=report.sast_report.errors,
-                                                  profiler=report.sast_report.profiler,
-                                                  run_metadata=report.sast_report.run_metadata,
-                                                  imports={}, reachability_report={})
-                        new_report = CDKReport(f'{CDK_FRAMEWORK_PREFIX}_{lang.value}', report.sast_report.run_metadata, lang, new_cdk_report)
-                        cdk_reports.append(new_report)
-                    for cdk_report in cdk_reports:
-                        if cdk_report.language == lang:
-                            cdk_report.cdk_report.rule_match[lang][policy_id] = rule_match
-                            for failed_check in report.failed_checks:
-                                if failed_check.check_id == policy_id:
-                                    cdk_report.failed_checks.append(failed_check)
-                                
-                            for skiped_check in report.skipped_checks:
-                                if skiped_check.check_id == policy_id:
-                                    cdk_report.skipped_checks.append(skiped_check)
-                            break
+                    self._update_cdk_report(lang, cdk_reports, report, policy_id, rule_match)
+                    
                 if sast_rule_matches:
                     report.sast_report.rule_match[lang] = sast_rule_matches
                 else:
@@ -395,6 +379,27 @@ class PrismaEngine(SastEngine):
                 self._update_sast_report_checks(report, cdk_reports)
 
         return self._get_all_reports(sast_reports, cdk_reports)
+
+    @staticmethod
+    def _update_cdk_report(lang: SastLanguages, cdk_reports: List[CDKReport], sast_report: SastReport, policy_id: str, rule_match: RuleMatch):
+        if lang not in [c.language for c in cdk_reports]:
+            new_cdk_report = PrismaReport(rule_match={lang: {}}, errors=sast_report.sast_report.errors,
+                                          profiler=sast_report.sast_report.profiler,
+                                          run_metadata=sast_report.sast_report.run_metadata,
+                                          imports={}, reachability_report={})
+            new_report = CDKReport(f'{CDK_FRAMEWORK_PREFIX}_{lang.value}', sast_report.sast_report.run_metadata, lang, new_cdk_report)
+            cdk_reports.append(new_report)
+        for cdk_report in cdk_reports:
+            if cdk_report.language == lang:
+                cdk_report.cdk_report.rule_match[lang][policy_id] = rule_match
+                for failed_check in sast_report.failed_checks:
+                    if failed_check.check_id == policy_id:
+                        cdk_report.failed_checks.append(failed_check)
+                    
+                for skiped_check in sast_report.skipped_checks:
+                    if skiped_check.check_id == policy_id:
+                        cdk_report.skipped_checks.append(skiped_check)
+                break
 
     def _update_sast_report_checks(self, report: SastReport, cdk_reports: List[CDKReport]) -> None:
         sast_failed_checks = []
@@ -406,19 +411,23 @@ class PrismaEngine(SastEngine):
             return
 
         for cdk_report in cdk_reports:
-            for fail_check in report.failed_checks:
-                if report.language == cdk_report.language and fail_check.check_id not in [f.check_id for f in cdk_report.failed_checks]:
-                    sast_failed_checks.append(fail_check)
-                    break
-
-            for skip_check in report.skipped_checks:
-                if report.language == cdk_report.language and skip_check.check_id not in [s.check_id for s in cdk_report.skipped_checks]:
-                    sast_skiped_checks.append(skip_check)
-                    break
+            fail_check = self._get_sast_check(report, cdk_report, report.failed_checks)
+            if fail_check:
+                sast_failed_checks.append(fail_check)
+            skip_check = self._get_sast_check(report, cdk_report, report.skipped_checks)
+            if skip_check:
+                sast_skiped_checks.append(skip_check)
         
         report.failed_checks = sast_failed_checks
         report.skipped_checks = sast_skiped_checks 
-    
+
+    @staticmethod
+    def _get_sast_check(sast_report: SastReport, cdk_report: CDKReport, sast_report_checks: List[Any]):
+        for check in sast_report_checks:
+            if sast_report.language == cdk_report.language and check.check_id not in [s.check_id for s in cdk_report.skipped_checks]:
+                return check
+        return None
+
     def _get_all_reports(self, sast_reports: List[SastReport], cdk_reports: List[CDKReport]) -> List[Union[SastReport, CDKReport]]:
         all_reports = []
         for report in sast_reports + cdk_reports:
