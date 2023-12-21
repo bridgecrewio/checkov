@@ -198,7 +198,7 @@ class PrismaEngine(SastEngine):
                        report_imports: bool = True,
                        report_reachability: bool = False,
                        remove_default_policies: bool = False,
-                       cdk_languages: Optional[Set[CDKLanguages]] = None) -> Union[List[Report], SastPolicies]:
+                       cdk_languages: Optional[List[CDKLanguages]] = None) -> Union[List[Report], SastPolicies]:
 
         validate_params(languages, source_codes, list_policies)
 
