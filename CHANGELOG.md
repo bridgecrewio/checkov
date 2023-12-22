@@ -1,6 +1,16 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.40...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.42...HEAD)
+
+## [3.1.42](https://github.com/bridgecrewio/checkov/compare/3.1.40...3.1.42) - 2023-12-22
+
+### Feature
+
+- **sast:** Split sast and cdk reports - [#5889](https://github.com/bridgecrewio/checkov/pull/5889)
+
+### Bug Fix
+
+- **terraform:** Fix CKV_Azure_234 - [#5886](https://github.com/bridgecrewio/checkov/pull/5886)
 
 ## [3.1.40](https://github.com/bridgecrewio/checkov/compare/3.1.38...3.1.40) - 2023-12-19
 
