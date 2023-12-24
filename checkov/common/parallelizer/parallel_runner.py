@@ -25,24 +25,24 @@ class ParallelRunner:
     ) -> None:
         self.workers_number = (workers_number if workers_number else os.cpu_count()) or 1
         self.os = platform.system()
-        self.type: str | ParallelizationType = parallelization_type if parallelization_type else self.get_default_parallelization_type()
+        self.type: str | ParallelizationType = parallelization_type if parallelization_type else self.get_default_parallelization_type(self.os)
 
         # ability to override the parallelization_type all over via env param
         custom_type = os.getenv("CHECKOV_PARALLELIZATION_TYPE")
         if custom_type:
             self.type = custom_type
 
-    def get_default_parallelization_type(self) -> str | ParallelizationType:
+    def get_default_parallelization_type(self, operation_system: str) -> str | ParallelizationType:
         if os.getenv("PYCHARM_HOSTED") == "1":
             # PYCHARM_HOSTED env variable equals 1 when debugging via jetbrains IDE.
             # To prevent JetBrains IDE from crashing on debug run sequentially
             type = ParallelizationType.NONE
-        elif self.os == "Windows":
+        elif operation_system == "Windows":
             # 'fork' mode is not supported on 'Windows'
             # 'spawn' mode results in a strange error, which needs to be investigated on an actual Windows machine
             type = ParallelizationType.THREAD
-        elif self.os == "Darwin":
-            # 'fork' mode is not supported on 'Darwin'
+        elif operation_system == "Darwin":
+            # 'fork' throw security errors on Darwin
             # 'spawn' mode results in an error because it erase the memoty for each new process
             type = ParallelizationType.THREAD
         else:
