@@ -33,17 +33,13 @@ class ParallelRunner:
             # PYCHARM_HOSTED env variable equals 1 when debugging via jetbrains IDE.
             # To prevent JetBrains IDE from crashing on debug run sequentially
             self.type = ParallelizationType.NONE
-        elif self.os == "Windows":
+        elif self.os == "Windows" or self.os == "Darwin":
             if self.type in [ParallelizationType.FORK, ParallelizationType.SPAWN]:
-                # 'fork' mode is not supported on 'Windows'
-                # 'spawn' mode results in a strange error, which needs to be investigated on an actual Windows machine
-                # only for those cases we will override to thread, we want to keep the option to use ParallelizationType.None
+                # 'fork' mode is not supported on 'Windows', and has security issues on macOS
+                # 'spawn' mode currently is not supported due to its memory erasure for each new process, which conflicts with the child processes' need for the parent's memory."
+                # only for the cases above cases we will override to thread, we want to keep the option to use ParallelizationType.None
                 self.type = ParallelizationType.THREAD
-        elif self.os == "Darwin":
-            # 'fork' throw security errors on Darwin
-            # 'spawn' mode is not supported yet because it erase the memory for each new process, and currently the child processes needs the parents process memory
-            self.type = ParallelizationType.THREAD
-        # future task - spawn is not working well with frozen mode, so need to ivestigate multiprocessing.freeze_support()
+        # future support - spawn is not working well with frozen mode, need to investigate multiprocessing.freeze_support()
 
     def run_function(
         self,
