@@ -65,12 +65,6 @@ class ParallelRunner:
     def _run_function_multiprocess_fork(
         self, func: Callable[[Any], _T], items: List[Any], group_size: Optional[int]
     ) -> Generator[_T, None, None]:
-        if multiprocessing.current_process().daemon:
-            # can't fork, when already inside a pool
-            for result in self._run_function_multithreaded(func, items):
-                yield result
-            return
-
         if not group_size:
             group_size = int(len(items) / self.workers_number) + 1
         groups_of_items = [items[i: i + group_size] for i in range(0, len(items), group_size)]
