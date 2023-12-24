@@ -21,36 +21,32 @@ _T = TypeVar("_T")
 class ParallelRunner:
     def __init__(
         self, workers_number: int | None = None,
-        parallelization_type: ParallelizationType | None = None
+        parallelization_type: ParallelizationType = ParallelizationType.FORK
     ) -> None:
         self.workers_number = (workers_number if workers_number else os.cpu_count()) or 1
         self.os = platform.system()
         self.type: str | ParallelizationType = parallelization_type if parallelization_type else self.get_default_parallelization_type(self.os)
 
-        # ability to override the parallelization_type all over via env param
         custom_type = os.getenv("CHECKOV_PARALLELIZATION_TYPE")
         if custom_type:
             self.type = custom_type
 
-    def get_default_parallelization_type(self, operation_system: str) -> str | ParallelizationType:
-        if os.getenv("PYCHARM_HOSTED") == "1":
+        if not custom_type and os.getenv("PYCHARM_HOSTED") == "1":
             # PYCHARM_HOSTED env variable equals 1 when debugging via jetbrains IDE.
             # To prevent JetBrains IDE from crashing on debug run sequentially
-            type = ParallelizationType.NONE
-        elif operation_system == "Windows":
+            self.type = ParallelizationType.NONE
+        elif self.os == "Windows":
             # 'fork' mode is not supported on 'Windows'
             # 'spawn' mode results in a strange error, which needs to be investigated on an actual Windows machine
-            type = ParallelizationType.THREAD
-        elif operation_system == "Darwin":
+            self.type = ParallelizationType.THREAD
+        elif self.os == "Darwin":
             # 'fork' throw security errors on Darwin
             # 'spawn' mode results in an error because it erase the memoty for each new process
-            type = ParallelizationType.THREAD
-        else:
-            type = ParallelizationType.FORK
-        if type == ParallelizationType.SPAWN and getattr(sys, 'frozen', False):
+            self.type = ParallelizationType.THREAD
+        
+        if self.type == ParallelizationType.SPAWN and getattr(sys, 'frozen', False):
             # if application is running from a frozen executable, spawn mode is not supported
-            type = ParallelizationType.THREAD
-        return type
+            self.type = ParallelizationType.THREAD
 
     def run_function(
         self,
@@ -58,12 +54,11 @@ class ParallelRunner:
         items: List[Any],
         group_size: Optional[int] = None,
     ) -> Iterable[_T]:
-        # choose the right type for execution
-        if type == ParallelizationType.THREAD:
+        if self.type == ParallelizationType.THREAD:
             return self._run_function_multithreaded(func, items)
-        elif type == ParallelizationType.FORK:
+        elif self.type == ParallelizationType.FORK:
             return self._run_function_multiprocess_fork(func, items, group_size)
-        elif type == ParallelizationType.SPAWN:
+        elif self.type == ParallelizationType.SPAWN:
             return self._run_function_multiprocess_spawn(func, items, group_size)
         else:
             return self._run_function_sequential(func, items)
