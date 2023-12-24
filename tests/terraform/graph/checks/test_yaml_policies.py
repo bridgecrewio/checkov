@@ -148,6 +148,30 @@ class TestYamlPolicies(unittest.TestCase):
     def test_GCPProjectHasNoLegacyNetworks(self):
         self.go("GCPProjectHasNoLegacyNetworks")
 
+    def test_GCPDocumentAIProcessorEncryptedWithCMK(self):
+        self.go("GCPDocumentAIProcessorEncryptedWithCMK")
+
+    def test_GCPDocumentAIWarehouseLocationEncryptedWithCMK(self):
+        self.go("GCPDocumentAIWarehouseLocationEncryptedWithCMK")
+
+    def test_GCPVertexInstanceEncryptedWithCMK(self):
+        self.go("GCPVertexInstanceEncryptedWithCMK")
+    
+    def test_GCPVertexAIEndpointEncryptedWithCMK(self):
+        self.go("GCPVertexAIEndpointEncryptedWithCMK")
+
+    def test_GCPVertexAIFeaturestoreEncryptedWithCMK(self):
+        self.go("GCPVertexAIFeaturestoreEncryptedWithCMK")
+
+    def test_GCPVertexAITensorboardEncryptedWithCMK(self):
+        self.go("GCPVertexAITensorboardEncryptedWithCMK")
+
+    def test_GCPVertexWorkbenchInstanceEncryptedWithCMK(self):
+        self.go("GCPVertexWorkbenchInstanceEncryptedWithCMK")
+
+    def test_GCPVertexWorkbenchInstanceNoPublicIp(self):
+        self.go("GCPVertexWorkbenchInstanceNoPublicIp")
+        
     def test_GCRContainerVulnerabilityScanningEnabled(self):
         self.go("GCRContainerVulnerabilityScanningEnabled")    
 

@@ -1,0 +1,12 @@
+metadata:
+  id: "CKV2_GCP_23"
+  name: "Ensure Document AI Warehouse Location is configured to use a Customer Managed Key (CMK)"
+  category: "ENCRYPTION"
+scope:
+  provider: "GCP"
+definition:
+  resource_types:
+    - google_document_ai_warehouse_location
+  operator: exists
+  attribute: kms_key
+  cond_type: attribute
