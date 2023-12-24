@@ -335,7 +335,7 @@ class Runner(BaseRunner[None, None, None]):
             (file, base_path)
             for file in files_to_scan
         ]
-        results = parallel_runner.run_function(func=Runner._safe_scan, items=items, parallelization_type=ParallelizationType.FORK)
+        results = parallel_runner.run_function(func=Runner._safe_scan, items=items)
 
         for filename, secrets_results in results:
             pbar.set_additional_data({'Current File Scanned': str(filename)})
