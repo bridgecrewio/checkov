@@ -7,7 +7,6 @@ import platform
 from typing import TYPE_CHECKING, Optional, List, Tuple
 
 from detect_secrets.core import scan
-from checkov.common.models.enums import ParallelizationType
 
 from checkov.common.util.stopit import ThreadingTimeout, SignalTimeout, TimeoutException
 from checkov.common.util.decorators import time_it
