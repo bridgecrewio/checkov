@@ -7,7 +7,6 @@ import os
 import platform
 from collections.abc import Iterator, Iterable
 from multiprocessing.pool import Pool
-import sys
 from typing import Any, List, Generator, Callable, Optional, TypeVar, TYPE_CHECKING
 
 from checkov.common.models.enums import ParallelizationType
@@ -35,17 +34,16 @@ class ParallelRunner:
             # To prevent JetBrains IDE from crashing on debug run sequentially
             self.type = ParallelizationType.NONE
         elif self.os == "Windows":
-            # 'fork' mode is not supported on 'Windows'
-            # 'spawn' mode results in a strange error, which needs to be investigated on an actual Windows machine
-            self.type = ParallelizationType.THREAD
+            if self.type in [ParallelizationType.FORK, ParallelizationType.SPAWN]:
+                # 'fork' mode is not supported on 'Windows'
+                # 'spawn' mode results in a strange error, which needs to be investigated on an actual Windows machine
+                # only for those cases we will override to thread, we want to keep the option to use ParallelizationType.None
+                self.type = ParallelizationType.THREAD
         elif self.os == "Darwin":
             # 'fork' throw security errors on Darwin
-            # 'spawn' mode results in an error because it erase the memoty for each new process
+            # 'spawn' mode is not supported yet because it erase the memory for each new process, and currently the child processes needs the parents process memory
             self.type = ParallelizationType.THREAD
-        
-        # if self.type == ParallelizationType.SPAWN and getattr(sys, 'frozen', False):
-            # if application is running from a frozen executable, spawn mode is not supported
-            # TODO: validate multiprocessing.freeze_support() if it's not supported use self.type = ParallelizationType.THREAD
+        # future task - spawn is not working well with frozen mode, so need to ivestigate multiprocessing.freeze_support()
 
     def run_function(
         self,
