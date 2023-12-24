@@ -21,6 +21,7 @@ from checkov.common.output.report import Report
 from checkov.common.sast.consts import SastLanguages
 from checkov.common.sca.reachability.sast_contract.data_fetcher_sast_lib import SastReachabilityDataFetcher
 from checkov.common.typing import _CheckResult
+from checkov.common.typing import _Metadata
 from checkov.common.util.http_utils import request_wrapper
 from checkov.sast.checks_infra.base_registry import Registry
 from checkov.sast.common import get_code_block_from_start, get_data_flow_code_block
@@ -313,13 +314,13 @@ class PrismaEngine(SastEngine):
                     file_line_range = [location.start.row, location.end.row]
                     split_code_block = [line + '\n' for line in location.code_block.split('\n')]
                     code_block = get_code_block_from_start(split_code_block, location.start.row)
-                    data_flow = []
+                    metadata = None
                     if match.metadata.taint_mode is not None:
-                        data_flow = get_data_flow_code_block(match.metadata.taint_mode.data_flow)
+                        metadata = _Metadata(taint_flow=get_data_flow_code_block(match.metadata.taint_mode.data_flow))
 
                     record = SastRecord(check_id=check_id, check_name=check_name, resource="", evaluations={},
                                         check_class="", check_result=check_result, code_block=code_block,
-                                        file_path=file_path, file_line_range=file_line_range, data_flow=data_flow,
+                                        file_path=file_path, file_line_range=file_line_range, metadata=metadata,
                                         file_abs_path=file_abs_path, severity=severity, cwe=check_cwe,
                                         owasp=check_owasp, show_severity=True)
                     report.add_record(record)
