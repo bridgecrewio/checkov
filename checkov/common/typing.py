@@ -40,7 +40,7 @@ class _CheckResult(TypedDict, total=False):
 
 
 class _Metadata(TypedDict, total=False):
-    taint_flow: Optional[List[Tuple[int, str]]] = None
+    taint_flow: Optional[List[Tuple[int, str]]]
 
 
 class _SkippedCheck(TypedDict, total=False):
