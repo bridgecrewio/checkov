@@ -43,9 +43,9 @@ class ParallelRunner:
             # 'spawn' mode results in an error because it erase the memoty for each new process
             self.type = ParallelizationType.THREAD
         
-        if self.type == ParallelizationType.SPAWN and getattr(sys, 'frozen', False):
+        # if self.type == ParallelizationType.SPAWN and getattr(sys, 'frozen', False):
             # if application is running from a frozen executable, spawn mode is not supported
-            self.type = ParallelizationType.THREAD
+            # TODO: validate multiprocessing.freeze_support() if it's not supported use self.type = ParallelizationType.THREAD
 
     def run_function(
         self,
