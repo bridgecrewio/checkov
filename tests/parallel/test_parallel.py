@@ -24,7 +24,7 @@ class TestParallel(unittest.TestCase):
         # fork and spawn is not supporting by Windows
         with unittest.mock.patch('platform.system', return_value='Windows'):
             parallel_runner = ParallelRunner()
-            self.assertEqual(parallel_runner.type, ParallelizationType.THREAD)
+            self.assertEqual(parallel_runner.type, ParallelizationType.FORK)
 
     @patch.dict(os.environ, {'PYCHARM_HOSTED': '0'})
     def test_windows_with_explicitly_to_spawn(self) -> None:
@@ -57,7 +57,7 @@ class TestParallel(unittest.TestCase):
         # fork and spawn is not supporting by macOS
         with unittest.mock.patch('platform.system', return_value='Darwin'):
             parallel_runner = ParallelRunner()
-            self.assertEqual(parallel_runner.type, ParallelizationType.THREAD)
+            self.assertEqual(parallel_runner.type, ParallelizationType.FORK)
 
     @patch.dict(os.environ, {'PYCHARM_HOSTED': '0'})
     def test_mac_with_explicitly_to_spawn(self) -> None:

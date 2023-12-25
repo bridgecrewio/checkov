@@ -28,8 +28,7 @@ class ParallelRunner:
         custom_type = os.getenv("CHECKOV_PARALLELIZATION_TYPE")
         if custom_type:
             self.type = custom_type
-
-        if not custom_type and os.getenv("PYCHARM_HOSTED") == "1":
+        elif os.getenv("PYCHARM_HOSTED") == "1":
             # PYCHARM_HOSTED env variable equals 1 when debugging via jetbrains IDE.
             # To prevent JetBrains IDE from crashing on debug run sequentially
             self.type = ParallelizationType.NONE
@@ -37,7 +36,6 @@ class ParallelRunner:
             if self.type in [ParallelizationType.FORK, ParallelizationType.SPAWN]:
                 # 'fork' mode is not supported on 'Windows', and has security issues on macOS
                 # 'spawn' mode currently is not supported due to its memory erasure for each new process, which conflicts with the child processes' need for the parent's memory."
-                # only for the cases above cases we will override to thread, we want to keep the option to use ParallelizationType.None
                 self.type = ParallelizationType.THREAD
         # future support - spawn is not working well with frozen mode, need to investigate multiprocessing.freeze_support()
 
