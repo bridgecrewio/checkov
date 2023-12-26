@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.43...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.44...HEAD)
+
+## [3.1.44](https://github.com/bridgecrewio/checkov/compare/3.1.43...3.1.44) - 2023-12-26
+
+### Feature
+
+- **sast:** add dataflow to checkov report from sast - [#5892](https://github.com/bridgecrewio/checkov/pull/5892)
 
 ## [3.1.43](https://github.com/bridgecrewio/checkov/compare/3.1.42...3.1.43) - 2023-12-24
 
