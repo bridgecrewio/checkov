@@ -16,7 +16,7 @@ class DLMEventsCrossRegionEncryption(BaseResourceCheck):
             if policy.get("action") and isinstance(policy.get("action"), list):
                 actions = policy.get("action")
                 for idx, action in enumerate(actions):
-                    if action.get("cross_region_copy") and isinstance(action.get("cross_region_copy"), list):
+                    if action != [] and action.get("cross_region_copy") and isinstance(action.get("cross_region_copy"), list):
                         cross = action.get("cross_region_copy")[0]
                         if cross.get("encryption_configuration") and isinstance(cross.get("encryption_configuration"), list):
                             config = cross.get("encryption_configuration")[0]
