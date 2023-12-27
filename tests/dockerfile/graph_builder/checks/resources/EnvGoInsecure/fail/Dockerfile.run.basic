@@ -1,0 +1,30 @@
+FROM golang:1.14
+RUN GOINSECURE=example.com go mod download
+RUN GOINSECURE="example.com" go mod download
+RUN GOINSECURE='example.com' go mod download
+
+RUN GOINSECURE=example.com TEST="lol" go mod download
+RUN GOINSECURE="example.com" TEST='lol' go mod download
+RUN GOINSECURE='example.com' TEST=lol go mod download
+
+RUN LOL=123 GOINSECURE=example.com go mod download
+RUN LOL="123" GOINSECURE="example.com" go mod download
+RUN LOL='123' GOINSECURE='example.com' go mod download
+
+RUN TEST_123="456" GOINSECURE=example.com TEST="lol" go mod download
+RUN TEST_123='456' GOINSECURE="example.com" TEST='lol' go mod download
+RUN TEST_123=456 GOINSECURE='example.com' TEST="lol" go mod download
+
+RUN TEST_123="456" \
+    GOINSECURE=example.com \
+    TEST="lol" \
+    go mod download
+RUN TEST_123='456' \
+    GOINSECURE="example.com" \
+    TEST='lol'\
+     go mod download
+RUN \
+     TEST_123=456\
+     GOINSECURE='example.com' \
+     TEST="lol" \
+     go mod download

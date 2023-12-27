@@ -1,0 +1,13 @@
+FROM golang:1.14
+ENV GOINSECURE example.com
+ENV GOINSECURE=example.com
+ENV GOINSECURE="example.com"
+ENV GOINSECURE='example.com'
+ARG GOINSECURE=example.com
+ARG GOINSECURE="example.com"
+ARG GOINSECURE='example.com'
+ARG GOINSECURE example.com
+ENV LOL=TLS GOINSECURE=example.com
+ENV GOINSECURE=example.com LOL=SSL
+ENV GOINSECURE    example.com
+ARG GOINSECURE    example.com

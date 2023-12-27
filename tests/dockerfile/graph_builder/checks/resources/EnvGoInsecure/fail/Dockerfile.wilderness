@@ -1,0 +1,6 @@
+FROM golang:1.14
+RUN export GOINSECURE=something.example.com,*.example.com && go mod tidy
+ENV GOINSECURE *.eng.example.com
+RUN set -ex echo "downloading modules" \
+    && GOINSECURE=git.example.com/* GOPRIVATE=git.example.com/* go mod vendor
+RUN GOINSECURE=example.com go mod download

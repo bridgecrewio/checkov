@@ -86,6 +86,9 @@ class TestYamlPolicies(TestYamlPoliciesBase):
     def test_RunChpasswd(self):
         self.go("RunChpasswd")
 
+    def test_EnvGoInsecure(self):
+        self.go("EnvGoInsecure")
+
     def test_registry_load(self):
         registry = self.get_checks_registry()
         self.assertGreater(len(registry.checks), 0)

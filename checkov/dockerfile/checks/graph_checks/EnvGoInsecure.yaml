@@ -1,0 +1,19 @@
+metadata:
+  id: "CKV2_DOCKER_18"
+  name: "Ensure that certificate validation isn't disabled for go via the environment variable 'GOINSECURE'"
+  category: "APPLICATION_SECURITY"
+definition:
+  or:
+    - cond_type: attribute
+      resource_types:
+        - RUN
+      attribute: value
+      operator: not_regex_match
+      value: "(.*[\\s;&|]+)?(export\\s+)?(GOINSECURE=(([^\\s]+)|('[^']+')|(\"[^s\"]+\"))).*"
+    - cond_type: attribute
+      resource_types:
+        - ARG
+        - ENV
+      attribute: value
+      operator: not_regex_match
+      value: "(.*\\s+)?(GOINSECURE(=|\\s+)[^\\s]+).*"
