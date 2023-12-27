@@ -1,0 +1,11 @@
+metadata:
+  id: "CKV2_GCP_36"
+  name: "Ensure Vertex AI runtime is private"
+  category: "NETWORKING"
+definition:
+  cond_type: attribute
+  resource_types:
+  - google_notebooks_runtime
+  attribute: virtual_machine.virtual_machine_config.internal_ip_only
+  operator: jsonpath_equals
+  value: "true"

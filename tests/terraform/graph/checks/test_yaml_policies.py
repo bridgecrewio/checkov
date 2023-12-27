@@ -324,6 +324,30 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_GCPContainerRegistryReposAreNotPubliclyAccessible(self):
         self.go("GCPContainerRegistryReposAreNotPubliclyAccessible")
+    
+    def test_GCPDialogFlowAgentLoggingEnabled(self):
+        self.go("GCPDialogFlowAgentLoggingEnabled")
+    
+    def test_GCPDialogFlowCxAgentLoggingEnabled(self):
+        self.go("GCPDialogFlowCxAgentLoggingEnabled")
+
+    def test_GCPDialogFlowCxWebhookLoggingEnabled(self):
+        self.go("GCPDialogFlowCxWebhookLoggingEnabled")
+
+    def test_GCPVertexAIPrivateEndpoint(self):
+        self.go("GCPVertexAIPrivateEndpoint")
+    
+    def test_GCPVertexAIPrivateIndexEndpoint(self):
+        self.go("GCPVertexAIPrivateIndexEndpoint")
+
+    def test_GCPTpuV2VmPrivateEndpoint(self):
+        self.go("GCPTpuV2VmPrivateEndpoint")
+    
+    def test_GCPVertexRuntimePrivate(self):
+        self.go("GCPVertexRuntimePrivate")
+
+    def test_GCPVertexRuntimeEncryptedWithCMK(self):
+        self.go("GCPVertexRuntimeEncryptedWithCMK")
 
     def test_S3BucketVersioning(self):
         self.go("S3BucketVersioning")
