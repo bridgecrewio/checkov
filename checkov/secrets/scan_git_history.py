@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
 os.environ["GIT_PYTHON_REFRESH"] = "quiet"
 try:
-    from git import Repo, Tree  # type: ignore
+    from git import Repo, Tree, GitCommandError  # type: ignore
 
     git_import_error = None
 except ImportError as e:
@@ -67,24 +67,28 @@ class GitHistoryScanner:
         return scanned
 
     def _scan_history(self, last_commit_scanned: Optional[str] = '') -> bool:
-        commits_diff: List[Commit] = []
-        if not last_commit_scanned:
-            first_commit_diff = self._get_first_commit()
-            if first_commit_diff:
-                commits_diff.append(self._get_first_commit())
-        commits_diff.extend(self._get_commits_diff(last_commit_sha=last_commit_scanned))
-        logging.info(f"[_scan_history] got {len(commits_diff)} files diffs in {self.commits_count} commits")
-        if self.commits_count > MIN_SPLIT:
-            logging.info("[_scan_history] starting parallel scan")
-            self._run_scan_parallel(commits_diff)
-        else:
-            logging.info("[_scan_history] starting single scan")
-            self.raw_store.extend(self._run_scan_one_bulk(commits_diff))
+        try:
+            commits_diff: List[Commit] = []
+            if not last_commit_scanned:
+                first_commit_diff = self._get_first_commit()
+                if first_commit_diff:
+                    commits_diff.append(self._get_first_commit())
+            commits_diff.extend(self._get_commits_diff(last_commit_sha=last_commit_scanned))
+            logging.info(f"[_scan_history] got {len(commits_diff)} files diffs in {self.commits_count} commits")
+            if self.commits_count > MIN_SPLIT:
+                logging.info("[_scan_history] starting parallel scan")
+                self._run_scan_parallel(commits_diff)
+            else:
+                logging.info("[_scan_history] starting single scan")
+                self.raw_store.extend(self._run_scan_one_bulk(commits_diff))
 
-        if not self.raw_store:  # scanned nothing
+            if not self.raw_store:  # scanned nothing
+                return False
+
+            self._process_raw_store()
+        except GitCommandError as exc:
+            logging.warning("[_scan_history] Got GitCommandError Exception", extra={"exception": str(exc), "status": exc.status})
             return False
-
-        self._process_raw_store()
         return True
 
     def _process_raw_store(self) -> None:
