@@ -924,7 +924,6 @@ class BcPlatformIntegration:
             logging.warning(f"Failed to get the customer run config from {self.platform_run_config_url}", exc_info=True)
             raise
 
-
     def get_reachability_run_config(self) -> Union[Dict[str, Any], None]:
         if self.skip_download is True:
             logging.debug("Skipping customer run config API call")
@@ -988,7 +987,9 @@ class BcPlatformIntegration:
             if not self.http:
                 logging.error("HTTP manager was not correctly created")
                 raise
-
+        except Exception:
+            pass
+        try:
             platform_type = PRISMA_PLATFORM if self.is_prisma_integration() else BRIDGECREW_PLATFORM
             url = f"{self.runtime_run_config_url}?repoId={self.repo_id}"
             request = self.http.request("GET", url,
@@ -1002,6 +1003,7 @@ class BcPlatformIntegration:
 
             self.runtime_run_config_response = json.loads(request.data.decode("utf8"))
         except Exception:
+            logging.debug(f"The repo doesn't have runtime indications")
             pass
 
     def get_prisma_build_policies(self, policy_filter: str) -> None:
