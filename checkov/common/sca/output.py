@@ -621,8 +621,7 @@ def add_to_report_sca_data(
         sca_details: SCADetails | None = None,
         report_type: str | None = None,
         inline_suppressions: _ScaSuppressions | None = None,
-        file_line_range: list[int] | None = None,
-        is_repo_in_runtime: bool | None = None
+        file_line_range: list[int] | None = None
 ) -> None:
     inline_suppressions_maps: _ScaSuppressionsMaps | None = get_inline_suppressions_map(inline_suppressions)
     packages_map: dict[str, dict[str, Any]] = {get_package_alias(p["name"], p["version"]): p for p in packages}
