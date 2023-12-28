@@ -965,7 +965,7 @@ class BcPlatformIntegration:
                             exc_info=True)
             raise
 
-    def get_runtime_run_config(self) -> Union[Dict[str, Any], None]:
+    def get_runtime_run_config(self) -> None:
         try:
             if self.skip_download is True:
                 logging.debug("Skipping customer run config API call")
