@@ -445,6 +445,8 @@ class Checkov:
                           '(but note that this will not include any custom platform configurations or policy metadata).',
                           file=sys.stderr)
                     self.exit_run()
+
+            bc_integration.get_runtime_run_config()
             bc_integration.setup_on_prem()
             if bc_integration.on_prem:
                 # disable --support for on-premises integrations
