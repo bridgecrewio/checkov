@@ -1001,7 +1001,7 @@ class BcPlatformIntegration:
 
             self.runtime_run_config_response = json.loads(request.data.decode("utf8"))
         except Exception:
-            logging.warning('could not get runtime info for this repo')
+            logging.debug('could not get runtime info for this repo')
 
     def get_prisma_build_policies(self, policy_filter: str) -> None:
         """

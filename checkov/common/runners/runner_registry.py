@@ -449,10 +449,11 @@ class RunnerRegistry:
             if not config.quiet:
                 print(f"{self.banner}\n")
 
-            if (bc_integration.runtime_run_config_response and bc_integration.runtime_run_config_response.get('isRepoInRuntime', False)):
-                print(f"The '{bc_integration.repo_id}' repository was discovered In a running environment\n")
-
             cli_output = ''
+
+            if (bc_integration.runtime_run_config_response and bc_integration.runtime_run_config_response.get('isRepoInRuntime', False)):
+                cli_output += f"The '{bc_integration.repo_id}' repository was discovered In a running environment\n\n"
+
             for report in cli_reports:
                 cli_output += report.print_console(
                     is_quiet=config.quiet,
