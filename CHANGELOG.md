@@ -1,6 +1,16 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.44...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.46...HEAD)
+
+## [3.1.46](https://github.com/bridgecrewio/checkov/compare/3.1.44...3.1.46) - 2023-12-28
+
+### Feature
+
+- **terraform:** CLI output - add indication if repository was discovered In a running environment - [#5908](https://github.com/bridgecrewio/checkov/pull/5908)
+
+### Bug Fix
+
+- **sast:** add missing field in MatchMetadata - [#5907](https://github.com/bridgecrewio/checkov/pull/5907)
 
 ## [3.1.44](https://github.com/bridgecrewio/checkov/compare/3.1.43...3.1.44) - 2023-12-26
 
