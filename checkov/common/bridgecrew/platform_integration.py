@@ -56,7 +56,6 @@ from checkov.common.util.http_utils import (
     REQUEST_RETRIES,
 )
 from checkov.common.util.type_forcers import convert_prisma_policy_filter_to_dict, convert_str_to_bool
-from checkov.sast.prisma_models.report import PrismaReport
 from checkov.version import version as checkov_version
 
 if TYPE_CHECKING:
@@ -626,8 +625,7 @@ class BcPlatformIntegration:
             for report in reports:
                 if report.check_type == f'sast_{lang}':
                     continue
-                sast_report = PrismaReport(rule_match={lang: {}}, errors={}, profiler={}, run_metadata={}, imports={}, reachability_report={} )
-                sast_reports[f'sast_{lang}'] = sast_report.model_dump(mode='json')
+                sast_reports[f'sast_{lang}'] = report.empty_sast_report.model_dump(mode='json')
 
         persist_checks_results(sast_reports, self.s3_client, self.bucket, self.repo_path)  # type: ignore
         persist_checks_results(cdk_scan_reports, self.s3_client, self.bucket, self.repo_path)  # type: ignore
