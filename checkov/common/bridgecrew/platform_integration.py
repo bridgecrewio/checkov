@@ -625,7 +625,7 @@ class BcPlatformIntegration:
             for report in reports:
                 if report.check_type == f'sast_{lang}':
                     continue
-                sast_reports[f'sast_{lang}'] = report.empty_sast_report.model_dump(mode='json')
+                sast_reports[f'sast_{lang}'] = report.empty_sast_report.model_dump(mode='json')  # type: ignore
 
         persist_checks_results(sast_reports, self.s3_client, self.bucket, self.repo_path)  # type: ignore
         persist_checks_results(cdk_scan_reports, self.s3_client, self.bucket, self.repo_path)  # type: ignore
