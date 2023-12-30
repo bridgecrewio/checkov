@@ -622,9 +622,11 @@ class BcPlatformIntegration:
         sast_reports = {}
         for check_type, report in cdk_scan_reports.items():
             lang = check_type.split('_')[1]
+            found_sast_report = False
             for report in reports:
                 if report.check_type == f'sast_{lang}':
-                    continue
+                    found_sast_report = True
+            if not found_sast_report:
                 sast_reports[f'sast_{lang}'] = report.empty_sast_report.model_dump(mode='json')  # type: ignore
 
         persist_checks_results(sast_reports, self.s3_client, self.bucket, self.repo_path)  # type: ignore
