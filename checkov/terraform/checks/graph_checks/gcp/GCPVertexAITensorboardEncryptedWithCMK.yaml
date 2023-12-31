@@ -1,0 +1,12 @@
+metadata:
+  id: "CKV2_GCP_26"
+  name: "Ensure Vertex AI tensorboard uses a Customer Managed Key (CMK)"
+  category: "ENCRYPTION"
+scope:
+  provider: "GCP"
+definition:
+  resource_types:
+    - google_vertex_ai_tensorboard
+  operator: exists
+  attribute: encryption_spec
+  cond_type: attribute

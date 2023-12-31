@@ -1,0 +1,7 @@
+pass:
+  - "google_workbench_instance.instance_good"
+  - "google_workbench_instance.instance_good_nodata"
+fail:
+  - "google_workbench_instance.instance_bad"
+  - "google_workbench_instance.instance_bad_nodata"
+  - "google_workbench_instance.instance_bad_nogcesetup"

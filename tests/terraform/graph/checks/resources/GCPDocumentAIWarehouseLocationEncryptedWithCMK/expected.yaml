@@ -1,0 +1,4 @@
+pass:
+  - "google_document_ai_warehouse_location.location_good"
+fail:
+  - "google_document_ai_warehouse_location.location_bad"
