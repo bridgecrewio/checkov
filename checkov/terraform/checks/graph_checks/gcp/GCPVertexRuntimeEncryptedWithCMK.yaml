@@ -1,0 +1,10 @@
+metadata:
+  id: "CKV2_GCP_35"
+  name: "Ensure Vertex AI runtime is encrypted with a Customer Managed Key (CMK)"
+  category: "ENCRYPTION"
+definition:
+  cond_type: attribute
+  resource_types:
+  - google_notebooks_runtime
+  attribute: virtual_machine.virtual_machine_config.encryption_config.kms_key
+  operator: jsonpath_exists

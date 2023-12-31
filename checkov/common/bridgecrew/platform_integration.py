@@ -114,6 +114,7 @@ class BcPlatformIntegration:
         self.prisma_policy_filters_url: str | None = None
         self.setup_api_urls()
         self.customer_run_config_response = None
+        self.runtime_run_config_response = None
         self.prisma_policies_response = None
         self.public_metadata_response = None
         self.use_s3_integration = False
@@ -205,6 +206,7 @@ class BcPlatformIntegration:
         self.integrations_api_url = f"{self.api_url}/api/v1/integrations/types/checkov"
         self.platform_run_config_url = f"{self.api_url}/api/v2/checkov/runConfiguration"
         self.reachability_run_config_url = f"{self.api_url}/api/v2/checkov/reachabilityRunConfiguration"
+        self.runtime_run_config_url = f"{self.api_url}/api/v1/runtime-images/repositories"
 
     def is_prisma_integration(self) -> bool:
         if self.bc_api_key and not self.is_bc_token(self.bc_api_key):
@@ -616,6 +618,18 @@ class BcPlatformIntegration:
             if self.on_prem:
                 BcPlatformIntegration._delete_code_block_from_sast_report(cdk_scan_reports)
 
+        # In case we dont have sast report - create empty one
+        sast_reports = {}
+        for check_type, report in cdk_scan_reports.items():
+            lang = check_type.split('_')[1]
+            found_sast_report = False
+            for report in reports:
+                if report.check_type == f'sast_{lang}':
+                    found_sast_report = True
+            if not found_sast_report:
+                sast_reports[f'sast_{lang}'] = report.empty_sast_report.model_dump(mode='json')  # type: ignore
+
+        persist_checks_results(sast_reports, self.s3_client, self.bucket, self.repo_path)  # type: ignore
         persist_checks_results(cdk_scan_reports, self.s3_client, self.bucket, self.repo_path)  # type: ignore
 
     def persist_scan_results(self, scan_reports: list[Report]) -> None:
@@ -962,6 +976,44 @@ class BcPlatformIntegration:
             logging.warning(f"Failed to get the reachability run config from {self.reachability_run_config_url}",
                             exc_info=True)
             raise
+
+    def get_runtime_run_config(self) -> None:
+        try:
+            if self.skip_download is True:
+                logging.debug("Skipping customer run config API call")
+                raise
+
+            if not self.bc_api_key or not self.is_integration_configured():
+                raise Exception(
+                    "Tried to get customer run config, but the API key was missing or the integration was not set up")
+
+            if not self.bc_source:
+                logging.error("Source was not set")
+                raise
+
+            token = self.get_auth_token()
+            headers = merge_dicts(get_auth_header(token),
+                                  get_default_get_headers(self.bc_source, self.bc_source_version))
+
+            self.setup_http_manager()
+            if not self.http:
+                logging.error("HTTP manager was not correctly created")
+                raise
+
+            platform_type = PRISMA_PLATFORM if self.is_prisma_integration() else BRIDGECREW_PLATFORM
+            url = f"{self.runtime_run_config_url}?repoId={self.repo_id}"
+            request = self.http.request("GET", url,
+                                        headers=headers)  # type:ignore[no-untyped-call]
+            if request.status != 200:
+                error_message = get_auth_error_message(request.status, self.is_prisma_integration(), False)
+                logging.error(error_message)
+                raise BridgecrewAuthError(error_message)
+
+            logging.debug(f"Got run config from {platform_type} platform")
+
+            self.runtime_run_config_response = json.loads(request.data.decode("utf8"))
+        except Exception:
+            logging.debug('could not get runtime info for this repo')
 
     def get_prisma_build_policies(self, policy_filter: str) -> None:
         """

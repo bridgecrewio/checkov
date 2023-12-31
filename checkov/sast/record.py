@@ -6,6 +6,7 @@ from checkov.common.bridgecrew.severities import Severity
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
 from checkov.common.typing import _CheckResult
+from checkov.common.typing import _Metadata
 
 
 class SastRecord(Record):
@@ -21,6 +22,7 @@ class SastRecord(Record):
                  check_class: str,
                  file_abs_path: str,
                  severity: Optional[Severity],
+                 metadata: Optional[_Metadata] = None,
                  bc_check_id: Optional[str] = None,
                  cwe: Optional[Union[List[str], str]] = None,
                  owasp: Optional[Union[List[str], str]] = None,
@@ -43,6 +45,7 @@ class SastRecord(Record):
         self.cwe = cwe
         self.owasp = owasp
         self.show_severity = show_severity
+        self.metadata = metadata
 
     def to_string(self, compact: bool = False, use_bc_ids: bool = False) -> str:
         status = ""
@@ -72,7 +75,7 @@ class SastRecord(Record):
                                                                   self.caller_file_line_range)
         evaluation_message = self.get_evaluation_string(self.evaluations, self.code_block)
 
-        status_message = colored("\t{} for file - {}\n".format(status, file_details), status_color)  # type: ignore
+        status_message = colored("\t{} for file - {}\n".format(status, file_details), status_color)
 
         cwe_message = colored(f'\t{self.cwe}\n') if self.cwe else ''
 

@@ -1,0 +1,4 @@
+pass:
+  - "google_vertex_ai_featurestore.featurestore_good"
+fail:
+  - "google_vertex_ai_featurestore.featurestore_bad"
