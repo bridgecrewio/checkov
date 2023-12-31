@@ -10,7 +10,7 @@ from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME
 from checkov.common.output.report import Report
 from checkov.common.sast.consts import SastLanguages
 from checkov.sast.report import SastReport
-from checkov.sast.prisma_models.report import Package, File, Function, PrismaReport
+from checkov.common.sast.report_types import Package, File, Function, PrismaReport
 
 
 class TestVulnerabilitiesIntegration(unittest.TestCase):

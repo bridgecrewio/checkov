@@ -6,7 +6,7 @@ from checkov.common.bridgecrew.severities import Severity
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
 from checkov.common.typing import _CheckResult
-from checkov.sast.prisma_models.report import MatchMetadata
+from checkov.common.sast.report_types import MatchMetadata
 
 
 class SastRecord(Record):

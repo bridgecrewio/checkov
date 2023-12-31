@@ -2,7 +2,7 @@ from typing import Dict, Union, List, Optional
 
 from checkov.common.output.report import Report
 from checkov.common.sast.consts import POLICIES_ERRORS, POLICIES_ERRORS_COUNT, SOURCE_FILES_COUNT, POLICY_COUNT, SastLanguages
-from checkov.sast.prisma_models.report import PrismaReport
+from checkov.common.sast.report_types import PrismaReport
 
 
 class CDKReport(Report):

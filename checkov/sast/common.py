@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import List, Tuple
 
 from checkov.common.output.record import PLACEHOLDER_LINE
-from checkov.sast.prisma_models.report import MatchLocation
+from checkov.common.sast.report_types import MatchLocation
 
 
 def get_data_flow_code_block(data_flow: List[MatchLocation]) -> List[Tuple[int, str]]:

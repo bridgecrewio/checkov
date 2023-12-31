@@ -71,7 +71,7 @@ from checkov.kustomize.runner import Runner as kustomize_runner
 from checkov.logging_init import log_stream as logs_stream
 from checkov.openapi.runner import Runner as openapi_runner
 from checkov.runner_filter import RunnerFilter
-from checkov.sast.prisma_models.report import serialize_reachability_report
+from checkov.common.sast.report_types import serialize_reachability_report
 from checkov.sast.report import SastData, SastReport
 from checkov.sast.runner import Runner as sast_runner
 from checkov.sca_image.runner import Runner as sca_image_runner

@@ -28,7 +28,7 @@ from checkov.sast.common import get_code_block_from_start, get_data_flow_code_bl
 from checkov.sast.engines.base_engine import SastEngine
 from checkov.sast.prisma_models.library_input import LibraryInput
 from checkov.sast.prisma_models.policies_list import SastPolicies
-from checkov.sast.prisma_models.report import PrismaReport, RuleMatch, create_empty_report
+from checkov.common.sast.report_types import PrismaReport, RuleMatch, create_empty_report
 from checkov.sast.record import SastRecord
 from checkov.sast.report import SastReport
 from checkov.cdk.report import CDKReport
