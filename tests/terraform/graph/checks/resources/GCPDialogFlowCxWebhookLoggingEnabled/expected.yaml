@@ -1,0 +1,5 @@
+pass:
+  - "google_dialogflow_cx_webhook.good_webhook"
+fail:
+  - "google_dialogflow_cx_webhook.bad_webhook"
+  - "google_dialogflow_cx_webhook.bad_unset_webhook"
