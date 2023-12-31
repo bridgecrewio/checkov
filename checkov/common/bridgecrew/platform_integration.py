@@ -618,6 +618,18 @@ class BcPlatformIntegration:
             if self.on_prem:
                 BcPlatformIntegration._delete_code_block_from_sast_report(cdk_scan_reports)
 
+        # In case we dont have sast report - create empty one
+        sast_reports = {}
+        for check_type, report in cdk_scan_reports.items():
+            lang = check_type.split('_')[1]
+            found_sast_report = False
+            for report in reports:
+                if report.check_type == f'sast_{lang}':
+                    found_sast_report = True
+            if not found_sast_report:
+                sast_reports[f'sast_{lang}'] = report.empty_sast_report.model_dump(mode='json')  # type: ignore
+
+        persist_checks_results(sast_reports, self.s3_client, self.bucket, self.repo_path)  # type: ignore
         persist_checks_results(cdk_scan_reports, self.s3_client, self.bucket, self.repo_path)  # type: ignore
 
     def persist_scan_results(self, scan_reports: list[Report]) -> None:
