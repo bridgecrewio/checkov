@@ -1,0 +1,11 @@
+metadata:
+  id: "CKV2_GCP_34"
+  name: "Ensure Vertex AI index endpoint is private"
+  category: "NETWORKING"
+definition:
+  cond_type: attribute
+  resource_types:
+  - google_vertex_ai_index_endpoint
+  attribute: public_endpoint_enabled
+  operator: not_equals
+  value: "true"

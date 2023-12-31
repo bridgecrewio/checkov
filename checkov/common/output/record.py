@@ -214,7 +214,7 @@ class Record:
         caller_file_details = self.get_caller_file_details_string(self.caller_file_path, self.caller_file_line_range)
         evaluation_message = self.get_evaluation_string(self.evaluations, self.code_block)
 
-        status_message = colored("\t{} for resource: {}\n".format(status, self.resource), status_color)  # type: ignore
+        status_message = colored("\t{} for resource: {}\n".format(status, self.resource), status_color)
 
         if self.check_result["result"] == CheckResult.FAILED and code_lines and not compact:
             return f"{check_message}{status_message}{severity_message}{detail}{file_details}{caller_file_details}{guideline_message}{code_lines}{evaluation_message}"

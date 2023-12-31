@@ -1,0 +1,4 @@
+pass:
+  - "google_vertex_ai_endpoint.endpoint_good"
+fail:
+  - "google_vertex_ai_endpoint.endpoint_bad"
