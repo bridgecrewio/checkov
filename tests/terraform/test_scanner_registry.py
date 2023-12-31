@@ -10,6 +10,12 @@ from pathlib import Path
 
 class TestScannerRegistry(unittest.TestCase):
 
+    def setUp(self):
+        self.checks = registry.checks
+
+    def tearDown(self) -> None:
+        registry.checks = self.checks
+
     def test_num_of_scanners(self):
         scanners_counter = 0
         for key in list(registry.checks.keys()):

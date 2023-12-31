@@ -2,7 +2,7 @@ import pytest
 
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
-
+from checkov.terraform.checks.resource.registry import resource_registry as registry
 
 class TestStaticCheck(BaseResourceCheck):
     # for pytest not to collect this class as tests
@@ -24,6 +24,11 @@ class TestStaticCheck(BaseResourceCheck):
             return CheckResult.FAILED
 
         return CheckResult.UNKNOWN
+
+@pytest.fixture(scope="module", autouse=True)
+def remove_check():
+    yield
+    del registry.checks["ckv_test"]
 
 
 @pytest.mark.parametrize(

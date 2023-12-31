@@ -12,6 +12,7 @@ from parameterized import parameterized_class
 # do not remove - prevents circular import
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import BcSeverities, Severities
+from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.db_connectors.rustworkx.rustworkx_db_connector import RustworkxConnector
@@ -31,6 +32,7 @@ class TestRunnerValid(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.orig_checks = deepcopy(resource_registry.checks)
+        cls.orig_all_registered_checks = deepcopy(BaseCheckRegistry._BaseCheckRegistry__all_registered_checks)
         cls.db_connector = cls.db_connector
 
     def test_py_graph_check(self):
@@ -242,6 +244,7 @@ class TestRunnerValid(unittest.TestCase):
         valid_plan_path = current_dir + "/resources/plan/tfplan.json"
         runner = Runner()
         runner.graph_registry.checks = []
+
         report = runner.run(
             root_folder=None,
             files=[valid_plan_path],
@@ -913,6 +916,7 @@ class TestRunnerValid(unittest.TestCase):
 
     def tearDown(self) -> None:
         resource_registry.checks = deepcopy(self.orig_checks)
+        BaseCheckRegistry._BaseCheckRegistry__all_registered_checks = deepcopy(self.orig_all_registered_checks)
 
 
 if __name__ == "__main__":
