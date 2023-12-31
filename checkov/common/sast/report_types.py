@@ -47,7 +47,7 @@ class MatchMetadata(BaseModel):
         if hasattr(self, 'taint_mode') and self.taint_mode:
             metadata['taint_mode'] = self.taint_mode
         if hasattr(self, 'code_locations') and self.code_locations:
-            metadata['code_locations'] = self.code_locations
+            metadata['code_locations'] = self.code_locations  # type: ignore
 
         return metadata
 
