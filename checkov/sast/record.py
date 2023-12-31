@@ -68,7 +68,9 @@ class SastRecord(Record):
 
         severity_message = f'\tSeverity: {self.severity.name}\n' if self.severity and self.show_severity else ''
 
-        file_details = f'{self.file_path}:{" -> ".join([str(x) for x in self.file_line_range])}'
+        file_details = f'{self.file_path}:{" -> ".join([str(x) for x in self.file_line_range])}' if \
+            self.file_line_range[0] != self.file_line_range[-1] else \
+            f'{self.file_path}:{str(self.file_line_range[0])}'
         code_lines = self.get_code_lines_string(self.code_block)
         detail = self.get_details_string(self.details)
         caller_file_details = self.get_caller_file_details_string(self.caller_file_path,

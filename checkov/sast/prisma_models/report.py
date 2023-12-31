@@ -28,32 +28,29 @@ class MatchLocation(BaseModel):
     def json(self) -> Dict[str, Any]:
         return self.__dict__
 
+
 class DataFlow(BaseModel):
     data_flow: List[MatchLocation]  # noqa: CCE003
 
     @model_serializer
-    def json(self) -> Dict[str, Any]:
+    def json(self) -> list:
         return self.data_flow
 
+
 class MatchMetadata(BaseModel):
-    metavariables: Optional[Dict[str, DataFlow]]  # noqa: CCE003
-    variables: Optional[Dict[str, DataFlow]]  # noqa: CCE003
     taint_mode: Optional[DataFlow] = None  # noqa: CCE003
     code_locations: Optional[List[MatchLocation]] = None  # noqa: CCE003
 
     @model_serializer
     def json(self) -> Dict[str, Any]:
         metadata = {}
-        if hasattr(self, 'metavariables') and self.metavariables:
-            metadata['metavariables'] = self.metavariables
-        if hasattr(self, 'variables') and self.variables:
-            metadata['variables'] = self.variables
         if hasattr(self, 'taint_mode') and self.taint_mode:
             metadata['taint_mode'] = self.taint_mode
         if hasattr(self, 'code_locations') and self.code_locations:
             metadata['code_locations'] = self.code_locations
 
         return metadata
+
 
 class Match(BaseModel):
     exact_hash: str  # noqa: CCE003
