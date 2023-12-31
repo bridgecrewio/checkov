@@ -24,7 +24,7 @@ from checkov.common.sca.reachability.sast_contract.data_fetcher_sast_lib import 
 from checkov.common.typing import _CheckResult
 from checkov.common.util.http_utils import request_wrapper
 from checkov.sast.checks_infra.base_registry import Registry
-from checkov.sast.common import get_code_block_from_start, get_data_flow_code_block
+from checkov.sast.common import get_code_block_from_start
 from checkov.sast.engines.base_engine import SastEngine
 from checkov.sast.prisma_models.library_input import LibraryInput
 from checkov.sast.prisma_models.policies_list import SastPolicies
