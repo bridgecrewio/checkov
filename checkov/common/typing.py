@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, TypeVar, Set, Union, TypedDict, List, Tuple, Optional
+from typing import TYPE_CHECKING, Any, Callable, Dict, TypeVar, Set, Union, TypedDict
 from typing_extensions import TypeAlias  # noqa[TC002]
 
 if TYPE_CHECKING:
@@ -37,10 +37,6 @@ class _CheckResult(TypedDict, total=False):
     results_configuration: dict[str, Any] | None
     check: BaseCheck
     entity: dict[str, Any]  # only exists for graph results
-
-
-class _Metadata(TypedDict, total=False):
-    taint_flow: Optional[List[Tuple[int, str]]]
 
 
 class _SkippedCheck(TypedDict, total=False):
