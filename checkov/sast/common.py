@@ -3,10 +3,10 @@ from __future__ import annotations
 from typing import List, Tuple
 
 from checkov.common.output.record import PLACEHOLDER_LINE
-from checkov.sast.prisma_models.report import Flow
+from checkov.sast.prisma_models.report import MatchLocation
 
 
-def get_data_flow_code_block(data_flow: List[Flow]) -> List[Tuple[int, str]]:
+def get_data_flow_code_block(data_flow: List[MatchLocation]) -> List[Tuple[int, str]]:
     code_block: List[Tuple[int, str]] = []
 
     prev_end = -1

@@ -6,7 +6,7 @@ from checkov.common.bridgecrew.severities import Severity
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
 from checkov.common.typing import _CheckResult
-from checkov.common.typing import _Metadata
+from checkov.sast.prisma_models.report import MatchMetadata
 
 
 class SastRecord(Record):
@@ -22,7 +22,7 @@ class SastRecord(Record):
                  check_class: str,
                  file_abs_path: str,
                  severity: Optional[Severity],
-                 metadata: Optional[_Metadata] = None,
+                 metadata: Optional[MatchMetadata] = None,
                  bc_check_id: Optional[str] = None,
                  cwe: Optional[Union[List[str], str]] = None,
                  owasp: Optional[Union[List[str], str]] = None,

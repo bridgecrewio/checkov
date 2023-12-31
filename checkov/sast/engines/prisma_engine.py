@@ -21,7 +21,7 @@ from checkov.common.models.enums import CheckResult
 from checkov.common.output.report import Report
 from checkov.common.sast.consts import CDKLanguages, SastLanguages
 from checkov.common.sca.reachability.sast_contract.data_fetcher_sast_lib import SastReachabilityDataFetcher
-from checkov.common.typing import _CheckResult, _Metadata
+from checkov.common.typing import _CheckResult
 from checkov.common.util.http_utils import request_wrapper
 from checkov.sast.checks_infra.base_registry import Registry
 from checkov.sast.common import get_code_block_from_start, get_data_flow_code_block
@@ -318,7 +318,7 @@ class PrismaEngine(SastEngine):
                     file_line_range = [location.start.row, location.end.row]
                     split_code_block = [line + '\n' for line in location.code_block.split('\n')]
                     code_block = get_code_block_from_start(split_code_block, location.start.row)
-                    metadata = _Metadata(taint_flow=get_data_flow_code_block(match.metadata.taint_mode.data_flow)) if match.metadata.taint_mode else None
+                    metadata = match.metadata
 
                     record = SastRecord(check_id=check_id, check_name=check_name, resource="", evaluations={},
                                         check_class="", check_result=check_result, code_block=code_block,

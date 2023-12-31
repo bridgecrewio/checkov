@@ -10,6 +10,7 @@ from checkov.common.bridgecrew.severities import Severity
 from checkov.common.output.common import ImageDetails
 from checkov.common.packaging.version import LegacyVersion, Version
 from detect_secrets.core.potential_secret import PotentialSecret
+from checkov.sast.prisma_models.report import MatchMetadata, DataFlow, MatchLocation, Point
 
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 
@@ -40,6 +41,14 @@ class CustomJSONEncoder(json.JSONEncoder):
         elif isinstance(o, TFModule):
             return dict(o)
         elif isinstance(o, PotentialSecret):
+            return o.json()
+        elif isinstance(o, MatchMetadata):
+            return o.json()
+        elif isinstance(o, DataFlow):
+            return o.json()
+        elif isinstance(o, MatchLocation):
+            return o.json()
+        elif isinstance(o, Point):
             return o.json()
         else:
             return json.JSONEncoder.default(self, o)

@@ -38,11 +38,6 @@ class _CheckResult(TypedDict, total=False):
     check: BaseCheck
     entity: dict[str, Any]  # only exists for graph results
 
-
-class _Metadata(TypedDict, total=False):
-    taint_flow: Optional[List[Tuple[int, str]]]
-
-
 class _SkippedCheck(TypedDict, total=False):
     bc_id: str | None
     id: str
