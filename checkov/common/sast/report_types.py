@@ -14,7 +14,7 @@ class Point(BaseModel):
     column: int  # noqa: CCE003
 
     @model_serializer
-    def json(self) -> Dict[str, Any]:
+    def serialize_model(self) -> Dict[str, Any]:
         return self.__dict__
 
 
@@ -25,7 +25,7 @@ class MatchLocation(BaseModel):
     code_block: str  # noqa: CCE003
 
     @model_serializer
-    def json(self) -> Dict[str, Any]:
+    def serialize_model(self) -> Dict[str, Any]:
         return self.__dict__
 
 
@@ -33,7 +33,7 @@ class DataFlow(BaseModel):
     data_flow: List[MatchLocation]  # noqa: CCE003
 
     @model_serializer
-    def json(self) -> list:
+    def serialize_model(self) -> List[MatchLocation]:
         return self.data_flow
 
 
@@ -42,7 +42,7 @@ class MatchMetadata(BaseModel):
     code_locations: Optional[List[MatchLocation]] = None  # noqa: CCE003
 
     @model_serializer
-    def json(self) -> Dict[str, Any]:
+    def serialize_model(self) -> Dict[str, Any]:
         metadata = {}
         if hasattr(self, 'taint_mode') and self.taint_mode:
             metadata['taint_mode'] = self.taint_mode
