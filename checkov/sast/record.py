@@ -75,7 +75,7 @@ class SastRecord(Record):
                                                                   self.caller_file_line_range)
         evaluation_message = self.get_evaluation_string(self.evaluations, self.code_block)
 
-        status_message = colored("\t{} for file - {}\n".format(status, file_details), status_color)  # type: ignore
+        status_message = colored("\t{} for file - {}\n".format(status, file_details), status_color)
 
         cwe_message = colored(f'\t{self.cwe}\n') if self.cwe else ''
 

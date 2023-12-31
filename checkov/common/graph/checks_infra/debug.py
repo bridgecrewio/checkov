@@ -55,7 +55,7 @@ def attribute_block(
     print("\nEvaluated block:\n")
     print(colored(yaml.dump([attribute_block_conf], sort_keys=False), "blue"))
     print("and got:")
-    print(colored(f'\nResource "{resource[CustomAttributes.ID]}" {status}:', color))  # type: ignore
+    print(colored(f'\nResource "{resource[CustomAttributes.ID]}" {status}:', color))
     print(colored(json.dumps(resource[CustomAttributes.CONFIG], indent=2), "yellow"))
 
 
