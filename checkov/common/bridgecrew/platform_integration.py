@@ -65,7 +65,7 @@ if TYPE_CHECKING:
     from checkov.secrets.coordinator import EnrichedSecret
     from mypy_boto3_s3.client import S3Client
     from typing_extensions import TypeGuard
-    from checkov.sast.prisma_models.report import Match
+    from checkov.common.sast.report_types import Match
 
 SLEEP_SECONDS = 1
 
