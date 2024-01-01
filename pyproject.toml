@@ -136,4 +136,4 @@ forbidden_modules = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "-n 4 --dist loadfile"
+addopts = "-n 2 --dist loadfile"
