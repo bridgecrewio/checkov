@@ -1,6 +1,65 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.38...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.50...HEAD)
+
+## [3.1.50](https://github.com/bridgecrewio/checkov/compare/3.1.46...3.1.50) - 2023-12-31
+
+### Feature
+
+- **sast:** Add sast metadata to sast report - [#5910](https://github.com/bridgecrewio/checkov/pull/5910)
+- **terraform:** Add various vertex related policies - [#5898](https://github.com/bridgecrewio/checkov/pull/5898)
+
+### Bug Fix
+
+- **sast:** persist empty sast report for cdk - [#5909](https://github.com/bridgecrewio/checkov/pull/5909)
+- **terraform:** Fix typo Customer Managed Key - [#5900](https://github.com/bridgecrewio/checkov/pull/5900)
+
+## [3.1.46](https://github.com/bridgecrewio/checkov/compare/3.1.44...3.1.46) - 2023-12-28
+
+### Feature
+
+- **terraform:** CLI output - add indication if repository was discovered In a running environment - [#5908](https://github.com/bridgecrewio/checkov/pull/5908)
+
+### Bug Fix
+
+- **sast:** add missing field in MatchMetadata - [#5907](https://github.com/bridgecrewio/checkov/pull/5907)
+
+## [3.1.44](https://github.com/bridgecrewio/checkov/compare/3.1.43...3.1.44) - 2023-12-26
+
+### Feature
+
+- **sast:** add dataflow to checkov report from sast - [#5892](https://github.com/bridgecrewio/checkov/pull/5892)
+
+## [3.1.43](https://github.com/bridgecrewio/checkov/compare/3.1.42...3.1.43) - 2023-12-24
+
+### Feature
+
+- **terraform:** add CKV2_AZURE_47, ensure storage account is configured without blob anonymous access - [#5888](https://github.com/bridgecrewio/checkov/pull/5888)
+- **terraform:** Ensure SES Configuration Set enforces TLS usage - [#5891](https://github.com/bridgecrewio/checkov/pull/5891)
+
+### Bug Fix
+
+- **terraform:** pod security policy removed in GKE 1.25 - [#5675](https://github.com/bridgecrewio/checkov/pull/5675)
+
+## [3.1.42](https://github.com/bridgecrewio/checkov/compare/3.1.40...3.1.42) - 2023-12-22
+
+### Feature
+
+- **sast:** Split sast and cdk reports - [#5889](https://github.com/bridgecrewio/checkov/pull/5889)
+
+### Bug Fix
+
+- **terraform:** Fix CKV_Azure_234 - [#5886](https://github.com/bridgecrewio/checkov/pull/5886)
+
+## [3.1.40](https://github.com/bridgecrewio/checkov/compare/3.1.38...3.1.40) - 2023-12-19
+
+### Feature
+
+- **terraform_plan:** Add PY graph checks for tf plan - [#5875](https://github.com/bridgecrewio/checkov/pull/5875)
+
+### Bug Fix
+
+- **terraform:** Remove CKV_AWS_188 as dupe - [#5884](https://github.com/bridgecrewio/checkov/pull/5884)
 
 ## [3.1.38](https://github.com/bridgecrewio/checkov/compare/3.1.34...3.1.38) - 2023-12-13
 

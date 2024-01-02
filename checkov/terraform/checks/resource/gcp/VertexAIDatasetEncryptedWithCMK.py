@@ -5,7 +5,7 @@ from checkov.common.models.consts import ANY_VALUE
 
 class VertexAIDatasetEncryptedWithCMK(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure Vertex AI datasets uses a CMK (Customer Manager Key)"
+        name = "Ensure Vertex AI datasets uses a CMK (Customer Managed Key)"
         id = "CKV_GCP_92"
         supported_resources = ['google_vertex_ai_dataset']
         categories = [CheckCategories.ENCRYPTION]

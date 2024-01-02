@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_71
   name: Ensure Redshift Cluster logging is enabled
   category: LOGGING
+  framework: cdk
 scope:
   languages:
     - python

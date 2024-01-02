@@ -3,6 +3,7 @@ metadata:
   id: CKV_AWS_21
   name: Ensure all data stored in the S3 bucket have versioning enabled
   category: BACKUP_AND_RECOVERY
+  framework: cdk
 scope:
   languages:
     - python

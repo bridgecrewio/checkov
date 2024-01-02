@@ -1,5 +1,5 @@
 from typing import Dict, List, Any, Optional, Union
-from pydantic import BaseModel
+from pydantic import BaseModel, model_serializer
 
 from checkov.common.sast.consts import SastLanguages
 
@@ -13,12 +13,9 @@ class Point(BaseModel):
     row: int  # noqa: CCE003
     column: int  # noqa: CCE003
 
-
-class Flow(BaseModel):
-    path: str  # noqa: CCE003
-    start: Point  # noqa: CCE003
-    end: Point  # noqa: CCE003
-    code_block: str  # noqa: CCE003
+    @model_serializer
+    def serialize_model(self) -> Dict[str, Any]:
+        return self.__dict__
 
 
 class MatchLocation(BaseModel):
@@ -27,15 +24,32 @@ class MatchLocation(BaseModel):
     end: Point  # noqa: CCE003
     code_block: str  # noqa: CCE003
 
+    @model_serializer
+    def serialize_model(self) -> Dict[str, Any]:
+        return self.__dict__
+
 
 class DataFlow(BaseModel):
-    data_flow: List[Flow]  # noqa: CCE003
+    data_flow: List[MatchLocation]  # noqa: CCE003
+
+    @model_serializer
+    def serialize_model(self) -> List[MatchLocation]:
+        return self.data_flow
 
 
 class MatchMetadata(BaseModel):
-    metavariables: Dict[str, DataFlow]  # noqa: CCE003
-    variables: Dict[str, Any]  # noqa: CCE003
     taint_mode: Optional[DataFlow] = None  # noqa: CCE003
+    code_locations: Optional[List[MatchLocation]] = None  # noqa: CCE003
+
+    @model_serializer
+    def serialize_model(self) -> Dict[str, Any]:
+        metadata = {}
+        if hasattr(self, 'taint_mode') and self.taint_mode:
+            metadata['taint_mode'] = self.taint_mode
+        if hasattr(self, 'code_locations') and self.code_locations:
+            metadata['code_locations'] = self.code_locations  # type: ignore
+
+        return metadata
 
 
 class Match(BaseModel):
@@ -46,6 +60,10 @@ class Match(BaseModel):
     minimized_ast: str  # noqa: CCE003
 
 
+class RuleMatchMetadata(BaseModel):
+    framework: Optional[str] = ''  # noqa: CCE003
+
+
 class RuleMatch(BaseModel):
     check_id: str  # noqa: CCE003
     check_name: str  # noqa: CCE003
@@ -53,6 +71,7 @@ class RuleMatch(BaseModel):
     check_owasp: Optional[Union[List[str], str]]  # noqa: CCE003
     severity: str  # noqa: CCE003
     matches: List[Match]  # noqa: CCE003
+    metadata: Optional[RuleMatchMetadata] = None  # noqa: CCE003
 
 
 class Function(BaseModel):

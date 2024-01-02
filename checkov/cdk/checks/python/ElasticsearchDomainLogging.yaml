@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_84
   name: Ensure Elasticsearch Domain Logging is enabled
   category: LOGGING
+  framework: cdk
 scope:
   languages:
     - python

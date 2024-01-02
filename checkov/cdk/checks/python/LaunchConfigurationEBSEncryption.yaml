@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_8
   name: Ensure all data stored in the Launch configuration EBS is securely encrypted
   category: ENCRYPTION
+  framework: cdk
 scope:
   languages:
     - python

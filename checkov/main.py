@@ -71,7 +71,7 @@ from checkov.kustomize.runner import Runner as kustomize_runner
 from checkov.logging_init import log_stream as logs_stream
 from checkov.openapi.runner import Runner as openapi_runner
 from checkov.runner_filter import RunnerFilter
-from checkov.sast.prisma_models.report import serialize_reachability_report
+from checkov.common.sast.report_types import serialize_reachability_report
 from checkov.sast.report import SastData, SastReport
 from checkov.sast.runner import Runner as sast_runner
 from checkov.sca_image.runner import Runner as sca_image_runner
@@ -445,6 +445,8 @@ class Checkov:
                           '(but note that this will not include any custom platform configurations or policy metadata).',
                           file=sys.stderr)
                     self.exit_run()
+
+            bc_integration.get_runtime_run_config()
             bc_integration.setup_on_prem()
             if bc_integration.on_prem:
                 # disable --support for on-premises integrations
@@ -606,6 +608,7 @@ class Checkov:
                             bc_integration.persist_repository(os.path.dirname(self.config.dockerfile_path), files=files, sast_languages=runner_filter.sast_languages)
                         bc_integration.persist_scan_results(self.scan_reports)
                         bc_integration.persist_sast_scan_results(self.scan_reports)
+                        bc_integration.persist_cdk_scan_results(self.scan_reports)
                         bc_integration.persist_image_scan_results(sca_runner.raw_report, self.config.dockerfile_path,
                                                                   self.config.docker_image,
                                                                   self.config.branch)
@@ -764,6 +767,7 @@ class Checkov:
                     scan_reports_to_upload.append(sca_supported_ir_report)
             bc_integration.persist_scan_results(scan_reports_to_upload)
             bc_integration.persist_sast_scan_results(scan_reports_to_upload)
+            bc_integration.persist_cdk_scan_results(scan_reports_to_upload)
             bc_integration.persist_assets_scan_results(self.sast_data.imports_data)
             bc_integration.persist_reachability_scan_results(self.sast_data.reachability_report)
             bc_integration.persist_run_metadata(self.run_metadata)

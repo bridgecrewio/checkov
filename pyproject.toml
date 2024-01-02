@@ -89,7 +89,7 @@ source_modules = [
     "checkov.sast",
 ]
 forbidden_modules = [
-    "checkov.cdk",
+    "checkov.cdk.runner",
 ]
 
 [[tool.importlinter.contracts]]

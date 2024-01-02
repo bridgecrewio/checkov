@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_120
   name: Ensure API Gateway caching is enabled
   category: BACKUP_AND_RECOVERY
+  framework: cdk
 scope:
   languages:
     - python

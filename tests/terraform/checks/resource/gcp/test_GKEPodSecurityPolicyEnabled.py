@@ -1,22 +1,39 @@
 import unittest
+import os
 
 from checkov.terraform.checks.resource.gcp.GKEPodSecurityPolicyEnabled import check
-from checkov.common.models.enums import CheckResult
+from checkov.runner_filter import RunnerFilter
+from checkov.terraform.runner import Runner
 
 
 class TestGKEPodSecurityPolicyEnabled(unittest.TestCase):
 
-    def test_failure(self):
-        resource_conf = {'name': ['google_cluster'], 'enable_legacy_abac': [False], 'resource_labels': [{'Owner': ['SomeoneNotWorkingHere']}], 'node_config': [{'image_type': ['cos']}], 'ip_allocation_policy': [{}]}
+    def test(self):
+        runner = Runner()
+        current_dir = os.path.dirname(os.path.realpath(__file__))
 
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+        test_files_dir = current_dir + "/example_GKEPodSecurityPolicyEnabled"
+        report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
+        summary = report.get_summary()
 
-    def test_success(self):
-        resource_conf = {'name': ['google_cluster'], 'monitoring_service': ['monitoring.googleapis.com'], 'master_authorized_networks_config': [{}], 'master_auth': [{'client_certificate_config': [{'issue_client_certificate': [False]}]}], 'node_config': [{'image_type': ['not-cos']}], 'pod_security_policy_config': [{'enabled': [True]}]}
+        passing_resources = {
+            'google_container_cluster.pass',
+        }
+        failing_resources = {
+            'google_container_cluster.fail',
+            'google_container_cluster.fail2',
+        }
 
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        passed_check_resources = set([c.resource for c in report.passed_checks])
+        failed_check_resources = set([c.resource for c in report.failed_checks])
+
+        self.assertEqual(summary['passed'], len(passing_resources))
+        self.assertEqual(summary['failed'], len(failing_resources))
+        self.assertEqual(summary['skipped'], 0)
+        self.assertEqual(summary['parsing_errors'], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
 
 if __name__ == '__main__':
