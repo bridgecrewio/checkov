@@ -26,7 +26,7 @@ class GKEDontUseNodePools(BaseResourceNegativeValueCheck):
     def get_inspected_key(self) -> str:
         return 'node_pool'
 
-    def get_forbidden_values(self) -> list[Any]:
+    def get_forbidden_values(self) -> Any:
         return [ANY_VALUE]
 
 
