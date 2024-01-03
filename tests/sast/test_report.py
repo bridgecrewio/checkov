@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from checkov.common.sast.consts import SastLanguages
 from checkov.sast.report import SastData, SastReport
-from checkov.sast.prisma_models.report import Function, PrismaReport, Repositories, File, Package
+from checkov.common.sast.report_types import Function, PrismaReport, Repositories, File, Package
 
 
 def _create_sast_reports_for_test_get_sast_reachability_report_with_one_report() -> list[SastReport]:

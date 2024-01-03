@@ -2,7 +2,7 @@ from typing import Dict, Union, List, Optional
 
 from checkov.common.output.report import Report
 from checkov.common.sast.consts import POLICIES_ERRORS, POLICIES_ERRORS_COUNT, SOURCE_FILES_COUNT, POLICY_COUNT, SastLanguages
-from checkov.sast.prisma_models.report import PrismaReport
+from checkov.common.sast.report_types import PrismaReport
 
 
 class CDKReport(Report):
@@ -11,6 +11,8 @@ class CDKReport(Report):
         self.metadata = metadata
         self.language: SastLanguages = language
         self.cdk_report: PrismaReport = cdk_report
+        # In case we dont have sast report for this lang
+        self.empty_sast_report: PrismaReport = PrismaReport(rule_match={language: {}}, profiler={}, errors={}, run_metadata={}, imports={}, reachability_report={})
 
     def get_summary(self) -> Dict[str, Union[int, str]]:
         base_summary: Dict[str, Union[int, str]] = super().get_summary()

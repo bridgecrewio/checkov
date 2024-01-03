@@ -6,7 +6,7 @@ from checkov.common.bridgecrew.severities import Severity
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
 from checkov.common.typing import _CheckResult
-from checkov.common.typing import _Metadata
+from checkov.common.sast.report_types import MatchMetadata
 
 
 class SastRecord(Record):
@@ -22,7 +22,7 @@ class SastRecord(Record):
                  check_class: str,
                  file_abs_path: str,
                  severity: Optional[Severity],
-                 metadata: Optional[_Metadata] = None,
+                 metadata: Optional[MatchMetadata] = None,
                  bc_check_id: Optional[str] = None,
                  cwe: Optional[Union[List[str], str]] = None,
                  owasp: Optional[Union[List[str], str]] = None,
@@ -68,14 +68,16 @@ class SastRecord(Record):
 
         severity_message = f'\tSeverity: {self.severity.name}\n' if self.severity and self.show_severity else ''
 
-        file_details = f'{self.file_path}:{" -> ".join([str(x) for x in self.file_line_range])}'
+        file_details = f'{self.file_path}:{" -> ".join([str(x) for x in self.file_line_range])}' if \
+            self.file_line_range[0] != self.file_line_range[-1] else \
+            f'{self.file_path}:{str(self.file_line_range[0])}'
         code_lines = self.get_code_lines_string(self.code_block)
         detail = self.get_details_string(self.details)
         caller_file_details = self.get_caller_file_details_string(self.caller_file_path,
                                                                   self.caller_file_line_range)
         evaluation_message = self.get_evaluation_string(self.evaluations, self.code_block)
 
-        status_message = colored("\t{} for file - {}\n".format(status, file_details), status_color)  # type: ignore
+        status_message = colored("\t{} for file - {}\n".format(status, file_details), status_color)
 
         cwe_message = colored(f'\t{self.cwe}\n') if self.cwe else ''
 
