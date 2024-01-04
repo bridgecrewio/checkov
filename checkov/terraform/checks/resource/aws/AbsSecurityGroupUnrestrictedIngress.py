@@ -82,7 +82,8 @@ class AbsSecurityGroupUnrestrictedIngress(BaseResourceCheck):
         if from_port == 0 and to_port == 0:
             to_port = 65535
 
-        if conf.get('prefix_list_ids'):
+        prefix_list_ids = conf.get('prefix_list_ids')
+        if prefix_list_ids and prefix_list_ids != [[]]:
             return False
 
         if from_port is not None and to_port is not None and (from_port <= self.port <= to_port) or (
