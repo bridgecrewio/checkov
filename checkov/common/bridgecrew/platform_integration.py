@@ -1313,5 +1313,4 @@ class BcPlatformIntegration:
             if self.on_prem:
                 logging.debug('On prem mode is enabled')
 
-    
 bc_integration = BcPlatformIntegration()
