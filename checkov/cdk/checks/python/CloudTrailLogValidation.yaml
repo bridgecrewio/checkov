@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_36
   name: Ensure CloudTrail log file validation is enabled
   category: LOGGING
+  framework: cdk
 scope:
   languages:
     - python

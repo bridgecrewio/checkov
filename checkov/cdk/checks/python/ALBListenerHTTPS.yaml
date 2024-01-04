@@ -1,0 +1,20 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_2
+  name: Ensure EFS is securely encrypted
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.aws_elasticloadbalancingv2.CfnListener(<ANY>)
+  conditions:
+    - not_pattern: aws_cdk.aws_elasticloadbalancingv2.CfnListener(<ANY>, protocol='HTTPS', <ANY>)
+    - not_pattern: aws_cdk.aws_elasticloadbalancingv2.CfnListener(<ANY>, protocol='TLS', <ANY>)
+    - not_pattern: aws_cdk.aws_elasticloadbalancingv2.CfnListener(<ANY>, protocol='TCP', <ANY>)
+    - not_pattern: aws_cdk.aws_elasticloadbalancingv2.CfnListener(<ANY>, protocol='UDP', <ANY>)
+    - not_pattern: aws_cdk.aws_elasticloadbalancingv2.CfnListener(<ANY>, protocol='TCP_UDP', <ANY>)
+    - not_pattern: |
+        aws_cdk.aws_elasticloadbalancingv2.CfnListener(<ANY>, default_actions=[<ANY>, {'type': 'redirect', 'redirectConfig':{'protocol': 'HTTPS'}} , <ANY>] , <ANY>)

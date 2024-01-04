@@ -1,0 +1,15 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_136
+  name: Ensure that ECR repositories are encrypted using KMS
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.aws_ecr.CfnRepository(<ANY>)
+  conditions:
+    - not_pattern: |
+        aws_cdk.aws_ecr.CfnRepository(<ANY>, encryption_configuration={'encryptionType': 'KMS'} ,<ANY>)

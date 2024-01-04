@@ -1,0 +1,14 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_154
+  name: Ensure Redshift is not deployed outside of a VPC
+  category: NETWORKING
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.aws_redshift.CfnCluster(<ANY>)
+  conditions:
+    - not_pattern: aws_cdk.aws_redshift.CfnCluster(<ANY>, cluster_subnet_group_name=$ARG ,<ANY>)

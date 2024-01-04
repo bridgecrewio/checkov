@@ -1,0 +1,15 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_6
+  name: Ensure all Elasticsearch has node-to-node encryption enabled
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.aws_elasticsearch.CfnDomain(<ANY>)
+  conditions:
+    - not_pattern: |
+        aws_cdk.aws_elasticsearch.CfnDomain(<ANY>, node_to_node_encryption_options={'enabled': True} , <ANY>)

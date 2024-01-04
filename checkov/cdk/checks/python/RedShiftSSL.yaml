@@ -1,0 +1,19 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_105
+  name: Ensure Redshift uses SSL
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.aws_redshift.CfnClusterParameterGroup(<ANY>)
+  conditions:
+    - not_pattern: aws_cdk.aws_redshift.CfnClusterParameterGroup(<ANY>, parameters=[<ANY>, aws_cdk.aws_redshift.CfnClusterParameterGroup.ParameterProperty(<ANY>, parameter_name='require_ssl', <ANY>, parameter_value='true', <ANY>) ,<ANY>] , <ANY>)
+    - not_pattern: aws_cdk.aws_redshift.CfnClusterParameterGroup(<ANY>, parameters=[<ANY>, aws_cdk.aws_redshift.CfnClusterParameterGroup.ParameterProperty(<ANY>, parameter_value='true', <ANY>, parameter_name='require_ssl', <ANY>) ,<ANY>] , <ANY>)
+    - not_pattern: |
+        aws_cdk.aws_redshift.CfnClusterParameterGroup(<ANY>, parameters=[<ANY>, {'parameterName': 'require_ssl','parameterValue': 'true'} ,<ANY>] , <ANY>)
+    - not_pattern: |
+        aws_cdk.aws_redshift.CfnClusterParameterGroup(<ANY>, parameters=[<ANY>, {'parameterValue': 'true','parameterName': 'require_ssl'} ,<ANY>] , <ANY>)

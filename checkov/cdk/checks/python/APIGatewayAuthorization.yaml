@@ -1,0 +1,22 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_59
+  name: Ensure there is no open access to back-end resources through API
+  category: GENERAL_SECURITY
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  patterns:
+    or:
+      - pattern: aws_cdk.aws_apigateway.Method(<ANY>, http_method=$ARG, <ANY>, authorization_type=aws_cdk.aws_apigateway.AuthorizationType.NONE, <ANY>, api_key_required=False, <ANY>)
+      - pattern: aws_cdk.aws_apigateway.Method(<ANY>, http_method=$ARG, <ANY>, api_key_required=False, <ANY>, authorization_type=aws_cdk.aws_apigateway.AuthorizationType.NONE, <ANY>)
+      - pattern: aws_cdk.aws_apigateway.Method(<ANY>, authorization_type=aws_cdk.aws_apigateway.AuthorizationType.NONE, <ANY>, http_method=$ARG, <ANY>, api_key_required=False, <ANY>)
+      - pattern: aws_cdk.aws_apigateway.Method(<ANY>, authorization_type=aws_cdk.aws_apigateway.AuthorizationType.NONE, <ANY>, api_key_required=False, <ANY>, http_method=$ARG, <ANY>)
+      - pattern: aws_cdk.aws_apigateway.Method(<ANY>, api_key_required=False, <ANY>, authorization_type=aws_cdk.aws_apigateway.AuthorizationType.NONE, <ANY>, http_method=$ARG, <ANY>)
+      - pattern: aws_cdk.aws_apigateway.Method(<ANY>, api_key_required=False, <ANY>, http_method=$ARG, <ANY>, authorization_type=aws_cdk.aws_apigateway.AuthorizationType.NONE, <ANY>)
+  conditions:
+    - metavariable: $ARG
+      not_regex: OPTIONS

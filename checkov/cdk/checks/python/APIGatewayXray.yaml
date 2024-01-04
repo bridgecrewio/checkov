@@ -1,0 +1,16 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_73
+  name: Ensure API Gateway has X-Ray Tracing enabled
+  category: LOGGING
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.$MOD.CfnStage(<ANY>)
+  conditions:
+    - not_pattern: aws_cdk.$MOD.CfnStage(<ANY>, tracing_enabled=True , <ANY>)
+    - metavariable: $MOD
+      regex: (aws_apigateway|aws_apigateway2)

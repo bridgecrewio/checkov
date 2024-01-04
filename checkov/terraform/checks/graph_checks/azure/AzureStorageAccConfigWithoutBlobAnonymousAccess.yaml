@@ -1,0 +1,17 @@
+metadata:
+  id: "CKV2_AZURE_47"
+  name: "Ensure storage account is configured without blob anonymous access"
+  category: "IAM"
+
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types: "azurerm_storage_account"
+      attribute: "allow_nested_items_to_be_public"
+      operator: "exists"
+
+    - cond_type: "attribute"
+      resource_types: "azurerm_storage_account"
+      attribute: "allow_nested_items_to_be_public"
+      operator: "equals_ignore_case"
+      value: "false"

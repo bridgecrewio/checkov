@@ -3,6 +3,7 @@ metadata:
   id: CKV_AWS_18
   name: Ensure the S3 bucket has access logging enabled
   category: LOGGING
+  framework: cdk
 scope:
   languages:
     - python

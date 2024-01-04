@@ -1,0 +1,15 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_164
+  name: Ensure Transfer Server is not exposed publicly.
+  category: GENERAL_SECURITY
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.aws_transfer.CfnServer(<ANY>)
+  conditions:
+    - not_pattern: aws_cdk.aws_transfer.CfnServer(<ANY>, endpoint_type='VPC', <ANY>)
+    - not_pattern: aws_cdk.aws_transfer.CfnServer(<ANY>, endpoint_type='VPC_ENDPOINT' , <ANY>)

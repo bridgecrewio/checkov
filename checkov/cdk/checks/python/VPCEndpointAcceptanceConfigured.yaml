@@ -1,0 +1,14 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_123
+  name: Ensure that VPC Endpoint Service is configured for Manual Acceptance
+  category: NETWORKING
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.aws_ec2.CfnVPCEndpointService(<ANY>)
+  conditions:
+    - not_pattern: aws_cdk.aws_ec2.CfnVPCEndpointService(<ANY>, acceptance_required=True ,<ANY>)

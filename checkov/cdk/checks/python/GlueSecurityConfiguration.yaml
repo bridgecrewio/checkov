@@ -1,0 +1,17 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_99
+  name: Ensure Glue Security Configuration Encryption is enabled
+  category: LOGGING
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.aws_glue.CfnSecurityConfiguration(<ANY>)
+  conditions:
+    - not_pattern: |
+        aws_cdk.aws_glue.CfnSecurityConfiguration(<ANY>, encryption_configuration={'CloudWatchEncryption': {'CloudWatchEncryptionMode': 'SSE-KMS'}, 'JobBookmarksEncryption': {'JobBookmarksEncryptionMode': 'CSE-KMS'}, 'S3Encryptions': [<ANY>,{'S3EncryptionMode': 'SSE-KMS'}, <ANY>]}, <ANY>)
+    - not_pattern: |
+        aws_cdk.aws_glue.CfnSecurityConfiguration(<ANY>, encryption_configuration={'CloudWatchEncryption': {'CloudWatchEncryptionMode': 'SSE-KMS'}, 'JobBookmarksEncryption': {'JobBookmarksEncryptionMode': 'CSE-KMS'}, 'S3Encryptions': [<ANY>,{'S3EncryptionMode': 'SSE-S3'}, <ANY>]}, <ANY>)

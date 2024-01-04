@@ -1,0 +1,11 @@
+metadata:
+  id: "CKV2_GCP_32"
+  name: "Ensure TPU v2 is private"
+  category: "NETWORKING"
+definition:
+  cond_type: attribute
+  resource_types:
+  - google_tpu_v2_vm
+  attribute: network_config.enable_external_ips
+  operator: jsonpath_equals
+  value: "false"

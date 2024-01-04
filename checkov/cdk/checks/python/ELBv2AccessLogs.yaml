@@ -1,0 +1,15 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_91
+  name: Ensure the ELBv2 (Application/Network) has access logging enabled
+  category: LOGGING
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.aws_elasticloadbalancingv2.CfnLoadBalancer(<ANY>)
+  conditions:
+    - not_pattern: aws_cdk.aws_elasticloadbalancingv2.CfnLoadBalancer(<ANY>, load_balancer_attributes=[<ANY>, aws_cdk.aws_elasticloadbalancingv2.CfnLoadBalancer.LoadBalancerAttributeProperty(<ANY>, key="access_logs.s3.enabled", <ANY>, value="true", <ANY>) ,<ANY>] ,<ANY>)
+    - not_pattern: aws_cdk.aws_elasticloadbalancingv2.CfnLoadBalancer(<ANY>, load_balancer_attributes=[<ANY>, aws_cdk.aws_elasticloadbalancingv2.CfnLoadBalancer.LoadBalancerAttributeProperty(<ANY>, value="true", <ANY>, key="access_logs.s3.enabled", <ANY>) ,<ANY>] ,<ANY>)

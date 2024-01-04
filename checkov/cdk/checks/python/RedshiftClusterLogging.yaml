@@ -1,0 +1,14 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_71
+  name: Ensure Redshift Cluster logging is enabled
+  category: LOGGING
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.aws_redshift.CfnCluster(<ANY>)
+  conditions:
+    - not_pattern: aws_cdk.aws_redshift.CfnCluster(<ANY>, logging_properties=aws_cdk.aws_redshift.CfnCluster.LoggingPropertiesProperty(<ANY>, bucket_name=$ARG ,<ANY>) ,<ANY>)

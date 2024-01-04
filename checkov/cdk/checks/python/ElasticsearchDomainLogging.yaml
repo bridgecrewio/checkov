@@ -1,0 +1,21 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_84
+  name: Ensure Elasticsearch Domain Logging is enabled
+  category: LOGGING
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  patterns:
+    or:
+      - pattern: aws_cdk.aws_elasticsearch.CfnDomain(<ANY>)
+        conditions:
+          - not_pattern: |
+              aws_cdk.aws_elasticsearch.CfnDomain(<ANY>, log_publishing_options={'logPublishingOptionsKey': aws_cdk.aws_elasticsearch.CfnDomain.LogPublishingOptionProperty(<ANY>, enabled=True ,<ANY>)} ,<ANY>)
+      - pattern: aws_cdk.aws_opensearchservice.CfnDomain(<ANY>)
+        conditions:
+          - not_pattern: |
+              aws_cdk.aws_opensearchservice.CfnDomain(<ANY>, log_publishing_options={'logPublishingOptionsKey': aws_cdk.aws_opensearchservice.CfnDomain.LogPublishingOptionProperty(<ANY>, enabled=True ,<ANY>)} ,<ANY>)

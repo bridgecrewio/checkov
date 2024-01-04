@@ -1,0 +1,15 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_78
+  name: Ensure that CodeBuild Project encryption is not disabled
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  patterns:
+    or:
+      - pattern: aws_cdk.aws_codebuild.Project(<ANY>, artifacts=aws_cdk.aws_codebuild.Artifacts(<ANY>, type=aws_cdk.aws_codebuild.ArtifactsType.S3, <ANY>, encryption_disabled=True, <ANY>) , <ANY>)
+      - pattern: aws_cdk.aws_codebuild.Project(<ANY>, artifacts=aws_cdk.aws_codebuild.Artifacts(<ANY>, encryption_disabled=True, <ANY>, type=aws_cdk.aws_codebuild.ArtifactsType.S3, <ANY>) , <ANY>)

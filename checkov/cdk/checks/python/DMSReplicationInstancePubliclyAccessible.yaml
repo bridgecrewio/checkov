@@ -1,0 +1,12 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_89
+  name: DMS replication instance should not be publicly accessible
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.aws_dms.ReplicationInstance(<ANY>, publicly_accessible=True, <ANY>)

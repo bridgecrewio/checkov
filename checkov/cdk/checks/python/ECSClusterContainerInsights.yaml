@@ -1,0 +1,17 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_65
+  name: Ensure container insights are enabled on ECS cluster
+  category: LOGGING
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.aws_ecs.CfnCluster(<ANY>)
+  conditions:
+    - not_pattern: |
+        aws_cdk.aws_ecs.CfnCluster(<ANY>, cluster_settings=[<ANY>, {'name': 'containerInsights', 'value': 'enabled'} ,<ANY>], <ANY>)
+    - not_pattern: |
+        aws_cdk.aws_ecs.CfnCluster(<ANY>, cluster_settings=[<ANY>, {'value': 'enabled', 'name': 'containerInsights'} ,<ANY>], <ANY>)

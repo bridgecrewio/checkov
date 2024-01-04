@@ -1,0 +1,14 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_92
+  name: Ensure the ELB has access logging enabled
+  category: LOGGING
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  pattern: aws_cdk.aws_elasticloadbalancing.CfnLoadBalancer(<ANY>)
+  conditions:
+    - not_pattern: aws_cdk.aws_elasticloadbalancing.CfnLoadBalancer(<ANY>, access_logging_policy=aws_cdk.aws_elasticloadbalancing.CfnLoadBalancer.AccessLoggingPolicyProperty(<ANY>, enabled=True ,<ANY>) ,<ANY>)

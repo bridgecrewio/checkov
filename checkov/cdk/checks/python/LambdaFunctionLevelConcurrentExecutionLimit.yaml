@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_115
   name: Ensure that AWS Lambda function is configured for function-level concurrent execution limit
   category: GENERAL_SECURITY
+  framework: cdk
 scope:
   languages:
     - python

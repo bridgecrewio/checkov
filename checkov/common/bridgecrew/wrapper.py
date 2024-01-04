@@ -45,6 +45,7 @@ FILE_NAME_IGRAPH = 'graph_igraph.json'
 FILE_NAME_RUSTWORKX = 'graph_rustworkx.json'
 
 SAST_FRAMEWORK_PREFIX = 'sast'
+CDK_FRAMEWORK_PREFIX = 'cdk'
 
 
 def _is_scanned_file(file: str) -> bool:
@@ -82,7 +83,7 @@ def reduce_scan_reports(scan_reports: list[Report], on_prem: Optional[bool] = Fa
     reduced_scan_reports: dict[str, _ReducedScanReport] = {}
     for report in scan_reports:
         check_type = report.check_type
-        if check_type.startswith(SAST_FRAMEWORK_PREFIX):
+        if check_type.startswith((SAST_FRAMEWORK_PREFIX, CDK_FRAMEWORK_PREFIX)):
             continue
         reduced_keys = secrets_check_reduced_keys if check_type == CheckType.SECRETS else check_reduced_keys
         if on_prem:
@@ -171,7 +172,7 @@ def enrich_and_persist_checks_metadata(
     checks_metadata_paths: dict[str, dict[str, str]] = {}
     for scan_report in scan_reports:
         check_type = scan_report.check_type
-        if check_type.startswith(SAST_FRAMEWORK_PREFIX):
+        if check_type.startswith((SAST_FRAMEWORK_PREFIX, CDK_FRAMEWORK_PREFIX)):
             continue
         checks_metadata_object = _extract_checks_metadata(scan_report, full_repo_object_key, on_prem)
         checks_metadata_object_path = f'{full_repo_object_key}/{checkov_results_prefix}/{check_type}/checks_metadata.json'

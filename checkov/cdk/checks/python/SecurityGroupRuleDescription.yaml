@@ -1,0 +1,27 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_23
+  name: Ensure every security groups rule has a description
+  category: NETWORKING
+  framework: cdk
+scope:
+  languages:
+    - python
+definition:
+  patterns:
+    or:
+      - pattern: aws_cdk.aws_ec2.CfnSecurityGroup(<ANY>, security_group_egress=[<ANY>] ,<ANY>)
+        conditions:
+          - not_pattern: |
+              aws_cdk.aws_ec2.CfnSecurityGroup(<ANY>, security_group_egress=[<ANY>, {<ANY>, 'description': 'True' ,<ANY>} ,<ANY>] ,<ANY>)
+      - pattern: aws_cdk.aws_ec2.CfnSecurityGroup(<ANY>, security_group_ingress=[<ANY>] ,<ANY>)
+        conditions:
+          - not_pattern: |
+              aws_cdk.aws_ec2.CfnSecurityGroup(<ANY>, security_group_ingress=[<ANY>, {<ANY>, 'description': 'True' ,<ANY>} ,<ANY>] ,<ANY>)
+      - pattern: aws_cdk.aws_ec2.CfnSecurityGroupIngress(<ANY>)
+        conditions:
+          - not_pattern: aws_cdk.aws_ec2.CfnSecurityGroupIngress(<ANY>, description=$ARG ,<ANY>)
+      - pattern: aws_cdk.aws_ec2.CfnSecurityGroupEgress(<ANY>)
+        conditions:
+          - not_pattern: aws_cdk.aws_ec2.CfnSecurityGroupEgress(<ANY>, description=$ARG ,<ANY>)

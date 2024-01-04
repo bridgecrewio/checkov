@@ -31,7 +31,7 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.bridgecrew.platform_key import read_key
 from checkov.common.bridgecrew.run_metadata.registry import registry
-from checkov.common.bridgecrew.wrapper import persist_assets_results, reduce_scan_reports, persist_checks_results, \
+from checkov.common.bridgecrew.wrapper import CDK_FRAMEWORK_PREFIX, persist_assets_results, reduce_scan_reports, persist_checks_results, \
     enrich_and_persist_checks_metadata, checkov_results_prefix, persist_run_metadata, _put_json_object, \
     persist_logs_stream, persist_graphs, persist_resource_subgraph_maps, persist_reachability_results
 from checkov.common.models.consts import SAST_SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILES, SCANNABLE_PACKAGE_FILES
@@ -65,7 +65,7 @@ if TYPE_CHECKING:
     from checkov.secrets.coordinator import EnrichedSecret
     from mypy_boto3_s3.client import S3Client
     from typing_extensions import TypeGuard
-    from checkov.sast.prisma_models.report import Match
+    from checkov.common.sast.report_types import Match
 
 SLEEP_SECONDS = 1
 
@@ -114,6 +114,7 @@ class BcPlatformIntegration:
         self.prisma_policy_filters_url: str | None = None
         self.setup_api_urls()
         self.customer_run_config_response = None
+        self.runtime_run_config_response = None
         self.prisma_policies_response = None
         self.public_metadata_response = None
         self.use_s3_integration = False
@@ -205,6 +206,7 @@ class BcPlatformIntegration:
         self.integrations_api_url = f"{self.api_url}/api/v1/integrations/types/checkov"
         self.platform_run_config_url = f"{self.api_url}/api/v2/checkov/runConfiguration"
         self.reachability_run_config_url = f"{self.api_url}/api/v2/checkov/reachabilityRunConfiguration"
+        self.runtime_run_config_url = f"{self.api_url}/api/v1/runtime-images/repositories"
 
     def is_prisma_integration(self) -> bool:
         if self.bc_api_key and not self.is_bc_token(self.bc_api_key):
@@ -574,6 +576,13 @@ class BcPlatformIntegration:
             for item in report:
                 BcPlatformIntegration._delete_code_block_from_sast_report(item)
 
+    @staticmethod
+    def save_sast_report_locally(sast_scan_reports: Dict[str, Dict[str, Any]]) -> None:
+        for lang, report in sast_scan_reports.items():
+            filename = f'{lang}_report.json'
+            with open(f"/tmp/{filename}", 'w') as f:  # nosec
+                f.write(json.dumps(report))
+
     def persist_sast_scan_results(self, reports: List[Report]) -> None:
         sast_scan_reports = {}
         for report in reports:
@@ -588,7 +597,40 @@ class BcPlatformIntegration:
                 sast_scan_reports[report.check_type] = report.sast_report.model_dump(mode='json')  # type: ignore
             if self.on_prem:
                 BcPlatformIntegration._delete_code_block_from_sast_report(sast_scan_reports)
+
+        if os.getenv('SAVE_SAST_REPORT_LOCALLY'):
+            self.save_sast_report_locally(sast_scan_reports)
+
         persist_checks_results(sast_scan_reports, self.s3_client, self.bucket, self.repo_path)  # type: ignore
+
+    def persist_cdk_scan_results(self, reports: List[Report]) -> None:
+        cdk_scan_reports = {}
+        for report in reports:
+            if not report.check_type.startswith(CDK_FRAMEWORK_PREFIX):
+                continue
+            if not report.cdk_report:  # type: ignore
+                continue
+            for match_by_check in report.cdk_report.rule_match.values():  # type: ignore
+                for _, match in match_by_check.items():
+                    for m in match.matches:
+                        self.adjust_sast_match_location_path(m)
+                cdk_scan_reports[report.check_type] = report.cdk_report.model_dump(mode='json')  # type: ignore
+            if self.on_prem:
+                BcPlatformIntegration._delete_code_block_from_sast_report(cdk_scan_reports)
+
+        # In case we dont have sast report - create empty one
+        sast_reports = {}
+        for check_type, report in cdk_scan_reports.items():
+            lang = check_type.split('_')[1]
+            found_sast_report = False
+            for report in reports:
+                if report.check_type == f'sast_{lang}':
+                    found_sast_report = True
+            if not found_sast_report:
+                sast_reports[f'sast_{lang}'] = report.empty_sast_report.model_dump(mode='json')  # type: ignore
+
+        persist_checks_results(sast_reports, self.s3_client, self.bucket, self.repo_path)  # type: ignore
+        persist_checks_results(cdk_scan_reports, self.s3_client, self.bucket, self.repo_path)  # type: ignore
 
     def persist_scan_results(self, scan_reports: list[Report]) -> None:
         """
@@ -935,6 +977,44 @@ class BcPlatformIntegration:
                             exc_info=True)
             raise
 
+    def get_runtime_run_config(self) -> None:
+        try:
+            if self.skip_download is True:
+                logging.debug("Skipping customer run config API call")
+                raise
+
+            if not self.bc_api_key or not self.is_integration_configured():
+                raise Exception(
+                    "Tried to get customer run config, but the API key was missing or the integration was not set up")
+
+            if not self.bc_source:
+                logging.error("Source was not set")
+                raise
+
+            token = self.get_auth_token()
+            headers = merge_dicts(get_auth_header(token),
+                                  get_default_get_headers(self.bc_source, self.bc_source_version))
+
+            self.setup_http_manager()
+            if not self.http:
+                logging.error("HTTP manager was not correctly created")
+                raise
+
+            platform_type = PRISMA_PLATFORM if self.is_prisma_integration() else BRIDGECREW_PLATFORM
+            url = f"{self.runtime_run_config_url}?repoId={self.repo_id}"
+            request = self.http.request("GET", url,
+                                        headers=headers)  # type:ignore[no-untyped-call]
+            if request.status != 200:
+                error_message = get_auth_error_message(request.status, self.is_prisma_integration(), False)
+                logging.error(error_message)
+                raise BridgecrewAuthError(error_message)
+
+            logging.debug(f"Got run config from {platform_type} platform")
+
+            self.runtime_run_config_response = json.loads(request.data.decode("utf8"))
+        except Exception:
+            logging.debug('could not get runtime info for this repo')
+
     def get_prisma_build_policies(self, policy_filter: str) -> None:
         """
         Get Prisma policy for enriching runConfig with metadata
@@ -1125,6 +1205,7 @@ class BcPlatformIntegration:
                                      attrs=['bold']) + Style.RESET_ALL)
         self.persist_scan_results(scan_reports)
         self.persist_sast_scan_results(scan_reports)
+        self.persist_cdk_scan_results(scan_reports)
         print(Style.BRIGHT + colored("Report upload complete", 'green',
                                      attrs=['bold']) + Style.RESET_ALL)
         self.commit_repository(args.branch)

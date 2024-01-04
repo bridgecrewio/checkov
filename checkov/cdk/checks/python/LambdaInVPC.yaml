@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_117
   name: Ensure that AWS Lambda function is configured inside a VPC
   category: GENERAL_SECURITY
+  framework: cdk
 scope:
   languages:
     - python
