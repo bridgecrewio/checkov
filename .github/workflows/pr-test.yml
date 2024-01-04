@@ -104,7 +104,7 @@ jobs:
           testing-framework: pytest
           mode: fail-fast
           time-limit: 30  # approx 15% of the run time
-          config-args: matrix_value=${{ matrix.python }}
+          config-args: matrix_value=${{ matrix.python }} file_based_prediction=true
 
       - name: Unit tests
         env:
