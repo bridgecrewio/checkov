@@ -731,6 +731,8 @@ resource "aws_rds_cluster" "pass_rds_cluster" {
   vpc_security_group_ids = [aws_security_group.pass_rds_cluster.id]
 }
 
+resource "aws_security_group" "pass_rds_db_sg" {}
+
 # Redshift
 
 resource "aws_security_group" "pass_redshift" {
