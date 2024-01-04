@@ -1,6 +1,10 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.50...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.51...HEAD)
+
+## [3.1.51](https://github.com/bridgecrewio/checkov/compare/3.1.50...3.1.51) - 2024-01-03
+
+- no noteworthy changes
 
 ## [3.1.50](https://github.com/bridgecrewio/checkov/compare/3.1.46...3.1.50) - 2023-12-31
 
