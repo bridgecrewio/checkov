@@ -978,42 +978,7 @@ class BcPlatformIntegration:
             raise
 
     def get_runtime_run_config(self) -> None:
-        try:
-            if self.skip_download is True:
-                logging.debug("Skipping customer run config API call")
-                raise
-
-            if not self.bc_api_key or not self.is_integration_configured():
-                raise Exception(
-                    "Tried to get customer run config, but the API key was missing or the integration was not set up")
-
-            if not self.bc_source:
-                logging.error("Source was not set")
-                raise
-
-            token = self.get_auth_token()
-            headers = merge_dicts(get_auth_header(token),
-                                  get_default_get_headers(self.bc_source, self.bc_source_version))
-
-            self.setup_http_manager()
-            if not self.http:
-                logging.error("HTTP manager was not correctly created")
-                raise
-
-            platform_type = PRISMA_PLATFORM if self.is_prisma_integration() else BRIDGECREW_PLATFORM
-            url = f"{self.runtime_run_config_url}?repoId={self.repo_id}"
-            request = self.http.request("GET", url,
-                                        headers=headers)  # type:ignore[no-untyped-call]
-            if request.status != 200:
-                error_message = get_auth_error_message(request.status, self.is_prisma_integration(), False)
-                logging.error(error_message)
-                raise BridgecrewAuthError(error_message)
-
-            logging.debug(f"Got run config from {platform_type} platform")
-
-            self.runtime_run_config_response = json.loads(request.data.decode("utf8"))
-        except Exception:
-            logging.debug('could not get runtime info for this repo')
+        self.runtime_run_config_response = None
 
     def get_prisma_build_policies(self, policy_filter: str) -> None:
         """
