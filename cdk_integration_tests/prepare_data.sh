@@ -21,7 +21,7 @@
 
 
 echo "creating report for CDK python"
-pipenv run checkov -s --framework cdk --repo-id cli/cdk -o json \
+pipenv run checkov -s --framework cdk --repo-id checkov_integration_test/cdk -o json \
         -d "cdk_integration_tests/src/python" --external-checks-dir "checkov/cdk/checks/python" \
          > "checkov_report_cdk_python.json"
 
