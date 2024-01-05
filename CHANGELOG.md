@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.53...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.54...HEAD)
+
+## [3.1.54](https://github.com/bridgecrewio/checkov/compare/3.1.53...3.1.54) - 2024-01-05
+
+### Bug Fix
+
+- **general:** temporary disable runtime config - [#5921](https://github.com/bridgecrewio/checkov/pull/5921)
 
 ## [3.1.53](https://github.com/bridgecrewio/checkov/compare/3.1.51...3.1.53) - 2024-01-04
 
