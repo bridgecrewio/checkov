@@ -446,6 +446,8 @@ class Checkov:
                           file=sys.stderr)
                     self.exit_run()
 
+            bc_integration.get_runtime_run_config()
+            logger.info('test')
             bc_integration.setup_on_prem()
             if bc_integration.on_prem:
                 # disable --support for on-premises integrations
