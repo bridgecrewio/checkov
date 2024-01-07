@@ -257,8 +257,8 @@ class PrismaEngine(SastEngine):
         print('--------')
         a = ''
         for nn in d.get('rule_match').get('python').keys():
-            a += nn + ' '
-        print(a)
+            print(nn)
+        # print(a)
         print('--------')
         try:
             result = self.create_prisma_report(d)
