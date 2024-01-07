@@ -254,6 +254,7 @@ class PrismaEngine(SastEngine):
         # convert our byte array to a string
         analyze_code_string = analyze_code_bytes.decode('utf-8')
         d = json.loads(analyze_code_string)
+
         try:
             result = self.create_prisma_report(d)
         except ValidationError as e:
