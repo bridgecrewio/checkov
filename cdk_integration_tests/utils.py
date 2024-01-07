@@ -12,6 +12,9 @@ def load_failed_checks_from_file(lang: str) -> Dict[str, List[Dict[str, Any]]]:
         data = f.read()
         report = json.loads(data)
         assert report is not None
+        print("-------------")
+        print(str(report))
+        print("-------------")
         results = report.get("results", {})
         failed_checks = results.get("failed_checks")
         results = {}
