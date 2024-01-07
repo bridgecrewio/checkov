@@ -65,8 +65,8 @@ class TestRunnerValid(unittest.TestCase):
 
     def tearDown(self):
         parser_registry.context = {}
-        resource_registry.checks = deepcopy(self.orig_checks)
-        resource_registry.wildcard_checks = deepcopy(self.orig_wildcard_checks)
+        resource_registry.checks = self.orig_checks
+        resource_registry.wildcard_checks = self.orig_wildcard_checks
         parallel_runner.type = self.parallelization_type
         del os.environ["CHECKOV_GRAPH_FRAMEWORK"]
         del os.environ["TF_SPLIT_GRAPH"]
