@@ -32,9 +32,9 @@ class CdkRunner(SastRunner):
     ) -> list[Report]:
         runner_filter = runner_filter or RunnerFilter()
         runner_filter.remove_default_sast_policies = True
+
         for lang in CDKLanguages.set():
             self.cdk_langs.append(lang)
-            
         reports = super().run(
             root_folder=root_folder,
             external_checks_dir=external_checks_dir,
