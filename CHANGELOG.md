@@ -1,6 +1,26 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.50...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.54...HEAD)
+
+## [3.1.54](https://github.com/bridgecrewio/checkov/compare/3.1.53...3.1.54) - 2024-01-05
+
+### Bug Fix
+
+- **general:** temporary disable runtime config - [#5921](https://github.com/bridgecrewio/checkov/pull/5921)
+
+## [3.1.53](https://github.com/bridgecrewio/checkov/compare/3.1.51...3.1.53) - 2024-01-04
+
+### Feature
+
+- **terraform:** node pools should be configured separately from a cl… - [#5916](https://github.com/bridgecrewio/checkov/pull/5916)
+
+### Bug Fix
+
+- **terraform:** handle no action in aws_dlm_lifecycle_policy - [#5905](https://github.com/bridgecrewio/checkov/pull/5905)
+
+## [3.1.51](https://github.com/bridgecrewio/checkov/compare/3.1.50...3.1.51) - 2024-01-03
+
+- no noteworthy changes
 
 ## [3.1.50](https://github.com/bridgecrewio/checkov/compare/3.1.46...3.1.50) - 2023-12-31
 
