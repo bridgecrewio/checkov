@@ -21,7 +21,6 @@ prepare_data () {
   echo "creating report for CDK python"
   python checkov/main.py -s --framework cdk --repo-id prisma/cdk -o json \
     -d "cdk_integration_tests/src/python" > "checkov_report_cdk_python.json"
-
 }
 
 delete_reports () {
