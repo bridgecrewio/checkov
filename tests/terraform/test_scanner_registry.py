@@ -1,4 +1,5 @@
 import unittest
+from copy import deepcopy
 
 # do not remove this - prevents circular import dependency
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration  # noqa
@@ -11,7 +12,7 @@ from pathlib import Path
 class TestScannerRegistry(unittest.TestCase):
 
     def setUp(self):
-        self.checks = registry.checks
+        self.checks = deepcopy(registry.checks)
 
     def tearDown(self) -> None:
         registry.checks = self.checks

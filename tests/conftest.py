@@ -1,5 +1,5 @@
 
-from copy import deepcopy
+from copy import copy, deepcopy
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 import pytest
 
@@ -12,11 +12,11 @@ def clean_bc_integration() -> None:
 @pytest.fixture(scope='module', autouse=True)
 def clean_feature_registry():
     from checkov.common.bridgecrew.integration_features.integration_feature_registry import integration_feature_registry
-    old_features = deepcopy(integration_feature_registry.features)
-    before_registred_checks = deepcopy(BaseCheckRegistry._BaseCheckRegistry__all_registered_checks)
+    old_features = copy(integration_feature_registry.features)
+    before_registered_checks = copy(BaseCheckRegistry._BaseCheckRegistry__all_registered_checks)
     yield
-    integration_feature_registry.features = deepcopy(old_features)
-    BaseCheckRegistry._BaseCheckRegistry__all_registered_checks = before_registred_checks
+    integration_feature_registry.features = old_features
+    BaseCheckRegistry._BaseCheckRegistry__all_registered_checks = before_registered_checks
 
 
 
