@@ -241,6 +241,9 @@ class PrismaEngine(SastEngine):
         if list_policies:
             return self.run_go_library_list_policies(document)
 
+        print("docdocdoc")
+        print(str(document))
+
         library = ctypes.cdll.LoadLibrary(self.lib_path)
         analyze_code = library.analyzeCode
         analyze_code.restype = ctypes.c_void_p
