@@ -32,9 +32,6 @@ class CdkRunner(SastRunner):
     ) -> list[Report]:
         runner_filter = runner_filter or RunnerFilter()
         runner_filter.remove_default_sast_policies = True
-
-        print("i am in cdk runner")
-
         for lang in CDKLanguages.set():
             self.cdk_langs.append(lang)
             

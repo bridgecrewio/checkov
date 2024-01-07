@@ -241,9 +241,6 @@ class PrismaEngine(SastEngine):
         if list_policies:
             return self.run_go_library_list_policies(document)
 
-        print("docdocdoc")
-        print(str(document))
-
         library = ctypes.cdll.LoadLibrary(self.lib_path)
         analyze_code = library.analyzeCode
         analyze_code.restype = ctypes.c_void_p
@@ -359,9 +356,6 @@ class PrismaEngine(SastEngine):
                 reports.append(report)
 
         all_report = self._split_sast_cdk_reports(reports)
-        print("??????all_report???????")
-        print(str(all_report))
-        print("??????all_report???????")
         return all_report
 
     def _split_sast_cdk_reports(self, sast_reports: List[SastReport]) -> List[Union[SastReport, CDKReport]]:
