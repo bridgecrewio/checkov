@@ -255,7 +255,10 @@ class PrismaEngine(SastEngine):
         analyze_code_string = analyze_code_bytes.decode('utf-8')
         d = json.loads(analyze_code_string)
         print('--------')
-        print(str(d.get('rule_match').get('python').keys()))
+        a = ''
+        for nn in d.get('rule_match').get('python').keys():
+            a += nn + ' '
+        print(a)
         print('--------')
         try:
             result = self.create_prisma_report(d)
