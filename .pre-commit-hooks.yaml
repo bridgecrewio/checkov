@@ -14,17 +14,48 @@
     exclude: \.+.terraform\/.*$
     require_serial: true
 
+-   id: checkov_container
+    name: Checkov
+    description: This hook runs checkov.
+    entry: --tty bridgecrew/checkov:latest -d .
+    args: []
+    language: docker_image
+    pass_filenames: false
+    always_run: false
+    files: \.tf$
+    exclude: \.+.terraform\/.*$
+    require_serial: true
+
 -   id: checkov_diff
     name: Checkov Diff
     description: This hook runs checkov against all changed files.
-    entry: checkov --enable-secret-scan-all-files -f
+    entry: checkov --enable-secret-scan-all-files
+    args: ["-f"] # required and must come last
     language: python
+    require_serial: true
+
+-   id: checkov_diff_container
+    name: Checkov Diff
+    description: This hook runs checkov against all changed files.
+    entry: --tty bridgecrew/checkov:latest --enable-secret-scan-all-files
+    args: ["-f"] # required and must come last
+    language: docker_image
     require_serial: true
 
 -   id: checkov_secrets
     name: Checkov Secrets
     description: This hook looks for secrets with checkov.
-    entry: checkov --framework secrets --enable-secret-scan-all-files -f
+    entry: checkov --framework secrets --enable-secret-scan-all-files
+    args: ["-f"] # required and must come last
     language: python
+    always_run: true
+    require_serial: true
+
+-   id: checkov_secrets_container
+    name: Checkov Secrets
+    description: This hook looks for secrets with checkov.
+    entry: --tty bridgecrew/checkov:latest --framework secrets --enable-secret-scan-all-files
+    args: ["-f"] # required and must come last
+    language: docker_image
     always_run: true
     require_serial: true
