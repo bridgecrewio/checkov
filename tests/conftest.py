@@ -27,5 +27,5 @@ def reset_checks():
     before_checks = deepcopy(registry.checks)
     before_wildcards_checks = deepcopy(registry.wildcard_checks)
     yield
-    registry.checks = before_checks
-    registry.wildcard_checks = before_wildcards_checks
+    registry.checks = deepcopy(before_checks)
+    registry.wildcard_checks = deepcopy(before_wildcards_checks)
