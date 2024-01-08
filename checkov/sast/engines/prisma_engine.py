@@ -75,6 +75,8 @@ class PrismaEngine(SastEngine):
         logging.info(bc_integration.bc_api_key)
 
         status = self.setup_sast_artifact()
+        logging.info("status")
+        logging.info(status)
         if not status:
             return []
 
