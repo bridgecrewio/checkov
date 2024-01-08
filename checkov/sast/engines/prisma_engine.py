@@ -148,10 +148,18 @@ class PrismaEngine(SastEngine):
                 url=f"{bc_integration.api_url}/{self.sast_platform_base_path}/{os_type}/{machine}/artifacts",
                 headers=headers,
             )
-            response.raise_for_status()
+
+
+            logging.info("current_version")
+            logging.info(current_version)
+
+            logging.info(f"{bc_integration.api_url}/{self.sast_platform_base_path}/{os_type}/{machine}/artifacts")
 
             logging.info("response.status_code")
             logging.info(response.status_code)
+
+            response.raise_for_status()
+            
             if response.status_code == 304:
                 return True
 
