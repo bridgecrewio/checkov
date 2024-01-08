@@ -71,6 +71,9 @@ class PrismaEngine(SastEngine):
             logging.info("The --bc-api-key flag needs to be set to run SAST Prisma Cloud scanning")
             return []
 
+        logging.info("bc_integration.bc_api_key")
+        logging.info(bc_integration.bc_api_key)
+
         status = self.setup_sast_artifact()
         if not status:
             return []
@@ -145,8 +148,8 @@ class PrismaEngine(SastEngine):
             )
             response.raise_for_status()
 
-            print("response.status_code")
-            print(response.status_code)
+            logging.info("response.status_code")
+            logging.info(response.status_code)
             if response.status_code == 304:
                 return True
 
@@ -445,8 +448,6 @@ class PrismaEngine(SastEngine):
             logging.info("The --bc-api-key flag needs to be set to run Sast prisma scanning")
             return []
 
-        print("bc_integration.bc_api_key")
-        print(bc_integration.bc_api_key)
         self.setup_sast_artifact()
         prisma_lib_path = self.get_sast_artifact()
         if not prisma_lib_path:
