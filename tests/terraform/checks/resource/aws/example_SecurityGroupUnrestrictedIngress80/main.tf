@@ -299,6 +299,13 @@ resource "aws_vpc_security_group_ingress_rule" "fail2" {
   to_port     = 80
 }
 
+resource "aws_vpc_security_group_ingress_rule" "pass_prefix_list" {
+  prefix_list_ids = "some_id"
+  from_port   = 80
+  ip_protocol = "tcp"
+  to_port     = 80
+}
+
 resource "aws_vpc_security_group_ingress_rule" "pass" {
   security_group_id = aws_security_group.example.id
 

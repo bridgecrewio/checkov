@@ -1,3 +1,4 @@
+from copy import deepcopy
 import inspect
 import os
 import shutil
@@ -55,7 +56,8 @@ EXTERNAL_MODULES_DOWNLOAD_PATH = os.environ.get('EXTERNAL_MODULES_DIR', DEFAULT_
 ])
 class TestRunnerValid(unittest.TestCase):
     def setUp(self) -> None:
-        self.orig_checks = resource_registry.checks
+        self.orig_checks = deepcopy(resource_registry.checks)
+        self.orig_wildcard_checks = deepcopy(resource_registry.wildcard_checks)
         self.parallelization_type = parallel_runner.type
         self.db_connector = self.db_connector
         os.environ["CHECKOV_GRAPH_FRAMEWORK"] = self.graph
@@ -64,6 +66,7 @@ class TestRunnerValid(unittest.TestCase):
     def tearDown(self):
         parser_registry.context = {}
         resource_registry.checks = self.orig_checks
+        resource_registry.wildcard_checks = self.orig_wildcard_checks
         parallel_runner.type = self.parallelization_type
         del os.environ["CHECKOV_GRAPH_FRAMEWORK"]
         del os.environ["TF_SPLIT_GRAPH"]

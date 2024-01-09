@@ -1,4 +1,5 @@
 import unittest
+from copy import deepcopy
 
 # do not remove this - prevents circular import dependency
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration  # noqa
@@ -9,6 +10,12 @@ from checkov.terraform.checks.resource.registry import resource_registry as regi
 from pathlib import Path
 
 class TestScannerRegistry(unittest.TestCase):
+
+    def setUp(self):
+        self.checks = deepcopy(registry.checks)
+
+    def tearDown(self) -> None:
+        registry.checks = self.checks
 
     def test_num_of_scanners(self):
         scanners_counter = 0
