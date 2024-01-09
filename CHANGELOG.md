@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.54...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.55...HEAD)
+
+## [3.1.55](https://github.com/bridgecrewio/checkov/compare/3.1.54...3.1.55) - 2024-01-08
+
+### Bug Fix
+
+- **terraform:** Support "pass_prefix_list" for SG ingress rules correctly - [#5918](https://github.com/bridgecrewio/checkov/pull/5918)
 
 ## [3.1.54](https://github.com/bridgecrewio/checkov/compare/3.1.53...3.1.54) - 2024-01-05
 
