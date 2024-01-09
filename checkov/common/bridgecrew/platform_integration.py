@@ -92,6 +92,9 @@ CI_METADATA_EXTRACTOR = registry.get_extractor()
 
 class BcPlatformIntegration:
     def __init__(self) -> None:
+        self.clean()
+
+    def clean(self) -> None:
         self.bc_api_key = read_key()
         self.s3_client: S3Client | None = None
         self.bucket: str | None = None
