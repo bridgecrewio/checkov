@@ -59,7 +59,7 @@ setup(
             "pytest==5.3.1",
             "coverage==5.5",
             "coverage-badge",
-            "GitPython==3.1.7",
+            "GitPython==3.1.41",
             "bandit",
             "jsonschema",
         ]
