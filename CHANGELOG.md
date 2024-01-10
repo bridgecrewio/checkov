@@ -1,6 +1,14 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.55...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.57...HEAD)
+
+## [3.1.57](https://github.com/bridgecrewio/checkov/compare/3.1.55...3.1.57) - 2024-01-10
+
+### Bug Fix
+
+- **general:** fix multiprocess abilities - [#5887](https://github.com/bridgecrewio/checkov/pull/5887)
+- **general:** fixing hidden dependencies & state breaking tests  - [#5911](https://github.com/bridgecrewio/checkov/pull/5911)
+- **general:** Reenabling cdk-integration-tests - [#5922](https://github.com/bridgecrewio/checkov/pull/5922)
 
 ## [3.1.55](https://github.com/bridgecrewio/checkov/compare/3.1.54...3.1.55) - 2024-01-08
 
