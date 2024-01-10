@@ -43,4 +43,9 @@ class CdkRunner(SastRunner):
             collect_skip_comments=collect_skip_comments,
         )
 
-        return reports
+        reports_to_keep = []
+        for report in reports:
+            if report.check_type.startswith('cdk'):
+                reports_to_keep.append(report)
+
+        return reports_to_keep
