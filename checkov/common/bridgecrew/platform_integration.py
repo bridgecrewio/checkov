@@ -555,15 +555,19 @@ class BcPlatformIntegration:
 
         self.persist_files(files_to_persist)
 
-    def adjust_sast_match_location_path(self, match: Match) -> None:
+    def adjust_sast_match_location_path(self, match: Match, args: argparse.Namespace) -> None:
         for dir in self.scan_dir:
             if not match.location.path.startswith(dir):
-                continue
+                basename = os.path.abspath(args.directory[0])
+                match.location.path = match.location.path.replace(basename, self.repo_path)
+                return
             match.location.path = match.location.path.replace(dir, self.repo_path)  # type: ignore
             return
         for file in self.scan_file:
             if match.location.path != file:
-                continue
+                basename = os.path.abspath(args.file[0])
+                match.location.path = match.location.path.replace(basename, self.repo_path)
+                return
             file_dir = '/'.join(match.location.path.split('/')[0:-1])
             match.location.path = match.location.path.replace(file_dir, self.repo_path)  # type: ignore
             return
@@ -586,7 +590,7 @@ class BcPlatformIntegration:
             with open(f"/tmp/{filename}", 'w') as f:  # nosec
                 f.write(json.dumps(report))
 
-    def persist_sast_scan_results(self, reports: List[Report]) -> None:
+    def persist_sast_scan_results(self, reports: List[Report], args: argparse.Namespace) -> None:
         sast_scan_reports = {}
         for report in reports:
             if not report.check_type.startswith('sast'):
@@ -596,7 +600,7 @@ class BcPlatformIntegration:
             for _, match_by_check in report.sast_report.rule_match.items():  # type: ignore
                 for _, match in match_by_check.items():
                     for m in match.matches:
-                        self.adjust_sast_match_location_path(m)
+                        self.adjust_sast_match_location_path(m, args)
                 sast_scan_reports[report.check_type] = report.sast_report.model_dump(mode='json')  # type: ignore
             if self.on_prem:
                 BcPlatformIntegration._delete_code_block_from_sast_report(sast_scan_reports)
@@ -606,7 +610,7 @@ class BcPlatformIntegration:
 
         persist_checks_results(sast_scan_reports, self.s3_client, self.bucket, self.repo_path)  # type: ignore
 
-    def persist_cdk_scan_results(self, reports: List[Report]) -> None:
+    def persist_cdk_scan_results(self, reports: List[Report], args: argparse.Namespace) -> None:
         cdk_scan_reports = {}
         for report in reports:
             if not report.check_type.startswith(CDK_FRAMEWORK_PREFIX):
@@ -616,7 +620,7 @@ class BcPlatformIntegration:
             for match_by_check in report.cdk_report.rule_match.values():  # type: ignore
                 for _, match in match_by_check.items():
                     for m in match.matches:
-                        self.adjust_sast_match_location_path(m)
+                        self.adjust_sast_match_location_path(m, args)
                 cdk_scan_reports[report.check_type] = report.cdk_report.model_dump(mode='json')  # type: ignore
             if self.on_prem:
                 BcPlatformIntegration._delete_code_block_from_sast_report(cdk_scan_reports)
