@@ -607,8 +607,8 @@ class Checkov:
                         if not bc_integration.on_prem:
                             bc_integration.persist_repository(os.path.dirname(self.config.dockerfile_path), files=files, sast_languages=runner_filter.sast_languages)
                         bc_integration.persist_scan_results(self.scan_reports)
-                        bc_integration.persist_sast_scan_results(self.scan_reports, self.config)
-                        bc_integration.persist_cdk_scan_results(self.scan_reports, self.config)
+                        bc_integration.persist_sast_scan_results(self.scan_reports)
+                        bc_integration.persist_cdk_scan_results(self.scan_reports)
                         bc_integration.persist_image_scan_results(sca_runner.raw_report, self.config.dockerfile_path,
                                                                   self.config.docker_image,
                                                                   self.config.branch)
@@ -766,8 +766,8 @@ class Checkov:
                     scan_reports_to_upload = [report for report in self.scan_reports if report.check_type != 'sca_image']
                     scan_reports_to_upload.append(sca_supported_ir_report)
             bc_integration.persist_scan_results(scan_reports_to_upload)
-            bc_integration.persist_sast_scan_results(scan_reports_to_upload, self.config)
-            bc_integration.persist_cdk_scan_results(scan_reports_to_upload, self.config)
+            bc_integration.persist_sast_scan_results(scan_reports_to_upload)
+            bc_integration.persist_cdk_scan_results(scan_reports_to_upload)
             bc_integration.persist_assets_scan_results(self.sast_data.imports_data)
             bc_integration.persist_reachability_scan_results(self.sast_data.reachability_report)
             bc_integration.persist_run_metadata(self.run_metadata)

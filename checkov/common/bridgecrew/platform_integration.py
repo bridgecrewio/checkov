@@ -555,22 +555,23 @@ class BcPlatformIntegration:
 
         self.persist_files(files_to_persist)
 
-    def adjust_sast_match_location_path(self, match: Match, args: argparse.Namespace) -> None:
+    def adjust_sast_match_location_path(self, match: Match) -> None:
         for dir in self.scan_dir:
-            if not match.location.path.startswith(dir):
-                basename = os.path.abspath(args.directory[0])
-                match.location.path = match.location.path.replace(basename, self.repo_path)
+            if match.location.path.startswith(dir):
+                match.location.path = match.location.path.replace(dir, self.repo_path)  # type: ignore
                 return
-            match.location.path = match.location.path.replace(dir, self.repo_path)  # type: ignore
-            return
+            if dir in  match.location.path:
+                match.location.path = match.location.path.replace(os.path.abspath(dir), self.repo_path)
+                return
+           
         for file in self.scan_file:
-            if match.location.path != file:
-                basename = os.path.abspath(args.file[0])
-                match.location.path = match.location.path.replace(basename, self.repo_path)
+            if match.location.path == file:
+                file_dir = '/'.join(match.location.path.split('/')[0:-1])
+                match.location.path = match.location.path.replace(file_dir, self.repo_path)  # type: ignore
                 return
-            file_dir = '/'.join(match.location.path.split('/')[0:-1])
-            match.location.path = match.location.path.replace(file_dir, self.repo_path)  # type: ignore
-            return
+            if file in match.location.path:
+                match.location.path = match.location.path.replace(os.path.abspath(file), self.repo_path)
+                return
 
     @staticmethod
     def _delete_code_block_from_sast_report(report: Dict[str, Any]) -> None:
@@ -590,7 +591,7 @@ class BcPlatformIntegration:
             with open(f"/tmp/{filename}", 'w') as f:  # nosec
                 f.write(json.dumps(report))
 
-    def persist_sast_scan_results(self, reports: List[Report], args: argparse.Namespace) -> None:
+    def persist_sast_scan_results(self, reports: List[Report]) -> None:
         sast_scan_reports = {}
         for report in reports:
             if not report.check_type.startswith('sast'):
@@ -600,7 +601,7 @@ class BcPlatformIntegration:
             for _, match_by_check in report.sast_report.rule_match.items():  # type: ignore
                 for _, match in match_by_check.items():
                     for m in match.matches:
-                        self.adjust_sast_match_location_path(m, args)
+                        self.adjust_sast_match_location_path(m)
                 sast_scan_reports[report.check_type] = report.sast_report.model_dump(mode='json')  # type: ignore
             if self.on_prem:
                 BcPlatformIntegration._delete_code_block_from_sast_report(sast_scan_reports)
@@ -610,7 +611,7 @@ class BcPlatformIntegration:
 
         persist_checks_results(sast_scan_reports, self.s3_client, self.bucket, self.repo_path)  # type: ignore
 
-    def persist_cdk_scan_results(self, reports: List[Report], args: argparse.Namespace) -> None:
+    def persist_cdk_scan_results(self, reports: List[Report]) -> None:
         cdk_scan_reports = {}
         for report in reports:
             if not report.check_type.startswith(CDK_FRAMEWORK_PREFIX):
@@ -620,7 +621,7 @@ class BcPlatformIntegration:
             for match_by_check in report.cdk_report.rule_match.values():  # type: ignore
                 for _, match in match_by_check.items():
                     for m in match.matches:
-                        self.adjust_sast_match_location_path(m, args)
+                        self.adjust_sast_match_location_path(m)
                 cdk_scan_reports[report.check_type] = report.cdk_report.model_dump(mode='json')  # type: ignore
             if self.on_prem:
                 BcPlatformIntegration._delete_code_block_from_sast_report(cdk_scan_reports)
