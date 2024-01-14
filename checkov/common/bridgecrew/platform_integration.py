@@ -559,12 +559,18 @@ class BcPlatformIntegration:
         for dir in self.scan_dir:
             if match.location.path.startswith(os.path.abspath(dir)):
                 match.location.path = match.location.path.replace(os.path.abspath(dir), self.repo_path)  # type: ignore
+                if match.metadata.code_locations:
+                    for code_location in match.metadata.code_locations:
+                        code_location.path = code_location.path.replace(os.path.abspath(dir), self.repo_path)  # type: ignore
                 return
 
         for file in self.scan_file:
             if match.location.path == os.path.abspath(file):
                 file_dir = '/'.join(match.location.path.split('/')[0:-1])
                 match.location.path = match.location.path.replace(os.path.abspath(file_dir), self.repo_path)  # type: ignore
+                if match.metadata.code_locations:
+                    for code_location in match.metadata.code_locations:
+                        code_location.path = code_location.path.replace(os.path.abspath(file_dir), self.repo_path)  # type: ignore
                 return
 
     @staticmethod
