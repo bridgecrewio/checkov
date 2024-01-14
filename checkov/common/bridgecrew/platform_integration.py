@@ -557,16 +557,15 @@ class BcPlatformIntegration:
 
     def adjust_sast_match_location_path(self, match: Match) -> None:
         for dir in self.scan_dir:
-            if not match.location.path.startswith(dir):
-                continue
-            match.location.path = match.location.path.replace(dir, self.repo_path)  # type: ignore
-            return
+            if match.location.path.startswith(os.path.abspath(dir)):
+                match.location.path = match.location.path.replace(os.path.abspath(dir), self.repo_path)  # type: ignore
+                return
+
         for file in self.scan_file:
-            if match.location.path != file:
-                continue
-            file_dir = '/'.join(match.location.path.split('/')[0:-1])
-            match.location.path = match.location.path.replace(file_dir, self.repo_path)  # type: ignore
-            return
+            if match.location.path == os.path.abspath(file):
+                file_dir = '/'.join(match.location.path.split('/')[0:-1])
+                match.location.path = match.location.path.replace(os.path.abspath(file_dir), self.repo_path)  # type: ignore
+                return
 
     @staticmethod
     def _delete_code_block_from_sast_report(report: Dict[str, Any]) -> None:
