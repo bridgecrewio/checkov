@@ -154,7 +154,7 @@ resource "google_sql_database_instance" "pass2" {
 }
 
 resource "google_sql_database_instance" "fail3" {
-  database_version = "SQLSERVER_2017_STANDARD"
+  database_version = "SQLSERVER_2019_STANDARD"
   name             = "general-sqlserver12"
   project          = "gcp-bridgecrew-deployment"
   region           = "us-central1"
@@ -210,7 +210,7 @@ resource "google_sql_database_instance" "fail3" {
 }
 
 resource "google_sql_database_instance" "pass3" {
-  database_version = "SQLSERVER_2019_STANDARD"
+  database_version = "SQLSERVER_2022_STANDARD"
   name             = "general-sqlserver12"
   project          = "gcp-bridgecrew-deployment"
   region           = "us-central1"
