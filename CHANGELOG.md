@@ -1,6 +1,15 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.57...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.60...HEAD)
+
+## [3.1.60](https://github.com/bridgecrewio/checkov/compare/3.1.57...3.1.60) - 2024-01-14
+
+### Bug Fix
+
+- **sast:** fix relative paths in sast cdk reports - [#5932](https://github.com/bridgecrewio/checkov/pull/5932)
+- **sast:** fix sast cdk code location paths - [#5938](https://github.com/bridgecrewio/checkov/pull/5938)
+- **terraform:** CKV_GCP_79  Upgrade CloudSQL SQLSERVER major version to 2022 - [#5936](https://github.com/bridgecrewio/checkov/pull/5936)
+- **terraform:** Improved bad performance pathlib check - [#5939](https://github.com/bridgecrewio/checkov/pull/5939)
 
 ## [3.1.57](https://github.com/bridgecrewio/checkov/compare/3.1.55...3.1.57) - 2024-01-10
 
