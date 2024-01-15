@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "6895f2b2f8f158fe647dcde4f0c7367189a36531f9defc92036ed884830f378f"
+            "sha256": "294657de07c09acbc1be057df594af47be957d1cf0e44c7a71e23e36674d81bf"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -407,7 +407,7 @@
                 "sha256:38a26d963ee3ad93332ddf782f9259c5bdfe405e73408d943ef5e7d0c3767ec7",
                 "sha256:97d06703873518cc5038509443742b25069a3c7562d1ea72ff08bfadde1ce777"
             ],
-            "markers": "python_version >= '3.6' and python_version < '4.0'",
+            "markers": "python_version >= '3.6' and python_full_version < '4.0.0'",
             "version": "==0.5.6"
         },
         "cloudsplaining": {
@@ -988,7 +988,7 @@
                 "sha256:389c2254d912bec3a44acdac667c947d73c59325050d5ae66386e1ed7108a45a",
                 "sha256:875bb9c01df77f563dfcd1e75bb4244b5596083d3aad4ccd3fb63e1f5a9d3e5f"
             ],
-            "markers": "python_version >= '3.7' and python_version < '4.0'",
+            "markers": "python_version >= '3.7' and python_full_version < '4.0.0'",
             "version": "==0.17.1"
         },
         "pycares": {
@@ -1303,7 +1303,7 @@
                 "sha256:0438920912a642c866a513de6fe8a0001bd86ef975057d6962c79ce4771687cd",
                 "sha256:9995eb8569428059b8c1affd26b25eac510d64f5043d9ce8c84e0d0036e995ae"
             ],
-            "markers": "python_version < '4.0' and python_full_version >= '3.8.1'",
+            "markers": "python_full_version >= '3.8.1' and python_full_version < '4.0.0'",
             "version": "==7.0.0"
         },
         "referencing": {
@@ -1686,14 +1686,6 @@
             ],
             "index": "pypi",
             "version": "==4.66.1"
-        },
-        "types-colorama": {
-            "hashes": [
-                "sha256:18294bc18f60dc0b4895de8119964a5d895f5e180c2d1308fdd33009c0fa0f38",
-                "sha256:49096b4c4cbfcaa11699a0470c36e4f5631f193fb980188e013ea64445d35656"
-            ],
-            "index": "pypi",
-            "version": "==0.4.15.20240106"
         },
         "typing-extensions": {
             "hashes": [
