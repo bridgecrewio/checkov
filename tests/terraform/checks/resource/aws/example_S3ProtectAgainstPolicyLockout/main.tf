@@ -146,6 +146,7 @@ resource "aws_s3_bucket_policy" "pass3" {
                     "Principal": {
                         "AWS": "some_arn"
                     }
+                    "Effect": "Deny"
                 }
             ]
         }
