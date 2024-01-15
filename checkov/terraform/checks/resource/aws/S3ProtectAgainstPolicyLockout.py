@@ -31,8 +31,6 @@ class S3ProtectAgainstPolicyLockout(BaseResourceCheck):
                         continue
 
                     principal = statement['Principal']
-                    # if principal == '*':
-                    #     return CheckResult.FAILED
                     if 'AWS' in statement['Principal']:
                         # Can be a string or an array of strings
                         aws = statement['Principal']['AWS']
