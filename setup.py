@@ -70,7 +70,7 @@ setup(
         "bc-jsonpath-ng==1.6.1",
         "pycep-parser==0.4.1",
         "tabulate>=0.9.0,<0.10.0",
-        "colorama>=0.4.6,<0.5.0",
+        "colorama>=0.4.3,<0.5.0",
         "termcolor>=2.2.0,<2.4.0",
         "junit-xml>=1.9,<2.0",
         "dpath==2.1.3",
