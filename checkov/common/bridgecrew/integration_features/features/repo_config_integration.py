@@ -114,6 +114,10 @@ class RepoConfigIntegration(BaseIntegrationFeature):
             'Selected the following enforcement rule (it will not be applied unless --use-enforcement-rules is specified):')
         logging.debug(json.dumps(self.enforcement_rule, indent=2))
 
+        # handle the rename in the platform side
+        if 'SAST' in self.enforcement_rule['codeCategories']:
+            self.enforcement_rule['codeCategories']['WEAKNESSES'] = self.enforcement_rule['codeCategories']['SAST']
+
         for code_category_type in [e.value for e in CodeCategoryType]:
             config = RepoConfigIntegration._get_code_category_object(self.enforcement_rule['codeCategories'],
                                                                      code_category_type)
