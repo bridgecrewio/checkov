@@ -71,7 +71,7 @@ class Runner(BaseRunner[None, None, None]):
         reports = []
         try:
             reports = self.engine.get_reports(targets, self.registry, runner_filter.sast_languages, self.cdk_langs)
-        except BaseException as e:
+        except BaseException as e:  # noqa: B036
             logger.error(f"got error when try to run prisma sast: {e}")
 
         return reports

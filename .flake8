@@ -3,7 +3,7 @@
 [flake8]
 max-line-length = 120
 # E203,E501 don't work with black together
-ignore = E203,E501,E731,W503,W504,DUO107,DUO104,DUO130,DUO109,DUO116,B028,B950,TC001,TC003,TC006,B907
+ignore = E203,E501,E731,W503,W504,DUO107,DUO104,DUO130,DUO109,DUO116,B028,B950,TC001,TC003,TC006,B907,B038
 select = C,E,F,W,B,B9,A,TC
 extend-exclude = .github, .pytest_cache, docs/*, venv/*, tests/*, flake8_plugins/*, cdk_integration_tests/src/python/*
 
