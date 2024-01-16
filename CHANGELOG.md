@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.61...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.63...HEAD)
+
+## [3.1.63](https://github.com/bridgecrewio/checkov/compare/3.1.61...3.1.63) - 2024-01-16
+
+### Bug Fix
+
+- **sast:** Fix serialize for sast report with taint mode - [#5949](https://github.com/bridgecrewio/checkov/pull/5949)
 
 ## [3.1.61](https://github.com/bridgecrewio/checkov/compare/3.1.60...3.1.61) - 2024-01-15
 
