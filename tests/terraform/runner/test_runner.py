@@ -132,7 +132,7 @@ class TestRunnerValid(unittest.TestCase):
         report.print_failed_github_md()
 
     def test_py_graph_check(self):
-        if not self.db_connector == IgraphConnector:
+        if not self.db_connector == RustworkxConnector:
             return
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources/py_graph_check"
