@@ -115,8 +115,11 @@ class RepoConfigIntegration(BaseIntegrationFeature):
         logging.debug(json.dumps(self.enforcement_rule, indent=2))
 
         # handle the rename in the platform side
-        if 'SAST' in self.enforcement_rule['codeCategories']:
+        if 'SAST' in self.enforcement_rule['codeCategories'] and 'WEAKNESSES' not in self.enforcement_rule['codeCategories']:
             self.enforcement_rule['codeCategories']['WEAKNESSES'] = self.enforcement_rule['codeCategories']['SAST']
+
+        if 'WEAKNESSES' in self.enforcement_rule['codeCategories'] and 'SAST' not in self.enforcement_rule['codeCategories']:
+            self.enforcement_rule['codeCategories']['SAST'] = self.enforcement_rule['codeCategories']['WEAKNESSES']
 
         for code_category_type in [e.value for e in CodeCategoryType]:
             config = RepoConfigIntegration._get_code_category_object(self.enforcement_rule['codeCategories'],
