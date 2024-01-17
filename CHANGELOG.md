@@ -1,6 +1,18 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.60...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.63...HEAD)
+
+## [3.1.63](https://github.com/bridgecrewio/checkov/compare/3.1.61...3.1.63) - 2024-01-16
+
+### Bug Fix
+
+- **sast:** Fix serialize for sast report with taint mode - [#5949](https://github.com/bridgecrewio/checkov/pull/5949)
+
+## [3.1.61](https://github.com/bridgecrewio/checkov/compare/3.1.60...3.1.61) - 2024-01-15
+
+### Bug Fix
+
+- **general:** allow colorama version >=0.4.3,<0.5.0 in setup - [#5944](https://github.com/bridgecrewio/checkov/pull/5944)
 
 ## [3.1.60](https://github.com/bridgecrewio/checkov/compare/3.1.57...3.1.60) - 2024-01-14
 
