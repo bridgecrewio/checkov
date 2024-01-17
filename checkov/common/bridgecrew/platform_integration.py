@@ -580,7 +580,7 @@ class BcPlatformIntegration:
                 if match.metadata.taint_mode and match.metadata.taint_mode.data_flow:
                     for df in match.metadata.taint_mode.data_flow:
                         df.path = df.path.replace(os.path.abspath(file_dir), self.repo_path)  # type: ignore
-                        
+
                 return
 
     @staticmethod
