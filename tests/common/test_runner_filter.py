@@ -452,7 +452,7 @@ class TestRunnerFilter(unittest.TestCase):
         enforcement_rule_configs = {
             CodeCategoryType.IAC: CodeCategoryConfiguration(CodeCategoryType.IAC, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.MEDIUM]),
              CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.SAST: CodeCategoryConfiguration(CodeCategoryType.SAST, Severities[BcSeverities.HIGH],Severities[BcSeverities.HIGH]),
+            CodeCategoryType.WEAKNESSES: CodeCategoryConfiguration(CodeCategoryType.WEAKNESSES, Severities[BcSeverities.HIGH],Severities[BcSeverities.HIGH]),
             CodeCategoryType.BUILD_INTEGRITY: CodeCategoryConfiguration(CodeCategoryType.BUILD_INTEGRITY, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
             CodeCategoryType.LICENSES: CodeCategoryConfiguration(CodeCategoryType.LICENSES, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
             CodeCategoryType.VULNERABILITIES: CodeCategoryConfiguration(CodeCategoryType.VULNERABILITIES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH])
@@ -472,7 +472,7 @@ class TestRunnerFilter(unittest.TestCase):
         enforcement_rule_configs = {
             CodeCategoryType.IAC: CodeCategoryConfiguration(CodeCategoryType.IAC, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.MEDIUM]),
             CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.SAST: CodeCategoryConfiguration(CodeCategoryType.SAST, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
+            CodeCategoryType.WEAKNESSES: CodeCategoryConfiguration(CodeCategoryType.WEAKNESSES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.BUILD_INTEGRITY: CodeCategoryConfiguration(CodeCategoryType.BUILD_INTEGRITY, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
             CodeCategoryType.LICENSES: CodeCategoryConfiguration(CodeCategoryType.LICENSES, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
             CodeCategoryType.VULNERABILITIES: CodeCategoryConfiguration(CodeCategoryType.VULNERABILITIES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH])
@@ -498,7 +498,7 @@ class TestRunnerFilter(unittest.TestCase):
         enforcement_rule_configs = {
             CodeCategoryType.IAC: CodeCategoryConfiguration(CodeCategoryType.IAC, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.MEDIUM]),
             CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.SAST: CodeCategoryConfiguration(CodeCategoryType.SAST, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
+            CodeCategoryType.WEAKNESSES: CodeCategoryConfiguration(CodeCategoryType.WEAKNESSES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.BUILD_INTEGRITY: CodeCategoryConfiguration(CodeCategoryType.BUILD_INTEGRITY, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
             CodeCategoryType.LICENSES: CodeCategoryConfiguration(CodeCategoryType.LICENSES, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
             CodeCategoryType.VULNERABILITIES: CodeCategoryConfiguration(CodeCategoryType.VULNERABILITIES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH])
@@ -524,7 +524,7 @@ class TestRunnerFilter(unittest.TestCase):
         enforcement_rule_configs = {
             CodeCategoryType.IAC: CodeCategoryConfiguration(CodeCategoryType.IAC, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.MEDIUM]),
             CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.SAST: CodeCategoryConfiguration(CodeCategoryType.SAST, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
+            CodeCategoryType.WEAKNESSES: CodeCategoryConfiguration(CodeCategoryType.WEAKNESSES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.BUILD_INTEGRITY: CodeCategoryConfiguration(CodeCategoryType.BUILD_INTEGRITY, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
             CodeCategoryType.LICENSES: CodeCategoryConfiguration(CodeCategoryType.LICENSES, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
             CodeCategoryType.VULNERABILITIES: CodeCategoryConfiguration(CodeCategoryType.VULNERABILITIES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH])
@@ -549,7 +549,7 @@ class TestRunnerFilter(unittest.TestCase):
         enforcement_rule_configs = {
             CodeCategoryType.IAC: CodeCategoryConfiguration(CodeCategoryType.IAC, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.MEDIUM]),
             CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.SAST: CodeCategoryConfiguration(CodeCategoryType.SAST, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
+            CodeCategoryType.WEAKNESSES: CodeCategoryConfiguration(CodeCategoryType.WEAKNESSES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.BUILD_INTEGRITY: CodeCategoryConfiguration(CodeCategoryType.BUILD_INTEGRITY, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
             CodeCategoryType.LICENSES: CodeCategoryConfiguration(CodeCategoryType.LICENSES, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
             CodeCategoryType.VULNERABILITIES: CodeCategoryConfiguration(CodeCategoryType.VULNERABILITIES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH])
@@ -574,7 +574,7 @@ class TestRunnerFilter(unittest.TestCase):
         enforcement_rule_configs = {
             CodeCategoryType.IAC: CodeCategoryConfiguration(CodeCategoryType.IAC, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.MEDIUM]),
             CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.SAST: CodeCategoryConfiguration(CodeCategoryType.SAST, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
+            CodeCategoryType.WEAKNESSES: CodeCategoryConfiguration(CodeCategoryType.WEAKNESSES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.BUILD_INTEGRITY: CodeCategoryConfiguration(CodeCategoryType.BUILD_INTEGRITY, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
             CodeCategoryType.LICENSES: CodeCategoryConfiguration(CodeCategoryType.LICENSES, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
             CodeCategoryType.VULNERABILITIES: CodeCategoryConfiguration(CodeCategoryType.VULNERABILITIES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH])
@@ -605,7 +605,7 @@ class TestRunnerFilter(unittest.TestCase):
         enforcement_rule_configs = {
             CodeCategoryType.IAC: CodeCategoryConfiguration(CodeCategoryType.IAC, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.MEDIUM]),
             CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.SAST: CodeCategoryConfiguration(CodeCategoryType.SAST, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
+            CodeCategoryType.WEAKNESSES: CodeCategoryConfiguration(CodeCategoryType.WEAKNESSES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.BUILD_INTEGRITY: CodeCategoryConfiguration(CodeCategoryType.BUILD_INTEGRITY, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
             CodeCategoryType.LICENSES: CodeCategoryConfiguration(CodeCategoryType.LICENSES, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
             CodeCategoryType.VULNERABILITIES: CodeCategoryConfiguration(CodeCategoryType.VULNERABILITIES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH])
@@ -630,7 +630,7 @@ class TestRunnerFilter(unittest.TestCase):
         enforcement_rule_configs = {
             CodeCategoryType.IAC: CodeCategoryConfiguration(CodeCategoryType.IAC, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.MEDIUM]),
             CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.SAST: CodeCategoryConfiguration(CodeCategoryType.SAST, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
+            CodeCategoryType.WEAKNESSES: CodeCategoryConfiguration(CodeCategoryType.WEAKNESSES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.BUILD_INTEGRITY: CodeCategoryConfiguration(CodeCategoryType.BUILD_INTEGRITY, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
             CodeCategoryType.LICENSES: CodeCategoryConfiguration(CodeCategoryType.LICENSES, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.HIGH]),
             CodeCategoryType.VULNERABILITIES: CodeCategoryConfiguration(CodeCategoryType.VULNERABILITIES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH])
@@ -657,7 +657,7 @@ class TestRunnerFilter(unittest.TestCase):
             CodeCategoryType.LICENSES: CodeCategoryConfiguration(CodeCategoryType.LICENSES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.VULNERABILITIES: CodeCategoryConfiguration(CodeCategoryType.VULNERABILITIES, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.MEDIUM]),
             CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
-            CodeCategoryType.SAST: CodeCategoryConfiguration(CodeCategoryType.SAST, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH])
+            CodeCategoryType.WEAKNESSES: CodeCategoryConfiguration(CodeCategoryType.WEAKNESSES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH])
         }
 
         instance.apply_enforcement_rules(enforcement_rule_configs)
@@ -679,7 +679,7 @@ class TestRunnerFilter(unittest.TestCase):
             CodeCategoryType.LICENSES: CodeCategoryConfiguration(CodeCategoryType.LICENSES, Severities[BcSeverities.HIGH], Severities[BcSeverities.HIGH]),
             CodeCategoryType.VULNERABILITIES: CodeCategoryConfiguration(CodeCategoryType.VULNERABILITIES, Severities[BcSeverities.MEDIUM], Severities[BcSeverities.MEDIUM]),
             CodeCategoryType.SECRETS: CodeCategoryConfiguration(CodeCategoryType.SECRETS, Severities[BcSeverities.OFF], Severities[BcSeverities.OFF]),
-            CodeCategoryType.SAST: CodeCategoryConfiguration(CodeCategoryType.SAST, Severities[BcSeverities.OFF], Severities[BcSeverities.OFF])
+            CodeCategoryType.WEAKNESSES: CodeCategoryConfiguration(CodeCategoryType.WEAKNESSES, Severities[BcSeverities.OFF], Severities[BcSeverities.OFF])
         }
 
         instance.apply_enforcement_rules(enforcement_rule_configs)
