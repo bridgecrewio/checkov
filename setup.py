@@ -139,10 +139,8 @@ setup(
         "checkov.github_actions.checks.graph_checks": ["**/*.json"],
         "checkov.kubernetes.checks.graph_checks": ["**/*.json"],
         "checkov.terraform.checks.graph_checks": ["**/*.json"],
-        "checkov.sast.checks": [
-            "java/*.yaml",
+        "checkov.cdk.checks": [
             "python/*.yaml",
-            "javascript/*.yaml",
         ],
     },
     scripts=["bin/checkov", "bin/checkov.cmd"],
