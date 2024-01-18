@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.66...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.67...HEAD)
+
+## [3.1.67](https://github.com/bridgecrewio/checkov/compare/3.1.66...3.1.67) - 2024-01-18
+
+### Feature
+
+- **sast:** Add policies to executable - [#5955](https://github.com/bridgecrewio/checkov/pull/5955)
 
 ## [3.1.66](https://github.com/bridgecrewio/checkov/compare/3.1.63...3.1.66) - 2024-01-17
 
