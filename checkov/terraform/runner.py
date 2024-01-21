@@ -136,7 +136,7 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
         report.add_parsing_errors(parsing_errors.keys())
 
         if self.all_graphs:
-            for single_graph, _ in self.all_graphs:
+            for single_graph, _ in self.all_graphs:  # type: ignore  # Due to issue with rustworkx typing
                 graph_report = self.get_graph_checks_report(root_folder, runner_filter, graph=single_graph)
                 merge_reports(report, graph_report)
         else:
