@@ -7,7 +7,6 @@ from checkov.common.images.graph.image_referencer_provider import _ExtractImages
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
 
 
-
 class BaseKustomizeProvider(BaseKubernetesProvider):
     def __init__(self, graph_connector: LibraryGraph,
                  supported_resource_types: dict[str, _ExtractImagesCallableAlias] | Mapping[str, _ExtractImagesCallableAlias],

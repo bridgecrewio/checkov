@@ -57,7 +57,7 @@ class BaseConnectionSolver(BaseSolver):
             self.vertices_under_connected_resources_types = [
                 v for _, v in graph_connector.nodes(data=True) if self.resource_type_pred(v, self.connected_resources_types)
             ]
-        else: # isinstance(graph_connector, PyDiGraph):
+        else:  # isinstance(graph_connector, PyDiGraph):
             self.vertices_under_resource_types = [
                 v for _, v in graph_connector.nodes() if self.resource_type_pred(v, self.resource_types)
             ]
@@ -96,7 +96,7 @@ class BaseConnectionSolver(BaseSolver):
                 if block_type in BaseConnectionSolver.SUPPORTED_CONNECTION_BLOCK_TYPES
             }
 
-        else: # isinstance(graph_connector, PyDiGraph):
+        else:  # isinstance(graph_connector, PyDiGraph):
             resource_nodes = {
                 index
                 for index, node in graph_connector.nodes()

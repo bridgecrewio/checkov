@@ -7,7 +7,6 @@ from checkov.kubernetes.image_referencer.provider.k8s import SUPPORTED_K8S_IMAGE
 from checkov.kustomize.image_referencer.base_provider import BaseKustomizeProvider
 
 
-
 class KustomizeProvider(BaseKustomizeProvider):
     def __init__(self, graph_connector: LibraryGraph, report_mutator_data: Dict[str, Dict[str, Any]]):
         super().__init__(

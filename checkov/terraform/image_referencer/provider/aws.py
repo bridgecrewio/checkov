@@ -8,7 +8,6 @@ from checkov.common.util.type_forcers import force_list, extract_json
 from checkov.terraform.image_referencer.base_provider import BaseTerraformProvider
 
 
-
 class AwsTerraformProvider(BaseTerraformProvider):
     def __init__(self, graph_connector: LibraryGraph) -> None:
         super().__init__(

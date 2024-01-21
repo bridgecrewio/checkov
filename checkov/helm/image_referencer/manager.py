@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 from checkov.common.images.graph.image_referencer_manager import GraphImageReferencerManager
 from checkov.common.typing import LibraryGraph

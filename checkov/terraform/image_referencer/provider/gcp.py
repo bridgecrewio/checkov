@@ -7,7 +7,6 @@ from checkov.common.util.data_structures_utils import find_in_dict
 from checkov.terraform.image_referencer.base_provider import BaseTerraformProvider
 
 
-
 class GcpTerraformProvider(BaseTerraformProvider):
     def __init__(self, graph_connector: LibraryGraph) -> None:
         super().__init__(

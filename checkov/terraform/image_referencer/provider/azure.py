@@ -8,7 +8,6 @@ from checkov.common.util.type_forcers import force_list
 from checkov.terraform.image_referencer.base_provider import BaseTerraformProvider
 
 
-
 class AzureTerraformProvider(BaseTerraformProvider):
     def __init__(self, graph_connector: LibraryGraph) -> None:
         super().__init__(

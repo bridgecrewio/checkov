@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import itertools
 import os
 import typing
 from abc import abstractmethod
@@ -66,7 +65,6 @@ class GraphImageReferencerProvider:
         def extract_resource_rustworkx(graph: _RustworkxGraph) -> Generator[dict[str, Any], None, None]:
             for _, resource in graph.nodes():
                 yield resource
-
 
         graph_resource = None
         if self.graph_framework == 'NETWORKX':
