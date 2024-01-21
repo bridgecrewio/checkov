@@ -70,7 +70,7 @@ class TestBCApiUrl(unittest.TestCase):
 
     def test_no_overriding_api_url(self):
         instance = BcPlatformIntegration()
-        self.assertEqual(instance.api_url, "https://www.bridgecrew.cloud")
+        self.assertEqual(instance.api_url, "https://api0.prismacloud.io")
 
     def test_skip_mapping_default(self):
         # Default is False so mapping is obtained
