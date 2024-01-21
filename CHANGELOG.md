@@ -1,6 +1,24 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.63...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.67...HEAD)
+
+## [3.1.67](https://github.com/bridgecrewio/checkov/compare/3.1.66...3.1.67) - 2024-01-18
+
+### Feature
+
+- **sast:** Add policies to executable - [#5955](https://github.com/bridgecrewio/checkov/pull/5955)
+
+## [3.1.66](https://github.com/bridgecrewio/checkov/compare/3.1.63...3.1.66) - 2024-01-17
+
+### Bug Fix
+
+- **sast:** change the path for taint mode match - [#5953](https://github.com/bridgecrewio/checkov/pull/5953)
+- **sast:** fix report with only reachability - [#5951](https://github.com/bridgecrewio/checkov/pull/5951)
+
+### Platform
+
+- **general:** Change SAST enforcement rule to weaknesses - [#5950](https://github.com/bridgecrewio/checkov/pull/5950)
+- **general:** handle weaknesses rename - [#5954](https://github.com/bridgecrewio/checkov/pull/5954)
 
 ## [3.1.63](https://github.com/bridgecrewio/checkov/compare/3.1.61...3.1.63) - 2024-01-16
 
