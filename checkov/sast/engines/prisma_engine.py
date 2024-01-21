@@ -433,7 +433,7 @@ class PrismaEngine(SastEngine):
                     all_reports.append(report)
                     continue
             if report.check_type.startswith('sast'):
-                if report.sast_report.rule_match:  # type: ignore
+                if report.sast_report.rule_match or report.sast_reachability or report.sast_imports:  # type: ignore
                     all_reports.append(report)
                     continue
         return all_reports
