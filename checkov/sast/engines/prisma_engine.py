@@ -419,7 +419,7 @@ class PrismaEngine(SastEngine):
         report.skipped_checks = sast_skiped_checks
 
     @staticmethod
-    def _get_sast_check(sast_report: SastReport, cdk_report: CDKReport, sast_report_checks: List[Any]) -> Any:
+    def _get_sast_check(sast_report: SastReport , cdk_report: CDKReport, sast_report_checks: List[Any]) -> Any:
         for check in sast_report_checks:
             if sast_report.language == cdk_report.language and check.check_id not in [s.check_id for s in cdk_report.skipped_checks]:
                 return check
