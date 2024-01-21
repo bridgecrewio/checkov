@@ -311,8 +311,7 @@ class Report:
 
         else:
             if self.check_type.lower().startswith(CheckType.SAST):
-                output_data += colored(f"SAST engine: {str(summary.get(ENGINE_NAME, '')).title()}, "
-                                       f"Source code files scanned: {summary.get(SOURCE_FILES_COUNT, -1)}, "
+                output_data += colored(f"Source code files scanned: {summary.get(SOURCE_FILES_COUNT, -1)}, "
                                        f"Policies found: {summary.get(POLICY_COUNT, -1)}\n\n", "cyan")
                 policies_errors: str = str(summary.get(POLICIES_ERRORS, ""))
                 if policies_errors:
