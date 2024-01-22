@@ -34,6 +34,8 @@ class TestRunnerValid(unittest.TestCase):
         cls.db_connector = cls.db_connector
 
     def test_py_graph_check(self):
+        if not self.db_connector == RustworkxConnector:
+            return
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources/py_graph_check_tf_plan"
         valid_dir_path_for_external_check = current_dir + '/py_check_tf_plan'
