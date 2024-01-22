@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.67...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.69...HEAD)
+
+## [3.1.69](https://github.com/bridgecrewio/checkov/compare/3.1.67...3.1.69) - 2024-01-22
+
+### Bug Fix
+
+- **sast:** replaced TBD with owasp and removed "sast engine" - [#5959](https://github.com/bridgecrewio/checkov/pull/5959)
+- **terraform:** External module test - [#5963](https://github.com/bridgecrewio/checkov/pull/5963)
 
 ## [3.1.67](https://github.com/bridgecrewio/checkov/compare/3.1.66...3.1.67) - 2024-01-18
 
