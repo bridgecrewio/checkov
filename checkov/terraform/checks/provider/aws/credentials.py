@@ -16,7 +16,7 @@ class AWSCredentials(BaseProviderCheck):
 
     def scan_provider_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
         """
-        see: https://www.terraform.io/docs/providers/aws/index.html#static-credentials
+        see: https://registry.terraform.io/providers/hashicorp/aws/latest/docs#provider-configuration
         """
         result = CheckResult.PASSED
         if self.secret_found(conf, "access_key", access_key_pattern):
