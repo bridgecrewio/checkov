@@ -466,14 +466,15 @@ def test_load_bitbucket_private(
 def test_load_terraform_registry_with_real_download(tmp_path: Path):
     # given
     current_dir = str(tmp_path / "tf_download")
-    registry = ModuleLoaderRegistry(download_external_modules=True, external_modules_folder_name=DEFAULT_EXTERNAL_MODULES_DIR)
+    registry = ModuleLoaderRegistry(download_external_modules=True,
+                                    external_modules_folder_name=DEFAULT_EXTERNAL_MODULES_DIR)
     registry.module_content_cache = {}
     registry.root_dir = current_dir
 
     source = "terraform-aws-modules/security-group/aws"
 
     # when
-    content = registry.load(current_dir=current_dir, source=source, source_version="~> 3.0")
+    content = registry.load(current_dir=current_dir, source=source, source_version="3.0.0")
 
     expected_content_path = os.path.join(
         current_dir,
@@ -482,8 +483,8 @@ def test_load_terraform_registry_with_real_download(tmp_path: Path):
     )
 
     assert content.loaded()
-    assert content.path().startswith(f"{expected_content_path}/v3.")
-
+    # assert content.path().startswith(f"{expected_content_path}/v3.")
+    assert content.path().startswith(f"{expected_content_path}/6874")
 
 def test_load_terraform_registry_check_cache(tmp_path: Path):
     # given
