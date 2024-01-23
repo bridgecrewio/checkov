@@ -10,7 +10,7 @@ LOG_TYPES = ("profiler", "audit")
 
 class DocDBLogging(BaseResourceCheck):
     def __init__(self) -> None:
-        name = "Ensure DocDB Logging is enabled"
+        name = "Ensure DocumentDB Logging is enabled"
         id = "CKV_AWS_85"
         supported_resources = ("AWS::DocDB::DBCluster",)
         categories = (CheckCategories.LOGGING,)
