@@ -9,7 +9,7 @@ class APIGatewayCreateBeforeDestroy(BaseResourceValueCheck):
         It is recommended to enable the resource lifecycle configuration block create_before_destroy
         argument in this resource configuration to manage all requests that use this API, avoiding an outage.
         """
-        name = "Ensure Create before destroy for API GATEWAY"
+        name = "Ensure Create before destroy for API Gateway"
         id = "CKV_AWS_237"
         supported_resources = ['aws_api_gateway_rest_api']
         categories = [CheckCategories.GENERAL_SECURITY]
