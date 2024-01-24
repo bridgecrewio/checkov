@@ -23,7 +23,7 @@ class TestBaseParser(unittest.TestCase):
         self.assertIsNotNone(skipped_checks)
         self.assertEqual(len(skipped_checks), 3)
         # Ensure checkov IDs are mapped to BC IDs
-        self.assertEqual(skipped_checks[2]["id"], "CKV_AWS_15")
+        self.assertEqual(skipped_checks[2]["id"], "BC_AWS_IAM_5")
         metadata_integration.bc_integration = bc_integration
 
     def test__compute_definition_end_line_with_multi_curly_brackets(self):
