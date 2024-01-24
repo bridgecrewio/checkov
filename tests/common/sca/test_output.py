@@ -56,7 +56,7 @@ def test_licenses_status(mock_bc_integration):
     # given
     responses.add(
         method=responses.POST,
-        url=mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/packages/get-licenses-violations",
+        url=mock_bc_integration.api_url + "/api/v1/vulnerabilities/packages/get-licenses-violations",
         json=response_json,
         status=200
     )
@@ -91,7 +91,7 @@ def test_licenses_status_on_failure(mock_bc_integration):
 
     responses.add(
         method=responses.POST,
-        url=mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/packages/get-licenses-violations",
+        url=mock_bc_integration.api_url + "/api/v1/vulnerabilities/packages/get-licenses-violations",
         status=500
     )
 
