@@ -131,7 +131,7 @@ def get_sca_image_report(mock_bc_integration: BcPlatformIntegration) -> Report:
     }
     responses.add(
         method=responses.POST,
-        url=mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/packages/get-licenses-violations",
+        url=mock_bc_integration.api_url + "/api/v1/vulnerabilities/packages/get-licenses-violations",
         json=response_json,
         status=200
     )

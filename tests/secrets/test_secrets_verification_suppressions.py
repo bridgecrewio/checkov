@@ -23,7 +23,7 @@ def test_runner_verify_secrets_skip_invalid_suppressed(mock_bc_integration, mock
 
     responses.add(
         method=responses.POST,
-        url=f"{mock_bc_integration.bc_api_url}/api/v1/secrets/reportVerification",
+        url=f"{mock_bc_integration.api_url}/api/v1/secrets/reportVerification",
         json={'verificationReportSignedUrl': 'mock'},
         status=200
     )
@@ -70,7 +70,7 @@ def test_runner_verify_secrets_skip_all_no_effect(mock_bc_integration, mock_meta
 
     responses.add(
         method=responses.POST,
-        url=f"{mock_bc_integration.bc_api_url}/api/v1/secrets/reportVerification",
+        url=f"{mock_bc_integration.api_url}/api/v1/secrets/reportVerification",
         json={'verificationReportSignedUrl': 'mock'},
         status=200
     )

@@ -75,6 +75,7 @@ class TestBCApiUrl(unittest.TestCase):
     def test_skip_mapping_default(self):
         # Default is False so mapping is obtained
         instance = BcPlatformIntegration()
+        instance.api_url = 'https://www.bridgecrew.cloud/v1'
         instance.setup_http_manager()
         instance.get_public_run_config()
         metadata_integration = PolicyMetadataIntegration(instance)
