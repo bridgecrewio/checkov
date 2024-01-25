@@ -339,6 +339,7 @@ class BcPlatformIntegration:
         source_version: str | None = None,
         repo_branch: str | None = None,
         prisma_api_url: str | None = None,
+        bc_api_url: str | None = None
     ) -> None:
         """
         Setup credentials against Bridgecrew's platform.
@@ -353,6 +354,12 @@ class BcPlatformIntegration:
         self.skip_download = skip_download
         self.bc_source = source
         self.bc_source_version = source_version
+
+        if bc_api_url:
+            self.prisma_api_url = None
+            self.bc_api_url = normalize_bc_url(bc_api_url)
+            self.setup_api_urls()
+            logging.info(f'Using BC API URL: {self.bc_api_url}')
 
         if prisma_api_url:
             self.prisma_api_url = normalize_prisma_url(prisma_api_url)
