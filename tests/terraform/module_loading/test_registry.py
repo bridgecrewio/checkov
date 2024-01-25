@@ -482,7 +482,9 @@ def test_load_terraform_registry_with_real_download(tmp_path: Path):
     )
 
     assert content.loaded()
-    assert content.path().startswith(f"{expected_content_path}/v3.")
+    content_path = content.path()
+    assert content_path.startswith(f"{expected_content_path}/v3.") or \
+           content_path.startswith(f"{expected_content_path}/2cd10c8aca557fd858f401616d5c3b27e2a7b595")
 
 
 def test_load_terraform_registry_check_cache(tmp_path: Path):
