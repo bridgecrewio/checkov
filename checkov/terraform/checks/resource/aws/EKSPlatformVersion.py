@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from typing import Any
 
-from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 from checkov.common.models.enums import CheckCategories, CheckResult
+from checkov.terraform.checks.resource.base_resource_value_check import (
+    BaseResourceValueCheck,
+)
 
 
 class EKSPlatformVersion(BaseResourceValueCheck):
@@ -24,7 +26,7 @@ class EKSPlatformVersion(BaseResourceValueCheck):
         return "version"
 
     def get_expected_values(self) -> list[Any]:
-        return ["1.23", "1.24", "1.25", "1.26", "1.27", "1.28"]
+        return ["1.23", "1.24", "1.25", "1.26", "1.27", "1.28","1.29"]
 
 
 check = EKSPlatformVersion()
