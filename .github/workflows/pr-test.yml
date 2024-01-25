@@ -200,6 +200,7 @@ jobs:
       - name: Create checkov reports
         env:
           LOG_LEVEL: INFO
+          BC_API_URL: https://www.bridgecrew.cloud
           BC_API_KEY: ${{ secrets.BC_API_KEY }}
         if: env.BC_API_KEY != null
         run: bash -c './sast_integration_tests/prepare_data.sh'
@@ -240,6 +241,7 @@ jobs:
       - name: Create checkov reports
         env:
           LOG_LEVEL: INFO
+          BC_API_URL: https://www.bridgecrew.cloud
           BC_API_KEY: ${{ secrets.BC_API_KEY }}
         if: env.BC_API_KEY != null
         run: bash -c './cdk_integration_tests/prepare_data.sh'
