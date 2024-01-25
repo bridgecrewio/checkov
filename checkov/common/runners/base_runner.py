@@ -66,7 +66,7 @@ class BaseRunner(ABC, Generic[_Definitions, _Context, _GraphManager]):
         self.file_names = file_names or []
         self.pbar = ProgressBar(self.check_type)
         db_connector_class: "type[NetworkxConnector | RustworkxConnector]" = NetworkxConnector
-        graph_framework = os.getenv("CHECKOV_GRAPH_FRAMEWORK", "NETWORKX")
+        graph_framework = os.getenv("CHECKOV_GRAPH_FRAMEWORK", "RUSTWORKX")
         if graph_framework == "RUSTWORKX":
             from checkov.common.graph.db_connectors.rustworkx.rustworkx_db_connector import RustworkxConnector
             db_connector_class = RustworkxConnector

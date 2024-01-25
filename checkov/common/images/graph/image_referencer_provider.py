@@ -24,7 +24,7 @@ class GraphImageReferencerProvider:
                      str, _ExtractImagesCallableAlias]):
         self.graph_connector = graph_connector
         self.supported_resource_types = supported_resource_types
-        self.graph_framework = os.environ.get('CHECKOV_GRAPH_FRAMEWORK', 'NETWORKX')
+        self.graph_framework = os.environ.get('CHECKOV_GRAPH_FRAMEWORK', 'RUSTWORKX')
 
     @abstractmethod
     def extract_images_from_resources(self) -> list[Image]:
