@@ -1,6 +1,49 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.60...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.70...HEAD)
+
+## [3.1.70](https://github.com/bridgecrewio/checkov/compare/3.1.69...3.1.70) - 2024-01-24
+
+### Bug Fix
+
+- **terraform:** Manually fixed test for loading terraform registry to be with commit hash instead of version tag - [#5971](https://github.com/bridgecrewio/checkov/pull/5971)
+
+## [3.1.69](https://github.com/bridgecrewio/checkov/compare/3.1.67...3.1.69) - 2024-01-22
+
+### Bug Fix
+
+- **sast:** replaced TBD with owasp and removed "sast engine" - [#5959](https://github.com/bridgecrewio/checkov/pull/5959)
+- **terraform:** External module test - [#5963](https://github.com/bridgecrewio/checkov/pull/5963)
+
+## [3.1.67](https://github.com/bridgecrewio/checkov/compare/3.1.66...3.1.67) - 2024-01-18
+
+### Feature
+
+- **sast:** Add policies to executable - [#5955](https://github.com/bridgecrewio/checkov/pull/5955)
+
+## [3.1.66](https://github.com/bridgecrewio/checkov/compare/3.1.63...3.1.66) - 2024-01-17
+
+### Bug Fix
+
+- **sast:** change the path for taint mode match - [#5953](https://github.com/bridgecrewio/checkov/pull/5953)
+- **sast:** fix report with only reachability - [#5951](https://github.com/bridgecrewio/checkov/pull/5951)
+
+### Platform
+
+- **general:** Change SAST enforcement rule to weaknesses - [#5950](https://github.com/bridgecrewio/checkov/pull/5950)
+- **general:** handle weaknesses rename - [#5954](https://github.com/bridgecrewio/checkov/pull/5954)
+
+## [3.1.63](https://github.com/bridgecrewio/checkov/compare/3.1.61...3.1.63) - 2024-01-16
+
+### Bug Fix
+
+- **sast:** Fix serialize for sast report with taint mode - [#5949](https://github.com/bridgecrewio/checkov/pull/5949)
+
+## [3.1.61](https://github.com/bridgecrewio/checkov/compare/3.1.60...3.1.61) - 2024-01-15
+
+### Bug Fix
+
+- **general:** allow colorama version >=0.4.3,<0.5.0 in setup - [#5944](https://github.com/bridgecrewio/checkov/pull/5944)
 
 ## [3.1.60](https://github.com/bridgecrewio/checkov/compare/3.1.57...3.1.60) - 2024-01-14
 

@@ -70,8 +70,8 @@ setup(
         "bc-jsonpath-ng==1.6.1",
         "pycep-parser==0.4.1",
         "tabulate>=0.9.0,<0.10.0",
-        "colorama>=0.4.6,<0.5.0",
-        "termcolor>=2.2.0,<2.4.0",
+        "colorama>=0.4.3,<0.5.0",
+        "termcolor>=1.1.0,<2.4.0",
         "junit-xml>=1.9,<2.0",
         "dpath==2.1.3",
         "pyyaml>=6.0.0,<7.0.0",
@@ -139,10 +139,8 @@ setup(
         "checkov.github_actions.checks.graph_checks": ["**/*.json"],
         "checkov.kubernetes.checks.graph_checks": ["**/*.json"],
         "checkov.terraform.checks.graph_checks": ["**/*.json"],
-        "checkov.sast.checks": [
-            "java/*.yaml",
+        "checkov.cdk.checks": [
             "python/*.yaml",
-            "javascript/*.yaml",
         ],
     },
     scripts=["bin/checkov", "bin/checkov.cmd"],
