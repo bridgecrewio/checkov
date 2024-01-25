@@ -772,7 +772,7 @@ class Checkov:
             bc_integration.persist_assets_scan_results(self.sast_data.imports_data)
             bc_integration.persist_reachability_scan_results(self.sast_data.reachability_report)
             bc_integration.persist_run_metadata(self.run_metadata)
-            if bc_integration.enable_persist_graphs:
+            if bc_integration.enable_persist_graphs and not bc_integration.on_prem:
                 bc_integration.persist_graphs(self.graphs, absolute_root_folder=absolute_root_folder)
                 bc_integration.persist_resource_subgraph_maps(self.resource_subgraph_maps)
             self.url = self.commit_repository()
