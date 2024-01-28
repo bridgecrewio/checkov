@@ -557,7 +557,7 @@ class Checkov:
                         created_baseline_path = os.path.join(os.path.abspath(root_folder), '.checkov.baseline')
                         with open(created_baseline_path, 'w') as f:
                             json.dump(overall_baseline.to_dict(), f, indent=4)
-                    
+
                     exit_codes.append(self.print_results(
                         runner_registry=runner_registry,
                         url=self.url,
