@@ -10,23 +10,23 @@
 
 
 prepare_data () {
-  python checkov/main.py -s --framework terraform -d repositories/terragoat/terraform/ --repo-id checkov/integration_test -o json > checkov_report_terragoat.json
-  python checkov/main.py -s --framework terraform -d repositories/terragoat/terraform/ --repo-id checkov/integration_test -o junitxml > checkov_report_terragoat.xml
-  python checkov/main.py -s --framework terraform -d repositories/terragoat/terraform/ --repo-id checkov/integration_test -o cyclonedx > checkov_report_terragoat_cyclonedx.xml
-  python checkov/main.py -s --framework terraform -d repositories/terragoat/terraform/ --repo-id checkov/integration_test -o sarif
-  python checkov/main.py -s --framework cloudformation -d repositories/cfngoat/ -o json --repo-id checkov/integration_test --external-checks-dir ./checkov/cloudformation/checks/graph_checks/aws > checkov_report_cfngoat.json
-  python checkov/main.py -s -d repositories/kubernetes-goat/ --framework kubernetes --repo-id checkov/integration_test -o json > checkov_report_kubernetes-goat.json
-  python checkov/main.py -s -d repositories/kubernetes-goat/ --framework helm --repo-id checkov/integration_test -o json > checkov_report_kubernetes-goat-helm.json
-  python checkov/main.py -s -d repositories/kustomizegoat/ --framework kustomize --repo-id checkov/integration_test -o json > checkov_report_kustomizegoat.json
-  python checkov/main.py -s --framework terraform --skip-check CKV_AWS_33,CKV_AWS_41 -d repositories/terragoat/terraform/ --repo-id checkov/integration_test -o json > checkov_report_terragoat_with_skip.json
-  python checkov/main.py -s --framework cloudformation -d repositories/cfngoat/ --repo-id checkov/integration_test -o json --quiet > checkov_report_cfngoat_quiet.json
-  python checkov/main.py -s -d repositories/terragoat/terraform/ --config-file integration_tests/example_config_files/config.yaml --repo-id checkov/integration_test -o json > checkov_config_report_terragoat.json
+  python checkov/main.py -s --framework terraform -d repositories/terragoat/terraform/ -o json > checkov_report_terragoat.json
+  python checkov/main.py -s --framework terraform -d repositories/terragoat/terraform/ -o junitxml > checkov_report_terragoat.xml
+  python checkov/main.py -s --framework terraform -d repositories/terragoat/terraform/ -o cyclonedx > checkov_report_terragoat_cyclonedx.xml
+  python checkov/main.py -s --framework terraform -d repositories/terragoat/terraform/ -o sarif
+  python checkov/main.py -s --framework cloudformation -d repositories/cfngoat/ -o json --external-checks-dir ./checkov/cloudformation/checks/graph_checks/aws > checkov_report_cfngoat.json
+  python checkov/main.py -s -d repositories/kubernetes-goat/ --framework kubernetes -o json > checkov_report_kubernetes-goat.json
+  python checkov/main.py -s -d repositories/kubernetes-goat/ --framework helm -o json > checkov_report_kubernetes-goat-helm.json
+  python checkov/main.py -s -d repositories/kustomizegoat/ --framework kustomize -o json > checkov_report_kustomizegoat.json
+  python checkov/main.py -s --framework terraform --skip-check CKV_AWS_33,CKV_AWS_41 -d repositories/terragoat/terraform/ -o json > checkov_report_terragoat_with_skip.json
+  python checkov/main.py -s --framework cloudformation -d repositories/cfngoat/ -o json --quiet > checkov_report_cfngoat_quiet.json
+  python checkov/main.py -s -d repositories/terragoat/terraform/ --config-file integration_tests/example_config_files/config.yaml -o json > checkov_config_report_terragoat.json
 
-  python checkov/main.py -s -f repositories/terragoat/terraform/aws/s3.tf --repo-id checkov/integration_test --bc-api-key $BC_API_KEY > checkov_report_s3_singlefile_api_key_terragoat.txt
-  python checkov/main.py -s -d repositories/terragoat/terraform/azure/ --repo-id checkov/integration_test --bc-api-key $BC_API_KEY > checkov_report_azuredir_api_key_terragoat.txt
-  python checkov/main.py -s -d integration_tests/example_workflow_file/.github/workflows/ -o json --repo-id checkov/integration_test --bc-api-key $BC_API_KEY --include-all-checkov-policies > checkov_report_workflow_cve.json
-  python checkov/main.py -s -d integration_tests/example_workflow_file/bitbucket/ -o json --repo-id checkov/integration_test --bc-api-key $BC_API_KEY --include-all-checkov-policies > checkov_report_bitbucket_pipelines_cve.json
-  python checkov/main.py --list --bc-api-key $BC_API_KEY --output-bc-ids > checkov_checks_list.txt
+  python checkov/main.py -s -f repositories/terragoat/terraform/aws/s3.tf --repo-id checkov/integration_test --bc-api-key $BC_KEY > checkov_report_s3_singlefile_api_key_terragoat.txt
+  python checkov/main.py -s -d repositories/terragoat/terraform/azure/ --repo-id checkov/integration_test --bc-api-key $BC_KEY > checkov_report_azuredir_api_key_terragoat.txt
+  python checkov/main.py -s -d integration_tests/example_workflow_file/.github/workflows/ -o json --repo-id checkov/integration_test --bc-api-key $BC_KEY --include-all-checkov-policies > checkov_report_workflow_cve.json
+  python checkov/main.py -s -d integration_tests/example_workflow_file/bitbucket/ -o json --repo-id checkov/integration_test --bc-api-key $BC_KEY --include-all-checkov-policies > checkov_report_bitbucket_pipelines_cve.json
+  python checkov/main.py --list --bc-api-key $BC_KEY --output-bc-ids > checkov_checks_list.txt
 }
 
 clone_repositories () {
