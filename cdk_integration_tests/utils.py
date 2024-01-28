@@ -10,6 +10,9 @@ def load_failed_checks_from_file(lang: str) -> Dict[str, List[Dict[str, Any]]]:
     report_path = os.path.join(current_dir, '..', f'checkov_report_cdk_{lang}.json')
     with open(report_path) as f:
         data = f.read()
+        print('---------------')
+        print(data)
+        print('---------------')
         report = json.loads(data)
         assert report is not None
         results = report.get("results", {})
