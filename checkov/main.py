@@ -558,9 +558,6 @@ class Checkov:
                         with open(created_baseline_path, 'w') as f:
                             json.dump(overall_baseline.to_dict(), f, indent=4)
                     
-                    print(os.getenv('PRISMA_KEY'))
-                    print(os.getenv('PRISMA_API_URL'))
-                    
                     exit_codes.append(self.print_results(
                         runner_registry=runner_registry,
                         url=self.url,
