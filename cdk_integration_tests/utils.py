@@ -36,6 +36,9 @@ def is_policy_with_correct_check_id(check_id: str, language: str, policy_name: s
 
 
 def run_check(check_results: Dict[str, List[Dict[str, Any]]], check_id: str, policy_name: str, language: str) -> None:
+    print('---------------')
+    print(check_results)
+    print('---------------')
     assert is_policy_with_correct_check_id(check_id, language, policy_name)
     results_for_check_id = check_results.get(check_id)
     assert results_for_check_id
