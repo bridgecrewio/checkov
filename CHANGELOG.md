@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.69...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.70...HEAD)
+
+## [3.1.70](https://github.com/bridgecrewio/checkov/compare/3.1.69...3.1.70) - 2024-01-24
+
+### Bug Fix
+
+- **terraform:** Manually fixed test for loading terraform registry to be with commit hash instead of version tag - [#5971](https://github.com/bridgecrewio/checkov/pull/5971)
 
 ## [3.1.69](https://github.com/bridgecrewio/checkov/compare/3.1.67...3.1.69) - 2024-01-22
 
