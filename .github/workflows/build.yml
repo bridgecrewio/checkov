@@ -85,7 +85,7 @@ jobs:
           bash -c './integration_tests/prepare_data.sh "${{ matrix.os }}" "${{ matrix.python }}"'
         env:
           LOG_LEVEL: INFO
-          BC_KEY: ${{ secrets.BC_API_KEY }}
+          BC_KEY: ${{ secrets.PRISMA_KEY_API2 }}
           TF_REGISTRY_TOKEN: ${{ secrets.TFC_TOKEN }}
           GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       - name: Run integration tests
