@@ -84,6 +84,7 @@ jobs:
           if [ '${{ matrix.python }}' == '3.12' ]; then
             # needed for numpy
             pipenv install --skip-lock --dev -v
+            pipenv install --skip-lock -v "pytest<8.0.0"
           else
             pipenv install --dev -v
           fi
