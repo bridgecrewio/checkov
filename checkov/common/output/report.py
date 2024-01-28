@@ -61,7 +61,7 @@ class Report:
 
     @property
     def errors(self) -> Dict[str, List[str]]:
-        return {}
+        return dict()
 
     def set_error_status(self, error_status: ErrorStatus) -> None:
         self.error_status = error_status
