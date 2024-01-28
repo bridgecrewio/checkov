@@ -10,9 +10,6 @@ def load_failed_checks_from_file(lang: str) -> Dict[str, List[Dict[str, Any]]]:
     report_path = os.path.join(current_dir, '..', f'checkov_report_cdk_{lang}.json')
     with open(report_path) as f:
         data = f.read()
-        print('---------------')
-        print(data)
-        print('---------------')
         report = json.loads(data)
         assert report is not None
         results = report.get("results", {})
@@ -36,10 +33,6 @@ def is_policy_with_correct_check_id(check_id: str, language: str, policy_name: s
 
 
 def run_check(check_results: Dict[str, List[Dict[str, Any]]], check_id: str, policy_name: str, language: str) -> None:
-    if check_id == 'CKV_AWS_105':
-        print('---------------')
-        print(check_results)
-        print('---------------')
     assert is_policy_with_correct_check_id(check_id, language, policy_name)
     results_for_check_id = check_results.get(check_id)
     assert results_for_check_id
