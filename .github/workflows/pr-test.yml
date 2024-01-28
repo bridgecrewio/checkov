@@ -201,16 +201,16 @@ jobs:
       - name: Create checkov reports
         env:
           LOG_LEVEL: INFO
-          BC_KEY: ${{ secrets.PRISMA_KEY_API2 }}
+          BC_API_KEY: ${{ secrets.PRISMA_KEY_API2 }}
           PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
-        if: env.BC_KEY != null
+        if: env.BC_API_KEY != null
         run: bash -c './sast_integration_tests/prepare_data.sh'
       - name: Run integration tests
         env:
           LOG_LEVEL: INFO
-          BC_KEY: ${{ secrets.PRISMA_KEY_API2 }}
+          BC_API_KEY: ${{ secrets.PRISMA_KEY_API2 }}
           PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
-        if: env.BC_KEY != null
+        if: env.BC_API_KEY != null
         run: |
           pipenv run pytest sast_integration_tests
 
