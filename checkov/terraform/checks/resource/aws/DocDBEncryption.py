@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 
 class DocDBEncryption(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure DocDB is encrypted at rest (default is unencrypted)"
+        name = "Ensure DocumentDB is encrypted at rest (default is unencrypted)"
         id = "CKV_AWS_74"
         supported_resources = ['aws_docdb_cluster']
         categories = [CheckCategories.ENCRYPTION]

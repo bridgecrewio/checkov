@@ -9,7 +9,7 @@ from checkov.common.util.secrets import AWS, GENERAL, get_secrets_from_string
 
 class LambdaEnvironmentCredentials(BaseResourceCheck):
     def __init__(self) -> None:
-        name = "Ensure no hard-coded secrets exist in lambda environment"
+        name = "Ensure no hard-coded secrets exist in Lambda environment"
         id = "CKV_AWS_45"
         supported_resources = ("AWS::Lambda::Function", "AWS::Serverless::Function")
         categories = (CheckCategories.SECRETS,)

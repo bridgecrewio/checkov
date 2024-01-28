@@ -5,7 +5,7 @@ from typing import List
 
 class EKSControlPlaneLogging(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure Amazon EKS control plane logging enabled for all log types"
+        name = "Ensure Amazon EKS control plane logging is enabled for all log types"
         id = "CKV_AWS_37"
         supported_resources = ['aws_eks_cluster']
         categories = [CheckCategories.KUBERNETES]

@@ -5,7 +5,7 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 class GuarddutyDetectorEnabled(BaseResourceValueCheck):
 
     def __init__(self):
-        name = "Ensure that Guard Duty detector is enabled"
+        name = "Ensure that GuardDuty detector is enabled"
         id = "CKV_AWS_238"
         supported_resources = ['aws_guardduty_detector']
         categories = [CheckCategories.GENERAL_SECURITY]

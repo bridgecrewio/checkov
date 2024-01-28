@@ -5,7 +5,7 @@ from checkov.common.models.enums import CheckCategories
 class S3RestrictPublicBuckets(BaseResourceValueCheck):
 
     def __init__(self):
-        name = "Ensure S3 bucket has 'restrict_public_bucket' enabled"
+        name = "Ensure S3 bucket has RestrictPublicBuckets enabled"
         id = "CKV_AWS_56"
         supported_resources = ['AWS::S3::Bucket']
         categories = [CheckCategories.GENERAL_SECURITY]
