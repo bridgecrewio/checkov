@@ -4,7 +4,6 @@ import itertools
 import logging
 from typing import List, Optional, Dict, Any, Tuple
 
-from igraph import Graph
 from rustworkx import PyDiGraph
 
 from checkov.common.graph.checks_infra import debug
@@ -65,9 +64,7 @@ class ConnectionExistsSolver(BaseConnectionSolver):
             failed.extend(self.vertices_under_connected_resources_types)
             return passed, failed, unknown
 
-        if isinstance(graph_connector, Graph):
-            self.get_igraph_operation(graph_connector=graph_connector, passed=passed, failed=failed, unknown=unknown)
-        elif isinstance(graph_connector, DiGraph):
+        if isinstance(graph_connector, DiGraph):
             self.get_networkx_operation(graph_connector=graph_connector, passed=passed, failed=failed, unknown=unknown)
         elif isinstance(graph_connector, PyDiGraph):
             self.get_rustworkx_operation(graph_connector=graph_connector, passed=passed, failed=failed, unknown=unknown)
@@ -85,45 +82,6 @@ class ConnectionExistsSolver(BaseConnectionSolver):
         )
 
         return passed, failed, unknown
-
-    def get_igraph_operation(
-        self,
-        graph_connector: Graph,
-        passed: list[dict[str, Any]],
-        failed: list[dict[str, Any]],
-        unknown: list[dict[str, Any]],
-    ) -> None:
-        for root_vertex in graph_connector.vs:
-            inverted = False
-            origin_attributes = None
-            destination_attributes_list = []
-            for vertex in graph_connector.dfsiter(root_vertex.index):
-                resource_type = vertex[CustomAttributes.RESOURCE_TYPE]
-                attributes = vertex["attr"]
-                if resource_type in self.resource_types and attributes in self.vertices_under_resource_types:
-                    if not origin_attributes:
-                        origin_attributes = attributes
-                    elif inverted:
-                        destination_attributes_list.append(attributes)
-                elif (
-                    resource_type in self.connected_resources_types
-                    and attributes in self.vertices_under_connected_resources_types
-                ):
-                    if not origin_attributes:
-                        origin_attributes = attributes
-                        inverted = True
-                    else:
-                        destination_attributes_list.append(attributes)
-
-            if origin_attributes and destination_attributes_list:
-                for destination_attributes in destination_attributes_list:
-                    self.populate_checks_results(
-                        origin_attributes=origin_attributes,
-                        destination_attributes=destination_attributes,
-                        passed=passed,
-                        failed=failed,
-                        unknown=unknown,
-                    )
 
     def get_networkx_operation(
         self,
