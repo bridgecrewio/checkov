@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 
 class CloudfrontDistributionEnabled(BaseResourceValueCheck):
     def __init__(self) -> None:
-        name = "Ensure Cloudfront distribution is enabled"
+        name = "Ensure CloudFront distribution is enabled"
         id = "CKV_AWS_216"
         supported_resources = ['aws_cloudfront_distribution']
         categories = [CheckCategories.GENERAL_SECURITY]

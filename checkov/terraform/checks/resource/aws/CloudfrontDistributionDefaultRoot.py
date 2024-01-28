@@ -10,7 +10,7 @@ class CloudfrontDistributionDefaultRoot(BaseResourceValueCheck):
         NIST.800-53.r5 SC-7(11), NIST.800-53.r5 SC-7(16)
         CloudFront distributions should have a default root object configured
         """
-        name = "Ensure Cloudfront distribution has a default root object configured"
+        name = "Ensure CloudFront distribution has a default root object configured"
         id = "CKV_AWS_305"
         supported_resources = ['aws_cloudfront_distribution']
         categories = [CheckCategories.GENERAL_SECURITY]

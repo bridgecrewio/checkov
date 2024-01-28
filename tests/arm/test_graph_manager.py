@@ -4,8 +4,8 @@ import pytest
 
 from checkov.arm.graph_manager import ArmGraphManager
 from checkov.arm.utils import get_files_definitions
-from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.graph.db_connectors.rustworkx.rustworkx_db_connector import RustworkxConnector
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
@@ -18,7 +18,7 @@ EXAMPLES_DIR = Path(__file__).parent / "examples"
     "graph_connector",
     [
         NetworkxConnector,
-        IgraphConnector
+        RustworkxConnector
     ]
 )
 def test_build_graph_from_definitions(graph_connector):

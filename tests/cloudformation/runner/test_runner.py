@@ -15,8 +15,8 @@ from checkov.cloudformation.checks.resource.base_resource_check import BaseResou
 from checkov.cloudformation.parser import parse
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import BcSeverities, Severities
-from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.graph.db_connectors.rustworkx.rustworkx_db_connector import RustworkxConnector
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.runner_filter import RunnerFilter
 from checkov.cloudformation.runner import Runner
@@ -28,7 +28,7 @@ RESOURCES_DIR = Path(__file__).parent / "resources"
 
 @parameterized_class([
    {"db_connector": NetworkxConnector},
-   {"db_connector": IgraphConnector}
+   {"db_connector": RustworkxConnector}
 ])
 class TestRunnerValid(unittest.TestCase):
 

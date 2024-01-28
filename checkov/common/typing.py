@@ -10,7 +10,6 @@ if TYPE_CHECKING:
     from checkov.common.models.enums import CheckResult
     from checkov.common.runners.base_runner import BaseRunner  # noqa
     from networkx import DiGraph
-    from igraph import Graph
     from rustworkx import PyDiGraph
     from checkov.terraform.modules.module_objects import TFDefinitionKey
 
@@ -24,8 +23,8 @@ _Resource: TypeAlias = str
 _Attributes: TypeAlias = Set[str]
 ResourceAttributesToOmit: TypeAlias = Dict[_Resource, _Attributes]
 _RustworkxGraph: TypeAlias = "PyDiGraph[tuple[int, dict[str, Any]], dict[str, str | int]]"
-LibraryGraph: TypeAlias = "Union[DiGraph, Graph, _RustworkxGraph]"
-LibraryGraphConnector: TypeAlias = "Union[DBConnector[DiGraph], DBConnector[Graph], DBConnector[_RustworkxGraph]]"
+LibraryGraph: TypeAlias = "Union[DiGraph, _RustworkxGraph]"
+LibraryGraphConnector: TypeAlias = "Union[DBConnector[DiGraph], DBConnector[_RustworkxGraph]]"
 # TODO Remove this type and only use TFDefinitionKey
 TFDefinitionKeyType: TypeAlias = "Union[str, TFDefinitionKey]"
 

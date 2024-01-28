@@ -1,11 +1,6 @@
 from unittest import mock
 
-import igraph
 import pytest
-from networkx import DiGraph
-from rustworkx import PyDiGraph
-
-from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.images.image_referencer import Image
 from checkov.terraform.image_referencer.provider.azure import AzureTerraformProvider
 from tests.graph_utils.utils import GRAPH_FRAMEWORKS, set_graph_by_graph_framework, \

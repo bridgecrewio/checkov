@@ -1,6 +1,6 @@
 metadata:
   id: "CKV2_AWS_46"
-  name: "Ensure AWS Cloudfront Distribution with S3 have Origin Access set to enabled"
+  name: "Ensure AWS CloudFront Distribution with S3 have Origin Access set to enabled"
   category: "IAM"
 definition:
   or:
