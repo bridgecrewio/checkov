@@ -59,6 +59,10 @@ class Report:
         self.image_cached_results: List[dict[str, Any]] = []
         self.error_status: ErrorStatus = ErrorStatus.SUCCESS
 
+    @property
+    def errors(self) -> Dict[str, List[str]]:
+        return dict()
+
     def set_error_status(self, error_status: ErrorStatus) -> None:
         self.error_status = error_status
 
@@ -271,6 +275,12 @@ class Report:
             checks_count += len(self.resources) + len(self.extra_resources) + len(self.image_cached_results)
 
         return checks_count == 0
+
+    def add_errors_to_output(self) -> str:
+        ret_value = ''
+        for error_title, errors_messages in self.errors.items():
+            ret_value += colored(f"Encountered {error_title} error - {len(errors_messages)} times\n\n", "red")
+        return ret_value
 
     def print_console(
             self,
