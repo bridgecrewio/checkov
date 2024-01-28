@@ -307,7 +307,7 @@ class PrismaEngine(SastEngine):
             for check_id, match_rule in checks.items():
                 check_name = match_rule.check_name
                 check_cwe = match_rule.check_cwe
-                check_owasp = "TBD"  # match.metadata.get('owasp')
+                check_owasp = match_rule.check_owasp
                 check_result = _CheckResult(result=CheckResult.FAILED)
                 severity = get_severity(match_rule.severity)
 
@@ -433,7 +433,7 @@ class PrismaEngine(SastEngine):
                     all_reports.append(report)
                     continue
             if report.check_type.startswith('sast'):
-                if report.sast_report.rule_match:  # type: ignore
+                if report.sast_report.rule_match or report.sast_reachability or report.sast_imports:  # type: ignore
                     all_reports.append(report)
                     continue
         return all_reports

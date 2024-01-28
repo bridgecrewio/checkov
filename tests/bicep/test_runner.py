@@ -6,8 +6,8 @@ from checkov.bicep.runner import Runner
 from checkov.arm.runner import Runner as ArmRunner
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
-from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.graph.db_connectors.rustworkx.rustworkx_db_connector import RustworkxConnector
 from checkov.runner_filter import RunnerFilter
 from checkov.bicep.checks.resource.registry import registry as resource_registry
 from checkov.bicep.checks.param.registry import registry as param_registry
@@ -38,7 +38,7 @@ def test_arm_checks_laoded():
     "graph_connector",
     [
         NetworkxConnector,
-        IgraphConnector
+        RustworkxConnector
     ]
 )
 def test_runner_passing_check(graph_connector):
@@ -60,7 +60,7 @@ def test_runner_passing_check(graph_connector):
     "graph_connector",
     [
         NetworkxConnector,
-        IgraphConnector
+        RustworkxConnector
     ]
 )
 def test_runner_failing_check(graph_connector):
@@ -82,7 +82,7 @@ def test_runner_failing_check(graph_connector):
     "graph_connector",
     [
         NetworkxConnector,
-        IgraphConnector
+        RustworkxConnector
     ]
 )
 def test_runner_skipping_check(graph_connector):
@@ -104,7 +104,7 @@ def test_runner_skipping_check(graph_connector):
     "graph_connector",
     [
         NetworkxConnector,
-        IgraphConnector
+        RustworkxConnector
     ]
 )
 def test_runner_honors_enforcement_rules(graph_connector):
@@ -130,7 +130,7 @@ def test_runner_honors_enforcement_rules(graph_connector):
     "graph_connector",
     [
         NetworkxConnector,
-        IgraphConnector
+        RustworkxConnector
     ]
 )
 def test_runner_parsing_errors(graph_connector):
@@ -152,7 +152,7 @@ def test_runner_parsing_errors(graph_connector):
     "graph_connector",
     [
         NetworkxConnector,
-        IgraphConnector
+        RustworkxConnector
     ]
 )
 def test_runner_ignore_existing_resource(graph_connector):
@@ -177,7 +177,7 @@ def test_runner_ignore_existing_resource(graph_connector):
     "graph_connector",
     [
         NetworkxConnector,
-        IgraphConnector
+        RustworkxConnector
     ]
 )
 def test_runner_extra_resources(graph_connector):

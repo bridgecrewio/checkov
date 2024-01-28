@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 
 class DocDBTLS(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure DocDB TLS is not disabled"
+        name = "Ensure DocumentDB TLS is not disabled"
         id = "CKV_AWS_90"
         supported_resources = ['aws_docdb_cluster_parameter_group']
         categories = [CheckCategories.ENCRYPTION]

@@ -5,7 +5,7 @@ from typing import List
 
 class ElasticacheReplicationGroupEncryptionAtTransitAuthToken(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure all data stored in the Elasticache Replication Group is securely encrypted at transit and has auth token"
+        name = "Ensure all data stored in the ElastiCache Replication Group is securely encrypted at transit and has auth token"
         id = "CKV_AWS_31"
         supported_resources = ['aws_elasticache_replication_group']
         categories = [CheckCategories.ENCRYPTION]

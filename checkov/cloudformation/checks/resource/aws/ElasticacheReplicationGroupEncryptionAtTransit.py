@@ -4,7 +4,7 @@ from checkov.cloudformation.checks.resource.base_resource_value_check import Bas
 
 class ElasticacheReplicationGroupEncryptionAtTransit(BaseResourceValueCheck):
     def __init__(self) -> None:
-        name = "Ensure all data stored in the Elasticache Replication Group is securely encrypted at transit"
+        name = "Ensure all data stored in the ElastiCache Replication Group is securely encrypted at transit"
         id = "CKV_AWS_30"
         supported_resources = ("AWS::ElastiCache::ReplicationGroup",)
         categories = (CheckCategories.ENCRYPTION,)

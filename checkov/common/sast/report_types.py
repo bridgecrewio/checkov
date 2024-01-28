@@ -33,8 +33,8 @@ class DataFlow(BaseModel):
     data_flow: List[MatchLocation]  # noqa: CCE003
 
     @model_serializer
-    def serialize_model(self) -> List[MatchLocation]:
-        return self.data_flow
+    def serialize_model(self) -> Dict[str, List[MatchLocation]]:
+        return {'data_flow': self.data_flow}
 
 
 class MatchMetadata(BaseModel):

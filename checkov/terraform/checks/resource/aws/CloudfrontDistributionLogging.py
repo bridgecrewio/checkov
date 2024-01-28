@@ -6,7 +6,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 class CloudfrontDistributionLogging(BaseResourceValueCheck):
 
     def __init__(self):
-        name = "Ensure Cloudfront distribution has Access Logging enabled"
+        name = "Ensure CloudFront distribution has Access Logging enabled"
         id = "CKV_AWS_86"
         supported_resources = ['aws_cloudfront_distribution']
         categories = [CheckCategories.LOGGING]

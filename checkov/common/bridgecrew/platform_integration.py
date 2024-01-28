@@ -562,6 +562,11 @@ class BcPlatformIntegration:
                 if match.metadata.code_locations:
                     for code_location in match.metadata.code_locations:
                         code_location.path = code_location.path.replace(os.path.abspath(dir), self.repo_path)  # type: ignore
+
+                if match.metadata.taint_mode and match.metadata.taint_mode.data_flow:
+                    for df in match.metadata.taint_mode.data_flow:
+                        df.path = df.path.replace(os.path.abspath(dir), self.repo_path)  # type: ignore
+
                 return
 
         for file in self.scan_file:
@@ -571,6 +576,11 @@ class BcPlatformIntegration:
                 if match.metadata.code_locations:
                     for code_location in match.metadata.code_locations:
                         code_location.path = code_location.path.replace(os.path.abspath(file_dir), self.repo_path)  # type: ignore
+
+                if match.metadata.taint_mode and match.metadata.taint_mode.data_flow:
+                    for df in match.metadata.taint_mode.data_flow:
+                        df.path = df.path.replace(os.path.abspath(file_dir), self.repo_path)  # type: ignore
+
                 return
 
     @staticmethod
