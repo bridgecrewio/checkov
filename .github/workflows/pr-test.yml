@@ -163,6 +163,9 @@ jobs:
           # Just making sure the API key tests don't run on PRs
           bash -c './integration_tests/prepare_data.sh ${{ matrix.os }} 3.8'
       - name: Run integration tests
+        env:
+          BC_API_KEY: ${{ secrets.PRISMA_KEY_API2 }}
+          PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
         run: |
           pipenv run pytest integration_tests -k 'not api_key'
 
