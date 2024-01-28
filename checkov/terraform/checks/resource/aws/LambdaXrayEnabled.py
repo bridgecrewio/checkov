@@ -4,7 +4,7 @@ from checkov.common.models.enums import CheckCategories
 
 class LambdaXrayEnabled(BaseResourceValueCheck):
     def __init__(self):
-        name = "X-ray tracing is enabled for Lambda"
+        name = "X-Ray tracing is enabled for Lambda"
         id = "CKV_AWS_50"
         supported_resources = ['aws_lambda_function']
         categories = [CheckCategories.LOGGING]

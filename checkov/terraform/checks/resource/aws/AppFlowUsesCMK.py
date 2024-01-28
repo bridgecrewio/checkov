@@ -5,7 +5,7 @@ from checkov.common.models.consts import ANY_VALUE
 
 class AppFlowUsesCMK(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure App Flow flow uses CMK"
+        name = "Ensure AppFlow flow uses CMK"
         id = "CKV_AWS_263"
         supported_resources = ['aws_appflow_flow']
         categories = [CheckCategories.ENCRYPTION]

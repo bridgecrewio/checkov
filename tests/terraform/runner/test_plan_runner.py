@@ -13,7 +13,6 @@ from parameterized import parameterized_class
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import BcSeverities, Severities
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
-from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.db_connectors.rustworkx.rustworkx_db_connector import RustworkxConnector
 from checkov.common.models.enums import CheckCategories, CheckResult
@@ -24,9 +23,8 @@ from checkov.terraform.plan_runner import Runner, resource_registry
 
 
 @parameterized_class([
-   {"db_connector": NetworkxConnector},
-   {"db_connector": IgraphConnector},
-   {"db_connector": RustworkxConnector},
+    {"db_connector": NetworkxConnector},
+    {"db_connector": RustworkxConnector},
 ])
 class TestRunnerValid(unittest.TestCase):
     @classmethod
@@ -36,7 +34,7 @@ class TestRunnerValid(unittest.TestCase):
         cls.db_connector = cls.db_connector
 
     def test_py_graph_check(self):
-        if not self.db_connector == IgraphConnector:
+        if not self.db_connector == RustworkxConnector:
             return
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources/py_graph_check_tf_plan"

@@ -3,7 +3,6 @@ from __future__ import annotations
 import itertools
 from typing import Any, List, Dict, Optional, Tuple, TYPE_CHECKING
 
-from igraph import Graph
 from networkx import DiGraph
 
 from checkov.common.graph.checks_infra.enums import SolverType
@@ -51,27 +50,14 @@ class BaseConnectionSolver(BaseSolver):
         return vertex_type in itertools.chain(self.resource_types, self.connected_resources_types)
 
     def set_vertices(self, graph_connector: LibraryGraph, exclude_vertices: List[Dict[str, Any]], unknown_vertices: List[Dict[str, Any]]) -> None:
-        if isinstance(graph_connector, Graph):
-            select_kwargs = {}
-            if self.resource_types:
-                select_kwargs = {"resource_type_in": self.resource_types}
-
-            self.vertices_under_resource_types = [
-                data for data in graph_connector.vs.select(**select_kwargs)["attr"]
-            ]
-            self.vertices_under_connected_resources_types = [
-                data for data in graph_connector.vs.select(resource_type_in=self.connected_resources_types)["attr"]
-            ]
-        elif isinstance(graph_connector, DiGraph):
+        if isinstance(graph_connector, DiGraph):
             self.vertices_under_resource_types = [
                 v for _, v in graph_connector.nodes(data=True) if self.resource_type_pred(v, self.resource_types)
             ]
             self.vertices_under_connected_resources_types = [
                 v for _, v in graph_connector.nodes(data=True) if self.resource_type_pred(v, self.connected_resources_types)
             ]
-
-        # isinstance(graph_connector, PyDiGraph):
-        else:
+        else:  # isinstance(graph_connector, PyDiGraph):
             self.vertices_under_resource_types = [
                 v for _, v in graph_connector.nodes() if self.resource_type_pred(v, self.resource_types)
             ]
@@ -96,14 +82,7 @@ class BaseConnectionSolver(BaseSolver):
         if not self.vertices_under_resource_types:
             return graph_connector
 
-        if isinstance(graph_connector, Graph):
-            resource_nodes = {
-                vertex for vertex in graph_connector.vs.select(resource_type_in=self.targeted_resources_types)
-            }
-            connection_nodes = {
-                vertex for vertex in graph_connector.vs.select(block_type__in=BaseConnectionSolver.SUPPORTED_CONNECTION_BLOCK_TYPES)
-            }
-        elif isinstance(graph_connector, DiGraph):
+        if isinstance(graph_connector, DiGraph):
             resource_nodes = {
                 node
                 for node, resource_type in graph_connector.nodes(data=CustomAttributes.RESOURCE_TYPE)
@@ -117,8 +96,7 @@ class BaseConnectionSolver(BaseSolver):
                 if block_type in BaseConnectionSolver.SUPPORTED_CONNECTION_BLOCK_TYPES
             }
 
-        # isinstance(graph_connector, PyDiGraph):
-        else:
+        else:  # isinstance(graph_connector, PyDiGraph):
             resource_nodes = {
                 index
                 for index, node in graph_connector.nodes()

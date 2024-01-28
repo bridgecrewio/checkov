@@ -2,7 +2,7 @@ metadata:
   version: 0.2
   approach: define failing
   id: CKV_AWS_56
-  name: Ensure S3 bucket has 'restrict_public_bucket' enabled
+  name: Ensure S3 bucket has 'restrict_public_buckets' enabled
   category: GENERAL_SECURITY
   framework: cdk
 scope:

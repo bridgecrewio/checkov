@@ -6,7 +6,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 
 class DynamodbGlobalTableRecovery(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure Dynamodb point in time recovery (backup) is enabled for global tables"
+        name = "Ensure DynamoDB point in time recovery (backup) is enabled for global tables"
         id = "CKV_AWS_165"
         supported_resources = ['aws_dynamodb_global_table']
         categories = [CheckCategories.BACKUP_AND_RECOVERY]

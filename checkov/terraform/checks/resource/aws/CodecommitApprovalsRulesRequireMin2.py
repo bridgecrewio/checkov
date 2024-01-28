@@ -8,7 +8,7 @@ class CodecommitApprovalsRulesRequireMin2(BaseResourceCheck):
         """
         See https://docs.aws.amazon.com/codecommit/latest/userguide/approval-rule-templates.html
         """
-        name = "Ensure codecommit branch changes have at least 2 approvals"
+        name = "Ensure CodeCommit branch changes have at least 2 approvals"
         id = "CKV_AWS_257"
         supported_resources = ['aws_codecommit_approval_rule_template']
         categories = [CheckCategories.GENERAL_SECURITY]
