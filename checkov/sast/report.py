@@ -15,6 +15,10 @@ class SastReport(Report):
         self.sast_reachability: Dict[str, Any] = {}
         self.sast_report: PrismaReport = sast_report
 
+    @property
+    def errors(self) -> Dict[str, Any]:
+        return {k: v for k, v in self.sast_report.errors.items() if isinstance(v, str) and "policy" not in v.lower()}
+
     def get_summary(self) -> Dict[str, Union[int, str]]:
         base_summary: Dict[str, Union[int, str]] = super().get_summary()
 
