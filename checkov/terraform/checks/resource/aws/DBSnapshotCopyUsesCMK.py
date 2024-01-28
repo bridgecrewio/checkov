@@ -3,9 +3,9 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 from checkov.common.models.consts import ANY_VALUE
 
 
-class BDSnapshotCopyUsesCMK(BaseResourceValueCheck):
+class DBSnapshotCopyUsesCMK(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure App Flow connector profile uses CMK"
+        name = "Ensure DB Snapshot copy uses CMK"
         id = "CKV_AWS_266"
         supported_resources = ['aws_db_snapshot_copy']
         categories = [CheckCategories.ENCRYPTION]
@@ -18,4 +18,4 @@ class BDSnapshotCopyUsesCMK(BaseResourceValueCheck):
         return ANY_VALUE
 
 
-check = BDSnapshotCopyUsesCMK()
+check = DBSnapshotCopyUsesCMK()

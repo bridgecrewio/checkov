@@ -5,7 +5,7 @@ from checkov.common.models.enums import CheckCategories
 
 class DocDBEncryptedWithCMK(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure Doc DB is encrypted by KMS using a customer managed Key (CMK)"
+        name = "Ensure DocumentDB is encrypted by KMS using a customer managed Key (CMK)"
         id = "CKV_AWS_182"
         supported_resources = ['aws_docdb_cluster']
         categories = [CheckCategories.ENCRYPTION]

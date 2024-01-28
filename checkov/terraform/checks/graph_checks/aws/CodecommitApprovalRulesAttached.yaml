@@ -1,5 +1,5 @@
 metadata:
-  name: "Ensure Codecommit associates an approval rule"
+  name: "Ensure CodeCommit associates an approval rule"
   category: "GENERAL_SECURITY"
   id: "CKV2_AWS_37"
 scope:

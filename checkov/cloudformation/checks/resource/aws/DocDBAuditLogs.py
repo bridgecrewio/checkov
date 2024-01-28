@@ -6,7 +6,7 @@ from checkov.common.models.enums import CheckCategories
 
 class DocDBAuditLogs(BaseResourceValueCheck):
     def __init__(self) -> None:
-        name = "Ensure DocDB has audit logs enabled"
+        name = "Ensure DocumentDB has audit logs enabled"
         id = "CKV_AWS_104"
         supported_resources = ["AWS::DocDB::DBClusterParameterGroup"]
         categories = [CheckCategories.LOGGING]

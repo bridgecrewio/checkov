@@ -2,7 +2,7 @@ metadata:
   version: 0.2
   approach: define failing
   id: CKV_AWS_74
-  name: Ensure DocDB is encrypted at rest (default is unencrypted)
+  name: Ensure DocumentDB is encrypted at rest (default is unencrypted)
   category: ENCRYPTION
   framework: cdk
 scope:
