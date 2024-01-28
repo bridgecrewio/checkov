@@ -51,7 +51,7 @@ class LicensingIntegration(BaseIntegrationFeature):
             self.enabled_modules = [CustomerSubscription(m) for m, e in license_details.get(MODULES_KEY).items() if e]
             print('&&&&&&&')
             print(self.enabled_modules)
-            rint('&&&&&&&')
+            print('&&&&&&&')
 
     def is_runner_valid(self, runner_check_type: str) -> bool:
         logging.debug(f'Checking if {runner_check_type} is valid for license')
