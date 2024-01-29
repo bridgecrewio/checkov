@@ -158,6 +158,7 @@ jobs:
         env:
           LOG_LEVEL: INFO
           BC_KEY: ${{ secrets.PRISMA_KEY_API2 }}
+          PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
         run: |
           # Just making sure the API key tests don't run on PRs
           bash -c './integration_tests/prepare_data.sh ${{ matrix.os }} 3.8'
