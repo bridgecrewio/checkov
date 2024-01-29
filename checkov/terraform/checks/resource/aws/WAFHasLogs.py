@@ -7,7 +7,7 @@ from checkov.common.models.consts import ANY_VALUE
 
 class WAFHasLogs(BaseResourceValueCheck):
     def __init__(self) -> None:
-        name = "Ensure Logging is enabled for WAF  Web Access Control Lists"
+        name = "Ensure Logging is enabled for WAF Web Access Control Lists"
         id = "CKV_AWS_176"
         supported_resources = ('aws_waf_web_acl', 'aws_wafregional_web_acl')
         categories = (CheckCategories.LOGGING,)

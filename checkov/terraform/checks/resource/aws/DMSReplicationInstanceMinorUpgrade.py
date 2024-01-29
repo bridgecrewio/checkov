@@ -4,7 +4,7 @@ from checkov.common.models.enums import CheckCategories
 
 class DMSReplicationInstanceMinorUpgrade(BaseResourceValueCheck):
     def __init__(self) -> None:
-        name = "Ensure DMS instance gets all minor upgrade automatically"
+        name = "Ensure DMS replication instance gets all minor upgrade automatically"
         id = "CKV_AWS_222"
         supported_resources = ["aws_dms_replication_instance"]
         categories = [CheckCategories.ENCRYPTION]

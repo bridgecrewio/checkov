@@ -4,7 +4,7 @@ from checkov.common.models.enums import CheckCategories, CheckResult
 
 class AppsyncCacheEncryptionAtRest(BaseResourceValueCheck):
     def __init__(self) -> None:
-        name = "Ensure Appsync API Cache is encrypted at rest"
+        name = "Ensure AppSync API Cache is encrypted at rest"
         id = "CKV_AWS_214"
         supported_resources = ["aws_appsync_api_cache"]
         categories = [CheckCategories.ENCRYPTION]

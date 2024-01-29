@@ -4,7 +4,7 @@ from checkov.common.models.enums import CheckCategories
 
 class DynamodbRecovery(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure Dynamodb point in time recovery (backup) is enabled"
+        name = "Ensure DynamoDB point in time recovery (backup) is enabled"
         id = "CKV_AWS_28"
         supported_resources = ['aws_dynamodb_table']
         categories = [CheckCategories.BACKUP_AND_RECOVERY]

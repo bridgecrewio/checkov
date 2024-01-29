@@ -7,7 +7,7 @@ from checkov.common.models.consts import ANY_VALUE
 
 class CodePipelineArtifactsEncrypted(BaseResourceValueCheck):
     def __init__(self) -> None:
-        name = "Ensure Code Pipeline Artifact store is using a KMS CMK"
+        name = "Ensure CodePipeline Artifact store is using a KMS CMK"
         id = "CKV_AWS_219"
         supported_resources = ("aws_codepipeline",)
         categories = (CheckCategories.ENCRYPTION,)

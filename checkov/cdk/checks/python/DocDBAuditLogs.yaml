@@ -2,7 +2,7 @@ metadata:
   version: 0.2
   approach: define failing
   id: CKV_AWS_104
-  name: Ensure DocDB has audit logs enabled
+  name: Ensure DocumentDB has audit logs enabled
   category: LOGGING
   framework: cdk
 scope:

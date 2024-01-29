@@ -59,7 +59,7 @@ setup(
             "pytest==5.3.1",
             "coverage==5.5",
             "coverage-badge",
-            "GitPython==3.1.7",
+            "GitPython==3.1.41",
             "bandit",
             "jsonschema",
         ]
@@ -82,7 +82,6 @@ setup(
         "packaging>=23.0,<24.0",
         "cloudsplaining>=0.6.2,<0.7.0",
         "networkx<2.7",
-        "igraph<0.11.0",
         "dockerfile-parse>=2.0.0,<3.0.0",
         "docker>=6.0.1,<8.0.0",
         "configargparse>=1.5.3,<2.0.0",
