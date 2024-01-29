@@ -24,7 +24,7 @@ class TestCheckovJsonReport(unittest.TestCase):
         if sys.version_info[1] == 8 and platform.system() == 'Linux':
             platform_url_found = False
             with open(report_path) as f:
-                if 'More details: https://www.bridgecrew.cloud/projects?' in f.read():
+                if 'More details: https://app0.prismacloud.io/projects?' in f.read():
                     platform_url_found = True
             self.assertEqual(platform_url_found, url_should_exist, "when using api key and not --skip-results-upload, platform code review url should exist")
 
