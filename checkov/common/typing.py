@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Dict, TypeVar, Set, Union, TypedDict
+from typing import TYPE_CHECKING, Any, Callable, Dict, TypeVar, Set, Union, TypedDict, Tuple
 from typing_extensions import TypeAlias  # noqa[TC002]
 
 if TYPE_CHECKING:
@@ -30,7 +30,7 @@ TFDefinitionKeyType: TypeAlias = "Union[str, TFDefinitionKey]"
 
 
 class _CheckResult(TypedDict, total=False):
-    result: "CheckResult" | tuple["CheckResult", dict[str, Any]]
+    result: Union["CheckResult", Tuple["CheckResult", dict[str, Any]]]
     suppress_comment: str
     evaluated_keys: list[str]
     results_configuration: dict[str, Any] | None
