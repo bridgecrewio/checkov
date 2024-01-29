@@ -85,7 +85,7 @@ jobs:
           bash -c './integration_tests/prepare_data.sh "${{ matrix.os }}" "${{ matrix.python }}"'
         env:
           LOG_LEVEL: INFO
-          BC_KEY: ${{ secrets.BC_API_KEY }}
+          BC_KEY: ${{ secrets.PRISMA_KEY_API2 }}
           TF_REGISTRY_TOKEN: ${{ secrets.TFC_TOKEN }}
           GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       - name: Run integration tests
@@ -154,7 +154,8 @@ jobs:
       - name: Create checkov reports
         env:
           LOG_LEVEL: INFO
-          BC_API_KEY: ${{ secrets.BC_API_KEY }}
+          BC_API_KEY: ${{ secrets.PRISMA_KEY_API2 }}
+          PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
         run: bash -c './sast_integration_tests/prepare_data.sh'
       - name: Run integration tests
         run: |
@@ -324,7 +325,8 @@ jobs:
       image_tag_short: ${{ needs.bump-version.outputs.major_version }}
       runner: "['self-hosted', 'public', 'linux', 'x64']"
     secrets:
-      BC_API_KEY: ${{ secrets.BC_API_KEY }}
+      BC_API_KEY: ${{ secrets.PRISMA_KEY_API2 }}
+      PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
   publish-checkov-k8s-dockerhub:
@@ -342,7 +344,8 @@ jobs:
       dockerfile_path: kubernetes/Dockerfile
       runner: "['self-hosted', 'public', 'linux', 'x64']"
     secrets:
-      BC_API_KEY: ${{ secrets.BC_API_KEY }}
+      BC_API_KEY: ${{ secrets.PRISMA_KEY_API2 }}
+      PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
   update-bridgecrew-projects:
