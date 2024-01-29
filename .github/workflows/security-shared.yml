@@ -40,8 +40,6 @@ jobs:
       - name: Scan for secrets
         uses: bridgecrewio/checkov-action@master  # use latest and greatest
         with:
-          api-key: ${{ secrets.PRISMA_API_URL_2 }}
+          api-key: ${{ secrets.PRISMA_KEY_API2 }}
+          prisma-api-url: ${{ secrets.PRISMA_API_URL_2 }}
           config_file: .github/checkov.yaml
-        env:
-          BC_API_KEY: ${{ secrets.PRISMA_KEY_API2 }}
-          PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
