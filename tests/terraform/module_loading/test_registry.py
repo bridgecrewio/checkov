@@ -474,7 +474,7 @@ def test_load_terraform_registry_with_real_download(tmp_path: Path):
     source = "terraform-aws-modules/security-group/aws"
 
     # when
-    content = registry.load(current_dir=current_dir, source=source, source_version="3.0.0")
+    content = registry.load(current_dir=current_dir, source=source, source_version="~> 3.0")
 
     expected_content_path = os.path.join(
         current_dir,
