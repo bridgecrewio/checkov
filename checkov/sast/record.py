@@ -97,18 +97,18 @@ class SastRecord(Record):
         code_lines = ""
         last_file = dataflows[0].path.split('/')[-1]
         last_line_num = dataflows[0].start.row
-        code_lines += colored("\t\t" + last_file + "\n", 'light_yellow')
+        code_lines += colored("\t\t" + last_file, 'light_yellow')
         file_details = last_file
         for df in dataflows:
             cur_file = df.path.split('/')[-1]
             cur_line_num = df.start.row
             if cur_file != last_file:
-                code_lines += colored("\t\t" + cur_file + "\n", 'light_yellow')
+                code_lines += colored("\t\t" + cur_file, 'light_yellow')
                 file_details += "->" + cur_file
                 last_file = cur_file
             else:
                 if cur_line_num != last_line_num and cur_line_num != last_line_num + 1:
-                    code_lines += colored("\t\t...\n", 'light_yellow')
+                    code_lines += colored("\t\t...", 'light_yellow')
             code_lines += self.get_code_lines_string([(cur_line_num, df.code_block)])
             file_details += "->" + str(cur_line_num)
             last_line_num = cur_line_num
