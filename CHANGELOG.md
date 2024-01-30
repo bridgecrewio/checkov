@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.1...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.2...HEAD)
+
+## [3.2.2](https://github.com/bridgecrewio/checkov/compare/3.2.1...3.2.2) - 2024-01-30
+
+### Feature
+
+- **sca:** persist support logs for sub processes - [#5988](https://github.com/bridgecrewio/checkov/pull/5988)
 
 ## [3.2.1](https://github.com/bridgecrewio/checkov/compare/3.2.0...3.2.1) - 2024-01-29
 
