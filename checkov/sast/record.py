@@ -6,7 +6,7 @@ from checkov.common.bridgecrew.severities import Severity
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
 from checkov.common.typing import _CheckResult
-from checkov.common.sast.report_types import MatchMetadata
+from checkov.common.sast.report_types import MatchMetadata, MatchLocation
 
 
 class SastRecord(Record):
@@ -93,7 +93,7 @@ class SastRecord(Record):
         else:
             return f"{check_message}{severity_message}{status_message}{cwe_message}{detail}{caller_file_details}{evaluation_message}{guideline_message}\n"
 
-    def get_code_lines_taint(self, dataflows) -> Tuple[str, str]:
+    def get_code_lines_taint(self, dataflows: List[MatchLocation]) -> Tuple[str, str]:
         code_lines = ""
         last_file = dataflows[0].path.split('/')[-1]
         last_line_num = dataflows[0].start.row
