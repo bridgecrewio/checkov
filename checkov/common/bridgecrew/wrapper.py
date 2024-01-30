@@ -24,7 +24,6 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.typing import _ReducedScanReport, LibraryGraph
 from checkov.common.util.file_utils import compress_multiple_strings_ios_tar
-from checkov.common.util.igraph_serialization import serialize_to_json
 from checkov.common.util.json_utils import CustomJSONEncoder
 
 if TYPE_CHECKING:

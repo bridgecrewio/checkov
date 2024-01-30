@@ -25,6 +25,6 @@ stream_handler.setLevel(logging.DEBUG)
 root_logger.addHandler(stream_handler)
 
 
-def erase_log_stream():
+def erase_log_stream() -> None:
     log_stream.seek(0)
     log_stream.truncate(0)
