@@ -5,7 +5,7 @@ from typing import Dict
 
 
 class LoggerStreams:
-    def __init__(self):
+    def __init__(self) -> None:
         self._streams: Dict[str, StringIO] = {}
         pass
 
