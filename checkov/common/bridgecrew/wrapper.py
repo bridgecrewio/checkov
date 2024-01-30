@@ -24,7 +24,7 @@ except ImportError:
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.typing import _ReducedScanReport, LibraryGraph
-from checkov.common.util.file_utils import compress_string_io_tar
+from checkov.common.util.file_utils import compress_multiple_strings_ios_tar
 from checkov.common.util.igraph_serialization import serialize_to_json
 from checkov.common.util.json_utils import CustomJSONEncoder
 
@@ -152,9 +152,9 @@ def persist_run_metadata(
         raise
 
 
-def persist_logs_stream(logs_stream: StringIO, s3_client: S3Client, bucket: str, full_repo_object_key: str) -> None:
-    file_io = compress_string_io_tar(logs_stream)
-    object_path = f'{full_repo_object_key}/logs_file.tar.gz'
+def persist_multiple_logs_stream(logs_streams: Dict[str, StringIO], s3_client: S3Client, bucket: str, full_repo_object_key: str) -> None:
+    file_io = compress_multiple_strings_ios_tar(logs_streams)
+    object_path = f'{full_repo_object_key}/logs_files.tar.gz'
     try:
         s3_client.put_object(Bucket=bucket, Key=object_path, Body=file_io)
     except Exception:
