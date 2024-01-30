@@ -4,7 +4,7 @@ from checkov.cloudformation.checks.resource.base_resource_value_check import Bas
 
 class DocDBEncryption(BaseResourceValueCheck):
     def __init__(self) -> None:
-        name = "Ensure DocDB is encrypted at rest (default is unencrypted)"
+        name = "Ensure DocumentDB is encrypted at rest (default is unencrypted)"
         id = "CKV_AWS_74"
         supported_resources = ("AWS::DocDB::DBCluster",)
         categories = (CheckCategories.ENCRYPTION,)

@@ -463,6 +463,9 @@ class RunnerRegistry:
             if (bc_integration.runtime_run_config_response and bc_integration.runtime_run_config_response.get('isRepoInRuntime', False)):
                 cli_output += f"The '{bc_integration.repo_id}' repository was discovered In a running environment\n\n"
 
+            if len(cli_reports) > 0:
+                cli_output += cli_reports[0].add_errors_to_output()
+
             for report in cli_reports:
                 cli_output += report.print_console(
                     is_quiet=config.quiet,

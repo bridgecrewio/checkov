@@ -1,17 +1,14 @@
 from __future__ import annotations
-from typing import Any, Mapping, TYPE_CHECKING, Union
+from typing import Any, Mapping
 
 from checkov.common.graph.graph_builder import CustomAttributes
+from checkov.common.typing import LibraryGraph
 from checkov.kubernetes.image_referencer.base_provider import BaseKubernetesProvider
 from checkov.common.images.graph.image_referencer_provider import _ExtractImagesCallableAlias
 
-if TYPE_CHECKING:
-    from igraph import Graph
-    from networkx import DiGraph
-
 
 class BaseHelmProvider(BaseKubernetesProvider):
-    def __init__(self, graph_connector: Union[Graph, DiGraph],
+    def __init__(self, graph_connector: LibraryGraph,
                  supported_resource_types: dict[str, _ExtractImagesCallableAlias] | Mapping[str, _ExtractImagesCallableAlias],
                  original_root_dir: str, temp_root_dir: str) -> None:
         super().__init__(

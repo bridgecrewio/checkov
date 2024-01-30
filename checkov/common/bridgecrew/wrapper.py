@@ -10,7 +10,6 @@ from typing import Any, TYPE_CHECKING, Optional, Dict
 from collections import defaultdict
 
 import dpath
-from igraph import Graph
 from rustworkx import PyDiGraph, digraph_node_link_json  # type: ignore
 
 try:
@@ -41,7 +40,6 @@ secrets_check_reduced_keys = check_reduced_keys + ('validation_status',)
 check_metadata_keys = ('evaluations', 'code_block', 'workflow_name', 'triggers', 'job')
 
 FILE_NAME_NETWORKX = 'graph_networkx.json'
-FILE_NAME_IGRAPH = 'graph_igraph.json'
 FILE_NAME_RUSTWORKX = 'graph_rustworkx.json'
 
 SAST_FRAMEWORK_PREFIX = 'sast'
@@ -193,9 +191,6 @@ def persist_graphs(
         if isinstance(graph, DiGraph):
             json_obj = node_link_data(graph)
             graph_file_name = FILE_NAME_NETWORKX
-        elif isinstance(graph, Graph):
-            json_obj = serialize_to_json(graph, _absolute_root_folder)
-            graph_file_name = FILE_NAME_IGRAPH
         elif isinstance(graph, PyDiGraph):
             json_obj = digraph_node_link_json(graph)
             graph_file_name = FILE_NAME_RUSTWORKX

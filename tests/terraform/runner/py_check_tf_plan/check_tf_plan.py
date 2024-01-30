@@ -17,9 +17,8 @@ class JustForTest(BaseResourceValueCheck):
 
     def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
         result = super().scan_resource_conf(conf=conf)
-        # For IGraph framework -
-        resources = self.graph.vs.select(block_type__eq="resource")["attr"]
-        # For RustworkX Framework - [g[1] for g in self.graph.nodes() if g[1].get('block_type_') == 'resource']
+        # For RustworkX Framework -
+        resources = [g[1] for g in self.graph.nodes() if g[1].get('block_type_') == 'resource']
 
         # Do something here.
         if resources:

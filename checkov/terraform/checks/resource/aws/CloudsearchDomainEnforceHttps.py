@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 
 class CloudsearchDomainEnforceHttps(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure that Cloudsearch is using https"
+        name = "Ensure that CloudSearch is using https"
         id = "CKV_AWS_220"
         supported_resources = ["aws_cloudsearch_domain"]
         categories = [CheckCategories.GENERAL_SECURITY]

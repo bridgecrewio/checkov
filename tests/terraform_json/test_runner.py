@@ -4,8 +4,8 @@ import pytest
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
-from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.graph.db_connectors.rustworkx.rustworkx_db_connector import RustworkxConnector
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform_json.runner import TerraformJsonRunner
 
@@ -16,7 +16,7 @@ EXAMPLES_DIR = Path(__file__).parent / "examples"
     "graph_connector",
     [
         NetworkxConnector,
-        IgraphConnector,
+        RustworkxConnector,
     ],
 )
 def test_runner_honors_enforcement_rules(graph_connector):
@@ -43,7 +43,7 @@ def test_runner_honors_enforcement_rules(graph_connector):
     "graph_connector",
     [
         NetworkxConnector,
-        IgraphConnector,
+        RustworkxConnector,
     ],
 )
 def test_runner_passing_check(graph_connector):
@@ -68,7 +68,7 @@ def test_runner_passing_check(graph_connector):
     "graph_connector",
     [
         NetworkxConnector,
-        IgraphConnector,
+        RustworkxConnector,
     ],
 )
 def test_runner_failing_check(graph_connector):

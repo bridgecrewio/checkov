@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 
 class DocDBBackupRetention(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure DocDB has an adequate backup retention period"
+        name = "Ensure DocumentDB has an adequate backup retention period"
         id = "CKV_AWS_360"
         supported_resources = ['aws_docdb_cluster']
         categories = [CheckCategories.BACKUP_AND_RECOVERY]
