@@ -15,12 +15,12 @@ class TestLoggerStreams(unittest.TestCase):
 
         # validate logs
         stream_content = logger_streams.get_streams().get(stream_name).getvalue()
-        self.assertTrue(log_message in stream_content)
+        self.assertIn(log_message, stream_content)
 
         # validate eraser of logs
         erase_log_stream()
         stream_content = logger_streams.get_streams().get(stream_name).getvalue()
-        self.assertTrue(stream_content == '')
+        self.assertEqual(stream_content, '')
 
 
 if __name__ == "__main__":
