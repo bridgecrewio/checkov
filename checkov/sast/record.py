@@ -92,7 +92,7 @@ class SastRecord(Record):
         else:
             return f"{check_message}{severity_message}{status_message}{cwe_message}{detail}{caller_file_details}{evaluation_message}{guideline_message}\n"
 
-    def get_code_lines_taint(self):
+    def get_code_lines_taint(self) -> (str, str):
         code_lines = ""
         last_file = self.metadata.taint_mode.data_flow[0].path.split('/')[-1]
         last_line_num = self.metadata.taint_mode.data_flow[0].start.row
@@ -103,12 +103,12 @@ class SastRecord(Record):
             cur_line_num = df.start.row
             if cur_file != last_file:
                 code_lines += colored("\t\t" + cur_file + "\n", 'light_yellow')
-                file_details += "->"+cur_file
+                file_details += "->" + cur_file
                 last_file = cur_file
             else:
                 if cur_line_num != last_line_num and cur_line_num != last_line_num + 1:
                     code_lines += colored("\t\t...\n", 'light_yellow')
             code_lines += self.get_code_lines_string([(cur_line_num, df.code_block)])
-            file_details += "->"+str(cur_line_num)
+            file_details += "->" + str(cur_line_num)
             last_line_num = cur_line_num
         return code_lines, file_details
