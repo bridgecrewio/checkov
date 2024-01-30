@@ -24,7 +24,7 @@ class StorageAccountMinimumTlsVersion(BaseResourceCheck):
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
         if "properties" in conf and \
             "minimumTlsVersion" in conf["properties"] and \
-                conf["properties"]["minimumTlsVersion"] in ['TLS1_2', 'TLS1_3']:
+                conf["properties"]["minimumTlsVersion"] in ['TLS1_2']:
             return CheckResult.PASSED
         return CheckResult.FAILED
 
