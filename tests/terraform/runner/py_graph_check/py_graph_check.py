@@ -20,7 +20,7 @@ class RDSEncryption(BaseResourceValueCheck):
         result = super().scan_resource_conf(conf=conf)
         provider_name = conf.get("provider")
         if provider_name and isinstance(provider_name, list):
-            providers = self.graph.vs.select(block_type__eq="provider")["attr"]
+            providers = [g[1] for g in self.graph.nodes() if g[1].get('block_type_') == 'provider']
             provider = next((prov for prov in providers if prov[CustomAttributes.BLOCK_NAME] == provider_name[0]), None)
             if provider and provider.get("use_fips_endpoint") is True:
                 return CheckResult.PASSED

@@ -6,7 +6,6 @@ from abc import abstractmethod
 from typing import Dict, Optional, Any, Set, TYPE_CHECKING, TypeVar, Generic
 
 import dpath
-import igraph
 from typing_extensions import TypeAlias  # noqa[TC002]
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
@@ -38,7 +37,7 @@ if TYPE_CHECKING:
     from networkx import DiGraph
     from checkov.common.checks_infra.registry import Registry
     from checkov.common.images.image_referencer import Image
-    from checkov.common.typing import LibraryGraphConnector
+    from checkov.common.typing import LibraryGraphConnector, LibraryGraph
 
 _Context = TypeVar("_Context", bound="dict[Any, Any]|None")
 _Definitions = TypeVar("_Definitions", bound="dict[Any, Any]|None")
@@ -130,7 +129,7 @@ class BaseTerraformRunner(
         return connected_node_data
 
     def get_graph_checks_report(
-        self, root_folder: str, runner_filter: RunnerFilter, graph: igraph.Graph | None = None
+        self, root_folder: str, runner_filter: RunnerFilter, graph: LibraryGraph | None = None
     ) -> Report:
         report = Report(self.check_type)
         checks_results = self.run_graph_checks_results(runner_filter, self.check_type, graph)
