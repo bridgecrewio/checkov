@@ -72,8 +72,9 @@ class SastRecord(Record):
 
         cwe_message = colored(f'\t{self.cwe}\n') if self.cwe else ''
 
-        if self.metadata is not None and self.metadata.taint_mode is not None and len(self.metadata.taint_mode.data_flow) > 0:
-            code_lines, file_details = self.get_code_lines_taint()
+        if self.metadata is not None and self.metadata.taint_mode is not None and self.metadata.taint_mode.data_flow \
+                is not None and len(self.metadata.taint_mode.data_flow) > 0:
+            code_lines, file_details = self.get_code_lines_taint(self.metadata.taint_mode.data_flow)
         else:
             file_details = f'{self.file_path}:{" -> ".join([str(x) for x in self.file_line_range])}' if \
                 self.file_line_range[0] != self.file_line_range[-1] else \
@@ -92,13 +93,13 @@ class SastRecord(Record):
         else:
             return f"{check_message}{severity_message}{status_message}{cwe_message}{detail}{caller_file_details}{evaluation_message}{guideline_message}\n"
 
-    def get_code_lines_taint(self) -> Tuple[str, str]:
+    def get_code_lines_taint(self, dataflows) -> Tuple[str, str]:
         code_lines = ""
-        last_file = self.metadata.taint_mode.data_flow[0].path.split('/')[-1]
-        last_line_num = self.metadata.taint_mode.data_flow[0].start.row
+        last_file = dataflows[0].path.split('/')[-1]
+        last_line_num = dataflows[0].start.row
         code_lines += colored("\t\t" + last_file + "\n", 'light_yellow')
         file_details = last_file
-        for df in self.metadata.taint_mode.data_flow:
+        for df in dataflows:
             cur_file = df.path.split('/')[-1]
             cur_line_num = df.start.row
             if cur_file != last_file:
