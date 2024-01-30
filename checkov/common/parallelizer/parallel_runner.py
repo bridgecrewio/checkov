@@ -40,7 +40,7 @@ class ParallelRunner:
         # future support - spawn is not working well with frozen mode, need to investigate multiprocessing.freeze_support()
 
     def running_as_process(self) -> bool:
-        return self.type in self.type in [ParallelizationType.FORK, ParallelizationType.SPAWN]
+        return self.type in [ParallelizationType.FORK, ParallelizationType.SPAWN]
 
     def run_function(
         self,
