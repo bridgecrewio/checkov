@@ -11,7 +11,7 @@ class TestLoggerStreams(unittest.TestCase):
         erase_log_stream()
         logger_streams = LoggerStreams()
         logger_streams.add_stream(stream_name, log_stream)
-        logging.debug(log_message)
+        logging.error(log_message)
 
         # validate logs
         stream_content = logger_streams.get_streams().get(stream_name).getvalue()
