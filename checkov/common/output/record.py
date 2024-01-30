@@ -147,7 +147,7 @@ class Record:
     @staticmethod
     def get_code_lines_string(code_block: List[Tuple[int, str]]) -> str:
         if code_block:
-            return "{}\n".format("".join([Record._code_line_string(code_block, not (ANSI_COLORS_DISABLED))]))
+            return "\n{}\n".format("".join([Record._code_line_string(code_block, not (ANSI_COLORS_DISABLED))]))
         return ''
 
     @staticmethod
