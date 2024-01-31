@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.2...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.3...HEAD)
+
+## [3.2.3](https://github.com/bridgecrewio/checkov/compare/3.2.2...3.2.3) - 2024-01-31
+
+### Bug Fix
+
+- **terraform:** find explicit lockout fail actions for s3 - [#5943](https://github.com/bridgecrewio/checkov/pull/5943)
 
 ## [3.2.2](https://github.com/bridgecrewio/checkov/compare/3.2.1...3.2.2) - 2024-01-30
 
