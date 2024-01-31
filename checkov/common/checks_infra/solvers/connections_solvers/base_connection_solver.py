@@ -115,8 +115,10 @@ class BaseConnectionSolver(BaseSolver):
         return graph_connector.subgraph(list(resource_nodes))
 
     def populate_checks_results(self, origin_attributes: Dict[str, Any], destination_attributes: Dict[str, Any], passed: List[Dict[str, Any]], failed: List[Dict[str, Any]], unknown: List[Dict[str, Any]]) -> None:
-        if origin_attributes in self.excluded_vertices or destination_attributes in self.excluded_vertices:
-            failed.extend([origin_attributes, destination_attributes])
+        if origin_attributes in self.excluded_vertices:
+            failed.append(origin_attributes)
+        elif destination_attributes in self.excluded_vertices:
+            failed.append(destination_attributes)
         elif origin_attributes in self.unknown_vertices or destination_attributes in self.unknown_vertices:
             unknown.extend([origin_attributes, destination_attributes])
         else:
