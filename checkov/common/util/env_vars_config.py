@@ -75,6 +75,7 @@ class EnvVarsConfig:
         # need to fix usage, because the env var value is set inside the code
         self.GITHUB_CONF_DIR_PATH = os.getenv("CKV_GITHUB_CONF_DIR_PATH")
         self.ENABLE_DEFINITION_KEY = os.getenv("ENABLE_DEFINITION_KEY", False)
+        self.SKIP_PACKAGE_UPDATE_CHECK = convert_str_to_bool(os.getenv("CKV_SKIP_PACKAGE_UPDATE_CHECK", False))
 
 
 env_vars_config = EnvVarsConfig()
