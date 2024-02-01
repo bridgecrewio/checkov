@@ -1,6 +1,34 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.70...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.3...HEAD)
+
+## [3.2.3](https://github.com/bridgecrewio/checkov/compare/3.2.2...3.2.3) - 2024-01-31
+
+### Bug Fix
+
+- **terraform:** find explicit lockout fail actions for s3 - [#5943](https://github.com/bridgecrewio/checkov/pull/5943)
+
+## [3.2.2](https://github.com/bridgecrewio/checkov/compare/3.2.1...3.2.2) - 2024-01-30
+
+### Feature
+
+- **sca:** persist support logs for sub processes - [#5988](https://github.com/bridgecrewio/checkov/pull/5988)
+
+## [3.2.1](https://github.com/bridgecrewio/checkov/compare/3.2.0...3.2.1) - 2024-01-29
+
+### Bug Fix
+
+- **sast:** summarize errors - [#5977](https://github.com/bridgecrewio/checkov/pull/5977)
+
+## [3.2.0](https://github.com/bridgecrewio/checkov/compare/3.1.70...3.2.0) - 2024-01-28
+
+### Bug Fix
+
+- **terraform:** and cdk/cloudformation: inconsistent naming of AWS resources in checks - [#5966](https://github.com/bridgecrewio/checkov/pull/5966)
+
+### Platform
+
+- **general:** remove igraph - [#5781](https://github.com/bridgecrewio/checkov/pull/5781)
 
 ## [3.1.70](https://github.com/bridgecrewio/checkov/compare/3.1.69...3.1.70) - 2024-01-24
 

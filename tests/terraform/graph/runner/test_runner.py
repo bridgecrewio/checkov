@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.graph.db_connectors.rustworkx.rustworkx_db_connector import RustworkxConnector
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner
 
@@ -11,7 +11,7 @@ from checkov.terraform.runner import Runner
     "graph_connector",
     [
         NetworkxConnector,
-        IgraphConnector
+        RustworkxConnector
     ]
 )
 def test_dynamics(graph_connector):

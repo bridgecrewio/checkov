@@ -39,7 +39,7 @@ class EnvVarsConfig:
         self.GITHUB_CONFIG_FETCH_DATA = convert_str_to_bool(os.getenv("CKV_GITHUB_CONFIG_FETCH_DATA", True))
         self.GITLAB_CONF_DIR_NAME = os.getenv("CKV_GITLAB_CONF_DIR_NAME", "gitlab_conf")
         self.GITLAB_CONFIG_FETCH_DATA = convert_str_to_bool(os.getenv("CKV_GITLAB_CONFIG_FETCH_DATA", True))
-        self.GRAPH_FRAMEWORK = os.getenv("CHECKOV_GRAPH_FRAMEWORK", "IGRAPH")
+        self.GRAPH_FRAMEWORK = os.getenv("CHECKOV_GRAPH_FRAMEWORK", "RUSTWORKX")
         self.IGNORED_DIRECTORIES = os.getenv("CKV_IGNORED_DIRECTORIES", "node_modules,.terraform,.serverless")
         self.IGNORE_HIDDEN_DIRECTORIES = convert_str_to_bool(os.getenv("CKV_IGNORE_HIDDEN_DIRECTORIES", True))
         self.MAX_FILE_SIZE = force_int(os.getenv("CHECKOV_MAX_FILE_SIZE", 5_000_000))  # 5 MB is default limit

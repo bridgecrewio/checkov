@@ -45,6 +45,7 @@ from checkov.common.bridgecrew.integration_features.integration_feature_registry
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.severities import BcSeverities
 from checkov.common.goget.github.get_git import GitGetter
+from checkov.common.logger_streams import logger_streams
 from checkov.common.output.baseline import Baseline
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.runners.runner_registry import RunnerRegistry
@@ -698,6 +699,9 @@ class Checkov:
 
         finally:
             if bc_integration.support_flag_enabled:
+                # append main process log stream to the list of all streams
+                logger_streams.add_stream('main', logs_stream)
+
                 if bc_integration.s3_setup_failed:
                     print_to_stderr = os.getenv('CKV_STDERR_DEBUG', 'FALSE').upper() == 'TRUE'
                     log_level = os.getenv('LOG_LEVEL', '')
@@ -705,7 +709,7 @@ class Checkov:
                         print('Unable to upload support logs. However, LOG_LEVEL is already set to DEBUG, so debug logs are available locally.')
                     elif print_to_stderr:
                         print('Unable to upload support logs - CKV_STDERR_DEBUG is TRUE, printing to stderr.')
-                        print(logs_stream.getvalue(), file=sys.stderr)
+                        logger_streams.print_to_console()
                     else:
                         # default to writing to a file - if they are using the support flag they probably are not excited
                         # to get debug logs from stderr (but they also might not be able to access a local file if it
@@ -713,11 +717,9 @@ class Checkov:
                         print('Unable to upload support logs - saving debug logs to ./checkov_debug.log. To print the debug '
                               'logs to stderr instead, set the CKV_STDERR_DEBUG environment variable to TRUE, and re-run. '
                               'Note that this will result in the scan results being printed, followed by all logs.')
-                        with open('./checkov_debug.log', 'w') as fp:
-                            logs_stream.seek(0)
-                            shutil.copyfileobj(logs_stream, fp)
+                        logger_streams.print_to_files()
                 else:
-                    bc_integration.persist_logs_stream(logs_stream)
+                    bc_integration.persist_all_logs_streams(logger_streams.get_streams())
 
     def exit_run(self) -> None:
         exit(0) if self.config.no_fail_on_crash else exit(2)

@@ -10,7 +10,6 @@ from typing import Any, TYPE_CHECKING, Optional, Dict
 from collections import defaultdict
 
 import dpath
-from igraph import Graph
 from rustworkx import PyDiGraph, digraph_node_link_json  # type: ignore
 
 try:
@@ -24,8 +23,7 @@ except ImportError:
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.typing import _ReducedScanReport, LibraryGraph
-from checkov.common.util.file_utils import compress_string_io_tar
-from checkov.common.util.igraph_serialization import serialize_to_json
+from checkov.common.util.file_utils import compress_multiple_strings_ios_tar
 from checkov.common.util.json_utils import CustomJSONEncoder
 
 if TYPE_CHECKING:
@@ -41,7 +39,6 @@ secrets_check_reduced_keys = check_reduced_keys + ('validation_status',)
 check_metadata_keys = ('evaluations', 'code_block', 'workflow_name', 'triggers', 'job')
 
 FILE_NAME_NETWORKX = 'graph_networkx.json'
-FILE_NAME_IGRAPH = 'graph_igraph.json'
 FILE_NAME_RUSTWORKX = 'graph_rustworkx.json'
 
 SAST_FRAMEWORK_PREFIX = 'sast'
@@ -152,9 +149,9 @@ def persist_run_metadata(
         raise
 
 
-def persist_logs_stream(logs_stream: StringIO, s3_client: S3Client, bucket: str, full_repo_object_key: str) -> None:
-    file_io = compress_string_io_tar(logs_stream)
-    object_path = f'{full_repo_object_key}/logs_file.tar.gz'
+def persist_multiple_logs_stream(logs_streams: Dict[str, StringIO], s3_client: S3Client, bucket: str, full_repo_object_key: str) -> None:
+    file_io = compress_multiple_strings_ios_tar(logs_streams)
+    object_path = f'{full_repo_object_key}/logs_files.tar.gz'
     try:
         s3_client.put_object(Bucket=bucket, Key=object_path, Body=file_io)
     except Exception:
@@ -193,9 +190,6 @@ def persist_graphs(
         if isinstance(graph, DiGraph):
             json_obj = node_link_data(graph)
             graph_file_name = FILE_NAME_NETWORKX
-        elif isinstance(graph, Graph):
-            json_obj = serialize_to_json(graph, _absolute_root_folder)
-            graph_file_name = FILE_NAME_IGRAPH
         elif isinstance(graph, PyDiGraph):
             json_obj = digraph_node_link_json(graph)
             graph_file_name = FILE_NAME_RUSTWORKX
