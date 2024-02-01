@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import re
 from checkov.common.sast.consts import SastLanguages
 from checkov.sast.record import SastRecord
 from checkov.sast.report import SastData, SastReport
@@ -59,22 +58,6 @@ def test_get_sast_reachability_report_with_one_report():
     }
 
 
-def rem_ansi(sometext):
-    ansi_escape = re.compile(r'''
-        \x1B  # ESC
-        (?:   # 7-bit C1 Fe (except CSI)
-            [@-Z\\-_]
-        |     # or [ for CSI, followed by a control sequence
-            \[
-            [0-?]*  # Parameter bytes
-            [ -/]*  # Intermediate bytes
-            [@-~]   # Final byte
-        )
-    ''', re.VERBOSE)
-    result = ansi_escape.sub('', sometext)
-    return result
-
-
 def test_get_code_lines_taint():
     record = SastRecord(check_id='', check_name='', resource='', evaluations={},
                         check_class='', check_result=None, code_block=[], file_path='', file_line_range=[],
@@ -83,7 +66,7 @@ def test_get_code_lines_taint():
                         owasp='', show_severity=True)
 
     code_lines_actual_output, file_details_actual_output = record.get_code_lines_taint(record.metadata.taint_mode.data_flow)
-    code_lines_expected_output = '\x1b[93m\t\tfile_that_import.js\x1b[0m\n\t\t\x1b[37m3 | \x1b[33mlet password = request.password;\n\x1b[93m\t\t...\x1b[0m\n\t\t\x1b[37m6 | \x1b[33mDanger(password);\n\x1b[93m\t\timported_file.js\x1b[0m\n\t\t\x1b[37m2 | \x1b[33mconsole.log("Danger: " + password)\n'
+    code_lines_expected_output = '\t\tfile_that_import.js\n\t\t\x1b[37m3 | \x1b[33mlet password = request.password;\n\t\t...\n\t\t\x1b[37m6 | \x1b[33mDanger(password);\n\t\timported_file.js\n\t\t\x1b[37m2 | \x1b[33mconsole.log("Danger: " + password)\n'
     file_details_expected_output = 'file_that_import.js->3->6->imported_file.js->2'
     assert code_lines_expected_output == code_lines_actual_output
     assert file_details_expected_output == file_details_actual_output
