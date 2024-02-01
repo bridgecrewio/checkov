@@ -31,9 +31,11 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.bridgecrew.platform_key import read_key
 from checkov.common.bridgecrew.run_metadata.registry import registry
-from checkov.common.bridgecrew.wrapper import CDK_FRAMEWORK_PREFIX, persist_assets_results, reduce_scan_reports, persist_checks_results, \
+from checkov.common.bridgecrew.wrapper import CDK_FRAMEWORK_PREFIX, persist_assets_results, reduce_scan_reports, \
+    persist_checks_results, \
     enrich_and_persist_checks_metadata, checkov_results_prefix, persist_run_metadata, _put_json_object, \
-    persist_logs_stream, persist_graphs, persist_resource_subgraph_maps, persist_reachability_results
+    persist_graphs, persist_resource_subgraph_maps, persist_reachability_results, \
+    persist_multiple_logs_stream
 from checkov.common.models.consts import SAST_SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILES, SCANNABLE_PACKAGE_FILES
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.sast.consts import SastLanguages
@@ -748,14 +750,15 @@ class BcPlatformIntegration:
             logging.debug(f'Also uploading run_metadata.json to support location: {self.support_bucket}/{self.support_repo_path}')
             persist_run_metadata(run_metadata, self.s3_client, self.support_bucket, self.support_repo_path, False)
 
-    def persist_logs_stream(self, logs_stream: StringIO) -> None:
+    def persist_all_logs_streams(self, logs_streams: Dict[str, StringIO]) -> None:
         if not self.use_s3_integration or not self.s3_client or self.s3_setup_failed:
             return
         if not self.support_bucket or not self.support_repo_path:
             logging.error(
                 f"Something went wrong with the log upload location: bucket {self.support_bucket}, repo path {self.support_repo_path}")
             return
-        persist_logs_stream(logs_stream, self.s3_client, self.support_bucket, self.support_repo_path)
+
+        persist_multiple_logs_stream(logs_streams, self.s3_client, self.support_bucket, self.support_repo_path)
 
     def persist_graphs(self, graphs: dict[str, list[tuple[LibraryGraph, Optional[str]]]], absolute_root_folder: str = '') -> None:
         if not self.use_s3_integration or not self.s3_client or self.s3_setup_failed:
