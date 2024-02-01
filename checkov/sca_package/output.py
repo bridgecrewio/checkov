@@ -288,7 +288,7 @@ def create_fixable_cve_summary_table_part(
     fixable_table.set_style(SINGLE_BORDER)
     if cve_count.fixable:
         fixable_table.add_row(
-            [f"To fix {cve_count.has_fix}/{cve_count.to_fix} CVEs, go to https://www.bridgecrew.cloud/"])
+            [f"To fix {cve_count.has_fix}/{cve_count.to_fix} CVEs, go to your Prisma Cloud account"])
         fixable_table.align = "l"
 
     # hack to make multiple tables look like one

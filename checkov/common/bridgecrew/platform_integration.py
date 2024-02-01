@@ -113,8 +113,8 @@ class BcPlatformIntegration:
         self.bc_source_version: str | None = None
         self.timestamp: str | None = None
         self.scan_reports: list[Report] = []
-        self.bc_api_url = normalize_bc_url(os.getenv('BC_API_URL', "https://www.bridgecrew.cloud"))
-        self.prisma_api_url = normalize_prisma_url(os.getenv("PRISMA_API_URL"))
+        self.bc_api_url = normalize_bc_url(os.getenv('BC_API_URL'))
+        self.prisma_api_url = normalize_prisma_url(os.getenv('PRISMA_API_URL', 'https://api0.prismacloud.io'))
         self.prisma_policies_url: str | None = None
         self.prisma_policy_filters_url: str | None = None
         self.setup_api_urls()
@@ -199,12 +199,12 @@ class BcPlatformIntegration:
         but Prisma Cloud requires resetting them in setup_bridgecrew_credentials,
         which is where command-line parameters are first made available.
         """
-        if self.prisma_api_url:
+        if self.bc_api_url:
+            self.api_url = self.bc_api_url
+        else:
             self.api_url = f"{self.prisma_api_url}/bridgecrew"
             self.prisma_policies_url = f"{self.prisma_api_url}/v2/policy"
             self.prisma_policy_filters_url = f"{self.prisma_api_url}/filter/policy/suggest"
-        else:
-            self.api_url = self.bc_api_url
         self.guidelines_api_url = f"{self.api_url}/api/v2/guidelines"
         self.guidelines_api_url_backoff = f"{self.api_url}/api/v1/guidelines"
 
@@ -341,6 +341,7 @@ class BcPlatformIntegration:
         source_version: str | None = None,
         repo_branch: str | None = None,
         prisma_api_url: str | None = None,
+        bc_api_url: str | None = None
     ) -> None:
         """
         Setup credentials against Bridgecrew's platform.
@@ -355,6 +356,12 @@ class BcPlatformIntegration:
         self.skip_download = skip_download
         self.bc_source = source
         self.bc_source_version = source_version
+
+        if bc_api_url:
+            self.prisma_api_url = None
+            self.bc_api_url = normalize_bc_url(bc_api_url)
+            self.setup_api_urls()
+            logging.info(f'Using BC API URL: {self.bc_api_url}')
 
         if prisma_api_url:
             self.prisma_api_url = normalize_prisma_url(prisma_api_url)
@@ -1219,7 +1226,7 @@ class BcPlatformIntegration:
         return repo_id
 
     def _upload_run(self, args: argparse.Namespace, scan_reports: list[Report]) -> None:
-        print(Style.BRIGHT + colored("Connecting to Bridgecrew.cloud...", 'green',
+        print(Style.BRIGHT + colored("Connecting to Prisma Cloud...", 'green',
                                      attrs=['bold']) + Style.RESET_ALL)
         self.persist_repository(args.directory[0])
         print(Style.BRIGHT + colored("Metadata upload complete", 'green',
@@ -1231,7 +1238,7 @@ class BcPlatformIntegration:
                                      attrs=['bold']) + Style.RESET_ALL)
         self.commit_repository(args.branch)
         print(Style.BRIGHT + colored(
-            "COMPLETE! \nYour results are in your Bridgecrew dashboard, available here: https://bridgecrew.cloud \n",
+            "COMPLETE! \nYour results are in your Prisma Cloud account \n",
             'green', attrs=['bold']) + Style.RESET_ALL)
 
     def _input_orgname(self) -> str:
