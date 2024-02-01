@@ -128,9 +128,13 @@ class ForeachAbstractHandler:
                             str_to_replace = f"{key_to_change}.{inner_key}"
                             if str_to_replace in attrs[k][0]:
                                 dollar_wrapped_str_to_replace = "${" + str_to_replace + "}"
-                                if dollar_wrapped_str_to_replace in attrs[k][0]:
+                                if attrs[k][0] == dollar_wrapped_str_to_replace:
+                                    attrs[k][0] = inner_value
+                                    v_changed = True
+                                    break
+                                elif dollar_wrapped_str_to_replace in attrs[k][0]:
                                     str_to_replace = dollar_wrapped_str_to_replace
-                                attrs[k][0] = attrs[k][0].replace(str_to_replace, inner_value)
+                                attrs[k][0] = attrs[k][0].replace(str_to_replace, str(inner_value))
                                 v_changed = True
                                 break
                     else:
