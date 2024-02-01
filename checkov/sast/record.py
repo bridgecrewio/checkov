@@ -72,8 +72,8 @@ class SastRecord(Record):
 
         cwe_message = colored(f'\t{self.cwe}\n') if self.cwe else ''
 
-        if self.metadata is not None and self.metadata.taint_mode is not None and self.metadata.taint_mode.data_flow \
-                is not None and len(self.metadata.taint_mode.data_flow) > 0:
+        if self.metadata and self.metadata.taint_mode and self.metadata.taint_mode.data_flow and \
+                len(self.metadata.taint_mode.data_flow) > 0:
             code_lines, file_details = self.get_code_lines_taint(self.metadata.taint_mode.data_flow)
         else:
             file_details = f'{self.file_path}:{" -> ".join([str(x) for x in self.file_line_range])}' if \
