@@ -11,7 +11,7 @@ from checkov.version import version
 
 class EnvVarsConfig:
     def __init__(self) -> None:
-        self.BC_API_URL = normalize_bc_url(os.getenv("BC_API_URL", "https://www.bridgecrew.cloud"))
+        self.BC_API_URL = normalize_bc_url(os.getenv("BC_API_URL"))
         self.BC_ENABLE_PERSIST_GRAPHS = convert_str_to_bool(os.getenv("BC_ENABLE_PERSIST_GRAPHS", True))
         self.BC_PERSIST_GRAPHS_TIMEOUT = force_int(os.getenv("BC_PERSIST_GRAPHS_TIMEOUT", 60))
         self.BC_ROOT_DIR = os.getenv("BC_ROOT_DIR", "")
@@ -71,7 +71,7 @@ class EnvVarsConfig:
         # is also defined as a flag, need to remove env var references in code
         self.BC_CA_BUNDLE = os.getenv("BC_CA_BUNDLE")
         # is also defined as a flag, need to remove env var references in code
-        self.PRISMA_API_URL = os.getenv("PRISMA_API_URL")
+        self.PRISMA_API_URL = os.getenv("PRISMA_API_URL", "https://api0.prismacloud.io")
         # need to fix usage, because the env var value is set inside the code
         self.GITHUB_CONF_DIR_PATH = os.getenv("CKV_GITHUB_CONF_DIR_PATH")
         self.ENABLE_DEFINITION_KEY = os.getenv("ENABLE_DEFINITION_KEY", False)
