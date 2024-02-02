@@ -127,7 +127,7 @@ operators_to_complex_solver_classes: dict[str, Type[BaseComplexSolver]] = {
 operator_to_connection_solver_classes: dict[str, Type[BaseConnectionSolver]] = {
     "exists": ConnectionExistsSolver,
     "one_exists": ConnectionOneExistsSolver,
-    "not_exists": ConnectionNotExistsSolver
+    "not_exists": ConnectionNotExistsSolver,
 }
 
 operator_to_complex_connection_solver_classes: dict[str, Type[ComplexConnectionSolver]] = {
@@ -209,7 +209,9 @@ class GraphCheckParser(BaseGraphCheckParser):
         else:
             return [""]
 
-    def _parse_raw_check(self, raw_check: Dict[str, Any], resources_types: Optional[List[str]], providers: Optional[List[str]]) -> BaseGraphCheck:
+    def _parse_raw_check(
+        self, raw_check: Dict[str, Any], resources_types: Optional[List[str]], providers: Optional[List[str]]
+    ) -> BaseGraphCheck:
         check = BaseGraphCheck()
         complex_operator = get_complex_operator(raw_check)
         if complex_operator:
@@ -233,10 +235,14 @@ class GraphCheckParser(BaseGraphCheckParser):
 
         else:
             resource_type = raw_check.get("resource_types", [])
-            if (
-                    not resource_type
-                    or (isinstance(resource_type, str) and resource_type.lower() == "all")
-                    or (isinstance(resource_type, list) and resource_type[0].lower() == "all")
+            if raw_check.get("cond_type") == "filter":
+                # filter blocks are only used in combination with others,
+                # which anyway have the needed resource types defined
+                check.resource_types = []
+            elif (
+                not resource_type
+                or (isinstance(resource_type, str) and resource_type.lower() == "all")
+                or (isinstance(resource_type, list) and resource_type[0].lower() == "all")
             ):
                 check.resource_types = resources_types or []
             elif "provider" in resource_type and providers:
