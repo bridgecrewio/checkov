@@ -697,6 +697,7 @@ class Checkov:
         except ModuleNotEnabledError as m:
             logging.error(m)
             self.exit_run()
+            return None
         except BaseException:
             logging.error("Exception traceback:", exc_info=True)
             raise
