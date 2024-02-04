@@ -103,6 +103,7 @@ class Runner(BaseRunner[None, None, None]):
             runner_filter: RunnerFilter | None = None,
             collect_skip_comments: bool = True
     ) -> Report:
+        
         runner_filter = runner_filter or RunnerFilter()
         current_dir = Path(__file__).parent
         secrets = SecretsCollection()
