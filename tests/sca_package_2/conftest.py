@@ -27,6 +27,7 @@ def mock_env_vars():
 @pytest.fixture()
 def mock_bc_integration() -> BcPlatformIntegration:
     bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
+    bc_integration.api_url = 'https://www.bridgecrew.cloud'
     bc_integration.setup_bridgecrew_credentials(
         repo_id="bridgecrewio/checkov",
         skip_fixes=True,

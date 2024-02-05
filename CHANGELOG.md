@@ -1,6 +1,35 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.0...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.7...HEAD)
+
+## [3.2.7](https://github.com/bridgecrewio/checkov/compare/3.2.3...3.2.7) - 2024-02-04
+
+### Feature
+
+- **azure:** create arm check StorageAccountMinimumTlsVersion CKV_AZURE_236 - [#5986](https://github.com/bridgecrewio/checkov/pull/5986)
+- **sast:** add dataflow to output - [#5987](https://github.com/bridgecrewio/checkov/pull/5987)
+
+### Bug Fix
+
+- **terraform:** Correctly relace foreach_value inside _update_attributes for complex cases - [#5994](https://github.com/bridgecrewio/checkov/pull/5994)
+
+## [3.2.3](https://github.com/bridgecrewio/checkov/compare/3.2.2...3.2.3) - 2024-01-31
+
+### Bug Fix
+
+- **terraform:** find explicit lockout fail actions for s3 - [#5943](https://github.com/bridgecrewio/checkov/pull/5943)
+
+## [3.2.2](https://github.com/bridgecrewio/checkov/compare/3.2.1...3.2.2) - 2024-01-30
+
+### Feature
+
+- **sca:** persist support logs for sub processes - [#5988](https://github.com/bridgecrewio/checkov/pull/5988)
+
+## [3.2.1](https://github.com/bridgecrewio/checkov/compare/3.2.0...3.2.1) - 2024-01-29
+
+### Bug Fix
+
+- **sast:** summarize errors - [#5977](https://github.com/bridgecrewio/checkov/pull/5977)
 
 ## [3.2.0](https://github.com/bridgecrewio/checkov/compare/3.1.70...3.2.0) - 2024-01-28
 
