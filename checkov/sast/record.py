@@ -50,6 +50,7 @@ class SastRecord(Record):
     def to_string(self, compact: bool = False, use_bc_ids: bool = False) -> str:
         status = ""
         status_color = "white"
+
         suppress_comment = ""
         if self.check_result["result"] == CheckResult.PASSED:
             status = CheckResult.PASSED.name
