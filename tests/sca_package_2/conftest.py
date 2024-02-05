@@ -20,8 +20,7 @@ EXAMPLES_DIR = Path(__file__).parent / "examples"
 
 @pytest.fixture(autouse=True)
 def mock_env_vars():
-    with mock.patch.dict(os.environ, {"CHECKOV_RUN_SCA_PACKAGE_SCAN_V2": "true"}):
-        yield
+    yield
 
 
 @pytest.fixture()
@@ -1039,7 +1038,6 @@ def scan_result_2_with_comma_in_licenses() -> Dict[str, Any]:
 
 
 @pytest.fixture()
-@mock.patch.dict(os.environ, {'CHECKOV_RUN_SCA_PACKAGE_SCAN_V2': 'true'})
 def scan_result_success_response() -> Dict[str, Any]:
     return {'outputType': 'Result',
             'outputData': "H4sIAN22X2IC/8WY23LbOBKGX6VLN5tUWRQp"
@@ -1078,7 +1076,6 @@ def scan_result_success_response() -> Dict[str, Any]:
 
 
 @pytest.fixture(scope='package')
-@mock.patch.dict(os.environ, {'CHECKOV_RUN_SCA_PACKAGE_SCAN_V2': 'true'})
 def sca_package_2_report(package_mocker: MockerFixture, scan_result_2: Dict[str, Any]) -> Report:
     bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
     scanner_mock = MagicMock()
@@ -1095,7 +1092,6 @@ def sca_package_2_report(package_mocker: MockerFixture, scan_result_2: Dict[str,
 
 
 @pytest.fixture(scope='package')
-@mock.patch.dict(os.environ, {'CHECKOV_RUN_SCA_PACKAGE_SCAN_V2': 'true'})
 def sca_package_report_dt(package_mocker: MockerFixture, scan_results_dt: Dict[str, Any]) -> Generator[Report, None, None]:
     orig_bc_api_key = bc_integration.bc_api_key
     orig_bc_source = bc_integration.bc_source
@@ -1123,7 +1119,6 @@ def sca_package_report_2_with_comma_in_licenses(package_mocker: MockerFixture,
     scanner_mock = MagicMock()
     scanner_mock.return_value.scan.return_value = scan_result_2_with_comma_in_licenses
     package_mocker.patch("checkov.sca_package_2.runner.Scanner", side_effect=scanner_mock)
-    package_mocker.patch.dict(os.environ, {'CHECKOV_RUN_SCA_PACKAGE_SCAN_V2': 'true'})
     return Runner().run(root_folder=EXAMPLES_DIR)
 
 
