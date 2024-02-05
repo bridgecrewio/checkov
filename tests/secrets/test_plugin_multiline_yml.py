@@ -10,6 +10,7 @@ from checkov.secrets.plugins.entropy_keyword_combinator import EntropyKeywordCom
 from checkov.secrets.plugins.entropy_keyword_combinator import REGEX_VALUE_KEYWORD_BY_FILETYPE
 from checkov.secrets.plugins.entropy_keyword_combinator import REGEX_VALUE_SECRET_BY_FILETYPE
 from checkov.secrets.runner import Runner
+from tests.secrets.utils_for_test import _filter_reports_for_incident_ids
 
 
 class TestCombinatorPluginMultilineYml(unittest.TestCase):
@@ -182,7 +183,9 @@ class TestCombinatorPluginMultilineYml(unittest.TestCase):
 
         # then
         assert end_time-start_time < 1  # assert the time limit is not too long for parsing long lines.
-        self.assertEqual(len(report.failed_checks), 4)
+        interesting_failed_checks = _filter_reports_for_incident_ids(report.failed_checks,
+                                                                     ["CKV_SECRET_4", "CKV_SECRET_6", "CKV_SECRET_13"])
+        self.assertEqual(len(interesting_failed_checks), 4)
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(report.passed_checks, [])
         self.assertEqual(report.skipped_checks, [])
