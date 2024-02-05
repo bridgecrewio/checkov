@@ -1725,7 +1725,7 @@ def create_cli_output_wrapper(with_line_numbers: bool) -> str:
     # given
     rootless_file_path = "requirements.txt"
     file_abs_path = "/path/to/requirements.txt"
-    check_class = "checkov.sca_package.scanner.Scanner"
+    check_class = "checkov.sca_package_2.scanner.Scanner"
     packages = {
         get_package_alias("django", "1.2"): {
             'package_registry': "https://registry.npmjs.org/",

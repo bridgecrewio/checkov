@@ -26,8 +26,6 @@ from checkov.runner_filter import RunnerFilter
 
 from checkov.sca_package_2.output import create_cli_output as create_sca_package_cli_output_v2
 
-from checkov.sca_package.output import create_cli_output as create_sca_package_cli_output_v1
-
 from checkov.policies_3d.output import create_cli_output as create_3d_policy_cli_output
 
 from checkov.version import version
@@ -311,7 +309,7 @@ class Report:
         # output for vulnerabilities is different
         if self.check_type in (CheckType.SCA_PACKAGE, CheckType.SCA_IMAGE):
             if self.failed_checks or self.skipped_checks:
-                create_cli_output = create_sca_package_cli_output_v2 if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 else create_sca_package_cli_output_v1
+                create_cli_output = create_sca_package_cli_output_v2
                 output_data += create_cli_output(self.check_type == CheckType.SCA_PACKAGE, self.failed_checks,
                                                  self.skipped_checks)
 
