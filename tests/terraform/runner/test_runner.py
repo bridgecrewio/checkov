@@ -393,6 +393,9 @@ class TestRunnerValid(unittest.TestCase):
             if f'CKV_GCP_{i}' == 'CKV_GCP_5':
                 # CKV_GCP_5 is no longer a valid platform check
                 continue
+            if f'CKV_GCP_{i}' == 'CKV_GCP_19':
+                # CKV_GCP_19 involved a configuration which was deprecated by GCP
+                continue
             if f'CKV_GCP_{i}' == 'CKV_GCP_67':
                 # CKV_GCP_67 is not deployable anymore https://cloud.google.com/kubernetes-engine/docs/how-to/hardening-your-cluster#protect_node_metadata
                 continue
