@@ -13,7 +13,7 @@ from os import path
 from pathlib import Path
 from time import sleep
 from types import MethodType
-from typing import List, Dict, TYPE_CHECKING, Any, Set, cast, Optional, Union
+from typing import List, Dict, TYPE_CHECKING, Any, Set, cast, Optional, Union, NoReturn
 from urllib.parse import urlparse
 
 import boto3
@@ -250,7 +250,7 @@ class BcPlatformIntegration:
         return re.match(UUID_V4_PATTERN, token) is not None
 
     @staticmethod
-    def raise_bridgecrew_auth_error(request_status: int, request_data: bytes) -> None:
+    def raise_bridgecrew_auth_error(request_status: int, request_data: bytes) -> NoReturn:
         logging.error(f'Received {request_status} response from Prisma /login endpoint: {request_data.decode("utf8")}') # danger:ignore
         raise BridgecrewAuthError()
 
