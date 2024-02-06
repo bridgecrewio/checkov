@@ -318,8 +318,7 @@ class BcPlatformIntegration:
                     os.environ['https_proxy'],
                     cert_reqs=cert_reqs,
                     ca_certs=ca_certificate,
-                    proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth),
-                    # type:ignore[no-untyped-call]
+                    proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth),  # type:ignore[no-untyped-call]
                     timeout=self.http_timeout,
                     retries=self.http_retry,
                 )
@@ -338,8 +337,7 @@ class BcPlatformIntegration:
                 self.http = urllib3.ProxyManager(
                     os.environ['https_proxy'],
                     cert_reqs=cert_reqs,
-                    proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth),
-                    # type:ignore[no-untyped-call]
+                    proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth),  # type:ignore[no-untyped-call]
                     timeout=self.http_timeout,
                     retries=self.http_retry,
                 )
