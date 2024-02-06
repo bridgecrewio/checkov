@@ -1,6 +1,23 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.3...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.8...HEAD)
+
+## [3.2.8](https://github.com/bridgecrewio/checkov/compare/3.2.7...3.2.8) - 2024-02-05
+
+### Feature
+
+- **secrets:** bump bc-detect-secrets to version 1.5.4 - [#5998](https://github.com/bridgecrewio/checkov/pull/5998)
+
+## [3.2.7](https://github.com/bridgecrewio/checkov/compare/3.2.3...3.2.7) - 2024-02-04
+
+### Feature
+
+- **azure:** create arm check StorageAccountMinimumTlsVersion CKV_AZURE_236 - [#5986](https://github.com/bridgecrewio/checkov/pull/5986)
+- **sast:** add dataflow to output - [#5987](https://github.com/bridgecrewio/checkov/pull/5987)
+
+### Bug Fix
+
+- **terraform:** Correctly relace foreach_value inside _update_attributes for complex cases - [#5994](https://github.com/bridgecrewio/checkov/pull/5994)
 
 ## [3.2.3](https://github.com/bridgecrewio/checkov/compare/3.2.2...3.2.3) - 2024-01-31
 
