@@ -92,10 +92,10 @@ async function alertPublicInterfaces() {
 
     for (const changedFile of changedFiles) {
         if (changedFile.endsWith("report_types.py")) {
-            warn("You've changed `report_types.py` file, that contains the contract for checkov input and output. Make sure to stay backwards compatible.")
+            fail("You've changed `report_types.py` file, that contains the contract for checkov input and output. Make sure to stay backwards compatible.")
         }
         if (changedFile.endsWith("report.py")) {
-            warn("You've changed `report.py` file, that contains the contract for checkov input and output. Make sure to stay backwards compatible.")
+            fail("You've changed `report.py` file, that contains the contract for checkov input and output. Make sure to stay backwards compatible.")
         }
     }
 }
