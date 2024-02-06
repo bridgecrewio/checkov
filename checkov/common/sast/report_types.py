@@ -34,7 +34,7 @@ class DataFlow(BaseModel):
 
     @model_serializer
     def serialize_model(self) -> Dict[str, List[MatchLocation]]:
-        return {'data_flow': self.data_flow}
+        return {'df': self.data_flow}
 
 
 class MatchMetadata(BaseModel):
