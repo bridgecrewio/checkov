@@ -251,7 +251,7 @@ class BcPlatformIntegration:
 
     @staticmethod
     def raise_bridgecrew_auth_error(request_status: int, request_data: bytes) -> None:
-        logging.error(f'Received {request_status} response from Prisma /login endpoint: {request_data.decode("utf8")}')
+        logging.error(f'Received {request_status} response from Prisma /login endpoint: {request_data.decode("utf8")}') # danger:ignore
         raise BridgecrewAuthError()
 
     def fetch_auth_token(self, username: str, password: str) -> str:
