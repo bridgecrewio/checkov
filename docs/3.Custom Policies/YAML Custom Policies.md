@@ -209,6 +209,7 @@ definition:
 | ----- | ----- |
 | Exists | `exists` |
 | Not Exists | `not_exists` |
+| One Exists | `one_exists` |
 
 ### Connection State Condition: Keys and Values
 

@@ -31,6 +31,7 @@ from checkov.circleci_pipelines.runner import Runner as circleci_pipelines_runne
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.bc_source import SourceTypes, BCSourceType, get_source_type, SourceType
 from checkov.common.bridgecrew.check_type import checkov_runners, CheckType
+from checkov.common.bridgecrew.platform_errors import ModuleNotEnabledError
 from checkov.common.bridgecrew.integration_features.features.custom_policies_integration import \
     integration as custom_policies_integration
 from checkov.common.bridgecrew.integration_features.features.licensing_integration import \
@@ -686,6 +687,10 @@ class Checkov:
                 return exit_code
             elif not self.config.quiet:
                 print(f"{banner}")
+            return None
+        except ModuleNotEnabledError as m:
+            logging.error(m)
+            self.exit_run()
             return None
         except BaseException:
             logging.error("Exception traceback:", exc_info=True)
