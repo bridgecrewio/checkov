@@ -250,16 +250,15 @@ class BcPlatformIntegration:
         return re.match(UUID_V4_PATTERN, token) is not None
 
     @staticmethod
-    def raise_bridgecrew_auth_error(request_status: int, request_data: bytes):
+    def raise_bridgecrew_auth_error(request_status: int, request_data: bytes) -> None:
         logging.error(f'Received {request_status} response from Prisma /login endpoint: {request_data.decode("utf8")}')
         raise BridgecrewAuthError()
 
     def fetch_auth_token(self, username: str, password: str) -> str:
         retries = int(os.getenv('REQUEST_MAX_TRIES', 3))
-        request = None
+        request: Any = None
         for i in range(retries):
             request = self.http.request("POST", f"{self.prisma_api_url}/login",
-                                        # type:ignore[no-untyped-call]
                                         body=json.dumps({"username": username, "password": password}),
                                         headers=merge_dicts({"Content-Type": "application/json"},
                                                             get_user_agent_header()))
