@@ -258,7 +258,7 @@ class BcPlatformIntegration:
         retries = int(os.getenv('REQUEST_MAX_TRIES', 3))
         request: Any = None
         for i in range(retries):
-            request = self.http.request("POST", f"{self.prisma_api_url}/login",
+            request = self.http.request("POST", f"{self.prisma_api_url}/login", # type:ignore[union-attr]
                                         body=json.dumps({"username": username, "password": password}),
                                         headers=merge_dicts({"Content-Type": "application/json"},
                                                             get_user_agent_header()))
