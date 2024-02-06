@@ -88,7 +88,7 @@ async function failIfLoggingLineContainsSensitiveData() {
 schedule(failIfLoggingLineContainsSensitiveData);
 
 async function alertPublicInterfaces() {
-    const changedFiles: string[] = danger.git.modified_files || [];
+    const changedFiles: string[] = danger.git.modified_files;
 
     for (const changedFile of changedFiles) {
         if (changedFile.endsWith("report_types.py")) {
