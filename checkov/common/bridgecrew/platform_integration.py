@@ -834,8 +834,7 @@ class BcPlatformIntegration:
                     return None
 
                 logging.debug(f'Submitting finalize upload request to {self.integrations_api_url}')
-                request = self.http.request("PUT", f"{self.integrations_api_url}?source={self.bc_source.name}",
-                                            # type:ignore[no-untyped-call]
+                request = self.http.request("PUT", f"{self.integrations_api_url}?source={self.bc_source.name}", # type:ignore[no-untyped-call]
                                             body=json.dumps(
                                                 {"path": self.repo_path, "branch": branch,
                                                  "to_branch": CI_METADATA_EXTRACTOR.to_branch,
