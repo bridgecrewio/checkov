@@ -40,7 +40,7 @@ class TestGetExitCode(unittest.TestCase):
             code_block=[],
             file_line_range=[],
             evaluations=None,
-            check_class='checkov.sca_package_2.scanner.Scanner',
+            check_class='checkov.sca_package.scanner.Scanner',
             file_abs_path='/requirements.txt'
         ))
         report.add_record(Record(
@@ -54,7 +54,7 @@ class TestGetExitCode(unittest.TestCase):
             code_block=[],
             file_line_range=[],
             evaluations=None,
-            check_class='checkov.sca_package_2.scanner.Scanner',
+            check_class='checkov.sca_package.scanner.Scanner',
             file_abs_path='/requirements.txt'
         ))
         report.add_record(Record(
@@ -68,7 +68,7 @@ class TestGetExitCode(unittest.TestCase):
             code_block=[],
             file_line_range=[],
             evaluations=None,
-            check_class='checkov.sca_package_2.scanner.Scanner',
+            check_class='checkov.sca_package.scanner.Scanner',
             file_abs_path='/requirements.txt'
         ))
         report.add_record(Record(
@@ -82,7 +82,7 @@ class TestGetExitCode(unittest.TestCase):
             code_block=[],
             file_line_range=[],
             evaluations=None,
-            check_class='checkov.sca_package_2.scanner.Scanner',
+            check_class='checkov.sca_package.scanner.Scanner',
             file_abs_path='/requirements.txt'
         ))
         report.add_record(Record(
@@ -96,7 +96,7 @@ class TestGetExitCode(unittest.TestCase):
             code_block=[],
             file_line_range=[],
             evaluations=None,
-            check_class='checkov.sca_package_2.scanner.Scanner',
+            check_class='checkov.sca_package.scanner.Scanner',
             file_abs_path='/requirements.txt'
         ))
         report.add_record(Record(
@@ -110,7 +110,7 @@ class TestGetExitCode(unittest.TestCase):
             code_block=[],
             file_line_range=[],
             evaluations=None,
-            check_class='checkov.sca_package_2.scanner.Scanner',
+            check_class='checkov.sca_package.scanner.Scanner',
             file_abs_path='/requirements.txt'
         ))
         report.add_record(Record(
@@ -124,7 +124,7 @@ class TestGetExitCode(unittest.TestCase):
             code_block=[],
             file_line_range=[],
             evaluations=None,
-            check_class='checkov.sca_package_2.scanner.Scanner',
+            check_class='checkov.sca_package.scanner.Scanner',
             file_abs_path='/requirements.txt'
         ))
         report.add_record(Record(
@@ -138,7 +138,7 @@ class TestGetExitCode(unittest.TestCase):
             code_block=[],
             file_line_range=[],
             evaluations=None,
-            check_class='checkov.sca_package_2.scanner.Scanner',
+            check_class='checkov.sca_package.scanner.Scanner',
             file_abs_path='/requirements.txt'
         ))
 

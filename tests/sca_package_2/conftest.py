@@ -20,7 +20,7 @@ EXAMPLES_DIR = Path(__file__).parent / "examples"
 
 @pytest.fixture(autouse=True)
 def mock_env_vars():
-    with mock.patch.dict(os.environ, {}):
+    with mock.patch.dict(os.environ, {"CHECKOV_RUN_SCA_PACKAGE_SCAN_V2": "true"}):
         yield
 
 
@@ -1039,7 +1039,7 @@ def scan_result_2_with_comma_in_licenses() -> Dict[str, Any]:
 
 
 @pytest.fixture()
-@mock.patch.dict(os.environ, {})
+@mock.patch.dict(os.environ, {'CHECKOV_RUN_SCA_PACKAGE_SCAN_V2': 'true'})
 def scan_result_success_response() -> Dict[str, Any]:
     return {'outputType': 'Result',
             'outputData': "H4sIAN22X2IC/8WY23LbOBKGX6VLN5tUWRQp"
@@ -1078,7 +1078,7 @@ def scan_result_success_response() -> Dict[str, Any]:
 
 
 @pytest.fixture(scope='package')
-@mock.patch.dict(os.environ, {})
+@mock.patch.dict(os.environ, {'CHECKOV_RUN_SCA_PACKAGE_SCAN_V2': 'true'})
 def sca_package_2_report(package_mocker: MockerFixture, scan_result_2: Dict[str, Any]) -> Report:
     bc_integration.bc_api_key = "abcd1234-abcd-1234-abcd-1234abcd1234"
     scanner_mock = MagicMock()
@@ -1095,7 +1095,7 @@ def sca_package_2_report(package_mocker: MockerFixture, scan_result_2: Dict[str,
 
 
 @pytest.fixture(scope='package')
-@mock.patch.dict(os.environ, {})
+@mock.patch.dict(os.environ, {'CHECKOV_RUN_SCA_PACKAGE_SCAN_V2': 'true'})
 def sca_package_report_dt(package_mocker: MockerFixture, scan_results_dt: Dict[str, Any]) -> Generator[Report, None, None]:
     orig_bc_api_key = bc_integration.bc_api_key
     orig_bc_source = bc_integration.bc_source
@@ -1725,7 +1725,7 @@ def create_cli_output_wrapper(with_line_numbers: bool) -> str:
     # given
     rootless_file_path = "requirements.txt"
     file_abs_path = "/path/to/requirements.txt"
-    check_class = "checkov.sca_package_2.scanner.Scanner"
+    check_class = "checkov.sca_package.scanner.Scanner"
     packages = {
         get_package_alias("django", "1.2"): {
             'package_registry': "https://registry.npmjs.org/",

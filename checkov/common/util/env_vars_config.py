@@ -57,6 +57,7 @@ class EnvVarsConfig:
         self.RENDER_VARIABLES_ASYNC = convert_str_to_bool(os.getenv("RENDER_VARIABLES_ASYNC", False))
         self.RUN_IN_DOCKER = convert_str_to_bool(os.getenv("RUN_IN_DOCKER", False))
         self.REQUEST_MAX_TRIES = force_int(os.getenv("REQUEST_MAX_TRIES", 3))
+        self.RUN_SCA_PACKAGE_SCAN_V2 = convert_str_to_bool(os.getenv("CHECKOV_RUN_SCA_PACKAGE_SCAN_V2", True))
         self.RUN_SECRETS_MULTIPROCESS = convert_str_to_bool(os.getenv("RUN_SECRETS_MULTIPROCESS", False))
         self.SLEEP_BETWEEN_REQUEST_TRIES = force_int(os.getenv("SLEEP_BETWEEN_REQUEST_TRIES", 1))
         self.SLS_FILE_MASK = os.getenv("CKV_SLS_FILE_MASK", "serverless.yml,serverless.yaml").split(",")
