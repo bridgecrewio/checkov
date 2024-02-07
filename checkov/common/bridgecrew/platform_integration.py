@@ -257,7 +257,7 @@ class BcPlatformIntegration:
     def fetch_auth_token(self, username: str, password: str) -> str:
         retries = int(os.getenv('REQUEST_MAX_TRIES', 3))
         request: Any = None
-        for _ in range(retries):
+        for i in range(retries):
             request = self.http.request("POST", f"{self.prisma_api_url}/login",  # type:ignore[union-attr]
                                         body=json.dumps({"username": username, "password": password}),
                                         headers=merge_dicts({"Content-Type": "application/json"},
@@ -268,6 +268,8 @@ class BcPlatformIntegration:
                 return token
             elif request.status in [401, 403]:
                 self.raise_bridgecrew_auth_error(request.status, request.data)
+
+            sleep(i * 1.5)
 
         self.raise_bridgecrew_auth_error(request.status, request.data)
 
