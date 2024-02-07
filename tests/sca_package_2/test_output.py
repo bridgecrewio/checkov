@@ -25,7 +25,7 @@ def test_create_report_cve_record():
     # given
     rootless_file_path = "requirements.txt"
     file_abs_path = "/path/to/requirements.txt"
-    check_class = "checkov.sca_package_2.scanner.Scanner"
+    check_class = "checkov.sca_package.scanner.Scanner"
     vulnerability_details = {
         "id": "CVE-2019-19844",
         "status": "fixed in 3.0.1, 2.2.9, 1.11.27",
@@ -96,7 +96,7 @@ def test_create_report_cve_record_results_from_platform():
     # given
     rootless_file_path = "requirements.txt"
     file_abs_path = "/path/to/requirements.txt"
-    check_class = "checkov.sca_package_2.scanner.Scanner"
+    check_class = "checkov.sca_package.scanner.Scanner"
     vulnerability_details = {
         "severity": "CRITICAL",
         "riskFactors": "{\"Critical severity\":{},\"Attack vector: network\":{},\"Has fix\":{},\"Attack complexity: low\":{}}",
@@ -168,7 +168,7 @@ def test_create_report_cve_record_moderate_severity():
     # given
     rootless_file_path = "requirements.txt"
     file_abs_path = "/path/to/requirements.txt"
-    check_class = "checkov.sca_package_2.scanner.Scanner"
+    check_class = "checkov.sca_package.scanner.Scanner"
     vulnerability_details = {
         "id": "CVE-2019-19844",
         "status": "fixed in 3.0.1, 2.2.9, 1.11.27",
@@ -209,7 +209,7 @@ def test_create_report_cve_record_severity_filter():
     # given
     rootless_file_path = "requirements.txt"
     file_abs_path = "/path/to/requirements.txt"
-    check_class = "checkov.sca_package_2.scanner.Scanner"
+    check_class = "checkov.sca_package.scanner.Scanner"
     vulnerability_details = {
         "id": "CVE-2019-19844",
         "status": "fixed in 3.0.1, 2.2.9, 1.11.27",
@@ -274,7 +274,7 @@ def test_create_report_cve_record_package_filter():
     # given
     rootless_file_path = "requirements.txt"
     file_abs_path = "/path/to/requirements.txt"
-    check_class = "checkov.sca_package_2.scanner.Scanner"
+    check_class = "checkov.sca_package.scanner.Scanner"
     vulnerability_details = {
         "id": "CVE-2019-19844",
         "status": "fixed in 3.0.1, 2.2.9, 1.11.27",
@@ -619,7 +619,7 @@ def test_create_cli_output_without_cve_records():
     # given
     rootless_file_path = "requirements.txt"
     file_abs_path = "/path/to/requirements.txt"
-    check_class = "checkov.sca_package_2.scanner.Scanner"
+    check_class = "checkov.sca_package.scanner.Scanner"
     license_statuses = [
         {
             "package_name": "django",
