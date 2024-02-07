@@ -210,7 +210,7 @@ class ContextParser:
                 pathprop.append(index)
                 keys.extend(ContextParser.search_deep_values(search_text, item, pathprop))
 
-        for inner_keys in keys:
+        for inner_keys in keys[:]:
             for i in inner_keys:
                 if isinstance(i, list) or isinstance(i, dict):
                     keys.remove(inner_keys)
