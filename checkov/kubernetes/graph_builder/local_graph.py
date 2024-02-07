@@ -40,7 +40,7 @@ class KubernetesLocalGraph(LocalGraph[KubernetesBlock]):
             if create_complex_vertices:
                 file_conf = self._extract_nested_resources(file_conf)
 
-            for resource in file_conf:
+            for resource in file_conf[:]:
                 resource_type = resource.get('kind', DEFAULT_NESTED_RESOURCE_TYPE)
                 metadata = resource.get('metadata') or {}
                 # TODO: add support for generateName
