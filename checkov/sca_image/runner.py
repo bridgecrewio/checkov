@@ -25,7 +25,7 @@ from checkov.common.util.file_utils import compress_file_gzip_base64
 from checkov.common.util.dockerfile import is_dockerfile
 from checkov.common.util.http_utils import request_wrapper
 from checkov.runner_filter import RunnerFilter
-from checkov.sca_package.runner import Runner as PackageRunner
+from checkov.sca_package_2.runner import Runner as PackageRunner
 
 
 class Runner(PackageRunner):
