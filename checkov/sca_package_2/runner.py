@@ -10,7 +10,8 @@ from checkov.common.sca.commons import should_run_scan
 from checkov.common.sca.output import add_to_report_sca_data
 from checkov.common.typing import _LicenseStatus
 from checkov.common.bridgecrew.platform_integration import bc_integration, FileToPersist
-from checkov.common.models.consts import SCANNABLE_PACKAGE_FILES_EXTENSIONS, SCANNABLE_PACKAGE_FILES
+from checkov.common.models.consts import SCANNABLE_PACKAGE_FILES_EXTENSIONS, SCANNABLE_PACKAGE_FILES, \
+    SUPPORTED_PACKAGE_FILES
 from checkov.common.models.enums import ErrorStatus
 from checkov.common.output.report import Report
 from checkov.common.bridgecrew.check_type import CheckType
@@ -188,3 +189,46 @@ class Runner(BaseRunner[None, None, None]):
                           "the scanning is terminating. details are below.\n"
                           "please try again. if it is repeated, please report.", exc_info=True)
             return None
+
+    def find_scannable_files(
+        self,
+        root_path: Path | None,
+        files: list[str] | None,
+        excluded_paths: set[str],
+        exclude_package_json: bool = True,
+        excluded_file_names: set[str] | None = None,
+        extra_supported_package_files: set[str] | None = None
+    ) -> set[Path]:
+        excluded_file_names = excluded_file_names or set()
+        extra_supported_package_files = extra_supported_package_files or set()
+        input_paths: set[Path] = set()
+        if root_path:
+            input_paths = {
+                file_path
+                for file_path in root_path.glob("**/*")
+                if file_path.name in SUPPORTED_PACKAGE_FILES.union(extra_supported_package_files) and not any(p in file_path.parts for p in excluded_paths)
+            }
+
+            package_json_lock_parent_paths = set()
+            if exclude_package_json:
+                # filter out package.json, if package-lock.json or yarn.lock exists
+                package_json_lock_parent_paths = {
+                    file_path.parent for file_path in input_paths if
+                    file_path.name in {"package-lock.json", "yarn.lock"}
+                }
+
+            input_paths = {
+                file_path
+                for file_path in input_paths
+                if (file_path.name != "package.json" or file_path.parent not in package_json_lock_parent_paths) and file_path.name not in excluded_file_names
+            }
+
+        for file in files or []:
+            file_path = Path(file)
+            if not file_path.exists():
+                logging.warning(f"File {file_path} doesn't exist")
+                continue
+
+            input_paths.add(file_path)
+
+        return input_paths
