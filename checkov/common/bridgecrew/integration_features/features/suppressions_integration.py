@@ -75,13 +75,15 @@ class SuppressionsIntegration(BaseIntegrationFeature):
             # group and map by policy ID
             self.suppressions = {policy_id: list(sup) for policy_id, sup in
                                  groupby(suppressions, key=lambda s: s['checkovPolicyId'])}
-            logging.debug(f'Found {len(self.suppressions)} valid suppressions from the platform.')
-            logging.debug('The found suppression rules are:')
-            logging.debug(self.suppressions)
             
             # map suppressions v2 by checkov ID - because the policy IDs are arrays, we need to map each unique ID in each
             # suppression's policy ID array to its suppressions
             self.suppressions_v2 = SuppressionsIntegration.create_suppression_v2_policy_id_map(suppressions_v2)
+
+            logging.debug('The found suppression v1 rules are:')
+            logging.debug(self.suppressions)
+            logging.debug('The found suppression v2 rules are:')
+            logging.debug(self.suppressions_v2)
             
         except Exception:
             self.integration_feature_failures = True
