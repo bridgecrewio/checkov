@@ -55,7 +55,6 @@ from checkov.common.typing import LibraryGraph
 from checkov.common.util import prompt
 from checkov.common.util.banner import banner as checkov_banner, tool as checkov_tool
 from checkov.common.util.config_utils import get_default_config_paths
-from checkov.common.util.consts import CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
 from checkov.common.util.ext_argument_parser import ExtArgumentParser, flatten_csv
 from checkov.common.util.runner_dependency_handler import RunnerDependencyHandler
 from checkov.common.util.type_forcers import convert_str_to_bool
@@ -77,7 +76,6 @@ from checkov.common.sast.report_types import serialize_reachability_report
 from checkov.sast.report import SastData, SastReport
 from checkov.sast.runner import Runner as sast_runner
 from checkov.sca_image.runner import Runner as sca_image_runner
-from checkov.sca_package.runner import Runner as sca_package_runner
 from checkov.sca_package_2.runner import Runner as sca_package_runner_2
 from checkov.secrets.runner import Runner as secrets_runner
 from checkov.serverless.runner import Runner as sls_runner
@@ -122,6 +120,7 @@ DEFAULT_RUNNERS: "list[BaseRunner[Any, Any, Any]]" = [
     bicep_runner(),
     openapi_runner(),
     sca_image_runner(),
+    sca_package_runner_2(),
     argo_workflows_runner(),
     circleci_pipelines_runner(),
     azure_pipelines_runner(),
@@ -347,11 +346,6 @@ class Checkov:
                 # This speeds up execution by not setting up upload credentials (since we won't upload anything anyways)
                 logger.debug('Using --list; setting source to DISABLED')
                 source = SourceTypes[BCSourceType.DISABLED]
-
-            if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2:
-                self.runners.append(sca_package_runner_2())
-            else:
-                self.runners.append(sca_package_runner())
 
             if outer_registry:
                 runner_registry = outer_registry

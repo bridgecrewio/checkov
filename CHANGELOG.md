@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.8...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.12...HEAD)
+
+## [3.2.12](https://github.com/bridgecrewio/checkov/compare/3.2.8...3.2.12) - 2024-02-06
+
+### Bug Fix
+
+- **general:** downgrade boto3 - [#6011](https://github.com/bridgecrewio/checkov/pull/6011)
+- **terraform:** fix check CKV2_AZURE_10 - [#6009](https://github.com/bridgecrewio/checkov/pull/6009)
 
 ## [3.2.8](https://github.com/bridgecrewio/checkov/compare/3.2.7...3.2.8) - 2024-02-05
 
