@@ -46,13 +46,11 @@ Resources:
         ConnectivityInfo:
           PublicAccess:
             Type: SERVICE_PROVIDED_EIPS
-          VpcConnectivity:
-            VpcConnectivity
         InstanceType: String
         SecurityGroups:
           - String
       ClusterName: String
-      EnhancedMonitoring: String
+      EnhancedMonitoring: DEFAULT
       KafkaVersion: String
       NumberOfBrokerNodes: 5
       Tags:

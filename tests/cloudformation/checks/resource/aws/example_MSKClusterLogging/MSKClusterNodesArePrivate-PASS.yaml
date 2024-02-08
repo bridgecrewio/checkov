@@ -7,7 +7,7 @@ Resources:
           - String
         InstanceType: kafka.m5.8xlarge
       ClusterName: String
-      EnhancedMonitoring: String
+      EnhancedMonitoring: DEFAULT
       KafkaVersion: String
       LoggingInfo:
         BrokerLogs:
@@ -32,7 +32,7 @@ Resources:
           - String
         InstanceType: kafka.m5.8xlarge
       ClusterName: String
-      EnhancedMonitoring: String
+      EnhancedMonitoring: DEFAULT
       KafkaVersion: String
       LoggingInfo:
         BrokerLogs:
