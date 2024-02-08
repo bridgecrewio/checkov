@@ -1,6 +1,14 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.12...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.17...HEAD)
+
+## [3.2.17](https://github.com/bridgecrewio/checkov/compare/3.2.12...3.2.17) - 2024-02-07
+
+### Bug Fix
+
+- **general:** downgrade botocore dependency - [#6016](https://github.com/bridgecrewio/checkov/pull/6016)
+- **graph:** remove SCA runner v1 - [#6005](https://github.com/bridgecrewio/checkov/pull/6005)
+- **terraform:** Deleted deprecated check CKV_GCP_19 - [#6010](https://github.com/bridgecrewio/checkov/pull/6010)
 
 ## [3.2.12](https://github.com/bridgecrewio/checkov/compare/3.2.8...3.2.12) - 2024-02-06
 
