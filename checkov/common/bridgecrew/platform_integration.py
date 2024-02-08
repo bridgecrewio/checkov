@@ -94,6 +94,7 @@ CI_METADATA_EXTRACTOR = registry.get_extractor()
 REQUEST_STATUS_CODES_RETRY = [401, 408, 500, 502, 503, 504]
 REQUEST_METHODS_TO_RETRY = ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'PUT', 'TRACE', 'POST']
 
+
 class BcPlatformIntegration:
     def __init__(self) -> None:
         self.clean()
