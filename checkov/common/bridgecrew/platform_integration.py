@@ -127,7 +127,7 @@ class BcPlatformIntegration:
         self.platform_integration_configured = False
         self.http: urllib3.PoolManager | urllib3.ProxyManager | None = None
         self.http_timeout = urllib3.Timeout(connect=REQUEST_CONNECT_TIMEOUT, read=REQUEST_READ_TIMEOUT)
-        self.http_retry = urllib3.Retry(REQUEST_RETRIES, redirect=3)
+        self.http_retry = urllib3.Retry(REQUEST_RETRIES, redirect=3,  status_forcelist=[401, 408, 500, 502, 503, 504])
         self.bc_skip_mapping = False
         self.cicd_details: _CicdDetails = {}
         self.support_flag_enabled = False
@@ -468,7 +468,7 @@ class BcPlatformIntegration:
     def _get_s3_creds(self, repo_id: str, token: str) -> dict[str, Any]:
         logging.debug(f'Getting S3 upload credentials from {self.integrations_api_url}')
         request = self.http.request("POST", self.integrations_api_url,  # type:ignore[union-attr]
-                                    body=json.dumps({"repoId": repo_id, "support": self.support_flag_enabled}),
+                                    body=json.dumps({"repoId": repo_id, "support": self.support_flag_enabled}), # here
                                     headers=merge_dicts({"Authorization": token, "Content-Type": "application/json"},
                                                         get_user_agent_header()))
         logging.debug(f'Request ID: {request.headers.get("x-amzn-requestid")}')
