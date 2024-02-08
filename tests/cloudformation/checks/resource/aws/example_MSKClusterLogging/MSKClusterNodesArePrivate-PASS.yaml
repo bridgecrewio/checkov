@@ -1,0 +1,67 @@
+Resources:
+  MSKClusterPASS:
+    Type: AWS::MSK::Cluster
+    Properties:
+      BrokerNodeGroupInfo:
+        BrokerNodeGroupInfo
+      ClientAuthentication:
+        ClientAuthentication
+      ClusterName: String
+      ConfigurationInfo:
+        ConfigurationInfo
+      CurrentVersion: String
+      EncryptionInfo:
+        EncryptionInfo
+      EnhancedMonitoring: String
+      KafkaVersion: String
+      LoggingInfo:
+        BrokerLogs:
+          CloudWatchLogs:
+            Enabled: True
+            LogGroup: String
+          Firehose:
+            DeliveryStream: String
+            Enabled: True
+          S3:
+            Bucket: String
+            Enabled: True
+            Prefix: String
+      NumberOfBrokerNodes: Integer
+      OpenMonitoring:
+        OpenMonitoring
+      StorageMode: String
+      Tags:
+        Key: Value
+  MSKClusterPASSskip:
+    Type: AWS::MSK::Cluster
+    Properties:
+      BrokerNodeGroupInfo:
+        BrokerNodeGroupInfo
+      ClientAuthentication:
+        ClientAuthentication
+      ClusterName: String
+      ConfigurationInfo:
+        ConfigurationInfo
+      CurrentVersion: String
+      EncryptionInfo:
+        EncryptionInfo
+      EnhancedMonitoring: String
+      KafkaVersion: String
+      LoggingInfo:
+        BrokerLogs:
+          CloudWatchLogs:
+            Enabled: False
+            LogGroup: String
+          Firehose:
+            DeliveryStream: String
+            Enabled: True
+          S3:
+            Bucket: String
+            Enabled: True
+            Prefix: String
+      NumberOfBrokerNodes: Integer
+      OpenMonitoring:
+        OpenMonitoring
+      StorageMode: String
+      Tags:
+        Key: Value
