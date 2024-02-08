@@ -13,7 +13,7 @@ class MSKClusterNodesArePrivate(BaseResourceNegativeValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self) -> str:
-        return 'Properties/BrokerNodeGroupInfo/ConnectivityInfo/PublicAccess/Type' # any multiple?
+        return 'Properties/BrokerNodeGroupInfo/ConnectivityInfo/PublicAccess/Type'
 
     def get_forbidden_values(self) -> List[Any]:
         return ["SERVICE_PROVIDED_EIPS"]

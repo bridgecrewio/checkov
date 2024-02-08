@@ -20,7 +20,6 @@ class MSKClusterLogging(BaseResourceCheck):
                     types = ["CloudWatchLogs", "Firehose", "S3"]
                     for x in types:
                         if x in logging and 'Enabled' in logging[x] and logging[x]['Enabled'] is True:
-                            #self.evaluated_keys = [f'LoggingInfo/[0]/BrokerLogs/[0]/{x}/[0]/Enabled']
                             return CheckResult.PASSED
         return CheckResult.FAILED
 
