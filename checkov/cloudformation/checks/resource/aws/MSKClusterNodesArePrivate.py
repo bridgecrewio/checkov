@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, List
 
 from checkov.cloudformation.checks.resource.base_resource_negative_value_check import BaseResourceNegativeValueCheck
 from checkov.common.models.enums import CheckCategories
@@ -15,7 +15,7 @@ class MSKClusterNodesArePrivate(BaseResourceNegativeValueCheck):
     def get_inspected_key(self) -> str:
         return 'Properties/BrokerNodeGroupInfo/ConnectivityInfo/PublicAccess/Type' # any multiple?
 
-    def get_forbidden_values(self) -> list[Any]:
+    def get_forbidden_values(self) -> List[Any]:
         return ["SERVICE_PROVIDED_EIPS"]
 
 

@@ -1,17 +1,18 @@
+from typing import Any, List
+
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.cloudformation.checks.resource.base_resource_check import BaseResourceCheck
-from typing import List
 
 
 class MSKClusterEncryption(BaseResourceCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure MSK Cluster encryption in rest and transit is enabled"
         id = "CKV_AWS_81"
         supported_resources = ['AWS::MSK::Cluster']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
+    def scan_resource_conf(self, conf) -> Any:
         # Note: As long as the 'EncryptionInfo' block is specified, the cluster
         # will be encrypted at rest even if 'DataVolumeKMSKeyId' is not specified
         if 'Properties' in conf.keys():
