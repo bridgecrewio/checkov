@@ -55,7 +55,7 @@ from checkov.common.util.http_utils import (
     normalize_bc_url,
     REQUEST_CONNECT_TIMEOUT,
     REQUEST_READ_TIMEOUT,
-    REQUEST_RETRIES,
+    REQUEST_RETRIES, REQUEST_STATUS_CODES_RETRY, REQUEST_METHODS_TO_RETRY,
 )
 from checkov.common.util.type_forcers import convert_prisma_policy_filter_to_dict, convert_str_to_bool
 from checkov.version import version as checkov_version
@@ -127,7 +127,12 @@ class BcPlatformIntegration:
         self.platform_integration_configured = False
         self.http: urllib3.PoolManager | urllib3.ProxyManager | None = None
         self.http_timeout = urllib3.Timeout(connect=REQUEST_CONNECT_TIMEOUT, read=REQUEST_READ_TIMEOUT)
-        self.http_retry = urllib3.Retry(REQUEST_RETRIES, redirect=3,  status_forcelist=[401, 408, 500, 502, 503, 504])
+        self.http_retry = urllib3.Retry(
+            REQUEST_RETRIES,
+            redirect=3,
+            status_forcelist=REQUEST_STATUS_CODES_RETRY,
+            allowed_methods=REQUEST_METHODS_TO_RETRY
+        )
         self.bc_skip_mapping = False
         self.cicd_details: _CicdDetails = {}
         self.support_flag_enabled = False
