@@ -475,7 +475,7 @@ class BcPlatformIntegration:
     def _get_s3_creds(self, repo_id: str, token: str) -> dict[str, Any]:
         logging.debug(f'Getting S3 upload credentials from {self.integrations_api_url}')
         request = self.http.request("POST", self.integrations_api_url,  # type:ignore[union-attr]
-                                    body=json.dumps({"repoId": repo_id, "support": self.support_flag_enabled}), # here
+                                    body=json.dumps({"repoId": repo_id, "support": self.support_flag_enabled}),
                                     headers=merge_dicts({"Authorization": token, "Content-Type": "application/json"},
                                                         get_user_agent_header()))
         logging.debug(f'Request ID: {request.headers.get("x-amzn-requestid")}')
