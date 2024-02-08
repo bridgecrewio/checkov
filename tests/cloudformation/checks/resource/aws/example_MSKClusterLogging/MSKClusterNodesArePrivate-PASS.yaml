@@ -3,15 +3,10 @@ Resources:
     Type: AWS::MSK::Cluster
     Properties:
       BrokerNodeGroupInfo:
-        BrokerNodeGroupInfo
-      ClientAuthentication:
-        ClientAuthentication
+        ClientSubnets: 
+          - String
+        InstanceType: kafka.m5.8xlarge
       ClusterName: String
-      ConfigurationInfo:
-        ConfigurationInfo
-      CurrentVersion: String
-      EncryptionInfo:
-        EncryptionInfo
       EnhancedMonitoring: String
       KafkaVersion: String
       LoggingInfo:
@@ -26,25 +21,17 @@ Resources:
             Bucket: String
             Enabled: True
             Prefix: String
-      NumberOfBrokerNodes: Integer
-      OpenMonitoring:
-        OpenMonitoring
-      StorageMode: String
+      NumberOfBrokerNodes: 3
       Tags:
         Key: Value
   MSKClusterPASSskip:
     Type: AWS::MSK::Cluster
     Properties:
       BrokerNodeGroupInfo:
-        BrokerNodeGroupInfo
-      ClientAuthentication:
-        ClientAuthentication
+        ClientSubnets: 
+          - String
+        InstanceType: kafka.m5.8xlarge
       ClusterName: String
-      ConfigurationInfo:
-        ConfigurationInfo
-      CurrentVersion: String
-      EncryptionInfo:
-        EncryptionInfo
       EnhancedMonitoring: String
       KafkaVersion: String
       LoggingInfo:
@@ -59,9 +46,6 @@ Resources:
             Bucket: String
             Enabled: True
             Prefix: String
-      NumberOfBrokerNodes: Integer
-      OpenMonitoring:
-        OpenMonitoring
-      StorageMode: String
+      NumberOfBrokerNodes: 5
       Tags:
         Key: Value

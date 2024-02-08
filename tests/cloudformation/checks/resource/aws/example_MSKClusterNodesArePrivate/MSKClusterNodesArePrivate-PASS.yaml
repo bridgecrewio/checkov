@@ -18,9 +18,6 @@ Resources:
         ConnectivityInfo:
           PublicAccess:
             Type: "DISABLED"
-      ClientAuthentication:
-        Sasl:
-          Scram: true
       ConfigurationInfo:
         Arn: ""
         Revision: 0
@@ -54,9 +51,6 @@ Resources:
         InstanceType: "kafka.t3.small"
         SecurityGroups:
           - "sg-002ed1a53dc5fe0ad"
-      ClientAuthentication:
-        Sasl:
-          Scram: true
       ConfigurationInfo:
         Arn: ""
         Revision: 0

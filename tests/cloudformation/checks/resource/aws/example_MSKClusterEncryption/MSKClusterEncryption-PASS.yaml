@@ -18,9 +18,6 @@ Resources:
         ConnectivityInfo:
           PublicAccess:
             Type: "SERVICE_PROVIDED_EIPS"
-      ClientAuthentication:
-        Sasl:
-          Scram: true
       ConfigurationInfo:
         Arn: ""
         Revision: 0
