@@ -55,7 +55,7 @@ from checkov.common.util.http_utils import (
     normalize_bc_url,
     REQUEST_CONNECT_TIMEOUT,
     REQUEST_READ_TIMEOUT,
-    REQUEST_RETRIES, REQUEST_STATUS_CODES_RETRY, REQUEST_METHODS_TO_RETRY,
+    REQUEST_RETRIES,
 )
 from checkov.common.util.type_forcers import convert_prisma_policy_filter_to_dict, convert_str_to_bool
 from checkov.version import version as checkov_version
