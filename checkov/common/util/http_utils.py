@@ -32,8 +32,6 @@ DEFAULT_TIMEOUT = (REQUEST_CONNECT_TIMEOUT, REQUEST_READ_TIMEOUT)
 
 # https://urllib3.readthedocs.io/en/stable/user-guide.html#retrying-requests
 REQUEST_RETRIES = force_int(os.getenv("CHECKOV_REQUEST_RETRIES")) or 3
-REQUEST_STATUS_CODES_RETRY = [401, 408, 500, 502, 503, 504]
-REQUEST_METHODS_TO_RETRY = ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'PUT', 'TRACE', 'POST']
 
 logger = logging.getLogger(__name__)
 add_resource_code_filter_to_logger(logger)
