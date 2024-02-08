@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.17...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.19...HEAD)
+
+## [3.2.19](https://github.com/bridgecrewio/checkov/compare/3.2.17...3.2.19) - 2024-02-08
+
+### Feature
+
+- **general:** Implement authentication retry mechanism  - [#6022](https://github.com/bridgecrewio/checkov/pull/6022)
+- **sast:** add danger rule - [#6012](https://github.com/bridgecrewio/checkov/pull/6012)
 
 ## [3.2.17](https://github.com/bridgecrewio/checkov/compare/3.2.12...3.2.17) - 2024-02-07
 
