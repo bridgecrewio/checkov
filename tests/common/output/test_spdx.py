@@ -14,7 +14,7 @@ def test_sca_package_output():
     # given
     rootless_file_path = "requirements.txt"
     file_abs_path = "/path/to/requirements.txt"
-    check_class = "checkov.sca_package.scanner.Scanner"
+    check_class = "checkov.sca_package_2.scanner.Scanner"
     vulnerability_details = {
         "id": "CVE-2019-19844",
         "status": "fixed in 3.0.1, 2.2.9, 1.11.27",
