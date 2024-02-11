@@ -40,7 +40,7 @@ from checkov.common.models.consts import SAST_SUPPORTED_FILE_EXTENSIONS, SUPPORT
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.common.sast.consts import SastLanguages
 from checkov.common.typing import _CicdDetails, LibraryGraph
-from checkov.common.util.consts import PRISMA_PLATFORM, BRIDGECREW_PLATFORM, CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
+from checkov.common.util.consts import PRISMA_PLATFORM, BRIDGECREW_PLATFORM
 from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.dockerfile import is_dockerfile
 from checkov.common.util.http_utils import (
@@ -519,7 +519,7 @@ class BcPlatformIntegration:
             for f in files:
                 f_name = os.path.basename(f)
                 _, file_extension = os.path.splitext(f)
-                if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 and file_extension in SCANNABLE_PACKAGE_FILES:
+                if file_extension in SCANNABLE_PACKAGE_FILES:
                     continue
                 if file_extension in SUPPORTED_FILE_EXTENSIONS or f_name in SUPPORTED_FILES:
                     files_to_persist.append(FileToPersist(f, os.path.relpath(f, root_dir)))
@@ -537,7 +537,7 @@ class BcPlatformIntegration:
                 filter_ignored_paths(root_path, f_names, excluded_paths)
                 for file_path in f_names:
                     _, file_extension = os.path.splitext(file_path)
-                    if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 and file_extension in SCANNABLE_PACKAGE_FILES:
+                    if file_extension in SCANNABLE_PACKAGE_FILES:
                         continue
                     full_file_path = os.path.join(root_path, file_path)
                     relative_file_path = os.path.relpath(full_file_path, root_dir)
