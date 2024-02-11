@@ -91,6 +91,9 @@ MAX_RETRIES = 40
 
 CI_METADATA_EXTRACTOR = registry.get_extractor()
 
+REQUEST_STATUS_CODES_RETRY = [401, 408, 500, 502, 503, 504]
+REQUEST_METHODS_TO_RETRY = ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'PUT', 'TRACE', 'POST']
+
 
 class BcPlatformIntegration:
     def __init__(self) -> None:
@@ -127,7 +130,12 @@ class BcPlatformIntegration:
         self.platform_integration_configured = False
         self.http: urllib3.PoolManager | urllib3.ProxyManager | None = None
         self.http_timeout = urllib3.Timeout(connect=REQUEST_CONNECT_TIMEOUT, read=REQUEST_READ_TIMEOUT)
-        self.http_retry = urllib3.Retry(REQUEST_RETRIES, redirect=3)
+        self.http_retry = urllib3.Retry(
+            REQUEST_RETRIES,
+            redirect=3,
+            status_forcelist=REQUEST_STATUS_CODES_RETRY,
+            allowed_methods=REQUEST_METHODS_TO_RETRY
+        )
         self.bc_skip_mapping = False
         self.cicd_details: _CicdDetails = {}
         self.support_flag_enabled = False
