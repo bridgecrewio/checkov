@@ -1,6 +1,21 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.12...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.19...HEAD)
+
+## [3.2.19](https://github.com/bridgecrewio/checkov/compare/3.2.17...3.2.19) - 2024-02-08
+
+### Feature
+
+- **general:** Implement authentication retry mechanism  - [#6022](https://github.com/bridgecrewio/checkov/pull/6022)
+- **sast:** add danger rule - [#6012](https://github.com/bridgecrewio/checkov/pull/6012)
+
+## [3.2.17](https://github.com/bridgecrewio/checkov/compare/3.2.12...3.2.17) - 2024-02-07
+
+### Bug Fix
+
+- **general:** downgrade botocore dependency - [#6016](https://github.com/bridgecrewio/checkov/pull/6016)
+- **graph:** remove SCA runner v1 - [#6005](https://github.com/bridgecrewio/checkov/pull/6005)
+- **terraform:** Deleted deprecated check CKV_GCP_19 - [#6010](https://github.com/bridgecrewio/checkov/pull/6010)
 
 ## [3.2.12](https://github.com/bridgecrewio/checkov/compare/3.2.8...3.2.12) - 2024-02-06
 

@@ -20,11 +20,13 @@ from checkov.common.output.ai import OpenAi
 from checkov.common.typing import _ExitCodeThresholds, _ScaExitCodeThresholds
 from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME
 from checkov.common.sast.consts import POLICIES_ERRORS, POLICIES_ERRORS_COUNT, SOURCE_FILES_COUNT, POLICY_COUNT
-from checkov.common.util.consts import PARSE_ERROR_FAIL_FLAG, S3_UPLOAD_DETAILS_MESSAGE
+from checkov.common.util.consts import PARSE_ERROR_FAIL_FLAG, CHECKOV_RUN_SCA_PACKAGE_SCAN_V2, S3_UPLOAD_DETAILS_MESSAGE
 from checkov.common.util.json_utils import CustomJSONEncoder
 from checkov.runner_filter import RunnerFilter
 
 from checkov.sca_package_2.output import create_cli_output as create_sca_package_cli_output_v2
+
+from checkov.sca_package.output import create_cli_output as create_sca_package_cli_output_v1
 
 from checkov.policies_3d.output import create_cli_output as create_3d_policy_cli_output
 
@@ -309,7 +311,7 @@ class Report:
         # output for vulnerabilities is different
         if self.check_type in (CheckType.SCA_PACKAGE, CheckType.SCA_IMAGE):
             if self.failed_checks or self.skipped_checks:
-                create_cli_output = create_sca_package_cli_output_v2
+                create_cli_output = create_sca_package_cli_output_v2 if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 else create_sca_package_cli_output_v1
                 output_data += create_cli_output(self.check_type == CheckType.SCA_PACKAGE, self.failed_checks,
                                                  self.skipped_checks)
 

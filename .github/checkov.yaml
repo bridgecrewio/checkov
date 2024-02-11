@@ -12,6 +12,7 @@ skip-path:
 - tests/common/utils/conftest.py
 - tests/common/utils/test_secrets_utils.py
 - tests/sca_image/conftest.py
+- tests/sca_package/conftest.py
 - tests/sca_package_2/conftest.py
 - tests/secrets
 - tests/terraform/checks/provider
