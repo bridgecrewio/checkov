@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.19...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.20...HEAD)
+
+## [3.2.20](https://github.com/bridgecrewio/checkov/compare/3.2.19...3.2.20) - 2024-02-11
+
+### Bug Fix
+
+- **graph:** remove SCA runner v1 - re-enable - [#6024](https://github.com/bridgecrewio/checkov/pull/6024)
 
 ## [3.2.19](https://github.com/bridgecrewio/checkov/compare/3.2.17...3.2.19) - 2024-02-08
 
