@@ -19,7 +19,6 @@ from typing import List, Optional
 logger = logging.getLogger(__name__)
 
 
-
 class Runner(BaseRunner[None, None, None]):
     check_type = CheckType.SAST  # noqa: CCE003  # a static attribute
 
