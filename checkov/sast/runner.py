@@ -3,14 +3,13 @@ from __future__ import annotations
 import logging
 import os
 import sys
-from pathlib import Path
+
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.platform_integration import bc_integration
-from checkov.common.bridgecrew.wrapper import CDK_FRAMEWORK_PREFIX
 from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import BaseRunner
-from checkov.common.sast.consts import SUPPORT_FILE_EXT, FILE_EXT_TO_SAST_LANG, CDKLanguages
+from checkov.common.sast.consts import SUPPORT_FILE_EXT, FILE_EXT_TO_SAST_LANG, CDKLanguages, CDK_CHECKS_DIR_PATH
 from checkov.runner_filter import RunnerFilter
 from checkov.sast.checks_infra.base_registry import Registry
 from checkov.sast.engines.prisma_engine import PrismaEngine
@@ -19,7 +18,6 @@ from typing import List, Optional
 
 logger = logging.getLogger(__name__)
 
-CDK_CHECKS_DIR_PATH = Path(__file__).parent.parent / CDK_FRAMEWORK_PREFIX / "checks"
 
 
 class Runner(BaseRunner[None, None, None]):
