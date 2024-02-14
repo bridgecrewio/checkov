@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.20...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.21...HEAD)
+
+## [3.2.21](https://github.com/bridgecrewio/checkov/compare/3.2.20...3.2.21) - 2024-02-14
+
+### Bug Fix
+
+- **sast:** fix cdk checks path - [#6029](https://github.com/bridgecrewio/checkov/pull/6029)
 
 ## [3.2.20](https://github.com/bridgecrewio/checkov/compare/3.2.19...3.2.20) - 2024-02-11
 
