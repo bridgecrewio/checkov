@@ -11,6 +11,7 @@
 [![Downloads](https://static.pepy.tech/badge/checkov)](https://pepy.tech/project/checkov)
 [![Docker Pulls](https://img.shields.io/docker/pulls/bridgecrew/checkov.svg)](https://hub.docker.com/r/bridgecrew/checkov)
 [![slack-community](https://img.shields.io/badge/Slack-4A154B?style=plastic&logo=slack&logoColor=white)](https://codifiedsecurity.slack.com/)
+[![Optimized by Redefine.dev](https://img.shields.io/badge/optimized_by-Redefine.dev-blueviolet)](https://redefine.dev)
 
 
 **Checkov** is a static code analysis tool for infrastructure as code (IaC) and also a software composition analysis (SCA) tool for images and open source packages.
