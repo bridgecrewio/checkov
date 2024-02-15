@@ -1,5 +1,5 @@
 [![checkov](https://raw.githubusercontent.com/bridgecrewio/checkov/main/docs/web/images/checkov_blue_logo.png)](#)
-       
+
 [![Maintained by Prisma Cloud](https://img.shields.io/badge/maintained_by-Prisma_Cloud-blue)](https://prismacloud.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov)
 [![build status](https://github.com/bridgecrewio/checkov/workflows/build/badge.svg)](https://github.com/bridgecrewio/checkov/actions?query=workflow%3Abuild)
 [![security status](https://github.com/bridgecrewio/checkov/workflows/security/badge.svg)](https://github.com/bridgecrewio/checkov/actions?query=event%3Apush+branch%3Amaster+workflow%3Asecurity)
@@ -10,8 +10,8 @@
 [![Terraform Version](https://img.shields.io/badge/tf-%3E%3D0.12.0-blue.svg)](#)
 [![Downloads](https://static.pepy.tech/badge/checkov)](https://pepy.tech/project/checkov)
 [![Docker Pulls](https://img.shields.io/docker/pulls/bridgecrew/checkov.svg)](https://hub.docker.com/r/bridgecrew/checkov)
-[![slack-community](https://img.shields.io/badge/Slack-4A154B?style=plastic&logo=slack&logoColor=white)](https://codifiedsecurity.slack.com/)
 [![Optimized by Redefine.dev](https://img.shields.io/badge/optimized_by-Redefine.dev-blueviolet)](https://redefine.dev)
+[![slack-community](https://img.shields.io/badge/Slack-4A154B?style=plastic&logo=slack&logoColor=white)](https://codifiedsecurity.slack.com/)
 
 
 **Checkov** is a static code analysis tool for infrastructure as code (IaC) and also a software composition analysis (SCA) tool for images and open source packages.
@@ -19,8 +19,8 @@
 It scans cloud infrastructure provisioned using [Terraform](https://terraform.io/), [Terraform plan](docs/7.Scan%20Examples/Terraform%20Plan%20Scanning.md), [Cloudformation](docs/7.Scan%20Examples/Cloudformation.md), [AWS SAM](docs/7.Scan%20Examples/AWS%20SAM.md), [Kubernetes](docs/7.Scan%20Examples/Kubernetes.md), [Helm charts](docs/7.Scan%20Examples/Helm.md), [Kustomize](docs/7.Scan%20Examples/Kustomize.md), [Dockerfile](docs/7.Scan%20Examples/Dockerfile.md),  [Serverless](docs/7.Scan%20Examples/Serverless%20Framework.md), [Bicep](docs/7.Scan%20Examples/Bicep.md), [OpenAPI](docs/7.Scan%20Examples/OpenAPI.md) or [ARM Templates](docs/7.Scan%20Examples/Azure%20ARM%20templates.md) and detects security and compliance misconfigurations using graph-based scanning.
 
 It performs [Software Composition Analysis (SCA) scanning](docs/7.Scan%20Examples/Sca.md) which is a scan of open source packages and images for Common Vulnerabilities and Exposures (CVEs).
- 
-Checkov also powers [**Prisma Cloud Application Security**](https://www.prismacloud.io/prisma/cloud/cloud-code-security/?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov), the developer-first platform that codifies and streamlines cloud security throughout the development lifecycle. Prisma Cloud identifies, fixes, and prevents misconfigurations in cloud resources and infrastructure-as-code files. 
+
+Checkov also powers [**Prisma Cloud Application Security**](https://www.prismacloud.io/prisma/cloud/cloud-code-security/?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov), the developer-first platform that codifies and streamlines cloud security throughout the development lifecycle. Prisma Cloud identifies, fixes, and prevents misconfigurations in cloud resources and infrastructure-as-code files.
 
 <a href="https://www.prismacloud.io/prisma/request-a-prisma-cloud-trial/?utm_campaign=checkov-github-repo&utm_source=github.com&utm_medium=get-started-button" title="Try_Prisma_Cloud">
     <img src="https://dabuttonfactory.com/button.png?t=Try+Prisma+Cloud&f=Open+Sans-Bold&ts=26&tc=fff&hp=45&vp=20&c=round&bgt=unicolored&bgc=00c0e8" align="right" width="120">
@@ -53,7 +53,7 @@ Checkov also powers [**Prisma Cloud Application Security**](https://www.prismacl
  * Policies support evaluation of [variables](docs/2.Basics/Handling%20Variables.md) to their optional default value.
  * Supports in-line [suppression](docs/2.Basics/Suppressing%20and%20Skipping%20Policies.md) of accepted risks or false-positives to reduce recurring scan failures. Also supports global skip from using CLI.
  * [Output](docs/2.Basics/Reviewing%20Scan%20Results.md) currently available as CLI, [CycloneDX](https://cyclonedx.org), JSON, JUnit XML, CSV, SARIF and github markdown and link to remediation [guides](https://docs.prismacloud.io/en/enterprise-edition/policy-reference/).
- 
+
 ## Screenshots
 
 Scan results in CLI
@@ -125,7 +125,7 @@ terraform show -json tf.plan  > tf.json
 checkov -f tf.json
 ```
 
-Note: `terraform show` output file `tf.json` will be a single line. 
+Note: `terraform show` output file `tf.json` will be a single line.
 For that reason all findings will be reported line number 0 by Checkov
 
 
@@ -425,13 +425,13 @@ external-checks-dir:
   - sample-dir
 external-modules-download-path: .external_modules
 framework:
-  - all 
-output: cli 
-quiet: true 
-repo-id: prisma-cloud/sample-repo 
-skip-check: 
-  - CKV_DOCKER_3 
-  - CKV_DOCKER_2 
+  - all
+output: cli
+quiet: true
+repo-id: prisma-cloud/sample-repo
+skip-check:
+  - CKV_DOCKER_3
+  - CKV_DOCKER_2
 skip-framework:
   - dockerfile
   - secrets
@@ -472,14 +472,14 @@ You can even start this with one-click dev in your browser through Gitpod at the
 Looking to contribute new checks? Learn how to write a new check (AKA policy) [here](docs/6.Contribution/Contribution%20Overview.md).
 
 ## Disclaimer
-`checkov` does not save, publish or share with anyone any identifiable customer information.  
+`checkov` does not save, publish or share with anyone any identifiable customer information.
 No identifiable customer information is used to query Prisma Cloud's publicly accessible guides.
 `checkov` uses Prisma Cloud's API to enrich the results with links to remediation guides.
 To skip this API call use the flag `--skip-download`.
 
 ## Support
 
-[Prisma Cloud](https://www.prismacloud.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov) builds and maintains Checkov to make policy-as-code simple and accessible. 
+[Prisma Cloud](https://www.prismacloud.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov) builds and maintains Checkov to make policy-as-code simple and accessible.
 
 Start with our [Documentation](https://www.checkov.io/1.Welcome/Quick%20Start.html) for quick tutorials and examples.
 
