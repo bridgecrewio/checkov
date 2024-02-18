@@ -23,10 +23,17 @@ class APIGatewayMethodSettingCacheEncrypted(BaseResourceValueCheck):
         return "settings/[0]/cache_data_encrypted"
 
     def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
-        settings = conf.get("settings", {})[0]
-        cache_enabled = settings.get("caching_enabled", [False])[0]
+        settings = conf.get("settings", {})
+        if settings and len(settings) == 1:
+            settings = settings[0]
+        cache_enabled = settings.get("caching_enabled", [False])
+        if isinstance(cache_enabled, list) and len(cache_enabled) == 1:
+            cache_enabled = cache_enabled[0]
         if cache_enabled:
-            if not settings.get("cache_data_encrypted", [False])[0]:
+            cache_encrypted = settings.get("cache_data_encrypted", [False])
+            if isinstance(cache_encrypted, list) and len(cache_encrypted) == 1:
+                cache_encrypted = cache_encrypted[0]
+            if not cache_encrypted:
                 return CheckResult.FAILED
         return CheckResult.PASSED
 
