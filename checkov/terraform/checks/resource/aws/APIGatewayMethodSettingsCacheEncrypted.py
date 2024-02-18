@@ -1,5 +1,9 @@
+from __future__ import annotations
+
+from typing import Any
+
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
-from checkov.common.models.enums import CheckCategories
+from checkov.common.models.enums import CheckCategories, CheckResult
 
 
 class APIGatewayMethodSettingCacheEncrypted(BaseResourceValueCheck):
@@ -17,6 +21,14 @@ class APIGatewayMethodSettingCacheEncrypted(BaseResourceValueCheck):
 
     def get_inspected_key(self):
         return "settings/[0]/cache_data_encrypted"
+
+    def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
+        settings = conf.get("settings", {})[0]
+        cache_enabled = settings.get("caching_enabled", [False])[0]
+        if cache_enabled:
+            if not settings.get("cache_data_encrypted", [False])[0]:
+                return CheckResult.FAILED
+        return CheckResult.PASSED
 
 
 check = APIGatewayMethodSettingCacheEncrypted()
