@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.21...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.22...HEAD)
+
+## [3.2.22](https://github.com/bridgecrewio/checkov/compare/3.2.21...3.2.22) - 2024-02-18
+
+### Bug Fix
+
+- **terraform:** CKV_AWS_308 - checked if caching was enabled and only then check for encryption of cache - [#6034](https://github.com/bridgecrewio/checkov/pull/6034)
 
 ## [3.2.21](https://github.com/bridgecrewio/checkov/compare/3.2.20...3.2.21) - 2024-02-14
 
