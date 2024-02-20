@@ -434,9 +434,9 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             vertex_foreach_value = vertex.for_each_index
             origin_address = origin_vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS, '')
             origin_foreach_value = origin_vertex.for_each_index
-            if origin_foreach_value == vertex_foreach_value and \
-                    get_terraform_foreach_or_count_key(origin_address) == get_terraform_foreach_or_count_key(
-                vertex_address):
+            if origin_foreach_value == vertex_foreach_value and origin_address != '' and \
+                    get_terraform_foreach_or_count_key(origin_address) == \
+                    get_terraform_foreach_or_count_key(vertex_address):
                 return vertex_index
 
         return vertex_index_with_longest_common_prefix
