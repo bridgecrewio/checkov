@@ -29,4 +29,4 @@ def get_sanitized_terraform_resource_id(resource_id: str) -> str:
         original_id_parts = resource_id.split(COUNT_KEY_SEPERATOR)
         original_resource_name = original_id_parts[-2]
         return original_resource_name
-        return resource_id
+    return resource_id

@@ -419,8 +419,10 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             return vertex_index_with_longest_common_prefix
 
         # Try to compare based on foreach attributes if we have more than 1 vertex in the list
-        return self._find_best_match_based_on_foreach_key(origin_vertex_index, vertices_with_longest_common_prefix,
-                                                          vertex_index_with_longest_common_prefix)
+        if origin_vertex_index is not None:
+            return self._find_best_match_based_on_foreach_key(origin_vertex_index, vertices_with_longest_common_prefix,
+                                                              vertex_index_with_longest_common_prefix)
+        return vertex_index_with_longest_common_prefix
 
     def _find_best_match_based_on_foreach_key(
             self,
