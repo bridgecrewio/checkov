@@ -29,8 +29,8 @@ from checkov.terraform.graph_builder.utils import (
     get_referenced_vertices_in_value,
     attribute_has_nested_attributes,
     remove_index_pattern_from_str,
-    join_double_quote_surrounded_dot_split,
-)
+    join_double_quote_surrounded_dot_split, )
+from checkov.terraform.graph_builder.foreach.utils import get_terraform_foreach_or_count_key
 from checkov.terraform.graph_builder.utils import is_local_path
 from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
 
@@ -398,19 +398,49 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                                      origin_vertex_index: Optional[int] = None) -> int:
         vertex_index_with_longest_common_prefix = -1
         longest_common_prefix = ""
+        vertices_with_longest_common_prefix = []
         for vertex_index in relevant_vertices_indexes:
             vertex = self.vertices[vertex_index]
             common_prefix = os.path.commonpath([os.path.realpath(vertex.path), os.path.realpath(origin_path)])
             if len(common_prefix) > len(longest_common_prefix):
                 vertex_index_with_longest_common_prefix = vertex_index
                 longest_common_prefix = common_prefix
-            elif len(common_prefix) == len(longest_common_prefix) and origin_vertex_index:
-                vertex_module_name = vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS, '')
-                origin_module_name = self.vertices[origin_vertex_index].attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS, '')
-                if vertex_module_name.startswith(BlockType.MODULE) and origin_module_name.startswith(BlockType.MODULE):
-                    split_module_name = vertex_module_name.split('.')[1]
-                    if origin_module_name.startswith(f'{BlockType.MODULE}.{split_module_name}'):
-                        vertex_index_with_longest_common_prefix = vertex_index
+                vertices_with_longest_common_prefix = [(vertex_index, vertex)]
+            elif len(common_prefix) == len(longest_common_prefix):
+                vertices_with_longest_common_prefix.append((vertex_index, vertex))
+                if origin_vertex_index is not None:
+                    vertex_module_name = vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS, '')
+                    origin_module_name = self.vertices[origin_vertex_index].attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS, '')
+                    if vertex_module_name.startswith(BlockType.MODULE) and origin_module_name.startswith(BlockType.MODULE):
+                        split_module_name = vertex_module_name.split('.')[1]
+                        if origin_module_name.startswith(f'{BlockType.MODULE}.{split_module_name}'):
+                            vertex_index_with_longest_common_prefix = vertex_index
+        if len(vertices_with_longest_common_prefix) <= 1:
+            return vertex_index_with_longest_common_prefix
+
+        # Try to compare based on foreach attributes if we have more than 1 vertex in the list
+        if origin_vertex_index is not None:
+            return self._find_best_match_based_on_foreach_key(origin_vertex_index, vertices_with_longest_common_prefix,
+                                                              vertex_index_with_longest_common_prefix)
+        return vertex_index_with_longest_common_prefix
+
+    def _find_best_match_based_on_foreach_key(
+            self,
+            origin_vertex_index: int,
+            vertices_with_longest_common_prefix: list[tuple[int, TerraformBlock]],
+            vertex_index_with_longest_common_prefix: int
+    ) -> int:
+        origin_vertex = self.vertices[origin_vertex_index]
+        for vertex_index, vertex in vertices_with_longest_common_prefix:
+            vertex_address = vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS, '')
+            vertex_foreach_value = vertex.for_each_index
+            origin_address = origin_vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS, '')
+            origin_foreach_value = origin_vertex.for_each_index
+            if origin_foreach_value == vertex_foreach_value and origin_address != '' and \
+                    get_terraform_foreach_or_count_key(origin_address) == \
+                    get_terraform_foreach_or_count_key(vertex_address):
+                return vertex_index
+
         return vertex_index_with_longest_common_prefix
 
     def get_vertices_hash_codes_to_attributes_map(self) -> Dict[str, Dict[str, Any]]:
