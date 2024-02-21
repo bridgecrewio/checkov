@@ -19,7 +19,7 @@ except ImportError:
     DiGraph = str
     node_link_data = lambda G : {}
 
-
+from checkov.common.sast.consts import CDK_FRAMEWORK_PREFIX, SAST_FRAMEWORK_PREFIX
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.typing import _ReducedScanReport, LibraryGraph
@@ -40,9 +40,6 @@ check_metadata_keys = ('evaluations', 'code_block', 'workflow_name', 'triggers',
 
 FILE_NAME_NETWORKX = 'graph_networkx.json'
 FILE_NAME_RUSTWORKX = 'graph_rustworkx.json'
-
-SAST_FRAMEWORK_PREFIX = 'sast'
-CDK_FRAMEWORK_PREFIX = 'cdk'
 
 
 def _is_scanned_file(file: str) -> bool:

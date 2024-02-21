@@ -1,6 +1,31 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.17...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.22...HEAD)
+
+## [3.2.22](https://github.com/bridgecrewio/checkov/compare/3.2.21...3.2.22) - 2024-02-18
+
+### Bug Fix
+
+- **terraform:** CKV_AWS_308 - checked if caching was enabled and only then check for encryption of cache - [#6034](https://github.com/bridgecrewio/checkov/pull/6034)
+
+## [3.2.21](https://github.com/bridgecrewio/checkov/compare/3.2.20...3.2.21) - 2024-02-14
+
+### Bug Fix
+
+- **sast:** fix cdk checks path - [#6029](https://github.com/bridgecrewio/checkov/pull/6029)
+
+## [3.2.20](https://github.com/bridgecrewio/checkov/compare/3.2.19...3.2.20) - 2024-02-11
+
+### Bug Fix
+
+- **graph:** remove SCA runner v1 - re-enable - [#6024](https://github.com/bridgecrewio/checkov/pull/6024)
+
+## [3.2.19](https://github.com/bridgecrewio/checkov/compare/3.2.17...3.2.19) - 2024-02-08
+
+### Feature
+
+- **general:** Implement authentication retry mechanism  - [#6022](https://github.com/bridgecrewio/checkov/pull/6022)
+- **sast:** add danger rule - [#6012](https://github.com/bridgecrewio/checkov/pull/6012)
 
 ## [3.2.17](https://github.com/bridgecrewio/checkov/compare/3.2.12...3.2.17) - 2024-02-07
 
