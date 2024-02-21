@@ -57,9 +57,8 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
                 try:
                     logging.debug(f"Loading policy id: {policy.get('id')}")
                     if policy.get('category') == SAST_CATEGORY:
-                        f = open(f"{sast_policies_dir}/{policy.get('id')}.yaml", "a")
-                        f.write(policy.get('code'))
-                        f.close()
+                        with open(f"{sast_policies_dir}/{policy.get('id')}.yaml", 'a') as f:
+                            f.write(policy.get('code'))
                         continue
 
                     converted_check = self._convert_raw_check(policy)
