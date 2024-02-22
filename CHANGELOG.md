@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.23...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.24...HEAD)
+
+## [3.2.24](https://github.com/bridgecrewio/checkov/compare/3.2.23...3.2.24) - 2024-02-22
+
+### Feature
+
+- **cloudformation:** add CFN policies for MSK - [#6021](https://github.com/bridgecrewio/checkov/pull/6021)
 
 ## [3.2.23](https://github.com/bridgecrewio/checkov/compare/3.2.22...3.2.23) - 2024-02-21
 
