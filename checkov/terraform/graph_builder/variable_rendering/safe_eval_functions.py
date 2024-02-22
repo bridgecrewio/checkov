@@ -279,8 +279,6 @@ SAFE_EVAL_DICT = dict([(k, locals().get(k, None)) for k in SAFE_EVAL_FUNCTIONS])
 
 
 # type conversion functions
-# As `try` is a saved word in python, we can't override it like other functions as `eval` won't accept it.
-# Instead, we are manually replacing this string with our own custom string, so we can pass it to `eval`.
 TRY_STR_REPLACEMENT = "__terraform_try__"
 SAFE_EVAL_DICT[TRY_STR_REPLACEMENT] = terraform_try
 
@@ -364,6 +362,9 @@ def evaluate(input_str: str) -> Any:
         # don't create an Ellipsis object
         return input_str
     if input_str.startswith("try"):
+        # As `try` is a saved word in python, we can't override it like other functions as `eval` won't accept it.
+        # Instead, we are manually replacing this string with our own custom string, so we can pass it to `eval`.
+
         # Don't use str.replace to make sure we replace just the first occurrence
         input_str = f"{TRY_STR_REPLACEMENT}{input_str[3:]}"
     evaluated = eval(input_str, {"__builtins__": None}, SAFE_EVAL_DICT)  # nosec
