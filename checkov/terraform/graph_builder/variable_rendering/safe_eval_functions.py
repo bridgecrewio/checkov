@@ -259,7 +259,7 @@ def formatdate(format_str: str, input_str: str) -> str:
     return dt.strftime(processed_format_str)
 
 
-def terraform_try(*args) -> Any:
+def terraform_try(*args: Any) -> Any:
     """
     From terraform docs:
         "try evaluates all of its argument expressions in turn and returns the result of the first one that does not
