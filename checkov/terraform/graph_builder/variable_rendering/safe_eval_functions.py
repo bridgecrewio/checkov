@@ -353,7 +353,6 @@ SAFE_EVAL_DICT["timeadd"] = timeadd
 SAFE_EVAL_DICT["formatdate"] = formatdate
 
 
-
 def evaluate(input_str: str) -> Any:
     if "__" in input_str:
         logging.debug(f"got a substring with double underscore, which is not allowed. origin string: {input_str}")
