@@ -1,4 +1,5 @@
 from json import JSONDecodeError
+import re
 
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
@@ -41,7 +42,26 @@ class S3AllowsAnyPrincipal(BaseResourceCheck):
                     # Can be a string or an array of strings
                     aws = statement['Principal']['AWS']
                     if (isinstance(aws, str) and aws == '*') or (isinstance(aws, list) and '*' in aws):
+                        if 'Condition' not in statement:
+                            return CheckResult.FAILED
+                        elif 'ArnNotEquals' in statement['Condition'] or 'ArnNotLike' in statement['Condition']:
+                            return CheckResult.PASSED
+                        elif 'ArnEquals' in statement['Condition'] and 'aws:PrincipalArn' in \
+                                statement['Condition']['ArnEquals']:
+                            pattern = r'^arn:aws:iam::\*.*$'
+                            principal_arn = statement['Condition']['ArnEquals']['aws:PrincipalArn']
+                            if re.match(pattern, principal_arn):
+                                return CheckResult.FAILED
+                            return CheckResult.PASSED
+                        elif 'ArnLike' in statement['Condition'] and 'aws:PrincipalArn' \
+                                in statement['Condition']['ArnLike']:
+                            pattern = r'^arn:aws:iam::\*.*$'
+                            principal_arn = statement['Condition']['ArnLike']['aws:PrincipalArn']
+                            if re.match(pattern, principal_arn):
+                                return CheckResult.FAILED
+                            return CheckResult.PASSED
                         return CheckResult.FAILED
+
 
         return CheckResult.PASSED
 
