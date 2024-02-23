@@ -8,6 +8,43 @@ import json
 from typing import List
 
 
+def check_conditions(statement):
+    # Check if 'Condition' key exists
+    if 'Condition' not in statement:
+        return CheckResult.FAILED
+
+    condition = statement['Condition']
+
+    # Direct pass conditions based on not keys
+    if any(key in condition for key in ['ArnNotEquals', 'ArnNotLike']):
+        return CheckResult.PASSED
+
+    # Handling 'ArnEquals' and 'ArnLike'
+    for arn_key in ['ArnEquals', 'ArnLike']:
+        if arn_key in condition:
+            # Pass unless it is for all IAM ARNs
+            for principal_key in ['aws:PrincipalArn', 'aws:SourceArn']:
+                if principal_key in condition[arn_key]:
+                    principal_arn = condition[arn_key][principal_key]
+                    # Fail if the  Condition is for all IAM ARNs
+                    if re.match(r'^arn:aws:iam::\*.*$', principal_arn):
+                        return CheckResult.FAILED
+            # Passed if 'aws:PrincipalArn' or 'aws:SourceArn' do not match because then they are specific
+            return CheckResult.PASSED
+
+    # Handle VPC sources. Other sources not specific enough
+    string_conditions = ['StringEquals', 'StringNotEquals', 'StringEqualsIgnoreCase',
+                         'StringNotEqualsIgnoreCase', 'StringLike', 'StringNotLike']
+    if any(condition_type in condition for condition_type in string_conditions):
+        for condition_type in string_conditions:
+            if condition_type in condition:
+                if any(source in condition[condition_type] for source in ['aws:sourceVpce', 'aws:SourceVpc']):
+                    return CheckResult.PASSED
+
+    # Default fail if none of the above conditions are met
+    return CheckResult.FAILED
+
+
 class S3AllowsAnyPrincipal(BaseResourceCheck):
 
     def __init__(self):
@@ -37,30 +74,12 @@ class S3AllowsAnyPrincipal(BaseResourceCheck):
                     continue
                 principal = statement['Principal']
                 if principal == '*':
-                    return CheckResult.FAILED
+                    return check_conditions(statement)
                 if 'AWS' in statement['Principal']:
                     # Can be a string or an array of strings
                     aws = statement['Principal']['AWS']
                     if (isinstance(aws, str) and aws == '*') or (isinstance(aws, list) and '*' in aws):
-                        if 'Condition' not in statement:
-                            return CheckResult.FAILED
-                        elif 'ArnNotEquals' in statement['Condition'] or 'ArnNotLike' in statement['Condition']:
-                            return CheckResult.PASSED
-                        elif 'ArnEquals' in statement['Condition'] and 'aws:PrincipalArn' in \
-                                statement['Condition']['ArnEquals']:
-                            pattern = r'^arn:aws:iam::\*.*$'
-                            principal_arn = statement['Condition']['ArnEquals']['aws:PrincipalArn']
-                            if re.match(pattern, principal_arn):
-                                return CheckResult.FAILED
-                            return CheckResult.PASSED
-                        elif 'ArnLike' in statement['Condition'] and 'aws:PrincipalArn' \
-                                in statement['Condition']['ArnLike']:
-                            pattern = r'^arn:aws:iam::\*.*$'
-                            principal_arn = statement['Condition']['ArnLike']['aws:PrincipalArn']
-                            if re.match(pattern, principal_arn):
-                                return CheckResult.FAILED
-                            return CheckResult.PASSED
-                        return CheckResult.FAILED
+                        return check_conditions(statement)
 
 
         return CheckResult.PASSED

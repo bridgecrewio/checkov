@@ -23,6 +23,9 @@ class TestS3AllowsAnyPrincipal(unittest.TestCase):
             "aws_s3_bucket.pass_w_condition",
             "aws_s3_bucket_policy.pass_w_condition2",
             "aws_s3_bucket.pass_w_condition2",
+            "aws_s3_bucket.pass_w_condition3",
+            "aws_s3_bucket.pass_w_condition4",
+            "aws_s3_bucket.pass_w_condition5",
         }
         failing_resources = {
             "aws_s3_bucket.fail",
