@@ -76,15 +76,14 @@ class S3AllowsAnyPrincipal(BaseResourceCheck):
                 if principal == '*':
                     if check_conditions(statement):
                         return CheckResult.PASSED
-                    CheckResult.FAILED
+                    return CheckResult.FAILED
                 if 'AWS' in statement['Principal']:
                     # Can be a string or an array of strings
                     aws = statement['Principal']['AWS']
                     if (isinstance(aws, str) and aws == '*') or (isinstance(aws, list) and '*' in aws):
                         if check_conditions(statement):
                             return CheckResult.PASSED
-                        CheckResult.FAILED
-        
+                        return CheckResult.FAILED
         return CheckResult.PASSED
 
     def get_evaluated_keys(self) -> List[str]:
