@@ -15,7 +15,7 @@ def check_conditions(statement):
 
     condition = statement['Condition']
 
-    # Direct pass conditions based on not keys
+    # Pass if they define bad ARNs. Assumes they are not too narrow
     if any(key in condition for key in ['ArnNotEquals', 'ArnNotLike']):
         return CheckResult.PASSED
 
@@ -26,15 +26,15 @@ def check_conditions(statement):
             for principal_key in ['aws:PrincipalArn', 'aws:SourceArn']:
                 if principal_key in condition[arn_key]:
                     principal_arn = condition[arn_key][principal_key]
-                    # Fail if the  Condition is for all IAM ARNs
-                    if re.match(r'^arn:aws:iam::\*.*$', principal_arn):
+                    # Fail if the  Condition is for all ARNs of any resource
+                    if re.match(r'^arn:aws:[a-z0-9-]+::\*.*$', principal_arn):
                         return CheckResult.FAILED
             # Passed if 'aws:PrincipalArn' or 'aws:SourceArn' do not match because then they are specific
             return CheckResult.PASSED
 
     # Handle VPC sources. Other sources not specific enough
-    string_conditions = ['StringEquals', 'StringNotEquals', 'StringEqualsIgnoreCase',
-                         'StringNotEqualsIgnoreCase', 'StringLike', 'StringNotLike']
+    # Leaves out the NOT conditions as too broad ('StringNotEquals', 'StringNotEqualsIgnoreCase', 'StringNotLike')
+    string_conditions = ['StringEquals', 'StringEqualsIgnoreCase', 'StringLike']
     if any(condition_type in condition for condition_type in string_conditions):
         for condition_type in string_conditions:
             if condition_type in condition:
