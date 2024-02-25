@@ -103,24 +103,20 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         for foreach_vertex_index in relevant_indices:
             vertex = self.vertices[foreach_vertex_index]
             is_planned_to_be_empty_count = vertex.attributes.get("count")[0] == 0 \
-                if "count" in vertex.attributes else False
-            is_planned_to_be_empty_foreach = vertex.attributes.get("foreach")[0] in [{}, []] \
-                if "foreach" in vertex.attributes else False
+                if "count" in vertex.attributes and len(vertex.attributes.get("count")) == 1 else False
+            is_planned_to_be_empty_foreach = vertex.attributes.get("for_each") in [{}, []] \
+                if "for_each" in vertex.attributes else False
             if is_planned_to_be_empty_count or is_planned_to_be_empty_foreach:
-                updated_edges = copy.copy(self.edges)
+                copied_edges = copy.copy(self.edges)
 
                 # Iterating over copy of self.edges to avoid changing it in place
-                for edge in updated_edges:
-                    if edge.origin == foreach_vertex_index:
+                for edge in copied_edges:
+                    if edge.origin == foreach_vertex_index or edge.dest == foreach_vertex_index:
                         self.edges.remove(edge)
-                    for index, out_edge in self.out_edges.items():
-                        if out_edge == edge:
-                            self.out_edges.pop(index)
-                    for index, in_edge in self.in_edges.items():
-                        if in_edge == edge:
-                            self.in_edges.pop(index)
+                        self.in_edges[edge.dest].remove(edge)
 
-
+                # Out edges are of the form: {<vertex_index>: <list-of-related-edges>}
+                self.out_edges[foreach_vertex_index] = []
 
     def update_vertices_fields(self) -> None:
         # Important to keep those 2 functions together, as the first affects the calculation of the second

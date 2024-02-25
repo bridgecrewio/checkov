@@ -434,3 +434,13 @@ class TestLocalGraph(TestCase):
         # Check they point to 2 different modules
         self.assertEqual(2, len(module_variable_edges))
         self.assertNotEqual(local_graph.vertices[module_variable_edges[0].origin], local_graph.vertices[module_variable_edges[1].origin])
+
+    def test_remove_empty_resources_edges_from_graph(self):
+        resources_dir = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/empty_count_and_foreach'))
+        hcl_config_parser = TFParser()
+        module, _ = hcl_config_parser.parse_hcl_module(resources_dir, self.source)
+        local_graph = TerraformLocalGraph(module)
+        local_graph.build_graph(render_variables=True)
+        assert local_graph.edges == []
+        assert len([edge for edge_list in local_graph.out_edges.values() for edge in edge_list]) == 0
+        assert len([edge for edge_list in local_graph.in_edges.values() for edge in edge_list]) == 0
