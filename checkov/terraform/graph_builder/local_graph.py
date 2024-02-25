@@ -94,7 +94,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         else:
             self.update_vertices_fields()
 
-    def _remove_empty_foreach_edges(self):
+    def _remove_empty_foreach_edges(self) -> None:
         """
         Check for resources which are marked with empty `count/foreach` statements, and remove their matching edges.
         This makes sure we won't find connections for resources which are not planned to be created.
@@ -102,8 +102,8 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         relevant_indices = [index for list_of_indices in self.foreach_blocks.values() for index in list_of_indices]
         for foreach_vertex_index in relevant_indices:
             vertex = self.vertices[foreach_vertex_index]
-            is_planned_to_be_empty_count = vertex.attributes.get("count")[0] == 0 \
-                if "count" in vertex.attributes and len(vertex.attributes.get("count")) == 1 else False
+            is_planned_to_be_empty_count = vertex.attributes.get("count", [])[0] == 0 \
+                if "count" in vertex.attributes and len(vertex.attributes.get("count", [])) == 1 else False
             is_planned_to_be_empty_foreach = vertex.attributes.get("for_each") in [{}, []] \
                 if "for_each" in vertex.attributes else False
             if is_planned_to_be_empty_count or is_planned_to_be_empty_foreach:
