@@ -4,7 +4,7 @@ repos:
     hooks:
       - id: debug-statements
   - repo: https://github.com/PyCQA/flake8
-    rev: 6.1.0
+    rev: 7.0.0
     hooks:
       - id: flake8
         language_version: python3.9
@@ -18,7 +18,7 @@ repos:
       - id: teyit
         language_version: python3.9
   - repo: https://github.com/rhysd/actionlint
-    rev: v1.6.26
+    rev: v1.6.27
     hooks:
       - id: actionlint-docker
         # SC2129 - Consider using { cmd1; cmd2; } >> file instead of individual redirects.
@@ -34,7 +34,7 @@ repos:
           - vistir<0.7.0  # can be removed, when v4.0.0 of pipenv-setup comes out
           - plette<1.0.0  # Solve issue of import error for plette.models
   - repo: https://github.com/seddonym/import-linter  # checks the import dependencies between each other
-    rev: v1.12.1
+    rev: v2.0
     hooks:
       - id: import-linter
         language_version: python3.9
