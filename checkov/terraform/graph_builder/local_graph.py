@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import logging
 import os
 from collections import defaultdict
@@ -89,8 +90,37 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 edges_count = len(self.edges)
                 self._build_cross_variable_edges()
                 logging.info(f"Found {len(self.edges) - edges_count} cross variable edges")
+            self._remove_empty_foreach_edges()
         else:
             self.update_vertices_fields()
+
+    def _remove_empty_foreach_edges(self):
+        """
+        Check for resources which are marked with empty `count/foreach` statements, and remove their matching edges.
+        This makes sure we won't find connections for resources which are not planned to be created.
+        """
+        relevant_indices = [index for list_of_indices in self.foreach_blocks.values() for index in list_of_indices]
+        for foreach_vertex_index in relevant_indices:
+            vertex = self.vertices[foreach_vertex_index]
+            is_planned_to_be_empty_count = vertex.attributes.get("count")[0] == 0 \
+                if "count" in vertex.attributes else False
+            is_planned_to_be_empty_foreach = vertex.attributes.get("foreach")[0] in [{}, []] \
+                if "foreach" in vertex.attributes else False
+            if is_planned_to_be_empty_count or is_planned_to_be_empty_foreach:
+                updated_edges = copy.copy(self.edges)
+
+                # Iterating over copy of self.edges to avoid changing it in place
+                for edge in updated_edges:
+                    if edge.origin == foreach_vertex_index:
+                        self.edges.remove(edge)
+                    for index, out_edge in self.out_edges.items():
+                        if out_edge == edge:
+                            self.out_edges.pop(index)
+                    for index, in_edge in self.in_edges.items():
+                        if in_edge == edge:
+                            self.in_edges.pop(index)
+
+
 
     def update_vertices_fields(self) -> None:
         # Important to keep those 2 functions together, as the first affects the calculation of the second
