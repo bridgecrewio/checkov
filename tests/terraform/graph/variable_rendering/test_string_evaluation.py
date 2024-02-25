@@ -479,6 +479,18 @@ class TestTerraformEvaluation(TestCase):
         expected = ["dGVzdA=="]
         self.assertEqual(expected, evaluate_terraform(input_str))
 
+    def test_try_block(self):
+        input_str = 'try("local.foo.boop", "{}")'
+        expected = {}
+        result = evaluate_terraform(input_str)
+        self.assertEqual(expected, result)
+
+    def test_try_then_merge_block(self):
+        input_str = "try((merge({}, {})), 1, 2)"
+        expected = {}
+        result = evaluate_terraform(input_str)
+        self.assertEqual(expected, result)
+
 
 @pytest.mark.parametrize(
     "origin_str,str_to_replace,new_value,expected",
