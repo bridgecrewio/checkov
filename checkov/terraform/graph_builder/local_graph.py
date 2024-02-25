@@ -100,6 +100,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         This makes sure we won't find connections for resources which are not planned to be created.
         """
         relevant_indices = [index for list_of_indices in self.foreach_blocks.values() for index in list_of_indices]
+        copied_edges = copy.copy(self.edges)
         for foreach_vertex_index in relevant_indices:
             vertex = self.vertices[foreach_vertex_index]
             is_planned_to_be_empty_count = vertex.attributes.get("count", [])[0] == 0 \
@@ -107,7 +108,6 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             is_planned_to_be_empty_foreach = vertex.attributes.get("for_each") in [{}, []] \
                 if "for_each" in vertex.attributes else False
             if is_planned_to_be_empty_count or is_planned_to_be_empty_foreach:
-                copied_edges = copy.copy(self.edges)
 
                 # Iterating over copy of self.edges to avoid changing it in place
                 for edge in copied_edges:
