@@ -1,33 +1,34 @@
 import os
 import unittest
 
+from checkov.cloudformation.checks.resource.aws.MSKClusterNodesArePrivate import check
+from checkov.cloudformation.runner import Runner
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.resource.aws.APIGatewayMethodSettingsCacheEncrypted import check
-from checkov.terraform.runner import Runner
 
 
-class TestAPIGatewayMethodSettingsCacheEncrypted(unittest.TestCase):
-    def test(self):
+class TestMSKClusterNodesArePrivate(unittest.TestCase):
+    def test_summary(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
-        test_files_dir = current_dir + "/example_APIGatewayMethodSettingsCacheEncrypted"
+        test_files_dir = current_dir + "/example_MSKClusterNodesArePrivate"
         report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
 
         passing_resources = {
-            "aws_api_gateway_method_settings.pass",
-            "aws_api_gateway_method_settings.pass2",
+            "AWS::MSK::Cluster.MSKClusterPASS",
+            "AWS::MSK::Cluster.MSKClusterPASS2"
         }
         failing_resources = {
-            "aws_api_gateway_method_settings.fail",
+            "AWS::MSK::Cluster.MSKCluster",
+            "AWS::MSK::Cluster.MSKCluster2"
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
-        self.assertEqual(summary["passed"], len(passing_resources))
-        self.assertEqual(summary["failed"], len(failing_resources))
+        self.assertEqual(summary["passed"], 2)
+        self.assertEqual(summary["failed"], 2)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 

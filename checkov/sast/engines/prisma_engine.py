@@ -16,7 +16,6 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.platform_key import bridgecrew_dir
 from checkov.common.bridgecrew.severities import get_severity, Severity, Severities, BcSeverities
-from checkov.common.bridgecrew.wrapper import CDK_FRAMEWORK_PREFIX
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.report import Report
 from checkov.common.sast.consts import CDKLanguages, SastLanguages
@@ -28,6 +27,7 @@ from checkov.sast.common import get_code_block_from_start
 from checkov.sast.engines.base_engine import SastEngine
 from checkov.sast.prisma_models.library_input import LibraryInput
 from checkov.sast.prisma_models.policies_list import SastPolicies
+from checkov.common.sast.consts import CDK_FRAMEWORK_PREFIX
 from checkov.common.sast.report_types import PrismaReport, RuleMatch, create_empty_report
 from checkov.sast.record import SastRecord
 from checkov.sast.report import SastReport

@@ -31,14 +31,14 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.bridgecrew.platform_key import read_key
 from checkov.common.bridgecrew.run_metadata.registry import registry
-from checkov.common.bridgecrew.wrapper import CDK_FRAMEWORK_PREFIX, persist_assets_results, reduce_scan_reports, \
+from checkov.common.bridgecrew.wrapper import persist_assets_results, reduce_scan_reports, \
     persist_checks_results, \
     enrich_and_persist_checks_metadata, checkov_results_prefix, persist_run_metadata, _put_json_object, \
     persist_graphs, persist_resource_subgraph_maps, persist_reachability_results, \
     persist_multiple_logs_stream
 from checkov.common.models.consts import SAST_SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILES, SCANNABLE_PACKAGE_FILES
 from checkov.common.runners.base_runner import filter_ignored_paths
-from checkov.common.sast.consts import SastLanguages
+from checkov.common.sast.consts import SastLanguages, CDK_FRAMEWORK_PREFIX
 from checkov.common.typing import _CicdDetails, LibraryGraph
 from checkov.common.util.consts import PRISMA_PLATFORM, BRIDGECREW_PLATFORM
 from checkov.common.util.data_structures_utils import merge_dicts
@@ -147,6 +147,7 @@ class BcPlatformIntegration:
         self.daemon_process = False  # set to 'True' when running in multiprocessing 'spawn' mode
         self.scan_dir: List[str] = []
         self.scan_file: List[str] = []
+        self.sast_custom_policies: str = ''
 
     def init_instance(self, platform_integration_data: dict[str, Any]) -> None:
         """This is mainly used for recreating the instance without interacting with the platform again"""
