@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.25...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.26...HEAD)
+
+## [3.2.26](https://github.com/bridgecrewio/checkov/compare/3.2.25...3.2.26) - 2024-02-26
+
+### Bug Fix
+
+- **sast:** fetch sast custom policieis - [#6040](https://github.com/bridgecrewio/checkov/pull/6040)
 
 ## [3.2.25](https://github.com/bridgecrewio/checkov/compare/3.2.24...3.2.25) - 2024-02-25
 
