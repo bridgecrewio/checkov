@@ -182,9 +182,14 @@ def create_report_cve_record(
     package_type = get_package_type(package_name, package_version, sca_details)
     cve_id = vulnerability_details.get("id", vulnerability_details.get("cveId", '')).upper()
     severity = vulnerability_details.get("severity", DEFAULT_SEVERITY)
+
     # sanitize severity names
     if severity == "moderate":
         severity = "medium"
+    if severity.upper() not in Severities:
+        logging.error(f"unknown severity - severity '{severity}' is unknown. using the DEFAULT_SEVERITY: '{DEFAULT_SEVERITY}' instead", exc_info=True)
+        severity = DEFAULT_SEVERITY
+
     description = vulnerability_details.get("description")
 
     check_result: _CheckResult = {
