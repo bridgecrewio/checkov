@@ -1,6 +1,14 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.26...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.28...HEAD)
+
+## [3.2.28](https://github.com/bridgecrewio/checkov/compare/3.2.26...3.2.28) - 2024-02-28
+
+### Bug Fix
+
+- **sca:** handling unknown severity  - [#6055](https://github.com/bridgecrewio/checkov/pull/6055)
+- **terraform:** Add Condition exceptions CKV_AWS_70 - [#6044](https://github.com/bridgecrewio/checkov/pull/6044)
+- **terraform:** Add k8s 1.29 to CKV_AWS_339 - [#6056](https://github.com/bridgecrewio/checkov/pull/6056)
 
 ## [3.2.26](https://github.com/bridgecrewio/checkov/compare/3.2.25...3.2.26) - 2024-02-26
 
