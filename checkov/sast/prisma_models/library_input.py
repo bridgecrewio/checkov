@@ -1,7 +1,7 @@
 from typing import Set, List
 
 from checkov.common.bridgecrew.severities import Severity
-from checkov.common.sast.consts import SastLanguages
+from checkov.common.sast.consts import SastLanguages, CDKLanguages
 import sys
 if sys.version_info < (3, 11):
     from typing_extensions import TypedDict, NotRequired
@@ -22,3 +22,4 @@ class LibraryInput(TypedDict):
     report_imports: bool
     remove_default_policies: NotRequired[bool]
     report_reachability: bool
+    cdk_languages: List[CDKLanguages]

@@ -20,7 +20,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
       - name: Install Node.js
-        uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65  # v4
+        uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8  # v4
         with:
           node-version: "16"
       - name: Install and run DangerJS
@@ -102,9 +102,9 @@ jobs:
           auth: ${{ secrets.REDEFINE_AUTH }}
           python-venv-path: ${{ steps.get-venv.outputs.venv }}
           testing-framework: pytest
-          # mode is "discover" if github.ref is "refs/heads/main" otherwise it's the value of inputs.redefine-mode
-          mode: discover
-          config-args: matrix_value=${{ matrix.python }}
+          mode: fail-fast
+          time-limit: 30  # approx 15% of the run time
+          config-args: matrix_value=${{ matrix.python }} file_based_prediction=true
 
       - name: Unit tests
         env:
@@ -126,7 +126,7 @@ jobs:
           allow-prereleases: true
           cache: "pipenv"
           cache-dependency-path: "Pipfile.lock"
-      - uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65  # v4
+      - uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8  # v4
       - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -157,7 +157,8 @@ jobs:
       - name: Create checkov reports
         env:
           LOG_LEVEL: INFO
-          BC_KEY: ${{ secrets.BC_API_KEY }}
+          BC_KEY: ${{ secrets.PRISMA_KEY_API2 }}
+          PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
         run: |
           # Just making sure the API key tests don't run on PRs
           bash -c './integration_tests/prepare_data.sh ${{ matrix.os }} 3.8'
@@ -200,13 +201,15 @@ jobs:
       - name: Create checkov reports
         env:
           LOG_LEVEL: INFO
-          BC_API_KEY: ${{ secrets.BC_API_KEY }}
+          BC_API_KEY: ${{ secrets.PRISMA_KEY_API2 }}
+          PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
         if: env.BC_API_KEY != null
         run: bash -c './sast_integration_tests/prepare_data.sh'
       - name: Run integration tests
         env:
           LOG_LEVEL: INFO
-          BC_API_KEY: ${{ secrets.BC_API_KEY }}
+          BC_API_KEY: ${{ secrets.PRISMA_KEY_API2 }}
+          PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
         if: env.BC_API_KEY != null
         run: |
           pipenv run pytest sast_integration_tests
@@ -240,13 +243,15 @@ jobs:
       - name: Create checkov reports
         env:
           LOG_LEVEL: INFO
-          BC_API_KEY: ${{ secrets.BC_API_KEY }}
+          BC_API_KEY: ${{ secrets.PRISMA_KEY_API2 }}
+          PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
         if: env.BC_API_KEY != null
         run: bash -c './cdk_integration_tests/prepare_data.sh'
       - name: Run integration tests
         env:
           LOG_LEVEL: INFO
-          BC_API_KEY: ${{ secrets.BC_API_KEY }}
+          BC_API_KEY: ${{ secrets.PRISMA_KEY_API2 }}
+          PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
         if: env.BC_API_KEY != null
         run: |
           pipenv run pytest cdk_integration_tests
@@ -263,7 +268,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: "pipenv"
           cache-dependency-path: "Pipfile.lock"
-      - uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65  # v4
+      - uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8  # v4
       - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

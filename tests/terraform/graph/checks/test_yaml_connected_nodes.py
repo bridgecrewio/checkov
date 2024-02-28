@@ -61,5 +61,4 @@ class TestYamlConnectedNodes(unittest.TestCase):
                 policy = load_yaml_data(f_name, root)
                 assert policy is not None
                 with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': 'NETWORKX'}):
-                    # connected nodes don't exist in igraph, because they are not needed
                     return get_policy_results(dir_path, policy)

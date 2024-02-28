@@ -14,14 +14,13 @@ set_env_vars() {
   export SAST_ARTIFACT_PATH=""
   export BC_API_KEY=""
   export LOG_LEVEL=DEBUG
-  export BC_API_URL=""
+  export PRISMA_API_URL="https://api0.prismacloud.io"
 }
 
 prepare_data () {
   echo "creating report for CDK python"
   python checkov/main.py -s --framework cdk --repo-id prisma/cdk -o json \
-    -d "cdk_integration_tests/src/python" \
-    --external-checks-dir "checkov/cdk/checks/python/" > "checkov_report_cdk_python.json"
+    -d "cdk_integration_tests/src/python" > "checkov_report_cdk_python.json"
 
 }
 
@@ -39,9 +38,9 @@ if [[ -z "BC_API_KEY" ]]; then
    exit 1
 fi
 
-echo $BC_API_URL
-if [[ -z "$BC_API_URL" ]]; then
-   echo "BC_API_URL is missing."
+echo $PRISMA_API_URL
+if [[ -z "PRISMA_API_URL" ]]; then
+   echo "PRISMA_API_URL is missing."
    exit 1
 fi
 

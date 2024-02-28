@@ -1,0 +1,11 @@
+metadata:
+  id: "CKV2_GCP_30"
+  name: "Ensure logging is enabled for Dialogflow CX agents"
+  category: "LOGGING"
+definition:
+  cond_type: attribute
+  resource_types:
+  - google_dialogflow_cx_agent
+  attribute: enable_stackdriver_logging
+  operator: equals
+  value: "true"

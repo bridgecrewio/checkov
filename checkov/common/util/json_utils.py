@@ -9,6 +9,7 @@ from bc_jsonpath_ng import parse, JSONPath
 from checkov.common.bridgecrew.severities import Severity
 from checkov.common.output.common import ImageDetails
 from checkov.common.packaging.version import LegacyVersion, Version
+from checkov.common.sast.report_types import MatchMetadata, DataFlow, MatchLocation, Point
 from detect_secrets.core.potential_secret import PotentialSecret
 
 from checkov.common.util.data_structures_utils import pickle_deepcopy
@@ -41,6 +42,14 @@ class CustomJSONEncoder(json.JSONEncoder):
             return dict(o)
         elif isinstance(o, PotentialSecret):
             return o.json()
+        elif isinstance(o, MatchMetadata):
+            return o.serialize_model()
+        elif isinstance(o, DataFlow):
+            return o.serialize_model()
+        elif isinstance(o, MatchLocation):
+            return o.serialize_model()
+        elif isinstance(o, Point):
+            return o.serialize_model()
         else:
             return json.JSONEncoder.default(self, o)
 

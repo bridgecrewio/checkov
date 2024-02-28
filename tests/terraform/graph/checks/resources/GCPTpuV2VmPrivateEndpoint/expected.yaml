@@ -1,0 +1,5 @@
+pass:
+  - "google_tpu_v2_vm.tpu_good"
+fail:
+  - "google_tpu_v2_vm.tpu_bad"
+  - "google_tpu_v2_vm.tpu_bad_unset"

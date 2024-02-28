@@ -8,10 +8,10 @@ skip-path:
 - tests/arm/checks/resource/example_AzureScaleSetPassword/UNKNOWN.json
 - tests/arm/checks/resource/example_StorageAccountAzureServicesAccessEnabled/storageAccountAzureServicesAccessEnabled-FAILED2.json
 - tests/arm/checks/resource/example_StorageAccountDefaultNetworkAccessDeny/storageAccountDefaultNetworkAccessDeny-FAILED2.json
+- tests/terraform/checks/resource/azure/example_AzureInstanceExtensions/main.tf
 - tests/common/utils/conftest.py
 - tests/common/utils/test_secrets_utils.py
 - tests/sca_image/conftest.py
-- tests/sca_package/conftest.py
 - tests/sca_package_2/conftest.py
 - tests/secrets
 - tests/terraform/checks/provider

@@ -1,0 +1,19 @@
+metadata:
+  id: "CKV2_GCP_21"
+  name: "Ensure Vertex AI instance disks are encrypted with a Customer Managed Key (CMK)"
+  category: "ENCRYPTION"
+scope:
+  provider: "GCP"
+definition:
+  and:
+    - resource_types:
+        - google_notebooks_instance
+      operator: exists
+      attribute: kms_key
+      cond_type: attribute
+    - resource_types:
+        - google_notebooks_instance
+      operator: equals
+      value: CMEK
+      attribute: disk_encryption
+      cond_type: attribute

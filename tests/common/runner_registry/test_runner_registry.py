@@ -11,6 +11,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from _pytest.capture import CaptureFixture
+from checkov.cdk.runner import CdkRunner
 
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.extra_resource import ExtraResource
@@ -25,9 +26,10 @@ from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.main import DEFAULT_RUNNERS
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package_2.runner import Runner as sca_package_runner_2
-from checkov.sca_package.runner import Runner as sca_package_runner
 from checkov.terraform.runner import Runner as tf_runner
 from checkov.bicep.runner import Runner as bicep_runner
+from checkov.sast.runner import Runner as SastRunner
+from checkov.terraform.runner import Runner as TFRunner
 import re
 
 
@@ -262,12 +264,6 @@ class TestRunnerRegistry(unittest.TestCase):
         )
         runner_registry.filter_runners_for_files(['main.tf'])
         self.assertEqual(set(r.check_type for r in runner_registry.runners), {'terraform', 'secrets'})
-
-        runner_registry = RunnerRegistry(
-            banner, runner_filter, *DEFAULT_RUNNERS, sca_package_runner()
-        )
-        runner_registry.filter_runners_for_files(['main.tf', 'requirements.txt'])
-        self.assertEqual(set(r.check_type for r in runner_registry.runners), {'terraform', 'secrets', 'sca_package'})
 
         runner_registry = RunnerRegistry(
             banner, runner_filter, *DEFAULT_RUNNERS, sca_package_runner_2()
@@ -821,6 +817,33 @@ def test_strip_code_blocks_from_json():
     # then
     assert reports[0]["results"]["passed_checks"][0]["code_block"] is None
     assert reports[0]["results"]["passed_checks"][0]["connected_node"] is None
+
+
+def test_merge_runners():
+    runner_cdk = CdkRunner()
+    runner_sast = SastRunner()
+    runner_tf = TFRunner()
+    valid_runners = [(runner_cdk, None, None, None, None, None, None)]
+    merged_runners = RunnerRegistry(None, None, None)._merge_runners(valid_runners)
+    assert len(merged_runners) == 1
+    assert isinstance(merged_runners[0][0], CdkRunner)
+
+    valid_runners = [(runner_sast, None, None, None, None, None, None)]
+    merged_runners = RunnerRegistry(None, None, None)._merge_runners(valid_runners)
+    assert len(merged_runners) == 1
+    assert isinstance(merged_runners[0][0], SastRunner)
+
+    valid_runners = [(runner_cdk, None, None, None, None, None, None), (runner_sast, None, None, None, None, None, None)]
+    merged_runners = RunnerRegistry(None, None, None)._merge_runners(valid_runners)
+    assert len(merged_runners) == 1
+    assert isinstance(merged_runners[0][0], SastRunner)
+    assert len(merged_runners[0][0].cdk_langs) > 0
+
+    valid_runners = [(runner_cdk, None, None, None, None, None, None), (runner_tf, None, None, None, None, None, None)]
+    merged_runners = RunnerRegistry(None, None, None)._merge_runners(valid_runners)
+    assert len(merged_runners) == 2
+    assert isinstance(merged_runners[0][0], CdkRunner) or isinstance(merged_runners[0][0], TFRunner)
+    assert isinstance(merged_runners[1][0], CdkRunner) or isinstance(merged_runners[1][0], TFRunner)
 
 
 if __name__ == "__main__":

@@ -2,22 +2,6 @@ from __future__ import annotations
 
 from typing import List, Tuple
 
-from checkov.common.output.record import PLACEHOLDER_LINE
-from checkov.sast.prisma_models.report import Flow
-
-
-def get_data_flow_code_block(data_flow: List[Flow]) -> List[Tuple[int, str]]:
-    code_block: List[Tuple[int, str]] = []
-
-    prev_end = -1
-    for flow in data_flow:
-        if prev_end >= 0 and abs(prev_end - flow.start.row) > 1:
-            code_block.append((-1, PLACEHOLDER_LINE))
-        code_block.append((flow.start.row, flow.code_block + "\n"))
-        prev_end = flow.end.row
-
-    return cut_code_block_ident(code_block)
-
 
 def get_code_block_from_start(lines: List[str], start: int) -> List[Tuple[int, str]]:
     code_block = [(index, line) for index, line in enumerate(lines, start=start)]

@@ -2,8 +2,9 @@ metadata:
   version: 0.2
   approach: define failing
   id: CKV_AWS_34
-  name: Ensure cloudfront distribution ViewerProtocolPolicy is set to HTTPS
+  name: Ensure CloudFront distribution ViewerProtocolPolicy is set to HTTPS
   category: ENCRYPTION
+  framework: cdk
 scope:
   languages:
     - python

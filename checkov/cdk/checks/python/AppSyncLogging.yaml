@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_193
   name: Ensure AppSync has Logging enabled
   category: LOGGING
+  framework: cdk
 scope:
   languages:
     - python

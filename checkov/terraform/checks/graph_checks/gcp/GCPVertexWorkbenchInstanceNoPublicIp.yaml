@@ -1,0 +1,13 @@
+metadata:
+  id: "CKV2_GCP_28"
+  name: "Ensure Vertex AI workbench instances are private"
+  category: "GENERAL_SECURITY"
+scope:
+  provider: "GCP"
+definition:
+  cond_type: attribute
+  resource_types:
+    - google_workbench_instance
+  attribute: "gce_setup.disable_public_ip"
+  operator: jsonpath_equals
+  value: "true"

@@ -31,14 +31,16 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.bridgecrew.platform_key import read_key
 from checkov.common.bridgecrew.run_metadata.registry import registry
-from checkov.common.bridgecrew.wrapper import persist_assets_results, reduce_scan_reports, persist_checks_results, \
+from checkov.common.bridgecrew.wrapper import persist_assets_results, reduce_scan_reports, \
+    persist_checks_results, \
     enrich_and_persist_checks_metadata, checkov_results_prefix, persist_run_metadata, _put_json_object, \
-    persist_logs_stream, persist_graphs, persist_resource_subgraph_maps, persist_reachability_results
+    persist_graphs, persist_resource_subgraph_maps, persist_reachability_results, \
+    persist_multiple_logs_stream
 from checkov.common.models.consts import SAST_SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILES, SCANNABLE_PACKAGE_FILES
 from checkov.common.runners.base_runner import filter_ignored_paths
-from checkov.common.sast.consts import SastLanguages
+from checkov.common.sast.consts import SastLanguages, CDK_FRAMEWORK_PREFIX
 from checkov.common.typing import _CicdDetails, LibraryGraph
-from checkov.common.util.consts import PRISMA_PLATFORM, BRIDGECREW_PLATFORM, CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
+from checkov.common.util.consts import PRISMA_PLATFORM, BRIDGECREW_PLATFORM
 from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.dockerfile import is_dockerfile
 from checkov.common.util.http_utils import (
@@ -65,7 +67,7 @@ if TYPE_CHECKING:
     from checkov.secrets.coordinator import EnrichedSecret
     from mypy_boto3_s3.client import S3Client
     from typing_extensions import TypeGuard
-    from checkov.sast.prisma_models.report import Match
+    from checkov.common.sast.report_types import Match
 
 SLEEP_SECONDS = 1
 
@@ -89,9 +91,15 @@ MAX_RETRIES = 40
 
 CI_METADATA_EXTRACTOR = registry.get_extractor()
 
+REQUEST_STATUS_CODES_RETRY = [401, 408, 500, 502, 503, 504]
+REQUEST_METHODS_TO_RETRY = ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'PUT', 'TRACE', 'POST']
+
 
 class BcPlatformIntegration:
     def __init__(self) -> None:
+        self.clean()
+
+    def clean(self) -> None:
         self.bc_api_key = read_key()
         self.s3_client: S3Client | None = None
         self.bucket: str | None = None
@@ -108,12 +116,13 @@ class BcPlatformIntegration:
         self.bc_source_version: str | None = None
         self.timestamp: str | None = None
         self.scan_reports: list[Report] = []
-        self.bc_api_url = normalize_bc_url(os.getenv('BC_API_URL', "https://www.bridgecrew.cloud"))
-        self.prisma_api_url = normalize_prisma_url(os.getenv("PRISMA_API_URL"))
+        self.bc_api_url = normalize_bc_url(os.getenv('BC_API_URL'))
+        self.prisma_api_url = normalize_prisma_url(os.getenv('PRISMA_API_URL', 'https://api0.prismacloud.io'))
         self.prisma_policies_url: str | None = None
         self.prisma_policy_filters_url: str | None = None
         self.setup_api_urls()
         self.customer_run_config_response = None
+        self.runtime_run_config_response = None
         self.prisma_policies_response = None
         self.public_metadata_response = None
         self.use_s3_integration = False
@@ -121,7 +130,12 @@ class BcPlatformIntegration:
         self.platform_integration_configured = False
         self.http: urllib3.PoolManager | urllib3.ProxyManager | None = None
         self.http_timeout = urllib3.Timeout(connect=REQUEST_CONNECT_TIMEOUT, read=REQUEST_READ_TIMEOUT)
-        self.http_retry = urllib3.Retry(REQUEST_RETRIES, redirect=3)
+        self.http_retry = urllib3.Retry(
+            REQUEST_RETRIES,
+            redirect=3,
+            status_forcelist=REQUEST_STATUS_CODES_RETRY,
+            allowed_methods=REQUEST_METHODS_TO_RETRY
+        )
         self.bc_skip_mapping = False
         self.cicd_details: _CicdDetails = {}
         self.support_flag_enabled = False
@@ -133,6 +147,7 @@ class BcPlatformIntegration:
         self.daemon_process = False  # set to 'True' when running in multiprocessing 'spawn' mode
         self.scan_dir: List[str] = []
         self.scan_file: List[str] = []
+        self.sast_custom_policies: str = ''
 
     def init_instance(self, platform_integration_data: dict[str, Any]) -> None:
         """This is mainly used for recreating the instance without interacting with the platform again"""
@@ -193,18 +208,19 @@ class BcPlatformIntegration:
         but Prisma Cloud requires resetting them in setup_bridgecrew_credentials,
         which is where command-line parameters are first made available.
         """
-        if self.prisma_api_url:
+        if self.bc_api_url:
+            self.api_url = self.bc_api_url
+        else:
             self.api_url = f"{self.prisma_api_url}/bridgecrew"
             self.prisma_policies_url = f"{self.prisma_api_url}/v2/policy"
             self.prisma_policy_filters_url = f"{self.prisma_api_url}/filter/policy/suggest"
-        else:
-            self.api_url = self.bc_api_url
         self.guidelines_api_url = f"{self.api_url}/api/v2/guidelines"
         self.guidelines_api_url_backoff = f"{self.api_url}/api/v1/guidelines"
 
         self.integrations_api_url = f"{self.api_url}/api/v1/integrations/types/checkov"
         self.platform_run_config_url = f"{self.api_url}/api/v2/checkov/runConfiguration"
         self.reachability_run_config_url = f"{self.api_url}/api/v2/checkov/reachabilityRunConfiguration"
+        self.runtime_run_config_url = f"{self.api_url}/api/v1/runtime-images/repositories"
 
     def is_prisma_integration(self) -> bool:
         if self.bc_api_key and not self.is_bc_token(self.bc_api_key):
@@ -334,6 +350,7 @@ class BcPlatformIntegration:
         source_version: str | None = None,
         repo_branch: str | None = None,
         prisma_api_url: str | None = None,
+        bc_api_url: str | None = None
     ) -> None:
         """
         Setup credentials against Bridgecrew's platform.
@@ -348,6 +365,12 @@ class BcPlatformIntegration:
         self.skip_download = skip_download
         self.bc_source = source
         self.bc_source_version = source_version
+
+        if bc_api_url:
+            self.prisma_api_url = None
+            self.bc_api_url = normalize_bc_url(bc_api_url)
+            self.setup_api_urls()
+            logging.info(f'Using BC API URL: {self.bc_api_url}')
 
         if prisma_api_url:
             self.prisma_api_url = normalize_prisma_url(prisma_api_url)
@@ -497,7 +520,7 @@ class BcPlatformIntegration:
             for f in files:
                 f_name = os.path.basename(f)
                 _, file_extension = os.path.splitext(f)
-                if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 and file_extension in SCANNABLE_PACKAGE_FILES:
+                if file_extension in SCANNABLE_PACKAGE_FILES:
                     continue
                 if file_extension in SUPPORTED_FILE_EXTENSIONS or f_name in SUPPORTED_FILES:
                     files_to_persist.append(FileToPersist(f, os.path.relpath(f, root_dir)))
@@ -515,7 +538,7 @@ class BcPlatformIntegration:
                 filter_ignored_paths(root_path, f_names, excluded_paths)
                 for file_path in f_names:
                     _, file_extension = os.path.splitext(file_path)
-                    if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 and file_extension in SCANNABLE_PACKAGE_FILES:
+                    if file_extension in SCANNABLE_PACKAGE_FILES:
                         continue
                     full_file_path = os.path.join(root_path, file_path)
                     relative_file_path = os.path.relpath(full_file_path, root_dir)
@@ -552,16 +575,31 @@ class BcPlatformIntegration:
 
     def adjust_sast_match_location_path(self, match: Match) -> None:
         for dir in self.scan_dir:
-            if not match.location.path.startswith(dir):
-                continue
-            match.location.path = match.location.path.replace(dir, self.repo_path)  # type: ignore
-            return
+            if match.location.path.startswith(os.path.abspath(dir)):
+                match.location.path = match.location.path.replace(os.path.abspath(dir), self.repo_path)  # type: ignore
+                if match.metadata.code_locations:
+                    for code_location in match.metadata.code_locations:
+                        code_location.path = code_location.path.replace(os.path.abspath(dir), self.repo_path)  # type: ignore
+
+                if match.metadata.taint_mode and match.metadata.taint_mode.data_flow:
+                    for df in match.metadata.taint_mode.data_flow:
+                        df.path = df.path.replace(os.path.abspath(dir), self.repo_path)  # type: ignore
+
+                return
+
         for file in self.scan_file:
-            if match.location.path != file:
-                continue
-            file_dir = '/'.join(match.location.path.split('/')[0:-1])
-            match.location.path = match.location.path.replace(file_dir, self.repo_path)  # type: ignore
-            return
+            if match.location.path == os.path.abspath(file):
+                file_dir = '/'.join(match.location.path.split('/')[0:-1])
+                match.location.path = match.location.path.replace(os.path.abspath(file_dir), self.repo_path)  # type: ignore
+                if match.metadata.code_locations:
+                    for code_location in match.metadata.code_locations:
+                        code_location.path = code_location.path.replace(os.path.abspath(file_dir), self.repo_path)  # type: ignore
+
+                if match.metadata.taint_mode and match.metadata.taint_mode.data_flow:
+                    for df in match.metadata.taint_mode.data_flow:
+                        df.path = df.path.replace(os.path.abspath(file_dir), self.repo_path)  # type: ignore
+
+                return
 
     @staticmethod
     def _delete_code_block_from_sast_report(report: Dict[str, Any]) -> None:
@@ -600,6 +638,35 @@ class BcPlatformIntegration:
             self.save_sast_report_locally(sast_scan_reports)
 
         persist_checks_results(sast_scan_reports, self.s3_client, self.bucket, self.repo_path)  # type: ignore
+
+    def persist_cdk_scan_results(self, reports: List[Report]) -> None:
+        cdk_scan_reports = {}
+        for report in reports:
+            if not report.check_type.startswith(CDK_FRAMEWORK_PREFIX):
+                continue
+            if not report.cdk_report:  # type: ignore
+                continue
+            for match_by_check in report.cdk_report.rule_match.values():  # type: ignore
+                for _, match in match_by_check.items():
+                    for m in match.matches:
+                        self.adjust_sast_match_location_path(m)
+                cdk_scan_reports[report.check_type] = report.cdk_report.model_dump(mode='json')  # type: ignore
+            if self.on_prem:
+                BcPlatformIntegration._delete_code_block_from_sast_report(cdk_scan_reports)
+
+        # In case we dont have sast report - create empty one
+        sast_reports = {}
+        for check_type, report in cdk_scan_reports.items():
+            lang = check_type.split('_')[1]
+            found_sast_report = False
+            for report in reports:
+                if report.check_type == f'sast_{lang}':
+                    found_sast_report = True
+            if not found_sast_report:
+                sast_reports[f'sast_{lang}'] = report.empty_sast_report.model_dump(mode='json')  # type: ignore
+
+        persist_checks_results(sast_reports, self.s3_client, self.bucket, self.repo_path)  # type: ignore
+        persist_checks_results(cdk_scan_reports, self.s3_client, self.bucket, self.repo_path)  # type: ignore
 
     def persist_scan_results(self, scan_reports: list[Report]) -> None:
         """
@@ -699,14 +766,15 @@ class BcPlatformIntegration:
             logging.debug(f'Also uploading run_metadata.json to support location: {self.support_bucket}/{self.support_repo_path}')
             persist_run_metadata(run_metadata, self.s3_client, self.support_bucket, self.support_repo_path, False)
 
-    def persist_logs_stream(self, logs_stream: StringIO) -> None:
+    def persist_all_logs_streams(self, logs_streams: Dict[str, StringIO]) -> None:
         if not self.use_s3_integration or not self.s3_client or self.s3_setup_failed:
             return
         if not self.support_bucket or not self.support_repo_path:
             logging.error(
                 f"Something went wrong with the log upload location: bucket {self.support_bucket}, repo path {self.support_repo_path}")
             return
-        persist_logs_stream(logs_stream, self.s3_client, self.support_bucket, self.support_repo_path)
+
+        persist_multiple_logs_stream(logs_streams, self.s3_client, self.support_bucket, self.support_repo_path)
 
     def persist_graphs(self, graphs: dict[str, list[tuple[LibraryGraph, Optional[str]]]], absolute_root_folder: str = '') -> None:
         if not self.use_s3_integration or not self.s3_client or self.s3_setup_failed:
@@ -946,6 +1014,44 @@ class BcPlatformIntegration:
                             exc_info=True)
             raise
 
+    def get_runtime_run_config(self) -> None:
+        try:
+            if self.skip_download is True:
+                logging.debug("Skipping customer run config API call")
+                raise
+
+            if not self.bc_api_key or not self.is_integration_configured():
+                raise Exception(
+                    "Tried to get customer run config, but the API key was missing or the integration was not set up")
+
+            if not self.bc_source:
+                logging.error("Source was not set")
+                raise
+
+            token = self.get_auth_token()
+            headers = merge_dicts(get_auth_header(token),
+                                  get_default_get_headers(self.bc_source, self.bc_source_version))
+
+            self.setup_http_manager()
+            if not self.http:
+                logging.error("HTTP manager was not correctly created")
+                raise
+
+            platform_type = PRISMA_PLATFORM if self.is_prisma_integration() else BRIDGECREW_PLATFORM
+            url = f"{self.runtime_run_config_url}?repoId={self.repo_id}"
+            request = self.http.request("GET", url,
+                                        headers=headers)  # type:ignore[no-untyped-call]
+            if request.status != 200:
+                error_message = get_auth_error_message(request.status, self.is_prisma_integration(), False)
+                logging.error(error_message)
+                raise BridgecrewAuthError(error_message)
+
+            logging.debug(f"Got run config from {platform_type} platform")
+
+            self.runtime_run_config_response = json.loads(request.data.decode("utf8"))
+        except Exception:
+            logging.debug('could not get runtime info for this repo')
+
     def get_prisma_build_policies(self, policy_filter: str) -> None:
         """
         Get Prisma policy for enriching runConfig with metadata
@@ -1129,18 +1235,19 @@ class BcPlatformIntegration:
         return repo_id
 
     def _upload_run(self, args: argparse.Namespace, scan_reports: list[Report]) -> None:
-        print(Style.BRIGHT + colored("Connecting to Bridgecrew.cloud...", 'green',
+        print(Style.BRIGHT + colored("Connecting to Prisma Cloud...", 'green',
                                      attrs=['bold']) + Style.RESET_ALL)
         self.persist_repository(args.directory[0])
         print(Style.BRIGHT + colored("Metadata upload complete", 'green',
                                      attrs=['bold']) + Style.RESET_ALL)
         self.persist_scan_results(scan_reports)
         self.persist_sast_scan_results(scan_reports)
+        self.persist_cdk_scan_results(scan_reports)
         print(Style.BRIGHT + colored("Report upload complete", 'green',
                                      attrs=['bold']) + Style.RESET_ALL)
         self.commit_repository(args.branch)
         print(Style.BRIGHT + colored(
-            "COMPLETE! \nYour results are in your Bridgecrew dashboard, available here: https://bridgecrew.cloud \n",
+            "COMPLETE! \nYour results are in your Prisma Cloud account \n",
             'green', attrs=['bold']) + Style.RESET_ALL)
 
     def _input_orgname(self) -> str:

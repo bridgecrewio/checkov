@@ -7,6 +7,7 @@ import gzip
 import io
 import logging
 from pathlib import Path
+from typing import Dict
 from zipfile import ZipFile
 
 from charset_normalizer import from_path
@@ -71,6 +72,26 @@ def compress_string_io_tar(string_io: io.StringIO) -> io.BytesIO:
             tar.addfile(info, bio)
         file_io.seek(0)
         return file_io
+    except Exception:
+        logging.exception("failed to compress logging file")
+        raise
+
+
+def compress_multiple_strings_ios_tar(logs_streams: Dict[str, io.StringIO]) -> io.BytesIO:
+    tar_stream = io.BytesIO()
+    try:
+        with tarfile.open(fileobj=tar_stream, mode='w:gz') as tar:
+            for filename, stringio in logs_streams.items():
+                bytes_io = io.BytesIO(stringio.getvalue().encode())
+
+                tarinfo = tarfile.TarInfo(name=f'{filename}.log')
+                tarinfo.size = len(bytes_io.getvalue())
+
+                bytes_io.seek(0)
+                tar.addfile(tarinfo, fileobj=bytes_io)
+
+        tar_stream.seek(0)
+        return tar_stream
     except Exception:
         logging.exception("failed to compress logging file")
         raise

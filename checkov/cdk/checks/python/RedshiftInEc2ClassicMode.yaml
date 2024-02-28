@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_154
   name: Ensure Redshift is not deployed outside of a VPC
   category: NETWORKING
+  framework: cdk
 scope:
   languages:
     - python

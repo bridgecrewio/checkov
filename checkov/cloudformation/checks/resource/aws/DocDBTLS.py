@@ -6,7 +6,7 @@ from checkov.common.models.enums import CheckCategories
 
 class DocDBTLS(BaseResourceNegativeValueCheck):
     def __init__(self):
-        name = "Ensure DocDB TLS is not disabled"
+        name = "Ensure DocumentDB TLS is not disabled"
         id = "CKV_AWS_90"
         supported_resources = ['AWS::DocDB::DBClusterParameterGroup']
         categories = [CheckCategories.ENCRYPTION]

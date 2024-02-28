@@ -9,7 +9,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 
 class EMRClusterConfEncryptsEBS(BaseResourceCheck):
     def __init__(self) -> None:
-        name = "Ensure EMR Cluster security configuration encrypts ebs disks"
+        name = "Ensure EMR Cluster security configuration encrypts EBS disks"
         id = "CKV_AWS_350"
         supported_resources = ("aws_emr_security_configuration",)
         categories = (CheckCategories.ENCRYPTION,)

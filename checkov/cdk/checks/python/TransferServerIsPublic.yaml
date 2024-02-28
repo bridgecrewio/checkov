@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_164
   name: Ensure Transfer Server is not exposed publicly.
   category: GENERAL_SECURITY
+  framework: cdk
 scope:
   languages:
     - python

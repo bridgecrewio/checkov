@@ -61,13 +61,6 @@ class ConnectionSolver(TestBaseSolver):
 
             assert len(reduced_graph.nodes) <= 85
             assert len(reduced_graph.edges) <= 20
-        #TODO delete IGRAPH
-        elif self.graph_framework == 'IGRAPH':
-            assert len(graph_connector.vs) >= 661
-            assert len(graph_connector.es) >= 327
-
-            assert len(reduced_graph.vs) <= 85
-            assert len(reduced_graph.es) <= 20
 
         elif self.graph_framework == 'RUSTWORKX':
             assert len(graph_connector.nodes()) >= 661

@@ -5,7 +5,7 @@ from checkov.common.models.consts import ANY_VALUE
 
 class VertexAIMetadataStoreEncryptedWithCMK(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure Vertex AI Metadata Store uses a CMK (Customer Manager Key)"
+        name = "Ensure Vertex AI Metadata Store uses a CMK (Customer Managed Key)"
         id = "CKV_GCP_96"
         supported_resources = ['google_vertex_ai_metadata_store']
         categories = [CheckCategories.ENCRYPTION]

@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_116
   name: Ensure that AWS Lambda function is configured for a Dead Letter Queue(DLQ)
   category: GENERAL_SECURITY
+  framework: cdk
 scope:
   languages:
     - python

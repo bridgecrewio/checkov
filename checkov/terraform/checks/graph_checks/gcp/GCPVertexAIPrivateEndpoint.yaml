@@ -1,0 +1,10 @@
+metadata:
+  id: "CKV2_GCP_33"
+  name: "Ensure Vertex AI endpoint is private"
+  category: "NETWORKING"
+definition:
+  cond_type: attribute
+  resource_types:
+  - google_vertex_ai_endpoint
+  attribute: network
+  operator: exists

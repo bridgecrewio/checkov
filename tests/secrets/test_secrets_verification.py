@@ -110,7 +110,7 @@ def test_verify_secrets_insufficient_params_tenant_config_missing_true_flag() ->
 def test_verify_secrets_failure(mock_bc_integration, status_code: int) -> None:
     responses.add(
         method=responses.POST,
-        url=f"{mock_bc_integration.bc_api_url}/api/v1/secrets/reportVerification",
+        url=f"{mock_bc_integration.api_url}/api/v1/secrets/reportVerification",
         json={},
         status=status_code
     )
@@ -154,7 +154,7 @@ def test_verify_secrets(mock_bc_integration, secrets_report) -> None:
 
     responses.add(
         method=responses.POST,
-        url=f"{mock_bc_integration.bc_api_url}/api/v1/secrets/reportVerification",
+        url=f"{mock_bc_integration.api_url}/api/v1/secrets/reportVerification",
         json={'verificationReportSignedUrl': 'mock'},
         status=200
     )
@@ -194,7 +194,7 @@ def test_runner_verify_secrets(mock_bc_integration, mock_metadata_integration):
 
     responses.add(
         method=responses.POST,
-        url=f"{mock_bc_integration.bc_api_url}/api/v1/secrets/reportVerification",
+        url=f"{mock_bc_integration.api_url}/api/v1/secrets/reportVerification",
         json={'verificationReportSignedUrl': 'mock'},
         status=200
     )

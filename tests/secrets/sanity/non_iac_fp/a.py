@@ -1,7 +1,7 @@
 def a():
     test_files_dir = current_dir + "/example_LustreFSEncryptedWithCMK"
 
-    mock_url = mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/scan-results/2e97f5afea42664309f492a1e2083b43479c2936"
+    mock_url = mock_bc_integration.api_url + "/api/v1/vulnerabilities/scan-results/2e97f5afea42664309f492a1e2083b43479c2936"
 
     PASSWORD = "PASSWORD"
     STATUS_ERROR_PASSWORD_FETCH = "ERROR_PASSWORD_FETCH"

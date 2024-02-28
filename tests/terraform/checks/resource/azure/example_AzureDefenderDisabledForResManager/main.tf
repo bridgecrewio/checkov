@@ -1,7 +1,7 @@
 
 # Case 1: Pass: tier is Standard and resource_type is Arm
 
-resource "azurerm_security_center_subscription_pricing" "pass" {
+resource "azurerm_security_center_subscription_pricing" "pass_1" {
   tier          = "Standard"
   resource_type = "Arm"
 }
@@ -13,10 +13,16 @@ resource "azurerm_security_center_subscription_pricing" "fail_1" {
   resource_type = "arm"
 }
 
-# Case 3: Fails as "resource_type" should be "Arm"
+# Case 3: Pass as policy should only check if the resource_type is "Arm"
 
-resource "azurerm_security_center_subscription_pricing" "fail_2" {
-  tier          = "Standard"
+resource "azurerm_security_center_subscription_pricing" "pass_2" {
+  tier          = "Free"
   resource_type = "Dns"
 }
 
+# Case 4: Pass as policy should only check if the resource_type is "Arm"
+
+resource "azurerm_security_center_subscription_pricing" "pass_3" {
+  tier          = "Free"
+  resource_type = "VirtualMachine"
+}

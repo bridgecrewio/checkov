@@ -4,6 +4,7 @@ import itertools
 import logging
 import os
 from datetime import datetime
+from hashlib import sha1
 from importlib.metadata import version as meta_version
 from pathlib import Path
 from typing import TYPE_CHECKING, cast, Any
@@ -12,7 +13,6 @@ from cyclonedx.model import (
     XsUri,
     ExternalReference,
     ExternalReferenceType,
-    sha1sum,
     HashAlgorithm,
     HashType,
     Property,
@@ -150,7 +150,7 @@ class CycloneDX:
         </component>
         """
 
-        sha1_hash = sha1sum(filename=resource.file_abs_path)
+        sha1_hash = file_sha1sum(filename=resource.file_abs_path)
         purl = PackageURL(
             type=check_type,
             namespace=f"{self.repo_id}/{resource.file_path}",
@@ -330,9 +330,11 @@ class CycloneDX:
                 )
             ],
             description=f"Resource: {resource.resource}. {resource.check_name}",
-            affects=[BomTarget(ref=component.bom_ref.value)],
             advisories=advisories,
         )
+        if component.bom_ref.value:
+            vulnerability.affects = [BomTarget(ref=component.bom_ref.value)]
+
         return vulnerability
 
     def create_cve_vulnerability(self, resource: Record, component: Component) -> Vulnerability:
@@ -401,8 +403,10 @@ class CycloneDX:
             description=resource.vulnerability_details.get("description"),
             recommendation=fix_version,
             published=datetime.fromisoformat(resource.vulnerability_details["published_date"].replace("Z", "")),
-            affects=[BomTarget(ref=component.bom_ref.value)],
         )
+        if component.bom_ref.value:
+            vulnerability.affects = [BomTarget(ref=component.bom_ref.value)]
+
         return vulnerability
 
     def get_fix_version_overview(self, vulnerability_details: dict[str, Any]) -> str | None:
@@ -472,3 +476,23 @@ class CycloneDX:
                 ),
             ]
         )
+
+
+# Copy of https://github.com/CycloneDX/cyclonedx-python-lib/blob/74865f8e498c9723c2ce3556ceecb6a3cfc4c490/cyclonedx/_internal/hash.py
+# because it looks like it meant to be something not exposed for external usage
+def file_sha1sum(filename: str) -> str:
+    """
+    Generate a SHA1 hash of the provided file.
+
+    Args:
+        filename:
+            Absolute path to file to hash as `str`
+
+    Returns:
+        SHA-1 hash
+    """
+    h = sha1()  # nosec B303, B324
+    with open(filename, 'rb') as f:
+        for byte_block in iter(lambda: f.read(4096), b''):
+            h.update(byte_block)
+    return h.hexdigest()

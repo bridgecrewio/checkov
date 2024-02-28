@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_195
   name: Ensure Glue component has a security configuration associated
   category: ENCRYPTION
+  framework: cdk
 scope:
   languages:
     - python

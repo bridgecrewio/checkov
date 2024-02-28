@@ -12,7 +12,7 @@ from parameterized import parameterized_class
 # do not remove - prevents circular import
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import BcSeverities, Severities
-from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
+from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.db_connectors.rustworkx.rustworkx_db_connector import RustworkxConnector
 from checkov.common.models.enums import CheckCategories, CheckResult
@@ -23,15 +23,27 @@ from checkov.terraform.plan_runner import Runner, resource_registry
 
 
 @parameterized_class([
-   {"db_connector": NetworkxConnector},
-   {"db_connector": IgraphConnector},
+    {"db_connector": NetworkxConnector},
     {"db_connector": RustworkxConnector},
 ])
 class TestRunnerValid(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.orig_checks = deepcopy(resource_registry.checks)
+        cls.orig_all_registered_checks = deepcopy(BaseCheckRegistry._BaseCheckRegistry__all_registered_checks)
         cls.db_connector = cls.db_connector
+
+    def test_py_graph_check(self):
+        if not self.db_connector == RustworkxConnector:
+            return
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/resources/py_graph_check_tf_plan"
+        valid_dir_path_for_external_check = current_dir + '/py_check_tf_plan'
+        runner = Runner(db_connector=self.db_connector())
+        checks_allowlist = ['CKV_AWS_99999']
+        report = runner.run(root_folder=valid_dir_path, external_checks_dir=[valid_dir_path_for_external_check],
+                            runner_filter=RunnerFilter(framework=["terraform_plan"], checks=checks_allowlist))
+        assert len(report.passed_checks) == 3
 
     def test_runner_two_checks_only(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
@@ -230,6 +242,7 @@ class TestRunnerValid(unittest.TestCase):
         valid_plan_path = current_dir + "/resources/plan/tfplan.json"
         runner = Runner()
         runner.graph_registry.checks = []
+
         report = runner.run(
             root_folder=None,
             files=[valid_plan_path],
@@ -901,6 +914,7 @@ class TestRunnerValid(unittest.TestCase):
 
     def tearDown(self) -> None:
         resource_registry.checks = deepcopy(self.orig_checks)
+        BaseCheckRegistry._BaseCheckRegistry__all_registered_checks = deepcopy(self.orig_all_registered_checks)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,24 @@
+metadata:
+  id: "CKV2_GCP_27"
+  name: "Ensure Vertex AI workbench instance disks are encrypted with a Customer Managed Key (CMK)"
+  category: "ENCRYPTION"
+scope:
+  provider: "GCP"
+definition:
+  and:
+    - cond_type: attribute
+      resource_types:
+        - google_workbench_instance
+      attribute: "gce_setup.boot_disk.kms_key"
+      operator: jsonpath_exists
+    - or:
+      - cond_type: attribute
+        resource_types:
+          - google_workbench_instance
+        attribute: "gce_setup.data_disks"
+        operator: jsonpath_not_exists
+      - cond_type: attribute
+        resource_types:
+          - google_workbench_instance
+        attribute: "gce_setup.data_disks.kms_key"
+        operator: jsonpath_exists

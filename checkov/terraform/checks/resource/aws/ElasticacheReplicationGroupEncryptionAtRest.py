@@ -4,7 +4,7 @@ from checkov.common.models.enums import CheckCategories
 
 class ElasticacheReplicationGroupEncryptionAtRest(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure all data stored in the Elasticache Replication Group is securely encrypted at rest"
+        name = "Ensure all data stored in the ElastiCache Replication Group is securely encrypted at rest"
         id = "CKV_AWS_29"
         supported_resources = ['aws_elasticache_replication_group']
         categories = [CheckCategories.ENCRYPTION]

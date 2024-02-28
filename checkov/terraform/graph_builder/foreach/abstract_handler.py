@@ -124,9 +124,19 @@ class ForeachAbstractHandler:
                         attrs[k][0] = val_to_change
                         v_changed = True
                     elif f"{key_to_change}." in attrs[k][0] and isinstance(val_to_change, dict):
-                        key = attrs[k][0].replace("}", "").split('.')[-1]
-                        attrs[k][0] = val_to_change.get(key)
-                        v_changed = True
+                        for inner_key, inner_value in val_to_change.items():
+                            str_to_replace = f"{key_to_change}.{inner_key}"
+                            if str_to_replace in attrs[k][0]:
+                                dollar_wrapped_str_to_replace = "${" + str_to_replace + "}"
+                                if attrs[k][0] == dollar_wrapped_str_to_replace:
+                                    attrs[k][0] = inner_value
+                                    v_changed = True
+                                    break
+                                elif dollar_wrapped_str_to_replace in attrs[k][0]:
+                                    str_to_replace = dollar_wrapped_str_to_replace
+                                attrs[k][0] = attrs[k][0].replace(str_to_replace, str(inner_value))
+                                v_changed = True
+                                break
                     else:
                         attrs[k][0] = attrs[k][0].replace("${" + key_to_change + "}", str(val_to_change))
                         if self.need_to_add_quotes(attrs[k][0], key_to_change):

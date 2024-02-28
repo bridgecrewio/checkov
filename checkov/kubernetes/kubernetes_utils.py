@@ -124,7 +124,7 @@ def build_definitions_context(
     definitions_context: Dict[str, Dict[str, Any]] = {}
     # iterate on the files
     for file_path, resources in definitions.items():
-        for resource in resources:
+        for resource in resources[:]:
             if resource.get("kind") == "List":
                 # this could be inefficient, if more than one 'List' object exists in the same file
                 resources = resources[:]

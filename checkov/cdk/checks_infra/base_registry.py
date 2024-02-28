@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.sast.checks_infra.base_registry import Registry
 

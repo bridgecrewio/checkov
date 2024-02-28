@@ -15,6 +15,10 @@ cp /usr/local/lib/checkov-problem-matcher-softfail.json "$warning_matcher_path"
 
 export BC_SOURCE=githubActions
 
+if [ -n "$PRISMA_API_URL" ]; then
+  export PRISMA_API_URL=$PRISMA_API_URL
+fi
+
 # Actions pass inputs as $INPUT_<input name> environment variables
 #
 [[ -n "$INPUT_SKIP_CHECK" ]] && SKIP_CHECK_FLAG="--skip-check $INPUT_SKIP_CHECK"

@@ -31,7 +31,8 @@ class TestSecurityGroupUnrestrictedIngress80(unittest.TestCase):
             "aws_security_group_rule.pass2",
             "aws_security_group_rule.pass3",
 
-            "aws_vpc_security_group_ingress_rule.pass"
+            "aws_vpc_security_group_ingress_rule.pass",
+            "aws_vpc_security_group_ingress_rule.pass_prefix_list",
         }
 
         failing_resources = {
@@ -48,7 +49,6 @@ class TestSecurityGroupUnrestrictedIngress80(unittest.TestCase):
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
-
         self.assertEqual(summary["passed"], len(passing_resources))
         self.assertEqual(summary["failed"], len(failing_resources))
         self.assertEqual(summary["skipped"], 0)

@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_67
   name: Ensure CloudTrail is enabled in all Regions
   category: LOGGING
+  framework: cdk
 scope:
   languages:
     - python

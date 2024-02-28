@@ -52,7 +52,7 @@ jobs:
       - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c  # v4
         with:
           python-version: ${{ matrix.python }}
-      - uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65  # v3
+      - uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8  # v3
       - uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78  # v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -85,7 +85,8 @@ jobs:
           bash -c './integration_tests/prepare_data.sh "${{ matrix.os }}" "${{ matrix.python }}"'
         env:
           LOG_LEVEL: INFO
-          BC_KEY: ${{ secrets.BC_API_KEY }}
+          BC_KEY: ${{ secrets.PRISMA_KEY_API2 }}
+          PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
           TF_REGISTRY_TOKEN: ${{ secrets.TFC_TOKEN }}
           GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       - name: Run integration tests
@@ -115,8 +116,8 @@ jobs:
         run: git clone https://github.com/bridgecrewio/terragoat
       - name: Run checkov with Prisma creds
         env:
-          PRISMA_KEY: ${{ secrets.PRISMA_KEY }}
-          PRISMA_API_URL: ${{ secrets.PRISMA_API_URL }}
+          PRISMA_KEY: ${{ secrets.PRISMA_KEY_API2 }}
+          PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
         run: |
           pipenv run checkov -s -d terragoat --bc-api-key "$PRISMA_KEY" --repo-id yuvalyacoby/terragoat > checkov_report_prisma.txt
           grep "prismacloud.io" checkov_report_prisma.txt
@@ -154,7 +155,8 @@ jobs:
       - name: Create checkov reports
         env:
           LOG_LEVEL: INFO
-          BC_API_KEY: ${{ secrets.BC_API_KEY }}
+          BC_API_KEY: ${{ secrets.PRISMA_KEY_API2 }}
+          PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
         run: bash -c './sast_integration_tests/prepare_data.sh'
       - name: Run integration tests
         run: |
@@ -208,7 +210,7 @@ jobs:
           token: ${{ secrets.GH_PAT_SECRET }}
       - name: Import GPG key
         id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@82a020f1f7f605c65dd2449b392a52c3fcfef7ef  # v5
+        uses: crazy-max/ghaction-import-gpg@01dd5d3ca463c7f10f7f4f7b4f177225ac661ee4  # v5
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
@@ -324,7 +326,8 @@ jobs:
       image_tag_short: ${{ needs.bump-version.outputs.major_version }}
       runner: "['self-hosted', 'public', 'linux', 'x64']"
     secrets:
-      BC_API_KEY: ${{ secrets.BC_API_KEY }}
+      BC_API_KEY: ${{ secrets.PRISMA_KEY_API2 }}
+      PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
   publish-checkov-k8s-dockerhub:
@@ -342,7 +345,8 @@ jobs:
       dockerfile_path: kubernetes/Dockerfile
       runner: "['self-hosted', 'public', 'linux', 'x64']"
     secrets:
-      BC_API_KEY: ${{ secrets.BC_API_KEY }}
+      BC_API_KEY: ${{ secrets.PRISMA_KEY_API2 }}
+      PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
   update-bridgecrew-projects:

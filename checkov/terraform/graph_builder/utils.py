@@ -6,8 +6,6 @@ import re
 from typing import Tuple
 from typing import Union, List, Any, Dict, Optional, TYPE_CHECKING
 
-import igraph
-
 from checkov.common.typing import LibraryGraph
 from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH, \
     TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR
@@ -353,18 +351,6 @@ def get_file_path_to_referred_id_networkx(graph_object: DiGraph) -> dict[str, st
     return file_path_to_module_id
 
 
-def get_file_path_to_referred_id_igraph(graph_object: igraph.Graph) -> dict[str, str]:
-    file_path_to_module_id = {}
-    modules = [v for v in graph_object.vs if
-               v[CustomAttributes.BLOCK_TYPE] == BlockType.MODULE]
-    for module_vertex in modules:
-        module_name = module_vertex['name']
-        module_content = module_vertex['attr'].get(CustomAttributes.CONFIG, {})
-        for path in module_content.get('batch', {}).get("__resolved__", []):
-            file_path_to_module_id[path] = f"module.{module_name}"
-    return file_path_to_module_id
-
-
 def get_file_path_to_referred_id_rustworkx(graph_object: DiGraph) -> dict[str, str]:
     file_path_to_module_id = {}
 
@@ -378,9 +364,7 @@ def get_file_path_to_referred_id_rustworkx(graph_object: DiGraph) -> dict[str, s
 
 
 def setup_file_path_to_referred_id(graph_object: LibraryGraph) -> dict[str, str]:
-    if isinstance(graph_object, igraph.Graph):
-        return get_file_path_to_referred_id_igraph(graph_object)
-    elif isinstance(graph_object, DiGraph):
+    if isinstance(graph_object, DiGraph):
         return get_file_path_to_referred_id_networkx(graph_object)
     else:
         return get_file_path_to_referred_id_rustworkx(graph_object)

@@ -8,7 +8,7 @@ from checkov.cloudformation.checks.resource.base_resource_check import BaseResou
 
 class LambdaEnvironmentEncryptionSettings(BaseResourceCheck):
     def __init__(self) -> None:
-        name = "Check encryption settings for Lambda environmental variable"
+        name = "Check encryption settings for Lambda environment variable"
         id = "CKV_AWS_173"
         supported_resources = ("AWS::Lambda::Function", "AWS::Serverless::Function")
         categories = (CheckCategories.ENCRYPTION,)

@@ -20,19 +20,19 @@ from checkov.terraform.module_loading.loaders.bitbucket_access_token_loader impo
         (
             "terraform-aws-modules/security-group/aws",
             "4.0.0",
+            "github.com/terraform-aws-modules/terraform-aws-security-group/ff2efb814c924572d27280b99a799fc34d061109",
+            "https://github.com/terraform-aws-modules/terraform-aws-security-group?ref=ff2efb814c924572d27280b99a799fc34d061109",
             "github.com/terraform-aws-modules/terraform-aws-security-group/v4.0.0",
-            "https://github.com/terraform-aws-modules/terraform-aws-security-group?ref=v4.0.0",
-            "github.com/terraform-aws-modules/terraform-aws-security-group/v4.0.0",
-            "git::https://github.com/terraform-aws-modules/terraform-aws-security-group?ref=v4.0.0",
+            "git::https://github.com/terraform-aws-modules/terraform-aws-security-group?ref=ff2efb814c924572d27280b99a799fc34d061109",
             "",
         ),
         (
             "terraform-aws-modules/security-group/aws//modules/http-80",
             "4.0.0",
-            "github.com/terraform-aws-modules/terraform-aws-security-group/v4.0.0/modules/http-80",
-            "https://github.com/terraform-aws-modules/terraform-aws-security-group?ref=v4.0.0",
+            "github.com/terraform-aws-modules/terraform-aws-security-group/ff2efb814c924572d27280b99a799fc34d061109/modules/http-80",
+            "https://github.com/terraform-aws-modules/terraform-aws-security-group?ref=ff2efb814c924572d27280b99a799fc34d061109",
             "github.com/terraform-aws-modules/terraform-aws-security-group/v4.0.0",
-            "git::https://github.com/terraform-aws-modules/terraform-aws-security-group?ref=v4.0.0",
+            "git::https://github.com/terraform-aws-modules/terraform-aws-security-group?ref=ff2efb814c924572d27280b99a799fc34d061109",
             "modules/http-80",
         )
     ],
@@ -482,7 +482,9 @@ def test_load_terraform_registry_with_real_download(tmp_path: Path):
     )
 
     assert content.loaded()
-    assert content.path().startswith(f"{expected_content_path}/v3.")
+    content_path = content.path()
+    assert content_path.startswith(f"{expected_content_path}/v3.") or \
+           content_path.startswith(f"{expected_content_path}/2cd10c8aca557fd858f401616d5c3b27e2a7b595")
 
 
 def test_load_terraform_registry_check_cache(tmp_path: Path):

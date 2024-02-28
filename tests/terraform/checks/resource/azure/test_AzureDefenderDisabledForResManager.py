@@ -17,11 +17,12 @@ class TestAzureDefenderDisabledForResManager(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            'azurerm_security_center_subscription_pricing.pass',
+            'azurerm_security_center_subscription_pricing.pass_1',
+            'azurerm_security_center_subscription_pricing.pass_2',
+            'azurerm_security_center_subscription_pricing.pass_3',
         }
         failing_resources = {
             'azurerm_security_center_subscription_pricing.fail_1',
-            'azurerm_security_center_subscription_pricing.fail_2',
         }
         skipped_resources = {}
 

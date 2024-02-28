@@ -114,6 +114,7 @@ class TestFixesIntegration(unittest.TestCase):
 
     def tearDown(self) -> None:
         metadata_integration.check_metadata = self._old_check_metadata
+        metadata_integration.bc_to_ckv_id_mapping = {}
 
 
 def mock_fixes_response(check_type: str, filename: str, file_contents: str, failed_checks: Iterable[Record]

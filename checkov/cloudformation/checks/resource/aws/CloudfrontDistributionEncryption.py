@@ -4,7 +4,7 @@ from checkov.cloudformation.checks.resource.base_resource_check import BaseResou
 
 class CloudfrontDistributionEncryption(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure cloudfront distribution ViewerProtocolPolicy is set to HTTPS"
+        name = "Ensure CloudFront Distribution ViewerProtocolPolicy is set to HTTPS"
         id = "CKV_AWS_34"
         supported_resources = ['AWS::CloudFront::Distribution']
         categories = [CheckCategories.ENCRYPTION]

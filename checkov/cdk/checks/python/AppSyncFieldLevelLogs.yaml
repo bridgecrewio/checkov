@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_194
   name: Ensure AppSync has Field-Level logs enabled
   category: LOGGING
+  framework: cdk
 scope:
   languages:
     - python

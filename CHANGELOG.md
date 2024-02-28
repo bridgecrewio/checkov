@@ -1,6 +1,260 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.1.38...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.26...HEAD)
+
+## [3.2.26](https://github.com/bridgecrewio/checkov/compare/3.2.25...3.2.26) - 2024-02-26
+
+### Bug Fix
+
+- **sast:** fetch sast custom policieis - [#6040](https://github.com/bridgecrewio/checkov/pull/6040)
+
+## [3.2.25](https://github.com/bridgecrewio/checkov/compare/3.2.24...3.2.25) - 2024-02-25
+
+### Feature
+
+- **terraform:** Added support for `try` function in evaluate_terraform - [#6043](https://github.com/bridgecrewio/checkov/pull/6043)
+
+## [3.2.24](https://github.com/bridgecrewio/checkov/compare/3.2.23...3.2.24) - 2024-02-22
+
+### Feature
+
+- **cloudformation:** add CFN policies for MSK - [#6021](https://github.com/bridgecrewio/checkov/pull/6021)
+
+## [3.2.23](https://github.com/bridgecrewio/checkov/compare/3.2.22...3.2.23) - 2024-02-21
+
+### Bug Fix
+
+- **terraform:** support vertex reference based on foreach key - [#6039](https://github.com/bridgecrewio/checkov/pull/6039)
+
+## [3.2.22](https://github.com/bridgecrewio/checkov/compare/3.2.21...3.2.22) - 2024-02-18
+
+### Bug Fix
+
+- **terraform:** CKV_AWS_308 - checked if caching was enabled and only then check for encryption of cache - [#6034](https://github.com/bridgecrewio/checkov/pull/6034)
+
+## [3.2.21](https://github.com/bridgecrewio/checkov/compare/3.2.20...3.2.21) - 2024-02-14
+
+### Bug Fix
+
+- **sast:** fix cdk checks path - [#6029](https://github.com/bridgecrewio/checkov/pull/6029)
+
+## [3.2.20](https://github.com/bridgecrewio/checkov/compare/3.2.19...3.2.20) - 2024-02-11
+
+### Bug Fix
+
+- **graph:** remove SCA runner v1 - re-enable - [#6024](https://github.com/bridgecrewio/checkov/pull/6024)
+
+## [3.2.19](https://github.com/bridgecrewio/checkov/compare/3.2.17...3.2.19) - 2024-02-08
+
+### Feature
+
+- **general:** Implement authentication retry mechanism  - [#6022](https://github.com/bridgecrewio/checkov/pull/6022)
+- **sast:** add danger rule - [#6012](https://github.com/bridgecrewio/checkov/pull/6012)
+
+## [3.2.17](https://github.com/bridgecrewio/checkov/compare/3.2.12...3.2.17) - 2024-02-07
+
+### Bug Fix
+
+- **general:** downgrade botocore dependency - [#6016](https://github.com/bridgecrewio/checkov/pull/6016)
+- **graph:** remove SCA runner v1 - [#6005](https://github.com/bridgecrewio/checkov/pull/6005)
+- **terraform:** Deleted deprecated check CKV_GCP_19 - [#6010](https://github.com/bridgecrewio/checkov/pull/6010)
+
+## [3.2.12](https://github.com/bridgecrewio/checkov/compare/3.2.8...3.2.12) - 2024-02-06
+
+### Bug Fix
+
+- **general:** downgrade boto3 - [#6011](https://github.com/bridgecrewio/checkov/pull/6011)
+- **terraform:** fix check CKV2_AZURE_10 - [#6009](https://github.com/bridgecrewio/checkov/pull/6009)
+
+## [3.2.8](https://github.com/bridgecrewio/checkov/compare/3.2.7...3.2.8) - 2024-02-05
+
+### Feature
+
+- **secrets:** bump bc-detect-secrets to version 1.5.4 - [#5998](https://github.com/bridgecrewio/checkov/pull/5998)
+
+## [3.2.7](https://github.com/bridgecrewio/checkov/compare/3.2.3...3.2.7) - 2024-02-04
+
+### Feature
+
+- **azure:** create arm check StorageAccountMinimumTlsVersion CKV_AZURE_236 - [#5986](https://github.com/bridgecrewio/checkov/pull/5986)
+- **sast:** add dataflow to output - [#5987](https://github.com/bridgecrewio/checkov/pull/5987)
+
+### Bug Fix
+
+- **terraform:** Correctly relace foreach_value inside _update_attributes for complex cases - [#5994](https://github.com/bridgecrewio/checkov/pull/5994)
+
+## [3.2.3](https://github.com/bridgecrewio/checkov/compare/3.2.2...3.2.3) - 2024-01-31
+
+### Bug Fix
+
+- **terraform:** find explicit lockout fail actions for s3 - [#5943](https://github.com/bridgecrewio/checkov/pull/5943)
+
+## [3.2.2](https://github.com/bridgecrewio/checkov/compare/3.2.1...3.2.2) - 2024-01-30
+
+### Feature
+
+- **sca:** persist support logs for sub processes - [#5988](https://github.com/bridgecrewio/checkov/pull/5988)
+
+## [3.2.1](https://github.com/bridgecrewio/checkov/compare/3.2.0...3.2.1) - 2024-01-29
+
+### Bug Fix
+
+- **sast:** summarize errors - [#5977](https://github.com/bridgecrewio/checkov/pull/5977)
+
+## [3.2.0](https://github.com/bridgecrewio/checkov/compare/3.1.70...3.2.0) - 2024-01-28
+
+### Bug Fix
+
+- **terraform:** and cdk/cloudformation: inconsistent naming of AWS resources in checks - [#5966](https://github.com/bridgecrewio/checkov/pull/5966)
+
+### Platform
+
+- **general:** remove igraph - [#5781](https://github.com/bridgecrewio/checkov/pull/5781)
+
+## [3.1.70](https://github.com/bridgecrewio/checkov/compare/3.1.69...3.1.70) - 2024-01-24
+
+### Bug Fix
+
+- **terraform:** Manually fixed test for loading terraform registry to be with commit hash instead of version tag - [#5971](https://github.com/bridgecrewio/checkov/pull/5971)
+
+## [3.1.69](https://github.com/bridgecrewio/checkov/compare/3.1.67...3.1.69) - 2024-01-22
+
+### Bug Fix
+
+- **sast:** replaced TBD with owasp and removed "sast engine" - [#5959](https://github.com/bridgecrewio/checkov/pull/5959)
+- **terraform:** External module test - [#5963](https://github.com/bridgecrewio/checkov/pull/5963)
+
+## [3.1.67](https://github.com/bridgecrewio/checkov/compare/3.1.66...3.1.67) - 2024-01-18
+
+### Feature
+
+- **sast:** Add policies to executable - [#5955](https://github.com/bridgecrewio/checkov/pull/5955)
+
+## [3.1.66](https://github.com/bridgecrewio/checkov/compare/3.1.63...3.1.66) - 2024-01-17
+
+### Bug Fix
+
+- **sast:** change the path for taint mode match - [#5953](https://github.com/bridgecrewio/checkov/pull/5953)
+- **sast:** fix report with only reachability - [#5951](https://github.com/bridgecrewio/checkov/pull/5951)
+
+### Platform
+
+- **general:** Change SAST enforcement rule to weaknesses - [#5950](https://github.com/bridgecrewio/checkov/pull/5950)
+- **general:** handle weaknesses rename - [#5954](https://github.com/bridgecrewio/checkov/pull/5954)
+
+## [3.1.63](https://github.com/bridgecrewio/checkov/compare/3.1.61...3.1.63) - 2024-01-16
+
+### Bug Fix
+
+- **sast:** Fix serialize for sast report with taint mode - [#5949](https://github.com/bridgecrewio/checkov/pull/5949)
+
+## [3.1.61](https://github.com/bridgecrewio/checkov/compare/3.1.60...3.1.61) - 2024-01-15
+
+### Bug Fix
+
+- **general:** allow colorama version >=0.4.3,<0.5.0 in setup - [#5944](https://github.com/bridgecrewio/checkov/pull/5944)
+
+## [3.1.60](https://github.com/bridgecrewio/checkov/compare/3.1.57...3.1.60) - 2024-01-14
+
+### Bug Fix
+
+- **sast:** fix relative paths in sast cdk reports - [#5932](https://github.com/bridgecrewio/checkov/pull/5932)
+- **sast:** fix sast cdk code location paths - [#5938](https://github.com/bridgecrewio/checkov/pull/5938)
+- **terraform:** CKV_GCP_79  Upgrade CloudSQL SQLSERVER major version to 2022 - [#5936](https://github.com/bridgecrewio/checkov/pull/5936)
+- **terraform:** Improved bad performance pathlib check - [#5939](https://github.com/bridgecrewio/checkov/pull/5939)
+
+## [3.1.57](https://github.com/bridgecrewio/checkov/compare/3.1.55...3.1.57) - 2024-01-10
+
+### Bug Fix
+
+- **general:** fix multiprocess abilities - [#5887](https://github.com/bridgecrewio/checkov/pull/5887)
+- **general:** fixing hidden dependencies & state breaking tests  - [#5911](https://github.com/bridgecrewio/checkov/pull/5911)
+- **general:** Reenabling cdk-integration-tests - [#5922](https://github.com/bridgecrewio/checkov/pull/5922)
+
+## [3.1.55](https://github.com/bridgecrewio/checkov/compare/3.1.54...3.1.55) - 2024-01-08
+
+### Bug Fix
+
+- **terraform:** Support "pass_prefix_list" for SG ingress rules correctly - [#5918](https://github.com/bridgecrewio/checkov/pull/5918)
+
+## [3.1.54](https://github.com/bridgecrewio/checkov/compare/3.1.53...3.1.54) - 2024-01-05
+
+### Bug Fix
+
+- **general:** temporary disable runtime config - [#5921](https://github.com/bridgecrewio/checkov/pull/5921)
+
+## [3.1.53](https://github.com/bridgecrewio/checkov/compare/3.1.51...3.1.53) - 2024-01-04
+
+### Feature
+
+- **terraform:** node pools should be configured separately from a cl… - [#5916](https://github.com/bridgecrewio/checkov/pull/5916)
+
+### Bug Fix
+
+- **terraform:** handle no action in aws_dlm_lifecycle_policy - [#5905](https://github.com/bridgecrewio/checkov/pull/5905)
+
+## [3.1.51](https://github.com/bridgecrewio/checkov/compare/3.1.50...3.1.51) - 2024-01-03
+
+- no noteworthy changes
+
+## [3.1.50](https://github.com/bridgecrewio/checkov/compare/3.1.46...3.1.50) - 2023-12-31
+
+### Feature
+
+- **sast:** Add sast metadata to sast report - [#5910](https://github.com/bridgecrewio/checkov/pull/5910)
+- **terraform:** Add various vertex related policies - [#5898](https://github.com/bridgecrewio/checkov/pull/5898)
+
+### Bug Fix
+
+- **sast:** persist empty sast report for cdk - [#5909](https://github.com/bridgecrewio/checkov/pull/5909)
+- **terraform:** Fix typo Customer Managed Key - [#5900](https://github.com/bridgecrewio/checkov/pull/5900)
+
+## [3.1.46](https://github.com/bridgecrewio/checkov/compare/3.1.44...3.1.46) - 2023-12-28
+
+### Feature
+
+- **terraform:** CLI output - add indication if repository was discovered In a running environment - [#5908](https://github.com/bridgecrewio/checkov/pull/5908)
+
+### Bug Fix
+
+- **sast:** add missing field in MatchMetadata - [#5907](https://github.com/bridgecrewio/checkov/pull/5907)
+
+## [3.1.44](https://github.com/bridgecrewio/checkov/compare/3.1.43...3.1.44) - 2023-12-26
+
+### Feature
+
+- **sast:** add dataflow to checkov report from sast - [#5892](https://github.com/bridgecrewio/checkov/pull/5892)
+
+## [3.1.43](https://github.com/bridgecrewio/checkov/compare/3.1.42...3.1.43) - 2023-12-24
+
+### Feature
+
+- **terraform:** add CKV2_AZURE_47, ensure storage account is configured without blob anonymous access - [#5888](https://github.com/bridgecrewio/checkov/pull/5888)
+- **terraform:** Ensure SES Configuration Set enforces TLS usage - [#5891](https://github.com/bridgecrewio/checkov/pull/5891)
+
+### Bug Fix
+
+- **terraform:** pod security policy removed in GKE 1.25 - [#5675](https://github.com/bridgecrewio/checkov/pull/5675)
+
+## [3.1.42](https://github.com/bridgecrewio/checkov/compare/3.1.40...3.1.42) - 2023-12-22
+
+### Feature
+
+- **sast:** Split sast and cdk reports - [#5889](https://github.com/bridgecrewio/checkov/pull/5889)
+
+### Bug Fix
+
+- **terraform:** Fix CKV_Azure_234 - [#5886](https://github.com/bridgecrewio/checkov/pull/5886)
+
+## [3.1.40](https://github.com/bridgecrewio/checkov/compare/3.1.38...3.1.40) - 2023-12-19
+
+### Feature
+
+- **terraform_plan:** Add PY graph checks for tf plan - [#5875](https://github.com/bridgecrewio/checkov/pull/5875)
+
+### Bug Fix
+
+- **terraform:** Remove CKV_AWS_188 as dupe - [#5884](https://github.com/bridgecrewio/checkov/pull/5884)
 
 ## [3.1.38](https://github.com/bridgecrewio/checkov/compare/3.1.34...3.1.38) - 2023-12-13
 
