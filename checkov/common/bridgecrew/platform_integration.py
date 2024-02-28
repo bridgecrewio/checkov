@@ -120,7 +120,7 @@ class BcPlatformIntegration:
         self.prisma_api_url = normalize_prisma_url(os.getenv('PRISMA_API_URL', 'https://api0.prismacloud.io'))
         self.prisma_policies_url: str | None = None
         self.prisma_policy_filters_url: str | None = None
-        self.custom_auth_headers: dict[str, str] | None = None
+        self.custom_auth_headers: dict[str, str] = {}
         self.setup_api_urls()
         self.customer_run_config_response = None
         self.runtime_run_config_response = None
