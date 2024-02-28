@@ -187,7 +187,7 @@ def create_report_cve_record(
     if severity == "moderate":
         severity = "medium"
     if severity.upper() not in Severities:
-        logging.error(f"unknown severity - severity '{severity}' is unknown. using the DEFAULT_SEVERITY: '{DEFAULT_SEVERITY}' instead", exc_info=True)
+        logging.warning(f"unknown severity - severity '{severity}' is unknown. using the DEFAULT_SEVERITY: '{DEFAULT_SEVERITY}' instead")
         severity = DEFAULT_SEVERITY
 
     description = vulnerability_details.get("description")
