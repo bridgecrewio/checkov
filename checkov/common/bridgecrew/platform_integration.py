@@ -1302,7 +1302,7 @@ class BcPlatformIntegration:
         # matches xyz_org/repo or org/repo (where xyz is the BC org name and the CLI repo prefix from the platform)
         return re.match(re.compile(f'^(\\w+_)?{self.repo_id}$'), repo_name) is not None
 
-    def get_default_headers(self, request_type: str) -> dict[str, Any]: # todo find usage
+    def get_default_headers(self, request_type: str) -> dict[str, Any]:
         if not self.bc_source:
             logging.warning("Source was not set")
             return {}
