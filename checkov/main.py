@@ -737,6 +737,10 @@ class Checkov:
             git_getter = GitGetter(url=self.config.external_checks_git[0])
             external_checks_dir = [git_getter.get()]
             atexit.register(shutil.rmtree, str(Path(external_checks_dir[0]).parent))
+        if bc_integration.sast_custom_policies:
+            if not external_checks_dir:
+                external_checks_dir = []
+            external_checks_dir.append(bc_integration.sast_custom_policies)
         return external_checks_dir
 
     def upload_results(

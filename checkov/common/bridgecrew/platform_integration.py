@@ -147,6 +147,7 @@ class BcPlatformIntegration:
         self.daemon_process = False  # set to 'True' when running in multiprocessing 'spawn' mode
         self.scan_dir: List[str] = []
         self.scan_file: List[str] = []
+        self.sast_custom_policies: str = ''
 
     def init_instance(self, platform_integration_data: dict[str, Any]) -> None:
         """This is mainly used for recreating the instance without interacting with the platform again"""

@@ -4,6 +4,7 @@ import json
 import logging
 import re
 from collections import defaultdict
+import tempfile
 from typing import TYPE_CHECKING, Any, List
 
 from checkov.common.bridgecrew.integration_features.base_integration_feature import BaseIntegrationFeature
@@ -21,6 +22,7 @@ if TYPE_CHECKING:
 
 # service-provider::service-name::data-type-name
 CFN_RESOURCE_TYPE_IDENTIFIER = re.compile(r"^[a-zA-Z0-9]+::[a-zA-Z0-9]+::[a-zA-Z0-9]+$")
+SAST_CATEGORY = 'Sast'
 
 
 class CustomPoliciesIntegration(BaseIntegrationFeature):
@@ -49,9 +51,16 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
                 return
 
             policies = self.bc_integration.customer_run_config_response.get('customPolicies')
+            sast_policies_dir = tempfile.mkdtemp()
+            self.bc_integration.sast_custom_policies = sast_policies_dir
             for policy in policies:
                 try:
                     logging.debug(f"Loading policy id: {policy.get('id')}")
+                    if policy.get('category') == SAST_CATEGORY:
+                        with open(f"{sast_policies_dir}/{policy.get('id')}.yaml", 'a') as f:
+                            f.write(policy.get('code'))
+                        continue
+
                     converted_check = self._convert_raw_check(policy)
                     source_incident_id = policy.get('sourceIncidentId')
                     if source_incident_id:
