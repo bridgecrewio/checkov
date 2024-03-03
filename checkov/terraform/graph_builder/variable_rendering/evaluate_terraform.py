@@ -192,12 +192,14 @@ def strip_double_quotes(input_str: str) -> str:
         input_str = input_str[1:-1]
     return input_str
 
+
 def get_input_inside_interpolation(input_str: str) -> str:
     match = re.search(r'\${(.*?)}', input_str)
     if match:
         return match.group(1)
     else:
         return input_str
+
 
 def evaluate_conditional_expression(input_str: str) -> str:
     input_str = get_input_inside_interpolation(input_str)
