@@ -30,8 +30,8 @@ delete_reports () {
   rm checkov_checks_list.txt
 }
 
-echo "calling set_env_vars"
-set_env_vars
+#echo "calling set_env_vars"
+#set_env_vars
 
 if [[ -z "BC_API_KEY" ]]; then
    echo "BC_API_KEY is missing."
@@ -44,7 +44,7 @@ if [[ -z "PRISMA_API_URL" ]]; then
    exit 1
 fi
 
-cd ..
+#cd ..
 
 echo $VIRTUAL_ENV
 if [ ! -z "$VIRTUAL_ENV" ]; then
