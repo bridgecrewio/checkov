@@ -120,6 +120,7 @@ class BcPlatformIntegration:
         self.prisma_api_url = normalize_prisma_url(os.getenv('PRISMA_API_URL', 'https://api0.prismacloud.io'))
         self.prisma_policies_url: str | None = None
         self.prisma_policy_filters_url: str | None = None
+        self.custom_auth_headers: dict[str, str] = {}
         self.setup_api_urls()
         self.customer_run_config_response = None
         self.runtime_run_config_response = None
@@ -163,6 +164,7 @@ class BcPlatformIntegration:
         self.credentials = platform_integration_data["credentials"]
         self.platform_integration_configured = platform_integration_data["platform_integration_configured"]
         self.prisma_api_url = platform_integration_data["prisma_api_url"]
+        self.custom_auth_headers = platform_integration_data["custom_auth_headers"]
         self.repo_branch = platform_integration_data["repo_branch"]
         self.repo_id = platform_integration_data["repo_id"]
         self.repo_path = platform_integration_data["repo_path"]
@@ -187,6 +189,7 @@ class BcPlatformIntegration:
             "credentials": self.credentials,
             "platform_integration_configured": self.platform_integration_configured,
             "prisma_api_url": self.prisma_api_url,
+            "custom_auth_headers": self.custom_auth_headers,
             "repo_branch": self.repo_branch,
             "repo_id": self.repo_id,
             "repo_path": self.repo_path,
@@ -479,7 +482,8 @@ class BcPlatformIntegration:
         request = self.http.request("POST", self.integrations_api_url,  # type:ignore[union-attr]
                                     body=json.dumps({"repoId": repo_id, "support": self.support_flag_enabled}),
                                     headers=merge_dicts({"Authorization": token, "Content-Type": "application/json"},
-                                                        get_user_agent_header()))
+                                                        get_user_agent_header(),
+                                                        self.custom_auth_headers))
         logging.debug(f'Request ID: {request.headers.get("x-amzn-requestid")}')
         logging.debug(f'Trace ID: {request.headers.get("x-amzn-trace-id")}')
         if request.status == 403:
@@ -834,7 +838,8 @@ class BcPlatformIntegration:
                                                                  "Content-Type": "application/json",
                                                                  'x-api-client': self.bc_source.name,
                                                                  'x-api-checkov-version': checkov_version},
-                                                                get_user_agent_header()
+                                                                get_user_agent_header(),
+                                                                self.custom_auth_headers
                                                                 ))
                 response = json.loads(request.data.decode("utf8"))
                 logging.debug(f'Request ID: {request.headers.get("x-amzn-requestid")}')
@@ -939,7 +944,8 @@ class BcPlatformIntegration:
         try:
             token = self.get_auth_token()
             headers = merge_dicts(get_auth_header(token),
-                                  get_default_get_headers(self.bc_source, self.bc_source_version))
+                                  get_default_get_headers(self.bc_source, self.bc_source_version),
+                                  self.custom_auth_headers)
 
             self.setup_http_manager()
             if not self.http:
@@ -989,7 +995,8 @@ class BcPlatformIntegration:
         try:
             token = self.get_auth_token()
             headers = merge_dicts(get_auth_header(token),
-                                  get_default_get_headers(self.bc_source, self.bc_source_version))
+                                  get_default_get_headers(self.bc_source, self.bc_source_version),
+                                  self.custom_auth_headers)
 
             self.setup_http_manager()
             if not self.http:
@@ -1030,7 +1037,8 @@ class BcPlatformIntegration:
 
             token = self.get_auth_token()
             headers = merge_dicts(get_auth_header(token),
-                                  get_default_get_headers(self.bc_source, self.bc_source_version))
+                                  get_default_get_headers(self.bc_source, self.bc_source_version),
+                                  self.custom_auth_headers)
 
             self.setup_http_manager()
             if not self.http:
@@ -1075,7 +1083,7 @@ class BcPlatformIntegration:
 
         try:
             token = self.get_auth_token()
-            headers = merge_dicts(get_prisma_auth_header(token), get_prisma_get_headers())
+            headers = merge_dicts(get_prisma_auth_header(token), get_prisma_get_headers(), self.custom_auth_headers)
 
             self.setup_http_manager()
             if not self.http:
@@ -1107,7 +1115,7 @@ class BcPlatformIntegration:
         request = None
         try:
             token = self.get_auth_token()
-            headers = merge_dicts(get_prisma_auth_header(token), get_prisma_get_headers())
+            headers = merge_dicts(get_prisma_auth_header(token), get_prisma_get_headers(), self.custom_auth_headers)
 
             self.setup_http_manager()
             if not self.http:
@@ -1301,10 +1309,12 @@ class BcPlatformIntegration:
 
         if request_type.upper() == "GET":
             return merge_dicts(get_default_get_headers(self.bc_source, self.bc_source_version),
-                               {"Authorization": self.get_auth_token()})
+                               {"Authorization": self.get_auth_token()},
+                               self.custom_auth_headers)
         elif request_type.upper() == "POST":
             return merge_dicts(get_default_post_headers(self.bc_source, self.bc_source_version),
-                               {"Authorization": self.get_auth_token()})
+                               {"Authorization": self.get_auth_token()},
+                               self.custom_auth_headers)
 
         logging.info(f"Unsupported request {request_type}")
         return {}
@@ -1316,7 +1326,8 @@ class BcPlatformIntegration:
         url_saml_config = f"{bc_integration.prisma_api_url}/saml/config"
         token = self.get_auth_token()
         headers = merge_dicts(get_auth_header(token),
-                              get_default_get_headers(self.bc_source, self.bc_source_version))
+                              get_default_get_headers(self.bc_source, self.bc_source_version),
+                              bc_integration.custom_auth_headers)
 
         request = self.http.request("GET", url_saml_config, headers=headers, timeout=10)  # type:ignore[no-untyped-call]
         if request.status >= 300:
