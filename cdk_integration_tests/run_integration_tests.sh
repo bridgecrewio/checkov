@@ -44,7 +44,7 @@ if [[ -z "PRISMA_API_URL" ]]; then
    exit 1
 fi
 
-#cd ..
+cd ..
 
 echo $VIRTUAL_ENV
 if [ ! -z "$VIRTUAL_ENV" ]; then
