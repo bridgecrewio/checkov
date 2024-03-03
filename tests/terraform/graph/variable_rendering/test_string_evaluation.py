@@ -5,6 +5,7 @@ from datetime import datetime
 import pytest
 
 from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform import evaluate_terraform, \
+    get_input_inside_interpolation, \
     replace_string_value, \
     remove_interpolation, _find_new_value_for_interpolation
 
@@ -281,6 +282,12 @@ class TestTerraformEvaluation(TestCase):
         original_str = '${merge(local.common_tags,local.common_data_tags,{\'Name\':\'Bob-${local.static1}-${local.static2}\'})}'
         replaced = remove_interpolation(original_str)
         expected = 'merge(local.common_tags,local.common_data_tags,{\'Name\':\'Bob-local.static1-local.static2\'})'
+        self.assertEqual(expected, replaced)
+
+    def test_get_input_inside_interpolation(self):
+        original_str = '[\'${blocked == "allowed" ? True : False}\']'
+        replaced = get_input_inside_interpolation(original_str)
+        expected = 'blocked == "allowed" ? True : False'
         self.assertEqual(expected, replaced)
 
     def test_jsonencode(self):

@@ -192,12 +192,15 @@ def strip_double_quotes(input_str: str) -> str:
         input_str = input_str[1:-1]
     return input_str
 
+def get_input_inside_interpolation(input_str: str) -> str:
+    match = re.search(r'\${(.*?)}', input_str)
+    if match:
+        return match.group(1)
+    else:
+        return input_str
 
 def evaluate_conditional_expression(input_str: str) -> str:
-    if input_str.startswith("${") and input_str.endswith("}"):
-        # just remove the needed char length of the interpolation marks
-        input_str = input_str[2:-1]
-
+    input_str = get_input_inside_interpolation(input_str)
     condition = find_conditional_expression_groups(input_str)
     while condition:
         groups, start, end = condition
