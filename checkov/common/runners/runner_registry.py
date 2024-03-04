@@ -149,7 +149,6 @@ class RunnerRegistry:
             # then raise a clear error
             # if some frameworks are disabled and the user used --framework, log a warning so they see it
             # if some frameworks are disabled and the user did not use --framework, then log at a lower level so that we have it for troubleshooting
-            frameworks_specified = self.runner_filter.framework and 'all' not in self.runner_filter.framework
             if not valid_runners:
                 runners_categories = os.linesep.join([f'{runner.check_type}: {self.licensing_integration.get_subscription_for_runner(runner.check_type).name}' for runner in invalid_runners])
                 error_message = f'All the frameworks are disabled because they are not enabled in the platform. ' \
@@ -157,9 +156,11 @@ class RunnerRegistry:
                 logging.error(error_message)
                 raise ModuleNotEnabledError(error_message)
             elif invalid_runners:
-                level = logging.WARNING if frameworks_specified else logging.INFO
                 for runner in invalid_runners:
-                    logging.log(level, f'The framework "{runner.check_type}" is part of the "{self.licensing_integration.get_subscription_for_runner(runner.check_type).name}" module, which is not enabled in the platform')
+                    level = logging.INFO
+                    if runner.check_type in self.runner_filter.framework_flag_values:
+                        level = logging.WARNING
+                    logging.log(level,f'The framework "{runner.check_type}" is part of the "{self.licensing_integration.get_subscription_for_runner(runner.check_type).name}" module, which is not enabled in the platform')
 
             valid_runners = self._merge_runners(valid_runners)
 
