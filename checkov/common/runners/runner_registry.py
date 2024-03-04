@@ -160,7 +160,7 @@ class RunnerRegistry:
                     level = logging.INFO
                     if runner.check_type in self.runner_filter.framework_flag_values:
                         level = logging.WARNING
-                    logging.log(level,f'The framework "{runner.check_type}" is part of the "{self.licensing_integration.get_subscription_for_runner(runner.check_type).name}" module, which is not enabled in the platform')
+                    logging.log(level, f'The framework "{runner.check_type}" is part of the "{self.licensing_integration.get_subscription_for_runner(runner.check_type).name}" module, which is not enabled in the platform')
 
             valid_runners = self._merge_runners(valid_runners)
 
