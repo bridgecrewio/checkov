@@ -108,7 +108,11 @@ class RunnerFilter(object):
                 self.skip_checks.append(val)
 
         self.include_all_checkov_policies = include_all_checkov_policies
-        self.framework_flag_values = [] if framework and "all" in framework else framework
+        if not framework or "all" in framework:
+            self.framework_flag_values = []
+        else:
+            self.framework_flag_values = framework
+
         self.framework: "Iterable[str]" = framework if framework else ["all"]
         if skip_framework:
             if "all" in self.framework:
