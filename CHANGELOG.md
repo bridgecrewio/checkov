@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.28...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.31...HEAD)
+
+## [3.2.31](https://github.com/bridgecrewio/checkov/compare/3.2.28...3.2.31) - 2024-03-04
+
+### Bug Fix
+
+- **terraform:** better handling of interpolation rendering in conditional expressions - [#6062](https://github.com/bridgecrewio/checkov/pull/6062)
+- **terraform:** Changed a couple of checks from negative to positive check, behavior is the same - [#6063](https://github.com/bridgecrewio/checkov/pull/6063)
 
 ## [3.2.28](https://github.com/bridgecrewio/checkov/compare/3.2.26...3.2.28) - 2024-02-28
 
