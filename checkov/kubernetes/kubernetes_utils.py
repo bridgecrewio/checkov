@@ -235,6 +235,20 @@ def get_resource_id(resource: dict[str, Any] | None) -> str | None:
         return build_resource_id_from_labels(resource_type, namespace, labels, resource)
     return None
 
+def get_resource_tags(resource: dict[str, Any] | None) -> dict[str, str] | None:
+    if not resource:
+        return None
+
+    metadata = resource.get("metadata") or {}
+    labels = metadata.get("labels")
+
+    ## Delete __startline__ and __endline__ from the attribute
+
+    remove_metadata_from_attribute(labels)
+    
+    if labels:
+        return labels
+    return None
 
 def build_resource_id_from_labels(resource_type: str,
                                   namespace: str,
