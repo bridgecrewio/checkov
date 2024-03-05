@@ -24,6 +24,19 @@ class TestTerraformEvaluation(TestCase):
         expected = 'smaller'
         self.assertEqual(expected, evaluate_terraform(input_str).strip())
 
+    def test_conditional_expression(self):
+        input_str = '"[\'${blocked == "allowed" ? True : False}\']"'
+        expected = False
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
+        input_str = '${blocked == "allowed" ? True : False}'
+        expected = False
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
+        input_str = 'blocked == "allowed" ? True : False'
+        expected = False
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
     def test_format(self):
         input_str = '"format("Hello, %s!", "Ander")"'
         expected = 'Hello, Ander!'

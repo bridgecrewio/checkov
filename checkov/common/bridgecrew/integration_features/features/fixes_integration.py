@@ -111,7 +111,8 @@ class FixesIntegration(BaseIntegrationFeature):
 
         headers = merge_dicts(
             get_default_post_headers(self.bc_integration.bc_source, self.bc_integration.bc_source_version),
-            {"Authorization": self.bc_integration.get_auth_token()}
+            {"Authorization": self.bc_integration.get_auth_token()},
+            self.bc_integration.custom_auth_headers
         )
 
         if not self.bc_integration.http:
