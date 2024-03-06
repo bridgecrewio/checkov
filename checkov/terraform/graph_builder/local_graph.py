@@ -59,8 +59,9 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self.enable_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_FOREACH_HANDLING', 'True'))
         self.enable_modules_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_MODULES_FOREACH_HANDLING', 'True'))
         self.foreach_blocks: Dict[str, List[int]] = {BlockType.RESOURCE: [], BlockType.MODULE: []}
-        # Important for foreach performance, see issue TODO -add -issue
-        self._vertex_path_to_realpath_cache = {}
+
+        # Important for foreach performance, see issue https://github.com/bridgecrewio/checkov/issues/6068
+        self._vertex_path_to_realpath_cache: Dict[str, str] = {}
 
     def build_graph(self, render_variables: bool) -> None:
         self._create_vertices()
