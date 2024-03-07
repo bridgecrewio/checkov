@@ -895,8 +895,6 @@ class BcPlatformIntegration:
         file_object_key = os.path.join(self.repo_path, s3_file_key).replace("\\", "/")
         while curr_try < tries:
             try:
-                if full_file_path == './helm/values.yaml':
-                    raise Exception('file upload failed muahahaha')
                 self.s3_client.upload_file(full_file_path, self.bucket, file_object_key)
                 return
             except ClientError as e:
