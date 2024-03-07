@@ -895,6 +895,8 @@ class BcPlatformIntegration:
         file_object_key = os.path.join(self.repo_path, s3_file_key).replace("\\", "/")
         while curr_try < tries:
             try:
+                if full_file_path == './helm/values.yaml':
+                    raise Exception('file upload failed muahahaha')
                 self.s3_client.upload_file(full_file_path, self.bucket, file_object_key)
                 return
             except ClientError as e:
@@ -902,11 +904,12 @@ class BcPlatformIntegration:
                     sleep(SLEEP_SECONDS)
                     curr_try += 1
                 else:
-                    logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}",
-                                  exc_info=True)
+                    logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}", exc_info=True)
+                    logging.debug(f"file size of {full_file_path} is {os.stat(full_file_path).st_size} bytes")
                     raise
             except Exception:
                 logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}", exc_info=True)
+                logging.debug(f"file size of {full_file_path} is {os.stat(full_file_path).st_size} bytes")
                 raise
         if curr_try == tries:
             logging.error(
