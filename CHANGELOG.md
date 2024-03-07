@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.31...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.32...HEAD)
+
+## [3.2.32](https://github.com/bridgecrewio/checkov/compare/3.2.31...3.2.32) - 2024-03-06
+
+### Bug Fix
+
+- **sast:** do not log warning when using skip framework - [#6066](https://github.com/bridgecrewio/checkov/pull/6066)
 
 ## [3.2.31](https://github.com/bridgecrewio/checkov/compare/3.2.28...3.2.31) - 2024-03-04
 
