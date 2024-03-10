@@ -626,9 +626,9 @@ class BcPlatformIntegration:
     def persist_sast_scan_results(self, reports: List[Report]) -> None:
         sast_scan_reports = {}
         for report in reports:
-            if not report.check_type.startswith('sast'):
+            if not report.check_type.lower().startswith(CheckType.SAST):
                 continue
-            if not report.sast_report:  # type: ignore
+            if not hasattr(report, 'sast_report') or not report.sast_report:  # type: ignore
                 continue
             for _, match_by_check in report.sast_report.rule_match.items():  # type: ignore
                 for _, match in match_by_check.items():
