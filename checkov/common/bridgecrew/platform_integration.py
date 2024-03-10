@@ -628,13 +628,13 @@ class BcPlatformIntegration:
         for report in reports:
             if not report.check_type.lower().startswith(CheckType.SAST):
                 continue
-            if not hasattr(report, 'sast_report') or not report.sast_report:  # type: ignore
+            if not hasattr(report, 'sast_report') or not report.sast_report:
                 continue
-            for _, match_by_check in report.sast_report.rule_match.items():  # type: ignore
+            for _, match_by_check in report.sast_report.rule_match.items():
                 for _, match in match_by_check.items():
                     for m in match.matches:
                         self.adjust_sast_match_location_path(m)
-                sast_scan_reports[report.check_type] = report.sast_report.model_dump(mode='json')  # type: ignore
+                sast_scan_reports[report.check_type] = report.sast_report.model_dump(mode='json')
             if self.on_prem:
                 BcPlatformIntegration._delete_code_block_from_sast_report(sast_scan_reports)
 
