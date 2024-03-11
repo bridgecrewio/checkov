@@ -30,7 +30,7 @@ class BaseResourceValueCheck(BaseResourceCheck):
             name=name,
             id=id,
             categories=categories,
-            supported_entities=supported_resources,
+            supported_resources=supported_resources,
             guideline=guideline,
         )
         self.missing_block_result = missing_block_result
