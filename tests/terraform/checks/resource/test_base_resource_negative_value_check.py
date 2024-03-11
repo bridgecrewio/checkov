@@ -15,7 +15,7 @@ class TestAnyCheck(BaseResourceNegativeValueCheck):
         id = "test/TestAnyNegativeCheck"
         categories = []
         supported_resources = ["doesnt_matter"]
-        guideline = "https://docs.prismacloud.io/en/enterprise-edition/policy-reference/test-policies/test-any-negative-check"
+        guideline = "https://docs.prismacloud.io/policy-reference/test-policies/test-any-negative-check"
         super().__init__(
             name=name,
             id=id,
@@ -40,7 +40,7 @@ class TestStaticCheck(BaseResourceNegativeValueCheck):
         id = "test/TestStaticNegativeCheck"
         categories = []
         supported_resources = ["doesnt_matter"]
-        guideline = "https://docs.prismacloud.io/en/enterprise-edition/policy-reference/test-policies/test-static-negative-check"
+        guideline = "https://docs.prismacloud.io/policy-reference/test-policies/test-static-negative-check"
         super().__init__(
             name=name,
             id=id,

@@ -13,7 +13,7 @@ class TestDynamicCheck(BaseResourceValueCheck):
         id = "test/TestDynamicCheck"
         categories = []
         supported_resources = ["doesnt_matter"]
-        guideline = "https://docs.prismacloud.io/en/enterprise-edition/policy-reference/test-policies/test-dynamic-check"
+        guideline = "https://docs.prismacloud.io/policy-reference/test-policies/test-dynamic-check"
         super().__init__(
             name=name,
             id=id,
@@ -37,7 +37,7 @@ class TestNestedDynamicCheck(BaseResourceValueCheck):
         id = "test/TestNestedDynamicCheck"
         categories = []
         supported_resources = ["doesnt_matter"]
-        guideline = "https://docs.prismacloud.io/en/enterprise-edition/policy-reference/test-policies/test-nested-dynamic-check"
+        guideline = "https://docs.prismacloud.io/policy-reference/test-policies/test-nested-dynamic-check"
         super().__init__(
             name=name,
             id=id,
@@ -62,7 +62,7 @@ class TestNestedMultipleDynamicCheckBlock1(BaseResourceValueCheck):
         id = "test/TestNestedMultipleDynamicCheckBlock1"
         categories = []
         supported_resources = ["doesnt_matter"]
-        guideline = "https://docs.prismacloud.io/en/enterprise-edition/policy-reference/test-policies/test-nested-multiple-dynamic-check-block-1"
+        guideline = "https://docs.prismacloud.io/policy-reference/test-policies/test-nested-multiple-dynamic-check-block-1"
         super().__init__(
             name=name,
             id=id,
@@ -86,7 +86,7 @@ class TestNestedMultipleDynamicCheckBlock2(BaseResourceValueCheck):
         id = "test/TestNestedMultipleDynamicCheckBlock2"
         categories = []
         supported_resources = ["doesnt_matter"]
-        guideline = "https://docs.prismacloud.io/en/enterprise-edition/policy-reference/test-policies/test-nested-multiple-dynamic-check-block-2"
+        guideline = "https://docs.prismacloud.io/policy-reference/test-policies/test-nested-multiple-dynamic-check-block-2"
         super().__init__(
             name=name,
             id=id,

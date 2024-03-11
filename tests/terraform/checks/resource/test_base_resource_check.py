@@ -13,7 +13,7 @@ class TestStaticCheck(BaseResourceCheck):
         id = "CKV_TEST_1"
         supported_resources = ["ckv_test"]
         categories = [CheckCategories.CONVENTION]
-        guideline = "https://docs.prismacloud.io/en/enterprise-edition/policy-reference/test-policies/test-resource-check"
+        guideline = "https://docs.prismacloud.io/policy-reference/test-policies/test-resource-check"
         super().__init__(
             name=name,
             id=id,

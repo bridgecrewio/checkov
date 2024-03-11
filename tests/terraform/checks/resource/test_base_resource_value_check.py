@@ -15,7 +15,7 @@ class TestAnyCheck(BaseResourceValueCheck):
         id = "test/TestAnyCheck"
         categories = []
         supported_resources = ["doesnt_matter"]
-        guideline = "https://docs.prismacloud.io/en/enterprise-edition/policy-reference/test-policies/test-any-check"
+        guideline = "https://docs.prismacloud.io/policy-reference/test-policies/test-any-check"
         super().__init__(
             name=name,
             id=id,
@@ -40,7 +40,7 @@ class TestStaticCheck(BaseResourceValueCheck):
         id = "test/TestStaticCheck"
         categories = []
         supported_resources = ["doesnt_matter"]
-        guideline = "https://docs.prismacloud.io/en/enterprise-edition/policy-reference/test-policies/test-static-check"
+        guideline = "https://docs.prismacloud.io/policy-reference/test-policies/test-static-check"
         super().__init__(
             name=name,
             id=id,
