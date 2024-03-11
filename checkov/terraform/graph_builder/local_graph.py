@@ -60,6 +60,9 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self.enable_modules_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_MODULES_FOREACH_HANDLING', 'True'))
         self.foreach_blocks: Dict[str, List[int]] = {BlockType.RESOURCE: [], BlockType.MODULE: []}
 
+        # Important for foreach performance, see issue https://github.com/bridgecrewio/checkov/issues/6068
+        self._vertex_path_to_realpath_cache: Dict[str, str] = {}
+
     def build_graph(self, render_variables: bool) -> None:
         self._create_vertices()
         logging.info(f"[TerraformLocalGraph] created {len(self.vertices)} vertices")
@@ -399,9 +402,16 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         vertex_index_with_longest_common_prefix = -1
         longest_common_prefix = ""
         vertices_with_longest_common_prefix = []
+        origin_real_path = os.path.realpath(origin_path)
         for vertex_index in relevant_vertices_indexes:
             vertex = self.vertices[vertex_index]
-            common_prefix = os.path.commonpath([os.path.realpath(vertex.path), os.path.realpath(origin_path)])
+            if vertex.path in self._vertex_path_to_realpath_cache:
+                # Using cache to make sure performance stays stable
+                vertex_realpath = self._vertex_path_to_realpath_cache[vertex.path]
+            else:
+                vertex_realpath = os.path.realpath(vertex.path)
+                self._vertex_path_to_realpath_cache[vertex.path] = vertex_realpath
+            common_prefix = os.path.commonpath([vertex_realpath, origin_real_path])
             if len(common_prefix) > len(longest_common_prefix):
                 vertex_index_with_longest_common_prefix = vertex_index
                 longest_common_prefix = common_prefix
