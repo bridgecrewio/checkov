@@ -1,7 +1,7 @@
 import logging
 from abc import abstractmethod
 from collections.abc import Iterable
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 import dpath
 import re
@@ -24,8 +24,15 @@ class BaseResourceValueCheck(BaseResourceCheck):
         categories: "Iterable[CheckCategories]",
         supported_resources: "Iterable[str]",
         missing_block_result: CheckResult = CheckResult.FAILED,
+        guideline: Optional[str] = None,
     ) -> None:
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_entities=supported_resources,
+            guideline=guideline,
+        )
         self.missing_block_result = missing_block_result
 
     @staticmethod
