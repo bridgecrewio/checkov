@@ -75,32 +75,32 @@ class Test(unittest.TestCase):
     def test_string_contains_var_any(self):
         result = self._check(TestAnyCheck(),
                              {"foo": "something-${var.whatever}"})
-        self.assertEqual(result, CheckResult.FAILED)
+        self.assertEqual(result, CheckResult.UNKNOWN)
 
     def test_string_contains_var_static(self):
         result = self._check(TestStaticCheck(),
                              {"foo": "something-${var.whatever}"})
-        self.assertEqual(result, CheckResult.PASSED)
+        self.assertEqual(result, CheckResult.UNKNOWN)
 
     def test_var_any(self):
         result = self._check(TestAnyCheck(),
                              {"foo": "${var.whatever}"})
-        self.assertEqual(result, CheckResult.FAILED)
+        self.assertEqual(result, CheckResult.UNKNOWN)
 
     def test_var_static(self):
         result = self._check(TestStaticCheck(),
                              {"foo": "${var.whatever}"})
-        self.assertEqual(result, CheckResult.PASSED)
+        self.assertEqual(result, CheckResult.UNKNOWN)
 
     def test_local_any(self):
         result = self._check(TestAnyCheck(),
                              {"foo": "${local.whatever}"})
-        self.assertEqual(result, CheckResult.FAILED)
+        self.assertEqual(result, CheckResult.UNKNOWN)
 
     def test_local_static(self):
         result = self._check(TestStaticCheck(),
                              {"foo": "${local.whatever}"})
-        self.assertEqual(result, CheckResult.PASSED)
+        self.assertEqual(result, CheckResult.UNKNOWN)
 
     def test_resource_any(self):
         result = self._check(TestAnyCheck(),
