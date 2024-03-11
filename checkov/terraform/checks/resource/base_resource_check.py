@@ -24,7 +24,7 @@ class BaseResourceCheck(BaseCheck):
             categories=categories,
             supported_entities=supported_resources,
             block_type="resource",
-            guideline=guideline
+            guideline=guideline,
         )
         self.supported_resources = supported_resources
         resource_registry.register(self)
