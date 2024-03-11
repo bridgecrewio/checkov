@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.33...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.34...HEAD)
+
+## [3.2.34](https://github.com/bridgecrewio/checkov/compare/3.2.33...3.2.34) - 2024-03-10
+
+### Bug Fix
+
+- **terraform:** Dont duplicate more vertices than needed for nested modules with large count/for each values + used cache to avoid extensive usage of os.path.realpath to drastically improve performance - [#6072](https://github.com/bridgecrewio/checkov/pull/6072)
 
 ## [3.2.33](https://github.com/bridgecrewio/checkov/compare/3.2.32...3.2.33) - 2024-03-08
 
