@@ -1,8 +1,8 @@
 import unittest
 from pathlib import Path
 
-from terraform.graph_builder.local_graph import TerraformLocalGraph
-from terraform.tf_parser import TFParser
+from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
+from checkov.terraform.tf_parser import TFParser
 
 
 class TestModuleProvider(unittest.TestCase):
