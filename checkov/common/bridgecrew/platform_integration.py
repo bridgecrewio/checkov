@@ -117,7 +117,7 @@ class BcPlatformIntegration:
         self.timestamp: str | None = None
         self.scan_reports: list[Report] = []
         self.bc_api_url = normalize_bc_url(os.getenv('BC_API_URL'))
-        self.prisma_api_url = normalize_prisma_url(os.getenv('PRISMA_API_URL', 'https://api0.prismacloud.io'))
+        self.prisma_api_url = normalize_prisma_url(os.getenv('PRISMA_API_URL') or 'https://api0.prismacloud.io')
         self.prisma_policies_url: str | None = None
         self.prisma_policy_filters_url: str | None = None
         self.custom_auth_headers: dict[str, str] = {}
@@ -163,7 +163,7 @@ class BcPlatformIntegration:
         self.cicd_details = platform_integration_data["cicd_details"]
         self.credentials = platform_integration_data["credentials"]
         self.platform_integration_configured = platform_integration_data["platform_integration_configured"]
-        self.prisma_api_url = platform_integration_data["prisma_api_url"]
+        self.prisma_api_url = platform_integration_data.get("prisma_api_url", 'https://api0.prismacloud.io')
         self.custom_auth_headers = platform_integration_data["custom_auth_headers"]
         self.repo_branch = platform_integration_data["repo_branch"]
         self.repo_id = platform_integration_data["repo_id"]
