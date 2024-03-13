@@ -738,7 +738,7 @@ def update_list_attribute(
                 return config
 
             inner_config[idx] = new_value
-            return config
+            return [inner_config]
     entry_to_update = int(key_parts[0]) if key_parts[0].isnumeric() else -1
     for i, config_value in enumerate(config):
         if entry_to_update == -1:
