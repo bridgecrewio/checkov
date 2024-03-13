@@ -1,6 +1,22 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.34...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.36...HEAD)
+
+## [3.2.36](https://github.com/bridgecrewio/checkov/compare/3.2.35...3.2.36) - 2024-03-12
+
+### Bug Fix
+
+- **gha:** make sure to have prisma url - [#6084](https://github.com/bridgecrewio/checkov/pull/6084)
+
+## [3.2.35](https://github.com/bridgecrewio/checkov/compare/3.2.34...3.2.35) - 2024-03-11
+
+### Feature
+
+- **general:** add policy name and guidelines to CSV output - [#6082](https://github.com/bridgecrewio/checkov/pull/6082)
+
+### Bug Fix
+
+- **sast:** add attribute verification - [#6078](https://github.com/bridgecrewio/checkov/pull/6078)
 
 ## [3.2.34](https://github.com/bridgecrewio/checkov/compare/3.2.33...3.2.34) - 2024-03-10
 
