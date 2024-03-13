@@ -33,7 +33,7 @@ from checkov.terraform.graph_builder.utils import (
 from checkov.terraform.graph_builder.foreach.utils import get_terraform_foreach_or_count_key
 from checkov.terraform.graph_builder.utils import is_local_path
 from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
-from common.util.consts import RESOLVED_MODULE_ENTRY_NAME
+from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
 
 MODULE_RESERVED_ATTRIBUTES = ("source", "version")
 CROSS_VARIABLE_EDGE_PREFIX = '[cross-variable] '
