@@ -33,7 +33,7 @@ from checkov.terraform.graph_builder.utils import (
 from checkov.terraform.graph_builder.foreach.utils import get_terraform_foreach_or_count_key
 from checkov.terraform.graph_builder.utils import is_local_path
 from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
-
+from common.util.consts import RESOLVED_MODULE_ENTRY_NAME
 
 MODULE_RESERVED_ATTRIBUTES = ("source", "version")
 CROSS_VARIABLE_EDGE_PREFIX = '[cross-variable] '
@@ -81,6 +81,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 logging.info(f'Failed to process foreach handling, error: {str(e)}')
 
         self.calculate_encryption_attribute(ENCRYPTION_BY_RESOURCE_TYPE)
+        self._connect_module_provider()
         if render_variables:
             logging.info(f"Rendering variables, graph has {len(self.vertices)} vertices and {len(self.edges)} edges")
             renderer = TerraformVariableRenderer(self)
@@ -286,6 +287,27 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             if self.get_dirname(self.vertices[index].path) == dest_module_path
         ]
 
+    def _connect_module_provider(self) -> None:
+        for origin_node_index, referenced_vertices in self.out_edges.items():
+            vertex = self.vertices[origin_node_index]
+            # if we have an edge of module->provider we need to connect that modules' resources to the provider
+            if vertex.block_type == BlockType.MODULE:
+                try:
+                    tf_def = vertex.config.get(vertex.name, {}).get(RESOLVED_MODULE_ENTRY_NAME)
+                    if tf_def and isinstance(tf_def, list):
+                        tf_module = tf_def[0].tf_source_modules
+                        # get all resources connected to module
+                        resources = self.vertices_by_module_dependency[tf_module].get("resource")
+                        if resources:
+                            # search for provider vertices in the referenced vertices
+                            for e in referenced_vertices:
+                                if self.vertices[e.dest].block_type == BlockType.PROVIDER:
+                                    for resource in resources:
+                                        # connect resource to provider
+                                        self.create_edge(resource, e.dest, e.label)
+                except Exception as e:
+                    logging.warning(f"Failed in connecting module resources to provider due to {e}")
+
     def _build_cross_variable_edges(self) -> None:
         aliases = self._get_aliases()
         resources_types = self.get_resources_types_in_graph()
@@ -295,23 +317,6 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                     any(self.vertices[e.dest].block_type != BlockType.RESOURCE for e in referenced_vertices):
                 modules = vertex.breadcrumbs.get(CustomAttributes.SOURCE_MODULE, [])
                 self._build_edges_for_vertex(origin_node_index, vertex, aliases, resources_types, True, modules)
-            # if we have an edge of module->provider we need to connect that modules' resources to the provider
-            if vertex.block_type == BlockType.MODULE and \
-                    any(self.vertices[e.dest].block_type == BlockType.PROVIDER for e in referenced_vertices):
-                try:
-                    tf_def: TFDefinitionKey = vertex.config.get(vertex.name, {}).get("__resolved__")
-                    if tf_def and isinstance(tf_def, list) and len(tf_def) > 0:
-                        tf_module = tf_def[0].tf_source_modules
-                        # get all resources connected to module
-                        resources = self.vertices_by_module_dependency[tf_module].get("resource")
-                        if resources:
-                            for resource in resources:
-                                for e in referenced_vertices:
-                                    if self.vertices[e.dest].block_type == BlockType.PROVIDER:
-                                        # connect resource to provider
-                                        self.create_edge(resource, e.dest, e.label)
-                except Exception as e:
-                    logging.warning(f"Failed in connecting module resources to provider due to {e}")
 
     def create_edge(self, origin_vertex_index: int, dest_vertex_index: int, label: str,
                     cross_variable_edges: bool = False) -> bool:
