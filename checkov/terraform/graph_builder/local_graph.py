@@ -18,7 +18,7 @@ from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.type_forcers import force_int
 from checkov.terraform.graph_builder.foreach.builder import ForeachBuilder
 from checkov.terraform.graph_builder.variable_rendering.vertex_reference import TerraformVertexReference
-from checkov.terraform.modules.module_objects import TFModule, TFDefinitionKey
+from checkov.terraform.modules.module_objects import TFModule
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
