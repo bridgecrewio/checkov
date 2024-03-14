@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.36...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.37...HEAD)
+
+## [3.2.37](https://github.com/bridgecrewio/checkov/compare/3.2.36...3.2.37) - 2024-03-13
+
+### Feature
+
+- **terraform:** connect module resource to provider - [#6083](https://github.com/bridgecrewio/checkov/pull/6083)
 
 ## [3.2.36](https://github.com/bridgecrewio/checkov/compare/3.2.35...3.2.36) - 2024-03-12
 
