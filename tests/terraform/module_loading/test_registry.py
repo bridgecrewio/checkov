@@ -466,7 +466,8 @@ def test_load_bitbucket_private(
 def test_load_terraform_registry_with_real_download(tmp_path: Path):
     # given
     current_dir = str(tmp_path / "tf_download")
-    registry = ModuleLoaderRegistry(download_external_modules=True, external_modules_folder_name=DEFAULT_EXTERNAL_MODULES_DIR)
+    registry = ModuleLoaderRegistry(download_external_modules=True,
+                                    external_modules_folder_name=DEFAULT_EXTERNAL_MODULES_DIR)
     registry.module_content_cache = {}
     registry.root_dir = current_dir
 
@@ -482,9 +483,11 @@ def test_load_terraform_registry_with_real_download(tmp_path: Path):
     )
 
     assert content.loaded()
+    
     content_path = content.path()
     assert content_path.startswith(f"{expected_content_path}/v3.") or \
            content_path.startswith(f"{expected_content_path}/2cd10c8aca557fd858f401616d5c3b27e2a7b595")
+
 
 
 def test_load_terraform_registry_check_cache(tmp_path: Path):
