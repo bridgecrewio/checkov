@@ -729,7 +729,8 @@ def update_list_attribute(
 
     if len(key_parts) == 1:
         idx = force_int(key_parts[0])
-        inner_config = config[0]
+        # Avoid changing the config and cause side effects
+        inner_config = pickle_deepcopy(config[0])
 
         if idx is not None and isinstance(inner_config, list):
             if not inner_config:
@@ -737,7 +738,7 @@ def update_list_attribute(
                 return config
 
             inner_config[idx] = new_value
-            return config
+            return [inner_config]
     entry_to_update = int(key_parts[0]) if key_parts[0].isnumeric() else -1
     for i, config_value in enumerate(config):
         if entry_to_update == -1:
