@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from typing import Any
 
-from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 from checkov.common.models.enums import CheckCategories, CheckResult
+from checkov.terraform.checks.resource.base_resource_value_check import (
+    BaseResourceValueCheck,
+)
 
 
 class EKSPlatformVersion(BaseResourceValueCheck):
