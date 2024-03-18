@@ -33,7 +33,7 @@ from checkov.terraform.graph_builder.utils import (
 from checkov.terraform.graph_builder.foreach.utils import get_terraform_foreach_or_count_key
 from checkov.terraform.graph_builder.utils import is_local_path
 from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
-
+from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
 
 MODULE_RESERVED_ATTRIBUTES = ("source", "version")
 CROSS_VARIABLE_EDGE_PREFIX = '[cross-variable] '
@@ -81,6 +81,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 logging.info(f'Failed to process foreach handling, error: {str(e)}')
 
         self.calculate_encryption_attribute(ENCRYPTION_BY_RESOURCE_TYPE)
+        self._connect_module_provider()
         if render_variables:
             logging.info(f"Rendering variables, graph has {len(self.vertices)} vertices and {len(self.edges)} edges")
             renderer = TerraformVariableRenderer(self)
@@ -285,6 +286,27 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             for index in self.vertices_by_module_dependency.get(target_path, {}).get(BlockType.VARIABLE, [])
             if self.get_dirname(self.vertices[index].path) == dest_module_path
         ]
+
+    def _connect_module_provider(self) -> None:
+        for origin_node_index, referenced_vertices in self.out_edges.items():
+            vertex = self.vertices[origin_node_index]
+            # if we have an edge of module->provider we need to connect that modules' resources to the provider
+            if vertex.block_type == BlockType.MODULE:
+                try:
+                    tf_def = vertex.config.get(vertex.name, {}).get(RESOLVED_MODULE_ENTRY_NAME)
+                    if tf_def and isinstance(tf_def, list):
+                        tf_module = tf_def[0].tf_source_modules
+                        # get all resources connected to module
+                        resources = self.vertices_by_module_dependency[tf_module].get("resource")
+                        if resources:
+                            # search for provider vertices in the referenced vertices
+                            for e in referenced_vertices:
+                                if self.vertices[e.dest].block_type == BlockType.PROVIDER:
+                                    for resource in resources:
+                                        # connect resource to provider
+                                        self.create_edge(resource, e.dest, e.label)
+                except Exception as e:
+                    logging.warning(f"Failed in connecting module resources to provider due to {e}")
 
     def _build_cross_variable_edges(self) -> None:
         aliases = self._get_aliases()
@@ -707,7 +729,8 @@ def update_list_attribute(
 
     if len(key_parts) == 1:
         idx = force_int(key_parts[0])
-        inner_config = config[0]
+        # Avoid changing the config and cause side effects
+        inner_config = pickle_deepcopy(config[0])
 
         if idx is not None and isinstance(inner_config, list):
             if not inner_config:
@@ -715,7 +738,7 @@ def update_list_attribute(
                 return config
 
             inner_config[idx] = new_value
-            return config
+            return [inner_config]
     entry_to_update = int(key_parts[0]) if key_parts[0].isnumeric() else -1
     for i, config_value in enumerate(config):
         if entry_to_update == -1:
