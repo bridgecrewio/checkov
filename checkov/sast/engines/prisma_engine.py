@@ -343,7 +343,8 @@ class PrismaEngine(SastEngine):
                     break
             else:
                 sast_report = PrismaReport(rule_match={lang: {}}, errors=prisma_report.errors, profiler=prisma_report.profiler,
-                                           run_metadata=prisma_report.run_metadata, imports={}, reachability_report={})
+                                           run_metadata=prisma_report.run_metadata, imports={}, reachability_report={},
+                                           skipped_checks_by_file={})
                 report = SastReport(f'{self.check_type.lower()}_{lang.value}', prisma_report.run_metadata, lang, sast_report)
                 report.sast_imports = prisma_report.imports[lang]
                 reports.append(report)
@@ -355,7 +356,8 @@ class PrismaEngine(SastEngine):
                     break
             else:
                 sast_report = PrismaReport(rule_match={lang: {}}, errors=prisma_report.errors, profiler=prisma_report.profiler,
-                                           run_metadata=prisma_report.run_metadata, imports={}, reachability_report={})
+                                           run_metadata=prisma_report.run_metadata, imports={}, reachability_report={},
+                                           skipped_checks_by_file={})
                 report = SastReport(f'{self.check_type.lower()}_{lang.value}', prisma_report.run_metadata, lang, sast_report)
                 report.sast_reachability = prisma_report.reachability_report[lang]
                 reports.append(report)
@@ -388,7 +390,7 @@ class PrismaEngine(SastEngine):
             new_cdk_report = PrismaReport(rule_match={lang: {}}, errors=sast_report.sast_report.errors,
                                           profiler=sast_report.sast_report.profiler,
                                           run_metadata=sast_report.sast_report.run_metadata,
-                                          imports={}, reachability_report={})
+                                          imports={}, reachability_report={}, skipped_checks_by_file={})
             new_report = CDKReport(f'{CDK_FRAMEWORK_PREFIX}_{lang.value}', sast_report.sast_report.run_metadata, lang, new_cdk_report)
             cdk_reports.append(new_report)
         for cdk_report in cdk_reports:

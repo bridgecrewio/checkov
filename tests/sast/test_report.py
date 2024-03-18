@@ -11,7 +11,8 @@ def _create_sast_reports_for_test_get_sast_reachability_report_with_one_report()
     # we don't care about the init's params, except for the sast-language
     report1 = SastReport('', {}, SastLanguages.JAVASCRIPT, PrismaReport(rule_match={}, errors={}, profiler={},
                                                                         run_metadata={}, imports={},
-                                                                        reachability_report={}))
+                                                                        reachability_report={},
+                                                                        skipped_checks_by_file={}))
     report1.sast_reachability = {
         'repo_1': Repositories(files={
             '/index.js': File(packages={
