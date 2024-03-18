@@ -117,7 +117,7 @@ class BcPlatformIntegration:
         self.timestamp: str | None = None
         self.scan_reports: list[Report] = []
         self.bc_api_url = normalize_bc_url(os.getenv('BC_API_URL'))
-        self.prisma_api_url = normalize_prisma_url(os.getenv('PRISMA_API_URL', 'https://api0.prismacloud.io'))
+        self.prisma_api_url = normalize_prisma_url(os.getenv('PRISMA_API_URL') or 'https://api0.prismacloud.io')
         self.prisma_policies_url: str | None = None
         self.prisma_policy_filters_url: str | None = None
         self.custom_auth_headers: dict[str, str] = {}
@@ -163,7 +163,7 @@ class BcPlatformIntegration:
         self.cicd_details = platform_integration_data["cicd_details"]
         self.credentials = platform_integration_data["credentials"]
         self.platform_integration_configured = platform_integration_data["platform_integration_configured"]
-        self.prisma_api_url = platform_integration_data["prisma_api_url"]
+        self.prisma_api_url = platform_integration_data.get("prisma_api_url", 'https://api0.prismacloud.io')
         self.custom_auth_headers = platform_integration_data["custom_auth_headers"]
         self.repo_branch = platform_integration_data["repo_branch"]
         self.repo_id = platform_integration_data["repo_id"]
@@ -626,15 +626,15 @@ class BcPlatformIntegration:
     def persist_sast_scan_results(self, reports: List[Report]) -> None:
         sast_scan_reports = {}
         for report in reports:
-            if not report.check_type.startswith('sast'):
+            if not report.check_type.lower().startswith(CheckType.SAST):
                 continue
-            if not report.sast_report:  # type: ignore
+            if not hasattr(report, 'sast_report') or not report.sast_report:
                 continue
-            for _, match_by_check in report.sast_report.rule_match.items():  # type: ignore
+            for _, match_by_check in report.sast_report.rule_match.items():
                 for _, match in match_by_check.items():
                     for m in match.matches:
                         self.adjust_sast_match_location_path(m)
-                sast_scan_reports[report.check_type] = report.sast_report.model_dump(mode='json')  # type: ignore
+                sast_scan_reports[report.check_type] = report.sast_report.model_dump(mode='json')
             if self.on_prem:
                 BcPlatformIntegration._delete_code_block_from_sast_report(sast_scan_reports)
 
@@ -902,11 +902,12 @@ class BcPlatformIntegration:
                     sleep(SLEEP_SECONDS)
                     curr_try += 1
                 else:
-                    logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}",
-                                  exc_info=True)
+                    logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}", exc_info=True)
+                    logging.debug(f"file size of {full_file_path} is {os.stat(full_file_path).st_size} bytes")
                     raise
             except Exception:
                 logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}", exc_info=True)
+                logging.debug(f"file size of {full_file_path} is {os.stat(full_file_path).st_size} bytes")
                 raise
         if curr_try == tries:
             logging.error(

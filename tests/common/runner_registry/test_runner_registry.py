@@ -167,7 +167,7 @@ class TestRunnerRegistry(unittest.TestCase):
         with open(iac_file_path) as file:
             content = file.readlines()
             header = content[:1][0]
-            self.assertEqual('Resource,Path,Git Org,Git Repository,Misconfigurations,Severity\n', header)
+            self.assertEqual('Resource,Path,Git Org,Git Repository,Misconfigurations,Severity,Policy title,Guideline\n', header)
             rows = content[1:]
             self.assertIn('aws_s3_bucket', rows[0])
         oss_file_path = re.search("Persisting SBOM to (.*oss_packages.csv)", output).group(1)
