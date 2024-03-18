@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.38...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.39...HEAD)
+
+## [3.2.39](https://github.com/bridgecrewio/checkov/compare/3.2.38...3.2.39) - 2024-03-17
+
+### Feature
+
+- **secrets:** fix entropy detector FP - [#6090](https://github.com/bridgecrewio/checkov/pull/6090)
 
 ## [3.2.38](https://github.com/bridgecrewio/checkov/compare/3.2.37...3.2.38) - 2024-03-14
 
