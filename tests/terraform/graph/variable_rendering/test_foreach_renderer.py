@@ -422,6 +422,13 @@ def test_foreach_with_lookup():
     assert graph.vertices[1].attributes.get('uniform_bucket_level_access') == [True]
 
 
+@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
+def test_foreach_large_count_with_nested_module(checkov_source_path):
+    dir_name = 'os_example_large_count_with_nested_module'
+    graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
+    assert len(graph.vertices) == 85
+
+
 def test__get_tf_module_with_no_foreach():
     module = TFModule(name='1', path='1', foreach_idx='1',
                       nested_tf_module=TFModule(name='2', path='2', foreach_idx='2', nested_tf_module=None))

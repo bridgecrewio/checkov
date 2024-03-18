@@ -39,7 +39,7 @@ HEADER_CONTAINER_IMAGE = HEADER_OSS_PACKAGES
 FILE_NAME_CONTAINER_IMAGES = f"{date_now}_container_images.csv"
 
 FILE_NAME_IAC = f"{date_now}_iac.csv"
-HEADER_IAC = ["Resource", "Path", "Git Org", "Git Repository", "Misconfigurations", "Severity"]
+HEADER_IAC = ["Resource", "Path", "Git Org", "Git Repository", "Misconfigurations", "Severity", "Policy title", "Guideline"]
 
 CTA_NO_API_KEY = "SCA, image and runtime findings are only available with a Prisma Cloud subscription."
 
@@ -115,11 +115,15 @@ class CSVSBOM:
 
         misconfig = None
         severity = None
+        check_name = None
+        guideline = None
         if isinstance(resource, Record) and resource.check_result["result"] == CheckResult.FAILED:
             # only failed resources should be added with their misconfiguration
             misconfig = resource.check_id
             if resource.severity is not None:
                 severity = resource.severity.name
+            check_name = resource.check_name
+            guideline = resource.guideline
         elif resource_id in self.iac_resource_cache:
             # IaC resources shouldn't be added multiple times, if they don't have any misconfiguration
             return
@@ -131,6 +135,8 @@ class CSVSBOM:
             "Git Repository": git_repository,
             "Misconfigurations": misconfig,
             "Severity": severity,
+            "Policy title": check_name,
+            "Guideline": guideline
         }
 
         if isinstance(resource, Record) and resource.details:
