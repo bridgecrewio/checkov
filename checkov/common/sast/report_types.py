@@ -99,8 +99,8 @@ class Repositories(BaseModel):
 
 
 class SkippedCheck(BaseModel):
-    check_id: str
-    suppress_comment: str
+    check_id: str   # noqa: CCE003
+    suppress_comment: str   # noqa: CCE003
 
 
 class PrismaReport(BaseModel):
@@ -110,7 +110,7 @@ class PrismaReport(BaseModel):
     run_metadata: Dict[str, Optional[Union[str, int, List[str]]]]  # noqa: CCE003
     imports: Dict[SastLanguages, Dict[str, Dict[str, Union[List[str], Dict[str, str]]]]]  # noqa: CCE003
     reachability_report: Dict[SastLanguages, Dict[str, Repositories]]   # noqa: CCE003
-    skipped_checks_by_file: Dict[str, List[SkippedCheck]]
+    skipped_checks_by_file: Dict[str, List[SkippedCheck]]   # noqa: CCE003
 
 
 def create_empty_report(languages: List[SastLanguages]) -> PrismaReport:
