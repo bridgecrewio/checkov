@@ -55,12 +55,14 @@ class SuppressionsIntegration(BaseIntegrationFeature):
             suppressions_v2 = self.bc_integration.customer_run_config_response.get('suppressionsV2')  # currently just SAST
 
             for suppression in suppressions:
+                suppression['isV1'] = True
                 if suppression['policyId'] in metadata_integration.bc_to_ckv_id_mapping:
                     suppression['checkovPolicyId'] = metadata_integration.get_ckv_id_from_bc_id(suppression['policyId'])
                 else:
                     suppression['checkovPolicyId'] = suppression['policyId']  # custom policy
 
             for suppression in suppressions_v2:
+                suppression['isV1'] = False
                 checkov_ids = []
                 for policy_id in suppression['policyIds']:
                     if policy_id in metadata_integration.bc_to_ckv_id_mapping:
@@ -75,7 +77,7 @@ class SuppressionsIntegration(BaseIntegrationFeature):
             # group and map by policy ID
             self.suppressions = {policy_id: list(sup) for policy_id, sup in
                                  groupby(suppressions, key=lambda s: s['checkovPolicyId'])}
-            
+
             # map suppressions v2 by checkov ID - because the policy IDs are arrays, we need to map each unique ID in each
             # suppression's policy ID array to its suppressions
             self.suppressions_v2 = SuppressionsIntegration.create_suppression_v2_policy_id_map(suppressions_v2)
@@ -84,11 +86,11 @@ class SuppressionsIntegration(BaseIntegrationFeature):
             logging.debug(self.suppressions)
             logging.debug('The found suppression v2 rules are:')
             logging.debug(self.suppressions_v2)
-            
+
         except Exception:
             self.integration_feature_failures = True
             logging.debug("Scanning without applying suppressions configured in the platform.", exc_info=True)
-    
+
     @staticmethod
     def create_suppression_v2_policy_id_map(suppressions_v2: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
         checkov_id_map = {}
@@ -123,7 +125,7 @@ class SuppressionsIntegration(BaseIntegrationFeature):
 
             applied_suppression = self._check_suppressions(check, relevant_suppressions, relevant_suppressions_v2) if has_suppression else None
             if applied_suppression:
-                suppress_comment = applied_suppression['comment']
+                suppress_comment = applied_suppression['comment'] if applied_suppression['isV1'] else applied_suppression['justificationComment']
                 logging.debug(f'Applying suppression to the check {check.check_id} with the comment: {suppress_comment}')
                 check.check_result = {
                     'result': CheckResult.SKIPPED,
@@ -140,8 +142,8 @@ class SuppressionsIntegration(BaseIntegrationFeature):
 
     def _check_suppressions(self, record: Record, suppressions: list[dict[str, Any]], suppressions_v2: list[dict[str, Any]]) -> dict[str, Any] | None:
         """
-        Checks the specified suppressions against the specified record, returning the first applicable suppression,
-        or None of no suppression is applicable.
+        Checks the specified suppressions against the specified record, returning a tuple of the applied suppression and whether
+        the suppression was a v1 suppression or not. If no suppression is found, then returns a tuple of None, None
         :param record:
         :param suppressions:
         :return:
@@ -169,7 +171,7 @@ class SuppressionsIntegration(BaseIntegrationFeature):
         type = suppression['suppressionType']
 
         if type == 'Policy':
-            # We already validated the policy ID above
+            # We already filtered suppressions relevant for this check by policy ID
             return True
         elif type == 'Accounts':
             # This should be true, because we validated when we downloaded the policies.
@@ -179,7 +181,7 @@ class SuppressionsIntegration(BaseIntegrationFeature):
             for resource in suppression['resources']:
                 if self.bc_integration.repo_matches(resource['accountId']) \
                         and (resource['resourceId'] == f'{record.repo_file_path}:{record.resource}'
-                             or resource['resourceId'] == f'{convert_to_unix_path(record.file_path)}:{record.resource}'):
+                             or resource['resourceId'] == f'{convert_to_unix_path(record.repo_file_path)}:{record.resource}'):
                     return True
             return False
         elif type == 'Tags':
@@ -235,7 +237,14 @@ class SuppressionsIntegration(BaseIntegrationFeature):
         elif type == 'finding':
             pass  # TODO how to map them?
         elif type == 'file':
-            pass  # TODO the suppression does not have the full file path, so we cannot map them >:|
+            record_file_path = record.repo_file_path if record.repo_file_path.startswith('/') else f'/{record.repo_file_path}'
+            for file_suppression in suppression['files']:
+                suppression_file_path = file_suppression['filePath']
+                suppression_file_path = suppression_file_path if suppression_file_path.startswith('/') else f'/{suppression_file_path}'
+                if self.bc_integration.repo_matches(file_suppression['repositoryName']) \
+                        and (suppression_file_path == record_file_path
+                             or suppression_file_path == convert_to_unix_path(record_file_path)):
+                    return True
         elif type == 'repository':
             return any(self.bc_integration.repo_matches(repo['repositoryName']) for repo in suppression['repositories'])
         return False
