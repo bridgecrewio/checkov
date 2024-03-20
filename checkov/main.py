@@ -438,13 +438,11 @@ class Checkov:
                 if not self.config.include_all_checkov_policies:
                     # stack trace gets printed in the exception handlers above
                     # include_all_checkov_policies will always be set when there is no API key, so we don't need to worry about it here
-                    # TODO this message was added at a time when we would still proceed with the run. This error message is useless if we exit the run.
-                    # If we change it so that this call does not block the run, then this message should be printed.
-                    # print('An error occurred getting data from the platform, including policy metadata. Because --include-all-checkov-policies '
-                    #       'was not used, Checkov cannot differentiate Checkov-only policies from platform policies, and no '
-                    #       'policies will get evaluated. Please resolve the error above or re-run with the --include-all-checkov-policies argument '
-                    #       '(but note that this will not include any custom platform configurations or policy metadata).',
-                    #       file=sys.stderr)
+                    print('An error occurred getting data from the platform, including policy metadata. Because --include-all-checkov-policies '
+                          'was not used, Checkov cannot differentiate Checkov-only policies from platform policies, and no '
+                          'policies will get evaluated. Please resolve the error above or re-run with the --include-all-checkov-policies argument '
+                          '(but note that this will not include any custom platform configurations or policy metadata).',
+                          file=sys.stderr)
                     self.exit_run()
 
             # bc_integration.get_runtime_run_config()
