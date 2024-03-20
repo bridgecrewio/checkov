@@ -510,7 +510,7 @@ class Checkov:
 
             if self.config.directory:
                 exit_codes = []
-                bc_integration.scan_dir = self.config.directory
+                bc_integration.scan_dir = self.config1.directory
                 for root_folder in self.config.directory:
                     absolute_root_folder = os.path.abspath(root_folder)
                     if not os.path.exists(root_folder):
@@ -704,7 +704,6 @@ class Checkov:
             # calling exit_run from an exception handler causes another exception that is caught here
             if not isinstance(e, SystemExit):
                 logging.error("Exception traceback:", exc_info=True)
-                raise
             self.exit_run()
             return None
 
