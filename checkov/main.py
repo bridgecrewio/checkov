@@ -703,6 +703,7 @@ class Checkov:
         except SystemExit:
             # calling exit_run from an exception handler causes another exception that is caught here, so we just need to re-exit
             self.exit_run()
+            return None
         except BaseException:
             logging.error("Exception traceback:", exc_info=True)
             self.exit_run()
