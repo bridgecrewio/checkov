@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import itertools
 import logging
 import re
 from itertools import groupby
@@ -171,7 +172,7 @@ class SuppressionsIntegration(BaseIntegrationFeature):
         type = suppression['suppressionType']
 
         if type == 'Policy':
-            # We already filtered suppressions relevant for this check by policy ID
+            # We already validated the policy ID above
             return True
         elif type == 'Accounts':
             # This should be true, because we validated when we downloaded the policies.
@@ -181,7 +182,7 @@ class SuppressionsIntegration(BaseIntegrationFeature):
             for resource in suppression['resources']:
                 if self.bc_integration.repo_matches(resource['accountId']) \
                         and (resource['resourceId'] == f'{record.repo_file_path}:{record.resource}'
-                             or resource['resourceId'] == f'{convert_to_unix_path(record.repo_file_path)}:{record.resource}'):
+                             or resource['resourceId'] == f'{convert_to_unix_path(record.file_path)}:{record.resource}'):
                     return True
             return False
         elif type == 'Tags':
@@ -283,12 +284,12 @@ class SuppressionsIntegration(BaseIntegrationFeature):
         # not used
         pass
 
-    def get_policy_level_suppressions(self) -> dict[str, str]:
+    def get_policy_level_suppressions(self) -> dict[str, list[str]]:
         policy_level_suppressions = {}
-        for check_suppressions in self.suppressions.values():
+        for check_suppressions in itertools.chain(self.suppressions.values(), self.suppressions_v2.values()):
             for suppression in check_suppressions:
-                if suppression.get("suppressionType") == "Policy":
-                    policy_level_suppressions[suppression['id']] = suppression['policyId']
+                if (suppression['isV1'] and suppression.get("suppressionType") == "Policy") or (not suppression['isV1'] and suppression.get("ruleType") == "policy"):
+                    policy_level_suppressions[suppression['id']] = [suppression['policyId']] if suppression['isV1'] else suppression['policyIds']
                     break
         return policy_level_suppressions
 
