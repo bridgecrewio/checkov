@@ -418,18 +418,18 @@ class BcPlatformIntegration:
                 logging.error('An error occurred connecting to the platform after multiple retries. Please verify your '
                               'API key and Prisma API URL, as well as network connectivity, and retry. If the problem '
                               'persists, please enable debug logs and contact support.')
-            logging.debug(f'The exception details:', exc_info=True)
-            raise PlatformConnectionError(str(e.reason))
+            logging.debug('The exception details:', exc_info=True)
+            raise PlatformConnectionError(str(e.reason)) from e
         except HTTPError as e:
             logging.error('An unexpected error occurred connecting to the platform. Please verify your '
                           'API key and Prisma API URL, as well as network connectivity, and retry. If the problem '
                           'persists, please enable debug logs and contact support.', exc_info=True)
-            raise PlatformConnectionError(str(e))
+            raise PlatformConnectionError(str(e)) from e
         except JSONDecodeError as e:
-            logging.error(f'An unexpected error occurred processing the response from the platform. Please verify your '
+            logging.error('An unexpected error occurred processing the response from the platform. Please verify your '
                           'API key and Prisma API URL, as well as network connectivity, and retry. If the problem '
                           'persists, please enable debug logs and contact support.', exc_info=True)
-            raise PlatformConnectionError(str(e))
+            raise PlatformConnectionError(str(e)) from e
         except BridgecrewAuthError:
             logging.error('An authentication error occurred connecting to the platform after multiple retries. '
                           'Please verify that your API keys and Prisma API URL are correct, and retry.')
