@@ -701,10 +701,12 @@ class Checkov:
             self.exit_run()
             return None
         except BaseException as e:
-            # calling exit_run from an exception handler causes another exception
+            # calling exit_run from an exception handler causes another exception that is caught here
             if not isinstance(e, SystemExit):
                 logging.error("Exception traceback:", exc_info=True)
                 raise
+            self.exit_run()
+            return None
 
         finally:
             if bc_integration.support_flag_enabled:
