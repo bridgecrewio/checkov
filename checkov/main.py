@@ -700,10 +700,11 @@ class Checkov:
             logging.debug("Exception traceback:", exc_info=True)
             self.exit_run()
             return None
-        except BaseException as e:
-            # calling exit_run from an exception handler causes another exception that is caught here
-            if not isinstance(e, SystemExit):
-                logging.error("Exception traceback:", exc_info=True)
+        except SystemExit:
+            # calling exit_run from an exception handler causes another exception that is caught here, so we just need to re-exit
+            self.exit_run()
+        except BaseException:
+            logging.error("Exception traceback:", exc_info=True)
             self.exit_run()
             return None
 
