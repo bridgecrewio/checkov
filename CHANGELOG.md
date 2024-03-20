@@ -1,6 +1,20 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.39...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.42...HEAD)
+
+## [3.2.42](https://github.com/bridgecrewio/checkov/compare/3.2.39...3.2.42) - 2024-03-20
+
+### Feature
+
+- **sast:** support sast skipped checks - [#6095](https://github.com/bridgecrewio/checkov/pull/6095)
+
+### Bug Fix
+
+- **secrets:** ignore secret check in test file - [#6105](https://github.com/bridgecrewio/checkov/pull/6105)
+
+### Platform
+
+- **general:** handle API errors with more detail - [#6107](https://github.com/bridgecrewio/checkov/pull/6107)
 
 ## [3.2.39](https://github.com/bridgecrewio/checkov/compare/3.2.38...3.2.39) - 2024-03-17
 
