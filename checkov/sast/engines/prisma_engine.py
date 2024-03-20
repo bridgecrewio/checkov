@@ -47,7 +47,7 @@ class PrismaEngine(SastEngine):
         self.check_type = CheckType.SAST
         self.prisma_sast_dir_path = Path(bridgecrew_dir) / "sast"
         self.sast_platform_base_path = "api/v1/sast"
-        self.enable_inline_suppressions = os.getenv("ENABLE_SAST_INLINE_SUPPRESSIONS", False)
+        self.enable_inline_suppressions = os.getenv("ENABLE_SAST_INLINE_SUPPRESSIONS", True)
 
     def get_check_thresholds(self, registry: Registry) -> Tuple[Severity, Severity]:
         """
