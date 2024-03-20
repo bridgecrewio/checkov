@@ -510,7 +510,7 @@ class Checkov:
 
             if self.config.directory:
                 exit_codes = []
-                bc_integration.scan_dir = self.config1.directory
+                bc_integration.scan_dir = self.config.directory
                 for root_folder in self.config.directory:
                     absolute_root_folder = os.path.abspath(root_folder)
                     if not os.path.exists(root_folder):
