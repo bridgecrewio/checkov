@@ -31,7 +31,7 @@ from checkov.circleci_pipelines.runner import Runner as circleci_pipelines_runne
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.bc_source import SourceTypes, BCSourceType, get_source_type, SourceType
 from checkov.common.bridgecrew.check_type import checkov_runners, CheckType
-from checkov.common.bridgecrew.platform_errors import ModuleNotEnabledError
+from checkov.common.bridgecrew.platform_errors import ModuleNotEnabledError, PlatformConnectionError
 from checkov.common.bridgecrew.integration_features.features.custom_policies_integration import \
     integration as custom_policies_integration
 from checkov.common.bridgecrew.integration_features.features.licensing_integration import \
@@ -402,6 +402,8 @@ class Checkov:
 
                 except MaxRetryError:
                     self.exit_run()
+                except PlatformConnectionError:
+                    self.exit_run()
                 except Exception:
                     if bc_integration.prisma_api_url:
                         message = 'An error occurred setting up the Prisma Cloud platform integration. ' \
@@ -436,11 +438,13 @@ class Checkov:
                 if not self.config.include_all_checkov_policies:
                     # stack trace gets printed in the exception handlers above
                     # include_all_checkov_policies will always be set when there is no API key, so we don't need to worry about it here
-                    print('An error occurred getting data from the platform, including policy metadata. Because --include-all-checkov-policies '
-                          'was not used, Checkov cannot differentiate Checkov-only policies from platform policies, and no '
-                          'policies will get evaluated. Please resolve the error above or re-run with the --include-all-checkov-policies argument '
-                          '(but note that this will not include any custom platform configurations or policy metadata).',
-                          file=sys.stderr)
+                    # TODO this message was added at a time when we would still proceed with the run. This error message is useless if we exit the run.
+                    # If we change it so that this call does not block the run, then this message should be printed.
+                    # print('An error occurred getting data from the platform, including policy metadata. Because --include-all-checkov-policies '
+                    #       'was not used, Checkov cannot differentiate Checkov-only policies from platform policies, and no '
+                    #       'policies will get evaluated. Please resolve the error above or re-run with the --include-all-checkov-policies argument '
+                    #       '(but note that this will not include any custom platform configurations or policy metadata).',
+                    #       file=sys.stderr)
                     self.exit_run()
 
             # bc_integration.get_runtime_run_config()
@@ -692,9 +696,17 @@ class Checkov:
             logging.error(m)
             self.exit_run()
             return None
-        except BaseException:
-            logging.error("Exception traceback:", exc_info=True)
-            raise
+        except PlatformConnectionError:
+            # we don't want to print all of these stack traces in normal output, as these could be user error
+            # and stack traces look like checkov bugs
+            logging.debug("Exception traceback:", exc_info=True)
+            self.exit_run()
+            return None
+        except BaseException as e:
+            # calling exit_run from an exception handler causes another exception
+            if not isinstance(e, SystemExit):
+                logging.error("Exception traceback:", exc_info=True)
+                raise
 
         finally:
             if bc_integration.support_flag_enabled:

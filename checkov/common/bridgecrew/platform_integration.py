@@ -28,7 +28,7 @@ from tqdm import trange
 from urllib3.exceptions import HTTPError, MaxRetryError
 
 from checkov.common.bridgecrew.check_type import CheckType
-from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
+from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError, PlatformConnectionError
 from checkov.common.bridgecrew.platform_key import read_key
 from checkov.common.bridgecrew.run_metadata.registry import registry
 from checkov.common.bridgecrew.wrapper import persist_assets_results, reduce_scan_reports, \
@@ -404,18 +404,35 @@ class BcPlatformIntegration:
 
             self.use_s3_integration = True
             self.platform_integration_configured = True
-        except MaxRetryError:
-            logging.error("An SSL error occurred connecting to the platform. If you are on a VPN, please try "
-                          "disabling it and re-running the command.", exc_info=True)
-            raise
-        except HTTPError:
-            logging.error("Failed to get customer assumed role", exc_info=True)
-            raise
-        except JSONDecodeError:
-            logging.error(f"Response of {self.integrations_api_url} is not a valid JSON", exc_info=True)
-            raise
+        except MaxRetryError as e:
+            # almost all failures should be caught by this block - we need to differentiate what actually happened
+            # for the causes that are almost certainly user error, we want to hide the exception details
+            # so that it does not look like checkov crashed due to a bug (stack traces are scary for users)
+            if str(e.reason) == 'too many 401 error responses':
+                logging.error('An authentication error occurred connecting to the platform after multiple retries. '
+                              'Please verify that your API key and Prisma API URL are correct, and retry.')
+            elif isinstance(e.reason, urllib3.exceptions.SSLError):
+                logging.error("An SSL error occurred connecting to the platform. If you are on a VPN, please try "
+                              f"disabling it and re-running the command. The error is: {e.reason}")
+            else:
+                logging.error('An error occurred connecting to the platform after multiple retries. Please verify your '
+                              'API key and Prisma API URL, as well as network connectivity, and retry. If the problem '
+                              'persists, please enable debug logs and contact support.')
+            logging.debug(f'The exception details:', exc_info=True)
+            raise PlatformConnectionError(str(e.reason))
+        except HTTPError as e:
+            logging.error('An unexpected error occurred connecting to the platform. Please verify your '
+                          'API key and Prisma API URL, as well as network connectivity, and retry. If the problem '
+                          'persists, please enable debug logs and contact support.', exc_info=True)
+            raise PlatformConnectionError(str(e))
+        except JSONDecodeError as e:
+            logging.error(f'An unexpected error occurred processing the response from the platform. Please verify your '
+                          'API key and Prisma API URL, as well as network connectivity, and retry. If the problem '
+                          'persists, please enable debug logs and contact support.', exc_info=True)
+            raise PlatformConnectionError(str(e))
         except BridgecrewAuthError:
-            logging.error("Received an error response during authentication")
+            logging.error('An authentication error occurred connecting to the platform after multiple retries. '
+                          'Please verify that your API keys and Prisma API URL are correct, and retry.')
             raise
 
     def set_s3_client(self) -> None:
@@ -976,8 +993,11 @@ class BcPlatformIntegration:
             self.customer_run_config_response = json.loads(request.data.decode("utf8"))
 
             logging.debug(f"Got customer run config from {platform_type} platform")
-        except Exception:
-            logging.warning(f"Failed to get the customer run config from {self.platform_run_config_url}", exc_info=True)
+        except Exception as e:
+            logging.warning(f"An unexpected error occurred getting the run configuration from {self.platform_run_config_url} "
+                            "after multiple retries. Please verify your API key and Prisma API URL, and retry. If the "
+                            "problem persists, please enable debug logs and contact support. The error is: "
+                            f"{e}", exc_info=True)
             raise
 
     def get_reachability_run_config(self) -> Union[Dict[str, Any], None]:
