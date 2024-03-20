@@ -14,8 +14,14 @@ def load_failed_checks_from_file(lang: str) -> Dict[str, List[Dict[str, Any]]]:
         assert report is not None
         results = report.get("results", {})
         failed_checks = results.get("failed_checks")
+        skipped_checks = results.get("skipped_checks")
         results = {}
         for check in failed_checks:
+            check_id = check['check_id']
+            if not results.get(check_id):
+                results[check_id] = []
+            results[check_id].append(check)
+        for check in skipped_checks:
             check_id = check['check_id']
             if not results.get(check_id):
                 results[check_id] = []

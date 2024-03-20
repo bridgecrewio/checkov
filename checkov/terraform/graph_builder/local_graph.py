@@ -29,11 +29,11 @@ from checkov.terraform.graph_builder.utils import (
     get_referenced_vertices_in_value,
     attribute_has_nested_attributes,
     remove_index_pattern_from_str,
-    join_double_quote_surrounded_dot_split,
-)
+    join_double_quote_surrounded_dot_split, )
+from checkov.terraform.graph_builder.foreach.utils import get_terraform_foreach_or_count_key
 from checkov.terraform.graph_builder.utils import is_local_path
 from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
-
+from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
 
 MODULE_RESERVED_ATTRIBUTES = ("source", "version")
 CROSS_VARIABLE_EDGE_PREFIX = '[cross-variable] '
@@ -60,6 +60,9 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self.enable_modules_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_MODULES_FOREACH_HANDLING', 'True'))
         self.foreach_blocks: Dict[str, List[int]] = {BlockType.RESOURCE: [], BlockType.MODULE: []}
 
+        # Important for foreach performance, see issue https://github.com/bridgecrewio/checkov/issues/6068
+        self._vertex_path_to_realpath_cache: Dict[str, str] = {}
+
     def build_graph(self, render_variables: bool) -> None:
         self._create_vertices()
         logging.info(f"[TerraformLocalGraph] created {len(self.vertices)} vertices")
@@ -78,6 +81,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 logging.info(f'Failed to process foreach handling, error: {str(e)}')
 
         self.calculate_encryption_attribute(ENCRYPTION_BY_RESOURCE_TYPE)
+        self._connect_module_provider()
         if render_variables:
             logging.info(f"Rendering variables, graph has {len(self.vertices)} vertices and {len(self.edges)} edges")
             renderer = TerraformVariableRenderer(self)
@@ -283,6 +287,27 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             if self.get_dirname(self.vertices[index].path) == dest_module_path
         ]
 
+    def _connect_module_provider(self) -> None:
+        for origin_node_index, referenced_vertices in self.out_edges.items():
+            vertex = self.vertices[origin_node_index]
+            # if we have an edge of module->provider we need to connect that modules' resources to the provider
+            if vertex.block_type == BlockType.MODULE:
+                try:
+                    tf_def = vertex.config.get(vertex.name, {}).get(RESOLVED_MODULE_ENTRY_NAME)
+                    if tf_def and isinstance(tf_def, list):
+                        tf_module = tf_def[0].tf_source_modules
+                        # get all resources connected to module
+                        resources = self.vertices_by_module_dependency[tf_module].get("resource")
+                        if resources:
+                            # search for provider vertices in the referenced vertices
+                            for e in referenced_vertices:
+                                if self.vertices[e.dest].block_type == BlockType.PROVIDER:
+                                    for resource in resources:
+                                        # connect resource to provider
+                                        self.create_edge(resource, e.dest, e.label)
+                except Exception as e:
+                    logging.warning(f"Failed in connecting module resources to provider due to {e}")
+
     def _build_cross_variable_edges(self) -> None:
         aliases = self._get_aliases()
         resources_types = self.get_resources_types_in_graph()
@@ -398,19 +423,56 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                                      origin_vertex_index: Optional[int] = None) -> int:
         vertex_index_with_longest_common_prefix = -1
         longest_common_prefix = ""
+        vertices_with_longest_common_prefix = []
+        origin_real_path = os.path.realpath(origin_path)
         for vertex_index in relevant_vertices_indexes:
             vertex = self.vertices[vertex_index]
-            common_prefix = os.path.commonpath([os.path.realpath(vertex.path), os.path.realpath(origin_path)])
+            if vertex.path in self._vertex_path_to_realpath_cache:
+                # Using cache to make sure performance stays stable
+                vertex_realpath = self._vertex_path_to_realpath_cache[vertex.path]
+            else:
+                vertex_realpath = os.path.realpath(vertex.path)
+                self._vertex_path_to_realpath_cache[vertex.path] = vertex_realpath
+            common_prefix = os.path.commonpath([vertex_realpath, origin_real_path])
             if len(common_prefix) > len(longest_common_prefix):
                 vertex_index_with_longest_common_prefix = vertex_index
                 longest_common_prefix = common_prefix
-            elif len(common_prefix) == len(longest_common_prefix) and origin_vertex_index:
-                vertex_module_name = vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS, '')
-                origin_module_name = self.vertices[origin_vertex_index].attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS, '')
-                if vertex_module_name.startswith(BlockType.MODULE) and origin_module_name.startswith(BlockType.MODULE):
-                    split_module_name = vertex_module_name.split('.')[1]
-                    if origin_module_name.startswith(f'{BlockType.MODULE}.{split_module_name}'):
-                        vertex_index_with_longest_common_prefix = vertex_index
+                vertices_with_longest_common_prefix = [(vertex_index, vertex)]
+            elif len(common_prefix) == len(longest_common_prefix):
+                vertices_with_longest_common_prefix.append((vertex_index, vertex))
+                if origin_vertex_index is not None:
+                    vertex_module_name = vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS, '')
+                    origin_module_name = self.vertices[origin_vertex_index].attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS, '')
+                    if vertex_module_name.startswith(BlockType.MODULE) and origin_module_name.startswith(BlockType.MODULE):
+                        split_module_name = vertex_module_name.split('.')[1]
+                        if origin_module_name.startswith(f'{BlockType.MODULE}.{split_module_name}'):
+                            vertex_index_with_longest_common_prefix = vertex_index
+        if len(vertices_with_longest_common_prefix) <= 1:
+            return vertex_index_with_longest_common_prefix
+
+        # Try to compare based on foreach attributes if we have more than 1 vertex in the list
+        if origin_vertex_index is not None:
+            return self._find_best_match_based_on_foreach_key(origin_vertex_index, vertices_with_longest_common_prefix,
+                                                              vertex_index_with_longest_common_prefix)
+        return vertex_index_with_longest_common_prefix
+
+    def _find_best_match_based_on_foreach_key(
+            self,
+            origin_vertex_index: int,
+            vertices_with_longest_common_prefix: list[tuple[int, TerraformBlock]],
+            vertex_index_with_longest_common_prefix: int
+    ) -> int:
+        origin_vertex = self.vertices[origin_vertex_index]
+        for vertex_index, vertex in vertices_with_longest_common_prefix:
+            vertex_address = vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS, '')
+            vertex_foreach_value = vertex.for_each_index
+            origin_address = origin_vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS, '')
+            origin_foreach_value = origin_vertex.for_each_index
+            if origin_foreach_value == vertex_foreach_value and origin_address != '' and \
+                    get_terraform_foreach_or_count_key(origin_address) == \
+                    get_terraform_foreach_or_count_key(vertex_address):
+                return vertex_index
+
         return vertex_index_with_longest_common_prefix
 
     def get_vertices_hash_codes_to_attributes_map(self) -> Dict[str, Dict[str, Any]]:
@@ -667,7 +729,8 @@ def update_list_attribute(
 
     if len(key_parts) == 1:
         idx = force_int(key_parts[0])
-        inner_config = config[0]
+        # Avoid changing the config and cause side effects
+        inner_config = pickle_deepcopy(config[0])
 
         if idx is not None and isinstance(inner_config, list):
             if not inner_config:
@@ -675,7 +738,7 @@ def update_list_attribute(
                 return config
 
             inner_config[idx] = new_value
-            return config
+            return [inner_config]
     entry_to_update = int(key_parts[0]) if key_parts[0].isnumeric() else -1
     for i, config_value in enumerate(config):
         if entry_to_update == -1:

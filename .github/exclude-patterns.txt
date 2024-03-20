@@ -24,6 +24,7 @@ tests/terraform/checks/resource/aws/test_EC2Credentials.py
 tests/terraform/checks/provider/ncp/test_credentials.py
 tests/terraform/checks/provider/openstack/test_credentials.py
 tests/terraform/module_loading/test_registry.py
+tests/terraform/checks/resource/azure/example_AzureInstanceExtensions/main.tf
 tests/unit/test_secrets.py
 tests/terraform/runner/resources/plan/tfplan.json
 tests/terraform/parser/resources/plan_tags/tfplan.json

@@ -31,6 +31,7 @@ from checkov.circleci_pipelines.runner import Runner as circleci_pipelines_runne
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.bc_source import SourceTypes, BCSourceType, get_source_type, SourceType
 from checkov.common.bridgecrew.check_type import checkov_runners, CheckType
+from checkov.common.bridgecrew.platform_errors import ModuleNotEnabledError
 from checkov.common.bridgecrew.integration_features.features.custom_policies_integration import \
     integration as custom_policies_integration
 from checkov.common.bridgecrew.integration_features.features.licensing_integration import \
@@ -54,7 +55,6 @@ from checkov.common.typing import LibraryGraph
 from checkov.common.util import prompt
 from checkov.common.util.banner import banner as checkov_banner, tool as checkov_tool
 from checkov.common.util.config_utils import get_default_config_paths
-from checkov.common.util.consts import CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
 from checkov.common.util.ext_argument_parser import ExtArgumentParser, flatten_csv
 from checkov.common.util.runner_dependency_handler import RunnerDependencyHandler
 from checkov.common.util.type_forcers import convert_str_to_bool
@@ -76,7 +76,6 @@ from checkov.common.sast.report_types import serialize_reachability_report
 from checkov.sast.report import SastData, SastReport
 from checkov.sast.runner import Runner as sast_runner
 from checkov.sca_image.runner import Runner as sca_image_runner
-from checkov.sca_package.runner import Runner as sca_package_runner
 from checkov.sca_package_2.runner import Runner as sca_package_runner_2
 from checkov.secrets.runner import Runner as secrets_runner
 from checkov.serverless.runner import Runner as sls_runner
@@ -121,6 +120,7 @@ DEFAULT_RUNNERS: "list[BaseRunner[Any, Any, Any]]" = [
     bicep_runner(),
     openapi_runner(),
     sca_image_runner(),
+    sca_package_runner_2(),
     argo_workflows_runner(),
     circleci_pipelines_runner(),
     azure_pipelines_runner(),
@@ -346,11 +346,6 @@ class Checkov:
                 # This speeds up execution by not setting up upload credentials (since we won't upload anything anyways)
                 logger.debug('Using --list; setting source to DISABLED')
                 source = SourceTypes[BCSourceType.DISABLED]
-
-            if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2:
-                self.runners.append(sca_package_runner_2())
-            else:
-                self.runners.append(sca_package_runner())
 
             if outer_registry:
                 runner_registry = outer_registry
@@ -693,6 +688,10 @@ class Checkov:
             elif not self.config.quiet:
                 print(f"{banner}")
             return None
+        except ModuleNotEnabledError as m:
+            logging.error(m)
+            self.exit_run()
+            return None
         except BaseException:
             logging.error("Exception traceback:", exc_info=True)
             raise
@@ -738,6 +737,10 @@ class Checkov:
             git_getter = GitGetter(url=self.config.external_checks_git[0])
             external_checks_dir = [git_getter.get()]
             atexit.register(shutil.rmtree, str(Path(external_checks_dir[0]).parent))
+        if bc_integration.sast_custom_policies:
+            if not external_checks_dir:
+                external_checks_dir = []
+            external_checks_dir.append(bc_integration.sast_custom_policies)
         return external_checks_dir
 
     def upload_results(

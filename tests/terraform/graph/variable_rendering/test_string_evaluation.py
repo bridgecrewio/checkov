@@ -24,6 +24,19 @@ class TestTerraformEvaluation(TestCase):
         expected = 'smaller'
         self.assertEqual(expected, evaluate_terraform(input_str).strip())
 
+    def test_conditional_expression(self):
+        input_str = '"[\'${blocked == "allowed" ? True : False}\']"'
+        expected = False
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
+        input_str = '${blocked == "allowed" ? True : False}'
+        expected = False
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
+        input_str = 'blocked == "allowed" ? True : False'
+        expected = False
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
     def test_format(self):
         input_str = '"format("Hello, %s!", "Ander")"'
         expected = 'Hello, Ander!'
@@ -478,6 +491,18 @@ class TestTerraformEvaluation(TestCase):
         input_str = "\"['dGVzdA==']\""
         expected = ["dGVzdA=="]
         self.assertEqual(expected, evaluate_terraform(input_str))
+
+    def test_try_block(self):
+        input_str = 'try("local.foo.boop", "{}")'
+        expected = {}
+        result = evaluate_terraform(input_str)
+        self.assertEqual(expected, result)
+
+    def test_try_then_merge_block(self):
+        input_str = "try((merge({}, {})), 1, 2)"
+        expected = {}
+        result = evaluate_terraform(input_str)
+        self.assertEqual(expected, result)
 
 
 @pytest.mark.parametrize(

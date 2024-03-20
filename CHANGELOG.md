@@ -1,6 +1,143 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.7...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.39...HEAD)
+
+## [3.2.39](https://github.com/bridgecrewio/checkov/compare/3.2.38...3.2.39) - 2024-03-17
+
+### Feature
+
+- **secrets:** fix entropy detector FP - [#6090](https://github.com/bridgecrewio/checkov/pull/6090)
+
+## [3.2.38](https://github.com/bridgecrewio/checkov/compare/3.2.37...3.2.38) - 2024-03-14
+
+### Bug Fix
+
+- **terraform:** prevent side effects when updating variable rendering - [#6087](https://github.com/bridgecrewio/checkov/pull/6087)
+
+## [3.2.37](https://github.com/bridgecrewio/checkov/compare/3.2.36...3.2.37) - 2024-03-13
+
+### Feature
+
+- **terraform:** connect module resource to provider - [#6083](https://github.com/bridgecrewio/checkov/pull/6083)
+
+## [3.2.36](https://github.com/bridgecrewio/checkov/compare/3.2.35...3.2.36) - 2024-03-12
+
+### Bug Fix
+
+- **gha:** make sure to have prisma url - [#6084](https://github.com/bridgecrewio/checkov/pull/6084)
+
+## [3.2.35](https://github.com/bridgecrewio/checkov/compare/3.2.34...3.2.35) - 2024-03-11
+
+### Feature
+
+- **general:** add policy name and guidelines to CSV output - [#6082](https://github.com/bridgecrewio/checkov/pull/6082)
+
+### Bug Fix
+
+- **sast:** add attribute verification - [#6078](https://github.com/bridgecrewio/checkov/pull/6078)
+
+## [3.2.34](https://github.com/bridgecrewio/checkov/compare/3.2.33...3.2.34) - 2024-03-10
+
+### Bug Fix
+
+- **terraform:** Dont duplicate more vertices than needed for nested modules with large count/for each values + used cache to avoid extensive usage of os.path.realpath to drastically improve performance - [#6072](https://github.com/bridgecrewio/checkov/pull/6072)
+
+## [3.2.33](https://github.com/bridgecrewio/checkov/compare/3.2.32...3.2.33) - 2024-03-08
+
+### Platform
+
+- **general:** improve upload failure logging and log size of failed files - [#6076](https://github.com/bridgecrewio/checkov/pull/6076)
+
+## [3.2.32](https://github.com/bridgecrewio/checkov/compare/3.2.31...3.2.32) - 2024-03-06
+
+### Bug Fix
+
+- **sast:** do not log warning when using skip framework - [#6066](https://github.com/bridgecrewio/checkov/pull/6066)
+
+## [3.2.31](https://github.com/bridgecrewio/checkov/compare/3.2.28...3.2.31) - 2024-03-04
+
+### Bug Fix
+
+- **terraform:** better handling of interpolation rendering in conditional expressions - [#6062](https://github.com/bridgecrewio/checkov/pull/6062)
+- **terraform:** Changed a couple of checks from negative to positive check, behavior is the same - [#6063](https://github.com/bridgecrewio/checkov/pull/6063)
+
+## [3.2.28](https://github.com/bridgecrewio/checkov/compare/3.2.26...3.2.28) - 2024-02-28
+
+### Bug Fix
+
+- **sca:** handling unknown severity  - [#6055](https://github.com/bridgecrewio/checkov/pull/6055)
+- **terraform:** Add Condition exceptions CKV_AWS_70 - [#6044](https://github.com/bridgecrewio/checkov/pull/6044)
+- **terraform:** Add k8s 1.29 to CKV_AWS_339 - [#6056](https://github.com/bridgecrewio/checkov/pull/6056)
+
+## [3.2.26](https://github.com/bridgecrewio/checkov/compare/3.2.25...3.2.26) - 2024-02-26
+
+### Bug Fix
+
+- **sast:** fetch sast custom policieis - [#6040](https://github.com/bridgecrewio/checkov/pull/6040)
+
+## [3.2.25](https://github.com/bridgecrewio/checkov/compare/3.2.24...3.2.25) - 2024-02-25
+
+### Feature
+
+- **terraform:** Added support for `try` function in evaluate_terraform - [#6043](https://github.com/bridgecrewio/checkov/pull/6043)
+
+## [3.2.24](https://github.com/bridgecrewio/checkov/compare/3.2.23...3.2.24) - 2024-02-22
+
+### Feature
+
+- **cloudformation:** add CFN policies for MSK - [#6021](https://github.com/bridgecrewio/checkov/pull/6021)
+
+## [3.2.23](https://github.com/bridgecrewio/checkov/compare/3.2.22...3.2.23) - 2024-02-21
+
+### Bug Fix
+
+- **terraform:** support vertex reference based on foreach key - [#6039](https://github.com/bridgecrewio/checkov/pull/6039)
+
+## [3.2.22](https://github.com/bridgecrewio/checkov/compare/3.2.21...3.2.22) - 2024-02-18
+
+### Bug Fix
+
+- **terraform:** CKV_AWS_308 - checked if caching was enabled and only then check for encryption of cache - [#6034](https://github.com/bridgecrewio/checkov/pull/6034)
+
+## [3.2.21](https://github.com/bridgecrewio/checkov/compare/3.2.20...3.2.21) - 2024-02-14
+
+### Bug Fix
+
+- **sast:** fix cdk checks path - [#6029](https://github.com/bridgecrewio/checkov/pull/6029)
+
+## [3.2.20](https://github.com/bridgecrewio/checkov/compare/3.2.19...3.2.20) - 2024-02-11
+
+### Bug Fix
+
+- **graph:** remove SCA runner v1 - re-enable - [#6024](https://github.com/bridgecrewio/checkov/pull/6024)
+
+## [3.2.19](https://github.com/bridgecrewio/checkov/compare/3.2.17...3.2.19) - 2024-02-08
+
+### Feature
+
+- **general:** Implement authentication retry mechanism  - [#6022](https://github.com/bridgecrewio/checkov/pull/6022)
+- **sast:** add danger rule - [#6012](https://github.com/bridgecrewio/checkov/pull/6012)
+
+## [3.2.17](https://github.com/bridgecrewio/checkov/compare/3.2.12...3.2.17) - 2024-02-07
+
+### Bug Fix
+
+- **general:** downgrade botocore dependency - [#6016](https://github.com/bridgecrewio/checkov/pull/6016)
+- **graph:** remove SCA runner v1 - [#6005](https://github.com/bridgecrewio/checkov/pull/6005)
+- **terraform:** Deleted deprecated check CKV_GCP_19 - [#6010](https://github.com/bridgecrewio/checkov/pull/6010)
+
+## [3.2.12](https://github.com/bridgecrewio/checkov/compare/3.2.8...3.2.12) - 2024-02-06
+
+### Bug Fix
+
+- **general:** downgrade boto3 - [#6011](https://github.com/bridgecrewio/checkov/pull/6011)
+- **terraform:** fix check CKV2_AZURE_10 - [#6009](https://github.com/bridgecrewio/checkov/pull/6009)
+
+## [3.2.8](https://github.com/bridgecrewio/checkov/compare/3.2.7...3.2.8) - 2024-02-05
+
+### Feature
+
+- **secrets:** bump bc-detect-secrets to version 1.5.4 - [#5998](https://github.com/bridgecrewio/checkov/pull/5998)
 
 ## [3.2.7](https://github.com/bridgecrewio/checkov/compare/3.2.3...3.2.7) - 2024-02-04
 

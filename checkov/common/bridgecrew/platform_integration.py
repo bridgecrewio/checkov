@@ -31,16 +31,16 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
 from checkov.common.bridgecrew.platform_key import read_key
 from checkov.common.bridgecrew.run_metadata.registry import registry
-from checkov.common.bridgecrew.wrapper import CDK_FRAMEWORK_PREFIX, persist_assets_results, reduce_scan_reports, \
+from checkov.common.bridgecrew.wrapper import persist_assets_results, reduce_scan_reports, \
     persist_checks_results, \
     enrich_and_persist_checks_metadata, checkov_results_prefix, persist_run_metadata, _put_json_object, \
     persist_graphs, persist_resource_subgraph_maps, persist_reachability_results, \
     persist_multiple_logs_stream
 from checkov.common.models.consts import SAST_SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILE_EXTENSIONS, SUPPORTED_FILES, SCANNABLE_PACKAGE_FILES
 from checkov.common.runners.base_runner import filter_ignored_paths
-from checkov.common.sast.consts import SastLanguages
+from checkov.common.sast.consts import SastLanguages, CDK_FRAMEWORK_PREFIX
 from checkov.common.typing import _CicdDetails, LibraryGraph
-from checkov.common.util.consts import PRISMA_PLATFORM, BRIDGECREW_PLATFORM, CHECKOV_RUN_SCA_PACKAGE_SCAN_V2
+from checkov.common.util.consts import PRISMA_PLATFORM, BRIDGECREW_PLATFORM
 from checkov.common.util.data_structures_utils import merge_dicts
 from checkov.common.util.dockerfile import is_dockerfile
 from checkov.common.util.http_utils import (
@@ -91,6 +91,9 @@ MAX_RETRIES = 40
 
 CI_METADATA_EXTRACTOR = registry.get_extractor()
 
+REQUEST_STATUS_CODES_RETRY = [401, 408, 500, 502, 503, 504]
+REQUEST_METHODS_TO_RETRY = ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'PUT', 'TRACE', 'POST']
+
 
 class BcPlatformIntegration:
     def __init__(self) -> None:
@@ -114,9 +117,10 @@ class BcPlatformIntegration:
         self.timestamp: str | None = None
         self.scan_reports: list[Report] = []
         self.bc_api_url = normalize_bc_url(os.getenv('BC_API_URL'))
-        self.prisma_api_url = normalize_prisma_url(os.getenv('PRISMA_API_URL', 'https://api0.prismacloud.io'))
+        self.prisma_api_url = normalize_prisma_url(os.getenv('PRISMA_API_URL') or 'https://api0.prismacloud.io')
         self.prisma_policies_url: str | None = None
         self.prisma_policy_filters_url: str | None = None
+        self.custom_auth_headers: dict[str, str] = {}
         self.setup_api_urls()
         self.customer_run_config_response = None
         self.runtime_run_config_response = None
@@ -127,7 +131,12 @@ class BcPlatformIntegration:
         self.platform_integration_configured = False
         self.http: urllib3.PoolManager | urllib3.ProxyManager | None = None
         self.http_timeout = urllib3.Timeout(connect=REQUEST_CONNECT_TIMEOUT, read=REQUEST_READ_TIMEOUT)
-        self.http_retry = urllib3.Retry(REQUEST_RETRIES, redirect=3)
+        self.http_retry = urllib3.Retry(
+            REQUEST_RETRIES,
+            redirect=3,
+            status_forcelist=REQUEST_STATUS_CODES_RETRY,
+            allowed_methods=REQUEST_METHODS_TO_RETRY
+        )
         self.bc_skip_mapping = False
         self.cicd_details: _CicdDetails = {}
         self.support_flag_enabled = False
@@ -139,6 +148,7 @@ class BcPlatformIntegration:
         self.daemon_process = False  # set to 'True' when running in multiprocessing 'spawn' mode
         self.scan_dir: List[str] = []
         self.scan_file: List[str] = []
+        self.sast_custom_policies: str = ''
 
     def init_instance(self, platform_integration_data: dict[str, Any]) -> None:
         """This is mainly used for recreating the instance without interacting with the platform again"""
@@ -153,7 +163,8 @@ class BcPlatformIntegration:
         self.cicd_details = platform_integration_data["cicd_details"]
         self.credentials = platform_integration_data["credentials"]
         self.platform_integration_configured = platform_integration_data["platform_integration_configured"]
-        self.prisma_api_url = platform_integration_data["prisma_api_url"]
+        self.prisma_api_url = platform_integration_data.get("prisma_api_url", 'https://api0.prismacloud.io')
+        self.custom_auth_headers = platform_integration_data["custom_auth_headers"]
         self.repo_branch = platform_integration_data["repo_branch"]
         self.repo_id = platform_integration_data["repo_id"]
         self.repo_path = platform_integration_data["repo_path"]
@@ -178,6 +189,7 @@ class BcPlatformIntegration:
             "credentials": self.credentials,
             "platform_integration_configured": self.platform_integration_configured,
             "prisma_api_url": self.prisma_api_url,
+            "custom_auth_headers": self.custom_auth_headers,
             "repo_branch": self.repo_branch,
             "repo_id": self.repo_id,
             "repo_path": self.repo_path,
@@ -470,7 +482,8 @@ class BcPlatformIntegration:
         request = self.http.request("POST", self.integrations_api_url,  # type:ignore[union-attr]
                                     body=json.dumps({"repoId": repo_id, "support": self.support_flag_enabled}),
                                     headers=merge_dicts({"Authorization": token, "Content-Type": "application/json"},
-                                                        get_user_agent_header()))
+                                                        get_user_agent_header(),
+                                                        self.custom_auth_headers))
         logging.debug(f'Request ID: {request.headers.get("x-amzn-requestid")}')
         logging.debug(f'Trace ID: {request.headers.get("x-amzn-trace-id")}')
         if request.status == 403:
@@ -511,7 +524,7 @@ class BcPlatformIntegration:
             for f in files:
                 f_name = os.path.basename(f)
                 _, file_extension = os.path.splitext(f)
-                if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 and file_extension in SCANNABLE_PACKAGE_FILES:
+                if file_extension in SCANNABLE_PACKAGE_FILES:
                     continue
                 if file_extension in SUPPORTED_FILE_EXTENSIONS or f_name in SUPPORTED_FILES:
                     files_to_persist.append(FileToPersist(f, os.path.relpath(f, root_dir)))
@@ -529,7 +542,7 @@ class BcPlatformIntegration:
                 filter_ignored_paths(root_path, f_names, excluded_paths)
                 for file_path in f_names:
                     _, file_extension = os.path.splitext(file_path)
-                    if CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 and file_extension in SCANNABLE_PACKAGE_FILES:
+                    if file_extension in SCANNABLE_PACKAGE_FILES:
                         continue
                     full_file_path = os.path.join(root_path, file_path)
                     relative_file_path = os.path.relpath(full_file_path, root_dir)
@@ -613,15 +626,15 @@ class BcPlatformIntegration:
     def persist_sast_scan_results(self, reports: List[Report]) -> None:
         sast_scan_reports = {}
         for report in reports:
-            if not report.check_type.startswith('sast'):
+            if not report.check_type.lower().startswith(CheckType.SAST):
                 continue
-            if not report.sast_report:  # type: ignore
+            if not hasattr(report, 'sast_report') or not report.sast_report:
                 continue
-            for _, match_by_check in report.sast_report.rule_match.items():  # type: ignore
+            for _, match_by_check in report.sast_report.rule_match.items():
                 for _, match in match_by_check.items():
                     for m in match.matches:
                         self.adjust_sast_match_location_path(m)
-                sast_scan_reports[report.check_type] = report.sast_report.model_dump(mode='json')  # type: ignore
+                sast_scan_reports[report.check_type] = report.sast_report.model_dump(mode='json')
             if self.on_prem:
                 BcPlatformIntegration._delete_code_block_from_sast_report(sast_scan_reports)
 
@@ -825,7 +838,8 @@ class BcPlatformIntegration:
                                                                  "Content-Type": "application/json",
                                                                  'x-api-client': self.bc_source.name,
                                                                  'x-api-checkov-version': checkov_version},
-                                                                get_user_agent_header()
+                                                                get_user_agent_header(),
+                                                                self.custom_auth_headers
                                                                 ))
                 response = json.loads(request.data.decode("utf8"))
                 logging.debug(f'Request ID: {request.headers.get("x-amzn-requestid")}')
@@ -888,11 +902,12 @@ class BcPlatformIntegration:
                     sleep(SLEEP_SECONDS)
                     curr_try += 1
                 else:
-                    logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}",
-                                  exc_info=True)
+                    logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}", exc_info=True)
+                    logging.debug(f"file size of {full_file_path} is {os.stat(full_file_path).st_size} bytes")
                     raise
             except Exception:
                 logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}", exc_info=True)
+                logging.debug(f"file size of {full_file_path} is {os.stat(full_file_path).st_size} bytes")
                 raise
         if curr_try == tries:
             logging.error(
@@ -930,7 +945,8 @@ class BcPlatformIntegration:
         try:
             token = self.get_auth_token()
             headers = merge_dicts(get_auth_header(token),
-                                  get_default_get_headers(self.bc_source, self.bc_source_version))
+                                  get_default_get_headers(self.bc_source, self.bc_source_version),
+                                  self.custom_auth_headers)
 
             self.setup_http_manager()
             if not self.http:
@@ -980,7 +996,8 @@ class BcPlatformIntegration:
         try:
             token = self.get_auth_token()
             headers = merge_dicts(get_auth_header(token),
-                                  get_default_get_headers(self.bc_source, self.bc_source_version))
+                                  get_default_get_headers(self.bc_source, self.bc_source_version),
+                                  self.custom_auth_headers)
 
             self.setup_http_manager()
             if not self.http:
@@ -1021,7 +1038,8 @@ class BcPlatformIntegration:
 
             token = self.get_auth_token()
             headers = merge_dicts(get_auth_header(token),
-                                  get_default_get_headers(self.bc_source, self.bc_source_version))
+                                  get_default_get_headers(self.bc_source, self.bc_source_version),
+                                  self.custom_auth_headers)
 
             self.setup_http_manager()
             if not self.http:
@@ -1066,7 +1084,7 @@ class BcPlatformIntegration:
 
         try:
             token = self.get_auth_token()
-            headers = merge_dicts(get_prisma_auth_header(token), get_prisma_get_headers())
+            headers = merge_dicts(get_prisma_auth_header(token), get_prisma_get_headers(), self.custom_auth_headers)
 
             self.setup_http_manager()
             if not self.http:
@@ -1098,7 +1116,7 @@ class BcPlatformIntegration:
         request = None
         try:
             token = self.get_auth_token()
-            headers = merge_dicts(get_prisma_auth_header(token), get_prisma_get_headers())
+            headers = merge_dicts(get_prisma_auth_header(token), get_prisma_get_headers(), self.custom_auth_headers)
 
             self.setup_http_manager()
             if not self.http:
@@ -1292,10 +1310,12 @@ class BcPlatformIntegration:
 
         if request_type.upper() == "GET":
             return merge_dicts(get_default_get_headers(self.bc_source, self.bc_source_version),
-                               {"Authorization": self.get_auth_token()})
+                               {"Authorization": self.get_auth_token()},
+                               self.custom_auth_headers)
         elif request_type.upper() == "POST":
             return merge_dicts(get_default_post_headers(self.bc_source, self.bc_source_version),
-                               {"Authorization": self.get_auth_token()})
+                               {"Authorization": self.get_auth_token()},
+                               self.custom_auth_headers)
 
         logging.info(f"Unsupported request {request_type}")
         return {}
@@ -1307,7 +1327,8 @@ class BcPlatformIntegration:
         url_saml_config = f"{bc_integration.prisma_api_url}/saml/config"
         token = self.get_auth_token()
         headers = merge_dicts(get_auth_header(token),
-                              get_default_get_headers(self.bc_source, self.bc_source_version))
+                              get_default_get_headers(self.bc_source, self.bc_source_version),
+                              bc_integration.custom_auth_headers)
 
         request = self.http.request("GET", url_saml_config, headers=headers, timeout=10)  # type:ignore[no-untyped-call]
         if request.status >= 300:
