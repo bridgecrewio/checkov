@@ -6,7 +6,7 @@ from checkov.terraform.runner import Runner
 from checkov.terraform.checks.resource.azure.SQLDatabaseGeoRedundantBackupEnabled import check
 
 
-class TestAppServiceIPRestrictionDefaultActionDeny(unittest.TestCase):
+class TestSQLDatabaseGeoRedundantBackupEnabled(unittest.TestCase):
 
     def test(self):
         runner = Runner()
