@@ -4,7 +4,7 @@ import itertools
 import logging
 import re
 from itertools import groupby
-from typing import TYPE_CHECKING, Pattern, Any
+from typing import TYPE_CHECKING, Pattern, Any, Optional
 
 from checkov.common.bridgecrew.check_type import CheckType
 
@@ -94,7 +94,7 @@ class SuppressionsIntegration(BaseIntegrationFeature):
 
     @staticmethod
     def create_suppression_v2_policy_id_map(suppressions_v2: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
-        checkov_id_map = {}
+        checkov_id_map: dict[str, list[dict[str, Any]]] = {}
         for suppression in suppressions_v2:
             for checkov_id in suppression['checkovPolicyIds']:
                 if checkov_id in checkov_id_map:
@@ -141,7 +141,7 @@ class SuppressionsIntegration(BaseIntegrationFeature):
         scan_report.failed_checks = still_failed_checks
         scan_report.passed_checks = still_passed_checks
 
-    def _check_suppressions(self, record: Record, suppressions: list[dict[str, Any]], suppressions_v2: list[dict[str, Any]]) -> dict[str, Any] | None:
+    def _check_suppressions(self, record: Record, suppressions: Optional[list[dict[str, Any]]], suppressions_v2: Optional[list[dict[str, Any]]]) -> dict[str, Any] | None:
         """
         Checks the specified suppressions against the specified record, returning a tuple of the applied suppression and whether
         the suppression was a v1 suppression or not. If no suppression is found, then returns a tuple of None, None
