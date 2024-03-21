@@ -1,23 +1,25 @@
-metadata:
-  id: "CKV2_IBM_6"
-  name: "Ensure Databases network access is restricted to a specific IP range"
-  category: "NETWORKING"
-
-definition:
-  and:
-    - cond_type: "attribute"
-      resource_types: "ibm_database"
-      attribute: "allowlist"
-      operator: "exists"
-
-    - cond_type: "attribute"
-      resource_types: "ibm_database"
-      attribute: "allowlist.address"
-      operator: "not_equals_ignore_case"
-      value: "0.0.0.0/0"
-
-    - cond_type: "attribute"
-      resource_types: "ibm_database"
-      attribute: "allowlist.address"
-      operator: "length_greater_than"
-      value: "0"
+# Commented out as this is currently requiring a deprecated feature of ibm_database
+# TODO update this check and remove from comment
+#metadata:
+#  id: "CKV2_IBM_6"
+#  name: "Ensure Databases network access is restricted to a specific IP range"
+#  category: "NETWORKING"
+#
+#definition:
+#  and:
+#    - cond_type: "attribute"
+#      resource_types: "ibm_database"
+#      attribute: "allowlist"
+#      operator: "exists"
+#
+#    - cond_type: "attribute"
+#      resource_types: "ibm_database"
+#      attribute: "allowlist.address"
+#      operator: "not_equals_ignore_case"
+#      value: "0.0.0.0/0"
+#
+#    - cond_type: "attribute"
+#      resource_types: "ibm_database"
+#      attribute: "allowlist.address"
+#      operator: "length_greater_than"
+#      value: "0"
