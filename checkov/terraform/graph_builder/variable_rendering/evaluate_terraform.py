@@ -203,9 +203,9 @@ def strip_interpolation_marks(input_str: str) -> str:
 
 def evaluate_conditional_expression(input_str: str) -> str:
     if input_str.startswith("['${") and input_str.endswith("}']"):
-        condition = find_conditional_expression_groups(input_str[5:-3])
+        condition = find_conditional_expression_groups(input_str[4:-3])
         if condition is not None:
-            input_str = input_str[5:-3]
+            input_str = input_str[4:-3]
     else:
         condition = find_conditional_expression_groups(input_str)
     if condition is None:
