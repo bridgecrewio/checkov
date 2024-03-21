@@ -2,3 +2,4 @@ pass:
   - "azurerm_key_vault.pass"
 fail:
   - "azurerm_key_vault.fail"
+  - "azurerm_key_vault.empty_count"
