@@ -54,16 +54,6 @@ setup(
     setup_requires=[
         "pyyaml",
     ],
-    extras_require={
-        "dev": [
-            "pytest==5.3.1",
-            "coverage==5.5",
-            "coverage-badge",
-            "GitPython==3.1.41",
-            "bandit",
-            "jsonschema",
-        ]
-    },
     install_requires=[
         "bc-python-hcl2==0.4.2",
         "bc-detect-secrets==1.5.4",
@@ -71,7 +61,7 @@ setup(
         "pycep-parser==0.4.1",
         "tabulate>=0.9.0,<0.10.0",
         "colorama>=0.4.3,<0.5.0",
-        "termcolor>=1.1.0,<2.4.0",
+        "termcolor>=1.1.0,<2.5.0",
         "junit-xml>=1.9,<2.0",
         "dpath==2.1.3",
         "pyyaml>=6.0.0,<7.0.0",
@@ -105,7 +95,7 @@ setup(
         "openai<1.0.0",
         "spdx-tools<0.9.0,>=0.8.0",
         "license-expression>=30.1.0,<31.0.0",
-        "rustworkx>=0.13.0,<0.14.0",
+        "rustworkx>=0.13.0,<0.15.0",
         "pydantic>=2.0.0,<3.0.0",
         "botocore==1.34.25"
     ],
