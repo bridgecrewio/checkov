@@ -31,7 +31,7 @@ from checkov.circleci_pipelines.runner import Runner as circleci_pipelines_runne
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.bc_source import SourceTypes, BCSourceType, get_source_type, SourceType
 from checkov.common.bridgecrew.check_type import checkov_runners, CheckType
-from checkov.common.bridgecrew.platform_errors import ModuleNotEnabledError
+from checkov.common.bridgecrew.platform_errors import ModuleNotEnabledError, PlatformConnectionError
 from checkov.common.bridgecrew.integration_features.features.custom_policies_integration import \
     integration as custom_policies_integration
 from checkov.common.bridgecrew.integration_features.features.licensing_integration import \
@@ -402,6 +402,8 @@ class Checkov:
 
                 except MaxRetryError:
                     self.exit_run()
+                except PlatformConnectionError:
+                    self.exit_run()
                 except Exception:
                     if bc_integration.prisma_api_url:
                         message = 'An error occurred setting up the Prisma Cloud platform integration. ' \
@@ -692,9 +694,20 @@ class Checkov:
             logging.error(m)
             self.exit_run()
             return None
-        except BaseException:
+        except PlatformConnectionError:
+            # we don't want to print all of these stack traces in normal output, as these could be user error
+            # and stack traces look like checkov bugs
+            logging.debug("Exception traceback:", exc_info=True)
+            self.exit_run()
+            return None
+        except SystemExit:
+            # calling exit_run from an exception handler causes another exception that is caught here, so we just need to re-exit
+            self.exit_run()
+            return None
+        except BaseException:  # noqa: B036 # we need to catch any failure and exit properly
             logging.error("Exception traceback:", exc_info=True)
-            raise
+            self.exit_run()
+            return None
 
         finally:
             if bc_integration.support_flag_enabled:
