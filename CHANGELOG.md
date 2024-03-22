@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.42...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.43...HEAD)
+
+## [3.2.43](https://github.com/bridgecrewio/checkov/compare/3.2.42...3.2.43) - 2024-03-21
+
+### Bug Fix
+
+- **terraform:** Fixed bug in evaluate_conditional_expression and added zipmap support - [#6106](https://github.com/bridgecrewio/checkov/pull/6106)
 
 ## [3.2.42](https://github.com/bridgecrewio/checkov/compare/3.2.39...3.2.42) - 2024-03-20
 
