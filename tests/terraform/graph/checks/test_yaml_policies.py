@@ -25,6 +25,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_KmsKeyPolicyIsDefined(self):
         self.go("KmsKeyPolicyIsDefined")
 
+    def test_KmsKeyWildcardPrincipal(self):
+        self.go("KmsKeyWildcardPrincipal")        
+
     def test_NetworkFirewallHasLogging(self):
         self.go("NetworkFirewallHasLogging")
 
