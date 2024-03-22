@@ -7,7 +7,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 class SQLDatabaseGeoRedundantBackupEnabled(BaseResourceValueCheck):
     def __init__(self) -> None:
         name = "Ensure that backups are geo-redundants for Azure SQL Databases"
-        id = "CKV_AZURE_240"
+        id = "CKV_AZURE_241"
         supported_resources = ("azurerm_mssql_database",)
         categories = (CheckCategories.BACKUP_AND_RECOVERY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
