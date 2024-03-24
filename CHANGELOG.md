@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.43...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.44...HEAD)
+
+## [3.2.44](https://github.com/bridgecrewio/checkov/compare/3.2.43...3.2.44) - 2024-03-24
+
+### Bug Fix
+
+- **sca:** Fix suppression integration crashing if licenseTypes is missing - [#6117](https://github.com/bridgecrewio/checkov/pull/6117)
 
 ## [3.2.43](https://github.com/bridgecrewio/checkov/compare/3.2.42...3.2.43) - 2024-03-21
 
