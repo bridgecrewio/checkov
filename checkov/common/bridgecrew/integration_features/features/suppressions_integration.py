@@ -182,7 +182,7 @@ class SuppressionsIntegration(BaseIntegrationFeature):
 
         elif type == 'LicenseType':
             return any(record.vulnerability_details and record.vulnerability_details['license'] == license_type
-                       for license_type in suppression['licenseTypes'])
+                       for license_type in suppression.get('licenseTypes', []))
 
         return False
 
