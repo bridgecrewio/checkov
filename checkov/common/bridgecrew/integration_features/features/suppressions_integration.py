@@ -143,10 +143,7 @@ class SuppressionsIntegration(BaseIntegrationFeature):
 
     def _check_suppressions(self, record: Record, suppressions: Optional[list[dict[str, Any]]], suppressions_v2: Optional[list[dict[str, Any]]]) -> dict[str, Any] | None:
         """
-        Checks the specified suppressions against the specified record, returning a tuple of the applied suppression and whether
-        the suppression was a v1 suppression or not. If no suppression is found, then returns a tuple of None, None
-        :param record:
-        :param suppressions:
+        Checks the specified suppressions against the specified record, returning the applied suppression, if any, else None
         :return:
         """
         if suppressions:
@@ -226,25 +223,34 @@ class SuppressionsIntegration(BaseIntegrationFeature):
 
         return False
 
+    @staticmethod
+    def normalize_file_path(file_path: str) -> str:
+        """
+        Returns the file path with a leading slash, if not already present
+        """
+        return file_path if file_path.startswith('/') else f'/{file_path}'
+
+    def _check_suppression_v2_file(self, record_file_path: str, suppression_file_path: str, suppression_repo_name: str) -> bool:
+        return self.bc_integration.repo_matches(suppression_repo_name) \
+               and (suppression_file_path == record_file_path
+                    or suppression_file_path == convert_to_unix_path(record_file_path))
+
     def _check_suppression_v2(self, record: Record, suppression: dict[str, Any]) -> bool:
         if record.check_id not in suppression['checkovPolicyIds']:
             return False
 
         type = suppression['ruleType']
 
-        if type == 'policy':  # TODO policy suppression not supported via UI yet but we just need to set the correct type value here
+        if type == 'policy':
             # We just checked the policy ID above
             return True
         elif type == 'finding':
             pass  # TODO how to map them?
         elif type == 'file':
-            record_file_path = record.repo_file_path if record.repo_file_path.startswith('/') else f'/{record.repo_file_path}'
+            record_file_path = SuppressionsIntegration.normalize_file_path(record.repo_file_path)
             for file_suppression in suppression['files']:
-                suppression_file_path = file_suppression['filePath']
-                suppression_file_path = suppression_file_path if suppression_file_path.startswith('/') else f'/{suppression_file_path}'
-                if self.bc_integration.repo_matches(file_suppression['repositoryName']) \
-                        and (suppression_file_path == record_file_path
-                             or suppression_file_path == convert_to_unix_path(record_file_path)):
+                suppression_file_path = SuppressionsIntegration.normalize_file_path(file_suppression['filePath'])
+                if self._check_suppression_v2_file(record_file_path, suppression_file_path, file_suppression['repositoryName']):
                     return True
         elif type == 'repository':
             return any(self.bc_integration.repo_matches(repo['repositoryName']) for repo in suppression['repositories'])
