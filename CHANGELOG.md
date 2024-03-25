@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.44...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.45...HEAD)
+
+## [3.2.45](https://github.com/bridgecrewio/checkov/compare/3.2.44...3.2.45) - 2024-03-25
+
+### Feature
+
+- **terraform:** fix for_each resource handling - [#6119](https://github.com/bridgecrewio/checkov/pull/6119)
 
 ## [3.2.44](https://github.com/bridgecrewio/checkov/compare/3.2.43...3.2.44) - 2024-03-24
 
