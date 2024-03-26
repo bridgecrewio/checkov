@@ -231,9 +231,8 @@ class SuppressionsIntegration(BaseIntegrationFeature):
         return file_path if file_path.startswith('/') else f'/{file_path}'
 
     def _check_suppression_v2_file(self, record_file_path: str, suppression_file_path: str, suppression_repo_name: str) -> bool:
-        return self.bc_integration.repo_matches(suppression_repo_name) \
-               and (suppression_file_path == record_file_path
-                    or suppression_file_path == convert_to_unix_path(record_file_path))
+        return self.bc_integration.repo_matches(suppression_repo_name)\
+            and (suppression_file_path == record_file_path or suppression_file_path == convert_to_unix_path(record_file_path))
 
     def _check_suppression_v2(self, record: Record, suppression: dict[str, Any]) -> bool:
         if record.check_id not in suppression['checkovPolicyIds']:
