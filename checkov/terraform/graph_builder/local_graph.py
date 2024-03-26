@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import logging
 import os
 from collections import defaultdict
@@ -18,7 +19,7 @@ from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.type_forcers import force_int
 from checkov.terraform.graph_builder.foreach.builder import ForeachBuilder
 from checkov.terraform.graph_builder.variable_rendering.vertex_reference import TerraformVertexReference
-from checkov.terraform.modules.module_objects import TFModule
+from checkov.terraform.modules.module_objects import TFModule, TFDefinitionKey
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
@@ -295,7 +296,11 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 try:
                     tf_def = vertex.config.get(vertex.name, {}).get(RESOLVED_MODULE_ENTRY_NAME)
                     if tf_def and isinstance(tf_def, list):
-                        tf_module = tf_def[0].tf_source_modules
+                        if isinstance(tf_def[0], str):
+                            definition = json.loads(tf_def[0])
+                            tf_module = TFDefinitionKey.from_json(definition).tf_source_modules
+                        else:
+                            tf_module = tf_def[0].tf_source_modules
                         # get all resources connected to module
                         resources = self.vertices_by_module_dependency[tf_module].get("resource")
                         if resources:
