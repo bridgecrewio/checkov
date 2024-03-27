@@ -25,6 +25,7 @@ from checkov.kubernetes.image_referencer.manager import KubernetesImageReference
 from checkov.kubernetes.kubernetes_utils import (
     create_definitions,
     build_definitions_context,
+    get_resource_tags,
     get_skipped_checks,
     get_resource_id,
     K8_POSSIBLE_ENDINGS,
@@ -219,6 +220,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_KubernetesDefinitions, _Kub
                     continue
 
                 entity_context = self.context[k8_file][resource_id]
+                tags = get_resource_tags(entity_conf)
 
                 record = Record(
                     check_id=check.id,
@@ -233,6 +235,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_KubernetesDefinitions, _Kub
                     check_class=check.__class__.__module__,
                     file_abs_path=file_abs_path,
                     severity=check.severity,
+                    entity_tags=tags,
                 )
                 record.set_guideline(check.guideline)
                 report.add_record(record=record)
@@ -276,6 +279,9 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_KubernetesDefinitions, _Kub
                     check_result=check_result, entity_context=entity_context, check_id=check.id
                 )
 
+                entity_conf = entity[CustomAttributes.CONFIG]
+                tags = get_resource_tags(entity_conf)
+                
                 record = Record(
                     check_id=check.id,
                     check_name=check.name,
@@ -287,7 +293,8 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_KubernetesDefinitions, _Kub
                     evaluations={},
                     check_class=check.__class__.__module__,
                     file_abs_path=entity_file_abs_path,
-                    severity=check.severity
+                    severity=check.severity,
+                    entity_tags=tags,
                 )
                 record.set_guideline(check.guideline)
                 report.add_record(record=record)
