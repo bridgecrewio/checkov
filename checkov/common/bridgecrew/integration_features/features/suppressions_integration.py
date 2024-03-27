@@ -147,11 +147,11 @@ class SuppressionsIntegration(BaseIntegrationFeature):
         :return:
         """
         if suppressions:
-            for suppression in suppressions or []:
+            for suppression in suppressions:
                 if self._check_suppression(record, suppression):
                     return suppression
         if suppressions_v2:
-            for suppression in suppressions_v2 or []:
+            for suppression in suppressions_v2:
                 if self._check_suppression_v2(record, suppression):
                     return suppression
         return None
