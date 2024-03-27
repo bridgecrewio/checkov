@@ -1329,7 +1329,7 @@ class BcPlatformIntegration:
             return {}
         if reset_http_manager:
             # for cases the http isn't set yet. e.g: when calling from the platform's BE
-            self.setup_http_manager(self.ca_certificate,self.no_cert_verify)
+            self.setup_http_manager(self.ca_certificate, self.no_cert_verify)
         if request_type.upper() == "GET":
             return merge_dicts(get_default_get_headers(self.bc_source, self.bc_source_version),
                                {"Authorization": self.get_auth_token()},
