@@ -1,6 +1,51 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.38...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.47...HEAD)
+
+## [3.2.47](https://github.com/bridgecrewio/checkov/compare/3.2.45...3.2.47) - 2024-03-26
+
+### Feature
+
+- **secrets:** bump manually bc-detect-secrets - [#6120](https://github.com/bridgecrewio/checkov/pull/6120)
+- **terraform:** add fix for when tf_def is a string - [#6121](https://github.com/bridgecrewio/checkov/pull/6121)
+
+## [3.2.45](https://github.com/bridgecrewio/checkov/compare/3.2.44...3.2.45) - 2024-03-25
+
+### Feature
+
+- **terraform:** fix for_each resource handling - [#6119](https://github.com/bridgecrewio/checkov/pull/6119)
+
+## [3.2.44](https://github.com/bridgecrewio/checkov/compare/3.2.43...3.2.44) - 2024-03-24
+
+### Bug Fix
+
+- **sca:** Fix suppression integration crashing if licenseTypes is missing - [#6117](https://github.com/bridgecrewio/checkov/pull/6117)
+
+## [3.2.43](https://github.com/bridgecrewio/checkov/compare/3.2.42...3.2.43) - 2024-03-21
+
+### Bug Fix
+
+- **terraform:** Fixed bug in evaluate_conditional_expression and added zipmap support - [#6106](https://github.com/bridgecrewio/checkov/pull/6106)
+
+## [3.2.42](https://github.com/bridgecrewio/checkov/compare/3.2.39...3.2.42) - 2024-03-20
+
+### Feature
+
+- **sast:** support sast skipped checks - [#6095](https://github.com/bridgecrewio/checkov/pull/6095)
+
+### Bug Fix
+
+- **secrets:** ignore secret check in test file - [#6105](https://github.com/bridgecrewio/checkov/pull/6105)
+
+### Platform
+
+- **general:** handle API errors with more detail - [#6107](https://github.com/bridgecrewio/checkov/pull/6107)
+
+## [3.2.39](https://github.com/bridgecrewio/checkov/compare/3.2.38...3.2.39) - 2024-03-17
+
+### Feature
+
+- **secrets:** fix entropy detector FP - [#6090](https://github.com/bridgecrewio/checkov/pull/6090)
 
 ## [3.2.38](https://github.com/bridgecrewio/checkov/compare/3.2.37...3.2.38) - 2024-03-14
 
