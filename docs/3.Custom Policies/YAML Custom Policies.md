@@ -58,7 +58,8 @@ The top level object under `definition` must be a single object (not a list). It
 ## Types of Definition Blocks
 
 * **Attribute Blocks:** The policy describes resources with a certain configuration as defined by a configuration **attribute** and its value (per Terraform), or by the presence/absence of an attribute.
-* **Connection State Blocks** - The policy describes resources in a particular **Connection state**; either connected or not connected to another type of resource (for example, a security group).
+* **Connection State Blocks:**  The policy describes resources in a particular **Connection state**; either connected or not connected to another type of resource (for example, a security group).
+* **Resource Type Blocks:** The policy describes resource types that are either allowed or forbidden to use, commonly referred to as allow/deny lists.
 
 ### Using AND/OR Logic
 A policy definition may include multiple blocks (**Attribute**, **Connection state** or both), associated by **AND/OR** logic.
@@ -252,6 +253,22 @@ definition:
 ```
 
 *Note: The condition above uses AND logic. See [additional examples](https://www.checkov.io/3.Custom%20Policies/Examples.html) for complex logic in policy definitions.*
+
+## Resource Type Blocks
+
+A **Resource Type Block** in a policy's definition indicates that a resource will be compliant/non-complaint depending on the resource type, which is allowed/forbidden. Use the `exist` operator to define an allowlist and the `not_exist` operator to define a blocklist.
+
+### Resource Type Block Example
+
+The Resource Type Block in the `definition` in the example below is used to ensure CloudHSM cluster won't be provisioned:
+
+```yaml
+definition:
+  cond_type: "resource"
+  resource_types:
+   - "aws_cloudhsm_v2_cluster"
+  operator: "not_exists"
+```
 
 ## Using AND/OR Logic
 
