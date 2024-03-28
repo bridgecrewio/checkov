@@ -24,3 +24,12 @@ Resources:
         S3Bucket: 'myBucket'
         S3Key: 'code/myLambda.zip'
       Runtime: 'dotnetcore3.1'
+  Fail-java8:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Handler: 'index.handler'
+      FunctionName: 'Java8Function'
+      Code:
+        S3Bucket: 'myBucket'
+        S3Key: 'code/myLambda.zip'
+      Runtime: 'java8'
