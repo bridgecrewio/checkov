@@ -23,7 +23,8 @@ class TestDeprecatedLambdaRuntime(unittest.TestCase):
         }
         failing_resources = {
             "AWS::Lambda::Function.Fail",
-            "AWS::Serverless::Function.Fail2"
+            "AWS::Serverless::Function.Fail2",
+            "AWS::Lambda::Function.Fail-java8"
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
