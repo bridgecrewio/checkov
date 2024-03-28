@@ -508,6 +508,11 @@ class Checkov:
             git_configuration_folders = [os.getenv("CKV_GITHUB_CONF_DIR_PATH", default_github_dir_path),
                                          os.getcwd() + '/' + os.getenv('CKV_GITLAB_CONF_DIR_NAME', 'gitlab_conf')]
 
+            collect_skip_comments = True
+            # Disable collecting comments if env CHECKOV_DISABLE_SKIP_COMMENTS is True, to suppress inline comments.
+            if os.getenv("CHECKOV_DISABLE_SKIP_COMMENTS", "FALSE").upper() == "TRUE":
+                collect_skip_comments = False
+
             if self.config.directory:
                 exit_codes = []
                 bc_integration.scan_dir = self.config.directory
@@ -521,6 +526,7 @@ class Checkov:
                         root_folder=root_folder,
                         external_checks_dir=external_checks_dir,
                         files=file,
+                        collect_skip_comments=collect_skip_comments,
                     )
                     self.graphs = runner_registry.check_type_to_graph
                     self.resource_subgraph_maps = runner_registry.check_type_to_resource_subgraph_map
@@ -591,6 +597,7 @@ class Checkov:
                     image_id=self.config.docker_image,
                     dockerfile_path=self.config.dockerfile_path,
                     runner_filter=runner_filter,
+                    collect_skip_comments=collect_skip_comments,
                 )
                 self.scan_reports = result if isinstance(result, list) else [result]
                 if runner_registry.is_error_in_reports(self.scan_reports):
@@ -636,6 +643,7 @@ class Checkov:
                     external_checks_dir=external_checks_dir,
                     files=self.config.file,
                     repo_root_for_plan_enrichment=self.config.repo_root_for_plan_enrichment,
+                    collect_skip_comments=collect_skip_comments,
                 )
                 self.graphs = runner_registry.check_type_to_graph
                 self.resource_subgraph_maps = runner_registry.check_type_to_resource_subgraph_map
