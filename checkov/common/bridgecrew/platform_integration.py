@@ -124,8 +124,8 @@ class BcPlatformIntegration:
         self.setup_api_urls()
         self.customer_run_config_response = None
         self.runtime_run_config_response = None
-        self.prisma_policies_response = None
-        self.prisma_policies_exception_response = None
+        self.prisma_policies_response: dict[str, str] | None = None
+        self.prisma_policies_exception_response: dict[str, str] | None = None
         self.public_metadata_response = None
         self.use_s3_integration = False
         self.s3_setup_failed = False
@@ -1084,7 +1084,7 @@ class BcPlatformIntegration:
         self.prisma_policies_response = self.get_prisma_policies_for_filter(policy_filter)
         self.prisma_policies_exception_response = self.get_prisma_policies_for_filter(policy_filter_exception)
 
-    def get_prisma_policies_for_filter(self, policy_filter: dict[str, str]) -> dict[Any, Any]:
+    def get_prisma_policies_for_filter(self, policy_filter: str) -> dict[Any, Any] | None:
         request = None
         filtered_policies = None
         try:
@@ -1094,7 +1094,7 @@ class BcPlatformIntegration:
             self.setup_http_manager()
             if not self.http:
                 logging.error("HTTP manager was not correctly created")
-                return
+                return filtered_policies
 
             logging.debug(f'Prisma policy URL: {self.prisma_policies_url}')
             query_params = convert_prisma_policy_filter_to_dict(policy_filter)

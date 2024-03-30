@@ -179,7 +179,7 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
                 self.filtered_policy_ids = policy_ids
                 self._add_ckv_id_for_filtered_cloned_checks(self.filtered_policy_ids, exclude_policies)
 
-    def _add_ckv_id_for_filtered_cloned_checks(self, policy_ids, exclude_policies: bool) -> None:
+    def _add_ckv_id_for_filtered_cloned_checks(self, policy_ids: list[str], exclude_policies: bool) -> None:
         """
         Filtered checks are the policies that are returned by --policy-metadata-filter.
         Filtered exclusion checks are the policies that are returned by --policy-metadata-filter-exclusion.

@@ -380,6 +380,7 @@ class RunnerFilter(object):
         if use_enforcement_rules is None:
             use_enforcement_rules = False
         filtered_policy_ids = obj.get('filtered_policy_ids')
+        filtered_exception_policy_ids = obj.get('filtered_exception_policy_ids')
         show_progress_bar = obj.get('show_progress_bar')
         if show_progress_bar is None:
             show_progress_bar = True
@@ -391,8 +392,8 @@ class RunnerFilter(object):
         runner_filter = RunnerFilter(framework, checks, skip_checks, include_all_checkov_policies,
                                      download_external_modules, external_modules_download_path, evaluate_variables,
                                      runners, skip_framework, excluded_paths, all_external, var_files,
-                                     skip_cve_package, use_enforcement_rules, filtered_policy_ids, show_progress_bar,
-                                     run_image_referencer, enable_secret_scan_all_files, block_list_secret_scan)
+                                     skip_cve_package, use_enforcement_rules, filtered_policy_ids, filtered_exception_policy_ids,
+                                     show_progress_bar, run_image_referencer, enable_secret_scan_all_files, block_list_secret_scan)
         return runner_filter
 
     def set_suppressed_policies(self, policy_level_suppressions: List[str]) -> None:
