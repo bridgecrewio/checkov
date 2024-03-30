@@ -174,11 +174,12 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
                         policy_ids.append(ckv_id)
             if exclude_policies:
                 self.filtered_exception_policy_ids = policy_ids
+                self._add_ckv_id_for_filtered_cloned_checks(self.filtered_exception_policy_ids, exclude_policies)
             else:
                 self.filtered_policy_ids = policy_ids
-            self._add_ckv_id_for_filtered_cloned_checks(exclude_policies)
+                self._add_ckv_id_for_filtered_cloned_checks(self.filtered_policy_ids, exclude_policies)
 
-    def _add_ckv_id_for_filtered_cloned_checks(self, exclude_policies: bool) -> None:
+    def _add_ckv_id_for_filtered_cloned_checks(self, policy_ids, exclude_policies: bool) -> None:
         """
         Filtered checks are the policies that are returned by --policy-metadata-filter.
         Filtered exclusion checks are the policies that are returned by --policy-metadata-filter-exclusion.
@@ -195,7 +196,7 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
                 filtered_policy_ids = [ "org_AWS_1609123441", "CKV_AWS_123" ]
         """
         ckv_ids = []
-        for policy_id in self.filtered_policy_ids:
+        for policy_id in policy_ids:
             source_bc_id = self.get_source_incident_id_from_ckv_id(policy_id)
             if not source_bc_id:
                 continue

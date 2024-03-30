@@ -493,7 +493,8 @@ class Checkov:
             if self.config.list:
                 print_checks(frameworks=self.config.framework, use_bc_ids=self.config.output_bc_ids,
                              include_all_checkov_policies=self.config.include_all_checkov_policies,
-                             filtered_policy_ids=runner_filter.filtered_policy_ids)
+                             filtered_policy_ids=runner_filter.filtered_policy_ids,
+                             filtered_exception_policy_ids=runner_filter.filtered_exception_policy_ids)
                 return None
 
             baseline = None
