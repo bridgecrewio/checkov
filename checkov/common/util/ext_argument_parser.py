@@ -469,6 +469,13 @@ class ExtArgumentParser(configargparse.ArgumentParser):
             default=None,
         )
         self.add(
+            "--policy-metadata-filter-exception",
+            help="comma separated key:value string to exclude filtered policies based on Prisma Cloud policy metadata. "
+                 "See https://prisma.pan.dev/api/cloud/cspm/policy#operation/get-policy-filters-and-options for "
+                 "information on allowed filters. Format: policy.label=test,cloud.type=aws ",
+            default=None,
+        )
+        self.add(
             "--secrets-scan-file-type",
             default=[],
             env_var="CKV_SECRETS_SCAN_FILE_TYPE",
