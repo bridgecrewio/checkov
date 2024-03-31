@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.49...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.50...HEAD)
+
+## [3.2.50](https://github.com/bridgecrewio/checkov/compare/3.2.49...3.2.50) - 2024-03-31
+
+### Bug Fix
+
+- **general:** remove limitation of resource and provider in tf.json file - [#6133](https://github.com/bridgecrewio/checkov/pull/6133)
 
 ## [3.2.49](https://github.com/bridgecrewio/checkov/compare/3.2.47...3.2.49) - 2024-03-28
 
