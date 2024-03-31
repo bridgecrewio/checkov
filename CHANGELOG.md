@@ -1,6 +1,19 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.45...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.49...HEAD)
+
+## [3.2.49](https://github.com/bridgecrewio/checkov/compare/3.2.47...3.2.49) - 2024-03-28
+
+### Bug Fix
+
+- **general:** pin the version of schema to <=0.7.5 - [#6125](https://github.com/bridgecrewio/checkov/pull/6125)
+
+## [3.2.47](https://github.com/bridgecrewio/checkov/compare/3.2.45...3.2.47) - 2024-03-26
+
+### Feature
+
+- **secrets:** bump manually bc-detect-secrets - [#6120](https://github.com/bridgecrewio/checkov/pull/6120)
+- **terraform:** add fix for when tf_def is a string - [#6121](https://github.com/bridgecrewio/checkov/pull/6121)
 
 ## [3.2.45](https://github.com/bridgecrewio/checkov/compare/3.2.44...3.2.45) - 2024-03-25
 
