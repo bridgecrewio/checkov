@@ -337,7 +337,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         if S3_BUCKET_RESOURCE_NAME not in resources_types:
             return
         # Find all the edges leading to S3 bucket and their references
-        s3_buckets_mapping = {}
+        s3_buckets_mapping: Dict[int, Dict[str, Any]] = {}
         for origin_node_index, referenced_vertices in self.out_edges.items():
             vertex = self.vertices[origin_node_index]
             for referenced_vertice in referenced_vertices:
