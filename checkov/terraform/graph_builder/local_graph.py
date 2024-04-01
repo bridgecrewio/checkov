@@ -96,12 +96,11 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 edges_count = len(self.edges)
                 self._build_cross_variable_edges()
                 logging.info(f"Found {len(self.edges) - edges_count} cross variable edges")
-            if strtobool(os.getenv("CHECKOV_EXPERIMENTAL_AWS_S3_NAME_REFERENCES", "True")):
-                # experimental flag on building S3 edges by name for terraform graph
-                logging.info("Building S3 edges name references")
-                edges_count = len(self.edges)
-                self._build_s3_name_reference_edges()
-                logging.info(f"Found {len(self.edges) - edges_count} S3 name references edges")
+            # building S3 edges by name for terraform graph
+            logging.info("Building S3 edges name references")
+            edges_count = len(self.edges)
+            self._build_s3_name_reference_edges()
+            logging.info(f"Found {len(self.edges) - edges_count} S3 name references edges")
         else:
             self.update_vertices_fields()
 
