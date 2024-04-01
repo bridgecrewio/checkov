@@ -346,7 +346,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                     if vertex.id.startswith(f"{S3_BUCKET_RESOURCE_NAME}."):
                         current["bucket_resource_index"] = origin_node_index
                     else:
-                        current["referenced_vertices"] = current["referenced_vertices"] + [referenced_vertice]
+                        current["referenced_vertices"].append(referenced_vertice)
                     s3_buckets_mapping[referenced_vertice.dest] = current
 
         # Create new edges of the found connections
