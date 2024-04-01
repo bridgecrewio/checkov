@@ -4,6 +4,7 @@ pass:
   - "aws_s3_bucket.enabled_var"
   - 'aws_s3_bucket.this["test-bucket1"]'
   - 'aws_s3_bucket.this["test-bucket2"]'
+  - "aws_s3_bucket.ref_by_name"
 fail:
   - "aws_s3_bucket.default"
   - "aws_s3_bucket.disabled"
