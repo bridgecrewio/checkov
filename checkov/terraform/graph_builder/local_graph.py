@@ -332,22 +332,25 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 self._build_edges_for_vertex(origin_node_index, vertex, aliases, resources_types, True, modules)
 
     def _build_s3_name_reference_edges(self) -> None:
+        # Supporting reference by name of S3 bucket
         resources_types = self.get_resources_types_in_graph()
         if S3_BUCKET_RESOURCE_NAME not in resources_types:
             return
-        bucket_mapping = {}
+        # Find all the edges leading to S3 bucket and their references
+        s3_buckets_mapping = {}
         for origin_node_index, referenced_vertices in self.out_edges.items():
             vertex = self.vertices[origin_node_index]
             for referenced_vertice in referenced_vertices:
                 if referenced_vertice.label == S3_BUCKET_REFERENCE_ATTRIBUTE:
-                    current = bucket_mapping.get(referenced_vertice.dest, {"bucket_resource_index": None, "referenced_vertices": list()})
+                    current = s3_buckets_mapping.get(referenced_vertice.dest, {"bucket_resource_index": None, "referenced_vertices": list()})
                     if vertex.id.startswith(f"{S3_BUCKET_RESOURCE_NAME}."):
                         current["bucket_resource_index"] = origin_node_index
                     else:
                         current["referenced_vertices"] = current["referenced_vertices"] + [referenced_vertice]
-                    bucket_mapping[referenced_vertice.dest] = current
+                    s3_buckets_mapping[referenced_vertice.dest] = current
 
-        for destination, mapping in bucket_mapping.items():
+        # Create new edges of the found connections
+        for destination, mapping in s3_buckets_mapping.items():
             if self.vertices[destination].block_type == BlockType.VARIABLE:
                 for reference_vertex in mapping["referenced_vertices"]:
                     self.create_edge(mapping["bucket_resource_index"], reference_vertex.origin, S3_BUCKET_REFERENCE_ATTRIBUTE, True)
