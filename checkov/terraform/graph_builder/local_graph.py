@@ -194,13 +194,6 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                                 referenced_modules: Optional[List[Dict[str, Any]]] = None) -> None:
 
         attribute_is_leaf = get_attribute_is_leaf(vertex)
-        # attributes_items = list(vertex.attributes.items())
-        # if vertex.block_type == BlockType.VARIABLE:
-        #     attributes_items.append(('_variable_referencer', f"var.{vertex.name}"))
-        # for attribute_key, attribute_value in attributes_items:
-        #     if attribute_key != "_variable_referencer" and (attribute_key in reserved_attribute_names or attribute_has_nested_attributes(
-        #             attribute_key, vertex.attributes, attribute_is_leaf
-        #     )):
         for attribute_key, attribute_value in vertex.attributes.items():
             if attribute_key in reserved_attribute_names or attribute_has_nested_attributes(
                     attribute_key, vertex.attributes, attribute_is_leaf
