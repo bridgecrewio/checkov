@@ -56,6 +56,24 @@ resource "aws_s3_bucket_versioning" "aws_bucket_versioning" {
   }
 }
 
+variable "bucket_name_2" {
+}
+
+locals {
+  bucketName = var.bucket_name_2
+}
+
+resource "aws_s3_bucket" "ref_by_name_local" {
+  bucket = local.bucketName
+}
+
+resource "aws_s3_bucket_versioning" "aws_bucket_versioning_local" {
+  bucket = local.bucketName
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
 # fail
 
 resource "aws_s3_bucket" "default" {

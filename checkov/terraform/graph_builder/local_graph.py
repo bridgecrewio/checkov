@@ -340,6 +340,8 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         s3_buckets_mapping: Dict[int, Dict[str, Any]] = {}
         for origin_node_index, referenced_vertices in self.out_edges.items():
             vertex = self.vertices[origin_node_index]
+            if vertex.block_type != BlockType.RESOURCE:
+                continue
             for referenced_vertice in referenced_vertices:
                 if referenced_vertice.label == S3_BUCKET_REFERENCE_ATTRIBUTE:
                     current = s3_buckets_mapping.get(referenced_vertice.dest, {"bucket_resource_index": None, "referenced_vertices": list()})
@@ -351,7 +353,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
 
         # Create new edges of the found connections
         for destination, mapping in s3_buckets_mapping.items():
-            if self.vertices[destination].block_type == BlockType.VARIABLE:
+            if self.vertices[destination].block_type in [BlockType.VARIABLE, BlockType.LOCALS]:
                 for reference_vertex in mapping["referenced_vertices"]:
                     self.create_edge(mapping["bucket_resource_index"], reference_vertex.origin, S3_BUCKET_REFERENCE_ATTRIBUTE, True)
 
