@@ -353,6 +353,8 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         # Create new edges of the found connections
         for destination, mapping in s3_buckets_mapping.items():
             if self.vertices[destination].block_type in [BlockType.VARIABLE, BlockType.LOCALS]:
+                if mapping["bucket_resource_index"] is None:
+                    continue
                 for reference_vertex in mapping["referenced_vertices"]:
                     self.create_edge(mapping["bucket_resource_index"], reference_vertex.origin, S3_BUCKET_REFERENCE_ATTRIBUTE, True)
 
