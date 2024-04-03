@@ -1,72 +1,72 @@
 
-                resource "azurerm_app_service" "fail" {
-                  name                = "example-app-service"
-                  location            = azurerm_resource_group.example.location
-                  resource_group_name = azurerm_resource_group.example.name
-                  app_service_plan_id = azurerm_app_service_plan.example.id
+resource "azurerm_app_service" "fail" {
+  name                = "example-app-service"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+  app_service_plan_id = azurerm_app_service_plan.example.id
 
-                  site_config {
-                    dotnet_framework_version = "v4.0"
-                    scm_type                 = "LocalGit"
-                    remote_debugging_enabled = true
-                  }
+  site_config {
+    dotnet_framework_version = "v4.0"
+    scm_type                 = "LocalGit"
+    remote_debugging_enabled = true
+  }
 
-                  app_settings = {
-                    "SOME_KEY" = "some-value"
-                  }
+  app_settings = {
+    "SOME_KEY" = "some-value"
+  }
 
-                  connection_string {
-                    name  = "Database"
-                    type  = "SQLServer"
-                    value = "Server=some-server.mydomain.com;Integrated Security=SSPI"
-                  }
-                }
+  connection_string {
+    name  = "Database"
+    type  = "SQLServer"
+    value = "Server=some-server.mydomain.com;Integrated Security=SSPI"
+  }
+}
 
-                resource "azurerm_app_service" "pass" {
-                  name                = "example-app-service"
-                  location            = azurerm_resource_group.example.location
-                  resource_group_name = azurerm_resource_group.example.name
-                  app_service_plan_id = azurerm_app_service_plan.example.id
+resource "azurerm_app_service" "pass" {
+  name                = "example-app-service"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+  app_service_plan_id = azurerm_app_service_plan.example.id
 
-                  site_config {
-                    dotnet_framework_version = "v4.0"
-                    scm_type                 = "LocalGit"
-                  }
+  site_config {
+    dotnet_framework_version = "v4.0"
+    scm_type                 = "LocalGit"
+  }
 
-                  app_settings = {
-                    "SOME_KEY" = "some-value"
-                  }
+  app_settings = {
+    "SOME_KEY" = "some-value"
+  }
 
-                  connection_string {
-                    name  = "Database"
-                    type  = "SQLServer"
-                    value = "Server=some-server.mydomain.com;Integrated Security=SSPI"
-                  }
-                }
+  connection_string {
+    name  = "Database"
+    type  = "SQLServer"
+    value = "Server=some-server.mydomain.com;Integrated Security=SSPI"
+  }
+}
 
-                resource "azurerm_app_service" "pass2" {
-                  name                = "example-app-service"
-                  location            = azurerm_resource_group.example.location
-                  resource_group_name = azurerm_resource_group.example.name
-                  app_service_plan_id = azurerm_app_service_plan.example.id
+resource "azurerm_app_service" "pass2" {
+  name                = "example-app-service"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+  app_service_plan_id = azurerm_app_service_plan.example.id
 
-                  site_config {
-                    dotnet_framework_version = "v4.0"
-                    scm_type                 = "LocalGit"
-                    remote_debugging_enabled = false
-                  }
+  site_config {
+    dotnet_framework_version = "v4.0"
+    scm_type                 = "LocalGit"
+    remote_debugging_enabled = false
+  }
 
-                  app_settings = {
-                    "SOME_KEY" = "some-value"
-                  }
+  app_settings = {
+    "SOME_KEY" = "some-value"
+  }
 
-                  connection_string {
-                    name  = "Database"
-                    type  = "SQLServer"
-                    value = "Server=some-server.mydomain.com;Integrated Security=SSPI"
-                  }
+  connection_string {
+    name  = "Database"
+    type  = "SQLServer"
+    value = "Server=some-server.mydomain.com;Integrated Security=SSPI"
+  }
 
-                }
+}
 
 resource "azurerm_linux_web_app" "pass" {
   name                = "example"
@@ -89,7 +89,7 @@ resource "azurerm_linux_web_app" "pass2" {
   }
 }
 
-                resource "azurerm_linux_web_app" "fail" {
+resource "azurerm_linux_web_app" "fail" {
   name                = "example"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_service_plan.example.location
@@ -100,7 +100,7 @@ resource "azurerm_linux_web_app" "pass2" {
   }
 }
 
-                resource "azurerm_windows_web_app" "pass" {
+resource "azurerm_windows_web_app" "pass" {
   name                = "example"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_service_plan.example.location
@@ -109,7 +109,7 @@ resource "azurerm_linux_web_app" "pass2" {
   site_config {}
 }
 
-                resource "azurerm_windows_web_app" "pass2" {
+resource "azurerm_windows_web_app" "pass2" {
   name                = "example"
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_service_plan.example.location
