@@ -124,7 +124,8 @@ class BcPlatformIntegration:
         self.setup_api_urls()
         self.customer_run_config_response = None
         self.runtime_run_config_response = None
-        self.prisma_policies_response = None
+        self.prisma_policies_response: dict[str, str] | None = None
+        self.prisma_policies_exception_response: dict[str, str] | None = None
         self.public_metadata_response = None
         self.use_s3_integration = False
         self.s3_setup_failed = False
@@ -1081,17 +1082,18 @@ class BcPlatformIntegration:
         except Exception:
             logging.debug('could not get runtime info for this repo')
 
-    def get_prisma_build_policies(self, policy_filter: str) -> None:
+    def get_prisma_build_policies(self, policy_filter: str, policy_filter_exception: str) -> None:
         """
         Get Prisma policy for enriching runConfig with metadata
         Filters: https://prisma.pan.dev/api/cloud/cspm/policy#operation/get-policy-filters-and-options
         :param policy_filter: comma separated filter string. Example, policy.label=A,cloud.type=aws
+        :param policy_filter_exception: comma separated filter string. Example, policy.label=A,cloud.type=aws
         :return:
         """
         if self.skip_download is True:
             logging.debug("Skipping prisma policy API call")
             return
-        if not policy_filter:
+        if not policy_filter and not policy_filter_exception:
             return
         if not self.is_prisma_integration():
             return
@@ -1099,9 +1101,12 @@ class BcPlatformIntegration:
             raise Exception(
                 "Tried to get prisma build policy metadata, "
                 "but the API key was missing or the integration was not set up")
+        self.prisma_policies_response = self.get_prisma_policies_for_filter(policy_filter)
+        self.prisma_policies_exception_response = self.get_prisma_policies_for_filter(policy_filter_exception)
 
+    def get_prisma_policies_for_filter(self, policy_filter: str) -> dict[Any, Any] | None:
         request = None
-
+        filtered_policies = None
         try:
             token = self.get_auth_token()
             headers = merge_dicts(get_prisma_auth_header(token), get_prisma_get_headers(), self.custom_auth_headers)
@@ -1109,7 +1114,7 @@ class BcPlatformIntegration:
             self.setup_http_manager()
             if not self.http:
                 logging.error("HTTP manager was not correctly created")
-                return
+                return filtered_policies
 
             logging.debug(f'Prisma policy URL: {self.prisma_policies_url}')
             query_params = convert_prisma_policy_filter_to_dict(policy_filter)
@@ -1123,14 +1128,13 @@ class BcPlatformIntegration:
                     headers=headers,
                     fields=query_params,
                 )
-                self.prisma_policies_response = json.loads(request.data.decode("utf8"))
                 logging.debug("Got Prisma build policy metadata")
-            else:
-                logging.warning("Skipping get prisma build policies. --policy-metadata-filter will not be applied.")
+                filtered_policies = json.loads(request.data.decode("utf8"))
         except Exception:
             response_message = f': {request.status} - {request.reason}' if request else ''
             logging.warning(
                 f"Failed to get prisma build policy metadata from {self.prisma_policies_url}{response_message}", exc_info=True)
+        return filtered_policies
 
     def get_prisma_policy_filters(self) -> Dict[str, Dict[str, Any]]:
         request = None
@@ -1182,7 +1186,7 @@ class BcPlatformIntegration:
                 logging.warning(f"Filter value not allowed: {filter_value}")
                 logging.warning("Available options: True")
                 return False
-        logging.debug("--policy-metadata-filter is valid")
+        logging.debug("policy filter is valid")
         return True
 
     def get_public_run_config(self) -> None:

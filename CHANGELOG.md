@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.50...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.51...HEAD)
+
+## [3.2.51](https://github.com/bridgecrewio/checkov/compare/3.2.50...3.2.51) - 2024-04-02
+
+### Feature
+
+- **general:** add policy metadata filter exception flag - [#6132](https://github.com/bridgecrewio/checkov/pull/6132)
 
 ## [3.2.50](https://github.com/bridgecrewio/checkov/compare/3.2.49...3.2.50) - 2024-03-31
 
