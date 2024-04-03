@@ -48,6 +48,11 @@ class Undetermined(TypedDict):
     variable_vertex_id: int
 
 
+class S3ConnectedResources(TypedDict):
+    bucket_resource_index: int | None
+    referenced_vertices: List[Edge]
+
+
 class TerraformLocalGraph(LocalGraph[TerraformBlock]):
     def __init__(self, module: Module) -> None:
         super().__init__()
@@ -336,7 +341,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         if S3_BUCKET_RESOURCE_NAME not in resources_types:
             return
         # Find all the edges leading to S3 bucket and their references
-        s3_buckets_mapping: Dict[int, Dict[str, Any]] = {}
+        s3_buckets_mapping: Dict[int, S3ConnectedResources] = {}
         for origin_node_index, referenced_vertices in self.out_edges.items():
             vertex = self.vertices[origin_node_index]
             if vertex.block_type != BlockType.RESOURCE:
