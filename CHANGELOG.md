@@ -1,6 +1,18 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.51...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.53...HEAD)
+
+## [3.2.53](https://github.com/bridgecrewio/checkov/compare/3.2.52...3.2.53) - 2024-04-03
+
+### Feature
+
+- **terraform:** support s3 bucket name for references in graph - [#6134](https://github.com/bridgecrewio/checkov/pull/6134)
+
+## [3.2.52](https://github.com/bridgecrewio/checkov/compare/3.2.51...3.2.52) - 2024-04-03
+
+### Feature
+
+- **general:** Update the releases' zip file names to be generic - [#6141](https://github.com/bridgecrewio/checkov/pull/6141)
 
 ## [3.2.51](https://github.com/bridgecrewio/checkov/compare/3.2.50...3.2.51) - 2024-04-02
 
