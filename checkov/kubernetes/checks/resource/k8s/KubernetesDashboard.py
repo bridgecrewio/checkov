@@ -19,6 +19,8 @@ class KubernetesDashboard(BaseK8sContainerCheck):
                 return CheckResult.FAILED
             if "kubernetes-dashboard" in conf_image or "kubernetesui" in conf_image:
                 return CheckResult.FAILED
+        else:
+            return CheckResult.FAILED
         if metadata and metadata.get("labels"):
             if "app" in metadata["labels"]:
                 if metadata["labels"]["app"] == "kubernetes-dashboard":
