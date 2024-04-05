@@ -1,11 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Resources:
-  AES256Encryption:
-    Type: AWS::ECR::Repository
-    Properties: 
-      RepositoryName: "test"
-      EncryptionConfiguration:
-        EncryptionType: "AES256"
   NoEncryption:
     Type: AWS::ECR::Repository
     Properties: 
