@@ -1,6 +1,7 @@
 from typing import Any
 
 from checkov.common.models.enums import CheckCategories
+from checkov.common.models.consts import ANY_VALUE
 from checkov.cloudformation.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
 
@@ -16,7 +17,8 @@ class ECRRepositoryEncrypted(BaseResourceValueCheck):
         return "Properties/EncryptionConfiguration/EncryptionType"
 
     def get_expected_value(self) -> Any:
-        return "KMS"
+        # Valid Values: AES256 | KMS
+        return ANY_VALUE
 
 
 check = ECRRepositoryEncrypted()
