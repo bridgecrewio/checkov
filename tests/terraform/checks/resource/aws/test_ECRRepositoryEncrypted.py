@@ -22,7 +22,7 @@ class TestECRRepositoryEncrypted(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.FAILED, scan_result)
 
-    def test_success(self):
+    def test_success_kms(self):
         hcl_res = hcl2.loads("""
                 resource "aws_ecr_repository" "foo" {
                   name                 = "bar"
@@ -40,6 +40,25 @@ class TestECRRepositoryEncrypted(unittest.TestCase):
         resource_conf = hcl_res['resource'][0]['aws_ecr_repository']['foo']
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
+
+        def test_success_kms(self):
+            hcl_res = hcl2.loads("""
+                    resource "aws_ecr_repository" "foo" {
+                      name                 = "bar"
+                      image_tag_mutability = "MUTABLE"
+
+                      image_scanning_configuration {
+                        scan_on_push = true
+                      }
+                      
+                      encryption_configuration {
+                        encryption_type = "AES256"
+                      }
+                    }
+            """)
+            resource_conf = hcl_res['resource'][0]['aws_ecr_repository']['foo']
+            scan_result = check.scan_resource_conf(conf=resource_conf)
+            self.assertEqual(CheckResult.PASSED, scan_result)
 
 
 if __name__ == '__main__':
