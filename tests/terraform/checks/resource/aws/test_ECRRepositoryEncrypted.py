@@ -41,7 +41,7 @@ class TestECRRepositoryEncrypted(unittest.TestCase):
         scan_result = check.scan_resource_conf(conf=resource_conf)
         self.assertEqual(CheckResult.PASSED, scan_result)
 
-        def test_success_kms(self):
+        def test_success_aes256(self):
             hcl_res = hcl2.loads("""
                     resource "aws_ecr_repository" "foo" {
                       name                 = "bar"
