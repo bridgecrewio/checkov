@@ -7,7 +7,7 @@ from checkov.cloudformation.checks.resource.base_resource_value_check import Bas
 
 class ECRRepositoryEncrypted(BaseResourceValueCheck):
     def __init__(self) -> None:
-        name = "Ensure that ECR repositories are encrypted using KMS"
+        name = "Ensure that ECR repositories are encrypted"
         id = "CKV_AWS_136"
         supported_resources = ("AWS::ECR::Repository",)
         categories = (CheckCategories.ENCRYPTION,)

@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 
 class ECRRepositoryEncrypted(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure that ECR repositories are encrypted using KMS"
+        name = "Ensure that ECR repositories are encrypted"
         id = "CKV_AWS_136"
         supported_resources = ['aws_ecr_repository']
         categories = [CheckCategories.ENCRYPTION]
