@@ -11,7 +11,7 @@ scope:
 definition:
   or:
     - pattern: |
-        new s3.Bucket(<ANY>, { accessControl: $ARG, <ANY> })
+        new s3.Bucket(<ANY>, {<ANY>, accessControl: $ARG, <ANY>}, <ANY> )
       conditions:
         or:
           - metavariable: $ARG
@@ -19,4 +19,4 @@ definition:
           - metavariable: $ARG
             pattern: s3.BucketAccessControl.PUBLIC_READ_WRITE
     -  pattern: |
-          new s3.Bucket(<ANY>, { publicReadAccess: true, <ANY> })
+          new s3.Bucket(<ANY>, { <ANY>, publicReadAccess: true, <ANY>}, <ANY>)
