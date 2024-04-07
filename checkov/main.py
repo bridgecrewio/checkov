@@ -391,7 +391,7 @@ class Checkov:
 
                 try:
                     bc_integration.bc_api_key = self.config.bc_api_key
-                    bc_integration.api_url = 'https://www.bridgecrew.cloud'
+                    # bc_integration.api_url = 'https://www.bridgecrew.cloud'
                     bc_integration.setup_bridgecrew_credentials(repo_id=self.config.repo_id,
                                                                 skip_fixes=False,  # will be set to True if this run is not eligible for fixes
                                                                 skip_download=self.config.skip_download,
