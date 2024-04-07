@@ -171,7 +171,7 @@ class SuppressionsIntegration(BaseIntegrationFeature):
                 return False
             if self.bc_integration.repo_id and self.bc_integration.source_id and self.bc_integration.source_id in suppression['accountIds']\
                     and suppression['cves']:
-                repo_name = self.bc_integration.repo_id.replace('\\', '/').split('/')[-1]
+                repo_name = align_path(self.bc_integration.repo_id).split('/')[-1]
                 suppression_path = self._get_cve_suppression_path(suppression)
                 repo_file_path = align_path(record.repo_file_path)
                 file_abs_path = align_path(record.file_abs_path)
@@ -190,7 +190,7 @@ class SuppressionsIntegration(BaseIntegrationFeature):
         return False
 
     def _get_cve_suppression_path(self, suppression: dict[str, Any]) -> str:
-        suppression_path: str =  align_path(suppression['cves'][0]['id'])
+        suppression_path: str = align_path(suppression['cves'][0]['id'])
         # for handling cases of IR/docker (e.g: '/Dockerfile:/DockerFile.FROM)
         suppression_path_parts = suppression_path.split(':')
         if len(suppression_path_parts) == 2 and suppression_path_parts[1].startswith(suppression_path_parts[0]):
