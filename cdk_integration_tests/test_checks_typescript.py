@@ -72,7 +72,7 @@ def test_TransferServerIsPublic():
 
 def test_VPCEndpointAcceptanceConfigured():
     run_check(check_results=failed_checks, check_id="CKV_AWS_123", policy_name="VPCEndpointAcceptanceConfigured", language="typescript")
-   
+
 
 def test_WAFEnabled():
     run_check(check_results=failed_checks, check_id="CKV_AWS_68", policy_name="WAFEnabled", language="typescript")
