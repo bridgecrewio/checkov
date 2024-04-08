@@ -24,4 +24,8 @@ echo "creating report for CDK python"
 pipenv run checkov -s --framework cdk --repo-id cli/cdk -o json \
         -d "cdk_integration_tests/src/python" > "checkov_report_cdk_python.json"
 
+echo "creating report for CDK typescript"
+pipenv run checkov -s --framework cdk --repo-id cli/cdk -o json \
+        -d "cdk_integration_tests/src/typescript" > "checkov_report_cdk_typescript.json"
+
 #todo: iterate over all the cdk typescript checks - when ts supported in sast
