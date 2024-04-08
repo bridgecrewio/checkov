@@ -1,6 +1,16 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.53...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.55...HEAD)
+
+## [3.2.55](https://github.com/bridgecrewio/checkov/compare/3.2.53...3.2.55) - 2024-04-08
+
+### Feature
+
+- **sast:** Adding typescript cdk part 6 paz - [#6149](https://github.com/bridgecrewio/checkov/pull/6149)
+
+### Bug Fix
+
+- **sca:** enabling suppression in the cli-output for IR-files and dockerfiles - [#6148](https://github.com/bridgecrewio/checkov/pull/6148)
 
 ## [3.2.53](https://github.com/bridgecrewio/checkov/compare/3.2.52...3.2.53) - 2024-04-03
 
