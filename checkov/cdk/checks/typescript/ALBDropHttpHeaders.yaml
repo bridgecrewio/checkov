@@ -9,13 +9,13 @@ scope:
   languages:
     - python
 definition:
-  pattern: aws_cdk.aws_elasticloadbalancingv2.CfnLoadBalancer(<ANY>)
+  pattern: new elbv2.CfnLoadBalancer(ANY)
   conditions:
     - not_pattern: |
-        aws_cdk.aws_elasticloadbalancingv2.CfnLoadBalancer(<ANY>, type='application' ,<ANY>, load_balancer_attributes=[<ANY>, {'key': 'routing.http.drop_invalid_header_fields.enabled','value': 'true'} ,<ANY>] ,<ANY>)
+        new elbv2.CfnLoadBalancer(<ANY>, type='application' ,<ANY>, load_balancer_attributes=[<ANY>, {'key': 'routing.http.drop_invalid_header_fields.enabled','value': 'true'} ,<ANY>] ,<ANY>)
     - not_pattern: |
-        aws_cdk.aws_elasticloadbalancingv2.CfnLoadBalancer(<ANY>, type='application' ,<ANY>, load_balancer_attributes=[<ANY>, {'value': 'true','key': 'routing.http.drop_invalid_header_fields.enabled'} ,<ANY>] ,<ANY>)
+        new elbv2.CfnLoadBalancer(<ANY>, type='application' ,<ANY>, load_balancer_attributes=[<ANY>, {'value': 'true','key': 'routing.http.drop_invalid_header_fields.enabled'} ,<ANY>] ,<ANY>)
     - not_pattern: |
-        aws_cdk.aws_elasticloadbalancingv2.CfnLoadBalancer(<ANY>, load_balancer_attributes=[<ANY>, {'key': 'routing.http.drop_invalid_header_fields.enabled','value': 'true'} ,<ANY>] ,<ANY>, type='application' ,<ANY>)
+        new elbv2.CfnLoadBalancer(<ANY>, load_balancer_attributes=[<ANY>, {'key': 'routing.http.drop_invalid_header_fields.enabled','value': 'true'} ,<ANY>] ,<ANY>, type='application' ,<ANY>)
     - not_pattern: |
-        aws_cdk.aws_elasticloadbalancingv2.CfnLoadBalancer(<ANY>, load_balancer_attributes=[<ANY>, {'value': 'true','key': 'routing.http.drop_invalid_header_fields.enabled'} ,<ANY>] ,<ANY>, type='application' ,<ANY>)
+        new elbv2.CfnLoadBalancer(<ANY>, load_balancer_attributes=[<ANY>, {'value': 'true','key': 'routing.http.drop_invalid_header_fields.enabled'} ,<ANY>] ,<ANY>, type='application' ,<ANY>)
