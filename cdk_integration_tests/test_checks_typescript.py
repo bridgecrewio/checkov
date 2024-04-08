@@ -1,8 +1,19 @@
-from cdk_integration_tests.utils import run_check
+from typing import Dict, Any, List
+
 import pytest
 
+from cdk_integration_tests.utils import run_check, load_failed_checks_from_file
+
+LANGUAGE = 'typescript'
+
+@pytest.fixture(scope="session", autouse=True)
+def failed_checks() -> Dict[str, List[Dict[str, Any]]]:
+    report_failed_checks = load_failed_checks_from_file(LANGUAGE)
+    yield report_failed_checks
+
+
 def test_ALBDropHttpHeaders():
-    run_check(lang="typescript", check_name="ALBDropHttpHeaders")
+    run_check(check_results=failed_checks, check_id="CKV_AWS_131", policy_name="ALBDropHttpHeaders", language="typescript")
 
 @pytest.mark.skip(reason="Not supported yet")
 def test_S3BucketEncryption():
@@ -25,34 +36,34 @@ def test_S3BucketVersioning():
     run_check(lang="typescript", check_name="S3BucketVersioning")
 
 def test_S3PublicACLRead():
-    run_check(lang="typescript", check_name="S3PublicACLRead")
+    run_check(check_results=failed_checks, check_id="CKV_AWS_20", policy_name="S3PublicACLRead", language="typescript")
 
 def test_S3RestrictPublicBuckets():
-    run_check(lang="typescript", check_name="S3RestrictPublicBuckets")
+    run_check(check_results=failed_checks, check_id="CKV_AWS_56", policy_name="S3RestrictPublicBuckets", language="typescript")
 
 def test_SecretManagerSecretEncrypted():
-    run_check(lang="typescript", check_name="SecretManagerSecretEncrypted")
+    run_check(check_results=failed_checks, check_id="CKV_AWS_149", policy_name="S3RestrictPublicBuckets", language="typescript")
 
 def test_SecurityGroupRuleDescription():
-    run_check(lang="typescript", check_name="SecurityGroupRuleDescription")
+    run_check(check_results=failed_checks, check_id="CKV_AWS_23", policy_name="SecurityGroupRuleDescription", language="typescript")
 
 def test_SNSTopicEncryption():
-    run_check(lang="typescript", check_name="SNSTopicEncryption")
+    run_check(check_results=failed_checks, check_id="CKV_AWS_26", policy_name="SNSTopicEncryption", language="typescript")
 
 def test_SQSQueueEncryption():
-    run_check(lang="typescript", check_name="SQSQueueEncryption")
+    run_check(check_results=failed_checks, check_id="CKV_AWS_27", policy_name="SQSQueueEncryption", language="typescript")
 
 def test_TransferServerIsPublic():
-    run_check(lang="typescript", check_name="TransferServerIsPublic")
+    run_check(check_results=failed_checks, check_id="CKV_AWS_164", policy_name="TransferServerIsPublic", language="typescript")
 
 def test_VPCEndpointAcceptanceConfigured():
-    run_check(lang="typescript", check_name="VPCEndpointAcceptanceConfigured")
+    run_check(check_results=failed_checks, check_id="CKV_AWS_123", policy_name="VPCEndpointAcceptanceConfigured", language="typescript")
    
 def test_WAFEnabled():
-    run_check(lang="typescript", check_name="WAFEnabled")
+    run_check(check_results=failed_checks, check_id="CKV_AWS_68", policy_name="WAFEnabled", language="typescript")
 
 def test_WorkspaceRootVolumeEncrypted():
-    run_check(lang="typescript", check_name="WorkspaceRootVolumeEncrypted")
+    run_check(check_results=failed_checks, check_id="CKV_AWS_156", policy_name="WorkspaceRootVolumeEncrypted", language="typescript")
 
 def test_WorkspaceUserVolumeEncrypted():
-    run_check(lang="typescript", check_name="WorkspaceUserVolumeEncrypted")
+    run_check(check_results=failed_checks, check_id="CKV_AWS_155", policy_name="WorkspaceUserVolumeEncrypted", language="typescript")
