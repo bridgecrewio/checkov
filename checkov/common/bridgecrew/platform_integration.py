@@ -386,6 +386,17 @@ class BcPlatformIntegration:
 
         self.platform_integration_configured = True
 
+    def _get_source_id_from_repo_path(self, repo_path: str) -> str | None:
+        repo_path_parts = repo_path.split("/")
+        if not repo_path_parts and repo_path_parts[0] != 'checkov':
+            logging.error(f'failed to get source_id from repo_path. repo_path format is unknown: ${repo_path}')
+            return None
+        try:
+            return '/'.join(repo_path_parts[2:4])
+        except IndexError:
+            logging.error(f'failed to get source_id from repo_path. repo_path format is unknown: ${repo_path}')
+            return None
+
     def set_s3_integration(self) -> None:
         try:
             self.skip_fixes = True  # no need to run fixes on CI integration
@@ -394,7 +405,7 @@ class BcPlatformIntegration:
                 return
 
             self.bucket, self.repo_path = repo_full_path.split("/", 1)
-
+            self.source_id = self._get_source_id_from_repo_path(self.repo_path)
             self.timestamp = self.repo_path.split("/")[-2]
             self.credentials = cast("dict[str, str]", response["creds"])
 
