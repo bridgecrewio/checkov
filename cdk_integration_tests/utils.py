@@ -49,7 +49,7 @@ def run_check(check_results: Dict[str, List[Dict[str, Any]]], check_id: str, pol
 
 
 def validate_report(report_path: str) -> None:
-    with open(report_path) as f:    
+    with open(report_path) as f:
         data = f.read()
         report = json.loads(data)
         assert report is not None
