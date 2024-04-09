@@ -21,6 +21,7 @@ class SastLanguages(Enum):
     PYTHON = 'python'
     JAVA = 'java'
     JAVASCRIPT = 'javascript'
+    TYPESCRIPT = 'typescript'
 
 
 class CDKLanguages(Enum):
