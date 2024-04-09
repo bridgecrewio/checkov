@@ -13,4 +13,4 @@ definition:
     new ecs.Cluster(<ANY>)
   conditions:
     - not_pattern: |
-       new ecs.Cluster(<ANY>, { <ANY>, containerInsights: true, <ANY>}, <ANY>)
+        new ecs.Cluster(<ANY>, { <ANY>, containerInsights: true, <ANY>}, <ANY>)
