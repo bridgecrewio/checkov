@@ -33,6 +33,7 @@ class CDKLanguages(Enum):
         return set(cls)
 
     PYTHON = 'python'
+    TYPESCRIPT = 'typescript'
 
 
 class BqlVersion(str, Enum):
