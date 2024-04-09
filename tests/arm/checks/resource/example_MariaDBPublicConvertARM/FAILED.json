@@ -15,6 +15,7 @@
         "version": "10.3",
         "administratorLogin": "admin",
         "administratorLoginPassword": "admin123",
+        "publicNetworkAccess": "True",
         "storageProfile": {
           "storageMB": "5120"
         }

@@ -6,12 +6,13 @@ from checkov.runner_filter import RunnerFilter
 
 
 class TestMariaDBPublicConvertARM(unittest.TestCase):
-    def summary(self):
-        test_files_dir = Path(__file__).parrent / "example_MariaDBPublicConvertARM"
+    def test_summary(self):
+        test_files_dir = Path(__file__).parent / "example_MariaDBPublicConvertARM"
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
         passing_resources = {
-              "Microsoft.DBforMariaDB/servers.pass",}
+              "Microsoft.DBforMariaDB/servers.pass",
+        }
         failing_resources = {
                "Microsoft.DBforMariaDB/servers.fail",
          }
@@ -29,4 +30,5 @@ class TestMariaDBPublicConvertARM(unittest.TestCase):
 
 
 if __name__ == '__main__':
+
     unittest.main()
