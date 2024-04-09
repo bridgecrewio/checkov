@@ -18,13 +18,9 @@ set_env_vars() {
 }
 
 prepare_data () {
-  echo "creating report for CDK python"
-  python checkov/main.py -s --framework cdk --repo-id prisma/cdk_python -o json \
-    -d "cdk_integration_tests/src/python" > "checkov_report_cdk_python.json"
-
-  echo "creating report for CDK typescript"
-  python checkov/main.py -s --framework cdk --repo-id prisma/cdk_typescript -o json \
-    -d "cdk_integration_tests/src/typescript" > "checkov_report_cdk_typescript.json"
+  echo "creating report for CDK"
+  python checkov/main.py -s --framework cdk --repo-id prisma/cdk -o json \
+    -d "cdk_integration_tests/src" > "checkov_report_cdk.json"
 
 }
 
