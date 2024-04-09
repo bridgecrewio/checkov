@@ -1,56 +1,35 @@
 import unittest
-import hcl2
-from checkov.arm.checks.resource.MariaDBpublicConvertARM import MariaDBpublicConvertARM, check
-from checkov.common.models.enums import CheckResult
+from pathlib import Path
+from checkov.arm.checks.resource.MariaDBpublicConvertARM import check
+from checkov.arm.runner import Runner
+from checkov.runner_filter import RunnerFilter
 
 
-class test_MariaDBpublicConvertARM(unittest.TestCase):
-    import unittest
-    def test_failure(self):
-        hcl_res = hcl2.loads("""
-                resource "azurerm_mariadb_server" "example" {
-                name                = var.server_name
-                location            = var.resource_group.location
-                resource_group_name = var.resource_group.name
-                administrator_login          = var.admin_login
-                administrator_login_password = random_string.password.result
-                sku_name   = "B_Gen5_2"
-                storage_mb = 5120
-                version    = "10.2"
-                auto_grow_enabled             = true
-                backup_retention_days         = 7
-                geo_redundant_backup_enabled  = false
-                public_network_access_enabled = true
-                #test this i guess
-                ssl_enforcement_enabled = false
-            }
-                    """)
-        resource_conf = hcl_res['resource'][0]['azurerm_mariadb_server']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
+class TestMariaDBPublicConvertARM(unittest.TestCase):
+    def test_summary(self):
+        test_files_dir = Path(__file__).parent / "example_MariaDBPublicConvertToARM"
 
-    def test_success(self):
-        hcl_res = hcl2.loads("""
-            resource "azurerm_mariadb_server" "example" {
-                name                = var.server_name
-                location            = var.resource_group.location
-                resource_group_name = var.resource_group.name
-                administrator_login          = var.admin_login
-                administrator_login_password = random_string.password.result
-                sku_name   = "B_Gen5_2"
-                storage_mb = 5120
-                version    = "10.2"
-                auto_grow_enabled             = true
-                backup_retention_days         = 7
-                geo_redundant_backup_enabled  = false
-                public_network_access_enabled = false
-                #test this i guess
-                ssl_enforcement_enabled = true
-            }
-                    """)
-        resource_conf = hcl_res['resource'][0]['azurerm_mariadb_server']['example']
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
+        report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
 
-    if __name__ == '__main__':
-        unittest.main()
+        summary = report.get_summary()
+
+        passing_resources = {
+            "Microsoft.DBforMariaDB/servers.pass",
+        }
+        failing_resources = {
+            "Microsoft.DBforMariaDB/servers.fail",
+        }
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
+
+        assert summary["passed"] == len(passing_resources)
+        assert summary["failed"] == len(failing_resources)
+        assert summary["skipped"] == 0
+        assert summary["parsing_errors"] == 0
+
+        assert passed_check_resources == passing_resources
+        assert failed_check_resources == failing_resources
+
+
+if __name__ == '__main__':
+    unittest.main()
