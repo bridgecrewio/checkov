@@ -898,7 +898,6 @@ class BcPlatformIntegration:
                 else:
                     logging.error(f"Failed to finalize repository {self.repo_id} in the platform with the following error:\n{response}")
                     self.s3_setup_failed = True
-
         return None
 
     def persist_files(self, files_to_persist: list[FileToPersist]) -> None:
