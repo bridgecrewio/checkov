@@ -2,7 +2,7 @@ import { App, Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { aws_elasticloadbalancingv2 as elbv2 } from 'aws-cdk-lib';
 
-class ALBDropHttpHeadersStack extends Stack {
+class ALBListenerHTTPSStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {
         super(scope, id, props);
 
@@ -16,4 +16,4 @@ class ALBDropHttpHeadersStack extends Stack {
 }
 
 const app = new App();
-new ALBDropHttpHeadersStack(app, 'ALBDropHttpHeadersStack');
+new ALBListenerHTTPSStack(app, 'ALBListenerHTTPSStack');
