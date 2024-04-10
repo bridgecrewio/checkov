@@ -6,7 +6,7 @@ from checkov.arm.base_resource_value_check import BaseResourceValueCheck
 class MariaDBpublicConvertARM(BaseResourceValueCheck):
     def __init__(self) -> None:
         name = "Ensure that MariaDB server enables geo-redundant backups"
-        id = "CKV_AZURE_129"
+        id = "CKV_AZURE_48"
         supported_resources = ["Microsoft.DBforMariaDB/servers"]
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

@@ -1,13 +1,13 @@
 import unittest
 from pathlib import Path
-from checkov.arm.checks.resource.MariaDBpublicConvertARM import check
+from checkov.arm.checks.resource.MariaDBPublicAccessDisabled import check
 from checkov.arm.runner import Runner
 from checkov.runner_filter import RunnerFilter
 
 
 class TestMariaDBPublicConvertARM(unittest.TestCase):
     def test_summary(self):
-        test_files_dir = Path(__file__).parent / "example_MariaDBPublicConvertToARM"
+        test_files_dir = Path(__file__).parent / "example_MariaDBPublicAccessDisabled"
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
         passing_resources = {
