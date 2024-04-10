@@ -117,61 +117,76 @@ def test_WorkspaceRootVolumeEncrypted():
 def test_WorkspaceUserVolumeEncrypted():
     run_check(check_results=failed_checks, check_id="CKV_AWS_155", policy_name="WorkspaceUserVolumeEncrypted", language="typescript")
 
+
 @pytest.mark.skip(reason="Not supported yet")
 def test_CKV_AWS_88_EC2PublicIP():
     run_check(check_name="EC2PublicIP", language="typescript")
+
 
 @pytest.mark.skip(reason="Not supported yet")
 def test_CKV_AWS_163_ECRImageScanning():
     run_check(check_name="ECRImageScanning", language="typescript")
 
+
 @pytest.mark.skip(reason="Not supported yet")
 def test_CKV_AWS_51_ECRImmutableTags():
     run_check(check_name="ECRImmutableTags", language="typescript")
+
 
 @pytest.mark.skip(reason="Not supported yet")
 def test_CKV_AWS_136_ECRRepositoryEncrypted():
     run_check(check_name="ECRRepositoryEncrypted", language="typescript")
 
+
 @pytest.mark.skip(reason="Not supported yet")
 def test_CKV_AWS_65_ECSClusterContainerInsights():
     run_check(check_name="ECSClusterContainerInsights", language="typescript")
+
 
 @pytest.mark.skip(reason="Not supported yet")
 def test_CKV_AWS_97_ECSTaskDefinitionEFSVolumeEncryption():
     run_check(check_name="ECSClusterContainerInsights", language="typescript")
 
+
 @pytest.mark.skip(reason="Not supported yet")
 def test_CKV_AWS_42_EFSEncryptionEnabled():
     run_check(check_name="EFSEncryptionEnabled", language="typescript")
+
 
 @pytest.mark.skip(reason="Not supported yet")
 def test_CKV_AWS_58_EKSSecretsEncryption():
     run_check(check_name="EKSSecretsEncryption", language="typescript")
 
+
 @pytest.mark.skip(reason="Not supported yet")
 def test_CKV_AWS_29_ElasticacheReplicationGroupEncryptionAtRest():
     run_check(check_name="ElasticacheReplicationGroupEncryptionAtRest", language="typescript")
+
 
 @pytest.mark.skip(reason="Not supported yet")
 def test_CKV_AWS_30_ElasticacheReplicationGroupEncryptionAtTransit():
     run_check(check_name="ElasticacheReplicationGroupEncryptionAtTransit", language="typescript")
 
+
 @pytest.mark.skip(reason="Not supported yet")
 def test_CKV_AWS_31_ElasticacheReplicationGroupEncryptionAtTransitAuthToken():
     run_check(check_name="ElasticacheReplicationGroupEncryptionAtTransitAuthToken", language="typescript")
+
 
 @pytest.mark.skip(reason="Not supported yet")
 def test_CKV_AWS_83_ElasticsearchDomainEnforceHTTPS():
     run_check(check_name="ElasticsearchDomainEnforceHTTPS", language="typescript")
 
+
 @pytest.mark.skip(reason="Not supported yet")
 def test_CKV_AWS_84_ElasticsearchDomainLogging():
     run_check(check_name="ElasticsearchDomainLogging", language="typescript")
 
+
 @pytest.mark.skip(reason="Not supported yet")
 def test_CKV_AWS_91_ELBAccessLogs():
     run_check(check_name="ELBAccessLogs", language="typescript")
+
 
 @pytest.mark.skip(reason="Not supported yet")
 def test_CKV_AWS_92_ELBv2AccessLogs():
