@@ -1,0 +1,26 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_370
+  name: Ensure Redshift Cluster logging is enabled
+  category: LOGGING
+  framework: cdk
+scope:
+  languages:
+    - javascript
+    - typescript
+definition:
+  source:
+    pattern: import <ANY> from '@aws-cdk/aws-redshift'
+  sink:
+    or:
+      - pattern: $FUNC(<ANY>)
+        conditions:
+          - metavariable: $FUNC
+            regex: (?i)(CfnCluster|Cluster|ClusterProps)
+          - not_pattern: '$FUNC(<ANY>, logging_properties: $FUNC.LoggingPropertiesProperty = {<ANY>, bucketName=$ARG, <ANY>} ,<ANY>)'
+      - pattern: $REDSHIFT.$FUNC(<ANY>)
+        conditions:
+          - metavariable: $FUNC
+            regex: (?i)(CfnCluster|Cluster|ClusterProps)
+          - not_pattern: '$REDSHIFT.$FUNC(<ANY>, logging_properties: $REDSHIFT.$FUNC.LoggingPropertiesProperty = {<ANY>, bucketName=$ARG, <ANY>} ,<ANY>)'

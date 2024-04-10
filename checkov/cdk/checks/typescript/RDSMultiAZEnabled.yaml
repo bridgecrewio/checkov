@@ -1,0 +1,26 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_366
+  name: Ensure that RDS instances have Multi-AZ enabled
+  category: NETWORKING
+  framework: cdk
+scope:
+  languages:
+    - javascript
+    - typescript
+definition:
+  source:
+    pattern: import <ANY> from '@aws-cdk/aws-rds'
+  sink:
+    or:
+      - pattern: $FUNC(<ANY>)
+        conditions:
+          - metavariable: $FUNC
+            regex: (?i)(CfnDBInstance|DatabaseInstance)
+          - not_pattern: '$FUNC(<ANY>, multiAZ: true ,<ANY>)'
+      - pattern: $RDS.$FUNC(<ANY>)
+        conditions:
+          - metavariable: $FUNC
+            regex: (?i)(CfnDBInstance|DatabaseInstance)
+          - not_pattern: '$RDS.$FUNC(<ANY>, multiAZ: true ,<ANY>)'
