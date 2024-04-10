@@ -12,6 +12,6 @@ definition:
   patterns:
     or:
       - pattern: | 
-          new ec2.Instance(<ANY>, { <ANY>, associatePublicIpAddress: true, <ANY> }, <ANY>)
+          new $AWS.Instance(<ANY>, { <ANY>, associatePublicIpAddress: true, <ANY> }, <ANY>)
       - pattern: | 
-          new ec2.LaunchTemplate(<ANY>, { <ANY>, associatePublicIpAddress: true, <ANY> }, <ANY>)
+          new $AWS.LaunchTemplate(<ANY>, { <ANY>, associatePublicIpAddress: true, <ANY> }, <ANY>)

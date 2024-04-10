@@ -9,12 +9,7 @@ scope:
   languages:
     - typescript
 definition:
-  or:
-    - pattern: new es.Domain(<ANY>)
-      conditions:
-        - not_pattern: |
-            new es.Domain(<ANY>, {<ANY>, enforceHttps: true , <ANY>}, <ANY>)
-    - pattern: new opensearch.Domain(<ANY>)
-      conditions:
-        - not_pattern: |
-            new opensearch.Domain(<ANY>, {<ANY>, enforceHttps: true , <ANY>}, <ANY>)
+  pattern: new $AWS.Domain(<ANY>)
+  conditions:
+    - not_pattern: |
+        new $AWS.Domain(<ANY>, {<ANY>, enforceHttps: true , <ANY>}, <ANY>)

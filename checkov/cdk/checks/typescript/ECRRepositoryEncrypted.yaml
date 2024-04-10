@@ -9,9 +9,9 @@ scope:
   languages:
     - typescript
 definition:
-  pattern: new ecr.Repository(<ANY>)
+  pattern: new $AWS.Repository(<ANY>)
   conditions:
     - not_pattern: |
-        new ecr.Repository(<ANY>, { <ANY>, encryption: ecr.RepositoryEncryption.KMS, <ANY> }, <ANY>)
+        new $ECR.Repository(<ANY>, { <ANY>, encryption: $ECR.RepositoryEncryption.KMS, <ANY> }, <ANY>)
     - not_pattern: |
-        new ecr.Repository(<ANY>, { <ANY>, encryptionKey: new kms.Key(<ANY>), <ANY> }, <ANY>)
+        new $ECR.Repository(<ANY>, { <ANY>, encryptionKey: new $KMS.Key(<ANY>), <ANY> }, <ANY>)

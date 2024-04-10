@@ -10,7 +10,7 @@ scope:
     - typescript
 definition:
   pattern: |
-    new ecr.Repository(<ANY>)
+    new $AWS.Repository(<ANY>)
   conditions:
     - not_pattern: |
-        new ecr.Repository(<ANY>, { <ANY>, imageScanOnPush: true, <ANY> }, <ANY>)
+        new $AWS.Repository(<ANY>, { <ANY>, imageScanOnPush: true, <ANY> }, <ANY>)
