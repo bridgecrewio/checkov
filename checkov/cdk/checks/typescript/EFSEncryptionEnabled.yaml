@@ -9,7 +9,7 @@ scope:
   languages:
     - typescript
 definition:
-  pattern: new efs.FileSystem(<ANY>)
+  pattern: new $AWS.FileSystem(<ANY>)
   conditions:
     - not_pattern: |
-        new efs.FileSystem(<ANY>, { <ANY>, encrypted: true, <ANY> }, <ANY>)
+        new $AWS.FileSystem(<ANY>, { <ANY>, encrypted: true, <ANY> }, <ANY>)

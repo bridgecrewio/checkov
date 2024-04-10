@@ -9,9 +9,9 @@ scope:
   languages:
     - typescript
 definition:
-  pattern: const $ELB = new elbv2.ApplicationLoadBalancer(<ANY>);
+  pattern: const $ELB = new $AWS.ApplicationLoadBalancer(<ANY>);
   conditions:
     - not_within: |
-        const $ELB = new elbv2.ApplicationLoadBalancer(<ANY>)
+        const $ELB = new $AWS.ApplicationLoadBalancer(<ANY>)
         <ANY>
         $ELB.logAccessLogs(<ANY>)

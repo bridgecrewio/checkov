@@ -9,7 +9,7 @@ scope:
   languages:
     - typescript
 definition:
-  pattern: new elb.LoadBalancer(<ANY>)
+  pattern: new $AWS.LoadBalancer(<ANY>)
   conditions:
     - not_pattern: |
-        new elb.LoadBalancer(<ANY>, {<ANY>, accessLoggingPolicy: {<ANY>, enabled: true, <ANY>} ,<ANY>})
+        new $AWS.LoadBalancer(<ANY>, {<ANY>, accessLoggingPolicy: {<ANY>, enabled: true, <ANY>} ,<ANY>})

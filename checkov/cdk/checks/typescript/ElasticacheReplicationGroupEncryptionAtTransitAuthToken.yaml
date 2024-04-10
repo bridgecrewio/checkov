@@ -9,9 +9,9 @@ scope:
   languages:
     - typescript
 definition:
-  pattern: new elasticache.CfnReplicationGroup(<ANY>)
+  pattern: new $AWS.CfnReplicationGroup(<ANY>)
   conditions:
     - not_pattern: |
-        new elasticache.CfnReplicationGroup(<ANY>, {<ANY>, transitEncryptionEnabled: true, <ANY>, authToken: $VAR, <ANY>}, <ANY>)
+        new $AWS.CfnReplicationGroup(<ANY>, {<ANY>, transitEncryptionEnabled: true, <ANY>, authToken: $VAR, <ANY>}, <ANY>)
     - not_pattern: |
-        new elasticache.CfnReplicationGroup(<ANY>, {<ANY>, authToken: $VAR, <ANY>, transitEncryptionEnabled: true, <ANY>}, <ANY>)
+        new $AWS.CfnReplicationGroup(<ANY>, {<ANY>, authToken: $VAR, <ANY>, transitEncryptionEnabled: true, <ANY>}, <ANY>)

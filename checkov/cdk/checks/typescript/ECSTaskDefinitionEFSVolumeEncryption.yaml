@@ -10,7 +10,7 @@ scope:
     - typescript
 definition:
   pattern: |
-    new ecs.$FUNC(<ANY>, {<ANY>, volumes: [<ANY>, {<ANY>, efsVolumeConfiguration: {<ANY>, transitEncryption: "DISABLED", <ANY>}, <ANY>},<ANY>],<ANY>})
+    new $AWS.$FUNC(<ANY>, {<ANY>, volumes: [<ANY>, {<ANY>, efsVolumeConfiguration: {<ANY>, transitEncryption: "DISABLED", <ANY>}, <ANY>},<ANY>],<ANY>})
   conditions:
     or:
       - metavariable: $FUNC
