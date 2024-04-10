@@ -14,6 +14,7 @@ from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import SCA_PACKAGE_SCAN_CHECK_NAME
 from checkov.common.util.file_utils import convert_to_unix_path
+from checkov.common.util.str_utils import removeprefix, align_path
 
 if TYPE_CHECKING:
     from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
@@ -170,12 +171,14 @@ class SuppressionsIntegration(BaseIntegrationFeature):
                 return False
             if self.bc_integration.repo_id and self.bc_integration.source_id and self.bc_integration.source_id in suppression['accountIds']\
                     and suppression['cves']:
-                repo_name = self.bc_integration.repo_id.replace('\\', '/').split('/')[-1]
-                suppression_path = suppression['cves'][0]['id'].replace('\\', '/')
-                file_abs_path = record.file_abs_path.replace('\\', '/')
+                repo_name = align_path(self.bc_integration.repo_id).split('/')[-1]
+                suppression_path = self._get_cve_suppression_path(suppression)
+                repo_file_path = align_path(record.repo_file_path)
+                file_abs_path = align_path(record.file_abs_path)
                 if file_abs_path == suppression_path[1:] or \
                         file_abs_path == suppression_path or \
-                        file_abs_path.endswith("".join([repo_name, suppression_path])):
+                        file_abs_path.endswith("".join([repo_name, suppression_path])) or \
+                        removeprefix(repo_file_path, '/') == removeprefix(suppression_path, '/'):
                     return any(record.vulnerability_details and record.vulnerability_details['id'] == cve['cve']
                                for cve in suppression['cves'])
             return False
@@ -185,6 +188,14 @@ class SuppressionsIntegration(BaseIntegrationFeature):
                        for license_type in suppression.get('licenseTypes', []))
 
         return False
+
+    def _get_cve_suppression_path(self, suppression: dict[str, Any]) -> str:
+        suppression_path: str = align_path(suppression['cves'][0]['id'])
+        # for handling cases of IR/docker (e.g: '/Dockerfile:/DockerFile.FROM)
+        suppression_path_parts = suppression_path.split(':')
+        if len(suppression_path_parts) == 2 and suppression_path_parts[1].startswith(suppression_path_parts[0]):
+            return suppression_path_parts[0]
+        return suppression_path
 
     def _suppression_valid_for_run(self, suppression: dict[str, Any]) -> bool:
         """

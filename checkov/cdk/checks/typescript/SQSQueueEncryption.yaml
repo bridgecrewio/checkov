@@ -1,0 +1,21 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_27
+  name: Ensure all data stored in the SQS queue is encrypted
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  patterns:
+    or:
+      - pattern: new sqs.Queue(<ANY>)
+        conditions:
+          - not_pattern: |
+              new sqs.Queue(<ANY>, {<ANY>, encryptionMasterKey: $KEY, <ANY>}, <ANY>)
+      - pattern: new sqs.CfnQueue(<ANY>)
+        conditions:
+          - not_pattern: |
+              new sqs.CfnQueue(<ANY>, {<ANY>, kmsMasterKeyId: $KEY, <ANY>}, <ANY>)

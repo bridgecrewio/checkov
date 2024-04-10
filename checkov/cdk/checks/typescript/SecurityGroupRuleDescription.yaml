@@ -1,0 +1,31 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_23
+  name: Ensure every security groups rule has a description
+  category: NETWORKING
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  patterns:
+    or:
+      - pattern: |
+          new ec2.CfnSecurityGroup(<ANY>, {<ANY>, securityGroupEgress: [<ANY>] ,<ANY>}, <ANY>)
+        conditions:
+          - not_pattern: |
+              new ec2.CfnSecurityGroup(<ANY>, {<ANY>, securityGroupEgress: [<ANY>, {<ANY>,description: 'True',<ANY> }, <ANY>] ,<ANY>}, <ANY>)
+      - pattern: |
+          new ec2.CfnSecurityGroup(<ANY>, {<ANY>, securityGroupIngress: [<ANY>] ,<ANY>}, <ANY>)
+        conditions:
+          - not_pattern: |
+              new ec2.CfnSecurityGroup(<ANY>, {<ANY>, securityGroupIngress: [<ANY>, {<ANY>,description: 'True', <ANY>}, <ANY>] ,<ANY>}, <ANY>)
+      - pattern: new ec2.CfnSecurityGroupIngress(<ANY>)
+        conditions:
+          - not_pattern: |
+              new ec2.CfnSecurityGroupIngress(<ANY>, {<ANY>, description: $ARG, <ANY>} ,<ANY>)
+      - pattern: new ec2.CfnSecurityGroupEgress(<ANY>)
+        conditions:
+          - not_pattern: |
+              new ec2.CfnSecurityGroupEgress(<ANY>, {<ANY>, description: $ARG, <ANY>} ,<ANY>)
