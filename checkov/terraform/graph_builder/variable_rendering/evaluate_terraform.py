@@ -409,12 +409,12 @@ def apply_binary_op(a: Optional[Union[str, int, bool]], b: Optional[Union[str, i
     if type_a != type_b:
         try:
             temp_b = type_a(b)  # type:ignore[misc,arg-type]
-            if isinstance(a, bool):
+            if isinstance(a, bool) and b:
                 temp_b = bool(convert_to_bool(b))
             return operators[operator](a, temp_b)  # type:ignore[type-var]
         except Exception:
             temp_a = type_b(a)  # type:ignore[misc,arg-type]
-            if isinstance(b, bool):
+            if isinstance(b, bool) and a:
                 temp_a = bool(convert_to_bool(a))
             return operators[operator](temp_a, b)  # type:ignore[type-var]
     else:
