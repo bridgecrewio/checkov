@@ -6,21 +6,19 @@
       "apiVersion": "2018-06-01",
       "type": "Microsoft.DBforMariaDB/servers",
       "location": "West Europe",
-      "name": "enabled",
+      "name": "fail",
       "sku": {
         "name": "B_Gen5_2",
         "size": "5120"
       },
       "properties": {
         "version": "10.3",
-        "publicNetworkAccess": "False",
         "administratorLogin": "admin",
         "administratorLoginPassword": "admin123",
+        "publicNetworkAccess" : "True",
         "storageProfile": {
           "storageMB": "5120"
-        },
-        "sslEnforcement": "Enabled"
-
+        }
       }
     }
   ]
