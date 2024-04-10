@@ -21,7 +21,6 @@ class SastLanguages(Enum):
     PYTHON = 'python'
     JAVA = 'java'
     JAVASCRIPT = 'javascript'
-    TYPESCRIPT = 'typescript'
 
 
 class CDKLanguages(Enum):
@@ -34,7 +33,6 @@ class CDKLanguages(Enum):
         return set(cls)
 
     PYTHON = 'python'
-    TYPESCRIPT = 'typescript'
 
 
 class BqlVersion(str, Enum):
