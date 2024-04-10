@@ -215,7 +215,9 @@ def evaluate_conditional_expression(input_str: str) -> str:
         groups, start, end = condition
         if len(groups) != 3:
             return input_str
-        evaluated_condition = evaluate_terraform(groups[0])
+        evaluated_condition = evaluate_compare(groups[0])
+        if type(evaluated_condition) is str:
+            evaluated_condition = evaluate_terraform(groups[0])
         condition_substr = input_str[start:end]
         bool_evaluated_condition = convert_to_bool(evaluated_condition)
         if bool_evaluated_condition is True:
@@ -407,12 +409,12 @@ def apply_binary_op(a: Optional[Union[str, int, bool]], b: Optional[Union[str, i
     if type_a != type_b:
         try:
             temp_b = type_a(b)  # type:ignore[misc,arg-type]
-            if isinstance(type_a, bool):
+            if isinstance(a, bool):
                 temp_b = bool(convert_to_bool(b))
             return operators[operator](a, temp_b)  # type:ignore[type-var]
         except Exception:
             temp_a = type_b(a)  # type:ignore[misc,arg-type]
-            if isinstance(type_b, bool):
+            if isinstance(b, bool):
                 temp_a = bool(convert_to_bool(a))
             return operators[operator](temp_a, b)  # type:ignore[type-var]
     else:
