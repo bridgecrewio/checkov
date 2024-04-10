@@ -1,0 +1,20 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_83
+  name: Ensure Elasticsearch Domain enforces HTTPS
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  or:
+    - pattern: new es.Domain(<ANY>)
+      conditions:
+        - not_pattern: |
+            new es.Domain(<ANY>, {<ANY>, enforceHttps: true , <ANY>}, <ANY>)
+    - pattern: new opensearch.Domain(<ANY>)
+      conditions:
+        - not_pattern: |
+            new opensearch.Domain(<ANY>, {<ANY>, enforceHttps: true , <ANY>}, <ANY>)
