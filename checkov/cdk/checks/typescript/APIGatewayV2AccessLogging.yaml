@@ -12,6 +12,6 @@ definition:
   pattern: new $AWS.$FUNC(<ANY>)
   conditions:
     - not_pattern: |
-        new $AWS.$FUNC(<ANY>, { <ANY>, accessLogSettings: $AWS.$FUNC.AccessLogSettingsProperty(<ANY>, {<ANY>, destinationArn: $ARG ,<ANY>}, <ANY>) ,<ANY>}, <ANY>)
+        new $AWS.$FUNC(<ANY>, { <ANY>, accessLogSettings: {<ANY>, destinationArn: $ARG ,<ANY>} ,<ANY>}, <ANY>)
     - metavariable: $FUNC
       regex: (CfnStage|CfnApi)
