@@ -1,0 +1,17 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_91
+  name: Ensure the ELBv2 (Application/Network) has access logging enabled
+  category: LOGGING
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  pattern: const $ELB = new $AWS.ApplicationLoadBalancer(<ANY>);
+  conditions:
+    - not_within: |
+        const $ELB = new $AWS.ApplicationLoadBalancer(<ANY>)
+        <ANY>
+        $ELB.logAccessLogs(<ANY>)

@@ -11,11 +11,11 @@ scope:
 definition:
   patterns:
     or:
-      - pattern: new sqs.Queue(<ANY>)
+      - pattern: new $AWS.Queue(<ANY>)
         conditions:
           - not_pattern: |
-              new sqs.Queue(<ANY>, {<ANY>, encryptionMasterKey: $KEY, <ANY>}, <ANY>)
-      - pattern: new sqs.CfnQueue(<ANY>)
+              new $AWS.Queue(<ANY>, {<ANY>, encryptionMasterKey: $KEY, <ANY>}, <ANY>)
+      - pattern: new $AWS.CfnQueue(<ANY>)
         conditions:
           - not_pattern: |
-              new sqs.CfnQueue(<ANY>, {<ANY>, kmsMasterKeyId: $KEY, <ANY>}, <ANY>)
+              new $AWS.CfnQueue(<ANY>, {<ANY>, kmsMasterKeyId: $KEY, <ANY>}, <ANY>)

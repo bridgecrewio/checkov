@@ -11,12 +11,12 @@ scope:
 definition:
   or:
     - pattern: |
-        new s3.Bucket(<ANY>, {<ANY>, accessControl: $ARG, <ANY>}, <ANY> )
+        new $AWS.Bucket(<ANY>, {<ANY>, accessControl: $ARG, <ANY>}, <ANY> )
       conditions:
         or:
           - metavariable: $ARG
-            pattern: s3.BucketAccessControl.PUBLIC_READ
+            pattern: $AWS.BucketAccessControl.PUBLIC_READ
           - metavariable: $ARG
-            pattern: s3.BucketAccessControl.PUBLIC_READ_WRITE
+            pattern: $AWS.BucketAccessControl.PUBLIC_READ_WRITE
     -  pattern: |
-          new s3.Bucket(<ANY>, { <ANY>, publicReadAccess: true, <ANY>}, <ANY>)
+          new $AWS.Bucket(<ANY>, { <ANY>, publicReadAccess: true, <ANY>}, <ANY>)

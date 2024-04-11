@@ -9,7 +9,7 @@ scope:
   languages:
     - typescript
 definition:
-  pattern: new ec2.CfnVPCEndpointService(<ANY>)
+  pattern: new $AWS.CfnVPCEndpointService(<ANY>)
   conditions:
     - not_pattern: |
-        new ec2.CfnVPCEndpointService(<ANY>, {<ANY>, acceptanceRequired: true, <ANY>} ,<ANY>)
+        new $AWS.CfnVPCEndpointService(<ANY>, {<ANY>, acceptanceRequired: true, <ANY>} ,<ANY>)

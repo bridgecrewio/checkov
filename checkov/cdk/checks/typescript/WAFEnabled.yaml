@@ -9,7 +9,7 @@ scope:
   languages:
     - typescript
 definition:
-  pattern: new cloudfront.CfnDistribution(<ANY>)
+  pattern: new $AWS.CfnDistribution(<ANY>)
   conditions:
     - not_pattern: |
-          new cloudfront.CfnDistribution(<ANY>, {<ANY>, distributionConfig: {<ANY>, webAclId: $ARG, <ANY>}, <ANY>} , <ANY>)
+          new $AWS.CfnDistribution(<ANY>, {<ANY>, distributionConfig: {<ANY>, webAclId: $ARG, <ANY>}, <ANY>} , <ANY>)

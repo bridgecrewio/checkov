@@ -12,20 +12,20 @@ definition:
   patterns:
     or:
       - pattern: |
-          new ec2.CfnSecurityGroup(<ANY>, {<ANY>, securityGroupEgress: [<ANY>] ,<ANY>}, <ANY>)
+          new $AWS.CfnSecurityGroup(<ANY>, {<ANY>, securityGroupEgress: [<ANY>] ,<ANY>}, <ANY>)
         conditions:
           - not_pattern: |
-              new ec2.CfnSecurityGroup(<ANY>, {<ANY>, securityGroupEgress: [<ANY>, {<ANY>,description: 'True',<ANY> }, <ANY>] ,<ANY>}, <ANY>)
+              new $AWS.CfnSecurityGroup(<ANY>, {<ANY>, securityGroupEgress: [<ANY>, {<ANY>,description: 'True',<ANY> }, <ANY>] ,<ANY>}, <ANY>)
       - pattern: |
-          new ec2.CfnSecurityGroup(<ANY>, {<ANY>, securityGroupIngress: [<ANY>] ,<ANY>}, <ANY>)
+          new $AWS.CfnSecurityGroup(<ANY>, {<ANY>, securityGroupIngress: [<ANY>] ,<ANY>}, <ANY>)
         conditions:
           - not_pattern: |
-              new ec2.CfnSecurityGroup(<ANY>, {<ANY>, securityGroupIngress: [<ANY>, {<ANY>,description: 'True', <ANY>}, <ANY>] ,<ANY>}, <ANY>)
-      - pattern: new ec2.CfnSecurityGroupIngress(<ANY>)
+              new $AWS.CfnSecurityGroup(<ANY>, {<ANY>, securityGroupIngress: [<ANY>, {<ANY>,description: 'True', <ANY>}, <ANY>] ,<ANY>}, <ANY>)
+      - pattern: new $AWS.CfnSecurityGroupIngress(<ANY>)
         conditions:
           - not_pattern: |
-              new ec2.CfnSecurityGroupIngress(<ANY>, {<ANY>, description: $ARG, <ANY>} ,<ANY>)
-      - pattern: new ec2.CfnSecurityGroupEgress(<ANY>)
+              new $AWS.CfnSecurityGroupIngress(<ANY>, {<ANY>, description: $ARG, <ANY>} ,<ANY>)
+      - pattern: new $AWS.CfnSecurityGroupEgress(<ANY>)
         conditions:
           - not_pattern: |
-              new ec2.CfnSecurityGroupEgress(<ANY>, {<ANY>, description: $ARG, <ANY>} ,<ANY>)
+              new $AWS.CfnSecurityGroupEgress(<ANY>, {<ANY>, description: $ARG, <ANY>} ,<ANY>)

@@ -1,0 +1,15 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_51
+  name: Ensure ECR Image Tags are immutable
+  category: GENERAL_SECURITY
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  pattern: new $AWS.Repository(<ANY>)
+  conditions:
+    - not_pattern: |
+        new $AWS.Repository(<ANY>, { <ANY>, imageTagMutability: ecr.TagMutability.IMMUTABLE, <ANY> }, <ANY>)
