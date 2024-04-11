@@ -33,7 +33,7 @@
     }
   },
   "variables": {
-    "appServicePlanName": "[concat('AppServicePlan-', parameters('webAppName'))]"
+    "appServicePlanName": "[concat('AppServicePlan-', parameters('webAppName'))]  "
   },
   "resources": [
     {

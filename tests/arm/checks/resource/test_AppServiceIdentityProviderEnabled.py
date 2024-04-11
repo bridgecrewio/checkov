@@ -39,5 +39,3 @@ class TestAppServiceIdentityProviderEnabled(unittest.TestCase):
         self.assertEqual(failing_resources, failed_check_resources)
 
 
-if __name__ == '__main__':
-    unittest.main()
