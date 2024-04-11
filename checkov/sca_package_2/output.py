@@ -185,6 +185,7 @@ def create_cli_output(fixable: bool = True, *cve_records: list[Record]) -> str:
                                                 package_version=package_version,
                                                 policy=record.vulnerability_details["policy"],
                                                 license=record.vulnerability_details["license"],
+                                                status=record.vulnerability_details["status"],
                                                 lines=lines)
                     )
 
