@@ -1,3 +1,8 @@
+## local testing
+
+		python3 -m pip install --user checkov==2.3.347 # Ubuntu 22.04
+		PYTHONPATH=.:$PYTHONPATH python3 checkov/main.py -o sarif --file ../playground/backet.tf
+
 [![checkov](https://raw.githubusercontent.com/bridgecrewio/checkov/main/docs/web/images/checkov_by_bridgecrew.png)](#)
        
 [![Maintained by Bridgecrew.io](https://img.shields.io/badge/maintained%20by-bridgecrew.io-blueviolet)](https://bridgecrew.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov)

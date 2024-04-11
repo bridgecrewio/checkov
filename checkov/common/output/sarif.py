@@ -212,10 +212,8 @@ class Sarif:
                     continue
                 
                 # some rules produce invalid output that we have to fix here to avoid more crashes
-                if record.file_line_range is None
-                    record.file_line_range= []
-                    record.file_line_range[0] = 1
-                    record.file_line_range[1] = 1
+                if record.file_line_range is None:
+                    record.file_line_range = [1, 1]
                 
                 result = {
                     "ruleId": rule_id,
