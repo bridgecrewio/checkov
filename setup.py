@@ -34,7 +34,7 @@ setup(
     },
     install_requires=[
         "bc-python-hcl2==0.3.47",
-        "bc-detect-secrets==1.3.14",
+        "bc-detect-secrets==1.5.6",
         "deep-merge",
         "tabulate",
         "colorama",
