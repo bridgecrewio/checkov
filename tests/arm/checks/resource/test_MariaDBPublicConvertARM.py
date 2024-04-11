@@ -19,6 +19,8 @@ class TestMariaDBPublicConvertARM(unittest.TestCase):
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
+        print("goldy")
+        print(summary)
 
         assert summary["passed"] == len(passing_resources)
         assert summary["failed"] == len(failing_resources)
@@ -30,5 +32,4 @@ class TestMariaDBPublicConvertARM(unittest.TestCase):
 
 
 if __name__ == '__main__':
-
     unittest.main()
