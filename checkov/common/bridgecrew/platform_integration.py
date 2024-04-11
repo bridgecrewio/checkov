@@ -87,6 +87,8 @@ FileToPersist = namedtuple('FileToPersist', 'full_file_path s3_file_key')
 DEFAULT_REGION = "us-west-2"
 GOV_CLOUD_REGION = 'us-gov-west-1'
 PRISMA_GOV_API_URL = 'https://api.gov.prismacloud.io'
+JAKARTA_API_URL = 'https://api.id.prismacloud.io'
+REGIONS_URL_NOT_SUPPORT_S3_ACCELERATE = [PRISMA_GOV_API_URL, JAKARTA_API_URL]
 MAX_RETRIES = 40
 
 CI_METADATA_EXTRACTOR = registry.get_extractor()
@@ -441,7 +443,7 @@ class BcPlatformIntegration:
             raise ValueError("Credentials for client are not set")
 
         region = DEFAULT_REGION
-        use_accelerate_endpoint = True
+        use_accelerate_endpoint = self.prisma_api_url not in REGIONS_URL_NOT_SUPPORT_S3_ACCELERATE  
         if self.prisma_api_url == PRISMA_GOV_API_URL:
             region = GOV_CLOUD_REGION
             use_accelerate_endpoint = False
