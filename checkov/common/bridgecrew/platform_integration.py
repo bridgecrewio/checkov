@@ -443,10 +443,9 @@ class BcPlatformIntegration:
             raise ValueError("Credentials for client are not set")
 
         region = DEFAULT_REGION
-        use_accelerate_endpoint = self.prisma_api_url not in REGIONS_URL_NOT_SUPPORT_S3_ACCELERATE  
+        use_accelerate_endpoint = self.prisma_api_url not in REGIONS_URL_NOT_SUPPORT_S3_ACCELERATE
         if self.prisma_api_url == PRISMA_GOV_API_URL:
             region = GOV_CLOUD_REGION
-            use_accelerate_endpoint = False
 
         try:
             config = Config(
