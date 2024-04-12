@@ -1,0 +1,13 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_69
+  name: Ensure Amazon MQ Broker should not have public access
+  category: GENERAL_SECURITY
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  pattern: |
+    new $AWS.CfnBroker(<ANY>, { <ANY>, publiclyAccessible: true, <ANY> }, <ANY>)
