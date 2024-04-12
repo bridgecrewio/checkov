@@ -1,0 +1,16 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_163
+  name: Ensure ECR image scanning on push is enabled
+  category: GENERAL_SECURITY
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  pattern: |
+    new $AWS.Repository(<ANY>)
+  conditions:
+    - not_pattern: |
+        new $AWS.Repository(<ANY>, { <ANY>, imageScanOnPush: true, <ANY> }, <ANY>)

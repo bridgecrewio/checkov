@@ -1,0 +1,16 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_65
+  name: Ensure container insights are enabled on ECS cluster
+  category: LOGGING
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  pattern: |
+    new ecs.Cluster(<ANY>)
+  conditions:
+    - not_pattern: |
+        new $AWS.Cluster(<ANY>, { <ANY>, containerInsights: true, <ANY>}, <ANY>)

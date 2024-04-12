@@ -1,0 +1,15 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_84
+  name: Ensure Elasticsearch Domain Logging is enabled
+  category: LOGGING
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  pattern: new $AWS.Domain(<ANY>)
+  conditions:
+    - not_pattern: |
+        new $AWS.Domain(<ANY>, {<ANY>, logging: {<ANY>, appLogEnabled: true, <ANY> }, <ANY>}, <ANY>)

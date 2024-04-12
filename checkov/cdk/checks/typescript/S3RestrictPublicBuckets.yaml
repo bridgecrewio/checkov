@@ -1,0 +1,21 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_56
+  name: Ensure S3 bucket has 'restrict_public_buckets' enabled
+  category: GENERAL_SECURITY
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  patterns:
+    or:
+      - pattern: new $AWS.Bucket(<ANY>)
+        conditions:
+          - not_pattern: |
+              new $AWS.Bucket(<ANY>, { <ANY>, blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL, <ANY> } ,<ANY>)
+      - pattern: new $AWS.CfnBucket(<ANY>)
+        conditions:
+          - not_pattern: |
+              new $AWS.CfnBucket(<ANY>, {<ANY>, publicAccessBlockConfiguration: {<ANY>, restrictPublicBuckets: true ,<ANY>}, <ANY>} , <ANY>)

@@ -1,0 +1,15 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_42
+  name: Ensure EFS is securely encrypted
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  pattern: new $AWS.FileSystem(<ANY>)
+  conditions:
+    - not_pattern: |
+        new $AWS.FileSystem(<ANY>, { <ANY>, encrypted: true, <ANY> }, <ANY>)
