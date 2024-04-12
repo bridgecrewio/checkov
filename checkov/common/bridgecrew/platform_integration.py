@@ -121,6 +121,7 @@ class BcPlatformIntegration:
         self.prisma_policies_url: str | None = None
         self.prisma_policy_filters_url: str | None = None
         self.custom_auth_headers: dict[str, str] = {}
+        self.custom_auth_token: str | None = None
         self.setup_api_urls()
         self.customer_run_config_response = None
         self.runtime_run_config_response = None
@@ -166,6 +167,7 @@ class BcPlatformIntegration:
         self.platform_integration_configured = platform_integration_data["platform_integration_configured"]
         self.prisma_api_url = platform_integration_data.get("prisma_api_url", 'https://api0.prismacloud.io')
         self.custom_auth_headers = platform_integration_data["custom_auth_headers"]
+        self.custom_auth_token = platform_integration_data["custom_auth_token"]
         self.repo_branch = platform_integration_data["repo_branch"]
         self.repo_id = platform_integration_data["repo_id"]
         self.repo_path = platform_integration_data["repo_path"]
@@ -227,7 +229,7 @@ class BcPlatformIntegration:
         self.runtime_run_config_url = f"{self.api_url}/api/v1/runtime-images/repositories"
 
     def is_prisma_integration(self) -> bool:
-        if self.bc_api_key and not self.is_bc_token(self.bc_api_key):
+        if (self.bc_api_key and not self.is_bc_token(self.bc_api_key)) or self.custom_auth_token:
             return True
         return False
 
@@ -266,6 +268,8 @@ class BcPlatformIntegration:
     def get_auth_token(self) -> str:
         if self.is_bc_token(self.bc_api_key):
             return self.bc_api_key
+        if self.custom_auth_token:
+            return self.custom_auth_token
         # A Prisma Cloud Access Key was specified as the Bridgecrew token.
         if not self.prisma_api_url:
             raise ValueError("A Prisma Cloud token was set, but no Prisma Cloud API URL was set")
@@ -386,6 +390,17 @@ class BcPlatformIntegration:
 
         self.platform_integration_configured = True
 
+    def _get_source_id_from_repo_path(self, repo_path: str) -> str | None:
+        repo_path_parts = repo_path.split("/")
+        if not repo_path_parts and repo_path_parts[0] != 'checkov':
+            logging.error(f'failed to get source_id from repo_path. repo_path format is unknown: ${repo_path}')
+            return None
+        try:
+            return '/'.join(repo_path_parts[2:4])
+        except IndexError:
+            logging.error(f'failed to get source_id from repo_path. repo_path format is unknown: ${repo_path}')
+            return None
+
     def set_s3_integration(self) -> None:
         try:
             self.skip_fixes = True  # no need to run fixes on CI integration
@@ -394,7 +409,7 @@ class BcPlatformIntegration:
                 return
 
             self.bucket, self.repo_path = repo_full_path.split("/", 1)
-
+            self.source_id = self._get_source_id_from_repo_path(self.repo_path)
             self.timestamp = self.repo_path.split("/")[-2]
             self.credentials = cast("dict[str, str]", response["creds"])
 
