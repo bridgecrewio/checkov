@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.60...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.63...HEAD)
+
+## [3.2.63](https://github.com/bridgecrewio/checkov/compare/3.2.60...3.2.63) - 2024-04-14
+
+### Feature
+
+- **sast:** CDK TS policies p2 - [#6165](https://github.com/bridgecrewio/checkov/pull/6165)
 
 ## [3.2.60](https://github.com/bridgecrewio/checkov/compare/3.2.55...3.2.60) - 2024-04-10
 
