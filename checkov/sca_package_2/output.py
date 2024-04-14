@@ -229,7 +229,6 @@ def create_cli_license_violations_table(file_path: str,
         "Package version",
         "Policy ID",
         "License",
-        "Status",
     ]
     for package_idx, (_, license_statuses) in enumerate(package_licenses_details_map.items()):
         if package_idx > 0:
@@ -248,8 +247,7 @@ def create_cli_license_violations_table(file_path: str,
                 col_package_name,
                 col_package_version,
                 license_status["policy"],
-                license_status["license"],
-                license_status["status"],
+                license_status["license"]
             ]
             package_table.add_row(curr_row)
 
