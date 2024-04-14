@@ -85,8 +85,19 @@ ASSUME_ROLE_UNUATHORIZED_MESSAGE = 'is not authorized to perform: sts:AssumeRole
 FileToPersist = namedtuple('FileToPersist', 'full_file_path s3_file_key')
 
 DEFAULT_REGION = "us-west-2"
-GOV_CLOUD_REGION = 'us-gov-west-1'
 PRISMA_GOV_API_URL = 'https://api.gov.prismacloud.io'
+JAKARTA_API_URL = 'https://api.id.prismacloud.io'
+
+API_URL_REGION_MAP = {
+    PRISMA_GOV_API_URL: 'us-gov-west-1',
+    JAKARTA_API_URL: 'ap-southeast-3'
+}
+
+REGIONS_URL_NOT_SUPPORT_S3_ACCELERATE = {
+    PRISMA_GOV_API_URL,
+    JAKARTA_API_URL
+}
+
 MAX_RETRIES = 40
 
 CI_METADATA_EXTRACTOR = registry.get_extractor()
@@ -121,10 +132,12 @@ class BcPlatformIntegration:
         self.prisma_policies_url: str | None = None
         self.prisma_policy_filters_url: str | None = None
         self.custom_auth_headers: dict[str, str] = {}
+        self.custom_auth_token: str | None = None
         self.setup_api_urls()
         self.customer_run_config_response = None
         self.runtime_run_config_response = None
-        self.prisma_policies_response = None
+        self.prisma_policies_response: dict[str, str] | None = None
+        self.prisma_policies_exception_response: dict[str, str] | None = None
         self.public_metadata_response = None
         self.use_s3_integration = False
         self.s3_setup_failed = False
@@ -165,6 +178,7 @@ class BcPlatformIntegration:
         self.platform_integration_configured = platform_integration_data["platform_integration_configured"]
         self.prisma_api_url = platform_integration_data.get("prisma_api_url", 'https://api0.prismacloud.io')
         self.custom_auth_headers = platform_integration_data["custom_auth_headers"]
+        self.custom_auth_token = platform_integration_data["custom_auth_token"]
         self.repo_branch = platform_integration_data["repo_branch"]
         self.repo_id = platform_integration_data["repo_id"]
         self.repo_path = platform_integration_data["repo_path"]
@@ -226,7 +240,7 @@ class BcPlatformIntegration:
         self.runtime_run_config_url = f"{self.api_url}/api/v1/runtime-images/repositories"
 
     def is_prisma_integration(self) -> bool:
-        if self.bc_api_key and not self.is_bc_token(self.bc_api_key):
+        if (self.bc_api_key and not self.is_bc_token(self.bc_api_key)) or self.custom_auth_token:
             return True
         return False
 
@@ -265,6 +279,8 @@ class BcPlatformIntegration:
     def get_auth_token(self) -> str:
         if self.is_bc_token(self.bc_api_key):
             return self.bc_api_key
+        if self.custom_auth_token:
+            return self.custom_auth_token
         # A Prisma Cloud Access Key was specified as the Bridgecrew token.
         if not self.prisma_api_url:
             raise ValueError("A Prisma Cloud token was set, but no Prisma Cloud API URL was set")
@@ -385,6 +401,17 @@ class BcPlatformIntegration:
 
         self.platform_integration_configured = True
 
+    def _get_source_id_from_repo_path(self, repo_path: str) -> str | None:
+        repo_path_parts = repo_path.split("/")
+        if not repo_path_parts and repo_path_parts[0] != 'checkov':
+            logging.error(f'failed to get source_id from repo_path. repo_path format is unknown: ${repo_path}')
+            return None
+        try:
+            return '/'.join(repo_path_parts[2:4])
+        except IndexError:
+            logging.error(f'failed to get source_id from repo_path. repo_path format is unknown: ${repo_path}')
+            return None
+
     def set_s3_integration(self) -> None:
         try:
             self.skip_fixes = True  # no need to run fixes on CI integration
@@ -393,7 +420,7 @@ class BcPlatformIntegration:
                 return
 
             self.bucket, self.repo_path = repo_full_path.split("/", 1)
-
+            self.source_id = self._get_source_id_from_repo_path(self.repo_path)
             self.timestamp = self.repo_path.split("/")[-2]
             self.credentials = cast("dict[str, str]", response["creds"])
 
@@ -441,9 +468,10 @@ class BcPlatformIntegration:
 
         region = DEFAULT_REGION
         use_accelerate_endpoint = True
-        if self.prisma_api_url == PRISMA_GOV_API_URL:
-            region = GOV_CLOUD_REGION
+
+        if self.prisma_api_url in REGIONS_URL_NOT_SUPPORT_S3_ACCELERATE:
             use_accelerate_endpoint = False
+            region = API_URL_REGION_MAP[self.prisma_api_url]
 
         try:
             config = Config(
@@ -1082,17 +1110,18 @@ class BcPlatformIntegration:
         except Exception:
             logging.debug('could not get runtime info for this repo')
 
-    def get_prisma_build_policies(self, policy_filter: str) -> None:
+    def get_prisma_build_policies(self, policy_filter: str, policy_filter_exception: str) -> None:
         """
         Get Prisma policy for enriching runConfig with metadata
         Filters: https://prisma.pan.dev/api/cloud/cspm/policy#operation/get-policy-filters-and-options
         :param policy_filter: comma separated filter string. Example, policy.label=A,cloud.type=aws
+        :param policy_filter_exception: comma separated filter string. Example, policy.label=A,cloud.type=aws
         :return:
         """
         if self.skip_download is True:
             logging.debug("Skipping prisma policy API call")
             return
-        if not policy_filter:
+        if not policy_filter and not policy_filter_exception:
             return
         if not self.is_prisma_integration():
             return
@@ -1100,9 +1129,12 @@ class BcPlatformIntegration:
             raise Exception(
                 "Tried to get prisma build policy metadata, "
                 "but the API key was missing or the integration was not set up")
+        self.prisma_policies_response = self.get_prisma_policies_for_filter(policy_filter)
+        self.prisma_policies_exception_response = self.get_prisma_policies_for_filter(policy_filter_exception)
 
+    def get_prisma_policies_for_filter(self, policy_filter: str) -> dict[Any, Any] | None:
         request = None
-
+        filtered_policies = None
         try:
             token = self.get_auth_token()
             headers = merge_dicts(get_prisma_auth_header(token), get_prisma_get_headers(), self.custom_auth_headers)
@@ -1110,7 +1142,7 @@ class BcPlatformIntegration:
             self.setup_http_manager()
             if not self.http:
                 logging.error("HTTP manager was not correctly created")
-                return
+                return filtered_policies
 
             logging.debug(f'Prisma policy URL: {self.prisma_policies_url}')
             query_params = convert_prisma_policy_filter_to_dict(policy_filter)
@@ -1124,14 +1156,13 @@ class BcPlatformIntegration:
                     headers=headers,
                     fields=query_params,
                 )
-                self.prisma_policies_response = json.loads(request.data.decode("utf8"))
                 logging.debug("Got Prisma build policy metadata")
-            else:
-                logging.warning("Skipping get prisma build policies. --policy-metadata-filter will not be applied.")
+                filtered_policies = json.loads(request.data.decode("utf8"))
         except Exception:
             response_message = f': {request.status} - {request.reason}' if request else ''
             logging.warning(
                 f"Failed to get prisma build policy metadata from {self.prisma_policies_url}{response_message}", exc_info=True)
+        return filtered_policies
 
     def get_prisma_policy_filters(self) -> Dict[str, Dict[str, Any]]:
         request = None
@@ -1183,7 +1214,7 @@ class BcPlatformIntegration:
                 logging.warning(f"Filter value not allowed: {filter_value}")
                 logging.warning("Available options: True")
                 return False
-        logging.debug("--policy-metadata-filter is valid")
+        logging.debug("policy filter is valid")
         return True
 
     def get_public_run_config(self) -> None:
