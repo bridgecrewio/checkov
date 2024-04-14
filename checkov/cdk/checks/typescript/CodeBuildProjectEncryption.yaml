@@ -1,0 +1,17 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_78
+  name: Ensure that CodeBuild Project encryption is not disabled
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  pattern: new $AWS.Project(<ANY>)
+  conditions:
+    - not_pattern: |
+        new $AWS.Project(<ANY>, {<ANY>, encryptionKey: new $ENC.Key(<ANY>) ,<ANY>} , <ANY>)
+    - not_pattern: |
+        new $AWS.Project(<ANY>, {<ANY>, encryptionKey: $ARG ,<ANY>} , <ANY>)

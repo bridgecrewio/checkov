@@ -14,7 +14,7 @@ definition:
       - pattern: new $AWS.CfnStage(<ANY>)
         conditions:
           - not_pattern: |
-            new $AWS.CfnStage(<ANY>, { <ANY>, accessLogSetting: { <ANY>, destinationArn: $ARG , <ANY> }, <ANY> } , <ANY>)
+              new $AWS.CfnStage(<ANY>, { <ANY>, accessLogSetting: { <ANY>, destinationArn: $ARG , <ANY> }, <ANY> } , <ANY>)
       - pattern: $AWS.Api(<ANY>)
         conditions:
           - not_pattern: |
