@@ -94,3 +94,4 @@ def test_skipped_checks():
     prisma_engine.enable_inline_suppressions = True
     sast_report = prisma_engine.create_report(report)
     assert len(sast_report[0].failed_checks) == 0 and len(sast_report[0].skipped_checks) == 1
+    assert sast_report[0].skipped_checks[0].check_result['suppress_comment'] == "Don't feel like it"

@@ -1,0 +1,15 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_47
+  name: Ensure DAX is encrypted at rest (default is unencrypted)
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  pattern: new $AWS.CfnCluster(<ANY>)
+  conditions:
+    - not_pattern: |
+        new $AWS.CfnCluster(<ANY>, {<ANY>, sseSpecification: {<ANY>, enabled: true ,<ANY>} ,<ANY>} , <ANY>)

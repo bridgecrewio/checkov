@@ -23,6 +23,7 @@ skip-path:
 - tests/unit/test_secrets.py
 - /cdk_integration_tests/src/python/ElasticacheReplicationGroupEncryptionAtTransitAuthToken/fail__2__.py
 - /cdk_integration_tests/src/python/ElasticacheReplicationGroupEncryptionAtTransitAuthToken/pass.py
+- /cdk_integration_tests/src/typescript
 - /checkov/cdk/checks/python/GlueDataCatalogEncryption.yaml
 - /checkov/cdk/checks/python/GlueDataCatalogEncryption.yaml
 - /checkov/cdk/checks/python/GlueDataCatalogEncryption.yaml

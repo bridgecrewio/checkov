@@ -85,8 +85,19 @@ ASSUME_ROLE_UNUATHORIZED_MESSAGE = 'is not authorized to perform: sts:AssumeRole
 FileToPersist = namedtuple('FileToPersist', 'full_file_path s3_file_key')
 
 DEFAULT_REGION = "us-west-2"
-GOV_CLOUD_REGION = 'us-gov-west-1'
 PRISMA_GOV_API_URL = 'https://api.gov.prismacloud.io'
+JAKARTA_API_URL = 'https://api.id.prismacloud.io'
+
+API_URL_REGION_MAP = {
+    PRISMA_GOV_API_URL: 'us-gov-west-1',
+    JAKARTA_API_URL: 'ap-southeast-3'
+}
+
+REGIONS_URL_NOT_SUPPORT_S3_ACCELERATE = {
+    PRISMA_GOV_API_URL,
+    JAKARTA_API_URL
+}
+
 MAX_RETRIES = 40
 
 CI_METADATA_EXTRACTOR = registry.get_extractor()
@@ -457,9 +468,10 @@ class BcPlatformIntegration:
 
         region = DEFAULT_REGION
         use_accelerate_endpoint = True
-        if self.prisma_api_url == PRISMA_GOV_API_URL:
-            region = GOV_CLOUD_REGION
+
+        if self.prisma_api_url in REGIONS_URL_NOT_SUPPORT_S3_ACCELERATE:
             use_accelerate_endpoint = False
+            region = API_URL_REGION_MAP[self.prisma_api_url]
 
         try:
             config = Config(
