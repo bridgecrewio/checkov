@@ -152,7 +152,7 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
         if 'customPolicies' in run_config:
             for custom_policy in run_config['customPolicies']:
                 self.check_metadata[custom_policy['id']] = {
-                    'severity': custom_policy['severity'],
+                    'severity': custom_policy.get('severity', None),
                     'guideline': custom_policy.get('guideline', None)
                 }
 
