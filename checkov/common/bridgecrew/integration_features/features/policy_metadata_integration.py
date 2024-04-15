@@ -151,11 +151,12 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
         # Custom policies are returned in run_config['customPolicies'] rather than run_config['policyMetadata'].
         if 'customPolicies' in run_config:
             for custom_policy in run_config['customPolicies']:
+                self.check_metadata[custom_policy['id']] = {
+                    'severity': custom_policy['severity']
+                }
                 if 'guideline' in custom_policy:
-                    self.check_metadata[custom_policy['id']] = {
-                        'guideline': custom_policy['guideline'],
-                        'severity': custom_policy['severity']
-                    }
+                    self.check_metadata[custom_policy['id']]['guideline'] = custom_policy['guideline']
+
                 pc_policy_id = custom_policy.get('pcPolicyId')
                 if pc_policy_id:
                     self.pc_to_ckv_id_mapping[pc_policy_id] = custom_policy['id']
