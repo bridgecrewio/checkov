@@ -324,7 +324,7 @@ class PrismaEngine(SastEngine):
                     if self.enable_inline_suppressions and any(skipped_check.check_id == match_rule.check_id for skipped_check in prisma_report.skipped_checks_by_file.get(file_abs_path, [])):
                         check_result = _CheckResult(
                             result=CheckResult.SKIPPED,
-                            suppress_comment=next(skipped_check.suppress_comment for skipped_check in prisma_report.skipped_checks_by_file.get(file_abs_path) if skipped_check.check_id == match_rule.check_id))
+                            suppress_comment=next(skipped_check.suppress_comment for skipped_check in prisma_report.skipped_checks_by_file.get(file_abs_path, []) if skipped_check.check_id == match_rule.check_id))
                     else:
                         check_result = _CheckResult(result=CheckResult.FAILED)
                     record = SastRecord(check_id=check_id, check_name=check_name, resource="", evaluations={},
