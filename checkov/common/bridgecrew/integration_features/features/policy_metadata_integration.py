@@ -152,10 +152,9 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
         if 'customPolicies' in run_config:
             for custom_policy in run_config['customPolicies']:
                 self.check_metadata[custom_policy['id']] = {
-                    'severity': custom_policy['severity']
+                    'severity': custom_policy['severity'],
+                    'guideline': custom_policy.get('guideline', None)
                 }
-                if 'guideline' in custom_policy:
-                    self.check_metadata[custom_policy['id']]['guideline'] = custom_policy['guideline']
 
                 pc_policy_id = custom_policy.get('pcPolicyId')
                 if pc_policy_id:
