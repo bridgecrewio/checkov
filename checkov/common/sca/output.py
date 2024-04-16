@@ -668,7 +668,7 @@ def get_license_statuses(packages: list[dict[str, Any]]) -> list[_LicenseStatus]
     try:
         response = request_wrapper(
             method="POST",
-            url=f"{bc_integration.api_url}/api/v1/vulnerabilities/license/get-licenses-violations",
+            url=f"{bc_integration.api_url}/api/v1/vulnerabilities/packages/get-licenses-violations",
             headers=bc_integration.get_default_headers("POST"),
             json={"packages": requests_input},
             should_call_raise_for_status=True
@@ -694,7 +694,7 @@ async def get_license_statuses_async(
     as an input, and the asyncio behavior is managed in the calling method.
     """
     requests_input = _get_request_input(packages)
-    url = f"{bc_integration.api_url}/api/v1/vulnerabilities/license/get-licenses-violations"
+    url = f"{bc_integration.api_url}/api/v1/vulnerabilities/packages/get-licenses-violations"
     if not requests_input:
         return {'image_name': image_name, 'licenses': []}
     try:
