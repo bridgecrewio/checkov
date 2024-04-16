@@ -47,7 +47,7 @@ def test_image_referencer_trigger_image_flow_calls(mock_bc_integration, image_na
     }
     with aioresponses() as mock_response:
         mock_response.post(
-            url=mock_bc_integration.api_url + "/api/v1/vulnerabilities/packages/get-licenses-violations",
+            url=mock_bc_integration.api_url + "/api/v1/vulnerabilities/license/get-licenses-violations",
             payload=response_json,
             status=200
         )
@@ -94,7 +94,7 @@ def test_runner_honors_enforcement_rules(mock_bc_integration, image_name, cached
 
     with aioresponses() as mock_response:
         mock_response.post(
-            url=mock_bc_integration.api_url + "/api/v1/vulnerabilities/packages/get-licenses-violations",
+            url=mock_bc_integration.api_url + "/api/v1/vulnerabilities/license/get-licenses-violations",
             payload=response_json,
             status=200
         )
@@ -224,7 +224,7 @@ def test_run_license_policy(mock_bc_integration, image_name, cached_scan_result)
     }
     with aioresponses() as mock_response:
         mock_response.post(
-            url=mock_bc_integration.api_url + "/api/v1/vulnerabilities/packages/get-licenses-violations",
+            url=mock_bc_integration.api_url + "/api/v1/vulnerabilities/license/get-licenses-violations",
             payload=response_json,
             status=200
         )
@@ -267,7 +267,7 @@ def test_run_with_empty_scan_result(mock_bc_integration):
     }
     responses.add(
         method=responses.POST,
-        url=mock_bc_integration.api_url + "/api/v1/vulnerabilities/packages/get-licenses-violations",
+        url=mock_bc_integration.api_url + "/api/v1/vulnerabilities/license/get-licenses-violations",
         json=response_json,
         status=200
     )
