@@ -18,9 +18,9 @@ definition:
         conditions:
           - metavariable: $FUNC
             regex: (?i)(Bucket|CfnBucket)
-          - not_pattern: '$FUNC(<ANY>, blockPublicAcls: false ,<ANY>)'
+          - not_pattern: '$FUNC(<ANY>, blockPublicAcls: true ,<ANY>)'
       - pattern: $S3.$FUNC(<ANY>)
         conditions:
           - metavariable: $FUNC
             regex: (?i)(Bucket|CfnBucket)
-          - not_pattern: '$S3.$FUNC(<ANY>, blockPublicAcls: false ,<ANY>)'
+          - not_pattern: '$S3.$FUNC(<ANY>, blockPublicAcls: true ,<ANY>)'

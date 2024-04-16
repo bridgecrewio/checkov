@@ -18,9 +18,9 @@ definition:
         conditions:
           - metavariable: $FUNC
             regex: (?i)(CfnCluster|Cluster|ClusterProps)
-          - not_pattern: '$FUNC(<ANY>, logging_properties: $FUNC.LoggingPropertiesProperty = {<ANY>, bucketName=$ARG, <ANY>} ,<ANY>)'
+          - not_pattern: '$FUNC(<ANY>, logging_properties: $FUNC.LoggingPropertiesProperty = {<ANY>, bucketName:$ARG, <ANY>} ,<ANY>)'
       - pattern: $REDSHIFT.$FUNC(<ANY>)
         conditions:
           - metavariable: $FUNC
             regex: (?i)(CfnCluster|Cluster|ClusterProps)
-          - not_pattern: '$REDSHIFT.$FUNC(<ANY>, logging_properties: $REDSHIFT.$FUNC.LoggingPropertiesProperty = {<ANY>, bucketName=$ARG, <ANY>} ,<ANY>)'
+          - not_pattern: '$REDSHIFT.$FUNC(<ANY>, logging_properties: $REDSHIFT.$FUNC.LoggingPropertiesProperty = {<ANY>, bucketName:$ARG, <ANY>} ,<ANY>)'

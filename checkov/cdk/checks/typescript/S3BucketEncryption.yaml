@@ -20,7 +20,7 @@ definition:
           - not_pattern: '$FUNC(<ANY>, encryption: $METHOD ,<ANY>)'
             conditions:
               - metavariable: $METHOD
-                regex: (?i)(aws_cdk.aws_s3.BucketEncryption.KMS_MANAGED|aws_cdk.aws_s3.BucketEncryption.S3_MANAGED|aws_cdk.aws_s3.BucketEncryption.KMS)
+                regex: (?i)(BucketEncryption.KMS_MANAGED|BucketEncryption.S3_MANAGED|BucketEncryption.KMS)
       - pattern: $S3.$FUNC(<ANY>)
         conditions:
           - metavariable: $FUNC
@@ -28,4 +28,4 @@ definition:
           - not_pattern: '$FUNC(<ANY>, encryption: $METHOD ,<ANY>)'
             conditions:
               - metavariable: $METHOD
-                regex: (?i)(aws_cdk.aws_s3.BucketEncryption.KMS_MANAGED|aws_cdk.aws_s3.BucketEncryption.S3_MANAGED|aws_cdk.aws_s3.BucketEncryption.KMS)
+                regex: (?i)($S3.BucketEncryption.KMS_MANAGED|$S3.BucketEncryption.S3_MANAGED|$S3.BucketEncryption.KMS)
