@@ -35,7 +35,7 @@ resource "google_cloudbuild_trigger" "build-trigger" {
     secret {
       kms_key_name = "projects/myProject/locations/global/keyRings/keyring-name/cryptoKeys/key-name"
       secret_env = {
-        PASSWORD = "ZW5jcnlwdGVkLXBhc3N3b3JkCg=="  # checkov:skip=CKV_SECRET_6 test secret
+        PASSWORD = "ZW5jcnlwdGVkLXBhc3N3b3JkCg=="  # checkov:skip=CKV_SECRET_6 test secret  # checkov:skip=CKV_SECRET_80 test secret
       }
     }
     available_secrets {
