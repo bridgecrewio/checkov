@@ -10,17 +10,16 @@ scope:
     - javascript
     - typescript
 definition:
-  source:
-    pattern: import <ANY> from '@aws-cdk/aws-rds'
-  sink:
-    or:
-      - pattern: $FUNC(<ANY>)
-        conditions:
-          - metavariable: $FUNC
-            regex: (?i)(CfnDBInstance|DatabaseInstance)
-          - not_pattern: '$FUNC(<ANY>, publicly_accessible: true ,<ANY>)'
-      - pattern: $RDS.$FUNC(<ANY>)
-        conditions:
-          - metavariable: $FUNC
-            regex: (?i)(CfnDBInstance|DatabaseInstance)
-          - not_pattern: '$RDS.$FUNC(<ANY>, publicly_accessible: true ,<ANY>)'
+  or:
+    - pattern: new $FUNC(<ANY>)
+      conditions:
+        - metavariable: $FUNC
+          regex: (?i)(CfnDBInstance|DatabaseInstance)
+        - not_pattern: |
+            'new $FUNC(<ANY>, publicly_accessible: true ,<ANY>)'
+    - pattern: new $RDS.$FUNC(<ANY>)
+      conditions:
+        - metavariable: $FUNC
+          regex: (?i)(CfnDBInstance|DatabaseInstance)
+        - not_pattern: |
+            'new $RDS.$FUNC(<ANY>, publicly_accessible: true ,<ANY>)'

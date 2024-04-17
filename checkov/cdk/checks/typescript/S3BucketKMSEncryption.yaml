@@ -8,23 +8,22 @@ scope:
     - javascript
     - typescript
 definition:
-  source:
-    pattern: import <ANY> from '@aws-cdk/aws-s3'
-  sink:
-    or:
-      - pattern: $FUNC(<ANY>)
-        conditions:
-          - metavariable: $FUNC
-            regex: (?i)(Bucket|CfnBucket)
-          - not_pattern: '$FUNC(<ANY>, encryption: $METHOD ,<ANY>)'
-            conditions:
-              - metavariable: $METHOD
-                regex: (?i)(aws_cdk.aws_s3.BucketEncryption.KMS_MANAGED|aws_cdk.aws_s3.BucketEncryption.KMS)
-      - pattern: $S3.$FUNC(<ANY>)
-        conditions:
-          - metavariable: $FUNC
-            regex: (?i)(Bucket|CfnBucket)
-          - not_pattern: '$FUNC(<ANY>, encryption: $METHOD ,<ANY>)'
-            conditions:
-              - metavariable: $METHOD
-                regex: (?i)(aws_cdk.aws_s3.BucketEncryption.KMS_MANAGED|aws_cdk.aws_s3.BucketEncryption.KMS)
+  or:
+    - pattern: new $FUNC(<ANY>)
+      conditions:
+        - metavariable: $FUNC
+          regex: (?i)(Bucket|CfnBucket)
+        - not_pattern: |
+            'new $FUNC(<ANY>, encryption: $METHOD ,<ANY>)'
+          conditions:
+            - metavariable: $METHOD
+              regex: (?i)(aws_cdk.aws_s3.BucketEncryption.KMS_MANAGED|aws_cdk.aws_s3.BucketEncryption.KMS)
+    - pattern: new $S3.$FUNC(<ANY>)
+      conditions:
+        - metavariable: $FUNC
+          regex: (?i)(Bucket|CfnBucket)
+        - not_pattern: |
+            'new $FUNC(<ANY>, encryption: $METHOD ,<ANY>)'
+          conditions:
+            - metavariable: $METHOD
+              regex: (?i)(aws_cdk.aws_s3.BucketEncryption.KMS_MANAGED|aws_cdk.aws_s3.BucketEncryption.KMS)

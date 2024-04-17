@@ -10,23 +10,24 @@ scope:
     - javascript
     - typescript
 definition:
-  source:
-    pattern: import <ANY> from '@aws-cdk/aws-s3'
-  sink:
-    or:
-      - pattern: $FUNC(<ANY>)
-        conditions:
-          - metavariable: $FUNC
-            regex: (?i)(Bucket|CfnBucket)
-          - patterns:
-              or:
-                - not_pattern: '$FUNC(<ANY>, publicReadAccess: false ,<ANY>)'
-                - not_pattern: "$FUNC(<ANY>, accessControl: 'Private' ,<ANY>)"
-      - pattern: $S3.$FUNC(<ANY>)
-        conditions:
-          - metavariable: $FUNC
-            regex: (?i)(Bucket|CfnBucket)
-          - patterns:
-              or:
-                - not_pattern: '$S3.$FUNC(<ANY>, publicReadAccess: false ,<ANY>)'
-                - not_pattern: "$S3.$FUNC(<ANY>, accessControl: 'Private' ,<ANY>)"
+  or:
+    - pattern: new $FUNC(<ANY>)
+      conditions:
+        - metavariable: $FUNC
+          regex: (?i)(Bucket|CfnBucket)
+        - patterns:
+            or:
+              - not_pattern: |
+                  'new $FUNC(<ANY>, publicReadAccess: false ,<ANY>)'
+              - not_pattern: |
+                  "new $FUNC(<ANY>, accessControl: 'Private' ,<ANY>)"
+    - pattern: new $S3.$FUNC(<ANY>)
+      conditions:
+        - metavariable: $FUNC
+          regex: (?i)(Bucket|CfnBucket)
+        - patterns:
+            or:
+              - not_pattern: |
+                  'new $S3.$FUNC(<ANY>, publicReadAccess: false ,<ANY>)'
+              - not_pattern: |
+                  "new $S3.$FUNC(<ANY>, accessControl: 'Private' ,<ANY>)"

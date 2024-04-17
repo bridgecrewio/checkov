@@ -10,17 +10,16 @@ scope:
     - javascript
     - typescript
 definition:
-  source:
-    pattern: import <ANY> from '@aws-cdk/aws-redshift'
-  sink:
-    or:
-      - pattern: $FUNC(<ANY>)
-        conditions:
-          - metavariable: $FUNC
-            regex: (?i)(CfnCluster|Cluster|ClusterProps)
-          - not_pattern: '$FUNC(<ANY>, logging_properties: $FUNC.LoggingPropertiesProperty = {<ANY>, bucketName:$ARG, <ANY>} ,<ANY>)'
-      - pattern: $REDSHIFT.$FUNC(<ANY>)
-        conditions:
-          - metavariable: $FUNC
-            regex: (?i)(CfnCluster|Cluster|ClusterProps)
-          - not_pattern: '$REDSHIFT.$FUNC(<ANY>, logging_properties: $REDSHIFT.$FUNC.LoggingPropertiesProperty = {<ANY>, bucketName:$ARG, <ANY>} ,<ANY>)'
+  or:
+    - pattern: new $FUNC(<ANY>)
+      conditions:
+        - metavariable: $FUNC
+          regex: (?i)(CfnCluster|Cluster|ClusterProps)
+        - not_pattern: |
+            'new $FUNC(<ANY>, logging_properties: $FUNC.LoggingPropertiesProperty = {<ANY>, bucketName:$ARG, <ANY>} ,<ANY>)'
+    - pattern: new $REDSHIFT.$FUNC(<ANY>)
+      conditions:
+        - metavariable: $FUNC
+          regex: (?i)(CfnCluster|Cluster|ClusterProps)
+        - not_pattern: |
+            'new $REDSHIFT.$FUNC(<ANY>, logging_properties: $REDSHIFT.$FUNC.LoggingPropertiesProperty = {<ANY>, bucketName:$ARG, <ANY>} ,<ANY>)'

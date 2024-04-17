@@ -10,15 +10,14 @@ scope:
     - javascript
     - typescript
 definition:
-  source:
-    pattern: import <ANY> from '@aws-cdk/aws-redshift'
-  sink:
-    or:
-      - pattern: '$FUNC(<ANY>, encrypted: false ,<ANY>)'
-        conditions:
-          - metavariable: $FUNC
-            regex: (?i)(CfnCluster|Cluster|ClusterProps)
-      - pattern: '$REDSHIFT.$FUNC(<ANY>, encrypted: false ,<ANY>)'
-        conditions:
-          - metavariable: $FUNC
-            regex: (?i)(CfnCluster|Cluster|ClusterProps)
+  or:
+    - pattern: |
+        'new $FUNC(<ANY>, encrypted: false ,<ANY>)'
+      conditions:
+        - metavariable: $FUNC
+          regex: (?i)(CfnCluster|Cluster|ClusterProps)
+    - pattern: |
+        'new $REDSHIFT.$FUNC(<ANY>, encrypted: false ,<ANY>)'
+      conditions:
+        - metavariable: $FUNC
+          regex: (?i)(CfnCluster|Cluster|ClusterProps)

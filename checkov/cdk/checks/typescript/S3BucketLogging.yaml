@@ -8,23 +8,22 @@ scope:
     - javascript
     - typescript
 definition:
-  source:
-    pattern: import <ANY> from '@aws-cdk/aws-s3'
-  sink:
-    or:
-      - pattern: $FUNC(<ANY>)
-        conditions:
-          - metavariable: $FUNC
-            regex: (?i)(Bucket|CfnBucket)
-          - not_pattern: '$FUNC(<ANY>, serverAccessLogsBucket: $BUCKET.$LOGGER(<ANY>) ,<ANY>)'
-            conditions:
-              - metavariable: $LOGGER
-                regex: (?i)(fromBucketArn|fromBucketAttributes|fromBucketName|fromBucketRegionalAttributes|fromBucketUrl)
-      - pattern: $S3.$FUNC(<ANY>)
-        conditions:
-          - metavariable: $FUNC
-            regex: (?i)(Bucket|CfnBucket)
-          - not_pattern: '$FUNC(<ANY>, serverAccessLogsBucket: $S3.$BUCKET.$LOGGER(<ANY>) ,<ANY>)'
-            conditions:
-              - metavariable: $LOGGER
-                regex: (?i)(fromBucketArn|fromBucketAttributes|fromBucketName|fromBucketRegionalAttributes|fromBucketUrl)
+  or:
+    - pattern: new $FUNC(<ANY>)
+      conditions:
+        - metavariable: $FUNC
+          regex: (?i)(Bucket|CfnBucket)
+        - not_pattern: |
+            'new $FUNC(<ANY>, serverAccessLogsBucket: $BUCKET.$LOGGER(<ANY>) ,<ANY>)'
+          conditions:
+            - metavariable: $LOGGER
+              regex: (?i)(fromBucketArn|fromBucketAttributes|fromBucketName|fromBucketRegionalAttributes|fromBucketUrl)
+    - pattern: new $S3.$FUNC(<ANY>)
+      conditions:
+        - metavariable: $FUNC
+          regex: (?i)(Bucket|CfnBucket)
+        - not_pattern: |
+            'new $FUNC(<ANY>, serverAccessLogsBucket: $S3.$BUCKET.$LOGGER(<ANY>) ,<ANY>)'
+          conditions:
+            - metavariable: $LOGGER
+              regex: (?i)(fromBucketArn|fromBucketAttributes|fromBucketName|fromBucketRegionalAttributes|fromBucketUrl)
