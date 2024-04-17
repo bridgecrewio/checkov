@@ -1394,7 +1394,7 @@ class BcPlatformIntegration:
     def get_sso_prismacloud_url(self, report_url: str) -> str:
         if not bc_integration.prisma_api_url or not self.http or not self.bc_source or report_url is None:
             return report_url or ''
-        url_saml_config = f"{bc_integration.bc_api_url}/saml/config"
+        url_saml_config = f"{bc_integration.prisma_api_url}/saml/config"
         token = self.get_auth_token()
         headers = merge_dicts(get_auth_header(token),
                               get_default_get_headers(self.bc_source, self.bc_source_version),
