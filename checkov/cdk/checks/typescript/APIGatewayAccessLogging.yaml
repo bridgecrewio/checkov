@@ -1,0 +1,21 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_76
+  name: Ensure API Gateway has Access Logging enabled
+  category: LOGGING
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  patterns:
+    or:
+      - pattern: new $AWS.CfnStage(<ANY>)
+        conditions:
+          - not_pattern: |
+              new $AWS.CfnStage(<ANY>, { <ANY>, accessLogSetting: { <ANY>, destinationArn: $ARG , <ANY> }, <ANY> } , <ANY>)
+      - pattern: $AWS.Api(<ANY>)
+        conditions:
+          - not_pattern: |
+              new $AWS.Api(<ANY>, { <ANY>, accessLogSetting: { <ANY>, destinationArn: $ARG , <ANY> }, <ANY> } , <ANY>)
