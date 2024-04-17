@@ -155,7 +155,7 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
                     'severity': custom_policy.get('severity'),
                     'guideline': custom_policy.get('guideline')
                 }
-                self.check_metadata[custom_policy['id']] = {k: v for k,v in custom_policy_check_metadata.items() if v is not None}
+                self.check_metadata[custom_policy['id']] = {k: v for k, v in custom_policy_check_metadata.items() if v is not None}
                 pc_policy_id = custom_policy.get('pcPolicyId')
                 if pc_policy_id:
                     self.pc_to_ckv_id_mapping[pc_policy_id] = custom_policy['id']
