@@ -656,12 +656,12 @@ class BcPlatformIntegration:
             for dir in self.scan_dir:
                 if filepath.startswith(os.path.abspath(dir)):
                     file_dir = '/'.join(filepath.split('/')[0:-1])
-                    new_filepath = filepath.replace(os.path.abspath(file_dir), self.repo_path)
+                    new_filepath = filepath.replace(os.path.abspath(file_dir), self.repo_path)  # type: ignore
                     break
             for file in self.scan_file:
                 if filepath == os.path.abspath(file):
                     file_dir = '/'.join(filepath.split('/')[0:-1])
-                    new_filepath = filepath.replace(os.path.abspath(file_dir), self.repo_path)
+                    new_filepath = filepath.replace(os.path.abspath(file_dir), self.repo_path)  # type: ignore
                     break
             if new_filepath:
                 skipped_checks_by_file[new_filepath] = skipped_checks_by_file[filepath]
