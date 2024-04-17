@@ -1,0 +1,15 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_165
+  name: Ensure DynamoDB global table point in time recovery (backup) is enabled
+  category: BACKUP_AND_RECOVERY
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  pattern: new $AWS.CfnGlobalTable(<ANY>)
+  conditions:
+    - not_pattern: |
+        new $AWS.CfnGlobalTable(<ANY>, {<ANY>, pointInTimeRecoverySpecification: {<ANY>, pointInTimeRecoveryEnabled: true ,<ANY>} ,<ANY>} , <ANY>)
