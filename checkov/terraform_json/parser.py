@@ -65,6 +65,9 @@ def loads(file_path: Path) -> tuple[dict[str, Any], list[tuple[int, str]]]:
 
     content = read_file_with_any_encoding(file_path=file_path)
 
+    if not all(key in content for key in ("resource", "provider")):
+        return {}, []
+
     file_lines = [(idx + 1, line) for idx, line in enumerate(content.splitlines(keepends=True))]
 
     template: "dict[str, Any] | list[dict[str, Any]]" = loader.loads(content=content)

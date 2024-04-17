@@ -66,7 +66,7 @@ setup(
     },
     install_requires=[
         "bc-python-hcl2==0.4.2",
-        "bc-detect-secrets==1.5.5",
+        "bc-detect-secrets==1.5.4",
         "bc-jsonpath-ng==1.6.1",
         "pycep-parser==0.4.1",
         "tabulate>=0.9.0,<0.10.0",
@@ -95,7 +95,6 @@ setup(
         "aiohttp>=3.8.0,<4.0.0",
         "aiodns>=3.0.0,<4.0.0",
         "aiomultiprocess>=0.9.0,<0.10.0",
-        "schema<=0.7.5",
         "jsonschema>=4.17.0,<5.0.0",
         "prettytable>=3.6.0,<4.0.0",
         "charset-normalizer>=3.1.0,<4.0.0",

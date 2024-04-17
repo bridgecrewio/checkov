@@ -58,13 +58,11 @@ def get_compare_key(c: list[str] | tuple[str, ...]) -> list[tuple[str, str, int,
 
 
 def print_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
-                 include_all_checkov_policies: bool = True, filtered_policy_ids: Optional[List[str]] = None,
-                 filtered_exception_policy_ids: Optional[List[str]] = None) -> None:
+                 include_all_checkov_policies: bool = True, filtered_policy_ids: Optional[List[str]] = None) -> None:
     framework_list = frameworks if frameworks else ["all"]
     printable_checks_list = get_checks(framework_list, use_bc_ids=use_bc_ids,
                                        include_all_checkov_policies=include_all_checkov_policies,
-                                       filtered_policy_ids=filtered_policy_ids or [],
-                                       filtered_exception_policy_ids=filtered_exception_policy_ids or [])
+                                       filtered_policy_ids=filtered_policy_ids or [])
     print(
         tabulate(printable_checks_list, headers=["Id", "Type", "Entity", "Policy", "IaC", "Resource Link"], tablefmt="github",
                  showindex=True))
@@ -85,15 +83,11 @@ def get_check_link(absolute_path: str) -> str:
 
 
 def get_checks(frameworks: Optional[List[str]] = None, use_bc_ids: bool = False,
-               include_all_checkov_policies: bool = True, filtered_policy_ids: Optional[List[str]] = None,
-               filtered_exception_policy_ids: Optional[List[str]] = None) -> List[Tuple[str, str, int, int, str, str]]:
+               include_all_checkov_policies: bool = True, filtered_policy_ids: Optional[List[str]] = None) -> List[Tuple[str, str, int, int, str, str]]:
     framework_list = frameworks if frameworks else ["all"]
     printable_checks_list: list[tuple[str, str, str, str, str, str]] = []
     filtered_policy_ids = filtered_policy_ids or []
-    filtered_exception_policy_ids = filtered_exception_policy_ids or []
-    runner_filter = RunnerFilter(include_all_checkov_policies=include_all_checkov_policies,
-                                 filtered_policy_ids=filtered_policy_ids,
-                                 filtered_exception_policy_ids=filtered_exception_policy_ids)
+    runner_filter = RunnerFilter(include_all_checkov_policies=include_all_checkov_policies, filtered_policy_ids=filtered_policy_ids)
 
     def add_from_repository(registry: Union[BaseCheckRegistry, BaseGraphRegistry], checked_type: str, iac: str,
                             runner_filter: RunnerFilter = runner_filter) -> None:

@@ -10,11 +10,6 @@ from checkov.terraform.graph_builder.variable_rendering.evaluate_terraform impor
 
 
 class TestTerraformEvaluation(TestCase):
-    def test_zipmap(self):
-        input_str = '"zipmap(["a", "b"], [1, 2])"'
-        expected = {'a': 1, 'b': 2}
-        self.assertEqual(expected, evaluate_terraform(input_str))
-
     def test_directive(self):
         input_str = '"Hello, %{ if "d" != "" }named%{ else }unnamed%{ endif }!"'
         expected = 'Hello, named!'
@@ -39,14 +34,6 @@ class TestTerraformEvaluation(TestCase):
         self.assertEqual(expected, evaluate_terraform(input_str))
 
         input_str = 'blocked == "allowed" ? True : False'
-        expected = False
-        self.assertEqual(expected, evaluate_terraform(input_str))
-        
-        input_str = 'True == "true" ? True : False'
-        expected = True
-        self.assertEqual(expected, evaluate_terraform(input_str))
-
-        input_str = 'False != "false" ? True : False'
         expected = False
         self.assertEqual(expected, evaluate_terraform(input_str))
 

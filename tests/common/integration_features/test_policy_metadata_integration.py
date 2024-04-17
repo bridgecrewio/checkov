@@ -13,14 +13,12 @@ class TestPolicyMetadataIntegration(unittest.TestCase):
         instance.bc_api_key = '00000000-0000-0000-0000-000000000000::1234=='
         instance.customer_run_config_response = mock_customer_run_config()
         instance.prisma_policies_response = mock_prisma_policies_response()
-        instance.prisma_policies_exception_response = [mock_prisma_policies_response()[0]]
         metadata_integration = PolicyMetadataIntegration(instance)
         metadata_integration.bc_integration = instance
         metadata_integration.pre_scan()
         metadata_integration.pc_to_ckv_id_mapping
         self.assertDictEqual(metadata_integration.pc_to_ckv_id_mapping, {'6960be11-e3a6-46cc-bf66-933c57c2af5d': 'CKV_AWS_212', '3dc2478c-bf25-4383-aaa1-30feb5cda586': '806079891421835264_AZR_1685557908904', 'c11ce08c-b93e-4e11-8d1c-e5a1339139d1': 'CKV_AWS_40', '0e4c576e-c934-4af3-8592-a53920e71ffb': 'CKV_AWS_53'})
         self.assertListEqual(metadata_integration.filtered_policy_ids, ['CKV_AWS_212', '806079891421835264_AZR_1685557908904', 'CKV_AWS_40', 'CKV_AWS_53', 'CKV_AZURE_122'])
-        self.assertListEqual(metadata_integration.filtered_exception_policy_ids, ['CKV_AWS_212'])
 
 
 def mock_customer_run_config():

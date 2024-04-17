@@ -128,7 +128,7 @@ jobs:
         with:
           upload_url: ${{ needs.github-release.outputs.upload_url }}
           asset_path: checkov.zip
-          asset_name: checkov_${{ matrix.name }}_X86_64.zip
+          asset_name: checkov_${{ matrix.name }}_X86_64_${{ needs.github-release.outputs.version }}.zip
           asset_content_type: application/zip
   build-release-artifact-linux-arm:
     needs: [ github-release ]
@@ -164,5 +164,5 @@ jobs:
         with:
           upload_url: ${{ needs.github-release.outputs.upload_url }}
           asset_path: checkov.zip
-          asset_name: checkov_linux_arm64.zip
+          asset_name: checkov_linux_arm64_${{ needs.github-release.outputs.version }}.zip
           asset_content_type: application/zip

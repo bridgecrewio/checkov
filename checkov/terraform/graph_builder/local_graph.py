@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import logging
 import os
 from collections import defaultdict
@@ -19,7 +18,7 @@ from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.type_forcers import force_int
 from checkov.terraform.graph_builder.foreach.builder import ForeachBuilder
 from checkov.terraform.graph_builder.variable_rendering.vertex_reference import TerraformVertexReference
-from checkov.terraform.modules.module_objects import TFModule, TFDefinitionKey
+from checkov.terraform.modules.module_objects import TFModule
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
@@ -38,19 +37,12 @@ from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
 
 MODULE_RESERVED_ATTRIBUTES = ("source", "version")
 CROSS_VARIABLE_EDGE_PREFIX = '[cross-variable] '
-S3_BUCKET_RESOURCE_NAME = "aws_s3_bucket"
-S3_BUCKET_REFERENCE_ATTRIBUTE = "bucket"
 
 
 class Undetermined(TypedDict):
     module_vertex_id: int
     attribute_name: str
     variable_vertex_id: int
-
-
-class S3ConnectedResources(TypedDict):
-    bucket_resource_index: int | None
-    referenced_vertices: List[Edge]
 
 
 class TerraformLocalGraph(LocalGraph[TerraformBlock]):
@@ -101,11 +93,6 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 edges_count = len(self.edges)
                 self._build_cross_variable_edges()
                 logging.info(f"Found {len(self.edges) - edges_count} cross variable edges")
-            # building S3 edges by name for terraform graph
-            logging.info("Building S3 edges name references")
-            edges_count = len(self.edges)
-            self._build_s3_name_reference_edges()
-            logging.info(f"Found {len(self.edges) - edges_count} S3 name references edges")
         else:
             self.update_vertices_fields()
 
@@ -308,11 +295,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 try:
                     tf_def = vertex.config.get(vertex.name, {}).get(RESOLVED_MODULE_ENTRY_NAME)
                     if tf_def and isinstance(tf_def, list):
-                        if isinstance(tf_def[0], str):
-                            definition = json.loads(tf_def[0])
-                            tf_module = TFDefinitionKey.from_json(definition).tf_source_modules
-                        else:
-                            tf_module = tf_def[0].tf_source_modules
+                        tf_module = tf_def[0].tf_source_modules
                         # get all resources connected to module
                         resources = self.vertices_by_module_dependency[tf_module].get("resource")
                         if resources:
@@ -334,34 +317,6 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                     any(self.vertices[e.dest].block_type != BlockType.RESOURCE for e in referenced_vertices):
                 modules = vertex.breadcrumbs.get(CustomAttributes.SOURCE_MODULE, [])
                 self._build_edges_for_vertex(origin_node_index, vertex, aliases, resources_types, True, modules)
-
-    def _build_s3_name_reference_edges(self) -> None:
-        # Supporting reference by name of S3 bucket
-        resources_types = self.get_resources_types_in_graph()
-        if S3_BUCKET_RESOURCE_NAME not in resources_types:
-            return
-        # Find all the edges leading to S3 bucket and their references
-        s3_buckets_mapping: Dict[int, S3ConnectedResources] = {}
-        for origin_node_index, referenced_vertices in self.out_edges.items():
-            vertex = self.vertices[origin_node_index]
-            if vertex.block_type != BlockType.RESOURCE:
-                continue
-            for referenced_vertice in referenced_vertices:
-                if referenced_vertice.label == S3_BUCKET_REFERENCE_ATTRIBUTE:
-                    current = s3_buckets_mapping.get(referenced_vertice.dest, {"bucket_resource_index": None, "referenced_vertices": list()})
-                    if vertex.id.startswith(f"{S3_BUCKET_RESOURCE_NAME}."):
-                        current["bucket_resource_index"] = origin_node_index
-                    else:
-                        current["referenced_vertices"].append(referenced_vertice)
-                    s3_buckets_mapping[referenced_vertice.dest] = current
-
-        # Create new edges of the found connections
-        for destination, mapping in s3_buckets_mapping.items():
-            if self.vertices[destination].block_type in [BlockType.VARIABLE, BlockType.LOCALS]:
-                if mapping["bucket_resource_index"] is None:
-                    continue
-                for reference_vertex in mapping["referenced_vertices"]:
-                    self.create_edge(mapping["bucket_resource_index"], reference_vertex.origin, S3_BUCKET_REFERENCE_ATTRIBUTE, True)
 
     def create_edge(self, origin_vertex_index: int, dest_vertex_index: int, label: str,
                     cross_variable_edges: bool = False) -> bool:

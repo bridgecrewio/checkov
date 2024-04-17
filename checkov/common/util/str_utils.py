@@ -11,12 +11,6 @@ def removeprefix(input_str: str, prefix: str) -> str:
     return input_str
 
 
-# in case of comparing paths from the BE and from the client, we have to make sure the structures are the same
-# e.g: in windows the seperator for the path is '\' while in linux/max it is '/'
-def align_path(path: str) -> str:
-    return path.replace('\\', '/')
-
-
 def convert_to_seconds(input_str: str) -> int:
     if re.search(seconds_per_unit_regex, input_str) is None:
         raise Exception(f"format error for input str, usage: {seconds_per_unit_regex}")

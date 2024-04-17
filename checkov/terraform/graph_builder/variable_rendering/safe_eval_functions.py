@@ -271,7 +271,7 @@ def terraform_try(*args: Any) -> Any:
         except Exception as e:
             logging.warning(f"Error in evaluate_try of argument {arg} - {e}")
             continue
-    raise Exception(f"No argument can be evaluated for try of {args}")
+    raise Exception(f"No argument can be avaluted for try of {args}")
 
 
 SAFE_EVAL_FUNCTIONS: List[str] = []
@@ -334,7 +334,6 @@ SAFE_EVAL_DICT["merge"] = merge
 # SAFE_EVAL_DICT['range']
 SAFE_EVAL_DICT["reverse"] = reverse
 SAFE_EVAL_DICT["sort"] = sort
-SAFE_EVAL_DICT["zipmap"] = lambda *lists: dict(zip(*lists))  # noqa: B905
 
 
 # type conversion

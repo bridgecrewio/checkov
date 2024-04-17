@@ -98,11 +98,6 @@ class Repositories(BaseModel):
     files: Dict[str, File]  # noqa: CCE003
 
 
-class SkippedCheck(BaseModel):
-    check_id: str   # noqa: CCE003
-    suppress_comment: str   # noqa: CCE003
-
-
 class PrismaReport(BaseModel):
     rule_match: Dict[SastLanguages, Dict[str, RuleMatch]]  # noqa: CCE003
     errors: Dict[str, List[str]]  # noqa: CCE003
@@ -110,15 +105,13 @@ class PrismaReport(BaseModel):
     run_metadata: Dict[str, Optional[Union[str, int, List[str]]]]  # noqa: CCE003
     imports: Dict[SastLanguages, Dict[str, Dict[str, Union[List[str], Dict[str, str]]]]]  # noqa: CCE003
     reachability_report: Dict[SastLanguages, Dict[str, Repositories]]   # noqa: CCE003
-    skipped_checks_by_file: Dict[str, List[SkippedCheck]]   # noqa: CCE003
 
 
 def create_empty_report(languages: List[SastLanguages]) -> PrismaReport:
     matches: Dict[SastLanguages, Dict[str, RuleMatch]] = {}
     for lang in languages:
         matches[lang] = {}
-    return PrismaReport(rule_match=matches, errors={}, profiler={}, run_metadata={}, imports={}, reachability_report={},
-                        skipped_checks_by_file={})
+    return PrismaReport(rule_match=matches, errors={}, profiler={}, run_metadata={}, imports={}, reachability_report={})
 
 
 def serialize_reachability_report(report: Dict[str, Repositories]) -> Dict[str, Any]:

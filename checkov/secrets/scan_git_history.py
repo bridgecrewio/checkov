@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
 os.environ["GIT_PYTHON_REFRESH"] = "quiet"
 try:
-    from git import Repo, Tree
+    from git import Repo, Tree  # type: ignore
 
     git_import_error = None
 except ImportError as e:

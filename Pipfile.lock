@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "675e0e54d9cb18d087732007765517fd5f22b2b061774588811856cc035cc039"
+            "sha256": "847f53f013d5e094e228fca5fe357f366d259a71bf3ddb184b174bb0feac6295"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -159,14 +159,12 @@
         },
         "bc-detect-secrets": {
             "hashes": [
-                "sha256:07c643d72ff28b46a1c0ca70a3d8998bf2dc193286db5602bc1fb14e2a89075d",
-                "sha256:3ce1eb6f2d85b5890379fb40d0c71d9543b88193c3ae46644a30d5620ff7f497",
                 "sha256:4b83fe926f3bea3bc08f3dcc3f912984079184f99450685dbf9da125e74bdf63",
                 "sha256:4ee47ebff2b86b7538e49476342e22fd014e4e232019e7a2965910949eab1585"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.8'",
-            "version": "==1.5.5"
+            "version": "==1.5.4"
         },
         "bc-jsonpath-ng": {
             "hashes": [
@@ -2065,7 +2063,9 @@
             "version": "==3.3.2"
         },
         "coverage": {
-            "extras": [],
+            "extras": [
+                "toml"
+            ],
             "hashes": [
                 "sha256:004d1880bed2d97151facef49f08e255a20ceb6f9432df75f4eef018fdd5a78c",
                 "sha256:01d84219b5cdbfc8122223b39a954820929497a1cb1422824bb86b07b74594b6",

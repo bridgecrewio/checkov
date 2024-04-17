@@ -154,24 +154,6 @@ class TestRunnerValid(unittest.TestCase):
         assert 'aws_db_instance.default' in failed_resources
         assert 'aws_db_instance.disabled' in failed_resources
 
-    def test_for_each_check(self):
-        if not self.db_connector == RustworkxConnector:
-            return
-        current_dir = os.path.dirname(os.path.realpath(__file__))
-        valid_dir_path = current_dir + "/resources/for_each"
-        runner = Runner(db_connector=self.db_connector())
-        checks_allowlist = ['CKV_AWS_186']
-        report = runner.run(root_folder=valid_dir_path, runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allowlist))
-        report_json = report.get_json()
-        self.assertIsInstance(report_json, str)
-        self.assertIsNotNone(report_json)
-        self.assertIsNotNone(report.get_test_suite())
-        assert len(report.failed_checks) == 2
-        assert len(report.passed_checks) == 0
-        failed_resources = [c.resource for c in report.failed_checks]
-        assert 'module.simple[0].aws_s3_bucket_object.this_file' in failed_resources
-        assert 'module.simple[1].aws_s3_bucket_object.this_file' in failed_resources
-
     def test_runner_passing_valid_tf(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
