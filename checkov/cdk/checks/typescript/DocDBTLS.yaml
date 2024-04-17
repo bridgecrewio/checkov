@@ -1,0 +1,13 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_90
+  name: Ensure DocumentDB TLS is not disabled
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  pattern: |
+      new $AWS.CfnDBClusterParameterGroup(<ANY>, {<ANY>, parameters: {<ANY>, tls: 'disabled' ,<ANY>}, <ANY>} ,<ANY>)

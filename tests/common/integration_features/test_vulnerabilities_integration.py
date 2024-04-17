@@ -58,7 +58,9 @@ class TestVulnerabilitiesIntegration(unittest.TestCase):
         sast_report: SastReport = SastReport(check_type=CheckType.SAST_JAVASCRIPT,
                                              language=SastLanguages.JAVASCRIPT, metadata=None,
                                              sast_report=PrismaReport(rule_match={}, errors={}, profiler={},
-                                                                      run_metadata={}, imports={}, reachability_report={}))
+                                                                      run_metadata={}, imports={},
+                                                                      reachability_report={},
+                                                                      skipped_checks_by_file={}))
         sast_report.sast_imports = sast_imports
         merged_reports = [sca_report, sast_report]
 
@@ -93,7 +95,9 @@ class TestVulnerabilitiesIntegration(unittest.TestCase):
         sast_report: SastReport = SastReport(check_type=CheckType.SAST_JAVASCRIPT,
                                              language=SastLanguages.JAVASCRIPT, metadata=None,
                                              sast_report=PrismaReport(rule_match={}, errors={}, profiler={},
-                                                                      run_metadata={}, imports={}, reachability_report={}))
+                                                                      run_metadata={}, imports={},
+                                                                      reachability_report={},
+                                                                      skipped_checks_by_file={}))
         sast_report.sast_imports = sast_imports
         merged_reports = [sca_report, sast_report]
 
