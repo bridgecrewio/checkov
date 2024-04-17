@@ -1,6 +1,16 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.68...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.70...HEAD)
+
+## [3.2.70](https://github.com/bridgecrewio/checkov/compare/3.2.68...3.2.70) - 2024-04-17
+
+### Feature
+
+- **sast:** Add 5 cdk for TS - [#6179](https://github.com/bridgecrewio/checkov/pull/6179)
+
+### Bug Fix
+
+- **sast:** fix skipped_checks paths before upload to the platform - [#6183](https://github.com/bridgecrewio/checkov/pull/6183)
 
 ## [3.2.68](https://github.com/bridgecrewio/checkov/compare/3.2.65...3.2.68) - 2024-04-16
 
