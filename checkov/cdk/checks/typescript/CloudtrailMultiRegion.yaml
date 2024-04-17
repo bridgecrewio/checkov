@@ -1,0 +1,21 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_67
+  name: Ensure CloudTrail is enabled in all Regions
+  category: LOGGING
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  patterns:
+    or:
+      - pattern: new $AWS.Trail(<ANY>)
+        conditions:
+          - not_pattern: |
+              new $AWS.Trail(<ANY>, {<ANY>, isMultiRegionTrail: true, <ANY>} ,<ANY>)
+      - pattern: new $AWS.CfnTrail(<ANY>)
+        conditions:
+          - not_pattern: |
+              new $AWS.CfnTrail(<ANY>, {<ANY>, isMultiRegionTrail: true, <ANY>} ,<ANY>)
