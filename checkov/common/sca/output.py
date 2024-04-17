@@ -664,6 +664,7 @@ def _get_request_input(packages: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 def get_license_statuses(packages: list[dict[str, Any]]) -> list[_LicenseStatus]:
     requests_input = _get_request_input(packages)
+    response = None
     if not requests_input:
         return []
     try:
@@ -679,12 +680,15 @@ def get_license_statuses(packages: list[dict[str, Any]]) -> list[_LicenseStatus]
             response_json = response.json()
             license_statuses.extend(_extract_license_statuses(response_json))
         return license_statuses
-    except Exception:
+    except Exception as e:
         error_message = (
-            "failing when trying to get licenses-violations. it is apparently some unexpected "
-            "connection issue. please try later. in case it keep happening. please report."
+            "[get_license_statuses] failing when trying to get licenses-violations. it is apparently some unexpected "
+            "connection issue. please try later. in case it keeps happening, please report.\n"
+            f"requests_input: {requests_input}\n"
+            f"response: {response}\n"
+            f"Error: {str(e)}"
         )
-        logging.info(error_message, exc_info=True)
+        logging.error(error_message, exc_info=True)
 
     return []
 
@@ -698,6 +702,7 @@ async def get_license_statuses_async(
     """
     requests_input = _get_request_input(packages)
     url = f"{bc_integration.api_url}/api/v1/vulnerabilities/license/get-licenses-violations"
+    resp = None
     if not requests_input:
         return {'image_name': image_name, 'licenses': []}
     try:
@@ -711,11 +716,13 @@ async def get_license_statuses_async(
         return {'image_name': image_name, 'licenses': license_statuses}
     except Exception as e:
         error_message = (
-            "failing when trying to get licenses-violations. it is apparently some unexpected "
-            "connection issue. please try later. in case it keeps happening, please report."
+            "[get_license_statuses_async] failing when trying to get licenses-violations. it is apparently some unexpected "
+            "connection issue. please try later. in case it keeps happening, please report.\n"
+            f"requests_input: {requests_input}\n"
+            f"response: {resp}\n"
             f"Error: {str(e)}"
         )
-        logging.info(error_message, exc_info=True)
+        logging.error(error_message, exc_info=True)
 
         return {'image_name': image_name, 'licenses': []}
 
