@@ -31,7 +31,7 @@ from checkov.circleci_pipelines.runner import Runner as circleci_pipelines_runne
 from checkov.cloudformation.runner import Runner as cfn_runner
 from checkov.common.bridgecrew.bc_source import SourceTypes, BCSourceType, get_source_type, SourceType
 from checkov.common.bridgecrew.check_type import checkov_runners, CheckType
-from checkov.common.bridgecrew.platform_errors import ModuleNotEnabledError
+from checkov.common.bridgecrew.platform_errors import ModuleNotEnabledError, PlatformConnectionError
 from checkov.common.bridgecrew.integration_features.features.custom_policies_integration import \
     integration as custom_policies_integration
 from checkov.common.bridgecrew.integration_features.features.licensing_integration import \
@@ -190,9 +190,9 @@ class Checkov:
         if self.config.bc_api_key and not self.config.repo_id and not self.config.list:
             self.parser.error('--repo-id is required when using a platform API key')
 
-        if self.config.policy_metadata_filter and not (self.config.bc_api_key and self.config.prisma_api_url):
+        if (self.config.policy_metadata_filter or self.config.policy_metadata_filter_exception) and not (self.config.bc_api_key and self.config.prisma_api_url):
             logger.warning(
-                '--policy-metadata-filter flag was used without a Prisma Cloud API key. Policy filtering will be skipped.'
+                '--policy-metadata-filter or --policy-metadata-filter-exception flag was used without a Prisma Cloud API key. Policy filtering will be skipped.'
             )
 
         logging.debug('Normalizing --framework')
@@ -402,6 +402,8 @@ class Checkov:
 
                 except MaxRetryError:
                     self.exit_run()
+                except PlatformConnectionError:
+                    self.exit_run()
                 except Exception:
                     if bc_integration.prisma_api_url:
                         message = 'An error occurred setting up the Prisma Cloud platform integration. ' \
@@ -460,7 +462,7 @@ class Checkov:
                     if removed_check_types:
                         logger.warning(f"Following runners won't run as they are not supported for on-premises integrations: {removed_check_types}")
 
-            bc_integration.get_prisma_build_policies(self.config.policy_metadata_filter)
+            bc_integration.get_prisma_build_policies(self.config.policy_metadata_filter, self.config.policy_metadata_filter_exception)
 
             # set config to make it usable inside the integration features
             integration_feature_registry.config = self.config
@@ -476,7 +478,9 @@ class Checkov:
                 runner_filter.run_image_referencer = licensing_integration.should_run_image_referencer()
 
             runner_filter.filtered_policy_ids = policy_metadata_integration.filtered_policy_ids
+            runner_filter.filtered_exception_policy_ids = policy_metadata_integration.filtered_exception_policy_ids
             logger.debug(f"Filtered list of policies: {runner_filter.filtered_policy_ids}")
+            logger.debug(f"Filtered excluded list of policies: {runner_filter.filtered_exception_policy_ids}")
 
             runner_filter.excluded_paths = runner_filter.excluded_paths + list(repo_config_integration.skip_paths)
             policy_level_suppression = suppressions_integration.get_policy_level_suppressions()
@@ -491,7 +495,8 @@ class Checkov:
             if self.config.list:
                 print_checks(frameworks=self.config.framework, use_bc_ids=self.config.output_bc_ids,
                              include_all_checkov_policies=self.config.include_all_checkov_policies,
-                             filtered_policy_ids=runner_filter.filtered_policy_ids)
+                             filtered_policy_ids=runner_filter.filtered_policy_ids,
+                             filtered_exception_policy_ids=runner_filter.filtered_exception_policy_ids)
                 return None
 
             baseline = None
@@ -692,9 +697,20 @@ class Checkov:
             logging.error(m)
             self.exit_run()
             return None
-        except BaseException:
+        except PlatformConnectionError:
+            # we don't want to print all of these stack traces in normal output, as these could be user error
+            # and stack traces look like checkov bugs
+            logging.debug("Exception traceback:", exc_info=True)
+            self.exit_run()
+            return None
+        except SystemExit:
+            # calling exit_run from an exception handler causes another exception that is caught here, so we just need to re-exit
+            self.exit_run()
+            return None
+        except BaseException:  # noqa: B036 # we need to catch any failure and exit properly
             logging.error("Exception traceback:", exc_info=True)
-            raise
+            self.exit_run()
+            return None
 
         finally:
             if bc_integration.support_flag_enabled:
