@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.70...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.71...HEAD)
+
+## [3.2.71](https://github.com/bridgecrewio/checkov/compare/3.2.70...3.2.71) - 2024-04-18
+
+### Feature
+
+- **sca:** support licenses custom policies enforcement rules - [#6173](https://github.com/bridgecrewio/checkov/pull/6173)
 
 ## [3.2.70](https://github.com/bridgecrewio/checkov/compare/3.2.68...3.2.70) - 2024-04-17
 
