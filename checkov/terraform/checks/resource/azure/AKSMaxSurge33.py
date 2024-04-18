@@ -12,7 +12,7 @@ class AKSMaxSurge33Test(BaseResourceCheck):
         name = (
             "Ensure Azure Kubernetes Cluster (AKS) doesn't have a MaxSurge superior to 33% if not equal to 'Default'."
         )
-        id = "CKV_AZURE_243"
+        id = "CKV_AZURE_244"
         supported_resources = ("azurerm_kubernetes_cluster", "azurerm_kubernetes_cluster_node_pool")
         categories = (CheckCategories.KUBERNETES,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
