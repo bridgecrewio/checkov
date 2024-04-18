@@ -1,0 +1,17 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_88
+  name: EC2 instance should not have public IP
+  category: NETWORKING
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  patterns:
+    or:
+      - pattern: | 
+          new $AWS.Instance(<ANY>, { <ANY>, associatePublicIpAddress: true, <ANY> }, <ANY>)
+      - pattern: | 
+          new $AWS.LaunchTemplate(<ANY>, { <ANY>, associatePublicIpAddress: true, <ANY> }, <ANY>)
