@@ -1,0 +1,23 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_174
+  name: Verify CloudFront Distribution Viewer Certificate is using TLS v1.2
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  pattern1: aws_cdk.aws_cloudfront.CfnDistribution(<ANY>)
+  pattern: |
+    new CfnDistribution(scope: Construct, id: string, props: CfnDistributionProps)
+
+  conditions:
+    - not_pattern: |
+        const $VCP: cloudfront.CfnDistribution.ViewerCertificateProperty = {  minimumProtocolVersion: 'TLSv1.2'};
+        <ANY>
+    - not_pattern: |
+        const $PROPS: cloudfront.CfnDistributionProps = { <ANY>, viewerCertificate: { <ANY>, minimumProtocolVersion: 'TLSv1.2' } }
+        <ANY>
+        new CfnDistribution(<ANY>, props: $PROPS)
