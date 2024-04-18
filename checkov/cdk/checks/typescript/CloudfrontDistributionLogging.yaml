@@ -1,0 +1,21 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_86
+  name: Ensure CloudFront distribution has Access Logging enabled
+  category: LOGGING
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  patterns:
+    or:
+      - pattern: new $AWS.Distribution(<ANY>)
+        conditions:
+          - not_pattern: |
+              new $AWS.Distribution(<ANY>, {<ANY>, enableLogging: true ,<ANY>} ,<ANY>)
+      - pattern: new $AWS.CfnDistribution(<ANY>)
+        conditions:
+          - not_pattern: |
+              new $AWS.CfnDistribution(<ANY>, {<ANY>, distributionConfig: {<ANY>, logging: {<ANY>, bucket: $ARG ,<ANY>} ,<ANY>} ,<ANY>} , <ANY>)

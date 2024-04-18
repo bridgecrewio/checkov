@@ -1,6 +1,52 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.55...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.70...HEAD)
+
+## [3.2.70](https://github.com/bridgecrewio/checkov/compare/3.2.68...3.2.70) - 2024-04-17
+
+### Feature
+
+- **sast:** Add 5 cdk for TS - [#6179](https://github.com/bridgecrewio/checkov/pull/6179)
+
+### Bug Fix
+
+- **sast:** fix skipped_checks paths before upload to the platform - [#6183](https://github.com/bridgecrewio/checkov/pull/6183)
+
+## [3.2.68](https://github.com/bridgecrewio/checkov/compare/3.2.65...3.2.68) - 2024-04-16
+
+### Feature
+
+- **sast:** adding extended code block - [#6178](https://github.com/bridgecrewio/checkov/pull/6178)
+- **sca:** using the new api license/get-licenses-violations instead of packages/get-licenses-violations (which is deprecated) - [#6174](https://github.com/bridgecrewio/checkov/pull/6174)
+
+### Bug Fix
+
+- **sca:** Revert "feat(sca): using the new api license/get-licenses-violations … - [#6176](https://github.com/bridgecrewio/checkov/pull/6176)
+
+## [3.2.65](https://github.com/bridgecrewio/checkov/compare/3.2.63...3.2.65) - 2024-04-15
+
+### Bug Fix
+
+- **sast:** save suppress_comment for sast inline suppressions - [#6171](https://github.com/bridgecrewio/checkov/pull/6171)
+- **secrets:** Azure Storage Key detector updates in bc-detect-secrets 1.5.7 - [#6168](https://github.com/bridgecrewio/checkov/pull/6168)
+
+## [3.2.63](https://github.com/bridgecrewio/checkov/compare/3.2.60...3.2.63) - 2024-04-14
+
+### Feature
+
+- **sast:** CDK TS policies p2 - [#6165](https://github.com/bridgecrewio/checkov/pull/6165)
+
+## [3.2.60](https://github.com/bridgecrewio/checkov/compare/3.2.55...3.2.60) - 2024-04-10
+
+### Feature
+
+- **sast:** Add TS CDK policies 1 - [#6151](https://github.com/bridgecrewio/checkov/pull/6151)
+- **sast:** CDK TS policies p3 - [#6157](https://github.com/bridgecrewio/checkov/pull/6157)
+
+### Bug Fix
+
+- **terraform:** Fix conditional expression evaluation logic with compare - [#6160](https://github.com/bridgecrewio/checkov/pull/6160)
+- **terraform:** Fixed flaky test for CKV_AWS_356 - [#6162](https://github.com/bridgecrewio/checkov/pull/6162)
 
 ## [3.2.55](https://github.com/bridgecrewio/checkov/compare/3.2.53...3.2.55) - 2024-04-08
 

@@ -11,11 +11,11 @@ scope:
 definition:
   patterns:
     or:
-      - pattern: new s3.Bucket(<ANY>)
+      - pattern: new $AWS.Bucket(<ANY>)
         conditions:
           - not_pattern: |
-              new s3.Bucket(<ANY>, { <ANY>, blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL, <ANY> } ,<ANY>)
-      - pattern: new s3.CfnBucket(<ANY>)
+              new $AWS.Bucket(<ANY>, { <ANY>, blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL, <ANY> } ,<ANY>)
+      - pattern: new $AWS.CfnBucket(<ANY>)
         conditions:
           - not_pattern: |
-              new s3.CfnBucket(<ANY>, {<ANY>, publicAccessBlockConfiguration: {<ANY>, restrictPublicBuckets: true ,<ANY>}, <ANY>} , <ANY>)
+              new $AWS.CfnBucket(<ANY>, {<ANY>, publicAccessBlockConfiguration: {<ANY>, restrictPublicBuckets: true ,<ANY>}, <ANY>} , <ANY>)
