@@ -36,3 +36,7 @@ class TestSQLDatabaseGeoRedundantBackupEnabled(unittest.TestCase):
 
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)
+
+
+if __name__ == '__main__':
+    unittest.main()
