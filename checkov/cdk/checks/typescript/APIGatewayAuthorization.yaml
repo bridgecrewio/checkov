@@ -13,13 +13,13 @@ definition:
     or:
       - pattern: |
           const $METHOD = $RESOURCE.addMethod($HTTP_METHOD, <ANY>, { <ANY>, apiKeyRequired: false });
-        condition:
+        conditions:
           - not_pattern: |
               const $METHOD = $RESOURCE.addMethod($HTTP_METHOD, <ANY>, { <ANY>, authorizationType: $AUTH });
           - metavariable: $AUTO
             regex: (apigateway.AuthorizationType.COGNITO|apigateway.AuthorizationType.IAM|apigateway.AuthorizationType.CUSTOM)
       - pattern: |
           const $METHOD = $RESOURCE.addMethod($HTTP_METHOD, <ANY>, { <ANY>, authorizationType: apigateway.AuthorizationType.NONE });
-        condition:
+        conditions:
           - not_pattern: |
               const $METHOD = $RESOURCE.addMethod($HTTP_METHOD, <ANY>, { <ANY>, apiKeyRequired: false });

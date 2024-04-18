@@ -9,9 +9,8 @@ scope:
   languages:
     - typescript
 definition:
-  pattern1: aws_cdk.aws_cloudfront.CfnDistribution(<ANY>)
   pattern: |
-    new CfnDistribution(scope: Construct, id: string, props: CfnDistributionProps)
+    const $AA = new cloudfront.CfnDistribution(<ANY>, <ANY>, CfnDistributionProps)
 
   conditions:
     - not_pattern: |
@@ -20,4 +19,4 @@ definition:
     - not_pattern: |
         const $PROPS: cloudfront.CfnDistributionProps = { <ANY>, viewerCertificate: { <ANY>, minimumProtocolVersion: 'TLSv1.2' } }
         <ANY>
-        new CfnDistribution(<ANY>, props: $PROPS)
+        new CfnDistribution(<ANY>, $PROPS)

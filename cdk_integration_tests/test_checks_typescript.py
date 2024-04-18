@@ -23,6 +23,10 @@ def test_CKV_AWS_2_ALBListenerHTTPS():
     run_check(check_results=failed_checks, check_id="CKV_AWS_2", policy_name="ALBListenerHTTPS", language="typescript")
 
 
+def test_CKV_AWS_59_APIGatewayAuthorization(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_59", policy_name="APIGatewayAuthorization", language="typescript")
+
+
 @pytest.mark.skip(reason="Not supported yet")
 def test_CKV_AWS_76_APIGatewayAccessLogging():
     run_check(check_results=failed_checks, check_id="CKV_AWS_76", policy_name="APIGatewayAccessLogging", language="typescript")
@@ -42,6 +46,17 @@ def test_CKV_AWS_95_APIGatewayV2AccessLogging():
 def test_CKV_AWS_73_APIGatewayXray():
     run_check(check_results=failed_checks, check_id="CKV_AWS_73", policy_name="APIGatewayXray", language="typescript")
 
+@pytest.mark.skip(reason="Not supported yet")
+def test_CKV_AWS_194_AppSyncFieldLevelLogs():
+    run_check(check_results=failed_checks, check_id="CKV_AWS_194", policy_name="AppSyncFieldLevelLogs", language="typescript")
+
+@pytest.mark.skip(reason="Not supported yet")
+def test_CKV_AWS_193_AppSyncLogging():
+    run_check(check_results=failed_checks, check_id="CKV_AWS_193", policy_name="AppSyncLogging", language="typescript")
+
+@pytest.mark.skip(reason="Not supported yet")
+def test_CKV_AWS_82_AthenaWorkgroupConfiguration():
+    run_check(check_results=failed_checks, check_id="CKV_AWS_82", policy_name="AthenaWorkgroupConfiguration", language="typescript")
 
 @pytest.mark.skip(reason="Not supported yet")
 def test_CKV_AWS_131_AmazonMQBrokerPublicAccess():
@@ -59,9 +74,12 @@ def test_CKV_AWS_166_BackupVaultEncrypted():
 
 
 @pytest.mark.skip(reason="Not supported yet")
+def test_CKV_AWS_174_CloudFrontTLS12():
+    run_check(check_results=failed_checks, check_id="CKV_AWS_174", policy_name="CloudFrontTLS12", language="typescript")
+
+@pytest.mark.skip(reason="Not supported yet")
 def test_CKV_AWS_36_CloudTrailLogValidation():
     run_check(check_results=failed_checks, check_id="CKV_AWS_36", policy_name="CloudTrailLogValidation", language="typescript")
-
 
 @pytest.mark.skip(reason="Not supported yet")
 def test_CKV_AWS_20_S3PublicACLRead():
