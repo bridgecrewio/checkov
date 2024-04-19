@@ -1,0 +1,15 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_104
+  name: Ensure DocumentDB has audit logs enabled
+  category: LOGGING
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  pattern: new $AWS.CfnDBClusterParameterGroup(<ANY>)
+  conditions:
+    - not_pattern: |
+        new $AWS.CfnDBClusterParameterGroup(<ANY>, {<ANY>, parameters: {<ANY>, audit_logs: 'enabled' ,<ANY>}, <ANY>} , <ANY>)

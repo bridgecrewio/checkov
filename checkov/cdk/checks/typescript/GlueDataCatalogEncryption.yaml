@@ -1,0 +1,25 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_94
+  name: Ensure Glue Data Catalog Encryption is enabled
+  category: LOGGING
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  or:
+    - pattern: new $PACKAGE.aws_glue.CfnDataCatalogEncryptionSettings(<ANY>, <ANY>, { <ANY> })
+      conditions:
+        - not_pattern: |
+            new $PACKAGE.aws_glue.CfnDataCatalogEncryptionSettings(<ANY>, <ANY>, { <ANY>, dataCatalogEncryptionSettings: { <ANY>, connectionPasswordEncryption :{ <ANY>, returnConnectionPasswordEncrypted: true , <ANY> }, <ANY>, encryptionAtRest:{ <ANY>, catalogEncryptionMode: "SSE-KMS", <ANY> }, <ANY>}, <ANY>})
+        - metavariable: $PACKAGE
+          comparison: $PACKAGE == "aws-cdk-lib"
+    - pattern: |
+        $X = { <ANY>, dataCatalogEncryptionSettings: { <ANY> }, <ANY> }
+      conditions:
+        - not_pattern: |
+            $X = { <ANY>, dataCatalogEncryptionSettings: { <ANY>, connectionPasswordEncryption: { <ANY>, returnConnectionPasswordEncrypted: true, <ANY> }, <ANY>, encryptionAtRest: { <ANY>, catalogEncryptionMode: "SSE-KMS", <ANY> }, <ANY> }, <ANY> }
+        - metavariable: $X
+          type: aws-cdk-lib.aws_glue.CfnDataCatalogEncryptionSettingsProps

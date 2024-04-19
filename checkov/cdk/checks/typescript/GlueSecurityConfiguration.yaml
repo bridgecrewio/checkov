@@ -1,0 +1,28 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_99
+  name: Ensure Glue Security Configuration Encryption is enabled
+  category: LOGGING
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  or:
+    - pattern: new $PACKAGE.aws_glue.CfnSecurityConfiguration(<ANY>, <ANY>, { <ANY> })
+      conditions:
+        - not_pattern: |
+            new $PACKAGE.aws_glue.CfnSecurityConfiguration(<ANY>, <ANY>, { <ANY>, encryptionConfiguration: { <ANY>, cloudWatchEncryption: { <ANY>, cloudWatchEncryptionMode: 'SSE-KMS', <ANY> }, <ANY>, jobBookmarksEncryption: { <ANY>, jobBookmarksEncryptionMode: 'CSE-KMS', <ANY> },  <ANY>, s3Encryptions: [ <ANY>, { <ANY>, s3EncryptionMode: 'SSE-KMS', <ANY> }, <ANY> ], <ANY> }, <ANY> })
+        - not_pattern: |
+            new $PACKAGE.aws_glue.CfnSecurityConfiguration(<ANY>, <ANY>, { <ANY>, encryptionConfiguration: { <ANY>, cloudWatchEncryption: { <ANY>, cloudWatchEncryptionMode: 'SSE-KMS', <ANY> }, <ANY>, jobBookmarksEncryption: { <ANY>, jobBookmarksEncryptionMode: 'CSE-KMS', <ANY> },  <ANY>, s3Encryptions: [ <ANY>, { <ANY>, s3EncryptionMode: 'SSE-S3', <ANY> }, <ANY> ], <ANY> }, <ANY> })
+        - metavariable: $PACKAGE
+          comparison: $PACKAGE == "aws-cdk-lib"
+    - pattern: "$X = { <ANY> , encryptionConfiguration: { <ANY> }, <ANY> }"
+      conditions:
+        - not_pattern: |
+            $X = { <ANY>, encryptionConfiguration: { <ANY>, cloudWatchEncryption: { <ANY>, cloudWatchEncryptionMode: "SSE-KMS", <ANY> }, <ANY>, jobBookmarksEncryption: { <ANY>, jobBookmarksEncryptionMode: 'CSE-KMS', <ANY> },  <ANY>, s3Encryptions: [ <ANY>, { <ANY>, s3EncryptionMode: 'SSE-KMS', <ANY> }, <ANY> ], <ANY> }, <ANY> }
+        - not_pattern: |
+            $X = { <ANY>, encryptionConfiguration: { <ANY>, cloudWatchEncryption: { <ANY>, cloudWatchEncryptionMode: 'SSE-KMS', <ANY> }, <ANY>, jobBookmarksEncryption: { <ANY>, jobBookmarksEncryptionMode: 'CSE-KMS', <ANY> },  <ANY>, s3Encryptions: [ <ANY>, { <ANY>, s3EncryptionMode: 'SSE-S3', <ANY> }, <ANY> ], <ANY> }, <ANY> }
+        - metavariable: $X
+          type: aws-cdk-lib.aws_glue.CfnSecurityConfigurationProps
