@@ -1,0 +1,9 @@
+pass:
+  - 'Microsoft.Sql/servers.sqlServer_pass'
+fail:
+  - 'Microsoft.Sql/servers.sqlServer_fail1'
+  - 'Microsoft.Sql/servers.sqlServer_fail2'
+  - 'Microsoft.Sql/servers.sqlServer_fail3'
+evaluated_keys:
+  - 'properties.retentionDays'
+  - 'properties.state'
