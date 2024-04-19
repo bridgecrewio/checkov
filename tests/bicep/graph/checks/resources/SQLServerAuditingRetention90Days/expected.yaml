@@ -7,3 +7,4 @@ fail:
 evaluated_keys:
   - 'properties/retentionDays'
   - 'properties/state'
+  - 'resource_type'
