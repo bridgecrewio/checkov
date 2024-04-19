@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.71...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.72...HEAD)
+
+## [3.2.72](https://github.com/bridgecrewio/checkov/compare/3.2.71...3.2.72) - 2024-04-19
+
+### Feature
+
+- **bicep:** Add bicep version of policy - [#6191](https://github.com/bridgecrewio/checkov/pull/6191)
 
 ## [3.2.71](https://github.com/bridgecrewio/checkov/compare/3.2.70...3.2.71) - 2024-04-18
 
