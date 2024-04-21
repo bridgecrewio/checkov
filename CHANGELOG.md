@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.72...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.73...HEAD)
+
+## [3.2.73](https://github.com/bridgecrewio/checkov/compare/3.2.72...3.2.73) - 2024-04-21
+
+### Feature
+
+- **sast:** TypeScript cdk policies p7 - [#6186](https://github.com/bridgecrewio/checkov/pull/6186)
 
 ## [3.2.72](https://github.com/bridgecrewio/checkov/compare/3.2.71...3.2.72) - 2024-04-19
 
