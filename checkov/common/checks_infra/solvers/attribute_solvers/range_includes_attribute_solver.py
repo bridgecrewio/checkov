@@ -40,12 +40,13 @@ class RangeIncludesAttributeSolver(BaseAttributeSolver):
         if isinstance(attr, str) and attr.count("-") == 1:
             return self._check_range(value, attr)
 
-        return force_int(attr) == value
+        return bool(force_int(attr) == value)
 
-    def _check_range(self, value: Any, range_str: str) -> bool:
+    @staticmethod
+    def _check_range(value: Any, range_str: str) -> bool:
         try:
             start, end = range_str.split("-")
-            return force_int(start) <= value <= force_int(end)
+            return bool(force_int(start) <= value <= force_int(end))
         except (TypeError, ValueError):
             # Occurs if there are not two entries or if one is not an int, in which case we just give up
             return False
