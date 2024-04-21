@@ -3,7 +3,7 @@ from __future__ import annotations
 import itertools
 import json
 import logging
-from typing import Optional, Tuple, Dict, List, Any, cast
+from typing import Any, Dict, List, Optional, Tuple, cast
 
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.parsers.node import ListNode
@@ -247,10 +247,10 @@ def _is_provider_key(key: str) -> bool:
     return (key.startswith('module.') or key.startswith('__') or key in {'start_line', 'end_line'})
 
 
-def _get_provider(template: dict[str, Any]) -> dict[str, dict[str, Any]]:
+def _get_provider(template: dict[str, dict[str, Any]]) -> dict[str, dict[str, Any]]:
     """Returns the provider dict"""
 
-    provider_map = {}
+    provider_map: dict[str, dict[str, Any]] = {}
     provider_config = template.get("configuration", {}).get("provider_config")
 
     if provider_config and isinstance(provider_config, dict):
