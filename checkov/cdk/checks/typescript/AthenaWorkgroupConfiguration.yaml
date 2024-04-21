@@ -11,11 +11,15 @@ scope:
 definition:
 
   pattern: |
-    const $WORKGROUP: athena.CfnWorkGroup.WorkGroupConfigurationProperty = { <ANY> };
+    new athena.CfnWorkGroup(<ANY>, <ANY>, $WORKGROUP );
   conditions:
     - not_pattern: |
-        const $WORKGROUP: athena.CfnWorkGroup.WorkGroupConfigurationProperty = { <ANY>, enforceWorkGroupConfiguration: true };
-#    - not_pattern: |
-#        $ARG = aws_cdk.aws_athena.CfnWorkGroup.WorkGroupConfigurationProperty(<ANY>, enforce_work_group_configuration=True , <ANY>)
-#        <ANY>
-#        aws_cdk.aws_athena.CfnWorkGroup(<ANY>, work_group_configuration=$ARG , <ANY>)
+        const $WORKGROUP: athena.CfnWorkGroup.WorkGroupConfigurationProperty = { <ANY>, enforceWorkGroupConfiguration: true, <ANY> };
+        <ANY>
+        const $VAR1 = new athena.CfnWorkGroup(<ANY>, <ANY>, $WORKGROUP );
+    - not_pattern:
+        source: |
+          { <ANY>, enforceWorkGroupConfiguration: true, <ANY> }
+        sink: new athena.CfnWorkGroup(<ANY>, <ANY>, <SOURCE> );
+    - not_pattern: |
+        new athena.CfnWorkGroup(<ANY>, <ANY>, {<ANY>, enforceWorkGroupConfiguration: true });

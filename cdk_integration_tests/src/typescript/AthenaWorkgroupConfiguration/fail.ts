@@ -16,4 +16,9 @@ const workgroupWithoutEnforcement = new athena.CfnWorkGroup(this, 'workgroupWith
   }
 });
 
+const workgroupWithoutEnforcement2 = new athena.CfnWorkGroup(this, 'workgroupWithoutEnforcement', {
+  // other configuration details
+  workGroupConfiguration: workgroupConfig
+});
+
 // The SAST engine should flag 1 vulnerability: `workgroupWithoutEnforcement`.
