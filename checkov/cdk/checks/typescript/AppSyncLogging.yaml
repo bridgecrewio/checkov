@@ -13,8 +13,8 @@ definition:
     const $logConfig: appsync.LogConfig = { <ANY> };
   conditions:
     - not_pattern: |
-        new appsync.GraphqlApi(<ANY>, <ANY>, { <ANY>,  role: <ANY>});
+        new $IMPORT.GraphqlApi(<ANY>, <ANY>, { <ANY>,  role: <ANY>});
     - not_pattern: |
-        const $LOG: appsync.LogConfig = { role: <ANY> };
+        const $LOG: $IMPORT.LogConfig = { role: <ANY> };
         <ANY>
-        new appsync.GraphqlApi(<ANY>, <ANY>, { <ANY>,  $LOG});
+        new $IMPORT.GraphqlApi(<ANY>, <ANY>, { <ANY>,  $LOG});

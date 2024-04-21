@@ -16,10 +16,13 @@ definition:
         conditions:
           - not_pattern: |
               const $METHOD = $RESOURCE.addMethod($HTTP_METHOD, <ANY>, { <ANY>, authorizationType: $AUTH });
-          - metavariable: $AUTO
-            regex: (apigateway.AuthorizationType.COGNITO|apigateway.AuthorizationType.IAM|apigateway.AuthorizationType.CUSTOM)
+          - metavariable: $AUTH
+            regex: ($IMPORT.AuthorizationType.COGNITO|$IMPORT.AuthorizationType.IAM|$IMPORT.AuthorizationType.CUSTOM)
       - pattern: |
-          const $METHOD = $RESOURCE.addMethod($HTTP_METHOD, <ANY>, { <ANY>, authorizationType: apigateway.AuthorizationType.NONE });
+          const $METHOD = $RESOURCE.addMethod($HTTP_METHOD, <ANY>, { <ANY>, authorizationType: $IMPORT.AuthorizationType.NONE, <ANY> });
         conditions:
           - not_pattern: |
               const $METHOD = $RESOURCE.addMethod($HTTP_METHOD, <ANY>, { <ANY>, apiKeyRequired: false });
+  conditions:
+    - metavariable: $HTTP_METHOD
+      not_regex: OPTIONS

@@ -10,14 +10,14 @@ scope:
     - typescript
 definition:
   pattern: |
-    new cloudfront.CfnDistribution(<ANY>, <ANY>, $VCP)
+    new $CF.CfnDistribution(<ANY>, <ANY>, $VCP)
   conditions:
     - not_pattern: |
-        const $VCP: cloudfront.CfnDistribution.ViewerCertificateProperty = {  minimumProtocolVersion: 'TLSv1.2'};
+        const $VCP: $CF.CfnDistribution.ViewerCertificateProperty = {  minimumProtocolVersion: 'TLSv1.2'};
         <ANY>
     - not_pattern: |
-        const $PROPS: cloudfront.CfnDistributionProps = { <ANY>, viewerCertificate: { <ANY>, minimumProtocolVersion: 'TLSv1.2' } }
+        const $PROPS: $CF.CfnDistributionProps = { <ANY>, viewerCertificate: { <ANY>, minimumProtocolVersion: 'TLSv1.2' } }
         <ANY>
         new CfnDistribution(<ANY>, $PROPS)
     - not_pattern: |
-        new cloudfront.CfnDistribution(<ANY>, <ANY>, { <ANY>, viewerCertificate: {<ANY>, minimumProtocolVersion: 'TLSv1.2'} })
+        new $CF.CfnDistribution(<ANY>, <ANY>, { <ANY>, viewerCertificate: {<ANY>, minimumProtocolVersion: 'TLSv1.2'} })

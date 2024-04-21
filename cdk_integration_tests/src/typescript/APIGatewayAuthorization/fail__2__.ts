@@ -7,8 +7,8 @@ const resource: Resource = new Resource(); // Placeholder for actual resource in
 
 // Test cases for the policy patterns
 
-// This should match the first pattern and not be sanitized by the second pattern
-// SOURCE
-const method1 = resource.addMethod('GET', new apigateway.MockIntegration(), {
-  apiKeyRequired: false
+// This should match the second pattern
+// SINK
+const method2 = resource.addMethod('POST', new apigateway.MockIntegration(), {
+  authorizationType: apigateway.AuthorizationType.NONE
 });

@@ -10,13 +10,13 @@ scope:
     - typescript
 definition:
   pattern: |
-    const $logConfig: appsync.LogConfig = { <ANY> };
+    const $logConfig: $IMPORT.LogConfig = { <ANY> };
   conditions:
     - not_pattern: | 
-        new appsync.GraphqlApi(<ANY>, <ANY>, { <ANY>,  logConfig: $ARG});
+        new $IMPORT.GraphqlApi(<ANY>, <ANY>, { <ANY>,  logConfig: $ARG});
     - not_pattern: |
-        const $LOG: appsync.LogConfig = { FieldLogLevel: $ARG };
+        const $LOG: $IMPORT.LogConfig = { FieldLogLevel: $ARG };
         <ANY>
-        new appsync.GraphqlApi(<ANY>, <ANY>, { <ANY>,  $LOG});
+        new $IMPORT.GraphqlApi(<ANY>, <ANY>, { <ANY>,  $LOG});
     - metavariable: $ARG
       regex: (ERROR|ALL)

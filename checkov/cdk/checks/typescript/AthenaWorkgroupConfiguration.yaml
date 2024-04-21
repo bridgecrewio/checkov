@@ -9,17 +9,12 @@ scope:
   languages:
     - typescript
 definition:
-
   pattern: |
-    new athena.CfnWorkGroup(<ANY>, <ANY>, $WORKGROUP );
+    new $IMPORT.CfnWorkGroup(<ANY>, <ANY>, $WORKGROUP );
   conditions:
-    - not_pattern: |
-        const $WORKGROUP: athena.CfnWorkGroup.WorkGroupConfigurationProperty = { <ANY>, enforceWorkGroupConfiguration: true, <ANY> };
+    - not_within: |
+        const $WORKGROUP: $IMPORT.CfnWorkGroup.WorkGroupConfigurationProperty = { <ANY>, enforceWorkGroupConfiguration: true, <ANY> };
         <ANY>
-        const $VAR1 = new athena.CfnWorkGroup(<ANY>, <ANY>, $WORKGROUP );
-    - not_pattern:
-        source: |
-          { <ANY>, enforceWorkGroupConfiguration: true, <ANY> }
-        sink: new athena.CfnWorkGroup(<ANY>, <ANY>, <SOURCE> );
+        const $VAR1 = new $IMPORT.CfnWorkGroup(<ANY>, <ANY>, $WORKGROUP );
     - not_pattern: |
-        new athena.CfnWorkGroup(<ANY>, <ANY>, {<ANY>, enforceWorkGroupConfiguration: true });
+        new $IMPORT.CfnWorkGroup(<ANY>, <ANY>, {<ANY>, enforceWorkGroupConfiguration: true });
