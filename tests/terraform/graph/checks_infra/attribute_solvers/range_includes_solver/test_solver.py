@@ -64,7 +64,7 @@ class TestRangeIncludesSolver(TestBaseSolver):
 
         self.run_test(root_folder=root_folder, expected_results=expected_results, check_id=check_id)
 
-    def test_range_includes_string_jsonpath_solver(self):
+    def test_range_includes_list_jsonpath_solver(self):
         root_folder = 'resources'
         check_id = "JsonPathRangeIncludesList"
         should_pass = ['test.pass1', 'test.pass2', 'test.pass3', 'test.pass4', 'test.pass5', 'test.pass6', 'test.pass7']

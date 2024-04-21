@@ -1,0 +1,16 @@
+metadata:
+  name: "example"
+  category: "GENERAL_SECURITY"
+  id: "JsonPathRangeNotIncludesString"
+scope:
+  provider: "AWS"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "test"
+  attribute: "range"
+  operator: "jsonpath_range_not_includes"
+  value:
+    - "3001"
+    - 3000
+    - 3002

@@ -27,7 +27,7 @@ class RangeIncludesAttributeSolver(BaseAttributeSolver):
 
         return any(self._check_value(value, attr) for value in self.value)
 
-    def _check_value(self, value, attr):
+    def _check_value(self, value: Any, attr: Any) -> bool:
         # expects one of the following values:
         # - an actual int
         # - a string that parses to an int
@@ -42,7 +42,7 @@ class RangeIncludesAttributeSolver(BaseAttributeSolver):
 
         return force_int(attr) == value
 
-    def _check_range(self, value, range_str):
+    def _check_range(self, value: Any, range_str: str) -> bool:
         try:
             start, end = range_str.split("-")
             return force_int(start) <= value <= force_int(end)
