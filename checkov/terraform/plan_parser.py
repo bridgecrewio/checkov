@@ -242,20 +242,25 @@ def _get_module_call_resources(module_address: str, root_module_conf: dict[str, 
     return cast("list[dict[str, Any]]", root_module_conf.get("resources", []))
 
 
+def _is_provider_key(key: str) -> bool:
+    """key is a valid provider"""
+    return (key.startswith('module.') or key.startswith('__') or key in {'start_line', 'end_line'})
+
+
 def _get_provider(template: dict[str, Any]) -> dict[str, dict[str, Any]]:
     """Returns the provider dict"""
 
     provider_map = {}
-    provider_config = template.get("configuration", {}).get("provider_config", None)
+    provider_config = template.get("configuration", {}).get("provider_config")
 
     if provider_config and isinstance(provider_config, dict):
         for provider_key, provider_data in provider_config.items():
-            if (provider_key.startswith('module.') or provider_key.startswith('__') or provider_key in {'start_line', 'end_line'}):
+            if _is_provider_key(key=provider_key):
                 # Not a provider, skip
                 continue
             provider_map[provider_key] = {}
             for field, value in provider_data.get('expressions', {}).items():
-                if field in LINE_FIELD_NAMES or field or not isinstance(value, dict):
+                if field in LINE_FIELD_NAMES or not isinstance(value, dict):
                     continue  # don't care about line #s or non dicts
                 expression_value = value.get('constant_value', None)
                 if expression_value:
@@ -319,7 +324,7 @@ def parse_tf_plan(tf_plan_file: str, out_parsing_errors: Dict[str, str]) -> Tupl
     template, template_lines = parse(tf_plan_file, out_parsing_errors)
     if not template:
         return None, None
-    
+
     provider = _get_provider(template=template)
     if bool(provider):
         tf_definition["provider"].append(provider)
