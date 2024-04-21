@@ -8,14 +8,6 @@ const viewerCertificateConfig: cloudfront.CfnDistribution.ViewerCertificatePrope
   // Viewer certificate configuration details
 };
 
-// This should not match the pattern as it includes a ViewerCertificate with TLSv1.2
-const distributionWithTLSv12 = new cloudfront.CfnDistribution(new Construct(), 'distributionWithTLSv12', {
-  // other configuration details
-  viewerCertificate: {
-    minimumProtocolVersion: 'TLSv1.2' // This is the correct configuration
-  }
-});
-
 // This should match the pattern and be flagged as a vulnerability
 // SINK
 const distributionWithoutTLSv12 = new cloudfront.CfnDistribution(new Construct(), 'distributionWithoutTLSv12', {

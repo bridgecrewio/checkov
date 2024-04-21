@@ -10,8 +10,7 @@ scope:
     - typescript
 definition:
   pattern: |
-    const $AA = new cloudfront.CfnDistribution(<ANY>, <ANY>, CfnDistributionProps)
-
+    new cloudfront.CfnDistribution(<ANY>, <ANY>, $VCP)
   conditions:
     - not_pattern: |
         const $VCP: cloudfront.CfnDistribution.ViewerCertificateProperty = {  minimumProtocolVersion: 'TLSv1.2'};
@@ -20,3 +19,5 @@ definition:
         const $PROPS: cloudfront.CfnDistributionProps = { <ANY>, viewerCertificate: { <ANY>, minimumProtocolVersion: 'TLSv1.2' } }
         <ANY>
         new CfnDistribution(<ANY>, $PROPS)
+    - not_pattern: |
+        new cloudfront.CfnDistribution(<ANY>, <ANY>, { <ANY>, viewerCertificate: {<ANY>, minimumProtocolVersion: 'TLSv1.2'} })
