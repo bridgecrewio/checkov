@@ -242,6 +242,28 @@ def _get_module_call_resources(module_address: str, root_module_conf: dict[str, 
     return cast("list[dict[str, Any]]", root_module_conf.get("resources", []))
 
 
+def _get_provider(template: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    """Returns the provider dict"""
+
+    provider_map = {}
+    provider_config = template.get("configuration", {}).get("provider_config", None)
+
+    if provider_config and isinstance(provider_config, dict):
+        for provider_key, provider_data in provider_config.items():
+            if (provider_key.startswith('module.') or provider_key.startswith('__') or provider_key in {'start_line', 'end_line'}):
+                # Not a provider, skip
+                continue
+            provider_map[provider_key] = {}
+            for field, value in provider_data.get('expressions', {}).items():
+                if field in LINE_FIELD_NAMES or field or not isinstance(value, dict):
+                    continue  # don't care about line #s or non dicts
+                expression_value = value.get('constant_value', None)
+                if expression_value:
+                    provider_map[provider_key][field] = expression_value
+
+    return provider_map
+
+
 def _get_resource_changes(template: dict[str, Any]) -> dict[str, dict[str, Any]]:
     """Returns a resource address to resource changes dict"""
 
@@ -293,10 +315,14 @@ def parse_tf_plan(tf_plan_file: str, out_parsing_errors: Dict[str, str]) -> Tupl
     :type tf_plan_file: str - path to plan file
     :rtype: tf_definition dictionary and template_lines of the plan file
     """
-    tf_definition: Dict[str, Any] = {"resource": [], "data": []}
+    tf_definition: Dict[str, Any] = {"provider": [], "resource": [], "data": []}
     template, template_lines = parse(tf_plan_file, out_parsing_errors)
     if not template:
         return None, None
+    
+    provider = _get_provider(template=template)
+    if bool(provider):
+        tf_definition["provider"].append(provider)
 
     resource_changes = _get_resource_changes(template=template)
 
