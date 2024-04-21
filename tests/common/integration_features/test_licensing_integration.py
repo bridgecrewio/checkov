@@ -74,6 +74,7 @@ class TestLicensingIntegration(unittest.TestCase):
             'sast_python',
             'sast_java',
             'sast_javascript',
+            'sast_typescript',
             '3d_policy'
         })
 
