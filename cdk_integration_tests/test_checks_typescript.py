@@ -60,6 +60,7 @@ def test_CKV_AWS_193_AppSyncLogging():
 
 @pytest.mark.skip(reason="Not supported yet")
 def test_CKV_AWS_82_AthenaWorkgroupConfiguration():
+    # need to wait for variable rendering in TS
     run_check(check_results=failed_checks, check_id="CKV_AWS_82", policy_name="AthenaWorkgroupConfiguration", language="typescript")
 
 
