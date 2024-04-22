@@ -60,8 +60,8 @@ Results will appear under [actions](https://github.com/bridgecrewio/checkov/acti
 To run tests locally use the following commands (install dev dependencies, run tests and compute tests coverage):
 If you are using conda, create a new environment with Python 3.10.14 version:
 ```sh
-conda create -n python37 --m python=Python 3.10.14
-conda activate python37
+conda create -n python310 --m python=Python 3.10.14
+conda activate python310
 ```
 Then, we need pipenv installation and run the tests and coverage modules 
 ```sh
