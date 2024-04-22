@@ -5,7 +5,7 @@ from checkov.common.models.enums import CheckCategories
 
 
 class DeprecatedLambdaRuntime(BaseResourceNegativeValueCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure Lambda Runtime is not deprecated"
         id = "CKV_AWS_363"
         supported_resources = ['AWS::Lambda::Function', 'AWS::Serverless::Function']

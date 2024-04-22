@@ -1,11 +1,11 @@
-
+from typing import List, Any
 
 from checkov.common.models.enums import CheckCategories
 from checkov.terraform.checks.resource.base_resource_negative_value_check import BaseResourceNegativeValueCheck
 
 
 class DeprecatedLambdaRuntime(BaseResourceNegativeValueCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure Lambda Runtime is not deprecated"
         id = "CKV_AWS_363"
         supported_resources = ['aws_lambda_function']
@@ -15,7 +15,7 @@ class DeprecatedLambdaRuntime(BaseResourceNegativeValueCheck):
     def get_inspected_key(self) -> str:
         return "runtime"
 
-    def get_forbidden_values(self):
+    def get_forbidden_values(self) -> List[Any]:
         # Source: https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html
         return ["dotnetcore3.1", "nodejs12.x", "python3.6", "python2.7", "dotnet5.0", "dotnetcore2.1", "ruby2.5",
                 "nodejs10.x", "nodejs8.10", "nodejs4.3", "nodejs6.10", "dotnetcore1.0", "dotnetcore2.0",
