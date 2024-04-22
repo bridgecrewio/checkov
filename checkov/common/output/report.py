@@ -369,7 +369,7 @@ class Report:
                     record.get_output_id(use_bc_ids),
                     record.check_name,
                     record.resource,
-                    record.guideline,
+                    f"[Link]({record.guideline})",
                     record.file_path,
                 ]
             )
@@ -387,11 +387,10 @@ class Report:
 
             table = tabulate(
                 result,
-                headers=["Check ID", "Check Name", "Resource", "Guideline",  "File"],
+                headers=["Check ID", "Check Name", "Resource", "Guideline", "File"],
                 tablefmt="github",
-                showindex=True,
             )
-            output_data = f"### {self.check_type} scan results:\n\n{message}{table}\n\n---\n"
+            output_data = f"### {self.check_type.replace('_', ' ').title()} Scan Results:\n\n{message}{table}\n\n---\n"
             return output_data
         else:
             return "\n\n---\n\n"
