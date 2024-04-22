@@ -1,0 +1,17 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_34
+  name: Ensure CloudFront distribution ViewerProtocolPolicy is set to HTTPS
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  patterns:
+    or:
+      - pattern: |
+          new $AWS.CfnDistribution(<ANY>, {distributionConfig: {<ANY>, defaultCacheBehavior: {<ANY>, viewerProtocolPolicy: 'allow-all' , <ANY>} , <ANY>}, <ANY>)
+      - pattern: |
+          new $AWS.Distribution(<ANY>, {<ANY>, defaultBehavior: {<ANY>, viewerProtocolPolicy: $AWS.ViewerProtocolPolicy.ALLOW_ALL ,<ANY>} , <ANY>},<ANY>)
