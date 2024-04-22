@@ -48,6 +48,7 @@ CodeCategoryMapping: Dict[str, Union[CodeCategoryType, List[CodeCategoryType]]] 
     CheckType.SAST_JAVA: CodeCategoryType.WEAKNESSES,
     CheckType.SAST_JAVASCRIPT: CodeCategoryType.WEAKNESSES,
     CheckType.SAST_TYPESCRIPT: CodeCategoryType.WEAKNESSES,
+    CheckType.SAST_GOLANG: CodeCategoryType.WEAKNESSES,
     CheckType.POLICY_3D: CodeCategoryType.IAC
 }
 

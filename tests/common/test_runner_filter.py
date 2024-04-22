@@ -744,6 +744,7 @@ class TestRunnerFilter(unittest.TestCase):
             'sast_java': Severities[BcSeverities.OFF],
             'sast_javascript': Severities[BcSeverities.OFF],
             'sast_typescript': Severities[BcSeverities.OFF],
+            'sast_golang': Severities[BcSeverities.OFF],
         }
         self.assertEqual(instance.enforcement_rule_configs, expected)
 
@@ -846,9 +847,11 @@ class TestRunnerFilter(unittest.TestCase):
         assert SastLanguages.JAVA in sast_langs
         assert SastLanguages.JAVASCRIPT in sast_langs
         assert SastLanguages.TYPESCRIPT in sast_langs
-        sast_langs = RunnerFilter.get_sast_languages(['sast_python', 'sast_typescript'], [])
+        assert SastLanguages.GOLANG in sast_langs
+        sast_langs = RunnerFilter.get_sast_languages(['sast_python', 'sast_typescript', 'sast_golang'], [])
         assert SastLanguages.PYTHON in sast_langs
         assert SastLanguages.TYPESCRIPT in sast_langs
+        assert SastLanguages.GOLANG in sast_langs
         sast_langs = RunnerFilter.get_sast_languages(['sast_python', 'sast_javascript'], [])
         assert SastLanguages.PYTHON in sast_langs
         assert SastLanguages.JAVASCRIPT in sast_langs
@@ -861,6 +864,7 @@ class TestRunnerFilter(unittest.TestCase):
         assert SastLanguages.PYTHON not in sast_langs
         assert SastLanguages.JAVASCRIPT not in sast_langs
         assert SastLanguages.TYPESCRIPT in sast_langs
+        assert SastLanguages.GOLANG in sast_langs
 
     def test_scan_secrets_history_limits_to_secrets_framework(self):
         # when

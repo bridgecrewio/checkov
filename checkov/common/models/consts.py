@@ -28,7 +28,8 @@ SAST_SUPPORTED_FILE_EXTENSIONS = {
     SastLanguages.JAVA: ['.java'],
     SastLanguages.JAVASCRIPT: ['.js'],
     SastLanguages.TYPESCRIPT: ['.ts'],
-    SastLanguages.PYTHON: ['.py']
+    SastLanguages.PYTHON: ['.py'],
+    SastLanguages.GOLANG: ['.go']
 }
 
 ANY_VALUE = "CKV_ANY"
