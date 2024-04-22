@@ -66,7 +66,7 @@ Scheduled scan result in Jenkins
 ## Getting started
 
 ### Requirements
- * Python >= 3.7 (Data classes are available for Python 3.7+)
+ * Python >= 3.8 (Data classes are available for Python 3.8+)
  * Terraform >= 0.12
 
 ### Installation
@@ -483,4 +483,4 @@ To skip this API call use the flag `--skip-download`.
 Start with our [Documentation](https://www.checkov.io/1.Welcome/Quick%20Start.html) for quick tutorials and examples.
 
 ## Python Version Support
-We follow the official support cycle of Python, and we use automated tests for all supported versions of Python. This means we currently support Python 3.7 - 3.11, inclusive. Note that Python 3.7 is reaching EOL on June 2023. After that time, we will have a short grace period where we will continue 3.7 support until September 2023, and then it will no longer be considered supported for Checkov. If you run into any issues with any non-EOL Python version, please open an Issue.
+We follow the official support cycle of Python, and we use automated tests for all supported versions of Python. This means we currently support Python 3.8 - 3.11, inclusive. Note that Python 3.7 reached EOL on June 2023. If you run into any issues with any non-EOL Python version, please open an Issue.
