@@ -1,0 +1,22 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_5
+  name: Ensure all data stored in the Elasticsearch is securely encrypted at rest
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  or:
+    - pattern: new $PACKAGE.aws_elasticsearch.CfnDomain(<ANY>, <ANY>, { <ANY> });
+      conditions:
+        - not_pattern: |
+            new $PACKAGE.aws_elasticsearch.CfnDomain(<ANY>, <ANY>, { <ANY>, encryptionAtRestOptions: { <ANY>, enabled: true, <ANY> }, <ANY> });
+        - metavariable: $PACKAGE
+          comparison: $PACKAGE == "aws-cdk-lib"
+    - pattern: "$X = { <ANY> , enabled: false, <ANY> }"
+      conditions:
+        - metavariable: $X
+          type: aws-cdk-lib.aws_elasticsearch.CfnDomain.EncryptionAtRestOptionsProperty

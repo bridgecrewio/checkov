@@ -1,6 +1,110 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.47...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.73...HEAD)
+
+## [3.2.73](https://github.com/bridgecrewio/checkov/compare/3.2.72...3.2.73) - 2024-04-21
+
+### Feature
+
+- **sast:** TypeScript cdk policies p7 - [#6186](https://github.com/bridgecrewio/checkov/pull/6186)
+
+## [3.2.72](https://github.com/bridgecrewio/checkov/compare/3.2.71...3.2.72) - 2024-04-19
+
+### Feature
+
+- **bicep:** Add bicep version of policy - [#6191](https://github.com/bridgecrewio/checkov/pull/6191)
+
+## [3.2.71](https://github.com/bridgecrewio/checkov/compare/3.2.70...3.2.71) - 2024-04-18
+
+### Feature
+
+- **sca:** support licenses custom policies enforcement rules - [#6173](https://github.com/bridgecrewio/checkov/pull/6173)
+
+## [3.2.70](https://github.com/bridgecrewio/checkov/compare/3.2.68...3.2.70) - 2024-04-17
+
+### Feature
+
+- **sast:** Add 5 cdk for TS - [#6179](https://github.com/bridgecrewio/checkov/pull/6179)
+
+### Bug Fix
+
+- **sast:** fix skipped_checks paths before upload to the platform - [#6183](https://github.com/bridgecrewio/checkov/pull/6183)
+
+## [3.2.68](https://github.com/bridgecrewio/checkov/compare/3.2.65...3.2.68) - 2024-04-16
+
+### Feature
+
+- **sast:** adding extended code block - [#6178](https://github.com/bridgecrewio/checkov/pull/6178)
+- **sca:** using the new api license/get-licenses-violations instead of packages/get-licenses-violations (which is deprecated) - [#6174](https://github.com/bridgecrewio/checkov/pull/6174)
+
+### Bug Fix
+
+- **sca:** Revert "feat(sca): using the new api license/get-licenses-violations … - [#6176](https://github.com/bridgecrewio/checkov/pull/6176)
+
+## [3.2.65](https://github.com/bridgecrewio/checkov/compare/3.2.63...3.2.65) - 2024-04-15
+
+### Bug Fix
+
+- **sast:** save suppress_comment for sast inline suppressions - [#6171](https://github.com/bridgecrewio/checkov/pull/6171)
+- **secrets:** Azure Storage Key detector updates in bc-detect-secrets 1.5.7 - [#6168](https://github.com/bridgecrewio/checkov/pull/6168)
+
+## [3.2.63](https://github.com/bridgecrewio/checkov/compare/3.2.60...3.2.63) - 2024-04-14
+
+### Feature
+
+- **sast:** CDK TS policies p2 - [#6165](https://github.com/bridgecrewio/checkov/pull/6165)
+
+## [3.2.60](https://github.com/bridgecrewio/checkov/compare/3.2.55...3.2.60) - 2024-04-10
+
+### Feature
+
+- **sast:** Add TS CDK policies 1 - [#6151](https://github.com/bridgecrewio/checkov/pull/6151)
+- **sast:** CDK TS policies p3 - [#6157](https://github.com/bridgecrewio/checkov/pull/6157)
+
+### Bug Fix
+
+- **terraform:** Fix conditional expression evaluation logic with compare - [#6160](https://github.com/bridgecrewio/checkov/pull/6160)
+- **terraform:** Fixed flaky test for CKV_AWS_356 - [#6162](https://github.com/bridgecrewio/checkov/pull/6162)
+
+## [3.2.55](https://github.com/bridgecrewio/checkov/compare/3.2.53...3.2.55) - 2024-04-08
+
+### Feature
+
+- **sast:** Adding typescript cdk part 6 paz - [#6149](https://github.com/bridgecrewio/checkov/pull/6149)
+
+### Bug Fix
+
+- **sca:** enabling suppression in the cli-output for IR-files and dockerfiles - [#6148](https://github.com/bridgecrewio/checkov/pull/6148)
+
+## [3.2.53](https://github.com/bridgecrewio/checkov/compare/3.2.52...3.2.53) - 2024-04-03
+
+### Feature
+
+- **terraform:** support s3 bucket name for references in graph - [#6134](https://github.com/bridgecrewio/checkov/pull/6134)
+
+## [3.2.52](https://github.com/bridgecrewio/checkov/compare/3.2.51...3.2.52) - 2024-04-03
+
+### Feature
+
+- **general:** Update the releases' zip file names to be generic - [#6141](https://github.com/bridgecrewio/checkov/pull/6141)
+
+## [3.2.51](https://github.com/bridgecrewio/checkov/compare/3.2.50...3.2.51) - 2024-04-02
+
+### Feature
+
+- **general:** add policy metadata filter exception flag - [#6132](https://github.com/bridgecrewio/checkov/pull/6132)
+
+## [3.2.50](https://github.com/bridgecrewio/checkov/compare/3.2.49...3.2.50) - 2024-03-31
+
+### Bug Fix
+
+- **general:** remove limitation of resource and provider in tf.json file - [#6133](https://github.com/bridgecrewio/checkov/pull/6133)
+
+## [3.2.49](https://github.com/bridgecrewio/checkov/compare/3.2.47...3.2.49) - 2024-03-28
+
+### Bug Fix
+
+- **general:** pin the version of schema to <=0.7.5 - [#6125](https://github.com/bridgecrewio/checkov/pull/6125)
 
 ## [3.2.47](https://github.com/bridgecrewio/checkov/compare/3.2.45...3.2.47) - 2024-03-26
 
