@@ -24,6 +24,11 @@ def test_CKV_AWS_2_ALBListenerHTTPS():
 
 
 @pytest.mark.skip(reason="Not supported yet")
+def test_CKV_AWS_59_APIGatewayAuthorization(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_59", policy_name="APIGatewayAuthorization", language="typescript")
+
+
+@pytest.mark.skip(reason="Not supported yet")
 def test_CKV_AWS_76_APIGatewayAccessLogging():
     run_check(check_results=failed_checks, check_id="CKV_AWS_76", policy_name="APIGatewayAccessLogging", language="typescript")
 
@@ -44,6 +49,22 @@ def test_CKV_AWS_73_APIGatewayXray():
 
 
 @pytest.mark.skip(reason="Not supported yet")
+def test_CKV_AWS_194_AppSyncFieldLevelLogs():
+    run_check(check_results=failed_checks, check_id="CKV_AWS_194", policy_name="AppSyncFieldLevelLogs", language="typescript")
+
+
+@pytest.mark.skip(reason="Not supported yet")
+def test_CKV_AWS_193_AppSyncLogging():
+    run_check(check_results=failed_checks, check_id="CKV_AWS_193", policy_name="AppSyncLogging", language="typescript")
+
+
+@pytest.mark.skip(reason="Not supported yet")
+def test_CKV_AWS_82_AthenaWorkgroupConfiguration():
+    # need to wait for variable rendering in TS
+    run_check(check_results=failed_checks, check_id="CKV_AWS_82", policy_name="AthenaWorkgroupConfiguration", language="typescript")
+
+
+@pytest.mark.skip(reason="Not supported yet")
 def test_CKV_AWS_131_AmazonMQBrokerPublicAccess():
     run_check(check_results=failed_checks, check_id="CKV_AWS_131", policy_name="AmazonMQBrokerPublicAccess", language="typescript")
 
@@ -56,6 +77,11 @@ def test_CKV_AWS_96_AuroraEncryption():
 @pytest.mark.skip(reason="Not supported yet")
 def test_CKV_AWS_166_BackupVaultEncrypted():
     run_check(check_results=failed_checks, check_id="CKV_AWS_166", policy_name="BackupVaultEncrypted", language="typescript")
+
+
+@pytest.mark.skip(reason="Not supported yet")
+def test_CKV_AWS_174_CloudFrontTLS12():
+    run_check(check_results=failed_checks, check_id="CKV_AWS_174", policy_name="CloudFrontTLS12", language="typescript")
 
 
 @pytest.mark.skip(reason="Not supported yet")
