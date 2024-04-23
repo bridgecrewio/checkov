@@ -27,6 +27,8 @@ RESOURCE_TYPES_JSONIFY = {
     "aws_iam_user_policy": "policy",
     "aws_ssoadmin_permission_set_inline_policy": "inline_policy",
     "azurerm_portal_dashboard": "dashboard_properties",
+    "aws_vpc_endpoint_policy": "policy",
+    "aws_ecr_registry_policy": "policy",
 }
 
 
