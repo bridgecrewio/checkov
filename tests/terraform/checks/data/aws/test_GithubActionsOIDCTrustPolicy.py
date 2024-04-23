@@ -1,9 +1,11 @@
+import os
 import unittest
 from pathlib import Path
 
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.data.aws.GithubActionsOIDCTrustPolicy import check
 from checkov.terraform.runner import Runner
+from checkov.terraform.plan_runner import Runner as PlanRunner
 
 
 class TestGithubActionsOIDCTrustPolicy(unittest.TestCase):
@@ -17,10 +19,6 @@ class TestGithubActionsOIDCTrustPolicy(unittest.TestCase):
             'aws_iam_policy_document.pass1',
             "aws_iam_policy_document.pass2",
             "aws_iam_policy_document.pass3",
-            'module.poc.data.aws_iam_policy_document.r4["p1"]',
-            'module.poc.data.aws_iam_policy_document.r4["p2"]',
-            'module.poc.data.aws_iam_policy_document.r3["p1"]',
-            'module.poc.data.aws_iam_policy_document.r3["p2"]',
 
         }
         failing_resources = {
@@ -38,6 +36,30 @@ class TestGithubActionsOIDCTrustPolicy(unittest.TestCase):
 
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)
+
+    def test_terraform_plan(self):
+        runner = PlanRunner()
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+
+        test_files_path = current_dir + "/example_GithubActionsOIDCTrustPolicy/tfplan.json"
+        report = runner.run(files=[test_files_path], runner_filter=RunnerFilter(checks=[check.id]))
+        summary = report.get_summary()
+
+        passing_resources = {
+            'module.poc.data.aws_iam_policy_document.r4["p1"]',
+            'module.poc.data.aws_iam_policy_document.r4["p2"]',
+            'module.poc.data.aws_iam_policy_document.r3["p1"]',
+            'module.poc.data.aws_iam_policy_document.r3["p2"]',
+        }
+
+        passed_check_resources = set([c.resource for c in report.passed_checks])
+
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], 0)
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
 
 
 if __name__ == "__main__":
