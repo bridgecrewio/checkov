@@ -17,6 +17,10 @@ class TestGithubActionsOIDCTrustPolicy(unittest.TestCase):
             'aws_iam_policy_document.pass1',
             "aws_iam_policy_document.pass2",
             "aws_iam_policy_document.pass3",
+            'module.poc.data.aws_iam_policy_document.r4["p1"]',
+            'module.poc.data.aws_iam_policy_document.r4["p2"]',
+            'module.poc.data.aws_iam_policy_document.r3["p1"]',
+            'module.poc.data.aws_iam_policy_document.r3["p2"]',
 
         }
         failing_resources = {
