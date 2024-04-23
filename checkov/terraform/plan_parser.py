@@ -64,7 +64,7 @@ RESOURCE_TYPES_JSONIFY = {
     "aws_sqs_queue_policy": "policy",
     "aws_secretsmanager_secret_policy": "policy",
     "aws_vpclattice_auth_policy": "policy",
-    "aws_vpclattice_resource_policy": "policy",
+    "aws_vpclattice_resource_policy": "policy"
 }
 
 
