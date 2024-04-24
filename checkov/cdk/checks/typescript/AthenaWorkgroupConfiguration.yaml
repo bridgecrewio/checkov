@@ -1,0 +1,20 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_82
+  name: Ensure Athena Workgroup should enforce configuration to prevent client disabling encryption
+  category: GENERAL_SECURITY
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  pattern: |
+    new $IMPORT.CfnWorkGroup(<ANY>, <ANY>, $WORKGROUP );
+  conditions:
+    - not_within: |
+        const $WORKGROUP: $IMPORT.CfnWorkGroup.WorkGroupConfigurationProperty = { <ANY>, enforceWorkGroupConfiguration: true, <ANY> };
+        <ANY>
+        const $VAR1 = new $IMPORT.CfnWorkGroup(<ANY>, <ANY>, $WORKGROUP );
+    - not_pattern: |
+        new $IMPORT.CfnWorkGroup(<ANY>, <ANY>, {<ANY>, enforceWorkGroupConfiguration: true });

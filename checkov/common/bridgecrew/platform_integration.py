@@ -67,7 +67,7 @@ if TYPE_CHECKING:
     from checkov.secrets.coordinator import EnrichedSecret
     from mypy_boto3_s3.client import S3Client
     from typing_extensions import TypeGuard
-    from checkov.common.sast.report_types import Match
+    from checkov.common.sast.report_types import Match, SkippedCheck
 
 SLEEP_SECONDS = 1
 
@@ -650,6 +650,23 @@ class BcPlatformIntegration:
 
                 return
 
+    def adjust_sast_skipped_checks_path(self, skipped_checks_by_file: Dict[str, List[SkippedCheck]]) -> None:
+        for filepath in list(skipped_checks_by_file.keys()):
+            new_filepath = None
+            for dir in self.scan_dir:
+                if filepath.startswith(os.path.abspath(dir)):
+                    file_dir = '/'.join(filepath.split('/')[0:-1])
+                    new_filepath = filepath.replace(os.path.abspath(file_dir), self.repo_path)  # type: ignore
+                    break
+            for file in self.scan_file:
+                if filepath == os.path.abspath(file):
+                    file_dir = '/'.join(filepath.split('/')[0:-1])
+                    new_filepath = filepath.replace(os.path.abspath(file_dir), self.repo_path)  # type: ignore
+                    break
+            if new_filepath:
+                skipped_checks_by_file[new_filepath] = skipped_checks_by_file[filepath]
+                skipped_checks_by_file.pop(filepath)
+
     @staticmethod
     def _delete_code_block_from_sast_report(report: Dict[str, Any]) -> None:
         if isinstance(report, dict):
@@ -679,6 +696,8 @@ class BcPlatformIntegration:
                 for _, match in match_by_check.items():
                     for m in match.matches:
                         self.adjust_sast_match_location_path(m)
+                self.adjust_sast_skipped_checks_path(report.sast_report.skipped_checks_by_file)
+
                 sast_scan_reports[report.check_type] = report.sast_report.model_dump(mode='json')
             if self.on_prem:
                 BcPlatformIntegration._delete_code_block_from_sast_report(sast_scan_reports)
