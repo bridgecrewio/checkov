@@ -483,4 +483,4 @@ To skip this API call use the flag `--skip-download`.
 Start with our [Documentation](https://www.checkov.io/1.Welcome/Quick%20Start.html) for quick tutorials and examples.
 
 ## Python Version Support
-We follow the official support cycle of Python, and we use automated tests for all supported versions of Python. This means we currently support Python 3.8 - 3.11, inclusive. Note that Python 3.7 reached EOL on June 2023. If you run into any issues with any non-EOL Python version, please open an Issue.
+We follow the official support cycle of Python, and we use automated tests for all supported versions of Python. This means we currently support Python 3.8 - 3.11, inclusive. Note that Python 3.7 reached EOL on June 2023 and Python 3.8 will reach EOL in October 2024. If you run into any issues with any non-EOL Python version, please open an Issue.
