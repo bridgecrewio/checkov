@@ -26,16 +26,6 @@ module "sub_dir_hash" {
   retention_in_days = 120
 }
 
-# fail
-
-module "tf_registry" {
-  source  = "terraform-aws-modules/cloudwatch/aws//modules/log-group"
-  version = "4.3.0"
-
-  name              = "normal"
-  retention_in_days = 120
-}
-
 module "tag" {
   source = "git::https://github.com/terraform-aws-modules/terraform-aws-vpc.git?ref=v5.0.0"
 
@@ -53,6 +43,16 @@ module "tag" {
     Terraform = "true"
     Environment = "dev"
   }
+}
+
+# fail
+
+module "tf_registry" {
+  source  = "terraform-aws-modules/cloudwatch/aws//modules/log-group"
+  version = "4.3.0"
+
+  name              = "normal"
+  retention_in_days = 120
 }
 
 module "looks_like_a_branch" {
