@@ -33,7 +33,7 @@ class GithubActionsOIDCTrustPolicy(BaseDataCheck):
                             for identifier in principal_identifiers:
                                 if isinstance(identifier,
                                               list) and identifier[0] is not None and \
-                                              'oidc-provider/token.actions.githubusercontent.com' in identifier[0]:
+                                        'oidc-provider/token.actions.githubusercontent.com' in identifier[0]:
                                     found_federated_gh_oidc = True
                                     break
                 if not found_federated_gh_oidc:
