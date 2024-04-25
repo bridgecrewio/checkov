@@ -7,6 +7,7 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.module.base_module_check import BaseModuleCheck
 
 COMMIT_ID_PATTERN = re.compile(r"\?(ref=)(?P<commit_id>([0-9a-f]{5,40}))")
+VERSION_PATTERN = re.compile(r"\?(ref=).*(\d\.\d).*")
 
 
 class RevisionHash(BaseModuleCheck):
@@ -23,8 +24,8 @@ class RevisionHash(BaseModuleCheck):
             if source_url.startswith(("./", "../")):
                 # local modules can't be pinned to a commit hash
                 return CheckResult.UNKNOWN
-            if "?ref" in source_url and re.search(COMMIT_ID_PATTERN, source_url):
-                # do first a quick lookup, if '?ref' exists in the string before actually searching for the commit hash
+            if "?ref" in source_url and (re.search(COMMIT_ID_PATTERN, source_url) or re.search(VERSION_PATTERN, source_url)):
+                # do first a quick lookup, if '?ref' exists in the string before actually searching for the rev value
                 return CheckResult.PASSED
 
         return CheckResult.FAILED

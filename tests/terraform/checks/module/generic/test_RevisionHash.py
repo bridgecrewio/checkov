@@ -20,9 +20,10 @@ class TestRevisionHash(unittest.TestCase):
         passing_resources = {
             "hash",
             "sub_dir_hash",
+            "tag"
         }
         failing_resources = {
-            "tag",
+            "looks_like_a_branch",
             "tf_registry",
         }
 
