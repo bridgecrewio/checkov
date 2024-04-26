@@ -1,6 +1,30 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.70...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.74...HEAD)
+
+## [3.2.74](https://github.com/bridgecrewio/checkov/compare/3.2.73...3.2.74) - 2024-04-22
+
+### Feature
+
+- **general:** Update range includes to handle lists of ranges and lists of values - [#6192](https://github.com/bridgecrewio/checkov/pull/6192)
+
+## [3.2.73](https://github.com/bridgecrewio/checkov/compare/3.2.72...3.2.73) - 2024-04-21
+
+### Feature
+
+- **sast:** TypeScript cdk policies p7 - [#6186](https://github.com/bridgecrewio/checkov/pull/6186)
+
+## [3.2.72](https://github.com/bridgecrewio/checkov/compare/3.2.71...3.2.72) - 2024-04-19
+
+### Feature
+
+- **bicep:** Add bicep version of policy - [#6191](https://github.com/bridgecrewio/checkov/pull/6191)
+
+## [3.2.71](https://github.com/bridgecrewio/checkov/compare/3.2.70...3.2.71) - 2024-04-18
+
+### Feature
+
+- **sca:** support licenses custom policies enforcement rules - [#6173](https://github.com/bridgecrewio/checkov/pull/6173)
 
 ## [3.2.70](https://github.com/bridgecrewio/checkov/compare/3.2.68...3.2.70) - 2024-04-17
 
