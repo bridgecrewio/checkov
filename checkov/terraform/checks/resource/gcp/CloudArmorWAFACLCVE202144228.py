@@ -25,7 +25,7 @@ class CloudArmorWAFACLCVE202144228(BaseResourceCheck):
             match = rule.get("match")
             if match and isinstance(match, list):
                 expr = match[0].get("expr")
-                if expr and isinstance(expr[0], dict) and expr[0].get("expression") == ["evaluatePreconfiguredExpr('cve-canary')"]:
+                if expr and isinstance(expr[0], dict) and expr[0].get("expression") == ["evaluatePreconfiguredWaf('cve-canary')"]:
                     if rule.get("action") == ["allow"]:
                         return CheckResult.FAILED
                     if rule.get("preview") == [True]:
