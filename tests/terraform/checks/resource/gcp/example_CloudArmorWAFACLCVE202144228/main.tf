@@ -8,7 +8,7 @@ resource "google_compute_security_policy" "enabled_deny_403" {
     priority = 1
     match {
       expr {
-        expression = "evaluatePreconfiguredExpr('cve-canary')"
+        expression = "evaluatePreconfiguredWaf('cve-canary')"
       }
     }
   }
@@ -22,7 +22,7 @@ resource "google_compute_security_policy" "enabled_deny_404" {
     priority = 1
     match {
       expr {
-        expression = "evaluatePreconfiguredExpr('cve-canary')"
+        expression = "evaluatePreconfiguredWaf('cve-canary')"
       }
     }
   }
@@ -38,7 +38,7 @@ resource "google_compute_security_policy" "allow" {
     priority = 1
     match {
       expr {
-        expression = "evaluatePreconfiguredExpr('cve-canary')"
+        expression = "evaluatePreconfiguredWaf('cve-canary')"
       }
     }
   }
@@ -52,7 +52,7 @@ resource "google_compute_security_policy" "preview" {
     priority = 1
     match {
       expr {
-        expression = "evaluatePreconfiguredExpr('cve-canary')"
+        expression = "evaluatePreconfiguredWaf('cve-canary')"
       }
     }
     preview = true
@@ -67,7 +67,7 @@ resource "google_compute_security_policy" "different_expr" {
     priority = 1
     match {
       expr {
-        expression = "evaluatePreconfiguredExpr('xss-canary')"
+        expression = "evaluatePreconfiguredWaf('xss-canary')"
       }
     }
   }
