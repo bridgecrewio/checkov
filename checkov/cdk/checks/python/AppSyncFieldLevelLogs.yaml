@@ -20,4 +20,4 @@ definition:
         <ANY>
         aws_cdk.aws_appsync.CfnGraphQLApi(<ANY>, log_config=$LOG , <ANY>)
     - metavariable: $ARG
-      regex: (ERRORS|ALL)
+      regex: (ERROR|ALL)
