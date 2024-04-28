@@ -375,8 +375,7 @@ class TestGraphBuilder(TestCase):
         self.check_edge(graph, local_node, var_bucket_name_node, 'bucket_name')
     
     def test_multiple_modules_with_connected_resources(self):
-        current_dir = os.path.dirname(os.path.realpath(__file__))
-        valid_plan_path = current_dir + "../resources/modules_edges_tfplan/tfplan.json"
+        valid_plan_path = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules_edges_tfplan/tfplan.json'))
         definitions, definitions_raw = create_definitions(root_folder=None, files=[valid_plan_path])
         graph_manager = TerraformGraphManager(db_connector=RustworkxConnector())
         tf_plan_local_graph = graph_manager.build_graph_from_definitions(definitions, render_variables=False)
