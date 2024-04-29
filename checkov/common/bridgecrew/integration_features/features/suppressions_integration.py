@@ -252,10 +252,10 @@ class SuppressionsIntegration(BaseIntegrationFeature):
             record_file_path = SuppressionsIntegration.normalize_file_path(record.repo_file_path)
             for file_suppression in suppression['files']:
                 suppression_file_path = SuppressionsIntegration.normalize_file_path(file_suppression['filePath'])
-                if self._check_suppression_v2_file(record_file_path, suppression_file_path, file_suppression['repositoryName']):
+                if self._check_suppression_v2_file(record_file_path, suppression_file_path, file_suppression.get('repositoryName', '')):
                     return True
         elif type == 'repository':
-            return any(self.bc_integration.repo_matches(repo['repositoryName']) for repo in suppression['repositories'])
+            return any(self.bc_integration.repo_matches(repo.get('repositoryName', '')) for repo in suppression['repositories'])
         return False
 
     def _get_cve_suppression_path(self, suppression: dict[str, Any]) -> str:
