@@ -1,0 +1,21 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_3
+  name: Ensure all data stored in the EBS is securely encrypted
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  patterns:
+    or:
+      - pattern: new $AWS.Volume(<ANY>)
+        conditions:
+          - not_pattern: |
+              new $AWS.Volume(<ANY>, {<ANY>, encrypted: true ,<ANY>} , <ANY>)
+      - pattern: new $AWS.CfnVolume(<ANY>)
+        conditions:
+          - not_pattern: |
+              new $AWS.CfnVolume(<ANY>, {<ANY>, encrypted: true ,<ANY>} , <ANY>)

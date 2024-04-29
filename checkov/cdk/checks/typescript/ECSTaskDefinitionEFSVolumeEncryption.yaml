@@ -1,0 +1,17 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_97
+  name: Ensure Encryption in transit is enabled for EFS volumes in ECS Task definitions
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  pattern: |
+    new $AWS.$FUNC(<ANY>, {<ANY>, volumes: [<ANY>, {<ANY>, efsVolumeConfiguration: {<ANY>, transitEncryption: "DISABLED", <ANY>}, <ANY>},<ANY>],<ANY>})
+  conditions:
+    or:
+      - metavariable: $FUNC
+        regex: (TaskDefinition|Ec2TaskDefinition|FargateTaskDefinition|ExternalTaskDefinition)
