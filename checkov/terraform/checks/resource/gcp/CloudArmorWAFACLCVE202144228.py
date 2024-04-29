@@ -37,7 +37,7 @@ class CloudArmorWAFACLCVE202144228(BaseResourceCheck):
                             return CheckResult.FAILED
                         if rule.get("preview") == [True]:
                             return CheckResult.FAILED
-                        return CheckResult.PASSED                    
+                        return CheckResult.PASSED
         return CheckResult.FAILED
 
 
