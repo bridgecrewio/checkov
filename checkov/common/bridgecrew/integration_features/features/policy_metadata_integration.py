@@ -145,7 +145,6 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
 
     def _handle_customer_run_config(self, run_config: dict[str, Any]) -> None:
         self.check_metadata = run_config['policyMetadata']
-        self.sast_check_metadata = { ckv_id: check for ckv_id, check in self.check_metadata.items() if 'SAST' in ckv_id }
         for ckv_id, pol in self.check_metadata.items():
             if 'SAST' in ckv_id:
                 self.sast_check_metadata[ckv_id] = pol
