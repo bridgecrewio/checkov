@@ -22,6 +22,7 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
     def __init__(self, bc_integration: BcPlatformIntegration) -> None:
         super().__init__(bc_integration=bc_integration, order=0)
         self.check_metadata: dict[str, Any] = {}
+        self.sast_check_metadata: dict[str, Any] = {}
         self.bc_to_ckv_id_mapping: dict[str, str] = {}
         self.pc_to_ckv_id_mapping: dict[str, str] = {}
         self.ckv_id_to_source_incident_id_mapping: dict[str, str] = {}
@@ -144,7 +145,10 @@ class PolicyMetadataIntegration(BaseIntegrationFeature):
 
     def _handle_customer_run_config(self, run_config: dict[str, Any]) -> None:
         self.check_metadata = run_config['policyMetadata']
+        self.sast_check_metadata = { ckv_id: check for ckv_id, check in self.check_metadata.items() if 'SAST' in ckv_id }
         for ckv_id, pol in self.check_metadata.items():
+            if 'SAST' in ckv_id:
+                self.sast_check_metadata[ckv_id] = pol
             self.bc_to_ckv_id_mapping[pol['id']] = ckv_id
             if self.bc_integration.is_prisma_integration() and pol.get('pcPolicyId'):
                 self.pc_to_ckv_id_mapping[pol['pcPolicyId']] = ckv_id
