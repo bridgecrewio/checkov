@@ -1,0 +1,15 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_96
+  name: Ensure all data stored in Aurora is securely encrypted at rest
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  pattern: new $AWS.CfnDBCluster(<ANY>)
+  conditions:
+    - not_pattern: |
+        new $AWS.CfnDBCluster(<ANY>, { <ANY>, storageEncrypted: true ,<ANY>}, <ANY>)

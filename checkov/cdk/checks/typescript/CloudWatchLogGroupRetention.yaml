@@ -1,0 +1,15 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_66
+  name: Ensure that CloudWatch Log Group specifies retention days
+  category: LOGGING
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  pattern: new $AWS.CfnLogGroup(<ANY>)
+  conditions:
+    - not_pattern: |
+        new $AWS.CfnLogGroup(<ANY>, {<ANY>, retentionInDays: $NUM , <ANY>} , <ANY>)
