@@ -1,4 +1,4 @@
-const { danger, fail, schedule } = require('danger');
+const { danger, fail, schedule, warn } = require('danger');
 
 const IGNORE_VAR = [
   'key', 's3_key', 's3_file_key', 'local_file_path', 'self.s3_bucket', 'e', 'error', 'str(e)', 'path', 'customer_name',
@@ -86,3 +86,18 @@ async function failIfLoggingLineContainsSensitiveData() {
 }
 
 schedule(failIfLoggingLineContainsSensitiveData);
+
+async function alertPublicInterfaces() {
+    let changedFiles = danger.git.modified_files || [];
+
+    for (const changedFile of changedFiles) {
+        if (changedFile.endsWith("report_types.py")) {
+            fail("You've changed `report_types.py` file, that contains the contract for checkov input and output. Make sure to stay backwards compatible.")
+        }
+        if (changedFile.endsWith("report.py")) {
+            fail("You've changed `report.py` file, that contains the contract for checkov input and output. Make sure to stay backwards compatible.")
+        }
+    }
+}
+
+schedule(alertPublicInterfaces)

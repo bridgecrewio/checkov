@@ -66,7 +66,7 @@ setup(
     },
     install_requires=[
         "bc-python-hcl2==0.4.2",
-        "bc-detect-secrets==1.5.4",
+        "bc-detect-secrets==1.5.7",
         "bc-jsonpath-ng==1.6.1",
         "pycep-parser==0.4.1",
         "tabulate>=0.9.0,<0.10.0",
@@ -75,7 +75,7 @@ setup(
         "junit-xml>=1.9,<2.0",
         "dpath==2.1.3",
         "pyyaml>=6.0.0,<7.0.0",
-        "boto3>=1.28.0,<2.0.0",
+        "boto3==1.34.25",
         "gitpython>=3.1.30,<4.0.0",
         "jmespath>=1.0.0,<2.0.0",
         "tqdm>=4.65.0,<5.0.0",
@@ -95,6 +95,7 @@ setup(
         "aiohttp>=3.8.0,<4.0.0",
         "aiodns>=3.0.0,<4.0.0",
         "aiomultiprocess>=0.9.0,<0.10.0",
+        "schema<=0.7.5",
         "jsonschema>=4.17.0,<5.0.0",
         "prettytable>=3.6.0,<4.0.0",
         "charset-normalizer>=3.1.0,<4.0.0",
@@ -107,6 +108,7 @@ setup(
         "license-expression>=30.1.0,<31.0.0",
         "rustworkx>=0.13.0,<0.14.0",
         "pydantic>=2.0.0,<3.0.0",
+        "botocore==1.34.25"
     ],
     dependency_links=[],  # keep it empty, needed for pipenv-setup
     license="Apache License 2.0",

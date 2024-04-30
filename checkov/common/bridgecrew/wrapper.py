@@ -19,7 +19,7 @@ except ImportError:
     DiGraph = str
     node_link_data = lambda G : {}
 
-
+from checkov.common.sast.consts import CDK_FRAMEWORK_PREFIX, SAST_FRAMEWORK_PREFIX
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.typing import _ReducedScanReport, LibraryGraph
@@ -41,9 +41,6 @@ check_metadata_keys = ('evaluations', 'code_block', 'workflow_name', 'triggers',
 FILE_NAME_NETWORKX = 'graph_networkx.json'
 FILE_NAME_RUSTWORKX = 'graph_rustworkx.json'
 
-SAST_FRAMEWORK_PREFIX = 'sast'
-CDK_FRAMEWORK_PREFIX = 'cdk'
-
 
 def _is_scanned_file(file: str) -> bool:
     file_ending = os.path.splitext(file)[1]
@@ -54,7 +51,7 @@ def _put_json_object(s3_client: S3Client, json_obj: Any, bucket: str, object_pat
     try:
         s3_client.put_object(Bucket=bucket, Key=object_path, Body=json.dumps(json_obj, cls=CustomJSONEncoder))
     except Exception:
-        logging.error(f"failed to persist object into S3 bucket {bucket}", exc_info=log_stack_trace_on_error)
+        logging.error(f"failed to persist object into S3 bucket {bucket} - {object_path}", exc_info=log_stack_trace_on_error)
         raise
 
 
