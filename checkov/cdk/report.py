@@ -12,7 +12,7 @@ class CDKReport(Report):
         self.language: SastLanguages = language
         self.cdk_report: PrismaReport = cdk_report
         # In case we dont have sast report for this lang
-        self.empty_sast_report: PrismaReport = PrismaReport(rule_match={language: {}}, profiler={}, errors={}, run_metadata={}, imports={}, reachability_report={})
+        self.empty_sast_report: PrismaReport = PrismaReport(rule_match={language: {}}, profiler={}, errors={}, run_metadata={}, imports={}, reachability_report={}, skipped_checks_by_file={})
 
     def get_summary(self) -> Dict[str, Union[int, str]]:
         base_summary: Dict[str, Union[int, str]] = super().get_summary()
