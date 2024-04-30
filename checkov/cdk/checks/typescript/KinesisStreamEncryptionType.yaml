@@ -1,0 +1,24 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_43
+  name: Ensure Kinesis Stream is securely encrypted
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  or:
+    - pattern: new $PACKAGE.aws_kinesis.CfnStream(<ANY>, <ANY>, { <ANY> })
+      conditions:
+        - not_pattern: |
+            new $PACKAGE.aws_kinesis.CfnStream(<ANY>, <ANY>, { <ANY>, streamEncryption: { <ANY>, encryptionType: "KMS", <ANY> }, <ANY> })
+        - metavariable: $PACKAGE
+          comparison: $PACKAGE == "aws-cdk-lib"
+    - pattern: "$X = { <ANY> }"
+      conditions:
+        - not_pattern: |
+            $X = { <ANY>, streamEncryption: { <ANY>, encryptionType: "KMS", <ANY> }, <ANY> }
+        - metavariable: $X
+          type: aws-cdk-lib.aws_kinesis.CfnStreamProps
