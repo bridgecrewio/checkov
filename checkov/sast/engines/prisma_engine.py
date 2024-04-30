@@ -32,6 +32,7 @@ from checkov.common.sast.report_types import PrismaReport, RuleMatch, create_emp
 from checkov.sast.record import SastRecord
 from checkov.sast.report import SastReport
 from checkov.cdk.report import CDKReport
+from checkov.sast.engines.files_filter_manager import FilesFilterManager
 
 logger = logging.getLogger(__name__)
 
@@ -85,9 +86,9 @@ class PrismaEngine(SastEngine):
         check_threshold, skip_check_threshold = self.get_check_thresholds(registry)
 
         skip_paths = registry.runner_filter.excluded_paths if registry.runner_filter else []
-        if SastLanguages.JAVASCRIPT in languages:
-            filtered_js_files = get_js_files_to_filter(targets)
-            skip_paths += filtered_js_files
+
+        files_filter_manager = FilesFilterManager(targets, languages)
+        skip_paths += files_filter_manager.get_files_to_filter()
 
         library_input: LibraryInput = {
             'languages': languages,
@@ -526,44 +527,3 @@ def get_reachability_data(repo_path: str) -> Dict[str, Any]:
                     if aliases:
                         data[lang]["package_alias"][original_package_name] = aliases[0]
     return data
-
-
-def get_js_files_to_filter(source_codes):
-    js_files_to_filter = []
-
-    for path in source_codes:
-        js_files = []
-        ts_files = []
-        tsconfig_files = []
-        for (dirpath, _, filenames) in os.walk(path):
-            if '/node_modules/' in dirpath:
-                continue
-            for filename in filenames:
-                if filename.endswith('.ts'):
-                    ts_files.append(os.sep.join([dirpath, filename]))
-                if filename.endswith('tsconfig.json'):
-                    tsconfig_files.append({"dir": dirpath, "full_path": os.sep.join([dirpath, filename]), "name": filename})
-                if filename.endswith('.js'):
-                    js_files.append(os.sep.join([dirpath, filename]))
-
-        
-
-        for tsconfig_file in tsconfig_files:
-            with open(tsconfig_file.get("full_path")) as fp:
-                config = json.load(fp)
-                out_dir = config.get('compilerOptions', {}).get('outDir')
-                if out_dir:
-                    if not out_dir.startswith('/'):
-                        build_path = os.path.abspath(tsconfig_file.get('dir') + '/' + out_dir)
-                    else:
-                        build_path = out_dir
-                    js_files_to_filter.append(build_path)
-                out_file = config.get('compilerOptions', {}).get('outFile')
-                if out_file:
-                    if not out_file.startswith('/'):
-                        build_path = os.path.abspath(tsconfig_file.get('dir') + '/' + out_file)
-                    else:
-                        build_path = out_dir
-                    js_files_to_filter.append(build_path)
-
-    return js_files_to_filter
