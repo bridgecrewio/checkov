@@ -34,19 +34,27 @@ class FilesFilterManager:
                         js_files.append({'full_path': os.sep.join([dirpath, filename]), 'dir': dirpath, 'name': filename})
 
             js_files_to_filter += FilesFilterManager._filter_by_tsconfig(tsconfig_files)
-            js_files_to_filter += FilesFilterManager._filter_direct_build_js(tsconfig_files, js_files, ts_files, js_files_to_filter)
+            js_files_to_filter += FilesFilterManager._filter_direct_build_js(js_files, ts_files, js_files_to_filter)
 
         return js_files_to_filter
 
     @staticmethod
-    def _filter_direct_build_js(tsconfig_files, js_files, ts_files, filtered_by_tsconfig):
+    def _filter_direct_build_js(js_files, ts_files, filtered_by_tsconfig):
         js_files_to_filter = []
         for js_file in js_files:
             js_dir = js_file.get('dir')
-
+            already_skipped = False
+            for filtered_by_tsconfig_path in filtered_by_tsconfig:
+                if js_dir.startswith(filtered_by_tsconfig_path):
+                    already_skipped = True
+                    break
+            if already_skipped:
+                continue
+            for ts_file in ts_files:
+                if ts_file.get('dir') == js_dir and ts_file.get('name')[:-3] == js_file.get('name')[:-3]:
+                    js_files_to_filter.append(js_file.get('full_path'))
+                    break
         return js_files_to_filter
-
-
 
     @staticmethod
     def _filter_by_tsconfig(tsconfig_files):
@@ -61,7 +69,7 @@ class FilesFilterManager:
             elif out_file:
                 build_dir = out_file
             else: 
-                continue
+                build_dir = tsconfig_file.get('dir')
 
             # relative path
             if not build_dir.startswith('/'):
