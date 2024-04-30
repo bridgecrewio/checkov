@@ -1,27 +1,28 @@
 import os
 import json
+from typing import Set, List, Dict
 
 from checkov.common.sast.consts import SastLanguages
 
 
 class FilesFilterManager:
-    def __init__(self, source_codes, languages) -> None:
-        self.source_codes = source_codes
-        self.languages = languages
+    def __init__(self, source_codes: List[str], languages: Set[SastLanguages]) -> None:
+        self.source_codes: List[str] = source_codes
+        self.languages: Set[SastLanguages] = languages
 
-    def get_files_to_filter(self):
-        files_to_filter = []
+    def get_files_to_filter(self) -> List[str]:
+        files_to_filter: List[str] = []
         if SastLanguages.JAVASCRIPT in self.languages:
             files_to_filter += self._get_js_files_to_filter()
         return files_to_filter
 
-    def _get_js_files_to_filter(self):
+    def _get_js_files_to_filter(self) -> List[str]:
         js_files_to_filter = []
 
         for path in self.source_codes:
-            js_files = []
-            ts_files = []
-            tsconfig_files = []
+            js_files: List[Dict[str, str]] = []
+            ts_files: List[Dict[str, str]] = []
+            tsconfig_files: List[Dict[str, str]] = []
             for (dirpath, _, filenames) in os.walk(path):
                 if '/node_modules/' in dirpath:
                     continue
@@ -39,8 +40,8 @@ class FilesFilterManager:
         return js_files_to_filter
 
     @staticmethod
-    def _filter_direct_build_js(js_files, ts_files, filtered_by_tsconfig):
-        js_files_to_filter = []
+    def _filter_direct_build_js(js_files: List[Dict[str, str]], ts_files: List[Dict[str, str]], filtered_by_tsconfig: List[str]) -> List[str]:
+        js_files_to_filter: List[str] = []
         for js_file in js_files:
             js_dir = js_file.get('dir')
             already_skipped = False
@@ -57,8 +58,8 @@ class FilesFilterManager:
         return js_files_to_filter
 
     @staticmethod
-    def _filter_by_tsconfig(tsconfig_files):
-        js_files_to_filter = []
+    def _filter_by_tsconfig(tsconfig_files: List[Dict[str, str]]) -> List[str]:
+        js_files_to_filter: List[str] = []
         for tsconfig_file in tsconfig_files:
             with open(tsconfig_file.get('full_path')) as fp:
                 config = json.load(fp)
