@@ -68,7 +68,7 @@ class FilesFilterManager:
                 build_dir = out_dir
             elif out_file:
                 build_dir = out_file
-            else: 
+            else:
                 build_dir = tsconfig_file.get('dir')
 
             # relative path
