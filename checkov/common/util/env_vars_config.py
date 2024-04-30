@@ -11,7 +11,7 @@ from checkov.version import version
 
 class EnvVarsConfig:
     def __init__(self) -> None:
-        self.BC_API_URL = normalize_bc_url(os.getenv("BC_API_URL", "https://www.bridgecrew.cloud"))
+        self.BC_API_URL = normalize_bc_url(os.getenv("BC_API_URL"))
         self.BC_ENABLE_PERSIST_GRAPHS = convert_str_to_bool(os.getenv("BC_ENABLE_PERSIST_GRAPHS", True))
         self.BC_PERSIST_GRAPHS_TIMEOUT = force_int(os.getenv("BC_PERSIST_GRAPHS_TIMEOUT", 60))
         self.BC_ROOT_DIR = os.getenv("BC_ROOT_DIR", "")
@@ -57,7 +57,6 @@ class EnvVarsConfig:
         self.RENDER_VARIABLES_ASYNC = convert_str_to_bool(os.getenv("RENDER_VARIABLES_ASYNC", False))
         self.RUN_IN_DOCKER = convert_str_to_bool(os.getenv("RUN_IN_DOCKER", False))
         self.REQUEST_MAX_TRIES = force_int(os.getenv("REQUEST_MAX_TRIES", 3))
-        self.RUN_SCA_PACKAGE_SCAN_V2 = convert_str_to_bool(os.getenv("CHECKOV_RUN_SCA_PACKAGE_SCAN_V2", True))
         self.RUN_SECRETS_MULTIPROCESS = convert_str_to_bool(os.getenv("RUN_SECRETS_MULTIPROCESS", False))
         self.SLEEP_BETWEEN_REQUEST_TRIES = force_int(os.getenv("SLEEP_BETWEEN_REQUEST_TRIES", 1))
         self.SLS_FILE_MASK = os.getenv("CKV_SLS_FILE_MASK", "serverless.yml,serverless.yaml").split(",")
@@ -71,7 +70,7 @@ class EnvVarsConfig:
         # is also defined as a flag, need to remove env var references in code
         self.BC_CA_BUNDLE = os.getenv("BC_CA_BUNDLE")
         # is also defined as a flag, need to remove env var references in code
-        self.PRISMA_API_URL = os.getenv("PRISMA_API_URL")
+        self.PRISMA_API_URL = os.getenv("PRISMA_API_URL", "https://api0.prismacloud.io")
         # need to fix usage, because the env var value is set inside the code
         self.GITHUB_CONF_DIR_PATH = os.getenv("CKV_GITHUB_CONF_DIR_PATH")
         self.ENABLE_DEFINITION_KEY = os.getenv("ENABLE_DEFINITION_KEY", False)

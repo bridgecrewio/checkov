@@ -39,6 +39,9 @@ class ParallelRunner:
                 self.type = ParallelizationType.THREAD
         # future support - spawn is not working well with frozen mode, need to investigate multiprocessing.freeze_support()
 
+    def running_as_process(self) -> bool:
+        return self.type in [ParallelizationType.FORK, ParallelizationType.SPAWN]
+
     def run_function(
         self,
         func: Callable[..., _T],

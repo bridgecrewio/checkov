@@ -1,0 +1,21 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_120
+  name: Ensure API Gateway caching is enabled
+  category: BACKUP_AND_RECOVERY
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  patterns:
+    or:
+      - pattern: new $AWS.Stage(<ANY>)
+        conditions:
+          - not_pattern: |
+              new $AWS.Stage(<ANY>, { <ANY>, cacheClusterEnabled: true, <ANY>} , <ANY>)
+      - pattern: new $AWS.CfnApi(<ANY>)
+        conditions:
+          - not_pattern: |
+              new $AWS.CfnApi(<ANY>, { <ANY>, cacheClusterEnabled: true , <ANY>} , <ANY>)

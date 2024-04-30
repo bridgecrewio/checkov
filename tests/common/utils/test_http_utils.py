@@ -19,7 +19,7 @@ def get_report_url() -> str:
 @mock.patch.dict(os.environ, {"REQUEST_MAX_TRIES": "5", "SLEEP_BETWEEN_REQUEST_TRIES": "0.01"})
 def test_request_wrapper_all_fail_with_connection_error_for_get_scan_result(mock_bc_integration):
     # given
-    mock_url = mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/scan-results/2e97f5afea42664309f492a1e2083b43479c2936"
+    mock_url = mock_bc_integration.api_url + "/api/v1/vulnerabilities/scan-results/2e97f5afea42664309f492a1e2083b43479c2936"
     responses.add(
         method=responses.GET,
         url=mock_url,
@@ -36,7 +36,7 @@ def test_request_wrapper_all_fail_with_connection_error_for_get_scan_result(mock
 @mock.patch.dict(os.environ, {"REQUEST_MAX_TRIES": "5", "SLEEP_BETWEEN_REQUEST_TRIES": "0.01"})
 def test_request_wrapper_all_fail_with_connection_error_for_post_scan(mock_bc_integration):
     # given
-    mock_url = mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/scan"
+    mock_url = mock_bc_integration.api_url + "/api/v1/vulnerabilities/scan"
     responses.add(
         method=responses.POST,
         url=mock_url,
@@ -53,7 +53,7 @@ def test_request_wrapper_all_fail_with_connection_error_for_post_scan(mock_bc_in
 @mock.patch.dict(os.environ, {"REQUEST_MAX_TRIES": "5", "SLEEP_BETWEEN_REQUEST_TRIES": "0.01"})
 def test_request_wrapper_all_fail_with_http_error(mock_bc_integration):
     # given
-    mock_url = mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/twistcli?os=linux"
+    mock_url = mock_bc_integration.api_url + "/api/v1/vulnerabilities/twistcli?os=linux"
     responses.add(
         method=responses.GET,
         url=mock_url,
@@ -68,7 +68,7 @@ def test_request_wrapper_all_fail_with_http_error(mock_bc_integration):
 @mock.patch.dict(os.environ, {"REQUEST_MAX_TRIES": "5", "SLEEP_BETWEEN_REQUEST_TRIES": "0.01"})
 def test_request_wrapper_all_fail_with_http_error_should_call_raise_for_status(mock_bc_integration):
     # given
-    mock_url = mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/twistcli?os=linux"
+    mock_url = mock_bc_integration.api_url + "/api/v1/vulnerabilities/twistcli?os=linux"
     responses.add(
         method=responses.GET,
         url=mock_url,
@@ -86,7 +86,7 @@ def test_request_wrapper_all_fail_with_http_error_should_call_raise_for_status(m
 @mock.patch.dict(os.environ, {"REQUEST_MAX_TRIES": "3", "SLEEP_BETWEEN_REQUEST_TRIES": "0.01"})
 def test_request_wrapper_with_success_for_get_scan_result(mock_bc_integration, scan_result_success_response):
     # given
-    mock_url = mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/scan-results/2e97f5afea42664309f492a1e2083b43479c2936"
+    mock_url = mock_bc_integration.api_url + "/api/v1/vulnerabilities/scan-results/2e97f5afea42664309f492a1e2083b43479c2936"
     responses.add(
         method=responses.GET,
         url=mock_url,
@@ -101,7 +101,7 @@ def test_request_wrapper_with_success_for_get_scan_result(mock_bc_integration, s
 @mock.patch.dict(os.environ, {"REQUEST_MAX_TRIES": "3", "SLEEP_BETWEEN_REQUEST_TRIES": "0.01"})
 def test_request_wrapper_with_success_for_download_twistcli(mock_bc_integration):
     # given
-    mock_url = mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/twistcli?os=linux"
+    mock_url = mock_bc_integration.api_url + "/api/v1/vulnerabilities/twistcli?os=linux"
     responses.add(
         method=responses.GET,
         url=mock_url,
@@ -116,7 +116,7 @@ def test_request_wrapper_with_success_for_download_twistcli(mock_bc_integration)
 @mock.patch.dict(os.environ, {"REQUEST_MAX_TRIES": "3", "SLEEP_BETWEEN_REQUEST_TRIES": "0.01"})
 def test_request_wrapper_with_success_for_post_scan(mock_bc_integration, scan_result_success_response):
     # given
-    mock_url = mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/scan"
+    mock_url = mock_bc_integration.api_url + "/api/v1/vulnerabilities/scan"
     responses.add(
         method=responses.POST,
         url=mock_url,

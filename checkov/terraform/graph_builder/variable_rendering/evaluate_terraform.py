@@ -56,6 +56,7 @@ def evaluate_terraform(input_str: Any, keep_interpolations: bool = True) -> Any:
     evaluated_value = evaluate_list_access(evaluated_value)
     evaluated_value = strip_double_quotes(evaluated_value)
     evaluated_value = evaluate_directives(evaluated_value)
+    evaluated_value = strip_interpolation_marks(evaluated_value)
     evaluated_value = evaluate_conditional_expression(evaluated_value)
     evaluated_value = evaluate_compare(evaluated_value)
     evaluated_value = evaluate_json_types(evaluated_value)
@@ -193,17 +194,30 @@ def strip_double_quotes(input_str: str) -> str:
     return input_str
 
 
-def evaluate_conditional_expression(input_str: str) -> str:
+def strip_interpolation_marks(input_str: str) -> str:
     if input_str.startswith("${") and input_str.endswith("}"):
-        # just remove the needed char length of the interpolation marks
+        # remove the needed char length of the interpolation marks
         input_str = input_str[2:-1]
+    return input_str
 
-    condition = find_conditional_expression_groups(input_str)
+
+def evaluate_conditional_expression(input_str: str) -> str:
+    if input_str.startswith("['${") and input_str.endswith("}']"):
+        condition = find_conditional_expression_groups(input_str[4:-3])
+        if condition is not None:
+            input_str = input_str[4:-3]
+    else:
+        condition = find_conditional_expression_groups(input_str)
+    if condition is None:
+        return input_str
+
     while condition:
         groups, start, end = condition
         if len(groups) != 3:
             return input_str
-        evaluated_condition = evaluate_terraform(groups[0])
+        evaluated_condition = evaluate_compare(groups[0])
+        if type(evaluated_condition) is str:
+            evaluated_condition = evaluate_terraform(groups[0])
         condition_substr = input_str[start:end]
         bool_evaluated_condition = convert_to_bool(evaluated_condition)
         if bool_evaluated_condition is True:
@@ -395,12 +409,12 @@ def apply_binary_op(a: Optional[Union[str, int, bool]], b: Optional[Union[str, i
     if type_a != type_b:
         try:
             temp_b = type_a(b)  # type:ignore[misc,arg-type]
-            if isinstance(type_a, bool):
+            if isinstance(a, bool) and b:
                 temp_b = bool(convert_to_bool(b))
             return operators[operator](a, temp_b)  # type:ignore[type-var]
         except Exception:
             temp_a = type_b(a)  # type:ignore[misc,arg-type]
-            if isinstance(type_b, bool):
+            if isinstance(b, bool) and a:
                 temp_a = bool(convert_to_bool(a))
             return operators[operator](temp_a, b)  # type:ignore[type-var]
     else:

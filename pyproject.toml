@@ -41,7 +41,6 @@ forbidden_modules = [
     "checkov.policies_3d",
     "checkov.sast",
     "checkov.sca_image",
-    "checkov.sca_package",
     "checkov.sca_package_2",
     "checkov.secrets",
     "checkov.serverless",
@@ -61,7 +60,6 @@ ignore_imports = [
     "checkov.common.runners.runner_registry -> checkov.terraform.modules.module_objects", # Should fix usage of get_enriched_resources
 
     "checkov.common.output.report -> checkov.policies_3d.output", # move to checkov.common.output
-    "checkov.common.output.report -> checkov.sca_package.output", # move to checkov.common.output
     "checkov.common.output.report -> checkov.sca_package_2.output", # move to checkov.common.output
 
     "checkov.common.checks_infra.solvers.connections_solvers.connection_exists_solver -> checkov.terraform.graph_builder.graph_components.block_types", # move to checkov.common.graph.graph_builder.graph_components?

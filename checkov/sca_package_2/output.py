@@ -229,7 +229,6 @@ def create_cli_license_violations_table(file_path: str,
         "Package version",
         "Policy ID",
         "License",
-        "Status",
     ]
     for package_idx, (_, license_statuses) in enumerate(package_licenses_details_map.items()):
         if package_idx > 0:
@@ -248,8 +247,7 @@ def create_cli_license_violations_table(file_path: str,
                 col_package_name,
                 col_package_version,
                 license_status["policy"],
-                license_status["license"],
-                license_status["status"],
+                license_status["license"]
             ]
             package_table.add_row(curr_row)
 
@@ -340,7 +338,7 @@ def create_fixable_cve_summary_table_part(
     fixable_table.set_style(SINGLE_BORDER)
     if cve_count.fixable:
         fixable_table.add_row(
-            [f"To fix {cve_count.has_fix}/{cve_count.to_fix} CVEs, go to https://www.bridgecrew.cloud/  "])
+            [f"To fix {cve_count.has_fix}/{cve_count.to_fix} CVEs, go to your Prisma Cloud account"])
         fixable_table.align = "l"
     else:
         return []

@@ -19,11 +19,11 @@ except ImportError:
     DiGraph = str
     node_link_data = lambda G : {}
 
-
+from checkov.common.sast.consts import CDK_FRAMEWORK_PREFIX, SAST_FRAMEWORK_PREFIX
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.models.consts import SUPPORTED_FILE_EXTENSIONS
 from checkov.common.typing import _ReducedScanReport, LibraryGraph
-from checkov.common.util.file_utils import compress_string_io_tar
+from checkov.common.util.file_utils import compress_multiple_strings_ios_tar
 from checkov.common.util.json_utils import CustomJSONEncoder
 
 if TYPE_CHECKING:
@@ -41,9 +41,6 @@ check_metadata_keys = ('evaluations', 'code_block', 'workflow_name', 'triggers',
 FILE_NAME_NETWORKX = 'graph_networkx.json'
 FILE_NAME_RUSTWORKX = 'graph_rustworkx.json'
 
-SAST_FRAMEWORK_PREFIX = 'sast'
-CDK_FRAMEWORK_PREFIX = 'cdk'
-
 
 def _is_scanned_file(file: str) -> bool:
     file_ending = os.path.splitext(file)[1]
@@ -54,7 +51,7 @@ def _put_json_object(s3_client: S3Client, json_obj: Any, bucket: str, object_pat
     try:
         s3_client.put_object(Bucket=bucket, Key=object_path, Body=json.dumps(json_obj, cls=CustomJSONEncoder))
     except Exception:
-        logging.error(f"failed to persist object into S3 bucket {bucket}", exc_info=log_stack_trace_on_error)
+        logging.error(f"failed to persist object into S3 bucket {bucket} - {object_path}", exc_info=log_stack_trace_on_error)
         raise
 
 
@@ -149,9 +146,9 @@ def persist_run_metadata(
         raise
 
 
-def persist_logs_stream(logs_stream: StringIO, s3_client: S3Client, bucket: str, full_repo_object_key: str) -> None:
-    file_io = compress_string_io_tar(logs_stream)
-    object_path = f'{full_repo_object_key}/logs_file.tar.gz'
+def persist_multiple_logs_stream(logs_streams: Dict[str, StringIO], s3_client: S3Client, bucket: str, full_repo_object_key: str) -> None:
+    file_io = compress_multiple_strings_ios_tar(logs_streams)
+    object_path = f'{full_repo_object_key}/logs_files.tar.gz'
     try:
         s3_client.put_object(Bucket=bucket, Key=object_path, Body=file_io)
     except Exception:

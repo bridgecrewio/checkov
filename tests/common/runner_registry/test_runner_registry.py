@@ -26,7 +26,6 @@ from checkov.kubernetes.runner import Runner as k8_runner
 from checkov.main import DEFAULT_RUNNERS
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_package_2.runner import Runner as sca_package_runner_2
-from checkov.sca_package.runner import Runner as sca_package_runner
 from checkov.terraform.runner import Runner as tf_runner
 from checkov.bicep.runner import Runner as bicep_runner
 from checkov.sast.runner import Runner as SastRunner
@@ -168,7 +167,7 @@ class TestRunnerRegistry(unittest.TestCase):
         with open(iac_file_path) as file:
             content = file.readlines()
             header = content[:1][0]
-            self.assertEqual('Resource,Path,Git Org,Git Repository,Misconfigurations,Severity\n', header)
+            self.assertEqual('Resource,Path,Git Org,Git Repository,Misconfigurations,Severity,Policy title,Guideline\n', header)
             rows = content[1:]
             self.assertIn('aws_s3_bucket', rows[0])
         oss_file_path = re.search("Persisting SBOM to (.*oss_packages.csv)", output).group(1)
@@ -265,12 +264,6 @@ class TestRunnerRegistry(unittest.TestCase):
         )
         runner_registry.filter_runners_for_files(['main.tf'])
         self.assertEqual(set(r.check_type for r in runner_registry.runners), {'terraform', 'secrets'})
-
-        runner_registry = RunnerRegistry(
-            banner, runner_filter, *DEFAULT_RUNNERS, sca_package_runner()
-        )
-        runner_registry.filter_runners_for_files(['main.tf', 'requirements.txt'])
-        self.assertEqual(set(r.check_type for r in runner_registry.runners), {'terraform', 'secrets', 'sca_package'})
 
         runner_registry = RunnerRegistry(
             banner, runner_filter, *DEFAULT_RUNNERS, sca_package_runner_2()

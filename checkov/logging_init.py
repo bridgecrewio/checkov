@@ -23,3 +23,8 @@ stream_handler = logging.StreamHandler(stream=log_stream)
 stream_handler.setFormatter(log_formatter)
 stream_handler.setLevel(logging.DEBUG)
 root_logger.addHandler(stream_handler)
+
+
+def erase_log_stream() -> None:
+    log_stream.seek(0)
+    log_stream.truncate(0)
