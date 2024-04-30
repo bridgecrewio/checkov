@@ -24,6 +24,11 @@ def test_CKV_AWS_2_ALBListenerHTTPS():
 
 
 @pytest.mark.skip(reason="Not supported yet")
+def test_CKV_AWS_59_APIGatewayAuthorization(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_59", policy_name="APIGatewayAuthorization", language="typescript")
+
+
+@pytest.mark.skip(reason="Not supported yet")
 def test_CKV_AWS_76_APIGatewayAccessLogging():
     run_check(check_results=failed_checks, check_id="CKV_AWS_76", policy_name="APIGatewayAccessLogging", language="typescript")
 
@@ -44,6 +49,22 @@ def test_CKV_AWS_73_APIGatewayXray():
 
 
 @pytest.mark.skip(reason="Not supported yet")
+def test_CKV_AWS_194_AppSyncFieldLevelLogs():
+    run_check(check_results=failed_checks, check_id="CKV_AWS_194", policy_name="AppSyncFieldLevelLogs", language="typescript")
+
+
+@pytest.mark.skip(reason="Not supported yet")
+def test_CKV_AWS_193_AppSyncLogging():
+    run_check(check_results=failed_checks, check_id="CKV_AWS_193", policy_name="AppSyncLogging", language="typescript")
+
+
+@pytest.mark.skip(reason="Not supported yet")
+def test_CKV_AWS_82_AthenaWorkgroupConfiguration():
+    # need to wait for variable rendering in TS
+    run_check(check_results=failed_checks, check_id="CKV_AWS_82", policy_name="AthenaWorkgroupConfiguration", language="typescript")
+
+
+@pytest.mark.skip(reason="Not supported yet")
 def test_CKV_AWS_131_AmazonMQBrokerPublicAccess():
     run_check(check_results=failed_checks, check_id="CKV_AWS_131", policy_name="AmazonMQBrokerPublicAccess", language="typescript")
 
@@ -56,6 +77,11 @@ def test_CKV_AWS_96_AuroraEncryption():
 @pytest.mark.skip(reason="Not supported yet")
 def test_CKV_AWS_166_BackupVaultEncrypted():
     run_check(check_results=failed_checks, check_id="CKV_AWS_166", policy_name="BackupVaultEncrypted", language="typescript")
+
+
+@pytest.mark.skip(reason="Not supported yet")
+def test_CKV_AWS_174_CloudFrontTLS12():
+    run_check(check_results=failed_checks, check_id="CKV_AWS_174", policy_name="CloudFrontTLS12", language="typescript")
 
 
 @pytest.mark.skip(reason="Not supported yet")
@@ -279,3 +305,78 @@ def CKV_AWS_28_DynamodbRecovery():
 @pytest.mark.skip(reason="Not supported yet")
 def CKV_AWS_3_EBSEncryption():
     run_check(check_results=failed_checks, check_id="CKV_AWS_3", policy_name="EBSEncryption", language="typescript")
+
+
+@pytest.mark.skip(reason="Not supported yet")
+def CKV_AWS_5_ElasticsearchEncryption():
+    run_check(check_results=failed_checks, check_id="CKV_AWS_5", policy_name="ElasticsearchEncryption", language="typescript")
+
+
+@pytest.mark.skip(reason="Not supported yet")
+def CKV_AWS_6_ElasticsearchNodeToNodeEncryption():
+    run_check(check_results=failed_checks, check_id="CKV_AWS_6", policy_name="ElasticsearchNodeToNodeEncryption", language="typescript")
+
+
+@pytest.mark.skip(reason="Not supported yet")
+def CKV_AWS_94_GlueDataCatalogEncryption():
+    run_check(check_results=failed_checks, check_id="CKV_AWS_94", policy_name="GlueDataCatalogEncryption", language="typescript")
+
+
+@pytest.mark.skip(reason="Not supported yet")
+def CKV_AWS_99_GlueSecurityConfiguration():
+    run_check(check_results=failed_checks, check_id="CKV_AWS_99", policy_name="GlueSecurityConfiguration", language="typescript")
+
+
+@pytest.mark.skip(reason="Not supported yet")
+def CKV_AWS_195_GlueSecurityConfigurationEnabled():
+    run_check(check_results=failed_checks, check_id="CKV_AWS_195", policy_name="GlueSecurityConfigurationEnabled", language="typescript")
+
+
+@pytest.mark.skip(reason="Not supported yet")
+def CKV_AWS_40_IAMPolicyAttachedToGroupOrRoles():
+    run_check(check_results=failed_checks, check_id="CKV_AWS_40", policy_name="IAMPolicyAttachedToGroupOrRoles", language="typescript")
+
+
+@pytest.mark.skip(reason="Not supported yet")
+def CKV_AWS_43_KinesisStreamEncryptionType():
+    run_check(check_results=failed_checks, check_id="CKV_AWS_43", policy_name="KinesisStreamEncryptionType", language="typescript")
+
+
+@pytest.mark.skip(reason="Not supported yet")
+def CKV_AWS_116_LambdaDLQConfigured():
+    run_check(check_results=failed_checks, check_id="CKV_AWS_116", policy_name="LambdaDLQConfigured", language="typescript")
+
+
+@pytest.mark.skip(reason="Not supported yet")
+def CKV_AWS_45_LambdaEnvironmentCredentials():
+    run_check(check_results=failed_checks, check_id="CKV_AWS_45", policy_name="LambdaEnvironmentCredentials", language="typescript")
+
+
+@pytest.mark.skip(reason="Not supported yet")
+def CKV_AWS_173_LambdaEnvironmentEncryptionSettings():
+    run_check(check_results=failed_checks, check_id="CKV_AWS_173", policy_name="LambdaEnvironmentEncryptionSettings", language="typescript")
+
+
+@pytest.mark.skip(reason="Not supported yet")
+def CKV_AWS_115_LambdaFunctionLevelConcurrentExecutionLimit():
+    run_check(check_results=failed_checks, check_id="CKV_AWS_115", policy_name="LambdaFunctionLevelConcurrentExecutionLimit", language="typescript")
+
+
+@pytest.mark.skip(reason="Not supported yet")
+def CKV_AWS_117_LambdaInVPC():
+    run_check(check_results=failed_checks, check_id="CKV_AWS_117", policy_name="LambdaInVPC", language="typescript")
+
+
+@pytest.mark.skip(reason="Not supported yet")
+def CKV_AWS_8_LaunchConfigurationEBSEncryption():
+    run_check(check_results=failed_checks, check_id="CKV_AWS_8", policy_name="LaunchConfigurationEBSEncryption", language="typescript")
+
+
+@pytest.mark.skip(reason="Not supported yet")
+def CKV_AWS_44_NeptuneClusterStorageEncrypted():
+    run_check(check_results=failed_checks, check_id="CKV_AWS_44", policy_name="NeptuneClusterStorageEncrypted", language="typescript")
+
+
+@pytest.mark.skip(reason="Not supported yet")
+def CKV_AWS_118_RDSEnhancedMonitorEnabled():
+    run_check(check_results=failed_checks, check_id="CKV_AWS_118", policy_name="RDSEnhancedMonitorEnabled", language="typescript")

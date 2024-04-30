@@ -3,7 +3,7 @@ from __future__ import annotations
 import itertools
 import json
 import logging
-from typing import Optional, Tuple, Dict, List, Any, cast
+from typing import Any, Dict, List, Optional, Tuple, cast
 
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.parsers.node import ListNode
@@ -27,6 +27,44 @@ RESOURCE_TYPES_JSONIFY = {
     "aws_iam_user_policy": "policy",
     "aws_ssoadmin_permission_set_inline_policy": "inline_policy",
     "azurerm_portal_dashboard": "dashboard_properties",
+    "aws_vpc_endpoint_policy": "policy",
+    "aws_ecr_registry_policy": "policy",
+    "aws_acmpca_policy": "policy",
+    "aws_api_gateway_rest_api_policy": "policy",
+    "aws_backup_vault_policy": "policy",
+    "aws_cloudwatch_log_destination_policy": "access_policy",
+    "aws_cloudwatch_log_resource_policy": "policy_document",
+    "aws_oam_sink_policy": "policy",
+    "aws_codebuild_resource_policy": "policy",
+    "aws_dynamodb_resource_policy": "policy",
+    "aws_ecr_repository_policy": "policy",
+    "aws_ecrpublic_repository_policy": "policy",
+    "aws_efs_file_system_policy": "policy",
+    "aws_elasticsearch_domain_policy": "access_policies",
+    "aws_media_store_container_policy": "policy",
+    "aws_cloudwatch_event_bus_policy": "policy",
+    "aws_schemas_registry_policy": "policy",
+    "aws_glue_resource_policy": "policy",
+    "aws_iot_policy": "policy",
+    "aws_kms_key": "policy",
+    "aws_kinesis_resource_policy": "policy",
+    "aws_msk_cluster_policy": "policy",
+    "aws_networkfirewall_resource_policy": "policy",
+    "aws_opensearch_domain_policy": "access_policies",
+    "aws_opensearchserverless_access_policy": "policy",
+    "aws_redshift_resource_policy": "policy",
+    "aws_redshiftserverless_resource_policy": "policy",
+    "aws_s3_bucket_policy": "policy",
+    "aws_s3control_access_point_policy": "policy",
+    "aws_s3control_bucket_policy": "policy",
+    "aws_ses_identity_policy": "policy",
+    "aws_sesv2_email_identity_policy": "policy",
+    "aws_sns_topic_data_protection_policy": "policy",
+    "aws_sns_topic_policy": "policy",
+    "aws_sqs_queue_policy": "policy",
+    "aws_secretsmanager_secret_policy": "policy",
+    "aws_vpclattice_auth_policy": "policy",
+    "aws_vpclattice_resource_policy": "policy"
 }
 
 
@@ -242,6 +280,33 @@ def _get_module_call_resources(module_address: str, root_module_conf: dict[str, 
     return cast("list[dict[str, Any]]", root_module_conf.get("resources", []))
 
 
+def _is_provider_key(key: str) -> bool:
+    """key is a valid provider"""
+    return (key.startswith('module.') or key.startswith('__') or key in {'start_line', 'end_line'})
+
+
+def _get_provider(template: dict[str, dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    """Returns the provider dict"""
+
+    provider_map: dict[str, dict[str, Any]] = {}
+    provider_config = template.get("configuration", {}).get("provider_config")
+
+    if provider_config and isinstance(provider_config, dict):
+        for provider_key, provider_data in provider_config.items():
+            if _is_provider_key(key=provider_key):
+                # Not a provider, skip
+                continue
+            provider_map[provider_key] = {}
+            for field, value in provider_data.get('expressions', {}).items():
+                if field in LINE_FIELD_NAMES or not isinstance(value, dict):
+                    continue  # don't care about line #s or non dicts
+                expression_value = value.get('constant_value', None)
+                if expression_value:
+                    provider_map[provider_key][field] = expression_value
+
+    return provider_map
+
+
 def _get_resource_changes(template: dict[str, Any]) -> dict[str, dict[str, Any]]:
     """Returns a resource address to resource changes dict"""
 
@@ -293,10 +358,14 @@ def parse_tf_plan(tf_plan_file: str, out_parsing_errors: Dict[str, str]) -> Tupl
     :type tf_plan_file: str - path to plan file
     :rtype: tf_definition dictionary and template_lines of the plan file
     """
-    tf_definition: Dict[str, Any] = {"resource": [], "data": []}
+    tf_definition: Dict[str, Any] = {"provider": [], "resource": [], "data": []}
     template, template_lines = parse(tf_plan_file, out_parsing_errors)
     if not template:
         return None, None
+
+    provider = _get_provider(template=template)
+    if bool(provider):
+        tf_definition["provider"].append(provider)
 
     resource_changes = _get_resource_changes(template=template)
 
