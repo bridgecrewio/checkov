@@ -65,7 +65,7 @@ class FilesFilterManager:
     def _filter_by_tsconfig(tsconfig_files: List[Dict[str, str]]) -> List[str]:
         js_files_to_filter: List[str] = []
         for tsconfig_file in tsconfig_files:
-            with open(tsconfig_file.get('full_path'), '') as fp:
+            with open(tsconfig_file.get('full_path', '')) as fp:
                 config = json.load(fp)
             out_dir = config.get('compilerOptions', {}).get('outDir')
             out_file = config.get('compilerOptions', {}).get('outFile')
