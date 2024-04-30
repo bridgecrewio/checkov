@@ -3,6 +3,8 @@ from __future__ import annotations
 import logging
 import os
 import sys
+from checkov.common.util.type_forcers import convert_str_to_bool
+from checkov.common.sast.consts import SastLanguages
 
 
 from checkov.common.bridgecrew.check_type import CheckType
@@ -53,6 +55,20 @@ class Runner(BaseRunner[None, None, None]):
             # only happens for 'ParallelizationType.SPAWN'
             bc_integration.setup_http_manager()
             bc_integration.set_s3_client()
+
+        # Todo remove when typescript is stable in platform
+        if not bool(convert_str_to_bool(os.getenv('ENABLE_SAST_TYPESCRIPT', False))):
+            if SastLanguages.TYPESCRIPT in runner_filter.sast_languages:
+                runner_filter.sast_languages.remove(SastLanguages.TYPESCRIPT)
+            if CDKLanguages.TYPESCRIPT in self.cdk_langs:
+                self.cdk_langs.remove(CDKLanguages.TYPESCRIPT)
+
+        # Todo remove when golang is stable in platform
+        if not bool(convert_str_to_bool(os.getenv('ENABLE_SAST_GOLANG', False))):
+            if SastLanguages.GOLANG in runner_filter.sast_languages:
+                runner_filter.sast_languages.remove(SastLanguages.GOLANG)
+            if CDKLanguages.GOLANG in self.cdk_langs:
+                self.cdk_langs.remove(CDKLanguages.GOLANG)
 
         # registry get all the paths
         self.registry.set_runner_filter(runner_filter)
