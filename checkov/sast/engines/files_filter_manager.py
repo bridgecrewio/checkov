@@ -43,7 +43,7 @@ class FilesFilterManager:
     def _filter_direct_build_js(js_files: List[Dict[str, str]], ts_files: List[Dict[str, str]], filtered_by_tsconfig: List[str]) -> List[str]:
         js_files_to_filter: List[str] = []
         for js_file in js_files:
-            js_dir = js_file.get('dir')
+            js_dir = js_file.get('dir', '')
             already_skipped = False
             for filtered_by_tsconfig_path in filtered_by_tsconfig:
                 if js_dir.startswith(filtered_by_tsconfig_path):
@@ -52,8 +52,8 @@ class FilesFilterManager:
             if already_skipped:
                 continue
             for ts_file in ts_files:
-                if ts_file.get('dir') == js_dir and ts_file.get('name')[:-3] == js_file.get('name')[:-3]:
-                    js_files_to_filter.append(js_file.get('full_path'))
+                if ts_file.get('dir', '') == js_dir and ts_file.get('name', '')[:-3] == js_file.get('name', '')[:-3]:
+                    js_files_to_filter.append(js_file.get('full_path', ''))
                     break
         return js_files_to_filter
 
@@ -61,7 +61,7 @@ class FilesFilterManager:
     def _filter_by_tsconfig(tsconfig_files: List[Dict[str, str]]) -> List[str]:
         js_files_to_filter: List[str] = []
         for tsconfig_file in tsconfig_files:
-            with open(tsconfig_file.get('full_path')) as fp:
+            with open(tsconfig_file.get('full_path'), '') as fp:
                 config = json.load(fp)
             out_dir = config.get('compilerOptions', {}).get('outDir')
             out_file = config.get('compilerOptions', {}).get('outFile')
@@ -74,7 +74,7 @@ class FilesFilterManager:
 
             # relative path
             if not build_dir.startswith('/'):
-                build_path = os.path.abspath(tsconfig_file.get('dir') + '/' + build_dir)
+                build_path = os.path.abspath(tsconfig_file.get('dir', '') + '/' + build_dir)
             # absolute path
             else:
                 build_path = build_dir
