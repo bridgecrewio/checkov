@@ -133,16 +133,3 @@ Resources:
       TransitEncryptionEnabled: False
       UserGroupIds:
         - Example
-Outputs:
-  RGEndpoint:
-    Description: The primary endpoint location
-    Value: !Join 
-      - ''
-      - - 'redis://'
-        - !GetAtt 
-          - ReplicationGroup
-          - PrimaryEndPoint.Address
-        - ':'
-        - !GetAtt 
-          - ReplicationGroup
-          - PrimaryEndPoint.Port
