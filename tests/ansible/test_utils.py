@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from checkov.ansible.runner import Runner
-from checkov.ansible.utils import build_definitions_context
+from checkov.ansible.utils import build_definitions_context, create_definitions
 
 EXAMPLES_DIR = Path(__file__).parent / "examples"
 
@@ -45,3 +45,10 @@ def test_build_definitions_context():
             "suppress_comment": "No comment provided",
         }
     ]
+
+
+def test_create_definitions():
+    definitions, definitions_raw = create_definitions(root_folder=str(EXAMPLES_DIR))
+
+    assert len(definitions) > 0
+    assert all(key.endswith(".yml") or key.endswith(".yaml") and len(value) > 0 for key, value in definitions.items())
