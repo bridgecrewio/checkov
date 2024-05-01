@@ -319,17 +319,21 @@ class BcPlatformIntegration:
 
         if self.http:
             return
+        # The `https_proxy` environment variable might be scheme-less. urllib3.ProxyManager expects a scheme, so set
+        # to a default of http:// if missing.
+        parsed_proxy_url = urllib3.util.parse_url(os.environ['https_proxy'])
+        if not parsed_proxy_url.scheme:
+            parsed_proxy_url = parsed_proxy_url._replace(scheme='http')
         if ca_certificate:
             os.environ['REQUESTS_CA_BUNDLE'] = ca_certificate
             cert_reqs = 'CERT_NONE' if no_cert_verify else 'REQUIRED'
             logging.debug(f'Using CA cert {ca_certificate} and cert_reqs {cert_reqs}')
             try:
-                parsed_url = urllib3.util.parse_url(os.environ['https_proxy'])
                 self.http = urllib3.ProxyManager(
-                    os.environ['https_proxy'],
+                    parsed_proxy_url.url,
                     cert_reqs=cert_reqs,
                     ca_certs=ca_certificate,
-                    proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth),  # type:ignore[no-untyped-call]
+                    proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_proxy_url.auth),  # type:ignore[no-untyped-call]
                     timeout=self.http_timeout,
                     retries=self.http_retry,
                 )
@@ -344,11 +348,10 @@ class BcPlatformIntegration:
             cert_reqs = 'CERT_NONE' if no_cert_verify else None
             logging.debug(f'Using cert_reqs {cert_reqs}')
             try:
-                parsed_url = urllib3.util.parse_url(os.environ['https_proxy'])
                 self.http = urllib3.ProxyManager(
-                    os.environ['https_proxy'],
+                    parsed_proxy_url.url,
                     cert_reqs=cert_reqs,
-                    proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth),  # type:ignore[no-untyped-call]
+                    proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_proxy_url.auth),  # type:ignore[no-untyped-call]
                     timeout=self.http_timeout,
                     retries=self.http_retry,
                 )
