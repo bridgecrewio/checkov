@@ -4,7 +4,7 @@ import logging
 import os
 import re
 from pathlib import Path
-from typing import Any, List, Dict, Callable
+from typing import Any, List
 
 from checkov.ansible.graph_builder.graph_components.resource_types import ResourceType
 from checkov.common.parallelizer.parallel_runner import parallel_runner
@@ -225,4 +225,4 @@ def create_file_definition(files_to_load: List[str], definitions: dict[str, dict
 
         file, result = file_result_pair
         if result:
-            (definitions[file], definitions_raw[file]) = result
+            (definitions[file], definitions_raw[file]) = result  # type: ignore[assignment]
