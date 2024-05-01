@@ -110,7 +110,7 @@ Resources:
       SubnetIds:
         - !Ref SubnetA
         - !Ref SubnetB
-  ReplicationGroup:
+  ReplicationGroupFail:
     Type: 'AWS::ElastiCache::ReplicationGroup'
     Properties:
       AutomaticFailoverEnabled: !Ref MultiAZSupport
