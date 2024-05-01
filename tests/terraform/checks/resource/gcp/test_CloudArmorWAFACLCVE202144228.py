@@ -20,19 +20,21 @@ class TestCloudArmorWAFACLCVE202144228(unittest.TestCase):
         passing_resources = {
             "google_compute_security_policy.enabled_deny_403",
             "google_compute_security_policy.enabled_deny_404",
+            "google_compute_security_policy.pass_preconfigwaf",
         }
 
         failing_resources = {
             "google_compute_security_policy.allow",
             "google_compute_security_policy.preview",
             "google_compute_security_policy.different_expr",
+            "google_compute_security_policy.pass_preconfigwaf"
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
-        self.assertEqual(summary["passed"], 2)
-        self.assertEqual(summary["failed"], 3)
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
