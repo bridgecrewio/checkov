@@ -12,7 +12,7 @@ class AppServiceRemoteDebuggingNotEnabled(BaseResourceValueCheck):
                                'azurerm_linux_function_app',
                                'azurerm_linux_function_app_slot',
                                'azurerm_linux_web_app',
-                               'azurerm_linux_web_app_slot', 
+                               'azurerm_linux_web_app_slot',
                                'azurerm_windows_function_app',
                                'azurerm_windows_function_app_slot',
                                'azurerm_windows_web_app',
