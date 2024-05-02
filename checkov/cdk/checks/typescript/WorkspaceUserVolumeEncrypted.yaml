@@ -1,0 +1,15 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_155
+  name: Ensure that Workspace user volumes are encrypted
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  pattern: new $AWS.CfnWorkspace(<ANY>)
+  conditions:
+    - not_pattern: |
+        new $AWS.CfnWorkspace(<ANY>, {<ANY>, userVolumeEncryptionEnabled: true, <ANY>} , <ANY>)
