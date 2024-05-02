@@ -1,0 +1,48 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_116
+  name: Ensure that AWS Lambda function is configured for a Dead Letter Queue(DLQ)
+  category: GENERAL_SECURITY
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  or:
+    - pattern: new $PACKAGE.aws_lambda.Function(<ANY>, <ANY>, { <ANY> })
+      conditions:
+        - not_pattern: |
+            new $PACKAGE.aws_lambda.Function(<ANY>, <ANY>, { <ANY>, deadLetterQueue: <ANY>, <ANY>, deadLetterQueueEnabled: true ,<ANY>})
+        - metavariable: $PACKAGE
+          comparison: $PACKAGE == "aws-cdk-lib"
+    - pattern: new $PACKAGE.aws_lambda.CfnFunction(<ANY>, <ANY>, { <ANY> })
+      conditions:
+        - not_pattern: |
+            new $PACKAGE.aws_lambda.CfnFunction(<ANY>, <ANY>, { <ANY>, deadLetterConfig: <ANY>, <ANY> })
+        - metavariable: $PACKAGE
+          comparison: $PACKAGE == "aws-cdk-lib"
+    - pattern: new $PACKAGE.aws_sam.CfnFunction(<ANY>, <ANY>, { <ANY> })
+      conditions:
+        - not_pattern: |
+            new $PACKAGE.aws_sam.CfnFunction(<ANY>, <ANY>, { <ANY>, deadLetterQueue: <ANY>, <ANY> })
+        - metavariable: $PACKAGE
+          comparison: $PACKAGE == "aws-cdk-lib"
+    - pattern: $X =  { <ANY> }
+      conditions:
+        - not_pattern: |
+            $X = { <ANY>, deadLetterQueue: <ANY>, <ANY>, deadLetterQueueEnabled: true ,<ANY>}
+        - metavariable: $X
+          type: aws-cdk-lib.aws_lambda.FunctionProps
+    - pattern: $X =  { <ANY> }
+      conditions:
+        - not_pattern: |
+            $X = { <ANY>, deadLetterConfig: <ANY>, <ANY> }
+        - metavariable: $X
+          type: aws-cdk-lib.aws_lambda.CfnFunctionProps
+    - pattern: $X =  { <ANY> }
+      conditions:
+        - not_pattern: |
+            $X = { <ANY>, deadLetterQueue: <ANY>, <ANY> }
+        - metavariable: $X
+          type: aws-cdk-lib.aws_sam.CfnFunctionProps

@@ -1,0 +1,66 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_173
+  name: Check encryption settings for Lambda environmental variable
+  category: Encryption
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  or:
+    - pattern: |
+        new $PACKAGE.aws_lambda.Function(<ANY>, <ANY>, { <ANY>, environment: { <ANY>, $ARG1:'$ARG2', <ANY> }, <ANY> } )
+      conditions:
+        - not_pattern: |
+            new $PACKAGE.aws_lambda.Function(<ANY>, <ANY>, { <ANY>, environment: { <ANY>, $ARG1:'$ARG2', <ANY> }, <ANY>, environmentEncryption: $KMS, <ANY> })
+        - not_pattern: |
+            new $PACKAGE.aws_lambda.Function(<ANY>, <ANY>, { <ANY>, environmentEncryption: $KMS, <ANY>, environment: { <ANY>, $ARG1:'$ARG2', <ANY> }, <ANY> })
+        - metavariable: $PACKAGE
+          comparison: $PACKAGE == "aws-cdk-lib"
+    - pattern: |
+        new $PACKAGE.aws_lambda.CfnFunction(<ANY>, <ANY>, { <ANY>, environment: { <ANY>, variables: { <ANY>, $ARG1:'$ARG2', <ANY>}, <ANY>}, <ANY> })
+      conditions:
+        - not_pattern: |
+            new $PACKAGE.aws_lambda.CfnFunction(<ANY>, <ANY>, { <ANY>, environment: { <ANY>, variables: { $ARG1:'$ARG2' }, <ANY> }, <ANY>, kmsKeyArn: $KMS, <ANY> })
+        - not_pattern: |
+            new $PACKAGE.aws_lambda.CfnFunction(<ANY>, <ANY>, { <ANY>, kmsKeyArn: $KMS, <ANY>, environment: { <ANY>, variables: { <ANY>, $ARG1:'$ARG2', <ANY>}, <ANY> })
+        - metavariable: $PACKAGE
+          comparison: $PACKAGE == "aws-cdk-lib"
+    - pattern: |
+        new $PACKAGE.aws_sam.CfnFunction(<ANY>, <ANY>, { <ANY>, environment: { <ANY>, variables: { $ARG1:'$ARG2'}, <ANY>}, <ANY> })
+      conditions:
+        - not_pattern: |
+            new $PACKAGE.aws_sam.CfnFunction(<ANY>, <ANY>, { <ANY>, environment: { <ANY>, variables: { $ARG1:'$ARG2'}, <ANY>, kmsKeyArn: $KMS, <ANY> }, <ANY> })
+        - not_pattern: |
+            new $PACKAGE.aws_sam.CfnFunction(<ANY>, <ANY>, { <ANY>, kmsKeyArn: $KMS, <ANY>, environment: { <ANY>, variables: { <ANY>, $ARG1:'$ARG2', <ANY> }, <ANY> })
+        - metavariable: $PACKAGE
+          comparison: $PACKAGE == "aws-cdk-lib"
+    - pattern: |
+        $X = { <ANY>, environment: { $ARG1:'$ARG2' }, <ANY> }
+      conditions:
+        - not_pattern: |
+            $X = { <ANY>, environment: { <ANY>, $ARG1:'$ARG2', <ANY> }, <ANY>, environmentEncryption: $KMS, <ANY> }
+        - not_pattern: |
+            $X = { <ANY>, environmentEncryption: $KMS, <ANY>, environment: { <ANY>, $ARG1:'$ARG2', <ANY> }, <ANY> }
+        - metavariable: $X
+          type: aws-cdk-lib.aws_lambda.FunctionProps
+    - pattern: |
+        $X =  { <ANY>, environment: { <ANY>, variables: { <ANY>, $ARG1:'$ARG2', <ANY> }, <ANY>}, <ANY> }
+      conditions:
+        - not_pattern: |
+            $X = { <ANY>, environment: { <ANY>, variables: { <ANY>, $ARG1:'$ARG2', <ANY> }, <ANY> }, <ANY>, kmsKeyArn: $KMS, <ANY> }
+        - not_pattern: |
+            $X = { <ANY>, kmsKeyArn: $KMS, <ANY>, environment: { <ANY>, variables: { <ANY>, $ARG1:'$ARG2', <ANY> }, <ANY> }, <ANY> }
+        - metavariable: $X
+          type: aws-cdk-lib.aws_lambda.CfnFunctionProps
+    - pattern: |
+        $X = { <ANY>, environment: { <ANY>, variables: { <ANY>, $ARG1:'$ARG2', <ANY> }, <ANY>}, <ANY> }
+      conditions:
+        - not_pattern: |
+            $X = { <ANY>, environment: { <ANY>, variables: { <ANY>, $ARG1:'$ARG2', <ANY> }, <ANY>, kmsKeyArn: $KMS, <ANY> }, <ANY> }
+        - not_pattern: |
+            $X = { <ANY>, kmsKeyArn: $KMS, <ANY>, environment: { <ANY>, variables: { <ANY>, $ARG1:'$ARG2', <ANY> }, <ANY> }, <ANY> }
+        - metavariable: $X
+          type: aws-cdk-lib.aws_sam.CfnFunctionProps
