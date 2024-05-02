@@ -25,6 +25,7 @@ class TestAppServiceRemoteDebuggingNotEnabled(unittest.TestCase):
             'azurerm_linux_function_app_slot.pass',
             'azurerm_linux_web_app_slot.pass',
             'azurerm_windows_function_app.pass',
+            'azurerm_windows_function_app_slot.pass',
             'azurerm_windows_web_app_slot.pass',
             'azurerm_app_service.pass2',
             'azurerm_windows_web_app.pass2',
@@ -33,6 +34,7 @@ class TestAppServiceRemoteDebuggingNotEnabled(unittest.TestCase):
             'azurerm_linux_function_app_slot.pass2',
             'azurerm_linux_web_app_slot.pass2',
             'azurerm_windows_function_app.pass2',
+            'azurerm_windows_function_app_slot.pass2',
             'azurerm_windows_web_app_slot.pass2',
         }
         failing_resources = {
@@ -43,6 +45,7 @@ class TestAppServiceRemoteDebuggingNotEnabled(unittest.TestCase):
             'azurerm_linux_function_app_slot.fail',
             'azurerm_linux_web_app_slot.fail',
             'azurerm_windows_function_app.fail',
+            'azurerm_windows_function_app_slot.fail',
             'azurerm_windows_web_app_slot.fail',
         }
         skipped_resources = {}
