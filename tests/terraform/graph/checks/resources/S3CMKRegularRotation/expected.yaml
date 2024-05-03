@@ -1,0 +1,4 @@
+pass:
+  - "aws_s3_bucket_server_side_encryption_configuration.pass"
+fail:
+  - "azurerm_mysql_server.not_ok"
