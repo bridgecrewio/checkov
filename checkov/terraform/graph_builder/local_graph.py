@@ -479,19 +479,23 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 vertex_realpath = os.path.realpath(vertex.path)
                 self._vertex_path_to_realpath_cache[vertex.path] = vertex_realpath
             common_prefix = os.path.commonpath([vertex_realpath, origin_real_path])
+
+            # checks if module name is same for dest and origin vertex.
+            if origin_vertex_index is not None:
+                vertex_module_name = vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS, '')
+                origin_module_name = self.vertices[origin_vertex_index].attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS, '')
+                if vertex_module_name.startswith(BlockType.MODULE) and origin_module_name.startswith(BlockType.MODULE):
+                    split_module_name = vertex_module_name.split('.')[1]
+                    if origin_module_name.startswith(f'{BlockType.MODULE}.{split_module_name}'):
+                        common_prefix = f"{common_prefix} {BlockType.MODULE}.{split_module_name}"
+
             if len(common_prefix) > len(longest_common_prefix):
                 vertex_index_with_longest_common_prefix = vertex_index
                 longest_common_prefix = common_prefix
                 vertices_with_longest_common_prefix = [(vertex_index, vertex)]
             elif len(common_prefix) == len(longest_common_prefix):
                 vertices_with_longest_common_prefix.append((vertex_index, vertex))
-                if origin_vertex_index is not None:
-                    vertex_module_name = vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS, '')
-                    origin_module_name = self.vertices[origin_vertex_index].attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS, '')
-                    if vertex_module_name.startswith(BlockType.MODULE) and origin_module_name.startswith(BlockType.MODULE):
-                        split_module_name = vertex_module_name.split('.')[1]
-                        if origin_module_name.startswith(f'{BlockType.MODULE}.{split_module_name}'):
-                            vertex_index_with_longest_common_prefix = vertex_index
+
         if len(vertices_with_longest_common_prefix) <= 1:
             return vertex_index_with_longest_common_prefix
 
