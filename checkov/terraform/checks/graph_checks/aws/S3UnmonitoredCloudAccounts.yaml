@@ -1,0 +1,17 @@
+metadata:
+  id: "CKV2_AWS_68"
+  name: "Ensure AWS S3 buckets are not accessible to unmonitored cloud accounts"
+  category: "IAM"
+definition:
+  or:
+    - cond_type: attribute
+      resource_types:
+        - aws_s3_bucket_acl
+      attribute: $.access_control_policy[*].grant[*].grantee.id
+      operator: jsonpath_not_exists
+    - cond_type: attribute
+      resource_types:
+        - aws_s3_bucket_acl
+      attribute: $.access_control_policy[*].grant[*].grantee.id
+      operator: jsonpath_equals
+      value: "c4c1ede66af53448b93c283ce9448c4ba468c9432aa01d700d3878632f77d2d0"
