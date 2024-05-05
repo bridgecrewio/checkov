@@ -2,7 +2,7 @@ import unittest
 
 import hcl2
 
-from checkov.terraform.checks.resource.azure.FunctionAppsEnableAuthentication import check
+from checkov.arm.checks.resource.FunctionAppsEnableAuthentication import check
 from checkov.common.models.enums import CheckResult
 
 
