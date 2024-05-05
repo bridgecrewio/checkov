@@ -56,7 +56,7 @@ class TestSarifReport(unittest.TestCase):
         self.assertDictEqual(
             sarif.json,
             {
-                "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/main/sarif-2.1/schema/sarif-schema-2.1.0.json",
+                "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
                 "version": "2.1.0",
                 "runs": [
                     {
@@ -345,7 +345,7 @@ class TestSarifReport(unittest.TestCase):
         self.assertDictEqual(
             sarif.json,
             {
-                "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/main/sarif-2.1/schema/sarif-schema-2.1.0.json",
+                "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
                 "version": "2.1.0",
                 "runs": [
                     {
