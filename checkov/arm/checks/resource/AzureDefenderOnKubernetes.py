@@ -31,5 +31,4 @@ class AzureDefenderOnKubernetes(BaseResourceCheck):
 
 
 
-
 check = AzureDefenderOnKubernetes()

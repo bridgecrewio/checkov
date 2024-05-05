@@ -10,6 +10,7 @@
         ]
     }
 },
+
 "resources": [
     {
         "type": "Microsoft.Security/pricings",
