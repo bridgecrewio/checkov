@@ -89,4 +89,3 @@ botocore = "==1.34.25"
 
 [requires]
 python_version = "3.8"
-
