@@ -26,7 +26,7 @@
     {
         "type": "Microsoft.Security/pricings",
         "apiVersion": "2018-06-01",
-        "name": "KubernetesService",
+        "name": "KeyVaults",
         "dependsOn": [
             "[concat('Microsoft.Security/pricings/SqlServers')]"
         ],
@@ -37,7 +37,7 @@
     {
         "type": "Microsoft.Security/pricings",
         "apiVersion": "2018-06-01",
-        "name": "KubernetesService",
+        "name": "SqlServerVirtualMachines",
         "dependsOn": [
             "[concat('Microsoft.Security/pricings/AppServices')]"
         ],
