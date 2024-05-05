@@ -56,7 +56,7 @@ class TestSarifReport(unittest.TestCase):
         self.assertDictEqual(
             sarif.json,
             {
-                "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+                "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/main/sarif-2.1/schema/sarif-schema-2.1.0.json",
                 "version": "2.1.0",
                 "runs": [
                     {
@@ -345,7 +345,7 @@ class TestSarifReport(unittest.TestCase):
         self.assertDictEqual(
             sarif.json,
             {
-                "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+                "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/main/sarif-2.1/schema/sarif-schema-2.1.0.json",
                 "version": "2.1.0",
                 "runs": [
                     {
@@ -398,7 +398,7 @@ class TestSarifReport(unittest.TestCase):
 
 def get_sarif_schema() -> dict[str, Any]:
     file_name, headers = urllib.request.urlretrieve(
-        "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Documents/CommitteeSpecifications/2.1.0/sarif-schema-2.1.0.json"
+        "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/main/sarif-2.1/schema/sarif-schema-2.1.0.json"
     )
     with open(file_name, "r") as file:
         schema = json.load(file)
