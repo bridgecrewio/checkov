@@ -317,7 +317,7 @@ def test_sarif_output(sca_package_report_2_with_skip_scope_function):
     # then
     sarif_output["runs"][0]["tool"]["driver"]["version"] = "2.0.x"
     expected_sarif_json = {
-        "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/main/sarif-2.1/schema/sarif-schema-2.1.0.json",
+        "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
         "version": "2.1.0",
         "runs": [
             {
