@@ -5,14 +5,11 @@
         {
             "type": "Microsoft.Web/sites",
             "apiVersion": "2021-02-01",
-            "name": "pass",
+            "name": "fail",
             "properties": {
                 "publisherEmail": "[parameters('adminEmail')]",
                 "publisherName": "[parameters('organizationName')]",
                 "customProperties": "[parameters('customProperties')]"
-            },
-            "auth_settings": {
-                "enabled": true
             },
             "resources": [],
             "dependsOn": []
