@@ -1,0 +1,48 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "pricing": {
+      "type": "string",
+      "allowedValues": [
+        "Standard",
+        "Free"
+      ]
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Security/pricings",
+      "apiVersion": "2018-06-01",
+      "name": "KeyVaults",
+      "dependsOn": [
+        "[concat('Microsoft.Security/pricings/default')]"
+      ],
+      "properties": {
+        "pricingTier": "Standard"
+      }
+    },
+    {
+      "type": "Microsoft.Security/pricings",
+      "apiVersion": "2018-06-01",
+      "name": "KubernetesService",
+      "dependsOn": [
+        "[concat('Microsoft.Security/pricings/SqlServers')]"
+      ],
+      "properties": {
+        "pricingTier": "Free"
+      }
+    },
+    {
+      "type": "Microsoft.Security/pricings",
+      "apiVersion": "2018-06-01",
+      "name": "ContainerRegistry",
+      "dependsOn": [
+        "[concat('Microsoft.Security/pricings/AppServices')]"
+      ],
+      "properties": {
+        "pricingTier": "Free"
+      }
+    }
+  ]
+}
