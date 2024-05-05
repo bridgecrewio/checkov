@@ -17,8 +17,8 @@
         "administratorLoginPassword": "admin123",
         "storageProfile": {
           "storageMB": "5120"
-        ,"publicNetworkAccess": "True"
-      }
+      },
+
       }
     }
   ]
