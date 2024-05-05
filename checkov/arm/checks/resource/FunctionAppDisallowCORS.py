@@ -1,3 +1,5 @@
+from typing import List
+
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.arm.base_resource_negative_value_check import BaseResourceNegativeValueCheck
 
@@ -21,3 +23,4 @@ class FunctionAppDisallowCORS(BaseResourceNegativeValueCheck):
 
 
 check = FunctionAppDisallowCORS()
+
