@@ -15,7 +15,7 @@ class StorageAccountMinimumTlsVersion(BaseResourceCheck):
             :return: <CheckResult>
         """
         name = "Ensure Storage Account is using the latest version of TLS encryption"
-        id = "CKV_AZURE_236"
+        id = "CKV_AZURE_44"
         supported_resources = ('Microsoft.Storage/storageAccounts',)
         categories = (CheckCategories.NETWORKING,)
 

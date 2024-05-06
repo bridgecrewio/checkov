@@ -1,0 +1,15 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_166
+  name: Ensure Backup Vault is encrypted at rest using KMS CMK
+  category: LOGGING
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  pattern: new $AWS.CfnBackupVault(<ANY>)
+  conditions:
+    - not_pattern: |
+        new $AWS.CfnBackupVault(<ANY>, { <ANY>, encryptionKeyArn: $ARG, <ANY>}, <ANY>)

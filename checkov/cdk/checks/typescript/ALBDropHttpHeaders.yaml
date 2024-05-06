@@ -1,0 +1,21 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_131
+  name: Ensure that ALB drops HTTP headers
+  category: NETWORKING
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  pattern: new $AWS.CfnLoadBalancer(<ANY>)
+  conditions:
+    - not_pattern: |
+        new $AWS.CfnLoadBalancer(<ANY>, { <ANY>, type: 'application', <ANY>, loadBalancerAttributes: [<ANY>, {'key': 'routing.http.drop_invalid_header_fields.enabled', 'value': 'true'} ,<ANY>] }, <ANY>)
+    - not_pattern: |
+        new $AWS.CfnLoadBalancer(<ANY>, { <ANY>, type: 'application', <ANY>, loadBalancerAttributes: [<ANY>, {'value': 'true', 'key': 'routing.http.drop_invalid_header_fields.enabled'} ,<ANY>] }, <ANY>)
+    - not_pattern: |
+        new $AWS.CfnLoadBalancer(<ANY>, { <ANY>, loadBalancerAttributes: [<ANY>, {'key': 'routing.http.drop_invalid_header_fields.enabled', 'value': 'true'} ,<ANY>], <ANY>, type: 'application' }, <ANY>)
+    - not_pattern: |
+        new $AWS.CfnLoadBalancer(<ANY>, { <ANY>, loadBalancerAttributes: [<ANY>, {'value': 'true', 'key': 'routing.http.drop_invalid_header_fields.enabled'} ,<ANY>], <ANY>, type: 'application' }, <ANY>)
