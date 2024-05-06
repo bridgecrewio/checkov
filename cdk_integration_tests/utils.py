@@ -33,7 +33,6 @@ def load_failed_checks_from_file(lang: str) -> Dict[str, List[Dict[str, Any]]]:
     return {}
 
 
-
 def is_policy_with_correct_check_id(check_id: str, language: str, policy_name: str) -> bool:
     path = os.path.join(current_dir, '..', 'checkov', 'cdk', 'checks', language, policy_name + ".yaml")
     with open(path, 'r') as file:
