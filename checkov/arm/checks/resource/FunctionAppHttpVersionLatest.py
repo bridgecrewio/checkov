@@ -21,3 +21,5 @@ class FunctionAppHttpVersionLatest(BaseResourceValueCheck):
 
 check = FunctionAppHttpVersionLatest()
 
+
+
