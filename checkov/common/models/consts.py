@@ -27,8 +27,9 @@ SCANNABLE_PACKAGE_FILES = SUPPORTED_PACKAGE_FILES | DEPENDENCY_TREE_SUPPORTED_FI
 SAST_SUPPORTED_FILE_EXTENSIONS = {
     SastLanguages.JAVA: ['.java'],
     SastLanguages.JAVASCRIPT: ['.js'],
+    SastLanguages.TYPESCRIPT: ['.ts'],
     SastLanguages.PYTHON: ['.py'],
-    SastLanguages.TYPESCRIPT: ['.ts']
+    SastLanguages.GOLANG: ['.go']
 }
 
 ANY_VALUE = "CKV_ANY"

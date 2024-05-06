@@ -3,7 +3,7 @@ from __future__ import annotations
 import itertools
 import json
 import logging
-from typing import Optional, Tuple, Dict, List, Any, cast
+from typing import Any, Dict, List, Optional, Tuple, cast
 
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.parsers.node import ListNode
@@ -250,7 +250,7 @@ def _find_child_modules(
                     (
                         module_call_resource
                         for module_call_resource in module_call_resources
-                        if f"{module_address}.{module_call_resource['address']}" == resource["address"]
+                        if f"{module_address}.{module_call_resource['address']}" == (resource["address"].rsplit('[', 1)[0] if resource["address"][-1] == "]" else resource["address"])
                     ),
                     None
                 )
@@ -278,6 +278,33 @@ def _get_module_call_resources(module_address: str, root_module_conf: dict[str, 
         root_module_conf = root_module_conf.get("module_calls", {}).get(module_name, {}).get("module", {})
 
     return cast("list[dict[str, Any]]", root_module_conf.get("resources", []))
+
+
+def _is_provider_key(key: str) -> bool:
+    """key is a valid provider"""
+    return (key.startswith('module.') or key.startswith('__') or key in {'start_line', 'end_line'})
+
+
+def _get_provider(template: dict[str, dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    """Returns the provider dict"""
+
+    provider_map: dict[str, dict[str, Any]] = {}
+    provider_config = template.get("configuration", {}).get("provider_config")
+
+    if provider_config and isinstance(provider_config, dict):
+        for provider_key, provider_data in provider_config.items():
+            if _is_provider_key(key=provider_key):
+                # Not a provider, skip
+                continue
+            provider_map[provider_key] = {}
+            for field, value in provider_data.get('expressions', {}).items():
+                if field in LINE_FIELD_NAMES or not isinstance(value, dict):
+                    continue  # don't care about line #s or non dicts
+                expression_value = value.get('constant_value', None)
+                if expression_value:
+                    provider_map[provider_key][field] = expression_value
+
+    return provider_map
 
 
 def _get_resource_changes(template: dict[str, Any]) -> dict[str, dict[str, Any]]:
@@ -331,10 +358,14 @@ def parse_tf_plan(tf_plan_file: str, out_parsing_errors: Dict[str, str]) -> Tupl
     :type tf_plan_file: str - path to plan file
     :rtype: tf_definition dictionary and template_lines of the plan file
     """
-    tf_definition: Dict[str, Any] = {"resource": [], "data": []}
+    tf_definition: Dict[str, Any] = {"provider": [], "resource": [], "data": []}
     template, template_lines = parse(tf_plan_file, out_parsing_errors)
     if not template:
         return None, None
+
+    provider = _get_provider(template=template)
+    if bool(provider):
+        tf_definition["provider"].append(provider)
 
     resource_changes = _get_resource_changes(template=template)
 
