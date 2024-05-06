@@ -1,0 +1,65 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "siteName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Azure Web App."
+      }
+    },
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "The Azure region where the resource should be deployed."
+      }
+    },
+    "sku": {
+      "type": "string",
+      "defaultValue": "Free",
+      "allowedValues": [
+        "Free",
+        "Shared",
+        "Basic",
+        "Standard",
+        "Premium"
+      ],
+      "metadata": {
+        "description": "The pricing tier of the Azure Web App."
+      }
+    },
+    "appServicePlanName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the App Service Plan to use."
+      }
+    },
+    "enableNonSslPort": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Indicates whether non-SSL port is enabled for the Redis Cache."
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Cache/Redis",
+      "apiVersion": "2019-08-01",
+      "name": "fail",
+      "location": "[parameters('location')]",
+      "properties": {
+        "name": "[parameters('siteName')]",
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]",
+        "minimumTlsVersion": "1.2",
+        "enableNonSSLPort": true
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]"
+      ],
+      "sku": {
+        "name": "[parameters('sku')]"
+      }
+    }
+  ]
+}
