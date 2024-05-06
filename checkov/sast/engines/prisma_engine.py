@@ -307,6 +307,9 @@ class PrismaEngine(SastEngine):
         logging.debug("Printing Prisma-SAST profiling data")
         logging.debug(prisma_report.profiler)
         reports: List[SastReport] = []
+        print("kkkkkkkeys")
+        print(list(prisma_report.rule_match.keys()))
+        print("kkkkkkkeys")
         for lang, checks in prisma_report.rule_match.items():
             sast_report = PrismaReport(rule_match={lang: checks}, errors=prisma_report.errors, profiler=prisma_report.profiler,
                                        run_metadata=prisma_report.run_metadata, imports={}, reachability_report={},
