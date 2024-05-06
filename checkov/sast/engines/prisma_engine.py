@@ -104,8 +104,6 @@ class PrismaEngine(SastEngine):
             'report_reachability': registry.runner_filter.report_sast_reachability if registry.runner_filter else False,
             'cdk_languages': cdk_languages
         }
-        print("lib input")
-        print(library_input)
         prisma_result = self.run_go_library(**library_input)
 
         return prisma_result
@@ -165,9 +163,6 @@ class PrismaEngine(SastEngine):
                 cli_file_name_path.touch(exist_ok=True)
                 cli_file_name_path.write_bytes(response.content)
                 cli_file_name_path.chmod(cli_file_name_path.stat().st_mode | stat.S_IEXEC | stat.S_IREAD)
-                print("naor")
-                print(cli_file_name_path)
-                print("naor")
                 logging.debug("sast artifacts downloaded")
             return True
         except Exception:
@@ -249,9 +244,6 @@ class PrismaEngine(SastEngine):
                 "version": bc_integration.bc_source_version
             }
         }
-        print("document scan code params")
-        print(document.get("scan_code_params"))
-        print("document")
 
         if list_policies:
             return self.run_go_library_list_policies(document)
@@ -316,9 +308,6 @@ class PrismaEngine(SastEngine):
         logging.debug(prisma_report.profiler)
         reports: List[SastReport] = []
         for lang, checks in prisma_report.rule_match.items():
-            print("lang")
-            print(lang)
-            print("lang")
             sast_report = PrismaReport(rule_match={lang: checks}, errors=prisma_report.errors, profiler=prisma_report.profiler,
                                        run_metadata=prisma_report.run_metadata, imports={}, reachability_report={},
                                        skipped_checks_by_file=prisma_report.skipped_checks_by_file)
@@ -381,13 +370,7 @@ class PrismaEngine(SastEngine):
                 report.sast_reachability = prisma_report.reachability_report[lang]
                 reports.append(report)
 
-        print("yoooo")
-        print(len(reports))
-        print("yoooo")
         all_report = self._split_sast_cdk_reports(reports)
-        print("naor")
-        print(len(all_report))
-        print("naor")
         return all_report
 
     def _split_sast_cdk_reports(self, sast_reports: List[SastReport]) -> List[Union[SastReport, CDKReport]]:

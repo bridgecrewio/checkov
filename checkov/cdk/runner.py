@@ -49,7 +49,4 @@ class CdkRunner(SastRunner):
             if report.check_type.startswith('cdk'):
                 reports_to_keep.append(report)
 
-        print("achiaachia")
-        print(len(reports_to_keep))
-        print("achiaachia")
         return reports_to_keep

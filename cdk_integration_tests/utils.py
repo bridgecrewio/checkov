@@ -11,7 +11,6 @@ def load_failed_checks_from_file(lang: str) -> Dict[str, List[Dict[str, Any]]]:
     report_path = os.path.join(current_dir, '..', 'checkov_report_cdk.json')
     with open(report_path) as f:
         data = f.read()
-        print(data)
         reports = json.loads(data)
         for report in reports:
             if report.get('check_type') == f'cdk_{lang}':
