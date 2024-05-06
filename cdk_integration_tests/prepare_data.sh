@@ -19,9 +19,6 @@
 #  fi
 #done
 
-export ENABLE_SAST_TYPESCRIPT="true"
-
-
 echo "creating report for CDK"
 pipenv run checkov -s --framework cdk --repo-id cli/cdk -o json \
         -d "cdk_integration_tests/src" > "checkov_report_cdk.json"
