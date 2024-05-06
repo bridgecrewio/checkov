@@ -1,0 +1,25 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_2
+  name: Ensure EFS is securely encrypted
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  pattern: new $AWS.CfnListener(<ANY>)
+  conditions:
+    - not_pattern: |
+        new $AWS.CfnListener(<ANY>, { <ANY>, protocol: 'HTTPS', <ANY> }, <ANY>)
+    - not_pattern: |
+        new $AWS.CfnListener(<ANY>, { <ANY>, protocol: 'TLS', <ANY> }, <ANY>)
+    - not_pattern: |
+        new $AWS.CfnListener(<ANY>, { <ANY>, protocol: 'TCP', <ANY> }, <ANY>)
+    - not_pattern: |
+        new $AWS.CfnListener(<ANY>, { <ANY>, protocol: 'UDP', <ANY> }, <ANY>)
+    - not_pattern: |
+        new $AWS.CfnListener(<ANY>, { <ANY>, protocol: 'TCP_UDP', <ANY> }, <ANY>)
+    - not_pattern: |
+        new $AWS.CfnListener(<ANY>, { defaultActions: [<ANY>, {type: 'redirect', redirectConfig:{protocol: 'HTTPS'}} , <ANY>] }, <ANY>)
