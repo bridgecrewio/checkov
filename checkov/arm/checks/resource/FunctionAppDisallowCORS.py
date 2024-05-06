@@ -2,6 +2,7 @@ from typing import List, Any
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.arm.base_resource_negative_value_check import BaseResourceNegativeValueCheck
 
+
 class FunctionAppDisallowCORS(BaseResourceNegativeValueCheck):
 
     def __init__(self) -> None:
@@ -18,5 +19,6 @@ class FunctionAppDisallowCORS(BaseResourceNegativeValueCheck):
 
     def get_forbidden_values(self) -> List[Any]:
         return ["*"]
+
 
 check = FunctionAppDisallowCORS()
