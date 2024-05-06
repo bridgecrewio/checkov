@@ -14,11 +14,12 @@ class MSSQLServerMinTLSVersion(BaseResourceValueCheck):
                          supported_resources=supported_resources,
                          missing_block_result=CheckResult.FAILED,)
 
-    def get_inspected_key(self):
+    def get_inspected_key(self) -> str:
         return "properties/minimalTlsVersion"
 
-    def get_expected_value(self):
+    def get_expected_value(self) -> str:
         return "1.2"
 
 
 check = MSSQLServerMinTLSVersion()
+
