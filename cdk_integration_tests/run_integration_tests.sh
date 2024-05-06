@@ -15,10 +15,10 @@ set_env_vars() {
   export BC_API_KEY=""
   export LOG_LEVEL=DEBUG
   export PRISMA_API_URL="https://api0.prismacloud.io"
-  export ENABLE_SAST_TYPESCRIPT="true"
 }
 
 prepare_data () {
+  export ENABLE_SAST_TYPESCRIPT="true"
   echo "creating report for CDK"
   python checkov/main.py -s --framework cdk --repo-id prisma/cdk -o json \
     -d "cdk_integration_tests/src" > "checkov_report_cdk.json"
