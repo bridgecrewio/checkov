@@ -261,9 +261,6 @@ class PrismaEngine(SastEngine):
         # convert our byte array to a string
         analyze_code_string = analyze_code_bytes.decode('utf-8')
         d = json.loads(analyze_code_string)
-        print("DDDDD")
-        print(list(d.keys()))
-        print("DDDDD")
 
         try:
             result = self.create_prisma_report(d)
@@ -310,9 +307,6 @@ class PrismaEngine(SastEngine):
         logging.debug("Printing Prisma-SAST profiling data")
         logging.debug(prisma_report.profiler)
         reports: List[SastReport] = []
-        print("kkkkkkkeys")
-        print(list(prisma_report.rule_match.keys()))
-        print("kkkkkkkeys")
         for lang, checks in prisma_report.rule_match.items():
             sast_report = PrismaReport(rule_match={lang: checks}, errors=prisma_report.errors, profiler=prisma_report.profiler,
                                        run_metadata=prisma_report.run_metadata, imports={}, reachability_report={},
