@@ -11,10 +11,10 @@ class AppServiceJavaVersion(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,
                          missing_block_result=CheckResult.UNKNOWN)
 
-    def get_inspected_key(self):
+    def get_inspected_key(self) -> str:
         return "site_config/java_version"
 
-    def get_expected_value(self):
+    def get_expected_value(self) -> str:
         return '17'
 
 
