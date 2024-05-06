@@ -348,7 +348,7 @@ jobs:
           LOG_LEVEL: INFO
           BC_API_KEY: ${{ secrets.PRISMA_KEY_API2 }}
           PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
-          ENABLE_SAST_TYPESCRIPT: true
+          ENABLE_SAST_TYPESCRIPT: "true"
         if: env.BC_API_KEY != null
         run: bash -c './cdk_integration_tests/prepare_data.sh'
       - name: Run integration tests
@@ -391,7 +391,7 @@ jobs:
           LOG_LEVEL: INFO
           BC_API_KEY: ${{ secrets.PRISMA_KEY_API2 }}
           PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
-          ENABLE_SAST_TYPESCRIPT: true
+          ENABLE_SAST_TYPESCRIPT: "true"
         if: env.BC_API_KEY != null
         run: bash -c './cdk_integration_tests/prepare_data.sh'
       - name: Run integration tests
