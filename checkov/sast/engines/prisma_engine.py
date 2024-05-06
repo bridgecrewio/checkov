@@ -32,6 +32,7 @@ from checkov.common.sast.report_types import PrismaReport, RuleMatch, create_emp
 from checkov.sast.record import SastRecord
 from checkov.sast.report import SastReport
 from checkov.cdk.report import CDKReport
+from checkov.sast.engines.files_filter_manager import FilesFilterManager
 
 logger = logging.getLogger(__name__)
 
@@ -84,6 +85,11 @@ class PrismaEngine(SastEngine):
 
         check_threshold, skip_check_threshold = self.get_check_thresholds(registry)
 
+        skip_paths = registry.runner_filter.excluded_paths if registry.runner_filter else []
+
+        files_filter_manager = FilesFilterManager(targets, languages)
+        skip_paths += files_filter_manager.get_files_to_filter()
+
         library_input: LibraryInput = {
             'languages': languages,
             'source_codes': targets,
@@ -92,7 +98,7 @@ class PrismaEngine(SastEngine):
             'skip_checks': registry.runner_filter.skip_checks if registry.runner_filter else [],
             'check_threshold': check_threshold,
             'skip_check_threshold': skip_check_threshold,
-            'skip_path': registry.runner_filter.excluded_paths if registry.runner_filter else [],
+            'skip_path': skip_paths,
             'report_imports': registry.runner_filter.report_sast_imports if registry.runner_filter else False,
             'remove_default_policies': registry.runner_filter.remove_default_sast_policies if registry.runner_filter else False,
             'report_reachability': registry.runner_filter.report_sast_reachability if registry.runner_filter else False,
@@ -322,7 +328,9 @@ class PrismaEngine(SastEngine):
                     metadata = match.metadata
 
                     if self.enable_inline_suppressions and any(skipped_check.check_id == match_rule.check_id for skipped_check in prisma_report.skipped_checks_by_file.get(file_abs_path, [])):
-                        check_result = _CheckResult(result=CheckResult.SKIPPED)
+                        check_result = _CheckResult(
+                            result=CheckResult.SKIPPED,
+                            suppress_comment=next(skipped_check.suppress_comment for skipped_check in prisma_report.skipped_checks_by_file.get(file_abs_path, []) if skipped_check.check_id == match_rule.check_id))
                     else:
                         check_result = _CheckResult(result=CheckResult.FAILED)
                     record = SastRecord(check_id=check_id, check_name=check_name, resource="", evaluations={},
