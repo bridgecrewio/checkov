@@ -12,7 +12,7 @@
                 "customProperties": "[parameters('customProperties')]"
             },
             "site_config": {
-                "java_version": "11"
+                "java_version": "17"
             },
             "resources": [],
             "dependsOn": []
