@@ -163,6 +163,9 @@ class PrismaEngine(SastEngine):
                 cli_file_name_path.touch(exist_ok=True)
                 cli_file_name_path.write_bytes(response.content)
                 cli_file_name_path.chmod(cli_file_name_path.stat().st_mode | stat.S_IEXEC | stat.S_IREAD)
+                print("naor")
+                print(cli_file_name_path)
+                print("naor")
                 logging.debug("sast artifacts downloaded")
             return True
         except Exception:
