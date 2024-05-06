@@ -104,6 +104,8 @@ class PrismaEngine(SastEngine):
             'report_reachability': registry.runner_filter.report_sast_reachability if registry.runner_filter else False,
             'cdk_languages': cdk_languages
         }
+        print("lib input")
+        print(json.dumps(library_input, indent=2))
         prisma_result = self.run_go_library(**library_input)
 
         return prisma_result
