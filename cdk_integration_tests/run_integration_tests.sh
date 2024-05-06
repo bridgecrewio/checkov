@@ -15,6 +15,7 @@ set_env_vars() {
   export BC_API_KEY=""
   export LOG_LEVEL=DEBUG
   export PRISMA_API_URL="https://api0.prismacloud.io"
+  export ENABLE_SAST_TYPESCRIPT="true"
 }
 
 prepare_data () {
