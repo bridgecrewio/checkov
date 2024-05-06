@@ -105,7 +105,7 @@ class PrismaEngine(SastEngine):
             'cdk_languages': cdk_languages
         }
         print("lib input")
-        print(json.dumps(library_input, indent=2))
+        print(library_input)
         prisma_result = self.run_go_library(**library_input)
 
         return prisma_result
