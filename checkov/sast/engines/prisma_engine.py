@@ -262,7 +262,7 @@ class PrismaEngine(SastEngine):
         analyze_code_string = analyze_code_bytes.decode('utf-8')
         d = json.loads(analyze_code_string)
         print("DDDDD")
-        print(json.dumps(d, indent=2))
+        print(list(d.keys()))
         print("DDDDD")
 
         try:
