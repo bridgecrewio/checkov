@@ -249,8 +249,8 @@ class PrismaEngine(SastEngine):
                 "version": bc_integration.bc_source_version
             }
         }
-        print("document")
-        print(document.get("scan_code_params").get(cdk_languages))
+        print("document scan code params")
+        print(document.get("scan_code_params"))
         print("document")
 
         if list_policies:
