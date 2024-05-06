@@ -10,7 +10,7 @@ ACCEPTED_VALUES = (
 
 class DocDBAuditLogs(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure DocDB has audit logs enabled"
+        name = "Ensure DocumentDB has audit logs enabled"
         id = "CKV_AWS_104"
         supported_resources = ("aws_docdb_cluster_parameter_group",)
         categories = (CheckCategories.LOGGING,)

@@ -2,7 +2,7 @@ metadata:
   version: 0.2
   approach: define failing
   id: CKV_AWS_86
-  name: Ensure Cloudfront distribution has Access Logging enabled
+  name: Ensure CloudFront distribution has Access Logging enabled
   category: LOGGING
   framework: cdk
 scope:

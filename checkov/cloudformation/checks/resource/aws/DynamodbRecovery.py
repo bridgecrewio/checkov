@@ -4,7 +4,7 @@ from checkov.cloudformation.checks.resource.base_resource_value_check import Bas
 
 class DynamodbRecovery(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure Dynamodb point in time recovery (backup) is enabled"
+        name = "Ensure DynamoDB point in time recovery (backup) is enabled"
         id = "CKV_AWS_28"
         supported_resources = ['AWS::DynamoDB::Table']
         categories = [CheckCategories.BACKUP_AND_RECOVERY]

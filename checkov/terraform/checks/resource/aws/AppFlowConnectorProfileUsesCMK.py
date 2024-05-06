@@ -5,7 +5,7 @@ from checkov.common.models.consts import ANY_VALUE
 
 class AppFlowConnectorProfileUsesCMK(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure App Flow connector profile uses CMK"
+        name = "Ensure AppFlow connector profile uses CMK"
         id = "CKV_AWS_264"
         supported_resources = ['aws_appflow_connector_profile']
         categories = [CheckCategories.ENCRYPTION]

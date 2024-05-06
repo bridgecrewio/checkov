@@ -228,7 +228,13 @@ def test_tf_definitions_and_breadcrumbs():
         ({"test_key": ["${test_val}"]}, {"test_val": True}, {"test_key": [True]}, ['test_key']),
         ({"test_key": {"a": "${test_val}"}}, {"test_val": "new_val"}, {"test_key": {"a": "new_val"}}, ['test_key.a']),
         ({"test_key": {"a": {"b": "${test_val}"}}}, {"test_val": "new_val"}, {"test_key": {"a": {"b": "new_val"}}}, ['test_key.a.b']),
-        ({'ports': '${each.value.port}', 'protocol': 'tcp'}, {'each.value': {'name': 'name-open-ssh', 'port': '22', 'range': '0.0.0.0/0', 'tag': 'allow-ssh'}}, {'ports': '22', 'protocol': 'tcp'}, ['ports'])
+        ({'ports': '${each.value.port}', 'protocol': 'tcp'}, {'each.value': {'name': 'name-open-ssh', 'port': '22', 'range': '0.0.0.0/0', 'tag': 'allow-ssh'}}, {'ports': '22', 'protocol': 'tcp'}, ['ports']),
+        (
+                {"tags": ["${try(merge(var.tags,{'product_owner': '${each.value.product_owner}'}),var.tags,{'git_commit': 'aaaaa', 'git_file': 'main.tf'})}"]},
+                {'each.value': {'name': 'security', 'product_owner': 'barak@gmail.com'}, 'each.key': 'security'},
+                {"tags": ["${try(merge(var.tags,{'product_owner': 'barak@gmail.com'}),var.tags,{'git_commit': 'aaaaa', 'git_file': 'main.tf'})}"]},
+                ["tags"]
+        )
     ]
 )
 def test_update_attrs(attrs, k_v_to_change, expected_attrs, expected_res):
@@ -414,6 +420,13 @@ def test_foreach_with_lookup():
     graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
     assert graph.vertices[0].attributes.get('uniform_bucket_level_access') == [True]
     assert graph.vertices[1].attributes.get('uniform_bucket_level_access') == [True]
+
+
+@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
+def test_foreach_large_count_with_nested_module(checkov_source_path):
+    dir_name = 'os_example_large_count_with_nested_module'
+    graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
+    assert len(graph.vertices) == 85
 
 
 def test__get_tf_module_with_no_foreach():

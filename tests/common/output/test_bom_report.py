@@ -41,7 +41,7 @@ class TestBomOutput:
         with open(iac_file_path) as file:
             content = file.readlines()
             header = content[:1][0]
-            assert 'Resource,Path,Git Org,Git Repository,Misconfigurations,Severity\n' == header
+            assert 'Resource,Path,Git Org,Git Repository,Misconfigurations,Severity,Policy title,Guideline\n' == header
             rows = content[1:]
             assert 'aws_s3_bucket' in rows[0]
 

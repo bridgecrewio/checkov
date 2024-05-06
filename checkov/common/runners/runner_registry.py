@@ -8,9 +8,11 @@ import os
 import re
 import platform
 import sys
+import time
 
 from collections import defaultdict
 from collections.abc import Iterable
+from io import StringIO
 from pathlib import Path
 from typing import List, Dict, Any, Optional, cast, TYPE_CHECKING, Type, Literal
 from checkov.common.bridgecrew.check_type import CheckType
@@ -27,6 +29,7 @@ from checkov.common.bridgecrew.integration_features.integration_feature_registry
 from checkov.common.bridgecrew.platform_errors import ModuleNotEnabledError
 from checkov.common.bridgecrew.severities import Severities
 from checkov.common.images.image_referencer import ImageReferencer
+from checkov.common.logger_streams import logger_streams
 from checkov.common.models.enums import ErrorStatus, ParallelizationType
 from checkov.common.output.csv import CSVSBOM
 from checkov.common.output.cyclonedx import CycloneDX
@@ -45,6 +48,7 @@ from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.json_utils import CustomJSONEncoder
 from checkov.common.util.secrets_omitter import SecretsOmitter
 from checkov.common.util.type_forcers import convert_csv_string_arg_to_list, force_list
+from checkov.logging_init import log_stream, erase_log_stream
 from checkov.sca_image.runner import Runner as image_runner
 from checkov.common.secrets.consts import SECRET_VALIDATION_STATUSES
 from checkov.terraform.context_parsers.registry import parser_registry
@@ -145,7 +149,6 @@ class RunnerRegistry:
             # then raise a clear error
             # if some frameworks are disabled and the user used --framework, log a warning so they see it
             # if some frameworks are disabled and the user did not use --framework, then log at a lower level so that we have it for troubleshooting
-            frameworks_specified = self.runner_filter.framework and 'all' not in self.runner_filter.framework
             if not valid_runners:
                 runners_categories = os.linesep.join([f'{runner.check_type}: {self.licensing_integration.get_subscription_for_runner(runner.check_type).name}' for runner in invalid_runners])
                 error_message = f'All the frameworks are disabled because they are not enabled in the platform. ' \
@@ -153,8 +156,10 @@ class RunnerRegistry:
                 logging.error(error_message)
                 raise ModuleNotEnabledError(error_message)
             elif invalid_runners:
-                level = logging.WARNING if frameworks_specified else logging.INFO
                 for runner in invalid_runners:
+                    level = logging.INFO
+                    if runner.check_type in self.runner_filter.framework_flag_values:
+                        level = logging.WARNING
                     logging.log(level, f'The framework "{runner.check_type}" is part of the "{self.licensing_integration.get_subscription_for_runner(runner.check_type).name}" module, which is not enabled in the platform')
 
             valid_runners = self._merge_runners(valid_runners)
@@ -170,8 +175,13 @@ class RunnerRegistry:
             full_check_type_to_resource_subgraph_map = {}
             for result in parallel_runner_results:
                 if result is not None:
-                    report, check_type, graphs, resource_subgraph_map = result
+                    report, check_type, graphs, resource_subgraph_map, subprocess_log_stream = result
                     reports.append(report)
+                    if subprocess_log_stream is not None:
+                        # only sub processes need to add their logs streams,
+                        # the logs of all others methods already exists in the main stream
+                        if parallel_runner.running_as_process():
+                            logger_streams.add_stream(f'{check_type or time.time()}', subprocess_log_stream)
                     if check_type is not None:
                         if graphs is not None:
                             full_check_type_to_graph[check_type] = graphs
@@ -453,6 +463,9 @@ class RunnerRegistry:
 
             if (bc_integration.runtime_run_config_response and bc_integration.runtime_run_config_response.get('isRepoInRuntime', False)):
                 cli_output += f"The '{bc_integration.repo_id}' repository was discovered In a running environment\n\n"
+
+            if len(cli_reports) > 0:
+                cli_output += cli_reports[0].add_errors_to_output()
 
             for report in cli_reports:
                 cli_output += report.print_console(
@@ -810,7 +823,11 @@ def _parallel_run(
     runner_filter: RunnerFilter | None = None,
     collect_skip_comments: bool = True,
     platform_integration_data: dict[str, Any] | None = None,
-) -> tuple[Report | list[Report], str | None, list[tuple[LibraryGraph, str | None]] | None, dict[str, str] | None]:
+) -> tuple[Report | list[Report], str | None, list[tuple[LibraryGraph, str | None]] | None, dict[str, str] | None, StringIO | None]:
+    # only sub processes need to erase their logs, to start clean
+    if parallel_runner.running_as_process():
+        erase_log_stream()
+
     if platform_integration_data:
         # only happens for 'ParallelizationType.SPAWN'
         bc_integration.init_instance(platform_integration_data=platform_integration_data)
@@ -828,5 +845,5 @@ def _parallel_run(
         report = Report(check_type=runner.check_type)
 
     if runner.graph_manager:
-        return report, runner.check_type, RunnerRegistry.extract_graphs_from_runner(runner), runner.resource_subgraph_map
-    return report, None, None, None
+        return report, runner.check_type, RunnerRegistry.extract_graphs_from_runner(runner), runner.resource_subgraph_map, log_stream
+    return report, runner.check_type, None, None, log_stream

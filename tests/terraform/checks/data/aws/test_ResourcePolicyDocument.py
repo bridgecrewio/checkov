@@ -7,6 +7,11 @@ from checkov.terraform.runner import Runner
 
 
 class TestResourcePolicyDocument(unittest.TestCase):
+    def setUp(self):
+        from checkov.terraform.checks.utils.base_cloudsplaining_iam_scanner import BaseTerraformCloudsplainingIAMScanner
+        # needs to be reset, because the cache belongs to the class not instance
+        BaseTerraformCloudsplainingIAMScanner.policy_document_cache = {}
+
     def test(self):
         test_files_dir = Path(__file__).parent / "example_ResourcePolicyDocument"
 
@@ -26,6 +31,8 @@ class TestResourcePolicyDocument(unittest.TestCase):
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
+        print("passed_check_resources")
+        print(passed_check_resources)
         self.assertEqual(summary["passed"], len(passing_resources))
         self.assertEqual(summary["failed"], len(failing_resources))
         self.assertEqual(summary["skipped"], 0)

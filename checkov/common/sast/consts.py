@@ -1,5 +1,12 @@
 from enum import Enum
 from typing import List, Any, Set
+from pathlib import Path
+
+
+SAST_FRAMEWORK_PREFIX = 'sast'
+CDK_FRAMEWORK_PREFIX = 'cdk'
+# checkov/checkov/cdk/checks
+CDK_CHECKS_DIR_PATH = Path(__file__).parent.parent.parent / CDK_FRAMEWORK_PREFIX / "checks"
 
 
 class SastLanguages(Enum):
@@ -14,6 +21,8 @@ class SastLanguages(Enum):
     PYTHON = 'python'
     JAVA = 'java'
     JAVASCRIPT = 'javascript'
+    TYPESCRIPT = 'typescript'
+    GOLANG = 'golang'
 
 
 class CDKLanguages(Enum):
@@ -26,6 +35,8 @@ class CDKLanguages(Enum):
         return set(cls)
 
     PYTHON = 'python'
+    TYPESCRIPT = 'typescript'
+    GOLANG = 'golang'
 
 
 class BqlVersion(str, Enum):
@@ -47,12 +58,16 @@ SUPPORT_FILE_EXT = {
     SastLanguages.PYTHON: ['py'],
     SastLanguages.JAVA: ['java'],
     SastLanguages.JAVASCRIPT: ['js'],
+    SastLanguages.TYPESCRIPT: ['ts'],
+    SastLanguages.GOLANG: ['go'],
 }
 
 FILE_EXT_TO_SAST_LANG = {
     'py': SastLanguages.PYTHON,
     'java': SastLanguages.JAVA,
     'js': SastLanguages.JAVASCRIPT,
+    'ts': SastLanguages.TYPESCRIPT,
+    'go': SastLanguages.GOLANG,
 }
 
 POLICIES_ERRORS = 'policies_errors'

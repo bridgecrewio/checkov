@@ -122,7 +122,7 @@ def test_run_with_severity_filter_without_api_key(caplog: LogCaptureFixture):
     ckv.run(banner=custom_banner)
 
     # then
-    assert caplog.messages == ["Filtering checks by severity is only possible with an API key"]
+    assert "Filtering checks by severity is only possible with an API key" in caplog.messages
 
 
 def test_run_with_severity_skip_filter_without_api_key(caplog: LogCaptureFixture):
@@ -142,4 +142,4 @@ def test_run_with_severity_skip_filter_without_api_key(caplog: LogCaptureFixture
     ckv.run(banner=custom_banner)
 
     # then
-    assert caplog.messages == ["Filtering checks by severity is only possible with an API key"]
+    assert "Filtering checks by severity is only possible with an API key" in caplog.messages

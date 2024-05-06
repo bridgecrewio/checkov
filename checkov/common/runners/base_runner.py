@@ -8,7 +8,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Iterable
 from typing import List, Any, TYPE_CHECKING, TypeVar, Generic, Dict, Optional
 
-from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
+from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.util.tqdm_utils import ProgressBar
 
@@ -18,10 +18,9 @@ from checkov.runner_filter import RunnerFilter
 from checkov.common.graph.graph_manager import GraphManager  # noqa
 
 if TYPE_CHECKING:
-    from igraph import Graph
     from checkov.common.checks_infra.registry import Registry
     from checkov.common.graph.checks_infra.registry import BaseRegistry
-    from checkov.common.typing import _CheckResult, LibraryGraphConnector
+    from checkov.common.typing import _CheckResult, LibraryGraphConnector, LibraryGraph
 
 _Context = TypeVar("_Context", bound="dict[Any, Any]|None")
 _Definitions = TypeVar("_Definitions", bound="dict[Any, Any]|None")
@@ -66,14 +65,9 @@ class BaseRunner(ABC, Generic[_Definitions, _Context, _GraphManager]):
         self.file_extensions = file_extensions or []
         self.file_names = file_names or []
         self.pbar = ProgressBar(self.check_type)
-        db_connector_class: "type[NetworkxConnector | IgraphConnector | RustworkxConnector]" = IgraphConnector
-        graph_framework = os.getenv("CHECKOV_GRAPH_FRAMEWORK", "IGRAPH")
-        if graph_framework == "IGRAPH":
-            db_connector_class = IgraphConnector
-        elif graph_framework == "NETWORKX":
-            from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
-            db_connector_class = NetworkxConnector
-        elif graph_framework == "RUSTWORKX":
+        db_connector_class: "type[NetworkxConnector | RustworkxConnector]" = NetworkxConnector
+        graph_framework = os.getenv("CHECKOV_GRAPH_FRAMEWORK", "RUSTWORKX")
+        if graph_framework == "RUSTWORKX":
             from checkov.common.graph.db_connectors.rustworkx.rustworkx_db_connector import RustworkxConnector
             db_connector_class = RustworkxConnector
 
@@ -131,7 +125,7 @@ class BaseRunner(ABC, Generic[_Definitions, _Context, _GraphManager]):
     def get_graph_checks_report(self, root_folder: str, runner_filter: RunnerFilter) -> Report:
         return Report(check_type="not_defined")
 
-    def run_graph_checks_results(self, runner_filter: RunnerFilter, report_type: str, graph: Graph | None = None
+    def run_graph_checks_results(self, runner_filter: RunnerFilter, report_type: str, graph: LibraryGraph | None = None
                                  ) -> dict[BaseGraphCheck, list[_CheckResult]]:
         checks_results: "dict[BaseGraphCheck, list[_CheckResult]]" = {}
         if graph is None and (not self.graph_manager or not self.graph_registry):

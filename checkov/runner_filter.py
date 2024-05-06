@@ -46,6 +46,7 @@ class RunnerFilter(object):
             skip_cve_package: Optional[List[str]] = None,
             use_enforcement_rules: bool = False,
             filtered_policy_ids: Optional[List[str]] = None,
+            filtered_exception_policy_ids: Optional[List[str]] = None,
             show_progress_bar: Optional[bool] = True,
             run_image_referencer: bool = False,
             enable_secret_scan_all_files: bool = False,
@@ -108,6 +109,10 @@ class RunnerFilter(object):
                 self.skip_checks.append(val)
 
         self.include_all_checkov_policies = include_all_checkov_policies
+        if not framework or "all" in framework:
+            self.framework_flag_values = []
+        else:
+            self.framework_flag_values = framework
 
         self.framework: "Iterable[str]" = framework if framework else ["all"]
         if skip_framework:
@@ -128,6 +133,7 @@ class RunnerFilter(object):
         self.var_files = var_files
         self.skip_cve_package = skip_cve_package
         self.filtered_policy_ids = filtered_policy_ids or []
+        self.filtered_exception_policy_ids = filtered_exception_policy_ids or []
         self.run_image_referencer = run_image_referencer
         self.enable_secret_scan_all_files = enable_secret_scan_all_files
         self.block_list_secret_scan = block_list_secret_scan
@@ -225,6 +231,7 @@ class RunnerFilter(object):
         implicit_run = not self.checks and not check_threshold
         is_external = RunnerFilter.is_external_check(check_id)
         is_policy_filtered = self.is_policy_filtered(check_id)
+        is_policy_exception = self.is_policy_exception(check_id)
         # True if this check is present in the allow list, or if there is no allow list
         # this is not necessarily the return value (need to apply other filters)
         should_run_check = (
@@ -242,6 +249,10 @@ class RunnerFilter(object):
         # It can, however, be skipped.
         if not is_policy_filtered:
             logging.debug(f'not is_policy_filtered {check_id}: should_run_check = False')
+            should_run_check = False
+        # If a policy is present in the list of filter exception policies, it should not be run - implicitly or explicitly.
+        if is_policy_exception:
+            logging.debug(f'is_policy_exception {check_id}: should_run_check = False')
             should_run_check = False
 
         skip_severity = severity and skip_check_threshold and severity.level <= skip_check_threshold.level
@@ -329,6 +340,11 @@ class RunnerFilter(object):
             return True
         return check_id in self.filtered_policy_ids
 
+    def is_policy_exception(self, check_id: str) -> bool:
+        if not self.filtered_exception_policy_ids:
+            return False
+        return check_id in self.filtered_exception_policy_ids
+
     def to_dict(self) -> Dict[str, Any]:
         result: Dict[str, Any] = {}
         for key, value in self.__dict__.items():
@@ -364,6 +380,7 @@ class RunnerFilter(object):
         if use_enforcement_rules is None:
             use_enforcement_rules = False
         filtered_policy_ids = obj.get('filtered_policy_ids')
+        filtered_exception_policy_ids = obj.get('filtered_exception_policy_ids')
         show_progress_bar = obj.get('show_progress_bar')
         if show_progress_bar is None:
             show_progress_bar = True
@@ -375,8 +392,8 @@ class RunnerFilter(object):
         runner_filter = RunnerFilter(framework, checks, skip_checks, include_all_checkov_policies,
                                      download_external_modules, external_modules_download_path, evaluate_variables,
                                      runners, skip_framework, excluded_paths, all_external, var_files,
-                                     skip_cve_package, use_enforcement_rules, filtered_policy_ids, show_progress_bar,
-                                     run_image_referencer, enable_secret_scan_all_files, block_list_secret_scan)
+                                     skip_cve_package, use_enforcement_rules, filtered_policy_ids, filtered_exception_policy_ids,
+                                     show_progress_bar, run_image_referencer, enable_secret_scan_all_files, block_list_secret_scan)
         return runner_filter
 
     def set_suppressed_policies(self, policy_level_suppressions: List[str]) -> None:

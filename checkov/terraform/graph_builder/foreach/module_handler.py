@@ -247,9 +247,17 @@ class ForeachModuleHandler(ForeachAbstractHandler):
     def _add_new_vertices_for_module(self, new_module_key: TFModule | None, new_module_value: dict[str, list[int]],
                                      new_resource_vertex_idx: int) -> dict[str, list[int]]:
         new_vertices_module_value: dict[str, list[int]] = defaultdict(list)
+        seen_vertices = []
         for vertex_type, vertices_idx in new_module_value.items():
             for vertex_idx in vertices_idx:
                 module_vertex = self.local_graph.vertices[vertex_idx]
+                if module_vertex in seen_vertices:
+                    # Makes sure we won't mistakenly go over vertices we already copied.
+                    # This may happen when using nested modules with count>2,
+                    # as we might duplicate the previous count index resources mistakenly.
+                    # See issue https://github.com/bridgecrewio/checkov/issues/6068
+                    continue
+                seen_vertices.append(module_vertex)
                 new_vertex = pickle_deepcopy(module_vertex)
                 new_vertex.source_module_object = new_module_key
                 self.local_graph.vertices.append(new_vertex)
