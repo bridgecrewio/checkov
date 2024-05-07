@@ -7,7 +7,7 @@ class MSSQLServerMinTLSVersion(BaseResourceValueCheck):
         name = "Ensure MSSQL is using the latest version of TLS encryption"
         id = "CKV_AZURE_52"
         supported_resources = ("Microsoft.Sql/servers",)
-        categories = (CheckCategories.NETWORKING)
+        categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name,
                          id=id,
                          categories=categories,
