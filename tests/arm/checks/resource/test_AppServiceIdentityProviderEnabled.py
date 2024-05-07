@@ -18,11 +18,9 @@ class TestAppServiceIdentityProviderEnabled(unittest.TestCase):
 
         passing_resources = {
          "Microsoft.Web/sites.pass",
-
         }
         failing_resources = {
             "Microsoft.Web/sites.fail",
-
         }
 
 

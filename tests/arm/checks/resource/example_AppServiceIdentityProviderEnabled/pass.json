@@ -8,6 +8,7 @@
       "metadata": {
         "description": "Base name of the resource such as web app name and app service plan "
       },
+
       "minLength": 2
     },
     "sku":{

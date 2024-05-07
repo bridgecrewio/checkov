@@ -20,4 +20,3 @@ class AppServiceIdentityProviderEnabled(BaseResourceValueCheck):
 
 
 check = AppServiceIdentityProviderEnabled()
-
