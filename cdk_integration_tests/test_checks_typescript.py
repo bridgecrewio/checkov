@@ -62,7 +62,7 @@ def test_CKV_AWS_82_AthenaWorkgroupConfiguration(failed_checks):
 
 
 def test_CKV_AWS_131_AmazonMQBrokerPublicAccess(failed_checks):
-    run_check(check_results=failed_checks, check_id="CKV_AWS_131", policy_name="AmazonMQBrokerPublicAccess",
+    run_check(check_results=failed_checks, check_id="CKV_AWS_69", policy_name="AmazonMQBrokerPublicAccess",
               language="typescript")
 
 
