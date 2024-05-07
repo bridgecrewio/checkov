@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import os
-from typing import List, Dict, Any, Set, Callable, Tuple, TYPE_CHECKING, cast
+from typing import List, Dict, Any, Set, Callable, Tuple, TYPE_CHECKING, cast, Union
 from ast import literal_eval
 
 from checkov.common.graph.graph_builder import CustomAttributes
@@ -36,7 +36,7 @@ class Module:
         self.resources_types: Set[str] = set()
         self.source_dir = source_dir
         self.render_dynamic_blocks_env_var = os.getenv('CHECKOV_RENDER_DYNAMIC_MODULES', 'True')
-        self.temp_tf_definition: dict[TFDefinitionKey, dict[str, Any]] = {}
+        self.temp_tf_definition: Union[dict[str, dict[str, Any]]] = {}
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Module):
