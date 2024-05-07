@@ -36,7 +36,7 @@ class Module:
         self.resources_types: Set[str] = set()
         self.source_dir = source_dir
         self.render_dynamic_blocks_env_var = os.getenv('CHECKOV_RENDER_DYNAMIC_MODULES', 'True')
-        self.temp_tf_definition = {}
+        self.temp_tf_definition: dict[TFDefinitionKey, dict[str, Any]] = {}
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Module):
@@ -233,11 +233,11 @@ class Module:
 
         path_for_tf_definition = path if isinstance(path, TFDefinitionKey) else TFDefinitionKey(path)
         if BlockType.PROVIDER in self.temp_tf_definition.get(path_for_tf_definition, {}):
-            provider_name = self._get_the_default_provider(self.temp_tf_definition.get(path_for_tf_definition).get(BlockType.PROVIDER, []))
+            provider_name = self._get_the_default_provider(self.temp_tf_definition.get(path_for_tf_definition, {}).get(BlockType.PROVIDER, []))
             self._assign_provider_fields(resource_conf, resource_dict, resource_type, name, provider_name)
 
-        elif path.tf_source_modules and BlockType.PROVIDER in self.temp_tf_definition.get(TFDefinitionKey(path.tf_source_modules.path), {}):
-            provider_name = self._get_the_default_provider(self.temp_tf_definition.get(TFDefinitionKey(path.tf_source_modules.path)).get(BlockType.PROVIDER, []))
+        elif path_for_tf_definition.tf_source_modules and BlockType.PROVIDER in self.temp_tf_definition.get(TFDefinitionKey(path_for_tf_definition.tf_source_modules.path), {}):
+            provider_name = self._get_the_default_provider(self.temp_tf_definition.get(TFDefinitionKey(path_for_tf_definition.tf_source_modules.path), {}).get(BlockType.PROVIDER, []))
             self._assign_provider_fields(resource_conf, resource_dict, resource_type, name, provider_name)
 
     @staticmethod
@@ -257,6 +257,7 @@ class Module:
             provider_name = list(provider.keys())[0]
             if 'alias' not in provider[provider_name]:
                 return f'{provider_name}.default'
+        return ''
 
     @staticmethod
     def clean_bad_characters(resource_conf: dict[str, Any]) -> dict[str, Any]:
