@@ -7,9 +7,8 @@ class DataExplorerUsesDiskEncryption(BaseResourceValueCheck):
         name = "Ensure that Azure Data Explorer (Kusto) uses disk encryption"
         id = "CKV_AZURE_74"
         supported_resources = ("Microsoft.Kusto/clusters",)
-        categories = [CheckCategories.ENCRYPTION]
+        categories = [CheckCategories.ENCRYPTION,]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,)
-
 
     def get_inspected_key(self) -> str:
         return "properties/enableDiskEncryption"
