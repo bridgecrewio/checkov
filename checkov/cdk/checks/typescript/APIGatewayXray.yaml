@@ -1,0 +1,15 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_73
+  name: Ensure API Gateway has X-Ray Tracing enabled
+  category: LOGGING
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  pattern: new $AWS.CfnStage(<ANY>)
+  conditions:
+    - not_pattern: |
+        new $AWS.CfnStage(<ANY>, {<ANY>, tracingEnabled: true, <ANY> }, <ANY>)
