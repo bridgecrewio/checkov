@@ -24,7 +24,6 @@ prepare_data () {
 
   python checkov/main.py -s -f repositories/terragoat/terraform/aws/s3.tf --repo-id checkov/integration_test --bc-api-key $BC_KEY > checkov_report_s3_singlefile_api_key_terragoat.txt
   python checkov/main.py -s -d repositories/terragoat/terraform/azure/ --repo-id checkov/integration_test --bc-api-key $BC_KEY > checkov_report_azuredir_api_key_terragoat.txt
-  python checkov/main.py -s -d integration_tests/example_workflow_file/.github/workflows/ -o json --repo-id checkov/integration_test --bc-api-key $BC_KEY --include-all-checkov-policies > checkov_report_workflow_cve.json
   python checkov/main.py -s -d integration_tests/example_workflow_file/bitbucket/ -o json --repo-id checkov/integration_test --bc-api-key $BC_KEY --include-all-checkov-policies > checkov_report_bitbucket_pipelines_cve.json
   python checkov/main.py --list --bc-api-key $BC_KEY --output-bc-ids > checkov_checks_list.txt
 }

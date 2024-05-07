@@ -1,0 +1,17 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_158
+  name: Ensure that CloudWatch Log Group is encrypted by KMS
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  pattern: new $AWS.LogGroup(<ANY>)
+  conditions:
+    - not_pattern: |
+        new $AWS.LogGroup(<ANY>, {<ANY>, encryptionKey: new $ENC.Key(<ANY>) , <ANY>}, <ANY>)
+    - not_pattern: |
+        new $AWS.LogGroup(<ANY>, {<ANY>, encryptionKey: $ARG ,<ANY>} , <ANY>)

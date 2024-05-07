@@ -1,0 +1,25 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_44
+  name: Ensure Neptune storage is securely encrypted
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  or:
+    - pattern: new $PACKAGE.aws_neptune.CfnDBCluster(<ANY>, <ANY>, { <ANY> })
+      conditions:
+        - not_pattern: |
+            new $PACKAGE.aws_neptune.CfnDBCluster(<ANY>, <ANY>, { <ANY>, storageEncrypted: true, <ANY> })
+        - metavariable: $PACKAGE
+          comparison: $PACKAGE == "aws-cdk-lib"
+    - pattern: |
+        $X = { <ANY> }
+      conditions:
+        - metavariable: $X
+          type: aws-cdk-lib.aws_neptune.CfnDBClusterProps
+        - not_pattern: |
+            $X = { <ANY>, storageEncrypted: true, <ANY> }

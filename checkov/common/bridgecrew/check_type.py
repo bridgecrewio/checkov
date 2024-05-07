@@ -35,6 +35,8 @@ class CheckType:
     SAST_PYTHON = 'sast_python'
     SAST_JAVA = 'sast_java'
     SAST_JAVASCRIPT = 'sast_javascript'
+    SAST_TYPESCRIPT = 'sast_typescript'
+    SAST_GOLANG = 'sast_golang'
     POLICY_3D = "3d_policy"
 
 
@@ -43,6 +45,8 @@ class SastType:
     SAST_PYTHON = 'sast_python'
     SAST_JAVA = 'sast_java'
     SAST_JAVASCRIPT = 'sast_javascript'
+    SAST_TYPESCRIPT = 'sast_typescript'
+    SAST_GOLANG = 'sast_golang'
 
 
 # needs to be at the end
