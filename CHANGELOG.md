@@ -1,6 +1,52 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.74...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.82...HEAD)
+
+## [3.2.82](https://github.com/bridgecrewio/checkov/compare/3.2.79...3.2.82) - 2024-05-06
+
+### Feature
+
+- **github:** add summary message in github_failed_only output - [#6131](https://github.com/bridgecrewio/checkov/pull/6131)
+- **sast:** add ts checks to python pack - [#6261](https://github.com/bridgecrewio/checkov/pull/6261)
+- **sast:** run all cdk integration test - [#6256](https://github.com/bridgecrewio/checkov/pull/6256)
+
+### Bug Fix
+
+- **general:** fix changed serif path - [#6251](https://github.com/bridgecrewio/checkov/pull/6251)
+
+## [3.2.79](https://github.com/bridgecrewio/checkov/compare/3.2.74...3.2.79) - 2024-05-02
+
+### Feature
+
+- **sast:** Add 10 TS CDK - [#6194](https://github.com/bridgecrewio/checkov/pull/6194)
+- **sast:** add typescript - DONT MERGE - [#6193](https://github.com/bridgecrewio/checkov/pull/6193)
+- **sast:** Filter js files generate by ts - [#6220](https://github.com/bridgecrewio/checkov/pull/6220)
+- **secrets:** bump bc-detect-secrets 1.5.9 - [#6205](https://github.com/bridgecrewio/checkov/pull/6205)
+- **terraform:** Add GCP policy - [#6177](https://github.com/bridgecrewio/checkov/pull/6177)
+- **terraform:** Add resource attributes to jsonify - [#6203](https://github.com/bridgecrewio/checkov/pull/6203)
+- **terraform:** Ensure dedicated data endpoints are enabled - [#6188](https://github.com/bridgecrewio/checkov/pull/6188)
+- **terraform:** support provider in tf_plan graph - [#6195](https://github.com/bridgecrewio/checkov/pull/6195)
+- **terraform:** Update CloudArmorWAFACLCVE202144228.py - [#6217](https://github.com/bridgecrewio/checkov/pull/6217)
+
+### Bug Fix
+
+- **general:** add print to random test - [#6229](https://github.com/bridgecrewio/checkov/pull/6229)
+- **general:** fix integration test in build - [#6227](https://github.com/bridgecrewio/checkov/pull/6227)
+- **general:** fix integration tests - [#6207](https://github.com/bridgecrewio/checkov/pull/6207)
+- **kubernetes:** Update checkov-job.yaml - [#5985](https://github.com/bridgecrewio/checkov/pull/5985)
+- **sca:** remove old test for the depracated workflow github-action - [#6232](https://github.com/bridgecrewio/checkov/pull/6232)
+- **terraform_plan:** Edges not created because of indexing in resource["address"] when resources in modules use count - [#6145](https://github.com/bridgecrewio/checkov/pull/6145)
+- **terraform:** CKV_AWS_23 rule description fixed for clarity - [#5993](https://github.com/bridgecrewio/checkov/pull/5993)
+- **terraform:** Fix CKV_AWS_358 to handle plan files - [#6202](https://github.com/bridgecrewio/checkov/pull/6202)
+
+### Platform
+
+- **ansible:** add create_definitions function for ansible framework - [#6225](https://github.com/bridgecrewio/checkov/pull/6225)
+
+### Documentation
+
+- **general:** Fix docs html brackets - [#6051](https://github.com/bridgecrewio/checkov/pull/6051)
+- **general:** Remove Python 3.7 - [#6200](https://github.com/bridgecrewio/checkov/pull/6200)
 
 ## [3.2.74](https://github.com/bridgecrewio/checkov/compare/3.2.73...3.2.74) - 2024-04-22
 
