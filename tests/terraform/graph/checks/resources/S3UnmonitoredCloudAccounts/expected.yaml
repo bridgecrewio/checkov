@@ -1,6 +1,0 @@
-pass:
-  - "aws_s3_bucket_acl.pass_no_id"
-  - "aws_s3_bucket_acl.pass_good_id"
-fail:
-  - "aws_s3_bucket_acl.fail_last_id"
-  - "aws_s3_bucket_acl.fail_multiple_id"
