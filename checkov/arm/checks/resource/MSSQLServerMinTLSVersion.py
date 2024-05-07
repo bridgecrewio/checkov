@@ -3,7 +3,7 @@ from checkov.arm.base_resource_value_check import BaseResourceValueCheck
 
 
 class MSSQLServerMinTLSVersion(BaseResourceValueCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure MSSQL is using the latest version of TLS encryption"
         id = "CKV_AZURE_52"
         supported_resources = ("Microsoft.Sql/servers",)
