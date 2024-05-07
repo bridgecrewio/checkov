@@ -24,3 +24,5 @@ class MSSQLServerMinTLSVersion(BaseResourceValueCheck):
 check = MSSQLServerMinTLSVersion()
 
 
+
+
