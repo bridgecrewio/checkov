@@ -2,6 +2,7 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.arm.base_resource_value_check import BaseResourceValueCheck
 from typing import Any
 
+
 class AppServiceJavaVersion(BaseResourceValueCheck):
     def __init__(self) -> None:
         name = "Ensure that 'Java version' is the latest, if used to run the web app"
