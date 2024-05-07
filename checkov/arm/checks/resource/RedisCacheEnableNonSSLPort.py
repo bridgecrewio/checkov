@@ -3,7 +3,7 @@ from checkov.arm.base_resource_value_check import BaseResourceValueCheck
 
 
 class RedisCacheEnableNonSSLPort(BaseResourceValueCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure that only SSL are enabled for Cache for Redis"
         id = "CKV_AZURE_91"
         supported_resources = ("Microsoft.Cache/Redis",)
@@ -24,3 +24,4 @@ class RedisCacheEnableNonSSLPort(BaseResourceValueCheck):
 
 
 check = RedisCacheEnableNonSSLPort()
+
