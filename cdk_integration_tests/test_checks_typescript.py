@@ -67,7 +67,7 @@ def test_CKV_AWS_131_AmazonMQBrokerPublicAccess(failed_checks):
 
 
 def test_CKV_AWS_96_AuroraEncryption(failed_checks):
-    run_check(check_results=failed_checks, check_id="CKV_AWS_96", policy_name="ALBDropHttpHeaders",
+    run_check(check_results=failed_checks, check_id="CKV_AWS_96", policy_name="AuroraEncryption",
               language="typescript")
 
 
