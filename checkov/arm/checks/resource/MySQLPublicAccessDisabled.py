@@ -15,7 +15,7 @@ class MySQLPublicAccessDisabled(BaseResourceValueCheck):
     def get_inspected_key(self) -> str:
         return "properties/publicNetworkAccess"
 
-    def get_expected_value(self):
+    def get_expected_value(self) -> str:
         """
         Returns the default expected value, governed by provider best practices
         """
