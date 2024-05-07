@@ -36,7 +36,6 @@ class CDKLanguages(Enum):
 
     PYTHON = 'python'
     TYPESCRIPT = 'typescript'
-    GOLANG = 'golang'
 
 
 class BqlVersion(str, Enum):
