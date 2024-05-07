@@ -1,0 +1,20 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_193
+  name: Ensure AppSync has Logging enabled
+  category: LOGGING
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  pattern: |
+    const $logConfig: appsync.LogConfig = { <ANY> };
+  conditions:
+    - not_pattern: |
+        new $IMPORT.GraphqlApi(<ANY>, <ANY>, { <ANY>,  role: <ANY>});
+    - not_pattern: |
+        const $LOG: $IMPORT.LogConfig = { role: <ANY> };
+        <ANY>
+        new $IMPORT.GraphqlApi(<ANY>, <ANY>, { <ANY>,  $LOG});
