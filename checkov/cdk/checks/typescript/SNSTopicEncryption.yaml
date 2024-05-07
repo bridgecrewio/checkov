@@ -1,0 +1,15 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_26
+  name: Ensure all data stored in the SNS topic is encrypted
+  category: Encryption
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  pattern: new $AWS.Topic(<ANY>)
+  conditions:
+    - not_pattern: |
+        new $AWS.Topic(<ANY>, {<ANY>, masterKey: $ARG ,<ANY> }, <ANY>)
