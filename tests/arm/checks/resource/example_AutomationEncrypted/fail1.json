@@ -1,21 +1,21 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-  "contentVersion": "1.0.0.0",
-  "parameters": {},
-  "variables": {},
-  "resources": [
-    {
-      "type": "Microsoft.Automation/automationAccounts/variables",
-      "apiVersion": "2020-01-13-preview",
-      "name": "fail1",
-      "properties": {
-        "name": "tfex-example-var",
-        "value": "Hello, Arm Basic Test."
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Automation/automationAccounts', 'example')]"
-      ]
-    }
-  ],
-  "outputs": {}
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {},
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Automation/automationAccounts/variables",
+            "apiVersion": "2020-01-13-preview",
+            "name": "fail1",
+            "properties": {
+                "name": "tfex-example-var",
+                "value": "Hello, Arm Basic Test."
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Automation/automationAccounts', 'example')]"
+            ]
+        }
+    ],
+    "outputs": {}
 }
