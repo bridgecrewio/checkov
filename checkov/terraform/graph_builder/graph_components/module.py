@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import os
-from typing import List, Dict, Any, Set, Callable, Tuple, TYPE_CHECKING, cast, TypeVar
+from typing import List, Dict, Any, Set, Callable, Tuple, TYPE_CHECKING, cast
 from ast import literal_eval
 
 from checkov.common.graph.graph_builder import CustomAttributes
