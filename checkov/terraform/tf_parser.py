@@ -48,6 +48,7 @@ class TFParser:
         self.module_address_map: Dict[Tuple[str, str], str] = {}
         self.loaded_files_map: dict[str, dict[str, list[dict[str, Any]]] | None] = {}
         self.external_variables_data: list[tuple[str, Any, str]] = []
+        self.temp_tf_definition: dict[str, Any] = {}
 
     def _init(self, directory: str,
               out_evaluations_context: Dict[TFDefinitionKey, Dict[str, EvaluationContext]] | None,
@@ -464,7 +465,9 @@ class TFParser:
         for file_path, blocks in copy_of_tf_definitions.items():
             for block_type in blocks:
                 try:
+                    module.temp_tf_definition = tf_definitions
                     module.add_blocks(block_type, blocks[block_type], file_path, source)
+                    module.temp_tf_definition = {}
                 except Exception as e:
                     logging.warning(f'Failed to add block {blocks[block_type]}. Error:')
                     logging.warning(e, exc_info=False)

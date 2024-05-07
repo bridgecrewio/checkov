@@ -1,3 +1,12 @@
+provider "aws" {
+  region = "us-west-1"
+}
+
+provider "abbey" {
+  alias = "a"
+  region = ""
+}
+
 locals {
   name_map = var.names_map
   name_list = var.names_list
@@ -10,6 +19,7 @@ resource "aws_s3_bucket" "bucket_rendered" {
   name     = each.key
   location = each.value
   region = var.test
+  provider = abbey.a
 }
 
 resource "aws_s3_bucket" "bucket_map_rendered" {

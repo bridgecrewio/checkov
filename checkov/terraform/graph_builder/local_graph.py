@@ -302,6 +302,8 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
 
     def _connect_module_provider(self) -> None:
         for origin_node_index, referenced_vertices in self.out_edges.items():
+            if not referenced_vertices:
+                continue
             vertex = self.vertices[origin_node_index]
             # if we have an edge of module->provider we need to connect that modules' resources to the provider
             if vertex.block_type == BlockType.MODULE:
@@ -320,10 +322,25 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                             for e in referenced_vertices:
                                 if self.vertices[e.dest].block_type == BlockType.PROVIDER:
                                     for resource in resources:
-                                        # connect resource to provider
+                                        self._add_provider_address_to_resource(e, resource)
                                         self.create_edge(resource, e.dest, e.label)
                 except Exception as e:
                     logging.warning(f"Failed in connecting module resources to provider due to {e}")
+
+    @staticmethod
+    def _get_resource_name_and_type_from_name(name: str) -> tuple[str, str]:
+        resource_name, resource_type = '', ''
+        split_name = name.split('.')
+        if len(split_name) >= 2:
+            resource_type = split_name[-2]
+            resource_name = split_name[-1]
+        return resource_name, resource_type
+
+    def _add_provider_address_to_resource(self, e: Edge, resource: int) -> None:
+        provider_name = self.vertices[e.dest].name
+        r_name, r_type = self._get_resource_name_and_type_from_name(self.vertices[resource].name)
+        self.vertices[resource].attributes[CustomAttributes.PROVIDER_ADDRESS] = provider_name
+        self.vertices[resource].config[r_type][r_name][CustomAttributes.PROVIDER_ADDRESS] = provider_name
 
     def _build_cross_variable_edges(self) -> None:
         aliases = self._get_aliases()

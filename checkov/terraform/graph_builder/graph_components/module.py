@@ -5,8 +5,10 @@ import os
 from typing import List, Dict, Any, Set, Callable, Tuple, TYPE_CHECKING, cast
 from ast import literal_eval
 
+from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.typing import TFDefinitionKeyType
 from checkov.common.util.data_structures_utils import pickle_deepcopy
+from checkov.terraform import TFDefinitionKey
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.parser_functions import handle_dynamic_values
@@ -34,6 +36,7 @@ class Module:
         self.resources_types: Set[str] = set()
         self.source_dir = source_dir
         self.render_dynamic_blocks_env_var = os.getenv('CHECKOV_RENDER_DYNAMIC_MODULES', 'True')
+        self.temp_tf_definition = {}
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Module):
@@ -185,6 +188,7 @@ class Module:
             for resource_type, resources in resource_dict.items():
                 self.resources_types.add(resource_type)
                 for name, resource_conf in resources.items():
+                    self._add_provider_attr_to_resources(path, resource_conf, resource_dict, resource_type, name)
                     attributes = self.clean_bad_characters(resource_conf)
                     dynamic_attributes = None
                     if not isinstance(attributes, dict):
@@ -212,6 +216,47 @@ class Module:
                         dynamic_attributes=dynamic_attributes
                     )
                     self._add_to_blocks(resource_block)
+
+    def _add_provider_attr_to_resources(
+            self,
+            path: TFDefinitionKeyType,
+            resource_conf: dict[str, Any],
+            resource_dict: dict[str, dict[str, Any]],
+            resource_type: str,
+            name: str
+    ) -> None:
+        if BlockType.PROVIDER in resource_conf:
+            provider = resource_conf[BlockType.PROVIDER][0] if isinstance(resource_conf[BlockType.PROVIDER], list) else resource_conf[BlockType.PROVIDER]
+            resource_conf[CustomAttributes.PROVIDER_ADDRESS] = provider
+            resource_dict[resource_type][name][CustomAttributes.PROVIDER_ADDRESS] = provider
+            return
+
+        path_for_tf_definition = path if isinstance(path, TFDefinitionKey) else TFDefinitionKey(path)
+        if BlockType.PROVIDER in self.temp_tf_definition.get(path_for_tf_definition, {}):
+            provider_name = self._get_the_default_provider(self.temp_tf_definition.get(path_for_tf_definition).get(BlockType.PROVIDER, []))
+            self._assign_provider_fields(resource_conf, resource_dict, resource_type, name, provider_name)
+
+        elif path.tf_source_modules and BlockType.PROVIDER in self.temp_tf_definition.get(TFDefinitionKey(path.tf_source_modules.path), {}):
+            provider_name = self._get_the_default_provider(self.temp_tf_definition.get(TFDefinitionKey(path.tf_source_modules.path)).get(BlockType.PROVIDER, []))
+            self._assign_provider_fields(resource_conf, resource_dict, resource_type, name, provider_name)
+
+    @staticmethod
+    def _assign_provider_fields(
+            resource_conf: dict[str, Any],
+            resource_dict: dict[str, dict[str, Any]],
+            resource_type: str,
+            name: str,
+            provider_name: str
+    ) -> None:
+        resource_conf[CustomAttributes.PROVIDER_ADDRESS] = provider_name
+        resource_dict[resource_type][name][CustomAttributes.PROVIDER_ADDRESS] = provider_name
+
+    @staticmethod
+    def _get_the_default_provider(providers: list[dict[str, dict[str, Any]]]) -> str:
+        for provider in providers:
+            provider_name = list(provider.keys())[0]
+            if 'alias' not in provider[provider_name]:
+                return f'{provider_name}.default'
 
     @staticmethod
     def clean_bad_characters(resource_conf: dict[str, Any]) -> dict[str, Any]:
