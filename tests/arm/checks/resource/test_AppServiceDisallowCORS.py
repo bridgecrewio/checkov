@@ -9,7 +9,6 @@ from checkov.arm.checks.resource.AppServiceDisallowCORS import check
 class TestAPPServiceDisallowCORS(unittest.TestCase):
 
     def test_summary(self):
-
         # given
         test_files_dir = Path(__file__).parent / "example_AppServiceDisallowCORS"
 
@@ -37,7 +36,3 @@ class TestAPPServiceDisallowCORS(unittest.TestCase):
 
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)
-
-
-
-
