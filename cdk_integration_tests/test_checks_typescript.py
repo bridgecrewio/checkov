@@ -95,7 +95,7 @@ def test_CKV_AWS_56_S3RestrictPublicBuckets(failed_checks):
 
 
 def test_CKV_AWS_149_SecretManagerSecretEncrypted(failed_checks):
-    run_check(check_results=failed_checks, check_id="CKV_AWS_149", policy_name="S3RestrictPublicBuckets",
+    run_check(check_results=failed_checks, check_id="CKV_AWS_149", policy_name="SecretManagerSecretEncrypted",
               language="typescript")
 
 
