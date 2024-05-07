@@ -25,4 +25,3 @@ check = MSSQLServerMinTLSVersion()
 
 
 
-
