@@ -1,6 +1,122 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.55...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.82...HEAD)
+
+## [3.2.82](https://github.com/bridgecrewio/checkov/compare/3.2.79...3.2.82) - 2024-05-06
+
+### Feature
+
+- **github:** add summary message in github_failed_only output - [#6131](https://github.com/bridgecrewio/checkov/pull/6131)
+- **sast:** add ts checks to python pack - [#6261](https://github.com/bridgecrewio/checkov/pull/6261)
+- **sast:** run all cdk integration test - [#6256](https://github.com/bridgecrewio/checkov/pull/6256)
+
+### Bug Fix
+
+- **general:** fix changed serif path - [#6251](https://github.com/bridgecrewio/checkov/pull/6251)
+
+## [3.2.79](https://github.com/bridgecrewio/checkov/compare/3.2.74...3.2.79) - 2024-05-02
+
+### Feature
+
+- **sast:** Add 10 TS CDK - [#6194](https://github.com/bridgecrewio/checkov/pull/6194)
+- **sast:** add typescript - DONT MERGE - [#6193](https://github.com/bridgecrewio/checkov/pull/6193)
+- **sast:** Filter js files generate by ts - [#6220](https://github.com/bridgecrewio/checkov/pull/6220)
+- **secrets:** bump bc-detect-secrets 1.5.9 - [#6205](https://github.com/bridgecrewio/checkov/pull/6205)
+- **terraform:** Add GCP policy - [#6177](https://github.com/bridgecrewio/checkov/pull/6177)
+- **terraform:** Add resource attributes to jsonify - [#6203](https://github.com/bridgecrewio/checkov/pull/6203)
+- **terraform:** Ensure dedicated data endpoints are enabled - [#6188](https://github.com/bridgecrewio/checkov/pull/6188)
+- **terraform:** support provider in tf_plan graph - [#6195](https://github.com/bridgecrewio/checkov/pull/6195)
+- **terraform:** Update CloudArmorWAFACLCVE202144228.py - [#6217](https://github.com/bridgecrewio/checkov/pull/6217)
+
+### Bug Fix
+
+- **general:** add print to random test - [#6229](https://github.com/bridgecrewio/checkov/pull/6229)
+- **general:** fix integration test in build - [#6227](https://github.com/bridgecrewio/checkov/pull/6227)
+- **general:** fix integration tests - [#6207](https://github.com/bridgecrewio/checkov/pull/6207)
+- **kubernetes:** Update checkov-job.yaml - [#5985](https://github.com/bridgecrewio/checkov/pull/5985)
+- **sca:** remove old test for the depracated workflow github-action - [#6232](https://github.com/bridgecrewio/checkov/pull/6232)
+- **terraform_plan:** Edges not created because of indexing in resource["address"] when resources in modules use count - [#6145](https://github.com/bridgecrewio/checkov/pull/6145)
+- **terraform:** CKV_AWS_23 rule description fixed for clarity - [#5993](https://github.com/bridgecrewio/checkov/pull/5993)
+- **terraform:** Fix CKV_AWS_358 to handle plan files - [#6202](https://github.com/bridgecrewio/checkov/pull/6202)
+
+### Platform
+
+- **ansible:** add create_definitions function for ansible framework - [#6225](https://github.com/bridgecrewio/checkov/pull/6225)
+
+### Documentation
+
+- **general:** Fix docs html brackets - [#6051](https://github.com/bridgecrewio/checkov/pull/6051)
+- **general:** Remove Python 3.7 - [#6200](https://github.com/bridgecrewio/checkov/pull/6200)
+
+## [3.2.74](https://github.com/bridgecrewio/checkov/compare/3.2.73...3.2.74) - 2024-04-22
+
+### Feature
+
+- **general:** Update range includes to handle lists of ranges and lists of values - [#6192](https://github.com/bridgecrewio/checkov/pull/6192)
+
+## [3.2.73](https://github.com/bridgecrewio/checkov/compare/3.2.72...3.2.73) - 2024-04-21
+
+### Feature
+
+- **sast:** TypeScript cdk policies p7 - [#6186](https://github.com/bridgecrewio/checkov/pull/6186)
+
+## [3.2.72](https://github.com/bridgecrewio/checkov/compare/3.2.71...3.2.72) - 2024-04-19
+
+### Feature
+
+- **bicep:** Add bicep version of policy - [#6191](https://github.com/bridgecrewio/checkov/pull/6191)
+
+## [3.2.71](https://github.com/bridgecrewio/checkov/compare/3.2.70...3.2.71) - 2024-04-18
+
+### Feature
+
+- **sca:** support licenses custom policies enforcement rules - [#6173](https://github.com/bridgecrewio/checkov/pull/6173)
+
+## [3.2.70](https://github.com/bridgecrewio/checkov/compare/3.2.68...3.2.70) - 2024-04-17
+
+### Feature
+
+- **sast:** Add 5 cdk for TS - [#6179](https://github.com/bridgecrewio/checkov/pull/6179)
+
+### Bug Fix
+
+- **sast:** fix skipped_checks paths before upload to the platform - [#6183](https://github.com/bridgecrewio/checkov/pull/6183)
+
+## [3.2.68](https://github.com/bridgecrewio/checkov/compare/3.2.65...3.2.68) - 2024-04-16
+
+### Feature
+
+- **sast:** adding extended code block - [#6178](https://github.com/bridgecrewio/checkov/pull/6178)
+- **sca:** using the new api license/get-licenses-violations instead of packages/get-licenses-violations (which is deprecated) - [#6174](https://github.com/bridgecrewio/checkov/pull/6174)
+
+### Bug Fix
+
+- **sca:** Revert "feat(sca): using the new api license/get-licenses-violations … - [#6176](https://github.com/bridgecrewio/checkov/pull/6176)
+
+## [3.2.65](https://github.com/bridgecrewio/checkov/compare/3.2.63...3.2.65) - 2024-04-15
+
+### Bug Fix
+
+- **sast:** save suppress_comment for sast inline suppressions - [#6171](https://github.com/bridgecrewio/checkov/pull/6171)
+- **secrets:** Azure Storage Key detector updates in bc-detect-secrets 1.5.7 - [#6168](https://github.com/bridgecrewio/checkov/pull/6168)
+
+## [3.2.63](https://github.com/bridgecrewio/checkov/compare/3.2.60...3.2.63) - 2024-04-14
+
+### Feature
+
+- **sast:** CDK TS policies p2 - [#6165](https://github.com/bridgecrewio/checkov/pull/6165)
+
+## [3.2.60](https://github.com/bridgecrewio/checkov/compare/3.2.55...3.2.60) - 2024-04-10
+
+### Feature
+
+- **sast:** Add TS CDK policies 1 - [#6151](https://github.com/bridgecrewio/checkov/pull/6151)
+- **sast:** CDK TS policies p3 - [#6157](https://github.com/bridgecrewio/checkov/pull/6157)
+
+### Bug Fix
+
+- **terraform:** Fix conditional expression evaluation logic with compare - [#6160](https://github.com/bridgecrewio/checkov/pull/6160)
+- **terraform:** Fixed flaky test for CKV_AWS_356 - [#6162](https://github.com/bridgecrewio/checkov/pull/6162)
 
 ## [3.2.55](https://github.com/bridgecrewio/checkov/compare/3.2.53...3.2.55) - 2024-04-08
 

@@ -9,7 +9,7 @@ scope:
   languages:
     - typescript
 definition:
-  pattern: new workspaces.CfnWorkspace(<ANY>)
+  pattern: new $AWS.CfnWorkspace(<ANY>)
   conditions:
     - not_pattern: |
-        new workspaces.CfnWorkspace(<ANY>, {<ANY>, rootVolumeEncryptionEnabled: true, <ANY>} , <ANY>)
+        new $AWS.CfnWorkspace(<ANY>, {<ANY>, rootVolumeEncryptionEnabled: true, <ANY>} , <ANY>)

@@ -9,7 +9,7 @@ scope:
   languages:
     - typescript
 definition:
-  pattern: new sns.Topic(<ANY>)
+  pattern: new $AWS.Topic(<ANY>)
   conditions:
     - not_pattern: |
-        new sns.Topic(<ANY>, {<ANY>, masterKey: $ARG ,<ANY> }, <ANY>)
+        new $AWS.Topic(<ANY>, {<ANY>, masterKey: $ARG ,<ANY> }, <ANY>)
