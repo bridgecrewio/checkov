@@ -1,0 +1,49 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_195
+  name: Ensure Glue component has a security configuration associated
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  or:
+    - pattern: new $PACKAGE.aws_glue.CfnCrawler(<ANY>, <ANY>, { <ANY> })
+      conditions:
+        - not_pattern: |
+            new $PACKAGE.aws_glue.CfnCrawler(<ANY>, <ANY>, { <ANY>, crawlerSecurityConfiguration: $CON, <ANY> } )
+        - metavariable: $PACKAGE
+          comparison: $PACKAGE == "aws-cdk-lib"
+    - pattern: new $PACKAGE.aws_glue.CfnDevEndpoint(<ANY>, <ANY>, { <ANY> })
+      conditions:
+        - not_pattern: |
+            new $PACKAGE.aws_glue.CfnDevEndpoint(<ANY>, <ANY>, { <ANY>, securityConfiguration: $VAL, <ANY> })
+        - metavariable: $PACKAGE
+          comparison: $PACKAGE == "aws-cdk-lib"
+    - pattern: new $PACKAGE.aws_glue.CfnJob(<ANY>, <ANY>, { <ANY> })
+      conditions:
+        - not_pattern: |
+            new $PACKAGE.aws_glue.CfnJob(<ANY>, <ANY>, { <ANY>, securityConfiguration: $VAL, <ANY> })
+        - metavariable: $PACKAGE
+          comparison: $PACKAGE == "aws-cdk-lib"
+    - pattern: "$X = { <ANY> }"
+      conditions:
+        - metavariable: $X
+          type: aws-cdk-lib.aws_glue.CfnCrawlerProps
+        - not_pattern: |
+            $X = { <ANY>, crawlerSecurityConfiguration: $VAL, <ANY> }
+    - pattern: "$X = { <ANY> }"
+      conditions:
+        - metavariable: $X
+          type: aws-cdk-lib.aws_glue.CfnDevEndpointProps
+        - not_pattern: |
+            $X = { <ANY>, securityConfiguration: $VAL, <ANY> }
+    - pattern: "$X = { <ANY> }"
+      conditions:
+        - metavariable: $X
+          type: aws-cdk-lib.aws_glue.CfnJobProps
+        - not_pattern: |
+            $X = { <ANY>, securityConfiguration: $VAL, <ANY> }
+
