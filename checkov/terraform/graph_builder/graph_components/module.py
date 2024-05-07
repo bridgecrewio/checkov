@@ -36,7 +36,7 @@ class Module:
         self.resources_types: Set[str] = set()
         self.source_dir = source_dir
         self.render_dynamic_blocks_env_var = os.getenv('CHECKOV_RENDER_DYNAMIC_MODULES', 'True')
-        self.temp_tf_definition: Union[dict[str, dict[str, Any]]] = {}
+        self.temp_tf_definition: dict[str, dict[str, Any]] | dict[TFDefinitionKey, dict[str, Any]] = {}
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Module):
