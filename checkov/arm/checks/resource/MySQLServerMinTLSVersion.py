@@ -20,4 +20,4 @@ class MySQLServerMinTLSVersion(BaseResourceValueCheck):
         return "TLS1_2"
 
 
-check =MySQLServerMinTLSVersion()
+check = MySQLServerMinTLSVersion()
