@@ -1,7 +1,6 @@
 from checkov.arm.base_resource_value_check import BaseResourceValueCheck
 from checkov.common.models.enums import CheckCategories
 
-
 class AutomationEncrypted(BaseResourceValueCheck):
     def __init__(self) -> None:
         name = "Ensure that Automation account variables are encrypted"
