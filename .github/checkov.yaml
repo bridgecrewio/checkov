@@ -21,6 +21,13 @@ skip-path:
 - tests/terraform/runner/tf_plan_skip_check_regex/resource/tfplan1.json
 - tests/terraform/runner/tfplan2.json
 - tests/unit/test_secrets.py
+- tests/terraform/runner/resources/example/example.tf
+- tests/terraform/graph
+- tests/terraform/checks
+- /checkov/secrets/plugins/entropy_keyword_combinator.py
+- /checkov/secrets/plugins/detector_utils.py
+- /cdk_integration_tests/src/python/RedshiftClusterPubliclyAccessible/pass.py
+- /cdk_integration_tests/src/python/RedshiftClusterPubliclyAccessible/fail__1__.py
 - /cdk_integration_tests/src/python/ElasticacheReplicationGroupEncryptionAtTransitAuthToken/fail__2__.py
 - /cdk_integration_tests/src/python/ElasticacheReplicationGroupEncryptionAtTransitAuthToken/pass.py
 - /cdk_integration_tests/src/typescript
