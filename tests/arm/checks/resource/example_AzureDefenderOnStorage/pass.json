@@ -7,6 +7,6 @@
             "name": "pass",
             "properties": {
                 "tier": "Standard",
-                "resourceType": "StorageAccounts"
+                "resourceType": "Microsoft.Security/pricings"
             }
         }]}

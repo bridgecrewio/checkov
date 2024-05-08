@@ -18,7 +18,7 @@ class AzureDefenderOnStorage(BaseResourceCheck):
         resourceType = properties.get("resourceType")
         return (
             CheckResult.PASSED
-            if resourceType != "StorageAccounts" or tier == "Standard"
+            if resourceType != "Microsoft.Security/pricings" or tier == "Standard"
             else CheckResult.FAILED
         )
 
