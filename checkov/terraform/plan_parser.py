@@ -250,7 +250,7 @@ def _find_child_modules(
                     (
                         module_call_resource
                         for module_call_resource in module_call_resources
-                        if f"{module_address}.{module_call_resource['address']}" == resource["address"]
+                        if f"{module_address}.{module_call_resource['address']}" == (resource["address"].rsplit('[', 1)[0] if resource["address"][-1] == "]" else resource["address"])
                     ),
                     None
                 )
