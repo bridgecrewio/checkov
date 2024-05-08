@@ -22,7 +22,7 @@ class CognitoUnauthenticatedIdentities(BaseResourceValueCheck):
         return False
 
     def get_inspected_key(self) -> str:
-        return 'AllowUnauthenticatedIdentities'
+        return 'Properties/AllowUnauthenticatedIdentities'
 
 
 check = CognitoUnauthenticatedIdentities()
