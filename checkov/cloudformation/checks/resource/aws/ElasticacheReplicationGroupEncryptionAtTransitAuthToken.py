@@ -23,7 +23,8 @@ class ElasticacheReplicationGroupEncryptionAtTransitAuthToken(BaseResourceCheck)
         """
         properties = conf. get("Properties")
         if properties and isinstance(properties, dict):
-            if "TransitEncryptionEnabled" in properties.keys() and "AuthToken" in properties.keys():
+            if "TransitEncryptionEnabled" in properties.keys() and ("AuthToken" in properties.keys() or
+                                                                    "UserGroupIds" in properties.keys()):
                 if conf["Properties"]["TransitEncryptionEnabled"]:
                     return CheckResult.PASSED
         return CheckResult.FAILED
