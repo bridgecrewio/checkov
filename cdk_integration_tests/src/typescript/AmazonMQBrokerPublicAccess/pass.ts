@@ -5,8 +5,8 @@ import { aws_elasticloadbalancingv2 as elbv2 } from 'aws-cdk-lib';
 class AmazonMQBrokerPublicAccessStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {
         super(scope, id, props);
-
-        new elbv2.CfnBroker(this, {publiclyAccessible: true})
+        new elbv2.CfnBroker(this, {})
+        new elbv2.CfnBroker(this, {publiclyAccessible: false})
     }
 }
 
