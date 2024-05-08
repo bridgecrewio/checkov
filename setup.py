@@ -142,6 +142,7 @@ setup(
         "checkov.terraform.checks.graph_checks": ["**/*.json"],
         "checkov.cdk.checks": [
             "python/*.yaml",
+            "typescript/*.yaml",
         ],
     },
     scripts=["bin/checkov", "bin/checkov.cmd"],

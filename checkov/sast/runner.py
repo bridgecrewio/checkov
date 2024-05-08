@@ -67,8 +67,6 @@ class Runner(BaseRunner[None, None, None]):
         if not bool(convert_str_to_bool(os.getenv('ENABLE_SAST_GOLANG', False))):
             if SastLanguages.GOLANG in runner_filter.sast_languages:
                 runner_filter.sast_languages.remove(SastLanguages.GOLANG)
-            if CDKLanguages.GOLANG in self.cdk_langs:
-                self.cdk_langs.remove(CDKLanguages.GOLANG)
 
         # registry get all the paths
         self.registry.set_runner_filter(runner_filter)

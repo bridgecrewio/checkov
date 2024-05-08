@@ -6,7 +6,7 @@ class ALBListenerHTTPSStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {
         super(scope, id, props);
 
-        new elbv2.CfnLoadBalancer(this, {})
+        new elbv2.CfnListener(this, {})
     }
 }
 

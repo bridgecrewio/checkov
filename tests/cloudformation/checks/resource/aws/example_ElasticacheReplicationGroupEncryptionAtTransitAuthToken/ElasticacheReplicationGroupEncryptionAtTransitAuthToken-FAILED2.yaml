@@ -110,10 +110,9 @@ Resources:
       SubnetIds:
         - !Ref SubnetA
         - !Ref SubnetB
-  ReplicationGroupPass:
+  ReplicationGroupFail2:
     Type: 'AWS::ElastiCache::ReplicationGroup'
     Properties:
-      AuthToken: 'MySecret!AuthToken$'
       AutomaticFailoverEnabled: !Ref MultiAZSupport
       AtRestEncryptionEnabled: True
       #AtRestEncryptionEnabled: False	# Optional parameter
@@ -131,5 +130,6 @@ Resources:
       SnapshotRetentionLimit: !Ref SnapshotRetentionLimit
       SnapshotWindow: !Ref SnapshotWindow
       #TransitEncryptionEnabled: False
-      TransitEncryptionEnabled: True
-
+      TransitEncryptionEnabled: False
+      UserGroupIds:
+        - Example

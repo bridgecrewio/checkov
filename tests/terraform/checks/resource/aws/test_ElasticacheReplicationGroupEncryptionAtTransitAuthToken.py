@@ -1,31 +1,42 @@
+import os
 import unittest
 
+from checkov.runner_filter import RunnerFilter
 from checkov.terraform.checks.resource.aws.ElasticacheReplicationGroupEncryptionAtTransitAuthToken import check
-from checkov.common.models.enums import CheckResult
+from checkov.terraform.runner import Runner
+
+class TestElasticacheReplicationGroupEncryptionAtTransitAuthToken(unittest.TestCase):
+    def test(self):
+        runner = Runner()
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+
+        test_files_dir = current_dir + "/example_ElasticacheReplicationGroupEncryptionAtTransitAuthToken"
+        report = runner.run(
+            root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id])
+        )
+        summary = report.get_summary()
+
+        passing_resources = {
+            "aws_elasticache_replication_group.pass",
+            "aws_elasticache_replication_group.pass2",
+        }
+        failing_resources = {
+            "aws_elasticache_replication_group.fail",
+            "aws_elasticache_replication_group.fail2",
+            "aws_elasticache_replication_group.fail3",
+        }
+
+        passed_check_resources = set([c.resource for c in report.passed_checks])
+        failed_check_resources = set([c.resource for c in report.failed_checks])
+
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
+        self.assertEqual(summary["skipped"], 0)
+        self.assertEqual(summary["parsing_errors"], 0)
+
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
 
-class TestKMSRotation(unittest.TestCase):
-
-    def test_success(self):
-        resource_conf = {'automatic_failover_enabled': [True], 'availability_zones': [['us-west-2a', 'us-west-2b']],
-                         'replication_group_id': ['tf-rep-group-1'],
-                         'replication_group_description': ['test description'], 'node_type': ['cache.m4.large'],
-                         'number_cache_clusters': [2], 'parameter_group_name': ['default.redis3.2'], 'port': [6379],
-                         'at_rest_encryption_enabled': [True], 'transit_encryption_enabled': [True],
-                         'auth_token': ['${var.auth_token}']}
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.PASSED, scan_result)
-
-    def test_failure(self):
-        resource_conf = {'automatic_failover_enabled': [True], 'availability_zones': [['us-west-2a', 'us-west-2b']],
-                         'replication_group_id': ['tf-rep-group-1'],
-                         'replication_group_description': ['test description'], 'node_type': ['cache.m4.large'],
-                         'number_cache_clusters': [2], 'parameter_group_name': ['default.redis3.2'], 'port': [6379],
-                         'at_rest_encryption_enabled': [False], 'transit_encryption_enabled': [False],
-                         }
-        scan_result = check.scan_resource_conf(conf=resource_conf)
-        self.assertEqual(CheckResult.FAILED, scan_result)
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
