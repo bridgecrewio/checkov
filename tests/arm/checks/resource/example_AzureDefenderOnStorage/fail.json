@@ -8,7 +8,7 @@
       "name": "fail",
       "properties": {
         "tier": "Free",
-        "resourceType": "StorageAccounts"
+        "resourceType": "Microsoft.Security/pricings"
       }
     }
   ]
