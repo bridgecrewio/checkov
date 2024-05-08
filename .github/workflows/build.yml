@@ -289,7 +289,7 @@ jobs:
         run: |
           pipenv run python -m pytest tests
   bump-version:
-    needs: [integration-tests, unit-tests, prisma-tests] # add 'sast-integration-tests' when ready
+    needs: [integration-tests, unit-tests, prisma-tests, sast-integration-tests, integration-tests-old-python, sast-integration-tests-old-python]
     runs-on: [self-hosted, public, linux, x64]
     environment: release
     permissions:
