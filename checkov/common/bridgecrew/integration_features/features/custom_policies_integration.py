@@ -23,6 +23,7 @@ if TYPE_CHECKING:
 # service-provider::service-name::data-type-name
 CFN_RESOURCE_TYPE_IDENTIFIER = re.compile(r"^[a-zA-Z0-9]+::[a-zA-Z0-9]+::[a-zA-Z0-9]+$")
 SAST_CATEGORY = 'Sast'
+LICENSES_CATEGORY = 'Licenses'
 
 
 class CustomPoliciesIntegration(BaseIntegrationFeature):
@@ -68,6 +69,10 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
                         self.bc_cloned_checks[source_incident_id].append(policy)
                         continue
                     resource_types = Registry._get_resource_types(converted_check['metadata'])
+
+                    if policy.get('category') == LICENSES_CATEGORY:
+                        continue
+
                     check = self.platform_policy_parser.parse_raw_check(converted_check, resources_types=resource_types)
                     check.severity = Severities[policy['severity']]
                     check.bc_id = check.id
