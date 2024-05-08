@@ -1,6 +1,17 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.82...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.84...HEAD)
+
+## [3.2.84](https://github.com/bridgecrewio/checkov/compare/3.2.82...3.2.84) - 2024-05-07
+
+### Feature
+
+- **sast:** Enable cdk ts integraion test - [#6158](https://github.com/bridgecrewio/checkov/pull/6158)
+
+### Bug Fix
+
+- **secrets:** add files for secret to skip - [#6275](https://github.com/bridgecrewio/checkov/pull/6275)
+- **terraform:** Update CKV_AWS_31 for RBAC - [#6224](https://github.com/bridgecrewio/checkov/pull/6224)
 
 ## [3.2.82](https://github.com/bridgecrewio/checkov/compare/3.2.79...3.2.82) - 2024-05-06
 
