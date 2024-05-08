@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from checkov.common.graph.checks_infra.registry import BaseRegistry
+
 from checkov.ansible.checks.registry import registry
 from checkov.ansible.graph_builder.graph_components.resource_types import ResourceType
 from checkov.ansible.graph_builder.local_graph import AnsibleLocalGraph
@@ -27,6 +29,7 @@ class Runner(YamlRunner):
         source: str = "Ansible",
         graph_class: type[ObjectLocalGraph] = AnsibleLocalGraph,
         graph_manager: ObjectGraphManager | None = None,
+        external_registries: list[BaseRegistry] | None = None,
     ) -> None:
         super().__init__(
             db_connector=db_connector,
