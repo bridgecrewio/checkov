@@ -30,7 +30,6 @@ fi
 [[ -n "$INPUT_SOFT_FAIL_ON" ]] && SOFT_FAIL_ON_FLAG="--soft-fail-on $INPUT_SOFT_FAIL_ON"
 [[ -n "$INPUT_HARD_FAIL_ON" ]] && HARD_FAIL_ON_FLAG="--hard-fail-on $INPUT_HARD_FAIL_ON"
 [[ -n "$INPUT_REPO_ROOT_FOR_PLAN_ENRICHMENT" ]] && INPUT_REPO_ROOT_FOR_PLAN_ENRICHMENT_FLAG="--repo-root-for-plan-enrichment $INPUT_REPO_ROOT_FOR_PLAN_ENRICHMENT"
-[[ -n "$INPUT_DEEP_ANALYSIS" ]] && INPUT_DEEP_ANALYSIS_FLAG="--deep-analysis $INPUT_DEEP_ANALYSIS"
 [[ -n "$INPUT_POLICY_METADATA_FILTER" ]] && POLICY_METADATA_FILTER_FLAG="--policy-metadata-filter $INPUT_POLICY_METADATA_FILTER"
 
 if [ -n "$INPUT_OUTPUT_BC_IDS" ] && [ "$INPUT_OUTPUT_BC_IDS" = "true" ]; then
@@ -67,6 +66,10 @@ fi
 
 if [ -n "$INPUT_SKIP_DOWNLOAD" ] && [ "$INPUT_SKIP_DOWNLOAD" = "true" ]; then
   SKIP_DOWNLOAD_FLAG="--skip-download"
+fi
+
+if [ -n "$INPUT_DEEP_ANALYSIS" ] && [ "$INPUT_DEEP_ANALYSIS" = "true" ]; then
+  INPUT_DEEP_ANALYSIS_FLAG="--deep-analysis"
 fi
 
 if [ -n "$INPUT_LOG_LEVEL" ]; then
