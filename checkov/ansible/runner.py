@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 from typing import TYPE_CHECKING, Any
 
 from checkov.common.graph.checks_infra.registry import BaseRegistry
@@ -134,5 +132,5 @@ class Runner(YamlRunner):
     ) -> dict[str, dict[str, Any]]:
         return build_definitions_context(definitions=definitions, definitions_raw=definitions_raw)
 
-    def set_definitions_raw(self, definitions_raw: dict[Path, list[tuple[int, str]]]) -> None:
+    def set_definitions_raw(self, definitions_raw: dict[str, list[tuple[int, str]]]) -> None:
         self.definitions_raw = definitions_raw
