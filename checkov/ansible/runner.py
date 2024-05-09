@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from typing import TYPE_CHECKING, Any
+
+from checkov.common.graph.checks_infra.registry import BaseRegistry
 
 from checkov.ansible.checks.registry import registry
 from checkov.ansible.graph_builder.graph_components.resource_types import ResourceType
@@ -27,6 +31,7 @@ class Runner(YamlRunner):
         source: str = "Ansible",
         graph_class: type[ObjectLocalGraph] = AnsibleLocalGraph,
         graph_manager: ObjectGraphManager | None = None,
+        external_registries: list[BaseRegistry] | None = None,
     ) -> None:
         super().__init__(
             db_connector=db_connector,
@@ -128,3 +133,6 @@ class Runner(YamlRunner):
         definitions_raw: dict[str, list[tuple[int, str]]],
     ) -> dict[str, dict[str, Any]]:
         return build_definitions_context(definitions=definitions, definitions_raw=definitions_raw)
+
+    def set_definitions_raw(self, definitions_raw: dict[Path, list[tuple[int, str]]]) -> None:
+        self.definitions_raw = definitions_raw
