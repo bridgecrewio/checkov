@@ -66,7 +66,8 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self.vertices_by_module_dependency: Dict[TFModule | None, Dict[str, List[int]]] = defaultdict(partial(defaultdict, list))
         self.enable_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_FOREACH_HANDLING', 'True'))
         self.enable_modules_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_MODULES_FOREACH_HANDLING', 'True'))
-        self.foreach_blocks: Dict[str, List[int]] = {BlockType.RESOURCE: [], BlockType.MODULE: []}
+        self.enable_datas_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_DATAS_FOREACH_HANDLING', 'False'))
+        self.foreach_blocks: Dict[str, List[int]] = {BlockType.RESOURCE: [], BlockType.MODULE: [], BlockType.DATA: []}
 
         # Important for foreach performance, see issue https://github.com/bridgecrewio/checkov/issues/6068
         self._vertex_path_to_realpath_cache: Dict[str, str] = {}
@@ -77,7 +78,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self._build_edges()
         logging.info(f"[TerraformLocalGraph] created {len(self.edges)} edges")
         if (self.enable_foreach_handling or self.enable_modules_foreach_handling) \
-                and (self.foreach_blocks[BlockType.RESOURCE] or self.foreach_blocks[BlockType.MODULE]):
+                and (self.foreach_blocks[BlockType.RESOURCE] or self.foreach_blocks[BlockType.MODULE] or self.foreach_blocks[BlockType.DATA]):
             try:
                 logging.info('[TerraformLocalGraph] start handling foreach')
                 foreach_builder = ForeachBuilder(self)
@@ -122,7 +123,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             self._add_block_data_to_graph(i, block)
             if self.enable_foreach_handling and (
                     checkov.terraform.graph_builder.foreach.consts.FOREACH_STRING in block.attributes or checkov.terraform.graph_builder.foreach.consts.COUNT_STRING in block.attributes) \
-                    and block.block_type in (BlockType.MODULE, BlockType.RESOURCE):
+                    and block.block_type in (BlockType.MODULE, BlockType.RESOURCE, BlockType.DATA):
                 self.foreach_blocks[block.block_type].append(i)
 
     def _add_block_data_to_graph(self, idx: int, block: TerraformBlock) -> None:
