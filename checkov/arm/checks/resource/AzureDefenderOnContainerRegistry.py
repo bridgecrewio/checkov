@@ -2,9 +2,8 @@ from __future__ import annotations
 
 from typing import List
 
-from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.arm.base_resource_check import BaseResourceCheck
-
+from checkov.common.models.enums import CheckCategories, CheckResult
 
 class AzureDefenderOnContainerRegistry(BaseResourceCheck):
     def __init__(self) -> None:

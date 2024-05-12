@@ -1,7 +1,7 @@
 import unittest
 from pathlib import Path
-from checkov.arm.checks.resource.AzureDefenderOnContainerRegistry import check
 from checkov.arm.runner import Runner
+from checkov.arm.checks.resource.AzureDefenderOnContainerRegistry import check
 from checkov.runner_filter import RunnerFilter
 
 
