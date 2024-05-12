@@ -23,6 +23,7 @@ class MatchLocation(BaseModel):
     start: Point  # noqa: CCE003
     end: Point  # noqa: CCE003
     code_block: str  # noqa: CCE003
+    extended_code_block: Optional[Dict[str, Any]] = None   # noqa: CCE003
 
     @model_serializer
     def serialize_model(self) -> Dict[str, Any]:
