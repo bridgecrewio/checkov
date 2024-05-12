@@ -21,6 +21,8 @@ class SastLanguages(Enum):
     PYTHON = 'python'
     JAVA = 'java'
     JAVASCRIPT = 'javascript'
+    TYPESCRIPT = 'typescript'
+    GOLANG = 'golang'
 
 
 class CDKLanguages(Enum):
@@ -33,6 +35,7 @@ class CDKLanguages(Enum):
         return set(cls)
 
     PYTHON = 'python'
+    TYPESCRIPT = 'typescript'
 
 
 class BqlVersion(str, Enum):
@@ -54,12 +57,16 @@ SUPPORT_FILE_EXT = {
     SastLanguages.PYTHON: ['py'],
     SastLanguages.JAVA: ['java'],
     SastLanguages.JAVASCRIPT: ['js'],
+    SastLanguages.TYPESCRIPT: ['ts'],
+    SastLanguages.GOLANG: ['go'],
 }
 
 FILE_EXT_TO_SAST_LANG = {
     'py': SastLanguages.PYTHON,
     'java': SastLanguages.JAVA,
     'js': SastLanguages.JAVASCRIPT,
+    'ts': SastLanguages.TYPESCRIPT,
+    'go': SastLanguages.GOLANG,
 }
 
 POLICIES_ERRORS = 'policies_errors'
