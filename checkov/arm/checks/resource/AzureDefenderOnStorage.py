@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List
+from typing import List, Any, Dict
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.arm.base_resource_check import BaseResourceCheck
 
@@ -12,10 +12,10 @@ class AzureDefenderOnStorage(BaseResourceCheck):
         categories = (CheckCategories.GENERAL_SECURITY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf: dict) -> CheckResult:
-        properties = conf.get("properties", {})
-        tier = properties.get("tier")
-        resourceType = properties.get("resourceType")
+    def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
+        properties: Dict[str, Any] = conf.get("properties", {})
+        tier = properties.get("tier", "")
+        resourceType = properties.get("resourceType", "")
         return (
             CheckResult.PASSED
             if resourceType != "Microsoft.Security/pricings" or tier == "Standard"
