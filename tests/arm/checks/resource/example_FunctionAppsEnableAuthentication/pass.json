@@ -3,15 +3,13 @@
     "contentVersion": "1.0.0.0",
     "resources": [
         {
-            "type": "Microsoft.Web/sites",
+            "type": "Microsoft.Web/sites/config",
             "apiVersion": "2021-02-01",
             "name": "pass",
             "properties": {
                 "publisherEmail": "[parameters('adminEmail')]",
                 "publisherName": "[parameters('organizationName')]",
-                "customProperties": "[parameters('customProperties')]"
-            },
-            "auth_settings": {
+                "customProperties": "[parameters('customProperties')]",
                 "enabled": true
             },
             "resources": [],

@@ -5,11 +5,12 @@
         {
             "type": "Microsoft.Web/sites/config",
             "apiVersion": "2021-02-01",
-            "name": "fail",
+            "name": "fail2",
             "properties": {
                 "publisherEmail": "[parameters('adminEmail')]",
                 "publisherName": "[parameters('organizationName')]",
-                "customProperties": "[parameters('customProperties')]"
+                "customProperties": "[parameters('customProperties')]",
+                "enabled": false
             },
             "resources": [],
             "dependsOn": []

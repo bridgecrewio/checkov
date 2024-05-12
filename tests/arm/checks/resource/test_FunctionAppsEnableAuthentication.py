@@ -19,10 +19,11 @@ class TestFunctionAppsEnableAuthentication(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "Microsoft.Web/sites.pass",
+            "Microsoft.Web/sites/config.pass",
         }
         failing_resources = {
-            "Microsoft.Web/sites.fail",
+            "Microsoft.Web/sites/config.fail",
+            "Microsoft.Web/sites/config.fail2",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}

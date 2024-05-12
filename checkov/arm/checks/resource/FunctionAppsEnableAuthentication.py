@@ -7,7 +7,7 @@ class FunctionAppsEnableAuthentication(BaseResourceValueCheck):
     def __init__(self) -> None:
         name = "Ensure that function apps enables Authentication"
         id = "CKV_AZURE_56"
-        supported_resources = ("Microsoft.Web/sites",)
+        supported_resources = ("Microsoft.Web/sites/config",)
         categories = (CheckCategories.GENERAL_SECURITY,)
         super().__init__(name=name,
                          id=id,
@@ -17,7 +17,7 @@ class FunctionAppsEnableAuthentication(BaseResourceValueCheck):
                          )
 
     def get_inspected_key(self) -> str:
-        return 'auth_settings/enabled'
+        return 'properties/enabled'
 
 
 check = FunctionAppsEnableAuthentication()
