@@ -46,16 +46,6 @@
                 "publicNetworkAccess": "Enabled",
                 "diskState": "Unattached"
             }
-        },
-    {
-        "type": "Microsoft.Security/pricings",
-        "apiVersion": "2018-06-01",
-        "name": "KubernetesService",
-        "dependsOn": [
-            "[concat('Microsoft.Security/pricings/AppServices')]"
-        ],
-        "properties": {
-            "pricingTier": "Free"
         }
-    }
+
 ]}

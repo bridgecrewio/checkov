@@ -13,20 +13,14 @@ class AzureDefenderOnKubernetes(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,)
 
     def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
-        if "name" in conf:
-            if conf["name"] != "KubernetesService":
-                return CheckResult.PASSED
-            properties = conf.get('properties')
-            if not properties or not isinstance(properties, dict):
-                return CheckResult.FAILED
-            pricingTier = properties.get('pricingTier')
-            if not pricingTier:
-                return CheckResult.FAILED
-            if pricingTier == "Free":
-                return CheckResult.FAILED
-            return CheckResult.PASSED
-        return CheckResult.FAILED
+        return (
+            CheckResult.PASSED
+            if conf.get("name") != "KubernetesService" or str(conf["properties"]["pricingTier"]).lower() == "standard"
+            else CheckResult.FAILED
+        )
 
+    def get_evaluated_keys(self) -> list[str]:
+        return ["name", "pricingTier"]
 
 
 check = AzureDefenderOnKubernetes()
