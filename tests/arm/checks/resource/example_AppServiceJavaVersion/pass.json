@@ -11,8 +11,8 @@
                 "publisherName": "[parameters('organizationName')]",
                 "customProperties": "[parameters('customProperties')]"
             },
-            "site_config": {
-                "java_version": "17"
+            "siteConfig": {
+                "javaVersion": "17"
             },
             "resources": [],
             "dependsOn": []

@@ -13,7 +13,7 @@ class AppServiceJavaVersion(BaseResourceValueCheck):
                          missing_block_result=CheckResult.UNKNOWN)
 
     def get_inspected_key(self) -> str:
-        return "site_config/java_version"
+        return "siteConfig/javaVersion"
 
     def get_expected_value(self) -> Any:
         return '17'
