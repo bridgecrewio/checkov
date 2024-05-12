@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.90...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.91...HEAD)
+
+## [3.2.91](https://github.com/bridgecrewio/checkov/compare/3.2.90...3.2.91) - 2024-05-12
+
+### Feature
+
+- **secrets:** bump bc-detect-secrets to 1.5.10 - [#6297](https://github.com/bridgecrewio/checkov/pull/6297)
 
 ## [3.2.90](https://github.com/bridgecrewio/checkov/compare/3.2.85...3.2.90) - 2024-05-09
 
