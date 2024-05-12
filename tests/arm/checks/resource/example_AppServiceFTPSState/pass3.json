@@ -11,8 +11,8 @@
                 "publisherName": "[parameters('organizationName')]",
                 "customProperties": "[parameters('customProperties')]"
             },
-            "site_config": {
-                "ftps_state":"Disabled",
+            "siteConfig": {
+                "ftpsState":"Disabled",
                         "appSettings": [
             {
               "name": "WEBSITE_NODE_DEFAULT_VERSION",

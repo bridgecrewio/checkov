@@ -12,7 +12,7 @@ class AppServiceFTPSState(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self) -> str:
-        return "site_config/ftps_state"
+        return "siteConfig/ftpsState"
 
     def get_expected_value(self) -> str:
         return "Disabled"

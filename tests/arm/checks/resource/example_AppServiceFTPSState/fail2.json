@@ -11,8 +11,8 @@
                 "publisherName": "[parameters('organizationName')]",
                 "customProperties": "[parameters('customProperties')]"
             },
-            "site_config": {
-                "ftps_state":
+            "siteConfig": {
+                "ftpsState":
             },
             "resources": [],
             "dependsOn": []
