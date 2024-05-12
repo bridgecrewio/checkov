@@ -17,6 +17,7 @@ class TestAppServiceRemoteDebuggingNotEnabled(unittest.TestCase):
 
         passing_resources = {
             "Microsoft.Web/sites.pass",
+            "Microsoft.Web/sites.pass1",
         }
         failing_resources = {
             "Microsoft.Web/sites.fail",
