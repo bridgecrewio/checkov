@@ -4,19 +4,18 @@ from checkov.arm.base_resource_value_check import BaseResourceValueCheck
 
 
 class AzureDataExplorerDoubleEncryptionEnabled(BaseResourceValueCheck):
-    def __init__(self):
-        name = "Ensure that Azure Data Explorer uses double encryption"
-        id = "CKV_AZURE_75"
-        supported_resources = ("Microsoft.Compute/disks",)
-        categories = (CheckCategories.ENCRYPTION,)
+    def __init__(self) -> None:
+        name: str = "Ensure that Azure Data Explorer uses double encryption"
+        id: str = "CKV_AZURE_75"
+        supported_resources: tuple = ("Microsoft.Compute/disks",)
+        categories: tuple = (CheckCategories.ENCRYPTION,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def get_inspected_key(self):
+    def get_inspected_key(self) -> str:
         return "properties/doubleEncryptionEnabled"
 
-    def get_expected_value(self):
+    def get_expected_value(self) -> Any:
         return True
 
 
-check = AzureDataExplorerDoubleEncryptionEnabled()
-
+check: Any = AzureDataExplorerDoubleEncryptionEnabled()
