@@ -1,6 +1,33 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.84...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.90...HEAD)
+
+## [3.2.90](https://github.com/bridgecrewio/checkov/compare/3.2.85...3.2.90) - 2024-05-09
+
+### Feature
+
+- **general:** Add deep-analysis to GHA - [#6288](https://github.com/bridgecrewio/checkov/pull/6288)
+- **terraform:** Add more hype policies - [#6239](https://github.com/bridgecrewio/checkov/pull/6239)
+
+### Bug Fix
+
+- **ansible:** fix ansible definitions raw type - [#6292](https://github.com/bridgecrewio/checkov/pull/6292)
+
+### Platform
+
+- **ansible:** add set definitions raw to ansible runner - [#6286](https://github.com/bridgecrewio/checkov/pull/6286)
+- **general:** Handle SAST suppressions (suppressions V2) - [#6109](https://github.com/bridgecrewio/checkov/pull/6109)
+
+### Documentation
+
+- **general:** add RENDER_EDGES_DUPLICATE_ITER_COUNT to docs - [#6291](https://github.com/bridgecrewio/checkov/pull/6291)
+- **general:** Update README links for PyPi - [#6231](https://github.com/bridgecrewio/checkov/pull/6231)
+
+## [3.2.85](https://github.com/bridgecrewio/checkov/compare/3.2.84...3.2.85) - 2024-05-08
+
+### Platform
+
+- **ansible:** add missing arg to ansible runner - [#6276](https://github.com/bridgecrewio/checkov/pull/6276)
 
 ## [3.2.84](https://github.com/bridgecrewio/checkov/compare/3.2.82...3.2.84) - 2024-05-07
 
