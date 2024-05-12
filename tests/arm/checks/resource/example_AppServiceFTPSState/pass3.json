@@ -1,0 +1,29 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "resources": [
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2021-02-01",
+            "name": "pass3",
+            "properties": {
+                "publisherEmail": "[parameters('adminEmail')]",
+                "publisherName": "[parameters('organizationName')]",
+                "customProperties": "[parameters('customProperties')]"
+            },
+            "site_config": {
+                "ftps_state":"Disabled",
+                        "appSettings": [
+            {
+              "name": "WEBSITE_NODE_DEFAULT_VERSION",
+              "value": "14.17.0"
+            }
+
+          ],
+          "linuxFxVersion": "NODE|14-lts"
+            },
+            "resources": [],
+            "dependsOn": []
+        }
+    ]
+}
