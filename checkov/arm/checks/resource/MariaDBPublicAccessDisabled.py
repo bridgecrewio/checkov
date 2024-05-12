@@ -5,7 +5,7 @@ from checkov.arm.base_resource_value_check import BaseResourceValueCheck
 
 class MariaDBPublicAccessDisabled(BaseResourceValueCheck):
     def __init__(self) -> None:
-        name = "Ensure that MariaDB server enables geo-redundant backups"
+        name = "Ensure 'public network access enabled' is set to 'False' for MariaDB servers"
         id = "CKV_AZURE_48"
         supported_resources = ("Microsoft.DBforMariaDB/servers",)
         categories = (CheckCategories.NETWORKING,)
