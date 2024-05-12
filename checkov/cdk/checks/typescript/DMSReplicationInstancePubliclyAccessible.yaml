@@ -1,0 +1,13 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_89
+  name: DMS replication instance should not be publicly accessible
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  pattern: |
+      new $AWS.CfnReplicationInstance(<ANY>, {<ANY>, publiclyAccessible: true, <ANY>}, <ANY>)

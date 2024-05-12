@@ -1,0 +1,34 @@
+metadata:
+  id: "CKV_AZURE_24"
+  name: "Ensure that 'Auditing' Retention is 'greater than 90 days' for SQL servers"
+  category: "LOGGING"
+definition:
+  and:
+    - cond_type: "filter"
+      attribute: "resource_type"
+      value:
+        - "Microsoft.Sql/servers"
+      operator: "within"
+    - cond_type: "connection"
+      resource_types:
+        - "Microsoft.Sql/servers"
+      connected_resource_types:
+        - "Microsoft.Sql/servers/auditingSettings"
+      operator: "exists"
+    - cond_type: "attribute"
+      resource_types:
+        - "Microsoft.Sql/servers/auditingSettings"
+      attribute: "properties.retentionDays"
+      operator: "exists"
+    - cond_type: "attribute"
+      resource_types:
+        - "Microsoft.Sql/servers/auditingSettings"
+      attribute: "properties.retentionDays"
+      operator: "greater_than_or_equal"
+      value: 90
+    - cond_type: "attribute"
+      resource_types:
+        - "Microsoft.Sql/servers/auditingSettings"
+      attribute: "properties.state"
+      operator: "equals"
+      value: Enabled
