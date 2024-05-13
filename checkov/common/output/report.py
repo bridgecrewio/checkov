@@ -367,20 +367,30 @@ class Report:
             result.append(
                 [
                     record.get_output_id(use_bc_ids),
-                    record.file_path,
-                    record.resource,
                     record.check_name,
-                    record.guideline,
+                    record.resource,
+                    f"[Link]({record.guideline})",
+                    record.file_path,
                 ]
             )
         if result:
+            summary = self.get_summary()
+            if self.parsing_errors:
+                message = "Passed Checks: {}, Failed Checks: {}, Skipped Checks: {}, Parsing Errors: {}\n\n".format(
+                    summary["passed"],
+                    summary["failed"],
+                    summary["skipped"],
+                    summary["parsing_errors"],
+                )
+            else:
+                message = f"```\nPassed Checks: {summary['passed']}, Failed Checks: {summary['failed']}, Skipped Checks: {summary['skipped']}\n```\n\n"
+
             table = tabulate(
                 result,
-                headers=["check_id", "file", "resource", "check_name", "guideline"],
+                headers=["Check ID", "Check Name", "Resource", "Guideline", "File"],
                 tablefmt="github",
-                showindex=True,
             )
-            output_data = f"### {self.check_type} scan results:\n\n{table}\n\n---\n"
+            output_data = f"### {self.check_type.replace('_', ' ').title()} Scan Results:\n\n{message}{table}\n\n---\n"
             return output_data
         else:
             return "\n\n---\n\n"
