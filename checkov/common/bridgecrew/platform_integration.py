@@ -1416,7 +1416,7 @@ class BcPlatformIntegration:
             # If there are any query parameters, append them to the URI
             if parsed_url.query:
                 uri = f"{uri}?{parsed_url.query}"
-                
+
                 # First encoding
                 encoded_uri = urllib.parse.quote(uri)
 
