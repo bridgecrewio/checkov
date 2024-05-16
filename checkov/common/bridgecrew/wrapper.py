@@ -134,6 +134,7 @@ def persist_checks_results(
     return checks_results_paths
 
 
+
 def persist_run_metadata(
         run_metadata: dict[str, str | list[str]], s3_client: S3Client, bucket: str, full_repo_object_key: str, use_checkov_results: bool = True
 ) -> None:
