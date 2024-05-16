@@ -1,6 +1,22 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.91...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.92...HEAD)
+
+## [3.2.92](https://github.com/bridgecrewio/checkov/compare/3.2.91...3.2.92) - 2024-05-15
+
+### Feature
+
+- **sast:** CDK TypeScript policies - [#6161](https://github.com/bridgecrewio/checkov/pull/6161)
+- **terraform:** add check for tf module versioned tag - [#6213](https://github.com/bridgecrewio/checkov/pull/6213)
+
+### Bug Fix
+
+- **secrets:** secret_filter_block_list filter by file name and suffixes - [#6285](https://github.com/bridgecrewio/checkov/pull/6285)
+- **secrets:** secret_filter_block_list filter by file name and suffixes 2 - [#6306](https://github.com/bridgecrewio/checkov/pull/6306)
+
+### Platform
+
+- **general:** Fix policy.name to use the spaces as specified on CLI. - [#6296](https://github.com/bridgecrewio/checkov/pull/6296)
 
 ## [3.2.91](https://github.com/bridgecrewio/checkov/compare/3.2.90...3.2.91) - 2024-05-12
 
