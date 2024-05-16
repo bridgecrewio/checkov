@@ -198,7 +198,7 @@ class Runner(BaseRunner[None, None, None]):
                                 if is_dockerfile(file):
                                     if 'dockerfile' not in block_list_secret_scan_lower:
                                         files_to_scan.append(os.path.join(root, file))
-                                elif f".{file.split('.')[-1]}" not in block_list_secret_scan_lower:
+                                elif f".{file.split('.')[-1]}" not in block_list_secret_scan_lower and file not in block_list_secret_scan_lower:
                                     files_to_scan.append(os.path.join(root, file))
                             elif file not in PROHIBITED_FILES and f".{file.split('.')[-1]}" in SUPPORTED_FILE_EXTENSIONS or is_dockerfile(
                                     file):
