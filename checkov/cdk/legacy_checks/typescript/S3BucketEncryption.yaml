@@ -1,47 +1,30 @@
 metadata:
-  version: 0.1
-  id: CKV_AWS_19
+  version: 0.2
+  id: CKV_AWS_375
   name: Ensure all data stored in the S3 bucket is securely encrypted at rest
   category: ENCRYPTION
+  framework: cdk
 scope:
   languages:
     - javascript
     - typescript
 definition:
-  - or:
-      - and:
-          - cond_type: filter
-            attribute: pattern
-            operator: within
-            value: |
-              import { Bucket, BucketEncryption } from "aws-cdk-lib/aws-s3"
-              ...
-          - or:
-              - and:
-                - cond_type: pattern
-                  operator: equals
-                  value: "new Bucket(...)"
-                - cond_type: pattern
-                  operator: not_equals
-                  value: "new Bucket(..., {..., encryption: BucketEncryption.$ANY_VAR, ...}, ...)"
-              - cond_type: pattern
-                operator: equals
-                value: "new Bucket(..., {..., encryption: BucketEncryption.UNENCRYPTED, ...}, ...)"
-      - and:
-          - cond_type: filter
-            attribute: pattern
-            operator: within
-            value: |
-              import * as $Y from "aws-cdk-lib/aws-s3"
-              ...
-          - or:
-              - and:
-                - cond_type: pattern
-                  operator: equals
-                  value: "new $Y.Bucket(...)"
-                - cond_type: pattern
-                  operator: not_equals
-                  value: "new $Y.Bucket(..., {..., encryption: $Y.BucketEncryption.$ANY_VAR, ...}, ...)"
-              - cond_type: pattern
-                operator: equals
-                value: "new $Y.Bucket(..., {..., encryption: $Y.BucketEncryption.UNENCRYPTED, ...}, ...)"
+  or:
+    - pattern: new $FUNC(<ANY>)
+      conditions:
+        - metavariable: $FUNC
+          regex: (?i)(Bucket|CfnBucket)
+        - not_pattern: |
+            'new $FUNC(<ANY>, encryption: $METHOD ,<ANY>)'
+          conditions:
+            - metavariable: $METHOD
+              regex: (?i)(BucketEncryption.KMS_MANAGED|BucketEncryption.S3_MANAGED|BucketEncryption.KMS)
+    - pattern: new $S3.$FUNC(<ANY>)
+      conditions:
+        - metavariable: $FUNC
+          regex: (?i)(Bucket|CfnBucket)
+        - not_pattern: |
+            'new $FUNC(<ANY>, encryption: $METHOD ,<ANY>)'
+          conditions:
+            - metavariable: $METHOD
+              regex: (?i)($S3.BucketEncryption.KMS_MANAGED|$S3.BucketEncryption.S3_MANAGED|$S3.BucketEncryption.KMS)

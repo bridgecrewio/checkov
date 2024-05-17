@@ -1,37 +1,30 @@
 metadata:
-  version: 0.1
-  id: CKV2_AWS_6
+  version: 0.2
+  id: CKV_AWS_378
   name: Ensure that S3 bucket has a Public Access block
   category: NETWORKING
+  framework: cdk
 scope:
   languages:
     - javascript
     - typescript
 definition:
-  - or:
-      - and:
-          - cond_type: filter
-            attribute: pattern
-            operator: within
-            value: |
-              import { Bucket } from "aws-cdk-lib/aws-s3"
-              ...
-          - cond_type: pattern
-            operator: equals
-            value: "new Bucket(...)"
-          - cond_type: pattern
-            operator: not_equals
-            value: "new Bucket(..., {..., blockPublicAccess: $ANY_VAR, ...}, ...)"
-      - and:
-          - cond_type: filter
-            attribute: pattern
-            operator: within
-            value: |
-              import * as $Y from "aws-cdk-lib/aws-s3"
-              ...
-          - cond_type: pattern
-            operator: equals
-            value: "new $Y.Bucket(...)"
-          - cond_type: pattern
-            operator: not_equals
-            value: "new $Y.Bucket(..., {..., blockPublicAccess: $ANY_VAR, ...}, ...)"
+  or:
+    - pattern: new $FUNC(<ANY>)
+      conditions:
+        - metavariable: $FUNC
+          regex: (?i)(Bucket|CfnBucket)
+        - not_pattern: |
+            'new $FUNC(<ANY>, blockPublicAccess: BlockPublicAccess.$ATR ,<ANY>)'
+          conditions:
+            - metavariable: $ATR
+              regex: (?i)(BLOCK_ALL|BLOCK_ACLS|BLOCK_POLICY|RESTRICTED)
+    - pattern: new $S3.$FUNC(<ANY>)
+      conditions:
+        - metavariable: $FUNC
+          regex: (?i)(Bucket|CfnBucket)
+        - not_pattern: |
+            'new $S3.$FUNC(<ANY>, blockPublicAccess: $S3.BlockPublicAccess.$ATR ,<ANY>)'
+          conditions:
+            - metavariable: $ATR
+              regex: (?i)(BLOCK_ALL|BLOCK_ACLS|BLOCK_POLICY|RESTRICTED)

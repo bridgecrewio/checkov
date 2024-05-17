@@ -1,6 +1,6 @@
 metadata:
-  version: 0.1
-  id: CKV_AWS_145
+  version: 0.2
+  id: CKV_AWS_376
   name: Ensure that S3 buckets are encrypted with KMS by default
   category: ENCRYPTION
 scope:
@@ -8,50 +8,22 @@ scope:
     - javascript
     - typescript
 definition:
-  - or:
-      - and:
-          - cond_type: filter
-            attribute: pattern
-            operator: within
-            value: |
-              import { Bucket, BucketEncryption } from "aws-cdk-lib/aws-s3"
-              ...
-          - or:
-              - and:
-                - cond_type: pattern
-                  operator: equals
-                  value: "new Bucket(...)"
-                - cond_type: pattern
-                  operator: not_equals
-                  value: "new Bucket(..., {..., encryption: BucketEncryption.$ANY_VAR, ...}, ...)"
-              - and:
-                - cond_type: variable
-                  variable: $ENCRYPTION
-                  operator: regex_match
-                  value: ^(S3_MANAGED|UNENCRYPTED)$
-                - cond_type: pattern
-                  operator: equals
-                  value: "new Bucket(..., {..., encryption: BucketEncryption.$ENCRYPTION, ...}, ...)"
-      - and:
-          - cond_type: filter
-            attribute: pattern
-            operator: within
-            value: |
-              import * as $Y from "aws-cdk-lib/aws-s3"
-              ...
-          - or:
-              - and:
-                - cond_type: pattern
-                  operator: equals
-                  value: "new $Y.Bucket(...)"
-                - cond_type: pattern
-                  operator: not_equals
-                  value: "new $Y.Bucket(..., {..., encryption: $Y.BucketEncryption.$ANY_VAR, ...}, ...)"
-              - and:
-                - cond_type: variable
-                  variable: $ENCRYPTION
-                  operator: regex_match
-                  value: ^(S3_MANAGED|UNENCRYPTED)$
-                - cond_type: pattern
-                  operator: equals
-                  value: "new $Y.Bucket(..., {..., encryption: $Y.BucketEncryption.$ENCRYPTION, ...}, ...)"
+  or:
+    - pattern: new $FUNC(<ANY>)
+      conditions:
+        - metavariable: $FUNC
+          regex: (?i)(Bucket|CfnBucket)
+        - not_pattern: |
+            'new $FUNC(<ANY>, encryption: $METHOD ,<ANY>)'
+          conditions:
+            - metavariable: $METHOD
+              regex: (?i)(aws_cdk.aws_s3.BucketEncryption.KMS_MANAGED|aws_cdk.aws_s3.BucketEncryption.KMS)
+    - pattern: new $S3.$FUNC(<ANY>)
+      conditions:
+        - metavariable: $FUNC
+          regex: (?i)(Bucket|CfnBucket)
+        - not_pattern: |
+            'new $FUNC(<ANY>, encryption: $METHOD ,<ANY>)'
+          conditions:
+            - metavariable: $METHOD
+              regex: (?i)(aws_cdk.aws_s3.BucketEncryption.KMS_MANAGED|aws_cdk.aws_s3.BucketEncryption.KMS)

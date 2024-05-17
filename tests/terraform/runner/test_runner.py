@@ -188,7 +188,7 @@ class TestRunnerValid(unittest.TestCase):
              'hard_fail_threshold': None}), 1)
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
-        self.assertEqual(9, summary['failed'])
+        self.assertEqual(10, summary['failed'])
         self.assertEqual(1, summary['skipped'])
         self.assertEqual(0, summary["parsing_errors"])
 
@@ -337,7 +337,7 @@ class TestRunnerValid(unittest.TestCase):
         # self.assertEqual(report.get_exit_code(), 0)
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
-        self.assertEqual(5, summary['failed'])
+        self.assertEqual(6, summary['failed'])
         self.assertEqual(0, summary["parsing_errors"])
 
     def test_check_ids_dont_collide(self):

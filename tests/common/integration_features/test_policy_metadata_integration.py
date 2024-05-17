@@ -18,9 +18,10 @@ class TestPolicyMetadataIntegration(unittest.TestCase):
         metadata_integration.bc_integration = instance
         metadata_integration.pre_scan()
         metadata_integration.pc_to_ckv_id_mapping
-        self.assertDictEqual(metadata_integration.pc_to_ckv_id_mapping, {'6960be11-e3a6-46cc-bf66-933c57c2af5d': 'CKV_AWS_212', '3dc2478c-bf25-4383-aaa1-30feb5cda586': '806079891421835264_AZR_1685557908904', 'c11ce08c-b93e-4e11-8d1c-e5a1339139d1': 'CKV_AWS_40', '0e4c576e-c934-4af3-8592-a53920e71ffb': 'CKV_AWS_53'})
+        self.assertDictEqual(metadata_integration.pc_to_ckv_id_mapping, {'6960be11-e3a6-46cc-bf66-933c57c2af5d': 'CKV_AWS_212', '3dc2478c-bf25-4383-aaa1-30feb5cda586': '806079891421835264_AZR_1685557908904', 'c11ce08c-b93e-4e11-8d1c-e5a1339139d1': 'CKV_AWS_40', '0e4c576e-c934-4af3-8592-a53920e71ffb': 'CKV_AWS_53', '1234': 'CKV3_SAST_123'})
         self.assertListEqual(metadata_integration.filtered_policy_ids, ['CKV_AWS_212', '806079891421835264_AZR_1685557908904', 'CKV_AWS_40', 'CKV_AWS_53', 'CKV_AZURE_122'])
         self.assertListEqual(metadata_integration.filtered_exception_policy_ids, ['CKV_AWS_212'])
+        self.assertSetEqual(set(metadata_integration.sast_check_metadata.keys()), {'CKV3_SAST_123'})
 
 
 def mock_customer_run_config():
@@ -87,6 +88,22 @@ def mock_customer_run_config():
                 "pcPolicyId": "3dc2478c-bf25-4383-aaa1-30feb5cda586",
                 "additionalPcPolicyIds": [
                     "3dc2478c-bf25-4383-aaa1-30feb5cda586"
+                ],
+                "benchmarks": {}
+            },
+            "CKV3_SAST_123": {
+                "id": "BC_SAST_123",
+                "title": "sast",
+                "guideline": "https://docs.bridgecrew.io/docs/abc",
+                "severity": "LOW",
+                "pcSeverity": "LOW",
+                "category": "Networking",
+                "checkovId": "CKV3_SAST_123",
+                "constructiveTitle": "sast",
+                "descriptiveTitle": "sast",
+                "pcPolicyId": "1234",
+                "additionalPcPolicyIds": [
+                    "1234"
                 ],
                 "benchmarks": {}
             }

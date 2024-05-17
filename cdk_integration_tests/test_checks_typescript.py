@@ -386,3 +386,48 @@ def CKV_AWS_44_NeptuneClusterStorageEncrypted(failed_checks):
 def CKV_AWS_118_RDSEnhancedMonitorEnabled(failed_checks):
     run_check(check_results=failed_checks, check_id="CKV_AWS_118", policy_name="RDSEnhancedMonitorEnabled",
               language="typescript")
+
+
+def CKV_AWS_366_RDSMultiAZEnabled(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_366", policy_name="RDSMultiAZEnabled",
+              language="typescript")
+
+
+def CKV_AWS_367_RDSPubliclyAccessible(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_367", policy_name="RDSPubliclyAccessible",
+              language="typescript")
+
+
+def CKV_AWS_369_RedShiftSSL(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_369", policy_name="RedShiftSSL",
+              language="typescript")
+
+
+def CKV_AWS_368_RedshiftClusterEncryption(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_368", policy_name="RedshiftClusterEncryption",
+              language="typescript")
+
+
+def CKV_AWS_370_RedshiftClusterLogging(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_370", policy_name="RedshiftClusterLogging",
+              language="typescript")
+
+
+def CKV_AWS_371_RedshiftClusterPubliclyAccessible(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_371", policy_name="RedshiftClusterPubliclyAccessible",
+              language="typescript")
+
+
+def CKV_AWS_372_RedshiftInEc2ClassicMode(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_372", policy_name="RedshiftInEc2ClassicMode",
+              language="typescript")
+
+
+def CKV_AWS_373_S3BlockPublicACLs(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_373", policy_name="S3BlockPublicACLs",
+              language="typescript")
+
+
+def CKV_AWS_374_S3BlockPublicPolicy(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_374", policy_name="S3BlockPublicPolicy",
+              language="typescript")
