@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.94...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.95...HEAD)
+
+## [3.2.95](https://github.com/bridgecrewio/checkov/compare/3.2.94...3.2.95) - 2024-05-17
+
+### Bug Fix
+
+- **terraform:** handle module source tag ref when it is not the first parameter - [#6314](https://github.com/bridgecrewio/checkov/pull/6314)
 
 ## [3.2.94](https://github.com/bridgecrewio/checkov/compare/3.2.92...3.2.94) - 2024-05-16
 
