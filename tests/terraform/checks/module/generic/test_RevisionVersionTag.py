@@ -21,6 +21,7 @@ class TestRevisionVersionTag(unittest.TestCase):
             "hash",
             "sub_dir_hash",
             "tag",
+            "shallow_clone"
         }
         failing_resources = {
             "looks_like_a_branch",
