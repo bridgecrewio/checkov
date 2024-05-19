@@ -1,0 +1,70 @@
+{
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {
+            "managedResourceGroupName": {
+              "type": "string"
+            },
+            "workspaceName": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the Azure Databricks workspace to create."
+              }
+            },
+            "location": {
+              "type": "string",
+              "metadata": {
+                "description": "Location for all resources."
+              }
+            },
+            "pricingTier": {
+              "type": "string",
+              "allowedValues": [
+                "standard",
+                "premium"
+              ],
+              "metadata": {
+                "description": "The pricing tier of workspace."
+              }
+            },
+            "keyVaultName": {
+              "type": "string",
+              "metadata": {
+                "description": "The Azure Key Vault name."
+              }
+            },
+            "keyName": {
+              "type": "string",
+              "metadata": {
+                "description": "The Azure Key Vault encryption key name."
+              }
+            },
+            "disablePublicIp": {
+              "type": "bool",
+              "metadata": {
+                "description": "Specifies whether to deploy Azure Databricks workspace with Secure Cluster Connectivity (No Public IP) enabled or not"
+              }
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Databricks/workspaces",
+              "apiVersion": "2023-02-01",
+              "name": "[parameters('workspaceName')]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "name": "[parameters('pricingTier')]"
+              },
+              "properties": {
+                "managedResourceGroupId": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', parameters('managedResourceGroupName'))]",
+                "parameters": {
+                  "enableNoPublicIp": {
+                    "value": "[parameters('disablePublicIp')]"
+                  },
+                  "publicNetworkAccess": "Disabled",
+                  "requiredNsgRules": "NoAzureDatabricksRules"
+                }
+              }
+            }
+          ]
+        }
