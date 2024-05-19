@@ -7,7 +7,7 @@
       "apiVersion": "2018-06-01",
       "name": "fail",
       "properties": {
-        "tier": "Free",
+        "pricingTier": "Free",
         "resourceType": "Microsoft.Security/pricings"
       }
     }
