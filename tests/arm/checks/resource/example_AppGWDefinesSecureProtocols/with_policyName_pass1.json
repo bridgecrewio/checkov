@@ -70,7 +70,7 @@
   "variables": {
     "applicationGatewayName": "applicationGateway1",
     "publicIPAddressName": "publicIp1",
-    "virtualNetworkName": "virtualNetwork1",
+    "virtualNetworkName": "virtualNetwork",
     "subnetName": "appGatewaySubnet",
     "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
     "publicIPRef": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]"

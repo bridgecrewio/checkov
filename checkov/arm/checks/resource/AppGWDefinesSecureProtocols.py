@@ -53,8 +53,7 @@ class AppGWDefinesSecureProtocols(BaseResourceCheck):
             if policyType != "Predefined":
                 protocolversion = sslPolicy.get("minProtocolVersion")
                 if (
-                        protocolversion
-                        and isinstance(protocolversion, str)
+                        protocolversion and isinstance(protocolversion, str)
                         and protocolversion in PROTOCOL_VERSIONS
                 ):
                     ciphers = sslPolicy.get("cipherSuites")

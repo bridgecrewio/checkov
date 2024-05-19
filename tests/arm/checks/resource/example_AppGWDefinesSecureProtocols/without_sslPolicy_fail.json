@@ -161,7 +161,7 @@
           {
             "name": "appGatewayBackendPoolDefault",
             "properties": {
-              "BackendAddresses": [
+              "BackendAddresses":[
                 {
                   "IpAddress": "[parameters('backendIpAddressDefault')]"
                 }

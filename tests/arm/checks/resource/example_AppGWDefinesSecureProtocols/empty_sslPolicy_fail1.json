@@ -219,7 +219,6 @@
         ],
         "sslPolicy": {
           "disabledSslProtocols": "TLSv1_0"
-
         }
       }
     }
