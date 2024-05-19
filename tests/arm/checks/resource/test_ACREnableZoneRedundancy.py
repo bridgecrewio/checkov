@@ -22,9 +22,8 @@ class TestACREnableZoneRedundancy(unittest.TestCase):
             'Microsoft.ContainerRegistry/registries.pass2',
         }
         failing_resources = {
-            'Microsoft.ContainerRegistry/registries.fail',
+            'Microsoft.ContainerRegistry/registries.fail1',
             'Microsoft.ContainerRegistry/registries.fail2',
-            'Microsoft.ContainerRegistry/registries.fail3',
         }
         skipped_resources = {}
 

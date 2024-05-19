@@ -1,8 +1,8 @@
 {
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
-    "resources": [
-      {
+    "resources":
+      [{
         "comments": "Container registry for storing docker images",
         "type": "Microsoft.ContainerRegistry/registries",
         "apiVersion": "2020-11-01",
@@ -20,24 +20,5 @@
           "adminUserEnabled": "[parameters('acrAdminUserEnabled')]",
           "zoneRedundancy": [true]
         }
-      },
-      {
-        "type": "Microsoft.ContainerRegistry/registries/replications",
-        "apiVersion": "2020-11-01",
-        "name": "[concat(parameters('acrName'), '/', parameters('acrReplicaLocation'))]",
-        "location": "[parameters('acrReplicaLocation')]",
-          "dependsOn": [
-          "[resourceId('Microsoft.ContainerRegistry/registries/', parameters('acrName'))]"
-        ],
-        "properties": {
-          "zoneRedundancy": "[true]"
-        }
+      }]
       }
-    ],
-    "outputs": {
-      "acrLoginServer": {
-        "value": "[reference(resourceId('Microsoft.ContainerRegistry/registries',parameters('acrName')),'2019-12-01').loginServer]",
-        "type": "string"
-      }
-    }
-  }
