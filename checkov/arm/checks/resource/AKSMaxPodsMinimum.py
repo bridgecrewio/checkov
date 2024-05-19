@@ -1,0 +1,35 @@
+from __future__ import annotations
+from typing import Any
+from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.arm.base_resource_check import BaseResourceCheck
+
+
+
+class AKSMaxPodsMinimum(BaseResourceCheck):
+    def __init__(self) -> None:
+        name = "Ensure Azure Kubernetes Cluster (AKS) nodes should use a minimum number of 50 pods."
+        id = "CKV_AZURE_168"
+        supported_resources = ("Microsoft.ContainerService/managedClusters",
+                               "Microsoft.ContainerService/managedClusters/agentPools", )
+        categories = (CheckCategories.KUBERNETES,)
+        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,)
+
+    def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
+        max_pods = 30  # default is 30
+
+        properties = conf.get("properties")
+        if properties and isinstance(properties, dict):
+            max_pods = properties.get("maxPods")
+
+        if "agentPoolProfiles" in properties:
+            agentPoolProfiles = properties.get("agentPoolProfiles")
+            if isinstance(agentPoolProfiles, dict):
+                max_pods = agentPoolProfiles.get("maxPods")
+
+        if max_pods is None or max_pods < 50:
+            return CheckResult.FAILED
+
+        return CheckResult.PASSED
+
+
+check = AKSMaxPodsMinimum()
