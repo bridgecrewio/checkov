@@ -198,11 +198,16 @@ def remove_fp_secrets_in_keys(detected_secrets: set[PotentialSecret], line: str,
             key, value = line.split("=", 1)
             if detected_secret.secret_value in key and detected_secret.secret_value in value:
                 secrets_to_remove.add(detected_secret)
+        # strings which are all lower/upper case letters are suspected to not be base64 high entropy strings
+        if processed_line.lower() == processed_line or processed_line.upper() == processed_line:
+            secrets_to_remove.add(detected_secret)
     detected_secrets -= secrets_to_remove
 
 
 def get_processed_line(formatted_line: str, secret_value: str) -> str:
-    if not formatted_line.startswith(secret_value) and formatted_line.find(":", formatted_line.rfind(secret_value) + len(secret_value)) > -1:
+    if not formatted_line.startswith(secret_value) and formatted_line.find(":",
+                                                                           formatted_line.rfind(secret_value) + len(
+                                                                                   secret_value)) > -1:
         return formatted_line[formatted_line.find(secret_value):]
     return formatted_line
 
