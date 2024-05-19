@@ -17,7 +17,7 @@ class MySQLPublicAccessDisabled(BaseResourceValueCheck):
         """
         Returns the default expected value, governed by provider best practices
         """
-        return "False"
+        return "disabled"
 
 
 check = MySQLPublicAccessDisabled()

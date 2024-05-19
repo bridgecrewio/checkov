@@ -138,7 +138,7 @@
           "properties": {
             "infrastructureEncryption": "string",
             "minimalTlsVersion": "string",
-            "publicNetworkAccess": "True",
+            "publicNetworkAccess": "enabled",
             "sslEnforcement": "string",
             "storageProfile": {
               "backupRetentionDays": "int",
