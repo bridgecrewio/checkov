@@ -18,13 +18,13 @@ class TestFunctionAppHttpVersionLatest(unittest.TestCase):
 
         passing_resources = {
             "Microsoft.Web/sites/slots.pass",
+            "Microsoft.Web/sites.pass2",
 
         }
         failing_resources = {
             "Microsoft.Web/sites/slots.fail",
+            "Microsoft.Web/sites.fail2"
         }
-
-        # skipped_resources = {}
 
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
