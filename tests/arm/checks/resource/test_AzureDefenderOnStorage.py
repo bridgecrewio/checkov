@@ -1,9 +1,5 @@
 import unittest
-
-import json
-
 from checkov.arm.checks.resource.AzureDefenderOnStorage import check
-from checkov.common.models.enums import CheckResult
 from pathlib import Path
 from checkov.arm.runner import Runner
 from checkov.runner_filter import RunnerFilter
@@ -19,7 +15,6 @@ class TestAzureDefenderOnStorage(unittest.TestCase):
         }
         failing_resources = {
             "Microsoft.Security/pricings.fail",
-
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
@@ -32,6 +27,7 @@ class TestAzureDefenderOnStorage(unittest.TestCase):
 
         self.assertEqual(passed_check_resources, passing_resources)
         self.assertEqual(failed_check_resources, failing_resources)
+
 
 if __name__ == '__main__':
     unittest.main()

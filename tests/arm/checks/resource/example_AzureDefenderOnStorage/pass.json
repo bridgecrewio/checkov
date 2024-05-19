@@ -1,12 +1,15 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
-  "resources": [{
-            "type": "Microsoft.Security/pricings",
-            "apiVersion": "2018-06-01",
-            "name": "pass",
-            "properties": {
-                "pricingTier": "Standard",
-                "resourceType": "Microsoft.Security/pricings"
-            }
-        }]}
+  "resources": [
+    {
+      "type": "Microsoft.Security/pricings",
+      "apiVersion": "2018-06-01",
+      "name": "pass",
+      "properties": {
+        "pricingTier": "Standard",
+        "resourceType": "Microsoft.Security/pricings"
+      }
+    }
+  ]
+}
