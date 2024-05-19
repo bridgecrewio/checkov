@@ -1,37 +1,24 @@
 metadata:
-  version: '0.1'
-  id: CKV_AWS_21
+  version: 0.2
+  id: CKV_AWS_379
   name: Ensure all data stored in the S3 bucket have versioning enabled
   category: BACKUP_AND_RECOVERY
+  framework: cdk
 scope:
   languages:
     - javascript
     - typescript
 definition:
-  - or:
-      - and:
-          - cond_type: filter
-            attribute: pattern
-            operator: within
-            value: |
-              import { Bucket } from "aws-cdk-lib/aws-s3"
-              ...
-          - cond_type: pattern
-            operator: equals
-            value: "new Bucket(...)"
-          - cond_type: pattern
-            operator: not_equals
-            value: "new Bucket(..., {..., versioned: true, ...}, ...)"
-      - and:
-          - cond_type: filter
-            attribute: pattern
-            operator: within
-            value: |
-              import * as $Y from "aws-cdk-lib/aws-s3"
-              ...
-          - cond_type: pattern
-            operator: equals
-            value: "new $Y.Bucket(...)"
-          - cond_type: pattern
-            operator: not_equals
-            value: "new $Y.Bucket(..., {..., versioned: true, ...}, ...)"
+  or:
+    - pattern: new $FUNC(<ANY>)
+      conditions:
+        - metavariable: $FUNC
+          regex: (?i)(Bucket|CfnBucket)
+        - not_pattern: |
+            'new $FUNC(<ANY>, versioned: true ,<ANY>)'
+    - pattern: new $S3.$FUNC(<ANY>)
+      conditions:
+        - metavariable: $FUNC
+          regex: (?i)(Bucket|CfnBucket)
+        - not_pattern: |
+            'new $S3.$FUNC(<ANY>, versioned: true ,<ANY>)'
