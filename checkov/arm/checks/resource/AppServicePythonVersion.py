@@ -20,7 +20,7 @@ class AppServicePythonVersion(BaseResourceValueCheck):
         return "properties/siteConfig/pythonVersion"
 
     def get_expected_value(self) -> str:
-        return "3.4"
+        return "3.10"
 
 
 check = AppServicePythonVersion()

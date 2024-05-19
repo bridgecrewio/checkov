@@ -3,7 +3,7 @@
   "contentVersion": "1.0.0.0",
   "metadata": {
     "_generator": {
-      "name": "bicep",
+      "name": "fail",
       "version": "0.25.53.49325",
       "templateHash": "16144177164140676603"
     }
@@ -92,7 +92,7 @@
     {
       "type": "Microsoft.Web/sites",
       "apiVersion": "2022-09-01",
-      "name": "pass",
+      "name": "unknown",
       "location": "string",
       "tags": {
         "tagName1": "tagValue1",
@@ -323,7 +323,7 @@
               "tagWhitelistJson": "string"
             }
           },
-          "pythonVersion": "3.10",
+          "pythonVersion": "unknown",
           "remoteDebuggingEnabled": "bool",
           "remoteDebuggingVersion": "string",
           "requestTracingEnabled": "bool",

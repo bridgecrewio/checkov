@@ -24,6 +24,7 @@ class TestAppServicePythonVersion(unittest.TestCase):
         }
         failing_resources = {
             "Microsoft.Web/sites.fail",
+            "Microsoft.Web/sites.unknown",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
