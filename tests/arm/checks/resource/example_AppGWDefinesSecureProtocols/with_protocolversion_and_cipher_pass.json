@@ -108,7 +108,7 @@
     },
     {
       "apiVersion": "2017-06-01",
-      "name": "pass",
+      "name": "with_protocolversion_and_cipher_pass",
       "type": "Microsoft.Network/applicationGateways",
       "location": "[parameters('location')]",
       "dependsOn": [

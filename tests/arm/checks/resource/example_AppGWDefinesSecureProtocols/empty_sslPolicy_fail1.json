@@ -108,7 +108,7 @@
     },
     {
       "apiVersion": "2017-06-01",
-      "name": "fail1",
+      "name": "empty_sslPolicy_fail1",
       "type": "Microsoft.Network/applicationGateways",
       "location": "[parameters('location')]",
       "dependsOn": [

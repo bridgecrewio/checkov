@@ -108,7 +108,7 @@
     },
     {
       "apiVersion": "2017-06-01",
-      "name": "pass1",
+      "name": "with_policyName_pass1",
       "type": "Microsoft.Network/applicationGateways",
       "location": "[parameters('location')]",
       "dependsOn": [

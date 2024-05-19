@@ -15,14 +15,14 @@ class TestAppGWDefinesSecureProtocols(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            'Microsoft.Network/applicationGateways.pass',
-            'Microsoft.Network/applicationGateways.pass1'
+            'Microsoft.Network/applicationGateways.with_protocolversion_and_cipher_pass',
+            'Microsoft.Network/applicationGateways.with_policyName_pass1'
         }
         failing_resources = {
-            'Microsoft.Network/applicationGateways.fail',
-            'Microsoft.Network/applicationGateways.fail1',
-            'Microsoft.Network/applicationGateways.fail2',
-            'Microsoft.Network/applicationGateways.fail3',
+            'Microsoft.Network/applicationGateways.without_sslPolicy_fail',
+            'Microsoft.Network/applicationGateways.empty_sslPolicy_fail1',
+            'Microsoft.Network/applicationGateways.with_protocolversion_and_cipher_fail2',
+            'Microsoft.Network/applicationGateways.with_policyName_fail3',
         }
         skipped_resources = {}
 
