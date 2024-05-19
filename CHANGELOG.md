@@ -1,6 +1,82 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.82...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.95...HEAD)
+
+## [3.2.95](https://github.com/bridgecrewio/checkov/compare/3.2.94...3.2.95) - 2024-05-17
+
+### Bug Fix
+
+- **terraform:** handle module source tag ref when it is not the first parameter - [#6314](https://github.com/bridgecrewio/checkov/pull/6314)
+
+## [3.2.94](https://github.com/bridgecrewio/checkov/compare/3.2.92...3.2.94) - 2024-05-16
+
+### Bug Fix
+
+- **sast:** fix random test sast js - [#6315](https://github.com/bridgecrewio/checkov/pull/6315)
+
+### Platform
+
+- **general:** Double-Encode URI for RelayState Parameter - [#6302](https://github.com/bridgecrewio/checkov/pull/6302)
+
+## [3.2.92](https://github.com/bridgecrewio/checkov/compare/3.2.91...3.2.92) - 2024-05-15
+
+### Feature
+
+- **sast:** CDK TypeScript policies - [#6161](https://github.com/bridgecrewio/checkov/pull/6161)
+- **terraform:** add check for tf module versioned tag - [#6213](https://github.com/bridgecrewio/checkov/pull/6213)
+
+### Bug Fix
+
+- **secrets:** secret_filter_block_list filter by file name and suffixes - [#6285](https://github.com/bridgecrewio/checkov/pull/6285)
+- **secrets:** secret_filter_block_list filter by file name and suffixes 2 - [#6306](https://github.com/bridgecrewio/checkov/pull/6306)
+
+### Platform
+
+- **general:** Fix policy.name to use the spaces as specified on CLI. - [#6296](https://github.com/bridgecrewio/checkov/pull/6296)
+
+## [3.2.91](https://github.com/bridgecrewio/checkov/compare/3.2.90...3.2.91) - 2024-05-12
+
+### Feature
+
+- **secrets:** bump bc-detect-secrets to 1.5.10 - [#6297](https://github.com/bridgecrewio/checkov/pull/6297)
+
+## [3.2.90](https://github.com/bridgecrewio/checkov/compare/3.2.85...3.2.90) - 2024-05-09
+
+### Feature
+
+- **general:** Add deep-analysis to GHA - [#6288](https://github.com/bridgecrewio/checkov/pull/6288)
+- **terraform:** Add more hype policies - [#6239](https://github.com/bridgecrewio/checkov/pull/6239)
+
+### Bug Fix
+
+- **ansible:** fix ansible definitions raw type - [#6292](https://github.com/bridgecrewio/checkov/pull/6292)
+
+### Platform
+
+- **ansible:** add set definitions raw to ansible runner - [#6286](https://github.com/bridgecrewio/checkov/pull/6286)
+- **general:** Handle SAST suppressions (suppressions V2) - [#6109](https://github.com/bridgecrewio/checkov/pull/6109)
+
+### Documentation
+
+- **general:** add RENDER_EDGES_DUPLICATE_ITER_COUNT to docs - [#6291](https://github.com/bridgecrewio/checkov/pull/6291)
+- **general:** Update README links for PyPi - [#6231](https://github.com/bridgecrewio/checkov/pull/6231)
+
+## [3.2.85](https://github.com/bridgecrewio/checkov/compare/3.2.84...3.2.85) - 2024-05-08
+
+### Platform
+
+- **ansible:** add missing arg to ansible runner - [#6276](https://github.com/bridgecrewio/checkov/pull/6276)
+
+## [3.2.84](https://github.com/bridgecrewio/checkov/compare/3.2.82...3.2.84) - 2024-05-07
+
+### Feature
+
+- **sast:** Enable cdk ts integraion test - [#6158](https://github.com/bridgecrewio/checkov/pull/6158)
+
+### Bug Fix
+
+- **secrets:** add files for secret to skip - [#6275](https://github.com/bridgecrewio/checkov/pull/6275)
+- **terraform:** Update CKV_AWS_31 for RBAC - [#6224](https://github.com/bridgecrewio/checkov/pull/6224)
 
 ## [3.2.82](https://github.com/bridgecrewio/checkov/compare/3.2.79...3.2.82) - 2024-05-06
 
