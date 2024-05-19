@@ -1,31 +1,26 @@
+import os
 import unittest
-from pathlib import Path
 
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.module.generic.RevisionVersionTag import check
-from checkov.terraform.runner import Runner
+from checkov.arm.checks.resource.DataExplorerUsesDiskEncryption import check
+from checkov.arm.runner import Runner
 
 
-class TestRevisionVersionTag(unittest.TestCase):
+class TestDataExplorerUsesDiskEncryption(unittest.TestCase):
     def test(self):
-        # given
-        test_files_dir = Path(__file__).parent / "example_RevisionVersionTag"
+        runner = Runner()
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        test_files_dir = current_dir + "/example_DataExplorerUsesDiskEncryption"
 
-        # when
-        report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
-
-        # then
+        report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
 
         passing_resources = {
-            "hash",
-            "sub_dir_hash",
-            "tag",
-            "shallow_clone"
+            "Microsoft.Kusto/clusters.pass",
         }
         failing_resources = {
-            "looks_like_a_branch",
-            "tf_registry",
+            "Microsoft.Kusto/clusters.fail",
+
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
