@@ -6,11 +6,10 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.arm.base_resource_check import BaseResourceCheck
 from checkov.common.util.data_structures_utils import find_in_dict
 
-# https://learn.microsoft.com/en-us/azure/templates/microsoft.databricks/workspaces?pivots=deployment-language-arm-template
-
 
 class DatabricksWorkspaceIsNotPublic(BaseResourceCheck):
     def __init__(self) -> None:
+        # https://learn.microsoft.com/en-us/azure/templates/microsoft.databricks/workspaces?pivots=deployment-language-arm-template
         name = "Ensure Databricks Workspace data plane to control plane communication happens over private link"
         id = "CKV_AZURE_158"
         supported_resources = ("Microsoft.Databricks/workspaces",)
