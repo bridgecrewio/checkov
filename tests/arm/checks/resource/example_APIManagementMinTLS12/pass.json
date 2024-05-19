@@ -1,0 +1,28 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+    "resources": [
+    {
+      "type": "Microsoft.ApiManagement/service",
+      "apiVersion": "2020-06-01-preview",
+      "name": "pass",
+      "location": "West US",
+      "properties": {
+        "sku": {
+          "name": "Developer",
+          "capacity": 1
+        },
+        "publisherEmail": "admin@example.com",
+        "publisherName": "Example",
+        "security": {
+          "enableFrontendTls10": false,
+          "enableFrontendTls11": false,
+          "enableBackendTls10": false,
+          "enableBackendTls11": false
+        }
+      }
+    }
+  ]
+}
+
+
