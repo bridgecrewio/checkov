@@ -19,7 +19,7 @@ class ElasticacheReplicationGroupEncryptionAtTransitAuthToken(BaseResourceCheck)
         :return: <CheckResult>
         """
         if "transit_encryption_enabled" in conf.keys() and conf["transit_encryption_enabled"][0] \
-                and "auth_token" in conf.keys():
+                and ("auth_token" in conf.keys() or "user_group_ids" in conf.keys()):
             return CheckResult.PASSED
         return CheckResult.FAILED
 
