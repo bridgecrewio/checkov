@@ -1,6 +1,17 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.95...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.97...HEAD)
+
+## [3.2.97](https://github.com/bridgecrewio/checkov/compare/3.2.95...3.2.97) - 2024-05-19
+
+### Feature
+
+- **arm:** add CKV_AZURE_73 to ensure that Automation account variables are encrypted - [#6271](https://github.com/bridgecrewio/checkov/pull/6271)
+- **arm:** add CKV_AZURE_76 to ensure that Azure Batch account uses key vault to encrypt data - [#6280](https://github.com/bridgecrewio/checkov/pull/6280)
+- **arm:** add FunctionAppDisallowCORS - password correctness check - [#6248](https://github.com/bridgecrewio/checkov/pull/6248)
+- **arm:** ARM FunctionAppHttpVersionLatest policy - [#6244](https://github.com/bridgecrewio/checkov/pull/6244)
+- **arm:** CKV_AZURE_74 to Ensure that Azure Data Explorer (Kusto) uses disk encryption - [#6273](https://github.com/bridgecrewio/checkov/pull/6273)
+- **arm:** MSSQLServerMinTLSVersion - [#6245](https://github.com/bridgecrewio/checkov/pull/6245)
 
 ## [3.2.95](https://github.com/bridgecrewio/checkov/compare/3.2.94...3.2.95) - 2024-05-17
 
