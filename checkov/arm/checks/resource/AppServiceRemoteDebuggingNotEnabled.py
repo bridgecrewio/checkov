@@ -7,13 +7,14 @@ class AppServiceRemoteDebuggingNotEnabled(BaseResourceValueCheck):
         name = "Ensure that remote debugging is not enabled for app services"
         id = "CKV_AZURE_72"
         supported_resources = ('Microsoft.Web/sites',)
-        categories = (CheckCategories.GENERAL_SECURITY,)
-        super().__init__(name=name,
-                         id=id,
-                         categories=categories,
-                         supported_resources=supported_resources,
-                         missing_block_result=CheckResult.PASSED,
-                         )
+        categories = [CheckCategories.GENERAL_SECURITY]
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_resources=supported_resources,
+            missing_block_result=CheckResult.PASSED
+        )
 
     def get_inspected_key(self) -> str:
         return "properties/siteConfig/remoteDebuggingEnabled"
