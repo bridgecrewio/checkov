@@ -207,7 +207,7 @@ def remove_fp_secrets_in_keys(detected_secrets: set[PotentialSecret], line: str,
 def get_processed_line(formatted_line: str, secret_value: str) -> str:
     if not formatted_line.startswith(secret_value) and formatted_line.find(":",
                                                                            formatted_line.rfind(secret_value) + len(
-                                                                                   secret_value)) > -1:
+                                                                               secret_value)) > -1:
         return formatted_line[formatted_line.find(secret_value):]
     return formatted_line
 
