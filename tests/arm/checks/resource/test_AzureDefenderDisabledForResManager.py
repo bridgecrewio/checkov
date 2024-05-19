@@ -5,6 +5,7 @@ from checkov.runner_filter import RunnerFilter
 from checkov.arm.runner import Runner
 from checkov.arm.checks.resource.AzureDefenderDisabledForResManager import check
 
+
 class TestAzureDefenderDisabledForResManager(unittest.TestCase):
     def test(self):
         runner = Runner()
