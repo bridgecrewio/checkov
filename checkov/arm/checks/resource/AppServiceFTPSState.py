@@ -7,7 +7,7 @@ class AppServiceFTPSState(BaseResourceValueCheck):
     def __init__(self) -> None:
         name = "Ensure FTP deployments are disabled"
         id = "CKV_AZURE_78"
-        supported_resources = ('Microsoft.Web/sites', 'azurerm_linux_web_app', 'azurerm_windows_web_app')
+        supported_resources = ('Microsoft.Web/sites',)
         categories = (CheckCategories.APPLICATION_SECURITY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
