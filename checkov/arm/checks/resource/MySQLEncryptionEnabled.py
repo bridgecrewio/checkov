@@ -1,5 +1,4 @@
 from __future__ import annotations
-
 from typing import Any
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.arm.base_resource_check import BaseResourceCheck
@@ -11,7 +10,7 @@ class MySQLEncryptionEnabled(BaseResourceCheck):
         id = "CKV_AZURE_96"
         supported_resources = ("Microsoft.DBforMySQL/flexibleServers",)
         categories = (CheckCategories.ENCRYPTION,)
-        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
+        super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,)
 
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
         properties = conf.get("properties")

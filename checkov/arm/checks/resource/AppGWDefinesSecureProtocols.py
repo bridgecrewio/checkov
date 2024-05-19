@@ -46,7 +46,7 @@ class AppGWDefinesSecureProtocols(BaseResourceCheck):
                          categories=categories,
                          supported_resources=supported_resources,)
 
-    def scan_resource_conf(self, conf: dict[str, list, Any]) -> CheckResult:
+    def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
         sslPolicy = conf["properties"].get("sslPolicy")
         if sslPolicy and isinstance(sslPolicy, dict):
             policyType = sslPolicy.get("policyType")
