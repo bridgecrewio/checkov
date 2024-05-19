@@ -1,11 +1,10 @@
-from __future__ import annotations
 from typing import List, Any, Dict
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.arm.base_resource_check import BaseResourceCheck
 
 
 class AzureDefenderOnStorage(BaseResourceCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure that Azure Defender is set to On for Storage"
         id = "CKV_AZURE_84"
         supported_resources = ("Microsoft.Security/pricings",)
