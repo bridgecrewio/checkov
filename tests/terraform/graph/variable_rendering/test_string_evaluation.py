@@ -41,6 +41,14 @@ class TestTerraformEvaluation(TestCase):
         input_str = 'blocked == "allowed" ? True : False'
         expected = False
         self.assertEqual(expected, evaluate_terraform(input_str))
+        
+        input_str = 'True == "true" ? True : False'
+        expected = True
+        self.assertEqual(expected, evaluate_terraform(input_str))
+
+        input_str = 'False != "false" ? True : False'
+        expected = False
+        self.assertEqual(expected, evaluate_terraform(input_str))
 
     def test_format(self):
         input_str = '"format("Hello, %s!", "Ander")"'

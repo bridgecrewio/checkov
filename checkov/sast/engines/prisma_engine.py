@@ -14,6 +14,7 @@ from pydantic import ValidationError
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.platform_integration import bc_integration
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as policy_metadata_integration
 from checkov.common.bridgecrew.platform_key import bridgecrew_dir
 from checkov.common.bridgecrew.severities import get_severity, Severity, Severities, BcSeverities
 from checkov.common.models.enums import CheckResult
@@ -32,6 +33,7 @@ from checkov.common.sast.report_types import PrismaReport, RuleMatch, create_emp
 from checkov.sast.record import SastRecord
 from checkov.sast.report import SastReport
 from checkov.cdk.report import CDKReport
+from checkov.sast.engines.files_filter_manager import FilesFilterManager
 
 logger = logging.getLogger(__name__)
 
@@ -84,6 +86,11 @@ class PrismaEngine(SastEngine):
 
         check_threshold, skip_check_threshold = self.get_check_thresholds(registry)
 
+        skip_paths = registry.runner_filter.excluded_paths if registry.runner_filter else []
+
+        files_filter_manager = FilesFilterManager(targets, languages)
+        skip_paths += files_filter_manager.get_files_to_filter()
+
         library_input: LibraryInput = {
             'languages': languages,
             'source_codes': targets,
@@ -92,7 +99,8 @@ class PrismaEngine(SastEngine):
             'skip_checks': registry.runner_filter.skip_checks if registry.runner_filter else [],
             'check_threshold': check_threshold,
             'skip_check_threshold': skip_check_threshold,
-            'skip_path': registry.runner_filter.excluded_paths if registry.runner_filter else [],
+            'platform_check_metadata': policy_metadata_integration.sast_check_metadata or {},
+            'skip_path': skip_paths,
             'report_imports': registry.runner_filter.report_sast_imports if registry.runner_filter else False,
             'remove_default_policies': registry.runner_filter.remove_default_sast_policies if registry.runner_filter else False,
             'report_reachability': registry.runner_filter.report_sast_reachability if registry.runner_filter else False,
@@ -195,6 +203,7 @@ class PrismaEngine(SastEngine):
                        skip_path: List[str],
                        check_threshold: Severity,
                        skip_check_threshold: Severity,
+                       platform_check_metadata: Dict[str, Any],
                        cdk_languages: List[CDKLanguages],
                        list_policies: bool = False,
                        report_imports: bool = True,
@@ -224,6 +233,7 @@ class PrismaEngine(SastEngine):
                 "skip_path": skip_path,
                 "check_threshold": str(check_threshold),
                 "skip_check_threshold": str(skip_check_threshold),
+                "platform_check_metadata": platform_check_metadata,
                 "list_policies": list_policies,
                 "report_imports": report_imports,
                 "remove_default_policies": remove_default_policies,
@@ -322,7 +332,9 @@ class PrismaEngine(SastEngine):
                     metadata = match.metadata
 
                     if self.enable_inline_suppressions and any(skipped_check.check_id == match_rule.check_id for skipped_check in prisma_report.skipped_checks_by_file.get(file_abs_path, [])):
-                        check_result = _CheckResult(result=CheckResult.SKIPPED)
+                        check_result = _CheckResult(
+                            result=CheckResult.SKIPPED,
+                            suppress_comment=next(skipped_check.suppress_comment for skipped_check in prisma_report.skipped_checks_by_file.get(file_abs_path, []) if skipped_check.check_id == match_rule.check_id))
                     else:
                         check_result = _CheckResult(result=CheckResult.FAILED)
                     record = SastRecord(check_id=check_id, check_name=check_name, resource="", evaluations={},
@@ -466,6 +478,7 @@ class PrismaEngine(SastEngine):
             'skip_checks': [],
             'check_threshold': Severities[BcSeverities.NONE],
             'skip_check_threshold': Severities[BcSeverities.NONE],
+            'platform_check_metadata': policy_metadata_integration.sast_check_metadata,
             'skip_path': [],
             'report_imports': False,
             'report_reachability': False,
