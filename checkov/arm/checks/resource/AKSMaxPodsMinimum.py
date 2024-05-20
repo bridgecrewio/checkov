@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Any
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.arm.base_resource_check import BaseResourceCheck
-
+from typing import Optional
 
 
 class AKSMaxPodsMinimum(BaseResourceCheck):
@@ -15,7 +15,7 @@ class AKSMaxPodsMinimum(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,)
 
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
-        max_pods = 30  # default is 30
+        max_pods: Optional[int] = 30  # default is 30
 
         properties = conf.get("properties")
         if properties and isinstance(properties, dict):
