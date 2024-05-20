@@ -19,11 +19,11 @@ class TestACREnableZoneRedundancy(unittest.TestCase):
 
         passing_resources = {
             'Microsoft.ContainerRegistry/registries.pass',
-            'Microsoft.ContainerRegistry/registries.pass2',
+            'Microsoft.ContainerRegistry/registries/replications.pass2',
         }
         failing_resources = {
             'Microsoft.ContainerRegistry/registries.fail1',
-            'Microsoft.ContainerRegistry/registries.fail2',
+            'Microsoft.ContainerRegistry/registries/replications.fail2',
         }
         skipped_resources = {}
 
@@ -35,8 +35,8 @@ class TestACREnableZoneRedundancy(unittest.TestCase):
         self.assertEqual(summary['skipped'], len(skipped_resources))
         self.assertEqual(summary['parsing_errors'], 0)
 
-        # self.assertEqual(passing_resources, passed_check_resources)
-        # self.assertEqual(failing_resources, failed_check_resources)
+        self.assertEqual(passing_resources, passed_check_resources)
+        self.assertEqual(failing_resources, failed_check_resources)
 
 
 if __name__ == '__main__':
