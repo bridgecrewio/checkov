@@ -1,0 +1,24 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "apiVersion": "2021-02-01",
+      "name": "pass",
+      "properties": {
+        "storageSyncServiceStatus": "Registered",
+        "storageSyncServiceProperties": {
+          "trustState": "Enabled",
+          "storageSyncServiceUid": "65fdd65b-ea5d-4a00-bf7f-40c41ba39ae4",
+          "provisioningState": "Succeeded"
+        },
+        "location": "East US",
+        "incoming_traffic_policy": "AllowVirtualNetworksOnly",
+        "tags": {
+          "foo": "bar"
+        }
+      },
+      "type": "Microsoft.StorageSync/storageSyncServices"
+    }
+  ]
+}
