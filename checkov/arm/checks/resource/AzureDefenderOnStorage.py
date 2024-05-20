@@ -1,4 +1,4 @@
-from typing import List, Any, Dict
+from typing import Any, Dict, List
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.arm.base_resource_check import BaseResourceCheck
 
@@ -20,8 +20,8 @@ class AzureDefenderOnStorage(BaseResourceCheck):
             else CheckResult.FAILED
         )
 
-    def get_evaluated_keys(self) -> str:
-        return "properties/pricingTier"
+    def get_evaluated_keys(self) -> List[str]:
+        return ["properties/pricingTier"]
 
 
 check = AzureDefenderOnStorage()
