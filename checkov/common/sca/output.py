@@ -25,7 +25,6 @@ from checkov.common.sca.commons import (
     get_record_file_line_range, get_license_policy_and_package_alias
 )
 from checkov.common.util.http_utils import request_wrapper
-from checkov.common.util.array_utils import chunk_array
 from checkov.runner_filter import RunnerFilter
 from checkov.common.output.common import format_licenses_to_string
 
@@ -667,17 +666,15 @@ def get_license_statuses(packages: list[dict[str, Any]]) -> list[_LicenseStatus]
     if not requests_input:
         return []
     try:
-        license_statuses: list[_LicenseStatus] = []
-        for chunked_request_input in chunk_array(requests_input, 50):
-            response = request_wrapper(
-                method="POST",
-                url=f"{bc_integration.api_url}/api/v1/vulnerabilities/license/get-licenses-violations",
-                headers=bc_integration.get_default_headers("POST"),
-                json={"packages": chunked_request_input},
-                should_call_raise_for_status=True
-            )
-            response_json = response.json()
-            license_statuses.extend(_extract_license_statuses(response_json))
+        response = request_wrapper(
+            method="POST",
+            url=f"{bc_integration.api_url}/api/v1/vulnerabilities/packages/get-licenses-violations",
+            headers=bc_integration.get_default_headers("POST"),
+            json={"packages": requests_input},
+            should_call_raise_for_status=True
+        )
+        response_json = response.json()
+        license_statuses: list[_LicenseStatus] = _extract_license_statuses(response_json)
         return license_statuses
     except Exception:
         error_message = (
@@ -697,17 +694,15 @@ async def get_license_statuses_async(
     as an input, and the asyncio behavior is managed in the calling method.
     """
     requests_input = _get_request_input(packages)
-    url = f"{bc_integration.api_url}/api/v1/vulnerabilities/license/get-licenses-violations"
+    url = f"{bc_integration.api_url}/api/v1/vulnerabilities/packages/get-licenses-violations"
     if not requests_input:
         return {'image_name': image_name, 'licenses': []}
     try:
-        license_statuses: list[_LicenseStatus] = []
-        for chunked_request_input in chunk_array(requests_input, 50):
-            async with session.request("POST", url, headers=bc_integration.get_default_headers("POST"),
-                                       json={"packages": chunked_request_input}) as resp:
-                response_json = await resp.json()
+        async with session.request("POST", url, headers=bc_integration.get_default_headers("POST"),
+                                   json={"packages": requests_input}) as resp:
+            response_json = await resp.json()
 
-            license_statuses.extend(_extract_license_statuses(response_json))
+        license_statuses = _extract_license_statuses(response_json)
         return {'image_name': image_name, 'licenses': license_statuses}
     except Exception as e:
         error_message = (
