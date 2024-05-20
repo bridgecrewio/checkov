@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import os
 from typing import Generator, Set, Tuple
 from typing import Any
 from typing import TYPE_CHECKING
@@ -29,7 +30,7 @@ if TYPE_CHECKING:
 
 MAX_LINE_LENGTH = 10000
 MAX_KEYWORD_LIMIT = 500
-ENTROPY_KEYWORD_COMBINATOR_LIMIT = 3
+ENTROPY_KEYWORD_COMBINATOR_LIMIT = float(os.getenv('CHECKOV_ENTROPY_KEYWORD_LIMIT', '3'))
 ENTROPY_KEYWORD_LIMIT = 4.8
 
 DENY_LIST_REGEX = r'|'.join(DENYLIST)
