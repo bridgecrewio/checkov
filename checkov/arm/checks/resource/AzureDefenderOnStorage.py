@@ -14,15 +14,14 @@ class AzureDefenderOnStorage(BaseResourceCheck):
     def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
         properties: Dict[str, Any] = conf.get("properties", {})
         pricingTier = properties.get("pricingTier", "")
-        resourceType = properties.get("resourceType", "")
         return (
             CheckResult.PASSED
-            if resourceType != "Microsoft.Security/pricings" or pricingTier == "Standard"
+            if pricingTier == "Standard"
             else CheckResult.FAILED
         )
 
-    def get_evaluated_keys(self) -> List[str]:
-        return ["properties/pricingTier", "properties/resourceType"]
+    def get_evaluated_keys(self) -> str:
+        return "properties/pricingTier"
 
 
 check = AzureDefenderOnStorage()
