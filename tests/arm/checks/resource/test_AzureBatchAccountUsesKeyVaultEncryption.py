@@ -1,15 +1,14 @@
 import unittest
 from pathlib import Path
-
+from checkov.arm.checks.resource.AzureBatchAccountUsesKeyVaultEncryption import check
+from checkov.arm.runner import Runner
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.module.generic.RevisionVersionTag import check
-from checkov.terraform.runner import Runner
 
 
-class TestRevisionVersionTag(unittest.TestCase):
-    def test(self):
+class TestAzureBatchAccountUsesKeyVaultEncryption(unittest.TestCase):
+    def test_summary(self):
         # given
-        test_files_dir = Path(__file__).parent / "example_RevisionVersionTag"
+        test_files_dir = Path(__file__).parent / "example_AzureBatchAccountUsesKeyVaultEncryption"
 
         # when
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
@@ -18,14 +17,10 @@ class TestRevisionVersionTag(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "hash",
-            "sub_dir_hash",
-            "tag",
-            "shallow_clone"
+            "Microsoft.Batch/batchAccounts.pass",
         }
         failing_resources = {
-            "looks_like_a_branch",
-            "tf_registry",
+            "Microsoft.Batch/batchAccounts.fail",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
