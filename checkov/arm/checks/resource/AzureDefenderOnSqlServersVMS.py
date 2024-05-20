@@ -7,7 +7,7 @@ class AzureDefenderOnSqlServersVMS(BaseResourceCheck):
     def __init__(self):
         name = "Ensure that Azure Defender is set to On for SQL servers on machines"
         id = "CKV_AZURE_79"
-        supported_resources = ("Microsoft.Cache/Redis",)
+        supported_resources = ("Microsoft.Security/pricings",)
         categories = [CheckCategories.GENERAL_SECURITY]
         super().__init__(
             name=name,

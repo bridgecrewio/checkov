@@ -18,11 +18,11 @@ class TestAzureDefenderOnSqlServersVMS(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "Microsoft.Cache/Redis.pass",
+            "Microsoft.Security/pricings.pass",
         }
 
         failing_resources = {
-            "Microsoft.Cache/Redis.fail",
+            "Microsoft.Security/pricings.fail",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
