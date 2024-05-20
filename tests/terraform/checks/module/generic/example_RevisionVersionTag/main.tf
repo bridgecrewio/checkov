@@ -45,6 +45,10 @@ module "tag" {
   }
 }
 
+module "shallow_clone" {
+  source = "git::https://github.com/terraform-aws-modules/terraform-aws-vpc.git?depth=1&ref=v1.2.0"
+}
+
 # fail
 
 module "tf_registry" {
