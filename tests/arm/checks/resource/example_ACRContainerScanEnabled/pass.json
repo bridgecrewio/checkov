@@ -1,0 +1,38 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.1",
+  "resources": [
+    {
+      "apiVersion": "2019-05-01",
+      "type": "Microsoft.ContainerRegistry/registries",
+      "name": "pass",
+      "location": "[resourceGroup().location]",
+      "sku": {
+        "name": "Standard"
+      },
+      "properties": {
+    "adminUserEnabled": "bool",
+    "anonymousPullEnabled": "bool",
+    "dataEndpointEnabled": "bool",
+    "encryption": {
+      "keyVaultProperties": {
+        "identity": "string",
+        "keyIdentifier": "string"
+      },
+      "status": "string"
+    },
+    "networkRuleBypassOptions": "string",
+    "networkRuleSet": {
+      "defaultAction": "string",
+      "ipRules": [
+        {
+          "action": "Allow",
+          "value": "string"
+        }
+      ]
+    }
+      }
+    }
+  ]
+}
+
