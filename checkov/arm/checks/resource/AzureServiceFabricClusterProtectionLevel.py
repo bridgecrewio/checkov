@@ -1,7 +1,7 @@
 from typing import Dict, List, Any
 from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.common.util.type_forcers import force_list
 from checkov.arm.base_resource_check import BaseResourceCheck
+from checkov.common.util.type_forcers import force_list
 
 
 class AzureServiceFabricClusterProtectionLevel(BaseResourceCheck):
