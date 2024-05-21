@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.97...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.98...HEAD)
+
+## [3.2.98](https://github.com/bridgecrewio/checkov/compare/3.2.97...3.2.98) - 2024-05-20
+
+### Bug Fix
+
+- **terraform:** Remove invalid CIDRs in CKV2_AWS_44 - [#6301](https://github.com/bridgecrewio/checkov/pull/6301)
 
 ## [3.2.97](https://github.com/bridgecrewio/checkov/compare/3.2.95...3.2.97) - 2024-05-19
 
