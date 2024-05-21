@@ -19,7 +19,7 @@ class FunctionAppMinTLSVersion(BaseResourceValueCheck):
     def get_expected_value(self) -> Any:
         return 1.2
 
-    def get_expected_values(self) -> List[str]:
+    def get_expected_values(self) -> List[Any]:
         return ["1.2", 1.2]
 
 
