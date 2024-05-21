@@ -14,7 +14,7 @@
           "provisioningState": "Succeeded"
         },
         "location": "East US",
-        "incoming_traffic_policy": "AllowAllTraffic",
+        "incomingTrafficPolicy": "AllowAllTraffic",
         "tags": {
           "foo": "bar"
         }
