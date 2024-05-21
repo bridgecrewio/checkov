@@ -13,7 +13,7 @@
           "provisioningState": "Succeeded"
         },
         "location": "East US",
-        "incoming_traffic_policy": "AllowVirtualNetworksOnly",
+        "incomingTrafficPolicy": "AllowVirtualNetworksOnly",
         "tags": {
           "foo": "bar"
         }
