@@ -121,7 +121,7 @@ class EntropyKeywordCombinator(BasePlugin):
 
     def __init__(self, limit: float = ENTROPY_KEYWORD_LIMIT, max_line_length: int = MAX_LINE_LENGTH,
                  entropy_limit: float = ENTROPY_KEYWORD_COMBINATOR_LIMIT) -> None:
-        self.entropy_limit = entropy_limit or ENTROPY_KEYWORD_COMBINATOR_LIMIT
+        self.entropy_limit = entropy_limit
         self.high_entropy_scanners_iac = (
             Base64HighEntropyString(
                 limit=entropy_limit), HexHighEntropyString(
