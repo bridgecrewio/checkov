@@ -51,7 +51,7 @@
   },
   "resources": [
     {
-      "type": "Microsoft.ContainerRegistry/registries",
+      "type": "Microsoft.ContainerRegistry/registries/replications",
       "apiVersion": "2019-12-01-preview",
       "name": "fail2",
       "location": "[parameters('location')]",
@@ -67,16 +67,6 @@
       "properties": {
         "adminUserEnabled": "[parameters('acrAdminUserEnabled')]"
       }
-    },
-    {
-      "type": "Microsoft.ContainerRegistry/registries/replications",
-      "apiVersion": "2019-12-01-preview",
-      "name": "[format('{0}/{1}', parameters('acrName'), parameters('acrReplicaLocation'))]",
-      "location": "[parameters('acrReplicaLocation')]",
-      "properties": {},
-      "dependsOn": [
-        "[resourceId('Microsoft.ContainerRegistry/registries', parameters('acrName'))]"
-      ]
     }
   ],
   "outputs": {

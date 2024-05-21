@@ -18,12 +18,12 @@ class TestACRGeoreplicated(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            'Microsoft.ContainerRegistry/registries.pass',
+            'Microsoft.ContainerRegistry/registries/replications.pass',
         }
         failing_resources = {
-            'Microsoft.ContainerRegistry/registries.fail',
-            'Microsoft.ContainerRegistry/registries.fail2',
-            'Microsoft.ContainerRegistry/registries.fail3'
+            'Microsoft.ContainerRegistry/registries/replications.fail',
+            'Microsoft.ContainerRegistry/registries/replications.fail2',
+            'Microsoft.ContainerRegistry/registries/replications.fail3'
         }
         skipped_resources = {}
 
