@@ -1,5 +1,5 @@
-import os
 import unittest
+import os
 
 from checkov.runner_filter import RunnerFilter
 from checkov.arm.runner import Runner
