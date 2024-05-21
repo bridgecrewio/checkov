@@ -5,7 +5,7 @@ from checkov.arm.base_resource_value_check import BaseResourceValueCheck
 class NetworkInterfaceEnableIPForwarding(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure that Azure File Sync disables public network access"
-        id = "CKV_AZURE_657"
+        id = "CKV_AZURE_64"
         supported_resources = ('Microsoft.StorageSync/storageSyncServices',)
         categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,
