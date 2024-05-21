@@ -12,7 +12,7 @@ class AzureDefenderOnKubernetes(BaseResourceCheck):
         categories = (CheckCategories.GENERAL_SECURITY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,)
 
-    def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
+    def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
         return (
             CheckResult.PASSED
             if conf.get("name") != "KubernetesService" or str(conf["properties"]["pricingTier"]).lower() == "standard"
