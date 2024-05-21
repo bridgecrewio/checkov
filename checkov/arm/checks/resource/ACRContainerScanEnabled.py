@@ -17,10 +17,14 @@ class ACRContainerScanEnabled(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
+
+        if "sku" in conf.keys():
+            sku = conf.get("sku")
+
         if (
-            "sku" in conf.keys()
-            and isinstance(conf["sku"], str)
-            and conf["sku"] in ACRContainerScanEnabled.SKUS
+                "name" in sku
+                and isinstance(sku["name"], str)
+                and sku["name"] in ACRContainerScanEnabled.SKUS
         ):
             return CheckResult.PASSED
 
