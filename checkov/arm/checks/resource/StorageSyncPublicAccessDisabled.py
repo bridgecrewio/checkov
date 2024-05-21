@@ -12,7 +12,7 @@ class NetworkInterfaceEnableIPForwarding(BaseResourceValueCheck):
                          missing_block_result=CheckResult.FAILED)
 
     def get_inspected_key(self):
-        return 'properties/incoming_traffic_policy'
+        return 'properties/incomingTrafficPolicy'
 
     def get_expected_value(self):
         return 'AllowVirtualNetworksOnly'
