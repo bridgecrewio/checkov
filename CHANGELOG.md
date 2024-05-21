@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.98...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.100...HEAD)
+
+## [3.2.100](https://github.com/bridgecrewio/checkov/compare/3.2.98...3.2.100) - 2024-05-21
+
+### Feature
+
+- **sast:** TS-legacy-checks - [#6311](https://github.com/bridgecrewio/checkov/pull/6311)
+- **secrets:** entropy limit as env variable - [#6332](https://github.com/bridgecrewio/checkov/pull/6332)
 
 ## [3.2.98](https://github.com/bridgecrewio/checkov/compare/3.2.97...3.2.98) - 2024-05-20
 
