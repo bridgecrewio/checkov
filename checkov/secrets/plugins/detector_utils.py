@@ -26,6 +26,8 @@ if TYPE_CHECKING:
 
 MAX_KEYWORD_LIMIT = 500
 
+B64_FP_REGEX = re.compile(r'\b[A-Za-z]+_+[A-Za-z_]*[A-Za-z]\b')
+
 DENY_LIST_REGEX = r'|'.join(DENYLIST)
 # Support for suffix after keyword i.e. password_secure = "value"
 DENY_LIST_REGEX2 = r'({denylist}){suffix}'.format(
@@ -199,7 +201,7 @@ def remove_fp_secrets_in_keys(detected_secrets: set[PotentialSecret], line: str,
             if detected_secret.secret_value in key and detected_secret.secret_value in value:
                 secrets_to_remove.add(detected_secret)
         # strings which are all lower/upper case letters are suspected to not be base64 high entropy strings
-        if processed_line.lower() == processed_line or processed_line.upper() == processed_line:
+        if B64_FP_REGEX.search(detected_secret.secret_value):
             secrets_to_remove.add(detected_secret)
     detected_secrets -= secrets_to_remove
 
