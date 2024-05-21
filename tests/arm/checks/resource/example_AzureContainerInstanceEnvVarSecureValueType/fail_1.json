@@ -1,0 +1,47 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.ContainerInstance/containerGroups",
+      "apiVersion": "2023-05-01",
+      "name": "fail_1",
+      "location": "westus2",
+      "properties": {
+        "osType": "Linux",
+        "containers": [],
+        "initContainers": [
+          {
+            "name": "init-container",
+            "properties": {
+              "image": "init-image:latest",
+              "resources": {
+                "requests": {
+                  "cpu": 0.5,
+                  "memoryInGB": 0.5
+                }
+              },
+              "environmentVariables": [
+                {
+                  "name": "ENV_INIT_FAIL_1",
+                  "value": "[parameters('randomString')]"
+                }
+              ],
+              "secureEnvironmentVariables": [
+                {
+                  "name": "SEC_INIT_FAIL_1",
+                  "secureValue": "[parameters('randomString')]"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "parameters": {
+    "randomString": {
+      "type": "string"
+    }
+  }
+}
