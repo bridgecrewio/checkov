@@ -13,7 +13,7 @@
         "sku": {
           "name": "Consumption"
         },
-        "clientCertificateEnabled": false,
+        "enableClientCertificate": false,
         "policy": {
           "value": "<policies><inbound /><backend /><outbound /><on-error /></policies>"
         },
