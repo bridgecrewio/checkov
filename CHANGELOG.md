@@ -1,6 +1,26 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.100...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.105...HEAD)
+
+## [3.2.105](https://github.com/bridgecrewio/checkov/compare/3.2.100...3.2.105) - 2024-05-22
+
+### Feature
+
+- **arm:** add AppServiceJavaVersion - [#6258](https://github.com/bridgecrewio/checkov/pull/6258)
+- **arm:** add CKV_AZURE_145 to check that the function app uses the latest version of TLS encryption - [#6323](https://github.com/bridgecrewio/checkov/pull/6323)
+- **arm:** add CKV_AZURE_218 to ensure that Application Gateway defines secure protocols for in transit communicationApp gw defines secure protocols - [#6320](https://github.com/bridgecrewio/checkov/pull/6320)
+- **arm:** add CKV_AZURE_54 to ensure Enforce a minimal Tls version for the server - [#6270](https://github.com/bridgecrewio/checkov/pull/6270)
+- **arm:** add CKV_AZURE_71 to  Ensure that Managed identity provider is enabled for web apps - [#6272](https://github.com/bridgecrewio/checkov/pull/6272)
+- **arm:** add CKV_AZURE_72 to ensure that remote debugging is not enabled for app services - [#6281](https://github.com/bridgecrewio/checkov/pull/6281)
+- **arm:** AzureDefenderOStorage - [#6269](https://github.com/bridgecrewio/checkov/pull/6269)
+- **arm:** MySQLPublicAccessDisabled-Azure MySQL: Restrict Public Access - [#6263](https://github.com/bridgecrewio/checkov/pull/6263)
+- **arm:** StorageSyncPublicAccessDisabled - [#6331](https://github.com/bridgecrewio/checkov/pull/6331)
+- **secrets:** eliminate false positives in entropy keyword combinator detector - [#6327](https://github.com/bridgecrewio/checkov/pull/6327)
+
+### Bug Fix
+
+- **ansible:** fix ansible resource id in local graph - [#6344](https://github.com/bridgecrewio/checkov/pull/6344)
+- **secrets:** fix entropy type - [#6347](https://github.com/bridgecrewio/checkov/pull/6347)
 
 ## [3.2.100](https://github.com/bridgecrewio/checkov/compare/3.2.98...3.2.100) - 2024-05-21
 
