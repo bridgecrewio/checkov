@@ -123,13 +123,12 @@ class Runner(BaseRunner[_ObjectDefinitions, _ObjectContext, ObjectGraphManager])
                 if self.graph_registry:
                     self.graph_registry.load_external_checks(directory)
 
-        if root_folder:
-            self.root_folder = root_folder
+        self.root_folder = root_folder
 
         if not self.context or not self.definitions:
             if files:
                 self._load_files(files)
-
+            if root_folder:
                 for root, d_names, f_names in os.walk(root_folder):
                     filter_ignored_paths(root, d_names, runner_filter.excluded_paths, self.included_paths())
                     filter_ignored_paths(root, f_names, runner_filter.excluded_paths, self.included_paths())
