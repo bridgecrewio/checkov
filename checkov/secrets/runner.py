@@ -88,7 +88,7 @@ class Runner(BaseRunner[None, None, None]):
             self,
             file_extensions: Iterable[str] | None = None,
             file_names: Iterable[str] | None = None,
-            entropy_limit: Optional[int] = None):
+            entropy_limit: Optional[float] = None):
         super().__init__(file_extensions, file_names)
         self.secrets_coordinator = SecretsCoordinator()
         self.history_secret_store = GitHistorySecretStore()
