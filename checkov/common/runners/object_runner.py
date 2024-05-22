@@ -123,7 +123,8 @@ class Runner(BaseRunner[_ObjectDefinitions, _ObjectContext, ObjectGraphManager])
                 if self.graph_registry:
                     self.graph_registry.load_external_checks(directory)
 
-        self.root_folder = root_folder
+        if root_folder:
+            self.root_folder = root_folder
 
         if not self.context or not self.definitions:
             if files:
