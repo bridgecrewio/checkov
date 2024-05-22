@@ -396,9 +396,10 @@ class RunnerFilter(object):
                                      show_progress_bar, run_image_referencer, enable_secret_scan_all_files, block_list_secret_scan)
         return runner_filter
 
-    def set_suppressed_policies(self, policy_level_suppressions: List[str]) -> None:
+    def set_suppressed_policies(self, policy_level_suppressions: List[List[str]]) -> None:
         logging.debug(f"Received the following policy-level suppressions, that will be skipped from running: {policy_level_suppressions}")
-        self.suppressed_policies = policy_level_suppressions
+        # flatten
+        self.suppressed_policies = [suppression for suppression_list in policy_level_suppressions for suppression in suppression_list]
 
     @staticmethod
     def get_sast_languages(frameworks: Optional[List[str]], skip_framework: Optional[List[str]]) -> Set[SastLanguages]:
