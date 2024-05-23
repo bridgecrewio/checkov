@@ -1,0 +1,45 @@
+metadata:
+  id: "CKV2_AZURE_48"
+  name: "Ensure that Databricks Workspaces enables customer-managed key for root DBFS encryption"
+  category: "ENCRYPTION"
+definition:
+  or:
+    - and:
+      - cond_type: filter
+        attribute: resource_type
+        operator: within
+        value:
+          - azurerm_databricks_workspace
+      - resource_types:
+          - azurerm_databricks_workspace
+        operator: not_equals
+        cond_type: attribute
+        attribute: sku
+        value: "premium"
+    - and:
+        - cond_type: filter
+          attribute: resource_type
+          operator: within
+          value:
+            - azurerm_databricks_workspace
+        - resource_types:
+            - azurerm_databricks_workspace
+          operator: equals
+          cond_type: attribute
+          attribute: sku
+          value: "premium"
+        - resource_types:
+            - azurerm_databricks_workspace
+          operator: equals
+          cond_type: attribute
+          attribute: customer_managed_key_enabled
+          value: true
+        - resource_types:
+            - azurerm_databricks_workspace
+          connected_resource_types:
+            - azurerm_databricks_workspace_root_dbfs_customer_managed_key
+          operator: exists
+          cond_type: connection
+
+# Root DBFS encryption is only valid if the Databricks Workspace sku is set to 'premium'.
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/databricks_workspace#customer_managed_key_enabled
