@@ -1,6 +1,74 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.92...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.106...HEAD)
+
+## [3.2.106](https://github.com/bridgecrewio/checkov/compare/3.2.105...3.2.106) - 2024-05-23
+
+### Feature
+
+- **arm:** Ensure Databricks Workspace data plane to control plane co… - [#6319](https://github.com/bridgecrewio/checkov/pull/6319)
+- **general:** TF and ARM - Ensure that Databricks Workspaces enable… - [#6313](https://github.com/bridgecrewio/checkov/pull/6313)
+- **secrets:** Bump detect-secrets - [#6346](https://github.com/bridgecrewio/checkov/pull/6346)
+
+## [3.2.105](https://github.com/bridgecrewio/checkov/compare/3.2.100...3.2.105) - 2024-05-22
+
+### Feature
+
+- **arm:** add AppServiceJavaVersion - [#6258](https://github.com/bridgecrewio/checkov/pull/6258)
+- **arm:** add CKV_AZURE_145 to check that the function app uses the latest version of TLS encryption - [#6323](https://github.com/bridgecrewio/checkov/pull/6323)
+- **arm:** add CKV_AZURE_218 to ensure that Application Gateway defines secure protocols for in transit communicationApp gw defines secure protocols - [#6320](https://github.com/bridgecrewio/checkov/pull/6320)
+- **arm:** add CKV_AZURE_54 to ensure Enforce a minimal Tls version for the server - [#6270](https://github.com/bridgecrewio/checkov/pull/6270)
+- **arm:** add CKV_AZURE_71 to  Ensure that Managed identity provider is enabled for web apps - [#6272](https://github.com/bridgecrewio/checkov/pull/6272)
+- **arm:** add CKV_AZURE_72 to ensure that remote debugging is not enabled for app services - [#6281](https://github.com/bridgecrewio/checkov/pull/6281)
+- **arm:** AzureDefenderOStorage - [#6269](https://github.com/bridgecrewio/checkov/pull/6269)
+- **arm:** MySQLPublicAccessDisabled-Azure MySQL: Restrict Public Access - [#6263](https://github.com/bridgecrewio/checkov/pull/6263)
+- **arm:** StorageSyncPublicAccessDisabled - [#6331](https://github.com/bridgecrewio/checkov/pull/6331)
+- **secrets:** eliminate false positives in entropy keyword combinator detector - [#6327](https://github.com/bridgecrewio/checkov/pull/6327)
+
+### Bug Fix
+
+- **ansible:** fix ansible resource id in local graph - [#6344](https://github.com/bridgecrewio/checkov/pull/6344)
+- **secrets:** fix entropy type - [#6347](https://github.com/bridgecrewio/checkov/pull/6347)
+
+## [3.2.100](https://github.com/bridgecrewio/checkov/compare/3.2.98...3.2.100) - 2024-05-21
+
+### Feature
+
+- **sast:** TS-legacy-checks - [#6311](https://github.com/bridgecrewio/checkov/pull/6311)
+- **secrets:** entropy limit as env variable - [#6332](https://github.com/bridgecrewio/checkov/pull/6332)
+
+## [3.2.98](https://github.com/bridgecrewio/checkov/compare/3.2.97...3.2.98) - 2024-05-20
+
+### Bug Fix
+
+- **terraform:** Remove invalid CIDRs in CKV2_AWS_44 - [#6301](https://github.com/bridgecrewio/checkov/pull/6301)
+
+## [3.2.97](https://github.com/bridgecrewio/checkov/compare/3.2.95...3.2.97) - 2024-05-19
+
+### Feature
+
+- **arm:** add CKV_AZURE_73 to ensure that Automation account variables are encrypted - [#6271](https://github.com/bridgecrewio/checkov/pull/6271)
+- **arm:** add CKV_AZURE_76 to ensure that Azure Batch account uses key vault to encrypt data - [#6280](https://github.com/bridgecrewio/checkov/pull/6280)
+- **arm:** add FunctionAppDisallowCORS - password correctness check - [#6248](https://github.com/bridgecrewio/checkov/pull/6248)
+- **arm:** ARM FunctionAppHttpVersionLatest policy - [#6244](https://github.com/bridgecrewio/checkov/pull/6244)
+- **arm:** CKV_AZURE_74 to Ensure that Azure Data Explorer (Kusto) uses disk encryption - [#6273](https://github.com/bridgecrewio/checkov/pull/6273)
+- **arm:** MSSQLServerMinTLSVersion - [#6245](https://github.com/bridgecrewio/checkov/pull/6245)
+
+## [3.2.95](https://github.com/bridgecrewio/checkov/compare/3.2.94...3.2.95) - 2024-05-17
+
+### Bug Fix
+
+- **terraform:** handle module source tag ref when it is not the first parameter - [#6314](https://github.com/bridgecrewio/checkov/pull/6314)
+
+## [3.2.94](https://github.com/bridgecrewio/checkov/compare/3.2.92...3.2.94) - 2024-05-16
+
+### Bug Fix
+
+- **sast:** fix random test sast js - [#6315](https://github.com/bridgecrewio/checkov/pull/6315)
+
+### Platform
+
+- **general:** Double-Encode URI for RelayState Parameter - [#6302](https://github.com/bridgecrewio/checkov/pull/6302)
 
 ## [3.2.92](https://github.com/bridgecrewio/checkov/compare/3.2.91...3.2.92) - 2024-05-15
 
