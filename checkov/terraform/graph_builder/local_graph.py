@@ -179,8 +179,10 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         v_name = vertex.name.split('.')
         vertex.config[v_name[0]][v_name[1]][CustomAttributes.PROVIDER_ADDRESS] = provider_name
 
-    def _get_provider_address(self, path_for_tf_definition: TFDefinitionKey) -> list[int] | None:
-        return self.vertices_by_module_dependency[path_for_tf_definition.tf_source_modules].get(BlockType.PROVIDER)
+    def _get_provider_address(self, path_for_tf_definition: TFDefinitionKeyType) -> list[int] | None:
+        if isinstance(path_for_tf_definition, TFDefinitionKey):
+            return self.vertices_by_module_dependency[path_for_tf_definition.tf_source_modules].get(BlockType.PROVIDER)
+        return None
 
     def _get_the_default_provider(
             self,
@@ -209,7 +211,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                             return cast(str, self.vertices[address].config[list(self.vertices[address].config)[0]].get(CustomAttributes.TF_RESOURCE_ADDRESS))
         else:
             for provider in providers:
-                provider_name = list(provider.keys())[0]
+                provider_name = list(provider.keys())[0]  # type:ignore
                 if 'alias' not in provider[provider_name]:
                     if provider_address and not is_same_file:
                         for p_address in provider_address:
