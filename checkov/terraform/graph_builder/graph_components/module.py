@@ -5,7 +5,6 @@ import os
 from typing import List, Dict, Any, Set, Callable, Tuple, TYPE_CHECKING, cast
 from ast import literal_eval
 
-from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.typing import TFDefinitionKeyType
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.terraform import TFDefinitionKey

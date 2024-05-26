@@ -155,7 +155,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                     self._assign_provider_fields(vertex, provider_name)
                 else:
                     while path_for_tf_definition.tf_source_modules:
-                        if path_for_tf_definition.tf_source_modules and BlockType.PROVIDER in self.module.temp_tf_definition.get(path_for_tf_definition):
+                        if self.module.temp_tf_definition and path_for_tf_definition.tf_source_modules and BlockType.PROVIDER in self.module.temp_tf_definition.get(path_for_tf_definition, ''):
                             module = [m for m in self.module.temp_tf_definition.get(path_for_tf_definition).get(BlockType.MODULE) if list(m.keys())[0] == vertex.source_module_object.name]
                             provider_name = self._get_the_default_provider(self.module.temp_tf_definition.get(TFDefinitionKey(path_for_tf_definition.tf_source_modules.path), {}).get(BlockType.PROVIDER, []), path_for_tf_definition, module=module)
                             self._assign_provider_fields(vertex, provider_name)
@@ -193,7 +193,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         if module and len(module) > 0:
             module_providers = module[0][list(module[0].keys())[0]].get('providers', [''])[0]
             if module_providers:
-                for m_key, m_alias in module_providers.items():
+                for _, m_alias in module_providers.items():
                     if not provider_address:
                         return module_providers[list(module_providers.keys())[0]].replace("$", "").replace("{", "").replace("}", "")
                     else:
