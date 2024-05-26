@@ -34,7 +34,8 @@ from checkov.terraform.graph_builder.utils import (
     join_double_quote_surrounded_dot_split, )
 from checkov.terraform.graph_builder.foreach.utils import get_terraform_foreach_or_count_key
 from checkov.terraform.graph_builder.utils import is_local_path
-from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
+from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer, DOLLAR_PREFIX, \
+    LEFT_CURLY, RIGHT_CURLY
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
 
 MODULE_RESERVED_ATTRIBUTES = ("source", "version")
@@ -146,6 +147,23 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self.out_edges[idx] = []
 
     def _add_provider_attr_to_resources(self) -> None:
+        """
+            Assign provider attributes to resource vertices in the Terraform configuration.
+
+            This function iterates through all vertices, and for each vertex that is of the
+            `RESOURCE` block type, it attempts to determine and assign the appropriate
+            provider based on the vertex's attributes and the module's temporary Terraform
+            definitions.
+
+            The function performs the following steps:
+            1. Iterates over each vertex in `self.vertices`.
+            2. Checks if the vertex's `block_type` is `RESOURCE`.
+            3. Determines the path for the Terraform definition.
+            4. Checks for the presence of a provider in the vertex's attributes.
+            5. If no provider is found, checks in the module's temporary Terraform definition.
+            6. If still no provider is found, iterates through nested modules to find a provider.
+            7. Assigns the provider fields to the vertex once a provider is determined.
+        """
         for vertex in self.vertices:
             if vertex.block_type == BlockType.RESOURCE:
                 path_for_tf_definition = TFDefinitionKey(file_path=vertex.path, tf_source_modules=vertex.source_module_object)
@@ -201,10 +219,10 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             if module_providers:
                 for _, m_alias in module_providers.items():
                     if not provider_address:
-                        return cast(str, module_providers[list(module_providers.keys())[0]].replace("$", "").replace("{", "").replace("}", ""))
+                        return cast(str, module_providers[list(module_providers.keys())[0]].replace(DOLLAR_PREFIX, "").replace(LEFT_CURLY, "").replace(RIGHT_CURLY, ""))
                     else:
                         for p_address in provider_address:
-                            if m_alias.replace("$", "").replace("{", "").replace("}", "") == self.vertices[p_address].name:
+                            if m_alias.replace(DOLLAR_PREFIX, "").replace(LEFT_CURLY, "").replace(RIGHT_CURLY, "") == self.vertices[p_address].name:
                                 return cast(str, self.vertices[p_address].config[list(self.vertices[p_address].config)[0]].get(CustomAttributes.TF_RESOURCE_ADDRESS))
 
         if isinstance(providers[0], str):
@@ -407,25 +425,9 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                             for e in referenced_vertices:
                                 if self.vertices[e.dest].block_type == BlockType.PROVIDER:
                                     for resource in resources:
-                                        self._add_provider_address_to_resource(e, resource)
                                         self.create_edge(resource, e.dest, e.label)
                 except Exception as e:
                     logging.warning(f"Failed in connecting module resources to provider due to {e}")
-
-    @staticmethod
-    def _get_resource_name_and_type_from_name(name: str) -> tuple[str, str]:
-        resource_name, resource_type = '', ''
-        split_name = name.split('.')
-        if len(split_name) >= 2:
-            resource_type = split_name[-2]
-            resource_name = split_name[-1]
-        return resource_name, resource_type
-
-    def _add_provider_address_to_resource(self, e: Edge, resource: int) -> None:
-        provider_name = self.vertices[e.dest].name
-        r_name, r_type = self._get_resource_name_and_type_from_name(self.vertices[resource].name)
-        self.vertices[resource].attributes[CustomAttributes.PROVIDER_ADDRESS] = provider_name
-        self.vertices[resource].config[r_type][r_name][CustomAttributes.PROVIDER_ADDRESS] = provider_name
 
     def _build_cross_variable_edges(self) -> None:
         aliases = self._get_aliases()
