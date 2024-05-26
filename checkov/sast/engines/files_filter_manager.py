@@ -3,7 +3,7 @@ import os
 import json
 from typing import Set, List, Dict
 
-from checkov.common.runners.base_runner import IGNORE_HIDDEN_DIRECTORY_ENV
+from checkov.common.runners.base_runner import IGNORE_HIDDEN_DIRECTORY_ENV, ignored_directories
 from checkov.common.sast.consts import SastLanguages
 
 
@@ -88,16 +88,16 @@ class FilesFilterManager:
         return js_files_to_filter
 
     def _filter_hidden_files(self) -> List[str]:
+        # consider ENV variable to ignore hidden directories (CKV_IGNORED_DIRECTORIES, CKV_IGNORE_HIDDEN_DIRECTORIES)
+        paths_to_filter: List[str] = ignored_directories.copy()
         if not IGNORE_HIDDEN_DIRECTORY_ENV:
-            return []
-        files_to_filter = []
+            return paths_to_filter
         for path in self.source_codes:
             for (dirpath, _, filenames) in os.walk(path):
-                print(dirpath)
                 if dirpath.split(os.sep)[-1].startswith('.'):
-                    for filename in filenames:
-                        files_to_filter.append(os.path.join(dirpath, filename))
-        return files_to_filter
+                    paths_to_filter.append(dirpath)
+
+        return paths_to_filter
 
 
 
