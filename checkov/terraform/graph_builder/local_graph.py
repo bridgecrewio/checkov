@@ -6,7 +6,7 @@ import os
 from collections import defaultdict
 from functools import partial
 from pathlib import Path
-from typing import List, Optional, Union, Any, Dict, overload, TypedDict
+from typing import List, Optional, Union, Any, Dict, overload, TypedDict, cast
 
 import checkov.terraform.graph_builder.foreach.consts
 from checkov.common.graph.graph_builder import Edge
@@ -156,17 +156,17 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 else:
                     while path_for_tf_definition.tf_source_modules:
                         if self.module.temp_tf_definition and path_for_tf_definition.tf_source_modules and BlockType.PROVIDER in self.module.temp_tf_definition.get(path_for_tf_definition, ''):
-                            module = [m for m in self.module.temp_tf_definition.get(path_for_tf_definition).get(BlockType.MODULE) if list(m.keys())[0] == vertex.source_module_object.name]
+                            module = [m for m in self.module.temp_tf_definition.get(path_for_tf_definition).get(BlockType.MODULE) if list(m.keys())[0] == vertex.source_module_object.name]  # type:ignore
                             provider_name = self._get_the_default_provider(self.module.temp_tf_definition.get(TFDefinitionKey(path_for_tf_definition.tf_source_modules.path), {}).get(BlockType.PROVIDER, []), path_for_tf_definition, module=module)
                             self._assign_provider_fields(vertex, provider_name)
                             break
                         elif path_for_tf_definition.tf_source_modules and BlockType.PROVIDER in self.module.temp_tf_definition.get(TFDefinitionKey(path_for_tf_definition.tf_source_modules.path), {}):
-                            if vertex.source_module_object.nested_tf_module:
-                                module = [m for m in self.module.temp_tf_definition.get(TFDefinitionKey(path_for_tf_definition.tf_source_modules.path)).get(BlockType.MODULE) if list(m.keys())[0] == vertex.source_module_object.nested_tf_module.name]
+                            if vertex.source_module_object and vertex.source_module_object.nested_tf_module:
+                                module = [m for m in self.module.temp_tf_definition.get(TFDefinitionKey(path_for_tf_definition.tf_source_modules.path)).get(BlockType.MODULE) if list(m.keys())[0] == vertex.source_module_object.nested_tf_module.name]  # type:ignore
                                 provider_name = self._get_the_default_provider(self.module.temp_tf_definition.get(TFDefinitionKey(path_for_tf_definition.tf_source_modules.path), {}).get(BlockType.PROVIDER, []), path_for_tf_definition, module=module)
                                 self._assign_provider_fields(vertex, provider_name)
                             else:
-                                module = [m for m in self.module.temp_tf_definition.get(TFDefinitionKey(path_for_tf_definition.tf_source_modules.path)).get(BlockType.MODULE) if list(m.keys())[0] == vertex.source_module_object.name]
+                                module = [m for m in self.module.temp_tf_definition.get(TFDefinitionKey(path_for_tf_definition.tf_source_modules.path)).get(BlockType.MODULE) if list(m.keys())[0] == vertex.source_module_object.name]  # type:ignore
                                 provider_name = self._get_the_default_provider(self.module.temp_tf_definition.get(TFDefinitionKey(path_for_tf_definition.tf_source_modules.path), {}).get(BlockType.PROVIDER, []), path_for_tf_definition, module=module)
                                 self._assign_provider_fields(vertex, provider_name)
                             break
@@ -179,7 +179,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         v_name = vertex.name.split('.')
         vertex.config[v_name[0]][v_name[1]][CustomAttributes.PROVIDER_ADDRESS] = provider_name
 
-    def _get_provider_address(self, path_for_tf_definition: TFDefinitionKeyType):
+    def _get_provider_address(self, path_for_tf_definition: TFDefinitionKey) -> list[int] | None:
         return self.vertices_by_module_dependency[path_for_tf_definition.tf_source_modules].get(BlockType.PROVIDER)
 
     def _get_the_default_provider(
@@ -195,18 +195,18 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             if module_providers:
                 for _, m_alias in module_providers.items():
                     if not provider_address:
-                        return module_providers[list(module_providers.keys())[0]].replace("$", "").replace("{", "").replace("}", "")
+                        return cast(str, module_providers[list(module_providers.keys())[0]].replace("$", "").replace("{", "").replace("}", ""))
                     else:
                         for p_address in provider_address:
                             if m_alias.replace("$", "").replace("{", "").replace("}", "") == self.vertices[p_address].name:
-                                return self.vertices[p_address].config[list(self.vertices[p_address].config)[0]].get(CustomAttributes.TF_RESOURCE_ADDRESS)
+                                return cast(str, self.vertices[p_address].config[list(self.vertices[p_address].config)[0]].get(CustomAttributes.TF_RESOURCE_ADDRESS))
 
         if isinstance(providers[0], str):
             for provider in providers:
                 if provider_address:
                     for address in provider_address:
                         if self.vertices[address].name == provider:
-                            return self.vertices[address].config[list(self.vertices[address].config)[0]].get(CustomAttributes.TF_RESOURCE_ADDRESS)
+                            return cast(str, self.vertices[address].config[list(self.vertices[address].config)[0]].get(CustomAttributes.TF_RESOURCE_ADDRESS))
         else:
             for provider in providers:
                 provider_name = list(provider.keys())[0]
@@ -214,7 +214,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                     if provider_address and not is_same_file:
                         for p_address in provider_address:
                             if self.vertices[p_address].name == provider_name:
-                                return self.vertices[p_address].config[list(self.vertices[p_address].config.keys())[0]][CustomAttributes.TF_RESOURCE_ADDRESS]
+                                return cast(str, self.vertices[p_address].config[list(self.vertices[p_address].config.keys())[0]][CustomAttributes.TF_RESOURCE_ADDRESS])
                     return f'{provider_name}.default'
         return ''
 
