@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.107...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.108...HEAD)
+
+## [3.2.108](https://github.com/bridgecrewio/checkov/compare/3.2.107...3.2.108) - 2024-05-26
+
+### Bug Fix
+
+- **sast:** don't scan hidden files - [#6349](https://github.com/bridgecrewio/checkov/pull/6349)
 
 ## [3.2.107](https://github.com/bridgecrewio/checkov/compare/3.2.106...3.2.107) - 2024-05-24
 
