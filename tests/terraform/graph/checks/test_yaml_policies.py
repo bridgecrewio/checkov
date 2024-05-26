@@ -22,6 +22,9 @@ class TestYamlPolicies(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
+    def test_DatabricksWorkspaceDBFSRootCustomerManagedKey(self):
+        self.go("DatabricksWorkspaceDBFSRootEncryptedWithCustomerManagedKey")
+
     def test_KmsKeyPolicyIsDefined(self):
         self.go("KmsKeyPolicyIsDefined")
 
@@ -510,6 +513,9 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_IBM_K8sClustersAccessibleViaPrivateEndPt(self):
         self.go("IBM_K8sClustersAccessibleViaPrivateEndPt")
+
+    def test_S3CMKRegularRotation(self):
+        self.go("S3CMKRegularRotation")
 
     def test_registry_load(self):
         registry = Registry(parser=GraphCheckParser(), checks_dir=str(

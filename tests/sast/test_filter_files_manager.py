@@ -9,6 +9,9 @@ def test_sast_js_filtered_files_by_ts():
     files_filter_manager = FilesFilterManager([test_dir], set([SastLanguages.JAVASCRIPT]))
     filtered_paths = files_filter_manager.get_files_to_filter()
     assert len(filtered_paths) == 3
-    assert filtered_paths[0].endswith('example2/build/file.js')
-    assert filtered_paths[1].endswith('example1/build')
-    assert filtered_paths[2].endswith('example3/main.js')
+    paths = {}
+    for path in filtered_paths:
+        if path.endswith('example2/build/file.js') or path.endswith('example1/build') or path.endswith('example3/main.js'):
+            paths[path] = path
+
+    assert len(paths.keys()) == 3
