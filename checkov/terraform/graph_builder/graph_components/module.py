@@ -188,7 +188,6 @@ class Module:
             for resource_type, resources in resource_dict.items():
                 self.resources_types.add(resource_type)
                 for name, resource_conf in resources.items():
-                    self._add_provider_attr_to_resources(path, resource_conf, resource_dict, resource_type, name)
                     attributes = self.clean_bad_characters(resource_conf)
                     dynamic_attributes = None
                     if not isinstance(attributes, dict):
@@ -216,48 +215,6 @@ class Module:
                         dynamic_attributes=dynamic_attributes
                     )
                     self._add_to_blocks(resource_block)
-
-    def _add_provider_attr_to_resources(
-            self,
-            path: TFDefinitionKeyType,
-            resource_conf: dict[str, Any],
-            resource_dict: dict[str, dict[str, Any]],
-            resource_type: str,
-            name: str
-    ) -> None:
-        if BlockType.PROVIDER in resource_conf:
-            provider = resource_conf[BlockType.PROVIDER][0] if isinstance(resource_conf[BlockType.PROVIDER], list) else resource_conf[BlockType.PROVIDER]
-            resource_conf[CustomAttributes.PROVIDER_ADDRESS] = provider
-            resource_dict[resource_type][name][CustomAttributes.PROVIDER_ADDRESS] = provider
-            return
-
-        path_for_tf_definition = path if isinstance(path, TFDefinitionKey) else TFDefinitionKey(path)
-        if BlockType.PROVIDER in self.temp_tf_definition.get(path_for_tf_definition, {}):
-            provider_name = self._get_the_default_provider(self.temp_tf_definition.get(path_for_tf_definition, {}).get(BlockType.PROVIDER, []))
-            self._assign_provider_fields(resource_conf, resource_dict, resource_type, name, provider_name)
-
-        elif path_for_tf_definition.tf_source_modules and BlockType.PROVIDER in self.temp_tf_definition.get(TFDefinitionKey(path_for_tf_definition.tf_source_modules.path), {}):
-            provider_name = self._get_the_default_provider(self.temp_tf_definition.get(TFDefinitionKey(path_for_tf_definition.tf_source_modules.path), {}).get(BlockType.PROVIDER, []))
-            self._assign_provider_fields(resource_conf, resource_dict, resource_type, name, provider_name)
-
-    @staticmethod
-    def _assign_provider_fields(
-            resource_conf: dict[str, Any],
-            resource_dict: dict[str, dict[str, Any]],
-            resource_type: str,
-            name: str,
-            provider_name: str
-    ) -> None:
-        resource_conf[CustomAttributes.PROVIDER_ADDRESS] = provider_name
-        resource_dict[resource_type][name][CustomAttributes.PROVIDER_ADDRESS] = provider_name
-
-    @staticmethod
-    def _get_the_default_provider(providers: list[dict[str, dict[str, Any]]]) -> str:
-        for provider in providers:
-            provider_name = list(provider.keys())[0]
-            if 'alias' not in provider[provider_name]:
-                return f'{provider_name}.default'
-        return ''
 
     @staticmethod
     def clean_bad_characters(resource_conf: dict[str, Any]) -> dict[str, Any]:

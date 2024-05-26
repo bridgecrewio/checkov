@@ -462,12 +462,11 @@ class TFParser:
         )
         self.add_tfvars(module, source)
         copy_of_tf_definitions = pickle_deepcopy(tf_definitions)
+        module.temp_tf_definition = tf_definitions  # type:ignore  # will be TFDefinitionKey and not string
         for file_path, blocks in copy_of_tf_definitions.items():
             for block_type in blocks:
                 try:
-                    module.temp_tf_definition = tf_definitions  # type:ignore  # will be TFDefinitionKey and not string
                     module.add_blocks(block_type, blocks[block_type], file_path, source)
-                    module.temp_tf_definition = {}
                 except Exception as e:
                     logging.warning(f'Failed to add block {blocks[block_type]}. Error:')
                     logging.warning(e, exc_info=False)
