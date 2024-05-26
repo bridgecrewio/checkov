@@ -1,6 +1,20 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.105...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.107...HEAD)
+
+## [3.2.107](https://github.com/bridgecrewio/checkov/compare/3.2.106...3.2.107) - 2024-05-24
+
+### Bug Fix
+
+- **terraform:** Handle registry modules with a version in CKF_TF_2 - [#6354](https://github.com/bridgecrewio/checkov/pull/6354)
+
+## [3.2.106](https://github.com/bridgecrewio/checkov/compare/3.2.105...3.2.106) - 2024-05-23
+
+### Feature
+
+- **arm:** Ensure Databricks Workspace data plane to control plane co… - [#6319](https://github.com/bridgecrewio/checkov/pull/6319)
+- **general:** TF and ARM - Ensure that Databricks Workspaces enable… - [#6313](https://github.com/bridgecrewio/checkov/pull/6313)
+- **secrets:** Bump detect-secrets - [#6346](https://github.com/bridgecrewio/checkov/pull/6346)
 
 ## [3.2.105](https://github.com/bridgecrewio/checkov/compare/3.2.100...3.2.105) - 2024-05-22
 
