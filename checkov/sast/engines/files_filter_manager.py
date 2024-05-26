@@ -93,12 +93,9 @@ class FilesFilterManager:
         if not IGNORE_HIDDEN_DIRECTORY_ENV:
             return paths_to_filter
         for path in self.source_codes:
-            for (dirpath, dirs, _) in os.walk(path):
+            for (_dirpath, dirs, _) in os.walk(path):
                 for directory in dirs:
                     if directory.startswith('.'):
                         paths_to_filter.append(directory)
 
         return paths_to_filter
-
-
-
