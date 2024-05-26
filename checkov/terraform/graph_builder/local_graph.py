@@ -114,7 +114,11 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         # Important to keep those 2 functions together, as the first affects the calculation of the second
         self._update_vertices_breadcrumbs_and_module_connections()
         self._update_nested_modules_address()
-        self._add_provider_attr_to_resources()
+        try:
+            if strtobool(os.getenv('CHECKOV_ADD_PROVIDER_ADDRESS_TO_RESOURCE', 'True')):
+                self._add_provider_attr_to_resources()
+        except Exception as e:
+            logging.info(f'Failed to add provider attributes to resources, error: {str(e)}')
 
     def _create_vertices(self) -> None:
         logging.info("Creating vertices")
