@@ -69,7 +69,7 @@ class AnsibleLocalGraph(ObjectLocalGraph):
                 # either it is actually not an Ansible file or a playbook without tasks refs
                 continue
 
-            resource_type = f"{ResourceType.TASKS}.{name}"
+            resource_type = f"{ResourceType.TASKS}.{prefix}{name}"
 
             if isinstance(config, str):
                 # this happens when modules have no parameters and are directly used with the user input
@@ -98,7 +98,7 @@ class AnsibleLocalGraph(ObjectLocalGraph):
                     path=file_path,
                     block_type=BlockType.RESOURCE,
                     attributes=attributes,
-                    id=f"{resource_type}.{prefix}{task_name}",
+                    id=f"{resource_type}.{task_name}",
                     source=self.source,
                 )
             )
