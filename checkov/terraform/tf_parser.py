@@ -699,14 +699,14 @@ def load_or_die_quietly(
     file: str | Path | os.DirEntry[str], parsing_errors: dict[str, Exception], clean_definitions: bool = True
 ) -> Optional[_Hcl2Payload]:
     """
-Load JSON or HCL, depending on filename.
+    Load JSON or HCL, depending on filename.
     :return: None if the file can't be loaded
     """
-    if file.name.endswith('.tfvars'):
-        clean_definitions = False
-
     file_path = os.fspath(file)
     file_name = os.path.basename(file_path)
+
+    if file_name.endswith('.tfvars'):
+        clean_definitions = False
 
     try:
         logging.debug(f"Parsing {file_path}")
