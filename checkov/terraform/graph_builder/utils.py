@@ -257,7 +257,7 @@ def get_referenced_vertices_in_str_value(
             return references_vertices
 
         str_value = remove_function_calls_from_str(str_value=str_value)
-        str_value = remove_index_pattern_from_str(str_value=str_value)
+        # str_value = remove_index_pattern_from_str(str_value=str_value)
         str_value = replace_map_attribute_access_with_dot(str_value=str_value)
         str_value = remove_interpolation(str_value=str_value)
 

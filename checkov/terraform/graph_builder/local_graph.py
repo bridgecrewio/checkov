@@ -212,7 +212,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             for vertex_reference in referenced_vertices:
                 # for certain blocks such as data and resource, the block name is composed from several parts.
                 # the purpose of the loop is to avoid not finding the node if the name has several parts
-                sub_values = [remove_index_pattern_from_str(sub_value) for sub_value in vertex_reference.sub_parts]
+                sub_values = [sub_value for sub_value in vertex_reference.sub_parts]
                 for i in range(len(sub_values)):
                     reference_name = join_trimmed_strings(char_to_join=".", str_lst=sub_values, num_to_trim=i)
                     source_module_object = vertex.source_module_object
@@ -453,7 +453,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             module_dependency_by_name_key = vertex.source_module_object
 
         # important to use this specific map for big graph performance
-        possible_vertices = self.vertices_by_module_dependency_by_name.get(module_dependency_by_name_key, {}).get(block_type, {}).get(name, [])
+        possible_vertices = self._get_possible_vertices(module_dependency_by_name_key, block_type, name)
         for vertex_index in possible_vertices:
             vertex = self.vertices[vertex_index]
             if self.get_dirname(vertex.path) == self.get_dirname(block_path):
@@ -464,6 +464,13 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         else:
             relative_vertex = self._find_vertex_with_best_match(relative_vertices, block_path, origin_vertex_index)
         return relative_vertex
+
+    def _get_possible_vertices(self, module_dependency_by_name_key: TFModule | None, block_type: str, name: str) -> list[int]:
+        possible_vertices = self.vertices_by_module_dependency_by_name.get(module_dependency_by_name_key, {}).get(block_type, {}).get(name, [])
+        if possible_vertices:
+            return possible_vertices
+        return self.vertices_by_module_dependency_by_name.get(module_dependency_by_name_key, {}).get(block_type, {}).get(name.replace('["', '[').replace('"]', ']'), [])
+
 
     def _find_vertex_with_best_match(self, relevant_vertices_indexes: List[int], origin_path: str,
                                      origin_vertex_index: Optional[int] = None) -> int:
