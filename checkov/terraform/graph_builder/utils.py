@@ -174,6 +174,7 @@ def remove_index_pattern_from_str(str_value: str) -> str:
         return str_value
 
     # Workaround for cases where the string value contains a map attribute access for foreach data block
+    # UT for this - `test_foreach_data_with_resource` -> /variable_rendering/test_foreach_renderer.py
     if "data." in str_value:
         return str_value
 
