@@ -702,6 +702,8 @@ def load_or_die_quietly(
 Load JSON or HCL, depending on filename.
     :return: None if the file can't be loaded
     """
+    if file.name.endswith('.tfvars'):
+        clean_definitions = False
 
     file_path = os.fspath(file)
     file_name = os.path.basename(file_path)
