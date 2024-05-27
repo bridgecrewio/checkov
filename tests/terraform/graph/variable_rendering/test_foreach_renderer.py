@@ -310,7 +310,7 @@ def test_new_tf_parser_with_foreach_modules(checkov_source_path):
     assert first_source_module.foreach_idx == 'a'
 
 
-@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True", "CHECKOV_ADD_PROVIDER_ADDRESS_TO_RESOURCE": "False"})
+@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
 def test_tf_definitions_for_foreach_on_modules(checkov_source_path):
     dir_name_and_definitions_path = [
         ('parser_dup_nested', 'expected_foreach_modules_tf_definitions.json'),

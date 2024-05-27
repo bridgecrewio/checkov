@@ -116,8 +116,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self._update_vertices_breadcrumbs_and_module_connections()
         self._update_nested_modules_address()
         try:
-            if strtobool(os.getenv('CHECKOV_ADD_PROVIDER_ADDRESS_TO_RESOURCE', 'True')):
-                self._add_provider_attr_to_resources()
+            self._add_provider_attr_to_resources()
         except Exception as e:
             logging.info(f'Failed to add provider attributes to resources, error: {str(e)}')
 
