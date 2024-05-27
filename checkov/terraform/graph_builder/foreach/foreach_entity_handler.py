@@ -1,16 +1,21 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Optional, Type
+from typing import Any, Optional, TYPE_CHECKING
 
 from checkov.common.util.data_structures_utils import pickle_deepcopy
-from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.foreach.abstract_handler import ForeachAbstractHandler
 from checkov.terraform.graph_builder.foreach.consts import FOR_EACH_BLOCK_TYPE, FOREACH_STRING, COUNT_STRING
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 
+if TYPE_CHECKING:
+    from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
+
+
 class ForeachEntityHandler(ForeachAbstractHandler):
-    block_type_to_handle: Type[BlockType] = BlockType
+    def __init__(self, local_graph: TerraformLocalGraph, block_type_to_handle: str) -> None:
+        super().__init__(local_graph)
+        self.block_type_to_handle = block_type_to_handle
 
     def handle(self, resources_blocks: list[int]) -> None:
         block_index_to_statement: FOR_EACH_BLOCK_TYPE = self._get_statements(resources_blocks)

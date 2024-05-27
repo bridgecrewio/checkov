@@ -10,7 +10,5 @@ if TYPE_CHECKING:
 
 
 class ForeachDataHandler(ForeachEntityHandler):
-    block_type_to_handle = BlockType.DATA
-
     def __init__(self, local_graph: TerraformLocalGraph) -> None:
-        super().__init__(local_graph)
+        super().__init__(local_graph, BlockType.DATA)

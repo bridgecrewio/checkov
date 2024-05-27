@@ -33,7 +33,8 @@ from checkov.terraform.graph_builder.utils import (
     join_double_quote_surrounded_dot_split, )
 from checkov.terraform.graph_builder.foreach.utils import get_terraform_foreach_or_count_key
 from checkov.terraform.graph_builder.utils import is_local_path
-from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer
+from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer, \
+    LEFT_BRACKET_WITH_QUOTATION, RIGHT_BRACKET_WITH_QUOTATION, LEFT_BRACKET, RIGHT_BRACKET
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
 
 MODULE_RESERVED_ATTRIBUTES = ("source", "version")
@@ -469,8 +470,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         possible_vertices = self.vertices_by_module_dependency_by_name.get(module_dependency_by_name_key, {}).get(block_type, {}).get(name, [])
         if possible_vertices:
             return possible_vertices
-        return self.vertices_by_module_dependency_by_name.get(module_dependency_by_name_key, {}).get(block_type, {}).get(name.replace('["', '[').replace('"]', ']'), [])
-
+        return self.vertices_by_module_dependency_by_name.get(module_dependency_by_name_key, {}).get(block_type, {}).get(name.replace(LEFT_BRACKET_WITH_QUOTATION, LEFT_BRACKET).replace(RIGHT_BRACKET_WITH_QUOTATION, RIGHT_BRACKET), [])
 
     def _find_vertex_with_best_match(self, relevant_vertices_indexes: List[int], origin_path: str,
                                      origin_vertex_index: Optional[int] = None) -> int:
