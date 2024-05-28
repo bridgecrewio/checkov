@@ -14,23 +14,22 @@ class APIManagementMinTLS12(BaseResourceCheck):
 
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
         properties = conf.get('properties', {})
-        if 'enableClientCertificate' in properties:
-            enableClientCertificate = properties['enableClientCertificate']
-            if 'enableFrontendTls10' in enableClientCertificate:
-                if enableClientCertificate['enableFrontendTls10']:
+        if 'identity' in properties:
+            identity = properties['identity']
+            if 'enableFrontendTls10' in identity:
+                if identity['enableFrontendTls10']:
                     return CheckResult.FAILED
-            if 'enableFrontendTls11' in enableClientCertificate:
-                if enableClientCertificate['enableFrontendTls11']:
+            if 'enableFrontendTls11' in identity:
+                if identity['enableFrontendTls11']:
                     return CheckResult.FAILED
-            if 'enableBackendTls10' in enableClientCertificate:
-                if enableClientCertificate['enableBackendTls10']:
+            if 'enableBackendTls10' in identity:
+                if identity['enableBackendTls10']:
                     return CheckResult.FAILED
-            if 'enableBackendTls11' in enableClientCertificate:
-                if enableClientCertificate['enableBackendTls11']:
+            if 'enableBackendTls11' in identity:
+                if identity['enableBackendTls11']:
                     return CheckResult.FAILED
 
         return CheckResult.PASSED
 
 
 check = APIManagementMinTLS12()
-
