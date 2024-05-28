@@ -3,7 +3,7 @@ from checkov.arm.base_resource_value_check import BaseResourceValueCheck
 
 
 class AKSLocalAdminDisabled(BaseResourceValueCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure AKS local admin account is disabled"
         id = "CKV_AZURE_141"
         supported_resources = ("Microsoft.ContainerService/managedClusters",)
@@ -13,7 +13,7 @@ class AKSLocalAdminDisabled(BaseResourceValueCheck):
     def get_inspected_key(self) -> str:
         return "properties/disableLocalAccounts"
 
-    def get_expected_value(self):
+    def get_expected_value(self) -> bool:
         return True
 
 
