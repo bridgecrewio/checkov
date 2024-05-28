@@ -14,7 +14,7 @@ class AzureServiceFabricClusterProtectionLevel(BaseResourceCheck):
 
     def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
         self.evaluated_keys = 'fabricSettings'
-        settings_conf = force_list(conf.get('properties', {}).get('fabricSettings', []))
+        settings_conf = conf.get('properties', {}).get('fabricSettings', [])
         for setting in settings_conf:
             if setting and setting.get('name') == 'Security':
                 params = setting.get('parameters', [{}])[0]
