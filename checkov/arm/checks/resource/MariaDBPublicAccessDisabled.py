@@ -14,8 +14,8 @@ class MariaDBPublicAccessDisabled(BaseResourceValueCheck):
     def get_inspected_key(self) -> str:
         return "properties/publicNetworkAccess"
 
-    def get_expected_value(self) -> Any:
-        return False
+    def get_expected_value(self) -> str:
+        return "Enabled"
 
 
 check = MariaDBPublicAccessDisabled()
