@@ -15,14 +15,16 @@ class ACREnableZoneRedundancy(BaseResourceCheck):
         """
         name = "Ensure Azure Container Registry (ACR) is zone redundant"
         id = "CKV_AZURE_233"
-        supported_resources = ("Microsoft.ContainerRegistry/registries","Microsoft.ContainerRegistry/registries/replications",)
+        supported_resources = ("Microsoft.ContainerRegistry/registries", "Microsoft.ContainerRegistry/registries/replications",)
         categories = (CheckCategories.BACKUP_AND_RECOVERY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
         # check registry. default=false
-        if conf.get("properties").get("zoneRedundancy", []) != [True]:
-            return CheckResult.FAILED
+        properties = conf.get("properties")
+        if properties and isinstance(properties, dict):
+            if properties.get( "zoneRedundancy", []) != [True]:
+             return CheckResult.FAILED
 
         return CheckResult.PASSED
 
