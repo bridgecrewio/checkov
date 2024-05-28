@@ -5,9 +5,8 @@
     {
       "type": "Microsoft.Security/pricings",
       "apiVersion": "2021-01-01-preview",
-      "name": "fail",
+      "name": "arm",
       "properties": {
-        "resourceType": "arm",
         "pricingTier": "Free"
       }
     }

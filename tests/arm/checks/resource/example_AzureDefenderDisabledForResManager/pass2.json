@@ -5,9 +5,8 @@
     {
       "type": "Microsoft.Security/pricings",
       "apiVersion": "2021-01-01-preview",
-      "name": "pass2",
+      "name": "Dns",
       "properties": {
-        "resourceType": "Dns",
         "pricingTier": "Free"
       }
     }

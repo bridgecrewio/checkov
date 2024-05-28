@@ -5,9 +5,8 @@
     {
       "type": "Microsoft.Security/pricings",
       "apiVersion": "2021-01-01-preview",
-      "name": "pass",
+      "name": "Arm",
       "properties": {
-        "resourceType": "Arm",
         "pricingTier": "Standard"
       }
     }

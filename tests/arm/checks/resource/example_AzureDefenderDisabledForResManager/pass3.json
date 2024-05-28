@@ -5,9 +5,8 @@
     {
       "type": "Microsoft.Security/pricings",
       "apiVersion": "2021-01-01-preview",
-      "name": "pass3",
+      "name": "VirtualMachine",
       "properties": {
-        "resourceType": "VirtualMachine",
         "pricingTier": "Free"
       }
     }

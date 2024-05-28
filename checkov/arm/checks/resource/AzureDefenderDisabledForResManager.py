@@ -15,15 +15,16 @@ class AzureDefenderDisabledForResManager(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
-        if "properties" in conf:
-            if "pricingTier" in conf["properties"]:
-                if str(conf["properties"]["pricingTier"]).lower() != "standard":
-                    if str(conf["properties"]["resourceType"]).lower() == "arm":
-                        return CheckResult.FAILED
-        return CheckResult.PASSED
+        properties = conf.get('properties')
+        if properties and isinstance(properties, dict):
+            pricing_tier = properties.get("pricingTier")
+            if str(pricing_tier).lower() != "standard":
+                if str(conf.get("name", [None])).lower() == "arm":
+                    return CheckResult.FAILED
+            return CheckResult.PASSED
 
     def get_evaluated_keys(self) -> list[str]:
-        return ["resourceType", "pricingTier"]
+        return ["name", "pricingTier"]
 
 
 check = AzureDefenderDisabledForResManager()
