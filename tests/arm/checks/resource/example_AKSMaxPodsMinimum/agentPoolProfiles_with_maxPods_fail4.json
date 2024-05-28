@@ -82,7 +82,7 @@
             "properties": {
                 "kubernetesVersion": "[parameters('kubernetesVersion')]",
                 "dnsPrefix": "[variables('dnsPrefix')]",
-                "agentPoolProfiles":
+                "agentPoolProfiles":[
                     {
                         "name": "agentpool",
                         "count": 3,
@@ -94,6 +94,7 @@
                         "mode": "System",
                         "osType": "Linux"
                     }
+                  ]
                 ,
                 "linuxProfile": {
                     "adminUsername": "[parameters('linuxAdminUsername')]",
