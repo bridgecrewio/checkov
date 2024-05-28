@@ -19,16 +19,15 @@ class CosmosDBLocalAuthDisabled(BaseResourceValueCheck):
         categories = (CheckCategories.IAM,)
         super().__init__(name=description, id=id, categories=categories, supported_resources=supported_resources,)
 
-    def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
-        if "kind" in conf:
-            if conf["kind"] == "GlobalDocumentDB":
-                return super().scan_resource_conf(conf)
-            return CheckResult.UNKNOWN
+    def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
+        if conf.get("kind") == "GlobalDocumentDB":
+            return super().scan_resource_conf(conf)
+        return CheckResult.UNKNOWN
 
     def get_inspected_key(self) -> str:
         return "properties/disableLocalAuth"
 
-    def get_expected_value(self) -> Any:
+    def get_expected_value(self) -> bool:
         return True
 
 
