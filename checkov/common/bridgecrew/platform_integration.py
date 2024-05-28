@@ -19,6 +19,7 @@ from urllib.parse import urlparse
 import boto3
 import dpath
 import urllib3
+import urllib.parse
 from botocore.config import Config
 from botocore.exceptions import ClientError
 from cachetools import cached, TTLCache
@@ -67,7 +68,7 @@ if TYPE_CHECKING:
     from checkov.secrets.coordinator import EnrichedSecret
     from mypy_boto3_s3.client import S3Client
     from typing_extensions import TypeGuard
-    from checkov.common.sast.report_types import Match
+    from checkov.common.sast.report_types import Match, SkippedCheck
 
 SLEEP_SECONDS = 1
 
@@ -85,8 +86,19 @@ ASSUME_ROLE_UNUATHORIZED_MESSAGE = 'is not authorized to perform: sts:AssumeRole
 FileToPersist = namedtuple('FileToPersist', 'full_file_path s3_file_key')
 
 DEFAULT_REGION = "us-west-2"
-GOV_CLOUD_REGION = 'us-gov-west-1'
 PRISMA_GOV_API_URL = 'https://api.gov.prismacloud.io'
+JAKARTA_API_URL = 'https://api.id.prismacloud.io'
+
+API_URL_REGION_MAP = {
+    PRISMA_GOV_API_URL: 'us-gov-west-1',
+    JAKARTA_API_URL: 'ap-southeast-3'
+}
+
+REGIONS_URL_NOT_SUPPORT_S3_ACCELERATE = {
+    PRISMA_GOV_API_URL,
+    JAKARTA_API_URL
+}
+
 MAX_RETRIES = 40
 
 CI_METADATA_EXTRACTOR = registry.get_extractor()
@@ -121,6 +133,7 @@ class BcPlatformIntegration:
         self.prisma_policies_url: str | None = None
         self.prisma_policy_filters_url: str | None = None
         self.custom_auth_headers: dict[str, str] = {}
+        self.custom_auth_token: str | None = None
         self.setup_api_urls()
         self.customer_run_config_response = None
         self.runtime_run_config_response = None
@@ -166,6 +179,7 @@ class BcPlatformIntegration:
         self.platform_integration_configured = platform_integration_data["platform_integration_configured"]
         self.prisma_api_url = platform_integration_data.get("prisma_api_url", 'https://api0.prismacloud.io')
         self.custom_auth_headers = platform_integration_data["custom_auth_headers"]
+        self.custom_auth_token = platform_integration_data["custom_auth_token"]
         self.repo_branch = platform_integration_data["repo_branch"]
         self.repo_id = platform_integration_data["repo_id"]
         self.repo_path = platform_integration_data["repo_path"]
@@ -227,7 +241,7 @@ class BcPlatformIntegration:
         self.runtime_run_config_url = f"{self.api_url}/api/v1/runtime-images/repositories"
 
     def is_prisma_integration(self) -> bool:
-        if self.bc_api_key and not self.is_bc_token(self.bc_api_key):
+        if (self.bc_api_key and not self.is_bc_token(self.bc_api_key)) or self.custom_auth_token:
             return True
         return False
 
@@ -266,6 +280,8 @@ class BcPlatformIntegration:
     def get_auth_token(self) -> str:
         if self.is_bc_token(self.bc_api_key):
             return self.bc_api_key
+        if self.custom_auth_token:
+            return self.custom_auth_token
         # A Prisma Cloud Access Key was specified as the Bridgecrew token.
         if not self.prisma_api_url:
             raise ValueError("A Prisma Cloud token was set, but no Prisma Cloud API URL was set")
@@ -386,6 +402,17 @@ class BcPlatformIntegration:
 
         self.platform_integration_configured = True
 
+    def _get_source_id_from_repo_path(self, repo_path: str) -> str | None:
+        repo_path_parts = repo_path.split("/")
+        if not repo_path_parts and repo_path_parts[0] != 'checkov':
+            logging.error(f'failed to get source_id from repo_path. repo_path format is unknown: ${repo_path}')
+            return None
+        try:
+            return '/'.join(repo_path_parts[2:4])
+        except IndexError:
+            logging.error(f'failed to get source_id from repo_path. repo_path format is unknown: ${repo_path}')
+            return None
+
     def set_s3_integration(self) -> None:
         try:
             self.skip_fixes = True  # no need to run fixes on CI integration
@@ -394,7 +421,7 @@ class BcPlatformIntegration:
                 return
 
             self.bucket, self.repo_path = repo_full_path.split("/", 1)
-
+            self.source_id = self._get_source_id_from_repo_path(self.repo_path)
             self.timestamp = self.repo_path.split("/")[-2]
             self.credentials = cast("dict[str, str]", response["creds"])
 
@@ -442,9 +469,10 @@ class BcPlatformIntegration:
 
         region = DEFAULT_REGION
         use_accelerate_endpoint = True
-        if self.prisma_api_url == PRISMA_GOV_API_URL:
-            region = GOV_CLOUD_REGION
+
+        if self.prisma_api_url in REGIONS_URL_NOT_SUPPORT_S3_ACCELERATE:
             use_accelerate_endpoint = False
+            region = API_URL_REGION_MAP[self.prisma_api_url]
 
         try:
             config = Config(
@@ -623,6 +651,23 @@ class BcPlatformIntegration:
 
                 return
 
+    def adjust_sast_skipped_checks_path(self, skipped_checks_by_file: Dict[str, List[SkippedCheck]]) -> None:
+        for filepath in list(skipped_checks_by_file.keys()):
+            new_filepath = None
+            for dir in self.scan_dir:
+                if filepath.startswith(os.path.abspath(dir)):
+                    file_dir = '/'.join(filepath.split('/')[0:-1])
+                    new_filepath = filepath.replace(os.path.abspath(file_dir), self.repo_path)  # type: ignore
+                    break
+            for file in self.scan_file:
+                if filepath == os.path.abspath(file):
+                    file_dir = '/'.join(filepath.split('/')[0:-1])
+                    new_filepath = filepath.replace(os.path.abspath(file_dir), self.repo_path)  # type: ignore
+                    break
+            if new_filepath:
+                skipped_checks_by_file[new_filepath] = skipped_checks_by_file[filepath]
+                skipped_checks_by_file.pop(filepath)
+
     @staticmethod
     def _delete_code_block_from_sast_report(report: Dict[str, Any]) -> None:
         if isinstance(report, dict):
@@ -652,6 +697,8 @@ class BcPlatformIntegration:
                 for _, match in match_by_check.items():
                     for m in match.matches:
                         self.adjust_sast_match_location_path(m)
+                self.adjust_sast_skipped_checks_path(report.sast_report.skipped_checks_by_file)
+
                 sast_scan_reports[report.check_type] = report.sast_report.model_dump(mode='json')
             if self.on_prem:
                 BcPlatformIntegration._delete_code_block_from_sast_report(sast_scan_reports)
@@ -1369,6 +1416,12 @@ class BcPlatformIntegration:
             # If there are any query parameters, append them to the URI
             if parsed_url.query:
                 uri = f"{uri}?{parsed_url.query}"
+
+                # First encoding
+                encoded_uri = urllib.parse.quote(uri)
+
+                # Second encoding
+                uri = urllib.parse.quote(encoded_uri)
             # Check if the URL already contains GET parameters.
             if "?" in access_saml_url:
                 report_url = f"{access_saml_url}&{relay_state_param_name}={uri}"
