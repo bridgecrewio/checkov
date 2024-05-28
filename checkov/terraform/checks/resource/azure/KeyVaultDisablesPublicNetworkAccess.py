@@ -28,7 +28,6 @@ class KeyVaultDisablesPublicNetworkAccess(BaseResourceValueCheck):
         conf_value = conf_value[0] if isinstance(conf_value, list) else conf_value
         if self.get_expected_value() == conf_value:
             return CheckResult.PASSED
-
         if conf.get("network_acls"):
             network_acls = conf.get("network_acls")
             if isinstance(network_acls, list):
