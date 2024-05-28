@@ -24,7 +24,7 @@ class AzureDefenderDisabledForResManager(BaseResourceCheck):
             return CheckResult.PASSED
 
     def get_evaluated_keys(self) -> list[str]:
-        return ["name", "pricingTier"]
+        return ['name', 'pricingTier']
 
 
 check = AzureDefenderDisabledForResManager()
