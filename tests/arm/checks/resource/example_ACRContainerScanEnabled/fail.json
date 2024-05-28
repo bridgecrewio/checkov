@@ -5,32 +5,32 @@
     {
       "apiVersion": "2019-05-01",
       "type": "Microsoft.ContainerRegistry/registries",
-      "name": "fail",
+      "name": "failed",
       "location": "[resourceGroup().location]",
       "sku": {
         "name": "Basic"
       },
       "properties": {
-    "adminUserEnabled": "bool",
-    "anonymousPullEnabled": "bool",
-    "dataEndpointEnabled": "bool",
-    "encryption": {
-      "keyVaultProperties": {
-        "identity": "string",
-        "keyIdentifier": "string"
-      },
-      "status": "string"
-    },
-    "networkRuleBypassOptions": "string",
-    "networkRuleSet": {
-      "defaultAction": "string",
-      "ipRules": [
-        {
-          "action": "Allow",
-          "value": "string"
+        "adminUserEnabled": true,
+        "anonymousPullEnabled": true,
+        "dataEndpointEnabled": true,
+        "encryption": {
+          "keyVaultProperties": {
+            "identity": "someIdentity",
+            "keyIdentifier": "someKeyIdentifier"
+          },
+          "status": "enabled"
+        },
+        "networkRuleBypassOptions": "AzureServices",
+        "networkRuleSet": {
+          "defaultAction": "Deny",
+          "ipRules": [
+            {
+              "action": "Allow",
+              "value": "127.0.0.1"
+            }
+          ]
         }
-      ]
-    }
       }
     }
   ]
