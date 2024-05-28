@@ -5,6 +5,7 @@ from typing import List, Any
 from checkov.arm.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckCategories, CheckResult
 
+
 class AzureDefenderOnContainerRegistry(BaseResourceCheck):
 
     def __init__(self) -> None:
