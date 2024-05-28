@@ -9,28 +9,28 @@ class AzureDefenderOnContainerRegistry(BaseResourceCheck):
     def __init__(self) -> None:
         name = "Ensure that Azure Defender is set to On for Container Registries"
         id = "CKV_AZURE_86"
-        supported_resources = ("Microsoft.ContainerRegistry/registries",)
+        supported_resources = ("Microsoft.Security/pricings",)
         categories = (CheckCategories.GENERAL_SECURITY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: dict) -> CheckResult:
         properties = conf.get("properties", {})
 
-        tier = properties.get("tier")
+        pricingTier = properties.get("pricingTier")
 
-        resourceType = properties.get("resourceType")
+        type = properties.get("type")
 
         return (
 
             CheckResult.PASSED
 
-            if resourceType != "ContainerRegistry" or tier == "Standard"
+            if type != "ContainerRegistry" or pricingTier == "Standard"
 
             else CheckResult.FAILED
         )
 
     def get_evaluated_keys(self) -> List[str]:
-        return ["properties/tier", "properties/resourceType"]
+        return ["properties/pricingTier	", "properties/type"]
 
 
 check = AzureDefenderOnContainerRegistry()

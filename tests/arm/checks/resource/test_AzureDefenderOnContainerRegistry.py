@@ -18,10 +18,10 @@ class TestAzureDefenderOnContainerRegistry(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "Microsoft.ContainerRegistry/registries.pass",
+            "Microsoft.Security/pricings.pass",
         }
         failing_resources = {
-            "Microsoft.ContainerRegistry/registries.fail",
+            "Microsoft.Security/pricings.fail",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
