@@ -14,7 +14,7 @@
         },
         "publisherEmail": "admin@example.com",
         "publisherName": "Example",
-        "enableClientCertificate": {
+        "identity": {
           "enableFrontendTls10": false,
           "enableFrontendTls11": false,
           "enableBackendTls10": false,
