@@ -12,9 +12,10 @@ class AppGatewayWAFACLCVE202144228(BaseResourceCheck):
         categories = (CheckCategories.APPLICATION_SECURITY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,)
 
-    def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
-        self.evaluated_keys = conf.get("properties").get("managedRules")
-        managed_rules = conf.get("properties").get("managedRules")
+    def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
+        properties = conf.get("properties")
+        self.evaluated_keys = properties.get("managedRules")
+        managed_rules = properties.get("managedRules")
         if managed_rules:
             managed_rule_sets = managed_rules.get("managedRuleSets") or []
             for idx_rule_set, rule_set in enumerate(force_list(managed_rule_sets)):
