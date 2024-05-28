@@ -1,7 +1,7 @@
 metadata:
   id: "CKV2_AZURE_49"
   name: "Ensure that Azure Machine learning workspace is not configured with overly permissive network access"
-  category: "GENERAL_SECURITY"
+  category: "NETWORKING"
 definition:
   or:
   - cond_type: "attribute"
