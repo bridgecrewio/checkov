@@ -1,6 +1,56 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.79...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.90...HEAD)
+
+## [3.2.90](https://github.com/bridgecrewio/checkov/compare/3.2.85...3.2.90) - 2024-05-09
+
+### Feature
+
+- **general:** Add deep-analysis to GHA - [#6288](https://github.com/bridgecrewio/checkov/pull/6288)
+- **terraform:** Add more hype policies - [#6239](https://github.com/bridgecrewio/checkov/pull/6239)
+
+### Bug Fix
+
+- **ansible:** fix ansible definitions raw type - [#6292](https://github.com/bridgecrewio/checkov/pull/6292)
+
+### Platform
+
+- **ansible:** add set definitions raw to ansible runner - [#6286](https://github.com/bridgecrewio/checkov/pull/6286)
+- **general:** Handle SAST suppressions (suppressions V2) - [#6109](https://github.com/bridgecrewio/checkov/pull/6109)
+
+### Documentation
+
+- **general:** add RENDER_EDGES_DUPLICATE_ITER_COUNT to docs - [#6291](https://github.com/bridgecrewio/checkov/pull/6291)
+- **general:** Update README links for PyPi - [#6231](https://github.com/bridgecrewio/checkov/pull/6231)
+
+## [3.2.85](https://github.com/bridgecrewio/checkov/compare/3.2.84...3.2.85) - 2024-05-08
+
+### Platform
+
+- **ansible:** add missing arg to ansible runner - [#6276](https://github.com/bridgecrewio/checkov/pull/6276)
+
+## [3.2.84](https://github.com/bridgecrewio/checkov/compare/3.2.82...3.2.84) - 2024-05-07
+
+### Feature
+
+- **sast:** Enable cdk ts integraion test - [#6158](https://github.com/bridgecrewio/checkov/pull/6158)
+
+### Bug Fix
+
+- **secrets:** add files for secret to skip - [#6275](https://github.com/bridgecrewio/checkov/pull/6275)
+- **terraform:** Update CKV_AWS_31 for RBAC - [#6224](https://github.com/bridgecrewio/checkov/pull/6224)
+
+## [3.2.82](https://github.com/bridgecrewio/checkov/compare/3.2.79...3.2.82) - 2024-05-06
+
+### Feature
+
+- **github:** add summary message in github_failed_only output - [#6131](https://github.com/bridgecrewio/checkov/pull/6131)
+- **sast:** add ts checks to python pack - [#6261](https://github.com/bridgecrewio/checkov/pull/6261)
+- **sast:** run all cdk integration test - [#6256](https://github.com/bridgecrewio/checkov/pull/6256)
+
+### Bug Fix
+
+- **general:** fix changed serif path - [#6251](https://github.com/bridgecrewio/checkov/pull/6251)
 
 ## [3.2.79](https://github.com/bridgecrewio/checkov/compare/3.2.74...3.2.79) - 2024-05-02
 
