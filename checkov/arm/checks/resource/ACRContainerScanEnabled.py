@@ -1,7 +1,6 @@
+
 from __future__ import annotations
-
-from typing import Any
-
+from typing import Any, Dict, List
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.arm.base_resource_check import BaseResourceCheck
 
@@ -16,16 +15,11 @@ class ACRContainerScanEnabled(BaseResourceCheck):
         categories = (CheckCategories.GENERAL_SECURITY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
+    def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
+        sku = conf.get("sku", {})
+        sku_name = sku.get("name")
 
-        if "sku" in conf.keys():
-            sku = conf.get("sku")
-
-        if (
-                "name" in sku
-                and isinstance(sku["name"], str)
-                and sku["name"] in ACRContainerScanEnabled.SKUS
-        ):
+        if isinstance(sku_name, str) and sku_name in ACRContainerScanEnabled.SKUS:
             return CheckResult.PASSED
 
         return CheckResult.FAILED
