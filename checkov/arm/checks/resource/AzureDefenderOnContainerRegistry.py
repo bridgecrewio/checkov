@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from typing import List
+from typing import List, Any
 
 from checkov.arm.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckCategories, CheckResult
 
 class AzureDefenderOnContainerRegistry(BaseResourceCheck):
+
     def __init__(self) -> None:
         name = "Ensure that Azure Defender is set to On for Container Registries"
         id = "CKV_AZURE_86"
@@ -13,7 +14,7 @@ class AzureDefenderOnContainerRegistry(BaseResourceCheck):
         categories = (CheckCategories.GENERAL_SECURITY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf: dict) -> CheckResult:
+    def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
         properties = conf.get("properties", {})
 
         pricingTier = properties.get("pricingTier")
