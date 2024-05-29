@@ -9,7 +9,6 @@ from pathlib import Path
 from typing import List, Optional, Union, Any, Dict, overload, TypedDict
 
 import checkov.terraform.graph_builder.foreach.consts
-from checkov.common.util.env_vars_config import env_vars_config
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder import reserved_attribute_names
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
