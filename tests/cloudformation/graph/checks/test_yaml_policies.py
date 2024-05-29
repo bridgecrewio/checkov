@@ -17,10 +17,10 @@ from tests.common.graph.checks.test_yaml_policies_base import TestYamlPoliciesBa
 file_dir = os.path.dirname(__file__)
 
 
-# @parameterized_class(PARAMETERIZED_GRAPH_FRAMEWORKS)
+@parameterized_class(PARAMETERIZED_GRAPH_FRAMEWORKS)
 class TestYamlPolicies(TestYamlPoliciesBase):
     def __init__(self, args):
-        db_connector = set_db_connector_by_graph_framework('RUSTWORKX')
+        db_connector = set_db_connector_by_graph_framework(self.graph_framework)
         graph_manager = CloudformationGraphManager(db_connector=db_connector)
         super().__init__(graph_manager,
                          os.path.abspath(os.path.join(file_dir, "../../../../checkov/cloudformation/checks/graph_checks")),
