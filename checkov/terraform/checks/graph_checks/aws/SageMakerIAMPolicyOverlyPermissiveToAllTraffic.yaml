@@ -1,5 +1,5 @@
 metadata:
-  id: "CKV2_AWS_70"
+  id: "CKV2_AWS_68"
   name: "Ensure SageMaker notebook instance IAM policy is not overly permissive"
   category: "NETWORKING"
 
