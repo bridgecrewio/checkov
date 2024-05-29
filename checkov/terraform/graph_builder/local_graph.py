@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import List, Optional, Union, Any, Dict, overload, TypedDict
 
 import checkov.terraform.graph_builder.foreach.consts
+from checkov.common.util.env_vars_config import env_vars_config
 from checkov.common.graph.graph_builder import Edge
 from checkov.common.graph.graph_builder import reserved_attribute_names
 from checkov.common.graph.graph_builder.graph_components.attribute_names import CustomAttributes
@@ -67,7 +68,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self.vertices_by_module_dependency: Dict[TFModule | None, Dict[str, List[int]]] = defaultdict(partial(defaultdict, list))
         self.enable_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_FOREACH_HANDLING', 'True'))
         self.enable_modules_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_MODULES_FOREACH_HANDLING', 'True'))
-        self.enable_datas_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_DATAS_FOREACH_HANDLING', 'False'))
+        self.enable_datas_foreach_handling = strtobool(env_vars_config.CHECKOV_ENABLE_DATAS_FOREACH_HANDLING)
         self.foreach_blocks: Dict[str, List[int]] = {BlockType.RESOURCE: [], BlockType.MODULE: [], BlockType.DATA: []}
 
         # Important for foreach performance, see issue https://github.com/bridgecrewio/checkov/issues/6068

@@ -18,6 +18,11 @@ class ForeachBuilder:
         self._data_handler = ForeachDataHandler(local_graph)
 
     def handle(self, foreach_blocks: dict[str, list[int]]) -> None:
+        """
+        First Data blocks that Modules can inherit from are handled.
+        Second, Module blocks are handled.
+        Last Resource blocks that can be duplicate by the Modules rendering.
+        """
         if self._data_handler.local_graph.enable_datas_foreach_handling:
             if foreach_blocks.get(BlockType.DATA):
                 self._data_handler.handle(foreach_blocks[BlockType.DATA])
