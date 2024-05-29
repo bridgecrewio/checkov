@@ -1,6 +1,17 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.108...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.112...HEAD)
+
+## [3.2.112](https://github.com/bridgecrewio/checkov/compare/3.2.108...3.2.112) - 2024-05-29
+
+### Feature
+
+- **terraform:** Add provider address to resources - [#6266](https://github.com/bridgecrewio/checkov/pull/6266)
+- **terraform:** Support for count & for_each in data blocks - [#6359](https://github.com/bridgecrewio/checkov/pull/6359)
+
+### Bug Fix
+
+- **terraform:** Fix an issue for loading tfvars + issue in the dynamic rendering - [#6360](https://github.com/bridgecrewio/checkov/pull/6360)
 
 ## [3.2.108](https://github.com/bridgecrewio/checkov/compare/3.2.107...3.2.108) - 2024-05-26
 
