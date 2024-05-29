@@ -68,7 +68,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self.vertices_by_module_dependency: Dict[TFModule | None, Dict[str, List[int]]] = defaultdict(partial(defaultdict, list))
         self.enable_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_FOREACH_HANDLING', 'True'))
         self.enable_modules_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_MODULES_FOREACH_HANDLING', 'True'))
-        self.enable_datas_foreach_handling = strtobool(env_vars_config.CHECKOV_ENABLE_DATAS_FOREACH_HANDLING)
+        self.enable_datas_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_DATAS_FOREACH_HANDLING', 'False'))
         self.foreach_blocks: Dict[str, List[int]] = {BlockType.RESOURCE: [], BlockType.MODULE: [], BlockType.DATA: []}
 
         # Important for foreach performance, see issue https://github.com/bridgecrewio/checkov/issues/6068
