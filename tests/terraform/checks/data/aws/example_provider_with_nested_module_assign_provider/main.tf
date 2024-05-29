@@ -1,15 +1,16 @@
 provider "aws" {
   region = "us-west-1"
 }
+
 provider "aws" {
-  alias  = "usw2"
-  region = "us-west-2"
+  region = "eu-west-1"
+  alias = "eu-west-1"
 }
 
 # The resources in the Provider block are not explicitly associated to this resource.
 module "example" {
   source    = "./example"
   providers = {
-    aws = aws.usw2
+    aws = aws.eu-west-1
   }
 }
