@@ -363,6 +363,9 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
 
             dynamic_arguments: list[str] = []
             TerraformVariableRenderer._extract_dynamic_arguments(block_name, block_content, dynamic_arguments, [])
+            if not dynamic_arguments and len(dynamic_values) == 1:
+                for argument, _ in block_content.items():
+                    dynamic_arguments.append(argument)
             if dynamic_arguments and isinstance(dynamic_values, list):
                 block_confs = []
                 for dynamic_value in dynamic_values:
