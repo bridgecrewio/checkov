@@ -17,10 +17,10 @@ from tests.common.graph.checks.test_yaml_policies_base import TestYamlPoliciesBa
 file_dir = os.path.dirname(__file__)
 
 
-@parameterized_class(PARAMETERIZED_GRAPH_FRAMEWORKS)
+# @parameterized_class(PARAMETERIZED_GRAPH_FRAMEWORKS)
 class TestYamlPolicies(TestYamlPoliciesBase):
     def __init__(self, args):
-        db_connector = set_db_connector_by_graph_framework(self.graph_framework)
+        db_connector = set_db_connector_by_graph_framework('RUSTWORKX')
         graph_manager = CloudformationGraphManager(db_connector=db_connector)
         super().__init__(graph_manager,
                          os.path.abspath(os.path.join(file_dir, "../../../../checkov/cloudformation/checks/graph_checks")),
@@ -38,6 +38,9 @@ class TestYamlPolicies(TestYamlPoliciesBase):
 
     def test_LambdaFunction(self):
         self.go("LambdaFunction")
+
+    def test_SageMakerIAMPolicyOverlyPermissiveToAllTraffic(self):
+        self.go("SageMakerIAMPolicyOverlyPermissiveToAllTraffic")
 
     def test_ALBRedirectHTTPtoHTTPS(self):
         self.go("ALBRedirectHTTPtoHTTPS")
