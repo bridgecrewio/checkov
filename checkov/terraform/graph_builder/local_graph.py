@@ -34,8 +34,8 @@ from checkov.terraform.graph_builder.utils import (
     join_double_quote_surrounded_dot_split, )
 from checkov.terraform.graph_builder.foreach.utils import get_terraform_foreach_or_count_key
 from checkov.terraform.graph_builder.utils import is_local_path
-from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer, DOLLAR_PREFIX, \
-    LEFT_CURLY, RIGHT_CURLY
+from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer, \
+    LEFT_BRACKET_WITH_QUOTATION, RIGHT_BRACKET_WITH_QUOTATION, LEFT_BRACKET, RIGHT_BRACKET, DOLLAR_PREFIX, RIGHT_CURLY, LEFT_CURLY
 from checkov.common.util.consts import RESOLVED_MODULE_ENTRY_NAME
 
 MODULE_RESERVED_ATTRIBUTES = ("source", "version")
@@ -68,7 +68,8 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self.vertices_by_module_dependency: Dict[TFModule | None, Dict[str, List[int]]] = defaultdict(partial(defaultdict, list))
         self.enable_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_FOREACH_HANDLING', 'True'))
         self.enable_modules_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_MODULES_FOREACH_HANDLING', 'True'))
-        self.foreach_blocks: Dict[str, List[int]] = {BlockType.RESOURCE: [], BlockType.MODULE: []}
+        self.enable_datas_foreach_handling = strtobool(os.getenv('CHECKOV_ENABLE_DATAS_FOREACH_HANDLING', 'False'))
+        self.foreach_blocks: Dict[str, List[int]] = {BlockType.RESOURCE: [], BlockType.MODULE: [], BlockType.DATA: []}
 
         # Important for foreach performance, see issue https://github.com/bridgecrewio/checkov/issues/6068
         self._vertex_path_to_realpath_cache: Dict[str, str] = {}
@@ -79,7 +80,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         self._build_edges()
         logging.info(f"[TerraformLocalGraph] created {len(self.edges)} edges")
         if (self.enable_foreach_handling or self.enable_modules_foreach_handling) \
-                and (self.foreach_blocks[BlockType.RESOURCE] or self.foreach_blocks[BlockType.MODULE]):
+                and (self.foreach_blocks[BlockType.RESOURCE] or self.foreach_blocks[BlockType.MODULE] or self.foreach_blocks[BlockType.DATA]):
             try:
                 logging.info('[TerraformLocalGraph] start handling foreach')
                 foreach_builder = ForeachBuilder(self)
@@ -128,7 +129,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             self._add_block_data_to_graph(i, block)
             if self.enable_foreach_handling and (
                     checkov.terraform.graph_builder.foreach.consts.FOREACH_STRING in block.attributes or checkov.terraform.graph_builder.foreach.consts.COUNT_STRING in block.attributes) \
-                    and block.block_type in (BlockType.MODULE, BlockType.RESOURCE):
+                    and block.block_type in (BlockType.MODULE, BlockType.RESOURCE, BlockType.DATA):
                 self.foreach_blocks[block.block_type].append(i)
 
     def _add_block_data_to_graph(self, idx: int, block: TerraformBlock) -> None:
@@ -555,7 +556,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
             module_dependency_by_name_key = vertex.source_module_object
 
         # important to use this specific map for big graph performance
-        possible_vertices = self.vertices_by_module_dependency_by_name.get(module_dependency_by_name_key, {}).get(block_type, {}).get(name, [])
+        possible_vertices = self._get_possible_vertices(module_dependency_by_name_key, block_type, name)
         for vertex_index in possible_vertices:
             vertex = self.vertices[vertex_index]
             if self.get_dirname(vertex.path) == self.get_dirname(block_path):
@@ -566,6 +567,12 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
         else:
             relative_vertex = self._find_vertex_with_best_match(relative_vertices, block_path, origin_vertex_index)
         return relative_vertex
+
+    def _get_possible_vertices(self, module_dependency_by_name_key: TFModule | None, block_type: str, name: str) -> list[int]:
+        possible_vertices = self.vertices_by_module_dependency_by_name.get(module_dependency_by_name_key, {}).get(block_type, {}).get(name, [])
+        if possible_vertices:
+            return possible_vertices
+        return self.vertices_by_module_dependency_by_name.get(module_dependency_by_name_key, {}).get(block_type, {}).get(name.replace(LEFT_BRACKET_WITH_QUOTATION, LEFT_BRACKET).replace(RIGHT_BRACKET_WITH_QUOTATION, RIGHT_BRACKET), [])
 
     def _find_vertex_with_best_match(self, relevant_vertices_indexes: List[int], origin_path: str,
                                      origin_vertex_index: Optional[int] = None) -> int:

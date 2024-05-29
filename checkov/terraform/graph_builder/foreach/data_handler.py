@@ -9,7 +9,6 @@ if TYPE_CHECKING:
     from checkov.terraform.graph_builder.local_graph import TerraformLocalGraph
 
 
-class ForeachResourceHandler(ForeachEntityHandler):
-
+class ForeachDataHandler(ForeachEntityHandler):
     def __init__(self, local_graph: TerraformLocalGraph) -> None:
-        super().__init__(local_graph, BlockType.RESOURCE)
+        super().__init__(local_graph, BlockType.DATA)
