@@ -243,7 +243,8 @@
             "restrict_public_buckets": [
               true
             ],
-            "__address__": "module.s3_module[\"a\"].module.inner_s3_module.aws_s3_bucket_public_access_block.var_bucket"
+            "__address__": "module.s3_module[\"a\"].module.inner_s3_module.aws_s3_bucket_public_access_block.var_bucket",
+            "__provider_address__": ""
           }
         }
       }
@@ -291,7 +292,8 @@
             "restrict_public_buckets": [
               true
             ],
-            "__address__": "module.s3_module2[0].module.inner_s3_module.aws_s3_bucket_public_access_block.var_bucket"
+            "__address__": "module.s3_module2[0].module.inner_s3_module.aws_s3_bucket_public_access_block.var_bucket",
+            "__provider_address__": ""
           }
         }
       }
@@ -339,7 +341,8 @@
             "restrict_public_buckets": [
               true
             ],
-            "__address__": "module.s3_module[\"a\"].module.inner_s3_module2.aws_s3_bucket_public_access_block.var_bucket"
+            "__address__": "module.s3_module[\"a\"].module.inner_s3_module2.aws_s3_bucket_public_access_block.var_bucket",
+            "__provider_address__": ""
           }
         }
       }
@@ -387,7 +390,8 @@
             "restrict_public_buckets": [
               true
             ],
-            "__address__": "module.s3_module2[0].module.inner_s3_module2.aws_s3_bucket_public_access_block.var_bucket"
+            "__address__": "module.s3_module2[0].module.inner_s3_module2.aws_s3_bucket_public_access_block.var_bucket",
+            "__provider_address__": ""
           }
         }
       }
@@ -520,7 +524,8 @@
             "restrict_public_buckets": [
               true
             ],
-            "__address__": "module.s3_module[\"b\"].module.inner_s3_module.aws_s3_bucket_public_access_block.var_bucket"
+            "__address__": "module.s3_module[\"b\"].module.inner_s3_module.aws_s3_bucket_public_access_block.var_bucket",
+            "__provider_address__": ""
           }
         }
       }
@@ -568,7 +573,8 @@
             "restrict_public_buckets": [
               true
             ],
-            "__address__": "module.s3_module[\"b\"].module.inner_s3_module2.aws_s3_bucket_public_access_block.var_bucket"
+            "__address__": "module.s3_module[\"b\"].module.inner_s3_module2.aws_s3_bucket_public_access_block.var_bucket",
+            "__provider_address__": ""
           }
         }
       }
@@ -674,7 +680,8 @@
             "restrict_public_buckets": [
               true
             ],
-            "__address__": "module.s3_module2[1].module.inner_s3_module.aws_s3_bucket_public_access_block.var_bucket"
+            "__address__": "module.s3_module2[1].module.inner_s3_module.aws_s3_bucket_public_access_block.var_bucket",
+            "__provider_address__": ""
           }
         }
       }
@@ -722,7 +729,8 @@
             "restrict_public_buckets": [
               true
             ],
-            "__address__": "module.s3_module2[1].module.inner_s3_module2.aws_s3_bucket_public_access_block.var_bucket"
+            "__address__": "module.s3_module2[1].module.inner_s3_module2.aws_s3_bucket_public_access_block.var_bucket",
+            "__provider_address__": ""
           }
         }
       }

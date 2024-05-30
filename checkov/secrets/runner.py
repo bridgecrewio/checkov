@@ -84,10 +84,15 @@ MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is de
 class Runner(BaseRunner[None, None, None]):
     check_type = CheckType.SECRETS  # noqa: CCE003  # a static attribute
 
-    def __init__(self, file_extensions: Iterable[str] | None = None, file_names: Iterable[str] | None = None):
+    def __init__(
+            self,
+            file_extensions: Iterable[str] | None = None,
+            file_names: Iterable[str] | None = None,
+            entropy_limit: Optional[float] = None):
         super().__init__(file_extensions, file_names)
         self.secrets_coordinator = SecretsCoordinator()
         self.history_secret_store = GitHistorySecretStore()
+        self.entropy_limit = entropy_limit or float(os.getenv('CHECKOV_ENTROPY_KEYWORD_LIMIT', '3'))
 
     def set_history_secret_store(self, value: Dict[str, List[EnrichedPotentialSecret]]) -> None:
         self.history_secret_store.secrets_by_file_value_type = value
@@ -121,7 +126,8 @@ class Runner(BaseRunner[None, None, None]):
             {'name': 'SquareOAuthDetector'},
             {'name': 'StripeDetector'},
             {'name': 'TwilioKeyDetector'},
-            {'name': 'EntropyKeywordCombinator', 'path': f'file://{current_dir}/plugins/entropy_keyword_combinator.py'}
+            {'name': 'EntropyKeywordCombinator', 'path': f'file://{current_dir}/plugins/entropy_keyword_combinator.py',
+             'entropy_limit': self.entropy_limit}
         ]
 
         # load runnable plugins
@@ -138,7 +144,8 @@ class Runner(BaseRunner[None, None, None]):
             policies_list = customer_run_config.get('secretsPolicies', [])
             suppressions = customer_run_config.get('suppressions', [])
             if suppressions:
-                secret_suppressions_id = [suppression['policyId'] for suppression in suppressions if suppression['suppressionType'] == 'SecretsPolicy']
+                secret_suppressions_id = [suppression['policyId']
+                                          for suppression in suppressions if suppression['suppressionType'] == 'SecretsPolicy']
             if policies_list:
                 runnable_plugins: dict[str, str] = get_runnable_plugins(policies_list)
                 logging.info(f"Found {len(runnable_plugins)} runnable plugins")
@@ -188,8 +195,10 @@ class Runner(BaseRunner[None, None, None]):
                         if enable_secret_scan_all_files:
                             # 'excluded_paths' shouldn't include the static paths from 'EXCLUDED_PATHS'
                             # they are separately referenced inside the 'filter_excluded_paths' function
-                            filter_excluded_paths(root_dir=root, names=d_names, excluded_paths=runner_filter.excluded_paths)
-                            filter_excluded_paths(root_dir=root, names=f_names, excluded_paths=runner_filter.excluded_paths)
+                            filter_excluded_paths(
+                                root_dir=root, names=d_names, excluded_paths=runner_filter.excluded_paths)
+                            filter_excluded_paths(
+                                root_dir=root, names=f_names, excluded_paths=runner_filter.excluded_paths)
                         else:
                             filter_ignored_paths(root, d_names, excluded_paths)
                             filter_ignored_paths(root, f_names, excluded_paths)
@@ -198,7 +207,7 @@ class Runner(BaseRunner[None, None, None]):
                                 if is_dockerfile(file):
                                     if 'dockerfile' not in block_list_secret_scan_lower:
                                         files_to_scan.append(os.path.join(root, file))
-                                elif f".{file.split('.')[-1]}" not in block_list_secret_scan_lower:
+                                elif f".{file.split('.')[-1]}" not in block_list_secret_scan_lower and file not in block_list_secret_scan_lower:
                                     files_to_scan.append(os.path.join(root, file))
                             elif file not in PROHIBITED_FILES and f".{file.split('.')[-1]}" in SUPPORTED_FILE_EXTENSIONS or is_dockerfile(
                                     file):
@@ -423,7 +432,8 @@ class Runner(BaseRunner[None, None, None]):
 
         validate_secrets_tenant_config = None
         if bc_integration.customer_run_config_response is not None:
-            validate_secrets_tenant_config = bc_integration.customer_run_config_response.get('tenantConfig', {}).get('secretsValidate')
+            validate_secrets_tenant_config = bc_integration.customer_run_config_response.get(
+                'tenantConfig', {}).get('secretsValidate')
 
         if validate_secrets_tenant_config is None and not convert_str_to_bool(os.getenv("CKV_VALIDATE_SECRETS", False)):
             logging.debug('Secrets verification is off, enable it via code configuration screen')
