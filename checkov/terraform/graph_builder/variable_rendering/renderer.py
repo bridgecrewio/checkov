@@ -236,6 +236,8 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
                     name = ".".join(copy_of_attribute_path[: i + 1])
                     if vertex_attributes[CustomAttributes.BLOCK_NAME] == name:
                         return attribute_path, vertex_reference.origin_value
+                    elif vertex_attributes[CustomAttributes.BLOCK_NAME] == name.replace(LEFT_BRACKET_WITH_QUOTATION, LEFT_BRACKET).replace(RIGHT_BRACKET_WITH_QUOTATION, RIGHT_BRACKET):
+                        return attribute_path, vertex_reference.origin_value
             elif block_type == BlockType.MODULE:
                 copy_of_attribute_path.reverse()
                 for i, _ in enumerate(copy_of_attribute_path):
