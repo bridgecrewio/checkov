@@ -1,6 +1,19 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.112...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.119...HEAD)
+
+## [3.2.119](https://github.com/bridgecrewio/checkov/compare/3.2.112...3.2.119) - 2024-05-30
+
+### Feature
+
+- **arm:** add FunctionAppsEnableAuthentication - Checking if a certain field exists - [#6250](https://github.com/bridgecrewio/checkov/pull/6250)
+- **terraform:** Add more conditions to CKV_AWS_70 - [#6371](https://github.com/bridgecrewio/checkov/pull/6371)
+- **terraform:** Added the CKV2_AWS_68 Check for TF and CFN - [#6369](https://github.com/bridgecrewio/checkov/pull/6369)
+
+### Bug Fix
+
+- **ansible:** set task as ansible vertices config - [#6376](https://github.com/bridgecrewio/checkov/pull/6376)
+- **terraform:** for_each/count attribute wasn't rendering if referencing a dynamic variable of a higher level module - [#6372](https://github.com/bridgecrewio/checkov/pull/6372)
 
 ## [3.2.112](https://github.com/bridgecrewio/checkov/compare/3.2.108...3.2.112) - 2024-05-29
 
