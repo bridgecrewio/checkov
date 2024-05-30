@@ -14,6 +14,8 @@ class AppGatewayWAFACLCVE202144228(BaseResourceCheck):
 
     def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
         properties = conf.get("properties")
+        if not properties:
+            return CheckResult.FAILED
         self.evaluated_keys = properties.get("managedRules")
         managed_rules = properties.get("managedRules")
         if managed_rules:
