@@ -9,7 +9,7 @@ from checkov.arm.base_resource_check import BaseResourceCheck
 class ACRAnonymousPullDisabled(BaseResourceCheck):
     ANONYMOUS_PULL_SKUS = {"Standard", "Premium"}  # noqa: CCE003  # a static attribute
 
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensures that ACR disables anonymous pulling of images"
         id = "CKV_AZURE_138"
         supported_resources = ("Microsoft.ContainerRegistry/registries",)
@@ -35,4 +35,5 @@ class ACRAnonymousPullDisabled(BaseResourceCheck):
         return CheckResult.PASSED
 
 
-check = ACRAnonymousPullDisabled()
+check = ACRAnonymousPullDisabled() # type: ignore
+
