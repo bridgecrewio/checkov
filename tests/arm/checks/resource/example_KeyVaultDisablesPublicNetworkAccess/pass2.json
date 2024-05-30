@@ -20,7 +20,7 @@
           "defaultAction" : "Allow",
           "bypass" : "AzureServices"
         },
-        "publicNetworkAccess": "Disabled",
+        "publicNetworkAccess": "disabled",
         "accessPolicies": [
           {
             "tenantId": "[subscription().tenantId]",
