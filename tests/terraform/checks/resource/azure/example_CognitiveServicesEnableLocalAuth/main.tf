@@ -1,0 +1,40 @@
+resource "azurerm_cognitive_account" "pass" {
+  name                = "example-account"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+  kind                = "Face"
+
+  sku_name = "S0"
+
+  tags = {
+    Acceptance = "Test"
+  }
+}
+
+resource "azurerm_cognitive_account" "pass2" {
+  name                = "example-account"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+  kind                = "Face"
+  local_auth_enabled = true
+
+  sku_name = "S0"
+
+  tags = {
+    Acceptance = "Test"
+  }
+}
+
+resource "azurerm_cognitive_account" "fail" {
+  name                = "example-account"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+  kind                = "Face"
+  local_auth_enabled = false
+
+  sku_name = "S0"
+
+  tags = {
+    Acceptance = "Test"
+  }
+}

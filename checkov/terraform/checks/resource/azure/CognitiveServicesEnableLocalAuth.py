@@ -1,0 +1,26 @@
+from checkov.common.models.enums import CheckCategories, CheckResult
+from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
+
+
+class CognitiveServicesEnableLocalAuth(BaseResourceValueCheck):
+    def __init__(self):
+        name = "Ensure that Cognitive Services accounts enable local authentication"
+        id = "CKV_AZURE_238"
+        supported_resources = ('azurerm_cognitive_account', )
+        categories = (CheckCategories.NETWORKING, )
+        super().__init__(
+            name=name,
+            id=id,
+            categories=categories,
+            supported_resources=supported_resources,
+            missing_block_result=CheckResult.PASSED
+        )
+
+    def get_inspected_key(self):
+        return 'local_auth_enabled'
+
+    def get_expected_value(self):
+        return True
+
+
+check = CognitiveServicesEnableLocalAuth()
