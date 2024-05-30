@@ -1,0 +1,25 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2023-05-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "accounts_pike_name": {
+      "defaultValue": "pike",
+      "type": "String"
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "type": "Microsoft.CognitiveServices/accounts",
+      "name": "pass2",
+      "location": "West US",
+      "sku": {
+        "name": "S0"
+      },
+      "kind": "CognitiveServices",
+      "properties": {
+        "publicNetworkAccess": "Enabled"
+      }
+    }
+  ]
+}
