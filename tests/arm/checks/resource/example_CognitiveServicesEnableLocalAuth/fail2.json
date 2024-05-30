@@ -11,7 +11,7 @@
   "resources": [
     {
       "type": "Microsoft.CognitiveServices/accounts",
-      "name": "pass2",
+      "name": "fail2",
       "location": "West US",
       "sku": {
         "name": "S0"

@@ -19,7 +19,7 @@
       "kind": "CognitiveServices",
       "properties": {
         "publicNetworkAccess": "Enabled",
-        "disableLocalAuth": false
+        "disableLocalAuth": true
       }
     }
   ]

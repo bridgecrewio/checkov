@@ -19,10 +19,10 @@ class TestCognitiveServicesEnableLocalAuth(unittest.TestCase):
 
         passing_resources = {
             "Microsoft.CognitiveServices/accounts.pass",
-            "Microsoft.CognitiveServices/accounts.pass2",
         }
         failing_resources = {
             "Microsoft.CognitiveServices/accounts.fail",
+            "Microsoft.CognitiveServices/accounts.fail2",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}

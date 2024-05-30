@@ -15,10 +15,11 @@ class TestCognitiveServicesEnableLocalAuth(unittest.TestCase):
 
         passing_resources = {
             "azurerm_cognitive_account.pass",
-            "azurerm_cognitive_account.pass2",
         }
         failing_resources = {
             "azurerm_cognitive_account.fail",
+            "azurerm_cognitive_account.fail2",
+
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}

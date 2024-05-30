@@ -1,4 +1,4 @@
-resource "azurerm_cognitive_account" "pass" {
+resource "azurerm_cognitive_account" "fail" {
   name                = "example-account"
   location            = azurerm_resource_group.example.location
   resource_group_name = azurerm_resource_group.example.name
@@ -11,7 +11,7 @@ resource "azurerm_cognitive_account" "pass" {
   }
 }
 
-resource "azurerm_cognitive_account" "pass2" {
+resource "azurerm_cognitive_account" "fail2" {
   name                = "example-account"
   location            = azurerm_resource_group.example.location
   resource_group_name = azurerm_resource_group.example.name
@@ -25,7 +25,7 @@ resource "azurerm_cognitive_account" "pass2" {
   }
 }
 
-resource "azurerm_cognitive_account" "fail" {
+resource "azurerm_cognitive_account" "pass" {
   name                = "example-account"
   location            = azurerm_resource_group.example.location
   resource_group_name = azurerm_resource_group.example.name

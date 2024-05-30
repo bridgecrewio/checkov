@@ -15,14 +15,13 @@ class CognitiveServicesEnableLocalAuth(BaseResourceValueCheck):
             id=id,
             categories=categories,
             supported_resources=supported_resources,
-            missing_block_result=CheckResult.PASSED
         )
 
     def get_inspected_key(self) -> str:
         return 'properties/disableLocalAuth'
 
     def get_expected_value(self) -> Any:
-        return False
+        return True
 
 
 check = CognitiveServicesEnableLocalAuth()

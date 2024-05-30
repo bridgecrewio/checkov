@@ -13,14 +13,13 @@ class CognitiveServicesEnableLocalAuth(BaseResourceValueCheck):
             id=id,
             categories=categories,
             supported_resources=supported_resources,
-            missing_block_result=CheckResult.PASSED
         )
 
     def get_inspected_key(self):
         return 'local_auth_enabled'
 
     def get_expected_value(self):
-        return True
+        return False
 
 
 check = CognitiveServicesEnableLocalAuth()
