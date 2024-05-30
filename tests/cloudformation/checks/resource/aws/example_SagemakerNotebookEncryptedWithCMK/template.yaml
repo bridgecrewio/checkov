@@ -1,12 +1,12 @@
 Resources:
-  BasicNotebookInstance_PASS:
+  BasicNotebookInstancePASS:
     Type: "AWS::SageMaker::NotebookInstance"
     Properties:
       InstanceType: "ml.t2.large"
-      RoleArn: !GetAtt ExecutionRole.Arn
+      RoleArn: "!GetAtt ExecutionRole.Arn"
       KmsKeyId: "bla bla"
-  BasicNotebookInstance_FAIL:
+  BasicNotebookInstanceFAIL:
     Type: "AWS::SageMaker::NotebookInstance"
     Properties:
       InstanceType: "ml.t2.large"
-      RoleArn: !GetAtt ExecutionRole.Arn
+      RoleArn: "!GetAtt ExecutionRole.Arn"
