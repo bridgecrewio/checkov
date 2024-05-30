@@ -1,9 +1,11 @@
+from typing import Any
+
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.arm.base_resource_value_check import BaseResourceValueCheck
 
 
 class CognitiveServicesEnableLocalAuth(BaseResourceValueCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure that Cognitive Services accounts enable local authentication"
         id = "CKV_AZURE_238"
         supported_resources = ('Microsoft.CognitiveServices/accounts', )
@@ -16,10 +18,10 @@ class CognitiveServicesEnableLocalAuth(BaseResourceValueCheck):
             missing_block_result=CheckResult.PASSED
         )
 
-    def get_inspected_key(self):
+    def get_inspected_key(self) -> str:
         return 'properties/disableLocalAuth'
 
-    def get_expected_value(self):
+    def get_expected_value(self) -> Any:
         return False
 
 
