@@ -17,7 +17,7 @@ class FunctionAppsEnableAuthentication(BaseResourceValueCheck):
                          )
 
     def get_inspected_key(self) -> str:
-        return 'properties/enabled'
+        return 'properties/platform/enabled'
 
 
 check = FunctionAppsEnableAuthentication()
