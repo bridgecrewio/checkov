@@ -1,6 +1,6 @@
 from typing import Any
 
-from checkov.common.models.enums import CheckCategories, CheckResult
+from checkov.common.models.enums import CheckCategories
 from checkov.arm.base_resource_value_check import BaseResourceValueCheck
 
 
