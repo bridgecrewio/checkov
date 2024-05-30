@@ -35,4 +35,4 @@ class ACRAnonymousPullDisabled(BaseResourceCheck):
         return CheckResult.PASSED
 
 
-check = ACRAnonymousPullDisabled
+check = ACRAnonymousPullDisabled()
