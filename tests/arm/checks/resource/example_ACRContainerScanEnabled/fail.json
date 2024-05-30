@@ -5,7 +5,7 @@
     {
       "apiVersion": "2019-05-01",
       "type": "Microsoft.ContainerRegistry/registries",
-      "name": "failed",
+      "name": "fail",
       "location": "[resourceGroup().location]",
       "sku": {
         "name": "Basic"
