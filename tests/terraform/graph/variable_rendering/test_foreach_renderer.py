@@ -387,6 +387,45 @@ def test_foreach_module_and_resource(checkov_source_path):
     assert graph.vertices[9].config['aws_s3_bucket_public_access_block']['var_bucket["b"]']['__address__'] == 'module.s3_module["b"].aws_s3_bucket_public_access_block.var_bucket["b"]'
 
 
+@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True", "CHECKOV_ENABLE_DATAS_FOREACH_HANDLING": "True"})
+def test_foreach_data(checkov_source_path):
+    dir_name = 'data_simple'
+    graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
+    tf_definitions, _ = convert_graph_vertices_to_tf_definitions(vertices=graph.vertices, root_folder=dir_name)
+
+    assert len([block for block in graph.vertices if block.block_type == 'data']) == 6
+    assert len(tf_definitions[list(tf_definitions.keys())[0]]['data']) == 6
+
+    data_vertices_names = [block.name for block in graph.vertices if block.block_type == 'data']
+    assert 'aws_s3_bucket.data_list["b"]' in data_vertices_names
+    assert 'aws_s3_bucket.data_dict["key1"]' in data_vertices_names
+    assert 'aws_s3_bucket.data_count[0]' in data_vertices_names
+    assert 'aws_s3_bucket.data_list["a"]' in data_vertices_names
+    assert 'aws_s3_bucket.data_dict["key2"]' in data_vertices_names
+    assert 'aws_s3_bucket.data_count[1]' in data_vertices_names
+
+
+@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True", "CHECKOV_ENABLE_DATAS_FOREACH_HANDLING": "True"})
+def test_foreach_data_with_resource(checkov_source_path):
+    dir_name = 'data_with_resource'
+    graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
+    tf_definitions, _ = convert_graph_vertices_to_tf_definitions(vertices=graph.vertices, root_folder=dir_name)
+
+    assert len([block for block in graph.vertices if block.block_type == 'data']) == 5
+    assert len(tf_definitions[list(tf_definitions.keys())[0]]['data']) == 5
+
+    data_vertices_names = [block.name for block in graph.vertices if block.block_type == 'data']
+    assert 'aws_s3_bucket.data_dict["key1"]' in data_vertices_names
+    assert 'aws_s3_bucket.data_count[0]' in data_vertices_names
+    assert 'aws_s3_bucket.data_dict["key2"]' in data_vertices_names
+    assert 'aws_s3_bucket.data_count[1]' in data_vertices_names
+
+    assert graph.vertices[0].attributes['bucket'] == graph.vertices[3].attributes['bucket']
+    assert graph.vertices[1].attributes['bucket'] == graph.vertices[4].attributes['bucket']
+    assert graph.vertices[8].attributes['bucket'] == graph.vertices[10].attributes['bucket']
+    assert graph.vertices[9].attributes['bucket'] == graph.vertices[11].attributes['bucket']
+
+
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
 def test_foreach_module_with_more_than_two_resources(checkov_source_path):
     dir_name = 'foreach_module_with_more_than_two_resources'

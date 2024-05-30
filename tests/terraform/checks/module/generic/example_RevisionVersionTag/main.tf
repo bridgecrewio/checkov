@@ -49,14 +49,15 @@ module "shallow_clone" {
   source = "git::https://github.com/terraform-aws-modules/terraform-aws-vpc.git?depth=1&ref=v1.2.0"
 }
 
+module "module_with_version" {
+  source  = "terraform-aws-modules/iam/aws//modules/iam-github-oidc-role"
+  version = "5.39.1"
+}
+
 # fail
 
-module "tf_registry" {
+module "tf_registry_no_version" {
   source  = "terraform-aws-modules/cloudwatch/aws//modules/log-group"
-  version = "4.3.0"
-
-  name              = "normal"
-  retention_in_days = 120
 }
 
 module "looks_like_a_branch" {
@@ -76,6 +77,22 @@ module "looks_like_a_branch" {
     Terraform = "true"
     Environment = "dev"
   }
+}
+
+module "github_module" {
+  source = "github.com/hashicorp/example"
+}
+
+module "bitbucket_module" {
+  source = "bitbucket.org/hashicorp/terraform-consul-aws"
+}
+
+module "github_ssh_module" {
+  source = "git@github.com:hashicorp/example.git"
+}
+
+module "generic_git_module" {
+  source = "git::https://example.com/vpc.git"
 }
 
 # unknown
