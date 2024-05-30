@@ -1,3 +1,5 @@
+from typing import List, Any
+
 from checkov.arm.base_resource_value_check import BaseResourceValueCheck
 from checkov.common.models.enums import CheckCategories, CheckResult
 
@@ -19,8 +21,8 @@ class AppServicePythonVersion(BaseResourceValueCheck):
     def get_inspected_key(self) -> str:
         return "properties/siteConfig/pythonVersion"
 
-    def get_expected_value(self) -> str:
-        return "3.10"
+    def get_expected_values(self) -> List[Any]:
+        return ["3.9", "3.10", "3.11", "3.12"]
 
 
 check = AppServicePythonVersion()
