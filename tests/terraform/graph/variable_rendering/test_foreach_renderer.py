@@ -483,7 +483,15 @@ def test__get_module_with_only_relevant_foreach_idx():
                                                                           nested_tf_module=None)
                                                 )
                       )
-
+    original_key = TFModule(name='2', path='2', foreach_idx='2',
+                            nested_tf_module=TFModule(name='3', path='3', foreach_idx='3', nested_tf_module=None))
+    result = ForeachModuleHandler._get_module_with_only_relevant_foreach_idx('test', original_key, module)
+    assert result == TFModule(name='1', path='1', foreach_idx='1',
+                              nested_tf_module=TFModule(name='2', path='2', foreach_idx='test',
+                                                        nested_tf_module=TFModule(name='3', path='3', foreach_idx='3',
+                                                                                  nested_tf_module=None)
+                                                        )
+                              )
 
 def test_nested_foreach_with_variable_reference():
     """
@@ -506,7 +514,8 @@ def test_nested_foreach_with_variable_reference():
 
 def test_double_nested_foreach_with_variable_reference():
     """
-    Here we test that a 2 level nested foreach loop based on module locals is correctly rendered in the Terraform graph.
+    Here we test that a 2 level nested foreach loop based on module local vars is correctly rendered in the Terraform graph.
+
     In this test we have 2 x level1 modules (green, blue) each has 2 level2 modules (test1.txt, test2.txt)
     and 2 resources for each (test3.txt, test4.txt).
     So (2 x level1) -> (2 x level2) -> (2 x aws_s3_bucket resource).
@@ -542,7 +551,7 @@ def test_double_nested_foreach_and_count_with_variable_reference():
     and 2 resources for each (count of 2).
     So (2 x level1) -> (2 x level2) -> (2 x aws_s3_bucket resource: count = 2).
 
-    The unique use case is that the for_each attributes depends on the main module's local variables.
+    The unique use case is that the count and for_each attributes (multiple levels) depends on the main module's local variables.
     """
     dir_name = 'count_examples/module_foreach_module_foreach_resource_count'
     graph = build_and_get_graph_by_path(dir_name)[0]
