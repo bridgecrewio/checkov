@@ -26,4 +26,3 @@ class AppServicePythonVersion(BaseResourceValueCheck):
 
 
 check = AppServicePythonVersion()
-
