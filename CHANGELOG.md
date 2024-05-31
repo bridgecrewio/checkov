@@ -1,6 +1,14 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.119...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.121...HEAD)
+
+## [3.2.121](https://github.com/bridgecrewio/checkov/compare/3.2.119...3.2.121) - 2024-05-31
+
+### Feature
+
+- **terraform:** AWS SageMaker notebook instance KMS Key - [#6374](https://github.com/bridgecrewio/checkov/pull/6374)
+- **terraform:** CognitiveServicesConfigureIdentity - new check - [#6378](https://github.com/bridgecrewio/checkov/pull/6378)
+- **terraform:** Ensure that Cognitive Services accounts enable local authentication - new check - [#6377](https://github.com/bridgecrewio/checkov/pull/6377)
 
 ## [3.2.119](https://github.com/bridgecrewio/checkov/compare/3.2.112...3.2.119) - 2024-05-30
 
