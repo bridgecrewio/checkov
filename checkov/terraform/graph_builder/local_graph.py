@@ -32,7 +32,8 @@ from checkov.terraform.graph_builder.utils import (
     attribute_has_nested_attributes,
     remove_index_pattern_from_str,
     join_double_quote_surrounded_dot_split, )
-from checkov.terraform.graph_builder.foreach.utils import get_terraform_foreach_or_count_key
+from checkov.terraform.graph_builder.foreach.utils import get_terraform_foreach_or_count_key, \
+    get_sanitized_terraform_resource_id
 from checkov.terraform.graph_builder.utils import is_local_path
 from checkov.terraform.graph_builder.variable_rendering.renderer import TerraformVariableRenderer, \
     LEFT_BRACKET_WITH_QUOTATION, RIGHT_BRACKET_WITH_QUOTATION, LEFT_BRACKET, RIGHT_BRACKET, DOLLAR_PREFIX, RIGHT_CURLY, LEFT_CURLY
@@ -312,7 +313,7 @@ class TerraformLocalGraph(LocalGraph[TerraformBlock]):
                 resources_types=resources_types,
             )
             for vertex_reference in referenced_vertices:
-                # for certain blocks such as data and resource, the block name is composed from several parts.
+                # for certain blocks such as data and resource, the block name is composed of several parts.
                 # the purpose of the loop is to avoid not finding the node if the name has several parts
                 sub_values = [remove_index_pattern_from_str(sub_value) for sub_value in vertex_reference.sub_parts]
                 for i in range(len(sub_values)):
@@ -909,4 +910,5 @@ def update_list_attribute(
 
 
 def get_vertex_as_tf_module(block: TerraformBlock) -> TFModule:
-    return TFModule(block.path, block.name, block.source_module_object)
+    block_name = get_sanitized_terraform_resource_id(block.name)
+    return TFModule(path=block.path, name=block_name, nested_tf_module=block.source_module_object, foreach_idx=block.for_each_index)
