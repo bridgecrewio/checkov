@@ -7,9 +7,9 @@ from checkov.common.models.enums import CheckCategories
 
 class SagemakerNotebookEncryptedWithCMK(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure Sagemaker notebook instance is encrypted by KMS using a customer managed Key (CMK)"
-        id = "CKV_AWS_198"
-        supported_resources = ["AWS::SageMaker::NotebookInstance"]
+        name = "Ensure Sagemaker domain and notebook instance are encrypted by KMS using a customer managed Key (CMK)"
+        id = "CKV_AWS_187"
+        supported_resources = ("AWS::SageMaker::NotebookInstance", "AWS::SageMaker::Domain")
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 

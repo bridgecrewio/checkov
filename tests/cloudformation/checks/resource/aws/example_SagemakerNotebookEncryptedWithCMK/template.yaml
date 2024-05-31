@@ -10,3 +10,15 @@ Resources:
     Properties:
       InstanceType: "ml.t2.large"
       RoleArn: "!GetAtt ExecutionRole.Arn"
+
+  BasicDomainPASS:
+    Type: "AWS::SageMaker::Domain"
+    Properties:
+      InstanceType: "ml.t2.large"
+      RoleArn: "!GetAtt ExecutionRole.Arn"
+      KmsKeyId: "bla bla"
+  BasicDomainFAIL:
+    Type: "AWS::SageMaker::Domain"
+    Properties:
+      InstanceType: "ml.t2.large"
+      RoleArn: "!GetAtt ExecutionRole.Arn"

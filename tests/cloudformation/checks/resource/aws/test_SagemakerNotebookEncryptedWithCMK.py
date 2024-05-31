@@ -18,9 +18,11 @@ class TestSagemakerNotebookEncryptedWithCMK(unittest.TestCase):
 
         passing_resources = {
             "AWS::SageMaker::NotebookInstance.BasicNotebookInstancePASS",
+            "AWS::SageMaker::Domain.BasicDomainPASS"
         }
         failing_resources = {
             "AWS::SageMaker::NotebookInstance.BasicNotebookInstanceFAIL",
+            "AWS::SageMaker::Domain.BasicDomainFAIL"
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
