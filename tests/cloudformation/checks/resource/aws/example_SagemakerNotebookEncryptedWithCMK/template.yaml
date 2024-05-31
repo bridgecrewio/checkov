@@ -18,6 +18,7 @@ Resources:
           ignore_checks:
             - E3002
             - E3030
+            - E3003
     Type: "AWS::SageMaker::Domain"
     Properties:
       InstanceType: "ml.t2.large"
@@ -30,6 +31,7 @@ Resources:
           ignore_checks:
             - E3002
             - E3030
+            - E3003
     Type: "AWS::SageMaker::Domain"
     Properties:
       InstanceType: "ml.t2.large"
