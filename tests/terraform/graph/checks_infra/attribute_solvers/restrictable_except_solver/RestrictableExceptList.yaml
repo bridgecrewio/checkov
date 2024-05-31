@@ -1,0 +1,15 @@
+metadata:
+  name: "example"
+  category: "GENERAL_SECURITY"
+  id: "RestrictableExceptString"
+scope:
+  provider: "AWS"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "data.aws_iam_policy_document"
+  attribute: "actions"
+  operator: "restrictable_except"
+  value:
+    - "states:CreateStateMachine"
+    - "states:CreateActivity"

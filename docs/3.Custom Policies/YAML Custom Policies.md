@@ -130,6 +130,7 @@ definition:
 | `range_not_includes`           | The range of the value of the attribute <br>does not include this single number | String, Int | operator: "range_not_includes"<br>value: 3000 |
 | `number_of_words_equals`       | The number of words in the value of the <br>attribute is equal to this number | String, Int | operator: number_of_words_equals<br>value: 6 |
 | `number_of_words_not_equals`   | The number of words in the value of the <br>attribute is not equal to this number | String, Int | operator: number_of_words_not_equals<br>value: 6 |
+| `restrictable_except`          | Fails if the policy document includes a restrictable action, but the resource is set to `*` except the listed actions | String | operator: restrictable_except<br>value:<br>- "states:CreateStateMachine" |
 
 All those operators are supporting JSONPath attribute expression by adding the `jsonpath_` prefix to the operator, for example - `jsonpath_length_equals`
 
