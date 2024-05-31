@@ -12,41 +12,25 @@ Resources:
       RoleArn: "!GetAtt ExecutionRole.Arn"
 
   BasicDomainPASS:
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E3002
+            - E3030
     Type: "AWS::SageMaker::Domain"
     Properties:
       InstanceType: "ml.t2.large"
       RoleArn: "!GetAtt ExecutionRole.Arn"
       KmsKeyId: "bla bla"
-      AppNetworkAccessType: "String"
-      AppSecurityGroupManagement: "String"
-      AuthMode: "String"
-      DefaultSpaceSettings:
-        DefaultSpaceSettings
-      DefaultUserSettings:
-        UserSettings
-      DomainName: "String"
-      DomainSettings:
-        DomainSettings
-      SubnetIds:
-        - "String"
-      ServiceToken: ""
-      VpcId: "String"
   BasicDomainFAIL:
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E3002
+            - E3030
     Type: "AWS::SageMaker::Domain"
     Properties:
       InstanceType: "ml.t2.large"
       RoleArn: "!GetAtt ExecutionRole.Arn"
-      AppNetworkAccessType: "String"
-      AppSecurityGroupManagement: "String"
-      AuthMode: "String"
-      DefaultSpaceSettings:
-        DefaultSpaceSettings
-      DefaultUserSettings:
-        UserSettings
-      DomainName: "String"
-      DomainSettings:
-        DomainSettings
-      SubnetIds:
-        - "String"
-      ServiceToken: ""
-      VpcId: "String"
