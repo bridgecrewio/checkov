@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.121...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.122...HEAD)
+
+## [3.2.122](https://github.com/bridgecrewio/checkov/compare/3.2.121...3.2.122) - 2024-06-01
+
+### Feature
+
+- **arm:** AppServicePythonVersion - 82 check the 'python version' is the latest, if used to run the web app - [#6282](https://github.com/bridgecrewio/checkov/pull/6282)
 
 ## [3.2.121](https://github.com/bridgecrewio/checkov/compare/3.2.119...3.2.121) - 2024-05-31
 
