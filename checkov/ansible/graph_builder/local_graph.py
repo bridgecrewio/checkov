@@ -94,7 +94,7 @@ class AnsibleLocalGraph(ObjectLocalGraph):
             self.vertices.append(
                 Block(
                     name=f"{resource_type}.{task_name}",
-                    config=config,
+                    config=task,
                     path=file_path,
                     block_type=BlockType.RESOURCE,
                     attributes=attributes,

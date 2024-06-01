@@ -1,6 +1,38 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.108...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.121...HEAD)
+
+## [3.2.121](https://github.com/bridgecrewio/checkov/compare/3.2.119...3.2.121) - 2024-05-31
+
+### Feature
+
+- **terraform:** AWS SageMaker notebook instance KMS Key - [#6374](https://github.com/bridgecrewio/checkov/pull/6374)
+- **terraform:** CognitiveServicesConfigureIdentity - new check - [#6378](https://github.com/bridgecrewio/checkov/pull/6378)
+- **terraform:** Ensure that Cognitive Services accounts enable local authentication - new check - [#6377](https://github.com/bridgecrewio/checkov/pull/6377)
+
+## [3.2.119](https://github.com/bridgecrewio/checkov/compare/3.2.112...3.2.119) - 2024-05-30
+
+### Feature
+
+- **arm:** add FunctionAppsEnableAuthentication - Checking if a certain field exists - [#6250](https://github.com/bridgecrewio/checkov/pull/6250)
+- **terraform:** Add more conditions to CKV_AWS_70 - [#6371](https://github.com/bridgecrewio/checkov/pull/6371)
+- **terraform:** Added the CKV2_AWS_68 Check for TF and CFN - [#6369](https://github.com/bridgecrewio/checkov/pull/6369)
+
+### Bug Fix
+
+- **ansible:** set task as ansible vertices config - [#6376](https://github.com/bridgecrewio/checkov/pull/6376)
+- **terraform:** for_each/count attribute wasn't rendering if referencing a dynamic variable of a higher level module - [#6372](https://github.com/bridgecrewio/checkov/pull/6372)
+
+## [3.2.112](https://github.com/bridgecrewio/checkov/compare/3.2.108...3.2.112) - 2024-05-29
+
+### Feature
+
+- **terraform:** Add provider address to resources - [#6266](https://github.com/bridgecrewio/checkov/pull/6266)
+- **terraform:** Support for count & for_each in data blocks - [#6359](https://github.com/bridgecrewio/checkov/pull/6359)
+
+### Bug Fix
+
+- **terraform:** Fix an issue for loading tfvars + issue in the dynamic rendering - [#6360](https://github.com/bridgecrewio/checkov/pull/6360)
 
 ## [3.2.108](https://github.com/bridgecrewio/checkov/compare/3.2.107...3.2.108) - 2024-05-26
 
