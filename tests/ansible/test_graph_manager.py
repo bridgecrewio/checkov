@@ -34,15 +34,17 @@ def test_build_graph_from_definitions():
     assert task.attributes[CustomAttributes.RESOURCE_TYPE] == "tasks.amazon.aws.ec2_instance"
     assert task.attributes[START_LINE] == 11
     assert task.attributes[END_LINE] == 22
-    assert task.config == {
-        "name": "public-compute-instance",
-        "key_name": "prod-ssh-key",
-        "vpc_subnet_id": "subnet-5ca1ab1e",
-        "instance_type": "c5.large",
-        "security_group": "default",
-        "network": {"assign_public_ip": True, "__startline__": 19, "__endline__": 20},
-        "image_id": "ami-123456",
-        "ebs_optimized": True,
-        "__startline__": 13,
-        "__endline__": 22,
-    }
+    assert task.config == {'name': 'enabled',
+                           'amazon.aws.ec2_instance':
+                               {'name': 'public-compute-instance',
+                                'key_name': 'prod-ssh-key',
+                                'vpc_subnet_id': 'subnet-5ca1ab1e',
+                                'instance_type': 'c5.large',
+                                'security_group': 'default',
+                                'network': {'assign_public_ip': True, '__startline__': 19, '__endline__': 20},
+                                'image_id': 'ami-123456',
+                                'ebs_optimized': True,
+                                '__startline__': 13,
+                                '__endline__': 22},
+                           '__startline__': 11,
+                           '__endline__': 22}
