@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING, Any, Optional
 
 from checkov.azure_pipelines.checks.registry import registry
 from checkov.azure_pipelines.common.resource_id_utils import generate_resource_key_recursive
-from checkov.common.images.image_referencer import ImageReferencerMixin
 from checkov.common.output.report import CheckType, Report
 from checkov.runner_filter import RunnerFilter
 from checkov.yaml_doc.runner import Runner as YamlRunner
@@ -14,7 +13,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
 
-class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any]]]"], YamlRunner):
+class Runner(YamlRunner):
     check_type = CheckType.AZURE_PIPELINES  # noqa: CCE003  # a static attribute
 
     def require_external_checks(self) -> bool:

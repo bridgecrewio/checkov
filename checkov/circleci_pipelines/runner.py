@@ -5,7 +5,6 @@ import os
 from typing import TYPE_CHECKING, Any, Iterable
 
 from checkov.circleci_pipelines.registry import registry
-from checkov.common.images.image_referencer import ImageReferencerMixin
 from checkov.common.output.report import CheckType, Report
 from checkov.runner_filter import RunnerFilter
 from checkov.yaml_doc.runner import Runner as YamlRunner
@@ -16,7 +15,7 @@ if TYPE_CHECKING:
 WORKFLOW_DIRECTORY = "circleci"
 
 
-class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any]]]"], YamlRunner):
+class Runner(YamlRunner):
     check_type = CheckType.CIRCLECI_PIPELINES  # noqa: CCE003  # a static attribute
 
     def require_external_checks(self) -> bool:

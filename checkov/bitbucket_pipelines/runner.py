@@ -22,6 +22,7 @@ class Runner(YamlRunner):
     def import_registry(self) -> BaseCheckRegistry:
         return registry
 
+    @staticmethod
     def is_workflow_file(file_path: str) -> bool:
         """
         :return: True if the file mentioned is named bitbucket-pipelines.yml. Otherwise: False
