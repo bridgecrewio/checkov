@@ -13,16 +13,31 @@ class AzureServiceFabricClusterProtectionLevel(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
-        self.evaluated_keys = 'fabricSettings'
-        settings_conf = conf.get('properties', {}).get('fabricSettings', [])
+        properties = conf.get('properties', {})
+        if not isinstance(properties, dict):
+            self.evaluated_keys = ['properties']
+            return CheckResult.FAILED
+
+        settings_conf = force_list(properties.get('fabricSettings', []))
+        if not isinstance(settings_conf, list):
+            self.evaluated_keys = ['properties/fabricSettings']
+            return CheckResult.FAILED
+
         for setting in settings_conf:
-            if setting and setting.get('name') == 'Security':
-                params = setting.get('parameters', [{}])[0]
-                if params.get('name') == 'ClusterProtectionLevel' and params.get('value') == 'EncryptAndSign':
-                    index = settings_conf.index(setting)
-                    self.evaluated_keys = [f'fabricSettings/{index}/parameters/name',
-                                           f'fabricSettings/{index}/parameters/value']
-                    return CheckResult.PASSED
+            if setting and isinstance(setting, dict) and setting.get('name') == 'Security':
+                params = setting.get('parameters', [{}])
+                if isinstance(params, list) and len(params) > 0 and isinstance(params[0], dict):
+                    param = params[0]
+                    if param.get('name') == 'ClusterProtectionLevel' and param.get('value') == 'EncryptAndSign':
+                        index = settings_conf.index(setting)
+                        self.evaluated_keys = [f'fabricSettings/{index}/parameters/name',
+                                               f'fabricSettings/{index}/parameters/value']
+                        return CheckResult.PASSED
+                else:
+                    self.evaluated_keys = [f'fabricSettings/{settings_conf.index(setting)}/parameters']
+                    return CheckResult.FAILED
+
+        self.evaluated_keys = ['fabricSettings']
         return CheckResult.FAILED
 
 
