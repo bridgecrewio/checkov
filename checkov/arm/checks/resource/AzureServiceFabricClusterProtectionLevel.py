@@ -1,4 +1,4 @@
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Union
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.arm.base_resource_check import BaseResourceCheck
 from checkov.common.util.type_forcers import force_list
@@ -13,7 +13,7 @@ class AzureServiceFabricClusterProtectionLevel(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
-        properties: Dict[str, Any] = conf.get('properties', {})
+        properties: Union[List[Any], Dict[str, Any]] = conf.get('properties', {})
         if not isinstance(properties, dict):
             self.evaluated_keys = ['properties']
             return CheckResult.FAILED
