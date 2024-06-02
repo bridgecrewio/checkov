@@ -229,9 +229,9 @@ class TestRunnerValid(unittest.TestCase):
         assert report.failed_checks[0].triggers[0] == {'workflow_dispatch', 'push'}
         assert report.failed_checks[0].workflow_name == 'build'
 
-        assert report.passed_checks[6].job[0] == "publish-checkov-dockerhub"
-        assert report.passed_checks[6].triggers[0] == {'workflow_dispatch', 'push'}
-        assert report.passed_checks[6].workflow_name == 'build'
+        assert report.passed_checks[8].job[0] == "publish-checkov-dockerhub"
+        assert report.passed_checks[8].triggers[0] == {'workflow_dispatch', 'push'}
+        assert report.passed_checks[8].workflow_name == 'build'
 
     def test_runner_on_codeql_analysis(self):
         # given
