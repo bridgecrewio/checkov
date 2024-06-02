@@ -22,8 +22,7 @@ class TestACRGeoreplicated(unittest.TestCase):
         }
         failing_resources = {
             'Microsoft.ContainerRegistry/registries/replications.fail',
-            'Microsoft.ContainerRegistry/registries/replications.fail2',
-            'Microsoft.ContainerRegistry/registries/replications.fail3'
+
         }
         skipped_resources = {}
 

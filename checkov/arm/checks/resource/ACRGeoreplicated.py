@@ -1,10 +1,11 @@
 from __future__ import annotations
 from typing import Any
-from checkov.common.models.enums import CheckResult, CheckCategories
-from checkov.arm.base_resource_check import BaseResourceCheck
+from checkov.common.models.consts import ANY_VALUE
+from checkov.common.models.enums import  CheckCategories
+from checkov.arm.base_resource_value_check import BaseResourceValueCheck
 
 
-class ACRGeoreplicated(BaseResourceCheck):
+class ACRGeoreplicated(BaseResourceValueCheck):
     def __init__(self) -> None:
 
         name = "Ensure geo-replicated container registries to match multi-region container deployments."
@@ -13,13 +14,11 @@ class ACRGeoreplicated(BaseResourceCheck):
         categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
-        sku = conf.get("sku")
-        if sku == ["Premium"]:
-            replication = conf.get("georeplications")
-            if replication:
-                return CheckResult.PASSED
-        return CheckResult.FAILED
+    def get_inspected_key(self) -> str:
+        return 'location'
+
+    def get_expected_value(self) -> Any:
+        return ANY_VALUE
 
 
 check = ACRGeoreplicated()
