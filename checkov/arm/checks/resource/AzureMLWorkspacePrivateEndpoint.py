@@ -1,10 +1,10 @@
 from typing import Dict, Any
 
 from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.arm.base_resource_value_check import BaseResourceValueCheck
+from checkov.arm.base_resource_check import BaseResourceCheck
 
 
-class AzureMLWorkspacePrivateEndpoint(BaseResourceValueCheck):
+class AzureMLWorkspacePrivateEndpoint(BaseResourceCheck):
     def __init__(self) -> None:
         name = "Ensure Azure Machine learning workspace is not configured with private endpoint"
         id = "CKV_AZURE_239"
