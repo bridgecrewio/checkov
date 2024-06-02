@@ -110,7 +110,6 @@ class Runner(YamlRunner):
         runner_filter = runner_filter or RunnerFilter()
         report = super().run(root_folder=root_folder, external_checks_dir=external_checks_dir,
                              files=files, runner_filter=runner_filter, collect_skip_comments=collect_skip_comments)
-        # TODO: check runner_filter.run_image_referencer
         return report
 
     def populate_metadata_dict(self) -> None:
