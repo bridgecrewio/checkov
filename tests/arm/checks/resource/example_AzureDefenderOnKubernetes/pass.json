@@ -31,7 +31,7 @@
             "[concat('Microsoft.Security/pricings/SqlServers')]"
         ],
         "properties": {
-            "pricingTier": "Free"
+            "pricingTier": "Standard"
         }
     },
     {
@@ -42,7 +42,7 @@
             "[concat('Microsoft.Security/pricings/AppServices')]"
         ],
         "properties": {
-            "pricingTier": "Free"
+            "pricingTier": "Standard"
         }
     }
 ]
