@@ -1,0 +1,15 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_30
+  name: Ensure all data stored in the ElastiCache Replication Group is securely encrypted at transit
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  pattern: new $AWS.CfnReplicationGroup(<ANY>)
+  conditions:
+    - not_pattern: |
+        new $AWS.CfnReplicationGroup(<ANY>, {<ANY>, transitEncryptionEnabled: true , <ANY>}, <ANY>)
