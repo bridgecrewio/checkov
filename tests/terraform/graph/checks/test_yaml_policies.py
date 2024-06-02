@@ -460,6 +460,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_AzureMariaDBserverUsingTLS_1_2(self):
             self.go("AzureMariaDBserverUsingTLS_1_2")
 
+    def test_AzureMLWorkspacePublicNetwork(self):
+            self.go("AzureMLWorkspacePublicNetwork")
+
     def test_AzureStorageAccountEnableSoftDelete(self):
             self.go("AzureStorageAccountEnableSoftDelete")
 
