@@ -24,7 +24,7 @@ class ACREnableZoneRedundancy(BaseResourceCheck):
         properties = conf.get("properties")
         if properties and isinstance(properties, dict):
             if properties.get("zoneRedundancy", []) != "enabled":
-             return CheckResult.FAILED
+                return CheckResult.FAILED
         return CheckResult.PASSED
 
 
