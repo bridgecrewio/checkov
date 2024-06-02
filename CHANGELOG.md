@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.122...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.124...HEAD)
+
+## [3.2.124](https://github.com/bridgecrewio/checkov/compare/3.2.122...3.2.124) - 2024-06-02
+
+### Feature
+
+- **azure:** Add policy to ensure proper AzureML Workspace network access - [#6362](https://github.com/bridgecrewio/checkov/pull/6362)
+- **azure:** Ensure Azure Storage Account storing Machine Learning workspace high business impact data is not publicly accessible - [#6368](https://github.com/bridgecrewio/checkov/pull/6368)
 
 ## [3.2.122](https://github.com/bridgecrewio/checkov/compare/3.2.121...3.2.122) - 2024-06-01
 
