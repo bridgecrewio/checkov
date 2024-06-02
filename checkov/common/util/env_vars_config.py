@@ -18,6 +18,7 @@ class EnvVarsConfig:
         self.BC_SOURCE_VERSION = os.getenv("BC_SOURCE_VERSION", version)
         self.CHECK_FAIL_LEVEL = os.getenv("CHECKOV_CHECK_FAIL_LEVEL", CheckFailLevel.ERROR)
         self.CREATE_COMPLEX_VERTICES = convert_str_to_bool(os.getenv("CREATE_COMPLEX_VERTICES", True))
+        self.CHECKOV_ENABLE_DATAS_FOREACH_HANDLING = os.getenv('CHECKOV_ENABLE_DATAS_FOREACH_HANDLING', 'False')
         self.CREATE_EDGES = convert_str_to_bool(os.getenv("CREATE_EDGES", True))
         self.CREATE_MARKDOWN_HYPERLINKS = convert_str_to_bool(os.getenv("CHECKOV_CREATE_MARKDOWN_HYPERLINKS", False))
         self.CREATE_SCA_IMAGE_REPORTS_FOR_IR = convert_str_to_bool(
