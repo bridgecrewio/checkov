@@ -13,7 +13,7 @@ class AzureServiceFabricClusterProtectionLevel(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
-        properties = conf.get('properties', {})
+        properties: Dict[str, Any] = conf.get('properties', {})
         if not isinstance(properties, dict):
             self.evaluated_keys = ['properties']
             return CheckResult.FAILED
