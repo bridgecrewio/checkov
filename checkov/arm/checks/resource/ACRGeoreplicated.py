@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Any
 from checkov.common.models.consts import ANY_VALUE
-from checkov.common.models.enums import  CheckCategories
+from checkov.common.models.enums import CheckCategories
 from checkov.arm.base_resource_value_check import BaseResourceValueCheck
 
 
