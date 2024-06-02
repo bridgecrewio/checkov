@@ -10,7 +10,7 @@
     "[resourceId('Microsoft.ContainerRegistry/registries/', parameters('acrName'))]"
   ],
   "properties": {
-    "zoneRedundancy": [true]
+    "zoneRedundancy": "enabled"
   },
 
     "outputs": {
