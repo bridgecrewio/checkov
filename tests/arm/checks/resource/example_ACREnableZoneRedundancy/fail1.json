@@ -18,9 +18,8 @@
       },
       "properties": {
         "adminUserEnabled": "[parameters('acrAdminUserEnabled')]",
-        "zoneRedundancy": [
+        "zoneRedundancy":
           "disabled"
-        ]
       }
     }
   ]

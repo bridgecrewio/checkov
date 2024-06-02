@@ -1,24 +1,25 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
-  "resources": [{
-  "type": "Microsoft.ContainerRegistry/registries/replications",
-  "apiVersion": "2020-11-01",
-  "name": "fail2",
-  "location": "[parameters('acrReplicaLocation')]",
-  "dependsOn": [
-    "[resourceId('Microsoft.ContainerRegistry/registries/', parameters('acrName'))]"
-  ],
-  "properties": {
-    "zoneRedundancy": "disabled"
-  },
-
-    "outputs": {
-      "acrLoginServer": {
-        "value": "[reference(resourceId('Microsoft.ContainerRegistry/registries',parameters('acrName')),'2019-12-01').loginServer]",
-        "type": "string"
+  "resources": [
+    {
+      "type": "Microsoft.ContainerRegistry/registries/replications",
+      "apiVersion": "2020-11-01",
+      "name": "fail2",
+      "location": "[parameters('acrReplicaLocation')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ContainerRegistry/registries/', parameters('acrName'))]"
+      ],
+      "properties": {
+        "zoneRedundancy": "disabled"
       }
     }
+  ],
+
+  "outputs": {
+    "acrLoginServer": {
+      "value": "[reference(resourceId('Microsoft.ContainerRegistry/registries',parameters('acrName')),'2019-12-01').loginServer]",
+      "type": "string"
+    }
+  }
 }
-    ]
-   }
