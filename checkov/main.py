@@ -84,6 +84,7 @@ from checkov.terraform.runner import Runner as tf_graph_runner
 from checkov.terraform_json.runner import TerraformJsonRunner
 from checkov.version import version
 from checkov.yaml_doc.runner import Runner as yaml_runner
+from checkov.common.util.env_vars_config import env_vars_config
 
 if TYPE_CHECKING:
     from checkov.common.output.report import Report
@@ -391,14 +392,14 @@ class Checkov:
 
                 try:
                     bc_integration.bc_api_key = self.config.bc_api_key
-                    # bc_integration.api_url = 'https://www.bridgecrew.cloud'
                     bc_integration.setup_bridgecrew_credentials(repo_id=self.config.repo_id,
                                                                 skip_fixes=False,  # will be set to True if this run is not eligible for fixes
                                                                 skip_download=self.config.skip_download,
                                                                 source=source,
                                                                 source_version=source_version,
                                                                 repo_branch=self.config.branch,
-                                                                prisma_api_url=self.config.prisma_api_url)
+                                                                prisma_api_url=self.config.prisma_api_url,
+                                                                bc_api_url=env_vars_config.BC_API_URL)
 
                 except MaxRetryError:
                     self.exit_run()
