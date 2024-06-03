@@ -154,8 +154,7 @@ class BaseAttributeSolver(BaseSolver):
     def _evaluate_attribute_matches(
         self, vertex: dict[str, Any], attribute_matches: list[str], filtered_attribute_matches: list[str]
     ) -> bool | None:
-        from common.checks_infra.solvers import NotContainsAttributeSolver
-        if self.is_jsonpath_check or isinstance(self, NotContainsAttributeSolver):
+        if self.is_jsonpath_check:
             if self.resource_type_pred(vertex, self.resource_types) and all(
                 self._get_operation(vertex=vertex, attribute=attr) for attr in filtered_attribute_matches
             ):
