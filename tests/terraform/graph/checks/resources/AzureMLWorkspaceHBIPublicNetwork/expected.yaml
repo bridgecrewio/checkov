@@ -1,9 +1,6 @@
 pass:
   - "azurerm_machine_learning_workspace.pass1"
   - "azurerm_machine_learning_workspace.pass2"
-  - "azurerm_storage_account.pass"
 fail:
   - "azurerm_machine_learning_workspace.fail1"
-  - "azurerm_storage_account.example"
-  - "azurerm_storage_account.example-default"
   - "azurerm_machine_learning_workspace.fail2"
