@@ -73,8 +73,8 @@ SECRET_TYPE_TO_ID = {
     'Hex High Entropy String': 'CKV_SECRET_19'
 }
 
-ENTROPY_CHECK_IDS = ('CKV_SECRET_6', 'CKV_SECRET_19', 'CKV_SECRET_80')
-GENERIC_PRIVATE_KEY_CHECK_IDS = ('CKV_SECRET_10', 'CKV_SECRET_13')
+ENTROPY_CHECK_IDS = {'CKV_SECRET_6', 'CKV_SECRET_19', 'CKV_SECRET_80'}
+GENERIC_PRIVATE_KEY_CHECK_IDS = {'CKV_SECRET_10', 'CKV_SECRET_13'}
 
 CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 
@@ -325,7 +325,7 @@ class Runner(BaseRunner[None, None, None]):
             secret_records.pop(secret_key)
             return True
         if secret_records[secret_key].check_id in GENERIC_PRIVATE_KEY_CHECK_IDS:
-            if check_id not in GENERIC_PRIVATE_KEY_CHECK_IDS + ENTROPY_CHECK_IDS:
+            if check_id not in GENERIC_PRIVATE_KEY_CHECK_IDS | ENTROPY_CHECK_IDS:
                 secret_records.pop(secret_key)
                 return True
         return False
