@@ -2,6 +2,7 @@ from typing import Dict, Any
 
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.arm.base_resource_check import BaseResourceCheck
+from checkov.common.util.consts import START_LINE, END_LINE
 
 
 class AzureMLWorkspacePrivateEndpoint(BaseResourceCheck):
@@ -20,7 +21,10 @@ class AzureMLWorkspacePrivateEndpoint(BaseResourceCheck):
                 ob_rules = managed_network.get("outboundRules")
                 if isinstance(ob_rules, dict):
                     # check no outbound rule has private endpoint type
-                    for rule in ob_rules.values():
+                    for key, rule in ob_rules.items():
+                        if key in [START_LINE, END_LINE]:
+                            # Skip inner fields we add
+                            continue
                         if rule.get("type") == "PrivateEndpoint":
                             return CheckResult.FAILED
         return CheckResult.PASSED
