@@ -236,6 +236,8 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
                     name = ".".join(copy_of_attribute_path[: i + 1])
                     if vertex_attributes[CustomAttributes.BLOCK_NAME] == name:
                         return attribute_path, vertex_reference.origin_value
+                    elif vertex_attributes[CustomAttributes.BLOCK_NAME] == name.replace(LEFT_BRACKET_WITH_QUOTATION, LEFT_BRACKET).replace(RIGHT_BRACKET_WITH_QUOTATION, RIGHT_BRACKET):
+                        return attribute_path, vertex_reference.origin_value
             elif block_type == BlockType.MODULE:
                 copy_of_attribute_path.reverse()
                 for i, _ in enumerate(copy_of_attribute_path):
@@ -363,6 +365,9 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
 
             dynamic_arguments: list[str] = []
             TerraformVariableRenderer._extract_dynamic_arguments(block_name, block_content, dynamic_arguments, [])
+            if not dynamic_arguments and len(dynamic_values) == 1:
+                for argument, _ in block_content.items():
+                    dynamic_arguments.append(argument)
             if dynamic_arguments and isinstance(dynamic_values, list):
                 block_confs = []
                 for dynamic_value in dynamic_values:

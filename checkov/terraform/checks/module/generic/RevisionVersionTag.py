@@ -7,7 +7,7 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.module.base_module_check import BaseModuleCheck
 from .RevisionHash import check as RevisionHashCheck
 
-VERSION_PATTERN = re.compile(r"\?(ref=).*(\d\.\d).*")
+VERSION_PATTERN = re.compile(r"[?&](ref=).*(\d\.\d).*")
 
 
 class RevisionVersionTag(BaseModuleCheck):
@@ -27,8 +27,13 @@ class RevisionVersionTag(BaseModuleCheck):
         source = conf.get("source")
         if source and isinstance(source, list):
             source_url = source[0]
-            if "?ref" in source_url and re.search(VERSION_PATTERN, source_url):
-                return CheckResult.PASSED
+            if BaseModuleCheck.is_git_source(source_url):
+                if ("?ref" in source_url or "&ref" in source_url) and re.search(VERSION_PATTERN, source_url):
+                    return CheckResult.PASSED
+            else:
+                version = conf.get("version")
+                if source and isinstance(version, list):
+                    return CheckResult.PASSED
 
         return CheckResult.FAILED
 
