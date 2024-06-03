@@ -12,13 +12,10 @@ from checkov.version import version
 class EnvVarsConfig:
     def __init__(self) -> None:
         self.BC_API_URL = normalize_bc_url(os.getenv("BC_API_URL"))
-        self.BC_ENABLE_PERSIST_GRAPHS = convert_str_to_bool(os.getenv("BC_ENABLE_PERSIST_GRAPHS", True))
-        self.BC_PERSIST_GRAPHS_TIMEOUT = force_int(os.getenv("BC_PERSIST_GRAPHS_TIMEOUT", 60))
         self.BC_ROOT_DIR = os.getenv("BC_ROOT_DIR", "")
         self.BC_SKIP_MAPPING = convert_str_to_bool(os.getenv("BC_SKIP_MAPPING", False))
         self.BC_SOURCE = os.getenv("BC_SOURCE", "cli")
         self.BC_SOURCE_VERSION = os.getenv("BC_SOURCE_VERSION", version)
-        self.CACHE_DIR = convert_str_to_bool(os.getenv("CKV_CACHE_DIR", str(Path(tempfile.gettempdir()) / "cache")))
         self.CHECK_FAIL_LEVEL = os.getenv("CHECKOV_CHECK_FAIL_LEVEL", CheckFailLevel.ERROR)
         self.CREATE_COMPLEX_VERTICES = convert_str_to_bool(os.getenv("CREATE_COMPLEX_VERTICES", True))
         self.CHECKOV_ENABLE_DATAS_FOREACH_HANDLING = os.getenv('CHECKOV_ENABLE_DATAS_FOREACH_HANDLING', 'False')
@@ -27,14 +24,16 @@ class EnvVarsConfig:
         self.CREATE_SCA_IMAGE_REPORTS_FOR_IR = convert_str_to_bool(
             os.getenv("CHECKOV_CREATE_SCA_IMAGE_REPORTS_FOR_IR", True)
         )
+        ######################
+        # env-vars for debugging
+        self.EXPERIMENTAL_GRAPH_DEBUG = convert_str_to_bool(os.getenv("CHECKOV_EXPERIMENTAL_GRAPH_DEBUG", False))
+        ######################
         # default version is set inside the relevant code
         self.CYCLONEDX_SCHEMA_VERSION = os.getenv("CHECKOV_CYCLONEDX_SCHEMA_VERSION", "")
-        self.DISPLAY_REGISTRY_URL = convert_str_to_bool(os.getenv("CHECKOV_DISPLAY_REGISTRY_URL", False))
         self.ENABLE_FOREACH_HANDLING = convert_str_to_bool(os.getenv("CHECKOV_ENABLE_FOREACH_HANDLING", True))
         self.ENABLE_MODULES_FOREACH_HANDLING = convert_str_to_bool(
             os.getenv("CHECKOV_ENABLE_MODULES_FOREACH_HANDLING", True)
         )
-        self.EXPERIMENTAL_GRAPH_DEBUG = convert_str_to_bool(os.getenv("CHECKOV_EXPERIMENTAL_GRAPH_DEBUG", False))
         self.EXPIRATION_TIME_IN_SEC = force_int(os.getenv("CHECKOV_EXPIRATION_TIME_IN_SEC", 604800))
         self.GITHUB_CONF_DIR_NAME = os.getenv("CKV_GITHUB_CONF_DIR_NAME", "github_conf")
         self.GITHUB_CONFIG_FETCH_DATA = convert_str_to_bool(os.getenv("CKV_GITHUB_CONFIG_FETCH_DATA", True))
@@ -45,21 +44,33 @@ class EnvVarsConfig:
         self.IGNORE_HIDDEN_DIRECTORIES = convert_str_to_bool(os.getenv("CKV_IGNORE_HIDDEN_DIRECTORIES", True))
         self.MAX_FILE_SIZE = force_int(os.getenv("CHECKOV_MAX_FILE_SIZE", 5_000_000))  # 5 MB is default limit
         self.MAX_IAC_FILE_SIZE = force_int(os.getenv("CHECKOV_MAX_IAC_FILE_SIZE", 50_000_000))  # 50 MB is default limit
-        self.NO_OUTPUT = convert_str_to_bool(os.getenv("CHECKOV_NO_OUTPUT", False))
         self.OPENAI_MAX_FINDINGS = force_int(os.getenv("CKV_OPENAI_MAX_FINDINGS", 5))
         self.OPENAI_MAX_TOKENS = force_int(os.getenv("CKV_OPENAI_MAX_TOKENS", 512))
         self.OPENAI_MODEL = os.getenv("CKV_OPENAI_MODEL", "gpt-3.5-turbo")
+        ######################
+        # data persisting related from checkov to platform
+        self.BC_ENABLE_PERSIST_GRAPHS = convert_str_to_bool(os.getenv("BC_ENABLE_PERSIST_GRAPHS", True))
+        self.BC_PERSIST_GRAPHS_TIMEOUT = force_int(os.getenv("BC_PERSIST_GRAPHS_TIMEOUT", 60))
+        ######################
+        # output parsing related
+        self.NO_OUTPUT = convert_str_to_bool(os.getenv("CHECKOV_NO_OUTPUT", False))
         self.OUTPUT_CODE_LINE_LIMIT = force_int(os.getenv("CHECKOV_OUTPUT_CODE_LINE_LIMIT", 50))
         self.PARSE_ERROR_FAIL = convert_str_to_bool(os.getenv("CKV_PARSE_ERROR_FAIL", False))
+        self.DISPLAY_REGISTRY_URL = convert_str_to_bool(os.getenv("CHECKOV_DISPLAY_REGISTRY_URL", False))
+        ######################
+        # variable rendering related
         self.RENDER_ASYNC_MAX_WORKERS = force_int(os.getenv("RENDER_ASYNC_MAX_WORKERS", 50))
         self.RENDER_EDGES_DUPLICATE_ITER_COUNT = force_int(os.getenv("RENDER_EDGES_DUPLICATE_ITER_COUNT", 4))
         self.RENDER_EDGES_DUPLICATE_PERCENT = force_int(os.getenv("RENDER_EDGES_DUPLICATE_PERCENT", 90))
         self.RENDER_MAX_LEN = force_int(os.getenv("CHECKOV_RENDER_MAX_LEN", 10000))
         self.RENDER_VARIABLES_ASYNC = convert_str_to_bool(os.getenv("RENDER_VARIABLES_ASYNC", False))
+        ######################
         self.RUN_IN_DOCKER = convert_str_to_bool(os.getenv("RUN_IN_DOCKER", False))
+        ######################
+        # http requests related
         self.REQUEST_MAX_TRIES = force_int(os.getenv("REQUEST_MAX_TRIES", 3))
-        self.RUN_SECRETS_MULTIPROCESS = convert_str_to_bool(os.getenv("RUN_SECRETS_MULTIPROCESS", False))
         self.SLEEP_BETWEEN_REQUEST_TRIES = force_int(os.getenv("SLEEP_BETWEEN_REQUEST_TRIES", 1))
+        ######################
         self.SLS_FILE_MASK = os.getenv("CKV_SLS_FILE_MASK", "serverless.yml,serverless.yaml").split(",")
         self.VALIDATE_SECRETS = convert_str_to_bool(os.getenv("CKV_VALIDATE_SECRETS", False))
         self.WORKDIR = os.getenv("WORKDIR", "")
@@ -75,6 +86,8 @@ class EnvVarsConfig:
         # need to fix usage, because the env var value is set inside the code
         self.GITHUB_CONF_DIR_PATH = os.getenv("CKV_GITHUB_CONF_DIR_PATH")
         self.ENABLE_DEFINITION_KEY = os.getenv("ENABLE_DEFINITION_KEY", False)
+        self.CACHE_DIR = convert_str_to_bool(os.getenv("CKV_CACHE_DIR", str(Path(tempfile.gettempdir()) / "cache")))
+        self.RUN_SECRETS_MULTIPROCESS = convert_str_to_bool(os.getenv("RUN_SECRETS_MULTIPROCESS", False))
 
 
 env_vars_config = EnvVarsConfig()
