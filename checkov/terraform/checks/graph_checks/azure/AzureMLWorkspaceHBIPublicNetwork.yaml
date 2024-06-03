@@ -1,0 +1,26 @@
+metadata: 
+  id: "CKV2_AZURE_50"
+  name: "Ensure Azure Storage Account storing Machine Learning workspace high business impact data is not publicly accessible"
+  category: "NETWORKING"
+
+definition:
+  or:
+  - cond_type: attribute
+    resource_types: azurerm_machine_learning_workspace
+    attribute: "high_business_impact"
+    operator: "equals"
+    value: "false"
+  - and:
+    - cond_type: connection
+      resource_types:
+        - azurerm_machine_learning_workspace
+      connected_resource_types:
+        - azurerm_storage_account
+      operator: exists
+    - cond_type: attribute
+      resource_types: azurerm_storage_account
+      attribute: "public_network_access_enabled"
+      operator: "equals"
+      value: "false"
+    
+
