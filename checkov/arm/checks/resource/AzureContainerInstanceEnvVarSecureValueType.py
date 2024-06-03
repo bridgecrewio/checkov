@@ -20,8 +20,8 @@ class AzureContainerInstanceEnvVarSecureValueType(BaseResourceCheck):
             conf.get('properties', {}).get('initContainers', [])
         )
         for container in containers:
-            env_vars = container.get('properties', {}).get('environmentVariables', [])
-            if any('value' in env_var for env_var in env_vars):
+            env_vars = container.get('properties', {}).get('environmentVariables')
+            if env_vars is not None and any('value' in env_var for env_var in env_vars):
                 return CheckResult.FAILED
         return CheckResult.PASSED
 
