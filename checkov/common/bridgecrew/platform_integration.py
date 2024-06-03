@@ -909,8 +909,10 @@ class BcPlatformIntegration:
                 response = json.loads(request.data.decode("utf8"))
                 logging.debug(f'Request ID: {request.headers.get("x-amzn-requestid")}')
                 logging.debug(f'Trace ID: {request.headers.get("x-amzn-trace-id")}')
-                # url: str = self.get_sso_prismacloud_url(response.get("url", None))
-                url: str = response.get("url", None)
+                if self.bc_api_url:
+                    url: str = response.get("url", None)
+                else:
+                    url = self.get_sso_prismacloud_url(response.get("url", None))
                 return url
             except HTTPError:
                 logging.error(f"Failed to commit repository {self.repo_path}", exc_info=True)
