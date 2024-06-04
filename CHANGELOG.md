@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.79...HEAD)0
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.79...HEAD)
 
 ## [3.2.79](https://github.com/bridgecrewio/checkov/compare/3.2.74...3.2.79) - 2024-05-02
 
@@ -3970,5 +3970,3 @@
 - **graph:** cache jsonpath attributes parser results - [#3451](https://github.com/bridgecrewio/checkov/pull/3451)
 
 ## Platform
-
-- **general:** revert dropping checks metadata for empty reports - [#3453](https://github.com/bridgecrewio/checkov/pull/3453)
