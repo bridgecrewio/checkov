@@ -19,8 +19,5 @@ class SagemakerDataQualityJobDefinitionEncryption(BaseResourceValueCheck):
     def get_expected_value(self):
         return ANY_VALUE
 
-    def get_evaluated_keys(self) -> List[str]:
-        return ['Properties/DataQualityJobOutputConfig/KmsKeyId']
-
 
 check = SagemakerDataQualityJobDefinitionEncryption()

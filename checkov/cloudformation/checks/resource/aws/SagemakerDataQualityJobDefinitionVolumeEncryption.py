@@ -19,8 +19,5 @@ class SagemakerDataQualityJobDefinitionVolumeEncryption(BaseResourceValueCheck):
     def get_expected_value(self):
         return ANY_VALUE
 
-    def get_evaluated_keys(self) -> List[str]:
-        return ['Properties/JobResources/ClusterConfig/VolumeKmsKeyId']
-
 
 check = SagemakerDataQualityJobDefinitionVolumeEncryption()
