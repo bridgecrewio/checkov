@@ -1,0 +1,45 @@
+Resources:
+  DataQualityJobDefinitionFail1:
+    Type: "AWS::SageMaker::DataQualityJobDefinition"
+    Properties:
+      JobDefinitionName: "MyDataQualityJobDefinition"
+      DataQualityBaselineConfig:
+        BaseliningJobName: "MyBaselineJob"
+      DataQualityAppSpecification:
+        ImageUri: "123456789012.dkr.ecr.us-west-2.amazonaws.com/my-custom-image:latest"
+      DataQualityJobInput:
+        EndpointInput:
+          EndpointName: "MyEndpoint"
+          LocalPath: "/opt/ml/processing/input"
+      DataQualityJobOutputConfig:
+        MonitoringOutputs:
+          - S3Output:
+              S3Uri: "s3://my-bucket/output/"
+              LocalPath: "/opt/ml/processing/output"
+              S3UploadMode: "EndOfJob"
+      RoleArn: "arn:aws:iam::123456789012:role/service-role/AmazonSageMaker-ExecutionRole-20200601T123456"
+      NetworkConfig:
+        EnableInterContainerTrafficEncryption: false
+      StoppingCondition:
+        MaxRuntimeInSeconds: 3600
+  DataQualityJobDefinitionFail2:
+    Type: "AWS::SageMaker::DataQualityJobDefinition"
+    Properties:
+      JobDefinitionName: "MyDataQualityJobDefinition"
+      DataQualityBaselineConfig:
+        BaseliningJobName: "MyBaselineJob"
+      DataQualityAppSpecification:
+        ImageUri: "123456789012.dkr.ecr.us-west-2.amazonaws.com/my-custom-image:latest"
+      DataQualityJobInput:
+        EndpointInput:
+          EndpointName: "MyEndpoint"
+          LocalPath: "/opt/ml/processing/input"
+      DataQualityJobOutputConfig:
+        MonitoringOutputs:
+          - S3Output:
+              S3Uri: "s3://my-bucket/output/"
+              LocalPath: "/opt/ml/processing/output"
+              S3UploadMode: "EndOfJob"
+      RoleArn: "arn:aws:iam::123456789012:role/service-role/AmazonSageMaker-ExecutionRole-20200601T123456"
+      StoppingCondition:
+        MaxRuntimeInSeconds: 3600
