@@ -1,0 +1,19 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.ContainerService/managedClusters",
+      "apiVersion": "2021-07-01",
+      "name": "pass1",
+      "location": "[resourceGroup().location]",
+      "properties": {
+         "addonProfiles": {
+           "azurePolicy": {
+            "enabled": true
+          }
+        }
+      }
+    }
+  ]
+}
