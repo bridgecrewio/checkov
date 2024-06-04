@@ -6,7 +6,7 @@ from checkov.common.models.enums import CheckCategories
 class SagemakerDataQualityJobDefinitionEncryption(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure Amazon Sagemaker Data Quality Job uses KMS to encrypt model artifacts"
-        id = "CKV_AWS_380"
+        id = "CKV_AWS_367"
         supported_resources = ['aws_sagemaker_data_quality_job_definition']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

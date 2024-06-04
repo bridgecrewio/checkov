@@ -17,6 +17,11 @@ Resources:
               S3Uri: "s3://my-bucket/output/"
               LocalPath: "/opt/ml/processing/output"
               S3UploadMode: "EndOfJob"
+      JobResources:
+        ClusterConfig:
+          InstanceCount: 1
+          InstanceType: ml.m5.large
+          VolumeSizeInGB: 50
       RoleArn: "arn:aws:iam::123456789012:role/service-role/AmazonSageMaker-ExecutionRole-20200601T123456"
       NetworkConfig:
         EnableInterContainerTrafficEncryption: false
@@ -40,6 +45,11 @@ Resources:
               S3Uri: "s3://my-bucket/output/"
               LocalPath: "/opt/ml/processing/output"
               S3UploadMode: "EndOfJob"
+      JobResources:
+        ClusterConfig:
+          InstanceCount: 1
+          InstanceType: ml.m5.large
+          VolumeSizeInGB: 50
       RoleArn: "arn:aws:iam::123456789012:role/service-role/AmazonSageMaker-ExecutionRole-20200601T123456"
       StoppingCondition:
         MaxRuntimeInSeconds: 3600

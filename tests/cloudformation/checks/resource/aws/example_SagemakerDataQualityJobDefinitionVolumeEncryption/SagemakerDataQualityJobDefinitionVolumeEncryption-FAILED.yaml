@@ -57,5 +57,10 @@ Resources:
               S3Uri: "s3://my-sagemaker-bucket/output"
               LocalPath: "/opt/ml/processing/output"
               S3UploadMode: "Continuous"
+      JobResources:
+        ClusterConfig:
+          InstanceCount: 2
+          InstanceType: "ml.m5.xlarge"
+          VolumeSizeInGB: 30
       StoppingCondition:
         MaxRuntimeInSeconds: 3600
