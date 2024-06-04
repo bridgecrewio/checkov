@@ -73,7 +73,8 @@ SECRET_TYPE_TO_ID = {
     'Hex High Entropy String': 'CKV_SECRET_19'
 }
 
-ENTROPY_CHECK_IDS = ('CKV_SECRET_6', 'CKV_SECRET_19', 'CKV_SECRET_80')
+ENTROPY_CHECK_IDS = {'CKV_SECRET_6', 'CKV_SECRET_19', 'CKV_SECRET_80'}
+GENERIC_PRIVATE_KEY_CHECK_IDS = {'CKV_SECRET_10', 'CKV_SECRET_13'}
 
 CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 
@@ -244,9 +245,8 @@ class Runner(BaseRunner[None, None, None]):
                         f"Removing secret due to UUID filtering: {hashlib.sha256(secret.secret_value.encode('utf-8')).hexdigest()}")
                     continue
                 if secret_key in secret_records.keys():
-                    if secret_records[secret_key].check_id in ENTROPY_CHECK_IDS and check_id not in ENTROPY_CHECK_IDS:
-                        secret_records.pop(secret_key)
-                    else:
+                    is_prioritise = self._prioritise_secrets(secret_records, secret_key, check_id)
+                    if not is_prioritise:
                         continue
                 bc_check_id = metadata_integration.get_bc_id(check_id)
                 if bc_check_id in secret_suppressions_id:
@@ -318,6 +318,17 @@ class Runner(BaseRunner[None, None, None]):
             if runner_filter.skip_invalid_secrets:
                 self._modify_invalid_secrets_check_result_to_skipped(report)
             return report
+
+    @staticmethod
+    def _prioritise_secrets(secret_records: Dict[str, SecretsRecord], secret_key: str, check_id: str) -> bool:
+        if secret_records[secret_key].check_id in ENTROPY_CHECK_IDS and check_id not in ENTROPY_CHECK_IDS:
+            secret_records.pop(secret_key)
+            return True
+        if secret_records[secret_key].check_id in GENERIC_PRIVATE_KEY_CHECK_IDS:
+            if check_id not in GENERIC_PRIVATE_KEY_CHECK_IDS | ENTROPY_CHECK_IDS:
+                secret_records.pop(secret_key)
+                return True
+        return False
 
     def cleanup_plugin_files(
             self,
