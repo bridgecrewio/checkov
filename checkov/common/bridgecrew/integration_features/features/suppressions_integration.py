@@ -128,12 +128,15 @@ class SuppressionsIntegration(BaseIntegrationFeature):
             applied_suppression = self._check_suppressions(check, relevant_suppressions, relevant_suppressions_v2) if has_suppression else None
             if applied_suppression:
                 suppress_comment = applied_suppression['comment'] if applied_suppression['isV1'] else applied_suppression['justificationComment']
-                logging.debug(f'Applying suppression to the check {check.check_id} with the comment: {suppress_comment}')
-                check.check_result = {
-                    'result': CheckResult.SKIPPED,
-                    'suppress_comment': suppress_comment
-                }
-                scan_report.skipped_checks.append(check)
+                if self._should_omit_check(applied_suppression):
+                    logging.debug(f'Removing check {check.check_id} from the report, comment: {suppress_comment}')
+                else:
+                    logging.debug(f'Applying suppression to the check {check.check_id} with the comment: {suppress_comment}')
+                    check.check_result = {
+                        'result': CheckResult.SKIPPED,
+                        'suppress_comment': suppress_comment
+                    }
+                    scan_report.skipped_checks.append(check)
             elif check.check_result['result'] == CheckResult.FAILED:
                 still_failed_checks.append(check)
             else:
@@ -141,6 +144,14 @@ class SuppressionsIntegration(BaseIntegrationFeature):
 
         scan_report.failed_checks = still_failed_checks
         scan_report.passed_checks = still_passed_checks
+
+    @staticmethod
+    def _should_omit_check(applied_suppression: dict[str, Any]) -> bool:
+        if applied_suppression['isV1']:
+            return False
+        if applied_suppression['ruleType'] == 'policy':
+            return True
+        return False
 
     def _check_suppressions(self, record: Record, suppressions: Optional[list[dict[str, Any]]], suppressions_v2: Optional[list[dict[str, Any]]]) -> dict[str, Any] | None:
         """
@@ -300,12 +311,18 @@ class SuppressionsIntegration(BaseIntegrationFeature):
         # not used
         pass
 
+    # def get_policy_level_suppressions(self) -> (dict[str, list[str]], list[str]):
     def get_policy_level_suppressions(self) -> dict[str, list[str]]:
         policy_level_suppressions = {}
+        ckv_suppressions = []
         for check_suppressions in itertools.chain(self.suppressions.values(), self.suppressions_v2.values()):
             for suppression in check_suppressions:
                 if (suppression['isV1'] and suppression.get("suppressionType") == "Policy") or (not suppression['isV1'] and suppression.get("ruleType") == "policy"):
                     policy_level_suppressions[suppression['id']] = [suppression['policyId']] if suppression['isV1'] else suppression['policyIds']
+                    if suppression['isV1']:
+                        ckv_suppressions.append(suppression['checkovPolicyId'])
+                    else:
+                        ckv_suppressions.extend(suppression['checkovPolicyIds'])
                     break
         return policy_level_suppressions
 
