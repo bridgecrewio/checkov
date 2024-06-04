@@ -125,12 +125,15 @@ class BaseContextParser(ABC):
                 if "start_line" in entity_context and "end_line" in entity_context \
                         and entity_context["start_line"] < skip_check_line_num < entity_context["end_line"]:
                     # No matter which ID was used to skip, save the pair of IDs in the appropriate fields
-                    if bc_id_mapping and skip_check["id"] in bc_id_mapping:
-                        skip_check["bc_id"] = skip_check["id"]
-                        skip_check["id"] = bc_id_mapping[skip_check["id"]]
-                    elif metadata_integration.check_metadata:
-                        skip_check["bc_id"] = metadata_integration.get_bc_id(skip_check["id"])
-                    skipped_checks.append(skip_check)
+                    skip_check_ids = skip_check["id"].split(',')
+                    for skip_check_id in skip_check_ids:
+                        single_skip_check = {"id": skip_check_id.strip(), "suppress_comment": skip_check["suppress_comment"]}
+                        if bc_id_mapping and single_skip_check["id"] in bc_id_mapping:
+                            single_skip_check["bc_id"] = single_skip_check["id"]
+                            single_skip_check["id"] = bc_id_mapping[single_skip_check["id"]]
+                        elif metadata_integration.check_metadata:
+                            single_skip_check["bc_id"] = metadata_integration.get_bc_id(skip_check["id"])
+                        skipped_checks.append(single_skip_check)
             dpath.new(self.context, entity_context_path + ["skipped_checks"], skipped_checks)
         return self.context
 
