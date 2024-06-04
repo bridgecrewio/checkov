@@ -15,7 +15,7 @@
       "apiVersion": "2021-01-01-preview",
       "name": "KubernetesService",
       "properties": {
-        "pricingTier": "Free"
+        "pricingTier": "Standard"
       }
     }
   ]

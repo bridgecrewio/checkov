@@ -15,16 +15,13 @@ class AzureDefenderOnKeyVaults(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
-        properties = conf.get('properties')
-        if properties and isinstance(properties, dict):
-            pricing_tier = properties.get("pricingTier")
-            if conf.get("name", [None]) != "KeyVaults" or pricing_tier == "Standard":
-                return CheckResult.PASSED
-            else:
-                return CheckResult.FAILED
+        if conf["properties"]["pricingTier"] == "Standard":
+            return CheckResult.PASSED
+        else:
+            return CheckResult.FAILED
 
     def get_evaluated_keys(self) -> list[str]:
-        return ["name", "properties/pricingTier"]
+        return ["pricingTier"]
 
 
 check = AzureDefenderOnKeyVaults()
