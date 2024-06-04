@@ -111,7 +111,7 @@
                     "index.php",
                     "hostingstart.html"
                 ],
-                "netFrameworkVersion": "v7.0",
+                "netFrameworkVersion": "v8.0",
                 "phpVersion": "5.6",
                 "requestTracingEnabled": true,
                 "requestTracingExpirationTime": "9999-12-31T23:59:00Z",
