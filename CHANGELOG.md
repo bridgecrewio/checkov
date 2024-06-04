@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.124...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.125...HEAD)
+
+## [3.2.125](https://github.com/bridgecrewio/checkov/compare/3.2.124...3.2.125) - 2024-06-03
+
+### Feature
+
+- **arm:** Add check for AzureML workspace not configured with private endpoint - [#6387](https://github.com/bridgecrewio/checkov/pull/6387)
 
 ## [3.2.124](https://github.com/bridgecrewio/checkov/compare/3.2.122...3.2.124) - 2024-06-02
 

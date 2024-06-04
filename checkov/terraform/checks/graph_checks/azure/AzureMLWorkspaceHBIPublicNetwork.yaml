@@ -5,12 +5,22 @@ metadata:
 
 definition:
   or:
+  - cond_type: filter
+    attribute: resource_type
+    operator: within
+    value:
+      - azurerm_machine_learning_workspace
   - cond_type: attribute
     resource_types: azurerm_machine_learning_workspace
-    attribute: "high_business_impact"
-    operator: "equals"
-    value: "false"
+    attribute: high_business_impact
+    operator: equals
+    value: false
   - and:
+    - cond_type: filter
+      attribute: resource_type
+      operator: within
+      value:
+        - azurerm_machine_learning_workspace
     - cond_type: connection
       resource_types:
         - azurerm_machine_learning_workspace
@@ -19,8 +29,8 @@ definition:
       operator: exists
     - cond_type: attribute
       resource_types: azurerm_storage_account
-      attribute: "public_network_access_enabled"
-      operator: "equals"
-      value: "false"
+      attribute: public_network_access_enabled
+      operator: equals
+      value: false
     
 
