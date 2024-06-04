@@ -311,19 +311,12 @@ class SuppressionsIntegration(BaseIntegrationFeature):
         # not used
         pass
 
-    # def get_policy_level_suppressions(self) -> (dict[str, list[str]], list[str]):
     def get_policy_level_suppressions(self) -> dict[str, list[str]]:
         policy_level_suppressions = {}
-        ckv_suppressions = []
         for check_suppressions in itertools.chain(self.suppressions.values(), self.suppressions_v2.values()):
             for suppression in check_suppressions:
                 if (suppression['isV1'] and suppression.get("suppressionType") == "Policy") or (not suppression['isV1'] and suppression.get("ruleType") == "policy"):
                     policy_level_suppressions[suppression['id']] = [suppression['policyId']] if suppression['isV1'] else suppression['policyIds']
-                    if suppression['isV1']:
-                        ckv_suppressions.append(suppression['checkovPolicyId'])
-                    else:
-                        ckv_suppressions.extend(suppression['checkovPolicyIds'])
-                    break
         return policy_level_suppressions
 
     def post_scan(self, merged_reports: list[Report]) -> None:
