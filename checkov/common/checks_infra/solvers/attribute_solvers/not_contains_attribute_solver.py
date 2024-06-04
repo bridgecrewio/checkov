@@ -10,5 +10,5 @@ class NotContainsAttributeSolver(ContainsAttributeSolver):
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
         return not super()._get_operation(vertex, attribute)
 
-    def is_needs_all_condition(self):
+    def is_needs_all_condition(self) -> bool:
         return True
