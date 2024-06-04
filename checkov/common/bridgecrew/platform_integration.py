@@ -59,7 +59,6 @@ from checkov.common.util.http_utils import (
     REQUEST_RETRIES,
 )
 from checkov.common.util.type_forcers import convert_prisma_policy_filter_to_dict, convert_str_to_bool
-from checkov.common.util.env_vars_config import env_vars_config
 from checkov.version import version as checkov_version
 
 if TYPE_CHECKING:
@@ -129,7 +128,7 @@ class BcPlatformIntegration:
         self.bc_source_version: str | None = None
         self.timestamp: str | None = None
         self.scan_reports: list[Report] = []
-        self.bc_api_url = env_vars_config.BC_API_URL
+        self.bc_api_url = normalize_bc_url(os.getenv('BC_API_URL'))
         self.prisma_api_url = normalize_prisma_url(os.getenv('PRISMA_API_URL') or 'https://api0.prismacloud.io')
         self.prisma_policies_url: str | None = None
         self.prisma_policy_filters_url: str | None = None

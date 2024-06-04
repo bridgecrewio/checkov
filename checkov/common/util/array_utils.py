@@ -4,7 +4,7 @@ from typing import Any
 
 
 def chunk_array(arr: list[Any], per_chunk: int) -> list[list[Any]]:
-    result_array = []
+    result_array: list[list[Any]] = []
     chunk_index = -1
 
     for index, item in enumerate(arr):
