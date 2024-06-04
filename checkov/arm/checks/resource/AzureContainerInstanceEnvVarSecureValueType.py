@@ -14,14 +14,14 @@ class AzureContainerInstanceEnvVarSecureValueType(BaseResourceCheck):
         categories = (CheckCategories.GENERAL_SECURITY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
+    def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
         containers = itertools.chain(
             conf.get('properties', {}).get('containers', []),
             conf.get('properties', {}).get('initContainers', [])
         )
         for container in containers:
             env_vars = container.get('properties', {}).get('environmentVariables', [])
-            if any('value' in env_var for env_var in env_vars):
+            if env_vars is not None and any('value' in env_var for env_var in env_vars):
                 return CheckResult.FAILED
         return CheckResult.PASSED
 
