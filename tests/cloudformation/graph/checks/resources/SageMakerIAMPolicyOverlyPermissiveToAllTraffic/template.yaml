@@ -1,0 +1,64 @@
+Resources:
+  aws_sagemaker_notebook_instance_pass:
+    Type: AWS::SageMaker::NotebookInstance
+    Properties:
+      NotebookInstanceName: my-notebook-instance
+      InstanceType: ""
+      RoleArn: !GetAtt aws_iam_role.Arn
+
+  aws_iam_role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: sagemaker.amazonaws.com
+            Action: sts:AssumeRole
+
+  aws_sagemaker_notebook_instance_pass2:
+    Type: AWS::SageMaker::NotebookInstance
+    Properties:
+      NotebookInstanceName: my-notebook-instance
+      ServiceToken: ""
+      RoleArn: !GetAtt aws_iam_role2.Arn
+
+  aws_iam_role2:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: sagemaker.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: my-policy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: sagemaker:*
+                Resource: !Sub 'arn:aws:sagemaker:${AWS::Region}:${AWS::AccountId}:notebook-instance/*'
+                Condition:
+                  IpAddress:
+                    'aws:SourceIp': '192.0.2.0/24'
+
+  aws_sagemaker_notebook_instance_fail:
+    Type: AWS::SageMaker::NotebookInstance
+    Properties:
+      NotebookInstanceName: my-notebook-instance
+      RoleArn: !GetAtt aws_iam_role3.Arn
+
+  aws_iam_role3:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: sagemaker.amazonaws.com
+            Action: '*'
