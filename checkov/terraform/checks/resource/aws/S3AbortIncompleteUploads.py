@@ -25,10 +25,31 @@ class S3AbortIncompleteUploads(BaseResourceCheck):
             for idx_rule, rule in enumerate(rules):
                 if rule.get("abort_incomplete_multipart_upload") and rule.get("status") == ["Enabled"]:
                     self.evaluated_keys = [f"rule/[{idx_rule}]/abort_incomplete_multipart_upload"]
-                    filter = rule.get("filter")
-                    if filter and isinstance(filter, list) and filter[0]:
-                        # it is possible to set an empty filter, which applies then to all objects
-                        continue
+                    filter_list = rule.get("filter")
+                    if filter_list and isinstance(filter_list, list):
+                        # if filter is empty then rule applies to all paths so we pass
+                        found_non_empty_parameter = False
+                        for filter_item in filter_list:
+                            if isinstance(filter_item, dict):       # check each filter parameter
+                                prefix = filter_item.get('prefix')
+                                if prefix and prefix[0]:
+                                    found_non_empty_parameter = True
+                                    continue
+                                object_size_greater_than = filter_item.get('object_size_greater_than')
+                                if object_size_greater_than and object_size_greater_than[0]:
+                                    found_non_empty_parameter = True
+                                    continue
+                                object_size_less_than = filter_item.get('object_size_less_than')
+                                if object_size_less_than and object_size_less_than[0]:
+                                    found_non_empty_parameter = True
+                                    continue
+                                tag = filter_item.get('tag')
+                                if tag and tag[0]:
+                                    found_non_empty_parameter = True
+                                    continue
+
+                        if found_non_empty_parameter:       # continue searching for rules
+                            continue
 
                     return CheckResult.PASSED
 
