@@ -1,0 +1,34 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: "Create basic notebook instance"
+Resources:
+  BasicNotebookInstanceFail1:
+    Type: "AWS::SageMaker::NotebookInstance"
+    Properties:
+      InstanceType: "ml.t2.large"
+      RoleArn: !GetAtt ExecutionRole.Arn
+      InstanceMetadataServiceConfiguration:
+        MinimumInstanceMetadataServiceVersion: "1"
+  BasicNotebookInstanceFail2:
+    Type: "AWS::SageMaker::NotebookInstance"
+    Properties:
+      InstanceType: "ml.t2.large"
+      RoleArn: !GetAtt ExecutionRole.Arn
+  ExecutionRole: 
+    Type: "AWS::IAM::Role"
+    Properties: 
+      AssumeRolePolicyDocument: 
+        Version: "2012-10-17"
+        Statement: 
+          - 
+            Effect: "Allow"
+            Principal: 
+              Service: 
+                - "sagemaker.amazonaws.com"
+            Action: 
+              - "sts:AssumeRole"
+      Path: "/"
+      ManagedPolicyArns:
+        - !Sub "arn:${AWS::Partition}:iam::aws:policy/AmazonSageMakerFullAccess"
+Outputs:
+  BasicNotebookInstanceId:
+    Value: !Ref BasicNotebookInstance
