@@ -31,6 +31,9 @@ class S3AbortIncompleteUploads(BaseResourceCheck):
                         found_non_empty_parameter = False
                         for filter_item in filter_list:
                             if isinstance(filter_item, dict):       # check each filter parameter
+                                connected = filter_item.get('and')
+                                if connected and connected[0]:
+                                    filter_item = connected[0]
                                 prefix = filter_item.get('prefix')
                                 if prefix and prefix[0]:
                                     found_non_empty_parameter = True
