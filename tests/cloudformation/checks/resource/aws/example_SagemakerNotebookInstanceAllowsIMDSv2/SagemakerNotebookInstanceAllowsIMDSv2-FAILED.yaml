@@ -29,6 +29,3 @@ Resources:
       Path: "/"
       ManagedPolicyArns:
         - !Sub "arn:${AWS::Partition}:iam::aws:policy/AmazonSageMakerFullAccess"
-Outputs:
-  BasicNotebookInstanceId:
-    Value: !Ref BasicNotebookInstance
