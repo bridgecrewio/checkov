@@ -1,27 +1,27 @@
 import os
 import unittest
 
-from checkov.cloudformation.checks.resource.aws.SagemakerDataQualityJobDefinitionVolumeEncryption import check
+from checkov.cloudformation.checks.resource.aws.SagemakerNotebookInstanceAllowsIMDSv2 import check
 from checkov.cloudformation.runner import Runner
 from checkov.runner_filter import RunnerFilter
 
 
-class TestSagemakerDataQualityJobDefinitionVolumeEncryption(unittest.TestCase):
+class TestSagemakerNotebookInstanceAllowsIMDSv2(unittest.TestCase):
 
     def test_summary(self):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
-        test_files_dir = current_dir + "/example_SagemakerDataQualityJobDefinitionVolumeEncryption"
+        test_files_dir = current_dir + "/example_SagemakerNotebookInstanceAllowsIMDSv2"
         report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
 
         passing_resources = {
-            "AWS::SageMaker::DataQualityJobDefinition.MyDataQualityJobDefinitionPass",
+            "AWS::SageMaker::NotebookInstance.BasicNotebookInstancePass",
         }
         failing_resources = {
-            "AWS::SageMaker::DataQualityJobDefinition.MyDataQualityJobDefinitionFail1",
-            "AWS::SageMaker::DataQualityJobDefinition.MyDataQualityJobDefinitionFail2",
+            "AWS::SageMaker::NotebookInstance.BasicNotebookInstanceFail1",
+            "AWS::SageMaker::NotebookInstance.BasicNotebookInstanceFail2",
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
