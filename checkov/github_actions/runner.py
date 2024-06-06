@@ -59,7 +59,11 @@ class Runner(YamlRunner):
 
             if not file_content:
                 with open(f, 'r') as f_obj:
-                    file_content = f_obj.read()
+                    try:
+                        file_content = f_obj.read()
+                    except Exception as e:
+                        logging.warning(f'Fail to read file {f}. error: {e}')
+
 
             if all(map(is_schema_valid, yaml.load_all(file_content, Loader=loader.SafeLineLoaderGhaSchema))):  # nosec
                 return entity_schema
