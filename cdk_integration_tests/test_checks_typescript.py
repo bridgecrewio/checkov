@@ -419,8 +419,8 @@ def CKV_AWS_372_RedshiftInEc2ClassicMode(failed_checks):
               language="typescript")
 
 
-def CKV_AWS_373_S3BlockPublicACLs(failed_checks):
-    run_check(check_results=failed_checks, check_id="CKV_AWS_373", policy_name="S3BlockPublicACLs",
+def CKV_AWS_73_S3BlockPublicACLs(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_73", policy_name="S3BlockPublicACLs",
               language="typescript")
 
 
