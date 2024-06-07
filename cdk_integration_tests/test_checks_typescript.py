@@ -424,6 +424,6 @@ def CKV_AWS_73_S3BlockPublicACLs(failed_checks):
               language="typescript")
 
 
-def CKV_AWS_374_S3BlockPublicPolicy(failed_checks):
-    run_check(check_results=failed_checks, check_id="CKV_AWS_374", policy_name="S3BlockPublicPolicy",
+def CKV_AWS_54_S3BlockPublicPolicy(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_54", policy_name="S3BlockPublicPolicy",
               language="typescript")
