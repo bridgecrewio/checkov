@@ -65,7 +65,7 @@ class AnsibleLocalGraph(ObjectLocalGraph):
                 continue
             if name in (START_LINE, END_LINE):
                 continue
-            if isinstance(config, list):
+            if isinstance(config, list) or isinstance(config, int) or isinstance(config, float):
                 # either it is actually not an Ansible file or a playbook without tasks refs
                 continue
 

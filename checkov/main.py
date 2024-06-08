@@ -468,10 +468,11 @@ class Checkov:
             integration_feature_registry.config = self.config
             integration_feature_registry.run_pre_scan()
 
+            # assign policies suppression to runner_filter
             policy_level_suppression = suppressions_integration.get_policy_level_suppressions()
-            bc_cloned_checks = custom_policies_integration.bc_cloned_checks
-            runner_filter.bc_cloned_checks = bc_cloned_checks
+            runner_filter.bc_cloned_checks = custom_policies_integration.bc_cloned_checks
             custom_policies_integration.policy_level_suppression = list(policy_level_suppression.keys())
+            runner_filter.set_suppressed_policies(list(policy_level_suppression.values()))
 
             if any(framework in runner_filter.framework for framework in ("all", CheckType.SCA_IMAGE)):
                 # only run image referencer, when sca_image framework is enabled
@@ -483,11 +484,6 @@ class Checkov:
             logger.debug(f"Filtered excluded list of policies: {runner_filter.filtered_exception_policy_ids}")
 
             runner_filter.excluded_paths = runner_filter.excluded_paths + list(repo_config_integration.skip_paths)
-            policy_level_suppression = suppressions_integration.get_policy_level_suppressions()
-            bc_cloned_checks = custom_policies_integration.bc_cloned_checks
-            runner_filter.bc_cloned_checks = bc_cloned_checks
-            custom_policies_integration.policy_level_suppression = list(policy_level_suppression.keys())
-            runner_filter.set_suppressed_policies(list(policy_level_suppression.values()))
 
             if self.config.use_enforcement_rules:
                 runner_filter.apply_enforcement_rules(repo_config_integration.code_category_configs)
