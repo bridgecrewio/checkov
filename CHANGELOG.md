@@ -1,6 +1,26 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.128...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.130...HEAD)
+
+## [3.2.130](https://github.com/bridgecrewio/checkov/compare/3.2.128...3.2.130) - 2024-06-09
+
+### Feature
+
+- **arm:** add CKV_AZURE_135 to ensure Application Gateway WAF prevents message lookup in Log4j2.  - [#6364](https://github.com/bridgecrewio/checkov/pull/6364)
+- **arm:** add CKV_AZURE_140 to ensure that Local Authentication is disabled on CosmosDB - [#6329](https://github.com/bridgecrewio/checkov/pull/6329)
+- **arm:** add CKV_AZURE_163  Enable vulnerability scanning for container images - [#6339](https://github.com/bridgecrewio/checkov/pull/6339)
+- **arm:** add MariaDbPublicAccessDisabled convert policy to arm - [#6246](https://github.com/bridgecrewio/checkov/pull/6246)
+- **arm:** AKSLocalAdminDisabled - [#6334](https://github.com/bridgecrewio/checkov/pull/6334)
+- **arm:** AppServiceFTPSState - [#6363](https://github.com/bridgecrewio/checkov/pull/6363)
+- **arm:** AzureServiceFabricClusterProtectionLevel - [#6366](https://github.com/bridgecrewio/checkov/pull/6366)
+- **arm:** ensure ACR disables anonymous pulling of images (CKV_AZURE_138) - [#6373](https://github.com/bridgecrewio/checkov/pull/6373)
+- **arm:** KeyVaultDisablesPublicNetworkAccess - [#6342](https://github.com/bridgecrewio/checkov/pull/6342)
+- **arm:** PostgreSQLServerPublicAccessDisabled - [#6330](https://github.com/bridgecrewio/checkov/pull/6330)
+- **terraform:** extract image referencers for AWS SageMaker - [#6408](https://github.com/bridgecrewio/checkov/pull/6408)
+
+### Bug Fix
+
+- **ansible:** add dict check in create_tasks_vertices - [#6417](https://github.com/bridgecrewio/checkov/pull/6417)
 
 ## [3.2.128](https://github.com/bridgecrewio/checkov/compare/3.2.125...3.2.128) - 2024-06-06
 
