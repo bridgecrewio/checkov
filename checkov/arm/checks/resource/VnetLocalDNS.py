@@ -1,5 +1,5 @@
 from ipaddress import ip_network, ip_address
-from typing import Any
+from typing import Any, List, Dict
 
 from checkov.arm.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckCategories, CheckResult
@@ -18,7 +18,7 @@ class VnetLocalDNS(BaseResourceCheck):
         categories = [CheckCategories.NETWORKING, ]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
+    def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
         if "properties" in conf and "dhcpOptions" in conf["properties"]:
             if "dnsServers" in conf["properties"]["dhcpOptions"]:
                 if isinstance(conf["properties"]["dhcpOptions"]["dnsServers"], list):
