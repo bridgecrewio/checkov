@@ -1,6 +1,32 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.124...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.128...HEAD)
+
+## [3.2.128](https://github.com/bridgecrewio/checkov/compare/3.2.125...3.2.128) - 2024-06-06
+
+### Feature
+
+- **azure:** drop support for dotnet v7.0 - [#6383](https://github.com/bridgecrewio/checkov/pull/6383)
+- **general:** Image Referencer should not run for CI workflow files - [#6386](https://github.com/bridgecrewio/checkov/pull/6386)
+- **secrets:** Add _prioritise_secrets by 3 levels of severity - [#6390](https://github.com/bridgecrewio/checkov/pull/6390)
+- **terraform:** add 5 policies - [#6401](https://github.com/bridgecrewio/checkov/pull/6401)
+- **terraform:** add 6 policies - [#6396](https://github.com/bridgecrewio/checkov/pull/6396)
+- **terraform:** add fix for ckv_aws_300 - [#6404](https://github.com/bridgecrewio/checkov/pull/6404)
+- **terraform:** add fix for not contains solver - [#6389](https://github.com/bridgecrewio/checkov/pull/6389)
+
+### Bug Fix
+
+- **ansible:** filter conf if its int or float - [#6409](https://github.com/bridgecrewio/checkov/pull/6409)
+- **general:** add try except gihub_action read file - [#6411](https://github.com/bridgecrewio/checkov/pull/6411)
+- **general:** bitbucket integration test failure - [#6407](https://github.com/bridgecrewio/checkov/pull/6407)
+- **general:** CKV2_AZURE_50 generates false positive azurerm_storage_account violations - [#6391](https://github.com/bridgecrewio/checkov/pull/6391)
+- **sast:** add log for sast on windows - [#6397](https://github.com/bridgecrewio/checkov/pull/6397)
+
+## [3.2.125](https://github.com/bridgecrewio/checkov/compare/3.2.124...3.2.125) - 2024-06-03
+
+### Feature
+
+- **arm:** Add check for AzureML workspace not configured with private endpoint - [#6387](https://github.com/bridgecrewio/checkov/pull/6387)
 
 ## [3.2.124](https://github.com/bridgecrewio/checkov/compare/3.2.122...3.2.124) - 2024-06-02
 
