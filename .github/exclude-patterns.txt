@@ -14,7 +14,8 @@ tests/cloudformation/checks/resource/aws/example_LambdaEnvironmentCredentials/sa
 tests/cloudformation/checks/resource/aws/example_LambdaEnvironmentCredentials/FAIL.yaml
 tests/cloudformation/graph/checks/resources/LambdaFunction/template.yaml
 tests/common/suppressions_resources/suppressions.tf
-tests/.*
+tests/secrets/.*
+tests/arm/checks/resource/example_PostgreSQLServerPublicAccessDisable/.*
 tests/common/utils/test_secrets_utils.py
 tests/terraform/runner/resources/example/example.tf
 tests/terraform/checks/resource/aws/example_EC2Credentials/main.tf
