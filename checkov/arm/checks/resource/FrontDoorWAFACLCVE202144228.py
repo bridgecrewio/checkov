@@ -51,4 +51,3 @@ class FrontDoorWAFACLCVE202144228(BaseResourceCheck):
 
 
 check = FrontDoorWAFACLCVE202144228()
-
