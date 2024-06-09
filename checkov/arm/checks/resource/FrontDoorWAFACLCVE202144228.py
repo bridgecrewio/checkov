@@ -16,7 +16,7 @@ class FrontDoorWAFACLCVE202144228(BaseResourceCheck):
     def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
         self.evaluatedKeys = ["managedRules"]
         properties = conf.get("properties")
-        managedRules = properties.get("managedRules", {})
+        managedRules = properties.get("managedRules")
 
         if not managedRules:
             return CheckResult.FAILED
@@ -43,7 +43,7 @@ class FrontDoorWAFACLCVE202144228(BaseResourceCheck):
                                 enabledState = rule.get("enabledState")
                                 if enabledState:
                                     if rule.get("enabledState") == "Disabled":
-                                       return CheckResult.FAILED
+                                        return CheckResult.FAILED
                                     if rule.get("action") in ["Block", "Redirect"]:
                                         return CheckResult.PASSED
 
