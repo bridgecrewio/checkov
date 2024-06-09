@@ -65,7 +65,7 @@ class AnsibleLocalGraph(ObjectLocalGraph):
                 continue
             if name in (START_LINE, END_LINE):
                 continue
-            if isinstance(config, list) or isinstance(config, int) or isinstance(config, float):
+            if isinstance(config, list):
                 # either it is actually not an Ansible file or a playbook without tasks refs
                 continue
 
@@ -82,6 +82,10 @@ class AnsibleLocalGraph(ObjectLocalGraph):
                     START_LINE: task[START_LINE],
                     END_LINE: task[END_LINE],
                 }
+
+            if not isinstance(config, dict):
+                # either it is actually not an Ansible file or a playbook without tasks refs
+                continue
 
             attributes = pickle_deepcopy(config)
             attributes[CustomAttributes.RESOURCE_TYPE] = resource_type

@@ -12,7 +12,7 @@
       },
       "properties": {
         "administrator_login": "psqladminun",
-        "administrator_login_password": "H@Sh1CoR3!",
+        "administrator_login_password": "1234",
         "version": "9.6",
         "storageProfile": {
           "storageMB": 640000,
