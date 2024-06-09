@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, List, Dict
 
 from checkov.arm.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckCategories, CheckResult
@@ -15,7 +15,7 @@ class VnetSingleDNSServer(BaseResourceCheck):
         categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
+    def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
         if "properties" in conf and "dnsSettings" in conf["properties"]:
             if "dnsServers" in conf["properties"]["dnsSettings"] and isinstance(
                     conf["properties"]["dnsSettings"]["dnsServers"], list):
@@ -23,7 +23,7 @@ class VnetSingleDNSServer(BaseResourceCheck):
                 if dns_servers and len(dns_servers) == 1:
                     self.evaluated_keys = ["dnsServers"]
                     return CheckResult.FAILED
-            return CheckResult.PASSED
+        return CheckResult.PASSED
 
 
 check = VnetSingleDNSServer()
