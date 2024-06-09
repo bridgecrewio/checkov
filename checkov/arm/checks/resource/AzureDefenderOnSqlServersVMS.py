@@ -4,7 +4,7 @@ from typing import List, Dict, Any
 
 
 class AzureDefenderOnSqlServersVMS(BaseResourceCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure that Azure Defender is set to On for SQL servers on machines"
         id = "CKV_AZURE_79"
         supported_resources = ("Microsoft.Security/pricings",)
