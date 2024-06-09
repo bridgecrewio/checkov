@@ -35,6 +35,8 @@ class ForeachModuleHandler(ForeachAbstractHandler):
 
         while modules_to_render:
             modules_to_render = self._render_foreach_modules_by_levels(modules_blocks, modules_to_render, current_level)
+            self.local_graph._arrange_graph_data()
+            self.local_graph._build_edges()
 
     def _render_foreach_modules_by_levels(self, modules_blocks: list[int], modules_to_render: list[int],
                                           current_level: list[TFModule | None]) -> list[int]:
@@ -75,8 +77,16 @@ class ForeachModuleHandler(ForeachAbstractHandler):
     def _duplicate_module_with_count(self, module_idx: int, count: int) -> None:
         self._create_new_resources_count(count, module_idx)
 
+    def _get_rendered_modules(self, source_modules: list[TFModule | None]) -> list[int]:
+        """
+        Returns a list of module indexes that have been rendered in the current iteration.
+        """
+        modules_created_by_provided_source_packed = [self.local_graph.vertices_by_module_dependency[curr][BlockType.MODULE] for curr in source_modules]
+        modules_created_by_provided_source = list(itertools.chain(*modules_created_by_provided_source_packed))  # list of lists -> single list
+        return modules_created_by_provided_source
+
     def _get_modules_to_render(self, current_level: list[TFModule | None]) -> list[int]:
-        rendered_modules = [self.local_graph.vertices_by_module_dependency[curr][BlockType.MODULE] for curr in current_level][0]
+        rendered_modules = self._get_rendered_modules(current_level)
         current_level.clear()
         for m_idx in rendered_modules:
             current_level.append(self._get_current_tf_module_object(m_idx))
@@ -190,7 +200,7 @@ class ForeachModuleHandler(ForeachAbstractHandler):
         main_resource_module_key = TFModule(
             path=new_resource.path,
             name=main_resource.name,
-            nested_tf_module=self._get_tf_module_with_no_foreach(new_resource.source_module_object)
+            nested_tf_module=new_resource.source_module_object
         )
 
         # Without making this copy the test don't pass, as we might access the data structure in the middle of an update

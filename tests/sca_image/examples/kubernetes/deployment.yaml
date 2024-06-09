@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: health-check-deployment
+spec:
+  selector:
+    matchLabels:
+      app: health-check
+  template:
+    metadata:
+      labels:
+        app: health-check
+    spec:
+      containers:
+      - name: health-check
+        image: node:14.16
+        resources:
+          limits:
+            memory: "100Mi"
+            cpu: "30m"
+        ports:
+        - containerPort: 80
+      # Custom Stuff
+        securityContext:
+          privileged: true
+        volumeMounts:
+          - mountPath: /custom/docker/docker.sock
+            name: docker-sock-volume
+      volumes:
+        - name: docker-sock-volume
+          hostPath:
+            path: /var/run/docker.sock
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: health-check-service
+spec:
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+  selector:
+    app: health-check
