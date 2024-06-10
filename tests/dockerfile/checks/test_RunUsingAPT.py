@@ -22,6 +22,7 @@ class TestRunUsingAPT(unittest.TestCase):
         failing_resources = {
             "/failure/Dockerfile.RUN",
             "/failure2/Dockerfile.RUN",
+            "/failure3/Dockerfile.RUN",
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
