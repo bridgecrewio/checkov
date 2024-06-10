@@ -15,7 +15,7 @@ class VnetSingleDNSServer(BaseResourceCheck):
         categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
+    def scan_resource_conf(self, conf: Dict[str, Dict[str, Dict[str, List[Any]]]]) -> CheckResult:
         if "properties" in conf and "dnsSettings" in conf["properties"]:
             if "dnsServers" in conf["properties"]["dnsSettings"] and isinstance(
                     conf["properties"]["dnsSettings"]["dnsServers"], list):
