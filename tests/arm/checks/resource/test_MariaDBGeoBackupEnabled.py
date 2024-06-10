@@ -5,7 +5,7 @@ from checkov.arm.runner import Runner
 from checkov.runner_filter import RunnerFilter
 
 
-class TestMariaDBPublicConvertARM(unittest.TestCase):
+class TestMariaDBGeoBackupEnabled(unittest.TestCase):
     def test_summary(self):
         test_files_dir = Path(__file__).parent / "example_MariaDBGeoBackupEnabled"
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
