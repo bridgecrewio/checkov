@@ -23,7 +23,8 @@ class RunUsingAPT(BaseDockerfileCheck):
     def scan_resource_conf(self, conf: list[_Instruction]) -> tuple[CheckResult, list[_Instruction] | None]:
         for run in conf:
             content = run["content"]
-            if " apt " in content:
+            # Check if 'apt' is used and 'rm' is not in the same line
+            if " apt " in content and " rm " not in content:
                 return CheckResult.FAILED, [run]
         return CheckResult.PASSED, None
 
