@@ -26,9 +26,8 @@ class RunUsingAPT(BaseDockerfileCheck):
             # Split the content by '&&' and strip any leading/trailing spaces from each segment
             commands = [cmd.strip() for cmd in content.split("&&")]
             for command in commands:
-                command = command.replace('\\\n', '').strip()
                 # Check if 'apt' is used and it's not part of a 'rm' command
-                if "apt " in command and not command.startswith("rm "):
+                if "apt " in command and "rm" not in command:
                     return CheckResult.FAILED, [run]
         return CheckResult.PASSED, None
 
