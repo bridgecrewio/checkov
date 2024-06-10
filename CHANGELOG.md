@@ -1,6 +1,16 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.130...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.133...HEAD)
+
+## [3.2.133](https://github.com/bridgecrewio/checkov/compare/3.2.130...3.2.133) - 2024-06-10
+
+### Feature
+
+- **general:** add AI_AND_ML to CheckCategories - [#6423](https://github.com/bridgecrewio/checkov/pull/6423)
+
+### Bug Fix
+
+- **sast:** Update CKV IDs for CDK policies - [#6415](https://github.com/bridgecrewio/checkov/pull/6415)
 
 ## [3.2.130](https://github.com/bridgecrewio/checkov/compare/3.2.128...3.2.130) - 2024-06-09
 
