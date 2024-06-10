@@ -5,13 +5,13 @@
       {
         "type": "Microsoft.MachineLearningServices/workspaces",
         "apiVersion": "2022-12-01",
-        "name": "fail1",
+        "name": "pass1",
         "location": "West US",
         "properties": {
           "managedNetwork": {
             "outboundRules": {
                 "rule1": {
-                    "type": "PrivateEndpoint"
+                    "type": "ServiceTag"
                 }
             }
           }

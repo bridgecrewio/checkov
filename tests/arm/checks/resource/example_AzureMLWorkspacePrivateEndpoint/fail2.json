@@ -1,24 +1,16 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
-    "resources": [
-      {
-        "type": "Microsoft.MachineLearningServices/workspaces",
-        "apiVersion": "2022-12-01",
-        "name": "fail2",
-        "location": "West US",
-        "properties": {
-          "managedNetwork": {
-            "outboundRules": {
-                "rule1": {
-                    "type": "ServiceTag"
-                },
-                "rule2": {
-                  "type": "PrivateEndpoint"
-              }
-            }
-          }
-        }
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.MachineLearningServices/workspaces",
+      "apiVersion": "2022-12-01",
+      "name": "pass2",
+      "location": "West US",
+      "properties": {
+          "description": "No networks"
+
       }
-    ]
-  }
+    }
+  ]
+}
