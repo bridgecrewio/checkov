@@ -1,0 +1,38 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.1",
+  "resources": [
+    {
+      "apiVersion": "2019-05-01",
+      "type": "Microsoft.ContainerRegistry/registries",
+      "name": "fail",
+      "location": "[resourceGroup().location]",
+      "sku": {
+        "name": "Basic"
+      },
+      "properties": {
+        "adminUserEnabled": true,
+        "anonymousPullEnabled": true,
+        "dataEndpointEnabled": true,
+        "encryption": {
+          "keyVaultProperties": {
+            "identity": "someIdentity",
+            "keyIdentifier": "someKeyIdentifier"
+          },
+          "status": "enabled"
+        },
+        "networkRuleBypassOptions": "AzureServices",
+        "networkRuleSet": {
+          "defaultAction": "Deny",
+          "ipRules": [
+            {
+              "action": "Allow",
+              "value": "127.0.0.1"
+            }
+          ]
+        }
+      },
+      "publicNetworkAccess":"Enabled"
+    }
+  ]
+}
