@@ -26,7 +26,7 @@ class TestStorageAccountName(unittest.TestCase):
             "Microsoft.Storage/storageAccounts.this-is-wrong",
             "Microsoft.Storage/storageAccounts.thisiswayyyyyytoooloooong",
         }
-        print(summary)
+
         passed_check_resources = {c.resource for c in report.passed_checks}
         failed_check_resources = {c.resource for c in report.failed_checks}
 
