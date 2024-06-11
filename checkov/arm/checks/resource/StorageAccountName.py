@@ -33,9 +33,6 @@ class StorageAccountName(BaseResourceCheck):
         :param conf: azurerm_storage_account configuration
         :return: <CheckResult>
         """
-        # between 3 and 24 characters may contain numbers and lowercases letters only
-        # unique
-
         if "name" in conf.keys():
             name = conf["name"]
             if name:
