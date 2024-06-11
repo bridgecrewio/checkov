@@ -37,7 +37,6 @@ class StorageAccountName(BaseResourceCheck):
             name = conf["name"]
             if name:
                 name = str(name)
-                print(name)
                 if any(x in name for x in VARIABLE_REFS):
                     # in the case we couldn't evaluate the name, just ignore
                     return CheckResult.UNKNOWN
