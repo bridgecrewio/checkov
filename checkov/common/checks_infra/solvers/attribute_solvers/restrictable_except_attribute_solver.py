@@ -5,6 +5,7 @@ from checkov.common.graph.checks_infra.enums import Operators
 if TYPE_CHECKING:
     from cloudsplaining.scan.policy_document import PolicyDocument
 
+
 class RestrictableExceptAttributeSolver(BaseAttributeSolver):
     operator = Operators.RESTRICTABLE_EXCEPT  # noqa: CCE003  # a static attribute
 
