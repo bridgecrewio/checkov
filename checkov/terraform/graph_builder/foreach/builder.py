@@ -31,7 +31,5 @@ class ForeachBuilder:
         if self._module_handler.local_graph.enable_modules_foreach_handling:
             if foreach_blocks.get(BlockType.MODULE):
                 self._module_handler.handle(foreach_blocks[BlockType.MODULE])
-                self._module_handler.local_graph._arrange_graph_data()
-                self._module_handler.local_graph._build_edges()
         if self._module_handler.local_graph.enable_foreach_handling:
             self._resource_handler.handle(foreach_blocks.get(BlockType.RESOURCE, []))
