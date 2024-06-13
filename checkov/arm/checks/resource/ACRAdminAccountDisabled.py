@@ -5,7 +5,7 @@ from checkov.arm.base_resource_negative_value_check import BaseResourceNegativeV
 
 
 class ACRAdminAccountDisabled(BaseResourceNegativeValueCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure ACR admin account is disabled"
         id = "CKV_AZURE_137"
         supported_resources = ("Microsoft.ContainerRegistry/registries",)
@@ -19,4 +19,5 @@ class ACRAdminAccountDisabled(BaseResourceNegativeValueCheck):
         return [True]
 
 
-check = ACRAdminAccountDisabled()
+check: ACRAdminAccountDisabled = ACRAdminAccountDisabled()
+
