@@ -5,7 +5,7 @@ from checkov.arm.base_resource_value_check import BaseResourceValueCheck
 
 
 class ACRPublicNetworkAccessDisabled(BaseResourceValueCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure ACR set to disable public networking"
         id = "CKV_AZURE_139"
         supported_resources = ("Microsoft.ContainerRegistry/registries",)
