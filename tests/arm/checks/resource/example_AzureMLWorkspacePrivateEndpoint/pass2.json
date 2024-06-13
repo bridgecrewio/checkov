@@ -8,8 +8,16 @@
         "name": "pass2",
         "location": "West US",
         "properties": {
-            "description": "No netowks"
-
+          "managedNetwork": {
+            "outboundRules": {
+                "rule1": {
+                    "type": "ServiceTag"
+                },
+                "rule2": {
+                  "type": "PrivateEndpoint"
+              }
+            }
+          }
         }
       }
     ]
