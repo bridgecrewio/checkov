@@ -24,3 +24,8 @@ Resources:
         S3Bucket: 'myBucket'
         S3Key: 'code/myLambda.zip'
       Runtime: 'dotnetcore3.1'
+      Metadata:
+        cfn-lint:
+          config:
+            ignore_checks:
+              - E2533
