@@ -16,6 +16,7 @@ Resources:
         config:
           ignore_checks:
             - E2531
+            - E2533
     Properties:
       Handler: 'index.handler'
       Role: 'arn:aws:iam::123456789012:role/execution_role'
@@ -24,8 +25,3 @@ Resources:
         S3Bucket: 'myBucket'
         S3Key: 'code/myLambda.zip'
       Runtime: 'dotnetcore3.1'
-      Metadata:
-        cfn-lint:
-          config:
-            ignore_checks:
-              - E2533

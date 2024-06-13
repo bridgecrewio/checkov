@@ -11,6 +11,7 @@ Resources:
         config:
           ignore_checks:
             - E2531
+            - E2533
     Properties:
       Handler: 'index.handler'
       Runtime: 'python3.6'
@@ -27,11 +28,6 @@ Resources:
       MemorySize: 256
       Timeout: 10
       Role: arn:aws:iam::123456789012:role/lambda_execution_role
-      Metadata:
-        cfn-lint:
-          config:
-            ignore_checks:
-              - E2533
   Pass2:
     Type: 'AWS::Serverless::Function'
     Properties:
