@@ -1,8 +1,5 @@
-
 from checkov.common.models.enums import CheckCategories
 from checkov.arm.base_resource_value_check import BaseResourceValueCheck
-
-
 
 class MariaDBGeoBackupEnabled(BaseResourceValueCheck):
     def __init__(self) -> None:
@@ -17,6 +14,5 @@ class MariaDBGeoBackupEnabled(BaseResourceValueCheck):
 
     def get_expected_value(self) -> str:
         return "Enabled"
-
 
 check = MariaDBGeoBackupEnabled()
