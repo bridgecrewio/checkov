@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  MySageMakerModel:
+    Type: AWS::SageMaker::Model
+    Properties:
+      ModelName: "my-single-container-model"
+      ExecutionRoleArn: "arn:aws:iam::123456789012:role/SageMakerRole"
+      PrimaryContainer:
+        Image: "123456789012.dkr.ecr.us-west-2.amazonaws.com/my-inference-image:latest"
+        ModelDataUrl: "s3://my-bucket/path/to/model.tar.gz"
+        Environment:
+          VAR1: "value1"
+          VAR2: "value2"
+      EnableNetworkIsolation: true
+      VpcConfig:
+        Subnets:
+          - "subnet-0123456789abcdef0"
+          - "subnet-0123456789abcdef1"
+        SecurityGroupIds:
+          - "sg-0123456789abcdef0"
+  MySageMakerModel2:
+    Type: AWS::SageMaker::Model
+    Properties:
+      ModelName: "my-multi-container-model"
+      ExecutionRoleArn: "arn:aws:iam::123456789012:role/SageMakerRole"
+      Containers:
+        - Image: "123456789012.dkr.ecr.us-west-2.amazonaws.com/my-inference-image-1:latest"
+          ModelDataUrl: "s3://my-bucket/path/to/model-1.tar.gz"
+          Environment:
+            VAR1: "value1"
+            VAR2: "value2"
+        - Image: "123456789012.dkr.ecr.us-west-2.amazonaws.com/my-inference-image-2:latest"
+          ModelDataUrl: "s3://my-bucket/path/to/model-2.tar.gz"
+          Environment:
+            VAR3: "value3"
+            VAR4: "value4"
+      InferenceExecutionConfig:
+        Mode: "Serial"
+      EnableNetworkIsolation: true
+      VpcConfig:
+        Subnets:
+          - "subnet-0123456789abcdef0"
+          - "subnet-0123456789abcdef1"
+        SecurityGroupIds:
+          - "sg-0123456789abcdef0"

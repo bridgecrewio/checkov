@@ -1,0 +1,158 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "resources": [
+       {
+  "type": "Microsoft.ServiceFabric/clusters",
+  "apiVersion": "2019-03-01",
+  "name": "pass",
+  "location": "string",
+  "tags": {
+    "tagName1": "tagValue1",
+    "tagName2": "tagValue2"
+  },
+  "properties": {
+    "addOnFeatures": [ "string" ],
+    "azureActiveDirectory": {
+      "clientApplication": "string",
+      "clusterApplication": "string",
+      "tenantId": "string"
+    },
+    "certificate": {
+      "thumbprint": "string",
+      "thumbprintSecondary": "string",
+      "x509StoreName": "string"
+    },
+    "certificateCommonNames": {
+      "commonNames": [
+        {
+          "certificateCommonName": "string",
+          "certificateIssuerThumbprint": "string"
+        }
+      ],
+      "x509StoreName": "string"
+    },
+    "clientCertificateCommonNames": [
+      {
+        "certificateCommonName": "string",
+        "certificateIssuerThumbprint": "string",
+        "isAdmin": "bool"
+      }
+    ],
+    "clientCertificateThumbprints": [
+      {
+        "certificateThumbprint": "string",
+        "isAdmin": "bool"
+      }
+    ],
+    "clusterCodeVersion": "string",
+    "diagnosticsStorageAccountConfig": {
+      "blobEndpoint": "string",
+      "protectedAccountKeyName": "string",
+      "queueEndpoint": "string",
+      "storageAccountName": "string",
+      "tableEndpoint": "string"
+    },
+    "eventStoreServiceEnabled": "bool",
+
+    "fabricSettings": [
+      {
+       "name": "Security",
+        "parameters": [
+          {
+            "name": "ClusterProtectionLevel",
+            "value": "EncryptAndSign"
+
+          }
+        ]
+      }
+    ],
+    "managementEndpoint": "string",
+    "nodeTypes": [
+      {
+        "applicationPorts": {
+          "endPort": "int",
+          "startPort": "int"
+        },
+        "capacities": {
+          "{customized property}": "string"
+        },
+        "clientConnectionEndpointPort": "int",
+        "durabilityLevel": "string",
+        "ephemeralPorts": {
+          "endPort": "int",
+          "startPort": "int"
+        },
+        "httpGatewayEndpointPort": "int",
+        "isPrimary": "bool",
+        "name": "string",
+        "placementProperties": {
+          "{customized property}": "string"
+        },
+        "reverseProxyEndpointPort": "int",
+        "vmInstanceCount": "int"
+      }
+    ],
+    "reliabilityLevel": "string",
+    "reverseProxyCertificate": {
+      "thumbprint": "string",
+      "thumbprintSecondary": "string",
+      "x509StoreName": "string"
+    },
+    "reverseProxyCertificateCommonNames": {
+      "commonNames": [
+        {
+          "certificateCommonName": "string",
+          "certificateIssuerThumbprint": "string"
+        }
+      ],
+      "x509StoreName": "string"
+    },
+    "upgradeDescription": {
+      "deltaHealthPolicy": {
+        "applicationDeltaHealthPolicies": {
+          "{customized property}": {
+            "defaultServiceTypeDeltaHealthPolicy": {
+              "maxPercentDeltaUnhealthyServices": "int"
+            },
+            "serviceTypeDeltaHealthPolicies": {
+              "{customized property}": {
+                "maxPercentDeltaUnhealthyServices": "int"
+              }
+            }
+          }
+        },
+        "maxPercentDeltaUnhealthyApplications": "int",
+        "maxPercentDeltaUnhealthyNodes": "int",
+        "maxPercentUpgradeDomainDeltaUnhealthyNodes": "int"
+      },
+      "forceRestart": "bool",
+      "healthCheckRetryTimeout": "string",
+      "healthCheckStableDuration": "string",
+      "healthCheckWaitDuration": "string",
+      "healthPolicy": {
+        "applicationHealthPolicies": {
+          "{customized property}": {
+            "defaultServiceTypeHealthPolicy": {
+              "maxPercentUnhealthyServices": "int"
+            },
+            "serviceTypeHealthPolicies": {
+              "{customized property}": {
+                "maxPercentUnhealthyServices": "int"
+              }
+            }
+          }
+        },
+        "maxPercentUnhealthyApplications": "int",
+        "maxPercentUnhealthyNodes": "int"
+      },
+      "upgradeDomainTimeout": "string",
+      "upgradeReplicaSetCheckTimeout": "string",
+      "upgradeTimeout": "string"
+    },
+    "upgradeMode": "string",
+    "vmImage": "string"
+  }
+}
+    ]
+}
