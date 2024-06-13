@@ -5,7 +5,7 @@
     {
       "type": "Microsoft.MachineLearningServices/workspaces",
       "apiVersion": "2022-12-01",
-      "name": "pass2",
+      "name": "fail2",
       "location": "West US",
       "properties": {
           "description": "No networks"
