@@ -13,7 +13,7 @@ class MariaDBGeoBackupEnabled(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self) -> str:
-        return "properties/geoRedundantBackup"
+        return "properties/storageProfile/geoRedundantBackup"
 
     def get_expected_value(self) -> str:
         return "Enabled"

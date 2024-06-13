@@ -16,8 +16,8 @@
         "administratorLogin": "admin",
         "administratorLoginPassword": "admin123",
         "publicNetworkAccess": "Enabled",
-        "geoRedundantBackup":  "Disabled",
         "storageProfile": {
+          "geoRedundantBackup":  "Disabled",
           "storageMB": "5120"
         }
       }
