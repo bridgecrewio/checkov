@@ -1300,6 +1300,18 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(len(resources_ids), 3)
         self.assertEqual(expected_resources_ids, resources_ids)
 
+    def test_list_of_routes(self):
+        resources_path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "resources", "list_of_routes")
+        checks_allow_list = ['CKV2_AWS_44']
+
+        runner = Runner(db_connector=self.db_connector())
+        report = runner.run(root_folder=resources_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allow_list))
+
+        self.assertEqual(len(report.passed_checks), 0)
+        self.assertEqual(len(report.failed_checks), 1)
+
     def test_resource_values_dont_exist(self):
         resources_path = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), "resources", "resource_value_without_var")
