@@ -21,3 +21,4 @@ class ACRAdminAccountDisabled(BaseResourceNegativeValueCheck):
 
 check: ACRAdminAccountDisabled = ACRAdminAccountDisabled()
 
+
