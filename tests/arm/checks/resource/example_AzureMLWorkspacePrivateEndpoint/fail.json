@@ -11,7 +11,7 @@
           "managedNetwork": {
             "outboundRules": {
                 "rule1": {
-                    "type": "PrivateEndpoint"
+                    "type": "ServiceTag"
                 }
             }
           }
