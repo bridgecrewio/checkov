@@ -13,7 +13,7 @@ class ACRPublicNetworkAccessDisabled(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self) -> str:
-        return "publicNetworkAccess"
+        return "properties/publicNetworkAccess"
 
     def get_expected_value(self) -> str:
         return "Disabled"
