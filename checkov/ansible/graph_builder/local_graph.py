@@ -83,6 +83,10 @@ class AnsibleLocalGraph(ObjectLocalGraph):
                     END_LINE: task[END_LINE],
                 }
 
+            if not isinstance(config, dict):
+                # either it is actually not an Ansible file or a playbook without tasks refs
+                continue
+
             attributes = pickle_deepcopy(config)
             attributes[CustomAttributes.RESOURCE_TYPE] = resource_type
 
@@ -94,7 +98,7 @@ class AnsibleLocalGraph(ObjectLocalGraph):
             self.vertices.append(
                 Block(
                     name=f"{resource_type}.{task_name}",
-                    config=config,
+                    config=task,
                     path=file_path,
                     block_type=BlockType.RESOURCE,
                     attributes=attributes,
