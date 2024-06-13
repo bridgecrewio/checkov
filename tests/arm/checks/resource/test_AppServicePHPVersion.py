@@ -8,9 +8,6 @@ from checkov.runner_filter import RunnerFilter
 
 class TestAppServicePHPVersion(unittest.TestCase):
 
-
-
-
     def test_summary(self):
         # given
         test_files_dir = Path(__file__).parent / "example_AppServicePHPVersion"
@@ -21,7 +18,6 @@ class TestAppServicePHPVersion(unittest.TestCase):
         # then
         summary = report.get_summary()
 
-        print("\nsummary:",summary)
         passing_resources = {
             "Microsoft.Web/sites.pass",
 

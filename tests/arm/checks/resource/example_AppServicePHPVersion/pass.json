@@ -11,7 +11,7 @@
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', 'example-app-service-plan')]",
         "httpsOnly": true,
         "siteConfig": {
-          "phpVersion": "7.4",
+          "phpVersion": "8.1",
           "scmType": "someValue"
         }
       }
