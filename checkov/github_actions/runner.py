@@ -1,25 +1,19 @@
 from __future__ import annotations
 
 import logging
-import os
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any
 
 import yaml
 
+import checkov.common.parsers.yaml.loader as loader
+from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.output.report import Report
-from checkov.github_actions.image_referencer.manager import GithubActionsImageReferencerManager
+from checkov.github_actions.checks.registry import registry
 from checkov.github_actions.graph_builder.local_graph import GitHubActionsLocalGraph
 from checkov.github_actions.utils import is_schema_valid, is_workflow_file
-
 from checkov.runner_filter import RunnerFilter
-
-import checkov.common.parsers.yaml.loader as loader
-from checkov.common.images.image_referencer import Image, ImageReferencerMixin
-from checkov.common.bridgecrew.check_type import CheckType
-from checkov.common.util.type_forcers import force_dict
-from checkov.github_actions.checks.registry import registry
 from checkov.yaml_doc.runner import Runner as YamlRunner
 
 if TYPE_CHECKING:
@@ -27,10 +21,9 @@ if TYPE_CHECKING:
     from checkov.common.typing import LibraryGraphConnector
     from checkov.common.runners.graph_builder.local_graph import ObjectLocalGraph
     from checkov.common.runners.graph_manager import ObjectGraphManager
-    from networkx import DiGraph
 
 
-class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any]]]"], YamlRunner):
+class Runner(YamlRunner):
     check_type = CheckType.GITHUB_ACTIONS  # noqa: CCE003  # a static attribute
 
     def __init__(
@@ -66,7 +59,11 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
 
             if not file_content:
                 with open(f, 'r') as f_obj:
-                    file_content = f_obj.read()
+                    try:
+                        file_content = f_obj.read()
+                    except Exception as e:
+                        logging.warning(f'Fail to read file {f}. error: {e}')
+                        return None
 
             if all(map(is_schema_valid, yaml.load_all(file_content, Loader=loader.SafeLineLoaderGhaSchema))):  # nosec
                 return entity_schema
@@ -117,42 +114,7 @@ class Runner(ImageReferencerMixin["dict[str, dict[str, Any] | list[dict[str, Any
         runner_filter = runner_filter or RunnerFilter()
         report = super().run(root_folder=root_folder, external_checks_dir=external_checks_dir,
                              files=files, runner_filter=runner_filter, collect_skip_comments=collect_skip_comments)
-        if runner_filter.run_image_referencer:
-            if files:
-                # 'root_folder' shouldn't be empty to remove the whole path later and only leave the shortened form
-                root_folder = os.path.split(os.path.commonprefix(files))[0]
-
-            image_report = self.check_container_image_references(
-                graph_connector=None,
-                root_path=root_folder,
-                runner_filter=runner_filter,
-                definitions=self.definitions,
-                definitions_raw=self.definitions_raw
-            )
-
-            if image_report:
-                if isinstance(report, list):
-                    return [*report, image_report]
-                return [report, image_report]
-
         return report
-
-    def extract_images(
-        self, graph_connector: DiGraph | None = None,
-            definitions: dict[str, dict[str, Any] | list[dict[str, Any]]] | None = None,
-            definitions_raw: dict[str, list[tuple[int, str]]] | None = None
-    ) -> list[Image]:
-        images: list[Image] = []
-        if not definitions or not definitions_raw:
-            return images
-
-        for file, config in definitions.items():
-            _config = force_dict(config) or {}
-            manager = GithubActionsImageReferencerManager(workflow_config=_config, file_path=file,
-                                                          workflow_line_numbers=definitions_raw[file])
-            images.extend(manager.extract_images_from_workflow())
-
-        return images
 
     def populate_metadata_dict(self) -> None:
         if isinstance(self.definitions, dict):

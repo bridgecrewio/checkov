@@ -1,6 +1,236 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.84...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.133...HEAD)
+
+## [3.2.133](https://github.com/bridgecrewio/checkov/compare/3.2.130...3.2.133) - 2024-06-10
+
+### Feature
+
+- **general:** add AI_AND_ML to CheckCategories - [#6423](https://github.com/bridgecrewio/checkov/pull/6423)
+
+### Bug Fix
+
+- **sast:** Update CKV IDs for CDK policies - [#6415](https://github.com/bridgecrewio/checkov/pull/6415)
+
+## [3.2.130](https://github.com/bridgecrewio/checkov/compare/3.2.128...3.2.130) - 2024-06-09
+
+### Feature
+
+- **arm:** add CKV_AZURE_135 to ensure Application Gateway WAF prevents message lookup in Log4j2.  - [#6364](https://github.com/bridgecrewio/checkov/pull/6364)
+- **arm:** add CKV_AZURE_140 to ensure that Local Authentication is disabled on CosmosDB - [#6329](https://github.com/bridgecrewio/checkov/pull/6329)
+- **arm:** add CKV_AZURE_163  Enable vulnerability scanning for container images - [#6339](https://github.com/bridgecrewio/checkov/pull/6339)
+- **arm:** add MariaDbPublicAccessDisabled convert policy to arm - [#6246](https://github.com/bridgecrewio/checkov/pull/6246)
+- **arm:** AKSLocalAdminDisabled - [#6334](https://github.com/bridgecrewio/checkov/pull/6334)
+- **arm:** AppServiceFTPSState - [#6363](https://github.com/bridgecrewio/checkov/pull/6363)
+- **arm:** AzureServiceFabricClusterProtectionLevel - [#6366](https://github.com/bridgecrewio/checkov/pull/6366)
+- **arm:** ensure ACR disables anonymous pulling of images (CKV_AZURE_138) - [#6373](https://github.com/bridgecrewio/checkov/pull/6373)
+- **arm:** KeyVaultDisablesPublicNetworkAccess - [#6342](https://github.com/bridgecrewio/checkov/pull/6342)
+- **arm:** PostgreSQLServerPublicAccessDisabled - [#6330](https://github.com/bridgecrewio/checkov/pull/6330)
+- **terraform:** extract image referencers for AWS SageMaker - [#6408](https://github.com/bridgecrewio/checkov/pull/6408)
+
+### Bug Fix
+
+- **ansible:** add dict check in create_tasks_vertices - [#6417](https://github.com/bridgecrewio/checkov/pull/6417)
+
+## [3.2.128](https://github.com/bridgecrewio/checkov/compare/3.2.125...3.2.128) - 2024-06-06
+
+### Feature
+
+- **azure:** drop support for dotnet v7.0 - [#6383](https://github.com/bridgecrewio/checkov/pull/6383)
+- **general:** Image Referencer should not run for CI workflow files - [#6386](https://github.com/bridgecrewio/checkov/pull/6386)
+- **secrets:** Add _prioritise_secrets by 3 levels of severity - [#6390](https://github.com/bridgecrewio/checkov/pull/6390)
+- **terraform:** add 5 policies - [#6401](https://github.com/bridgecrewio/checkov/pull/6401)
+- **terraform:** add 6 policies - [#6396](https://github.com/bridgecrewio/checkov/pull/6396)
+- **terraform:** add fix for ckv_aws_300 - [#6404](https://github.com/bridgecrewio/checkov/pull/6404)
+- **terraform:** add fix for not contains solver - [#6389](https://github.com/bridgecrewio/checkov/pull/6389)
+
+### Bug Fix
+
+- **ansible:** filter conf if its int or float - [#6409](https://github.com/bridgecrewio/checkov/pull/6409)
+- **general:** add try except gihub_action read file - [#6411](https://github.com/bridgecrewio/checkov/pull/6411)
+- **general:** bitbucket integration test failure - [#6407](https://github.com/bridgecrewio/checkov/pull/6407)
+- **general:** CKV2_AZURE_50 generates false positive azurerm_storage_account violations - [#6391](https://github.com/bridgecrewio/checkov/pull/6391)
+- **sast:** add log for sast on windows - [#6397](https://github.com/bridgecrewio/checkov/pull/6397)
+
+## [3.2.125](https://github.com/bridgecrewio/checkov/compare/3.2.124...3.2.125) - 2024-06-03
+
+### Feature
+
+- **arm:** Add check for AzureML workspace not configured with private endpoint - [#6387](https://github.com/bridgecrewio/checkov/pull/6387)
+
+## [3.2.124](https://github.com/bridgecrewio/checkov/compare/3.2.122...3.2.124) - 2024-06-02
+
+### Feature
+
+- **azure:** Add policy to ensure proper AzureML Workspace network access - [#6362](https://github.com/bridgecrewio/checkov/pull/6362)
+- **azure:** Ensure Azure Storage Account storing Machine Learning workspace high business impact data is not publicly accessible - [#6368](https://github.com/bridgecrewio/checkov/pull/6368)
+
+## [3.2.122](https://github.com/bridgecrewio/checkov/compare/3.2.121...3.2.122) - 2024-06-01
+
+### Feature
+
+- **arm:** AppServicePythonVersion - 82 check the 'python version' is the latest, if used to run the web app - [#6282](https://github.com/bridgecrewio/checkov/pull/6282)
+
+## [3.2.121](https://github.com/bridgecrewio/checkov/compare/3.2.119...3.2.121) - 2024-05-31
+
+### Feature
+
+- **terraform:** AWS SageMaker notebook instance KMS Key - [#6374](https://github.com/bridgecrewio/checkov/pull/6374)
+- **terraform:** CognitiveServicesConfigureIdentity - new check - [#6378](https://github.com/bridgecrewio/checkov/pull/6378)
+- **terraform:** Ensure that Cognitive Services accounts enable local authentication - new check - [#6377](https://github.com/bridgecrewio/checkov/pull/6377)
+
+## [3.2.119](https://github.com/bridgecrewio/checkov/compare/3.2.112...3.2.119) - 2024-05-30
+
+### Feature
+
+- **arm:** add FunctionAppsEnableAuthentication - Checking if a certain field exists - [#6250](https://github.com/bridgecrewio/checkov/pull/6250)
+- **terraform:** Add more conditions to CKV_AWS_70 - [#6371](https://github.com/bridgecrewio/checkov/pull/6371)
+- **terraform:** Added the CKV2_AWS_68 Check for TF and CFN - [#6369](https://github.com/bridgecrewio/checkov/pull/6369)
+
+### Bug Fix
+
+- **ansible:** set task as ansible vertices config - [#6376](https://github.com/bridgecrewio/checkov/pull/6376)
+- **terraform:** for_each/count attribute wasn't rendering if referencing a dynamic variable of a higher level module - [#6372](https://github.com/bridgecrewio/checkov/pull/6372)
+
+## [3.2.112](https://github.com/bridgecrewio/checkov/compare/3.2.108...3.2.112) - 2024-05-29
+
+### Feature
+
+- **terraform:** Add provider address to resources - [#6266](https://github.com/bridgecrewio/checkov/pull/6266)
+- **terraform:** Support for count & for_each in data blocks - [#6359](https://github.com/bridgecrewio/checkov/pull/6359)
+
+### Bug Fix
+
+- **terraform:** Fix an issue for loading tfvars + issue in the dynamic rendering - [#6360](https://github.com/bridgecrewio/checkov/pull/6360)
+
+## [3.2.108](https://github.com/bridgecrewio/checkov/compare/3.2.107...3.2.108) - 2024-05-26
+
+### Bug Fix
+
+- **sast:** don't scan hidden files - [#6349](https://github.com/bridgecrewio/checkov/pull/6349)
+
+## [3.2.107](https://github.com/bridgecrewio/checkov/compare/3.2.106...3.2.107) - 2024-05-24
+
+### Bug Fix
+
+- **terraform:** Handle registry modules with a version in CKF_TF_2 - [#6354](https://github.com/bridgecrewio/checkov/pull/6354)
+
+## [3.2.106](https://github.com/bridgecrewio/checkov/compare/3.2.105...3.2.106) - 2024-05-23
+
+### Feature
+
+- **arm:** Ensure Databricks Workspace data plane to control plane co… - [#6319](https://github.com/bridgecrewio/checkov/pull/6319)
+- **general:** TF and ARM - Ensure that Databricks Workspaces enable… - [#6313](https://github.com/bridgecrewio/checkov/pull/6313)
+- **secrets:** Bump detect-secrets - [#6346](https://github.com/bridgecrewio/checkov/pull/6346)
+
+## [3.2.105](https://github.com/bridgecrewio/checkov/compare/3.2.100...3.2.105) - 2024-05-22
+
+### Feature
+
+- **arm:** add AppServiceJavaVersion - [#6258](https://github.com/bridgecrewio/checkov/pull/6258)
+- **arm:** add CKV_AZURE_145 to check that the function app uses the latest version of TLS encryption - [#6323](https://github.com/bridgecrewio/checkov/pull/6323)
+- **arm:** add CKV_AZURE_218 to ensure that Application Gateway defines secure protocols for in transit communicationApp gw defines secure protocols - [#6320](https://github.com/bridgecrewio/checkov/pull/6320)
+- **arm:** add CKV_AZURE_54 to ensure Enforce a minimal Tls version for the server - [#6270](https://github.com/bridgecrewio/checkov/pull/6270)
+- **arm:** add CKV_AZURE_71 to  Ensure that Managed identity provider is enabled for web apps - [#6272](https://github.com/bridgecrewio/checkov/pull/6272)
+- **arm:** add CKV_AZURE_72 to ensure that remote debugging is not enabled for app services - [#6281](https://github.com/bridgecrewio/checkov/pull/6281)
+- **arm:** AzureDefenderOStorage - [#6269](https://github.com/bridgecrewio/checkov/pull/6269)
+- **arm:** MySQLPublicAccessDisabled-Azure MySQL: Restrict Public Access - [#6263](https://github.com/bridgecrewio/checkov/pull/6263)
+- **arm:** StorageSyncPublicAccessDisabled - [#6331](https://github.com/bridgecrewio/checkov/pull/6331)
+- **secrets:** eliminate false positives in entropy keyword combinator detector - [#6327](https://github.com/bridgecrewio/checkov/pull/6327)
+
+### Bug Fix
+
+- **ansible:** fix ansible resource id in local graph - [#6344](https://github.com/bridgecrewio/checkov/pull/6344)
+- **secrets:** fix entropy type - [#6347](https://github.com/bridgecrewio/checkov/pull/6347)
+
+## [3.2.100](https://github.com/bridgecrewio/checkov/compare/3.2.98...3.2.100) - 2024-05-21
+
+### Feature
+
+- **sast:** TS-legacy-checks - [#6311](https://github.com/bridgecrewio/checkov/pull/6311)
+- **secrets:** entropy limit as env variable - [#6332](https://github.com/bridgecrewio/checkov/pull/6332)
+
+## [3.2.98](https://github.com/bridgecrewio/checkov/compare/3.2.97...3.2.98) - 2024-05-20
+
+### Bug Fix
+
+- **terraform:** Remove invalid CIDRs in CKV2_AWS_44 - [#6301](https://github.com/bridgecrewio/checkov/pull/6301)
+
+## [3.2.97](https://github.com/bridgecrewio/checkov/compare/3.2.95...3.2.97) - 2024-05-19
+
+### Feature
+
+- **arm:** add CKV_AZURE_73 to ensure that Automation account variables are encrypted - [#6271](https://github.com/bridgecrewio/checkov/pull/6271)
+- **arm:** add CKV_AZURE_76 to ensure that Azure Batch account uses key vault to encrypt data - [#6280](https://github.com/bridgecrewio/checkov/pull/6280)
+- **arm:** add FunctionAppDisallowCORS - password correctness check - [#6248](https://github.com/bridgecrewio/checkov/pull/6248)
+- **arm:** ARM FunctionAppHttpVersionLatest policy - [#6244](https://github.com/bridgecrewio/checkov/pull/6244)
+- **arm:** CKV_AZURE_74 to Ensure that Azure Data Explorer (Kusto) uses disk encryption - [#6273](https://github.com/bridgecrewio/checkov/pull/6273)
+- **arm:** MSSQLServerMinTLSVersion - [#6245](https://github.com/bridgecrewio/checkov/pull/6245)
+
+## [3.2.95](https://github.com/bridgecrewio/checkov/compare/3.2.94...3.2.95) - 2024-05-17
+
+### Bug Fix
+
+- **terraform:** handle module source tag ref when it is not the first parameter - [#6314](https://github.com/bridgecrewio/checkov/pull/6314)
+
+## [3.2.94](https://github.com/bridgecrewio/checkov/compare/3.2.92...3.2.94) - 2024-05-16
+
+### Bug Fix
+
+- **sast:** fix random test sast js - [#6315](https://github.com/bridgecrewio/checkov/pull/6315)
+
+### Platform
+
+- **general:** Double-Encode URI for RelayState Parameter - [#6302](https://github.com/bridgecrewio/checkov/pull/6302)
+
+## [3.2.92](https://github.com/bridgecrewio/checkov/compare/3.2.91...3.2.92) - 2024-05-15
+
+### Feature
+
+- **sast:** CDK TypeScript policies - [#6161](https://github.com/bridgecrewio/checkov/pull/6161)
+- **terraform:** add check for tf module versioned tag - [#6213](https://github.com/bridgecrewio/checkov/pull/6213)
+
+### Bug Fix
+
+- **secrets:** secret_filter_block_list filter by file name and suffixes - [#6285](https://github.com/bridgecrewio/checkov/pull/6285)
+- **secrets:** secret_filter_block_list filter by file name and suffixes 2 - [#6306](https://github.com/bridgecrewio/checkov/pull/6306)
+
+### Platform
+
+- **general:** Fix policy.name to use the spaces as specified on CLI. - [#6296](https://github.com/bridgecrewio/checkov/pull/6296)
+
+## [3.2.91](https://github.com/bridgecrewio/checkov/compare/3.2.90...3.2.91) - 2024-05-12
+
+### Feature
+
+- **secrets:** bump bc-detect-secrets to 1.5.10 - [#6297](https://github.com/bridgecrewio/checkov/pull/6297)
+
+## [3.2.90](https://github.com/bridgecrewio/checkov/compare/3.2.85...3.2.90) - 2024-05-09
+
+### Feature
+
+- **general:** Add deep-analysis to GHA - [#6288](https://github.com/bridgecrewio/checkov/pull/6288)
+- **terraform:** Add more hype policies - [#6239](https://github.com/bridgecrewio/checkov/pull/6239)
+
+### Bug Fix
+
+- **ansible:** fix ansible definitions raw type - [#6292](https://github.com/bridgecrewio/checkov/pull/6292)
+
+### Platform
+
+- **ansible:** add set definitions raw to ansible runner - [#6286](https://github.com/bridgecrewio/checkov/pull/6286)
+- **general:** Handle SAST suppressions (suppressions V2) - [#6109](https://github.com/bridgecrewio/checkov/pull/6109)
+
+### Documentation
+
+- **general:** add RENDER_EDGES_DUPLICATE_ITER_COUNT to docs - [#6291](https://github.com/bridgecrewio/checkov/pull/6291)
+- **general:** Update README links for PyPi - [#6231](https://github.com/bridgecrewio/checkov/pull/6231)
+
+## [3.2.85](https://github.com/bridgecrewio/checkov/compare/3.2.84...3.2.85) - 2024-05-08
+
+### Platform
+
+- **ansible:** add missing arg to ansible runner - [#6276](https://github.com/bridgecrewio/checkov/pull/6276)
 
 ## [3.2.84](https://github.com/bridgecrewio/checkov/compare/3.2.82...3.2.84) - 2024-05-07
 
