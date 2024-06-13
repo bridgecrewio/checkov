@@ -22,7 +22,7 @@ class TestKeyVaultEnablesRBAC(unittest.TestCase):
         }
         failing_resources = {
             'azurerm_key_vault.fail',
-            'azurerm_key_vault.fail2'
+            'azurerm_key_vault.fail1'
         }
         skipped_resources = {}
 
