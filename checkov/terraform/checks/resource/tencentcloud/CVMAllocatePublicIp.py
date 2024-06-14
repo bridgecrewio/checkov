@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import (
 
 class CVMAllocatePublicIp(BaseResourceCheck):
     def __init__(self):
-        name = "CVM instance should not allocate public IP"
+        name = "Ensure CVM instance should not allocate public IP"
         id = "CKV_TC_2"
         supported_resources = ['tencentcloud_instance']
         categories = [CheckCategories.ENCRYPTION]
