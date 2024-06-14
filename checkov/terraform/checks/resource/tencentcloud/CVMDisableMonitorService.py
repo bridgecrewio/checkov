@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import (
 
 class CVMDisableMonitorService(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure that monitor service is enabled for CVM instances"
+        name = "Ensure CVM monitor service is enabled"
         id = "CKV_TC_3"
         supported_resources = ['tencentcloud_instance']
         categories = [CheckCategories.ENCRYPTION]

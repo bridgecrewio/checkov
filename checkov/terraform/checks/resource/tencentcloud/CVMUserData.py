@@ -7,7 +7,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import (
 
 class CVMUserData(BaseResourceCheck):
     def __init__(self):
-        name = "CVM user data not contain aksk"
+        name = "Ensure CVM user data not contain aksk"
         id = "CKV_TC_13"
         supported_resources = ['tencentcloud_instance']
         categories = [CheckCategories.ENCRYPTION]
