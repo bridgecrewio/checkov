@@ -58,6 +58,8 @@ from checkov.common.checks_infra.solvers import (
 )
 from checkov.common.checks_infra.solvers.connections_solvers.connection_one_exists_solver import \
     ConnectionOneExistsSolver
+from checkov.common.checks_infra.solvers.resource_solvers import ExistsResourcerSolver, NotExistsResourcerSolver
+from checkov.common.checks_infra.solvers.resource_solvers.base_resource_solver import BaseResourceSolver
 from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 from checkov.common.graph.checks_infra.base_parser import BaseGraphCheckParser
 from checkov.common.graph.checks_infra.enums import SolverType
@@ -144,6 +146,12 @@ condition_type_to_solver_type = {
     "attribute": SolverType.ATTRIBUTE,
     "connection": SolverType.CONNECTION,
     "filter": SolverType.FILTER,
+    "resource": SolverType.RESOURCE,
+}
+
+operator_to_resource_solver_classes: dict[str, Type[BaseResourceSolver]] = {
+    "exists": ExistsResourcerSolver,
+    "not_exists": NotExistsResourcerSolver,
 }
 
 JSONPATH_PREFIX = "jsonpath_"
@@ -297,6 +305,9 @@ class GraphCheckParser(BaseGraphCheckParser):
             ),
             SolverType.FILTER: operator_to_filter_solver_classes.get(check.operator, lambda *args: None)(
                 check.resource_types, check.attribute, check.attribute_value
+            ),
+            SolverType.RESOURCE: operator_to_resource_solver_classes.get(check.operator, lambda *args: None)(
+                check.resource_types
             ),
         }
 
