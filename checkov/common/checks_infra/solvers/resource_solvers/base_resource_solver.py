@@ -56,9 +56,9 @@ class BaseResourceSolver(BaseSolver):
 
         return passed_vertices, failed_vertices, []
 
-    def _process_node(self, data: dict[str, Any], passed_vartices: list[dict[str, Any]],
+    def _process_node(self, data: dict[str, str], passed_vartices: list[dict[str, Any]],
                       failed_vertices: list[dict[str, Any]], unknown_vertices: list[dict[str, Any]]) -> None:
-        result = self.get_operation(data.get(CustomAttributes.RESOURCE_TYPE))
+        result = self.get_operation(data.get(CustomAttributes.RESOURCE_TYPE))  # type:ignore[arg-type]
         # A None indicate for UNKNOWN result - the vertex shouldn't be added to the passed or the failed vertices
         if result is None:
             unknown_vertices.append(data)
