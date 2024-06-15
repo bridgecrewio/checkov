@@ -5,10 +5,18 @@ from typing import Any, Callable, TYPE_CHECKING
 
 from networkx import DiGraph
 
+import concurrent.futures
+
+from concurrent.futures import ThreadPoolExecutor
+
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
 from checkov.common.graph.graph_builder import CustomAttributes
+
 from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
+from checkov.terraform.graph_builder.graph_components.block_types import BlockType as TerraformBlockType
+
+SUPPORTED_BLOCK_TYPES = {BlockType.RESOURCE, TerraformBlockType.DATA, TerraformBlockType.MODULE, TerraformBlockType.PROVIDER}
 
 if TYPE_CHECKING:
     from checkov.common.typing import LibraryGraph
@@ -31,22 +39,21 @@ class BaseResourceSolver(BaseSolver):
     def run(
         self, graph_connector: LibraryGraph
     ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
+        executer = ThreadPoolExecutor()
+        jobs = []
         passed_vertices: list[dict[str, Any]] = []
         failed_vertices: list[dict[str, Any]] = []
+        unknown_vertices: list[dict[str, Any]] = []
 
         if isinstance(graph_connector, DiGraph):
-            select_kwargs = {"block_type__eq": BlockType.RESOURCE}
+            for _, data in graph_connector.nodes(data=True):
+                if data.get(CustomAttributes.BLOCK_TYPE) in SUPPORTED_BLOCK_TYPES:
+                    jobs.append(executer.submit(self._process_node, data, passed_vertices, failed_vertices, unknown_vertices))
 
-            for data in graph_connector.vs.select(**select_kwargs)["attr"]:
-                result = self.get_operation(resource_type=data.get(CustomAttributes.RESOURCE_TYPE))
-                if result:
-                    passed_vertices.append(data)
-                else:
-                    failed_vertices.append(data)
+            concurrent.futures.wait(jobs)
+            return passed_vertices, failed_vertices, unknown_vertices
 
-            return passed_vertices, failed_vertices, []
-
-        for _, data in graph_connector.nodes(data=True):
+        for _, data in graph_connector.nodes():
             result = self.get_operation(resource_type=data.get(CustomAttributes.RESOURCE_TYPE))
             if result:
                 passed_vertices.append(data)
@@ -54,3 +61,14 @@ class BaseResourceSolver(BaseSolver):
                 failed_vertices.append(data)
 
         return passed_vertices, failed_vertices, []
+
+    def _process_node(self, data: dict[str, Any], passed_vartices: list[dict[str, Any]],
+                      failed_vertices: list[dict[str, Any]], unknown_vertices: list[dict[str, Any]]) -> None:
+        result = self.get_operation(data.get(CustomAttributes.RESOURCE_TYPE))
+        # A None indicate for UNKNOWN result - the vertex shouldn't be added to the passed or the failed vertices
+        if result is None:
+            unknown_vertices.append(data)
+        elif result:
+            passed_vartices.append(data)
+        else:
+            failed_vertices.append(data)
