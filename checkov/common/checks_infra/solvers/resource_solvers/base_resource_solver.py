@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import Any, Callable, TYPE_CHECKING
 
-from igraph import Graph
+from networkx import DiGraph
 
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
@@ -34,7 +34,7 @@ class BaseResourceSolver(BaseSolver):
         passed_vertices: list[dict[str, Any]] = []
         failed_vertices: list[dict[str, Any]] = []
 
-        if isinstance(graph_connector, Graph):
+        if isinstance(graph_connector, DiGraph):
             select_kwargs = {"block_type__eq": BlockType.RESOURCE}
 
             for data in graph_connector.vs.select(**select_kwargs)["attr"]:
