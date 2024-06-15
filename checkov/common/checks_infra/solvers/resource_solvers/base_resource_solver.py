@@ -13,11 +13,6 @@ from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
 from checkov.common.graph.graph_builder import CustomAttributes
 
-from checkov.common.graph.graph_builder.graph_components.block_types import BlockType
-from checkov.terraform.graph_builder.graph_components.block_types import BlockType as TerraformBlockType
-
-SUPPORTED_BLOCK_TYPES = {BlockType.RESOURCE, TerraformBlockType.DATA, TerraformBlockType.MODULE, TerraformBlockType.PROVIDER}
-
 if TYPE_CHECKING:
     from checkov.common.typing import LibraryGraph
 
@@ -47,8 +42,7 @@ class BaseResourceSolver(BaseSolver):
 
         if isinstance(graph_connector, DiGraph):
             for _, data in graph_connector.nodes(data=True):
-                if data.get(CustomAttributes.BLOCK_TYPE) in SUPPORTED_BLOCK_TYPES:
-                    jobs.append(executer.submit(self._process_node, data, passed_vertices, failed_vertices, unknown_vertices))
+                jobs.append(executer.submit(self._process_node, data, passed_vertices, failed_vertices, unknown_vertices))
 
             concurrent.futures.wait(jobs)
             return passed_vertices, failed_vertices, unknown_vertices
