@@ -52,6 +52,23 @@ class Seccomp(BaseK8Check):
             if security_profile:
                 return CheckResult.PASSED if security_profile == 'RuntimeDefault' else CheckResult.FAILED
 
+            if "spec" in conf and isinstance(conf["spec"], dict):
+                template_spec = conf["spec"].get("template", {}).get("spec", {})
+                containers = template_spec.get("containers")
+                if containers:
+                    containers = force_list(containers)
+                    num_containers = len(containers)
+                    passed_containers = 0
+                    for container in containers:
+                        security_profile = find_in_dict(container, "securityContext/seccompProfile/type")
+                        if security_profile:
+                            if security_profile == "RuntimeDefault":
+                                passed_containers += 1
+                            else:
+                                return CheckResult.FAILED
+                    if passed_containers == num_containers:
+                        return CheckResult.PASSED
+
             metadata = find_in_dict(input_dict=conf, key_path="spec/template/metadata")
             if not metadata and "metadata" in conf:
                 metadata = conf["metadata"]
@@ -82,3 +99,5 @@ class Seccomp(BaseK8Check):
 
 
 check = Seccomp()
+
+
