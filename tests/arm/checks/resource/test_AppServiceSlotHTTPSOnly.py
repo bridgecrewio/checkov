@@ -6,7 +6,7 @@ from checkov.runner_filter import RunnerFilter
 from checkov.arm.checks.resource.AppServiceSlotHTTPSOnly import check
 
 
-class TestAPPServiceDisallowCORS(unittest.TestCase):
+class TestAppServiceSlotHTTPSOnly(unittest.TestCase):
 
     def test_summary(self):
         # given
