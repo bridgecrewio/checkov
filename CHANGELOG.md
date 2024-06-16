@@ -1,6 +1,23 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.130...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.136...HEAD)
+
+## [3.2.136](https://github.com/bridgecrewio/checkov/compare/3.2.133...3.2.136) - 2024-06-13
+
+### Bug Fix
+
+- **arm:** Correct AzureMLWorkspacePrivateEndpoint rule check logic - [#6432](https://github.com/bridgecrewio/checkov/pull/6432)
+- **general:** removed references Putin references - [#6445](https://github.com/bridgecrewio/checkov/pull/6445)
+
+## [3.2.133](https://github.com/bridgecrewio/checkov/compare/3.2.130...3.2.133) - 2024-06-10
+
+### Feature
+
+- **general:** add AI_AND_ML to CheckCategories - [#6423](https://github.com/bridgecrewio/checkov/pull/6423)
+
+### Bug Fix
+
+- **sast:** Update CKV IDs for CDK policies - [#6415](https://github.com/bridgecrewio/checkov/pull/6415)
 
 ## [3.2.130](https://github.com/bridgecrewio/checkov/compare/3.2.128...3.2.130) - 2024-06-09
 

@@ -26,8 +26,8 @@ class AzureMLWorkspacePrivateEndpoint(BaseResourceCheck):
                             # Skip inner fields we add
                             continue
                         if rule.get("type") == "PrivateEndpoint":
-                            return CheckResult.FAILED
-        return CheckResult.PASSED
+                            return CheckResult.PASSED
+        return CheckResult.FAILED
 
 
 check = AzureMLWorkspacePrivateEndpoint()
