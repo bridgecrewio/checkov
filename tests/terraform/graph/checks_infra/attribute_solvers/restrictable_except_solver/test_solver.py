@@ -17,17 +17,17 @@ class TestRestrictableExceptSolver(TestBaseSolver):
     def test_restrictable_except_string_solver(self):
         root_folder = 'resources'
         check_id = "RestrictableExceptString"
-        should_pass = ['data.aws_iam_policy_document.pass1']
-        should_fail = ['data.aws_iam_policy_document.fail1']
+        should_pass = ['aws_iam_policy.pass1']
+        should_fail = ['aws_iam_policy.fail1']
         expected_results = {check_id: {"should_pass": should_pass, "should_fail": should_fail}}
 
         self.run_test(root_folder=root_folder, expected_results=expected_results, check_id=check_id)
 
     def test_restrictable_except_list_solver(self):
         root_folder = 'resources'
-        check_id = "RestrictableExceptString"
-        should_pass = ['data.aws_iam_policy_document.pass1']
-        should_fail = ['data.aws_iam_policy_document.fail1']
+        check_id = "RestrictableExceptList"
+        should_pass = ['aws_iam_policy.pass1']
+        should_fail = ['aws_iam_policy.fail1']
         expected_results = {check_id: {"should_pass": should_pass, "should_fail": should_fail}}
 
         self.run_test(root_folder=root_folder, expected_results=expected_results, check_id=check_id)

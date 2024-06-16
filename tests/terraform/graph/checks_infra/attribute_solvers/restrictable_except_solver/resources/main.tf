@@ -1,3 +1,43 @@
+resource "aws_iam_policy" "pass1" {
+  name        = "test_policy"
+  path        = "/"
+  description = "My test policy"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "s3:ListAllMyBuckets",
+          "states:ListStateMachines"
+        ]
+        Effect   = "Allow"
+        Resource = "*"
+      },
+    ]
+  })
+}
+
+resource "aws_iam_policy" "fail1" {
+  name        = "test_policy"
+  path        = "/"
+  description = "My test policy"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "s3:ListAllMyBuckets",
+          "states:ListStateMachines"
+        ]
+        Effect   = "Allow"
+        Resource = "*"
+      },
+    ]
+  })
+}
+
 data "aws_iam_policy_document" "fail1" {
   statement {
     sid    = "sampleStatesGlobal"

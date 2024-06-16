@@ -7,7 +7,7 @@ scope:
 definition:
   cond_type: "attribute"
   resource_types:
-    - "data.aws_iam_policy_document"
-  attribute: "actions"
+    - "aws_iam_policy"
+  attribute: "statement"
   operator: "restrictable_except"
   value: "states:CreateStateMachine"
