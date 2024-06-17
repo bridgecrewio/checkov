@@ -19,10 +19,11 @@ class AppServicePHPVersion(BaseResourceValueCheck):
         return ["8.1", "8.2"]
 
     def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
-        php_version = conf.get("properties", {}).get("siteConfig", {}).get("phpVersion")
-        expected_values = self.get_expected_value()
-        if php_version in expected_values:
-            return CheckResult.PASSED
+        if conf.get("properties") and conf["properties"].get("siteConfig"):
+            php_version = conf.get("properties", {}).get("siteConfig", {}).get("phpVersion")
+            expected_values = self.get_expected_value()
+            if php_version in expected_values:
+                return CheckResult.PASSED
         return CheckResult.FAILED
 
 
