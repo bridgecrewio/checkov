@@ -2,7 +2,7 @@ pass:
   - "pass1.yaml"
   - "pass1.json"
   - "pass2.yaml"
-  - "pass2.json"
+  - "pass.json"
 fail:
   - "fail1.json"
   - "fail1.yaml"
