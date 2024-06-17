@@ -20,6 +20,6 @@ class APIManagementCertsEnforced(BaseResourceCheck):
             self.evaluated_keys = ['/resources/properties/enableClientCertificate/']
             if client_certificate_enabled is False:
                 return CheckResult.FAILED
-
+        return CheckResult.FAILED
 
 check = APIManagementCertsEnforced()
