@@ -68,6 +68,26 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_summary()["failed"], 3)
         self.assertEqual(report.get_summary()["passed"], 3)
 
+    def test_tf_plan_filtered_rule(self):
+        if not self.db_connector == RustworkxConnector:
+            return
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_plan_path = current_dir + "/resources/plan/tf_plan_filtered_rule_success.json"
+        runner = Runner(db_connector=self.db_connector())
+        checks_allowlist = ['CKV_AWS_300']
+        report = runner.run(files=[valid_plan_path], runner_filter=RunnerFilter(framework=["terraform_plan"], checks=checks_allowlist))
+        assert len(report.passed_checks) == 1
+
+    def test_tf_plan_filtered_rule(self):
+        if not self.db_connector == RustworkxConnector:
+            return
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_plan_path = current_dir + "/resources/plan/tf_plan_filtered_rule_fail.json"
+        runner = Runner(db_connector=self.db_connector())
+        checks_allowlist = ['CKV_AWS_300']
+        report = runner.run(files=[valid_plan_path], runner_filter=RunnerFilter(framework=["terraform_plan"], checks=checks_allowlist))
+        assert len(report.failed_checks) == 1
+
     def test_runner_record_severity(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_plan_path = current_dir + "/resources/plan/tfplan.json"
