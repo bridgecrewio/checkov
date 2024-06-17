@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.133...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.136...HEAD)
+
+## [3.2.136](https://github.com/bridgecrewio/checkov/compare/3.2.133...3.2.136) - 2024-06-13
+
+### Bug Fix
+
+- **arm:** Correct AzureMLWorkspacePrivateEndpoint rule check logic - [#6432](https://github.com/bridgecrewio/checkov/pull/6432)
+- **general:** removed references Putin references - [#6445](https://github.com/bridgecrewio/checkov/pull/6445)
 
 ## [3.2.133](https://github.com/bridgecrewio/checkov/compare/3.2.130...3.2.133) - 2024-06-10
 
