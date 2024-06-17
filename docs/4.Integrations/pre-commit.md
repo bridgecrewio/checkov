@@ -1,15 +1,16 @@
 ---
 layout: default
 published: true
-title: Pre-Commit
+title: Pre-Commit Hooks
 nav_order: 6
 ---
 
-# Pre-Commit
+# Pre-Commit Hooks
 
-If you want to automatically run `checkov` when files in your git repo change, [install the pre-commit binary](https://pre-commit.com/#install), and add a [.pre-commit-config.yaml file](https://github.com/bridgecrewio/checkov/blob/main/.pre-commit-config.yaml) to your project with content similar to the example below.
+To automatically run Checkov whenever files in your Git repository change, first [install the pre-commit binary](https://pre-commit.com/#install) and then add a [.pre-commit-config.yaml](https://github.com/bridgecrewio/checkov/blob/main/.pre-commit-config.yaml) file to your project with content similar to the example below.
 
-Note that depending on the hook id you select for pre-commit hooks, you may need to provide the following:
+
+NOTE: Depending on the hook id you select for pre-commit hooks, you may need to provide the following:
 
 * For the `python` hooks, pre-commit 3.x is able to provide [python](https://pre-commit.com/#python) without additional dependencies.
 * For the `container` hooks, the [Docker](https://docs.docker.com/get-docker/) CLI and a container runtime must be available.
