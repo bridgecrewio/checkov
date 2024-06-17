@@ -110,7 +110,7 @@ Resources:
       SubnetIds:
         - !Ref SubnetA
         - !Ref SubnetB
-  ReplicationGroup:
+  ReplicationGroupPass:
     Type: 'AWS::ElastiCache::ReplicationGroup'
     Properties:
       AuthToken: 'MySecret!AuthToken$'
@@ -132,16 +132,4 @@ Resources:
       SnapshotWindow: !Ref SnapshotWindow
       #TransitEncryptionEnabled: False
       TransitEncryptionEnabled: True
-Outputs:
-  RGEndpoint:
-    Description: The primary endpoint location
-    Value: !Join 
-      - ''
-      - - 'redis://'
-        - !GetAtt 
-          - ReplicationGroup
-          - PrimaryEndPoint.Address
-        - ':'
-        - !GetAtt 
-          - ReplicationGroup
-          - PrimaryEndPoint.Port
+

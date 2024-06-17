@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import os
 from typing import Generator, Set, Tuple
 from typing import Any
 from typing import TYPE_CHECKING
@@ -29,7 +30,7 @@ if TYPE_CHECKING:
 
 MAX_LINE_LENGTH = 10000
 MAX_KEYWORD_LIMIT = 500
-ENTROPY_KEYWORD_COMBINATOR_LIMIT = 3
+ENTROPY_KEYWORD_COMBINATOR_LIMIT = float(os.getenv('CHECKOV_ENTROPY_KEYWORD_LIMIT', '3'))
 ENTROPY_KEYWORD_LIMIT = 4.8
 
 DENY_LIST_REGEX = r'|'.join(DENYLIST)
@@ -118,10 +119,18 @@ FOLLOWED_BY_EQUAL_VALUE_SECRET_REGEX = re.compile(
 class EntropyKeywordCombinator(BasePlugin):
     secret_type = ""  # nosec  # noqa: CCE003  # a static attribute
 
-    def __init__(self, limit: float = ENTROPY_KEYWORD_LIMIT, max_line_length: int = MAX_LINE_LENGTH) -> None:
-        iac_limit = ENTROPY_KEYWORD_COMBINATOR_LIMIT
-        self.high_entropy_scanners_iac = (Base64HighEntropyString(limit=iac_limit), HexHighEntropyString(limit=iac_limit))
-        self.entropy_scanners_non_iac_with_keyword = (Base64HighEntropyString(limit=iac_limit + 0.3), HexHighEntropyString(limit=iac_limit + 0.3))
+    def __init__(self, limit: float = ENTROPY_KEYWORD_LIMIT, max_line_length: int = MAX_LINE_LENGTH,
+                 entropy_limit: float = ENTROPY_KEYWORD_COMBINATOR_LIMIT) -> None:
+        self.entropy_limit = entropy_limit
+        self.high_entropy_scanners_iac = (
+            Base64HighEntropyString(
+                limit=entropy_limit), HexHighEntropyString(
+                limit=entropy_limit))
+        self.entropy_scanners_non_iac_with_keyword = (
+            Base64HighEntropyString(
+                limit=entropy_limit + 0.3),
+            HexHighEntropyString(
+                limit=entropy_limit + 0.3))
         self.high_entropy_scanners = (Base64HighEntropyString(limit=limit), HexHighEntropyString(limit=limit))
         self.keyword_scanner = KeywordDetector()
         self.max_line_length = max_line_length
