@@ -14,7 +14,7 @@
         "storageProfile": {
           "storageMB": 640000,
           "backupRetentionDays": 7,
-          "geoRedundantBackup": "disabled"
+          "geoRedundantBackup": "Disabled"
         },
         "sslEnforcement": "Enabled",
         "minimalTlsVersion": "TLS1_2"
