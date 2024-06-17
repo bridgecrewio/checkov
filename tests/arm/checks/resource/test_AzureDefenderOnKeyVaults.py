@@ -18,7 +18,6 @@ class TestAzureDefenderOnKeyVaults(unittest.TestCase):
 
         passing_resources = {
             "Microsoft.Security/pricings.KeyVaults",
-            "Microsoft.Security/pricings.KubernetesService",
         }
         failing_resources = {
             "Microsoft.Security/pricings.KeyVaults",
