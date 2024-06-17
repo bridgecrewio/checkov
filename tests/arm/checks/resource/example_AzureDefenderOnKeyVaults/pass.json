@@ -9,14 +9,6 @@
       "properties": {
         "pricingTier": "Standard"
       }
-    },
-    {
-      "type": "Microsoft.Security/pricings",
-      "apiVersion": "2021-01-01-preview",
-      "name": "KubernetesService",
-      "properties": {
-        "pricingTier": "Standard"
-      }
     }
   ]
 }

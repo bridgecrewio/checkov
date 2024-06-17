@@ -17,7 +17,8 @@ class AzureDefenderOnKeyVaults(BaseResourceCheck):
     def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
         properties = conf.get('properties')
         if properties and isinstance(properties, dict):
-            if conf["properties"]["pricingTier"] == "Standard":
+            pricing_tier = properties.get("pricingTier", [None])
+            if pricing_tier == "Standard":
                 return CheckResult.PASSED
             else:
                 return CheckResult.FAILED
