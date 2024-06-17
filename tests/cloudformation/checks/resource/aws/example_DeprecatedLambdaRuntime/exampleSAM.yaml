@@ -11,6 +11,7 @@ Resources:
         config:
           ignore_checks:
             - E2531
+            - E2533
     Properties:
       Handler: 'index.handler'
       Runtime: 'python3.6'

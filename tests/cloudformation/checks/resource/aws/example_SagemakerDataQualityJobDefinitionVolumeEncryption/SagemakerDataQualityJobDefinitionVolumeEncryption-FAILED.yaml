@@ -1,0 +1,66 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  MySageMakerRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "sagemaker.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+
+  MyDataQualityJobDefinitionFail1:
+    Type: "AWS::SageMaker::DataQualityJobDefinition"
+    Properties:
+      JobDefinitionName: "MyDataQualityJob"
+      RoleArn: !GetAtt MySageMakerRole.Arn
+      DataQualityAppSpecification:
+        ImageUri: "123456789012.dkr.ecr.us-west-2.amazonaws.com/my-image:latest"
+      DataQualityJobInput:
+        EndpointInput:
+          EndpointName: "my-endpoint"
+          LocalPath: "/opt/ml/processing/input"
+      DataQualityJobOutputConfig:
+        KmsKeyId: "arn:aws:kms:us-west-2:123456789012:key/my-existing-kms-key-id"
+        MonitoringOutputs:
+          - S3Output:
+              S3Uri: "s3://my-sagemaker-bucket/output"
+              LocalPath: "/opt/ml/processing/output"
+              S3UploadMode: "Continuous"
+      JobResources:
+        ClusterConfig:
+          InstanceCount: 1
+          InstanceType: "ml.m5.xlarge"
+          VolumeSizeInGB: 20
+      StoppingCondition:
+        MaxRuntimeInSeconds: 3600
+
+  MyDataQualityJobDefinitionFail2:
+    Type: "AWS::SageMaker::DataQualityJobDefinition"
+    Properties:
+      JobDefinitionName: "MyDataQualityJob"
+      RoleArn: !GetAtt MySageMakerRole.Arn
+      DataQualityAppSpecification:
+        ImageUri: "123456789012.dkr.ecr.us-west-2.amazonaws.com/my-image:latest"
+      DataQualityJobInput:
+        EndpointInput:
+          EndpointName: "my-endpoint"
+          LocalPath: "/opt/ml/processing/input"
+      DataQualityJobOutputConfig:
+        KmsKeyId: "arn:aws:kms:us-west-2:123456789012:key/my-existing-kms-key-id"
+        MonitoringOutputs:
+          - S3Output:
+              S3Uri: "s3://my-sagemaker-bucket/output"
+              LocalPath: "/opt/ml/processing/output"
+              S3UploadMode: "Continuous"
+      JobResources:
+        ClusterConfig:
+          InstanceCount: 2
+          InstanceType: "ml.m5.xlarge"
+          VolumeSizeInGB: 30
+      StoppingCondition:
+        MaxRuntimeInSeconds: 3600
