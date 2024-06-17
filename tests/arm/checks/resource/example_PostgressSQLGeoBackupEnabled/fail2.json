@@ -9,7 +9,7 @@
       "location": "[resourceGroup().location]",
       "properties": {
         "administratorLogin": "psqladminun",
-        "administratorLoginPassword": "H@Sh1CoR3!",
+        "administratorLoginPassword": "blabla",
         "version": "9.6",
         "storageProfile": {
           "storageMB": 640000,
