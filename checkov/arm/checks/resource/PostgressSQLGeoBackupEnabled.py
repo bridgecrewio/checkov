@@ -16,7 +16,7 @@ class PostgressSQLGeoBackupEnabled(BaseResourceValueCheck):
         return 'properties/storageProfile/geoRedundantBackup'
 
     def get_expected_value(self) -> str:
-        return 'enabled'
+        return 'Enabled'
 
 
 check = PostgressSQLGeoBackupEnabled()
