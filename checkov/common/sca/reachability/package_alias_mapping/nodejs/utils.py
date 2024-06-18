@@ -13,7 +13,7 @@ MODULE_EXPORTS_PATTERN = r'module\.exports\s*=\s*({.*?});'
 EXPORT_DEFAULT_PATTERN = r'export\s*default\s*({.*?});'
 
 
-def load_json_with_comments(json_str: str):
+def load_json_with_comments(json_str: str) -> str:
     # Regular expression to remove comments (both single line and multi-line)
     clean_json_str = re.sub(r'//.*?$|/\*.*?\*/', '', json_str, flags=re.MULTILINE | re.DOTALL)
     return json.loads(clean_json_str)
