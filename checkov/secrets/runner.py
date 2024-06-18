@@ -20,6 +20,7 @@ from checkov.common.output.secrets_record import SecretsRecord
 from checkov.common.util.http_utils import request_wrapper, DEFAULT_TIMEOUT
 from detect_secrets import SecretsCollection
 from detect_secrets.core import scan
+from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.settings import transient_settings
 
 from checkov.common.bridgecrew.check_type import CheckType
@@ -46,7 +47,6 @@ from checkov.secrets.utils import filter_excluded_paths, EXCLUDED_PATHS
 
 if TYPE_CHECKING:
     from checkov.common.util.tqdm_utils import ProgressBar
-    from detect_secrets.core.potential_secret import PotentialSecret
 
 SOURCE_CODE_EXTENSION = ['.py', '.js', '.properties', '.pem', '.php', '.xml', '.ts', '.env', '.java', '.rb',
                          'go', 'cs', '.txt']
