@@ -5,7 +5,7 @@ from checkov.arm.base_resource_value_check import BaseResourceValueCheck
 
 
 class KeyVaultEnablesPurgeProtection(BaseResourceValueCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure that key vault enables purge protection"
         id = "CKV_AZURE_110"
         supported_resources = ['Microsoft.KeyVault/vaults']
