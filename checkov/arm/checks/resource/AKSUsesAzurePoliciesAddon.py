@@ -1,3 +1,4 @@
+import typing
 from typing import Any
 
 from checkov.common.models.enums import CheckCategories, CheckResult
@@ -17,7 +18,7 @@ class AKSUsesAzurePoliciesAddon(BaseResourceCheck):
             supported_resources=supported_resources
         )
 
-    def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
+    def scan_resource_conf(self, conf: typing.Dict[str, Any]) -> CheckResult:
         properties = conf.get("properties")
         if not properties:
             return CheckResult.FAILED
