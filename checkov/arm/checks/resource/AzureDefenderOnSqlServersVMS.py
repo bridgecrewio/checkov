@@ -18,14 +18,13 @@ class AzureDefenderOnSqlServersVMS(BaseResourceCheck):
 
     def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
         properties = conf.get("properties", {})
-        resourceType = properties.get("resourceType")
         tier = properties.get("tier")
-        if resourceType != "SqlServerVirtualMachines" or tier == "Standard":
+        if tier == "Standard":
             return CheckResult.FAILED
         return CheckResult.PASSED
 
     def get_evaluated_keys(self) -> List[str]:
-        return ["resource_type", "tier"]
+        return ["tier"]
 
 
 check = AzureDefenderOnSqlServersVMS()

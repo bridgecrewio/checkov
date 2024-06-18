@@ -7,8 +7,7 @@
         "apiVersion": "2020-01-01",
         "name": "pass",
         "properties": {
-        "tier": "Free",
-        "resourceType": "SqlServerVirtualMachines"
+        "tier": "Free"
       }
     }
   ],
