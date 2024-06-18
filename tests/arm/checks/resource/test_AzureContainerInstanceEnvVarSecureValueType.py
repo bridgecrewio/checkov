@@ -8,7 +8,6 @@ from checkov.arm.checks.resource.AzureContainerInstanceEnvVarSecureValueType imp
 
 class TestAzureContainerInstanceEnvVarSecureValueType(unittest.TestCase):
     def test_summary(self):
-
         current_dir = os.path.dirname(os.path.realpath(__file__))
         test_files_dir = os.path.join(current_dir, "example_AzureContainerInstanceEnvVarSecureValueType")
 
@@ -31,7 +30,7 @@ class TestAzureContainerInstanceEnvVarSecureValueType(unittest.TestCase):
 
         self.assertEqual(summary['passed'], len(passing_resources))
         self.assertEqual(summary['failed'], len(failing_resources))
-        self.assertEqual(summary['skipped'], 0)
+        self.assertEqual(summary['skipped'], len(skipped_resources))
         self.assertEqual(summary['parsing_errors'], 0)
 
         self.assertEqual(passing_resources, passed_check_resources)
