@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import datetime
-import hashlib
 import linecache
 import logging
 import os
@@ -12,7 +11,6 @@ from typing import TYPE_CHECKING, cast, Optional, Iterable, Any, List, Dict
 
 import requests
 from detect_secrets.filters.heuristic import is_potential_uuid
-from detect_secrets.core.potential_secret import PotentialSecret
 
 from checkov.common.util.decorators import time_it
 from checkov.common.util.type_forcers import convert_str_to_bool
