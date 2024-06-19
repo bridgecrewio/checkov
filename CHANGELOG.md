@@ -1,6 +1,20 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.138...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.140...HEAD)
+
+## [3.2.140](https://github.com/bridgecrewio/checkov/compare/3.2.138...3.2.140) - 2024-06-18
+
+### Feature
+
+- **azure:** fix ckv_azure_189 according to docs - [#6413](https://github.com/bridgecrewio/checkov/pull/6413)
+
+### Bug Fix
+
+- **sca:** Support parsing json with comments - [#6466](https://github.com/bridgecrewio/checkov/pull/6466)
+
+### Documentation
+
+- **general:** fix pre-commit link - [#6433](https://github.com/bridgecrewio/checkov/pull/6433)
 
 ## [3.2.138](https://github.com/bridgecrewio/checkov/compare/3.2.136...3.2.138) - 2024-06-17
 
