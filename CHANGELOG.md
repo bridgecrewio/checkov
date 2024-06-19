@@ -1,6 +1,18 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.136...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.138...HEAD)
+
+## [3.2.138](https://github.com/bridgecrewio/checkov/compare/3.2.136...3.2.138) - 2024-06-17
+
+### Feature
+
+- **graph:** support creation of resource type allow/deny lists - [#6451](https://github.com/bridgecrewio/checkov/pull/6451)
+
+### Bug Fix
+
+- **terraform:** Fix name of CKV2_AWS_67 to be more clear - [#6434](https://github.com/bridgecrewio/checkov/pull/6434)
+- **terraform:** Fix when apt is in rm statement - [#6437](https://github.com/bridgecrewio/checkov/pull/6437)
+- **terraform:** Update CKV_AWS_224 title - [#6435](https://github.com/bridgecrewio/checkov/pull/6435)
 
 ## [3.2.136](https://github.com/bridgecrewio/checkov/compare/3.2.133...3.2.136) - 2024-06-13
 
