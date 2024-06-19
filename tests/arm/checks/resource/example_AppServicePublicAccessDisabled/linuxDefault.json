@@ -8,7 +8,7 @@
       "name": "linuxDefault",
       "location": "[resourceGroup().location]",
       "properties": {
-        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', 'exampleServicePlan')]",
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', 'exampleServicePlan')]"
       }
     }
   ]
