@@ -1,0 +1,12 @@
+Description: Security Group Example
+Resources:
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: IPv4 connections
+      SecurityGroupIngress:
+      - Description: Allow ingress from anywhere over tcp protocol to all ports
+        IpProtocol: tcp
+        FromPort: 443
+        ToPort: 443
+        CidrIp: 0.0.0.0/0
