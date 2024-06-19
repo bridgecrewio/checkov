@@ -102,4 +102,3 @@ class Seccomp(BaseK8Check):
 
 
 check = Seccomp()
-
