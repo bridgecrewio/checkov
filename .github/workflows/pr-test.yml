@@ -38,12 +38,21 @@ jobs:
       - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c  # v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
+      - name: Get changed CFN test files
+        id: changed-files-specific
+        uses: tj-actions/changed-files@v44
+        with:
+          files: tests/cloudformation/checks/resource/aws/**/*
       - name: Install cfn-lint
+        if: steps.changed-files-specific.outputs.any_changed == 'true'
         run: |
           pip install -U cfn-lint
       - name: Lint Cloudformation templates
+        if: steps.changed-files-specific.outputs.any_changed == 'true'
+        env:
+          ALL_CHANGED_FILES: ${{ steps.changed-files-specific.outputs.all_changed_files }}
         run: |
-          cfn-lint $(git diff --name-only ${{ github.event.pull_request.base.sha }} | grep 'tests/cloudformation/checks/resource/aws/**/*' | xargs) -i W
+          cfn-lint $ALL_CHANGED_FILES -i W
 
   mypy:
     uses: bridgecrewio/gha-reusable-workflows/.github/workflows/mypy.yaml@main
