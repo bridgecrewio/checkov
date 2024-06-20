@@ -43,7 +43,7 @@ jobs:
           pip install -U cfn-lint
       - name: Lint Cloudformation templates
         run: |
-          cfn-lint $(git diff --name-only $GITHUB_BASE_REF | grep 'tests/cloudformation/checks/resource/aws/**/*' | xargs) -i W
+          cfn-lint $(git diff --name-only ${{ github.event.pull_request.base.sha }} | grep 'tests/cloudformation/checks/resource/aws/**/*' | xargs) -i W
 
   mypy:
     uses: bridgecrewio/gha-reusable-workflows/.github/workflows/mypy.yaml@main
