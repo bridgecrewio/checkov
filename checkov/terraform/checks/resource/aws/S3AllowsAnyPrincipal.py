@@ -44,7 +44,7 @@ def check_conditions(statement) -> bool:
                 # 'aws:PrincipalServiceName', 'aws:PrincipalServiceNamesList', 'aws:PrincipalType', 'aws:userid',
                 # 'aws:username'
                 if any(source in condition[condition_type] for source in ['aws:sourceVpce', 'aws:SourceVpc',
-                                                                          'aws:PrincipalOrgPath', 'aws:userid',
+                                                                          'aws:PrincipalOrgPaths', 'aws:userid',
                                                                           'aws:PrincipalArn',
                                                                           'aws:PrincipalAccount',
                                                                           'aws:PrincipalOrgID',
