@@ -3,6 +3,11 @@ Description: IAM Group with multiple policies
 Resources:
   PolicyOnePassPolicyTwoFailAdmin:
     Type: 'AWS::IAM::Group'
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E3510
     Properties:
       Policies:
       - PolicyName: a
