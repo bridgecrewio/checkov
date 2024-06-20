@@ -1,6 +1,11 @@
 Resources:
   MyDBAurora0:
     Type: 'AWS::RDS::DBInstance'
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E3691
     Properties:
       DBName: 'mydb'
       DBInstanceClass: 'db.r3.2xlarge'

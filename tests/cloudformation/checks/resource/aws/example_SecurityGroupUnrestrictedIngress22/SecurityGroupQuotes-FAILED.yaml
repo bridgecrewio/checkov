@@ -1,6 +1,11 @@
 Resources:
   DemoSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E1151
     Properties:
       VpcId: vpc-000000 #dummy vpc id
       GroupDescription: SG to allow SSH access via port 22
