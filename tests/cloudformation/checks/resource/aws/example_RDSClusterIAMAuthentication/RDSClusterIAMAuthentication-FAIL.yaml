@@ -1,12 +1,22 @@
 Resources:
   Default:
     Type: 'AWS::RDS::DBCluster'
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E3690
     Properties:
       Engine: 'aurora'
       MasterUsername: 'username'
       MasterUserPassword: 'password'
   Disabled:
     Type: 'AWS::RDS::DBCluster'
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E3690
     Properties:
       Engine: 'aurora'
       MasterUsername: 'username'

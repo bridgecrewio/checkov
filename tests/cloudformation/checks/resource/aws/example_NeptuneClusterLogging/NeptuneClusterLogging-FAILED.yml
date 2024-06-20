@@ -2,10 +2,20 @@ AWSTemplateFormatVersion: 2010-09-09
 Resources:
   NeptuneDBClusterDefault:
     Type: "AWS::Neptune::DBCluster"
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E3019
     Properties:
       DBClusterIdentifier: DBClusterIdentifier
   NeptuneDBClusterEmpty:
     Type: "AWS::Neptune::DBCluster"
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E3019
     Properties:
       DBClusterIdentifier: DBClusterIdentifier
       EnableCloudwatchLogsExports: []

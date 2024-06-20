@@ -1,6 +1,11 @@
 Resources:
   Enabled:
     Type: 'AWS::RDS::DBCluster'
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E3690
     Properties:
       Engine: 'aurora'
       MasterUsername: 'username'
