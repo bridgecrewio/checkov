@@ -30,7 +30,7 @@ jobs:
           npm install -g danger
           danger ci --verbose --failOnErrors
   cfn-lint:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     env:
       PYTHON_VERSION: "3.8"
     steps:
