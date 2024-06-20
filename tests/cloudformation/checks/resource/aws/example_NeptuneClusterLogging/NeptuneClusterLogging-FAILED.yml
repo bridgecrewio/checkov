@@ -9,3 +9,4 @@ Resources:
     Properties:
       DBClusterIdentifier: DBClusterIdentifier
       EnableCloudwatchLogsExports: []
+      Engine: neptune

@@ -41,9 +41,17 @@ jobs:
       - name: Install cfn-lint
         run: |
           pip install -U cfn-lint
-      - name: Lint Cloudformation templates
+      - name: Filter CloudFormation template changes
+        id: filter
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        with:
+          filters: |
+            cloudformation:
+              - 'tests/cloudformation/checks/resource/aws/**/*'
+      - name: Lint CloudFormation templates
+        if: steps.filter.outputs.cloudformation == 'true'
         run: |
-          cfn-lint tests/cloudformation/checks/resource/aws/**/* -i W
+          cfn-lint $(git diff --name-only ${{ github.event.before }} ${{ github.sha }} -- 'tests/cloudformation/checks/resource/aws/**/*') -i W
 
   mypy:
     uses: bridgecrewio/gha-reusable-workflows/.github/workflows/mypy.yaml@main
