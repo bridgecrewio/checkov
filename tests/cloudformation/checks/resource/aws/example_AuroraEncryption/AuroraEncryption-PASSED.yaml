@@ -1,6 +1,11 @@
 Resources:
   Aurora0:
     Type: 'AWS::RDS::DBCluster'
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E3690
     Properties:
       DatabaseName: 'mydb2'
       Engine: 'aurora'
