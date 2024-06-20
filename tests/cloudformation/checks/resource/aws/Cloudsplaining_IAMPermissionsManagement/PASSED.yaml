@@ -12,7 +12,7 @@ Resources:
             Action: 
             - 's3:Get*'
             Resource: 
-            - 'foo'
+            - 'foobar'
       Roles:
         - example_role
   NotPermissionsWildcard:

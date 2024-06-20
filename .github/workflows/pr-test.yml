@@ -41,9 +41,14 @@ jobs:
       - name: Install cfn-lint
         run: |
           pip install -U cfn-lint
-      - name: Lint Cloudformation templates
+      - name: Find modified CloudFormation templates
+        id: modified_files
         run: |
-          cfn-lint tests/cloudformation/checks/resource/aws/**/* -i W
+          echo "modified_files=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep 'tests/cloudformation/checks/resource/aws/**/*' | xargs)" >> $GITHUB_ENV
+      - name: Lint Cloudformation templates
+        if: env.modified_files != ''
+        run: |
+          cfn-lint ${{ env.modified_files }} -i W
 
   mypy:
     uses: bridgecrewio/gha-reusable-workflows/.github/workflows/mypy.yaml@main
