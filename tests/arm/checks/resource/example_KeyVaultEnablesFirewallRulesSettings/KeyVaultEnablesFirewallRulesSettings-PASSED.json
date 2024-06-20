@@ -129,7 +129,7 @@
           "family": "A"
         },
         "networkAcls": {
-          "defaultAction": "Deny",
+          "defaultAction": "deny",
           "bypass": "AzureServices"
         },
         "enableSoftDelete": "true",
