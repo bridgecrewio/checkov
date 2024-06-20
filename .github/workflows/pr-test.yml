@@ -52,7 +52,7 @@ jobs:
         env:
           ALL_CHANGED_FILES: ${{ steps.changed-files-specific.outputs.all_changed_files }}
         run: |
-          cfn-lint $ALL_CHANGED_FILES -i W
+          cfn-lint "$ALL_CHANGED_FILES" -i W
 
   mypy:
     uses: bridgecrewio/gha-reusable-workflows/.github/workflows/mypy.yaml@main
