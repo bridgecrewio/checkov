@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.140...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.141...HEAD)
+
+## [3.2.141](https://github.com/bridgecrewio/checkov/compare/3.2.140...3.2.141) - 2024-06-19
+
+### Bug Fix
+
+- **secrets:** dedup secrets history values - [#6462](https://github.com/bridgecrewio/checkov/pull/6462)
 
 ## [3.2.140](https://github.com/bridgecrewio/checkov/compare/3.2.138...3.2.140) - 2024-06-18
 
