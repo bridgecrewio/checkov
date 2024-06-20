@@ -2,6 +2,6 @@ Resources:
   Aurora0:
     Type: 'AWS::RDS::DBCluster'
     Properties:
-      DatabaseName: 'mydb'
+      DatabaseName: 'mydb2'
       Engine: 'aurora'
       StorageEncrypted: true
