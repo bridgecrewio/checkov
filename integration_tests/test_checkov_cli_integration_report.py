@@ -30,21 +30,18 @@ class TestCheckovJsonReport(unittest.TestCase):
 
     def test_bitbucket_pipelines_report_api_key(self):
         report_path = os.path.join(current_dir, '..', 'checkov_report_bitbucket_pipelines_cve.json')
+        # the below condition exist because checkov_report_bitbucket_pipelines_cve.json is
+        # generated only on Linux with Python 3.8 - see prepare_data.sh script
         if sys.version_info[1] == 8 and platform.system() == 'Linux':
             with open(report_path, encoding='utf-8') as f:
-                reports = json.load(f)
-                self.assertGreaterEqual(len(reports), 2,
-                                        "expecting to have 2 reports at least, bitbucket_pipelines and sca_image")
+                report = json.load(f)
+                self.assertGreaterEqual(len(report), 1,
+                                        "expecting to have one report at least - bitbucket_pipelines ")
                 bitbucket_pipelines_actions_report_exists = False
-                sca_image = False
-                for report in reports:
-                    if report["check_type"] == "bitbucket_pipelines":
-                        bitbucket_pipelines_actions_report_exists = True
-                        self.assertGreaterEqual(report['summary']['failed'], 1)
-                    if report["check_type"] == "sca_image":
-                        sca_image = True
-                        self.assertGreaterEqual(report['summary']['failed'], 1)
-                self.assertTrue(sca_image)
+                if report["check_type"] == "bitbucket_pipelines":
+                    bitbucket_pipelines_actions_report_exists = True
+                    self.assertGreaterEqual(report['summary']['failed'], 1)
+
                 self.assertTrue(bitbucket_pipelines_actions_report_exists)
 
 

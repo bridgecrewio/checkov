@@ -18,16 +18,18 @@ class TestSagemakerDomainEncryptedWithCMK(unittest.TestCase):
 
         passing_resources = {
             "aws_sagemaker_domain.pass",
+            "aws_sagemaker_notebook_instance.pass",
         }
         failing_resources = {
             "aws_sagemaker_domain.fail",
+            "aws_sagemaker_notebook_instance.fail",
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])
         failed_check_resources = set([c.resource for c in report.failed_checks])
 
-        self.assertEqual(summary["passed"], 1)
-        self.assertEqual(summary["failed"], 1)
+        self.assertEqual(summary["passed"], len(passing_resources))
+        self.assertEqual(summary["failed"], len(failing_resources))
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 

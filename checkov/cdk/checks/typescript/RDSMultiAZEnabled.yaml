@@ -1,7 +1,7 @@
 metadata:
   version: 0.2
   approach: define failing
-  id: CKV_AWS_366
+  id: CKV_AWS_157
   name: Ensure that RDS instances have Multi-AZ enabled
   category: NETWORKING
   framework: cdk

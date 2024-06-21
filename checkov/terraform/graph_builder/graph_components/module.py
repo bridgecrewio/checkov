@@ -7,6 +7,7 @@ from ast import literal_eval
 
 from checkov.common.typing import TFDefinitionKeyType
 from checkov.common.util.data_structures_utils import pickle_deepcopy
+from checkov.terraform import TFDefinitionKey
 from checkov.terraform.graph_builder.graph_components.block_types import BlockType
 from checkov.terraform.graph_builder.graph_components.blocks import TerraformBlock
 from checkov.terraform.parser_functions import handle_dynamic_values
@@ -34,6 +35,7 @@ class Module:
         self.resources_types: Set[str] = set()
         self.source_dir = source_dir
         self.render_dynamic_blocks_env_var = os.getenv('CHECKOV_RENDER_DYNAMIC_MODULES', 'True')
+        self.temp_tf_definition: dict[TFDefinitionKey, dict[str, Any]] = {}
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Module):

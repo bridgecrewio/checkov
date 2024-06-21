@@ -1,0 +1,8 @@
+pass:
+  - "AWS::SageMaker::NotebookInstance.aws_sagemaker_notebook_instance_pass"
+  - "AWS::SageMaker::NotebookInstance.aws_sagemaker_notebook_instance_pass2"
+fail:
+  - "AWS::SageMaker::NotebookInstance.aws_sagemaker_notebook_instance_fail"
+evaluated_keys:
+  - 'AssumeRolePolicyDocument/Statement[?(@/Effect == Allow)]/Action[*]'
+  - 'resource_type'

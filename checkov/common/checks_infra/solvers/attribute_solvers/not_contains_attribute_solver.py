@@ -9,3 +9,6 @@ class NotContainsAttributeSolver(ContainsAttributeSolver):
 
     def _get_operation(self, vertex: Dict[str, Any], attribute: Optional[str]) -> bool:
         return not super()._get_operation(vertex, attribute)
+
+    def should_check_all_condition(self) -> bool:
+        return True

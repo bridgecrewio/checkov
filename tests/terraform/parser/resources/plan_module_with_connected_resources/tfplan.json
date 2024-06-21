@@ -2044,10 +2044,6 @@
                                 "default": null,
                                 "description": "(Optional) A valid bucket policy JSON document. Note that if the policy document is not specific enough (but still valid), Terraform may view the policy as constantly changing in a terraform plan. In this case, please make sure you use the verbose/specific version of the policy. For more information about building AWS IAM policy documents with Terraform, see the AWS IAM Policy Document Guide."
                             },
-                            "putin_khuylo": {
-                                "default": true,
-                                "description": "Do you agree that Putin doesn't respect Ukrainian sovereignty and territorial integrity? More info: https://en.wikipedia.org/wiki/Putin_khuylo!"
-                            },
                             "replication_configuration": {
                                 "default": {},
                                 "description": "Map containing cross-region replication configuration."

@@ -1,7 +1,7 @@
 metadata:
   version: 0.2
   approach: define failing
-  id: CKV_AWS_374
+  id: CKV_AWS_54
   name: Ensure S3 bucket has block public policy enabled
   category: GENERAL_SECURITY
   framework: cdk

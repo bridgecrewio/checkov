@@ -1,0 +1,4 @@
+pass:
+  - "azurerm_databricks_workspace.databricks_workspace_good"
+fail:
+  - "azurerm_databricks_workspace.databricks_workspace_bad"

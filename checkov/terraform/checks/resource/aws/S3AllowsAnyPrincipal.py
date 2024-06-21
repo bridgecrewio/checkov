@@ -38,7 +38,8 @@ def check_conditions(statement) -> bool:
     if any(condition_type in condition for condition_type in string_conditions):
         for condition_type in string_conditions:
             if condition_type in condition:
-                if any(source in condition[condition_type] for source in ['aws:sourceVpce', 'aws:SourceVpc']):
+                if any(source in condition[condition_type] for source in ['aws:sourceVpce', 'aws:SourceVpc',
+                                                                          'aws:PrincipalOrgPath', 'aws:userid']):
                     return True
 
     # Default fail if none of the above conditions are met

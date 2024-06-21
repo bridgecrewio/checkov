@@ -411,3 +411,22 @@ resource "azurerm_application_gateway" "pass2" {
     policy_name = "AppGwSslPolicy20220101S"
   }
 }
+
+resource "azurerm_application_gateway" "pass_dynamic_bug" {
+
+  enable_http2        = false
+  location            = ""
+  name                = ""
+  resource_group_name = ""
+
+  dynamic "ssl_policy" {
+    for_each = var.ssl_policy == null ? [] : [1]
+    content {
+      disabled_protocols   = lookup(var.ssl_policy, "disabled_protocols", [])
+      policy_type          = lookup(var.ssl_policy, "policy_type", "Predefined")
+      policy_name          = lookup(var.ssl_policy, "policy_type") == "Predefined" ? lookup(var.ssl_policy, "policy_name", "AppGwSslPolicy20170401S") : null
+      cipher_suites        = lookup(var.ssl_policy, "cipher_suites", [])
+      min_protocol_version = lookup(var.ssl_policy, "min_protocol_version", null)
+    }
+  }
+}

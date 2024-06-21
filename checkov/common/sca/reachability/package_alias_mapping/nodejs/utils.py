@@ -13,6 +13,12 @@ MODULE_EXPORTS_PATTERN = r'module\.exports\s*=\s*({.*?});'
 EXPORT_DEFAULT_PATTERN = r'export\s*default\s*({.*?});'
 
 
+def load_json_with_comments(json_str: str) -> Any:
+    # Regular expression to remove comments (both single line and multi-line)
+    clean_json_str = re.sub(r'//.*?$|/\*.*?\*/', '', json_str, flags=re.MULTILINE | re.DOTALL)
+    return json.loads(clean_json_str)
+
+
 def _parse_export(file_content: str, pattern: str) -> Dict[str, Any] | None:
     module_export_match = re.search(pattern, file_content, re.DOTALL)
 
@@ -40,7 +46,7 @@ def parse_webpack_file(file_content: str, relevant_packages: Set[str]) -> Dict[s
 
 def parse_tsconfig_file(file_content: str, relevant_packages: Set[str]) -> Dict[str, Any]:
     output: Dict[str, Any] = {"packageAliases": {}}
-    tsconfig_json = json.loads(file_content)
+    tsconfig_json = load_json_with_comments(file_content)
     paths = tsconfig_json.get("compilerOptions", {}).get("paths", {})
     for imported_name in paths:
         for package_relative_path in paths[imported_name]:
@@ -52,7 +58,7 @@ def parse_tsconfig_file(file_content: str, relevant_packages: Set[str]) -> Dict[
 
 def parse_babel_file(file_content: str, relevant_packages: Set[str]) -> Dict[str, Any]:
     output: Dict[str, Any] = {"packageAliases": {}}
-    babelrc_json = json.loads(file_content)
+    babelrc_json = load_json_with_comments(file_content)
     plugins = babelrc_json.get("plugins", {})
     for plugin in plugins:
         if len(plugin) > 1:
@@ -91,7 +97,7 @@ def parse_rollup_file(file_content: str, relevant_packages: Set[str]) -> Dict[st
 def parse_package_json_file(file_content: str, relevant_packages: Set[str]) -> Dict[str, Any]:
     output: Dict[str, Any] = {"packageAliases": {}}
     try:
-        package_json = json.loads(file_content)
+        package_json = load_json_with_comments(file_content)
     except JSONDecodeError:
         logging.warning('unable to parse package json file')
         return output

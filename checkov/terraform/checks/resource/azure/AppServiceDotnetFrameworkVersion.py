@@ -21,14 +21,14 @@ class AppServiceDotnetFrameworkVersion(BaseResourceCheck):
             if site_config.get('application_stack') and isinstance(site_config.get('application_stack'), list):
                 stack = site_config.get('application_stack')[0]
                 if stack.get('dotnet_version') and isinstance(stack.get('dotnet_version'), list):
-                    if stack.get('dotnet_version')[0] == "v7.0":
+                    if stack.get('dotnet_version')[0] == "v8.0":
                         return CheckResult.PASSED
                     return CheckResult.FAILED
 
         return CheckResult.UNKNOWN
 
     def get_expected_values(self) -> List[str]:
-        return ["v6.0", "v7.0"]
+        return ["v6.0", "v8.0"]
 
 
 check = AppServiceDotnetFrameworkVersion()

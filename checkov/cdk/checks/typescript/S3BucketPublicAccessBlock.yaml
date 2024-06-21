@@ -1,0 +1,30 @@
+metadata:
+  version: 0.2
+  id: CKV2_AWS_6
+  name: Ensure that S3 bucket has a Public Access block
+  category: NETWORKING
+  framework: cdk
+scope:
+  languages:
+    - javascript
+    - typescript
+definition:
+  or:
+    - pattern: new $FUNC(<ANY>)
+      conditions:
+        - metavariable: $FUNC
+          regex: (?i)(Bucket|CfnBucket)
+        - not_pattern: |
+            'new $FUNC(<ANY>, blockPublicAccess: BlockPublicAccess.$ATR ,<ANY>)'
+          conditions:
+            - metavariable: $ATR
+              regex: (?i)(BLOCK_ALL|BLOCK_ACLS|BLOCK_POLICY|RESTRICTED)
+    - pattern: new $S3.$FUNC(<ANY>)
+      conditions:
+        - metavariable: $FUNC
+          regex: (?i)(Bucket|CfnBucket)
+        - not_pattern: |
+            'new $S3.$FUNC(<ANY>, blockPublicAccess: $S3.BlockPublicAccess.$ATR ,<ANY>)'
+          conditions:
+            - metavariable: $ATR
+              regex: (?i)(BLOCK_ALL|BLOCK_ACLS|BLOCK_POLICY|RESTRICTED)

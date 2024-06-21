@@ -1,7 +1,7 @@
 metadata:
   version: 0.2
   approach: define failing
-  id: CKV_AWS_369
+  id: CKV_AWS_105
   name: Ensure Redshift uses SSL
   category: ENCRYPTION
   framework: cdk

@@ -459,3 +459,28 @@ resource "aws_s3_bucket" "pass_w_condition5" {
 }
 POLICY
 }
+
+resource "aws_s3_bucket" "pass_w_condition6" {
+  bucket = aws_s3_bucket.example_bucket.id
+
+  policy = <<POLICY
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowAccessFromSpecificVpcEndpoint",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::your-bucket-name/*",
+      "Condition": {
+          "StringLike": {
+            "aws:PrincipalOrgPath": "arn:aws:organizations::*:organization/123456789012*",
+            "aws:userid": "AROAEXAMPLE1234567890123456789"
+          }
+        }
+    }
+  ]
+}
+POLICY
+}

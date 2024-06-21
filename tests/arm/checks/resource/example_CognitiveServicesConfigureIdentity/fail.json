@@ -1,0 +1,33 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "accounts_pike_name": {
+            "defaultValue": "pike",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.CognitiveServices/accounts",
+            "apiVersion": "2023-05-01",
+            "name": "fail",
+            "location": "westeurope",
+            "tags": {
+                "createby": "Terraform"
+            },
+            "sku": {
+                "name": "S0"
+            },
+            "kind": "Face",
+            "properties": {
+                "publicNetworkAccess": "Enabled",
+                "restrictOutboundNetworkAccess": false,
+                "allowedFqdnList": [],
+                "disableLocalAuth": false,
+                "dynamicThrottlingEnabled": false
+            }
+        }
+    ]
+}

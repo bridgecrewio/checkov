@@ -1292,8 +1292,8 @@ class TestSuppressionsIntegration(unittest.TestCase):
         self.assertEqual(report.failed_checks[0].check_id, 'CKV_AWS_1')
         self.assertEqual(len(report.passed_checks), 1)
         self.assertEqual(report.passed_checks[0].check_id, 'CKV_AWS_2')
-        self.assertEqual(len(report.skipped_checks), 2)
-        self.assertEqual(report.skipped_checks[0].check_result['suppress_comment'], "comment")
+        # We are omitting policy level suppression
+        self.assertEqual(len(report.skipped_checks), 0)
 
     def test_get_policy_level_suppressions(self):
         instance = BcPlatformIntegration()
