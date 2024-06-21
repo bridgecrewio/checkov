@@ -3,6 +3,11 @@ Description: IAM Users with multiple policies
 Resources:
   PolicyOnePassPolicyTwoFailAdmin:
     Type: 'AWS::IAM::User'
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E3510
     Properties:
       Policies:
       - PolicyName: a

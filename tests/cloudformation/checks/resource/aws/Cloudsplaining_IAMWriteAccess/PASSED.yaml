@@ -3,6 +3,11 @@ Description: IAM policy
 Resources:
   NotWriteScoped:
     Type: 'AWS::IAM::Policy'
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E3510
     Properties:
       PolicyName: root
       PolicyDocument:
@@ -43,6 +48,11 @@ Resources:
         - example_role
   WriteScoped:
     Type: 'AWS::IAM::Policy'
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E3510
     Properties:
       PolicyName: root
       PolicyDocument:

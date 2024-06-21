@@ -3,6 +3,11 @@ Description: IAM Roles with multiple policies
 Resources:
   PolicyOnePassPolicyTwoFailAdmin:
     Type: 'AWS::IAM::Role'
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E3510
     Properties:
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
