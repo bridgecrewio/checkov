@@ -43,6 +43,11 @@ Resources:
         - example_role
   PermissionsScoped:
     Type: 'AWS::IAM::ManagedPolicy'
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E3510
     Properties:
       ManagedPolicyName: root
       PolicyDocument:
