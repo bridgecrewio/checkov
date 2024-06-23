@@ -173,6 +173,11 @@ def remove_index_pattern_from_str(str_value: str) -> str:
         # otherwise it can't be accessed via index
         return str_value
 
+    # Workaround for cases where the string value contains a map attribute access for foreach data block
+    # UT for this - `test_foreach_data_with_resource` -> /variable_rendering/test_foreach_renderer.py
+    if "data." in str_value:
+        return str_value
+
     str_value = re.sub(INDEX_PATTERN, "", str_value)
     str_value = str_value.replace('["', CHECKOV_LOREM_IPSUM_VAL).replace("[", " [ ").replace(CHECKOV_LOREM_IPSUM_VAL, '["')
     str_value = str_value.replace('"]', CHECKOV_LOREM_IPSUM_VAL).replace("]", " ] ").replace(CHECKOV_LOREM_IPSUM_VAL, '"]')
@@ -258,7 +263,6 @@ def get_referenced_vertices_in_str_value(
 
         str_value = remove_function_calls_from_str(str_value=str_value)
         str_value = remove_index_pattern_from_str(str_value=str_value)
-        str_value = replace_map_attribute_access_with_dot(str_value=str_value)
         str_value = remove_interpolation(str_value=str_value)
 
         references_vertices = get_vertices_references(str_value, aliases, resources_types)
