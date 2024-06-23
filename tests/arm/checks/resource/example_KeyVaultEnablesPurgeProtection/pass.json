@@ -11,7 +11,7 @@
                         "enabledForDiskEncryption": false,
                         "tenantId": "[data.azure_client_config.current.tenantId]",
                         "softDeleteRetentionDays": 7,
-                        "purgeProtectionEnabled": true,
+                        "enablePurgeProtection": true,
                         "sku": {
                             "family": "A",
                             "name": "standard"
