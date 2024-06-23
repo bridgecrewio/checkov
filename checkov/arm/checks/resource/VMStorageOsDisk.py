@@ -3,14 +3,14 @@ from checkov.arm.base_resource_value_check import BaseResourceCheck
 
 
 class VMStorageOsDisk(BaseResourceCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure that Virtual Machines use managed disks"
         id = "CKV_AZURE_92"
         supported_resources = ("Microsoft.Compute/virtualMachines",)
         categories = (CheckCategories.GENERAL_SECURITY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
+    def scan_resource_conf(self, conf) -> CheckResult:
         properties = conf.get('properties')
         if not properties:
             return CheckResult.PASSED

@@ -5,7 +5,7 @@
     {
       "type": "Microsoft.Compute/virtualMachines",
       "apiVersion": "2021-07-01",
-      "name": "[concat(parameters('prefix'), '-linux-vm')]",
+      "name": "pass-linux",
       "location": "[resourceGroup().location]",
       "properties": {
         "hardwareProfile": {

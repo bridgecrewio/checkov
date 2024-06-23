@@ -19,12 +19,12 @@ class TestVMStorageOsDisk(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "Microsoft.Compute/virtualMachines.[concat(parameters('prefix'), '-linux-vm')]",
-            "Microsoft.Compute/virtualMachines.[concat(parameters('prefix'), '-windows-vm')]",
+            "Microsoft.Compute/virtualMachines.pass-linux",
+            "Microsoft.Compute/virtualMachines.pass-windows",
         }
         failing_resources = {
-            "Microsoft.Compute/virtualMachines.[concat(parameters('prefix'), '-linux-vm-with-vhd')]",
-            "Microsoft.Compute/virtualMachines.[concat(parameters('prefix'), '-windows-vm-with-vhd')]",
+            "Microsoft.Compute/virtualMachines.fail-linux",
+            "Microsoft.Compute/virtualMachines.fail-windows",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}

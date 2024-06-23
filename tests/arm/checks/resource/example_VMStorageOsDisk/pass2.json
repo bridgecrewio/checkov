@@ -5,7 +5,7 @@
     {
       "type": "Microsoft.Compute/virtualMachines",
       "apiVersion": "2021-07-01",
-      "name": "[concat(parameters('prefix'), '-windows-vm')]",
+      "name": "pass-windows",
       "location": "[resourceGroup().location]",
       "properties": {
         "hardwareProfile": {
