@@ -1,0 +1,5 @@
+pass:
+  - "azurerm_machine_learning_workspace.pass1"
+  - "azurerm_machine_learning_workspace.pass2"
+fail:
+  - "azurerm_machine_learning_workspace.failed"
