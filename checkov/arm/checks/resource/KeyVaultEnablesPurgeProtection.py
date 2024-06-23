@@ -13,7 +13,7 @@ class KeyVaultEnablesPurgeProtection(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self) -> Any:
-        return "properties/purgeProtectionEnabled"
+        return "properties/enablePurgeProtection"
 
     def get_expected_value(self) -> bool:
         return True
