@@ -48,14 +48,6 @@ class CustomRegexDetector(RegexBasedDetector):
                     exc_info=True,
                 )
 
-    @property
-    def multiline_regex_supported_file_types(self) -> Set[str]:
-        if self._multiline_regex_supported_file_types:
-            return self._multiline_regex_supported_file_types
-        for regex in self.multiline_regex_to_metadata.values():
-            self._multiline_regex_supported_file_types.update(regex.get("supportedFiles", []))
-        return self._multiline_regex_supported_file_types
-
     def analyze_line(
             self,
             filename: str,
@@ -87,8 +79,6 @@ class CustomRegexDetector(RegexBasedDetector):
             self._analyzed_files.add(filename)
             # We only want to read file if: there is regex supporting it & file size is not over MAX_FILE_SIZE
             if not self.multiline_regex_to_metadata.values() or \
-                    not self.multiline_regex_supported_file_types or \
-                    not any([filename.endswith(str(file_type)) for file_type in self.multiline_regex_supported_file_types]) or \
                     not 0 < get_file_size_safe(filename) < CustomRegexDetector.MAX_FILE_SIZE:
                 return output
             file_content = read_file_safe(filename)
