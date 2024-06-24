@@ -19,7 +19,7 @@ class TestSeccomp(unittest.TestCase):
         passed_resources = [check.resource for check in report.passed_checks]
         failed_resources = [check.resource for check in report.failed_checks]
 
-        self.assertEqual(summary["passed"], 9)
+        self.assertEqual(summary["passed"], 10)
         self.assertEqual(summary["failed"], 3)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
@@ -34,6 +34,7 @@ class TestSeccomp(unittest.TestCase):
             "Pod.default.seccomp-passed-security-context",
             "StatefulSet.default.RELEASE-NAME",
             "Pod.default.my-secure-pod",
+            "Deployment.aws-dev.fdn-svc",
         ]
         expected_failed_resources = [
             "Deployment.infra.app-cert-manager",
