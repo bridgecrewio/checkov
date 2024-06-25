@@ -9,7 +9,7 @@ assignees: ''
 
 **Describe the feature**
 
-Explain the feature in detail. Note that feature requests are always reviewed, but prioritized based on popularity, effort, and impact.
+Explain the feature in detail. Note that feature requests are always reviewed, but prioritized based on popularity, effort, and impact. We also welcome contributions.
 
 **Examples**
 
