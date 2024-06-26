@@ -1,6 +1,6 @@
 metadata:
   id: "CKV2_AWS_67"
-  name: "Ensure AWS S3 bucket encrypted with Customer Managed Key (CMK) has regular rotation"
+  name: "Ensure AWS S3 bucket is encrypted with a Customer Managed Key (CMK) and the key has regular rotation"
   category: "ENCRYPTION"
 definition:
   and:
