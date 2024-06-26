@@ -3,6 +3,11 @@ Description: IAM policy
 Resources:
   NotPermissionsScoped:
     Type: 'AWS::IAM::Policy'
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E3510
     Properties:
       PolicyName: root
       PolicyDocument:
@@ -12,7 +17,7 @@ Resources:
             Action: 
             - 's3:Get*'
             Resource: 
-            - 'foo'
+            - 'foobar'
       Roles:
         - example_role
   NotPermissionsWildcard:
@@ -43,6 +48,11 @@ Resources:
         - example_role
   PermissionsScoped:
     Type: 'AWS::IAM::Policy'
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - E3510
     Properties:
       PolicyName: root
       PolicyDocument:
