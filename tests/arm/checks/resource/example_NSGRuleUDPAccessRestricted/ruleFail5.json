@@ -1,0 +1,33 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+      "apiVersion": "2020-11-01",
+      "name": "ruleFail5",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "priority": 100,
+        "direction": "Inbound",
+        "access": "Allow",
+        "protocol": "Udp",
+        "sourcePortRange": "*",
+        "destinationPortRange": "*",
+        "sourceAddressPrefix": "Internet",
+        "destinationAddressPrefix": "*"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName'))]"
+      ]
+    }
+  ],
+  "parameters": {
+    "networkSecurityGroupName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Network Security Group."
+      }
+    }
+  }
+}
