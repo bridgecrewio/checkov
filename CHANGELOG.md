@@ -1,6 +1,88 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.128...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.145...HEAD)
+
+## [3.2.145](https://github.com/bridgecrewio/checkov/compare/3.2.144...3.2.145) - 2024-06-25
+
+### Documentation
+
+- **general:** Note for feature requests - [#6497](https://github.com/bridgecrewio/checkov/pull/6497)
+
+## [3.2.144](https://github.com/bridgecrewio/checkov/compare/3.2.141...3.2.144) - 2024-06-23
+
+### Bug Fix
+
+- **kubernetes:** ensure seccompProfile is set to RuntimeDefault for all containers in deployments and similar resources - [#6459](https://github.com/bridgecrewio/checkov/pull/6459)
+- **terraform:** Add more conditions for CKV_AWS_70 - [#6464](https://github.com/bridgecrewio/checkov/pull/6464)
+
+## [3.2.141](https://github.com/bridgecrewio/checkov/compare/3.2.140...3.2.141) - 2024-06-19
+
+### Bug Fix
+
+- **secrets:** dedup secrets history values - [#6462](https://github.com/bridgecrewio/checkov/pull/6462)
+
+## [3.2.140](https://github.com/bridgecrewio/checkov/compare/3.2.138...3.2.140) - 2024-06-18
+
+### Feature
+
+- **azure:** fix ckv_azure_189 according to docs - [#6413](https://github.com/bridgecrewio/checkov/pull/6413)
+
+### Bug Fix
+
+- **sca:** Support parsing json with comments - [#6466](https://github.com/bridgecrewio/checkov/pull/6466)
+
+### Documentation
+
+- **general:** fix pre-commit link - [#6433](https://github.com/bridgecrewio/checkov/pull/6433)
+
+## [3.2.138](https://github.com/bridgecrewio/checkov/compare/3.2.136...3.2.138) - 2024-06-17
+
+### Feature
+
+- **graph:** support creation of resource type allow/deny lists - [#6451](https://github.com/bridgecrewio/checkov/pull/6451)
+
+### Bug Fix
+
+- **terraform:** Fix name of CKV2_AWS_67 to be more clear - [#6434](https://github.com/bridgecrewio/checkov/pull/6434)
+- **terraform:** Fix when apt is in rm statement - [#6437](https://github.com/bridgecrewio/checkov/pull/6437)
+- **terraform:** Update CKV_AWS_224 title - [#6435](https://github.com/bridgecrewio/checkov/pull/6435)
+
+## [3.2.136](https://github.com/bridgecrewio/checkov/compare/3.2.133...3.2.136) - 2024-06-13
+
+### Bug Fix
+
+- **arm:** Correct AzureMLWorkspacePrivateEndpoint rule check logic - [#6432](https://github.com/bridgecrewio/checkov/pull/6432)
+- **general:** removed references Putin references - [#6445](https://github.com/bridgecrewio/checkov/pull/6445)
+
+## [3.2.133](https://github.com/bridgecrewio/checkov/compare/3.2.130...3.2.133) - 2024-06-10
+
+### Feature
+
+- **general:** add AI_AND_ML to CheckCategories - [#6423](https://github.com/bridgecrewio/checkov/pull/6423)
+
+### Bug Fix
+
+- **sast:** Update CKV IDs for CDK policies - [#6415](https://github.com/bridgecrewio/checkov/pull/6415)
+
+## [3.2.130](https://github.com/bridgecrewio/checkov/compare/3.2.128...3.2.130) - 2024-06-09
+
+### Feature
+
+- **arm:** add CKV_AZURE_135 to ensure Application Gateway WAF prevents message lookup in Log4j2.  - [#6364](https://github.com/bridgecrewio/checkov/pull/6364)
+- **arm:** add CKV_AZURE_140 to ensure that Local Authentication is disabled on CosmosDB - [#6329](https://github.com/bridgecrewio/checkov/pull/6329)
+- **arm:** add CKV_AZURE_163  Enable vulnerability scanning for container images - [#6339](https://github.com/bridgecrewio/checkov/pull/6339)
+- **arm:** add MariaDbPublicAccessDisabled convert policy to arm - [#6246](https://github.com/bridgecrewio/checkov/pull/6246)
+- **arm:** AKSLocalAdminDisabled - [#6334](https://github.com/bridgecrewio/checkov/pull/6334)
+- **arm:** AppServiceFTPSState - [#6363](https://github.com/bridgecrewio/checkov/pull/6363)
+- **arm:** AzureServiceFabricClusterProtectionLevel - [#6366](https://github.com/bridgecrewio/checkov/pull/6366)
+- **arm:** ensure ACR disables anonymous pulling of images (CKV_AZURE_138) - [#6373](https://github.com/bridgecrewio/checkov/pull/6373)
+- **arm:** KeyVaultDisablesPublicNetworkAccess - [#6342](https://github.com/bridgecrewio/checkov/pull/6342)
+- **arm:** PostgreSQLServerPublicAccessDisabled - [#6330](https://github.com/bridgecrewio/checkov/pull/6330)
+- **terraform:** extract image referencers for AWS SageMaker - [#6408](https://github.com/bridgecrewio/checkov/pull/6408)
+
+### Bug Fix
+
+- **ansible:** add dict check in create_tasks_vertices - [#6417](https://github.com/bridgecrewio/checkov/pull/6417)
 
 ## [3.2.128](https://github.com/bridgecrewio/checkov/compare/3.2.125...3.2.128) - 2024-06-06
 
