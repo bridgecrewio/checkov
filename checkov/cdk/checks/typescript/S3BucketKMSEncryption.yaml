@@ -1,6 +1,6 @@
 metadata:
   version: 0.2
-  id: CKV_AWS_376
+  id: CKV_AWS_145
   name: Ensure that S3 buckets are encrypted with KMS by default
   category: ENCRYPTION
 scope:
