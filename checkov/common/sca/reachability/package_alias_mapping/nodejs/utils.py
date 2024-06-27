@@ -17,8 +17,6 @@ def load_json_with_comments(json_str: str) -> dict:
     # Regular expression to remove comments (both single line and multi-line)
     pattern = r'(?<!\\)(["\'])(?:(?=(\\?))\2.)*?\1|//.*?$|/\*[\s\S]*?\*/'
     regex = re.compile(pattern, re.MULTILINE)
-
-    # Replace comments with an empty string, preserving quoted strings
     clean_json_str = regex.sub(lambda match: match.group(0) if match.group(1) else '', json_str)
     return json.loads(clean_json_str)
 
