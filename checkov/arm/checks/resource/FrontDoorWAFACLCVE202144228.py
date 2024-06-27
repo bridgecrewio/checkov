@@ -16,8 +16,11 @@ class FrontDoorWAFACLCVE202144228(BaseResourceCheck):
     def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
         self.evaluatedKeys = ["managedRules"]
         properties = conf.get("properties")
-        managedRules = properties.get("managedRules")
 
+        if properties is None or "managedRules" not in properties:
+            return CheckResult.FAILED
+
+        managedRules = properties.get("managedRules")
         if not managedRules:
             return CheckResult.FAILED
 
