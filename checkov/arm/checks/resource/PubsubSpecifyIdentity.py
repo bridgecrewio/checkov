@@ -1,4 +1,4 @@
-from typing import List, Any
+from typing import Any
 
 from checkov.arm.base_resource_value_check import BaseResourceValueCheck
 from checkov.common.models.consts import ANY_VALUE

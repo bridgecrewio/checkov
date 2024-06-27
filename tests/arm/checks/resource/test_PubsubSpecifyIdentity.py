@@ -1,6 +1,6 @@
 import unittest
 from pathlib import Path
-from checkov.arm.checks.resource.PubsubSKUSLA import check
+from checkov.arm.checks.resource.PubsubSpecifyIdentity import check
 from checkov.arm.runner import Runner
 from checkov.runner_filter import RunnerFilter
 
