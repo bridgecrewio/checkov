@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 
 class CognitiveServicesEnableLocalAuth(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure that Cognitive Services accounts enable local authentication"
+        name = "Ensure that Cognitive Services accounts disable local authentication"
         id = "CKV_AZURE_236"
         supported_resources = ('azurerm_cognitive_account', )
         categories = (CheckCategories.NETWORKING, )
