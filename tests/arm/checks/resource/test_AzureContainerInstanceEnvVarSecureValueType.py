@@ -2,27 +2,26 @@ import os
 import unittest
 
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.runner import Runner
-from checkov.terraform.checks.resource.azure.AzureContainerInstanceEnvVarSecureValueType import check
+from checkov.arm.runner import Runner
+from checkov.arm.checks.resource.AzureContainerInstanceEnvVarSecureValueType import check
 
 
 class TestAzureContainerInstanceEnvVarSecureValueType(unittest.TestCase):
-    def test(self):
-        runner = Runner()
+    def test_summary(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
-
         test_files_dir = os.path.join(current_dir, "example_AzureContainerInstanceEnvVarSecureValueType")
-        report = runner.run(root_folder=test_files_dir,
-                            runner_filter=RunnerFilter(checks=[check.id]))
+
+        report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
+
         summary = report.get_summary()
 
         passing_resources = {
-            'azurerm_container_group.pass_1',
-            'azurerm_container_group.pass_2',
+            'Microsoft.ContainerInstance/containerGroups.pass_1',
+            'Microsoft.ContainerInstance/containerGroups.pass_2',
         }
         failing_resources = {
-            'azurerm_container_group.fail_1',
-            'azurerm_container_group.fail_2',
+            'Microsoft.ContainerInstance/containerGroups.fail_1',
+            'Microsoft.ContainerInstance/containerGroups.fail_2',
         }
         skipped_resources = {}
 
