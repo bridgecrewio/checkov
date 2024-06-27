@@ -13,7 +13,7 @@ from os import path
 from pathlib import Path
 from time import sleep
 from types import MethodType
-from typing import List, Dict, TYPE_CHECKING, Any, Set, cast, Optional, Union
+from typing import Callable, List, Dict, TYPE_CHECKING, Any, Set, cast, Optional, Union
 from urllib.parse import urlparse
 
 import boto3
@@ -163,6 +163,7 @@ class BcPlatformIntegration:
         self.scan_dir: List[str] = []
         self.scan_file: List[str] = []
         self.sast_custom_policies: str = ''
+        self.internal_notifier: Callable[[str, Dict], None] = lambda event, payload: None
 
     def init_instance(self, platform_integration_data: dict[str, Any]) -> None:
         """This is mainly used for recreating the instance without interacting with the platform again"""
