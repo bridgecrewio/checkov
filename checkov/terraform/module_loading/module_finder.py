@@ -105,14 +105,15 @@ def load_tf_modules(
     if not modules_to_load:
         modules_to_load = find_modules(path)
 
-    # To avoid duplicate work, we need to get the distinct module sources
-    distinct_modules = list({m.address: m for m in modules_to_load}.values())
+    # load terraform managed modules first, before pulling out distinct modules, as address attribute changes
+    replaced_modules = replace_terraform_managed_modules(path=path, found_modules=modules_to_load)
 
-    replaced_modules = replace_terraform_managed_modules(path=path, found_modules=distinct_modules)
+    # To avoid duplicate work, we need to get the distinct module_name and address sources
+    distinct_modules = list({m.address: m for m in replaced_modules}.values())
 
     downloadable_modules = [
         (module_loader_registry, m)
-        for m in replaced_modules if should_download_module(m.module_link)
+        for m in distinct_modules if should_download_module(m.module_link)
     ]
 
     if run_parallel:
