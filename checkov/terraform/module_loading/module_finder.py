@@ -113,7 +113,7 @@ def load_tf_modules(
     # load terraform managed modules first, before pulling out distinct modules, as address attribute changes
     replaced_modules = replace_terraform_managed_modules(path=path, found_modules=modules_to_load)
 
-    # To avoid duplicate work, we need to get the distinct module_name and address sources
+    # To avoid duplicate work, we need to get the distinct module sources
     distinct_modules = list({m.address: m for m in replaced_modules}.values())
 
     downloadable_modules = [
