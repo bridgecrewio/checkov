@@ -1,0 +1,29 @@
+metadata:
+  version: 0.2
+  id: CKV_AWS_145
+  name: Ensure that S3 buckets are encrypted with KMS by default
+  category: ENCRYPTION
+scope:
+  languages:
+    - javascript
+    - typescript
+definition:
+  or:
+    - pattern: new $FUNC(<ANY>)
+      conditions:
+        - metavariable: $FUNC
+          regex: (?i)(Bucket|CfnBucket)
+        - not_pattern: |
+            'new $FUNC(<ANY>, encryption: $METHOD ,<ANY>)'
+          conditions:
+            - metavariable: $METHOD
+              regex: (?i)(aws_cdk.aws_s3.BucketEncryption.KMS_MANAGED|aws_cdk.aws_s3.BucketEncryption.KMS)
+    - pattern: new $S3.$FUNC(<ANY>)
+      conditions:
+        - metavariable: $FUNC
+          regex: (?i)(Bucket|CfnBucket)
+        - not_pattern: |
+            'new $FUNC(<ANY>, encryption: $METHOD ,<ANY>)'
+          conditions:
+            - metavariable: $METHOD
+              regex: (?i)(aws_cdk.aws_s3.BucketEncryption.KMS_MANAGED|aws_cdk.aws_s3.BucketEncryption.KMS)
