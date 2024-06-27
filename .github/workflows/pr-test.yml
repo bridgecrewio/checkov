@@ -38,12 +38,23 @@ jobs:
       - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c  # v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
+      - name: Get changed CFN test files
+        id: changed-files-specific
+        uses: tj-actions/changed-files@eaf854ef0c266753e1abec356dcf17d92695b251 # v44
+        with:
+          files: tests/cloudformation/checks/resource/aws/**/*
       - name: Install cfn-lint
+        if: steps.changed-files-specific.outputs.any_changed == 'true'
         run: |
           pip install -U cfn-lint
       - name: Lint Cloudformation templates
+        if: steps.changed-files-specific.outputs.any_changed == 'true'
+        env:
+          ALL_CHANGED_FILES: ${{ steps.changed-files-specific.outputs.all_changed_files }}
         run: |
-          cfn-lint tests/cloudformation/checks/resource/aws/**/* -i W
+          for file in $ALL_CHANGED_FILES; do
+            cfn-lint "$file" -i W
+          done
 
   mypy:
     uses: bridgecrewio/gha-reusable-workflows/.github/workflows/mypy.yaml@main
@@ -348,7 +359,6 @@ jobs:
           LOG_LEVEL: INFO
           BC_API_KEY: ${{ secrets.PRISMA_KEY_API2 }}
           PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
-          ENABLE_SAST_TYPESCRIPT: true
         if: env.BC_API_KEY != null
         run: bash -c './cdk_integration_tests/prepare_data.sh'
       - name: Run integration tests
@@ -391,7 +401,6 @@ jobs:
           LOG_LEVEL: INFO
           BC_API_KEY: ${{ secrets.PRISMA_KEY_API2 }}
           PRISMA_API_URL: ${{ secrets.PRISMA_API_URL_2 }}
-          ENABLE_SAST_TYPESCRIPT: true
         if: env.BC_API_KEY != null
         run: bash -c './cdk_integration_tests/prepare_data.sh'
       - name: Run integration tests

@@ -1,0 +1,25 @@
+metadata:
+  id: "CKV2_AWS_68"
+  name: "Ensure SageMaker notebook instance IAM policy is not overly permissive"
+  category: "NETWORKING"
+
+definition:
+  and:
+    - cond_type: filter
+      value:
+        - AWS::SageMaker::NotebookInstance
+      operator: within
+      attribute: resource_type
+    - cond_type: connection
+      resource_types:
+        - AWS::SageMaker::NotebookInstance
+      connected_resource_types:
+        - AWS::IAM::Role
+      operator: exists
+    - cond_type: attribute
+      resource_types:
+        - AWS::IAM::Role
+      attribute: "AssumeRolePolicyDocument.Statement[?(@.Effect == Allow)].Action[*]"
+      operator: "jsonpath_not_equals"
+      value: "*"
+
