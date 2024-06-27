@@ -1,6 +1,25 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.140...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.145...HEAD)
+
+## [3.2.145](https://github.com/bridgecrewio/checkov/compare/3.2.144...3.2.145) - 2024-06-25
+
+### Documentation
+
+- **general:** Note for feature requests - [#6497](https://github.com/bridgecrewio/checkov/pull/6497)
+
+## [3.2.144](https://github.com/bridgecrewio/checkov/compare/3.2.141...3.2.144) - 2024-06-23
+
+### Bug Fix
+
+- **kubernetes:** ensure seccompProfile is set to RuntimeDefault for all containers in deployments and similar resources - [#6459](https://github.com/bridgecrewio/checkov/pull/6459)
+- **terraform:** Add more conditions for CKV_AWS_70 - [#6464](https://github.com/bridgecrewio/checkov/pull/6464)
+
+## [3.2.141](https://github.com/bridgecrewio/checkov/compare/3.2.140...3.2.141) - 2024-06-19
+
+### Bug Fix
+
+- **secrets:** dedup secrets history values - [#6462](https://github.com/bridgecrewio/checkov/pull/6462)
 
 ## [3.2.140](https://github.com/bridgecrewio/checkov/compare/3.2.138...3.2.140) - 2024-06-18
 
