@@ -78,15 +78,17 @@ class Seccomp(BaseK8Check):
         elif conf['kind'] == 'CronJob':
             inner_template = find_in_dict(input_dict=conf, key_path="spec/jobTemplate/spec/template")
             if inner_template and isinstance(inner_template, dict):
-                if "metadata" in inner_template:
-                    metadata = inner_template["metadata"]
-                elif "spec" in inner_template:
+                if "spec" in inner_template:
                     inner_spec = inner_template["spec"]
                     if "metadata" in inner_spec:
                         metadata = inner_spec["metadata"]
                     elif "securityContext" in inner_spec:
                         security_profile = inner_spec["securityContext"].get("seccompProfile", {}).get("type")
-                        return CheckResult.PASSED if security_profile == 'RuntimeDefault' else CheckResult.FAILED
+                        if security_profile == 'RuntimeDefault':
+                            return CheckResult.PASSED
+                if "metadata" in inner_template:
+                    metadata = inner_template["metadata"]
+
         else:
             inner_metadata = find_in_dict(input_dict=conf, key_path="spec/template/metadata")
             metadata = inner_metadata if inner_metadata else metadata
