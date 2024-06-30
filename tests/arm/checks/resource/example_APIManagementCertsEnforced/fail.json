@@ -1,0 +1,31 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.ApiManagement/service",
+      "apiVersion": "2021-01-01-preview",
+      "name": "fail",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "publisherName": "My Company",
+        "publisherEmail": "company@terraform.io",
+        "sku": {
+          "name": "Consumption"
+        },
+        "policy": {
+          "value": "<policies><inbound /><backend /><outbound /><on-error /></policies>"
+        },
+        "customProperties": {},
+        "security": {
+          "enableFrontendTls10": false,
+          "enableFrontendTls11": false,
+          "enableFrontendSsl30": false
+        }
+      },
+      "identity": {
+        "type": "None"
+      }
+    }
+  ]
+}
