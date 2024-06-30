@@ -5,7 +5,7 @@
     {
       "type": "Microsoft.Security/pricings",
       "apiVersion": "2021-01-01-preview",
-      "name": "KeyVaults",
+      "name": "pass",
       "properties": {
         "pricingTier": "Standard"
       }
