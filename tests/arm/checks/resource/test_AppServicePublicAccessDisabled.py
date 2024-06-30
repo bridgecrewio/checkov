@@ -20,12 +20,16 @@ class TestAppServicePublicAccessDisabled(unittest.TestCase):
         passing_resources = {
             "Microsoft.Web/sites.linuxPass",
             "Microsoft.Web/sites.windowsPass",
+            "Microsoft.Web/sites/slots.slotPass",
+            "Microsoft.Web/sites/config.configPass",
         }
         failing_resources = {
             "Microsoft.Web/sites.linuxDefault",
             "Microsoft.Web/sites.windowsDefault",
             "Microsoft.Web/sites.linuxFail",
             "Microsoft.Web/sites.windowsFail",
+            "Microsoft.Web/sites/slots.slotFail",
+            "Microsoft.Web/sites/config.configFail",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}

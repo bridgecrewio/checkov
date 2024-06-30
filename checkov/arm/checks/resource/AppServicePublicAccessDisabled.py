@@ -8,7 +8,11 @@ class AppServicePublicAccessDisabled(BaseResourceValueCheck):
     def __init__(self) -> None:
         name = "Ensure that Azure Web App public network access is disabled"
         id = "CKV_AZURE_222"
-        supported_resources = ["Microsoft.Web/sites",]
+        supported_resources = [
+            "Microsoft.Web/sites",
+            "Microsoft.Web/sites/slots",
+            "Microsoft.Web/sites/config"
+        ]
         categories = [CheckCategories.NETWORKING,]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
