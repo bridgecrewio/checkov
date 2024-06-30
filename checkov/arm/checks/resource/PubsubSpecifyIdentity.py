@@ -14,7 +14,7 @@ class PubsubSpecifyIdentity(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self) -> str:
-        return "identity/[0]/type"
+        return "identity/type"
 
     def get_expected_value(self) -> Any:
         return ANY_VALUE
