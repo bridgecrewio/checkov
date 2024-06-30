@@ -6,7 +6,7 @@ from checkov.arm.base_resource_value_check import BaseResourceValueCheck
 
 class CognitiveServicesEnableLocalAuth(BaseResourceValueCheck):
     def __init__(self) -> None:
-        name = "Ensure that Cognitive Services accounts enable local authentication"
+        name = "Ensure that Cognitive Services accounts disable local authentication"
         id = "CKV_AZURE_236"
         supported_resources = ('Microsoft.CognitiveServices/accounts', )
         categories = (CheckCategories.NETWORKING, )
