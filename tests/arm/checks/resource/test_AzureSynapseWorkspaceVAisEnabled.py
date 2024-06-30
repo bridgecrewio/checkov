@@ -20,11 +20,11 @@ class TestSynapseWorkspaceVAisEnabled(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "azurerm_synapse_workspace_vulnerability_assessment.pass",
+            "Microsoft.Synapse/workspaces/vulnerabilityAssessments.pass",
         }
         failing_resources = {
-            "azurerm_synapse_workspace_vulnerability_assessment.fail1",
-            "azurerm_synapse_workspace_vulnerability_assessment.fail2",
+            "Microsoft.Synapse/workspaces/vulnerabilityAssessments.fail1",
+            "Microsoft.Synapse/workspaces/vulnerabilityAssessments.fail2",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}

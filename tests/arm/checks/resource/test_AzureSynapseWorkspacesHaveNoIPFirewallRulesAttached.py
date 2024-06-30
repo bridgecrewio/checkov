@@ -21,11 +21,11 @@ class TestSynapseWorkspaceHaveNoIPFirewallRulesAttached(unittest.TestCase):
         logging.warning(f"summary:  {summary}")
 
         passing_resources = {
-            "azurerm_synapse_workspace.pass",
-            "azurerm_synapse_workspace.pass2",
+            "Microsoft.Synapse/workspaces.pass",
+            "Microsoft.Synapse/workspaces.pass2",
         }
         failing_resources = {
-            "azurerm_synapse_workspace.fail",
+            "Microsoft.Synapse/workspaces.fail",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}

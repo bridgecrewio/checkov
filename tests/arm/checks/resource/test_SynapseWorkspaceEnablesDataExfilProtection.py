@@ -21,11 +21,11 @@ class TestSynapseWorkspaceEnablesDataExfilProtection(unittest.TestCase):
         logging.warning(f"summary:  {summary}")
 
         passing_resources = {
-            "azurerm_synapse_workspace.pass",
+            "Microsoft.Synapse/workspaces.pass",
         }
         failing_resources = {
-            "azurerm_synapse_workspace.fail1",
-            "azurerm_synapse_workspace.fail2",
+            "Microsoft.Synapse/workspaces.fail1",
+            "Microsoft.Synapse/workspaces.fail2",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
