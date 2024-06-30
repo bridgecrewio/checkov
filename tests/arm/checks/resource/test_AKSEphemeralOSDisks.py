@@ -15,11 +15,11 @@ class TestAKSEphemeralOSDisks(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            'Microsoft.ContainerService.pass',
+            'Microsoft.ContainerService/managedClusters.pass',
         }
         failing_resources = {
-            'Microsoft.ContainerService.fail',
-            'Microsoft.ContainerService.fail2',
+            'Microsoft.ContainerService/managedClusters.fail',
+            'Microsoft.ContainerService/managedClusters.fail2',
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}

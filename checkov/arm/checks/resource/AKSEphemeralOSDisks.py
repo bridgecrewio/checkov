@@ -19,8 +19,8 @@ class AKSEphemeralOSDisks(BaseResourceValueCheck):
         """
         name = "Ensure ephemeral disks are used for OS disks"
         id = "CKV_AZURE_226"
-        supported_resources = ("Microsoft.ContainerService",)
-        categories = (CheckCategories.KUBERNETES,)
+        supported_resources = ["Microsoft.ContainerService/managedClusters",]
+        categories = [CheckCategories.KUBERNETES,]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self) -> str:

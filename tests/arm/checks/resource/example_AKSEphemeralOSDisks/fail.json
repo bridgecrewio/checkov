@@ -3,7 +3,7 @@
   "contentVersion": "1.0.0.0",
   "resources": [
     {
-      "type": "Microsoft.ContainerService",
+      "type": "Microsoft.ContainerService/managedClusters",
       "apiVersion": "2018-06-01",
       "name": "fail",
       "properties": {
