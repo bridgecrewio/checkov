@@ -16,9 +16,9 @@ class AzureDefenderDisabledForResManager(BaseResourceCheck):
 
     def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
 
-        properties = conf.get("properties", {})
-        resource_type = properties["subPlan"].lower()
-        pricing_tier = properties["pricingTier"].lower()
+        properties: Dict[str, Any] = conf.get("properties", {})
+        resource_type = properties.get("subPlan", "").lower()
+        pricing_tier = properties.get("pricingTier","").lower()
 
         if resource_type == "arm" and pricing_tier != "standard":
             return CheckResult.FAILED
