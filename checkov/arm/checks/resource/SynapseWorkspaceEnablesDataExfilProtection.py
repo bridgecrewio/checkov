@@ -1,6 +1,7 @@
 from checkov.common.models.enums import CheckCategories
 from checkov.arm.base_resource_value_check import BaseResourceValueCheck
 
+
 class SynapseWorkspaceEnablesDataExfilProtection(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure that Synapse workspace has data_exfiltration_protection_enabled"

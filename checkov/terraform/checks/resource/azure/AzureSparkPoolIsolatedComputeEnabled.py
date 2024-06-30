@@ -1,6 +1,7 @@
 from checkov.common.models.enums import CheckCategories
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
+
 class AzureSparkPoolIsolatedComputeEnabled(BaseResourceValueCheck):
     def __init__(self) -> None:
         name = "Ensure isolated compute is enabled for Synapse Spark pools"
@@ -11,5 +12,6 @@ class AzureSparkPoolIsolatedComputeEnabled(BaseResourceValueCheck):
 
     def get_inspected_key(self) -> str:
         return "compute_isolation_enabled"
+
 
 check = AzureSparkPoolIsolatedComputeEnabled()

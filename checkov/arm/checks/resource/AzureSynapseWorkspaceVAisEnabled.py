@@ -1,6 +1,7 @@
 from checkov.common.models.enums import CheckCategories
 from checkov.arm.base_resource_value_check import BaseResourceValueCheck
 
+
 class SynapseWorkspaceVAisEnabled(BaseResourceValueCheck):
     def __init__(self):
         name = "Ensure that Azure Synapse Workspace vulnerability assessment is enabled"

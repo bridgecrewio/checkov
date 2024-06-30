@@ -2,6 +2,7 @@ from typing import Dict, List, Any
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.arm.base_resource_check import BaseResourceCheck
 
+
 class AzureSynapseWorkspacesHaveNoIPFirewallRulesAttached(BaseResourceCheck):
     def __init__(self):
         name = "Ensure that Azure Synapse workspaces have no IP firewall rules attached"
@@ -18,5 +19,5 @@ class AzureSynapseWorkspacesHaveNoIPFirewallRulesAttached(BaseResourceCheck):
             return CheckResult.FAILED
         return CheckResult.PASSED
 
-check = AzureSynapseWorkspacesHaveNoIPFirewallRulesAttached()
 
+check = AzureSynapseWorkspacesHaveNoIPFirewallRulesAttached()
