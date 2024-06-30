@@ -1,0 +1,23 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.StorageSync/storageSyncServices",
+      "apiVersion": "2021-02-01",
+      "name": "fail1",
+      "properties": {
+        "storageSyncServiceStatus": "Registered",
+        "storageSyncServiceProperties": {
+          "trustState": "Enabled",
+          "storageSyncServiceUid": "65fdd65b-ea5d-4a00-bf7f-40c41ba39ae4",
+          "provisioningState": "Succeeded"
+        },
+        "location": "East US",
+        "tags": {
+          "foo": "bar"
+        }
+      }
+    }
+  ]
+}
