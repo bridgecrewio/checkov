@@ -1,4 +1,4 @@
-from typing import Any, List, Dict
+from typing import Any, List
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.arm.base_resource_value_check import BaseResourceValueCheck
 
