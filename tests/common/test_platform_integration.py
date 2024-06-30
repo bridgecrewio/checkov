@@ -158,6 +158,16 @@ class TestBCApiUrl(unittest.TestCase):
                                                          valid_filters=mock_prisma_policy_filter_response()))
         self.assertFalse(instance.is_valid_policy_filter(policy_filter={'policy.label': ['A', 'B']}, valid_filters={}))
 
+    def test_proxy_without_scheme(self):
+        current_proxy = os.environ['https_proxy']
+        try:
+            os.environ['https_proxy'] = "127.0.0.1"
+            instance = BcPlatformIntegration()
+            instance.api_url = 'https://www.bridgecrew.cloud/v1'
+            instance.setup_http_manager()
+        finally:
+            os.environ['https_proxy'] = current_proxy
+
     def test_setup_on_prem(self):
         instance = BcPlatformIntegration()
 
