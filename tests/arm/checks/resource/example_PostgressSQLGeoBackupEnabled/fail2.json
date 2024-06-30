@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.DBforPostgreSQL/servers",
+      "apiVersion": "2017-12-01",
+      "name": "fail2",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "administratorLogin": "psqladminun",
+        "administratorLoginPassword": "blabla",
+        "version": "9.6",
+        "storageProfile": {
+          "storageMB": 640000,
+          "backupRetentionDays": 7
+        },
+        "sslEnforcement": "Enabled",
+        "minimalTlsVersion": "TLS1_2"
+      },
+      "sku": {
+        "name": "GP_Gen5_4"
+      }
+    }
+  ]
+}

@@ -19,7 +19,8 @@ class TestAppGWDefinesSecureProtocols(unittest.TestCase):
 
         passing_resources = {
             'azurerm_application_gateway.pass',
-            'azurerm_application_gateway.pass2'
+            'azurerm_application_gateway.pass2',
+            'azurerm_application_gateway.pass_dynamic_bug'
         }
         failing_resources = {
             'azurerm_application_gateway.fail',

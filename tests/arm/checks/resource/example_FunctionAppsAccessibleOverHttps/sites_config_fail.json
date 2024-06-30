@@ -1,0 +1,57 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.15.31.15270",
+      "templateHash": "11556880252039009077"
+    }
+  },
+  "parameters": {
+    "hostingPlanName": {
+      "type": "string",
+      "minLength": 1,
+      "metadata": {
+        "description": "Name of the hosting plan to use in Azure."
+      }
+    },
+    "webSiteName": {
+      "type": "string",
+      "minLength": 1,
+      "metadata": {
+        "description": "Name of the Azure Web app to create."
+      }
+    }
+  },
+  "resources": [
+
+
+    {
+      "type": "Microsoft.Web/sites/config",
+      "apiVersion": "2022-03-01",
+      "name": "sites_config_fail",
+      "properties": {
+        "globalValidation": {
+      "requireAuthentication": true,
+      "unauthenticatedClientAction": "Return401"
+    },
+    "httpSettings": {
+      "forwardProxy": {
+        "convention": "NoProxy"
+      },
+      "requireHttps": false,
+      "routes": {
+        "apiPrefix": "/.auth"
+      }
+    },
+        "javaVersion": "1.8",
+        "javaContainer": "TOMCAT",
+        "javaContainerVersion": "9.0"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', parameters('webSiteName'))]"
+      ]
+    }
+  ]
+}

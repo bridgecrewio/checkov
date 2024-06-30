@@ -1,0 +1,25 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_154
+  name: Ensure Redshift is not deployed outside of a VPC
+  category: NETWORKING
+  framework: cdk
+scope:
+  languages:
+    - javascript
+    - typescript
+definition:
+  or:
+    - pattern: new $FUNC(<ANY>)
+      conditions:
+        - metavariable: $FUNC
+          regex: (?i)(CfnCluster|Cluster|ClusterProps)
+        - not_pattern: |
+            'new $FUNC(<ANY>, clusterSubnetGroupName: $ARG ,<ANY>)'
+    - pattern: new $REDSHIFT.$FUNC(<ANY>)
+      conditions:
+        - metavariable: $FUNC
+          regex: (?i)(CfnCluster|Cluster|ClusterProps)
+        - not_pattern: |
+            'new $REDSHIFT.$FUNC(<ANY>, clusterSubnetGroupName: $ARG ,<ANY>)'

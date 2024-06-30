@@ -8,7 +8,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 
 class ECSClusterLoggingEncryptedWithCMK(BaseResourceCheck):
     def __init__(self) -> None:
-        name = "Ensure ECS Cluster logging uses CMK"
+        name = "Ensure ECS Cluster logging is enabled and client to container communication uses CMK"
         id = "CKV_AWS_224"
         supported_resources = ("aws_ecs_cluster",)
         categories = (CheckCategories.ENCRYPTION,)

@@ -1,0 +1,22 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cronjob-passed2
+spec:
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: new-app
+        spec:
+          securityContext:
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+          - image: "ubuntu"
+            name: image
+            securityContext:
+              allowPrivilegeEscalation: false
+  schedule: "0 2 * * *"

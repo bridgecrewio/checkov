@@ -1,0 +1,28 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_59
+  name: Ensure there is no open access to back-end resources through API
+  category: GENERAL_SECURITY
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  patterns:
+    or:
+      - pattern: |
+          const $METHOD = $RESOURCE.addMethod($HTTP_METHOD, <ANY>, { <ANY>, apiKeyRequired: false });
+        conditions:
+          - not_pattern: |
+              const $METHOD = $RESOURCE.addMethod($HTTP_METHOD, <ANY>, { <ANY>, authorizationType: $AUTH });
+          - metavariable: $AUTH
+            regex: ($IMPORT.AuthorizationType.COGNITO|$IMPORT.AuthorizationType.IAM|$IMPORT.AuthorizationType.CUSTOM)
+      - pattern: |
+          const $METHOD = $RESOURCE.addMethod($HTTP_METHOD, <ANY>, { <ANY>, authorizationType: $IMPORT.AuthorizationType.NONE, <ANY> });
+        conditions:
+          - not_pattern: |
+              const $METHOD = $RESOURCE.addMethod($HTTP_METHOD, <ANY>, { <ANY>, apiKeyRequired: false });
+  conditions:
+    - metavariable: $HTTP_METHOD
+      not_regex: OPTIONS

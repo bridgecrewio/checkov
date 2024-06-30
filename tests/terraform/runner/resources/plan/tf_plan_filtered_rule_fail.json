@@ -1,0 +1,183 @@
+{
+    "format_version": "1.2",
+    "terraform_version": "1.5.7",
+    "planned_values": {
+        "root_module": {
+            "resources": [
+                {
+                    "address": "aws_s3_bucket_lifecycle_configuration.this",
+                    "mode": "managed",
+                    "type": "aws_s3_bucket_lifecycle_configuration",
+                    "name": "this",
+                    "provider_name": "registry.terraform.io/hashicorp/aws",
+                    "schema_version": 0,
+                    "values": {
+                        "bucket": "my_bucket",
+                        "expected_bucket_owner": "",
+                        "id": "the_id",
+                        "rule": [
+                            {
+                                "abort_incomplete_multipart_upload": [
+                                    {
+                                        "days_after_initiation": 7
+                                    }
+                                ],
+                                "expiration": [],
+                                "filter": [
+                                    {
+                                        "and": [],
+                                        "object_size_greater_than": "",
+                                        "object_size_less_than": "",
+                                        "prefix": "",
+                                        "tag": ["my_tag"]
+                                    }
+                                ],
+                                "id": "failed-uploads",
+                                "noncurrent_version_expiration": [],
+                                "noncurrent_version_transition": [],
+                                "prefix": "",
+                                "status": "Enabled",
+                                "transition": []
+                            }
+                        ],
+                        "timeouts": null
+                    },
+                    "sensitive_values": {
+                        "rule": [
+                            {
+                                "abort_incomplete_multipart_upload": [
+                                    {}
+                                ],
+                                "expiration": [],
+                                "filter": [
+                                    {
+                                        "and": [],
+                                        "tag": []
+                                    }
+                                ],
+                                "noncurrent_version_expiration": [],
+                                "noncurrent_version_transition": [],
+                                "transition": []
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    "resource_changes": [
+        {
+            "address": "aws_s3_bucket_lifecycle_configuration.this",
+            "mode": "managed",
+            "type": "aws_s3_bucket_lifecycle_configuration",
+            "name": "this",
+            "provider_name": "registry.terraform.io/hashicorp/aws",
+            "change": {
+                "actions": [
+                    "update"
+                ],
+                "before": {
+                    "bucket": "my_bucket",
+                    "expected_bucket_owner": "",
+                    "id": "the_id",
+                    "rule": [
+                        {
+                            "abort_incomplete_multipart_upload": [
+                                {
+                                    "days_after_initiation": 6
+                                }
+                            ],
+                            "expiration": [],
+                            "filter": [
+                                {
+                                    "and": [],
+                                    "object_size_greater_than": "",
+                                    "object_size_less_than": "",
+                                    "prefix": "",
+                                    "tag": []
+                                }
+                            ],
+                            "id": "failed-uploads",
+                            "noncurrent_version_expiration": [],
+                            "noncurrent_version_transition": [],
+                            "prefix": "",
+                            "status": "Enabled",
+                            "transition": []
+                        }
+                    ],
+                    "timeouts": null
+                },
+                "after": {
+                    "bucket": "my_bucket",
+                    "expected_bucket_owner": "",
+                    "id": "the_id",
+                    "rule": [
+                        {
+                            "abort_incomplete_multipart_upload": [
+                                {
+                                    "days_after_initiation": 7
+                                }
+                            ],
+                            "expiration": [],
+                            "filter": [
+                                {
+                                    "and": [],
+                                    "object_size_greater_than": "",
+                                    "object_size_less_than": "",
+                                    "prefix": "",
+                                    "tag": []
+                                }
+                            ],
+                            "id": "failed-uploads",
+                            "noncurrent_version_expiration": [],
+                            "noncurrent_version_transition": [],
+                            "prefix": "",
+                            "status": "Enabled",
+                            "transition": []
+                        }
+                    ],
+                    "timeouts": null
+                },
+                "after_unknown": {},
+                "before_sensitive": {
+                    "rule": [
+                        {
+                            "abort_incomplete_multipart_upload": [
+                                {}
+                            ],
+                            "expiration": [],
+                            "filter": [
+                                {
+                                    "and": [],
+                                    "tag": []
+                                }
+                            ],
+                            "noncurrent_version_expiration": [],
+                            "noncurrent_version_transition": [],
+                            "transition": []
+                        }
+                    ]
+                },
+                "after_sensitive": {
+                    "rule": [
+                        {
+                            "abort_incomplete_multipart_upload": [
+                                {}
+                            ],
+                            "expiration": [],
+                            "filter": [
+                                {
+                                    "and": [],
+                                    "tag": []
+                                }
+                            ],
+                            "noncurrent_version_expiration": [],
+                            "noncurrent_version_transition": [],
+                            "transition": []
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}

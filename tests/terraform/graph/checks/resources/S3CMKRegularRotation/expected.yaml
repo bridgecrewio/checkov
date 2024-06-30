@@ -1,0 +1,6 @@
+pass:
+  - "aws_s3_bucket_server_side_encryption_configuration.pass"
+fail:
+  - "aws_s3_bucket_server_side_encryption_configuration.fail_disabled"
+  - "aws_s3_bucket_server_side_encryption_configuration.fail_no_rotation"
+  - "aws_s3_bucket_server_side_encryption_configuration.fail_no_kms"

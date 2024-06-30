@@ -1,0 +1,18 @@
+metadata:
+  name: "example"
+  category: "GENERAL_SECURITY"
+  id: "JsonPathRangeIncludesList"
+scope:
+  provider: "AWS"
+definition:
+  cond_type: "attribute"
+  resource_types:
+    - "test"
+  attribute: "range"
+  operator: "jsonpath_range_includes"
+  value:
+    - "400"
+    - 3000
+    - 100
+    - "1"
+

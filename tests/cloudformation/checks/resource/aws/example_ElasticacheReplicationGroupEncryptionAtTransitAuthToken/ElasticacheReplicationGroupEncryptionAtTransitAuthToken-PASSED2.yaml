@@ -1,0 +1,136 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  An example template that stands up an ElastiCache Replication Group Multi-AZ in a particular VPC specifying then a Subnet Group and a Security Group, VpcId is not directly referenced by the Replication Group resource, and is instead inferred by the Security Group and Subnet Group.
+Parameters:
+  CacheNodeType:
+    Description: The instance type the nodes will launch under.
+    Type: String
+    Default: cache.m3.medium
+    AllowedValues:
+      - cache.t2.micro
+      - cache.t2.small
+      - cache.t2.medium
+      - cache.m3.medium
+      - cache.m3.large
+      - cache.m3.xlarge
+      - cache.m3.2xlarge
+      - cache.r3.large
+      - cache.r3.xlarge
+      - cache.r3.2xlarge
+      - cache.r3.4xlarge
+      - cache.r3.8xlarge
+  MultiAZSupport:
+    Description: >-
+      Indicates whether Multi-AZ is enabled. When Multi-AZ is enabled, a
+      read-only replica is automatically promoted to a read-write primary
+      cluster if the existing primary cluster fails. If you specify true, you must specify a value greater than 1 for the NumCacheClusters property.
+    Type: String
+    Default: 'true'
+    AllowedValues:
+      - 'true'
+      - 'false'
+  NumCacheClusters:
+    Description: >-
+      The number of cache clusters for this replication group. If MultiAZ
+      support is enabled, you must specify a value greater than 1.
+    Default: '2'
+    Type: Number
+    MinValue: '1'
+    MaxValue: '6'
+  RedisPort:
+    Description: >-
+      The port number on which each member of the replication group accepts
+      connections.
+    Type: Number
+    Default: '6379'
+    MinValue: '1'
+    MaxValue: '65535'
+  ReplicationGroupDescription:
+    Description: The description of the replication group.
+    Type: String
+    Default: Example replication group
+  VpcId:
+    Description: The VPC to create this ReplicationGroup under
+    Type: 'AWS::EC2::VPC::Id'
+  CidrIp:
+    Description: The CIDR you want to access to the Replication Group
+    Type: String
+    Default: 0.0.0.0/0
+    AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
+    MinLength: '9'
+    MaxLength: '18'
+    ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x
+  SnapshotRetentionLimit:
+    Description: >-
+      The number of days that ElastiCache retains automatic snapshots before
+      deleting them.
+    Type: Number
+    Default: '7'
+  SnapshotWindow:
+    Description: >-
+      The time range (in UTC) when ElastiCache takes a daily snapshot of your node group.
+    Type: String
+    Default: '05:00-09:00'
+    AllowedPattern: '\d{2}:\d{2}-\d{2}:\d{2}'
+    ConstraintDescription: 'must be a valid timestamp range, for example 05:00-09:00'
+  PreferredMaintenanceWindow:
+    Description: >-
+      The weekly time range during which system maintenance can occur. Use the following format to specify a time range: ddd:hh24:mi-ddd:hh24:mi (24H Clock UTC).
+    Type: String
+    Default: 'sun:22:00-sun:23:30'
+    AllowedPattern: >-
+      (mon|tue|wed|thu|fri|sat|sun):\d{2}:\d{2}-(mon|tue|wed|thu|fri|sat|sun):\d{2}:\d{2}
+    ConstraintDescription: >-
+      must be a valid timestamp range with day of week, for example
+      sun:22:00-sun:23:30
+  SubnetA:
+    Description: >-
+      One of the subnets you would like the ReplicationGroup to be created in. In this example we only accept 2 subnets
+    Type: 'AWS::EC2::Subnet::Id'
+  SubnetB:
+    Description: >-
+      One of the subnets you would like the ReplicationGroup to be created in. In this example we only accept 2 subnets
+    Type: 'AWS::EC2::Subnet::Id'
+Resources:
+  SecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Security Group for Example Replication Group
+      SecurityGroupIngress:
+        - Description: Redis Traffic
+          CidrIp: !Ref CidrIp
+          FromPort: !Ref RedisPort
+          ToPort: !Ref RedisPort
+          IpProtocol: tcp
+      VpcId: !Ref VpcId
+  SubnetGroup:
+    Type: 'AWS::ElastiCache::SubnetGroup'
+    Properties:
+      Description: Subnet Group for Example Replication Group
+      SubnetIds:
+        - !Ref SubnetA
+        - !Ref SubnetB
+  ReplicationGroupPass2:
+    Type: 'AWS::ElastiCache::ReplicationGroup'
+    Properties:
+      AutomaticFailoverEnabled: !Ref MultiAZSupport
+      AtRestEncryptionEnabled: True
+      #AtRestEncryptionEnabled: False	# Optional parameter
+      CacheNodeType: !Ref CacheNodeType
+      CacheSubnetGroupName: !Ref SubnetGroup
+      Engine: redis
+      NumCacheClusters: !Ref NumCacheClusters
+      Port: !Ref RedisPort
+      PreferredMaintenanceWindow: !Ref PreferredMaintenanceWindow
+      ReplicationGroupDescription: !Ref ReplicationGroupDescription
+      SecurityGroupIds:
+        - !GetAtt 
+          - SecurityGroup
+          - GroupId
+      SnapshotRetentionLimit: !Ref SnapshotRetentionLimit
+      SnapshotWindow: !Ref SnapshotWindow
+      #TransitEncryptionEnabled: False
+      TransitEncryptionEnabled: True
+      UserGroupIds:
+        - Example
+

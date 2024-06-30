@@ -39,6 +39,9 @@ class TestYamlPolicies(TestYamlPoliciesBase):
     def test_LambdaFunction(self):
         self.go("LambdaFunction")
 
+    def test_SageMakerIAMPolicyOverlyPermissiveToAllTraffic(self):
+        self.go("SageMakerIAMPolicyOverlyPermissiveToAllTraffic")
+
     def test_ALBRedirectHTTPtoHTTPS(self):
         self.go("ALBRedirectHTTPtoHTTPS")
 

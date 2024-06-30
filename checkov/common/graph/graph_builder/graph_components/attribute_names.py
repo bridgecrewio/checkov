@@ -23,6 +23,7 @@ class CustomAttributes:
     ENCRYPTION = "encryption_"
     ENCRYPTION_DETAILS = "encryption_details_"
     TF_RESOURCE_ADDRESS = "__address__"
+    PROVIDER_ADDRESS = "__provider_address__"
     REFERENCES = "references_"
     FOREACH_ATTRS = "foreach_attrs_"
     SOURCE_MODULE_OBJECT = "source_module_object_"

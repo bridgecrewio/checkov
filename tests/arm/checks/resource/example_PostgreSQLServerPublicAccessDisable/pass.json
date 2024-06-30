@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.DBforPostgreSQL/servers",
+      "apiVersion": "2021-02-01",
+      "name": "pass",
+      "location": "[azurerm_resource_group.example.location]",
+      "properties": {
+        "administrator_login": "psqladminun",
+        "administrator_login_password": "1234",
+        "version": "9.6",
+        "storageProfile": {
+          "storageMB": 640000,
+          "backupRetentionDays": 7,
+          "geoRedundantBackup": "Enabled",
+          "auto_grow_enabled": "Enabled"
+        },
+        "publicNetworkAccess": "Disabled",
+        "ssl_enforcement_enabled": true,
+        "ssl_minimal_tls_version_enforced": "TLS1_2"
+      }
+    }
+  ]
+}

@@ -40,6 +40,9 @@ class TestYamlPolicies(TestYamlPoliciesBase):
     def test_AzureSpringCloudConfigWithVnet(self):
         self.go("AzureSpringCloudConfigWithVnet")
 
+    def test_AzureMLWorkspacePublicNetwork(self):
+        self.go("AzureMLWorkspacePublicNetwork")
+
     def test_registry_load(self):
         registry = self.get_checks_registry()
         self.assertGreater(len(registry.checks), 0)

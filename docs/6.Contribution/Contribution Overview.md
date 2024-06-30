@@ -100,7 +100,7 @@ Let's assume we're trying to create a new AWS resource Check to ensure all of ou
     ```
     $ pytest -k test_CheckovIsAwesome
     ================================================================================ test session starts ================================================================================
-    platform darwin -- Python 3.7.11, pytest-6.2.5, py-1.10.0, pluggy-1.0.0
+    platform darwin -- Python 3.10.14, pytest-6.2.5, py-1.10.0, pluggy-1.0.0
     rootdir: /path/to/checkov
     plugins: xdist-2.4.0, forked-1.3.0, cov-3.0.0
     collected 1952 items / 1951 deselected / 1 selected
@@ -162,7 +162,7 @@ Let's assume we're trying to create a new AWS resource Check to ensure all of ou
     ```
     $ pytest -k test_CheckovIsAwesome
     ================================================================================ test session starts ================================================================================
-    platform darwin -- Python 3.7.11, pytest-6.2.5, py-1.10.0, pluggy-1.0.0
+    platform darwin -- Python 3.10.14, pytest-6.2.5, py-1.10.0, pluggy-1.0.0
     rootdir: /Users/joseph.meredith/dev/jmeredith18/checkov
     plugins: xdist-2.4.0, forked-1.3.0, cov-3.0.0
     collected 1952 items / 1951 deselected / 1 selected

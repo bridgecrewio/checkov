@@ -22,6 +22,10 @@ resource "test" "pass6" {
   range = "2000-4000"
 }
 
+resource "test" "pass7" {
+  range = ["2100","2000-4000","3400"]
+}
+
 resource "test" "fail1" {
   range = 2000
 }
@@ -52,4 +56,8 @@ resource "test" "fail7" {
 
 resource "test" "fail8" {
   range = "1000-5000-6000"
+}
+
+resource "test" "fail9" {
+  range = ["1000","2000-2900"]
 }

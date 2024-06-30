@@ -38,6 +38,13 @@ class KeyVaultDisablesPublicNetworkAccess(BaseResourceValueCheck):
                         ip_rules = ip_rules[0] if ip_rules and isinstance(ip_rules, list) else ip_rules
                         if ip_rules:
                             return CheckResult.PASSED
+                        virtual_network_subnet_ids = network_acl.get("virtual_network_subnet_ids")
+                        # Get first element in virtual_network_subnet_ids (as parser wrap it with list).
+                        virtual_network_subnet_ids = virtual_network_subnet_ids[0] \
+                            if virtual_network_subnet_ids and isinstance(virtual_network_subnet_ids, list) \
+                            else virtual_network_subnet_ids
+                        if virtual_network_subnet_ids:
+                            return CheckResult.PASSED
 
         return CheckResult.FAILED
 

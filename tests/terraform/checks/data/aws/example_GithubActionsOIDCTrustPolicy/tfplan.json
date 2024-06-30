@@ -1,0 +1,1605 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.5.7",
+  "planned_values": {
+    "root_module": {
+      "child_modules": [
+        {
+          "resources": [
+            {
+              "address": "module.poc.aws_iam_openid_connect_provider.r5",
+              "mode": "managed",
+              "type": "aws_iam_openid_connect_provider",
+              "name": "r5",
+              "provider_name": "registry.terraform.io/hashicorp/aws",
+              "schema_version": 0,
+              "values": {
+                "client_id_list": [
+                  "sts.amazonaws.com"
+                ],
+                "tags": null,
+                "tags_all": {
+                  "checkov_uid": "CKV_AWS_358",
+                  "environment": "test",
+                  "managed_by": "terraform"
+                },
+                "thumbprint_list": [
+                  "123"
+                ],
+                "url": "https://accounts.google.com"
+              },
+              "sensitive_values": {
+                "client_id_list": [
+                  false
+                ],
+                "tags_all": {},
+                "thumbprint_list": [
+                  false
+                ]
+              }
+            },
+            {
+              "address": "module.poc.aws_iam_role.r6[\"p1\"]",
+              "mode": "managed",
+              "type": "aws_iam_role",
+              "name": "r6",
+              "index": "p1",
+              "provider_name": "registry.terraform.io/hashicorp/aws",
+              "schema_version": 0,
+              "values": {
+                "description": null,
+                "force_detach_policies": true,
+                "inline_policy": [
+                  {
+                    "name": "eks_s3_access",
+                    "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Action\":[\"s3:ListBucket\"],\"Condition\":{\"StringLike\":{\"s3:prefix\":[\"p1/*\"]}},\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:s3:::\"],\"Sid\":\"AllowListingOfUserFolder\"}]}"
+                  }
+                ],
+                "max_session_duration": 3600,
+                "name": "r8",
+                "path": "/",
+                "permissions_boundary": null,
+                "tags": null,
+                "tags_all": {
+                  "checkov_uid": "CKV_AWS_358",
+                  "environment": "test",
+                  "managed_by": "terraform"
+                }
+              },
+              "sensitive_values": {
+                "inline_policy": [
+                  {}
+                ],
+                "managed_policy_arns": [],
+                "tags_all": {}
+              }
+            },
+            {
+              "address": "module.poc.aws_iam_role.r6[\"p2\"]",
+              "mode": "managed",
+              "type": "aws_iam_role",
+              "name": "r6",
+              "index": "p2",
+              "provider_name": "registry.terraform.io/hashicorp/aws",
+              "schema_version": 0,
+              "values": {
+                "description": null,
+                "force_detach_policies": true,
+                "inline_policy": [
+                  {
+                    "name": "eks_s3_access",
+                    "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Action\":[\"s3:ListBucket\"],\"Condition\":{\"StringLike\":{\"s3:prefix\":[\"p2/*\"]}},\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:s3:::\"],\"Sid\":\"AllowListingOfUserFolder\"}]}"
+                  }
+                ],
+                "max_session_duration": 3600,
+                "name": "r9",
+                "path": "/",
+                "permissions_boundary": null,
+                "tags": null,
+                "tags_all": {
+                  "checkov_uid": "CKV_AWS_358",
+                  "environment": "test",
+                  "managed_by": "terraform"
+                }
+              },
+              "sensitive_values": {
+                "inline_policy": [
+                  {}
+                ],
+                "managed_policy_arns": [],
+                "tags_all": {}
+              }
+            },
+            {
+              "address": "module.poc.aws_iam_role.r1[\"p1\"]",
+              "mode": "managed",
+              "type": "aws_iam_role",
+              "name": "r1",
+              "index": "p1",
+              "provider_name": "registry.terraform.io/hashicorp/aws",
+              "schema_version": 0,
+              "values": {
+                "description": null,
+                "force_detach_policies": true,
+                "inline_policy": [
+                  {
+                    "name": "eks_s3_access",
+                    "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Action\":[\"s3:ListBucket\"],\"Condition\":{\"StringLike\":{\"s3:prefix\":[\"p1/*\"]}},\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:s3:::\"],\"Sid\":\"AllowListingOfUserFolder\"}]}"
+                  }
+                ],
+                "max_session_duration": 3600,
+                "name": "r7",
+                "path": "/",
+                "permissions_boundary": null,
+                "tags": null,
+                "tags_all": {
+                  "checkov_uid": "CKV_AWS_358",
+                  "environment": "test",
+                  "managed_by": "terraform"
+                }
+              },
+              "sensitive_values": {
+                "inline_policy": [
+                  {}
+                ],
+                "managed_policy_arns": [],
+                "tags_all": {}
+              }
+            },
+            {
+              "address": "module.poc.aws_iam_role.r1[\"p2\"]",
+              "mode": "managed",
+              "type": "aws_iam_role",
+              "name": "r1",
+              "index": "p2",
+              "provider_name": "registry.terraform.io/hashicorp/aws",
+              "schema_version": 0,
+              "values": {
+                "description": null,
+                "force_detach_policies": true,
+                "inline_policy": [
+                  {
+                    "name": "eks_s3_access",
+                    "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Action\":[\"s3:ListBucket\"],\"Condition\":{\"StringLike\":{\"s3:prefix\":[\"p2/*\"]}},\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:s3:::\"],\"Sid\":\"AllowListingOfUserFolder\"}]}"
+                  }
+                ],
+                "max_session_duration": 3600,
+                "name": "r2",
+                "path": "/",
+                "permissions_boundary": null,
+                "tags": null,
+                "tags_all": {
+                  "checkov_uid": "CKV_AWS_358",
+                  "environment": "test",
+                  "managed_by": "terraform"
+                }
+              },
+              "sensitive_values": {
+                "inline_policy": [
+                  {}
+                ],
+                "managed_policy_arns": [],
+                "tags_all": {}
+              }
+            },
+            {
+              "address": "module.poc.data.aws_iam_policy_document.r4[\"p1\"]",
+              "mode": "data",
+              "type": "aws_iam_policy_document",
+              "name": "r4",
+              "index": "p1",
+              "provider_name": "registry.terraform.io/hashicorp/aws",
+              "schema_version": 0,
+              "values": {
+                "override_json": null,
+                "override_policy_documents": null,
+                "policy_id": null,
+                "source_json": null,
+                "source_policy_documents": null,
+                "statement": [
+                  {
+                    "actions": [
+                      "sts:AssumeRoleWithWebIdentity"
+                    ],
+                    "condition": [
+                      {
+                        "test": "StringEquals",
+                        "values": [
+                          "sts.amazonaws.com"
+                        ],
+                        "variable": "accounts.google.com:aud"
+                      },
+                      {
+                        "test": "StringEquals",
+                        "values": [
+                          "system:serviceaccount:p1:default"
+                        ],
+                        "variable": "accounts.google.com:sub"
+                      }
+                    ],
+                    "effect": "Allow",
+                    "not_actions": null,
+                    "not_principals": [],
+                    "not_resources": null,
+                    "principals": [
+                      {
+                        "identifiers": [
+                          "cognito-identity.amazonaws.com"
+                        ],
+                        "type": "Federated"
+                      }
+                    ],
+                    "resources": null,
+                    "sid": null
+                  }
+                ],
+                "version": null
+              },
+              "sensitive_values": {
+                "statement": [
+                  {
+                    "actions": [
+                      false
+                    ],
+                    "condition": [
+                      {
+                        "values": [
+                          false
+                        ]
+                      },
+                      {
+                        "values": [
+                          false
+                        ]
+                      }
+                    ],
+                    "not_principals": [],
+                    "principals": [
+                      {
+                        "identifiers": [
+                          false
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "address": "module.poc.data.aws_iam_policy_document.r4[\"p2\"]",
+              "mode": "data",
+              "type": "aws_iam_policy_document",
+              "name": "r4",
+              "index": "p2",
+              "provider_name": "registry.terraform.io/hashicorp/aws",
+              "schema_version": 0,
+              "values": {
+                "override_json": null,
+                "override_policy_documents": null,
+                "policy_id": null,
+                "source_json": null,
+                "source_policy_documents": null,
+                "statement": [
+                  {
+                    "actions": [
+                      "sts:AssumeRoleWithWebIdentity"
+                    ],
+                    "condition": [
+                      {
+                        "test": "StringEquals",
+                        "values": [
+                          "sts.amazonaws.com"
+                        ],
+                        "variable": "accounts.google.com:aud"
+                      },
+                      {
+                        "test": "StringEquals",
+                        "values": [
+                          "system:serviceaccount:p2:default"
+                        ],
+                        "variable": "accounts.google.com:sub"
+                      }
+                    ],
+                    "effect": "Allow",
+                    "not_actions": null,
+                    "not_principals": [],
+                    "not_resources": null,
+                    "principals": [
+                      {
+                        "identifiers": [
+                          "cognito-identity.amazonaws.com"
+                        ],
+                        "type": "Federated"
+                      }
+                    ],
+                    "resources": null,
+                    "sid": null
+                  }
+                ],
+                "version": null
+              },
+              "sensitive_values": {
+                "statement": [
+                  {
+                    "actions": [
+                      false
+                    ],
+                    "condition": [
+                      {
+                        "values": [
+                          false
+                        ]
+                      },
+                      {
+                        "values": [
+                          false
+                        ]
+                      }
+                    ],
+                    "not_principals": [],
+                    "principals": [
+                      {
+                        "identifiers": [
+                          false
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "address": "module.poc.data.aws_iam_policy_document.r3[\"p1\"]",
+              "mode": "data",
+              "type": "aws_iam_policy_document",
+              "name": "r3",
+              "index": "p1",
+              "provider_name": "registry.terraform.io/hashicorp/aws",
+              "schema_version": 0,
+              "values": {
+                "override_json": null,
+                "override_policy_documents": null,
+                "policy_id": null,
+                "source_json": null,
+                "source_policy_documents": null,
+                "statement": [
+                  {
+                    "actions": [
+                      "sts:AssumeRoleWithWebIdentity"
+                    ],
+                    "condition": [
+                      {
+                        "test": "StringEquals",
+                        "values": [
+                          "sts.amazonaws.com"
+                        ],
+                        "variable": "accounts.google.com:aud"
+                      },
+                      {
+                        "test": "StringEquals",
+                        "values": [
+                          "system:serviceaccount:p1:default"
+                        ],
+                        "variable": "accounts.google.com:sub"
+                      }
+                    ],
+                    "effect": "Allow",
+                    "not_actions": null,
+                    "not_principals": [],
+                    "not_resources": null,
+                    "principals": [
+                      {
+                        "identifiers": [
+                          null
+                        ],
+                        "type": "Federated"
+                      }
+                    ],
+                    "resources": null,
+                    "sid": null
+                  }
+                ],
+                "version": null
+              },
+              "sensitive_values": {
+                "statement": [
+                  {
+                    "actions": [
+                      false
+                    ],
+                    "condition": [
+                      {
+                        "values": [
+                          false
+                        ]
+                      },
+                      {
+                        "values": [
+                          false
+                        ]
+                      }
+                    ],
+                    "not_principals": [],
+                    "principals": [
+                      {
+                        "identifiers": [
+                          false
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "address": "module.poc.data.aws_iam_policy_document.r3[\"p2\"]",
+              "mode": "data",
+              "type": "aws_iam_policy_document",
+              "name": "r3",
+              "index": "p2",
+              "provider_name": "registry.terraform.io/hashicorp/aws",
+              "schema_version": 0,
+              "values": {
+                "override_json": null,
+                "override_policy_documents": null,
+                "policy_id": null,
+                "source_json": null,
+                "source_policy_documents": null,
+                "statement": [
+                  {
+                    "actions": [
+                      "sts:AssumeRoleWithWebIdentity"
+                    ],
+                    "condition": [
+                      {
+                        "test": "StringEquals",
+                        "values": [
+                          "sts.amazonaws.com"
+                        ],
+                        "variable": "accounts.google.com:aud"
+                      },
+                      {
+                        "test": "StringEquals",
+                        "values": [
+                          "system:serviceaccount:p2:default"
+                        ],
+                        "variable": "accounts.google.com:sub"
+                      }
+                    ],
+                    "effect": "Allow",
+                    "not_actions": null,
+                    "not_principals": [],
+                    "not_resources": null,
+                    "principals": [
+                      {
+                        "identifiers": [
+                          null
+                        ],
+                        "type": "Federated"
+                      }
+                    ],
+                    "resources": null,
+                    "sid": null
+                  }
+                ],
+                "version": null
+              },
+              "sensitive_values": {
+                "statement": [
+                  {
+                    "actions": [
+                      false
+                    ],
+                    "condition": [
+                      {
+                        "values": [
+                          false
+                        ]
+                      },
+                      {
+                        "values": [
+                          false
+                        ]
+                      }
+                    ],
+                    "not_principals": [],
+                    "principals": [
+                      {
+                        "identifiers": [
+                          false
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "address": "module.poc"
+        }
+      ]
+    }
+  },
+  "resource_changes": [
+    {
+      "address": "module.poc.data.aws_iam_policy_document.r4[\"p1\"]",
+      "module_address": "module.poc",
+      "mode": "data",
+      "type": "aws_iam_policy_document",
+      "name": "r4",
+      "index": "p1",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "read"
+        ],
+        "before": null,
+        "after": {
+          "override_json": null,
+          "override_policy_documents": null,
+          "policy_id": null,
+          "source_json": null,
+          "source_policy_documents": null,
+          "statement": [
+            {
+              "actions": [
+                "sts:AssumeRoleWithWebIdentity"
+              ],
+              "condition": [
+                {
+                  "test": "StringEquals",
+                  "values": [
+                    "sts.amazonaws.com"
+                  ],
+                  "variable": "accounts.google.com:aud"
+                },
+                {
+                  "test": "StringEquals",
+                  "values": [
+                    "system:serviceaccount:p1:default"
+                  ],
+                  "variable": "accounts.google.com:sub"
+                }
+              ],
+              "effect": "Allow",
+              "not_actions": null,
+              "not_principals": [],
+              "not_resources": null,
+              "principals": [
+                {
+                  "identifiers": [
+                    "cognito-identity.amazonaws.com"
+                  ],
+                  "type": "Federated"
+                }
+              ],
+              "resources": null,
+              "sid": null
+            }
+          ],
+          "version": null
+        },
+        "after_unknown": {
+          "id": true,
+          "json": true,
+          "statement": [
+            {
+              "actions": [
+                false
+              ],
+              "condition": [
+                {
+                  "values": [
+                    false
+                  ]
+                },
+                {
+                  "values": [
+                    false
+                  ]
+                }
+              ],
+              "not_principals": [],
+              "principals": [
+                {
+                  "identifiers": [
+                    false
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "statement": [
+            {
+              "actions": [
+                false
+              ],
+              "condition": [
+                {
+                  "values": [
+                    false
+                  ]
+                },
+                {
+                  "values": [
+                    false
+                  ]
+                }
+              ],
+              "not_principals": [],
+              "principals": [
+                {
+                  "identifiers": [
+                    false
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "action_reason": "read_because_dependency_pending"
+    },
+    {
+      "address": "module.poc.data.aws_iam_policy_document.r4[\"p2\"]",
+      "module_address": "module.poc",
+      "mode": "data",
+      "type": "aws_iam_policy_document",
+      "name": "r4",
+      "index": "p2",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "read"
+        ],
+        "before": null,
+        "after": {
+          "override_json": null,
+          "override_policy_documents": null,
+          "policy_id": null,
+          "source_json": null,
+          "source_policy_documents": null,
+          "statement": [
+            {
+              "actions": [
+                "sts:AssumeRoleWithWebIdentity"
+              ],
+              "condition": [
+                {
+                  "test": "StringEquals",
+                  "values": [
+                    "sts.amazonaws.com"
+                  ],
+                  "variable": "accounts.google.com:aud"
+                },
+                {
+                  "test": "StringEquals",
+                  "values": [
+                    "system:serviceaccount:p2:default"
+                  ],
+                  "variable": "accounts.google.com:sub"
+                }
+              ],
+              "effect": "Allow",
+              "not_actions": null,
+              "not_principals": [],
+              "not_resources": null,
+              "principals": [
+                {
+                  "identifiers": [
+                    "cognito-identity.amazonaws.com"
+                  ],
+                  "type": "Federated"
+                }
+              ],
+              "resources": null,
+              "sid": null
+            }
+          ],
+          "version": null
+        },
+        "after_unknown": {
+          "id": true,
+          "json": true,
+          "statement": [
+            {
+              "actions": [
+                false
+              ],
+              "condition": [
+                {
+                  "values": [
+                    false
+                  ]
+                },
+                {
+                  "values": [
+                    false
+                  ]
+                }
+              ],
+              "not_principals": [],
+              "principals": [
+                {
+                  "identifiers": [
+                    false
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "statement": [
+            {
+              "actions": [
+                false
+              ],
+              "condition": [
+                {
+                  "values": [
+                    false
+                  ]
+                },
+                {
+                  "values": [
+                    false
+                  ]
+                }
+              ],
+              "not_principals": [],
+              "principals": [
+                {
+                  "identifiers": [
+                    false
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "action_reason": "read_because_dependency_pending"
+    },
+    {
+      "address": "module.poc.data.aws_iam_policy_document.r3[\"p1\"]",
+      "module_address": "module.poc",
+      "mode": "data",
+      "type": "aws_iam_policy_document",
+      "name": "r3",
+      "index": "p1",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "read"
+        ],
+        "before": null,
+        "after": {
+          "override_json": null,
+          "override_policy_documents": null,
+          "policy_id": null,
+          "source_json": null,
+          "source_policy_documents": null,
+          "statement": [
+            {
+              "actions": [
+                "sts:AssumeRoleWithWebIdentity"
+              ],
+              "condition": [
+                {
+                  "test": "StringEquals",
+                  "values": [
+                    "sts.amazonaws.com"
+                  ],
+                  "variable": "accounts.google.com:aud"
+                },
+                {
+                  "test": "StringEquals",
+                  "values": [
+                    "system:serviceaccount:p1:default"
+                  ],
+                  "variable": "accounts.google.com:sub"
+                }
+              ],
+              "effect": "Allow",
+              "not_actions": null,
+              "not_principals": [],
+              "not_resources": null,
+              "principals": [
+                {
+                  "identifiers": [
+                    null
+                  ],
+                  "type": "Federated"
+                }
+              ],
+              "resources": null,
+              "sid": null
+            }
+          ],
+          "version": null
+        },
+        "after_unknown": {
+          "id": true,
+          "json": true,
+          "statement": [
+            {
+              "actions": [
+                false
+              ],
+              "condition": [
+                {
+                  "values": [
+                    false
+                  ]
+                },
+                {
+                  "values": [
+                    false
+                  ]
+                }
+              ],
+              "not_principals": [],
+              "principals": [
+                {
+                  "identifiers": [
+                    true
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "statement": [
+            {
+              "actions": [
+                false
+              ],
+              "condition": [
+                {
+                  "values": [
+                    false
+                  ]
+                },
+                {
+                  "values": [
+                    false
+                  ]
+                }
+              ],
+              "not_principals": [],
+              "principals": [
+                {
+                  "identifiers": [
+                    false
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "action_reason": "read_because_config_unknown"
+    },
+    {
+      "address": "module.poc.data.aws_iam_policy_document.r3[\"p2\"]",
+      "module_address": "module.poc",
+      "mode": "data",
+      "type": "aws_iam_policy_document",
+      "name": "r3",
+      "index": "p2",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "read"
+        ],
+        "before": null,
+        "after": {
+          "override_json": null,
+          "override_policy_documents": null,
+          "policy_id": null,
+          "source_json": null,
+          "source_policy_documents": null,
+          "statement": [
+            {
+              "actions": [
+                "sts:AssumeRoleWithWebIdentity"
+              ],
+              "condition": [
+                {
+                  "test": "StringEquals",
+                  "values": [
+                    "sts.amazonaws.com"
+                  ],
+                  "variable": "accounts.google.com:aud"
+                },
+                {
+                  "test": "StringEquals",
+                  "values": [
+                    "system:serviceaccount:p2:default"
+                  ],
+                  "variable": "accounts.google.com:sub"
+                }
+              ],
+              "effect": "Allow",
+              "not_actions": null,
+              "not_principals": [],
+              "not_resources": null,
+              "principals": [
+                {
+                  "identifiers": [
+                    null
+                  ],
+                  "type": "Federated"
+                }
+              ],
+              "resources": null,
+              "sid": null
+            }
+          ],
+          "version": null
+        },
+        "after_unknown": {
+          "id": true,
+          "json": true,
+          "statement": [
+            {
+              "actions": [
+                false
+              ],
+              "condition": [
+                {
+                  "values": [
+                    false
+                  ]
+                },
+                {
+                  "values": [
+                    false
+                  ]
+                }
+              ],
+              "not_principals": [],
+              "principals": [
+                {
+                  "identifiers": [
+                    true
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "statement": [
+            {
+              "actions": [
+                false
+              ],
+              "condition": [
+                {
+                  "values": [
+                    false
+                  ]
+                },
+                {
+                  "values": [
+                    false
+                  ]
+                }
+              ],
+              "not_principals": [],
+              "principals": [
+                {
+                  "identifiers": [
+                    false
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "action_reason": "read_because_config_unknown"
+    },
+    {
+      "address": "module.poc.aws_iam_openid_connect_provider.r5",
+      "module_address": "module.poc",
+      "mode": "managed",
+      "type": "aws_iam_openid_connect_provider",
+      "name": "r5",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "client_id_list": [
+            "sts.amazonaws.com"
+          ],
+          "tags": null,
+          "tags_all": {
+            "checkov_uid": "CKV_AWS_358",
+            "environment": "test",
+            "managed_by": "terraform"
+          },
+          "thumbprint_list": [
+            "cf23df2207d99a74fbe169e3eba035e633b65d94"
+          ],
+          "url": "https://accounts.google.com"
+        },
+        "after_unknown": {
+          "arn": true,
+          "client_id_list": [
+            false
+          ],
+          "id": true,
+          "tags_all": {},
+          "thumbprint_list": [
+            false
+          ]
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "client_id_list": [
+            false
+          ],
+          "tags_all": {},
+          "thumbprint_list": [
+            false
+          ]
+        }
+      }
+    },
+    {
+      "address": "module.poc.aws_iam_role.r6[\"p1\"]",
+      "module_address": "module.poc",
+      "mode": "managed",
+      "type": "aws_iam_role",
+      "name": "r6",
+      "index": "p1",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "description": null,
+          "force_detach_policies": true,
+          "inline_policy": [
+            {
+              "name": "eks_s3_access",
+              "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Action\":[\"s3:ListBucket\"],\"Condition\":{\"StringLike\":{\"s3:prefix\":[\"p1/*\"]}},\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:s3:::\"],\"Sid\":\"AllowListingOfUserFolder\"}]}"
+            }
+          ],
+          "max_session_duration": 3600,
+          "name": "r8",
+          "path": "/",
+          "permissions_boundary": null,
+          "tags": null,
+          "tags_all": {
+            "checkov_uid": "CKV_AWS_358",
+            "environment": "test",
+            "managed_by": "terraform"
+          }
+        },
+        "after_unknown": {
+          "arn": true,
+          "assume_role_policy": true,
+          "create_date": true,
+          "id": true,
+          "inline_policy": [
+            {}
+          ],
+          "managed_policy_arns": true,
+          "name_prefix": true,
+          "tags_all": {},
+          "unique_id": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "inline_policy": [
+            {}
+          ],
+          "managed_policy_arns": [],
+          "tags_all": {}
+        }
+      }
+    },
+    {
+      "address": "module.poc.aws_iam_role.r6[\"p2\"]",
+      "module_address": "module.poc",
+      "mode": "managed",
+      "type": "aws_iam_role",
+      "name": "r6",
+      "index": "p2",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "description": null,
+          "force_detach_policies": true,
+          "inline_policy": [
+            {
+              "name": "eks_s3_access",
+              "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Action\":[\"s3:ListBucket\"],\"Condition\":{\"StringLike\":{\"s3:prefix\":[\"p2/*\"]}},\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:s3:::\"],\"Sid\":\"AllowListingOfUserFolder\"}]}"
+            }
+          ],
+          "max_session_duration": 3600,
+          "name": "r9",
+          "path": "/",
+          "permissions_boundary": null,
+          "tags": null,
+          "tags_all": {
+            "checkov_uid": "CKV_AWS_358",
+            "environment": "test",
+            "managed_by": "terraform"
+          }
+        },
+        "after_unknown": {
+          "arn": true,
+          "assume_role_policy": true,
+          "create_date": true,
+          "id": true,
+          "inline_policy": [
+            {}
+          ],
+          "managed_policy_arns": true,
+          "name_prefix": true,
+          "tags_all": {},
+          "unique_id": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "inline_policy": [
+            {}
+          ],
+          "managed_policy_arns": [],
+          "tags_all": {}
+        }
+      }
+    },
+    {
+      "address": "module.poc.aws_iam_role.r1[\"p1\"]",
+      "module_address": "module.poc",
+      "mode": "managed",
+      "type": "aws_iam_role",
+      "name": "r1",
+      "index": "p1",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "description": null,
+          "force_detach_policies": true,
+          "inline_policy": [
+            {
+              "name": "eks_s3_access",
+              "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Action\":[\"s3:ListBucket\"],\"Condition\":{\"StringLike\":{\"s3:prefix\":[\"p1/*\"]}},\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:s3:::\"],\"Sid\":\"AllowListingOfUserFolder\"}]}"
+            }
+          ],
+          "max_session_duration": 3600,
+          "name": "r7",
+          "path": "/",
+          "permissions_boundary": null,
+          "tags": null,
+          "tags_all": {
+            "checkov_uid": "CKV_AWS_358",
+            "environment": "test",
+            "managed_by": "terraform"
+          }
+        },
+        "after_unknown": {
+          "arn": true,
+          "assume_role_policy": true,
+          "create_date": true,
+          "id": true,
+          "inline_policy": [
+            {}
+          ],
+          "managed_policy_arns": true,
+          "name_prefix": true,
+          "tags_all": {},
+          "unique_id": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "inline_policy": [
+            {}
+          ],
+          "managed_policy_arns": [],
+          "tags_all": {}
+        }
+      }
+    },
+    {
+      "address": "module.poc.aws_iam_role.r1[\"p2\"]",
+      "module_address": "module.poc",
+      "mode": "managed",
+      "type": "aws_iam_role",
+      "name": "r1",
+      "index": "p2",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": [
+          "create"
+        ],
+        "before": null,
+        "after": {
+          "description": null,
+          "force_detach_policies": true,
+          "inline_policy": [
+            {
+              "name": "eks_s3_access",
+              "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Action\":[\"s3:ListBucket\"],\"Condition\":{\"StringLike\":{\"s3:prefix\":[\"p2/*\"]}},\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:s3:::\"],\"Sid\":\"AllowListingOfUserFolder\"}]}"
+            }
+          ],
+          "max_session_duration": 3600,
+          "name": "r2",
+          "path": "/",
+          "permissions_boundary": null,
+          "tags": null,
+          "tags_all": {
+            "checkov_uid": "CKV_AWS_358",
+            "environment": "test",
+            "managed_by": "terraform"
+          }
+        },
+        "after_unknown": {
+          "arn": true,
+          "assume_role_policy": true,
+          "create_date": true,
+          "id": true,
+          "inline_policy": [
+            {}
+          ],
+          "managed_policy_arns": true,
+          "name_prefix": true,
+          "tags_all": {},
+          "unique_id": true
+        },
+        "before_sensitive": false,
+        "after_sensitive": {
+          "inline_policy": [
+            {}
+          ],
+          "managed_policy_arns": [],
+          "tags_all": {}
+        }
+      }
+    }
+  ],
+  "configuration": {
+    "provider_config": {
+      "aws": {
+        "name": "aws",
+        "full_name": "registry.terraform.io/hashicorp/aws",
+        "expressions": {
+          "default_tags": [
+            {
+              "tags": {
+                "constant_value": {
+                  "checkov_uid": "CKV_AWS_358",
+                  "environment": "test",
+                  "managed_by": "terraform"
+                }
+              }
+            }
+          ],
+          "region": {
+            "constant_value": "eu-central-1"
+          }
+        }
+      }
+    },
+    "root_module": {
+      "module_calls": {
+        "poc": {
+          "source": "./module",
+          "module": {
+            "resources": [
+              {
+                "address": "aws_iam_openid_connect_provider.r5",
+                "mode": "managed",
+                "type": "aws_iam_openid_connect_provider",
+                "name": "r5",
+                "provider_config_key": "aws",
+                "expressions": {
+                  "client_id_list": {
+                    "constant_value": [
+                      "sts.amazonaws.com"
+                    ]
+                  },
+                  "thumbprint_list": {
+                    "constant_value": [
+                      "cf23df2207d99a74fbe169e3eba035e633b65d94"
+                    ]
+                  },
+                  "url": {
+                    "constant_value": "https://accounts.google.com"
+                  }
+                },
+                "schema_version": 0
+              },
+              {
+                "address": "aws_iam_role.r6",
+                "mode": "managed",
+                "type": "aws_iam_role",
+                "name": "r6",
+                "provider_config_key": "aws",
+                "expressions": {
+                  "assume_role_policy": {
+                    "references": [
+                      "data.aws_iam_policy_document.r4",
+                      "each.key"
+                    ]
+                  },
+                  "force_detach_policies": {
+                    "constant_value": true
+                  },
+                  "inline_policy": [
+                    {
+                      "name": {
+                        "constant_value": "eks_s3_access"
+                      },
+                      "policy": {
+                        "references": [
+                          "each.value"
+                        ]
+                      }
+                    }
+                  ],
+                  "name": {
+                    "references": [
+                      "each.value"
+                    ]
+                  }
+                },
+                "schema_version": 0,
+                "for_each_expression": {
+                  "references": [
+                    "var.app_k8s_namespace"
+                  ]
+                }
+              },
+              {
+                "address": "aws_iam_role.r1",
+                "mode": "managed",
+                "type": "aws_iam_role",
+                "name": "r1",
+                "provider_config_key": "aws",
+                "expressions": {
+                  "assume_role_policy": {
+                    "references": [
+                      "data.aws_iam_policy_document.r3",
+                      "each.key"
+                    ]
+                  },
+                  "force_detach_policies": {
+                    "constant_value": true
+                  },
+                  "inline_policy": [
+                    {
+                      "name": {
+                        "constant_value": "eks_s3_access"
+                      },
+                      "policy": {
+                        "references": [
+                          "each.value"
+                        ]
+                      }
+                    }
+                  ],
+                  "name": {
+                    "references": [
+                      "each.value"
+                    ]
+                  }
+                },
+                "schema_version": 0,
+                "for_each_expression": {
+                  "references": [
+                    "var.app_k8s_namespace"
+                  ]
+                }
+              },
+              {
+                "address": "data.aws_iam_policy_document.r4",
+                "mode": "data",
+                "type": "aws_iam_policy_document",
+                "name": "r4",
+                "provider_config_key": "aws",
+                "expressions": {
+                  "statement": [
+                    {
+                      "actions": {
+                        "constant_value": [
+                          "sts:AssumeRoleWithWebIdentity"
+                        ]
+                      },
+                      "condition": [
+                        {
+                          "test": {
+                            "constant_value": "StringEquals"
+                          },
+                          "values": {
+                            "references": [
+                              "each.value"
+                            ]
+                          },
+                          "variable": {
+                            "references": [
+                              "aws_iam_openid_connect_provider.r5.url",
+                              "aws_iam_openid_connect_provider.r5"
+                            ]
+                          }
+                        },
+                        {
+                          "test": {
+                            "constant_value": "StringEquals"
+                          },
+                          "values": {
+                            "constant_value": [
+                              "sts.amazonaws.com"
+                            ]
+                          },
+                          "variable": {
+                            "references": [
+                              "aws_iam_openid_connect_provider.r5.url",
+                              "aws_iam_openid_connect_provider.r5"
+                            ]
+                          }
+                        }
+                      ],
+                      "effect": {
+                        "constant_value": "Allow"
+                      },
+                      "principals": [
+                        {
+                          "identifiers": {
+                            "constant_value": [
+                              "cognito-identity.amazonaws.com"
+                            ]
+                          },
+                          "type": {
+                            "constant_value": "Federated"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "schema_version": 0,
+                "for_each_expression": {
+                  "references": [
+                    "var.app_k8s_namespace"
+                  ]
+                }
+              },
+              {
+                "address": "data.aws_iam_policy_document.r3",
+                "mode": "data",
+                "type": "aws_iam_policy_document",
+                "name": "r3",
+                "provider_config_key": "aws",
+                "expressions": {
+                  "statement": [
+                    {
+                      "actions": {
+                        "constant_value": [
+                          "sts:AssumeRoleWithWebIdentity"
+                        ]
+                      },
+                      "condition": [
+                        {
+                          "test": {
+                            "constant_value": "StringEquals"
+                          },
+                          "values": {
+                            "references": [
+                              "each.value"
+                            ]
+                          },
+                          "variable": {
+                            "references": [
+                              "aws_iam_openid_connect_provider.r5.url",
+                              "aws_iam_openid_connect_provider.r5"
+                            ]
+                          }
+                        },
+                        {
+                          "test": {
+                            "constant_value": "StringEquals"
+                          },
+                          "values": {
+                            "constant_value": [
+                              "sts.amazonaws.com"
+                            ]
+                          },
+                          "variable": {
+                            "references": [
+                              "aws_iam_openid_connect_provider.r5.url",
+                              "aws_iam_openid_connect_provider.r5"
+                            ]
+                          }
+                        }
+                      ],
+                      "effect": {
+                        "constant_value": "Allow"
+                      },
+                      "principals": [
+                        {
+                          "identifiers": {
+                            "references": [
+                              "aws_iam_openid_connect_provider.r5.arn",
+                              "aws_iam_openid_connect_provider.r5"
+                            ]
+                          },
+                          "type": {
+                            "constant_value": "Federated"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "schema_version": 0,
+                "for_each_expression": {
+                  "references": [
+                    "var.app_k8s_namespace"
+                  ]
+                }
+              }
+            ],
+            "variables": {
+              "app_k8s_namespace": {
+                "default": [
+                  "p2",
+                  "p1"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "relevant_attributes": [
+    {
+      "resource": "module.poc.aws_iam_openid_connect_provider.r5",
+      "attribute": [
+        "url"
+      ]
+    },
+    {
+      "resource": "module.poc.aws_iam_openid_connect_provider.r5",
+      "attribute": [
+        "arn"
+      ]
+    },
+    {
+      "resource": "module.poc.data.aws_iam_policy_document.r4",
+      "attribute": []
+    },
+    {
+      "resource": "module.poc.data.aws_iam_policy_document.r3",
+      "attribute": []
+    }
+  ],
+  "timestamp": "123"
+}

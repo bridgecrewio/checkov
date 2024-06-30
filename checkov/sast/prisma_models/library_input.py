@@ -1,4 +1,4 @@
-from typing import Set, List
+from typing import Set, List, Dict, Any
 
 from checkov.common.bridgecrew.severities import Severity
 from checkov.common.sast.consts import SastLanguages, CDKLanguages
@@ -18,6 +18,7 @@ class LibraryInput(TypedDict):
     skip_path: List[str]
     check_threshold: Severity
     skip_check_threshold: Severity
+    platform_check_metadata: Dict[str, Any]
     list_policies: NotRequired[bool]
     report_imports: bool
     remove_default_policies: NotRequired[bool]

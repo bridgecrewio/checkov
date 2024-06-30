@@ -45,3 +45,7 @@ class BaseModuleCheck(BaseCheck):
     @abstractmethod
     def scan_module_conf(self, conf: Dict[str, List[Any]]) -> CheckResult:
         raise NotImplementedError()
+
+    @staticmethod
+    def is_git_source(source: str) -> bool:
+        return source.startswith('git@') or source.startswith('git::') or source.startswith('github.com') or source.startswith('bitbucket.org')

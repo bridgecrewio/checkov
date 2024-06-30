@@ -14,7 +14,7 @@ class AppServiceDotnetFrameworkVersion(BaseResourceValueCheck):
         return "properties/netFrameworkVersion"
 
     def get_expected_value(self) -> str:
-        return "v7.0"
+        return "v8.0"
 
 
 check = AppServiceDotnetFrameworkVersion()

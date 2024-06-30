@@ -1,0 +1,29 @@
+metadata:
+  version: 0.2
+  id: CKV_AWS_18
+  name: Ensure the S3 bucket has access logging enabled
+  category: LOGGING
+scope:
+  languages:
+    - javascript
+    - typescript
+definition:
+  or:
+    - pattern: new $FUNC(<ANY>)
+      conditions:
+        - metavariable: $FUNC
+          regex: (?i)(Bucket|CfnBucket)
+        - not_pattern: |
+            'new $FUNC(<ANY>, serverAccessLogsBucket: $BUCKET.$LOGGER(<ANY>) ,<ANY>)'
+          conditions:
+            - metavariable: $LOGGER
+              regex: (?i)(fromBucketArn|fromBucketAttributes|fromBucketName|fromBucketRegionalAttributes|fromBucketUrl)
+    - pattern: new $S3.$FUNC(<ANY>)
+      conditions:
+        - metavariable: $FUNC
+          regex: (?i)(Bucket|CfnBucket)
+        - not_pattern: |
+            'new $FUNC(<ANY>, serverAccessLogsBucket: $S3.$BUCKET.$LOGGER(<ANY>) ,<ANY>)'
+          conditions:
+            - metavariable: $LOGGER
+              regex: (?i)(fromBucketArn|fromBucketAttributes|fromBucketName|fromBucketRegionalAttributes|fromBucketUrl)

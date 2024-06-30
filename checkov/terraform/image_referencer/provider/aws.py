@@ -84,6 +84,38 @@ def extract_images_from_aws_lightsail_container_service_deployment_version(resou
     return image_names
 
 
+def extract_images_from_aws_sagemaker_image_version(resource: dict[str, Any]) -> list[str]:
+    image_names: list[str] = []
+
+    image_name = find_in_dict(input_dict=resource, key_path="base_image")
+    if image_name and isinstance(image_name, str):
+        image_names.append(image_name)
+
+    return image_names
+
+
+def extract_images_from_aws_sagemaker_model(resource: dict[str, Any]) -> list[str]:
+    image_names: list[str] = []
+
+    containers = resource.get("container")
+    if containers:
+        for container in force_list(containers):
+            if isinstance(container, dict):
+                name = container.get("image")
+                if name and isinstance(name, str):
+                    image_names.append(name)
+
+    containers = resource.get("primary_container")
+    if containers:
+        for container in force_list(containers):
+            if isinstance(container, dict):
+                name = container.get("image")
+                if name and isinstance(name, str):
+                    image_names.append(name)
+
+    return image_names
+
+
 # needs to be at the bottom to add the defined functions
 SUPPORTED_AWS_IMAGE_RESOURCE_TYPES = {
     "aws_apprunner_service": extract_images_from_aws_apprunner_service,
@@ -91,4 +123,6 @@ SUPPORTED_AWS_IMAGE_RESOURCE_TYPES = {
     "aws_codebuild_project": extract_images_from_aws_codebuild_project,
     "aws_ecs_task_definition": extract_images_from_aws_ecs_task_definition,
     "aws_lightsail_container_service_deployment_version": extract_images_from_aws_lightsail_container_service_deployment_version,
+    "aws_sagemaker_image_version": extract_images_from_aws_sagemaker_image_version,
+    "aws_sagemaker_model": extract_images_from_aws_sagemaker_model,
 }

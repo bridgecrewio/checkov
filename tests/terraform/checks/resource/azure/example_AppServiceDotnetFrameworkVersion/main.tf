@@ -74,7 +74,7 @@ resource "azurerm_windows_web_app" "pass" {
     http2_enabled     = true
     health_check_path = var.health_check_path
     application_stack {
-      dotnet_version = "v7.0"
+      dotnet_version = "v8.0"
     }
   }
 

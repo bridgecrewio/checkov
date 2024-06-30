@@ -1,0 +1,38 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.KeyVault/vaults",
+      "apiVersion": "2019-09-01",
+      "name": "fail3",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "enabledForDiskEncryption": true,
+        "tenantId": "[subscription().tenantId]",
+        "softDeleteRetentionInDays": 90,
+        "purgeProtectionEnabled": true,
+        "sku": {
+          "family": "A",
+          "name": "standard"
+        },
+        "networkAcls": {
+          "defaultAction" : "Allow",
+          "bypass" : "AzureServices",
+          "ipRules" : []
+        },
+        "accessPolicies": [
+          {
+            "tenantId": "[subscription().tenantId]",
+            "objectId": "[parameters('objectId')]",
+            "permissions": {
+              "keys": ["get"],
+              "secrets": ["get"],
+              "storage": ["get"]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

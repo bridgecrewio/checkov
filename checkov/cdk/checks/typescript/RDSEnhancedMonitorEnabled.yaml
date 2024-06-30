@@ -1,0 +1,19 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_118
+  name: Ensure that enhanced monitoring is enabled for Amazon RDS instances
+  category: LOGGING
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  pattern: new $PACKAGE.aws_rds.DatabaseInstance(<ANY>, <ANY>, { <ANY> })
+  conditions:
+    - not_pattern: |
+        new $PACKAGE.aws_rds.DatabaseInstance(<ANY>, <ANY>, { <ANY>, monitoringInterval: $COUNT, <ANY> })
+    - metavariable: $COUNT # bug: should preform with not_pattern and not after BCE-33034
+      comparison: $COUNT > 0
+    - metavariable: $PACKAGE
+      comparison: $PACKAGE == "aws-cdk-lib"

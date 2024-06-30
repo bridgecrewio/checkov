@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  SageMakerExecutionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: 'SageMakerExecutionRole'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service: 'sagemaker.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: 'SageMakerExecutionPolicy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action:
+                  - 's3:GetObject'
+                  - 's3:PutObject'
+                Resource: 'arn:aws:s3:::your-s3-bucket-name/*'
+
+  SageMakerModelFail1:
+    Type: 'AWS::SageMaker::Model'
+    Properties:
+      ModelName: 'ExampleSageMakerModel'
+      ExecutionRoleArn: !GetAtt SageMakerExecutionRole.Arn
+      PrimaryContainer:
+        Image: '123456789012.dkr.ecr.us-west-2.amazonaws.com/my-sagemaker-image:latest'
+        Mode: 'SingleModel'
+        ModelDataUrl: 's3://your-s3-bucket-name/model.tar.gz'
+      EnableNetworkIsolation: false
+
+  SageMakerModelFail2:
+    Type: 'AWS::SageMaker::Model'
+    Properties:
+      ModelName: 'ExampleSageMakerModel'
+      ExecutionRoleArn: !GetAtt SageMakerExecutionRole.Arn
+      PrimaryContainer:
+        Image: '123456789012.dkr.ecr.us-west-2.amazonaws.com/my-sagemaker-image:latest'
+        Mode: 'SingleModel'
+        ModelDataUrl: 's3://your-s3-bucket-name/model.tar.gz'
