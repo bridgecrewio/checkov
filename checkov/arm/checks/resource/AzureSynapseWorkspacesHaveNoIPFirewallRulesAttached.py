@@ -4,7 +4,7 @@ from checkov.arm.base_resource_check import BaseResourceCheck
 
 
 class AzureSynapseWorkspacesHaveNoIPFirewallRulesAttached(BaseResourceCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure that Azure Synapse workspaces have no IP firewall rules attached"
         id = "CKV2_AZURE_19"
         supported_resources = ["Microsoft.Synapse/workspaces"]
