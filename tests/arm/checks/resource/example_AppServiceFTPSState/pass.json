@@ -9,10 +9,10 @@
             "properties": {
                 "publisherEmail": "[parameters('adminEmail')]",
                 "publisherName": "[parameters('organizationName')]",
-                "customProperties": "[parameters('customProperties')]"
-            },
-            "siteConfig": {
-                "ftpsState": "Disabled"
+                "customProperties": "[parameters('customProperties')]",
+                "siteConfig": {
+                    "ftpsState": "Disabled"
+                }
             },
             "resources": [],
             "dependsOn": []
