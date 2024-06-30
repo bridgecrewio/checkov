@@ -1,4 +1,3 @@
-
 {
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
@@ -10,10 +9,10 @@
             "properties": {
                 "publisherEmail": "[parameters('adminEmail')]",
                 "publisherName": "[parameters('organizationName')]",
-                "customProperties": "[parameters('customProperties')]"
-            },
-            "siteConfig": {
-                "ftpsState": "Enabled"
+                "customProperties": "[parameters('customProperties')]",
+                "siteConfig": {
+                    "ftpsState": "Enabled"
+                }
             },
             "resources": [],
             "dependsOn": []
