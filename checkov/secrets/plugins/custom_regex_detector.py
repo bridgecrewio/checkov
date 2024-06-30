@@ -114,7 +114,7 @@ class CustomRegexDetector(RegexBasedDetector):
             # We want the multiline regex to execute only if current file is supported by them
             for regex in self.multiline_deny_list:
                 regex_supported_files = self.multiline_regex_to_metadata.get(regex.pattern, {}).get("supportedFiles", [])
-                if regex_supported_files and any([filename.endswith(regex_supported_file) for regex_supported_file in regex_supported_files]):
+                if len(regex_supported_files) == 0 or any([filename.endswith(regex_supported_file) for regex_supported_file in regex_supported_files]):
                     current_denylist.add(regex)
         else:
             current_denylist = self.denylist
