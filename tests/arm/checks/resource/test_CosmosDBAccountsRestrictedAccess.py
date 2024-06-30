@@ -1,8 +1,6 @@
 import os
 import unittest
 
-import hcl2
-
 from checkov.arm.checks.resource.CosmosDBAccountsRestrictedAccess import check
 from checkov.arm.runner import Runner
 from checkov.runner_filter import RunnerFilter

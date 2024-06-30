@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Dict,Any,Optional
 
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.arm.base_resource_check import BaseResourceCheck
@@ -8,12 +8,12 @@ class CosmosDBAccountsRestrictedAccess(BaseResourceCheck):
     def __init__(self) -> None:
         name = "Ensure Cosmos DB accounts have restricted access"
         id = "CKV_AZURE_99"
-        supported_resources = ['Microsoft.DocumentDB/databaseAccounts']
+        supported_resources = ('Microsoft.DocumentDB/databaseAccounts',)
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
-        properties = conf.get('properties')
+    def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
+        properties: Optional[Dict[str, Any]] = conf.get('properties')
         if 'enableMultipleWriteLocations' not in properties or properties['enableMultipleWriteLocations']:
             self.evaluated_keys = ['enableMultipleWriteLocations']
             if 'isVirtualNetworkFilterEnabled' in properties and properties['isVirtualNetworkFilterEnabled']:
