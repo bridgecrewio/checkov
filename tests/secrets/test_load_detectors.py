@@ -801,4 +801,4 @@ class TestLoadDetectors(unittest.TestCase):
                             runner_filter=RunnerFilter(framework=['secrets'],
                                                        enable_secret_scan_all_files=True))
         interesting_failed_checks = _filter_reports_for_incident_ids(report.failed_checks, ["test1", "test2"])
-        self.assertEqual(len(interesting_failed_checks), 1)
+        self.assertEqual(len(interesting_failed_checks), 2)
