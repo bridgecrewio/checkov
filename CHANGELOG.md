@@ -1,6 +1,16 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.159...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.163...HEAD)
+
+## [3.2.163](https://github.com/bridgecrewio/checkov/compare/3.2.159...3.2.163) - 2024-07-01
+
+### Feature
+
+- **arm:** add CKV_AZURE_174 to ensure that API management public access is disabled - [#6480](https://github.com/bridgecrewio/checkov/pull/6480)
+- **arm:** AppServicePHPVersion - [#6436](https://github.com/bridgecrewio/checkov/pull/6436)
+- **arm:** AppServicePublicAccessDisabled - [#6467](https://github.com/bridgecrewio/checkov/pull/6467)
+- **arm:** KeyVaultEnablesPurgeProtection - [#6465](https://github.com/bridgecrewio/checkov/pull/6465)
+- **arm:** PubsubSpecifyIdentity - [#6483](https://github.com/bridgecrewio/checkov/pull/6483)
 
 ## [3.2.159](https://github.com/bridgecrewio/checkov/compare/3.2.156...3.2.159) - 2024-06-30
 
