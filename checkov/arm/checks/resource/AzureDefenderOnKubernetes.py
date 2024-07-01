@@ -15,12 +15,12 @@ class AzureDefenderOnKubernetes(BaseResourceCheck):
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
         return (
             CheckResult.PASSED
-            if str(conf["properties"]["pricingTier"]).lower() == "standard"
+            if conf.get("name") != "KubernetesService" or str(conf["properties"]["pricingTier"]).lower() == "standard"
             else CheckResult.FAILED
         )
 
     def get_evaluated_keys(self) -> list[str]:
-        return ["pricingTier"]
+        return ["name", "pricingTier"]
 
 
 check = AzureDefenderOnKubernetes()
