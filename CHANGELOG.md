@@ -1,6 +1,40 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.145...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.159...HEAD)
+
+## [3.2.159](https://github.com/bridgecrewio/checkov/compare/3.2.156...3.2.159) - 2024-06-30
+
+### Bug Fix
+
+- **arm:** fix CKV_AZURE_78: `siteConfig` object should be under `properties` - [#6477](https://github.com/bridgecrewio/checkov/pull/6477)
+- **general:** Mypy issues - [#6510](https://github.com/bridgecrewio/checkov/pull/6510)
+- **terraform:** ignore comment out modules  - [#6507](https://github.com/bridgecrewio/checkov/pull/6507)
+
+## [3.2.156](https://github.com/bridgecrewio/checkov/compare/3.2.145...3.2.156) - 2024-06-27
+
+### Feature
+
+- **arm:** add CKV_AZURE_129 Ensure that MariaDB server enables geo-redundant backups  - [#6427](https://github.com/bridgecrewio/checkov/pull/6427)
+- **arm:** add CKV_AZURE_137 Ensure ACR admin account is disabled - [#6430](https://github.com/bridgecrewio/checkov/pull/6430)
+- **arm:** add CKV_AZURE_139 Ensure ACR set to disable public networking - [#6428](https://github.com/bridgecrewio/checkov/pull/6428)
+- **arm:** add CKV_AZURE_166 Ensure container image quarantine, scan, and mark images verified - [#6431](https://github.com/bridgecrewio/checkov/pull/6431)
+- **arm:** add CKV_AZURE_168 to ensure that Azure Kubernetes Cluster (AKS) nodes should use a minimum number of 50 pods - [#6385](https://github.com/bridgecrewio/checkov/pull/6385)
+- **arm:** add CKV_AZURE_45 to ensure that no sensitive credentials are exposed in VM custom_data - [#6422](https://github.com/bridgecrewio/checkov/pull/6422)
+- **arm:** add CKV_AZURE_70 to ensure that Function apps is only accessible over HTTPS - [#6457](https://github.com/bridgecrewio/checkov/pull/6457)
+- **arm:** ARM AppServiceSlotDebugDisabled - CKV_AZURE_155 - [#6453](https://github.com/bridgecrewio/checkov/pull/6453)
+- **arm:** ARM AppServiceSlotHTTPSOnly - [#6454](https://github.com/bridgecrewio/checkov/pull/6454)
+- **arm:** ARM VnetLocalDNS - [#6424](https://github.com/bridgecrewio/checkov/pull/6424)
+- **arm:** PostgressSQLGeoBackupEnabled - [#6456](https://github.com/bridgecrewio/checkov/pull/6456)
+- **arm:** StorageAccountName - [#6426](https://github.com/bridgecrewio/checkov/pull/6426)
+- **secrets:** dont filter secrets - [#6508](https://github.com/bridgecrewio/checkov/pull/6508)
+
+### Bug Fix
+
+- **azure:** fix description of CKV_AZURE_236 - [#6503](https://github.com/bridgecrewio/checkov/pull/6503)
+- **kubernetes:** Fix CKV_K8S_31 for CronJobs - [#6506](https://github.com/bridgecrewio/checkov/pull/6506)
+- **sca:** fix parsing json with comments - [#6509](https://github.com/bridgecrewio/checkov/pull/6509)
+- **terraform:** CKV_AWS_339 add Kubernetes 1.30 to AWS EKS version checks - [#6353](https://github.com/bridgecrewio/checkov/pull/6353)
+- **terraform:** remove print from CKV_AWS_364 - [#6504](https://github.com/bridgecrewio/checkov/pull/6504)
 
 ## [3.2.145](https://github.com/bridgecrewio/checkov/compare/3.2.144...3.2.145) - 2024-06-25
 
