@@ -14,11 +14,9 @@ class TestSynapseWorkspaceEnablesDataExfilProtection(unittest.TestCase):
 
         # when
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
-        logging.warning(f"report:  {report}")
+
         # then
         summary = report.get_summary()
-        logging.warning(f"Check id:  {check.id}")
-        logging.warning(f"summary:  {summary}")
 
         passing_resources = {
             "Microsoft.Synapse/workspaces.pass",
