@@ -117,6 +117,13 @@
           "adminUsername": "[parameters('adminUsername')]",
           "linuxConfiguration": {
             "disablePasswordAuthentication": true,
+            "ssh": {
+              "publicKeys": [
+                {
+
+                }
+              ]
+            }
           }
         },
         "storageProfile": {
@@ -166,7 +173,16 @@
             "computerNamePrefix": "[parameters('vmssName')]",
             "adminUsername": "[parameters('adminUsername')]",
             "adminPassword": "[parameters('adminPasswordOrKey')]",
-            "linuxConfiguration": "[if(equals(parameters('authenticationType'), 'password'), json('null'), variables('linuxConfiguration'))]"
+            "linuxConfiguration": {
+            "disablePasswordAuthentication": true,
+            "ssh": {
+              "publicKeys": [
+                {
+
+                }
+              ]
+            }
+          }
           },
           "networkProfile": {
             "networkInterfaceConfigurations": [

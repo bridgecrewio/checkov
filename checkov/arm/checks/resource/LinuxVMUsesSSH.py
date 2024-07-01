@@ -13,10 +13,9 @@ class LinuxVMUsesSSH(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources,)
 
     def get_inspected_key(self) -> str:
-        if self.entity_type == "Microsoft.Compute/virtualMachines":
-            return "properties/osProfile/linuxConfiguration/ssh/publicKeys/[0]/path"
-        elif self.entity_type == "Microsoft.Compute/virtualMachineScaleSets":
+        if self.entity_type == "Microsoft.Compute/virtualMachineScaleSets":
             return "properties/virtualMachineProfile/osProfile/linuxConfiguration/ssh/publicKeys/[0]/path"
+        return "properties/osProfile/linuxConfiguration/ssh/publicKeys/[0]/path"
 
     def get_expected_value(self) -> Any:
         return ANY_VALUE
