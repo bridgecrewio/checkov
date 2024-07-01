@@ -206,7 +206,7 @@ def _prepare_resource_block(
             resource_conf[TF_PLAN_RESOURCE_CHANGE_ACTIONS] = changes.get("change", {}).get("actions") or []
             resource_conf[TF_PLAN_RESOURCE_CHANGE_KEYS] = changes.get(TF_PLAN_RESOURCE_CHANGE_KEYS) or []
             # enrich conf with after_unknown values
-            if os.getenv('EVAL_TF_PLAN_AFTER_UNKNOWN') and changes.get("change", {}).get(TF_PLAN_RESOURCE_AFTER_UNKNOWN):
+            if changes.get("change", {}).get(TF_PLAN_RESOURCE_AFTER_UNKNOWN):
                 after_unknown = changes.get("change", {}).get(TF_PLAN_RESOURCE_AFTER_UNKNOWN)
                 if isinstance(after_unknown, dict):
                     for k, v in after_unknown.items():
