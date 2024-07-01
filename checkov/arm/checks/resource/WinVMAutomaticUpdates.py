@@ -12,10 +12,9 @@ class WinVMAutomaticUpdates(BaseResourceValueCheck):
                          missing_block_result=CheckResult.PASSED,)
 
     def get_inspected_key(self) -> str:
-        if self.entity_type == "Microsoft.Compute/virtualMachines":
-            return "properties/osProfile/windowsConfiguration/enableAutomaticUpdates"
-        elif self.entity_type == "Microsoft.Compute/virtualMachineScaleSets":
+        if self.entity_type == "Microsoft.Compute/virtualMachineScaleSets":
             return "properties/virtualMachineProfile/osProfile/windowsConfiguration/enableAutomaticUpdates"
+        return "properties/osProfile/windowsConfiguration/enableAutomaticUpdates"
 
 
 check = WinVMAutomaticUpdates()
