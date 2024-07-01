@@ -1,0 +1,30 @@
+metadata:
+  version: 0.2
+  id: CKV_AWS_19
+  name: Ensure all data stored in the S3 bucket is securely encrypted at rest
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - javascript
+    - typescript
+definition:
+  or:
+    - pattern: new $FUNC(<ANY>)
+      conditions:
+        - metavariable: $FUNC
+          regex: (?i)(Bucket|CfnBucket)
+        - not_pattern: |
+            'new $FUNC(<ANY>, encryption: $METHOD ,<ANY>)'
+          conditions:
+            - metavariable: $METHOD
+              regex: (?i)(BucketEncryption.KMS_MANAGED|BucketEncryption.S3_MANAGED|BucketEncryption.KMS)
+    - pattern: new $S3.$FUNC(<ANY>)
+      conditions:
+        - metavariable: $FUNC
+          regex: (?i)(Bucket|CfnBucket)
+        - not_pattern: |
+            'new $FUNC(<ANY>, encryption: $METHOD ,<ANY>)'
+          conditions:
+            - metavariable: $METHOD
+              regex: (?i)($S3.BucketEncryption.KMS_MANAGED|$S3.BucketEncryption.S3_MANAGED|$S3.BucketEncryption.KMS)
