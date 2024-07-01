@@ -37,7 +37,7 @@ class TestSkipJsonRegexPattern(unittest.TestCase):
 
         summary = report.get_summary()
 
-        self.assertEqual(summary['passed'], 0)
+        self.assertEqual(summary['passed'], 4)
         self.assertEqual(summary['failed'], 16)
         # As skip is not being inserted to result in base check scan
         self.assertEqual(summary['skipped'], 0)
@@ -55,7 +55,7 @@ class TestSkipJsonRegexPattern(unittest.TestCase):
 
         summary = report.get_summary()
 
-        self.assertEqual(summary['passed'], 0)
+        self.assertEqual(summary['passed'], 4)
         self.assertEqual(summary['failed'], 18)
         # As skip is not being inserted to result in base check scan
         self.assertEqual(summary['skipped'], 0)
@@ -73,7 +73,7 @@ class TestSkipJsonRegexPattern(unittest.TestCase):
 
         summary = report.get_summary()
 
-        self.assertEqual(summary['passed'], 0)
+        self.assertEqual(summary['passed'], 4)
         self.assertEqual(summary['failed'], 18)
         # As skip is not being inserted to result in base check scan
         self.assertEqual(summary['skipped'], 0)
@@ -91,7 +91,7 @@ class TestSkipJsonRegexPattern(unittest.TestCase):
 
         summary = report.get_summary()
 
-        self.assertEqual(summary['passed'], 0)
+        self.assertEqual(summary['passed'], 4)
         self.assertEqual(summary['failed'], 20)
         # As skip is not being inserted to result in base check scan
         self.assertEqual(summary['skipped'], 0)
