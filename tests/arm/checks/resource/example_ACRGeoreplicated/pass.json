@@ -9,6 +9,9 @@
       "location": "eastus",
       "properties": {
         "adminUserEnabled": false,
+        "sku": {
+          "name": "Premium"
+        },
         "replications": [
           {
             "location": "westus",

@@ -1,7 +1,7 @@
 from __future__ import annotations
+from typing import Any
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.arm.base_resource_check import BaseResourceCheck
-from typing import Any
 
 
 class ACRGeoreplicated(BaseResourceCheck):
