@@ -17,6 +17,7 @@ class TestAPIGatewayMethodSettingsCacheEncrypted(unittest.TestCase):
 
         passing_resources = {
             "aws_api_gateway_method_settings.pass",
+            "aws_api_gateway_method_settings.pass2",
         }
         failing_resources = {
             "aws_api_gateway_method_settings.fail",

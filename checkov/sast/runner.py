@@ -3,14 +3,17 @@ from __future__ import annotations
 import logging
 import os
 import sys
+from checkov.common.util.type_forcers import convert_str_to_bool
+from checkov.common.sast.consts import SastLanguages
+
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.output.report import Report
 from checkov.common.runners.base_runner import BaseRunner
-from checkov.common.sast.consts import SUPPORT_FILE_EXT, FILE_EXT_TO_SAST_LANG, CDKLanguages
+from checkov.common.sast.consts import SUPPORT_FILE_EXT, FILE_EXT_TO_SAST_LANG, CDKLanguages, CDK_CHECKS_DIR_PATH
 from checkov.runner_filter import RunnerFilter
-from checkov.sast.checks_infra.base_registry import CDK_CHECKS_DIR_PATH, Registry
+from checkov.sast.checks_infra.base_registry import Registry
 from checkov.sast.engines.prisma_engine import PrismaEngine
 
 from typing import List, Optional
@@ -41,6 +44,7 @@ class Runner(BaseRunner[None, None, None]):
             collect_skip_comments: bool = True) -> List[Report]:
 
         if sys.platform.startswith('win'):
+            logger.warning('Skip SAST for windows')
             # TODO: Enable SAST for windows runners.
             return [Report(self.check_type)]
 
@@ -52,6 +56,11 @@ class Runner(BaseRunner[None, None, None]):
             # only happens for 'ParallelizationType.SPAWN'
             bc_integration.setup_http_manager()
             bc_integration.set_s3_client()
+
+        # Todo remove when golang is stable in platform
+        if not bool(convert_str_to_bool(os.getenv('ENABLE_SAST_GOLANG', False))):
+            if SastLanguages.GOLANG in runner_filter.sast_languages:
+                runner_filter.sast_languages.remove(SastLanguages.GOLANG)
 
         # registry get all the paths
         self.registry.set_runner_filter(runner_filter)
@@ -66,7 +75,7 @@ class Runner(BaseRunner[None, None, None]):
             targets.extend([a if os.path.isabs(a) else os.path.abspath(a) for a in files])
 
         if self.cdk_langs:
-            self.registry.checks_dirs_path.append(CDK_CHECKS_DIR_PATH)
+            self.registry.checks_dirs_path.append(str(CDK_CHECKS_DIR_PATH))
 
         reports = []
         try:

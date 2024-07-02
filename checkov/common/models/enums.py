@@ -26,6 +26,7 @@ class CheckCategories(Enum):
     SUPPLY_CHAIN = 11
     API_SECURITY = 12
     SAST = 13
+    AI_AND_ML = 14
 
 
 class OutputFormat(Enum):

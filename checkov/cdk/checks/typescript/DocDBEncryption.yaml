@@ -1,0 +1,15 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_74
+  name: Ensure DocumentDB is encrypted at rest (default is unencrypted)
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  pattern: new $AWS.CfnDBCluster(<ANY>)
+  conditions:
+    - not_pattern: |
+        new $AWS.CfnDBCluster(<ANY>, {<ANY>, storageEncrypted: true, <ANY>} , <ANY>)
