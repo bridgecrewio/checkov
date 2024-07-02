@@ -1,3 +1,5 @@
+from typing import Any, Dict
+
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.arm.base_resource_value_check import BaseResourceCheck
 
@@ -10,7 +12,7 @@ class VMStorageOsDisk(BaseResourceCheck):
         categories = (CheckCategories.GENERAL_SECURITY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf) -> CheckResult:
+    def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
         properties = conf.get('properties')
         if not properties:
             return CheckResult.PASSED
