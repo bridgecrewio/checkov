@@ -1,0 +1,18 @@
+metadata: 
+  id: "CKV2_AZURE_53"
+  name: "Ensure Synapse SQL Pool has a security alert policy"
+  category: "GENERAL_SECURITY"
+
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - azurerm_synapse_workspace
+      operator: within
+    - cond_type: connection
+      resource_types:
+        - azurerm_synapse_workspace
+      connected_resource_types:
+        - azurerm_synapse_workspace_extended_auditing_policy
+      operator: exists
