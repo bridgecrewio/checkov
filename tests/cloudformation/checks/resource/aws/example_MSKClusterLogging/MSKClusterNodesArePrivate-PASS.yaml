@@ -1,0 +1,51 @@
+Resources:
+  MSKClusterPASS:
+    Type: AWS::MSK::Cluster
+    Properties:
+      BrokerNodeGroupInfo:
+        ClientSubnets: 
+          - String
+        InstanceType: kafka.m5.8xlarge
+      ClusterName: String
+      EnhancedMonitoring: DEFAULT
+      KafkaVersion: String
+      LoggingInfo:
+        BrokerLogs:
+          CloudWatchLogs:
+            Enabled: True
+            LogGroup: String
+          Firehose:
+            DeliveryStream: String
+            Enabled: True
+          S3:
+            Bucket: String
+            Enabled: True
+            Prefix: String
+      NumberOfBrokerNodes: 3
+      Tags:
+        Key: Value
+  MSKClusterPASSskip:
+    Type: AWS::MSK::Cluster
+    Properties:
+      BrokerNodeGroupInfo:
+        ClientSubnets: 
+          - String
+        InstanceType: kafka.m5.8xlarge
+      ClusterName: String
+      EnhancedMonitoring: DEFAULT
+      KafkaVersion: String
+      LoggingInfo:
+        BrokerLogs:
+          CloudWatchLogs:
+            Enabled: False
+            LogGroup: String
+          Firehose:
+            DeliveryStream: String
+            Enabled: True
+          S3:
+            Bucket: String
+            Enabled: True
+            Prefix: String
+      NumberOfBrokerNodes: 5
+      Tags:
+        Key: Value

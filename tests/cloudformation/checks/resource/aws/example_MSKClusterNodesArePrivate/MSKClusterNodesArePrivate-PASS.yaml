@@ -1,0 +1,70 @@
+Resources:
+  MSKClusterPASS:
+    Type: "AWS::MSK::Cluster"
+    Properties:
+      ClusterName: "bad"
+      KafkaVersion: "3.2.0"
+      NumberOfBrokerNodes: 2
+      BrokerNodeGroupInfo:
+        StorageInfo:
+          EBSStorageInfo:
+            VolumeSize: 1100
+        ClientSubnets:
+          - "subnet-0562ef1d304b968f4"
+          - "subnet-08895dbf9e060579b"
+        InstanceType: "kafka.t3.small"
+        SecurityGroups:
+          - "sg-002ed1a53dc5fe0ad"
+        ConnectivityInfo:
+          PublicAccess:
+            Type: "DISABLED"
+      ConfigurationInfo:
+        Arn: ""
+        Revision: 0
+      EncryptionInfo:
+        EncryptionAtRest:
+          DataVolumeKMSKeyId: "arn:aws:kms:eu-west-2:680235478471:key/fd160011-126e-4bec-b370-c8765b5c6a37"
+        EncryptionInTransit:
+          ClientBroker: "TLS"
+          InCluster: true
+      OpenMonitoring:
+        Prometheus:
+          JmxExporter:
+            EnabledInBroker: false
+          NodeExporter:
+            EnabledInBroker: false
+      Tags:
+        pike: "permissions"
+  MSKClusterPASS2:
+    Type: "AWS::MSK::Cluster"
+    Properties:
+      ClusterName: "bad"
+      KafkaVersion: "3.2.0"
+      NumberOfBrokerNodes: 2
+      BrokerNodeGroupInfo:
+        StorageInfo:
+          EBSStorageInfo:
+            VolumeSize: 1100
+        ClientSubnets:
+          - "subnet-0562ef1d304b968f4"
+          - "subnet-08895dbf9e060579b"
+        InstanceType: "kafka.t3.small"
+        SecurityGroups:
+          - "sg-002ed1a53dc5fe0ad"
+      ConfigurationInfo:
+        Arn: ""
+        Revision: 0
+      EncryptionInfo:
+        EncryptionAtRest:
+          DataVolumeKMSKeyId: "arn:aws:kms:eu-west-2:680235478471:key/fd160011-126e-4bec-b370-c8765b5c6a37"
+        EncryptionInTransit:
+          ClientBroker: "TLS"
+          InCluster: true
+      OpenMonitoring:
+        Prometheus:
+          JmxExporter:
+            EnabledInBroker: false
+          NodeExporter:
+            EnabledInBroker: false
+      Tags:
+        pike: "permissions"

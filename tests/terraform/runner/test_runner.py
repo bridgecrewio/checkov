@@ -154,6 +154,24 @@ class TestRunnerValid(unittest.TestCase):
         assert 'aws_db_instance.default' in failed_resources
         assert 'aws_db_instance.disabled' in failed_resources
 
+    def test_for_each_check(self):
+        if not self.db_connector == RustworkxConnector:
+            return
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/resources/for_each"
+        runner = Runner(db_connector=self.db_connector())
+        checks_allowlist = ['CKV_AWS_186']
+        report = runner.run(root_folder=valid_dir_path, runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allowlist))
+        report_json = report.get_json()
+        self.assertIsInstance(report_json, str)
+        self.assertIsNotNone(report_json)
+        self.assertIsNotNone(report.get_test_suite())
+        assert len(report.failed_checks) == 2
+        assert len(report.passed_checks) == 0
+        failed_resources = [c.resource for c in report.failed_checks]
+        assert 'module.simple[0].aws_s3_bucket_object.this_file' in failed_resources
+        assert 'module.simple[1].aws_s3_bucket_object.this_file' in failed_resources
+
     def test_runner_passing_valid_tf(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -170,7 +188,7 @@ class TestRunnerValid(unittest.TestCase):
              'hard_fail_threshold': None}), 1)
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
-        self.assertEqual(9, summary['failed'])
+        self.assertEqual(10, summary['failed'])
         self.assertEqual(1, summary['skipped'])
         self.assertEqual(0, summary["parsing_errors"])
 
@@ -319,7 +337,7 @@ class TestRunnerValid(unittest.TestCase):
         # self.assertEqual(report.get_exit_code(), 0)
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
-        self.assertEqual(5, summary['failed'])
+        self.assertEqual(6, summary['failed'])
         self.assertEqual(0, summary["parsing_errors"])
 
     def test_check_ids_dont_collide(self):
@@ -451,7 +469,7 @@ class TestRunnerValid(unittest.TestCase):
         for check_list in [aws_checks, gcp_checks, azure_checks]:
             check_list.sort(reverse=True, key=lambda s: int(s.split('_')[-1]))
 
-        for i in range(1, len(aws_checks) + 5):
+        for i in range(1, len(aws_checks) + 4):
             if f'CKV2_AWS_{i}' == 'CKV2_AWS_17':
                 # CKV2_AWS_17 was overly keen and those resources it checks are created by default
                 continue
@@ -1281,6 +1299,18 @@ class TestRunnerValid(unittest.TestCase):
         resources_ids.sort()
         self.assertEqual(len(resources_ids), 3)
         self.assertEqual(expected_resources_ids, resources_ids)
+
+    def test_list_of_routes(self):
+        resources_path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "resources", "list_of_routes")
+        checks_allow_list = ['CKV2_AWS_44']
+
+        runner = Runner(db_connector=self.db_connector())
+        report = runner.run(root_folder=resources_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allow_list))
+
+        self.assertEqual(len(report.passed_checks), 0)
+        self.assertEqual(len(report.failed_checks), 1)
 
     def test_resource_values_dont_exist(self):
         resources_path = os.path.join(

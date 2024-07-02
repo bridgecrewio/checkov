@@ -8,9 +8,13 @@ If you've already developed new checks we'd be happy to take a look at them and 
 
 ## Open an issue
 
-Checkov is an open source project maintained by [Prisma Cloud by Palo Alto Networks](https://www.prismacloud.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov). We have dedicated maintainers developing 
-new content and adding more features. If you have a bug or an idea, start by opening an issue. Try to make it as 
-descriptive as possible. 
+Checkov is an open source project maintained by 
+[Prisma Cloud by Palo Alto Networks](https://www.prismacloud.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=checkov). 
+Our team of maintainers continuously works on developing new features and enhancing existing features. If you encounter 
+a bug or have a suggestion, please start by opening an Issue. When reporting, provide a detailed description with examples 
+to help us understand the context and specifics. Please note that while we review every issue, non-critical or 
+non-blocking issues may be prioritized based on their popularity or frequency. We appreciate your contributions and 
+engagement in helping us improve Checkov.
 
 ## Developing and contributing code
 
@@ -58,10 +62,10 @@ Continuous integration will run these tests either as pre-submits on PRs and pos
 Results will appear under [actions](https://github.com/bridgecrewio/checkov/actions).
 
 To run tests locally use the following commands (install dev dependencies, run tests and compute tests coverage):
-If you are using conda, create a new environment with Python 3.7.10 version:
+If you are using conda, create a new environment with Python 3.10.14 version:
 ```sh
-conda create -n python37 --m python=3.7.10
-conda activate python37
+conda create -n python310 --m python=Python 3.10.14
+conda activate python310
 ```
 Then, we need pipenv installation and run the tests and coverage modules 
 ```sh

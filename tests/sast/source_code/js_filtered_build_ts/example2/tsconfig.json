@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "module": "system",
+    "noImplicitAny": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "outFile": "./build/file.js",
+    "sourceMap": true
+  },
+  "include": [
+    "./*.ts"
+  ]
+}
