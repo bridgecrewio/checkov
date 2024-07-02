@@ -37,6 +37,7 @@ from checkov.common.output.gitlab_sast import GitLabSast
 from checkov.common.output.report import Report, merge_reports
 from checkov.common.output.sarif import Sarif
 from checkov.common.output.spdx import SPDX
+from checkov.common.output.in_toto_output import InTotoOutput
 from checkov.common.parallelizer.parallel_runner import parallel_runner
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.common.sast.consts import CDKLanguages
@@ -73,6 +74,7 @@ OUTPUT_CHOICES = [
     "gitlab_sast",
     "sarif",
     "spdx",
+    "in_toto"
 ]
 SUMMARY_POSITIONS = frozenset(['top', 'bottom'])
 OUTPUT_DELIMITER = "\n--- OUTPUT DELIMITER ---\n"
@@ -405,6 +407,7 @@ class RunnerRegistry:
         cyclonedx_reports = []
         gitlab_reports = []
         spdx_reports = []
+        in_toto_reports = []
         csv_sbom_report = CSVSBOM()
 
         try:
@@ -430,6 +433,8 @@ class RunnerRegistry:
                     cli_reports.append(report)
                 if "gitlab_sast" in config.output:
                     gitlab_reports.append(report)
+                if "in_toto" in config.output:
+                    in_toto_reports.append(report)
             if not report.is_empty() or len(report.extra_resources):
                 if any(cyclonedx in config.output for cyclonedx in CYCLONEDX_OUTPUTS):
                     cyclonedx_reports.append(report)
@@ -545,7 +550,9 @@ class RunnerRegistry:
 
             data_outputs["json"] = json.dumps(report_json_output, cls=CustomJSONEncoder)
         if "junitxml" in config.output:
+
             properties = Report.create_test_suite_properties_block(config)
+
 
             if junit_reports:
                 test_suites = [
@@ -564,6 +571,18 @@ class RunnerRegistry:
             )
 
             data_outputs['junitxml'] = junit_output
+
+        if "in_toto" in config.output:
+            in_toto = InTotoOutput(repo_id=metadata_integration.bc_integration.repo_id, reports=in_toto_reports)
+            in_toto_data = in_toto.generate_output()
+            self._print_to_console(
+                output_formats=output_formats,
+                output_format="in_toto",
+                output=json.dumps(in_toto_data, indent=4),  # Assuming you want JSON output
+            )
+
+            data_outputs["in_toto"] = json.dumps(in_toto_data)  # Store the output in data_outputs
+
         if any(cyclonedx in config.output for cyclonedx in CYCLONEDX_OUTPUTS):
             cyclonedx = CycloneDX(repo_id=metadata_integration.bc_integration.repo_id, reports=cyclonedx_reports)
 
@@ -599,6 +618,8 @@ class RunnerRegistry:
 
             data_outputs["gitlab_sast"] = json.dumps(gl_sast.sast_json)
         if "spdx" in config.output:
+
+
             spdx = SPDX(repo_id=metadata_integration.bc_integration.repo_id, reports=spdx_reports)
             spdx_output = spdx.get_tag_value_output()
 
@@ -626,6 +647,7 @@ class RunnerRegistry:
             'cyclonedx_json': 'results_cyclonedx.json',
             'gitlab_sast': 'results_gitlab_sast.json',
             'spdx': 'results_spdx.spdx',
+            'in_toto': 'results_in_toto.json',
         }
 
         if config.output_file_path:
@@ -649,6 +671,8 @@ class RunnerRegistry:
 
     def _print_to_console(self, output_formats: dict[str, str], output_format: str, output: str, url: str | None = None, support_path: str | None = None) -> None:
         """Prints the output to console, if needed"""
+
+
         output_dest = output_formats[output_format]
         if output_dest == CONSOLE_OUTPUT:
             del output_formats[output_format]
@@ -667,6 +691,7 @@ class RunnerRegistry:
 
             if CONSOLE_OUTPUT in output_formats.values():
                 print(OUTPUT_DELIMITER)
+
 
     def print_iac_bom_reports(self, output_path: str,
                               scan_reports: list[Report],
@@ -699,6 +724,7 @@ class RunnerRegistry:
             csv_sbom_report.persist_report_iac(file_name=output_files['csv'], output_path=output_path)
 
         return {key: os.path.join(output_path, value) for key, value in output_files.items()}
+
 
     def filter_runner_framework(self) -> None:
         if not self.runner_filter:
