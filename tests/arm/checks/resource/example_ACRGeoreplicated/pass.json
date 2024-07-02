@@ -3,19 +3,24 @@
   "contentVersion": "1.0.0.0",
   "resources": [
     {
-  "type": "Microsoft.ContainerRegistry/registries/replications",
-  "apiVersion": "2023-01-01-preview",
-  "name": "pass",
-  "location": "string",
-  "tags": {
-    "tagName1": "tagValue1",
-    "tagName2": "tagValue2"
-  },
-  "properties": {
-    "regionEndpointEnabled": "bool",
-    "zoneRedundancy": "string"
-  }
-}
+      "type": "Microsoft.ContainerRegistry/registries",
+      "apiVersion": "2019-05-01",
+      "name": "pass",
+      "location": "eastus",
+      "properties": {
+        "adminUserEnabled": false,
+        "sku": {
+          "name": "Premium"
+        },
+        "replications": [
+          {
+            "location": "westus",
+            "tags": {
+              "environment": "production"
+            }
+          }
+        ]
+      }
+    }
   ]
-
 }

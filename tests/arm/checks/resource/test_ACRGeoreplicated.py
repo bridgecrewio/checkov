@@ -1,6 +1,5 @@
 import os
 import unittest
-
 from checkov.runner_filter import RunnerFilter
 from checkov.arm.runner import Runner
 from checkov.arm.checks.resource.ACRGeoreplicated import check
@@ -18,10 +17,11 @@ class TestACRGeoreplicated(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            'Microsoft.ContainerRegistry/registries/replications.pass',
+            'Microsoft.ContainerRegistry/registries.pass',
         }
         failing_resources = {
-            'Microsoft.ContainerRegistry/registries/replications.fail',
+            'Microsoft.ContainerRegistry/registries.fail',
+
 
         }
         skipped_resources = {}
