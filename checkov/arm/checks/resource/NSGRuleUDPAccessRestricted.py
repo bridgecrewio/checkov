@@ -12,7 +12,7 @@ class NSGRuleUDPAccessRestricted(BaseResourceCheck):
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf):
+    def scan_resource_conf(self, conf) -> str:
         rule_confs = [conf.get("properties")]
         evaluated_key_prefix = ''
         if 'securityRules' in rule_confs[0]:
