@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.163...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.164...HEAD)
+
+## [3.2.164](https://github.com/bridgecrewio/checkov/compare/3.2.163...3.2.164) - 2024-07-02
+
+### Documentation
+
+- **general:** Add Python note - [#6521](https://github.com/bridgecrewio/checkov/pull/6521)
 
 ## [3.2.163](https://github.com/bridgecrewio/checkov/compare/3.2.159...3.2.163) - 2024-07-01
 
