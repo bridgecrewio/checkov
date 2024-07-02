@@ -4,10 +4,15 @@
   "resources": [
     {
       "type": "Microsoft.Security/pricings",
-      "apiVersion": "2021-01-01-preview",
+      "apiVersion": "2024-01-01",
       "name": "pass",
       "properties": {
-        "pricingTier": "Standard"
+        "pricingTier": "Standard",
+        "extensions": [
+          {
+            "name": "KeyVaults"
+          }
+        ]
       }
     }
   ]
