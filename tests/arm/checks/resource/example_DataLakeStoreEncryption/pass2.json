@@ -1,0 +1,15 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.DataLakeStore/accounts",
+      "apiVersion": "2016-11-01",
+      "name": "pass2",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "encryptionState": "Enabled"
+      }
+    }
+  ]
+}
