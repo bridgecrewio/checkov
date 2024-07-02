@@ -1,0 +1,38 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.ContainerService/managedClusters",
+      "apiVersion": "2018-06-01",
+      "name": "fail2",
+      "properties": {
+        "vmSize": "Standard_DS2_v2",
+        "count": 1,
+        "osDiskType": "Managed",
+        "tags": {
+          "Environment": "Production"
+        },
+        "agentPoolProfiles": [
+          {
+            "name": "default",
+            "enableEncryptionAtHost": true,
+            "vmSize": "Standard_E4ads_v5",
+            "osDiskType": "Managed",
+            "availabilityZones": [
+              1,
+              2,
+              3
+            ],
+            "type": "VirtualMachineScaleSets",
+            "vnetSubnetID": "",
+            "enableAutoScaling": true,
+            "maxCount": 6,
+            "minCount": 2,
+            "orchestratorVersion": ""
+          }
+        ]
+      }
+    }
+  ]
+}
