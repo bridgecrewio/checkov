@@ -5,14 +5,20 @@ metadata:
 
 definition:
   and:
-    - cond_type: filter
-      attribute: resource_type
-      value:
-        - azurerm_synapse_sql_pool
-      operator: within
     - cond_type: connection
       resource_types:
         - azurerm_synapse_sql_pool
       connected_resource_types:
         - azurerm_synapse_sql_pool_security_alert_policy
       operator: exists
+    - cond_type: attribute
+      resource_types:
+        - azurerm_synapse_sql_pool_security_alert_policy
+      attribute: 'policy_state'
+      operator: equals
+      value: 'Enabled'
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - azurerm_synapse_sql_pool
+      operator: within

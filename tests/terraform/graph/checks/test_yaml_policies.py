@@ -250,6 +250,12 @@ class TestYamlPolicies(unittest.TestCase):
     def test_StorageLoggingIsEnabledForTableService(self):
         self.go("StorageLoggingIsEnabledForTableService")
 
+    def test_SynapseSQLPoolHasSecurityAlertPolicy(self):
+        self.go("SynapseSQLPoolHasSecurityAlertPolicy")
+
+    def test_SynapseSQLPoolHasVulnerabilityAssessment(self):
+        self.go("SynapseSQLPoolHasVulnerabilityAssessment")
+
     def test_VMHasBackUpMachine(self):
         self.go("VMHasBackUpMachine")
 
