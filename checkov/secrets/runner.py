@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import datetime
-import hashlib
 import linecache
 import logging
 import os
@@ -21,6 +20,7 @@ from checkov.common.output.secrets_record import SecretsRecord
 from checkov.common.util.http_utils import request_wrapper, DEFAULT_TIMEOUT
 from detect_secrets import SecretsCollection
 from detect_secrets.core import scan
+from detect_secrets.core.potential_secret import PotentialSecret
 from detect_secrets.settings import transient_settings
 
 from checkov.common.bridgecrew.check_type import CheckType
@@ -47,7 +47,6 @@ from checkov.secrets.utils import filter_excluded_paths, EXCLUDED_PATHS
 
 if TYPE_CHECKING:
     from checkov.common.util.tqdm_utils import ProgressBar
-    from detect_secrets.core.potential_secret import PotentialSecret
 
 SOURCE_CODE_EXTENSION = ['.py', '.js', '.properties', '.pem', '.php', '.xml', '.ts', '.env', '.java', '.rb',
                          'go', 'cs', '.txt']
@@ -73,7 +72,8 @@ SECRET_TYPE_TO_ID = {
     'Hex High Entropy String': 'CKV_SECRET_19'
 }
 
-ENTROPY_CHECK_IDS = ('CKV_SECRET_6', 'CKV_SECRET_19', 'CKV_SECRET_80')
+ENTROPY_CHECK_IDS = {'CKV_SECRET_6', 'CKV_SECRET_19', 'CKV_SECRET_80'}
+GENERIC_PRIVATE_KEY_CHECK_IDS = {'CKV_SECRET_10', 'CKV_SECRET_13'}
 
 CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 
@@ -223,7 +223,14 @@ class Runner(BaseRunner[None, None, None]):
                 self.pbar.close()
 
             secret_records: dict[str, SecretsRecord] = {}
+            secrets_in_uuid_form = ['CKV_SECRETS_116']
             for key, secret in secrets:
+                check_id = secret.check_id if secret.check_id else SECRET_TYPE_TO_ID.get(secret.type)
+                if not check_id:
+                    logging.debug(f'Secret was filtered - no check_id for line_number {secret.line_number}')
+                    continue
+                secret_key = f'{key}_{secret.line_number}_{secret.secret_hash}'
+                # secret history
                 added_commit_hash, removed_commit_hash, code_line, added_by, removed_date, added_date = '', '', '', '', '', ''
                 if runner_filter.enable_git_history_secret_scan:
                     enriched_potential_secret = git_history_scanner.\
@@ -234,19 +241,18 @@ class Runner(BaseRunner[None, None, None]):
                     added_by = enriched_potential_secret.get('added_by') or ''
                     removed_date = enriched_potential_secret.get('removed_date') or ''
                     added_date = enriched_potential_secret.get('added_date') or ''
-                check_id = secret.check_id if secret.check_id else SECRET_TYPE_TO_ID.get(secret.type)
-                if not check_id:
-                    logging.debug(f'Secret was filtered - no check_id for line_number {secret.line_number}')
-                    continue
-                secret_key = f'{key}_{secret.line_number}_{secret.secret_hash}'
-                if secret.secret_value and is_potential_uuid(secret.secret_value):
+                    # run over secret key
+                    if isinstance(secret.secret_value, str) and secret.secret_value:
+                        stripped = secret.secret_value.strip(',"')
+                        if stripped != secret.secret_value:
+                            secret_key = f'{key}_{secret.line_number}_{PotentialSecret.hash_secret(stripped)}'
+                if secret.secret_value and is_potential_uuid(secret.secret_value) and secret.check_id in secrets_in_uuid_form:
                     logging.info(
-                        f"Removing secret due to UUID filtering: {hashlib.sha256(secret.secret_value.encode('utf-8')).hexdigest()}")
+                        f"Removing secret due to UUID filtering: {PotentialSecret.hash_secret(secret.secret_value)}")
                     continue
                 if secret_key in secret_records.keys():
-                    if secret_records[secret_key].check_id in ENTROPY_CHECK_IDS and check_id not in ENTROPY_CHECK_IDS:
-                        secret_records.pop(secret_key)
-                    else:
+                    is_prioritise = self._prioritise_secrets(secret_records, secret_key, check_id)
+                    if not is_prioritise:
                         continue
                 bc_check_id = metadata_integration.get_bc_id(check_id)
                 if bc_check_id in secret_suppressions_id:
@@ -318,6 +324,17 @@ class Runner(BaseRunner[None, None, None]):
             if runner_filter.skip_invalid_secrets:
                 self._modify_invalid_secrets_check_result_to_skipped(report)
             return report
+
+    @staticmethod
+    def _prioritise_secrets(secret_records: Dict[str, SecretsRecord], secret_key: str, check_id: str) -> bool:
+        if secret_records[secret_key].check_id in ENTROPY_CHECK_IDS and check_id not in ENTROPY_CHECK_IDS:
+            secret_records.pop(secret_key)
+            return True
+        if secret_records[secret_key].check_id in GENERIC_PRIVATE_KEY_CHECK_IDS:
+            if check_id not in GENERIC_PRIVATE_KEY_CHECK_IDS | ENTROPY_CHECK_IDS:
+                secret_records.pop(secret_key)
+                return True
+        return False
 
     def cleanup_plugin_files(
             self,

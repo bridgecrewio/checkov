@@ -44,6 +44,7 @@ class Runner(BaseRunner[None, None, None]):
             collect_skip_comments: bool = True) -> List[Report]:
 
         if sys.platform.startswith('win'):
+            logger.warning('Skip SAST for windows')
             # TODO: Enable SAST for windows runners.
             return [Report(self.check_type)]
 
