@@ -26,7 +26,14 @@ resource "azurerm_synapse_workspace" "azurerm_synapse_workspace_example" {
   }
 }
 
-resource "azurerm_synapse_sql_pool" "azurerm_synapse_sql_pool_pass" {
+resource "azurerm_synapse_sql_pool" "azurerm_synapse_sql_pool_pass_A" {
+  name                 = "examplesqlpool"
+  synapse_workspace_id = azurerm_synapse_workspace.azurerm_synapse_workspace_example.id
+  sku_name             = "DW100c"
+  create_mode          = "Default"
+}
+
+resource "azurerm_synapse_sql_pool" "azurerm_synapse_sql_pool_pass_B" {
   name                 = "examplesqlpool"
   synapse_workspace_id = azurerm_synapse_workspace.azurerm_synapse_workspace_example.id
   sku_name             = "DW100c"
@@ -47,9 +54,18 @@ resource "azurerm_synapse_sql_pool" "azurerm_synapse_sql_pool_fail_B" {
   create_mode          = "Default"
 }
 
+
 resource "azurerm_synapse_sql_pool_extended_auditing_policy" "extended_auditing_policy_enabled" {
-  sql_pool_id                             = azurerm_synapse_sql_pool.azurerm_synapse_sql_pool_pass.id
+  sql_pool_id                             = azurerm_synapse_sql_pool.azurerm_synapse_sql_pool_pass_A.id
   log_monitoring_enabled                  = true
+  storage_endpoint                        = azurerm_storage_account.audit_logs.primary_blob_endpoint
+  storage_account_access_key              = azurerm_storage_account.audit_logs.primary_access_key
+  storage_account_access_key_is_secondary = false
+  retention_in_days                       = 6
+}
+
+resource "azurerm_synapse_sql_pool_extended_auditing_policy" "extended_auditing_policy_enabled_by_default" {
+  sql_pool_id                             = azurerm_synapse_sql_pool.azurerm_synapse_sql_pool_pass_B.id
   storage_endpoint                        = azurerm_storage_account.audit_logs.primary_blob_endpoint
   storage_account_access_key              = azurerm_storage_account.audit_logs.primary_access_key
   storage_account_access_key_is_secondary = false

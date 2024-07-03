@@ -1,9 +1,9 @@
-from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
+from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from typing import List
 
 
-class SynapseWorkspaceAdministratorLoginPasswordHidden(BaseResourceValueCheck):
+class SynapseWorkspaceAdministratorLoginPasswordHidden(BaseResourceCheck):
     def __init__(self):
         name = "Ensure Azure Synapse Workspace administrator login password is not exposed"
         id = "CKV_AZURE_240"
@@ -15,12 +15,6 @@ class SynapseWorkspaceAdministratorLoginPasswordHidden(BaseResourceValueCheck):
         if 'sql_administrator_login_password' in conf:
             return CheckResult.FAILED
         return CheckResult.PASSED
-
-    def get_inspected_key(self) -> str:
-        return "sql_administrator_login_password" # TODO: Validate if needed
-
-    def get_evaluated_keys(self) -> List[str]:
-        return ['sql_administrator_login_password'] # TODO: Validate if needed
 
 
 check = SynapseWorkspaceAdministratorLoginPasswordHidden()
