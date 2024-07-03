@@ -1,0 +1,5 @@
+pass:
+  - "aws_sagemaker_notebook_instance.pass1"
+  - "aws_sagemaker_notebook_instance.pass2"
+fail:
+  - "aws_sagemaker_notebook_instance.fail1"

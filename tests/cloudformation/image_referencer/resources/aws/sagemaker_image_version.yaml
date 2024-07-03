@@ -1,0 +1,23 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  MySageMakerImageVersion:
+    Type: AWS::SageMaker::ImageVersion
+    Properties:
+      Alias: "latest"
+      Aliases:
+        - "stable"
+        - "recommended"
+      BaseImage: "123456789012.dkr.ecr.us-west-2.amazonaws.com/my-base-image:1.0.0"
+      Horovod: false
+      ImageName: "my-sagemaker-image"
+      JobType: "TRAINING"
+      MLFramework: "TensorFlow"
+      Processor: "CPU"
+      ProgrammingLang: "Python"
+      ReleaseNotes: "Initial release of the custom SageMaker image version."
+      VendorGuidance: "NOT_PROVIDED"
+  SageMakerImage:
+    Type: AWS::SageMaker::Image
+    Properties:
+      ImageName: "my-sagemaker-image"
+      RoleArn: "arn:aws:iam::123456789012:role/SageMakerRole"
