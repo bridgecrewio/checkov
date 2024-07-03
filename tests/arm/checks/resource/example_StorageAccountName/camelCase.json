@@ -1,0 +1,19 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2021-04-01",
+      "name": "thisIsWrong",
+      "location": "westeurope",
+      "kind": "StorageV2",
+      "sku": {
+        "name": "Standard_GRS"
+      },
+      "tags": {
+        "environment": "staging"
+      }
+    }
+  ]
+}

@@ -11,7 +11,8 @@ class TestSecrets(unittest.TestCase):
             'AKIAIOSFODNN7EXAMPLE',  # checkov:skip=CKV_SECRET_2 test secret
             'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',  # checkov:skip=CKV_SECRET_6 test secret
             '-----BEGIN RSA PRIVATE KEY-----\n',  # checkov:skip=CKV_SECRET_13 test secret
-            'Hello from Bridgecrew'
+            'Hello from Bridgecrew',
+            'cert-manager.io/secret: org/repo',
         ]
 
         # check that no category checks all
