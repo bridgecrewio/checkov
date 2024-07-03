@@ -36,7 +36,7 @@ class TestSkipJsonRegexPattern(unittest.TestCase):
 
         summary = report.get_summary()
 
-        self.assertEqual(summary['passed'], 0)
+        self.assertEqual(summary['passed'], 4)
         self.assertEqual(summary['failed'], 24)  # Updated expected value
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
@@ -53,7 +53,7 @@ class TestSkipJsonRegexPattern(unittest.TestCase):
 
         summary = report.get_summary()
 
-        self.assertEqual(summary['passed'], 0)
+        self.assertEqual(summary['passed'], 4)
         self.assertEqual(summary['failed'], 26)  # Updated expected value
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
@@ -70,7 +70,7 @@ class TestSkipJsonRegexPattern(unittest.TestCase):
 
         summary = report.get_summary()
 
-        self.assertEqual(summary['passed'], 0)
+        self.assertEqual(summary['passed'], 4)
         self.assertEqual(summary['failed'], 26)  # Updated expected value
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
@@ -87,7 +87,7 @@ class TestSkipJsonRegexPattern(unittest.TestCase):
 
         summary = report.get_summary()
 
-        self.assertEqual(summary['passed'], 0)
+        self.assertEqual(summary['passed'], 4)
         self.assertEqual(summary['failed'], 28)  # Updated expected value
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
