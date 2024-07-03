@@ -256,6 +256,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_SynapseSQLPoolHasVulnerabilityAssessment(self):
         self.go("SynapseSQLPoolHasVulnerabilityAssessment")
 
+    def test_SynapseWorkspaceHasExtendedAuditLogs(self):
+        self.go("SynapseWorkspaceHasExtendedAuditLogs")
+
     def test_VMHasBackUpMachine(self):
         self.go("VMHasBackUpMachine")
 
