@@ -1,0 +1,16 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.Web/sites/slots",
+      "apiVersion": "2021-02-01",
+      "name": "slotFail",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', 'exampleServicePlan')]",
+        "publicNetworkAccess": "Enabled"
+      }
+    }
+  ]
+}
