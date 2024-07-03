@@ -485,6 +485,9 @@ class TestRunnerValid(unittest.TestCase):
             if f'CKV2_AWS_{i}' == 'CKV2_AWS_26':
                 # Was a test policy
                 continue
+            if f'CKV2_AWS_{i}' == 'CKV2_AWS_67':
+                # Too many edge cases for ways to get a KMS key connected to S3
+                continue
             self.assertIn(f'CKV2_AWS_{i}', aws_checks,
                           msg=f'The new AWS violation should have the ID "CKV2_AWS_{i}"')
         for i in range(1, len(gcp_checks) + 1):
