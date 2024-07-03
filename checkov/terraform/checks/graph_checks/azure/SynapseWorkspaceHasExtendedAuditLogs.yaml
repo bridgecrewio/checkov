@@ -1,6 +1,6 @@
 metadata: 
   id: "CKV2_AZURE_53"
-  name: "Ensure Synapse SQL Pool has a security alert policy"
+  name: "Ensure Azure Synapse Workspace has extended audit logs"
   category: "GENERAL_SECURITY"
 
 definition:
