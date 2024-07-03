@@ -1,0 +1,18 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cronjob-passed3
+spec:
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          securityContext:
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+          - image: "ubuntu"
+            name: image
+            seccompProfile:
+              type: RuntimeDefault
+  schedule: "0 2 * * *"

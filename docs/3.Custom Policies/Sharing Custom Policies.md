@@ -26,3 +26,5 @@ checkov --external-checks-git  https://github.com/bridgecrewio/checkov.git//test
 For example, if you’re downloading this GitHub repository, but you only want to download the “extra_checks” directory, you can do the following:
 
 `https://github.com/bridgecrewio/checkov.git//extra_checks`
+
+Note: Checkov will execute Python code. Only use trusted sources when executing external checks.

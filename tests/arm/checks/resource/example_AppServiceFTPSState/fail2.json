@@ -9,10 +9,8 @@
             "properties": {
                 "publisherEmail": "[parameters('adminEmail')]",
                 "publisherName": "[parameters('organizationName')]",
-                "customProperties": "[parameters('customProperties')]"
-            },
-            "siteConfig": {
-
+                "customProperties": "[parameters('customProperties')]",
+                "siteConfig": {}
             },
             "resources": [],
             "dependsOn": []

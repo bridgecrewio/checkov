@@ -1,0 +1,32 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.SignalRService/webPubSub",
+      "apiVersion": "2021-02-01",
+      "name": "fail",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Free_F1",
+        "capacity": 1
+      },
+      "properties": {
+        "liveTraceConfiguration": {
+          "enabled": "true",
+          "categories": [
+            {
+              "name": "MessagingLogs",
+              "enabled": "true"
+            },
+            {
+              "name": "ConnectivityLogs",
+              "enabled": "false"
+            }
+          ]
+        }
+      },
+      "publicNetworkAccess": "Disabled"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cronjob-failed
+spec:
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          securityContext:
+            runAsNonRoot: true
+          containers:
+          - image: "ubuntu"
+            name: image
+  schedule: "0 2 * * *"

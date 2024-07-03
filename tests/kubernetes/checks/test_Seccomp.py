@@ -19,13 +19,15 @@ class TestSeccomp(unittest.TestCase):
         passed_resources = [check.resource for check in report.passed_checks]
         failed_resources = [check.resource for check in report.failed_checks]
 
-        self.assertEqual(summary["passed"], 10)
-        self.assertEqual(summary["failed"], 3)
+        self.assertEqual(summary["passed"], 12)
+        self.assertEqual(summary["failed"], 4)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
         expected_passed_resources = [
             "CronJob.default.cronjob-passed",
+            "CronJob.default.cronjob-passed2",
+            "CronJob.default.cronjob-passed3",
             "CronJob.default.cronjob-securityContext-passed",
             "Deployment.default.seccomp-passed-deployment",
             "Deployment.default.seccomp-passed-metadata-annotations",
@@ -37,6 +39,7 @@ class TestSeccomp(unittest.TestCase):
             "Deployment.aws-dev.fdn-svc",
         ]
         expected_failed_resources = [
+            "CronJob.default.cronjob-failed",
             "Deployment.infra.app-cert-manager",
             "Pod.default.seccomp-failed",
             "Pod.default.my-insecure-pod",
