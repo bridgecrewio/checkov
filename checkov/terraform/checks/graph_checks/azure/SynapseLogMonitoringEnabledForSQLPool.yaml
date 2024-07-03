@@ -1,0 +1,24 @@
+metadata: 
+  id: "CKV2_AZURE_54"
+  name: "Ensure log monitoring is enabled for Synapse SQL Pool"
+  category: "GENERAL_SECURITY"
+
+definition:
+  and:
+    - cond_type: connection
+      resource_types:
+        - azurerm_synapse_sql_pool
+      connected_resource_types:
+        - azurerm_synapse_sql_pool_extended_auditing_policy
+      operator: exists
+    - cond_type: attribute
+      resource_types:
+        - azurerm_synapse_sql_pool_extended_auditing_policy
+      attribute: 'log_monitoring_enabled'
+      operator: equals
+      value: true
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - azurerm_synapse_sql_pool
+      operator: within
