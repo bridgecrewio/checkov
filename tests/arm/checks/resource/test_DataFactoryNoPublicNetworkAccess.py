@@ -1,16 +1,14 @@
-import os
 import unittest
-
-from checkov.openapi.checks.resource.v3.CleartextOverUnencryptedChannel import check
-from checkov.openapi.runner import Runner
+from pathlib import Path
+from checkov.arm.checks.resource.DataFactoryNoPublicNetworkAccess import check
+from checkov.arm.runner import Runner
 from checkov.runner_filter import RunnerFilter
 
 
-class TestCleartextCredsOverUnencryptedChannel(unittest.TestCase):
+class TestDataFactoryNoPublicNetworkAccess(unittest.TestCase):
     def test_summary(self):
         # given
-        current_dir = os.path.dirname(os.path.realpath(__file__))
-        test_files_dir = current_dir + "/example_CleartextCredsOverUnencryptedChannel"
+        test_files_dir = Path(__file__).parent / "example_DataFactoryNoPublicNetworkAccess"
 
         # when
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
@@ -19,20 +17,18 @@ class TestCleartextCredsOverUnencryptedChannel(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "/pass.yaml",
-            "/pass.json",
-            "/pass2.yaml",
-            "/pass2.json",
-            "/pass3.yaml",
-            "/pass3.json",
+            "Microsoft.DataFactory/factories.pass",
         }
+        print("\n",passing_resources)
         failing_resources = {
-            "/fail.yaml",
-            "/fail.json",
+            "Microsoft.DataFactory/factories.fail1",
+            "Microsoft.DataFactory/factories.fail2",
         }
+        print("\n",summary)
 
-        passed_check_resources = {c.file_path for c in report.passed_checks}
-        failed_check_resources = {c.file_path for c in report.failed_checks}
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
+        print("\n",passed_check_resources)
 
         self.assertEqual(summary["passed"], len(passing_resources))
         self.assertEqual(summary["failed"], len(failing_resources))

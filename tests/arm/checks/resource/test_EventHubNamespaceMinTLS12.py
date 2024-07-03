@@ -1,16 +1,16 @@
-import os
 import unittest
+from pathlib import Path
 
-from checkov.openapi.checks.resource.v3.CleartextOverUnencryptedChannel import check
-from checkov.openapi.runner import Runner
+from checkov.arm.checks.resource.EventHubNamespaceMinTLS12 import check
+from checkov.arm.runner import Runner
 from checkov.runner_filter import RunnerFilter
 
 
-class TestCleartextCredsOverUnencryptedChannel(unittest.TestCase):
+class TestEventHubNamespaceMinTLS12(unittest.TestCase):
+
     def test_summary(self):
         # given
-        current_dir = os.path.dirname(os.path.realpath(__file__))
-        test_files_dir = current_dir + "/example_CleartextCredsOverUnencryptedChannel"
+        test_files_dir = Path(__file__).parent / "example_EventHubNamespaceMinTLS12"
 
         # when
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
@@ -19,20 +19,15 @@ class TestCleartextCredsOverUnencryptedChannel(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "/pass.yaml",
-            "/pass.json",
-            "/pass2.yaml",
-            "/pass2.json",
-            "/pass3.yaml",
-            "/pass3.json",
+            "Microsoft.EventHub/namespaces.pass",
+            "Microsoft.EventHub/namespaces.pass2",
         }
         failing_resources = {
-            "/fail.yaml",
-            "/fail.json",
+            "Microsoft.EventHub/namespaces.fail",
         }
 
-        passed_check_resources = {c.file_path for c in report.passed_checks}
-        failed_check_resources = {c.file_path for c in report.failed_checks}
+        passed_check_resources = {c.resource for c in report.passed_checks}
+        failed_check_resources = {c.resource for c in report.failed_checks}
 
         self.assertEqual(summary["passed"], len(passing_resources))
         self.assertEqual(summary["failed"], len(failing_resources))
@@ -43,5 +38,5 @@ class TestCleartextCredsOverUnencryptedChannel(unittest.TestCase):
         self.assertEqual(failing_resources, failed_check_resources)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()
