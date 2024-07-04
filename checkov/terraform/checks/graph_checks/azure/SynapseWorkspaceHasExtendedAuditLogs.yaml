@@ -1,7 +1,7 @@
 metadata: 
   id: "CKV2_AZURE_53"
   name: "Ensure Azure Synapse Workspace has extended audit logs"
-  category: "GENERAL_SECURITY"
+  category: "LOGGING"
 
 definition:
   and:
