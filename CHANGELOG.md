@@ -1,6 +1,18 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.171...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.174...HEAD)
+
+## [3.2.174](https://github.com/bridgecrewio/checkov/compare/3.2.171...3.2.174) - 2024-07-04
+
+### Feature
+
+- **arm:** add CKV_AZURE_172 to ensure autorotation of Secrets Store CSI Driver secrets for AKS clusters - [#6533](https://github.com/bridgecrewio/checkov/pull/6533)
+- **arm:** add CKV_AZURE_173 to ensure that API management uses at least TLS 1.2 - [#6478](https://github.com/bridgecrewio/checkov/pull/6478)
+- **arm:** AppServicePlanZoneRedundant - [#6472](https://github.com/bridgecrewio/checkov/pull/6472)
+- **arm:** AzureSearchSLAIndex - [#6530](https://github.com/bridgecrewio/checkov/pull/6530)
+- **arm:** SQLDatabaseZoneRedundant - [#6515](https://github.com/bridgecrewio/checkov/pull/6515)
+- **azure:** add new policies for Azure Synapse - [#6520](https://github.com/bridgecrewio/checkov/pull/6520)
+- **general:** update detect secrets package - [#6535](https://github.com/bridgecrewio/checkov/pull/6535)
 
 ## [3.2.171](https://github.com/bridgecrewio/checkov/compare/3.2.164...3.2.171) - 2024-07-03
 
