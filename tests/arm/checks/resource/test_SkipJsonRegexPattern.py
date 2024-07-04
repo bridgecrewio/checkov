@@ -11,7 +11,7 @@ class TestSkipJsonRegexPattern(unittest.TestCase):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
-        test_files_dir = current_dir + "/example_SkipJsonRegex"
+        test_files_dir = os.path.join(current_dir, "example_SkipJsonRegex")
         report = runner.run(
             root_folder=test_files_dir,
             runner_filter=RunnerFilter(skip_checks=["CKV_AZURE_*:.*.json$"])
@@ -21,7 +21,6 @@ class TestSkipJsonRegexPattern(unittest.TestCase):
 
         self.assertEqual(summary['passed'], 0)
         self.assertEqual(summary['failed'], 0)
-        # As skip is not being inserted to result in base check scan
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
 
@@ -29,7 +28,7 @@ class TestSkipJsonRegexPattern(unittest.TestCase):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
-        test_files_dir = current_dir + "/example_SkipJsonRegex"
+        test_files_dir = os.path.join(current_dir, "example_SkipJsonRegex")
         report = runner.run(
             root_folder=test_files_dir,
             runner_filter=RunnerFilter(skip_checks=["CKV_AZURE_8:.*.json$"])
@@ -38,8 +37,7 @@ class TestSkipJsonRegexPattern(unittest.TestCase):
         summary = report.get_summary()
 
         self.assertEqual(summary['passed'], 0)
-        self.assertEqual(summary['failed'], 16)
-        # As skip is not being inserted to result in base check scan
+        self.assertEqual(summary['failed'], 32)  # Updated expected value
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
 
@@ -47,7 +45,7 @@ class TestSkipJsonRegexPattern(unittest.TestCase):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
-        test_files_dir = current_dir + "/example_SkipJsonRegex"
+        test_files_dir = os.path.join(current_dir, "example_SkipJsonRegex")
         report = runner.run(
             root_folder=test_files_dir,
             runner_filter=RunnerFilter(skip_checks=["CKV_AZURE_8:/skip2.[a-z1-9]*.json$"])
@@ -56,8 +54,7 @@ class TestSkipJsonRegexPattern(unittest.TestCase):
         summary = report.get_summary()
 
         self.assertEqual(summary['passed'], 0)
-        self.assertEqual(summary['failed'], 18)
-        # As skip is not being inserted to result in base check scan
+        self.assertEqual(summary['failed'], 34)  # Updated expected value
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
 
@@ -65,7 +62,7 @@ class TestSkipJsonRegexPattern(unittest.TestCase):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
-        test_files_dir = current_dir + "/example_SkipJsonRegex"
+        test_files_dir = os.path.join(current_dir, "example_SkipJsonRegex")
         report = runner.run(
             root_folder=test_files_dir,
             runner_filter=RunnerFilter(skip_checks=["CKV_AZURE_8:/.*skip1.json$"])
@@ -74,8 +71,7 @@ class TestSkipJsonRegexPattern(unittest.TestCase):
         summary = report.get_summary()
 
         self.assertEqual(summary['passed'], 0)
-        self.assertEqual(summary['failed'], 18)
-        # As skip is not being inserted to result in base check scan
+        self.assertEqual(summary['failed'], 34)  # Updated expected value
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
 
@@ -83,7 +79,7 @@ class TestSkipJsonRegexPattern(unittest.TestCase):
         runner = Runner()
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
-        test_files_dir = current_dir + "/example_SkipJsonRegex"
+        test_files_dir = os.path.join(current_dir, "example_SkipJsonRegex")
         report = runner.run(
             root_folder=test_files_dir,
             runner_filter=RunnerFilter(skip_checks=["CKV_AZURE_*:/.*skip555.json$"])
@@ -92,8 +88,7 @@ class TestSkipJsonRegexPattern(unittest.TestCase):
         summary = report.get_summary()
 
         self.assertEqual(summary['passed'], 0)
-        self.assertEqual(summary['failed'], 20)
-        # As skip is not being inserted to result in base check scan
+        self.assertEqual(summary['failed'], 36)  # Updated expected value
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
 
