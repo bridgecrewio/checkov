@@ -6,7 +6,7 @@ from checkov.runner_filter import RunnerFilter
 from checkov.terraform.runner import Runner
 from checkov.terraform.checks.resource.azure.AzureSqlPoolEncryption import check
 
-class TestAzureSparkPoolIsolatedComputeEnabled(unittest.TestCase):
+class TestAAzureSqlPoolEncryption(unittest.TestCase):
 
     def test(self):
         runner = Runner()

@@ -2,13 +2,13 @@ import logging
 import unittest
 from pathlib import Path
 
-from checkov.arm.checks.resource.AzureSynapseWorkspacesHaveNoIPFirewallRulesAttached import check
+from checkov.arm.checks.resource.AzureSparkPoolIsolatedComputeEnabled import check
 
 from checkov.arm.runner import Runner
 from checkov.runner_filter import RunnerFilter
 
 
-class TestSynapseWorkspaceHaveNoIPFirewallRulesAttached(unittest.TestCase):
+class TestAzureSparkPoolIsolatedComputeEnabled(unittest.TestCase):
     def test_summary(self):
         # given
         test_files_dir = Path(__file__).parent / "example_AzureSparkPoolIsolatedComputeEnabled"
