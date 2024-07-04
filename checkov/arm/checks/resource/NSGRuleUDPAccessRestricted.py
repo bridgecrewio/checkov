@@ -1,7 +1,7 @@
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.arm.checks.resource.NSGRulePortAccessRestricted import INTERNET_ADDRESSES
 from checkov.arm.base_resource_check import BaseResourceCheck
-
+from typing import List, Dict, Union
 
 class NSGRuleUDPAccessRestricted(BaseResourceCheck):
     def __init__(self) -> None:
@@ -12,7 +12,7 @@ class NSGRuleUDPAccessRestricted(BaseResourceCheck):
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf) -> str:
+    def scan_resource_conf(self, conf: Dict[str, Union[str, Dict[str, List[Dict[str, str]]]]]) -> CheckResult:
         rule_confs = [conf.get("properties")]
         evaluated_key_prefix = ''
         if 'securityRules' in rule_confs[0]:
