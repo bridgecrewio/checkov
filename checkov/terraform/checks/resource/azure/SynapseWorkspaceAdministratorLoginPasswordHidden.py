@@ -8,7 +8,7 @@ class SynapseWorkspaceAdministratorLoginPasswordHidden(BaseResourceCheck):
         name = "Ensure Azure Synapse Workspace administrator login password is not exposed"
         id = "CKV_AZURE_240"
         supported_resources = ['azurerm_synapse_workspace']
-        categories = [CheckCategories.ENCRYPTION]
+        categories = [CheckCategories.SECRETS]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
