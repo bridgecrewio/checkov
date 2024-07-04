@@ -1,12 +1,11 @@
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
-from typing import List
 
 
 class SynapseWorkspaceAdministratorLoginPasswordHidden(BaseResourceCheck):
     def __init__(self):
         name = "Ensure Azure Synapse Workspace administrator login password is not exposed"
-        id = "CKV_AZURE_240"
+        id = "CKV_AZURE_239"
         supported_resources = ['azurerm_synapse_workspace']
         categories = [CheckCategories.SECRETS]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
