@@ -1,4 +1,4 @@
-from checkov.terraform_json.parser import hclify
+from checkov.terraform_json.parser import hclify, prepare_definition
 
 
 def test_hclify():
@@ -33,4 +33,30 @@ def test_hclify():
                 "status": ["Enabled"],
             }
         ],
+    }
+
+
+def test_prepare_definition_locals():
+    cdk_definition = {
+        "locals": {
+            "bucket_name": "example",
+            "http_endpoint": "disabled",
+            "__startline__": 1,
+            "__endline__": 2,
+        }
+    }
+
+    # when
+    tf_definition = prepare_definition(cdk_definition)
+
+    # then
+    assert tf_definition == {
+        "locals": [
+            {
+                "bucket_name": ["example"],
+                "http_endpoint": ["disabled"],
+                "__startline__": 1,
+                "__endline__": 2,
+            }
+        ]
     }

@@ -163,14 +163,16 @@ class ExtArgumentParser(configargparse.ArgumentParser):
         self.add(
             "--external-checks-dir",
             action="append",
-            help="Directory for custom checks to be loaded. Can be repeated",
+            help="Directory for custom checks to be loaded. Can be repeated. Note that this will run Python code "
+                 'from the specified directory, so only use this option with trusted directories.',
         )
         self.add(
             "--external-checks-git",
             action="append",
-            help="Github url of external checks to be added.\n you can specify a subdirectory after a double-slash //."
-                 "\n possible to use ?ref=tags/tagName or ?ref=heads/branchName or ?ref=commit_id"
-                 "\n cannot be used together with --external-checks-dir",
+            help="GitHub url of external checks to be added. You can specify a subdirectory after a double-slash //."
+                 "It is ossible to use ?ref=tags/tagName or ?ref=heads/branchName or ?ref=commit_id and "
+                 "cannot be used together with --external-checks-dir. Note that this will run Python code "
+                 "from the specified directory, so only use this option with trusted repositories.",
         )
         self.add(
             "-l",

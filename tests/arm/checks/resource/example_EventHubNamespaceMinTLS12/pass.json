@@ -1,0 +1,22 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.EventHub/namespaces",
+      "apiVersion": "2024-01-01",
+      "name": "pass",
+      "location": "[resourceGroup().location]",
+      "sku": {
+        "name": "Standard",
+        "capacity": 2
+      },
+      "properties": {
+        "minimumTlsVersion": "1.2"
+      },
+      "tags": {
+        "environment": "Production"
+      }
+    }
+  ]
+}
