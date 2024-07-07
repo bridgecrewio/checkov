@@ -1,0 +1,81 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.Network/azureFirewalls",
+      "apiVersion": "2020-05-01",
+      "name": "pass2",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "priority": 100,
+        "action": {
+          "type": "Allow"
+        },
+        "rules": [
+          {
+            "name": "testrule",
+            "ruleType": "NetworkRule",
+            "sourceAddresses": [
+              "10.0.0.0/16"
+            ],
+            "destinationAddresses": [
+              "8.8.8.8",
+              "8.8.4.4"
+            ],
+            "destinationPorts": [
+              "53"
+            ],
+            "protocols": [
+              "TCP",
+              "UDP"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts",
+      "apiVersion": "2020-04-01",
+      "name": "pass2",
+      "location": "[resourceGroup().location]",
+      "kind": "GlobalDocumentDB",
+      "properties": {
+        "consistencyPolicy": {
+          "defaultConsistencyLevel": "BoundedStaleness",
+          "maxIntervalInSeconds": 10,
+          "maxStalenessPrefix": 200
+        },
+        "isVirtualNetworkFilterEnabled": true,
+        "locations": [
+          {
+            "locationName": "[parameters('failoverLocation')]",
+            "failoverPriority": 1
+          },
+          {
+            "locationName": "[resourceGroup().location]",
+            "failoverPriority": 0
+          }
+        ],
+        "enableAutomaticFailover": true,
+        "capabilities": [
+          {
+            "name": "EnableAggregationPipeline"
+          },
+          {
+            "name": "mongoEnableDocLevelTTL"
+          },
+          {
+            "name": "MongoDBv3.4"
+          }
+        ],
+        "virtualNetworkRules": [
+          {
+            "id": "Microsoft.virtualNetworks",
+            "ignoreMissingVNetServiceEndpoint": true
+          }
+        ]
+      }
+    }
+  ]
+}
