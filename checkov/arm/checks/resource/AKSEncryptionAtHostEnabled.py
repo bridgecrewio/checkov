@@ -31,8 +31,6 @@ class AKSEncryptionAtHostEnabled(BaseResourceValueCheck):
             return "properties/agentPoolProfiles/[0]/enableEncryptionAtHost"
         elif self.entity_type == "Microsoft.ContainerService/managedClusters/agentPools":
             return "properties/enableEncryptionAtHost"
-        else:
-            return ""
 
     def get_expected_value(self) -> bool:
         return True
