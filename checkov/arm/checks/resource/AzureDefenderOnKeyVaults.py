@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Dict
 
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.arm.base_resource_check import BaseResourceCheck
@@ -14,15 +14,17 @@ class AzureDefenderOnKeyVaults(BaseResourceCheck):
         categories = (CheckCategories.GENERAL_SECURITY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
+    def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
+        properties = conf.get('properties', {})
+        pricing_tier = properties.get('pricingTier')
         return (
             CheckResult.PASSED
-            if conf['properties']['pricingTier'] == "Standard"
+            if pricing_tier == "Standard"
             else CheckResult.FAILED
         )
 
     def get_evaluated_keys(self) -> list[str]:
-        return ["pricingTier","name"]
+        return ["properties.pricingTier", "name"]
 
 
 check = AzureDefenderOnKeyVaults()
