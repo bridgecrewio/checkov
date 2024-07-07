@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.174...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.175...HEAD)
+
+## [3.2.175](https://github.com/bridgecrewio/checkov/compare/3.2.174...3.2.175) - 2024-07-07
+
+### Feature
+
+- **arm:** AzureSearchSQLQueryUpdates - [#6543](https://github.com/bridgecrewio/checkov/pull/6543)
 
 ## [3.2.174](https://github.com/bridgecrewio/checkov/compare/3.2.171...3.2.174) - 2024-07-04
 
