@@ -1,4 +1,4 @@
-## SHOULD PASS: Explicit false
+## SHOULD PASS: Explicit true
 resource "synapse_spark_pool" "pass" {
   name                = "sparkPool1"
   resource_group_name = azurerm_resource_group.rg.name
@@ -6,14 +6,14 @@ resource "synapse_spark_pool" "pass" {
   compute_isolation_enabled       = true
 }
 
-## SHOULD PASS: Default false
+## SHOULD FAIL: Default false
 resource "synapse_spark_pool" "fail" {
   name                = "sparkPool1"
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
 }
 
-## SHOULD FAIL: Explicit true
+## SHOULD FAIL: Explicit false
 resource "synapse_spark_pool" "fail2" {
   name                = "sparkPool1"
   resource_group_name = azurerm_resource_group.rg.name
