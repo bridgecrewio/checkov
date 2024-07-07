@@ -14,17 +14,17 @@ class VMStorageOsDisk(BaseResourceCheck):
 
     def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
         properties = conf.get('properties')
-        if not properties:
+        if not properties or not isinstance(properties, dict):
             return CheckResult.PASSED
         storage_profile = properties.get('storageProfile')
-        if not storage_profile:
+        if not storage_profile or not isinstance(storage_profile, dict):
             return CheckResult.PASSED
         os_disk = storage_profile.get('osDisk')
         data_disks = storage_profile.get('dataDisks', [])
-        if os_disk and "vhd" in os_disk:
+        if os_disk and isinstance(os_disk, dict) and "vhd" in os_disk:
             self.evaluated_keys = ['os_disk']
             return CheckResult.FAILED
-        if data_disks and any("vhd" in data_disk for data_disk in data_disks):
+        if data_disks and any(isinstance(data_disk, dict) and "vhd" in data_disk for data_disk in data_disks):
             self.evaluated_keys = ['data_disks']
             return CheckResult.FAILED
         self.evaluated_keys = ['os_disk'] if os_disk else []
