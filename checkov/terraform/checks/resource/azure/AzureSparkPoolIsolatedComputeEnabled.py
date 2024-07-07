@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 class AzureSparkPoolIsolatedComputeEnabled(BaseResourceValueCheck):
     def __init__(self) -> None:
         name = "Ensure isolated compute is enabled for Synapse Spark pools"
-        id = "CKV_AZURE_240"
+        id = "CKV_AZURE_242"
         supported_resources = ("synapse_spark_pool",)
         categories = (CheckCategories.GENERAL_SECURITY,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
