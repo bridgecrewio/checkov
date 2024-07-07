@@ -529,9 +529,6 @@ class TestYamlPolicies(unittest.TestCase):
     def test_IBM_RestrictAPIkeyCreationInAccountSettings(self):
         self.go("IBM_RestrictAPIkeyCreationInAccountSettings")
 
-    # def test_IBM_DatabasesNWaccessRestrictedToSpecificIPrange(self):
-    #     self.go("IBM_DatabasesNWaccessRestrictedToSpecificIPrange")
-
     def test_IBM_K8sClustersAccessibleViaPrivateEndPt(self):
         self.go("IBM_K8sClustersAccessibleViaPrivateEndPt")
 
