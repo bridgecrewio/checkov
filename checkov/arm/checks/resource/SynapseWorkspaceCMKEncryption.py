@@ -6,7 +6,7 @@ from checkov.common.models.enums import CheckResult, CheckCategories
 class SynapseWorkspaceCMKEncryption(BaseResourceCheck):
     def __init__(self):
         name = "Ensure Azure Synapse Workspace is encrypted with a CMK"
-        id = "CKV_AZURE_239"
+        id = "CKV_AZURE_240"
         supported_resources = ['Microsoft.Synapse/workspaces']
         categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
