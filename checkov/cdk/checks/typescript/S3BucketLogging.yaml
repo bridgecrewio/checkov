@@ -8,22 +8,9 @@ scope:
     - javascript
     - typescript
 definition:
-  or:
-    - pattern: new $FUNC(<ANY>)
-      conditions:
-        - metavariable: $FUNC
-          regex: (?i)(Bucket|CfnBucket)
-        - not_pattern: |
-            'new $FUNC(<ANY>, serverAccessLogsBucket: $BUCKET.$LOGGER(<ANY>) ,<ANY>)'
-          conditions:
-            - metavariable: $LOGGER
-              regex: (?i)(fromBucketArn|fromBucketAttributes|fromBucketName|fromBucketRegionalAttributes|fromBucketUrl)
-    - pattern: new $S3.$FUNC(<ANY>)
-      conditions:
-        - metavariable: $FUNC
-          regex: (?i)(Bucket|CfnBucket)
-        - not_pattern: |
-            'new $FUNC(<ANY>, serverAccessLogsBucket: $S3.$BUCKET.$LOGGER(<ANY>) ,<ANY>)'
-          conditions:
-            - metavariable: $LOGGER
-              regex: (?i)(fromBucketArn|fromBucketAttributes|fromBucketName|fromBucketRegionalAttributes|fromBucketUrl)
+  pattern: new $AWS.$FUNC(<ANY>)
+  conditions:
+    - metavariable: $FUNC
+      regex: (Bucket|CfnBucket)
+    - not_pattern: |
+        new $AWS.$FUNC(<ANY>, { <ANY>, serverAccessLogsBucket: <ANY> , <ANY> } ,<ANY>)
