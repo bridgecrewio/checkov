@@ -1,0 +1,39 @@
+metadata: 
+  id: "CKV2_AZURE_54"
+  name: "Ensure log monitoring is enabled for Synapse SQL Pool"
+  category: "LOGGING"
+
+definition:
+  and:
+    - cond_type: connection
+      resource_types:
+        - Microsoft.Synapse/workspaces/sqlPools
+      connected_resource_types:
+        - Microsoft.Synapse/workspaces/sqlPools/auditingSettings
+      operator: exists
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - Microsoft.Synapse/workspaces/sqlPools
+      operator: within
+
+    - or:
+      - and:
+        - cond_type: attribute
+          resource_types:
+            - Microsoft.Synapse/workspaces/sqlPools/auditingSettings
+          attribute: state
+          operator: exists
+
+        - cond_type: attribute
+          resource_types:
+            - Microsoft.Synapse/workspaces/sqlPools/auditingSettings
+          attribute: state
+          operator: equals
+          value: Enabled
+
+      - cond_type: attribute
+        resource_types:
+          - Microsoft.Synapse/workspaces/sqlPools/auditingSettings
+        attribute: state
+        operator: not_exists

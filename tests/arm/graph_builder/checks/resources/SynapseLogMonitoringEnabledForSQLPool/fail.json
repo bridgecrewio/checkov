@@ -1,0 +1,80 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.Synapse/workspaces/sqlPools",
+      "apiVersion": "2021-06-01",
+      "name": "[concat(parameters('workspaceName'), '/', parameters('sqlPoolName'))]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "collation": "SQL_Latin1_General_CP1_CI_AS",
+        "maxSizeBytes": "2147483648",
+        "sku": {
+          "name": "DW100c",
+          "tier": "DataWarehouse"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Synapse/workspaces/sqlPools/auditingSettings",
+      "apiVersion": "2021-06-01",
+      "name": "[concat(parameters('workspaceName'), '/', parameters('sqlPoolName'), '/default')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Synapse/workspaces/sqlPools', parameters('workspaceName'), parameters('sqlPoolName'))]"
+      ],
+      "properties": {
+        "state": "Enabled",
+        "auditActionsAndGroups": [
+          "SUCCESSFUL_DATABASE_AUTHENTICATION_GROUP",
+          "FAILED_DATABASE_AUTHENTICATION_GROUP",
+          "BATCH_COMPLETED_GROUP"
+        ],
+        "isAzureMonitorTargetEnabled": false,
+        "retentionDays": 90,
+        "storageAccountSubscriptionId": "[parameters('storageAccountSubscriptionId')]",
+        "storageAccountResourceGroupName": "[parameters('storageAccountResourceGroupName')]",
+        "storageAccountName": "[parameters('storageAccountName')]",
+        "isStorageSecondaryKeyInUse": false
+      }
+    }
+  ],
+  "parameters": {
+    "workspaceName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Synapse workspace."
+      }
+    },
+    "sqlPoolName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the SQL pool."
+      }
+    },
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "The location of the Synapse workspace."
+      }
+    },
+    "storageAccountSubscriptionId": {
+      "type": "string",
+      "metadata": {
+        "description": "The subscription ID of the storage account for auditing logs."
+      }
+    },
+    "storageAccountResourceGroupName": {
+      "type": "string",
+      "metadata": {
+        "description": "The resource group name of the storage account for auditing logs."
+      }
+    },
+    "storageAccountName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the storage account for auditing logs."
+      }
+    }
+  }
+}

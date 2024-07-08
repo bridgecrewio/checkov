@@ -43,6 +43,18 @@ class TestYamlPolicies(TestYamlPoliciesBase):
     def test_AzureMLWorkspacePublicNetwork(self):
         self.go("AzureMLWorkspacePublicNetwork")
 
+    def test_SynapseLogMonitoringEnabledForSQLPool(self):
+        self.go("SynapseLogMonitoringEnabledForSQLPool")
+
+    def test_SynapseSQLPoolHasSecurityAlertPolicy(self):
+        self.go("SynapseSQLPoolHasSecurityAlertPolicy")
+
+    def test_SynapseSQLPoolHasVulnerabilityAssessment(self):
+        self.go("SynapseSQLPoolHasVulnerabilityAssessment")
+    
+    def test_SynapseWorkspaceHasExtendedAuditLogs(self):
+        self.go("SynapseWorkspaceHasExtendedAuditLogs")
+
     def test_registry_load(self):
         registry = self.get_checks_registry()
         self.assertGreater(len(registry.checks), 0)
