@@ -207,7 +207,7 @@ def _prepare_resource_block(
             resource_conf[TF_PLAN_RESOURCE_CHANGE_KEYS] = changes.get(TF_PLAN_RESOURCE_CHANGE_KEYS) or []
             # enrich conf with after_unknown values
             after_unknown = changes.get("change", {}).get(TF_PLAN_RESOURCE_AFTER_UNKNOWN)
-            if after_unknown and isinstance(after_unknown, dict):
+            if os.getenv('EVAL_TF_PLAN_AFTER_UNKNOWN') and after_unknown and isinstance(after_unknown, dict):
                 for k, v in after_unknown.items():
                     # We check if the value of the field is True. That would mean its value is known after the apply
                     # We also check whether the field is not already present in the conf since we do not want to
