@@ -1,7 +1,6 @@
 pass:
-  - "Microsoft.MachineLearningServices/workspaces.pass"
-  - "Microsoft.MachineLearningServices/workspaces.pass2"
+  - "Microsoft.Synapse/workspaces/sqlPools.pass"
 fail:
-  - "Microsoft.MachineLearningServices/workspaces.fail"
+  - "Microsoft.Synapse/workspaces/sqlPools.fail"
 evaluated_keys:
   - 'properties/publicNetworkAccess'

@@ -31,7 +31,7 @@
     {
       "type": "Microsoft.Synapse/workspaces",
       "apiVersion": "2021-06-01-preview",
-      "name": "[parameters('workspaceName')]",
+      "name": "fail2",
       "location": "[resourceGroup().location]",
       "properties": {},
       "resources": [

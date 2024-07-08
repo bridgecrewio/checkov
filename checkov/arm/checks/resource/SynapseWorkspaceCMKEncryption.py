@@ -7,7 +7,7 @@ class SynapseWorkspaceCMKEncryption(BaseResourceCheck):
         name = "Ensure Azure Synapse Workspace is encrypted with a CMK"
         id = "CKV_AZURE_239"
         supported_resources = ['Microsoft.Synapse/workspaces']
-        categories = [CheckCategories.NETWORKING]
+        categories = [CheckCategories.ENCRYPTION]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf) -> CheckResult:

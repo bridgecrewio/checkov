@@ -5,7 +5,7 @@
     {
       "type": "Microsoft.Synapse/workspaces/sqlPools",
       "apiVersion": "2021-06-01",
-      "name": "[concat(parameters('workspaceName'), '/', parameters('sqlPoolName'))]",
+      "name": "fail",
       "location": "[parameters('location')]",
       "properties": {
         "collation": "SQL_Latin1_General_CP1_CI_AS",

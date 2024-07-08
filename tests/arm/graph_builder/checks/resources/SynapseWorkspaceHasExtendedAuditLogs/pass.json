@@ -31,7 +31,7 @@
     {
       "type": "Microsoft.Synapse/workspaces",
       "apiVersion": "2021-06-01-preview",
-      "name": "[parameters('workspaceName')]",
+      "name": "pass",
       "location": "[resourceGroup().location]",
       "properties": {},
       "resources": [
