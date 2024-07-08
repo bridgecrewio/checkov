@@ -1,11 +1,12 @@
 metadata:
   version: 0.2
+  approach: define failing
   id: CKV_AWS_145
   name: Ensure that S3 buckets are encrypted with KMS by default
   category: ENCRYPTION
+  framework: cdk
 scope:
   languages:
-    - javascript
     - typescript
 definition:
   pattern: new $AWS.$FUNC(<ANY>)
