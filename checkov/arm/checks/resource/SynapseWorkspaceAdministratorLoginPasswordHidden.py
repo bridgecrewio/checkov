@@ -16,13 +16,6 @@ class SynapseWorkspaceAdministratorLoginPasswordHidden(BaseResourceCheck):
 
 
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
-        # if "properties" in conf:
-        #     if conf["properties"]:
-        #         if 'encryption' in conf["properties"]:
-        #             if 'encryption' in conf["properties"]:
-        #                 if 'cmk' in conf["properties"]['encryption']:
-        #                     return CheckResult.PASSED
-        # return CheckResult.FAILED
         if "resources" in conf:
             if conf["resources"]:
                 for resource in conf["resources"]:
