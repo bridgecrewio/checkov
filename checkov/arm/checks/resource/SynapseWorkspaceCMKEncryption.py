@@ -1,4 +1,3 @@
-
 from checkov.arm.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckResult, CheckCategories
 
@@ -13,12 +12,11 @@ class SynapseWorkspaceCMKEncryption(BaseResourceCheck):
 
     def scan_resource_conf(self, conf) -> CheckResult:
         encryption = conf.get("properties", {}).get("encryption", {})
-        
+
         if "cmk" in encryption:
             return CheckResult.PASSED
-        
-        return CheckResult.FAILED
 
+        return CheckResult.FAILED
 
 
 check = SynapseWorkspaceCMKEncryption()

@@ -15,10 +15,8 @@ class SynapseWorkspaceAdministratorLoginPasswordHidden(BaseResourceCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: dict[str, Any]) -> CheckResult:
-        if conf.get("resources"):
-            for resource in conf["resources"]:
-                if resource.get("parameters", {}).get("sqlAdministratorLoginPassword"):
-                    return CheckResult.FAILED
+        if conf.get("properties", {}).get("sqlAdministratorLoginPassword"):
+            return CheckResult.FAILED
         return CheckResult.PASSED
 
 
