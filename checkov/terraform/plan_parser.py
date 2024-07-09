@@ -217,7 +217,7 @@ def _prepare_resource_block(
     return resource_block, block_type, prepared
 
 
-def _eval_after_unknown(changes, resource_conf):
+def _eval_after_unknown(changes: dict[str, Any], resource_conf: dict[str, Any]) -> None:
     after_unknown = changes.get("change", {}).get(TF_PLAN_RESOURCE_AFTER_UNKNOWN)
     if os.getenv('EVAL_TF_PLAN_AFTER_UNKNOWN') and after_unknown and isinstance(after_unknown, dict):
         for k, v in after_unknown.items():
