@@ -280,12 +280,12 @@ def test_CKV_AWS_3_EBSEncryption(failed_checks):
     run_check(check_results=failed_checks, check_id="CKV_AWS_3", policy_name="EBSEncryption", language="typescript")
 
 
-def CKV_AWS_18_S3BucketLogging(failed_checks):
+def test_CKV_AWS_18_S3BucketLogging(failed_checks):
     run_check(check_results=failed_checks, check_id="CKV_AWS_18", policy_name="S3BucketLogging",
               language="typescript")
 
 
-def CKV_AWS_19_S3BucketEncryption(failed_checks):
+def test_CKV_AWS_19_S3BucketEncryption(failed_checks):
     run_check(check_results=failed_checks, check_id="CKV_AWS_19", policy_name="S3BucketEncryption",
               language="typescript")
 
@@ -295,12 +295,12 @@ def CKV_AWS_21_S3BucketVersioning(failed_checks):
               language="typescript")
 
 
-def CKV_AWS_145_S3BucketKMSEncryption(failed_checks):
+def test_CKV_AWS_145_S3BucketKMSEncryption(failed_checks):
     run_check(check_results=failed_checks, check_id="CKV_AWS_145", policy_name="S3BucketKMSEncryption",
               language="typescript")
 
 
-def CKV2_AWS_6_S3BucketPublicAccessBlock(failed_checks):
+def test_CKV2_AWS_6_S3BucketPublicAccessBlock(failed_checks):
     run_check(check_results=failed_checks, check_id="CKV2_AWS_6", policy_name="S3BucketPublicAccessBlock",
               language="typescript")
 

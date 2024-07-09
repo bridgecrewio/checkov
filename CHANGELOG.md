@@ -1,6 +1,65 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.159...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.177...HEAD)
+
+## [3.2.177](https://github.com/bridgecrewio/checkov/compare/3.2.175...3.2.177) - 2024-07-08
+
+### Bug Fix
+
+- **sast:** fix cdk policies - [#6552](https://github.com/bridgecrewio/checkov/pull/6552)
+
+## [3.2.175](https://github.com/bridgecrewio/checkov/compare/3.2.174...3.2.175) - 2024-07-07
+
+### Feature
+
+- **arm:** AzureSearchSQLQueryUpdates - [#6543](https://github.com/bridgecrewio/checkov/pull/6543)
+
+## [3.2.174](https://github.com/bridgecrewio/checkov/compare/3.2.171...3.2.174) - 2024-07-04
+
+### Feature
+
+- **arm:** add CKV_AZURE_172 to ensure autorotation of Secrets Store CSI Driver secrets for AKS clusters - [#6533](https://github.com/bridgecrewio/checkov/pull/6533)
+- **arm:** add CKV_AZURE_173 to ensure that API management uses at least TLS 1.2 - [#6478](https://github.com/bridgecrewio/checkov/pull/6478)
+- **arm:** AppServicePlanZoneRedundant - [#6472](https://github.com/bridgecrewio/checkov/pull/6472)
+- **arm:** AzureSearchSLAIndex - [#6530](https://github.com/bridgecrewio/checkov/pull/6530)
+- **arm:** SQLDatabaseZoneRedundant - [#6515](https://github.com/bridgecrewio/checkov/pull/6515)
+- **azure:** add new policies for Azure Synapse - [#6520](https://github.com/bridgecrewio/checkov/pull/6520)
+- **general:** update detect secrets package - [#6535](https://github.com/bridgecrewio/checkov/pull/6535)
+
+## [3.2.171](https://github.com/bridgecrewio/checkov/compare/3.2.164...3.2.171) - 2024-07-03
+
+### Feature
+
+- **arm:** add CKV_AZURE_171 to ensure that AKS cluster upgrade channel is chosen - [#6532](https://github.com/bridgecrewio/checkov/pull/6532)
+- **arm:** add CKV_AZURE_175 to ensure that Web PubSub uses a SKU with an SLA - [#6523](https://github.com/bridgecrewio/checkov/pull/6523)
+- **arm:** add CKV_AZURE_178 to ensure that linux VM enables SSH with keys for secure communication - [#6486](https://github.com/bridgecrewio/checkov/pull/6486)
+- **arm:** add CKV_AZURE_85 to ensure that Azure Defender is set to On for Kubernetes - [#6279](https://github.com/bridgecrewio/checkov/pull/6279)
+- **arm:** CKV_AZURE_99 to Ensure Cosmos DB accounts have restricted access - [#6498](https://github.com/bridgecrewio/checkov/pull/6498)
+- **arm:** DataFactoryNoPublicNetworkAccess - [#6479](https://github.com/bridgecrewio/checkov/pull/6479)
+- **arm:** DataLakeStoreEncryption - [#6516](https://github.com/bridgecrewio/checkov/pull/6516)
+- **arm:** EventHubNamespaceMinTLS12 - [#6485](https://github.com/bridgecrewio/checkov/pull/6485)
+
+### Bug Fix
+
+- **openapi:** [CKV_OPENAPI_3] Prevent false-positive when checking for http+!basic - [#6406](https://github.com/bridgecrewio/checkov/pull/6406)
+- **terraform_json:** support locals block in CDKTF output - [#6452](https://github.com/bridgecrewio/checkov/pull/6452)
+- **terraform:** Deprecate CKV2_AWS_67 - [#6529](https://github.com/bridgecrewio/checkov/pull/6529)
+
+## [3.2.164](https://github.com/bridgecrewio/checkov/compare/3.2.163...3.2.164) - 2024-07-02
+
+### Documentation
+
+- **general:** Add Python note - [#6521](https://github.com/bridgecrewio/checkov/pull/6521)
+
+## [3.2.163](https://github.com/bridgecrewio/checkov/compare/3.2.159...3.2.163) - 2024-07-01
+
+### Feature
+
+- **arm:** add CKV_AZURE_174 to ensure that API management public access is disabled - [#6480](https://github.com/bridgecrewio/checkov/pull/6480)
+- **arm:** AppServicePHPVersion - [#6436](https://github.com/bridgecrewio/checkov/pull/6436)
+- **arm:** AppServicePublicAccessDisabled - [#6467](https://github.com/bridgecrewio/checkov/pull/6467)
+- **arm:** KeyVaultEnablesPurgeProtection - [#6465](https://github.com/bridgecrewio/checkov/pull/6465)
+- **arm:** PubsubSpecifyIdentity - [#6483](https://github.com/bridgecrewio/checkov/pull/6483)
 
 ## [3.2.159](https://github.com/bridgecrewio/checkov/compare/3.2.156...3.2.159) - 2024-06-30
 
