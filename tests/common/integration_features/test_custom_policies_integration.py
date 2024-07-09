@@ -22,6 +22,7 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         get_graph_checks_registry("cloudformation").checks = []
         get_graph_checks_registry("terraform").checks = []
         get_graph_checks_registry("kubernetes").checks = []
+        get_graph_checks_registry("bicep").checks = []
 
     def test_integration_valid(self):
         instance = BcPlatformIntegration()
