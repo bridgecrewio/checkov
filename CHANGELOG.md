@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.177...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.179...HEAD)
+
+## [3.2.179](https://github.com/bridgecrewio/checkov/compare/3.2.177...3.2.179) - 2024-07-09
+
+### Feature
+
+- **arm:** add CKV_AZURE_206 to ensure that Storage Accounts use replication - [#6524](https://github.com/bridgecrewio/checkov/pull/6524)
+- **arm:** BCE-33785 Support Azure Synapse Analytics policies - [#6513](https://github.com/bridgecrewio/checkov/pull/6513)
 
 ## [3.2.177](https://github.com/bridgecrewio/checkov/compare/3.2.175...3.2.177) - 2024-07-08
 
