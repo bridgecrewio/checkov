@@ -1,6 +1,18 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.174...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.177...HEAD)
+
+## [3.2.177](https://github.com/bridgecrewio/checkov/compare/3.2.175...3.2.177) - 2024-07-08
+
+### Bug Fix
+
+- **sast:** fix cdk policies - [#6552](https://github.com/bridgecrewio/checkov/pull/6552)
+
+## [3.2.175](https://github.com/bridgecrewio/checkov/compare/3.2.174...3.2.175) - 2024-07-07
+
+### Feature
+
+- **arm:** AzureSearchSQLQueryUpdates - [#6543](https://github.com/bridgecrewio/checkov/pull/6543)
 
 ## [3.2.174](https://github.com/bridgecrewio/checkov/compare/3.2.171...3.2.174) - 2024-07-04
 
