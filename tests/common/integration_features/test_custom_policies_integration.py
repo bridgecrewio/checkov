@@ -219,6 +219,7 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         cfn_registry = get_graph_checks_registry("cloudformation").checks
         tf_registry = get_graph_checks_registry("terraform").checks
         k8s_registry = get_graph_checks_registry("kubernetes").checks
+        bicep_registry = get_graph_checks_registry("bicep").checks
         self.assertEqual(1, len(custom_policies_integration.bc_cloned_checks))
         self.assertEqual('kpande_AZR_1648821862291', tf_registry[0].id, cfn_registry[0].id)
         self.assertEqual('kpande_AZR_1648821862291', tf_registry[0].bc_id, cfn_registry[0].bc_id)
