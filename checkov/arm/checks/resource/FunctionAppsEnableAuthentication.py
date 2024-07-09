@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any
 
 from checkov.arm.base_resource_check import BaseResourceCheck
