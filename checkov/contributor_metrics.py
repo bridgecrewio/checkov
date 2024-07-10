@@ -23,23 +23,24 @@ def report_contributor_metrics(repository: str, source: str,
     if request_body:
         while number_of_attempts <= 4:
             logging.debug(f'Uploading contributor metrics to {contributors_report_api_url}')
-            response = request_wrapper(
+            response = bc_integration.http.request(
                 "POST", contributors_report_api_url,
-                headers=bc_integration.get_default_headers("POST"), data=json.dumps(request_body)
+                headers=bc_integration.get_default_headers("POST"),
+                body=json.dumps(request_body)
             )
             logging.debug(f'Request ID: {response.headers.get("x-amzn-requestid")}')
             logging.debug(f'Trace ID: {response.headers.get("x-amzn-trace-id")}')
-            if response.status_code < 300:
+            if response.status < 300:
                 logging.debug(
-                    f"Successfully uploaded contributor metrics with status: {response.status_code}. number of attempts: {number_of_attempts}")
+                    f"Successfully uploaded contributor metrics with status: {response.status}. number of attempts: {number_of_attempts}")
                 break
             else:
                 contributors_report_api_url = f"{bc_integration.api_url}/api/v1/contributors/report"
                 failed_attempt = {
-                    'message': f"Failed to upload contributor metrics with: {response.status_code} - {response.reason}. number of attempts: {number_of_attempts}",
+                    'message': f"Failed to upload contributor metrics with: {response.status} - {response.reason}. number of attempts: {number_of_attempts}",
                     'timestamp': str(datetime.datetime.now())}
                 request_body['failedAttempts'].append(failed_attempt)
-                logging.info(f"Failed to upload contributor metrics with: {response.status_code} - {response.reason}")
+                logging.info(f"Failed to upload contributor metrics with: {response.status} - {response.reason}")
                 number_of_attempts += 1
 
 

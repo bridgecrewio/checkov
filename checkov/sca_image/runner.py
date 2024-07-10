@@ -118,15 +118,18 @@ class Runner(PackageRunner):
                 "compressionMethod": "gzip",
                 "id": image_id_sha
             }
-            response = request_wrapper(
+
+            response = bc_integration.http.request(
                 "POST", f"{self.base_url}/api/v1/vulnerabilities/scan-results",
-                headers=bc_integration.get_default_headers("POST"), data=json.dumps(request_body)
+                headers=bc_integration.get_default_headers("POST"),
+                body=json.dumps(request_body)
             )
 
-            if response.ok:
-                logging.info(f"Successfully uploaded scan results to cache with id={image_id}")
-            else:
+            if response.status >= 400:
                 logging.info(f"Failed to upload scan results to cache with id={image_id}")
+                raise Exception(f'Request failed with status code: {response.status}')
+            else:
+                logging.info(f"Successfully uploaded scan results to cache with id={image_id}")
 
             output_path.unlink()
         except Exception:

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime
+import json
 import linecache
 import logging
 import os
@@ -465,20 +466,22 @@ class Runner(BaseRunner[None, None, None]):
         }
         response = None
         try:
-            response = request_wrapper(
+            response = bc_integration.http.request(
                 "POST", f"{bc_integration.api_url}/api/v1/secrets/reportVerification",
                 headers=bc_integration.get_default_headers("POST"),
-                json=request_body,
-                should_call_raise_for_status=True,
-                log_json_body=False
+                body=json.dumps(request_body)
             )
+
+            if response.status >= 400:
+                raise Exception(f'Request failed with status code: {response.status}')
+
         except Exception:
             logging.error('Failed to perform secrets verification', exc_info=True)
 
-        if not response:
+        if not response.data:
             return VerifySecretsResult.FAILURE
 
-        verification_report_presigned_url = response.json().get('verificationReportSignedUrl')
+        verification_report_presigned_url = response.data.get('verificationReportSignedUrl')
         if not verification_report_presigned_url:
             logging.error("Response is missing verificationReportSignedUrl key, aborting")
             return VerifySecretsResult.FAILURE
