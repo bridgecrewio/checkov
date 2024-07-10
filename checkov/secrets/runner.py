@@ -223,7 +223,7 @@ class Runner(BaseRunner[None, None, None]):
                 self.pbar.close()
 
             secret_records: dict[str, SecretsRecord] = {}
-            secrets_in_uuid_form = ['CKV_SECRETS_116']
+            secrets_in_uuid_form = ['CKV_SECRET_116']
             for key, secret in secrets:
                 check_id = secret.check_id if secret.check_id else SECRET_TYPE_TO_ID.get(secret.type)
                 if not check_id:
@@ -246,7 +246,7 @@ class Runner(BaseRunner[None, None, None]):
                         stripped = secret.secret_value.strip(',"')
                         if stripped != secret.secret_value:
                             secret_key = f'{key}_{secret.line_number}_{PotentialSecret.hash_secret(stripped)}'
-                if secret.secret_value and is_potential_uuid(secret.secret_value) and secret.check_id in secrets_in_uuid_form:
+                if secret.secret_value and is_potential_uuid(secret.secret_value) and secret.check_id not in secrets_in_uuid_form:
                     logging.info(
                         f"Removing secret due to UUID filtering: {PotentialSecret.hash_secret(secret.secret_value)}")
                     continue
