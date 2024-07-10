@@ -66,7 +66,7 @@ setup(
     },
     install_requires=[
         "bc-python-hcl2==0.4.2",
-        "bc-detect-secrets==1.5.12",
+        "bc-detect-secrets==1.5.15",
         "bc-jsonpath-ng==1.6.1",
         "pycep-parser==0.4.1",
         "tabulate>=0.9.0,<0.10.0",
