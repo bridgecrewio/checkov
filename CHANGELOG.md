@@ -1,6 +1,20 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.179...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.183...HEAD)
+
+## [3.2.183](https://github.com/bridgecrewio/checkov/compare/3.2.179...3.2.183) - 2024-07-10
+
+### Feature
+
+- **terraform_plan:** support tf_plan after_unknown enrichment - [#6517](https://github.com/bridgecrewio/checkov/pull/6517)
+
+### Bug Fix
+
+- **secrets:** small fix for filtering - [#6562](https://github.com/bridgecrewio/checkov/pull/6562)
+
+### Platform
+
+- **general:** pass repo ID to runconfig - [#6560](https://github.com/bridgecrewio/checkov/pull/6560)
 
 ## [3.2.179](https://github.com/bridgecrewio/checkov/compare/3.2.177...3.2.179) - 2024-07-09
 
