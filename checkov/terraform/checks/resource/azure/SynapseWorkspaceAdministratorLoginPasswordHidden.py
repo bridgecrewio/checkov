@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 class SynapseWorkspaceAdministratorLoginPasswordHidden(BaseResourceCheck):
     def __init__(self):
         name = "Ensure Azure Synapse Workspace administrator login password is not exposed"
-        id = "CKV_AZURE_242"
+        id = "CKV_AZURE_239"
         supported_resources = ['azurerm_synapse_workspace']
         categories = [CheckCategories.SECRETS]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
