@@ -81,7 +81,7 @@ CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is default limit
 
 
-def should_filter_vault_secret(secret_value, check_id):
+def should_filter_vault_secret(secret_value: str, check_id: str):
     if secret_value and 'vault:' in secret_value.lower() and check_id in ENTROPY_CHECK_IDS:
         return True
     return False
