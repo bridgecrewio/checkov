@@ -225,6 +225,8 @@ class Runner(BaseRunner[None, None, None]):
             secret_records: dict[str, SecretsRecord] = {}
             secrets_in_uuid_form = ['CKV_SECRET_116']
             for key, secret in secrets:
+                if 'vault:' in secret.secret_value.lower() and secret.check_id in ENTROPY_CHECK_IDS:
+                    continue
                 check_id = secret.check_id if secret.check_id else SECRET_TYPE_TO_ID.get(secret.type)
                 if not check_id:
                     logging.debug(f'Secret was filtered - no check_id for line_number {secret.line_number}')
