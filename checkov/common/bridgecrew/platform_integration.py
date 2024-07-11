@@ -62,6 +62,7 @@ from checkov.common.util.http_utils import (
     REQUEST_READ_TIMEOUT,
     REQUEST_RETRIES,
 )
+from checkov.common.util.proxy import proxy_manager
 from checkov.common.util.type_forcers import convert_prisma_policy_filter_to_dict, convert_str_to_bool
 from checkov.version import version as checkov_version
 
@@ -160,8 +161,6 @@ class BcPlatformIntegration:
         self.support_flag_enabled = False
         self.enable_persist_graphs = convert_str_to_bool(os.getenv('BC_ENABLE_PERSIST_GRAPHS', 'True'))
         self.persist_graphs_timeout = int(os.getenv('BC_PERSIST_GRAPHS_TIMEOUT', 60))
-        self.ca_certificate: str | None = None
-        self.no_cert_verify: bool = False
         self.on_prem: bool = False
         self.daemon_process = False  # set to 'True' when running in multiprocessing 'spawn' mode
         self.scan_dir: List[str] = []
@@ -322,24 +321,23 @@ class BcPlatformIntegration:
         :param ca_certificate: an optional CA bundle to be used by both libraries.
         :param no_cert_verify: whether to skip SSL cert verification
         """
-        self.ca_certificate = ca_certificate if ca_certificate else self.ca_certificate
-        self.no_cert_verify = no_cert_verify
+        if ca_certificate != None:
+            proxy_manager.init(ca_certificate, no_cert_verify)
 
-        ca_certificate = ca_certificate or os.getenv('BC_CA_BUNDLE')
+        ca_certificate = proxy_manager.ca_certificate
         cert_reqs: str | None
 
         if self.http:
             return
         if ca_certificate:
-            os.environ['REQUESTS_CA_BUNDLE'] = ca_certificate
-            cert_reqs = 'CERT_NONE' if no_cert_verify else 'REQUIRED'
-            logging.debug(f'Using CA cert {ca_certificate} and cert_reqs {cert_reqs}')
+            cert_reqs = 'CERT_NONE' if proxy_manager.no_cert_verify else 'REQUIRED'
+            logging.debug(f'Using CA cert {proxy_manager.ca_certificate} and cert_reqs {cert_reqs}')
             try:
                 parsed_url = urllib3.util.parse_url(os.environ['https_proxy'])
                 self.http = urllib3.ProxyManager(
                     os.environ['https_proxy'],
                     cert_reqs=cert_reqs,
-                    ca_certs=ca_certificate,
+                    ca_certs=proxy_manager.ca_certificate,
                     proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth),  # type:ignore[no-untyped-call]
                     timeout=self.http_timeout,
                     retries=self.http_retry,
@@ -347,12 +345,12 @@ class BcPlatformIntegration:
             except KeyError:
                 self.http = urllib3.PoolManager(
                     cert_reqs=cert_reqs,
-                    ca_certs=ca_certificate,
+                    ca_certs=proxy_manager.ca_certificate,
                     timeout=self.http_timeout,
                     retries=self.http_retry,
                 )
         else:
-            cert_reqs = 'CERT_NONE' if no_cert_verify else None
+            cert_reqs = 'CERT_NONE' if proxy_manager.no_cert_verify else None
             logging.debug(f'Using cert_reqs {cert_reqs}')
             try:
                 parsed_url = urllib3.util.parse_url(os.environ['https_proxy'])
