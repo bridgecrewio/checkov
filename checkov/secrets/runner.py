@@ -81,6 +81,12 @@ CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is default limit
 
 
+def should_filter_vault_secret(secret_value, check_id):
+    if secret_value and 'vault:' in secret_value.lower() and check_id in ENTROPY_CHECK_IDS:
+        return True
+    return False
+
+
 class Runner(BaseRunner[None, None, None]):
     check_type = CheckType.SECRETS  # noqa: CCE003  # a static attribute
 
@@ -225,11 +231,12 @@ class Runner(BaseRunner[None, None, None]):
             secret_records: dict[str, SecretsRecord] = {}
             secrets_in_uuid_form = ['CKV_SECRET_116']
             for key, secret in secrets:
-                if secret.secret_value and 'vault:' in secret.secret_value.lower() and secret.check_id in ENTROPY_CHECK_IDS:
-                    continue
                 check_id = secret.check_id if secret.check_id else SECRET_TYPE_TO_ID.get(secret.type)
                 if not check_id:
                     logging.debug(f'Secret was filtered - no check_id for line_number {secret.line_number}')
+                    continue
+                if should_filter_vault_secret(secret.secret_value, check_id):
+                    logging.debug(f'Secret was filtered - this is a vault reference: {secret.secret_value}')
                     continue
                 secret_key = f'{key}_{secret.line_number}_{secret.secret_hash}'
                 # secret history
