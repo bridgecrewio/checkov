@@ -23,6 +23,7 @@ def report_contributor_metrics(repository: str, source: str,
     if request_body:
         while number_of_attempts <= 4:
             logging.debug(f'Uploading contributor metrics to {contributors_report_api_url}')
+            bc_integration.setup_http_manager(bc_integration.ca_certificate, bc_integration.no_cert_verify)
             response = bc_integration.http.request(
                 "POST", contributors_report_api_url,
                 headers=bc_integration.get_default_headers("POST"),

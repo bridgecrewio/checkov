@@ -47,17 +47,14 @@ class Scanner:
                 "repositoryId": ""
             }
 
+            bc_integration.setup_http_manager(bc_integration.ca_certificate, bc_integration.no_cert_verify)
             response = bc_integration.http.request(
                 "POST", self.bc_cli_scan_api_url,
                 headers=bc_integration.get_default_headers("POST"),
                 body=json.dumps(request_body),
             )
 
-            if response.status >= 400:
-                raise Exception(f'Request failed with status code: {response.status}')
-
-            response_json = json.loads(response.data) if response.data else None
-
+            response_json = bc_integration.get_response_as_json(response)
             if not response_json["startedSuccessfully"]:
                 logging.info("Failed to run package scanning.")
                 return False
@@ -73,6 +70,7 @@ class Scanner:
         total_sleeping_time = 0
 
         while total_sleeping_time < MAX_SLEEP_DURATION:
+            bc_integration.setup_http_manager(bc_integration.ca_certificate, bc_integration.no_cert_verify)
             response = bc_integration.http.request(
                 "GET", f"{self.bc_cli_scan_api_url}/{bc_integration.timestamp}",
                 headers=bc_integration.get_default_headers("GET"),
@@ -80,9 +78,7 @@ class Scanner:
             )
 
             try:
-                if response.status >= 400:
-                    raise Exception(f'Request failed with status code: {response.status}')
-                response_json = json.loads(response.data) if response.data else None
+                response_json = bc_integration.get_response_as_json(response)
             except JSONDecodeError:
                 logging.debug(f"Unexpected response from {self.bc_cli_scan_api_url}: {response.text}")
                 return {}

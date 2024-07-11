@@ -119,6 +119,7 @@ class Runner(PackageRunner):
                 "id": image_id_sha
             }
 
+            bc_integration.setup_http_manager(bc_integration.ca_certificate, bc_integration.no_cert_verify)
             response = bc_integration.http.request(
                 "POST", f"{self.base_url}/api/v1/vulnerabilities/scan-results",
                 headers=bc_integration.get_default_headers("POST"),

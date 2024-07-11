@@ -4,6 +4,7 @@ import json
 import logging
 import os.path
 import re
+import ssl
 import uuid
 from collections import namedtuple
 from concurrent import futures
@@ -16,10 +17,13 @@ from types import MethodType
 from typing import List, Dict, TYPE_CHECKING, Any, Set, cast, Optional, Union
 from urllib.parse import urlparse
 
+import aiohttp
 import boto3
 import dpath
 import urllib3
 import urllib.parse
+
+from aiohttp import BaseConnector
 from botocore.config import Config
 from botocore.exceptions import ClientError
 from cachetools import cached, TTLCache
@@ -186,7 +190,10 @@ class BcPlatformIntegration:
         self.skip_fixes = platform_integration_data["skip_fixes"]
         self.timestamp = platform_integration_data["timestamp"]
         self.use_s3_integration = platform_integration_data["use_s3_integration"]
+        self.ca_certificate = platform_integration_data["ca_certificate"]
+        self.no_cert_verify = platform_integration_data["no_cert_verify"]
         self.setup_api_urls()
+
         # 'mypy' doesn't like, when you try to override an instance method
         self.get_auth_token = MethodType(lambda _=None: platform_integration_data["get_auth_token"], self)  # type:ignore[method-assign]
 
@@ -213,7 +220,9 @@ class BcPlatformIntegration:
             "timestamp": self.timestamp,
             "use_s3_integration": self.use_s3_integration,
             # will be overriden with a simple lambda expression
-            "get_auth_token": self.get_auth_token() if self.bc_api_key else ""
+            "get_auth_token": self.get_auth_token() if self.bc_api_key else "",
+            "ca_certificate": self.ca_certificate,
+            "no_cert_verify": self.no_cert_verify
         }
 
     def set_bc_api_url(self, new_url: str) -> None:
@@ -313,7 +322,7 @@ class BcPlatformIntegration:
         :param ca_certificate: an optional CA bundle to be used by both libraries.
         :param no_cert_verify: whether to skip SSL cert verification
         """
-        self.ca_certificate = ca_certificate
+        self.ca_certificate = ca_certificate if ca_certificate else self.ca_certificate
         self.no_cert_verify = no_cert_verify
 
         ca_certificate = ca_certificate or os.getenv('BC_CA_BUNDLE')
@@ -361,6 +370,32 @@ class BcPlatformIntegration:
                     retries=self.http_retry,
                 )
         logging.debug('Successfully set up HTTP manager')
+
+    # generate connector, so the http clients of ai http can also use connection settings
+    def get_ai_ohttp_connector_with_settings(self) -> BaseConnector:
+        if self.ca_certificate:
+            # Set up SSL context
+            ssl_context = ssl.create_default_context(cafile=self.ca_certificate)
+            if self.no_cert_verify:
+                ssl_context.verify_mode = ssl.CERT_NONE
+                ssl_context.check_hostname = False
+            logging.debug(
+                f'Using CA cert {self.ca_certificate} and cert_reqs {"CERT_NONE" if self.no_cert_verify else "REQUIRED"}')
+        else:
+            # No CA certificate provided, optionally disable certificate verification
+            ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+            if self.no_cert_verify:
+                ssl_context.verify_mode = ssl.CERT_NONE
+                ssl_context.check_hostname = False
+            logging.debug(f'Using cert_reqs {"CERT_NONE" if self.no_cert_verify else "None"}')
+
+        # Determine proxy settings
+        proxy_url = os.getenv('https_proxy')
+        if proxy_url:
+            connector = aiohttp.TCPConnector(ssl=ssl_context, proxy=proxy_url)
+        else:
+            connector = aiohttp.TCPConnector(ssl=ssl_context)
+        return connector
 
     def setup_bridgecrew_credentials(
         self,
@@ -1424,6 +1459,12 @@ class BcPlatformIntegration:
 
         logging.info(f"Unsupported request {request_type}")
         return {}
+
+    def get_response_as_json(self, response: Any, should_call_raise_for_status: bool = True) -> Any | None:
+        if should_call_raise_for_status and response.status >= 400:
+            raise Exception(f'Request failed with status code: {response.status}')
+        response_json = json.loads(response.data) if response.data else None
+        return response_json
 
     # Define the function that will get the relay state from the Prisma Cloud Platform.
     def get_sso_prismacloud_url(self, report_url: str) -> str:

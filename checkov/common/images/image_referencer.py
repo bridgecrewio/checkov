@@ -20,7 +20,7 @@ from checkov.common.sca.output import add_to_report_sca_data, get_license_status
 from checkov.common.typing import _LicenseStatus
 
 if TYPE_CHECKING:
-    from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
+    from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration, bc_integration
     from checkov.runner_filter import RunnerFilter
     from networkx import DiGraph
 
@@ -185,7 +185,7 @@ class ImageReferencerMixin(Generic[_Definitions]):
         This is an async implementation of `_fetch_image_results`. The only change is we're getting a session
         as an input, and the asyncio behavior is managed in the calling method.
         """
-        async with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession(bc_integration.get_ai_ohttp_connector_with_settings()) as session:
             results: list[dict[str, Any]] = await asyncio.gather(*[
                 image_scanner.get_scan_results_from_cache_async(session, f"image:{i}")
                 for i in image_names_to_query
@@ -320,7 +320,7 @@ class ImageReferencerMixin(Generic[_Definitions]):
     async def _fetch_licenses_per_image(image_names: list[str], image_results: list[dict[str, Any]]) \
             -> dict[str, list[_LicenseStatus]]:
         merged_result: dict[str, list[_LicenseStatus]] = {}
-        async with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession(bc_integration.get_ai_ohttp_connector_with_settings()) as session:
             license_results = await asyncio.gather(*[
                 get_license_statuses_async(session, result['results'][0].get('packages') or [], image_names[i])
                 for i, result in enumerate(image_results)

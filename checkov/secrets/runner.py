@@ -466,6 +466,7 @@ class Runner(BaseRunner[None, None, None]):
         }
         response = None
         try:
+            bc_integration.setup_http_manager(bc_integration.ca_certificate, bc_integration.no_cert_verify)
             response = bc_integration.http.request(
                 "POST", f"{bc_integration.api_url}/api/v1/secrets/reportVerification",
                 headers=bc_integration.get_default_headers("POST"),
