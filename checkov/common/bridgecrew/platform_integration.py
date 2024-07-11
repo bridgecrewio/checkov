@@ -190,6 +190,7 @@ class BcPlatformIntegration:
         # 'mypy' doesn't like, when you try to override an instance method
         self.get_auth_token = MethodType(lambda _=None: platform_integration_data["get_auth_token"], self)  # type:ignore[method-assign]
 
+        # TODO: init proxy settings
     def generate_instance_data(self) -> dict[str, Any]:
         """This output is used to re-initialize the instance and should be kept in sync with 'init_instance()'"""
 
@@ -475,10 +476,23 @@ class BcPlatformIntegration:
             region = API_URL_REGION_MAP[self.prisma_api_url]
 
         try:
+            proxies = {}
+            proxies_config = {}
+            if os.environ['https_proxy']:
+                proxies = {
+                    'http': os.environ['https_proxy'],
+                    'https': os.environ['https_proxy'],
+                }
+            if self.ca_certificate:
+                proxies_config = {
+                    'proxy_ca_bundle ': self.ca_certificate,
+                }
             config = Config(
                 s3={
                     "use_accelerate_endpoint": use_accelerate_endpoint,
-                }
+                },
+                proxies=proxies,
+                proxies_config=proxies_config,
             )
             self.s3_client = boto3.client(
                 "s3",
@@ -487,6 +501,7 @@ class BcPlatformIntegration:
                 aws_session_token=self.credentials["SessionToken"],
                 region_name=region,
                 config=config,
+                verify=False if self.no_cert_verify else None
             )
         except ClientError:
             logging.error(f"Failed to initiate client with credentials {self.credentials}", exc_info=True)
@@ -1014,7 +1029,10 @@ class BcPlatformIntegration:
                                   get_default_get_headers(self.bc_source, self.bc_source_version),
                                   self.custom_auth_headers)
 
-            self.setup_http_manager()
+            self.setup_http_manager(
+                self.ca_certificate,
+                self.no_cert_verify
+            )
             if not self.http:
                 logging.error("HTTP manager was not correctly created")
                 return
@@ -1068,7 +1086,10 @@ class BcPlatformIntegration:
                                   get_default_get_headers(self.bc_source, self.bc_source_version),
                                   self.custom_auth_headers)
 
-            self.setup_http_manager()
+            self.setup_http_manager(
+                self.ca_certificate,
+                self.no_cert_verify
+            )
             if not self.http:
                 logging.error("HTTP manager was not correctly created")
                 return None
@@ -1110,7 +1131,10 @@ class BcPlatformIntegration:
                                   get_default_get_headers(self.bc_source, self.bc_source_version),
                                   self.custom_auth_headers)
 
-            self.setup_http_manager()
+            self.setup_http_manager(
+                self.ca_certificate,
+                self.no_cert_verify
+            )
             if not self.http:
                 logging.error("HTTP manager was not correctly created")
                 raise
@@ -1159,7 +1183,10 @@ class BcPlatformIntegration:
             token = self.get_auth_token()
             headers = merge_dicts(get_prisma_auth_header(token), get_prisma_get_headers(), self.custom_auth_headers)
 
-            self.setup_http_manager()
+            self.setup_http_manager(
+                self.ca_certificate,
+                self.no_cert_verify
+            )
             if not self.http:
                 logging.error("HTTP manager was not correctly created")
                 return filtered_policies
@@ -1190,7 +1217,10 @@ class BcPlatformIntegration:
             token = self.get_auth_token()
             headers = merge_dicts(get_prisma_auth_header(token), get_prisma_get_headers(), self.custom_auth_headers)
 
-            self.setup_http_manager()
+            self.setup_http_manager(
+                self.ca_certificate,
+                self.no_cert_verify
+            )
             if not self.http:
                 logging.error("HTTP manager was not correctly created")
                 return {}
@@ -1244,7 +1274,10 @@ class BcPlatformIntegration:
         try:
             headers: dict[str, Any] = {}
 
-            self.setup_http_manager()
+            self.setup_http_manager(
+                self.ca_certificate,
+                self.no_cert_verify
+            )
             if not self.http:
                 logging.error("HTTP manager was not correctly created")
                 return
