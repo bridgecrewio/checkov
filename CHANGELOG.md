@@ -1,6 +1,18 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.183...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.186...HEAD)
+
+## [3.2.186](https://github.com/bridgecrewio/checkov/compare/3.2.183...3.2.186) - 2024-07-11
+
+### Feature
+
+- **azure:** add new policies for Azure Synapse (tf and arm) - [#6554](https://github.com/bridgecrewio/checkov/pull/6554)
+- **bicep:** support bicep custom policy - [#6561](https://github.com/bridgecrewio/checkov/pull/6561)
+
+### Bug Fix
+
+- **arm:** CKV_AZURE_56 just for authsettingsV2 name - [#6557](https://github.com/bridgecrewio/checkov/pull/6557)
+- **secrets:** filter secrets that have vault: in them - [#6565](https://github.com/bridgecrewio/checkov/pull/6565)
 
 ## [3.2.183](https://github.com/bridgecrewio/checkov/compare/3.2.179...3.2.183) - 2024-07-10
 
