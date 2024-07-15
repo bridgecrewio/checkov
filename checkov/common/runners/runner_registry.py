@@ -553,7 +553,6 @@ class RunnerRegistry:
 
             properties = Report.create_test_suite_properties_block(config)
 
-
             if junit_reports:
                 test_suites = [
                     report.get_test_suite(properties=properties, use_bc_ids=config.output_bc_ids)
@@ -619,7 +618,6 @@ class RunnerRegistry:
             data_outputs["gitlab_sast"] = json.dumps(gl_sast.sast_json)
         if "spdx" in config.output:
 
-
             spdx = SPDX(repo_id=metadata_integration.bc_integration.repo_id, reports=spdx_reports)
             spdx_output = spdx.get_tag_value_output()
 
@@ -672,11 +670,9 @@ class RunnerRegistry:
     def _print_to_console(self, output_formats: dict[str, str], output_format: str, output: str, url: str | None = None, support_path: str | None = None) -> None:
         """Prints the output to console, if needed"""
 
-
         output_dest = output_formats[output_format]
         if output_dest == CONSOLE_OUTPUT:
             del output_formats[output_format]
-
             if platform.system() == 'Windows':
                 sys.stdout.buffer.write(output.encode("utf-8"))
             else:
@@ -692,12 +688,10 @@ class RunnerRegistry:
             if CONSOLE_OUTPUT in output_formats.values():
                 print(OUTPUT_DELIMITER)
 
-
     def print_iac_bom_reports(self, output_path: str,
                               scan_reports: list[Report],
                               output_types: list[str],
                               account_id: str) -> dict[str, str]:
-
         output_files = {
             'cyclonedx': 'results_cyclonedx.xml',
             'csv': 'results_iac.csv'
@@ -724,7 +718,6 @@ class RunnerRegistry:
             csv_sbom_report.persist_report_iac(file_name=output_files['csv'], output_path=output_path)
 
         return {key: os.path.join(output_path, value) for key, value in output_files.items()}
-
 
     def filter_runner_framework(self) -> None:
         if not self.runner_filter:
