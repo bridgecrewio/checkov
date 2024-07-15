@@ -14,7 +14,7 @@ class TestAzureDataExplorerDoubleEncryptionEnabled(unittest.TestCase):
             "Microsoft.Kusto/clusters.pass"
         }
         failing_resources = {
-            "Microsoft.Kusto/clusters"
+            "Microsoft.Kusto/clusters.fail"
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
