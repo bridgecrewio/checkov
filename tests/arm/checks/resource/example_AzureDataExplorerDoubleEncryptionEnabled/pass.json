@@ -15,7 +15,7 @@
         "version": "10.3",
         "administratorLogin": "admin",
         "administratorLoginPassword": "admin123",
-        "doubleEncryptionEnabled": true,
+        "enableDoubleEncryption": true,
         "storageProfile": {
           "storageMB": "5120"
         }

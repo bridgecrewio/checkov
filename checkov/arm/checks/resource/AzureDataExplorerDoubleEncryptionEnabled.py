@@ -7,12 +7,12 @@ class AzureDataExplorerDoubleEncryptionEnabled(BaseResourceValueCheck):
     def __init__(self) -> None:
         name: str = "Ensure that Azure Data Explorer uses double encryption"
         id: str = "CKV_AZURE_75"
-        supported_resources: tuple = ("Microsoft.Compute/disks",)
-        categories: tuple = (CheckCategories.ENCRYPTION,)
+        supported_resources = ("Microsoft.Kusto/clusters",)
+        categories = (CheckCategories.ENCRYPTION,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self) -> str:
-        return "properties/doubleEncryptionEnabled"
+        return "properties/enableDoubleEncryption"
 
     def get_expected_value(self) -> Any:
         return True
