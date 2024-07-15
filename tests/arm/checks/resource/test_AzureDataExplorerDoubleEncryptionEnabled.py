@@ -11,10 +11,10 @@ class TestAzureDataExplorerDoubleEncryptionEnabled(unittest.TestCase):
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
         passing_resources = {
-            "Microsoft.Compute/disks.pass"
+            "Microsoft.Kusto/clusters.pass"
         }
         failing_resources = {
-            "Microsoft.Compute/disks.fail"
+            "Microsoft.Kusto/clusters"
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
