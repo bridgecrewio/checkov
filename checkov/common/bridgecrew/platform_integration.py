@@ -989,7 +989,8 @@ class BcPlatformIntegration:
             self.get_public_run_config()
 
     def _get_run_config_query_params(self) -> str:
-        return f'module={"bc" if self.is_bc_token(self.bc_api_key) else "pc"}&enforcementv2=true'
+        # ignore mypy warning that this can be null
+        return f'module={"bc" if self.is_bc_token(self.bc_api_key) else "pc"}&enforcementv2=true&repoId={urllib.parse.quote(self.repo_id)}'  # type: ignore
 
     def get_run_config_url(self) -> str:
         return f'{self.platform_run_config_url}?{self._get_run_config_query_params()}'

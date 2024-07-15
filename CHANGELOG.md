@@ -1,6 +1,71 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.171...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.189...HEAD)
+
+## [3.2.189](https://github.com/bridgecrewio/checkov/compare/3.2.186...3.2.189) - 2024-07-14
+
+### Feature
+
+- **arm:** add CKV_AZURE_169 to ensure that AKS use the Paid Sku for its SLA - [#6545](https://github.com/bridgecrewio/checkov/pull/6545)
+- **arm:** add CKV_AZURE_177 to ensure that Windows VM enables automatic updates - [#6484](https://github.com/bridgecrewio/checkov/pull/6484)
+- **cloudformation:** Update audit_logs valid values - [#6566](https://github.com/bridgecrewio/checkov/pull/6566)
+
+## [3.2.186](https://github.com/bridgecrewio/checkov/compare/3.2.183...3.2.186) - 2024-07-11
+
+### Feature
+
+- **azure:** add new policies for Azure Synapse (tf and arm) - [#6554](https://github.com/bridgecrewio/checkov/pull/6554)
+- **bicep:** support bicep custom policy - [#6561](https://github.com/bridgecrewio/checkov/pull/6561)
+
+### Bug Fix
+
+- **arm:** CKV_AZURE_56 just for authsettingsV2 name - [#6557](https://github.com/bridgecrewio/checkov/pull/6557)
+- **secrets:** filter secrets that have vault: in them - [#6565](https://github.com/bridgecrewio/checkov/pull/6565)
+
+## [3.2.183](https://github.com/bridgecrewio/checkov/compare/3.2.179...3.2.183) - 2024-07-10
+
+### Feature
+
+- **terraform_plan:** support tf_plan after_unknown enrichment - [#6517](https://github.com/bridgecrewio/checkov/pull/6517)
+
+### Bug Fix
+
+- **secrets:** small fix for filtering - [#6562](https://github.com/bridgecrewio/checkov/pull/6562)
+
+### Platform
+
+- **general:** pass repo ID to runconfig - [#6560](https://github.com/bridgecrewio/checkov/pull/6560)
+
+## [3.2.179](https://github.com/bridgecrewio/checkov/compare/3.2.177...3.2.179) - 2024-07-09
+
+### Feature
+
+- **arm:** add CKV_AZURE_206 to ensure that Storage Accounts use replication - [#6524](https://github.com/bridgecrewio/checkov/pull/6524)
+- **arm:** BCE-33785 Support Azure Synapse Analytics policies - [#6513](https://github.com/bridgecrewio/checkov/pull/6513)
+
+## [3.2.177](https://github.com/bridgecrewio/checkov/compare/3.2.175...3.2.177) - 2024-07-08
+
+### Bug Fix
+
+- **sast:** fix cdk policies - [#6552](https://github.com/bridgecrewio/checkov/pull/6552)
+
+## [3.2.175](https://github.com/bridgecrewio/checkov/compare/3.2.174...3.2.175) - 2024-07-07
+
+### Feature
+
+- **arm:** AzureSearchSQLQueryUpdates - [#6543](https://github.com/bridgecrewio/checkov/pull/6543)
+
+## [3.2.174](https://github.com/bridgecrewio/checkov/compare/3.2.171...3.2.174) - 2024-07-04
+
+### Feature
+
+- **arm:** add CKV_AZURE_172 to ensure autorotation of Secrets Store CSI Driver secrets for AKS clusters - [#6533](https://github.com/bridgecrewio/checkov/pull/6533)
+- **arm:** add CKV_AZURE_173 to ensure that API management uses at least TLS 1.2 - [#6478](https://github.com/bridgecrewio/checkov/pull/6478)
+- **arm:** AppServicePlanZoneRedundant - [#6472](https://github.com/bridgecrewio/checkov/pull/6472)
+- **arm:** AzureSearchSLAIndex - [#6530](https://github.com/bridgecrewio/checkov/pull/6530)
+- **arm:** SQLDatabaseZoneRedundant - [#6515](https://github.com/bridgecrewio/checkov/pull/6515)
+- **azure:** add new policies for Azure Synapse - [#6520](https://github.com/bridgecrewio/checkov/pull/6520)
+- **general:** update detect secrets package - [#6535](https://github.com/bridgecrewio/checkov/pull/6535)
 
 ## [3.2.171](https://github.com/bridgecrewio/checkov/compare/3.2.164...3.2.171) - 2024-07-03
 

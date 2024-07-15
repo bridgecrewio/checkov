@@ -81,6 +81,10 @@ CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is default limit
 
 
+def should_filter_vault_secret(secret_value: str, check_id: str) -> bool:
+    return 'vault:' in secret_value.lower() and check_id in ENTROPY_CHECK_IDS
+
+
 class Runner(BaseRunner[None, None, None]):
     check_type = CheckType.SECRETS  # noqa: CCE003  # a static attribute
 
@@ -223,11 +227,14 @@ class Runner(BaseRunner[None, None, None]):
                 self.pbar.close()
 
             secret_records: dict[str, SecretsRecord] = {}
-            secrets_in_uuid_form = ['CKV_SECRETS_116']
+            secrets_in_uuid_form = ['CKV_SECRET_116']
             for key, secret in secrets:
                 check_id = secret.check_id if secret.check_id else SECRET_TYPE_TO_ID.get(secret.type)
                 if not check_id:
                     logging.debug(f'Secret was filtered - no check_id for line_number {secret.line_number}')
+                    continue
+                if secret.secret_value and should_filter_vault_secret(secret.secret_value, check_id):
+                    logging.debug(f'Secret was filtered - this is a vault reference: {secret.secret_value}')
                     continue
                 secret_key = f'{key}_{secret.line_number}_{secret.secret_hash}'
                 # secret history
@@ -246,7 +253,7 @@ class Runner(BaseRunner[None, None, None]):
                         stripped = secret.secret_value.strip(',"')
                         if stripped != secret.secret_value:
                             secret_key = f'{key}_{secret.line_number}_{PotentialSecret.hash_secret(stripped)}'
-                if secret.secret_value and is_potential_uuid(secret.secret_value) and secret.check_id in secrets_in_uuid_form:
+                if secret.secret_value and is_potential_uuid(secret.secret_value) and secret.check_id not in secrets_in_uuid_form:
                     logging.info(
                         f"Removing secret due to UUID filtering: {PotentialSecret.hash_secret(secret.secret_value)}")
                     continue
