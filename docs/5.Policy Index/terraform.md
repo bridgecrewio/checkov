@@ -2137,6 +2137,7 @@ nav_order: 1
 | 2126 | CKV_YC_24       | resource | yandex_resourcemanager_folder_iam_binding               | Ensure passport account is not used for assignment. Use service accounts and federated accounts where possible.                                                                                          | Terraform | [IAMPassportAccountUsage.py](https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/yandexcloud/IAMPassportAccountUsage.py)                                                                         |
 | 2127 | CKV_YC_24       | resource | yandex_resourcemanager_folder_iam_member                | Ensure passport account is not used for assignment. Use service accounts and federated accounts where possible.                                                                                          | Terraform | [IAMPassportAccountUsage.py](https://github.com/bridgecrewio/checkov/blob/main/checkov/terraform/checks/resource/yandexcloud/IAMPassportAccountUsage.py)                                                                         |
 
+
 ---
 
 
