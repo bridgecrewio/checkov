@@ -6,7 +6,7 @@ from checkov.arm.base_resource_value_check import BaseResourceValueCheck
 
 class CognitiveServicesConfigureIdentity(BaseResourceValueCheck):
     def __init__(self) -> None:
-        name = "Ensure that Cognitive Services account is not configured with managed identity"
+        name = "Ensure that all Azure Cognitive Services accounts are configured with a managed identity"
         id = "CKV_AZURE_238"
         supported_resources = ('Microsoft.CognitiveServices/accounts',)
         categories = (CheckCategories.GENERAL_SECURITY,)
