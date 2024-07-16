@@ -9,7 +9,7 @@ class VMCredsInCustomData(BaseResourceCheck):
     def __init__(self) -> None:
         name = "Ensure that no sensitive credentials are exposed in VM custom_data"
         id = "CKV_AZURE_45"
-        supported_resources = ("azurerm_virtual_machine",)
+        supported_resources = ("azurerm_virtual_machine")
         categories = (CheckCategories.SECRETS,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 

@@ -32,7 +32,8 @@ class BaseSolver:
     @staticmethod
     def resource_type_pred(v: Dict[str, Any], resource_types: List[str]) -> bool:
         if bool(convert_str_to_bool(os.getenv('CKV_SUPPORT_ALL_RESOURCE_TYPE', False))):
-            support_all_resources = bool("resource_type" in v and [a for a in resource_types if a.lower() == 'all'] and v[
+            is_all_resources = isinstance(resource_types, list) and resource_types[0].lower() == "all"
+            support_all_resources = bool("resource_type" in v and is_all_resources and v[
                 "resource_type"] != 'module')
         else:
             support_all_resources = False
