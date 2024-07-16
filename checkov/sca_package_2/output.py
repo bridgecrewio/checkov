@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import itertools
 import logging
+import sys
 from collections import defaultdict
 from dataclasses import dataclass
 from typing import List, Union, Dict, Any
@@ -278,7 +279,12 @@ def create_cli_cves_table(file_path: str, cve_count: CveCount, package_details_m
                           lines_details_found: bool) -> str:
     columns = 7
     table_width = 159
+    fixed_line_with = 159
     column_width = int(table_width / columns)
+
+    # on python 3.12 and above, there is extra space in the table, so the table is wider.
+    if sys.version_info >= (3, 12):
+        table_width = 165
 
     cve_table_lines = create_cve_summary_table_part(
         table_width=table_width, column_width=column_width, cve_count=cve_count
@@ -286,7 +292,7 @@ def create_cli_cves_table(file_path: str, cve_count: CveCount, package_details_m
 
     vulnerable_packages = True if package_details_map else False
     fixable_table_lines = create_fixable_cve_summary_table_part(
-        table_width=table_width, column_count=columns, cve_count=cve_count, vulnerable_packages=vulnerable_packages
+        table_width=fixed_line_with, column_count=columns, cve_count=cve_count, vulnerable_packages=vulnerable_packages
     )
 
     package_table_lines = create_package_overview_table_part(
