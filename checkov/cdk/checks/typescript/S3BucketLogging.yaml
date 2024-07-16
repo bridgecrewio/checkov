@@ -1,0 +1,17 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_18
+  name: Ensure the S3 bucket has access logging enabled
+  category: LOGGING
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  pattern: new $AWS.$FUNC(<ANY>)
+  conditions:
+    - metavariable: $FUNC
+      regex: (Bucket|CfnBucket)
+    - not_pattern: |
+        new $AWS.$FUNC(<ANY>, { <ANY>, serverAccessLogsBucket: <ANY> , <ANY> } ,<ANY>)

@@ -280,30 +280,26 @@ def test_CKV_AWS_3_EBSEncryption(failed_checks):
     run_check(check_results=failed_checks, check_id="CKV_AWS_3", policy_name="EBSEncryption", language="typescript")
 
 
-@pytest.mark.skip(reason="Not implemented yet")
 def test_CKV_AWS_18_S3BucketLogging(failed_checks):
-    run_check(check_results=failed_checks, check_id="CKV_AWS_18", policy_name="S3BucketLogging", language="typescript")
+    run_check(check_results=failed_checks, check_id="CKV_AWS_18", policy_name="S3BucketLogging",
+              language="typescript")
 
 
-@pytest.mark.skip(reason="Not implemented yet")
 def test_CKV_AWS_19_S3BucketEncryption(failed_checks):
     run_check(check_results=failed_checks, check_id="CKV_AWS_19", policy_name="S3BucketEncryption",
               language="typescript")
 
 
-@pytest.mark.skip(reason="Not implemented yet")
-def test_CKV_AWS_21_S3BucketVersioning(failed_checks):
+def CKV_AWS_21_S3BucketVersioning(failed_checks):
     run_check(check_results=failed_checks, check_id="CKV_AWS_21", policy_name="S3BucketVersioning",
               language="typescript")
 
 
-@pytest.mark.skip(reason="Not implemented yet")
 def test_CKV_AWS_145_S3BucketKMSEncryption(failed_checks):
     run_check(check_results=failed_checks, check_id="CKV_AWS_145", policy_name="S3BucketKMSEncryption",
               language="typescript")
 
 
-@pytest.mark.skip(reason="Not implemented yet")
 def test_CKV2_AWS_6_S3BucketPublicAccessBlock(failed_checks):
     run_check(check_results=failed_checks, check_id="CKV2_AWS_6", policy_name="S3BucketPublicAccessBlock",
               language="typescript")
@@ -385,4 +381,49 @@ def CKV_AWS_44_NeptuneClusterStorageEncrypted(failed_checks):
 
 def CKV_AWS_118_RDSEnhancedMonitorEnabled(failed_checks):
     run_check(check_results=failed_checks, check_id="CKV_AWS_118", policy_name="RDSEnhancedMonitorEnabled",
+              language="typescript")
+
+
+def CKV_AWS_157_RDSMultiAZEnabled(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_157", policy_name="RDSMultiAZEnabled",
+              language="typescript")
+
+
+def CKV_AWS_17_RDSPubliclyAccessible(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_17", policy_name="RDSPubliclyAccessible",
+              language="typescript")
+
+
+def CKV_AWS_105_RedShiftSSL(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_105", policy_name="RedShiftSSL",
+              language="typescript")
+
+
+def CKV_AWS_64_RedshiftClusterEncryption(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_64", policy_name="RedshiftClusterEncryption",
+              language="typescript")
+
+
+def CKV_AWS_71_RedshiftClusterLogging(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_71", policy_name="RedshiftClusterLogging",
+              language="typescript")
+
+
+def CKV_AWS_87_RedshiftClusterPubliclyAccessible(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_87", policy_name="RedshiftClusterPubliclyAccessible",
+              language="typescript")
+
+
+def CKV_AWS_154_RedshiftInEc2ClassicMode(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_154", policy_name="RedshiftInEc2ClassicMode",
+              language="typescript")
+
+
+def CKV_AWS_73_S3BlockPublicACLs(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_73", policy_name="S3BlockPublicACLs",
+              language="typescript")
+
+
+def CKV_AWS_54_S3BlockPublicPolicy(failed_checks):
+    run_check(check_results=failed_checks, check_id="CKV_AWS_54", policy_name="S3BlockPublicPolicy",
               language="typescript")

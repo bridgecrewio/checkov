@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/name: fdn-svc
+  name: fdn-svc
+  namespace: aws-dev
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: fdn-svc
+  template:
+    metadata:
+      annotations:
+        checksum/config: 9730118d75e24d06bac70b575dc49f6a75dd23c617198e4346fd6ed449362502
+      labels:
+        app.kubernetes.io/name: fdn-svc
+    spec:
+      containers:
+        - env:
+            - name: APP_PORT
+              value: ''
+            - name: SSU
+              value: ''
+            - name: client_id
+              value: fdn-svc
+            - name: cache
+              value: disabled
+            - name: cache_ttl
+              value: '60'
+            - name: Filter_Attribute_value_separator
+              value: '#'
+            - name: NEW_RELIC_APP_NAME
+              value: ''
+            - name: NEW_RELIC_LICENSE_KEY
+              value: ''
+            - name: PREEMPTIVE_LICENSE_KEY
+              value: ''
+            - name: PREEMPTIVE_USER_EMAIL
+              value: ''
+            - name: DEPENDENCY_CHECK
+              value: 'false'
+            - name: authorization_type
+              value: close
+            - name: RBAC_Support
+              value: enabled
+            - name: TENANT_FILE_PATH
+              value: /secrets
+          image: ''
+          imagePullPolicy: Always
+          name: fdn-svc
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+          resources:
+            limits:
+              cpu: 200m
+              memory: 256Mi
+            requests:
+              cpu: 50m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 65532
+            seccompProfile:
+              type: RuntimeDefault
+          volumeMounts:
+            - mountPath: /secrets
+              name: tenant-config-volume
+              readOnly: true
+      imagePullSecrets:
+        - name: bn-image-pullcreds
+      securityContext:
+        runAsUser: 65532
+      serviceAccountName: fdn-svc
+      volumes:
+        - name: tenant-config-volume
+          secret:
+            secretName: fdn-svc-secret
