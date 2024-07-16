@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import os
 from abc import abstractmethod
 from typing import Tuple, List, Dict, Any, TYPE_CHECKING
 
 from checkov.common.graph.checks_infra.enums import SolverType
+from checkov.common.util.type_forcers import convert_str_to_bool
 
 if TYPE_CHECKING:
     from networkx import DiGraph
@@ -29,4 +31,9 @@ class BaseSolver:
 
     @staticmethod
     def resource_type_pred(v: Dict[str, Any], resource_types: List[str]) -> bool:
-        return not resource_types or ("resource_type" in v and v["resource_type"] in resource_types)
+        if bool(convert_str_to_bool(os.getenv('CKV_SUPPORT_ALL_RESOURCE_TYPE', False))):
+            support_all_resources = "resource_type" in v and [a for a in resource_types if a.lower() == 'all'] and v[
+                "resource_type"] != 'module'
+        else:
+            support_all_resources = False
+        return not resource_types or ("resource_type" in v and v["resource_type"] in resource_types) or support_all_resources
