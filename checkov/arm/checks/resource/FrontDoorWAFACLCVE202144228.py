@@ -43,11 +43,10 @@ class FrontDoorWAFACLCVE202144228(BaseResourceCheck):
                             ])
                             if rule.get("ruleId") == "944240":
                                 enabledState = rule.get("enabledState")
-                                if enabledState:
-                                    if rule.get("enabledState") == "Disabled":
-                                        return CheckResult.FAILED
-                                    if rule.get("action") in ["Block", "Redirect"]:
-                                        return CheckResult.PASSED
+                                if not enabledState:
+                                    return CheckResult.FAILED
+                                if rule.get("action") in ["Block", "Redirect"]:
+                                    return CheckResult.PASSED
 
         return CheckResult.FAILED
 
