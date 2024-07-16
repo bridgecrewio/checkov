@@ -65,6 +65,7 @@ from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 from checkov.common.graph.checks_infra.base_parser import BaseGraphCheckParser
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
+from checkov.common.util.env_vars_config import env_vars_config
 from checkov.common.util.type_forcers import force_list, convert_str_to_bool
 
 if TYPE_CHECKING:
@@ -247,7 +248,7 @@ class GraphCheckParser(BaseGraphCheckParser):
                     or (isinstance(resource_type, str) and resource_type.lower() == "all")
                     or (isinstance(resource_type, list) and resource_type[0].lower() == "all")
             ):
-                if bool(convert_str_to_bool(os.getenv('CKV_SUPPORT_ALL_RESOURCE_TYPE', False))):
+                if env_vars_config.CKV_SUPPORT_ALL_RESOURCE_TYPE:
                     check.resource_types = ['all']
                 else:
                     check.resource_types = resources_types or []
