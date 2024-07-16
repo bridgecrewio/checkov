@@ -122,11 +122,10 @@ def render_cve_output(record: Policy3dRecord) -> str | None:
 
 def create_cli_cves_table(file_path: str, package_details_map: Dict[str, Dict[str, Any]]) -> str:
     columns = 5
-    table_width = get_table_width()
     column_width = int(TABLE_WIDTH / columns)
 
     package_table_lines = create_package_overview_table_part(
-        table_width=table_width, column_width=column_width, package_details_map=package_details_map
+        table_width=TABLE_WIDTH, column_width=column_width, package_details_map=package_details_map
     )
 
     return (
@@ -224,25 +223,12 @@ def render_iac_violations_table(record: Policy3dRecord) -> str | None:
     return None
 
 
-def get_table_width() -> int:
-    """
-    Determine the appropriate table width based on the Python version.
-    On Python 3.12 and above, the columns are smaller, so we need to make them wider to maintain consistency.
-    """
-    if sys.version_info >= (3, 12):
-        return 165
-    else:
-        return TABLE_WIDTH
-
-
 def create_iac_violations_table(file_path: str, resource_violation_details_map: Dict[str, Dict[str, Any]]) -> str:
     columns = 5  # it really has only 4 columns, but the title would get a width of two columns
-    table_width = get_table_width()
-
     column_width = int(TABLE_WIDTH / columns)
 
     iac_table_lines = create_iac_violations_overview_table_part(
-        table_width=table_width, column_width=column_width, resource_violation_details_map=resource_violation_details_map
+        table_width=TABLE_WIDTH, column_width=column_width, resource_violation_details_map=resource_violation_details_map
     )
 
     return (
@@ -257,6 +243,11 @@ def create_iac_violations_overview_table_part(
         table_width: int, column_width: int, resource_violation_details_map: Dict[str, Dict[str, Any]]
 ) -> List[str]:
     iac_table_lines: List[str] = []
+
+    # on python 3.12 and above, the columns are smaller, need to make them wider in order to have consistency.
+    if sys.version_info >= (3, 12):
+        table_width += 3
+
     iac_table = PrettyTable(
         min_table_width=table_width,
         max_table_width=table_width
