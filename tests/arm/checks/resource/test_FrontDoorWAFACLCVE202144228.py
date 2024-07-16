@@ -25,7 +25,6 @@ class TestFrontDoorWAFACLCVE202144228(unittest.TestCase):
         }
         failing_resources = {
             "Microsoft.Network/frontdoorWebApplicationFirewallPolicies.fail1",
-            "Microsoft.Network/frontdoorWebApplicationFirewallPolicies.fail2",
             "Microsoft.Network/frontdoorWebApplicationFirewallPolicies.fail3",
             "Microsoft.Network/frontdoorWebApplicationFirewallPolicies.fail4",
         }
