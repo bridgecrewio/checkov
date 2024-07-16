@@ -84,6 +84,8 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
                                 get_graph_checks_registry("terraform").checks.append(check)
                             elif f.lower() == "kubernetes":
                                 get_graph_checks_registry("kubernetes").checks.append(check)
+                            elif f.lower() == "bicep":
+                                get_graph_checks_registry("bicep").checks.append(check)
                     elif re.match(CFN_RESOURCE_TYPE_IDENTIFIER, check.resource_types[0]):
                         get_graph_checks_registry("cloudformation").checks.append(check)
                     else:

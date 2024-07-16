@@ -139,10 +139,13 @@ class TestBCApiUrl(unittest.TestCase):
 
     def test_run_config_url(self):
         instance = BcPlatformIntegration()
+        instance.repo_id = 'owner/repo'
         instance.bc_api_key = '00000000-0000-0000-0000-000000000000'
-        self.assertTrue(instance.get_run_config_url().endswith('/runConfiguration?module=bc&enforcementv2=true'))
+        self.assertTrue(instance.get_run_config_url().endswith('/runConfiguration?module=bc&enforcementv2=true&repoId=owner/repo'))
         instance.bc_api_key = '00000000-0000-0000-0000-000000000000::1234=='
-        self.assertTrue(instance.get_run_config_url().endswith('/runConfiguration?module=pc&enforcementv2=true'))
+        self.assertTrue(instance.get_run_config_url().endswith('/runConfiguration?module=pc&enforcementv2=true&repoId=owner/repo'))
+        instance.repo_id = 'encode/më'
+        self.assertTrue(instance.get_run_config_url().endswith('/runConfiguration?module=pc&enforcementv2=true&repoId=encode/m%C3%AB'))
 
     def test_is_valid_policy_filter(self):
         instance = BcPlatformIntegration()
