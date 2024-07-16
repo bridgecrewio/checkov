@@ -282,7 +282,7 @@ def create_cli_cves_table(file_path: str, cve_count: CveCount, package_details_m
     fixed_line_with = 159
     column_width = int(table_width / columns)
 
-    # on python 3.12 and above, there is extra space in the table, so the table is wider.
+    # on python 3.12 and above, the columns are smaller, need to make them wider in order to have consistency.
     if sys.version_info >= (3, 12):
         table_width = 165
 
