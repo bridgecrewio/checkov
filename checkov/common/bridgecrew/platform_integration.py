@@ -4,6 +4,7 @@ import json
 import logging
 import os.path
 import re
+import ssl
 import uuid
 from collections import namedtuple
 from concurrent import futures
@@ -16,10 +17,13 @@ from types import MethodType
 from typing import List, Dict, TYPE_CHECKING, Any, Set, cast, Optional, Union
 from urllib.parse import urlparse
 
+import aiohttp
 import boto3
 import dpath
 import urllib3
 import urllib.parse
+
+from aiohttp import BaseConnector
 from botocore.config import Config
 from botocore.exceptions import ClientError
 from cachetools import cached, TTLCache
@@ -58,6 +62,7 @@ from checkov.common.util.http_utils import (
     REQUEST_READ_TIMEOUT,
     REQUEST_RETRIES,
 )
+from checkov.common.util.proxy import proxy_manager
 from checkov.common.util.type_forcers import convert_prisma_policy_filter_to_dict, convert_str_to_bool
 from checkov.version import version as checkov_version
 
@@ -156,8 +161,6 @@ class BcPlatformIntegration:
         self.support_flag_enabled = False
         self.enable_persist_graphs = convert_str_to_bool(os.getenv('BC_ENABLE_PERSIST_GRAPHS', 'True'))
         self.persist_graphs_timeout = int(os.getenv('BC_PERSIST_GRAPHS_TIMEOUT', 60))
-        self.ca_certificate: str | None = None
-        self.no_cert_verify: bool = False
         self.on_prem: bool = False
         self.daemon_process = False  # set to 'True' when running in multiprocessing 'spawn' mode
         self.scan_dir: List[str] = []
@@ -186,10 +189,14 @@ class BcPlatformIntegration:
         self.skip_fixes = platform_integration_data["skip_fixes"]
         self.timestamp = platform_integration_data["timestamp"]
         self.use_s3_integration = platform_integration_data["use_s3_integration"]
+        self.ca_certificate = platform_integration_data["ca_certificate"]
+        self.no_cert_verify = platform_integration_data["no_cert_verify"]
         self.setup_api_urls()
+
         # 'mypy' doesn't like, when you try to override an instance method
         self.get_auth_token = MethodType(lambda _=None: platform_integration_data["get_auth_token"], self)  # type:ignore[method-assign]
 
+        # TODO: init proxy settings
     def generate_instance_data(self) -> dict[str, Any]:
         """This output is used to re-initialize the instance and should be kept in sync with 'init_instance()'"""
 
@@ -212,7 +219,9 @@ class BcPlatformIntegration:
             "timestamp": self.timestamp,
             "use_s3_integration": self.use_s3_integration,
             # will be overriden with a simple lambda expression
-            "get_auth_token": self.get_auth_token() if self.bc_api_key else ""
+            "get_auth_token": self.get_auth_token() if self.bc_api_key else "",
+            "ca_certificate": self.ca_certificate,
+            "no_cert_verify": self.no_cert_verify
         }
 
     def set_bc_api_url(self, new_url: str) -> None:
@@ -312,24 +321,23 @@ class BcPlatformIntegration:
         :param ca_certificate: an optional CA bundle to be used by both libraries.
         :param no_cert_verify: whether to skip SSL cert verification
         """
-        self.ca_certificate = ca_certificate
-        self.no_cert_verify = no_cert_verify
+        if ca_certificate != None:
+            proxy_manager.init(ca_certificate, no_cert_verify)
 
-        ca_certificate = ca_certificate or os.getenv('BC_CA_BUNDLE')
+        ca_certificate = proxy_manager.ca_certificate
         cert_reqs: str | None
 
         if self.http:
             return
         if ca_certificate:
-            os.environ['REQUESTS_CA_BUNDLE'] = ca_certificate
-            cert_reqs = 'CERT_NONE' if no_cert_verify else 'REQUIRED'
-            logging.debug(f'Using CA cert {ca_certificate} and cert_reqs {cert_reqs}')
+            cert_reqs = 'CERT_NONE' if proxy_manager.no_cert_verify else 'REQUIRED'
+            logging.debug(f'Using CA cert {proxy_manager.ca_certificate} and cert_reqs {cert_reqs}')
             try:
                 parsed_url = urllib3.util.parse_url(os.environ['https_proxy'])
                 self.http = urllib3.ProxyManager(
                     os.environ['https_proxy'],
                     cert_reqs=cert_reqs,
-                    ca_certs=ca_certificate,
+                    ca_certs=proxy_manager.ca_certificate,
                     proxy_headers=urllib3.make_headers(proxy_basic_auth=parsed_url.auth),  # type:ignore[no-untyped-call]
                     timeout=self.http_timeout,
                     retries=self.http_retry,
@@ -337,12 +345,12 @@ class BcPlatformIntegration:
             except KeyError:
                 self.http = urllib3.PoolManager(
                     cert_reqs=cert_reqs,
-                    ca_certs=ca_certificate,
+                    ca_certs=proxy_manager.ca_certificate,
                     timeout=self.http_timeout,
                     retries=self.http_retry,
                 )
         else:
-            cert_reqs = 'CERT_NONE' if no_cert_verify else None
+            cert_reqs = 'CERT_NONE' if proxy_manager.no_cert_verify else None
             logging.debug(f'Using cert_reqs {cert_reqs}')
             try:
                 parsed_url = urllib3.util.parse_url(os.environ['https_proxy'])
@@ -360,6 +368,32 @@ class BcPlatformIntegration:
                     retries=self.http_retry,
                 )
         logging.debug('Successfully set up HTTP manager')
+
+    # generate connector, so the http clients of ai http can also use connection settings
+    def get_ai_ohttp_connector_with_settings(self) -> BaseConnector:
+        if self.ca_certificate:
+            # Set up SSL context
+            ssl_context = ssl.create_default_context(cafile=self.ca_certificate)
+            if self.no_cert_verify:
+                ssl_context.verify_mode = ssl.CERT_NONE
+                ssl_context.check_hostname = False
+            logging.debug(
+                f'Using CA cert {self.ca_certificate} and cert_reqs {"CERT_NONE" if self.no_cert_verify else "REQUIRED"}')
+        else:
+            # No CA certificate provided, optionally disable certificate verification
+            ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+            if self.no_cert_verify:
+                ssl_context.verify_mode = ssl.CERT_NONE
+                ssl_context.check_hostname = False
+            logging.debug(f'Using cert_reqs {"CERT_NONE" if self.no_cert_verify else "None"}')
+
+        # Determine proxy settings
+        proxy_url = os.getenv('https_proxy')
+        if proxy_url:
+            connector = aiohttp.TCPConnector(ssl=ssl_context, proxy=proxy_url)
+        else:
+            connector = aiohttp.TCPConnector(ssl=ssl_context)
+        return connector
 
     def setup_bridgecrew_credentials(
         self,
@@ -475,10 +509,23 @@ class BcPlatformIntegration:
             region = API_URL_REGION_MAP[self.prisma_api_url]
 
         try:
+            proxies = {}
+            proxies_config = {}
+            if os.environ['https_proxy']:
+                proxies = {
+                    'http': os.environ['https_proxy'],
+                    'https': os.environ['https_proxy'],
+                }
+            if self.ca_certificate:
+                proxies_config = {
+                    'proxy_ca_bundle ': self.ca_certificate,
+                }
             config = Config(
                 s3={
                     "use_accelerate_endpoint": use_accelerate_endpoint,
-                }
+                },
+                proxies=proxies,
+                proxies_config=proxies_config,
             )
             self.s3_client = boto3.client(
                 "s3",
@@ -487,6 +534,7 @@ class BcPlatformIntegration:
                 aws_session_token=self.credentials["SessionToken"],
                 region_name=region,
                 config=config,
+                verify=False if self.no_cert_verify else None
             )
         except ClientError:
             logging.error(f"Failed to initiate client with credentials {self.credentials}", exc_info=True)
@@ -1014,7 +1062,10 @@ class BcPlatformIntegration:
                                   get_default_get_headers(self.bc_source, self.bc_source_version),
                                   self.custom_auth_headers)
 
-            self.setup_http_manager()
+            self.setup_http_manager(
+                self.ca_certificate,
+                self.no_cert_verify
+            )
             if not self.http:
                 logging.error("HTTP manager was not correctly created")
                 return
@@ -1068,7 +1119,10 @@ class BcPlatformIntegration:
                                   get_default_get_headers(self.bc_source, self.bc_source_version),
                                   self.custom_auth_headers)
 
-            self.setup_http_manager()
+            self.setup_http_manager(
+                self.ca_certificate,
+                self.no_cert_verify
+            )
             if not self.http:
                 logging.error("HTTP manager was not correctly created")
                 return None
@@ -1110,7 +1164,10 @@ class BcPlatformIntegration:
                                   get_default_get_headers(self.bc_source, self.bc_source_version),
                                   self.custom_auth_headers)
 
-            self.setup_http_manager()
+            self.setup_http_manager(
+                self.ca_certificate,
+                self.no_cert_verify
+            )
             if not self.http:
                 logging.error("HTTP manager was not correctly created")
                 raise
@@ -1159,7 +1216,10 @@ class BcPlatformIntegration:
             token = self.get_auth_token()
             headers = merge_dicts(get_prisma_auth_header(token), get_prisma_get_headers(), self.custom_auth_headers)
 
-            self.setup_http_manager()
+            self.setup_http_manager(
+                self.ca_certificate,
+                self.no_cert_verify
+            )
             if not self.http:
                 logging.error("HTTP manager was not correctly created")
                 return filtered_policies
@@ -1190,7 +1250,10 @@ class BcPlatformIntegration:
             token = self.get_auth_token()
             headers = merge_dicts(get_prisma_auth_header(token), get_prisma_get_headers(), self.custom_auth_headers)
 
-            self.setup_http_manager()
+            self.setup_http_manager(
+                self.ca_certificate,
+                self.no_cert_verify
+            )
             if not self.http:
                 logging.error("HTTP manager was not correctly created")
                 return {}
@@ -1244,7 +1307,10 @@ class BcPlatformIntegration:
         try:
             headers: dict[str, Any] = {}
 
-            self.setup_http_manager()
+            self.setup_http_manager(
+                self.ca_certificate,
+                self.no_cert_verify
+            )
             if not self.http:
                 logging.error("HTTP manager was not correctly created")
                 return
@@ -1391,6 +1457,12 @@ class BcPlatformIntegration:
 
         logging.info(f"Unsupported request {request_type}")
         return {}
+
+    def get_response_as_json(self, response: Any, should_call_raise_for_status: bool = True) -> Any | None:
+        if should_call_raise_for_status and response.status >= 400:
+            raise Exception(f'Request failed with status code: {response.status}')
+        response_json = json.loads(response.data) if response.data else None
+        return response_json
 
     # Define the function that will get the relay state from the Prisma Cloud Platform.
     def get_sso_prismacloud_url(self, report_url: str) -> str:

@@ -54,7 +54,10 @@ class Runner(BaseRunner[None, None, None]):
 
         if bc_integration.daemon_process:
             # only happens for 'ParallelizationType.SPAWN'
-            bc_integration.setup_http_manager()
+            bc_integration.setup_http_manager(
+                bc_integration.ca_certificate,
+                bc_integration.no_cert_verify
+            )
             bc_integration.set_s3_client()
 
         # Todo remove when golang is stable in platform

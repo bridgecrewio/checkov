@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import logging
 import time
 from pathlib import Path
@@ -46,15 +47,14 @@ class Scanner:
                 "repositoryId": ""
             }
 
-            response = request_wrapper(
+            bc_integration.setup_http_manager(bc_integration.ca_certificate, bc_integration.no_cert_verify)
+            response = bc_integration.http.request(
                 "POST", self.bc_cli_scan_api_url,
                 headers=bc_integration.get_default_headers("POST"),
-                json=request_body,
-                should_call_raise_for_status=True
+                body=json.dumps(request_body),
             )
 
-            response_json = response.json()
-
+            response_json = bc_integration.get_response_as_json(response)
             if not response_json["startedSuccessfully"]:
                 logging.info("Failed to run package scanning.")
                 return False
@@ -70,14 +70,15 @@ class Scanner:
         total_sleeping_time = 0
 
         while total_sleeping_time < MAX_SLEEP_DURATION:
-            response = request_wrapper(
+            bc_integration.setup_http_manager(bc_integration.ca_certificate, bc_integration.no_cert_verify)
+            response = bc_integration.http.request(
                 "GET", f"{self.bc_cli_scan_api_url}/{bc_integration.timestamp}",
                 headers=bc_integration.get_default_headers("GET"),
-                params={"repoId": bc_integration.repo_id}
+                fields={"repoId": bc_integration.repo_id},
             )
 
             try:
-                response_json = response.json()
+                response_json = bc_integration.get_response_as_json(response)
             except JSONDecodeError:
                 logging.debug(f"Unexpected response from {self.bc_cli_scan_api_url}: {response.text}")
                 return {}

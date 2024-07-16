@@ -18,6 +18,7 @@ from checkov.common.resource_code_logger_filter import add_resource_code_filter_
 from checkov.common.util.consts import DEV_API_GET_HEADERS, DEV_API_POST_HEADERS, PRISMA_API_GET_HEADERS, \
     PRISMA_PLATFORM, BRIDGECREW_PLATFORM
 from checkov.common.util.data_structures_utils import merge_dicts
+from checkov.common.util.proxy import proxy_manager
 from checkov.common.util.type_forcers import force_int, force_float
 from checkov.version import version as checkov_version
 
@@ -159,6 +160,17 @@ def request_wrapper(
     request_max_tries = int(os.getenv('REQUEST_MAX_TRIES', 3))
     sleep_between_request_tries = float(os.getenv('SLEEP_BETWEEN_REQUEST_TRIES', 1))
 
+    # Specify the CA bundle path
+    ca_bundle_path = proxy_manager.ca_certificate
+
+    # Define proxy settings
+    proxies = {}
+    if proxy_manager.proxy_url:
+        proxies = {
+            'http': proxy_manager.proxy_url,
+            'https': proxy_manager.proxy_url,
+        }
+
     for i in range(request_max_tries):
         try:
             headers["X-Request-Id"] = str(uuid.uuid4())
@@ -170,6 +182,8 @@ def request_wrapper(
                 json=json,
                 params=params,
                 timeout=DEFAULT_TIMEOUT,
+                proxies=proxies,
+                verify=ca_bundle_path
             )
             if should_call_raise_for_status:
                 response.raise_for_status()

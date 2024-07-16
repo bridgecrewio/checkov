@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import logging
 from collections import defaultdict
 from datetime import datetime, timedelta
@@ -666,14 +667,14 @@ def get_license_statuses(packages: list[dict[str, Any]]) -> list[_LicenseStatus]
     if not requests_input:
         return []
     try:
-        response = request_wrapper(
-            method="POST",
-            url=f"{bc_integration.api_url}/api/v1/vulnerabilities/packages/get-licenses-violations",
+        bc_integration.setup_http_manager(bc_integration.ca_certificate, bc_integration.no_cert_verify)
+        response = bc_integration.http.request(
+            "POST", f"{bc_integration.api_url}/api/v1/vulnerabilities/packages/get-licenses-violations",
             headers=bc_integration.get_default_headers("POST"),
-            json={"packages": requests_input},
-            should_call_raise_for_status=True
+            body=json.dumps({"packages": requests_input})
         )
-        response_json = response.json()
+
+        response_json = bc_integration.get_response_as_json(response)
         license_statuses: list[_LicenseStatus] = _extract_license_statuses(response_json)
         return license_statuses
     except Exception:
@@ -698,10 +699,18 @@ async def get_license_statuses_async(
     if not requests_input:
         return {'image_name': image_name, 'licenses': []}
     try:
-        async with session.request("POST", url, headers=bc_integration.get_default_headers("POST"),
-                                   json={"packages": requests_input}) as resp:
-            response_json = await resp.json()
+        # TODO check
+         async with session.request("POST", url, headers=bc_integration.get_default_headers("POST"),
+                                    json={"packages": requests_input}) as resp:
+             response_json = await resp.json()
+        bc_integration.setup_http_manager(bc_integration.ca_certificate, bc_integration.no_cert_verify)
+        response = bc_integration.http.request(
+            "POST", url,
+            headers=bc_integration.get_default_headers("POST"),
+            body=json.dumps({"packages": requests_input})
+        )
 
+        response_json = bc_integration.get_response_as_json(response)
         license_statuses = _extract_license_statuses(response_json)
         return {'image_name': image_name, 'licenses': license_statuses}
     except Exception as e:
