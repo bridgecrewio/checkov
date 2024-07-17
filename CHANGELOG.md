@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.190...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.191...HEAD)
+
+## [3.2.191](https://github.com/bridgecrewio/checkov/compare/3.2.190...3.2.191) - 2024-07-16
+
+### Bug Fix
+
+- **general:** fix sca unit tests for python 3.12 - [#6574](https://github.com/bridgecrewio/checkov/pull/6574)
 
 ## [3.2.190](https://github.com/bridgecrewio/checkov/compare/3.2.189...3.2.190) - 2024-07-15
 
