@@ -35,7 +35,7 @@
         "osProfile": {
           "computerName": "hostname",
           "adminUsername": "testadmin",
-          "adminPassword": "Password1234!"
+          "adminPassword": "1111"
         },
         "networkProfile": {
           "networkInterfaces": [
