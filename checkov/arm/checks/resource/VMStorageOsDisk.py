@@ -20,7 +20,7 @@ class VMStorageOsDisk(BaseResourceCheck):
         if not storage_profile or not isinstance(storage_profile, dict):
             return CheckResult.PASSED
         os_disk = storage_profile.get('osDisk')
-        data_disks = storage_profile.get('dataDisks', [])
+        data_disks = list(storage_profile.get('dataDisks', []))
         if os_disk and isinstance(os_disk, dict) and "vhd" in os_disk:
             self.evaluated_keys = ['os_disk']
             return CheckResult.FAILED
