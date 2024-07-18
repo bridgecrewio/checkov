@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.191...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.193...HEAD)
+
+## [3.2.193](https://github.com/bridgecrewio/checkov/compare/3.2.191...3.2.193) - 2024-07-17
+
+### Bug Fix
+
+- **terraform:** fix failures of no caller on definition context - [#6573](https://github.com/bridgecrewio/checkov/pull/6573)
+- **terraform:** TFPlan + TF fixes for google_project_iam_policy + google_iam_policy - [#6577](https://github.com/bridgecrewio/checkov/pull/6577)
 
 ## [3.2.191](https://github.com/bridgecrewio/checkov/compare/3.2.190...3.2.191) - 2024-07-16
 
