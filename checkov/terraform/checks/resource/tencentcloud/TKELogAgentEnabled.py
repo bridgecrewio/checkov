@@ -17,4 +17,5 @@ class TKELogAgentEnable(BaseResourceValueCheck):
     def get_expected_value(self) -> bool:
         return True
 
+
 check = TKELogAgentEnable()

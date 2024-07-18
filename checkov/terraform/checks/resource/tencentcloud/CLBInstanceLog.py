@@ -16,4 +16,5 @@ class CLBInstanceLog(BaseResourceCheck):
             return CheckResult.FAILED
         return CheckResult.PASSED
 
+
 check = CLBInstanceLog()

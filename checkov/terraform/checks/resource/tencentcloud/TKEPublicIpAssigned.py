@@ -17,14 +17,15 @@ class TKEPublicIpAssigned(BaseResourceCheck):
                 if mc.get("public_ip_assigned") and mc["public_ip_assigned"][0]:
                     return CheckResult.FAILED
                 if mc.get("public_ip_assigned") is None and mc.get("internet_max_bandwidth_out") and mc["internet_max_bandwidth_out"][0] > 0:
-                        return CheckResult.FAILED
-                
+                    return CheckResult.FAILED
+
         if conf.get("worker_config"):
             for mc in conf["worker_config"]:
                 if mc.get("public_ip_assigned") and mc["public_ip_assigned"][0]:
                     return CheckResult.FAILED
                 if mc.get("public_ip_assigned") is None and mc.get("internet_max_bandwidth_out") and mc["internet_max_bandwidth_out"][0] > 0:
-                        return CheckResult.FAILED
+                    return CheckResult.FAILED
         return CheckResult.PASSED
+
 
 check = TKEPublicIpAssigned()

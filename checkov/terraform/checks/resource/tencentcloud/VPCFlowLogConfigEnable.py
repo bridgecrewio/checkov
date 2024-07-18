@@ -16,4 +16,5 @@ class VPCFlowLogConfigEnable(BaseResourceCheck):
             return CheckResult.FAILED
         return CheckResult.PASSED
 
+
 check = VPCFlowLogConfigEnable()

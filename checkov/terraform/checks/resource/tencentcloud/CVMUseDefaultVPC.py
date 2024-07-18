@@ -13,9 +13,10 @@ class CVMUseDefaultVPC(BaseResourceCheck):
 
     def scan_resource_conf(self, conf) -> CheckResult:
         if conf.get("vpc_id") and ".default." in conf["vpc_id"][0]:
-                return CheckResult.FAILED
+            return CheckResult.FAILED
         if conf.get("subnet_id") and ".default." in conf["subnet_id"][0]:
-                return CheckResult.FAILED
+            return CheckResult.FAILED
         return CheckResult.PASSED
+
 
 check = CVMUseDefaultVPC()

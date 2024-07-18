@@ -13,17 +13,18 @@ class VPCSecurityGroupRuleSet(BaseResourceCheck):
 
     def scan_resource_conf(self, conf) -> CheckResult:
         if conf.get("ingress"):
-             for i in conf["ingress"]:
-                  if i.get("action") and i["action"][0] != "ACCEPT":
-                       continue
-                  if  i.get("cidr_block") and i["cidr_block"][0] != "0.0.0.0/0":
-                       continue
-                  if  i.get("protocol") and i["protocol"][0] != "ALL":
-                       continue
-                  if  i.get("port") and i["port"][0] != "ALL":
-                       continue
-                  return CheckResult.FAILED
-                
+            for i in conf["ingress"]:
+                if i.get("action") and i["action"][0] != "ACCEPT":
+                    continue
+                if i.get("cidr_block") and i["cidr_block"][0] != "0.0.0.0/0":
+                    continue
+                if i.get("protocol") and i["protocol"][0] != "ALL":
+                    continue
+                if i.get("port") and i["port"][0] != "ALL":
+                    continue
+                return CheckResult.FAILED
+
         return CheckResult.PASSED
+
 
 check = VPCSecurityGroupRuleSet()

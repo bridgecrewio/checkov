@@ -16,4 +16,5 @@ class CLBListenerProtocol(BaseResourceCheck):
             return CheckResult.FAILED
         return CheckResult.PASSED
 
+
 check = CLBListenerProtocol()

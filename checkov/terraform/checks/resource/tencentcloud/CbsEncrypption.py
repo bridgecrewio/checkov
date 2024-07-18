@@ -17,4 +17,5 @@ class CBSEncryption(BaseResourceValueCheck):
     def get_expected_value(self) -> bool:
         return True
 
+
 check = CBSEncryption()

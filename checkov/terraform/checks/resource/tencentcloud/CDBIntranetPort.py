@@ -13,8 +13,9 @@ class CDBIntranetPort(BaseResourceCheck):
 
     def scan_resource_conf(self, conf) -> CheckResult:
         if conf.get("intranet_port") and conf["intranet_port"][0] == 3306:
-                  return CheckResult.FAILED
-                
+            return CheckResult.FAILED
+
         return CheckResult.PASSED
+
 
 check = CDBIntranetPort()

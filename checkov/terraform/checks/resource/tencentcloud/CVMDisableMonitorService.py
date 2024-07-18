@@ -16,4 +16,5 @@ class CVMDisableMonitorService(BaseResourceCheck):
             return CheckResult.FAILED
         return CheckResult.PASSED
 
+
 check = CVMDisableMonitorService()

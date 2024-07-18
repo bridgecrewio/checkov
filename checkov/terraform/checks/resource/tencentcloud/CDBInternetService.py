@@ -13,8 +13,9 @@ class CDBInternetService(BaseResourceCheck):
 
     def scan_resource_conf(self, conf) -> CheckResult:
         if conf.get("internet_service") and conf["internet_service"][0] == 1:
-                  return CheckResult.FAILED
-                
+            return CheckResult.FAILED
+
         return CheckResult.PASSED
+
 
 check = CDBInternetService()

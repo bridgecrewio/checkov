@@ -16,4 +16,5 @@ class CVMAllocatePublicIp(BaseResourceCheck):
             return CheckResult.FAILED
         return CheckResult.PASSED
 
+
 check = CVMAllocatePublicIp()

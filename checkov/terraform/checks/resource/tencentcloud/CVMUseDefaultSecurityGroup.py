@@ -13,14 +13,15 @@ class CVMUseDefaultSecurityGroup(BaseResourceCheck):
 
     def scan_resource_conf(self, conf: dict) -> CheckResult:
         if conf.get("orderly_security_groups"):
-                for osg in conf["orderly_security_groups"][0]:
-                      if ".default." in osg:
-                        return CheckResult.FAILED
-                
+            for osg in conf["orderly_security_groups"][0]:
+                if ".default." in osg:
+                    return CheckResult.FAILED
+
         if conf.get("security_groups"):
-                for sg in conf["security_groups"][0]:
-                      if ".default." in sg:
-                        return CheckResult.FAILED
+            for sg in conf["security_groups"][0]:
+                if ".default." in sg:
+                    return CheckResult.FAILED
         return CheckResult.PASSED
+
 
 check = CVMUseDefaultSecurityGroup()
