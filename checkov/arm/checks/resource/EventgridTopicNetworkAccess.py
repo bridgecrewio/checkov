@@ -14,7 +14,7 @@ class EventgridTopicNetworkAccess(BaseResourceValueCheck):
         return "properties/publicNetworkAccess"
 
     def get_expected_value(self) -> str:
-        return "disabled"
+        return "Disabled"
 
 
 check = EventgridTopicNetworkAccess()

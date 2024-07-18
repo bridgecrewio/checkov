@@ -90,7 +90,7 @@
           "inputSchemaMappingType": "string"
         },
         "minimumTlsVersionAllowed": "string",
-        "publicNetworkAccess": "enabled"
+        "publicNetworkAccess": "Enabled"
       }
     }
   ]
