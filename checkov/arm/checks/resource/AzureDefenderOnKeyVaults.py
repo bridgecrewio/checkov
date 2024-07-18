@@ -17,9 +17,10 @@ class AzureDefenderOnKeyVaults(BaseResourceCheck):
     def scan_resource_conf(self, conf: Dict[str, Any]) -> CheckResult:
         properties = conf.get('properties', {})
         pricing_tier = properties.get('pricingTier')
+        name = conf.get('name', '')
         return (
             CheckResult.PASSED
-            if pricing_tier == "Standard"
+            if pricing_tier == "Standard" and name == 'KeyVaults'
             else CheckResult.FAILED
         )
 

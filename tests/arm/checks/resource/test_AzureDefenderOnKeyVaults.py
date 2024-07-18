@@ -17,10 +17,10 @@ class TestAzureDefenderOnKeyVaults(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "Microsoft.Security/pricings.pass",
+            "Microsoft.Security/pricings.KeyVaults",
         }
         failing_resources = {
-            "Microsoft.Security/pricings.fail",
+            "Microsoft.Security/pricings.KeyVaults",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}

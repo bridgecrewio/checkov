@@ -5,7 +5,7 @@
     {
       "type": "Microsoft.Security/pricings",
       "apiVersion": "2024-01-01",
-      "name": "fail",
+      "name": "KeyVaults",
       "properties": {
         "pricingTier": "Free",
         "extensions": [
