@@ -1,6 +1,20 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.193...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.194...HEAD)
+
+## [3.2.194](https://github.com/bridgecrewio/checkov/compare/3.2.193...3.2.194) - 2024-07-18
+
+### Feature
+
+- **arm:** AKSEncryptionAtHostEnable - [#6575](https://github.com/bridgecrewio/checkov/pull/6575)
+- **arm:** AKSEphemeralOSDisks - [#6578](https://github.com/bridgecrewio/checkov/pull/6578)
+- **arm:** CKV_AZURE_92 to Ensure that Virtual Machines use managed disks - [#6455](https://github.com/bridgecrewio/checkov/pull/6455)
+- **arm:** FrontDoorWAFACLCVE202144228 - Mitigates the Log4j2 vulnerability CVE-2021-44228. - [#6419](https://github.com/bridgecrewio/checkov/pull/6419)
+
+### Bug Fix
+
+- **general:** fix the right numbers in TestSkipJsonRegexPattern - [#6580](https://github.com/bridgecrewio/checkov/pull/6580)
+- **terraform:** Fix title of CKV_AZURE_238 - [#6570](https://github.com/bridgecrewio/checkov/pull/6570)
 
 ## [3.2.193](https://github.com/bridgecrewio/checkov/compare/3.2.191...3.2.193) - 2024-07-17
 
