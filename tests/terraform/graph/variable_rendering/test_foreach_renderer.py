@@ -387,6 +387,45 @@ def test_foreach_module_and_resource(checkov_source_path):
     assert graph.vertices[9].config['aws_s3_bucket_public_access_block']['var_bucket["b"]']['__address__'] == 'module.s3_module["b"].aws_s3_bucket_public_access_block.var_bucket["b"]'
 
 
+@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True", "CHECKOV_ENABLE_DATAS_FOREACH_HANDLING": "True"})
+def test_foreach_data(checkov_source_path):
+    dir_name = 'data_simple'
+    graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
+    tf_definitions, _ = convert_graph_vertices_to_tf_definitions(vertices=graph.vertices, root_folder=dir_name)
+
+    assert len([block for block in graph.vertices if block.block_type == 'data']) == 6
+    assert len(tf_definitions[list(tf_definitions.keys())[0]]['data']) == 6
+
+    data_vertices_names = [block.name for block in graph.vertices if block.block_type == 'data']
+    assert 'aws_s3_bucket.data_list["b"]' in data_vertices_names
+    assert 'aws_s3_bucket.data_dict["key1"]' in data_vertices_names
+    assert 'aws_s3_bucket.data_count[0]' in data_vertices_names
+    assert 'aws_s3_bucket.data_list["a"]' in data_vertices_names
+    assert 'aws_s3_bucket.data_dict["key2"]' in data_vertices_names
+    assert 'aws_s3_bucket.data_count[1]' in data_vertices_names
+
+
+@mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True", "CHECKOV_ENABLE_DATAS_FOREACH_HANDLING": "True"})
+def test_foreach_data_with_resource(checkov_source_path):
+    dir_name = 'data_with_resource'
+    graph, _ = build_and_get_graph_by_path(dir_name, render_var=True)
+    tf_definitions, _ = convert_graph_vertices_to_tf_definitions(vertices=graph.vertices, root_folder=dir_name)
+
+    assert len([block for block in graph.vertices if block.block_type == 'data']) == 5
+    assert len(tf_definitions[list(tf_definitions.keys())[0]]['data']) == 5
+
+    data_vertices_names = [block.name for block in graph.vertices if block.block_type == 'data']
+    assert 'aws_s3_bucket.data_dict["key1"]' in data_vertices_names
+    assert 'aws_s3_bucket.data_count[0]' in data_vertices_names
+    assert 'aws_s3_bucket.data_dict["key2"]' in data_vertices_names
+    assert 'aws_s3_bucket.data_count[1]' in data_vertices_names
+
+    assert graph.vertices[0].attributes['bucket'] == graph.vertices[3].attributes['bucket']
+    assert graph.vertices[1].attributes['bucket'] == graph.vertices[4].attributes['bucket']
+    assert graph.vertices[8].attributes['bucket'] == graph.vertices[10].attributes['bucket']
+    assert graph.vertices[9].attributes['bucket'] == graph.vertices[11].attributes['bucket']
+
+
 @mock.patch.dict(os.environ, {"CHECKOV_ENABLE_MODULES_FOREACH_HANDLING": "True"})
 def test_foreach_module_with_more_than_two_resources(checkov_source_path):
     dir_name = 'foreach_module_with_more_than_two_resources'
@@ -448,8 +487,89 @@ def test__get_module_with_only_relevant_foreach_idx():
                             nested_tf_module=TFModule(name='3', path='3', foreach_idx='3', nested_tf_module=None))
     result = ForeachModuleHandler._get_module_with_only_relevant_foreach_idx('test', original_key, module)
     assert result == TFModule(name='1', path='1', foreach_idx='1',
-                      nested_tf_module=TFModule(name='2', path='2', foreach_idx='test',
-                                                nested_tf_module=TFModule(name='3', path='3', foreach_idx='3',
-                                                                          nested_tf_module=None)
-                                                )
-                      )
+                              nested_tf_module=TFModule(name='2', path='2', foreach_idx='test',
+                                                        nested_tf_module=TFModule(name='3', path='3', foreach_idx='3',
+                                                                                  nested_tf_module=None)
+                                                        )
+                              )
+
+def test_nested_foreach_with_variable_reference():
+    """
+    Here we test that a nested foreach loop based on module locals is correctly rendered in the Terraform graph.
+    """
+    resources_by_group_local_var = 2
+    resources_by_files_local_var = 2
+
+    dir_name = 'foreach_examples/nested_foreach_based_on_module_locals'
+    graph = build_and_get_graph_by_path(dir_name)[0]
+    graph_resources_filter = filter(lambda blk: blk.block_type == 'resource', graph.vertices)
+    graph_resources_created = list(map(lambda rsrc: rsrc.attributes['__address__'], graph_resources_filter))
+
+    assert len(graph_resources_created) is (resources_by_group_local_var * resources_by_files_local_var)
+    assert graph_resources_created == ['module.files["blue"].aws_s3_bucket_object.this_file["test1"]',
+                                       'module.files["green"].aws_s3_bucket_object.this_file["test1"]',
+                                       'module.files["blue"].aws_s3_bucket_object.this_file["test2"]',
+                                       'module.files["green"].aws_s3_bucket_object.this_file["test2"]']
+
+
+def test_double_nested_foreach_with_variable_reference():
+    """
+    Here we test that a 2 level nested foreach loop based on module local vars is correctly rendered in the Terraform graph.
+
+    In this test we have 2 x level1 modules (green, blue) each has 2 level2 modules (test1.txt, test2.txt)
+    and 2 resources for each (test3.txt, test4.txt).
+    So (2 x level1) -> (2 x level2) -> (2 x aws_s3_bucket resource).
+
+    The unique use case is that the for_each attributes depends on the main module's local variables.
+    """
+    dir_name = 'foreach_examples/module_foreach_module_foreach_resource_foreach'
+    graph = build_and_get_graph_by_path(dir_name)[0]
+
+    graph_modules_filter = filter(lambda blk: blk.block_type == 'module', graph.vertices)
+    graph_modules_created = list(map(lambda rsrc: rsrc.attributes['__address__'], graph_modules_filter))
+
+    graph_resources_filter = filter(lambda blk: blk.block_type == 'resource', graph.vertices)
+    graph_resources_created = list(map(lambda rsrc: rsrc.attributes['__address__'], graph_resources_filter))
+
+    assert len(graph_modules_created) is 6    # 2 level1 modules, each has 2 level2 modules (total of 2 + 2*2 = 6)
+    assert len(graph_resources_created) is 8  # 4 level2 modules, each has 2 resources (total of 2*2*2 = 8)
+
+    assert graph_resources_created == ['module.level1["blue"].module.level2["test1.txt"].aws_s3_bucket_object.this_file["test3.txt"]',
+                                       'module.level1["green"].module.level2["test1.txt"].aws_s3_bucket_object.this_file["test3.txt"]',
+                                       'module.level1["blue"].module.level2["test2.txt"].aws_s3_bucket_object.this_file["test3.txt"]',
+                                       'module.level1["green"].module.level2["test2.txt"].aws_s3_bucket_object.this_file["test3.txt"]',
+                                       'module.level1["blue"].module.level2["test1.txt"].aws_s3_bucket_object.this_file["test4.txt"]',
+                                       'module.level1["green"].module.level2["test1.txt"].aws_s3_bucket_object.this_file["test4.txt"]',
+                                       'module.level1["blue"].module.level2["test2.txt"].aws_s3_bucket_object.this_file["test4.txt"]',
+                                       'module.level1["green"].module.level2["test2.txt"].aws_s3_bucket_object.this_file["test4.txt"]']
+
+
+def test_double_nested_foreach_and_count_with_variable_reference():
+    """
+    Here we test that a 2 level nested foreach loop and count based on module locals is correctly rendered in the Terraform graph.
+    In this test we have 2 x level1 modules (green, blue) each has 2 level2 modules (test1.txt, test2.txt)
+    and 2 resources for each (count of 2).
+    So (2 x level1) -> (2 x level2) -> (2 x aws_s3_bucket resource: count = 2).
+
+    The unique use case is that the count and for_each attributes (multiple levels) depends on the main module's local variables.
+    """
+    dir_name = 'count_examples/module_foreach_module_foreach_resource_count'
+    graph = build_and_get_graph_by_path(dir_name)[0]
+
+    graph_modules_filter = filter(lambda blk: blk.block_type == 'module', graph.vertices)
+    graph_modules_created = list(map(lambda rsrc: rsrc.attributes['__address__'], graph_modules_filter))
+
+    graph_resources_filter = filter(lambda blk: blk.block_type == 'resource', graph.vertices)
+    graph_resources_created = list(map(lambda rsrc: rsrc.attributes['__address__'], graph_resources_filter))
+
+    assert len(graph_modules_created) is 6    # 2 level1 modules, each has 2 level2 modules (total of 2 + 2*2 = 6)
+    assert len(graph_resources_created) is 8  # 4 level2 modules, each has 2 resources (total of 2*2*2 = 8)
+
+    assert graph_resources_created == ['module.level1["blue"].module.level2["test1.txt"].aws_s3_bucket_object.this_file[0]',
+                                       'module.level1["green"].module.level2["test1.txt"].aws_s3_bucket_object.this_file[0]',
+                                       'module.level1["blue"].module.level2["test2.txt"].aws_s3_bucket_object.this_file[0]',
+                                       'module.level1["green"].module.level2["test2.txt"].aws_s3_bucket_object.this_file[0]',
+                                       'module.level1["blue"].module.level2["test1.txt"].aws_s3_bucket_object.this_file[1]',
+                                       'module.level1["green"].module.level2["test1.txt"].aws_s3_bucket_object.this_file[1]',
+                                       'module.level1["blue"].module.level2["test2.txt"].aws_s3_bucket_object.this_file[1]',
+                                       'module.level1["green"].module.level2["test2.txt"].aws_s3_bucket_object.this_file[1]']

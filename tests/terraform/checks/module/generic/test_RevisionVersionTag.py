@@ -21,10 +21,17 @@ class TestRevisionVersionTag(unittest.TestCase):
             "hash",
             "sub_dir_hash",
             "tag",
+            "shallow_clone",
+            "module_with_version"
         }
+
         failing_resources = {
             "looks_like_a_branch",
-            "tf_registry",
+            "tf_registry_no_version",
+            "generic_git_module",
+            "bitbucket_module",
+            "github_ssh_module",
+            "github_module"
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
