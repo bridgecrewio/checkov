@@ -11,7 +11,7 @@ class VnetSingleDNSServer(BaseResourceCheck):
         where the DNS IP address is not load balanced."""
         name = "Ensure that VNET has at least 2 connected DNS Endpoints"
         id = "CKV_AZURE_182"
-        supported_resources = ("Microsoft.Network/networkInterfaces",)
+        supported_resources = ("Microsoft.Network/networkInterfaces", "Microsoft.Network/virtualNetworks")
         categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
@@ -23,6 +23,14 @@ class VnetSingleDNSServer(BaseResourceCheck):
                 if dns_servers and len(dns_servers) == 1:
                     self.evaluated_keys = ["dnsServers"]
                     return CheckResult.FAILED
+        else:
+            if "properties" in conf and "dhcpOptions" in conf["properties"]:
+                if "dnsServers" in conf["properties"]["dhcpOptions"] and isinstance(
+                        conf["properties"]["dhcpOptions"]["dnsServers"], list):
+                    dns_servers = conf["properties"]["dhcpOptions"]["dnsServers"]
+                    if dns_servers and len(dns_servers) == 1:
+                        self.evaluated_keys = ["dnsServers"]
+                        return CheckResult.FAILED
         return CheckResult.PASSED
 
 

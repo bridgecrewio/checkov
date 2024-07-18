@@ -21,10 +21,12 @@ class TestVnetSingleDNSServer(unittest.TestCase):
             "Microsoft.Network/networkInterfaces.pass",
             "Microsoft.Network/networkInterfaces.pass2",
             "Microsoft.Network/networkInterfaces.pass3",
+            "Microsoft.Network/virtualNetworks.pass4"
         }
         failing_resources = {
             "Microsoft.Network/networkInterfaces.fail",
             "Microsoft.Network/networkInterfaces.fail2",
+            "Microsoft.Network/virtualNetworks.fail3"
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
