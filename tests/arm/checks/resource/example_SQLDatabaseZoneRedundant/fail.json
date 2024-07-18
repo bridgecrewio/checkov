@@ -1,0 +1,24 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.Sql/servers/databases",
+      "apiVersion": "2014-04-01",
+      "name": "fail",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "collation": "SQL_Latin1_General_CP1_CI_AS",
+        "licenseType": "LicenseIncluded",
+        "maxSizeBytes": 4,
+        "readScale": "Enabled"
+      },
+      "sku": {
+        "name": "S0"
+      },
+      "tags": {
+        "environment": "Production"
+      }
+    }
+  ]
+}

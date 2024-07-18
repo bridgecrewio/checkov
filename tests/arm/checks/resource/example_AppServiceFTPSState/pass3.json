@@ -9,18 +9,17 @@
             "properties": {
                 "publisherEmail": "[parameters('adminEmail')]",
                 "publisherName": "[parameters('organizationName')]",
-                "customProperties": "[parameters('customProperties')]"
-            },
-            "siteConfig": {
-                "ftpsState":"Disabled",
-                        "appSettings": [
-            {
-              "name": "WEBSITE_NODE_DEFAULT_VERSION",
-              "value": "14.17.0"
-            }
-
-          ],
-          "linuxFxVersion": "NODE|14-lts"
+                "customProperties": "[parameters('customProperties')]",
+                "siteConfig": {
+                    "ftpsState": "Disabled",
+                    "appSettings": [
+                        {
+                            "name": "WEBSITE_NODE_DEFAULT_VERSION",
+                            "value": "14.17.0"
+                        }
+                    ]
+                },
+                "linuxFxVersion": "NODE|14-lts"
             },
             "resources": [],
             "dependsOn": []
