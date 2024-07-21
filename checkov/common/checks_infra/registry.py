@@ -5,6 +5,7 @@ import logging
 import os
 from pathlib import Path
 from typing import Any, TYPE_CHECKING
+from enum import Enum
 
 import yaml
 
@@ -19,6 +20,34 @@ if TYPE_CHECKING:
     from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 
 CHECKS_POSSIBLE_ENDING = {".json", ".yaml", ".yml"}
+
+
+class IACFrameworkTypes(str, Enum):
+    TERRAFORM = "terraform"
+    CLOUDFORMATION = "cloudformation"
+    SERVERLESS = "serverless"
+    KUBERNETES = "kubernetes"
+    SECRETS = "secrets"
+    TERRAFORM_PLAN = "terraform_plan"
+    ARM = "arm"
+    DOCKERFILE = "dockerfile"
+    DOCKER_IMAGE = "docker_image"
+    GITHUB_CONFIGURATION = "github_configuration"
+    GITLAB_CONFIGURATION = "gitlab_configuration"
+    KUSTOMIZE = "kustomize"
+    BICEP = "bicep"
+    OPENAPI = "openapi"
+    GITHUB_ACTION = "github_actions"
+    HELM = "helm"
+    GITLAB_CI = "gitlab_ci"
+    AZURE_PIPELINES = "azure_pipelines"
+    CIRCLECI_PIPELINES = "circleci_pipelines"
+    ANSIBLE = "ansible"
+
+
+IACFrameworksWithRunner = [IACFrameworkTypes.TERRAFORM, IACFrameworkTypes.CLOUDFORMATION, IACFrameworkTypes.KUBERNETES,
+                           IACFrameworkTypes.TERRAFORM_PLAN, IACFrameworkTypes.KUSTOMIZE, IACFrameworkTypes.BICEP,
+                           IACFrameworkTypes.GITHUB_ACTION, IACFrameworkTypes.HELM, IACFrameworkTypes.ANSIBLE]
 
 
 class Registry(BaseRegistry):
@@ -65,7 +94,8 @@ class Registry(BaseRegistry):
                             continue
 
                         check = self.parser.parse_raw_check(
-                            check_json, resources_types=self._get_resource_types(check_json), check_path=f'{root}/{file}'
+                            check_json, resources_types=self._get_resource_types(check_json),
+                            check_path=f'{root}/{file}'
                         )
                         if not any(c for c in self.checks if check.id == c.id):
                             if external_check:
@@ -85,10 +115,21 @@ class Registry(BaseRegistry):
 _registry_instances: dict[str, Registry] = {}
 
 
+def _initialize_registry(check_type: str) -> None:
+    _registry_instances[check_type] = Registry(
+        parser=GraphCheckParser(),
+        checks_dir=f"{Path(__file__).parent.parent.parent}/{check_type}/checks/graph_checks",
+    )
+
+
 def get_graph_checks_registry(check_type: str) -> Registry:
     if not _registry_instances.get(check_type):
-        _registry_instances[check_type] = Registry(
-            parser=GraphCheckParser(),
-            checks_dir=f"{Path(__file__).parent.parent.parent}/{check_type}/checks/graph_checks",
-        )
+        _initialize_registry(check_type)
     return _registry_instances[check_type]
+
+
+def get_all_graph_checks_registries() -> list[Registry]:
+    for framework in IACFrameworksWithRunner:
+        if not _registry_instances.get(framework):
+            _initialize_registry(framework)
+    return list(_registry_instances.values())
