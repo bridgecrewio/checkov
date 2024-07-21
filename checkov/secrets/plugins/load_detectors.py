@@ -15,7 +15,6 @@ def load_detectors() -> list[dict[str, Any]]:
         policies_list: List[dict[str, Any]] = []
         if customer_run_config_response:
             policies_list = customer_run_config_response.get('secretsPolicies', [])
-            # policies_list = [p for p in policies_list if p.get("incidentId") == "CKV_SECRET_99999"]
     except Exception as e:
         logging.error(f"Failed to get detectors from customer_run_config_response, error: {e}")
         return []
