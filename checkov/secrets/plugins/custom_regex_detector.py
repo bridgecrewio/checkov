@@ -19,6 +19,7 @@ MAX_CHARACTERS = 100
 if TYPE_CHECKING:
     from detect_secrets.util.code_snippet import CodeSnippet
 
+
 class CustomRegexDetector(RegexBasedDetector):
     secret_type = "Regex Detector"  # noqa: CCE003 # nosec
     denylist: Set[Pattern[str]] = set()  # noqa: CCE003
