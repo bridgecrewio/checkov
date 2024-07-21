@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-import os
 from abc import abstractmethod
 from typing import Tuple, List, Dict, Any, TYPE_CHECKING
 
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.util.env_vars_config import env_vars_config
-from checkov.common.util.type_forcers import convert_str_to_bool
 
 if TYPE_CHECKING:
     from networkx import DiGraph

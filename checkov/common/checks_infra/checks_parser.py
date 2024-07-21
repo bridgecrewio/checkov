@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import os
 from typing import Dict, Any, List, Optional, Type, TYPE_CHECKING
 
 from checkov.common.checks_infra.solvers import (
@@ -66,7 +65,7 @@ from checkov.common.graph.checks_infra.base_parser import BaseGraphCheckParser
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
 from checkov.common.util.env_vars_config import env_vars_config
-from checkov.common.util.type_forcers import force_list, convert_str_to_bool
+from checkov.common.util.type_forcers import force_list
 
 if TYPE_CHECKING:
     from checkov.common.checks_infra.solvers.attribute_solvers.base_attribute_solver import BaseAttributeSolver
