@@ -101,9 +101,11 @@ class CustomRegexDetector(RegexBasedDetector):
                     not self.multiline_regex_supported_file_types or \
                     not any([filename.endswith(str(file_type)) for file_type in self.multiline_regex_supported_file_types]) or \
                     not 0 < get_file_size_safe(filename) < CustomRegexDetector.MAX_FILE_SIZE:
-                file_content = read_file_safe(filename)
-                if not file_content:
-                    return output
+                return output
+
+            file_content = read_file_safe(filename)
+            if not file_content:
+                return output
 
             self._find_potential_secret(
                 filename=filename,
