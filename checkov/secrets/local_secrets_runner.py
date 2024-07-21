@@ -4,7 +4,7 @@ from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.runner_filter import RunnerFilter
 from checkov.common.bridgecrew.platform_integration import bc_integration
 
-with open("/Users/pbechor/development/platform/src/microStacks/secretScanningStack/src/test/python/secret_checkov_scanner/secrets_policies.json") as secrets_policies_file:
+with open("SECRETS_POLICIES_JSON_PATH") as secrets_policies_file:
     default_regexes = json.load(secrets_policies_file)
 bc_integration.customer_run_config_response = {'secretsPolicies': default_regexes}
 
