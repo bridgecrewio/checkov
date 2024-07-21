@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.194...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.196...HEAD)
+
+## [3.2.196](https://github.com/bridgecrewio/checkov/compare/3.2.194...3.2.196) - 2024-07-21
+
+### Feature
+
+- **general:** Add metadata exception filter to GHA - [#6583](https://github.com/bridgecrewio/checkov/pull/6583)
+- **general:** Refactor all resource type handling in Checkov - [#6572](https://github.com/bridgecrewio/checkov/pull/6572)
 
 ## [3.2.194](https://github.com/bridgecrewio/checkov/compare/3.2.193...3.2.194) - 2024-07-18
 
