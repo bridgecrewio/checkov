@@ -30,7 +30,7 @@ class CustomRegexDetector(RegexBasedDetector):
         self.regex_to_metadata: dict[str, dict[str, Any]] = dict()
         self.denylist = set()
         self.multiline_deny_list = set()
-        self.multiline_pattern_by_prerun_compiled: dict[str, Pattern] = dict()
+        self.multiline_pattern_by_prerun_compiled: dict[str, Pattern[str]] = dict()
         self.multiline_regex_to_metadata: dict[str, dict[str, Any]] = dict()
         self._analyzed_files: Set[str] = set()
         self._analyzed_files_by_check: Dict[str, Set[str]] = defaultdict(lambda: set())
@@ -153,8 +153,8 @@ class CustomRegexDetector(RegexBasedDetector):
 
             # It's a multiline regex (only the prerun executed). We should execute the whole multiline pattern
             # We want to run multiline policy once per file (if prerun was found)
-            if regex_data.get("prerun") and filename not in self._analyzed_files_by_check[regex_data.get('Check_ID')]:
-                self._analyzed_files_by_check[regex_data.get('Check_ID')].add(filename)
+            if regex_data.get("prerun") and filename not in self._analyzed_files_by_check[regex_data['Check_ID']]:
+                self._analyzed_files_by_check[regex_data['Check_ID']].add(filename)
 
                 # We are going to scan the whole file with the multiline regex
                 if not 0 < get_file_size_safe(filename) < CustomRegexDetector.MAX_FILE_SIZE:
@@ -163,6 +163,8 @@ class CustomRegexDetector(RegexBasedDetector):
                 if not file_content:
                     return
                 multiline_regex = self.multiline_pattern_by_prerun_compiled.get(regex.pattern)
+                if multiline_regex is None:
+                    return
                 multiline_matches = multiline_regex.findall(file_content)
                 for mm in multiline_matches:
                     mm = f"'{mm}'"
