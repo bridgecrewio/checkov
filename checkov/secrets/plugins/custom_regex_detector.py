@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from typing import Set, Any, Generator, Pattern, Optional, Dict, Tuple, TYPE_CHECKING, cast
+from collections import defaultdict
 
 from detect_secrets.constants import VerifiedResult
 from detect_secrets.core.potential_secret import PotentialSecret
@@ -18,7 +19,6 @@ MAX_CHARACTERS = 100
 if TYPE_CHECKING:
     from detect_secrets.util.code_snippet import CodeSnippet
 
-
 class CustomRegexDetector(RegexBasedDetector):
     secret_type = "Regex Detector"  # noqa: CCE003 # nosec
     denylist: Set[Pattern[str]] = set()  # noqa: CCE003
@@ -29,16 +29,24 @@ class CustomRegexDetector(RegexBasedDetector):
         self.regex_to_metadata: dict[str, dict[str, Any]] = dict()
         self.denylist = set()
         self.multiline_deny_list = set()
+        self.multiline_pattern_by_prerun_compiled: dict[str, Pattern] = dict()
         self.multiline_regex_to_metadata: dict[str, dict[str, Any]] = dict()
         self._analyzed_files: Set[str] = set()
+        self._analyzed_files_by_check: Dict[str, Set[str]] = defaultdict(lambda: set())
         self._multiline_regex_supported_file_types: Set[str] = set()
         detectors = load_detectors()
 
         for detector in detectors:
             try:
                 if detector.get("isMultiline"):
-                    self.multiline_deny_list.add(re.compile('{}'.format(detector["Regex"])))
-                    self.multiline_regex_to_metadata[detector["Regex"]] = detector
+                    # If prerun exists, we will add it as 'regular detector' (special treat in analyze_line)
+                    if detector.get("prerun"):
+                        self.denylist.add(re.compile('{}'.format(detector["prerun"])))
+                        self.regex_to_metadata[detector["prerun"]] = detector
+                        self.multiline_pattern_by_prerun_compiled[detector["prerun"]] = re.compile('{}'.format(detector["Regex"]))
+                    else:
+                        self.multiline_deny_list.add(re.compile('{}'.format(detector["Regex"])))
+                        self.multiline_regex_to_metadata[detector["Regex"]] = detector
                     continue
                 self.denylist.add(re.compile('{}'.format(detector["Regex"])))
                 self.regex_to_metadata[detector["Regex"]] = detector
@@ -48,6 +56,7 @@ class CustomRegexDetector(RegexBasedDetector):
                     exc_info=True,
                 )
 
+    # ToDo: Delete and add the check inside the multiline regex executer
     @property
     def multiline_regex_supported_file_types(self) -> Set[str]:
         if self._multiline_regex_supported_file_types:
@@ -86,11 +95,12 @@ class CustomRegexDetector(RegexBasedDetector):
         if filename not in self._analyzed_files:
             self._analyzed_files.add(filename)
             # We only want to read file if: there is regex supporting it & file size is not over MAX_FILE_SIZE
+            # Notice: in the find potential secret we check per multiline regex if we should run it according the filetype.
+            #   This is only a validation to reduce file content reading in case it not supported at all
             if not self.multiline_regex_to_metadata.values() or \
                     not self.multiline_regex_supported_file_types or \
                     not any([filename.endswith(str(file_type)) for file_type in self.multiline_regex_supported_file_types]) or \
                     not 0 < get_file_size_safe(filename) < CustomRegexDetector.MAX_FILE_SIZE:
-                return output
             file_content = read_file_safe(filename)
             if not file_content:
                 return output
@@ -138,6 +148,45 @@ class CustomRegexDetector(RegexBasedDetector):
             except Exception:
                 is_verified = False
             regex_data = current_regex_to_metadata[regex.pattern]
+
+            # It's a multiline regex (only the prerun executed). We should execute the whole multiline pattern
+            # We want to run multiline policy once per file (if prerun was found)
+            if regex_data.get("prerun") and filename not in self._analyzed_files_by_check[regex_data.get('Check_ID')]:
+                self._analyzed_files_by_check[regex_data.get('Check_ID')].add(filename)
+
+                # We are going to scan the whole file with the multiline regex
+                if not 0 < get_file_size_safe(filename) < CustomRegexDetector.MAX_FILE_SIZE:
+                    return
+                file_content = read_file_safe(filename)
+                if not file_content:
+                    return
+                multiline_regex = self.multiline_pattern_by_prerun_compiled.get(regex.pattern)
+                is_multiline = True
+                multiline_matches = multiline_regex.findall(file_content)
+                for mm in multiline_matches:
+                    mm = f"'{mm}'" if is_multiline else mm
+                    ps = PotentialSecret(
+                        type=regex_data["Name"],
+                        filename=filename,
+                        secret=mm,
+                        line_number=line_number,
+                        is_verified=is_verified,
+                        is_added=is_added,
+                        is_removed=is_removed,
+                        is_multiline=is_multiline,
+                    )
+                    ps.check_id = regex_data["Check_ID"]
+                    if is_multiline:
+                        output.add(ps)
+                    elif len(cast(str, ps.secret_value)) in range(MIN_CHARACTERS, MAX_CHARACTERS) or not regex_data[
+                        'isCustom']:
+                        output.add(ps)
+                    else:
+                        logging.info(
+                            f'Finding for check {ps.check_id} are not 5-100 characters in length, was ignored')
+                return
+
+
             # Wrap multiline match with fstring + ''
             match = f"'{match}'" if is_multiline else match
             ps = PotentialSecret(
