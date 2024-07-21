@@ -101,9 +101,9 @@ class CustomRegexDetector(RegexBasedDetector):
                     not self.multiline_regex_supported_file_types or \
                     not any([filename.endswith(str(file_type)) for file_type in self.multiline_regex_supported_file_types]) or \
                     not 0 < get_file_size_safe(filename) < CustomRegexDetector.MAX_FILE_SIZE:
-            file_content = read_file_safe(filename)
-            if not file_content:
-                return output
+                file_content = read_file_safe(filename)
+                if not file_content:
+                    return output
 
             self._find_potential_secret(
                 filename=filename,
@@ -161,10 +161,9 @@ class CustomRegexDetector(RegexBasedDetector):
                 if not file_content:
                     return
                 multiline_regex = self.multiline_pattern_by_prerun_compiled.get(regex.pattern)
-                is_multiline = True
                 multiline_matches = multiline_regex.findall(file_content)
                 for mm in multiline_matches:
-                    mm = f"'{mm}'" if is_multiline else mm
+                    mm = f"'{mm}'"
                     ps = PotentialSecret(
                         type=regex_data["Name"],
                         filename=filename,
@@ -173,19 +172,11 @@ class CustomRegexDetector(RegexBasedDetector):
                         is_verified=is_verified,
                         is_added=is_added,
                         is_removed=is_removed,
-                        is_multiline=is_multiline,
+                        is_multiline=True,
                     )
                     ps.check_id = regex_data["Check_ID"]
-                    if is_multiline:
-                        output.add(ps)
-                    elif len(cast(str, ps.secret_value)) in range(MIN_CHARACTERS, MAX_CHARACTERS) or not regex_data[
-                        'isCustom']:
-                        output.add(ps)
-                    else:
-                        logging.info(
-                            f'Finding for check {ps.check_id} are not 5-100 characters in length, was ignored')
+                    output.add(ps)
                 return
-
 
             # Wrap multiline match with fstring + ''
             match = f"'{match}'" if is_multiline else match
