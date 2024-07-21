@@ -56,7 +56,6 @@ class CustomRegexDetector(RegexBasedDetector):
                     exc_info=True,
                 )
 
-    # ToDo: Delete and add the check inside the multiline regex executer
     @property
     def multiline_regex_supported_file_types(self) -> Set[str]:
         if self._multiline_regex_supported_file_types:
