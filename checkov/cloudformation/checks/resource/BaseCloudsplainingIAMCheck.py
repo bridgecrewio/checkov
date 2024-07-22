@@ -66,6 +66,7 @@ class BaseCloudsplainingIAMCheck(BaseResourceCheck):
                         if statement_key in converted_policy_doc:
                             policy_statement = PolicyDocument(converted_policy_doc)
                             self.policy_document_cache[self.entity_path][policy.get("PolicyName")] = policy_statement
+                    self.cloudsplaining_evaluated_keys(policy_statement)
                     violations = self.cloudsplaining_analysis(policy_statement)
                     if violations:
                         logging.debug(f"detailed cloudsplaining finding: {json.dumps(violations)}")
@@ -79,3 +80,13 @@ class BaseCloudsplainingIAMCheck(BaseResourceCheck):
     @abstractmethod
     def cloudsplaining_analysis(self, policy: PolicyDocument) -> list[str]:
         raise NotImplementedError()
+
+    def cloudsplaining_evaluated_keys(self, policy: PolicyDocument) -> None:
+        try:
+            if self.cloudsplaining_analysis(policy):
+                for statement in policy.statements:
+                    resource_line = statement.statement.get('__endline__', 1) - 1
+                    if resource_line > 0:
+                        self.evaluated_keys.append([resource_line, statement.statement.get('Resource')])
+        except Exception as e:
+            logging.warning(f'Failed enriching cloudsplaining evaluated keys due to: {e}')
