@@ -2,13 +2,15 @@
 # type: ignore
 
 import json
+import os
+
 from checkov.main import secrets_runner
 from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.runner_filter import RunnerFilter
 from checkov.common.bridgecrew.platform_integration import bc_integration
 
 
-with open("LOCAL_SECRETS_POLICIES_JOSN") as secrets_policies_file:
+with open(os.environ['LOCAL_SECRETS_POLICIES_JSON']) as secrets_policies_file:
     default_regexes = json.load(secrets_policies_file)
 bc_integration.customer_run_config_response = {'secretsPolicies': default_regexes}
 
@@ -30,7 +32,7 @@ def execute():
     )
 
     scan_reports = runner_registry.run(
-        root_folder="LOCAL_SCANNING_FOLDER",
+        root_folder=os.environ["LOCAL_SCANNING_FOLDER"],
         external_checks_dir=list(),
         collect_skip_comments=True)
 
