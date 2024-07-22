@@ -44,6 +44,7 @@ class BaseCheck(ABC):
             logging.debug(f'Found custom guideline for check {id}')
         self.details: List[str] = []
         self.check_fail_level = os.environ.get('CHECKOV_CHECK_FAIL_LEVEL', CheckFailLevel.ERROR)
+        self.inspected_key_line = None
 
     def run(
         self,

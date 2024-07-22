@@ -185,7 +185,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_CloudformationDefinitions, 
                                         file_abs_path=file_abs_path,
                                         entity_tags=tags,
                                         severity=check.severity,
-                                        evaluated_keys=check.evaluated_keys if check.evaluated_keys else None
+                                        inspected_key_line=check.inspected_key_line if check.inspected_key_line else None
                                     )
 
                                     if self.breadcrumbs:

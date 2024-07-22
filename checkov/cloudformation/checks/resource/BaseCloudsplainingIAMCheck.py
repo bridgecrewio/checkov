@@ -87,6 +87,6 @@ class BaseCloudsplainingIAMCheck(BaseResourceCheck):
                 for statement in policy.statements:
                     resource_line = statement.statement.get('__endline__', 1) - 1
                     if resource_line > 0:
-                        self.evaluated_keys.append([resource_line, statement.statement.get('Resource')])
+                        self.inspected_key_line = resource_line
         except Exception as e:
             logging.warning(f'Failed enriching cloudsplaining evaluated keys due to: {e}')
