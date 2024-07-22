@@ -67,7 +67,7 @@
       },
       "properties": {
         "dataResidencyBoundary": "string",
-        "disableLocalAuth": true,
+        "disableLocalAuth": false,
         "eventTypeInfo": {
           "inlineEventTypes": {
             "{customized property}": {

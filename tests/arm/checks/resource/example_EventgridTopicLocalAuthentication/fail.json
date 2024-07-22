@@ -40,7 +40,7 @@
     {
       "type": "Microsoft.EventGrid/topics",
       "apiVersion": "2023-12-15-preview",
-      "name": "pass2",
+      "name": "fail",
       "location": "string",
       "tags": {
         "tagName1": "tagValue1",

@@ -19,9 +19,9 @@ class TestEventgridTopicLocalAuthentication(unittest.TestCase):
 
         passing_resources = {
             "Microsoft.EventGrid/topics.pass",
-            "Microsoft.EventGrid/topics.pass2",
         }
         failing_resources = {
+            "Microsoft.EventGrid/topics.fail",
             "Microsoft.EventGrid/topics.fail2",
         }
 
