@@ -5,10 +5,10 @@ from checkov.terraform.checks.resource.base_resource_value_check import \
 
 class TKEPublicIpAssigned(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure TKE not assigned public ip"
+        name = "Ensure Tencent Cloud TKE cluster is not assigned a public IP address"
         id = "CKV_TC_7"
         supported_resources = ['tencentcloud_kubernetes_cluster']
-        categories = [CheckCategories.ENCRYPTION]
+        categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf) -> CheckResult:

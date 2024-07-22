@@ -2,7 +2,7 @@ import unittest
 from pathlib import Path
 
 from checkov.runner_filter import RunnerFilter
-from checkov.terraform.checks.resource.tencentcloud.CBSEncrypption import check
+from checkov.terraform.checks.resource.tencentcloud.CBSEncryption import check
 from checkov.terraform.runner import Runner
 
 

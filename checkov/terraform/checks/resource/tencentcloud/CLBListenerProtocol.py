@@ -1,20 +1,23 @@
-from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.terraform.checks.resource.base_resource_value_check import \
-    BaseResourceCheck
+from typing import Any, List
+
+from checkov.common.models.enums import CheckCategories
+from checkov.terraform.checks.resource.base_resource_negative_value_check import \
+    BaseResourceNegativeValueCheck
 
 
-class CLBListenerProtocol(BaseResourceCheck):
+class CLBListenerProtocol(BaseResourceNegativeValueCheck):
     def __init__(self):
-        name = "Check CLB listren protocol"
+        name = "Ensure Tencent Cloud CLBs use modern, encrypted protocols"
         id = "CKV_TC_12"
         supported_resources = ['tencentcloud_clb_listener']
-        categories = [CheckCategories.ENCRYPTION]
+        categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf) -> CheckResult:
-        if conf.get("protocol") and conf.get("protocol")[0] in ["TCP", "UDP", "HTTP"]:
-            return CheckResult.FAILED
-        return CheckResult.PASSED
+    def get_inspected_key(self) -> str:
+        return 'protocol/[0]'
+
+    def get_forbidden_values(self) -> List[Any]:
+        return ["TCP", "UDP", "HTTP"]
 
 
 check = CLBListenerProtocol()

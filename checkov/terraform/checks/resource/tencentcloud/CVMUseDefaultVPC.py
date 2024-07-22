@@ -5,10 +5,10 @@ from checkov.terraform.checks.resource.base_resource_value_check import \
 
 class CVMUseDefaultVPC(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure CVM instances not refer resource vpc named default"
+        name = "Ensure Tencent Cloud CVM instances do not use the default VPC"
         id = "CKV_TC_5"
         supported_resources = ['tencentcloud_instance']
-        categories = [CheckCategories.ENCRYPTION]
+        categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf) -> CheckResult:

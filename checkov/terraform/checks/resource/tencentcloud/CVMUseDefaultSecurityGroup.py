@@ -5,10 +5,10 @@ from checkov.terraform.checks.resource.base_resource_value_check import \
 
 class CVMUseDefaultSecurityGroup(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure CVM instances not use default "
+        name = "Ensure Tencent Cloud CVM instances do not use the default security group "
         id = "CKV_TC_4"
         supported_resources = ['tencentcloud_instance']
-        categories = [CheckCategories.ENCRYPTION]
+        categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: dict) -> CheckResult:

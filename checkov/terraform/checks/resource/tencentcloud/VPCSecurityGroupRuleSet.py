@@ -5,10 +5,10 @@ from checkov.terraform.checks.resource.base_resource_value_check import \
 
 class VPCSecurityGroupRuleSet(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure VPC security group rule not accept all traffic"
+        name = "Ensure Tencent Cloud VPC security group rules do not accept all traffic"
         id = "CKV_TC_8"
         supported_resources = ['tencentcloud_security_group_rule_set']
-        categories = [CheckCategories.ENCRYPTION]
+        categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf) -> CheckResult:
@@ -16,11 +16,11 @@ class VPCSecurityGroupRuleSet(BaseResourceCheck):
             for i in conf["ingress"]:
                 if i.get("action") and i["action"][0] != "ACCEPT":
                     continue
+                if i.get("cidr_block") is None and i.get("ipv6_cidr_block") is None:
+                    continue
                 if i.get("cidr_block") and i["cidr_block"][0] != "0.0.0.0/0":
                     continue
-                if i.get("protocol") and i["protocol"][0] != "ALL":
-                    continue
-                if i.get("port") and i["port"][0] != "ALL":
+                if i.get("ipv6_cidr_block") and (i["ipv6_cidr_block"][0] not in ["::/0", "0::0/0"]):
                     continue
                 return CheckResult.FAILED
 

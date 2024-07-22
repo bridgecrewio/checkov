@@ -5,10 +5,10 @@ from checkov.terraform.checks.resource.base_resource_value_check import \
 
 class TKELogAgentEnable(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure TKE log agent enable"
+        name = "Ensure Tencent Cloud TKE clusters enable log agent"
         id = "CKV_TC_6"
         supported_resources = ['tencentcloud_kubernetes_cluster']
-        categories = [CheckCategories.ENCRYPTION]
+        categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def get_inspected_key(self):

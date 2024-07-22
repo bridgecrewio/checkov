@@ -5,10 +5,10 @@ from checkov.terraform.checks.resource.base_resource_value_check import \
 
 class CLBInstanceLog(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure CLB config log_set_id and log_topic_id"
+        name = "Ensure Tencent Cloud CLB has a logging ID and topic"
         id = "CKV_TC_11"
         supported_resources = ['tencentcloud_clb_instance']
-        categories = [CheckCategories.ENCRYPTION]
+        categories = [CheckCategories.LOGGING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf) -> CheckResult:

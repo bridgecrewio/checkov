@@ -1,20 +1,23 @@
+from typing import Any, List
+
 from checkov.common.models.enums import CheckCategories
-from checkov.terraform.checks.resource.base_resource_value_check import (
-    BaseResourceCheck, CheckResult)
+from checkov.terraform.checks.resource.base_resource_negative_value_check import \
+    BaseResourceNegativeValueCheck
 
 
-class CVMAllocatePublicIp(BaseResourceCheck):
+class CVMAllocatePublicIp(BaseResourceNegativeValueCheck):
     def __init__(self):
-        name = "Ensure CVM instance should not allocate public IP"
+        name = "Ensure Tencent Cloud CVM instance does not allocate a public IP"
         id = "CKV_TC_2"
         supported_resources = ['tencentcloud_instance']
-        categories = [CheckCategories.ENCRYPTION]
+        categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def scan_resource_conf(self, conf: dict) -> CheckResult:
-        if conf.get("allocate_public_ip") and conf["allocate_public_ip"][0]:
-            return CheckResult.FAILED
-        return CheckResult.PASSED
+    def get_inspected_key(self) -> str:
+        return 'allocate_public_ip/[0]'
+
+    def get_forbidden_values(self) -> List[Any]:
+        return [True]
 
 
 check = CVMAllocatePublicIp()
