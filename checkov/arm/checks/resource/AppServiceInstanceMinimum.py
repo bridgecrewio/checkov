@@ -20,7 +20,7 @@ class AppServiceInstanceMinimum(BaseResourceCheck):
 
     def scan_resource_conf(self, conf: Dict[str, Dict[str, Dict[str, int]]]) -> CheckResult:
         if "properties" in conf:
-            if "siteConfig" in conf["properties"]:
+            if "siteConfig" in conf["properties"] and conf["properties"]["siteConfig"] is not None:
                 if "numberOfWorkers" in conf["properties"]["siteConfig"]:
                     worker_count = conf["properties"]["siteConfig"]["numberOfWorkers"]
                     if worker_count:
