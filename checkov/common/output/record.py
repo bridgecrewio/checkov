@@ -91,6 +91,7 @@ class Record:
         self.details: List[str] = details or []
         self.check_len = check_len
         self.definition_context_file_path = definition_context_file_path
+        self.inspected_key_line = inspected_key_line
 
     @staticmethod
     @lru_cache(maxsize=None)
