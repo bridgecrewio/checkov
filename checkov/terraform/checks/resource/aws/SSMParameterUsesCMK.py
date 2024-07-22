@@ -14,7 +14,7 @@ class SSMParameterUsesCMK(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        if conf.get("type")[0] == "String":
+        if conf.get("type")[0] != "SecureString":
             return CheckResult.PASSED
         return super().scan_resource_conf(conf)
 
