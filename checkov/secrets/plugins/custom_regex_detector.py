@@ -153,7 +153,9 @@ class CustomRegexDetector(RegexBasedDetector):
 
             # It's a multiline regex (only the prerun executed). We should execute the whole multiline pattern
             # We want to run multiline policy once per file (if prerun was found)
-            if regex_data.get("prerun") and filename not in self._analyzed_files_by_check[regex_data['Check_ID']]:
+            if regex_data.get("prerun"):
+                if filename in self._analyzed_files_by_check[regex_data['Check_ID']]:
+                    return
                 self._analyzed_files_by_check[regex_data['Check_ID']].add(filename)
 
                 # We are going to scan the whole file with the multiline regex
