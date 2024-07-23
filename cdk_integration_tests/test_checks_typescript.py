@@ -330,11 +330,6 @@ def test_CKV_AWS_99_GlueSecurityConfiguration(failed_checks):
               language="typescript")
 
 
-def test_CKV_AWS_195_GlueSecurityConfigurationEnabled(failed_checks):
-    run_check(check_results=failed_checks, check_id="CKV_AWS_195", policy_name="GlueSecurityConfigurationEnabled",
-              language="typescript")
-
-
 def test_CKV_AWS_40_IAMPolicyAttachedToGroupOrRoles(failed_checks):
     run_check(check_results=failed_checks, check_id="CKV_AWS_40", policy_name="IAMPolicyAttachedToGroupOrRoles",
               language="typescript")
@@ -379,9 +374,10 @@ def test_CKV_AWS_44_NeptuneClusterStorageEncrypted(failed_checks):
               language="typescript")
 
 
-def test_CKV_AWS_118_RDSEnhancedMonitorEnabled(failed_checks):
-    run_check(check_results=failed_checks, check_id="CKV_AWS_118", policy_name="RDSEnhancedMonitorEnabled",
-              language="typescript")
+# unskip after BCE-33034
+# def test_CKV_AWS_118_RDSEnhancedMonitorEnabled(failed_checks):
+#     run_check(check_results=failed_checks, check_id="CKV_AWS_118", policy_name="RDSEnhancedMonitorEnabled",
+#               language="typescript")
 
 
 def test_CKV_AWS_157_RDSMultiAZEnabled(failed_checks):

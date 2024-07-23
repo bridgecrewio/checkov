@@ -10,16 +10,17 @@ scope:
     - javascript
     - typescript
 definition:
-  or:
-    - pattern: new $FUNC(<ANY>)
-      conditions:
-        - metavariable: $FUNC
-          regex: (?i)(Bucket|CfnBucket)
-        - not_pattern: |
-            'new $FUNC(<ANY>, blockPublicAcls: true ,<ANY>)'
-    - pattern: new $S3.$FUNC(<ANY>)
-      conditions:
-        - metavariable: $FUNC
-          regex: (?i)(Bucket|CfnBucket)
-        - not_pattern: |
-            'new $S3.$FUNC(<ANY>, blockPublicAcls: true ,<ANY>)'
+  patterns:
+    or:
+      - pattern: new $S3.Bucket(<ANY>)
+        conditions:
+          - not_pattern: |
+              new $S3.Bucket(<ANY>, { <ANY>, blockPublicAccess: $S3.BlockPublicAccess.BLOCK_ACLS , <ANY> } ,<ANY>)
+          - not_pattern: |
+              new $S3.Bucket(<ANY>, { <ANY>, blockPublicAccess: $S3.BlockPublicAccess.BLOCK_ALL , <ANY> } ,<ANY>)
+      - pattern: new Bucket(<ANY>)
+        conditions:
+          - not_pattern: |
+              new Bucket(<ANY>, { <ANY>, blockPublicAccess: BlockPublicAccess.BLOCK_ACLS , <ANY> } ,<ANY>)
+          - not_pattern: |
+              new Bucket(<ANY>, { <ANY>, blockPublicAccess: BlockPublicAccess.BLOCK_ALL , <ANY> } ,<ANY>)
