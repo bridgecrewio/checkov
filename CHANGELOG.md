@@ -1,6 +1,17 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.199...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.201...HEAD)
+
+## [3.2.201](https://github.com/bridgecrewio/checkov/compare/3.2.199...3.2.201) - 2024-07-23
+
+### Feature
+
+- **terraform:** add 14 rules for tencentcloud provider - [#6448](https://github.com/bridgecrewio/checkov/pull/6448)
+
+### Bug Fix
+
+- **secrets:** fix secrets prerun bug - [#6594](https://github.com/bridgecrewio/checkov/pull/6594)
+- **terraform:** Exclude String in CKV_AWS_337 - [#6592](https://github.com/bridgecrewio/checkov/pull/6592)
 
 ## [3.2.199](https://github.com/bridgecrewio/checkov/compare/3.2.196...3.2.199) - 2024-07-22
 
