@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import fnmatch
 import json
 import logging
 from abc import abstractmethod
@@ -93,7 +94,7 @@ class BaseCloudsplainingIAMCheck(BaseResourceCheck):
                             actions = [actions]
                         for action in actions:      # go through the actions of this statement and try to match one violation
                             for violating_action in violating_actions:
-                                if violating_action == action:      # found the violating action in our list of actions
+                                if fnmatch.fnmatch(violating_action, action):      # found the violating action in our list of actions
                                     resource_line = statement.statement.get('__endline__', 1) - 1
                                     if resource_line > 0:
                                         self.inspected_key_line = resource_line
