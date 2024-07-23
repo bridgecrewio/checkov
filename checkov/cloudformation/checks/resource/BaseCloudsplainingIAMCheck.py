@@ -83,11 +83,22 @@ class BaseCloudsplainingIAMCheck(BaseResourceCheck):
 
     def cloudsplaining_enrich_resource_line(self, policy: PolicyDocument) -> None:
         try:
-            if self.cloudsplaining_analysis(policy):
+            violating_actions = self.cloudsplaining_analysis(policy)
+            if violating_actions:
+                # in case we have violating actions for this policy we start looking for it through the statements
                 for statement in policy.statements:
-                    resource_line = statement.statement.get('__endline__', 1) - 1
-                    if resource_line > 0:
-                        self.inspected_key_line = resource_line
+                    actions = statement.statement.get('Action')  # get the actions for this statement
+                    if actions:
+                        if isinstance(actions, str):
+                            actions = [actions]
+                        for action in actions:      # go through the actions of this statement and try to match one violation
+                            for violating_action in violating_actions:
+                                if violating_action == action:      # found the violating action in our list of actions
+                                    resource_line = statement.statement.get('__endline__', 1) - 1
+                                    if resource_line > 0:
+                                        self.inspected_key_line = resource_line
+                                        # we stop here since for a violating statement we aim to find just one line
+                                        break
         except Exception as e:
             logging.warning(f'Failed enriching cloudsplaining evaluated keys due to: {e}')
 
