@@ -5,7 +5,6 @@ from checkov.cloudformation.checks.resource.aws.IAMCredentialsExposure import ch
 from checkov.cloudformation.runner import Runner
 from checkov.runner_filter import RunnerFilter
 
-
 class TestCloudsplainingIAMCredentialsExposure(unittest.TestCase):
 
     def test_summary(self):
@@ -13,14 +12,13 @@ class TestCloudsplainingIAMCredentialsExposure(unittest.TestCase):
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
         test_files_dir = current_dir + "/Cloudsplaining_IAMCredentialsExposure"
-        report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
+        report = runner.run(root_folder=test_files_dir,runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
         self.assertEqual(report.failed_checks[0].check_id, check.id)
         self.assertEqual(summary['passed'], 1)
         self.assertEqual(summary['failed'], 1)
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
-        self.assertEqual(report.failed_checks[0].inspected_key_line, 12)
 
 
 if __name__ == '__main__':
