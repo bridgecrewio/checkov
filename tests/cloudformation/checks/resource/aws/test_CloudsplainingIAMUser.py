@@ -23,6 +23,8 @@ class TestCloudsplainingIAMUser(unittest.TestCase):
         self.assertEqual(summary['failed'], 2)
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
+        self.assertEqual(report.failed_checks[0].inspected_key_line, 23)
+        self.assertEqual(report.failed_checks[1].inspected_key_line, 35)
 
 
 if __name__ == '__main__':
