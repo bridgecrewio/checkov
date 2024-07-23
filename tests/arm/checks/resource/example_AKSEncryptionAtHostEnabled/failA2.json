@@ -1,0 +1,18 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.ContainerService/managedClusters/agentPools",
+      "apiVersion": "2014-04-01",
+      "name": "failA2",
+      "properties": {
+        "nodeCount": 1,
+        "vmSize": "Standard_DS2_v2",
+        "tags": {
+          "Environment": "Production"
+        }
+      }
+    }
+  ]
+}
