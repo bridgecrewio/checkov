@@ -5,7 +5,7 @@ from checkov.terraform.checks.resource.base_resource_value_check import BaseReso
 
 class CognitiveServicesDisablesPublicNetwork(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure that Cognitive Services account is not configured with managed identity"
+        name = "Ensure that all Azure Cognitive Services accounts are configured with a managed identity"
         id = "CKV_AZURE_238"
         supported_resources = ['azurerm_cognitive_account']
         categories = [CheckCategories.NETWORKING]
