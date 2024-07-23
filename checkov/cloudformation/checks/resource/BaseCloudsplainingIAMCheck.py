@@ -92,7 +92,6 @@ class BaseCloudsplainingIAMCheck(BaseResourceCheck):
         except Exception as e:
             logging.warning(f'Failed enriching cloudsplaining evaluated keys due to: {e}')
     
-
+    '''
     def get_inspected_key(self):
         return 'Resource'
-    '''
