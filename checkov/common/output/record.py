@@ -55,7 +55,7 @@ class Record:
         details: Optional[List[str]] = None,
         check_len: int | None = None,
         definition_context_file_path: Optional[str] = None,
-        inspected_key_line: int = None
+        inspected_key_line: int | None = None
     ) -> None:
         """
         :param evaluations: A dict with the key being the variable name, value being a dict containing:
