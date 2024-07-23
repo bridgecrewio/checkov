@@ -8,7 +8,7 @@ from checkov.common.util.consts import START_LINE, END_LINE
 class AzureMLWorkspacePrivateEndpoint(BaseResourceCheck):
     def __init__(self) -> None:
         name = "Ensure Azure Machine learning workspace is not configured with private endpoint"
-        id = "CKV_AZURE_239"
+        id = "CKV_AZURE_243"
         supported_resources = ["Microsoft.MachineLearningServices/workspaces"]
         categories = [CheckCategories.NETWORKING]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)

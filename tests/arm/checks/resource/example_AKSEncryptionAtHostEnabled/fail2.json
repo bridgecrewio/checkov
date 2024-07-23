@@ -1,0 +1,31 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.ContainerService/managedClusters",
+      "apiVersion": "2024-03-02",
+      "name": "fail2",
+      "location": "East US",
+      "properties": {
+        "vmSize": "Standard_DS2_v2",
+        "count": 1,
+        "agentPoolProfiles": [
+          {
+            "name": "default",
+            "vmSize": "Standard_E4ads_v5",
+            "osDiskType": "Ephemeral",
+            "availabilityZones": [1, 2, 3],
+            "onlyCriticalAddonsEnabled": true,
+            "type": "VirtualMachineScaleSets",
+            "vnetSubnetID": "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Network/virtualNetworks/{vnetName}/subnets/{subnetName}",
+            "enableAutoScaling": true,
+            "maxCount": 6,
+            "minCount": 2,
+            "orchestratorVersion": "[parameters('kubernetesVersion')]"
+          }
+        ]
+      }
+    }
+  ]
+}
