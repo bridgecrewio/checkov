@@ -41,3 +41,6 @@ class BaseTerraformCloudsplainingResourceIAMCheck(BaseResourceCheck, BaseTerrafo
             policy = conf['policy'][0]
 
         return PolicyDocument(policy)
+
+    def get_inspected_key(self):
+        return 'resources'
