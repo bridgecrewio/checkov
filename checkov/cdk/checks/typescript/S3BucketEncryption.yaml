@@ -1,0 +1,27 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_19
+  name: Ensure all data stored in the S3 bucket is securely encrypted at rest
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  pattern: new $AWS.$FUNC(<ANY>)
+  conditions:
+    - metavariable: $FUNC
+      regex: (?i)(Bucket|CfnBucket)
+    - not_pattern: |
+        new $AWS.$FUNC(<ANY>, { <ANY>, encryption: $AWS.BucketEncryption.KMS_MANAGED, <ANY> } ,<ANY>)
+    - not_pattern: |
+        new $AWS.$FUNC(<ANY>, { <ANY>, encryption: $AWS.BucketEncryption.S3_MANAGED, <ANY> } ,<ANY>)
+    - not_pattern: |
+        new $AWS.$FUNC(<ANY>, { <ANY>, encryption: $AWS.BucketEncryption.KMS, <ANY> } ,<ANY>)
+    - not_pattern: |
+        new $AWS.$FUNC(<ANY>, { <ANY>, encryption: BucketEncryption.KMS_MANAGED, <ANY> } ,<ANY>)
+    - not_pattern: |
+        new $AWS.$FUNC(<ANY>, { <ANY>, encryption: BucketEncryption.S3_MANAGED, <ANY> } ,<ANY>)
+    - not_pattern: |
+        new $AWS.$FUNC(<ANY>, { <ANY>, encryption: BucketEncryption.KMS, <ANY> } ,<ANY>)

@@ -19,6 +19,7 @@ from urllib.parse import urlparse
 import boto3
 import dpath
 import urllib3
+import urllib.parse
 from botocore.config import Config
 from botocore.exceptions import ClientError
 from cachetools import cached, TTLCache
@@ -988,7 +989,8 @@ class BcPlatformIntegration:
             self.get_public_run_config()
 
     def _get_run_config_query_params(self) -> str:
-        return f'module={"bc" if self.is_bc_token(self.bc_api_key) else "pc"}&enforcementv2=true'
+        # ignore mypy warning that this can be null
+        return f'module={"bc" if self.is_bc_token(self.bc_api_key) else "pc"}&enforcementv2=true&repoId={urllib.parse.quote(self.repo_id)}'  # type: ignore
 
     def get_run_config_url(self) -> str:
         return f'{self.platform_run_config_url}?{self._get_run_config_query_params()}'
@@ -1415,6 +1417,12 @@ class BcPlatformIntegration:
             # If there are any query parameters, append them to the URI
             if parsed_url.query:
                 uri = f"{uri}?{parsed_url.query}"
+
+                # First encoding
+                encoded_uri = urllib.parse.quote(uri)
+
+                # Second encoding
+                uri = urllib.parse.quote(encoded_uri)
             # Check if the URL already contains GET parameters.
             if "?" in access_saml_url:
                 report_url = f"{access_saml_url}&{relay_state_param_name}={uri}"
