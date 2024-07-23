@@ -1,6 +1,15 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.196...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.199...HEAD)
+
+## [3.2.199](https://github.com/bridgecrewio/checkov/compare/3.2.196...3.2.199) - 2024-07-22
+
+### Feature
+
+- **arm:** add CKV_AZURE_87 to ensure that Azure Defender is set to On for Key Vault - [#6418](https://github.com/bridgecrewio/checkov/pull/6418)
+- **arm:** ARM VnetSingleDNSServer - [#6379](https://github.com/bridgecrewio/checkov/pull/6379)
+- **secrets:** Adding the option to prerun before multiline pattern executing - [#6586](https://github.com/bridgecrewio/checkov/pull/6586)
+- **secrets:** If the prrun regex found but we already scanned file we already scann… - [#6591](https://github.com/bridgecrewio/checkov/pull/6591)
 
 ## [3.2.196](https://github.com/bridgecrewio/checkov/compare/3.2.194...3.2.196) - 2024-07-21
 
