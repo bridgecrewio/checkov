@@ -5,7 +5,7 @@
     {
         "type": "Microsoft.Security/pricings",
         "apiVersion": "2020-01-01",
-        "name": "pass",
+        "name": "SqlServerVirtualMachines",
         "properties": {
         "tier": "Free"
       }

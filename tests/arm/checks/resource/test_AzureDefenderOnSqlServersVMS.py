@@ -18,11 +18,11 @@ class TestAzureDefenderOnSqlServersVMS(unittest.TestCase):
         summary = report.get_summary()
 
         passing_resources = {
-            "Microsoft.Security/pricings.pass",
+            "Microsoft.Security/pricings.SqlServerVirtualMachines",
         }
 
         failing_resources = {
-            "Microsoft.Security/pricings.fail",
+            "Microsoft.Security/pricings.SqlServerVirtualMachines",
         }
 
         passed_check_resources = {c.resource for c in report.passed_checks}
