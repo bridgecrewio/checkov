@@ -14,7 +14,7 @@ from checkov.cloudformation.checks.resource.base_resource_check import BaseResou
 from checkov.common.models.enums import CheckResult, CheckCategories
 from checkov.cloudformation.checks.utils.iam_cloudformation_document_to_policy_converter import \
     convert_cloudformation_conf_to_iam_policy
-from common.util.consts import START_LINE, END_LINE
+from checkov.common.util.consts import START_LINE, END_LINE
 
 
 class BaseCloudsplainingIAMCheck(BaseResourceCheck):
