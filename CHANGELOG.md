@@ -1,6 +1,16 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.201...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.204...HEAD)
+
+## [3.2.204](https://github.com/bridgecrewio/checkov/compare/3.2.201...3.2.204) - 2024-07-24
+
+### Feature
+
+- **arm:** add CKV_AZURE_191 to ensure that Managed identity provider is enabled for Azure Event Grid Topic - [#6496](https://github.com/bridgecrewio/checkov/pull/6496)
+
+### Bug Fix
+
+- **sast:** BCE-36172 fix cdk policies - [#6588](https://github.com/bridgecrewio/checkov/pull/6588)
 
 ## [3.2.201](https://github.com/bridgecrewio/checkov/compare/3.2.199...3.2.201) - 2024-07-23
 
