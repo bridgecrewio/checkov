@@ -7,8 +7,9 @@ Resources:
       PolicyName: IAMUpdateAccessKeyPolicy
       PolicyDocument:
         Statement:
-          - Action: 'iam:UpdateAccessKey'
-            Effect: Allow
+          - Effect: Allow
+            Action:
+            - 'iam:UpdateAccessKey'
             Resource: '*'
       Roles:
         - example_role

@@ -23,8 +23,8 @@ class TestCloudsplainingIAMRole(unittest.TestCase):
         self.assertEqual(summary['failed'], 2)
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
-        self.assertEqual(report.failed_checks[0].inspected_key_line, 32)
-        self.assertEqual(report.failed_checks[1].inspected_key_line, 53)
+        self.assertEqual(report.failed_checks[0].inspected_key_line, 31)
+        self.assertEqual(report.failed_checks[1].inspected_key_line, 52)
 
 
 if __name__ == '__main__':
