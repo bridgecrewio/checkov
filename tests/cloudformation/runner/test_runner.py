@@ -439,7 +439,7 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner(db_connector=self.db_connector())
         report = runner.run(root_folder=None, external_checks_dir=None, files=[scan_file_path],
                             runner_filter=RunnerFilter(framework=['cloudformation']))
-        self.assertEqual(len(report.failed_checks), 4)
+        self.assertEqual(len(report.failed_checks), 5)
         id_and_line = [(x.check_id, x.inspected_key_line) for x in report.failed_checks]
         self.assertIn(('CKV_AWS_107', 17), id_and_line)
         self.assertIn(('CKV_AWS_111', 14), id_and_line)
