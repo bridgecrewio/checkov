@@ -19,7 +19,6 @@ const cluster = new redshift.Cluster(stack, 'MyCluster', {
         masterUsername: 'admin',
     },
     vpc,
-    encryption: true,
 });
 
 import * as redshift from 'aws-cdk-lib/aws_redshift';
@@ -45,7 +44,6 @@ const cfnCluster = new redshift.CfnCluster(stack, 'MyCfnCluster', {
     masterUserPassword: 'password',
     nodeType: 'ds2.xlarge',
     numberOfNodes: 3,
-    encryption: true,
     kmsKeyId: kmsKey.keyArn, // Use the specific KMS key
     vpcSecurityGroupIds: [ /* security group IDs */ ],
     clusterSubnetGroupName: vpc.selectSubnets({ subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS }).subnetIds[0],
