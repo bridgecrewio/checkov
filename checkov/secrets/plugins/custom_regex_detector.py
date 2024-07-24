@@ -155,18 +155,18 @@ class CustomRegexDetector(RegexBasedDetector):
             # We want to run multiline policy once per file (if prerun was found)
             if regex_data.get("prerun"):
                 if filename in self._analyzed_files_by_check[regex_data['Check_ID']]:
-                    return
+                    continue
                 self._analyzed_files_by_check[regex_data['Check_ID']].add(filename)
 
                 # We are going to scan the whole file with the multiline regex
                 if not 0 < get_file_size_safe(filename) < CustomRegexDetector.MAX_FILE_SIZE:
-                    return
+                    continue
                 file_content = read_file_safe(filename)
                 if not file_content:
-                    return
+                    continue
                 multiline_regex = self.multiline_pattern_by_prerun_compiled.get(regex.pattern)
                 if multiline_regex is None:
-                    return
+                    continue
                 multiline_matches = multiline_regex.findall(file_content)
                 for mm in multiline_matches:
                     mm = f"'{mm}'"
@@ -182,7 +182,7 @@ class CustomRegexDetector(RegexBasedDetector):
                     )
                     ps.check_id = regex_data["Check_ID"]
                     output.add(ps)
-                return
+                continue
 
             # Wrap multiline match with fstring + ''
             match = f"'{match}'" if is_multiline else match
