@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: IAM policy
+Resources:
+  MyResource:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: root
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+            - 's3:PutObject'
+            Resource: '*'
+          - Effect: Allow
+            Action: 'iam:UpdateAccessKey'
+            Resource: '*'
+      Roles:
+        - example_role
+      Users:
+        - admin

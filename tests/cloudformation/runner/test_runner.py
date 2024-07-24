@@ -433,6 +433,17 @@ class TestRunnerValid(unittest.TestCase):
                             runner_filter=RunnerFilter(framework='cloudformation'))
         self.assertEqual(report.parsing_errors, [scan_file_path])
 
+    def test_double_statement(self):
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        scan_file_path = os.path.join(current_dir, "resources", "double_statement_cloudsplaining.yml")
+        runner = Runner(db_connector=self.db_connector())
+        report = runner.run(root_folder=None, external_checks_dir=None, files=[scan_file_path],
+                            runner_filter=RunnerFilter(framework=['cloudformation']))
+        self.assertEqual(len(report.failed_checks), 4)
+        id_and_line = [(x.check_id, x.inspected_key_line) for x in report.failed_checks]
+        self.assertIn(('CKV_AWS_107', 17), id_and_line)
+        self.assertIn(('CKV_AWS_111', 14), id_and_line)
+
     def test_skip_sub_dict_json(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         scan_file_path = os.path.join(current_dir, "resources", "skip_sub_dict.json")
