@@ -51,7 +51,7 @@ class BaseAttributeSolver(BaseSolver):
 
         if isinstance(graph_connector, DiGraph):
             for _, data in graph_connector.nodes(data=True):
-                if (not self.resource_types or data.get(CustomAttributes.RESOURCE_TYPE) in self.resource_types) \
+                if self.resource_type_pred(data, self.resource_types) \
                         and data.get(CustomAttributes.BLOCK_TYPE) in SUPPORTED_BLOCK_TYPES:
                     jobs.append(executer.submit(
                         self._process_node, data, passed_vertices, failed_vertices, unknown_vertices))
@@ -60,8 +60,7 @@ class BaseAttributeSolver(BaseSolver):
             return passed_vertices, failed_vertices, unknown_vertices
 
         for _, data in graph_connector.nodes():
-            if (not self.resource_types or data.get(CustomAttributes.RESOURCE_TYPE) in self.resource_types) \
-                    and data.get(CustomAttributes.BLOCK_TYPE) in SUPPORTED_BLOCK_TYPES:
+            if self.resource_type_pred(data, self.resource_types) and data.get(CustomAttributes.BLOCK_TYPE) in SUPPORTED_BLOCK_TYPES:
                 jobs.append(executer.submit(
                     self._process_node, data, passed_vertices, failed_vertices, unknown_vertices))
 

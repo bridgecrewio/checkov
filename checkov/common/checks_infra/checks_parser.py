@@ -206,6 +206,7 @@ class GraphCheckParser(BaseGraphCheckParser):
         check.guideline = raw_check.get("metadata", {}).get("guideline")
         check.check_path = kwargs.get("check_path", "")
         solver = self.get_check_solver(check)
+        solver.providers = providers
         check.set_solver(solver)
 
         return check
