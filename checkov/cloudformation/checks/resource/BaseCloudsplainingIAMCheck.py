@@ -101,7 +101,7 @@ class BaseCloudsplainingIAMCheck(BaseResourceCheck):
                                 for violating_action in violating_actions:
                                     if fnmatch.fnmatch(violating_action, action):      # found the violating action in our list of actions
                                         self.evaluated_keys.append(
-                                            f"Properties/PolicyDocument/Statement/[{stmt_idx}]/Action/[{action_idx}]"
+                                            f"Properties/PolicyDocument/Statement/[{stmt_idx}]/Action/[{action_idx}]/"
                                         )
                                         break
         except Exception as e:
@@ -131,6 +131,3 @@ class BaseCloudsplainingIAMCheck(BaseResourceCheck):
                     output_action_first_line = True
                 curr_line += 1
         return 0
-
-    def get_inspected_key(self):
-        return 'Action'
