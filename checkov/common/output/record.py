@@ -54,8 +54,7 @@ class Record:
         connected_node: Optional[Dict[str, Any]] = None,
         details: Optional[List[str]] = None,
         check_len: int | None = None,
-        definition_context_file_path: Optional[str] = None,
-        inspected_key_line: int | None = None
+        definition_context_file_path: Optional[str] = None
     ) -> None:
         """
         :param evaluations: A dict with the key being the variable name, value being a dict containing:
@@ -91,7 +90,6 @@ class Record:
         self.details: List[str] = details or []
         self.check_len = check_len
         self.definition_context_file_path = definition_context_file_path
-        self.inspected_key_line = inspected_key_line
 
     @staticmethod
     @lru_cache(maxsize=None)

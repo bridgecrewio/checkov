@@ -10,6 +10,9 @@ Resources:
           - Effect: Allow
             Action:
             - 'iam:UpdateAccessKey'
+            - 'iam:UntagRole'
+            - 'iam:CreateAccessKey'
+            - 'iam:TagPolicy'
             Resource: '*'
       Roles:
         - example_role

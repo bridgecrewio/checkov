@@ -23,8 +23,8 @@ class TestCloudsplainingIAMGroup(unittest.TestCase):
         self.assertEqual(summary['failed'], 2)
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
-        self.assertEqual(report.failed_checks[0].inspected_key_line, 22)
-        self.assertEqual(report.failed_checks[1].inspected_key_line, 34)
+        self.assertEqual(report.failed_checks[0].check_result.get('evaluated_keys'), ['Properties/PolicyDocument/Statement/[0]/Action'])
+        self.assertEqual(report.failed_checks[1].check_result.get('evaluated_keys'), ['Properties/PolicyDocument/Statement/[0]/Action/[0]/'])
 
 
 if __name__ == '__main__':

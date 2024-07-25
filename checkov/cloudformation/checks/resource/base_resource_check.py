@@ -25,7 +25,6 @@ class BaseResourceCheck(BaseCheck):
             guideline=guideline,
         )
         self.supported_resources = supported_resources
-        self.inspected_key_line = None
         cfn_registry.register(self)
 
     def scan_entity_conf(self, conf: Dict[str, Any], entity_type: str) -> CheckResult:

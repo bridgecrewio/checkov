@@ -19,7 +19,8 @@ class TestCloudsplainingIAMCredentialsExposure(unittest.TestCase):
         self.assertEqual(summary['failed'], 1)
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
-        self.assertEqual(report.failed_checks[0].inspected_key_line, 12)
+        self.assertIn('Properties/PolicyDocument/Statement/[0]/Action/[0]/', report.failed_checks[0].check_result.get('evaluated_keys'))
+        self.assertIn('Properties/PolicyDocument/Statement/[0]/Action/[2]/', report.failed_checks[0].check_result.get('evaluated_keys'))
 
 
 if __name__ == '__main__':

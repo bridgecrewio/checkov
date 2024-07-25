@@ -20,9 +20,9 @@ class TestIAMWriteAccess(unittest.TestCase):
         self.assertEqual(summary['failed'], 3)
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
-        self.assertEqual(report.failed_checks[0].inspected_key_line, 12)
-        self.assertEqual(report.failed_checks[1].inspected_key_line, 27)
-        self.assertEqual(report.failed_checks[2].inspected_key_line, 42)
+        self.assertEqual(report.failed_checks[0].check_result.get('evaluated_keys'), ['Properties/PolicyDocument/Statement/[0]/Action'])
+        self.assertEqual(report.failed_checks[1].check_result.get('evaluated_keys'), ['Properties/PolicyDocument/Statement/[0]/Action/[0]/'])
+        self.assertEqual(report.failed_checks[2].check_result.get('evaluated_keys'), ['Properties/PolicyDocument/Statement/[0]/Action/[0]/'])
 
 
 if __name__ == '__main__':
