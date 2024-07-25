@@ -1186,7 +1186,7 @@ class BcPlatformIntegration:
         return filtered_policies
 
     @staticmethod
-    def add_static_policy_filters(query_params: list[tuple[str, str]]):
+    def add_static_policy_filters(query_params: list[tuple[str, str]]) -> list[tuple[str, str]]:
         """
         Adds policy.enabled = true, policy.subtype = build to the query params, if these are not already present. Modifies the list in place and also returns it.
         """
