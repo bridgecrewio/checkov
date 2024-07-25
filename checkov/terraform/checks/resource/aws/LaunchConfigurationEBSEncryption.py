@@ -35,16 +35,31 @@ class LaunchConfigurationEBSEncryption(BaseResourceCheck):
         self.evaluated_keys.append("ebs_block_device")
         blocks = conf.get("ebs_block_device") or []
 
-        allblocks = root + blocks
+        all_blocks = root + blocks
 
-        if not allblocks:
+        if not all_blocks:
             return CheckResult.UNKNOWN
+        all_blocks_results = []
 
-        for block in allblocks:
-            if isinstance(block, dict) and not block.get("encrypted") == [True]:
-                if not block.get("snapshot_id"):
-                    return CheckResult.FAILED
-        return CheckResult.PASSED
+        for block in all_blocks:
+            all_blocks_results.append(_is_block_encrypted(block))
+        if CheckResult.FAILED in all_blocks_results:
+            return CheckResult.FAILED
+        elif CheckResult.UNKNOWN in all_blocks_results:
+            return CheckResult.UNKNOWN
+        else:
+            return CheckResult.PASSED
 
 
 check = LaunchConfigurationEBSEncryption()
+
+
+def _is_block_encrypted(block) -> CheckResult:
+    if isinstance(block, dict):
+        if block.get("encrypted") in ([False], False) and not block.get("snapshot_id"):
+            return CheckResult.FAILED
+        elif block.get("encrypted") in ([True], True):
+            return CheckResult.PASSED
+        elif not block.get("encrypted") in ([True], True) and block.get("snapshot_id"):
+            return CheckResult.PASSED
+    return CheckResult.UNKNOWN
