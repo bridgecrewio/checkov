@@ -10,6 +10,11 @@ from checkov.common.util.env_vars_config import env_vars_config
 if TYPE_CHECKING:
     from networkx import DiGraph
 
+# Based on the resource names in iac frameworks
+AWS_KEYS = ['aws_', 'AWS::', 'aws-']
+GCP_KEYS = ['gcloud', 'google_']
+AZURE_KEYS = ['azurerm_', 'Microsoft.']
+
 
 class BaseSolver:
     operator = ""  # noqa: CCE003  # a static attribute
@@ -42,21 +47,17 @@ class BaseSolver:
         return not resource_types or (resource_type in v and v[resource_type] in resource_types)
 
     def resource_match_provider(self, resource_type: str) -> bool:
-        # Based on the resource names in iac frameworks
-        aws_keys = ['aws_', 'AWS::', 'aws-']
-        gcp_keys = ['gcloud', 'google_']
-        azure_keys = ['azurerm_', 'Microsoft.']
         if not self.providers:
             return True
         for provider in self.providers:
             if provider.lower() == 'aws':
-                if any(resource_type.startswith(key) for key in aws_keys):
+                if any(resource_type.startswith(key) for key in AWS_KEYS):
                     return True
             elif provider.lower() == 'gcp':
-                if any(resource_type.startswith(key) for key in gcp_keys):
+                if any(resource_type.startswith(key) for key in GCP_KEYS):
                     return True
             elif provider.lower() == 'azure':
-                if any(resource_type.startswith(key) for key in azure_keys):
+                if any(resource_type.startswith(key) for key in AZURE_KEYS):
                     return True
             else:  # if we don't have a provider or the provider was not one of the basic providers
                 return True
