@@ -440,9 +440,9 @@ class TestRunnerValid(unittest.TestCase):
         report = runner.run(root_folder=None, external_checks_dir=None, files=[scan_file_path],
                             runner_filter=RunnerFilter(framework=['cloudformation']))
         self.assertEqual(len(report.failed_checks), 5)
-        id_and_line = [(x.check_id, x.inspected_key_line) for x in report.failed_checks]
-        self.assertIn(('CKV_AWS_107', 17), id_and_line)
-        self.assertIn(('CKV_AWS_111', 14), id_and_line)
+        id_and_key = [(x.check_id, x.check_result.get('evaluated_keys')) for x in report.failed_checks]
+        self.assertIn(('CKV_AWS_107', ['Properties/PolicyDocument/Statement/[1]/Action']), id_and_key)
+        self.assertIn(('CKV_AWS_111', ['Properties/PolicyDocument/Statement/[0]/Action/[1]/']), id_and_key)
 
     def test_skip_sub_dict_json(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
