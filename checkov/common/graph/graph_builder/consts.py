@@ -13,6 +13,11 @@ class GraphSource(str, Enum):
     GITHUB_ACTIONS = "GitHubActions"
     KUBERNETES = "Kubernetes"
     TERRAFORM = "Terraform"
+    TERRAFORM_PLAN = "terraform_plan"
+    KUSTOMIZE = "kustomize"
+    GITHUB_ACTION = "github_actions"
+    HELM = "helm"
+
 
     def __str__(self) -> str:
         # needed, because of a Python 3.11 change

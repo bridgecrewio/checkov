@@ -5,13 +5,13 @@ import logging
 import os
 from pathlib import Path
 from typing import Any, TYPE_CHECKING
-from enum import Enum
 
 import yaml
 
 from checkov.common.checks_infra.checks_parser import GraphCheckParser
 from checkov.common.graph.checks_infra.base_parser import BaseGraphCheckParser
 from checkov.common.graph.checks_infra.registry import BaseRegistry
+from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.runner_filter import RunnerFilter
 from checkov.common.checks_infra.resources_types import resources_types
@@ -21,33 +21,9 @@ if TYPE_CHECKING:
 
 CHECKS_POSSIBLE_ENDING = {".json", ".yaml", ".yml"}
 
-
-class IACFrameworkTypes(str, Enum):
-    TERRAFORM = "terraform"
-    CLOUDFORMATION = "cloudformation"
-    SERVERLESS = "serverless"
-    KUBERNETES = "kubernetes"
-    SECRETS = "secrets"
-    TERRAFORM_PLAN = "terraform_plan"
-    ARM = "arm"
-    DOCKERFILE = "dockerfile"
-    DOCKER_IMAGE = "docker_image"
-    GITHUB_CONFIGURATION = "github_configuration"
-    GITLAB_CONFIGURATION = "gitlab_configuration"
-    KUSTOMIZE = "kustomize"
-    BICEP = "bicep"
-    OPENAPI = "openapi"
-    GITHUB_ACTION = "github_actions"
-    HELM = "helm"
-    GITLAB_CI = "gitlab_ci"
-    AZURE_PIPELINES = "azure_pipelines"
-    CIRCLECI_PIPELINES = "circleci_pipelines"
-    ANSIBLE = "ansible"
-
-
-IACFrameworksWithRunner = [IACFrameworkTypes.TERRAFORM, IACFrameworkTypes.CLOUDFORMATION, IACFrameworkTypes.KUBERNETES,
-                           IACFrameworkTypes.TERRAFORM_PLAN, IACFrameworkTypes.KUSTOMIZE, IACFrameworkTypes.BICEP,
-                           IACFrameworkTypes.GITHUB_ACTION, IACFrameworkTypes.HELM, IACFrameworkTypes.ANSIBLE]
+GraphSupportedIACFrameworks = [GraphSource.TERRAFORM, GraphSource.CLOUDFORMATION, GraphSource.KUBERNETES,
+                               GraphSource.TERRAFORM_PLAN, GraphSource.KUSTOMIZE, GraphSource.BICEP,
+                               GraphSource.GITHUB_ACTION, GraphSource.HELM, GraphSource.ANSIBLE]
 
 
 class Registry(BaseRegistry):
@@ -129,7 +105,7 @@ def get_graph_checks_registry(check_type: str) -> Registry:
 
 
 def get_all_graph_checks_registries() -> list[Registry]:
-    for framework in IACFrameworksWithRunner:
+    for framework in GraphSupportedIACFrameworks:
         if not _registry_instances.get(framework):
             _initialize_registry(framework)
     return list(_registry_instances.values())
