@@ -1,6 +1,36 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.196...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.204...HEAD)
+
+## [3.2.204](https://github.com/bridgecrewio/checkov/compare/3.2.201...3.2.204) - 2024-07-24
+
+### Feature
+
+- **arm:** add CKV_AZURE_191 to ensure that Managed identity provider is enabled for Azure Event Grid Topic - [#6496](https://github.com/bridgecrewio/checkov/pull/6496)
+
+### Bug Fix
+
+- **sast:** BCE-36172 fix cdk policies - [#6588](https://github.com/bridgecrewio/checkov/pull/6588)
+
+## [3.2.201](https://github.com/bridgecrewio/checkov/compare/3.2.199...3.2.201) - 2024-07-23
+
+### Feature
+
+- **terraform:** add 14 rules for tencentcloud provider - [#6448](https://github.com/bridgecrewio/checkov/pull/6448)
+
+### Bug Fix
+
+- **secrets:** fix secrets prerun bug - [#6594](https://github.com/bridgecrewio/checkov/pull/6594)
+- **terraform:** Exclude String in CKV_AWS_337 - [#6592](https://github.com/bridgecrewio/checkov/pull/6592)
+
+## [3.2.199](https://github.com/bridgecrewio/checkov/compare/3.2.196...3.2.199) - 2024-07-22
+
+### Feature
+
+- **arm:** add CKV_AZURE_87 to ensure that Azure Defender is set to On for Key Vault - [#6418](https://github.com/bridgecrewio/checkov/pull/6418)
+- **arm:** ARM VnetSingleDNSServer - [#6379](https://github.com/bridgecrewio/checkov/pull/6379)
+- **secrets:** Adding the option to prerun before multiline pattern executing - [#6586](https://github.com/bridgecrewio/checkov/pull/6586)
+- **secrets:** If the prrun regex found but we already scanned file we already scann… - [#6591](https://github.com/bridgecrewio/checkov/pull/6591)
 
 ## [3.2.196](https://github.com/bridgecrewio/checkov/compare/3.2.194...3.2.196) - 2024-07-21
 
