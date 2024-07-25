@@ -53,7 +53,9 @@ jobs:
           ALL_CHANGED_FILES: ${{ steps.changed-files-specific.outputs.all_changed_files }}
         run: |
           for file in $ALL_CHANGED_FILES; do
-            cfn-lint "$file" -i W
+            if [[ "$file" == *.yaml || "$file" == *.yml || "$file" == *.json ]]; then
+              cfn-lint "$file" -i W
+            fi
           done
 
   mypy:
