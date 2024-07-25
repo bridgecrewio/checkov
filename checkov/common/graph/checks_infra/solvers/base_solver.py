@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import Tuple, List, Dict, Any, TYPE_CHECKING, Optional
+from typing import Tuple, List, Dict, Any, TYPE_CHECKING
 
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.graph_builder import CustomAttributes

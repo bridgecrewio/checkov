@@ -34,13 +34,13 @@ class BaseGraphCheck:
         self.is_jsonpath_check: bool = False
         self.check_path: str = ""
 
-
     def set_solver(self, solver: BaseSolver) -> None:
         self.solver = solver
 
     def run(self, graph_connector: DiGraph) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
         if not self.solver:
             raise AttributeError("solver attribute was not set")
+
         return self.solver.run(graph_connector=graph_connector)
 
     def get_output_id(self, use_bc_ids: bool) -> str:
