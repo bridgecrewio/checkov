@@ -88,18 +88,21 @@ class BaseCloudsplainingIAMCheck(BaseResourceCheck):
             violating_actions = self.cloudsplaining_analysis(policy)
             if violating_actions:
                 # in case we have violating actions for this policy we start looking for it through the statements
-                for statement in policy.statements:
+                for stmt_idx, statement in enumerate(policy.statements):
                     actions = statement.statement.get('Action')  # get the actions for this statement
                     if actions:
                         if isinstance(actions, str):
-                            actions = [actions]
-                        for action in actions:      # go through the actions of this statement and try to match one violation
                             for violating_action in violating_actions:
-                                if fnmatch.fnmatch(violating_action, action):      # found the violating action in our list of actions
-                                    action_line = self.extract_action_line(statement.statement, action)
-                                    if action_line > 0:
-                                        self.inspected_key_line = action_line
-                                        # we stop here since for a violating statement we aim to find just one line
+                                if fnmatch.fnmatch(violating_action, actions):  # found the violating action in our list of actions
+                                    self.evaluated_keys = [f"Properties/PolicyDocument/Statement/[{stmt_idx}]/Action"]
+                                    break
+                        if isinstance(actions, list):
+                            for action_idx, action in enumerate(actions):      # go through the actions of this statement and try to match one violation
+                                for violating_action in violating_actions:
+                                    if fnmatch.fnmatch(violating_action, action):      # found the violating action in our list of actions
+                                        self.evaluated_keys.append(
+                                            f"Properties/PolicyDocument/Statement/[{stmt_idx}]/Action/[{action_idx}]"
+                                        )
                                         break
         except Exception as e:
             logging.warning(f'Failed enriching cloudsplaining evaluated keys due to: {e}')
