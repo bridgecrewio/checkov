@@ -88,7 +88,8 @@ resource "google_compute_subnetwork" "unknown2" {
 resource "google_compute_subnetwork" "unknown2" {
   name             = "log-test-subnetwork"
   ip_cidr_range    = "10.2.0.0/16"
-  # stack_type       = "IPV4_IPV6" # No stack_type defaults to IPV4_ONLY
+  # No stack_type defaults to IPV4_ONLY
+  # stack_type       = "IPV4_IPV6"
   ipv6_access_type = "EXTERNAL"
   region           = "us-central1"
   network          = google_compute_network.custom-test.id
