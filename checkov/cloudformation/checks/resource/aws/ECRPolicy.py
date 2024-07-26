@@ -53,9 +53,14 @@ class ECRPolicy(BaseResourceCheck):
                         principal_block = principal_block['AWS']
                     for principal_index, principal in enumerate(principal_block):
                         if principal == "*" and not self.check_for_constrained_condition(statement):
-                            self.evaluated_keys = [
-                                f"Properties/RepositoryPolicyText/Statement/[{statement_index}]/Principal/[{principal_index}]"
-                            ]
+                            if isinstance(principal_block, list):
+                                self.evaluated_keys = [
+                                    f"Properties/RepositoryPolicyText/Statement/[{statement_index}]/Principal/[{principal_index}]"
+                                ]
+                            else:
+                                self.evaluated_keys = [
+                                    f"Properties/RepositoryPolicyText/Statement/[{statement_index}]/Principal"
+                                ]
                             return CheckResult.FAILED
         return CheckResult.PASSED
 
