@@ -21,6 +21,7 @@ class KeyVaultDisablesPublicNetworkAccess(BaseResourceValueCheck):
         properties = conf.get("properties", {})
         if self.get_inspected_key() in properties:
             conf_value = conf["properties"][self.get_inspected_key()]
+            # Docs are unclear, so supporting Disabled and disabled
             if conf_value and conf_value.lower() == self.get_expected_value():
                 return CheckResult.PASSED
 
