@@ -11,7 +11,7 @@ class RDSInstancePerformanceInsights(BaseResourceValueCheck):
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf):
-        # Performance Insights is not available  for MariaDB and MySQL using certain classes: https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PerfInsights.Overview.Engines.html
+        # Performance Insights is not available  for MariaDB and MySQL using certain classes: https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PerfInsights.Overview.Engines.html 
         if conf.get("engine") in (["mariadb"], ["mysql"], ["aws_rds_cluster.default.engine"]):
             if conf.get("instance_class") in (["db.t2.micro"], ["db.t2.small"], ["db.t3.micro"], ["db.t3.small"],
                                               ["db.t4g.micro"], ["db.t4g.small"]):
