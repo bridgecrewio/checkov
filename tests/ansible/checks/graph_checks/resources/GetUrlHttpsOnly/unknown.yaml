@@ -1,10 +1,11 @@
 ---
 - name: Verify tests
   hosts: all
-  gather_facts: False
+  vars:
+    variable_url: https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
   tasks:
     - name: unknown
       get_url:
-        url: {{ variable_https }}
+        url: "{{ variable_url }}"
         dest: /etc/foo.conf
         force_basic_auth: yes
