@@ -3,10 +3,18 @@ metadata:
   name: "Ensure that HTTPS url is used with get_url"
   category: "NETWORKING"
 definition:
-  cond_type: attribute
-  resource_types:
-    - tasks.ansible.builtin.get_url
-    - tasks.get_url
-  attribute: url
-  operator: starting_with
-  value: "https://"
+  or:
+    - cond_type: attribute
+      resource_types:
+        - tasks.ansible.builtin.get_url
+        - tasks.get_url
+      attribute: url
+      operator: not_starting_with
+      value: "http://"
+    - cond_type: attribute
+      resource_types:
+        - tasks.ansible.builtin.get_url
+        - tasks.get_url
+      attribute: url
+      operator: not_starting_with
+      value: "ftp://"
