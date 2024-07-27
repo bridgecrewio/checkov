@@ -3,7 +3,7 @@ metadata:
   name: "Ensure that HTTPS url is used with get_url"
   category: "NETWORKING"
 definition:
-  or:
+  and:
     - cond_type: attribute
       resource_types:
         - tasks.ansible.builtin.get_url
