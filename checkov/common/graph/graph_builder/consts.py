@@ -18,7 +18,6 @@ class GraphSource(str, Enum):
     GITHUB_ACTION = "github_actions"
     HELM = "helm"
 
-
     def __str__(self) -> str:
         # needed, because of a Python 3.11 change
         return self.value
