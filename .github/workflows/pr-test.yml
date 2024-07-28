@@ -47,7 +47,7 @@ jobs:
         if: steps.changed-files-specific.outputs.any_changed == 'true'
         id: filter-files
         run: |
-          YAML_JSON_FILES=$(echo ${{ steps.changed-files-specific.outputs.all_changed_files }} | tr ' ' '\n' | grep -E '\.ya?ml$|\.json$' | tr '\n' ' ')
+          YAML_JSON_FILES=$(echo "${{ steps.changed-files-specific.outputs.all_changed_files }}" | tr ' ' '\n' | grep -E '\.ya?ml$|\.json$' | tr '\n' ' ')
           if [ -n "$YAML_JSON_FILES" ]; then
             echo "YAML_JSON_FILES=$YAML_JSON_FILES" >> $GITHUB_ENV
             echo "RELEVANT_FILES_CHANGED=true" >> $GITHUB_ENV
