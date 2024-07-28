@@ -103,7 +103,8 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
             'id': policy['id'],
             'name': policy['title'],
             'category': policy['category'],
-            'frameworks': policy.get('frameworks', [])
+            'frameworks': policy.get('frameworks', []),
+            'scope': {'provider': policy.get('provider', '').lower()}
         }
         check = {
             'metadata': metadata,

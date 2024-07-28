@@ -1,6 +1,73 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.193...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.208...HEAD)
+
+## [3.2.208](https://github.com/bridgecrewio/checkov/compare/3.2.204...3.2.208) - 2024-07-25
+
+### Feature
+
+- **general:** filter resource by provider for all resources types - [#6598](https://github.com/bridgecrewio/checkov/pull/6598)
+- **secrets:** add CKV_SECRET_192 to GENERIC_PRIVATE_KEY_CHECK_IDS - [#6600](https://github.com/bridgecrewio/checkov/pull/6600)
+- **terraform:** Update ckv-aws-8 policy - support unknown statement  - [#6596](https://github.com/bridgecrewio/checkov/pull/6596)
+
+### Bug Fix
+
+- **terraform:** Fix resource type for CKV_AZURE_242 - [#6599](https://github.com/bridgecrewio/checkov/pull/6599)
+
+### Platform
+
+- **general:** handle multiple values for the same metadata filter - [#6604](https://github.com/bridgecrewio/checkov/pull/6604)
+
+## [3.2.204](https://github.com/bridgecrewio/checkov/compare/3.2.201...3.2.204) - 2024-07-24
+
+### Feature
+
+- **arm:** add CKV_AZURE_191 to ensure that Managed identity provider is enabled for Azure Event Grid Topic - [#6496](https://github.com/bridgecrewio/checkov/pull/6496)
+
+### Bug Fix
+
+- **sast:** BCE-36172 fix cdk policies - [#6588](https://github.com/bridgecrewio/checkov/pull/6588)
+
+## [3.2.201](https://github.com/bridgecrewio/checkov/compare/3.2.199...3.2.201) - 2024-07-23
+
+### Feature
+
+- **terraform:** add 14 rules for tencentcloud provider - [#6448](https://github.com/bridgecrewio/checkov/pull/6448)
+
+### Bug Fix
+
+- **secrets:** fix secrets prerun bug - [#6594](https://github.com/bridgecrewio/checkov/pull/6594)
+- **terraform:** Exclude String in CKV_AWS_337 - [#6592](https://github.com/bridgecrewio/checkov/pull/6592)
+
+## [3.2.199](https://github.com/bridgecrewio/checkov/compare/3.2.196...3.2.199) - 2024-07-22
+
+### Feature
+
+- **arm:** add CKV_AZURE_87 to ensure that Azure Defender is set to On for Key Vault - [#6418](https://github.com/bridgecrewio/checkov/pull/6418)
+- **arm:** ARM VnetSingleDNSServer - [#6379](https://github.com/bridgecrewio/checkov/pull/6379)
+- **secrets:** Adding the option to prerun before multiline pattern executing - [#6586](https://github.com/bridgecrewio/checkov/pull/6586)
+- **secrets:** If the prrun regex found but we already scanned file we already scann… - [#6591](https://github.com/bridgecrewio/checkov/pull/6591)
+
+## [3.2.196](https://github.com/bridgecrewio/checkov/compare/3.2.194...3.2.196) - 2024-07-21
+
+### Feature
+
+- **general:** Add metadata exception filter to GHA - [#6583](https://github.com/bridgecrewio/checkov/pull/6583)
+- **general:** Refactor all resource type handling in Checkov - [#6572](https://github.com/bridgecrewio/checkov/pull/6572)
+
+## [3.2.194](https://github.com/bridgecrewio/checkov/compare/3.2.193...3.2.194) - 2024-07-18
+
+### Feature
+
+- **arm:** AKSEncryptionAtHostEnable - [#6575](https://github.com/bridgecrewio/checkov/pull/6575)
+- **arm:** AKSEphemeralOSDisks - [#6578](https://github.com/bridgecrewio/checkov/pull/6578)
+- **arm:** CKV_AZURE_92 to Ensure that Virtual Machines use managed disks - [#6455](https://github.com/bridgecrewio/checkov/pull/6455)
+- **arm:** FrontDoorWAFACLCVE202144228 - Mitigates the Log4j2 vulnerability CVE-2021-44228. - [#6419](https://github.com/bridgecrewio/checkov/pull/6419)
+
+### Bug Fix
+
+- **general:** fix the right numbers in TestSkipJsonRegexPattern - [#6580](https://github.com/bridgecrewio/checkov/pull/6580)
+- **terraform:** Fix title of CKV_AZURE_238 - [#6570](https://github.com/bridgecrewio/checkov/pull/6570)
 
 ## [3.2.193](https://github.com/bridgecrewio/checkov/compare/3.2.191...3.2.193) - 2024-07-17
 
