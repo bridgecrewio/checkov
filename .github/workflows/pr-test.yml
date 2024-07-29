@@ -50,17 +50,11 @@ jobs:
           YAML_JSON_FILES=$(echo ${{ steps.changed-files-specific.outputs.all_changed_files }} | tr ' ' '\n' | grep -E '\.ya?ml$|\.json$' | tr '\n' ' ')
           if [ -n "$YAML_JSON_FILES" ]; then
             echo "YAML_JSON_FILES=$YAML_JSON_FILES" >> "$GITHUB_ENV"
-            echo "RELEVANT_FILES_CHANGED=true" >> "$GITHUB_ENV"
-          else
-            echo "RELEVANT_FILES_CHANGED=false" >> "$GITHUB_ENV"
           fi
-      - name: Install cfn-lint
-        if: env.RELEVANT_FILES_CHANGED == 'true'
+      - name: Install cfn-lint & Lint Cloudformation templates
+        if: env.YAML_JSON_FILES != ''
         run: |
           pip install -U cfn-lint
-      - name: Lint Cloudformation templates
-        if: env.RELEVANT_FILES_CHANGED == 'true'
-        run: |
           for file in $YAML_JSON_FILES; do
             cfn-lint "$file" -i W
           done
