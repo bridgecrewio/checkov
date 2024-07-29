@@ -1,6 +1,32 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.204...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.209...HEAD)
+
+## [3.2.209](https://github.com/bridgecrewio/checkov/compare/3.2.208...3.2.209) - 2024-07-28
+
+### Feature
+
+- **cloudformation:** Enrich cloudsplaining eval keys - [#6602](https://github.com/bridgecrewio/checkov/pull/6602)
+
+### Documentation
+
+- **general:** add --repo-id to relevant examples with API key - [#6605](https://github.com/bridgecrewio/checkov/pull/6605)
+
+## [3.2.208](https://github.com/bridgecrewio/checkov/compare/3.2.204...3.2.208) - 2024-07-25
+
+### Feature
+
+- **general:** filter resource by provider for all resources types - [#6598](https://github.com/bridgecrewio/checkov/pull/6598)
+- **secrets:** add CKV_SECRET_192 to GENERIC_PRIVATE_KEY_CHECK_IDS - [#6600](https://github.com/bridgecrewio/checkov/pull/6600)
+- **terraform:** Update ckv-aws-8 policy - support unknown statement  - [#6596](https://github.com/bridgecrewio/checkov/pull/6596)
+
+### Bug Fix
+
+- **terraform:** Fix resource type for CKV_AZURE_242 - [#6599](https://github.com/bridgecrewio/checkov/pull/6599)
+
+### Platform
+
+- **general:** handle multiple values for the same metadata filter - [#6604](https://github.com/bridgecrewio/checkov/pull/6604)
 
 ## [3.2.204](https://github.com/bridgecrewio/checkov/compare/3.2.201...3.2.204) - 2024-07-24
 

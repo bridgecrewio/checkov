@@ -469,7 +469,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
                  "When used with --policy-metadata-filter-exception, the exceptions override any policies selected as"
                  "a result of the --policy-metadata-filter flag."
                  "See https://prisma.pan.dev/api/cloud/cspm/policy#operation/get-policy-filters-and-options for "
-                 "information on allowed filters. Format: policy.label=test,cloud.type=aws ",
+                 "information on allowed filters. Example: policy.label=label1,policy.label=label2,cloud.type=aws",
             default=None,
         )
         self.add(
@@ -478,7 +478,7 @@ class ExtArgumentParser(configargparse.ArgumentParser):
                  "When used with --policy-metadata-filter, the exceptions override any policies selected as"
                  "a result of the --policy-metadata-filter flag."
                  "See https://prisma.pan.dev/api/cloud/cspm/policy#operation/get-policy-filters-and-options for "
-                 "information on allowed filters. Format: policy.label=test,cloud.type=aws ",
+                 "information on allowed filters. Example: policy.label=label1,policy.label=label2,cloud.type=aws",
             default=None,
         )
         self.add(

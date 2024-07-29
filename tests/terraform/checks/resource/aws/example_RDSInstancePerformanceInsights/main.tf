@@ -61,3 +61,36 @@ resource "aws_rds_cluster_instance" "pass" {
   engine_version               = aws_rds_cluster.default.engine_version
   performance_insights_enabled = true
 }
+
+resource "aws_db_instance" "unknown_engine_class_combo" {
+  allocated_storage    = 20
+  storage_type         = "gp2"
+  engine               = "mariadb"
+  engine_version       = "10.5"
+  instance_class       = "db.t3.micro"
+  name                 = "mydatabase"
+  username             = "admin"
+  password             = "yourpassword" # Use a more secure method for production
+  parameter_group_name = "default.mariadb10.5"
+  skip_final_snapshot  = true
+
+  tags = {
+    Name = "MyMariaDBInstance"
+  }
+}
+
+resource "aws_rds_cluster_instance" "unknown_engine_defaultclass_combo" {
+  identifier         = "aurora-cluster-demo-${count.index}"
+  cluster_identifier = aws_rds_cluster.default.id
+  instance_class     = "db.t2.small"
+  engine             = aws_rds_cluster.default.engine
+  engine_version     = aws_rds_cluster.default.engine_version
+}
+
+resource "aws_rds_cluster_instance" "unknown_engine_class_combo" {
+  identifier         = "aurora-cluster-demo-${count.index}"
+  cluster_identifier = aws_rds_cluster.default.id
+  instance_class     = "db.t2.small"
+  engine             = "mysql"
+  engine_version     = aws_rds_cluster.default.engine_version
+}
