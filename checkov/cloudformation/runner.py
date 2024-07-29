@@ -78,6 +78,7 @@ class Runner(ImageReferencerMixin[None], BaseRunner[_CloudformationDefinitions, 
         if not runner_filter.show_progress_bar:
             self.pbar.turn_off_progress_bar()
 
+        logging.warning("This is a test!!!")
         report = Report(self.check_type)
         parsing_errors: dict[str, str] = {}
 
