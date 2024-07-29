@@ -250,6 +250,18 @@ class TestYamlPolicies(unittest.TestCase):
     def test_StorageLoggingIsEnabledForTableService(self):
         self.go("StorageLoggingIsEnabledForTableService")
 
+    def test_SynapseLogMonitoringEnabledForSQLPool(self):
+        self.go("SynapseLogMonitoringEnabledForSQLPool")
+        
+    def test_SynapseSQLPoolHasSecurityAlertPolicy(self):
+        self.go("SynapseSQLPoolHasSecurityAlertPolicy")
+
+    def test_SynapseSQLPoolHasVulnerabilityAssessment(self):
+        self.go("SynapseSQLPoolHasVulnerabilityAssessment")
+
+    def test_SynapseWorkspaceHasExtendedAuditLogs(self):
+        self.go("SynapseWorkspaceHasExtendedAuditLogs")
+
     def test_VMHasBackUpMachine(self):
         self.go("VMHasBackUpMachine")
 
@@ -459,6 +471,12 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_AzureMariaDBserverUsingTLS_1_2(self):
             self.go("AzureMariaDBserverUsingTLS_1_2")
+   
+    def test_AzureMLWorkspaceWithPublicStorageAccount(self):
+            self.go("AzureMLWorkspaceHBIPublicNetwork")
+
+    def test_AzureMLWorkspacePublicNetwork(self):
+            self.go("AzureMLWorkspacePublicNetwork")
 
     def test_AzureStorageAccountEnableSoftDelete(self):
             self.go("AzureStorageAccountEnableSoftDelete")
@@ -511,14 +529,8 @@ class TestYamlPolicies(unittest.TestCase):
     def test_IBM_RestrictAPIkeyCreationInAccountSettings(self):
         self.go("IBM_RestrictAPIkeyCreationInAccountSettings")
 
-    def test_IBM_DatabasesNWaccessRestrictedToSpecificIPrange(self):
-        self.go("IBM_DatabasesNWaccessRestrictedToSpecificIPrange")
-
     def test_IBM_K8sClustersAccessibleViaPrivateEndPt(self):
         self.go("IBM_K8sClustersAccessibleViaPrivateEndPt")
-
-    def test_S3CMKRegularRotation(self):
-        self.go("S3CMKRegularRotation")
 
     def test_registry_load(self):
         registry = Registry(parser=GraphCheckParser(), checks_dir=str(

@@ -3,11 +3,12 @@ from __future__ import annotations
 import itertools
 import json
 import logging
+import os
 from typing import Any, Dict, List, Optional, Tuple, cast
 
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.parsers.node import ListNode
-from checkov.common.util.consts import LINE_FIELD_NAMES
+from checkov.common.util.consts import LINE_FIELD_NAMES, TRUE_AFTER_UNKNOWN
 from checkov.common.util.type_forcers import force_list
 from checkov.terraform.context_parsers.tf_plan import parse
 
@@ -16,6 +17,7 @@ TF_PLAN_RESOURCE_ADDRESS = CustomAttributes.TF_RESOURCE_ADDRESS
 TF_PLAN_RESOURCE_CHANGE_ACTIONS = "__change_actions__"
 TF_PLAN_RESOURCE_CHANGE_KEYS = "__change_keys__"
 TF_PLAN_RESOURCE_PROVISIONERS = "provisioners"
+TF_PLAN_RESOURCE_AFTER_UNKNOWN = 'after_unknown'
 
 RESOURCE_TYPES_JSONIFY = {
     "aws_batch_job_definition": "container_properties",
@@ -64,7 +66,8 @@ RESOURCE_TYPES_JSONIFY = {
     "aws_sqs_queue_policy": "policy",
     "aws_secretsmanager_secret_policy": "policy",
     "aws_vpclattice_auth_policy": "policy",
-    "aws_vpclattice_resource_policy": "policy"
+    "aws_vpclattice_resource_policy": "policy",
+    "google_project_iam_policy": "policy_data"
 }
 
 
@@ -199,10 +202,12 @@ def _prepare_resource_block(
         resource_address: str | None = resource.get("address")
         resource_conf[TF_PLAN_RESOURCE_ADDRESS] = resource_address  # type:ignore[assignment]  # special field
 
-        changes = resource_changes.get(resource_address)  # type:ignore[arg-type]  # becaus eit can be None
+        changes = resource_changes.get(resource_address)  # type:ignore[arg-type]  # because it can be None
         if changes:
             resource_conf[TF_PLAN_RESOURCE_CHANGE_ACTIONS] = changes.get("change", {}).get("actions") or []
             resource_conf[TF_PLAN_RESOURCE_CHANGE_KEYS] = changes.get(TF_PLAN_RESOURCE_CHANGE_KEYS) or []
+            # enrich conf with after_unknown values
+            _eval_after_unknown(changes, resource_conf)
 
         provisioners = conf.get(TF_PLAN_RESOURCE_PROVISIONERS) if conf else None
         if provisioners:
@@ -211,6 +216,22 @@ def _prepare_resource_block(
         resource_block[resource_type][resource.get("name", "default")] = resource_conf
         prepared = True
     return resource_block, block_type, prepared
+
+
+def _eval_after_unknown(changes: dict[str, Any], resource_conf: dict[str, Any]) -> None:
+    after_unknown = changes.get("change", {}).get(TF_PLAN_RESOURCE_AFTER_UNKNOWN)
+    if os.getenv('EVAL_TF_PLAN_AFTER_UNKNOWN') and after_unknown and isinstance(after_unknown, dict):
+        for k, v in after_unknown.items():
+            # We check if the value of the field is True. That would mean its value is known after the apply
+            # We also check whether the field is not already present in the conf since we do not want to
+            # override it. Overriding can actually cause losing its value
+            if v is True and k not in resource_conf:
+                # We set the value to 'true_after_unknown' and not its original value
+                # We need to set a constant other than a boolean (True/"true"),
+                # so it will not collide with actual possible values of those attributes
+                # In these cases, policies checking the existence of a value will succeed,
+                # but policies checking for concrete values will fail
+                resource_conf[k] = _clean_simple_type_list([TRUE_AFTER_UNKNOWN])
 
 
 def _find_child_modules(
@@ -418,13 +439,27 @@ def _clean_simple_type_list(value_list: List[Any]) -> List[Any]:
     return value_list
 
 
-def _get_provisioner(input_data: List[Any]) -> List[Any]:
+def _get_provisioner(input_data: List[Dict[str, Any]]) -> List[Dict[str, Dict[str, Any]]]:
     result = []
     for item in input_data:
-        key = item['type']
-        command_value = item['expressions']['command']
-        if not isinstance(command_value, list):
-            command_value = [command_value]
-        transformed_item = {key: {'command': command_value}}
-        result.append(transformed_item)
+        if 'type' in item and 'expressions' in item:
+            key = item['type']
+            expressions = item['expressions']
+            transformed_expressions = {}
+
+            if key == 'local-exec':
+                if 'command' in expressions:
+                    command_value = expressions['command']
+                    if not isinstance(command_value, list):
+                        command_value = [command_value]
+                    transformed_expressions['command'] = command_value
+
+                for field, value in expressions.items():
+                    if field != 'command':
+                        transformed_expressions[field] = value
+            else:
+                transformed_expressions = expressions
+
+            transformed_item = {key: transformed_expressions}
+            result.append(transformed_item)
     return result
