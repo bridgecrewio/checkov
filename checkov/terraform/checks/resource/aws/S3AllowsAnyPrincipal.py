@@ -32,13 +32,26 @@ def check_conditions(statement) -> bool:
             # Passed if 'aws:PrincipalArn' or 'aws:SourceArn' do not match because then they are specific
             return True
 
-    # Handle VPC sources. Other sources not specific enough
     # Leaves out the NOT conditions as too broad ('StringNotEquals', 'StringNotEqualsIgnoreCase', 'StringNotLike')
     string_conditions = ['StringEquals', 'StringEqualsIgnoreCase', 'StringLike']
     if any(condition_type in condition for condition_type in string_conditions):
         for condition_type in string_conditions:
             if condition_type in condition:
-                if any(source in condition[condition_type] for source in ['aws:sourceVpce', 'aws:SourceVpc']):
+                # Purposefully not included: 'aws:SourceIp', 'aws:UserAgent', 'aws:Referer', 'aws:RequestTime',
+                # 'aws:SourceArn', 'aws:PrincipalType', 'aws:RequestTag', 'aws:SecureTransport', 'aws:SourceIp',
+                # 'aws:MultiFactorAuthPresent', 'aws:PrincipalType', all 'Properties of the request',
+                # all 'Properties of the resource', 'aws:PrincipalTag', 'aws:PrincipalIsAWSService',
+                # 'aws:PrincipalServiceName', 'aws:PrincipalServiceNamesList', 'aws:PrincipalType', 'aws:userid',
+                # 'aws:username'
+                if any(source in condition[condition_type] for source in ['aws:sourceVpce', 'aws:SourceVpc',
+                                                                          'aws:PrincipalOrgPaths', 'aws:userid',
+                                                                          'aws:PrincipalArn',
+                                                                          'aws:PrincipalAccount',
+                                                                          'aws:PrincipalOrgID',
+                                                                          'aws:Ec2InstanceSourceVpc',
+                                                                          'ec2:SourceInstanceArn',
+                                                                          'lambda:SourceFunctionArn',
+                                                                          'ssm:SourceInstanceArn']):
                     return True
 
     # Default fail if none of the above conditions are met
