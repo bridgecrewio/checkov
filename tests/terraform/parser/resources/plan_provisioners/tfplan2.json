@@ -199,15 +199,23 @@
           "provider_config_key": "aws",
           "provisioners": [
             {
-              "type": "local-exec",
+              "type": "file",
               "expressions": {
-                "command": {
-                  "constant_value": "open WFH, '>completed.txt' and print WFH scalar localtime"
+                "destination": {
+                  "constant_value": "/tmp/script.sh"
                 },
-                "interpreter": {
+                "source": {
+                  "constant_value": "script.sh"
+                }
+              }
+            },
+            {
+              "type": "remote-exec",
+              "expressions": {
+                "inline": {
                   "constant_value": [
-                    "perl",
-                    "-e"
+                    "chmod +x /tmp/script.sh",
+                    "/tmp/script.sh args"
                   ]
                 }
               }
@@ -231,5 +239,5 @@
       ]
     }
   },
-  "timestamp": "2024-07-26T05:47:45Z"
+  "timestamp": "2024-07-26T05:10:57Z"
 }

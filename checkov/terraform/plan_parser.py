@@ -439,13 +439,27 @@ def _clean_simple_type_list(value_list: List[Any]) -> List[Any]:
     return value_list
 
 
-def _get_provisioner(input_data: List[Any]) -> List[Any]:
+def _get_provisioner(input_data: List[Dict[str, Any]]) -> List[Dict[str, Dict[str, Any]]]:
     result = []
     for item in input_data:
-        key = item['type']
-        command_value = item['expressions']['command']
-        if not isinstance(command_value, list):
-            command_value = [command_value]
-        transformed_item = {key: {'command': command_value}}
-        result.append(transformed_item)
+        if 'type' in item and 'expressions' in item:
+            key = item['type']
+            expressions = item['expressions']
+            transformed_expressions = {}
+
+            if key == 'local-exec':
+                if 'command' in expressions:
+                    command_value = expressions['command']
+                    if not isinstance(command_value, list):
+                        command_value = [command_value]
+                    transformed_expressions['command'] = command_value
+
+                for field, value in expressions.items():
+                    if field != 'command':
+                        transformed_expressions[field] = value
+            else:
+                transformed_expressions = expressions
+
+            transformed_item = {key: transformed_expressions}
+            result.append(transformed_item)
     return result
