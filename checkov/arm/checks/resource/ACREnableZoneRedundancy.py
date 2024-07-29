@@ -23,7 +23,7 @@ class ACREnableZoneRedundancy(BaseResourceCheck):
         # check registry. default=false
         properties = conf.get("properties")
         if properties and isinstance(properties, dict):
-            if properties.get("zoneRedundancy") == "disabled":
+            if properties.get("zoneRedundancy") == "Disabled":
                 return CheckResult.FAILED
         return CheckResult.PASSED
 
