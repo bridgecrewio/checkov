@@ -18,7 +18,7 @@ class NSGRuleUDPAccessRestricted(BaseResourceCheck):
     def scan_resource_conf(self, conf: Dict[str, Union[str, Dict[str, List[Dict[str, str] | Any]]]]) -> CheckResult:
         rule_confs = [conf.get("properties", {})]
         evaluated_key_prefix = ''
-        if isinstance(rule_confs[0],dict) and 'securityRules' in rule_confs[0]:
+        if isinstance(rule_confs[0], dict) and 'securityRules' in rule_confs[0]:
             rule_confs = [rule_confs[0]['securityRules'][0]["properties"]]
             self.evaluated_keys = ['securityRules']
             evaluated_key_prefix = 'securityRules/'
