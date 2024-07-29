@@ -1,6 +1,16 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.208...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.209...HEAD)
+
+## [3.2.209](https://github.com/bridgecrewio/checkov/compare/3.2.208...3.2.209) - 2024-07-28
+
+### Feature
+
+- **cloudformation:** Enrich cloudsplaining eval keys - [#6602](https://github.com/bridgecrewio/checkov/pull/6602)
+
+### Documentation
+
+- **general:** add --repo-id to relevant examples with API key - [#6605](https://github.com/bridgecrewio/checkov/pull/6605)
 
 ## [3.2.208](https://github.com/bridgecrewio/checkov/compare/3.2.204...3.2.208) - 2024-07-25
 
