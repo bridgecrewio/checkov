@@ -1,6 +1,23 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.209...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.213...HEAD)
+
+## [3.2.213](https://github.com/bridgecrewio/checkov/compare/3.2.209...3.2.213) - 2024-07-29
+
+### Feature
+
+- **arm:** ARM AppServiceInstanceMinimum - CKV_AZURE_212 - [#6502](https://github.com/bridgecrewio/checkov/pull/6502)
+- **terraform:** - TF and CFN - Add a policy for ensuring AWS Bedrock Agent is encrypted with a CMK - [#6603](https://github.com/bridgecrewio/checkov/pull/6603)
+
+### Bug Fix
+
+- **ansible:** Fix CKV2_ANSIBLE_2 - [#6610](https://github.com/bridgecrewio/checkov/pull/6610)
+- **arm:** Support upper and lower disabled for CKV_AZURE_189 - [#6609](https://github.com/bridgecrewio/checkov/pull/6609)
+- **dockerfile:** Fix edge case with apt in domain - [#6611](https://github.com/bridgecrewio/checkov/pull/6611)
+- **terraform_plan:** Fix parsing other types of provisioners - [#6606](https://github.com/bridgecrewio/checkov/pull/6606)
+- **terraform:** add condition for CKV_AWS_353 - [#6607](https://github.com/bridgecrewio/checkov/pull/6607)
+- **terraform:** catch unknowns with WAF configs - [#6612](https://github.com/bridgecrewio/checkov/pull/6612)
+- **terraform:** Handle default for CKV_GCP_76 - [#6608](https://github.com/bridgecrewio/checkov/pull/6608)
 
 ## [3.2.209](https://github.com/bridgecrewio/checkov/compare/3.2.208...3.2.209) - 2024-07-28
 
