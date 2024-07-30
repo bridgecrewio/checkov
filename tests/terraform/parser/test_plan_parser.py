@@ -61,12 +61,15 @@ class TestPlanFileParser(unittest.TestCase):
 
     def test_provisioners(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
-        valid_plan_path = current_dir + "/resources/plan_provisioners/tfplan.json"
-        tf_definition, _ = parse_tf_plan(valid_plan_path, {})
-        file_resource_definition = tf_definition['resource'][1]
-        resource_definition = next(iter(file_resource_definition.values()))
-        resource_attributes = next(iter(resource_definition.values()))
-        self.assertTrue(resource_attributes['provisioner'])
+        plan_files = ['tfplan.json','tfplan2.json']
+
+        for file in plan_files:
+            valid_plan_path = current_dir + "/resources/plan_provisioners/" + file
+            tf_definition, _ = parse_tf_plan(valid_plan_path, {})
+            file_resource_definition = tf_definition['resource'][0]
+            resource_definition = next(iter(file_resource_definition.values()))
+            resource_attributes = next(iter(resource_definition.values()))
+            self.assertTrue(resource_attributes['provisioner'])
 
     def test_module_with_connected_resources(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
