@@ -35,15 +35,29 @@ jobs:
       PYTHON_VERSION: "3.8"
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
-      - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c  # v4
+      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-      - name: Install cfn-lint
+      - name: Get changed CFN test files
+        id: changed-files-specific
+        uses: tj-actions/changed-files@eaf854ef0c266753e1abec356dcf17d92695b251 # v44
+        with:
+          files: tests/cloudformation/checks/resource/aws/**/*
+      - name: Filter YAML and JSON files
+        if: steps.changed-files-specific.outputs.any_changed == 'true'
+        id: filter-files
+        run: |
+          YAML_JSON_FILES=$(echo ${{ steps.changed-files-specific.outputs.all_changed_files }} | tr ' ' '\n' | grep -E '\.ya?ml$|\.json$' | tr '\n' ' ')
+          if [ -n "$YAML_JSON_FILES" ]; then
+            echo "YAML_JSON_FILES=$YAML_JSON_FILES" >> "$GITHUB_ENV"
+          fi
+      - name: Install cfn-lint & Lint Cloudformation templates
+        if: env.YAML_JSON_FILES != ''
         run: |
           pip install -U cfn-lint
-      - name: Lint Cloudformation templates
-        run: |
-          cfn-lint tests/cloudformation/checks/resource/aws/**/* -i W
+          for file in $YAML_JSON_FILES; do
+            cfn-lint "$file" -i W
+          done
 
   mypy:
     uses: bridgecrewio/gha-reusable-workflows/.github/workflows/mypy.yaml@main
@@ -60,7 +74,7 @@ jobs:
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
       - name: Set up Python ${{ matrix.python }}
-        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c  # v4
+        uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
         with:
           python-version: ${{ matrix.python }}
           allow-prereleases: true
@@ -120,7 +134,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
-      - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c  # v4
+      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
         with:
           python-version: ${{ matrix.python }}
           allow-prereleases: true
@@ -175,7 +189,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
-      - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c  # v4
+      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
         with:
           python-version: ${{ matrix.python }}
           allow-prereleases: true
@@ -230,7 +244,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
-      - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c  # v4
+      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
         with:
           python-version: ${{ matrix.python }}
           allow-prereleases: true
@@ -278,7 +292,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
-      - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c  # v4
+      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
         with:
           python-version: ${{ matrix.python }}
           allow-prereleases: true
@@ -326,7 +340,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
-      - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c  # v4
+      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
         with:
           python-version: ${{ matrix.python }}
           allow-prereleases: true
@@ -368,7 +382,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
-      - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c  # v4
+      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
         with:
           python-version: ${{ matrix.python }}
           allow-prereleases: true
@@ -408,7 +422,7 @@ jobs:
     runs-on: [self-hosted, public, linux, x64]
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
-      - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c  # v4
+      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: "pipenv"
@@ -463,7 +477,7 @@ jobs:
       WORKING_DIRECTORY: ./dogfood_tests
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
-      - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c  # v4
+      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: "pipenv"

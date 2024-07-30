@@ -1,7 +1,7 @@
 metadata:
   version: 0.2
   approach: define failing
-  id: CKV_AWS_370
+  id: CKV_AWS_71
   name: Ensure Redshift Cluster logging is enabled
   category: LOGGING
   framework: cdk

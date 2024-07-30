@@ -251,3 +251,88 @@ def test_lightsail_resources(mocker: MockerFixture, graph_framework):
     assert len(sca_image_report.failed_checks) == 3
     assert len(sca_image_report.skipped_checks) == 0
     assert len(sca_image_report.parsing_errors) == 0
+
+
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
+def test_sagemaker_image_version_resources(mocker: MockerFixture, graph_framework):
+    file_name = "sagemaker_image_version.tf"
+    base_image = "012345678912.dkr.ecr.us-west-2.amazonaws.com/image:latest"
+    code_lines = "1-4"
+    test_file = RESOURCES_PATH / file_name
+    runner_filter = RunnerFilter(run_image_referencer=True)
+
+    mocker.patch(
+        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
+        side_effect=mock_get_image_cached_result_async,
+    )
+    mocker.patch(
+        "checkov.common.images.image_referencer.get_license_statuses_async",
+        side_effect=mock_get_empty_license_statuses_async,
+    )
+
+    # when
+    with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': graph_framework}):
+        reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
+
+    # then
+    assert len(reports) == 2
+    tf_report = next(report for report in reports if report.check_type == CheckType.TERRAFORM)
+    sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
+
+    assert len(tf_report.resources) == 1
+    assert len(tf_report.passed_checks) == 0
+    assert len(tf_report.failed_checks) == 0
+    assert len(tf_report.skipped_checks) == 0
+    assert len(tf_report.parsing_errors) == 0
+
+    assert len(sca_image_report.resources) == 1
+    assert sca_image_report.resources == {f"{file_name} ({base_image} lines:{code_lines} (sha256:2460522297)).go"}
+    assert len(sca_image_report.passed_checks) == 0
+    assert len(sca_image_report.failed_checks) == 3
+    assert len(sca_image_report.skipped_checks) == 0
+    assert len(sca_image_report.parsing_errors) == 0
+
+
+@pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
+def test_sagemaker_model_resources(mocker: MockerFixture, graph_framework):
+    file_name = "sagemaker_model.tf"
+    image_1 = "012345678912.dkr.ecr.us-west-2.amazonaws.com/image1:latest"
+    image_2 = "012345678912.dkr.ecr.us-west-2.amazonaws.com/image2:latest"
+    code_lines_1 = "1-8"
+    code_lines_2 = "10-17"
+    test_file = RESOURCES_PATH / file_name
+    runner_filter = RunnerFilter(run_image_referencer=True)
+
+    mocker.patch(
+        "checkov.common.images.image_referencer.image_scanner.get_scan_results_from_cache_async",
+        side_effect=mock_get_image_cached_result_async,
+    )
+    mocker.patch(
+        "checkov.common.images.image_referencer.get_license_statuses_async",
+        side_effect=mock_get_empty_license_statuses_async,
+    )
+
+    # when
+    with mock.patch.dict('os.environ', {'CHECKOV_GRAPH_FRAMEWORK': graph_framework}):
+        reports = Runner().run(root_folder="", files=[str(test_file)], runner_filter=runner_filter)
+
+    # then
+    assert len(reports) == 2
+    tf_report = next(report for report in reports if report.check_type == CheckType.TERRAFORM)
+    sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
+
+    assert len(tf_report.resources) == 2
+    assert len(tf_report.passed_checks) == 0
+    assert len(tf_report.failed_checks) == 2
+    assert len(tf_report.skipped_checks) == 0
+    assert len(tf_report.parsing_errors) == 0
+
+    assert len(sca_image_report.resources) == 2
+    assert sca_image_report.resources == {
+        f"{file_name} ({image_1} lines:{code_lines_1} (sha256:2460522297)).go",
+        f"{file_name} ({image_2} lines:{code_lines_2} (sha256:2460522297)).go",
+    }
+    assert len(sca_image_report.passed_checks) == 0
+    assert len(sca_image_report.failed_checks) == 6
+    assert len(sca_image_report.skipped_checks) == 0
+    assert len(sca_image_report.parsing_errors) == 0

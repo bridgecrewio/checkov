@@ -1,0 +1,323 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string"
+    },
+    "osDiskType": {
+      "type": "string"
+    },
+    "addressPrefixes": {
+      "type": "array"
+    },
+    "subnets": {
+      "type": "array"
+    },
+    "virtualNetworkId": {
+      "type": "string"
+    },
+    "virtualNetworkName": {
+      "type": "string"
+    },
+    "networkSecurityGroups": {
+      "type": "array"
+    },
+    "networkInterfaceConfigurations": {
+      "type": "array"
+    },
+    "vmName": {
+      "type": "string"
+    },
+    "virtualMachineScaleSetName": {
+      "type": "string"
+    },
+    "instanceCount": {
+      "type": "string"
+    },
+    "instanceSize": {
+      "type": "string"
+    },
+    "adminUsername": {
+      "type": "string"
+    },
+    "securityType": {
+      "type": "string"
+    },
+    "secureBoot": {
+      "type": "bool"
+    },
+    "vTPM": {
+      "type": "bool"
+    },
+    "platformFaultDomainCount": {
+      "type": "string"
+    }
+  },
+  "variables": {
+    "storageApiVersion": "2021-01-01",
+    "networkApiVersion": "2020-11-01",
+    "virtualMachineScaleSetApiVersion": "2023-03-01",
+    "namingInfix": "[toLower(substring(concat(parameters('virtualMachineScaleSetName'), uniqueString(resourceGroup().id)), 0, 9))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "apiVersion": "2023-11-01",
+      "name": "pass4",
+      "location": "string",
+      "tags": {
+        "tagName1": "tagValue1",
+        "tagName2": "tagValue2"
+      },
+      "extendedLocation": {
+        "name": "string",
+        "type": "EdgeZone"
+      },
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "string"
+          ]
+        },
+        "bgpCommunities": {
+          "virtualNetworkCommunity": "string"
+        },
+        "ddosProtectionPlan": {
+          "id": "string"
+        },
+        "dhcpOptions": {
+          "dnsServers": [
+            "10.7.7.2",
+            "10.7.7.7",
+            "10.7.7.1"
+          ]
+        },
+        "enableDdosProtection": "bool",
+        "enableVmProtection": "bool",
+        "encryption": {
+          "enabled": "bool",
+          "enforcement": "string"
+        },
+        "flowTimeoutInMinutes": "int",
+        "ipAllocations": [
+          {
+            "id": "string"
+          }
+        ],
+        "subnets": [
+          {
+            "id": "string",
+            "name": "string",
+            "properties": {
+              "addressPrefix": "string",
+              "addressPrefixes": [
+                "string"
+              ],
+              "applicationGatewayIPConfigurations": [
+                {
+                  "id": "string",
+                  "name": "string",
+                  "properties": {
+                    "subnet": {
+                      "id": "string"
+                    }
+                  }
+                }
+              ],
+              "defaultOutboundAccess": "bool",
+              "delegations": [
+                {
+                  "id": "string",
+                  "name": "string",
+                  "properties": {
+                    "serviceName": "string"
+                  },
+                  "type": "string"
+                }
+              ],
+              "ipAllocations": [
+                {
+                  "id": "string"
+                }
+              ],
+              "natGateway": {
+                "id": "string"
+              },
+              "networkSecurityGroup": {
+                "id": "string",
+                "location": "string",
+                "properties": {
+                  "flushConnection": "bool",
+                  "securityRules": [
+                    {
+                      "id": "string",
+                      "name": "string",
+                      "properties": {
+                        "access": "string",
+                        "description": "string",
+                        "destinationAddressPrefix": "string",
+                        "destinationAddressPrefixes": [
+                          "string"
+                        ],
+                        "destinationApplicationSecurityGroups": [
+                          {
+                            "id": "string",
+                            "location": "string",
+                            "properties": {},
+                            "tags": {}
+                          }
+                        ],
+                        "destinationPortRange": "string",
+                        "destinationPortRanges": [
+                          "string"
+                        ],
+                        "direction": "string",
+                        "priority": "int",
+                        "protocol": "string",
+                        "sourceAddressPrefix": "string",
+                        "sourceAddressPrefixes": [
+                          "string"
+                        ],
+                        "sourceApplicationSecurityGroups": [
+                          {
+                            "id": "string",
+                            "location": "string",
+                            "properties": {},
+                            "tags": {}
+                          }
+                        ],
+                        "sourcePortRange": "string",
+                        "sourcePortRanges": [
+                          "string"
+                        ]
+                      },
+                      "type": "string"
+                    }
+                  ]
+                },
+                "tags": {}
+              },
+              "privateEndpointNetworkPolicies": "string",
+              "privateLinkServiceNetworkPolicies": "string",
+              "routeTable": {
+                "id": "string",
+                "location": "string",
+                "properties": {
+                  "disableBgpRoutePropagation": "bool",
+                  "routes": [
+                    {
+                      "id": "string",
+                      "name": "string",
+                      "properties": {
+                        "addressPrefix": "string",
+                        "hasBgpOverride": "bool",
+                        "nextHopIpAddress": "string",
+                        "nextHopType": "string"
+                      },
+                      "type": "string"
+                    }
+                  ]
+                },
+                "tags": {}
+              },
+              "serviceEndpointPolicies": [
+                {
+                  "id": "string",
+                  "location": "string",
+                  "properties": {
+                    "contextualServiceEndpointPolicies": [
+                      "string"
+                    ],
+                    "serviceAlias": "string",
+                    "serviceEndpointPolicyDefinitions": [
+                      {
+                        "id": "string",
+                        "name": "string",
+                        "properties": {
+                          "description": "string",
+                          "service": "string",
+                          "serviceResources": [
+                            "string"
+                          ]
+                        },
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  "tags": {}
+                }
+              ],
+              "serviceEndpoints": [
+                {
+                  "locations": [
+                    "string"
+                  ],
+                  "service": "string"
+                }
+              ],
+              "sharingScope": "string"
+            },
+            "type": "string"
+          }
+        ],
+        "virtualNetworkPeerings": [
+          {
+            "id": "string",
+            "name": "string",
+            "properties": {
+              "allowForwardedTraffic": "bool",
+              "allowGatewayTransit": "bool",
+              "allowVirtualNetworkAccess": "bool",
+              "doNotVerifyRemoteGateways": "bool",
+              "enableOnlyIPv6Peering": "bool",
+              "localAddressSpace": {
+                "addressPrefixes": [
+                  "string"
+                ]
+              },
+              "localSubnetNames": [
+                "string"
+              ],
+              "localVirtualNetworkAddressSpace": {
+                "addressPrefixes": [
+                  "string"
+                ]
+              },
+              "peerCompleteVnets": "bool",
+              "peeringState": "string",
+              "peeringSyncLevel": "string",
+              "remoteAddressSpace": {
+                "addressPrefixes": [
+                  "string"
+                ]
+              },
+              "remoteBgpCommunities": {
+                "virtualNetworkCommunity": "string"
+              },
+              "remoteSubnetNames": [
+                "string"
+              ],
+              "remoteVirtualNetwork": {
+                "id": "string"
+              },
+              "remoteVirtualNetworkAddressSpace": {
+                "addressPrefixes": [
+                  "string"
+                ]
+              },
+              "useRemoteGateways": "bool"
+            },
+            "type": "string"
+          }
+        ]
+      }
+    }
+  ],
+  "outputs": {
+    "adminUsername": {
+      "type": "string",
+      "value": "[parameters('adminUsername')]"
+    }
+  }
+}

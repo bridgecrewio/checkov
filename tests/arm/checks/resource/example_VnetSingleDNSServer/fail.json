@@ -1,0 +1,96 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "type": "string"
+    },
+    "osDiskType": {
+      "type": "string"
+    },
+    "addressPrefixes": {
+      "type": "array"
+    },
+    "subnets": {
+      "type": "array"
+    },
+    "virtualNetworkId": {
+      "type": "string"
+    },
+    "virtualNetworkName": {
+      "type": "string"
+    },
+    "networkSecurityGroups": {
+      "type": "array"
+    },
+    "networkInterfaceConfigurations": {
+      "type": "array"
+    },
+    "vmName": {
+      "type": "string"
+    },
+    "virtualMachineScaleSetName": {
+      "type": "string"
+    },
+    "instanceCount": {
+      "type": "string"
+    },
+    "instanceSize": {
+      "type": "string"
+    },
+    "adminUsername": {
+      "type": "string"
+    },
+    "securityType": {
+      "type": "string"
+    },
+    "secureBoot": {
+      "type": "bool"
+    },
+    "vTPM": {
+      "type": "bool"
+    },
+    "platformFaultDomainCount": {
+      "type": "string"
+    }
+  },
+  "variables": {
+    "storageApiVersion": "2021-01-01",
+    "networkApiVersion": "2020-11-01",
+    "virtualMachineScaleSetApiVersion": "2023-03-01",
+    "namingInfix": "[toLower(substring(concat(parameters('virtualMachineScaleSetName'), uniqueString(resourceGroup().id)), 0, 9))]"
+  },
+  "resources": [
+    {
+      "name": "fail",
+      "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2022-11-01",
+      "location": "[parameters('location')]",
+      "dependsOn": [],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "subnet": {
+                "id": "[variables('subnetRef')]"
+              },
+              "privateIPAllocationMethod": "Dynamic"
+            }
+          }
+        ],
+        "dnsSettings": {
+          "dnsServers": [
+            "10.0.0.4"
+          ]
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "adminUsername": {
+      "type": "string",
+      "value": "[parameters('adminUsername')]"
+    }
+  }
+}

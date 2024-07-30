@@ -52,7 +52,7 @@ class TestModuleFinder(unittest.TestCase):
 
 
 @mock.patch.dict(os.environ, {"CHECKOV_EXPERIMENTAL_TERRAFORM_MANAGED_MODULES": "True"})
-def test_tf_managed_modules():
+def test_tf_managed_and_comment_out_modules():
     # this test leverages the modules, which Terraform downloads on its own
 
     # given
