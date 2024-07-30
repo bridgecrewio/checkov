@@ -251,14 +251,14 @@ checkov -d . --skip-check kube-system
 
 Run a scan of a container image. First pull or build the image then refer to it by the hash, ID, or name:tag:
 ```sh
-checkov --framework sca_image --docker-image sha256:1234example --dockerfile-path /Users/path/to/Dockerfile --bc-api-key ...
+checkov --framework sca_image --docker-image sha256:1234example --dockerfile-path /Users/path/to/Dockerfile --repo-id ... --bc-api-key ...
 
-checkov --docker-image <image-name>:tag --dockerfile-path /User/path/to/Dockerfile --bc-api-key ...
+checkov --docker-image <image-name>:tag --dockerfile-path /User/path/to/Dockerfile --repo-id ... --bc-api-key ...
 ```
 
 You can use --image flag also to scan container image instead of --docker-image for shortener:
 ```sh
-checkov --image <image-name>:tag --dockerfile-path /User/path/to/Dockerfile --bc-api-key ...
+checkov --image <image-name>:tag --dockerfile-path /User/path/to/Dockerfile --repo-id ... --bc-api-key ...
 ```
 
 Run an SCA scan of packages in a repo:
@@ -278,12 +278,12 @@ checkov -d .
 
 Run secrets scanning on all files in MyDirectory. Skip CKV_SECRET_6 check on json files that their suffix is DontScan
 ```sh
-checkov -d /MyDirectory --framework secrets --bc-api-key ... --skip-check CKV_SECRET_6:.*DontScan.json$
+checkov -d /MyDirectory --framework secrets --repo-id ... --bc-api-key ... --skip-check CKV_SECRET_6:.*DontScan.json$
 ```
 
 Run secrets scanning on all files in MyDirectory. Skip CKV_SECRET_6 check on json files that contains "skip_test" in path
 ```sh
-checkov -d /MyDirectory --framework secrets --bc-api-key ... --skip-check CKV_SECRET_6:.*skip_test.*json$
+checkov -d /MyDirectory --framework secrets --repo-id ... --bc-api-key ... --skip-check CKV_SECRET_6:.*skip_test.*json$
 ```
 
 One can mask values from scanning results by supplying a configuration file (using --config-file flag) with mask entry.
