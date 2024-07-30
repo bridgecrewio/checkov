@@ -19,12 +19,22 @@ class TestS3AllowsAnyPrincipal(unittest.TestCase):
             "aws_s3_bucket.pass",
             "aws_s3_bucket.pass2",
             "aws_s3_bucket_policy.pass",
+            "aws_s3_bucket_policy.pass_w_condition",
+            "aws_s3_bucket.pass_w_condition",
+            "aws_s3_bucket_policy.pass_w_condition2",
+            "aws_s3_bucket.pass_w_condition2",
+            "aws_s3_bucket.pass_w_condition3",
+            "aws_s3_bucket.pass_w_condition4",
+            "aws_s3_bucket.pass_w_condition5",
+            "aws_s3_bucket.pass_w_condition6",
         }
         failing_resources = {
             "aws_s3_bucket.fail",
             "aws_s3_bucket.fail2",
             "aws_s3_bucket.fail3",
             "aws_s3_bucket_policy.fail",
+            "aws_s3_bucket.fail_w_condition",
+            "aws_s3_bucket_policy.fail_w_condition",
         }
 
         passed_check_resources = set([c.resource for c in report.passed_checks])

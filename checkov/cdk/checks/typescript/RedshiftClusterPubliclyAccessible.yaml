@@ -1,0 +1,22 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_87
+  name: Redshift cluster should not be publicly accessible
+  category: NETWORKING
+  framework: cdk
+scope:
+  languages:
+    - javascript
+    - typescript
+definition:
+  patterns:
+    or:
+      - pattern: |
+          new $REDSHIFT.CfnCluster(<ANY>, {<ANY>, publiclyAccessible: true, <ANY>} ,<ANY>)
+      - pattern: |
+          new $REDSHIFT.Cluster(<ANY>, {<ANY>, publiclyAccessible: true, <ANY>} ,<ANY>)
+      - pattern: |
+          new CfnCluster(<ANY>, {<ANY>, publiclyAccessible: true, <ANY>} ,<ANY>)
+      - pattern: |
+          new Cluster(<ANY>, {<ANY>, publiclyAccessible: true, <ANY>} ,<ANY>)

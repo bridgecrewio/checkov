@@ -1,0 +1,17 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_164
+  name: Ensure Transfer Server is not exposed publicly.
+  category: GENERAL_SECURITY
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  pattern: new $AWS.CfnServer(<ANY>)
+  conditions:
+    - not_pattern: |
+          new $AWS.CfnServer(<ANY>, {<ANY>, endpointType: 'VPC', <ANY>}, <ANY>)
+    - not_pattern: |
+        new $AWS.CfnServer(<ANY>, {<ANY>, endpointType: 'VPC_ENDPOINT', <ANY>}, <ANY>)

@@ -5,6 +5,7 @@ RESOLVED_MODULE_ENTRY_NAME = "__resolved__"
 START_LINE = '__startline__'
 END_LINE = '__endline__'
 LINE_FIELD_NAMES = {START_LINE, END_LINE}
+TRUE_AFTER_UNKNOWN = 'true_after_unknown'
 
 DEV_API_GET_HEADERS = {
     'Accept': 'application/json'
@@ -25,8 +26,6 @@ PRISMA_PLATFORM = 'Prisma Cloud Code Security'
 BRIDGECREW_PLATFORM = 'Bridgecrew'
 
 MAX_IAC_FILE_SIZE = int(os.getenv('CHECKOV_MAX_IAC_FILE_SIZE', '50_000_000'))  # 50 MB is default limit
-
-CHECKOV_RUN_SCA_PACKAGE_SCAN_V2 = os.getenv('CHECKOV_RUN_SCA_PACKAGE_SCAN_V2', 'true').lower() == 'true'
 
 RESOURCE_ATTRIBUTES_TO_OMIT_UNIVERSAL_MASK = '*'
 
