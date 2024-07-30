@@ -1,0 +1,67 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.ContainerInstance/containerGroups",
+      "apiVersion": "2023-05-01",
+      "name": "pass_1",
+      "location": "pud_default_value",
+      "properties": {
+        "osType": "Linux",
+        "ipAddress": {
+          "type": "Public",
+          "ports": [
+            {
+              "port": 443,
+              "protocol": "TCP"
+            }
+          ]
+        },
+        "containers": [
+          {
+            "name": "hello-world",
+            "properties": {
+              "image": "mcr.microsoft.com/azuredocs/aci-helloworld:latest",
+              "resources": {
+                "requests": {
+                  "cpu": 0.5,
+                  "memoryInGB": 1.5
+                }
+              },
+              "ports": [
+                {
+                  "port": 443,
+                  "protocol": "TCP"
+                }
+              ]
+            }
+          },
+          {
+            "name": "een_le_pa",
+            "properties": {
+              "image": "mcr.microsoft.com/azuredocs/aci-tutorial-sidecar",
+              "resources": {
+                "requests": {
+                  "cpu": 0.5,
+                  "memoryInGB": 1.5
+                }
+              },
+              "environmentVariables": [
+                {
+                  "name": "SEC_CONT_PASS_1",
+                  "secureValue": "[parameters('randomString')]"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "parameters": {
+    "randomString": {
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.ContainerInstance/containerGroups",
+      "apiVersion": "2023-05-01",
+      "name": "pass_2",
+      "location": "westus2",
+      "properties": {
+        "osType": "Linux",
+        "containers": [],
+        "initContainers": [
+          {
+            "name": "init-container",
+            "properties": {
+              "image": "init-image:latest",
+              "resources": {
+                "requests": {
+                  "cpu": 0.5,
+                  "memoryInGB": 0.5
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
