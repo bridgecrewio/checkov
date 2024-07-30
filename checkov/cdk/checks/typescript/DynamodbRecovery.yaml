@@ -1,0 +1,21 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_28
+  name: Ensure DynamoDB point-in-time recovery (backup) is enabled
+  category: BACKUP_AND_RECOVERY
+  framework: cdk
+scope:
+  languages:
+    - typescript
+definition:
+  patterns:
+    or:
+      - pattern: new $AWS.CfnTable(<ANY>)
+        conditions:
+          - not_pattern: |
+              new $AWS.CfnTable(<ANY>, {<ANY>, pointInTimeRecoverySpecification: {<ANY>, pointInTimeRecoveryEnabled: true ,<ANY>} ,<ANY>} , <ANY>)
+      - pattern: new $AWS.Table(<ANY>)
+        conditions:
+          - not_pattern: |
+              new $AWS.Table(<ANY>, {<ANY>, pointInTimeRecovery: true ,<ANY>} ,<ANY>)

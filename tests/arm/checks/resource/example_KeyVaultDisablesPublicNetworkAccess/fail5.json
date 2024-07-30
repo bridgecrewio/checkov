@@ -1,0 +1,32 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.KeyVault/vaults",
+      "apiVersion": "2019-09-01",
+      "name": "fail5",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "enabledForDiskEncryption": true,
+        "tenantId": "[subscription().tenantId]",
+        "softDeleteRetentionInDays": 90,
+        "purgeProtectionEnabled": true,
+        "sku": {
+          "family": "A",
+          "name": "standard"
+        },
+        "networkAcls": {
+          "defaultAction": "Allow",
+          "bypass": "AzureServices",
+          "ipRules": [],
+          "virtualNetworkRules": [
+            {
+              "id": "[if(parameters('naclsEnabled'),concat(subscription().id, '/resourceGroups/', parameters('resourceGroupName'), '/providers/Microsoft.Network/virtualNetworks/<yourVirtualNetworkName>/subnets/<yourSubnetName>'),json('null'))]"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

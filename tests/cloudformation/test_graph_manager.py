@@ -14,7 +14,7 @@ class TestCloudformationGraphManager(TestCase):
         root_dir = os.path.realpath(os.path.join(TEST_DIRNAME, "./runner/resources"))
         graph_manager = CloudformationGraphManager(db_connector=NetworkxConnector())
         local_graph, definitions = graph_manager.build_graph_from_source_directory(root_dir, render_variables=False,
-                                                                                   excluded_paths=["skip.*"])
+                                                                                   excluded_paths=["skip.*", "double_state.*"])
 
         expected_resources_by_file = {
             os.path.join(root_dir, "no_properties.yaml"): [
