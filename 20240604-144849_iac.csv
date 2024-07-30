@@ -1,8 +1,0 @@
-Resource,Path,Git Org,Git Repository,Misconfigurations,Severity,Policy title,Guideline
-aws_s3_bucket.test,\main.tf,,,CKV2_AWS_62,,Ensure S3 buckets should have event notifications enabled,
-aws_s3_bucket.test,\main.tf,,,CKV2_AWS_6,,Ensure that S3 bucket has a Public Access block,
-aws_s3_bucket.test,\main.tf,,,CKV2_AWS_61,,Ensure that an S3 bucket has a lifecycle configuration,
-aws_s3_bucket.test,\main.tf,,,CKV_AWS_21,,Ensure all data stored in the S3 bucket have versioning enabled,
-aws_s3_bucket.test,\main.tf,,,CKV_AWS_145,,Ensure that S3 buckets are encrypted with KMS by default,
-aws_s3_bucket.test,\main.tf,,,CKV_AWS_144,,Ensure that S3 bucket has cross-region replication enabled,
-aws_s3_bucket.test,\main.tf,,,CKV_AWS_18,,Ensure the S3 bucket has access logging enabled,

@@ -6,7 +6,7 @@ from checkov.cloudformation.runner import Runner
 from checkov.runner_filter import RunnerFilter
 
 
-class TesthSagemakerDataQualityJobDefinitionVolumeEncryption(unittest.TestCase):
+class TestSagemakerDataQualityJobDefinitionVolumeEncryption(unittest.TestCase):
 
     def test_summary(self):
         runner = Runner()
