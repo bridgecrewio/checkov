@@ -58,10 +58,13 @@ from checkov.common.checks_infra.solvers import (
 )
 from checkov.common.checks_infra.solvers.connections_solvers.connection_one_exists_solver import \
     ConnectionOneExistsSolver
+from checkov.common.checks_infra.solvers.resource_solvers import ExistsResourcerSolver, NotExistsResourcerSolver
+from checkov.common.checks_infra.solvers.resource_solvers.base_resource_solver import BaseResourceSolver
 from checkov.common.graph.checks_infra.base_check import BaseGraphCheck
 from checkov.common.graph.checks_infra.base_parser import BaseGraphCheckParser
 from checkov.common.graph.checks_infra.enums import SolverType
 from checkov.common.graph.checks_infra.solvers.base_solver import BaseSolver
+from checkov.common.util.env_vars_config import env_vars_config
 from checkov.common.util.type_forcers import force_list
 
 if TYPE_CHECKING:
@@ -144,6 +147,12 @@ condition_type_to_solver_type = {
     "attribute": SolverType.ATTRIBUTE,
     "connection": SolverType.CONNECTION,
     "filter": SolverType.FILTER,
+    "resource": SolverType.RESOURCE,
+}
+
+operator_to_resource_solver_classes: dict[str, Type[BaseResourceSolver]] = {
+    "exists": ExistsResourcerSolver,
+    "not_exists": NotExistsResourcerSolver,
 }
 
 JSONPATH_PREFIX = "jsonpath_"
@@ -195,6 +204,7 @@ class GraphCheckParser(BaseGraphCheckParser):
         check.guideline = raw_check.get("metadata", {}).get("guideline")
         check.check_path = kwargs.get("check_path", "")
         solver = self.get_check_solver(check)
+        solver.providers = providers
         check.set_solver(solver)
 
         return check
@@ -238,7 +248,11 @@ class GraphCheckParser(BaseGraphCheckParser):
                     or (isinstance(resource_type, str) and resource_type.lower() == "all")
                     or (isinstance(resource_type, list) and resource_type[0].lower() == "all")
             ):
-                check.resource_types = resources_types or []
+                if env_vars_config.CKV_SUPPORT_ALL_RESOURCE_TYPE:
+                    check.resource_types = ['all']
+                else:
+                    check.resource_types = resources_types or []
+
             elif "provider" in resource_type and providers:
                 for provider in providers:
                     check.resource_types.append(f"provider.{provider.lower()}")
@@ -297,6 +311,9 @@ class GraphCheckParser(BaseGraphCheckParser):
             ),
             SolverType.FILTER: operator_to_filter_solver_classes.get(check.operator, lambda *args: None)(
                 check.resource_types, check.attribute, check.attribute_value
+            ),
+            SolverType.RESOURCE: operator_to_resource_solver_classes.get(check.operator, lambda *args: None)(
+                check.resource_types
             ),
         }
 

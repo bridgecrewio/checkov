@@ -22,6 +22,9 @@ class TestYamlPolicies(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
+    def test_DatabricksWorkspaceDBFSRootCustomerManagedKey(self):
+        self.go("DatabricksWorkspaceDBFSRootEncryptedWithCustomerManagedKey")
+
     def test_KmsKeyPolicyIsDefined(self):
         self.go("KmsKeyPolicyIsDefined")
 
@@ -50,7 +53,7 @@ class TestYamlPolicies(unittest.TestCase):
         self.go("S3NotAllowAccessToAllAuthenticatedUsers")
 
     def test_CloudFrontHasCustomSSLCertificate(self):
-        self.go("CloudFrontHasCustomSSLCertificate")            
+        self.go("CloudFrontHasCustomSSLCertificate")
 
     def test_CodecommitApprovalRulesAttached(self):
         self.go("CodecommitApprovalRulesAttached")
@@ -65,7 +68,7 @@ class TestYamlPolicies(unittest.TestCase):
         self.go("APIGatewayEndpointsUsesCertificateForAuthentication")
 
     def test_APIGatewayRequestParameterValidationEnabled(self):
-        self.go("APIGatewayRequestParameterValidationEnabled")        
+        self.go("APIGatewayRequestParameterValidationEnabled")
 
     def test_CloudFrontUsesSecureProtocolsForHTTPS(self):
         self.go("CloudFrontUsesSecureProtocolsForHTTPS")
@@ -74,7 +77,7 @@ class TestYamlPolicies(unittest.TestCase):
         self.go("EMRClusterHasSecurityConfiguration")
 
     def test_OpenSearchDomainHasFineGrainedControl(self):
-        self.go("OpenSearchDomainHasFineGrainedControl")        
+        self.go("OpenSearchDomainHasFineGrainedControl")
 
     def test_VPCHasRestrictedSG(self):
         self.go("VPCHasRestrictedSG")
@@ -89,7 +92,7 @@ class TestYamlPolicies(unittest.TestCase):
         self.go("SGAttachedToResource")
 
     def test_EC2InstanceHasIAMRoleAttached(self):
-        self.go("EC2InstanceHasIAMRoleAttached") 
+        self.go("EC2InstanceHasIAMRoleAttached")
 
     def test_StorageContainerActivityLogsNotPublic(self):
         self.go("StorageContainerActivityLogsNotPublic")
@@ -116,7 +119,7 @@ class TestYamlPolicies(unittest.TestCase):
         self.go("DMSEndpointHaveSSLConfigured")
 
     def test_ElastiCacheRedisConfiguredAutomaticFailOver(self):
-        self.go("ElastiCacheRedisConfiguredAutomaticFailOver")  
+        self.go("ElastiCacheRedisConfiguredAutomaticFailOver")
 
     def test_VAconfiguredToSendReportsToAdmins(self):
         self.go("VAconfiguredToSendReportsToAdmins")
@@ -156,7 +159,7 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_GCPVertexInstanceEncryptedWithCMK(self):
         self.go("GCPVertexInstanceEncryptedWithCMK")
-    
+
     def test_GCPVertexAIEndpointEncryptedWithCMK(self):
         self.go("GCPVertexAIEndpointEncryptedWithCMK")
 
@@ -171,9 +174,9 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_GCPVertexWorkbenchInstanceNoPublicIp(self):
         self.go("GCPVertexWorkbenchInstanceNoPublicIp")
-        
+
     def test_GCRContainerVulnerabilityScanningEnabled(self):
-        self.go("GCRContainerVulnerabilityScanningEnabled")    
+        self.go("GCRContainerVulnerabilityScanningEnabled")
 
     def test_AzureDataFactoriesEncryptedWithCustomerManagedKey(self):
         self.go("AzureDataFactoriesEncryptedWithCustomerManagedKey")
@@ -194,7 +197,7 @@ class TestYamlPolicies(unittest.TestCase):
         self.go("GCPLogBucketsConfiguredUsingLock")
 
     def test_CloudFunctionSecureHTTPTrigger(self):
-        self.go("CloudFunctionSecureHTTPTrigger")    
+        self.go("CloudFunctionSecureHTTPTrigger")
 
     def test_GCPAuditLogsConfiguredForAllServicesAndUsers(self):
         self.go("GCPAuditLogsConfiguredForAllServicesAndUsers")
@@ -246,6 +249,18 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_StorageLoggingIsEnabledForTableService(self):
         self.go("StorageLoggingIsEnabledForTableService")
+
+    def test_SynapseLogMonitoringEnabledForSQLPool(self):
+        self.go("SynapseLogMonitoringEnabledForSQLPool")
+        
+    def test_SynapseSQLPoolHasSecurityAlertPolicy(self):
+        self.go("SynapseSQLPoolHasSecurityAlertPolicy")
+
+    def test_SynapseSQLPoolHasVulnerabilityAssessment(self):
+        self.go("SynapseSQLPoolHasVulnerabilityAssessment")
+
+    def test_SynapseWorkspaceHasExtendedAuditLogs(self):
+        self.go("SynapseWorkspaceHasExtendedAuditLogs")
 
     def test_VMHasBackUpMachine(self):
         self.go("VMHasBackUpMachine")
@@ -324,10 +339,10 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_GCPContainerRegistryReposAreNotPubliclyAccessible(self):
         self.go("GCPContainerRegistryReposAreNotPubliclyAccessible")
-    
+
     def test_GCPDialogFlowAgentLoggingEnabled(self):
         self.go("GCPDialogFlowAgentLoggingEnabled")
-    
+
     def test_GCPDialogFlowCxAgentLoggingEnabled(self):
         self.go("GCPDialogFlowCxAgentLoggingEnabled")
 
@@ -336,13 +351,13 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_GCPVertexAIPrivateEndpoint(self):
         self.go("GCPVertexAIPrivateEndpoint")
-    
+
     def test_GCPVertexAIPrivateIndexEndpoint(self):
         self.go("GCPVertexAIPrivateIndexEndpoint")
 
     def test_GCPTpuV2VmPrivateEndpoint(self):
         self.go("GCPTpuV2VmPrivateEndpoint")
-    
+
     def test_GCPVertexRuntimePrivate(self):
         self.go("GCPVertexRuntimePrivate")
 
@@ -411,7 +426,7 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_GCPdisableAlphaClusterFeatureInKubernetesEngineClusters(self):
         self.go("GCPdisableAlphaClusterFeatureInKubernetesEngineClusters")
-        
+
     def test_AzureContainerInstanceconfigManagedIdentity(self):
             self.go("AzureContainerInstanceconfigManagedIdentity")
 
@@ -429,7 +444,7 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_AzureStorageAccConfigWithPrivateEndpoint(self):
         self.go("AzureStorageAccConfigWithPrivateEndpoint")
-    
+
     def test_OCI_K8EngineClusterBootVolConfigInTransitEncryption(self):
             self.go("OCI_K8EngineClusterBootVolConfigInTransitEncryption")
 
@@ -456,6 +471,12 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_AzureMariaDBserverUsingTLS_1_2(self):
             self.go("AzureMariaDBserverUsingTLS_1_2")
+   
+    def test_AzureMLWorkspaceWithPublicStorageAccount(self):
+            self.go("AzureMLWorkspaceHBIPublicNetwork")
+
+    def test_AzureMLWorkspacePublicNetwork(self):
+            self.go("AzureMLWorkspacePublicNetwork")
 
     def test_AzureStorageAccountEnableSoftDelete(self):
             self.go("AzureStorageAccountEnableSoftDelete")
@@ -496,6 +517,9 @@ class TestYamlPolicies(unittest.TestCase):
     def test_IBM_VPCclassicAccessIsDisabled(self):
         self.go("IBM_VPCclassicAccessIsDisabled")
 
+    def test_SageMakerIAMPolicyOverlyPermissiveToAllTraffic(self):
+        self.go("SageMakerIAMPolicyOverlyPermissiveToAllTraffic")
+
     def test_IBM_RestrictServiceIDCreationInAccountSettings(self):
         self.go("IBM_RestrictServiceIDCreationInAccountSettings")
 
@@ -504,9 +528,6 @@ class TestYamlPolicies(unittest.TestCase):
 
     def test_IBM_RestrictAPIkeyCreationInAccountSettings(self):
         self.go("IBM_RestrictAPIkeyCreationInAccountSettings")
-
-    def test_IBM_DatabasesNWaccessRestrictedToSpecificIPrange(self):
-        self.go("IBM_DatabasesNWaccessRestrictedToSpecificIPrange")
 
     def test_IBM_K8sClustersAccessibleViaPrivateEndPt(self):
         self.go("IBM_K8sClustersAccessibleViaPrivateEndPt")

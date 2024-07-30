@@ -19,6 +19,7 @@ from urllib.parse import urlparse
 import boto3
 import dpath
 import urllib3
+import urllib.parse
 from botocore.config import Config
 from botocore.exceptions import ClientError
 from cachetools import cached, TTLCache
@@ -28,7 +29,7 @@ from tqdm import trange
 from urllib3.exceptions import HTTPError, MaxRetryError
 
 from checkov.common.bridgecrew.check_type import CheckType
-from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError
+from checkov.common.bridgecrew.platform_errors import BridgecrewAuthError, PlatformConnectionError
 from checkov.common.bridgecrew.platform_key import read_key
 from checkov.common.bridgecrew.run_metadata.registry import registry
 from checkov.common.bridgecrew.wrapper import persist_assets_results, reduce_scan_reports, \
@@ -57,7 +58,7 @@ from checkov.common.util.http_utils import (
     REQUEST_READ_TIMEOUT,
     REQUEST_RETRIES,
 )
-from checkov.common.util.type_forcers import convert_prisma_policy_filter_to_dict, convert_str_to_bool
+from checkov.common.util.type_forcers import convert_prisma_policy_filter_to_params, convert_str_to_bool
 from checkov.version import version as checkov_version
 
 if TYPE_CHECKING:
@@ -67,7 +68,7 @@ if TYPE_CHECKING:
     from checkov.secrets.coordinator import EnrichedSecret
     from mypy_boto3_s3.client import S3Client
     from typing_extensions import TypeGuard
-    from checkov.common.sast.report_types import Match
+    from checkov.common.sast.report_types import Match, SkippedCheck
 
 SLEEP_SECONDS = 1
 
@@ -85,8 +86,19 @@ ASSUME_ROLE_UNUATHORIZED_MESSAGE = 'is not authorized to perform: sts:AssumeRole
 FileToPersist = namedtuple('FileToPersist', 'full_file_path s3_file_key')
 
 DEFAULT_REGION = "us-west-2"
-GOV_CLOUD_REGION = 'us-gov-west-1'
 PRISMA_GOV_API_URL = 'https://api.gov.prismacloud.io'
+JAKARTA_API_URL = 'https://api.id.prismacloud.io'
+
+API_URL_REGION_MAP = {
+    PRISMA_GOV_API_URL: 'us-gov-west-1',
+    JAKARTA_API_URL: 'ap-southeast-3'
+}
+
+REGIONS_URL_NOT_SUPPORT_S3_ACCELERATE = {
+    PRISMA_GOV_API_URL,
+    JAKARTA_API_URL
+}
+
 MAX_RETRIES = 40
 
 CI_METADATA_EXTRACTOR = registry.get_extractor()
@@ -117,13 +129,16 @@ class BcPlatformIntegration:
         self.timestamp: str | None = None
         self.scan_reports: list[Report] = []
         self.bc_api_url = normalize_bc_url(os.getenv('BC_API_URL'))
-        self.prisma_api_url = normalize_prisma_url(os.getenv('PRISMA_API_URL', 'https://api0.prismacloud.io'))
+        self.prisma_api_url = normalize_prisma_url(os.getenv('PRISMA_API_URL') or 'https://api0.prismacloud.io')
         self.prisma_policies_url: str | None = None
         self.prisma_policy_filters_url: str | None = None
+        self.custom_auth_headers: dict[str, str] = {}
+        self.custom_auth_token: str | None = None
         self.setup_api_urls()
         self.customer_run_config_response = None
         self.runtime_run_config_response = None
-        self.prisma_policies_response = None
+        self.prisma_policies_response: dict[str, str] | None = None
+        self.prisma_policies_exception_response: dict[str, str] | None = None
         self.public_metadata_response = None
         self.use_s3_integration = False
         self.s3_setup_failed = False
@@ -162,7 +177,9 @@ class BcPlatformIntegration:
         self.cicd_details = platform_integration_data["cicd_details"]
         self.credentials = platform_integration_data["credentials"]
         self.platform_integration_configured = platform_integration_data["platform_integration_configured"]
-        self.prisma_api_url = platform_integration_data["prisma_api_url"]
+        self.prisma_api_url = platform_integration_data.get("prisma_api_url", 'https://api0.prismacloud.io')
+        self.custom_auth_headers = platform_integration_data["custom_auth_headers"]
+        self.custom_auth_token = platform_integration_data["custom_auth_token"]
         self.repo_branch = platform_integration_data["repo_branch"]
         self.repo_id = platform_integration_data["repo_id"]
         self.repo_path = platform_integration_data["repo_path"]
@@ -187,6 +204,7 @@ class BcPlatformIntegration:
             "credentials": self.credentials,
             "platform_integration_configured": self.platform_integration_configured,
             "prisma_api_url": self.prisma_api_url,
+            "custom_auth_headers": self.custom_auth_headers,
             "repo_branch": self.repo_branch,
             "repo_id": self.repo_id,
             "repo_path": self.repo_path,
@@ -223,7 +241,7 @@ class BcPlatformIntegration:
         self.runtime_run_config_url = f"{self.api_url}/api/v1/runtime-images/repositories"
 
     def is_prisma_integration(self) -> bool:
-        if self.bc_api_key and not self.is_bc_token(self.bc_api_key):
+        if (self.bc_api_key and not self.is_bc_token(self.bc_api_key)) or self.custom_auth_token:
             return True
         return False
 
@@ -262,6 +280,8 @@ class BcPlatformIntegration:
     def get_auth_token(self) -> str:
         if self.is_bc_token(self.bc_api_key):
             return self.bc_api_key
+        if self.custom_auth_token:
+            return self.custom_auth_token
         # A Prisma Cloud Access Key was specified as the Bridgecrew token.
         if not self.prisma_api_url:
             raise ValueError("A Prisma Cloud token was set, but no Prisma Cloud API URL was set")
@@ -382,6 +402,17 @@ class BcPlatformIntegration:
 
         self.platform_integration_configured = True
 
+    def _get_source_id_from_repo_path(self, repo_path: str) -> str | None:
+        repo_path_parts = repo_path.split("/")
+        if not repo_path_parts and repo_path_parts[0] != 'checkov':
+            logging.error(f'failed to get source_id from repo_path. repo_path format is unknown: ${repo_path}')
+            return None
+        try:
+            return '/'.join(repo_path_parts[2:4])
+        except IndexError:
+            logging.error(f'failed to get source_id from repo_path. repo_path format is unknown: ${repo_path}')
+            return None
+
     def set_s3_integration(self) -> None:
         try:
             self.skip_fixes = True  # no need to run fixes on CI integration
@@ -390,7 +421,7 @@ class BcPlatformIntegration:
                 return
 
             self.bucket, self.repo_path = repo_full_path.split("/", 1)
-
+            self.source_id = self._get_source_id_from_repo_path(self.repo_path)
             self.timestamp = self.repo_path.split("/")[-2]
             self.credentials = cast("dict[str, str]", response["creds"])
 
@@ -401,18 +432,35 @@ class BcPlatformIntegration:
 
             self.use_s3_integration = True
             self.platform_integration_configured = True
-        except MaxRetryError:
-            logging.error("An SSL error occurred connecting to the platform. If you are on a VPN, please try "
-                          "disabling it and re-running the command.", exc_info=True)
-            raise
-        except HTTPError:
-            logging.error("Failed to get customer assumed role", exc_info=True)
-            raise
-        except JSONDecodeError:
-            logging.error(f"Response of {self.integrations_api_url} is not a valid JSON", exc_info=True)
-            raise
+        except MaxRetryError as e:
+            # almost all failures should be caught by this block - we need to differentiate what actually happened
+            # for the causes that are almost certainly user error, we want to hide the exception details
+            # so that it does not look like checkov crashed due to a bug (stack traces are scary for users)
+            if str(e.reason) == 'too many 401 error responses':
+                logging.error('An authentication error occurred connecting to the platform after multiple retries. '
+                              'Please verify that your API key and Prisma API URL are correct, and retry.')
+            elif isinstance(e.reason, urllib3.exceptions.SSLError):
+                logging.error("An SSL error occurred connecting to the platform. If you are on a VPN, please try "
+                              f"disabling it and re-running the command. The error is: {e.reason}")
+            else:
+                logging.error('An error occurred connecting to the platform after multiple retries. Please verify your '
+                              'API key and Prisma API URL, as well as network connectivity, and retry. If the problem '
+                              'persists, please enable debug logs and contact support.')
+            logging.debug('The exception details:', exc_info=True)
+            raise PlatformConnectionError(str(e.reason)) from e
+        except HTTPError as e:
+            logging.error('An unexpected error occurred connecting to the platform. Please verify your '
+                          'API key and Prisma API URL, as well as network connectivity, and retry. If the problem '
+                          'persists, please enable debug logs and contact support.', exc_info=True)
+            raise PlatformConnectionError(str(e)) from e
+        except JSONDecodeError as e:
+            logging.error('An unexpected error occurred processing the response from the platform. Please verify your '
+                          'API key and Prisma API URL, as well as network connectivity, and retry. If the problem '
+                          'persists, please enable debug logs and contact support.', exc_info=True)
+            raise PlatformConnectionError(str(e)) from e
         except BridgecrewAuthError:
-            logging.error("Received an error response during authentication")
+            logging.error('An authentication error occurred connecting to the platform after multiple retries. '
+                          'Please verify that your API keys and Prisma API URL are correct, and retry.')
             raise
 
     def set_s3_client(self) -> None:
@@ -421,9 +469,10 @@ class BcPlatformIntegration:
 
         region = DEFAULT_REGION
         use_accelerate_endpoint = True
-        if self.prisma_api_url == PRISMA_GOV_API_URL:
-            region = GOV_CLOUD_REGION
+
+        if self.prisma_api_url in REGIONS_URL_NOT_SUPPORT_S3_ACCELERATE:
             use_accelerate_endpoint = False
+            region = API_URL_REGION_MAP[self.prisma_api_url]
 
         try:
             config = Config(
@@ -479,7 +528,8 @@ class BcPlatformIntegration:
         request = self.http.request("POST", self.integrations_api_url,  # type:ignore[union-attr]
                                     body=json.dumps({"repoId": repo_id, "support": self.support_flag_enabled}),
                                     headers=merge_dicts({"Authorization": token, "Content-Type": "application/json"},
-                                                        get_user_agent_header()))
+                                                        get_user_agent_header(),
+                                                        self.custom_auth_headers))
         logging.debug(f'Request ID: {request.headers.get("x-amzn-requestid")}')
         logging.debug(f'Trace ID: {request.headers.get("x-amzn-trace-id")}')
         if request.status == 403:
@@ -601,6 +651,23 @@ class BcPlatformIntegration:
 
                 return
 
+    def adjust_sast_skipped_checks_path(self, skipped_checks_by_file: Dict[str, List[SkippedCheck]]) -> None:
+        for filepath in list(skipped_checks_by_file.keys()):
+            new_filepath = None
+            for dir in self.scan_dir:
+                if filepath.startswith(os.path.abspath(dir)):
+                    file_dir = '/'.join(filepath.split('/')[0:-1])
+                    new_filepath = filepath.replace(os.path.abspath(file_dir), self.repo_path)  # type: ignore
+                    break
+            for file in self.scan_file:
+                if filepath == os.path.abspath(file):
+                    file_dir = '/'.join(filepath.split('/')[0:-1])
+                    new_filepath = filepath.replace(os.path.abspath(file_dir), self.repo_path)  # type: ignore
+                    break
+            if new_filepath:
+                skipped_checks_by_file[new_filepath] = skipped_checks_by_file[filepath]
+                skipped_checks_by_file.pop(filepath)
+
     @staticmethod
     def _delete_code_block_from_sast_report(report: Dict[str, Any]) -> None:
         if isinstance(report, dict):
@@ -622,15 +689,17 @@ class BcPlatformIntegration:
     def persist_sast_scan_results(self, reports: List[Report]) -> None:
         sast_scan_reports = {}
         for report in reports:
-            if not report.check_type.startswith('sast'):
+            if not report.check_type.lower().startswith(CheckType.SAST):
                 continue
-            if not report.sast_report:  # type: ignore
+            if not hasattr(report, 'sast_report') or not report.sast_report:
                 continue
-            for _, match_by_check in report.sast_report.rule_match.items():  # type: ignore
+            for _, match_by_check in report.sast_report.rule_match.items():
                 for _, match in match_by_check.items():
                     for m in match.matches:
                         self.adjust_sast_match_location_path(m)
-                sast_scan_reports[report.check_type] = report.sast_report.model_dump(mode='json')  # type: ignore
+                self.adjust_sast_skipped_checks_path(report.sast_report.skipped_checks_by_file)
+
+                sast_scan_reports[report.check_type] = report.sast_report.model_dump(mode='json')
             if self.on_prem:
                 BcPlatformIntegration._delete_code_block_from_sast_report(sast_scan_reports)
 
@@ -834,7 +903,8 @@ class BcPlatformIntegration:
                                                                  "Content-Type": "application/json",
                                                                  'x-api-client': self.bc_source.name,
                                                                  'x-api-checkov-version': checkov_version},
-                                                                get_user_agent_header()
+                                                                get_user_agent_header(),
+                                                                self.custom_auth_headers
                                                                 ))
                 response = json.loads(request.data.decode("utf8"))
                 logging.debug(f'Request ID: {request.headers.get("x-amzn-requestid")}')
@@ -897,11 +967,12 @@ class BcPlatformIntegration:
                     sleep(SLEEP_SECONDS)
                     curr_try += 1
                 else:
-                    logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}",
-                                  exc_info=True)
+                    logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}", exc_info=True)
+                    logging.debug(f"file size of {full_file_path} is {os.stat(full_file_path).st_size} bytes")
                     raise
             except Exception:
                 logging.error(f"failed to persist file {full_file_path} into S3 bucket {self.bucket}", exc_info=True)
+                logging.debug(f"file size of {full_file_path} is {os.stat(full_file_path).st_size} bytes")
                 raise
         if curr_try == tries:
             logging.error(
@@ -918,7 +989,8 @@ class BcPlatformIntegration:
             self.get_public_run_config()
 
     def _get_run_config_query_params(self) -> str:
-        return f'module={"bc" if self.is_bc_token(self.bc_api_key) else "pc"}&enforcementv2=true'
+        # ignore mypy warning that this can be null
+        return f'module={"bc" if self.is_bc_token(self.bc_api_key) else "pc"}&enforcementv2=true&repoId={urllib.parse.quote(self.repo_id)}'  # type: ignore
 
     def get_run_config_url(self) -> str:
         return f'{self.platform_run_config_url}?{self._get_run_config_query_params()}'
@@ -939,7 +1011,8 @@ class BcPlatformIntegration:
         try:
             token = self.get_auth_token()
             headers = merge_dicts(get_auth_header(token),
-                                  get_default_get_headers(self.bc_source, self.bc_source_version))
+                                  get_default_get_headers(self.bc_source, self.bc_source_version),
+                                  self.custom_auth_headers)
 
             self.setup_http_manager()
             if not self.http:
@@ -969,8 +1042,11 @@ class BcPlatformIntegration:
             self.customer_run_config_response = json.loads(request.data.decode("utf8"))
 
             logging.debug(f"Got customer run config from {platform_type} platform")
-        except Exception:
-            logging.warning(f"Failed to get the customer run config from {self.platform_run_config_url}", exc_info=True)
+        except Exception as e:
+            logging.warning(f"An unexpected error occurred getting the run configuration from {self.platform_run_config_url} "
+                            "after multiple retries. Please verify your API key and Prisma API URL, and retry. If the "
+                            "problem persists, please enable debug logs and contact support. The error is: "
+                            f"{e}", exc_info=True)
             raise
 
     def get_reachability_run_config(self) -> Union[Dict[str, Any], None]:
@@ -989,7 +1065,8 @@ class BcPlatformIntegration:
         try:
             token = self.get_auth_token()
             headers = merge_dicts(get_auth_header(token),
-                                  get_default_get_headers(self.bc_source, self.bc_source_version))
+                                  get_default_get_headers(self.bc_source, self.bc_source_version),
+                                  self.custom_auth_headers)
 
             self.setup_http_manager()
             if not self.http:
@@ -1030,7 +1107,8 @@ class BcPlatformIntegration:
 
             token = self.get_auth_token()
             headers = merge_dicts(get_auth_header(token),
-                                  get_default_get_headers(self.bc_source, self.bc_source_version))
+                                  get_default_get_headers(self.bc_source, self.bc_source_version),
+                                  self.custom_auth_headers)
 
             self.setup_http_manager()
             if not self.http:
@@ -1052,17 +1130,18 @@ class BcPlatformIntegration:
         except Exception:
             logging.debug('could not get runtime info for this repo')
 
-    def get_prisma_build_policies(self, policy_filter: str) -> None:
+    def get_prisma_build_policies(self, policy_filter: str, policy_filter_exception: str) -> None:
         """
         Get Prisma policy for enriching runConfig with metadata
         Filters: https://prisma.pan.dev/api/cloud/cspm/policy#operation/get-policy-filters-and-options
         :param policy_filter: comma separated filter string. Example, policy.label=A,cloud.type=aws
+        :param policy_filter_exception: comma separated filter string. Example, policy.label=A,cloud.type=aws
         :return:
         """
         if self.skip_download is True:
             logging.debug("Skipping prisma policy API call")
             return
-        if not policy_filter:
+        if not policy_filter and not policy_filter_exception:
             return
         if not self.is_prisma_integration():
             return
@@ -1070,44 +1149,58 @@ class BcPlatformIntegration:
             raise Exception(
                 "Tried to get prisma build policy metadata, "
                 "but the API key was missing or the integration was not set up")
+        self.prisma_policies_response = self.get_prisma_policies_for_filter(policy_filter)
+        self.prisma_policies_exception_response = self.get_prisma_policies_for_filter(policy_filter_exception)
 
+    def get_prisma_policies_for_filter(self, policy_filter: str) -> dict[Any, Any] | None:
         request = None
-
+        filtered_policies = None
         try:
             token = self.get_auth_token()
-            headers = merge_dicts(get_prisma_auth_header(token), get_prisma_get_headers())
+            headers = merge_dicts(get_prisma_auth_header(token), get_prisma_get_headers(), self.custom_auth_headers)
 
             self.setup_http_manager()
             if not self.http:
                 logging.error("HTTP manager was not correctly created")
-                return
+                return filtered_policies
 
             logging.debug(f'Prisma policy URL: {self.prisma_policies_url}')
-            query_params = convert_prisma_policy_filter_to_dict(policy_filter)
+            query_params = convert_prisma_policy_filter_to_params(policy_filter)
             if self.is_valid_policy_filter(query_params, valid_filters=self.get_prisma_policy_filters()):
                 # If enabled and subtype are not explicitly set, use the only acceptable values.
-                query_params['policy.enabled'] = True
-                query_params['policy.subtype'] = 'build'
+                self.add_static_policy_filters(query_params)
+                logging.debug(f'Filter query params: {query_params}')
+
                 request = self.http.request(  # type:ignore[no-untyped-call]
                     "GET",
                     self.prisma_policies_url,
                     headers=headers,
-                    fields=query_params,
+                    fields=tuple(query_params),
                 )
-                self.prisma_policies_response = json.loads(request.data.decode("utf8"))
                 logging.debug("Got Prisma build policy metadata")
-            else:
-                logging.warning("Skipping get prisma build policies. --policy-metadata-filter will not be applied.")
+                filtered_policies = json.loads(request.data.decode("utf8"))
         except Exception:
             response_message = f': {request.status} - {request.reason}' if request else ''
             logging.warning(
                 f"Failed to get prisma build policy metadata from {self.prisma_policies_url}{response_message}", exc_info=True)
+        return filtered_policies
+
+    @staticmethod
+    def add_static_policy_filters(query_params: list[tuple[str, str]]) -> list[tuple[str, str]]:
+        """
+        Adds policy.enabled = true, policy.subtype = build to the query params, if these are not already present. Modifies the list in place and also returns it.
+        """
+        if not any(p[0] == 'policy.enabled' for p in query_params):
+            query_params.append(('policy.enabled', 'true'))
+        if not any(p[0] == 'policy.subtype' for p in query_params):
+            query_params.append(('policy.subtype', 'build'))
+        return query_params
 
     def get_prisma_policy_filters(self) -> Dict[str, Dict[str, Any]]:
         request = None
         try:
             token = self.get_auth_token()
-            headers = merge_dicts(get_prisma_auth_header(token), get_prisma_get_headers())
+            headers = merge_dicts(get_prisma_auth_header(token), get_prisma_get_headers(), self.custom_auth_headers)
 
             self.setup_http_manager()
             if not self.http:
@@ -1130,7 +1223,7 @@ class BcPlatformIntegration:
             return {}
 
     @staticmethod
-    def is_valid_policy_filter(policy_filter: dict[str, str], valid_filters: dict[str, dict[str, Any]] | None = None) -> bool:
+    def is_valid_policy_filter(policy_filter: list[tuple[str, str]], valid_filters: dict[str, dict[str, Any]] | None = None) -> bool:
         """
         Validates only the filter names
         """
@@ -1140,7 +1233,7 @@ class BcPlatformIntegration:
             return False
         if not valid_filters:
             return False
-        for filter_name, filter_value in policy_filter.items():
+        for filter_name, filter_value in policy_filter:
             if filter_name not in valid_filters.keys():
                 logging.warning(f"Invalid filter name: {filter_name}")
                 logging.warning(f"Available filter names: {', '.join(valid_filters.keys())}")
@@ -1153,7 +1246,7 @@ class BcPlatformIntegration:
                 logging.warning(f"Filter value not allowed: {filter_value}")
                 logging.warning("Available options: True")
                 return False
-        logging.debug("--policy-metadata-filter is valid")
+        logging.debug("policy filter is valid")
         return True
 
     def get_public_run_config(self) -> None:
@@ -1301,10 +1394,12 @@ class BcPlatformIntegration:
 
         if request_type.upper() == "GET":
             return merge_dicts(get_default_get_headers(self.bc_source, self.bc_source_version),
-                               {"Authorization": self.get_auth_token()})
+                               {"Authorization": self.get_auth_token()},
+                               self.custom_auth_headers)
         elif request_type.upper() == "POST":
             return merge_dicts(get_default_post_headers(self.bc_source, self.bc_source_version),
-                               {"Authorization": self.get_auth_token()})
+                               {"Authorization": self.get_auth_token()},
+                               self.custom_auth_headers)
 
         logging.info(f"Unsupported request {request_type}")
         return {}
@@ -1316,7 +1411,8 @@ class BcPlatformIntegration:
         url_saml_config = f"{bc_integration.prisma_api_url}/saml/config"
         token = self.get_auth_token()
         headers = merge_dicts(get_auth_header(token),
-                              get_default_get_headers(self.bc_source, self.bc_source_version))
+                              get_default_get_headers(self.bc_source, self.bc_source_version),
+                              bc_integration.custom_auth_headers)
 
         request = self.http.request("GET", url_saml_config, headers=headers, timeout=10)  # type:ignore[no-untyped-call]
         if request.status >= 300:
@@ -1333,6 +1429,12 @@ class BcPlatformIntegration:
             # If there are any query parameters, append them to the URI
             if parsed_url.query:
                 uri = f"{uri}?{parsed_url.query}"
+
+                # First encoding
+                encoded_uri = urllib.parse.quote(uri)
+
+                # Second encoding
+                uri = urllib.parse.quote(encoded_uri)
             # Check if the URL already contains GET parameters.
             if "?" in access_saml_url:
                 report_url = f"{access_saml_url}&{relay_state_param_name}={uri}"

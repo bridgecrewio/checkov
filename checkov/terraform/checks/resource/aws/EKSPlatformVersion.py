@@ -24,7 +24,7 @@ class EKSPlatformVersion(BaseResourceValueCheck):
         return "version"
 
     def get_expected_values(self) -> list[Any]:
-        return ["1.23", "1.24", "1.25", "1.26", "1.27", "1.28"]
+        return ["1.23", "1.24", "1.25", "1.26", "1.27", "1.28", "1.29", "1.30"]
 
 
 check = EKSPlatformVersion()

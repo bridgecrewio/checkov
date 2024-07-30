@@ -1,0 +1,30 @@
+metadata:
+  version: 0.2
+  approach: define failing
+  id: CKV_AWS_64
+  name: Ensure all data stored in the Redshift cluster is securely encrypted at rest
+  category: ENCRYPTION
+  framework: cdk
+scope:
+  languages:
+    - javascript
+    - typescript
+definition:
+  patterns:
+    or:
+      - pattern: new $REDSHIFT.CfnCluster(<ANY>)
+        conditions:
+          - not_pattern: |
+              new $REDSHIFT.CfnCluster(<ANY>, {<ANY>, encrypted: true, <ANY>} ,<ANY>)
+      - pattern: new $REDSHIFT.Cluster(<ANY>)
+        conditions:
+          - not_pattern: |
+              new $REDSHIFT.Cluster(<ANY>, {<ANY>, encrypted: true, <ANY>} ,<ANY>)
+      - pattern: new CfnCluster(<ANY>)
+        conditions:
+          - not_pattern: |
+              new CfnCluster(<ANY>, {<ANY>, encrypted: true, <ANY>} ,<ANY>)
+      - pattern: new Cluster(<ANY>)
+        conditions:
+          - not_pattern: |
+              new Cluster(<ANY>, {<ANY>, encrypted: true, <ANY>} ,<ANY>)
