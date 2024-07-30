@@ -36,6 +36,9 @@ class TestAzureContainerInstanceEnvVarSecureValueType(unittest.TestCase):
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)
 
+        self.assertEqual(len(report.resources), 1)
+        self.assertEqual(len(report.passed_checks), 1)
+
 
 if __name__ == '__main__':
     unittest.main()
