@@ -50,6 +50,7 @@ def validate_report(report_path: str) -> None:
         summary = report.get("summary")
         assert summary.get("passed") == 0
         assert summary.get("failed") > 0
+        assert summary.get("policies_errors_count") == 0
 
 
 def validate_platform_report(report_path: str, lang: str) -> None:
