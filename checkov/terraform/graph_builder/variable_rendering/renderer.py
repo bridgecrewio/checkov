@@ -174,11 +174,20 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
             self.done_edges_by_origin_vertex[edge.origin].append(edge)
 
     def extract_value_from_vertex(self, key_path: List[str], attributes: Dict[str, Any]) -> Any:
+        # if key_path[-1] == 'json':
+        #     key_path = ['config_', *key_path[:-1]]
+        #     value = attributes
+        #     for key in key_path:
+        #         value = value.get(key)
+        #     return value
         for i, _ in enumerate(key_path):
             key = join_trimmed_strings(char_to_join=".", str_lst=key_path, num_to_trim=i)
             value = attributes.get(key, None)
             if value is not None:
                 return value
+            # if key.endswith('.json'):
+            #     beginning = key.split('.json')[0]
+            #     return attributes['config_'].get(beginning)
 
         reversed_key_path = key_path[::-1]
         for i, _ in enumerate(reversed_key_path):
