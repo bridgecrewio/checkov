@@ -248,11 +248,11 @@ class Runner(BaseRunner[None, None, None]):
                     added_by = enriched_potential_secret.get('added_by') or ''
                     removed_date = enriched_potential_secret.get('removed_date') or ''
                     added_date = enriched_potential_secret.get('added_date') or ''
-                # run over secret key
-                if isinstance(secret.secret_value, str) and secret.secret_value:
-                    stripped = secret.secret_value.strip(',";\'')
-                    if stripped != secret.secret_value:
-                        secret_key = f'{key}_{secret.line_number}_{PotentialSecret.hash_secret(stripped)}'
+                    # run over secret key
+                    if isinstance(secret.secret_value, str) and secret.secret_value:
+                        stripped = secret.secret_value.strip(',"')
+                        if stripped != secret.secret_value:
+                            secret_key = f'{key}_{secret.line_number}_{PotentialSecret.hash_secret(stripped)}'
                 if secret.secret_value and is_potential_uuid(secret.secret_value) and secret.check_id not in secrets_in_uuid_form:
                     logging.info(
                         f"Removing secret due to UUID filtering: {PotentialSecret.hash_secret(secret.secret_value)}")
