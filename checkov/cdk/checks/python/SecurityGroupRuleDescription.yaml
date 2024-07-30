@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_23
   name: Ensure every security groups rule has a description
   category: NETWORKING
+  framework: cdk
 scope:
   languages:
     - python

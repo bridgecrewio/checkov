@@ -39,7 +39,7 @@ jobs:
       - name: Build GitHub Release changelog
         if: steps.prepare_release.outputs.create_release == 'true'
         id: build_github_release
-        uses: mikepenz/release-changelog-builder-action@81ca5f10b8c238cbc36e53691a39273636d7d1f6  # v3
+        uses: mikepenz/release-changelog-builder-action@5f3409748e2230350e149a7f7b5b8e9bcd785d44  # v3
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT_SECRET }}
         with:
@@ -94,7 +94,7 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c  # v4
+      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Install pipenv
@@ -128,7 +128,7 @@ jobs:
         with:
           upload_url: ${{ needs.github-release.outputs.upload_url }}
           asset_path: checkov.zip
-          asset_name: checkov_${{ matrix.name }}_X86_64_${{ needs.github-release.outputs.version }}.zip
+          asset_name: checkov_${{ matrix.name }}_X86_64.zip
           asset_content_type: application/zip
   build-release-artifact-linux-arm:
     needs: [ github-release ]
@@ -164,5 +164,5 @@ jobs:
         with:
           upload_url: ${{ needs.github-release.outputs.upload_url }}
           asset_path: checkov.zip
-          asset_name: checkov_linux_arm64_${{ needs.github-release.outputs.version }}.zip
+          asset_name: checkov_linux_arm64.zip
           asset_content_type: application/zip

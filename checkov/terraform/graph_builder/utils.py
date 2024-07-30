@@ -6,8 +6,6 @@ import re
 from typing import Tuple
 from typing import Union, List, Any, Dict, Optional, TYPE_CHECKING
 
-import igraph
-
 from checkov.common.typing import LibraryGraph
 from checkov.common.util.parser_utils import TERRAFORM_NESTED_MODULE_PATH_SEPARATOR_LENGTH, \
     TERRAFORM_NESTED_MODULE_INDEX_SEPARATOR
@@ -175,6 +173,11 @@ def remove_index_pattern_from_str(str_value: str) -> str:
         # otherwise it can't be accessed via index
         return str_value
 
+    # Workaround for cases where the string value contains a map attribute access for foreach data block
+    # UT for this - `test_foreach_data_with_resource` -> /variable_rendering/test_foreach_renderer.py
+    if "data." in str_value:
+        return str_value
+
     str_value = re.sub(INDEX_PATTERN, "", str_value)
     str_value = str_value.replace('["', CHECKOV_LOREM_IPSUM_VAL).replace("[", " [ ").replace(CHECKOV_LOREM_IPSUM_VAL, '["')
     str_value = str_value.replace('"]', CHECKOV_LOREM_IPSUM_VAL).replace("]", " ] ").replace(CHECKOV_LOREM_IPSUM_VAL, '"]')
@@ -260,7 +263,6 @@ def get_referenced_vertices_in_str_value(
 
         str_value = remove_function_calls_from_str(str_value=str_value)
         str_value = remove_index_pattern_from_str(str_value=str_value)
-        str_value = replace_map_attribute_access_with_dot(str_value=str_value)
         str_value = remove_interpolation(str_value=str_value)
 
         references_vertices = get_vertices_references(str_value, aliases, resources_types)
@@ -353,18 +355,6 @@ def get_file_path_to_referred_id_networkx(graph_object: DiGraph) -> dict[str, st
     return file_path_to_module_id
 
 
-def get_file_path_to_referred_id_igraph(graph_object: igraph.Graph) -> dict[str, str]:
-    file_path_to_module_id = {}
-    modules = [v for v in graph_object.vs if
-               v[CustomAttributes.BLOCK_TYPE] == BlockType.MODULE]
-    for module_vertex in modules:
-        module_name = module_vertex['name']
-        module_content = module_vertex['attr'].get(CustomAttributes.CONFIG, {})
-        for path in module_content.get('batch', {}).get("__resolved__", []):
-            file_path_to_module_id[path] = f"module.{module_name}"
-    return file_path_to_module_id
-
-
 def get_file_path_to_referred_id_rustworkx(graph_object: DiGraph) -> dict[str, str]:
     file_path_to_module_id = {}
 
@@ -378,9 +368,7 @@ def get_file_path_to_referred_id_rustworkx(graph_object: DiGraph) -> dict[str, s
 
 
 def setup_file_path_to_referred_id(graph_object: LibraryGraph) -> dict[str, str]:
-    if isinstance(graph_object, igraph.Graph):
-        return get_file_path_to_referred_id_igraph(graph_object)
-    elif isinstance(graph_object, DiGraph):
+    if isinstance(graph_object, DiGraph):
         return get_file_path_to_referred_id_networkx(graph_object)
     else:
         return get_file_path_to_referred_id_rustworkx(graph_object)

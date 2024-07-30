@@ -2,8 +2,9 @@ metadata:
   version: 0.2
   approach: define failing
   id: CKV_AWS_30
-  name: Ensure all data stored in the Elasticache Replication Group is securely encrypted at transit
+  name: Ensure all data stored in the ElastiCache Replication Group is securely encrypted at transit
   category: ENCRYPTION
+  framework: cdk
 scope:
   languages:
     - python

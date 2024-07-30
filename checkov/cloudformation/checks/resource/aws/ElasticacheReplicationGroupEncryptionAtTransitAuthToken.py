@@ -8,7 +8,7 @@ from checkov.cloudformation.checks.resource.base_resource_check import BaseResou
 
 class ElasticacheReplicationGroupEncryptionAtTransitAuthToken(BaseResourceCheck):
     def __init__(self) -> None:
-        name = "Ensure all data stored in the Elasticache Replication Group is securely encrypted at transit and has auth token"
+        name = "Ensure all data stored in the ElastiCache Replication Group is securely encrypted at transit and has auth token"
         id = "CKV_AWS_31"
         supported_resources = ("AWS::ElastiCache::ReplicationGroup",)
         categories = (CheckCategories.ENCRYPTION,)
@@ -23,7 +23,8 @@ class ElasticacheReplicationGroupEncryptionAtTransitAuthToken(BaseResourceCheck)
         """
         properties = conf. get("Properties")
         if properties and isinstance(properties, dict):
-            if "TransitEncryptionEnabled" in properties.keys() and "AuthToken" in properties.keys():
+            if "TransitEncryptionEnabled" in properties.keys() and ("AuthToken" in properties.keys() or
+                                                                    "UserGroupIds" in properties.keys()):
                 if conf["Properties"]["TransitEncryptionEnabled"]:
                     return CheckResult.PASSED
         return CheckResult.FAILED

@@ -32,8 +32,8 @@ class GithubActionsOIDCTrustPolicy(BaseDataCheck):
                                                                                                  list):
                             for identifier in principal_identifiers:
                                 if isinstance(identifier,
-                                              list) and 'oidc-provider/token.actions.githubusercontent.com' in \
-                                        identifier[0]:
+                                              list) and identifier[0] is not None and \
+                                        'oidc-provider/token.actions.githubusercontent.com' in identifier[0]:
                                     found_federated_gh_oidc = True
                                     break
                 if not found_federated_gh_oidc:
@@ -57,7 +57,7 @@ class GithubActionsOIDCTrustPolicy(BaseDataCheck):
                         if found_sub_condition_value and found_sub_condition_variable:
                             return CheckResult.PASSED
 
-                # Found a federated GitHub user, but no restirctions
+                # Found a federated GitHub user, but no restrictions
                 return CheckResult.FAILED
 
         return CheckResult.PASSED

@@ -1,0 +1,4 @@
+pass:
+  - "google_vertex_ai_tensorboard.tensorboard_good"
+fail:
+  - "google_vertex_ai_tensorboard.tensorboard_bad"

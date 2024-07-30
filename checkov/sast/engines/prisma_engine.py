@@ -14,22 +14,26 @@ from pydantic import ValidationError
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.platform_integration import bc_integration
+from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as policy_metadata_integration
 from checkov.common.bridgecrew.platform_key import bridgecrew_dir
 from checkov.common.bridgecrew.severities import get_severity, Severity, Severities, BcSeverities
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.report import Report
-from checkov.common.sast.consts import SastLanguages
+from checkov.common.sast.consts import CDKLanguages, SastLanguages
 from checkov.common.sca.reachability.sast_contract.data_fetcher_sast_lib import SastReachabilityDataFetcher
 from checkov.common.typing import _CheckResult
 from checkov.common.util.http_utils import request_wrapper
 from checkov.sast.checks_infra.base_registry import Registry
-from checkov.sast.common import get_code_block_from_start, get_data_flow_code_block
+from checkov.sast.common import get_code_block_from_start
 from checkov.sast.engines.base_engine import SastEngine
 from checkov.sast.prisma_models.library_input import LibraryInput
 from checkov.sast.prisma_models.policies_list import SastPolicies
-from checkov.sast.prisma_models.report import PrismaReport, create_empty_report
+from checkov.common.sast.consts import CDK_FRAMEWORK_PREFIX
+from checkov.common.sast.report_types import PrismaReport, RuleMatch, create_empty_report
 from checkov.sast.record import SastRecord
 from checkov.sast.report import SastReport
+from checkov.cdk.report import CDKReport
+from checkov.sast.engines.files_filter_manager import FilesFilterManager
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +49,7 @@ class PrismaEngine(SastEngine):
         self.check_type = CheckType.SAST
         self.prisma_sast_dir_path = Path(bridgecrew_dir) / "sast"
         self.sast_platform_base_path = "api/v1/sast"
+        self.enable_inline_suppressions = os.getenv("ENABLE_SAST_INLINE_SUPPRESSIONS", False)
 
     def get_check_thresholds(self, registry: Registry) -> Tuple[Severity, Severity]:
         """
@@ -64,7 +69,7 @@ class PrismaEngine(SastEngine):
             (enforcement_threshold, none) if enforcement_threshold else \
             (none, none)
 
-    def get_reports(self, targets: List[str], registry: Registry, languages: Set[SastLanguages]) -> List[Report]:
+    def get_reports(self, targets: List[str], registry: Registry, languages: Set[SastLanguages], cdk_languages: List[CDKLanguages]) -> List[Report]:
         if not bc_integration.bc_api_key:
             logging.info("The --bc-api-key flag needs to be set to run SAST Prisma Cloud scanning")
             return []
@@ -81,6 +86,11 @@ class PrismaEngine(SastEngine):
 
         check_threshold, skip_check_threshold = self.get_check_thresholds(registry)
 
+        skip_paths = registry.runner_filter.excluded_paths if registry.runner_filter else []
+
+        files_filter_manager = FilesFilterManager(targets, languages)
+        skip_paths += files_filter_manager.get_files_to_filter()
+
         library_input: LibraryInput = {
             'languages': languages,
             'source_codes': targets,
@@ -89,10 +99,12 @@ class PrismaEngine(SastEngine):
             'skip_checks': registry.runner_filter.skip_checks if registry.runner_filter else [],
             'check_threshold': check_threshold,
             'skip_check_threshold': skip_check_threshold,
-            'skip_path': registry.runner_filter.excluded_paths if registry.runner_filter else [],
+            'platform_check_metadata': policy_metadata_integration.sast_check_metadata or {},
+            'skip_path': skip_paths,
             'report_imports': registry.runner_filter.report_sast_imports if registry.runner_filter else False,
             'remove_default_policies': registry.runner_filter.remove_default_sast_policies if registry.runner_filter else False,
             'report_reachability': registry.runner_filter.report_sast_reachability if registry.runner_filter else False,
+            'cdk_languages': cdk_languages
         }
         prisma_result = self.run_go_library(**library_input)
 
@@ -191,6 +203,8 @@ class PrismaEngine(SastEngine):
                        skip_path: List[str],
                        check_threshold: Severity,
                        skip_check_threshold: Severity,
+                       platform_check_metadata: Dict[str, Any],
+                       cdk_languages: List[CDKLanguages],
                        list_policies: bool = False,
                        report_imports: bool = True,
                        report_reachability: bool = False,
@@ -219,11 +233,13 @@ class PrismaEngine(SastEngine):
                 "skip_path": skip_path,
                 "check_threshold": str(check_threshold),
                 "skip_check_threshold": str(skip_check_threshold),
+                "platform_check_metadata": platform_check_metadata,
                 "list_policies": list_policies,
                 "report_imports": report_imports,
                 "remove_default_policies": remove_default_policies,
                 "report_reachability": report_reachability,
-                "reachability_data": reachability_data
+                "reachability_data": reachability_data,
+                "cdk_languages": [a.value for a in cdk_languages]
             },
             "auth": {
                 "api_key": bc_integration.get_auth_token(),
@@ -291,19 +307,19 @@ class PrismaEngine(SastEngine):
                 logging.error(d.get('errors'))
             return {}
 
-    def create_report(self, prisma_report: PrismaReport) -> List[SastReport]:
+    def create_report(self, prisma_report: PrismaReport) -> List[Union[SastReport, CDKReport]]:
         logging.debug("Printing Prisma-SAST profiling data")
         logging.debug(prisma_report.profiler)
         reports: List[SastReport] = []
         for lang, checks in prisma_report.rule_match.items():
             sast_report = PrismaReport(rule_match={lang: checks}, errors=prisma_report.errors, profiler=prisma_report.profiler,
-                                       run_metadata=prisma_report.run_metadata, imports={}, reachability_report={})
+                                       run_metadata=prisma_report.run_metadata, imports={}, reachability_report={},
+                                       skipped_checks_by_file=prisma_report.skipped_checks_by_file)
             report = SastReport(f'{self.check_type.lower()}_{lang.value}', prisma_report.run_metadata, lang, sast_report)
             for check_id, match_rule in checks.items():
                 check_name = match_rule.check_name
                 check_cwe = match_rule.check_cwe
-                check_owasp = "TBD"  # match.metadata.get('owasp')
-                check_result = _CheckResult(result=CheckResult.FAILED)
+                check_owasp = match_rule.check_owasp
                 severity = get_severity(match_rule.severity)
 
                 for match in match_rule.matches:
@@ -311,16 +327,19 @@ class PrismaEngine(SastEngine):
                     file_abs_path = location.path
                     file_path = file_abs_path.split('/')[-1]
                     file_line_range = [location.start.row, location.end.row]
+                    split_code_block = [line + '\n' for line in location.code_block.split('\n')]
+                    code_block = get_code_block_from_start(split_code_block, location.start.row)
+                    metadata = match.metadata
 
-                    if match.metadata.taint_mode is not None:
-                        code_block = get_data_flow_code_block(match.metadata.taint_mode.data_flow)
+                    if self.enable_inline_suppressions and any(skipped_check.check_id == match_rule.check_id for skipped_check in prisma_report.skipped_checks_by_file.get(file_abs_path, [])):
+                        check_result = _CheckResult(
+                            result=CheckResult.SKIPPED,
+                            suppress_comment=next(skipped_check.suppress_comment for skipped_check in prisma_report.skipped_checks_by_file.get(file_abs_path, []) if skipped_check.check_id == match_rule.check_id))
                     else:
-                        split_code_block = [line + '\n' for line in location.code_block.split('\n')]
-                        code_block = get_code_block_from_start(split_code_block, location.start.row)
-
+                        check_result = _CheckResult(result=CheckResult.FAILED)
                     record = SastRecord(check_id=check_id, check_name=check_name, resource="", evaluations={},
                                         check_class="", check_result=check_result, code_block=code_block,
-                                        file_path=file_path, file_line_range=file_line_range,
+                                        file_path=file_path, file_line_range=file_line_range, metadata=metadata,
                                         file_abs_path=file_abs_path, severity=severity, cwe=check_cwe,
                                         owasp=check_owasp, show_severity=True)
                     report.add_record(record)
@@ -328,6 +347,7 @@ class PrismaEngine(SastEngine):
             if report_parsing_errors:
                 report.add_parsing_errors(report_parsing_errors)
             reports.append(report)
+
         for lang in prisma_report.imports:
             for report in reports:
                 if report.language == lang:
@@ -335,7 +355,8 @@ class PrismaEngine(SastEngine):
                     break
             else:
                 sast_report = PrismaReport(rule_match={lang: {}}, errors=prisma_report.errors, profiler=prisma_report.profiler,
-                                           run_metadata=prisma_report.run_metadata, imports={}, reachability_report={})
+                                           run_metadata=prisma_report.run_metadata, imports={}, reachability_report={},
+                                           skipped_checks_by_file={})
                 report = SastReport(f'{self.check_type.lower()}_{lang.value}', prisma_report.run_metadata, lang, sast_report)
                 report.sast_imports = prisma_report.imports[lang]
                 reports.append(report)
@@ -347,11 +368,94 @@ class PrismaEngine(SastEngine):
                     break
             else:
                 sast_report = PrismaReport(rule_match={lang: {}}, errors=prisma_report.errors, profiler=prisma_report.profiler,
-                                           run_metadata=prisma_report.run_metadata, imports={}, reachability_report={})
+                                           run_metadata=prisma_report.run_metadata, imports={}, reachability_report={},
+                                           skipped_checks_by_file={})
                 report = SastReport(f'{self.check_type.lower()}_{lang.value}', prisma_report.run_metadata, lang, sast_report)
                 report.sast_reachability = prisma_report.reachability_report[lang]
                 reports.append(report)
-        return reports
+
+        all_report = self._split_sast_cdk_reports(reports)
+        return all_report
+
+    def _split_sast_cdk_reports(self, sast_reports: List[SastReport]) -> List[Union[SastReport, CDKReport]]:
+        cdk_reports: List[CDKReport] = []
+        for report in sast_reports:
+            for lang, rule_matches in report.sast_report.rule_match.items():
+                sast_rule_matches: Dict[str, RuleMatch] = {}
+                for policy_id, rule_match in rule_matches.items():
+                    if rule_match.metadata.framework != CDK_FRAMEWORK_PREFIX:  # type: ignore
+                        sast_rule_matches[policy_id] = rule_match
+                        continue
+                    self._update_cdk_report(lang, cdk_reports, report, policy_id, rule_match)
+
+                if sast_rule_matches:
+                    report.sast_report.rule_match[lang] = sast_rule_matches
+                else:
+                    report.sast_report.rule_match = {}
+                self._update_sast_report_checks(report, cdk_reports)
+
+        return self._get_all_reports(sast_reports, cdk_reports)
+
+    @staticmethod
+    def _update_cdk_report(lang: SastLanguages, cdk_reports: List[CDKReport], sast_report: SastReport, policy_id: str, rule_match: RuleMatch) -> None:
+        if lang not in [c.language for c in cdk_reports]:
+            new_cdk_report = PrismaReport(rule_match={lang: {}}, errors=sast_report.sast_report.errors,
+                                          profiler=sast_report.sast_report.profiler,
+                                          run_metadata=sast_report.sast_report.run_metadata,
+                                          imports={}, reachability_report={}, skipped_checks_by_file={})
+            new_report = CDKReport(f'{CDK_FRAMEWORK_PREFIX}_{lang.value}', sast_report.sast_report.run_metadata, lang, new_cdk_report)
+            cdk_reports.append(new_report)
+        for cdk_report in cdk_reports:
+            if cdk_report.language == lang:
+                cdk_report.cdk_report.rule_match[lang][policy_id] = rule_match
+                for failed_check in sast_report.failed_checks:
+                    if failed_check.check_id == policy_id:
+                        cdk_report.failed_checks.append(failed_check)
+
+                for skiped_check in sast_report.skipped_checks:
+                    if skiped_check.check_id == policy_id:
+                        cdk_report.skipped_checks.append(skiped_check)
+                break
+
+    def _update_sast_report_checks(self, report: SastReport, cdk_reports: List[CDKReport]) -> None:
+        sast_failed_checks = []
+        sast_skiped_checks = []
+
+        if report.language not in [c.language for c in cdk_reports]:
+            report.failed_checks = report.failed_checks
+            report.skipped_checks = report.skipped_checks
+            return
+
+        for cdk_report in cdk_reports:
+            fail_check = self._get_sast_check(report, cdk_report, report.failed_checks)
+            if fail_check:
+                sast_failed_checks.append(fail_check)
+            skip_check = self._get_sast_check(report, cdk_report, report.skipped_checks)
+            if skip_check:
+                sast_skiped_checks.append(skip_check)
+
+        report.failed_checks = sast_failed_checks
+        report.skipped_checks = sast_skiped_checks
+
+    @staticmethod
+    def _get_sast_check(sast_report: SastReport, cdk_report: CDKReport, sast_report_checks: List[Any]) -> Any:
+        for check in sast_report_checks:
+            if sast_report.language == cdk_report.language and check.check_id not in [s.check_id for s in cdk_report.skipped_checks]:
+                return check
+        return None
+
+    def _get_all_reports(self, sast_reports: List[SastReport], cdk_reports: List[CDKReport]) -> List[Union[SastReport, CDKReport]]:
+        all_reports = []
+        for report in sast_reports + cdk_reports:
+            if report.check_type.startswith('cdk'):
+                if report.cdk_report.rule_match:  # type: ignore
+                    all_reports.append(report)
+                    continue
+            if report.check_type.startswith('sast'):
+                if report.sast_report.rule_match or report.sast_reachability or report.sast_imports:  # type: ignore
+                    all_reports.append(report)
+                    continue
+        return all_reports
 
     def get_policies(self, languages: Set[SastLanguages]) -> SastPolicies:
         if not bc_integration.bc_api_key:
@@ -374,9 +478,11 @@ class PrismaEngine(SastEngine):
             'skip_checks': [],
             'check_threshold': Severities[BcSeverities.NONE],
             'skip_check_threshold': Severities[BcSeverities.NONE],
+            'platform_check_metadata': policy_metadata_integration.sast_check_metadata,
             'skip_path': [],
             'report_imports': False,
-            'report_reachability': False
+            'report_reachability': False,
+            'cdk_languages': []
         }
         prisma_result = self.run_go_library(**library_input)
         return prisma_result

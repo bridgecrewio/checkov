@@ -48,6 +48,7 @@ class TFParser:
         self.module_address_map: Dict[Tuple[str, str], str] = {}
         self.loaded_files_map: dict[str, dict[str, list[dict[str, Any]]] | None] = {}
         self.external_variables_data: list[tuple[str, Any, str]] = []
+        self.temp_tf_definition: dict[str, Any] = {}
 
     def _init(self, directory: str,
               out_evaluations_context: Dict[TFDefinitionKey, Dict[str, EvaluationContext]] | None,
@@ -461,6 +462,7 @@ class TFParser:
         )
         self.add_tfvars(module, source)
         copy_of_tf_definitions = pickle_deepcopy(tf_definitions)
+        module.temp_tf_definition = tf_definitions  # type:ignore  # will be TFDefinitionKey and not string
         for file_path, blocks in copy_of_tf_definitions.items():
             for block_type in blocks:
                 try:
@@ -525,9 +527,10 @@ class TFParser:
         if not self.external_variables_data:
             return
         for var_name, default, path in self.external_variables_data:
-            if Path(source_dir) in Path(path).parents and ".tfvars" in path:
-                block = [{var_name: {"default": default}}]
-                module.add_blocks(BlockType.TF_VARIABLE, block, path, source)
+            if ".tfvars" in path:
+                if Path(source_dir) in Path(path).parents:
+                    block = [{var_name: {"default": default}}]
+                    module.add_blocks(BlockType.TF_VARIABLE, block, path, source)
 
     def get_dirname(self, path: TFDefinitionKey) -> str:
         file_path = path.file_path
@@ -698,12 +701,14 @@ def load_or_die_quietly(
     file: str | Path | os.DirEntry[str], parsing_errors: dict[str, Exception], clean_definitions: bool = True
 ) -> Optional[_Hcl2Payload]:
     """
-Load JSON or HCL, depending on filename.
+    Load JSON or HCL, depending on filename.
     :return: None if the file can't be loaded
     """
-
     file_path = os.fspath(file)
     file_name = os.path.basename(file_path)
+
+    if file_name.endswith('.tfvars'):
+        clean_definitions = False
 
     try:
         logging.debug(f"Parsing {file_path}")

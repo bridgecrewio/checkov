@@ -5,7 +5,7 @@ from checkov.common.models.enums import CheckCategories
 
 class CodeArtifactDomainEncryptedWithCMK(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure Code artifact Domain is encrypted by KMS using a customer managed Key (CMK)"
+        name = "Ensure CodeArtifact Domain is encrypted by KMS using a customer managed Key (CMK)"
         id = "CKV_AWS_221"
         supported_resources = ['aws_codeartifact_domain']
         categories = [CheckCategories.ENCRYPTION]

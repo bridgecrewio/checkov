@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 
 class CloudfrontDistributionEncryption(BaseResourceCheck):
     def __init__(self):
-        name = "Ensure cloudfront distribution ViewerProtocolPolicy is set to HTTPS"
+        name = "Ensure CloudFront distribution ViewerProtocolPolicy is set to HTTPS"
         id = "CKV_AWS_34"
         supported_resources = ['aws_cloudfront_distribution']
         categories = [CheckCategories.ENCRYPTION]

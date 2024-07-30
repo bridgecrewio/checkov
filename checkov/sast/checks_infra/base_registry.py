@@ -6,6 +6,7 @@ import os
 from typing import List, Any, Optional, Dict
 
 from checkov.common.bridgecrew.check_type import CheckType
+
 from checkov.common.checks.base_check_registry import BaseCheckRegistry
 from checkov.runner_filter import RunnerFilter
 

@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_174
   name: Verify CloudFront Distribution Viewer Certificate is using TLS v1.2
   category: ENCRYPTION
+  framework: cdk
 scope:
   languages:
     - python

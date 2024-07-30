@@ -1,0 +1,7 @@
+pass:
+  - "google_notebooks_instance.instance_good_vm"
+fail:
+  - "google_notebooks_instance.instance_bad_vm"
+  - "google_notebooks_instance.instance_bad_container"
+  - "google_notebooks_instance.instance_bad"
+  - "google_notebooks_instance.instance_bad_crafty_container"

@@ -1,0 +1,5 @@
+pass:
+  - "google_dialogflow_cx_agent.good"
+fail:
+  - "google_dialogflow_cx_agent.bad"
+  - "google_dialogflow_cx_agent.bad_unset"

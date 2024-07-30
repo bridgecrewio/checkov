@@ -1,0 +1,35 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.SignalRService/webPubSub",
+      "apiVersion": "2021-02-01",
+      "name": "pass2",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard_S1",
+        "capacity": 1
+      },
+      "identity": {
+        "type": "UserAssigned"
+      },
+      "properties": {
+        "liveTraceConfiguration": {
+          "enabled": "true",
+          "categories": [
+            {
+              "name": "MessagingLogs",
+              "enabled": "true"
+            },
+            {
+              "name": "ConnectivityLogs",
+              "enabled": "false"
+            }
+          ]
+        }
+      },
+      "publicNetworkAccess": "Disabled"
+    }
+  ]
+}

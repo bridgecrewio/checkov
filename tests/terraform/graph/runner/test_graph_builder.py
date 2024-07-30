@@ -3,15 +3,15 @@ import os
 from unittest import TestCase, mock
 from parameterized import parameterized_class
 
-from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.graph.db_connectors.rustworkx.rustworkx_db_connector import RustworkxConnector
 from checkov.terraform.runner import Runner
 
 TEST_DIRNAME = os.path.dirname(os.path.realpath(__file__))
 
 @parameterized_class([
    {"db_connector": NetworkxConnector},
-   {"db_connector": IgraphConnector}
+   {"db_connector": RustworkxConnector}
 ])
 class TestGraphBuilder(TestCase):
     @mock.patch.dict(os.environ, {"CHECKOV_NEW_TF_PARSER": "False"})

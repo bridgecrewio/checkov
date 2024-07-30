@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_118
   name: Ensure that enhanced monitoring is enabled for Amazon RDS instances
   category: LOGGING
+  framework: cdk
 scope:
   languages:
     - python

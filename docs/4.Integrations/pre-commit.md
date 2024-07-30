@@ -1,22 +1,47 @@
 ---
 layout: default
 published: true
-title: Pre-Commit
+title: Pre-Commit Hooks
 nav_order: 6
 ---
 
-# Pre-Commit
+# Pre-Commit Hooks
 
-To use Checkov with [pre-commit](https://pre-commit.com), just add the following to your local repo's `.pre-commit-config.yaml` file:
+To automatically run Checkov whenever files in your Git repository change, first [install the pre-commit binary](https://pre-commit.com/#install) and then add a [.pre-commit-config.yaml](https://github.com/bridgecrewio/checkov/blob/main/.pre-commit-config.yaml) file to your project with content similar to the example below.
+
+
+NOTE: Depending on the hook id you select for pre-commit hooks, you may need to provide the following:
+
+* For the `python` hooks, pre-commit 3.x is able to provide [python](https://pre-commit.com/#python) without additional dependencies.
+* For the `container` hooks, the [Docker](https://docs.docker.com/get-docker/) CLI and a container runtime must be available.
+
 
 ```yaml
 - repo: https://github.com/bridgecrewio/checkov.git
   rev: '' # change to tag or sha
   hooks:
     - id: checkov
+      # - id: checkov_container
+      # - id: checkov_diff
+      # - id: checkov_diff_container
+      # - id: checkov_secrets
+      # - id: checkov_secrets_container
 ```
 
 Make sure to change `rev:` to be either a git commit sha or tag of checkov containing `.pre-commit-hooks.yaml`. Note that local environment variables will apply when using pre-commit hooks. In urgent situations, pre-commit hooks can be skipped with the `--no-verify` flag.
+
+After adding the hooks to `.pre-commit-config.yaml` run the following command(s):
+
+```bash
+pre-commit install --install-hooks
+```
+
+or
+
+```bash
+pre-commit install
+pre-commit install-hooks
+```
 
 ## Adding Custom Parameters
 
@@ -70,6 +95,21 @@ repos:
         entry: checkov -d . --skip-check CKV_AWS_123
 ```
 
+When using the `diff` or `secrets` hooks, the last argument _must_ be `-f` due to how `checkov` and `pre-commit` interact:
+
+```yaml
+      - id: checkov_secrets_container
+        args:
+          - '--quiet'
+          - '-f' # required and must come last
+```
+
+By default, the container based pre-commit hooks use the `latest` tag. This can be overridden by declaring the version number in the entry field in the pre-commit config.
+
+```yaml
+    hooks:
+      - id: checkov_container
+        entry: bridgecrew/checkov:2.4.2 -d .
 ## Diff scanning pre-commit hook
 
 To let `checkov` only scan the changed files choose the `checkov_diff` hook, which scans against all frameworks:
@@ -80,6 +120,7 @@ repos:
     rev: '' # change to tag or sha
     hooks:
       - id: checkov_diff
+      # - id: checkov_diff_container
 ```
 
 if you want to customize this hook, you need to override the `entry` field, because the file flag `-f` has to be at the end:
@@ -103,4 +144,5 @@ repos:
     rev: '' # change to tag or sha
     hooks:
       - id: checkov_secrets
+      # - id: checkov_secrets_container
 ```

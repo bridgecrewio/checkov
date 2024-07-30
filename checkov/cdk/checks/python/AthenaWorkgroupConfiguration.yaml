@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_82
   name: Ensure Athena Workgroup should enforce configuration to prevent client disabling encryption
   category: GENERAL_SECURITY
+  framework: cdk
 scope:
   languages:
     - python

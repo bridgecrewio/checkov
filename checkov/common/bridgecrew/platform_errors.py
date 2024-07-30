@@ -1,9 +1,18 @@
-class BridgecrewAuthError(Exception):
-    def __init__(self, message: str = "Authorization error accessing Bridgecrew.cloud api. Please check bc-api-key") -> None:
+class PlatformConnectionError(Exception):
+    def __init__(self, message: str) -> None:
         self.message = message
 
     def __str__(self) -> str:
-        return f"BCAuthError, {self.message} "
+        return f"PlatformConnectionError: {self.message}"
+
+
+class BridgecrewAuthError(PlatformConnectionError):
+    def __init__(self, message: str = "Authorization error accessing the platform api. Please check your API keys and "
+                                      "Prisma API URL.") -> None:
+        self.message = message
+
+    def __str__(self) -> str:
+        return f"BCAuthError: {self.message}"
 
 
 class ModuleNotEnabledError(Exception):
@@ -11,4 +20,4 @@ class ModuleNotEnabledError(Exception):
         self.message = message
 
     def __str__(self) -> str:
-        return f"ModuleNotEnabledError, {self.message} "
+        return f"ModuleNotEnabledError: {self.message}"

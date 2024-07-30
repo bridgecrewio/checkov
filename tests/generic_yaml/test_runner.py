@@ -5,8 +5,8 @@ from parameterized import parameterized_class
 
 from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
-from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
+from checkov.common.graph.db_connectors.rustworkx.rustworkx_db_connector import RustworkxConnector
 from checkov.runner_filter import RunnerFilter
 from checkov.yaml_doc.runner import Runner
 from checkov.yaml_doc.registry import registry
@@ -14,7 +14,7 @@ from checkov.yaml_doc.registry import registry
 
 @parameterized_class([
    {"db_connector": NetworkxConnector},
-   {"db_connector": IgraphConnector}
+   {"db_connector": RustworkxConnector}
 ])
 class TestRunnerValid(unittest.TestCase):
 

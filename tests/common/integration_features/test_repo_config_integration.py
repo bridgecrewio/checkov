@@ -708,7 +708,7 @@ class TestRepoConfigIntegration(unittest.TestCase):
     def test_enforcement_rule_constants(self):
         # tests to ensure that the correct constants get updated as rules and runners change
         module_keys = [e.value for e in CodeCategoryType]
-        self.assertEqual(set(module_keys), {'IAC', 'SECRETS', 'VULNERABILITIES', 'LICENSES', 'BUILD_INTEGRITY', 'SAST'})
+        self.assertEqual(set(module_keys), {'IAC', 'SECRETS', 'VULNERABILITIES', 'LICENSES', 'BUILD_INTEGRITY', 'WEAKNESSES'})
 
     def test_global_soft_fail(self):
         self.assertFalse(CodeCategoryConfiguration('', Severities[BcSeverities.LOW], Severities[BcSeverities.LOW]).is_global_soft_fail())
@@ -779,6 +779,27 @@ class TestRepoConfigIntegration(unittest.TestCase):
                             "excludePaths": [
                                 "a/b"
                             ]
+                        },
+                        "isDefault": True
+                    }
+                ]
+            }
+        }
+
+        instance = BcPlatformIntegration()
+        instance.repo_id = 'org/repo'
+        repo_config_integration = RepoConfigIntegration(instance)
+        repo_config_integration._set_exclusion_paths(vcs_config)
+        self.assertEqual(repo_config_integration.skip_paths, set())
+
+    def test_skip_paths_no_repos(self):
+        vcs_config = {
+            "scannedFiles": {
+                "sections": [
+                    {
+                        "repos": [],
+                        "rule": {
+                            "excludePaths": []
                         },
                         "isDefault": True
                     }

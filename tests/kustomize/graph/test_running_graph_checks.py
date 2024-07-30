@@ -7,8 +7,10 @@ import os
 from checkov.kustomize.runner import Runner
 from checkov.runner_filter import RunnerFilter
 from tests.graph_utils.utils import GRAPH_FRAMEWORKS
+from tests.kustomize.utils import kustomize_exists
 
 
+@pytest.mark.skipif(not kustomize_exists(), reason="kustomize not installed")
 @pytest.mark.parametrize("graph_framework", GRAPH_FRAMEWORKS)
 def test_runner(mocker: MockerFixture, graph_framework):
     scan_dir_path = Path(__file__).parent / "resources" / "example_checks"

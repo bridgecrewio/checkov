@@ -1,3 +1,4 @@
+from copy import deepcopy
 import inspect
 import os
 import shutil
@@ -9,7 +10,6 @@ from pathlib import Path
 # do not remove; prevents circular import error
 from typing import Dict, Any
 from unittest import mock
-from igraph import Graph
 from networkx import DiGraph
 from parameterized import parameterized, parameterized_class
 from rustworkx import PyDiGraph
@@ -18,7 +18,6 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 
 from checkov.common.checks_infra.registry import get_graph_checks_registry
-from checkov.common.graph.db_connectors.igraph.igraph_db_connector import IgraphConnector
 from checkov.common.graph.db_connectors.networkx.networkx_db_connector import NetworkxConnector
 from checkov.common.graph.db_connectors.rustworkx.rustworkx_db_connector import RustworkxConnector
 from checkov.common.graph.graph_builder import CustomAttributes
@@ -44,18 +43,16 @@ CUSTOM_GRAPH_CHECK_ID = 'CKV2_CUSTOM_1'
 EXTERNAL_MODULES_DOWNLOAD_PATH = os.environ.get('EXTERNAL_MODULES_DIR', DEFAULT_EXTERNAL_MODULES_DIR)
 
 
-# TODO delete igraph
 @parameterized_class([
     {"db_connector": NetworkxConnector, "tf_split_graph": "True", "graph": "NETWORKX"},
     {"db_connector": NetworkxConnector, "tf_split_graph": "False", "graph": "NETWORKX"},
-    {"db_connector": IgraphConnector, "tf_split_graph": "True", "graph": "IGRAPH"},
-    {"db_connector": IgraphConnector, "tf_split_graph": "False", "graph": "IGRAPH"},
     {"db_connector": RustworkxConnector, "tf_split_graph": "True", "graph": "RUSTWORKX"},
     {"db_connector": RustworkxConnector, "tf_split_graph": "False", "graph": "RUSTWORKX"},
 ])
 class TestRunnerValid(unittest.TestCase):
     def setUp(self) -> None:
-        self.orig_checks = resource_registry.checks
+        self.orig_checks = deepcopy(resource_registry.checks)
+        self.orig_wildcard_checks = deepcopy(resource_registry.wildcard_checks)
         self.parallelization_type = parallel_runner.type
         self.db_connector = self.db_connector
         os.environ["CHECKOV_GRAPH_FRAMEWORK"] = self.graph
@@ -64,6 +61,7 @@ class TestRunnerValid(unittest.TestCase):
     def tearDown(self):
         parser_registry.context = {}
         resource_registry.checks = self.orig_checks
+        resource_registry.wildcard_checks = self.orig_wildcard_checks
         parallel_runner.type = self.parallelization_type
         del os.environ["CHECKOV_GRAPH_FRAMEWORK"]
         del os.environ["TF_SPLIT_GRAPH"]
@@ -134,7 +132,7 @@ class TestRunnerValid(unittest.TestCase):
         report.print_failed_github_md()
 
     def test_py_graph_check(self):
-        if not self.db_connector == IgraphConnector:
+        if not self.db_connector == RustworkxConnector:
             return
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources/py_graph_check"
@@ -156,6 +154,24 @@ class TestRunnerValid(unittest.TestCase):
         assert 'aws_db_instance.default' in failed_resources
         assert 'aws_db_instance.disabled' in failed_resources
 
+    def test_for_each_check(self):
+        if not self.db_connector == RustworkxConnector:
+            return
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        valid_dir_path = current_dir + "/resources/for_each"
+        runner = Runner(db_connector=self.db_connector())
+        checks_allowlist = ['CKV_AWS_186']
+        report = runner.run(root_folder=valid_dir_path, runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allowlist))
+        report_json = report.get_json()
+        self.assertIsInstance(report_json, str)
+        self.assertIsNotNone(report_json)
+        self.assertIsNotNone(report.get_test_suite())
+        assert len(report.failed_checks) == 2
+        assert len(report.passed_checks) == 0
+        failed_resources = [c.resource for c in report.failed_checks]
+        assert 'module.simple[0].aws_s3_bucket_object.this_file' in failed_resources
+        assert 'module.simple[1].aws_s3_bucket_object.this_file' in failed_resources
+
     def test_runner_passing_valid_tf(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
 
@@ -172,7 +188,7 @@ class TestRunnerValid(unittest.TestCase):
              'hard_fail_threshold': None}), 1)
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
-        self.assertEqual(9, summary['failed'])
+        self.assertEqual(10, summary['failed'])
         self.assertEqual(1, summary['skipped'])
         self.assertEqual(0, summary["parsing_errors"])
 
@@ -321,7 +337,7 @@ class TestRunnerValid(unittest.TestCase):
         # self.assertEqual(report.get_exit_code(), 0)
         summary = report.get_summary()
         self.assertGreaterEqual(summary['passed'], 1)
-        self.assertEqual(5, summary['failed'])
+        self.assertEqual(6, summary['failed'])
         self.assertEqual(0, summary["parsing_errors"])
 
     def test_check_ids_dont_collide(self):
@@ -381,6 +397,9 @@ class TestRunnerValid(unittest.TestCase):
                 # CKV_AWS_299 was deleted because AWS doesn't support it and seems to be a bug in Terraform.
                 # https://github.com/hashicorp/terraform-provider-aws/issues/31821
                 continue
+            if f'CKV_AWS_{i}' == 'CKV_AWS_188':
+                # CKV_AWS_188 was deleted because it duplicated CKV_AWS_142
+                continue
             self.assertIn(f'CKV_AWS_{i}', aws_checks, msg=f'The new AWS violation should have the ID "CKV_AWS_{i}"')
 
         gcp_checks = sorted(
@@ -391,6 +410,9 @@ class TestRunnerValid(unittest.TestCase):
         for i in range(1, len(gcp_checks) + 2):
             if f'CKV_GCP_{i}' == 'CKV_GCP_5':
                 # CKV_GCP_5 is no longer a valid platform check
+                continue
+            if f'CKV_GCP_{i}' == 'CKV_GCP_19':
+                # CKV_GCP_19 involved a configuration which was deprecated by GCP
                 continue
             if f'CKV_GCP_{i}' == 'CKV_GCP_67':
                 # CKV_GCP_67 is not deployable anymore https://cloud.google.com/kubernetes-engine/docs/how-to/hardening-your-cluster#protect_node_metadata
@@ -447,7 +469,7 @@ class TestRunnerValid(unittest.TestCase):
         for check_list in [aws_checks, gcp_checks, azure_checks]:
             check_list.sort(reverse=True, key=lambda s: int(s.split('_')[-1]))
 
-        for i in range(1, len(aws_checks) + 5):
+        for i in range(1, len(aws_checks) + 4):
             if f'CKV2_AWS_{i}' == 'CKV2_AWS_17':
                 # CKV2_AWS_17 was overly keen and those resources it checks are created by default
                 continue
@@ -463,12 +485,15 @@ class TestRunnerValid(unittest.TestCase):
             if f'CKV2_AWS_{i}' == 'CKV2_AWS_26':
                 # Was a test policy
                 continue
+            if f'CKV2_AWS_{i}' == 'CKV2_AWS_67':
+                # Too many edge cases for ways to get a KMS key connected to S3
+                continue
             self.assertIn(f'CKV2_AWS_{i}', aws_checks,
                           msg=f'The new AWS violation should have the ID "CKV2_AWS_{i}"')
         for i in range(1, len(gcp_checks) + 1):
             self.assertIn(f'CKV2_GCP_{i}', gcp_checks,
                           msg=f'The new GCP violation should have the ID "CKV2_GCP_{i}"')
-        for i in range(1, len(azure_checks) + 2):
+        for i in range(1, len(azure_checks) + 1):
             if f'CKV2_AZURE_{i}' == 'CKV2_AZURE_18':
                 # duplicate of CKV2_AZURE_1
                 continue
@@ -492,39 +517,37 @@ class TestRunnerValid(unittest.TestCase):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources/"
         runner = Runner(db_connector=self.db_connector())
-        if isinstance(runner.db_connector, IgraphConnector):
-            result = runner.run(root_folder=valid_dir_path, external_checks_dir=None, runner_filter=RunnerFilter(
-                checks=['CKV_AWS_21', 'CKV_AWS_42', 'CKV_AWS_62', 'CKV_AWS_53', 'CKV_AWS_18', 'CKV_AWS_61',
-                        'CKV_AWS_144',
-                        'CKV_AWS_145', 'CKV_AWS_115', 'CKV_AWS_116', 'CKV_AWS_117', 'CKV_AWS_6', 'CKV_AWS_168',
-                        'CKV_AWS_170',
-                        'CKV_AWS_171', 'CKV_AWS_172', 'CKV_AWS_37', 'CKV_AWS_38', 'CKV_AWS_39', 'CKV_AWS_107',
-                        'CKV_AWS_109',
-                        'CKV_AWS_110'], framework=['terraform']))
-            self.assertEqual(len(result.passed_checks), 52)
-            self.assertEqual(len(result.failed_checks), 255)
-            self.assertEqual(len(result.skipped_checks), 0)
+        result = runner.run(root_folder=valid_dir_path, external_checks_dir=None, runner_filter=RunnerFilter(
+            checks=['CKV_AWS_21', 'CKV_AWS_42', 'CKV_AWS_62', 'CKV_AWS_53', 'CKV_AWS_18', 'CKV_AWS_61',
+                    'CKV_AWS_144',
+                    'CKV_AWS_145', 'CKV_AWS_115', 'CKV_AWS_116', 'CKV_AWS_117', 'CKV_AWS_6', 'CKV_AWS_168',
+                    'CKV_AWS_170',
+                    'CKV_AWS_171', 'CKV_AWS_172', 'CKV_AWS_37', 'CKV_AWS_38', 'CKV_AWS_39', 'CKV_AWS_107',
+                    'CKV_AWS_109',
+                    'CKV_AWS_110'], framework=['terraform']))
+        self.assertEqual(len(result.passed_checks), 52)
+        self.assertEqual(len(result.failed_checks), 255)
+        self.assertEqual(len(result.skipped_checks), 0)
 
     def test_modules_folder_with_files_args(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         valid_dir_path = current_dir + "/resources"
         runner = Runner(db_connector=self.db_connector())
-        if isinstance(runner.db_connector, IgraphConnector):
-            res = []
-            for (dir_path, dir_names, file_names) in os.walk(valid_dir_path):
-                for file in file_names:
-                    res.append(os.path.join(dir_path, file))
-            result = runner.run(files=res, root_folder=None, external_checks_dir=None,
-                                runner_filter=RunnerFilter(
-                                    checks=['CKV_AWS_21', 'CKV_AWS_42', 'CKV_AWS_62', 'CKV_AWS_109', 'CKV_AWS_168',
-                                            'CKV_AWS_53', 'CKV_AWS_18', 'CKV_AWS_61', 'CKV_AWS_144', 'CKV_AWS_170',
-                                            'CKV_AWS_145', 'CKV_AWS_115', 'CKV_AWS_116', 'CKV_AWS_117', 'CKV_AWS_6',
-                                            'CKV_AWS_171', 'CKV_AWS_172', 'CKV_AWS_37', 'CKV_AWS_38', 'CKV_AWS_39',
-                                            'CKV_AWS_107', 'CKV_AWS_110'],
-                                    framework=['terraform']))
-            self.assertEqual(len(result.passed_checks), 51)
-            self.assertEqual(len(result.failed_checks), 263)
-            self.assertEqual(len(result.skipped_checks), 0)
+        res = []
+        for (dir_path, dir_names, file_names) in os.walk(valid_dir_path):
+            for file in file_names:
+                res.append(os.path.join(dir_path, file))
+        result = runner.run(files=res, root_folder=None, external_checks_dir=None,
+                            runner_filter=RunnerFilter(
+                                checks=['CKV_AWS_21', 'CKV_AWS_42', 'CKV_AWS_62', 'CKV_AWS_109', 'CKV_AWS_168',
+                                        'CKV_AWS_53', 'CKV_AWS_18', 'CKV_AWS_61', 'CKV_AWS_144', 'CKV_AWS_170',
+                                        'CKV_AWS_145', 'CKV_AWS_115', 'CKV_AWS_116', 'CKV_AWS_117', 'CKV_AWS_6',
+                                        'CKV_AWS_171', 'CKV_AWS_172', 'CKV_AWS_37', 'CKV_AWS_38', 'CKV_AWS_39',
+                                        'CKV_AWS_107', 'CKV_AWS_110'],
+                                framework=['terraform']))
+        self.assertEqual(len(result.passed_checks), 51)
+        self.assertEqual(len(result.failed_checks), 263)
+        self.assertEqual(len(result.skipped_checks), 0)
 
     def test_terraform_module_checks_are_performed(self):
         check_name = "TF_M_1"
@@ -1280,6 +1303,18 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(len(resources_ids), 3)
         self.assertEqual(expected_resources_ids, resources_ids)
 
+    def test_list_of_routes(self):
+        resources_path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "resources", "list_of_routes")
+        checks_allow_list = ['CKV2_AWS_44']
+
+        runner = Runner(db_connector=self.db_connector())
+        report = runner.run(root_folder=resources_path, external_checks_dir=None,
+                            runner_filter=RunnerFilter(framework=["terraform"], checks=checks_allow_list))
+
+        self.assertEqual(len(report.passed_checks), 0)
+        self.assertEqual(len(report.failed_checks), 1)
+
     def test_resource_values_dont_exist(self):
         resources_path = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), "resources", "resource_value_without_var")
@@ -1672,7 +1707,6 @@ class TestRunnerValid(unittest.TestCase):
 
     @parameterized.expand([
         (NetworkxConnector,),
-        (IgraphConnector,),
         (RustworkxConnector,)
     ])
     def test_get_graph_resource_entity_config(self, graph_connector):
@@ -1684,10 +1718,6 @@ class TestRunnerValid(unittest.TestCase):
         graph_connector = graph_manager.get_reader_endpoint()
         if isinstance(graph_connector, DiGraph):
             for _, data in graph_connector.nodes(data=True):
-                config = Runner.get_graph_resource_entity_config(data)
-                self.assertIn(CustomAttributes.TF_RESOURCE_ADDRESS, config)
-        if isinstance(graph_connector, Graph):
-            for data in graph_connector.vs.select()["attr"]:
                 config = Runner.get_graph_resource_entity_config(data)
                 self.assertIn(CustomAttributes.TF_RESOURCE_ADDRESS, config)
         if isinstance(graph_connector, PyDiGraph):

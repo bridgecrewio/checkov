@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_20
   name: Ensure the S3 bucket does not allow READ permissions to everyone
   category: GENERAL_SECURITY
+  framework: cdk
 scope:
   languages:
     - python

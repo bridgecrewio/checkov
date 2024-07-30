@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_44
   name: Ensure Neptune storage is securely encrypted
   category: ENCRYPTION
+  framework: cdk
 scope:
   languages:
     - python

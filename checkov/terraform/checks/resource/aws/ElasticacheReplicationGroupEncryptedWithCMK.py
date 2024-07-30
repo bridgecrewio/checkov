@@ -5,7 +5,7 @@ from checkov.common.models.enums import CheckCategories
 
 class ElasticacheReplicationGroupEncryptedWithCMK(BaseResourceValueCheck):
     def __init__(self):
-        name = "Ensure Elasticache replication group is encrypted by KMS using a customer managed Key (CMK)"
+        name = "Ensure ElastiCache replication group is encrypted by KMS using a customer managed Key (CMK)"
         id = "CKV_AWS_191"
         supported_resources = ['aws_elasticache_replication_group']
         categories = [CheckCategories.ENCRYPTION]

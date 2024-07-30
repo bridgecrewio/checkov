@@ -19,24 +19,28 @@ _T = TypeVar("_T")
 
 class ParallelRunner:
     def __init__(
-        self, workers_number: int | None = None, parallelization_type: ParallelizationType = ParallelizationType.FORK
+        self, workers_number: int | None = None,
+        parallelization_type: ParallelizationType = ParallelizationType.FORK
     ) -> None:
         self.workers_number = (workers_number if workers_number else os.cpu_count()) or 1
         self.os = platform.system()
         self.type: str | ParallelizationType = parallelization_type
-
         custom_type = os.getenv("CHECKOV_PARALLELIZATION_TYPE")
         if custom_type:
             self.type = custom_type
-
-        if not custom_type and os.getenv("PYCHARM_HOSTED") == "1":
+        elif os.getenv("PYCHARM_HOSTED") == "1":
             # PYCHARM_HOSTED env variable equals 1 when debugging via jetbrains IDE.
             # To prevent JetBrains IDE from crashing on debug run sequentially
             self.type = ParallelizationType.NONE
-        elif self.os == "Windows":
-            # 'fork' mode is not supported on 'Windows'
-            # 'spawn' mode results in a strange error, which needs to be investigated on an actual Windows machine
-            self.type = ParallelizationType.THREAD
+        elif self.os == "Windows" or self.os == "Darwin":
+            if self.type in [ParallelizationType.FORK, ParallelizationType.SPAWN]:
+                # 'fork' mode is not supported on 'Windows', and has security issues on macOS
+                # 'spawn' mode currently is not supported due to its memory erasure for each new process, which conflicts with the child processes' need for the parent's memory."
+                self.type = ParallelizationType.THREAD
+        # future support - spawn is not working well with frozen mode, need to investigate multiprocessing.freeze_support()
+
+    def running_as_process(self) -> bool:
+        return self.type in [ParallelizationType.FORK, ParallelizationType.SPAWN]
 
     def run_function(
         self,
@@ -58,7 +62,7 @@ class ParallelRunner:
     ) -> Generator[_T, None, None]:
         if not group_size:
             group_size = int(len(items) / self.workers_number) + 1
-        groups_of_items = [items[i : i + group_size] for i in range(0, len(items), group_size)]
+        groups_of_items = [items[i: i + group_size] for i in range(0, len(items), group_size)]
 
         def func_wrapper(original_func: Callable[[Any], _T], items_group: List[Any], connection: Connection) -> None:
             for item in items_group:
@@ -124,7 +128,8 @@ class ParallelRunner:
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.workers_number) as executor:
             if items and isinstance(items[0], tuple):
                 # split a list of tuple into tuples of the positioned values of the tuple
-                return executor.map(func, *list(zip(*items)))  # noqa[B905]  # no need to set 'strict' otherwise 'mypy' complains
+                return executor.map(func, *list(
+                    zip(*items)))  # noqa[B905]  # no need to set 'strict' otherwise 'mypy' complains
 
             return executor.map(func, items)
 

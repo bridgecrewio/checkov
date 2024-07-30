@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_57
   name: Ensure the S3 bucket does not allow WRITE permissions to everyone
   category: GENERAL_SECURITY
+  framework: cdk
 scope:
   languages:
     - python

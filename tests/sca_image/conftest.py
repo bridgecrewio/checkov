@@ -14,8 +14,8 @@ from checkov.sca_image.runner import Runner
 from checkov.common.output.report import Report
 from .mocks import mock_scan
 
+KUBERNETES_EXAMPLES_DIR = Path(__file__).parent / "examples/kubernetes"
 DOCKERFILE_EXAMPLES_DIR = Path(__file__).parent / "examples/dockerfile"
-
 
 @pytest.fixture()
 def image_id() -> str:
@@ -50,7 +50,7 @@ def empty_report() -> dict[str, Any]:
 
 @pytest.fixture()
 def image_name() -> str:
-    return "python:3.8-alpine"
+    return "ubuntu"
 
 
 @pytest.fixture()
@@ -131,7 +131,7 @@ def get_sca_image_report(mock_bc_integration: BcPlatformIntegration) -> Report:
     }
     responses.add(
         method=responses.POST,
-        url=mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/packages/get-licenses-violations",
+        url=mock_bc_integration.api_url + "/api/v1/vulnerabilities/packages/get-licenses-violations",
         json=response_json,
         status=200
     )

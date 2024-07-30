@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_157
   name: Ensure that RDS instances have Multi-AZ enabled
   category: NETWORKING
+  framework: cdk
 scope:
   languages:
     - python

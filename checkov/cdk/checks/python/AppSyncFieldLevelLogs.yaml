@@ -4,6 +4,7 @@ metadata:
   id: CKV_AWS_194
   name: Ensure AppSync has Field-Level logs enabled
   category: LOGGING
+  framework: cdk
 scope:
   languages:
     - python
@@ -19,4 +20,4 @@ definition:
         <ANY>
         aws_cdk.aws_appsync.CfnGraphQLApi(<ANY>, log_config=$LOG , <ANY>)
     - metavariable: $ARG
-      regex: (ERRORS|ALL)
+      regex: (ERROR|ALL)

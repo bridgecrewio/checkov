@@ -136,8 +136,8 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
         report.add_parsing_errors(parsing_errors.keys())
 
         if self.all_graphs:
-            for igraph_graph, _ in self.all_graphs:
-                graph_report = self.get_graph_checks_report(root_folder, runner_filter, graph=igraph_graph)
+            for single_graph, _ in self.all_graphs:  # type: ignore  # Due to issue with rustworkx typing
+                graph_report = self.get_graph_checks_report(root_folder, runner_filter, graph=single_graph)
                 merge_reports(report, graph_report)
         else:
             graph_report = self.get_graph_checks_report(root_folder, runner_filter)
@@ -188,15 +188,15 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
         self.definitions = {}
         self.breadcrumbs = {}
         self.all_graphs = []
-        for subgraph_path, graph in local_graphs:
-            for vertex in graph.vertices:
+        for subgraph_path, local_graph in local_graphs:
+            for vertex in local_graph.vertices:
                 if vertex.block_type == BlockType.RESOURCE:
                     vertex_id = vertex.attributes.get(CustomAttributes.TF_RESOURCE_ADDRESS)
                     report.add_resource(f"{vertex.path}:{vertex_id}")
-            igraph_graph = self.graph_manager.save_graph(graph)
-            self.all_graphs.append((igraph_graph, subgraph_path))
+            graph = self.graph_manager.save_graph(local_graph)
+            self.all_graphs.append((graph, subgraph_path))
             current_definitions, current_breadcrumbs = convert_graph_vertices_to_tf_definitions(
-                graph.vertices,
+                local_graph.vertices,
                 root_folder,
             )
             self.definitions.update(current_definitions)
@@ -362,7 +362,7 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
                         logging.warning(f"Failed to get module name for resource {entity_id}. {str(e)}")
                         continue
                     module_name = full_definition_path[module_name_index]
-                caller_context = definition_context[module_full_path].get(BlockType.MODULE, {}).get(module_name)
+                caller_context = definition_context.get(module_full_path, {}).get(BlockType.MODULE, {}).get(module_name)
                 if not caller_context:
                     continue
                 caller_file_line_range = (caller_context.get("start_line", 1), caller_context.get("end_line", 1))

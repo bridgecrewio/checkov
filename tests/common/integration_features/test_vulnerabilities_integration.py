@@ -10,7 +10,7 @@ from checkov.common.output.record import Record, SCA_PACKAGE_SCAN_CHECK_NAME
 from checkov.common.output.report import Report
 from checkov.common.sast.consts import SastLanguages
 from checkov.sast.report import SastReport
-from checkov.sast.prisma_models.report import Package, File, Function
+from checkov.common.sast.report_types import Package, File, Function, PrismaReport
 
 
 class TestVulnerabilitiesIntegration(unittest.TestCase):
@@ -56,7 +56,11 @@ class TestVulnerabilitiesIntegration(unittest.TestCase):
         sca_report: Report = Report(check_type=CheckType.SCA_PACKAGE)
         sca_report.failed_checks = failed_checks
         sast_report: SastReport = SastReport(check_type=CheckType.SAST_JAVASCRIPT,
-                                             language=SastLanguages.JAVASCRIPT, metadata=None)
+                                             language=SastLanguages.JAVASCRIPT, metadata=None,
+                                             sast_report=PrismaReport(rule_match={}, errors={}, profiler={},
+                                                                      run_metadata={}, imports={},
+                                                                      reachability_report={},
+                                                                      skipped_checks_by_file={}))
         sast_report.sast_imports = sast_imports
         merged_reports = [sca_report, sast_report]
 
@@ -89,7 +93,11 @@ class TestVulnerabilitiesIntegration(unittest.TestCase):
         sca_report: Report = Report(check_type=CheckType.SCA_PACKAGE)
         sca_report.failed_checks = failed_checks
         sast_report: SastReport = SastReport(check_type=CheckType.SAST_JAVASCRIPT,
-                                             language=SastLanguages.JAVASCRIPT, metadata=None)
+                                             language=SastLanguages.JAVASCRIPT, metadata=None,
+                                             sast_report=PrismaReport(rule_match={}, errors={}, profiler={},
+                                                                      run_metadata={}, imports={},
+                                                                      reachability_report={},
+                                                                      skipped_checks_by_file={}))
         sast_report.sast_imports = sast_imports
         merged_reports = [sca_report, sast_report]
 

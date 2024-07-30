@@ -74,20 +74,22 @@ class TestLicensingIntegration(unittest.TestCase):
             'sast_python',
             'sast_java',
             'sast_javascript',
+            'sast_typescript',
+            'sast_golang',
             '3d_policy'
         })
 
         self.assertEqual(SubscriptionCategoryMapping.get(CustomerSubscription.IAC), (CodeCategoryType.IAC, CodeCategoryType.BUILD_INTEGRITY))
         self.assertEqual(SubscriptionCategoryMapping.get(CustomerSubscription.SCA), (CodeCategoryType.LICENSES, CodeCategoryType.VULNERABILITIES))
         self.assertEqual(SubscriptionCategoryMapping.get(CustomerSubscription.SECRETS), (CodeCategoryType.SECRETS,))
-        self.assertEqual(SubscriptionCategoryMapping.get(CustomerSubscription.SAST), (CodeCategoryType.SAST,))
+        self.assertEqual(SubscriptionCategoryMapping.get(CustomerSubscription.SAST), (CodeCategoryType.WEAKNESSES,))
 
         self.assertEqual(CategoryToSubscriptionMapping[CodeCategoryType.IAC], CustomerSubscription.IAC)
         self.assertEqual(CategoryToSubscriptionMapping[CodeCategoryType.BUILD_INTEGRITY], CustomerSubscription.IAC)
         self.assertEqual(CategoryToSubscriptionMapping[CodeCategoryType.LICENSES], CustomerSubscription.SCA)
         self.assertEqual(CategoryToSubscriptionMapping[CodeCategoryType.VULNERABILITIES], CustomerSubscription.SCA)
         self.assertEqual(CategoryToSubscriptionMapping[CodeCategoryType.SECRETS], CustomerSubscription.SECRETS)
-        self.assertEqual(CategoryToSubscriptionMapping[CodeCategoryType.SAST], CustomerSubscription.SAST)
+        self.assertEqual(CategoryToSubscriptionMapping[CodeCategoryType.WEAKNESSES], CustomerSubscription.SAST)
 
         self.assertEqual(CodeCategoryMapping.get(CheckType.BITBUCKET_PIPELINES), CodeCategoryType.BUILD_INTEGRITY)
         self.assertEqual(CodeCategoryMapping.get(CheckType.CIRCLECI_PIPELINES), CodeCategoryType.BUILD_INTEGRITY)
@@ -95,7 +97,7 @@ class TestLicensingIntegration(unittest.TestCase):
         self.assertEqual(CodeCategoryMapping.get(CheckType.ARM), CodeCategoryType.IAC)
         self.assertEqual(CodeCategoryMapping.get(CheckType.AZURE_PIPELINES), CodeCategoryType.BUILD_INTEGRITY)
         self.assertEqual(CodeCategoryMapping.get(CheckType.BICEP), CodeCategoryType.IAC)
-        self.assertEqual(CodeCategoryMapping.get(CheckType.CDK), CodeCategoryType.SAST)
+        self.assertEqual(CodeCategoryMapping.get(CheckType.CDK), CodeCategoryType.WEAKNESSES)
         self.assertEqual(CodeCategoryMapping.get(CheckType.CLOUDFORMATION), CodeCategoryType.IAC)
         self.assertEqual(CodeCategoryMapping.get(CheckType.DOCKERFILE), CodeCategoryType.IAC)
         self.assertEqual(CodeCategoryMapping.get(CheckType.GITHUB_CONFIGURATION), CodeCategoryType.BUILD_INTEGRITY)
@@ -116,7 +118,7 @@ class TestLicensingIntegration(unittest.TestCase):
         self.assertEqual(CodeCategoryMapping.get(CheckType.TERRAFORM), CodeCategoryType.IAC)
         self.assertEqual(CodeCategoryMapping.get(CheckType.TERRAFORM_PLAN), CodeCategoryType.IAC)
         self.assertEqual(CodeCategoryMapping.get(CheckType.ARGO_WORKFLOWS), CodeCategoryType.BUILD_INTEGRITY)
-        self.assertEqual(CodeCategoryMapping.get(CheckType.SAST), CodeCategoryType.SAST)
+        self.assertEqual(CodeCategoryMapping.get(CheckType.SAST), CodeCategoryType.WEAKNESSES)
 
         self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.BITBUCKET_PIPELINES), CustomerSubscription.IAC)
         self.assertEqual(LicensingIntegration.get_subscription_for_runner(CheckType.CIRCLECI_PIPELINES), CustomerSubscription.IAC)

@@ -1,0 +1,51 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts",
+      "apiVersion": "2024-05-15",
+      "name": "fail3",
+      "location": "[resourceGroup().location]",
+      "kind": "GlobalDocumentDB",
+      "properties": {
+        "capabilities": [
+          {
+            "name": "EnableAggregationPipeline"
+          },
+          {
+            "name": "mongoEnableDocLevelTTL"
+          },
+          {
+            "name": "MongoDBv3.4"
+          }
+        ],
+        "consistencyPolicy": {
+          "defaultConsistencyLevel": "BoundedStaleness",
+          "maxIntervalInSeconds": 10,
+          "maxStalenessPrefix": 200
+        },
+        "databaseAccountOfferType": "Standard",
+        "enableAutomaticFailover": true,
+        "ipRangeFilter": [],
+        "isVirtualNetworkFilterEnabled": false,
+        "locations": [
+          {
+            "locationName": "[variables('failoverLocation')]",
+            "failoverPriority": 1
+          },
+          {
+            "locationName": "[resourceGroup().location]",
+            "failoverPriority": 0
+          }
+        ],
+        "networkAclBypass": "AzureServices",
+        "virtualNetworkRules": [
+          {
+            "id": "Microsoft.virtualNetworks"
+          }
+        ]
+      }
+    }
+  ]
+}

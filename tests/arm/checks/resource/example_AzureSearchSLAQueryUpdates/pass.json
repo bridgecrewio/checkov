@@ -1,0 +1,19 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.Search/searchServices",
+      "apiVersion": "2024-03-01-preview",
+      "name": "pass",
+      "location": "string",
+      "sku": {
+        "name": "standard"
+      },
+      "properties": {
+        "publicNetworkAccess": "Disabled",
+        "replicaCount": 2
+      }
+    }
+  ]
+}

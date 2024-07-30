@@ -11,7 +11,7 @@ class CodeCategoryType(str, Enum):
     SECRETS = "SECRETS"
     LICENSES = "LICENSES"
     BUILD_INTEGRITY = "BUILD_INTEGRITY"
-    SAST = "SAST"
+    WEAKNESSES = "WEAKNESSES"
 
 
 CodeCategoryMapping: Dict[str, Union[CodeCategoryType, List[CodeCategoryType]]] = {
@@ -21,7 +21,7 @@ CodeCategoryMapping: Dict[str, Union[CodeCategoryType, List[CodeCategoryType]]] 
     CheckType.AZURE_PIPELINES: CodeCategoryType.BUILD_INTEGRITY,
     CheckType.BICEP: CodeCategoryType.IAC,
     CheckType.BITBUCKET_PIPELINES: CodeCategoryType.BUILD_INTEGRITY,
-    CheckType.CDK: CodeCategoryType.SAST,
+    CheckType.CDK: CodeCategoryType.WEAKNESSES,
     CheckType.CIRCLECI_PIPELINES: CodeCategoryType.BUILD_INTEGRITY,
     CheckType.CLOUDFORMATION: CodeCategoryType.IAC,
     CheckType.DOCKERFILE: CodeCategoryType.IAC,
@@ -43,10 +43,12 @@ CodeCategoryMapping: Dict[str, Union[CodeCategoryType, List[CodeCategoryType]]] 
     CheckType.TERRAFORM: CodeCategoryType.IAC,
     CheckType.TERRAFORM_JSON: CodeCategoryType.IAC,
     CheckType.TERRAFORM_PLAN: CodeCategoryType.IAC,
-    CheckType.SAST: CodeCategoryType.SAST,
-    CheckType.SAST_PYTHON: CodeCategoryType.SAST,
-    CheckType.SAST_JAVA: CodeCategoryType.SAST,
-    CheckType.SAST_JAVASCRIPT: CodeCategoryType.SAST,
+    CheckType.SAST: CodeCategoryType.WEAKNESSES,
+    CheckType.SAST_PYTHON: CodeCategoryType.WEAKNESSES,
+    CheckType.SAST_JAVA: CodeCategoryType.WEAKNESSES,
+    CheckType.SAST_JAVASCRIPT: CodeCategoryType.WEAKNESSES,
+    CheckType.SAST_TYPESCRIPT: CodeCategoryType.WEAKNESSES,
+    CheckType.SAST_GOLANG: CodeCategoryType.WEAKNESSES,
     CheckType.POLICY_3D: CodeCategoryType.IAC
 }
 

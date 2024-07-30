@@ -58,6 +58,10 @@ KEY_VALUE_SEPERATOR = ' : '
 TYPE_REGEX = re.compile(r'^(\${)?([a-z]+)')
 CHECKOV_RENDER_MAX_LEN = force_int(os.getenv("CHECKOV_RENDER_MAX_LEN", "10000"))
 
+DATA_SPECIAL_KEYWORDS = {
+    "policy_data": "binding"
+}
+
 
 class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
     def __init__(self, local_graph: "TerraformLocalGraph") -> None:
@@ -182,6 +186,10 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
             value = attributes.get(key, None)
             if value is not None:
                 return value
+            special_key = DATA_SPECIAL_KEYWORDS.get(key, '')
+            value = attributes.get(special_key)
+            if attributes.get('block_type_') == BlockType.DATA and value is not None:
+                return {special_key: value}
 
         if attributes.get(CustomAttributes.BLOCK_TYPE) in (BlockType.VARIABLE, BlockType.TF_VARIABLE):
             var_type = attributes.get('type')
@@ -235,6 +243,8 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
                     copy_of_attribute_path[i] = remove_index_pattern_from_str(copy_of_attribute_path[i])
                     name = ".".join(copy_of_attribute_path[: i + 1])
                     if vertex_attributes[CustomAttributes.BLOCK_NAME] == name:
+                        return attribute_path, vertex_reference.origin_value
+                    elif vertex_attributes[CustomAttributes.BLOCK_NAME] == name.replace(LEFT_BRACKET_WITH_QUOTATION, LEFT_BRACKET).replace(RIGHT_BRACKET_WITH_QUOTATION, RIGHT_BRACKET):
                         return attribute_path, vertex_reference.origin_value
             elif block_type == BlockType.MODULE:
                 copy_of_attribute_path.reverse()
@@ -363,6 +373,9 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
 
             dynamic_arguments: list[str] = []
             TerraformVariableRenderer._extract_dynamic_arguments(block_name, block_content, dynamic_arguments, [])
+            if not dynamic_arguments and len(dynamic_values) == 1:
+                for argument, _ in block_content.items():
+                    dynamic_arguments.append(argument)
             if dynamic_arguments and isinstance(dynamic_values, list):
                 block_confs = []
                 for dynamic_value in dynamic_values:

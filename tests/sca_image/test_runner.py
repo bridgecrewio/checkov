@@ -13,14 +13,12 @@ from checkov.common.bridgecrew.check_type import CheckType
 from checkov.common.bridgecrew.code_categories import CodeCategoryType
 from checkov.common.bridgecrew.severities import Severities, BcSeverities
 from checkov.common.models.enums import CheckResult
-from checkov.github_actions.runner import Runner as GHA_Runner
+from checkov.dockerfile.runner import Runner as Dockerfile_Runner
+from checkov.kubernetes.runner import Runner as Kubernetes_Runner
 from checkov.runner_filter import RunnerFilter
 from checkov.sca_image.runner import Runner
+from .conftest import DOCKERFILE_EXAMPLES_DIR, KUBERNETES_EXAMPLES_DIR
 from .mocks import mock_scan_empty, mock_scan_image
-
-WORKFLOW_EXAMPLES_DIR = Path(__file__).parent / "examples/.github/workflows"
-WORKFLOW_IMAGE_EXAMPLES_DIR = Path(__file__).parent / "examples/example/.github/workflows"
-DOCKERFILE_EXAMPLES_DIR = Path(__file__).parent / "examples/dockerfile"
 
 
 def test_image_referencer_trigger_image_flow_calls(mock_bc_integration, image_name, cached_scan_result):
@@ -47,20 +45,20 @@ def test_image_referencer_trigger_image_flow_calls(mock_bc_integration, image_na
     }
     with aioresponses() as mock_response:
         mock_response.post(
-            url=mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/packages/get-licenses-violations",
+            url=mock_bc_integration.api_url + "/api/v1/vulnerabilities/packages/get-licenses-violations",
             payload=response_json,
             status=200
         )
         mock_response.get(
-            url=URL(mock_bc_integration.bc_api_url + f"/api/v1/vulnerabilities/scan-results/{image_id_encoded}",
+            url=URL(mock_bc_integration.api_url + f"/api/v1/vulnerabilities/scan-results/{image_id_encoded}",
                     encoded=True),
             payload=cached_scan_result,
             status=200,
         )
 
         # when
-        reports = GHA_Runner().run(root_folder=str(WORKFLOW_EXAMPLES_DIR),
-                                   runner_filter=RunnerFilter(run_image_referencer=True))
+        reports = Dockerfile_Runner().run(root_folder=str(DOCKERFILE_EXAMPLES_DIR),
+                                          runner_filter=RunnerFilter(run_image_referencer=True))
 
         sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
@@ -69,9 +67,9 @@ def test_image_referencer_trigger_image_flow_calls(mock_bc_integration, image_na
     assert len(sca_image_report.passed_checks) == 1
 
 
-def test_runner_honors_enforcement_rules(mock_bc_integration, image_name, cached_scan_result):
+def test_runner_honors_enforcement_rules(mock_bc_integration, image_name2, cached_scan_result):
     # given
-    image_id_encoded = quote_plus(f"image:{image_name}")
+    image_id_encoded = quote_plus(f"image:{image_name2}")
 
     response_json = {
         "violations": [
@@ -94,12 +92,12 @@ def test_runner_honors_enforcement_rules(mock_bc_integration, image_name, cached
 
     with aioresponses() as mock_response:
         mock_response.post(
-            url=mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/packages/get-licenses-violations",
+            url=mock_bc_integration.api_url + "/api/v1/vulnerabilities/packages/get-licenses-violations",
             payload=response_json,
             status=200
         )
         mock_response.get(
-            url=URL(mock_bc_integration.bc_api_url + f"/api/v1/vulnerabilities/scan-results/{image_id_encoded}", encoded=True),
+            url=URL(mock_bc_integration.api_url + f"/api/v1/vulnerabilities/scan-results/{image_id_encoded}", encoded=True),
             payload=cached_scan_result,
             status=200,
         )
@@ -109,14 +107,14 @@ def test_runner_honors_enforcement_rules(mock_bc_integration, image_name, cached
         # this is not quite a true test, because the checks don't have severities. However, this shows that the check registry
         # passes the report type properly to RunnerFilter.should_run_check, and we have tests for that method
         runner_filter.enforcement_rule_configs = {
-            CheckType.GITHUB_ACTIONS: Severities[BcSeverities.OFF],
+            CheckType.KUBERNETES: Severities[BcSeverities.OFF],
             CheckType.SCA_IMAGE: {
                 CodeCategoryType.LICENSES: Severities[BcSeverities.OFF],
                 CodeCategoryType.VULNERABILITIES: Severities[BcSeverities.OFF]
             }
         }
 
-        reports = GHA_Runner().run(root_folder=str(WORKFLOW_EXAMPLES_DIR), runner_filter=runner_filter)
+        reports = Kubernetes_Runner().run(root_folder=str(KUBERNETES_EXAMPLES_DIR), runner_filter=runner_filter)
         sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
         summary = sca_image_report.get_summary()
@@ -224,19 +222,19 @@ def test_run_license_policy(mock_bc_integration, image_name, cached_scan_result)
     }
     with aioresponses() as mock_response:
         mock_response.post(
-            url=mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/packages/get-licenses-violations",
+            url=mock_bc_integration.api_url + "/api/v1/vulnerabilities/packages/get-licenses-violations",
             payload=response_json,
             status=200
         )
         mock_response.get(
-            url=URL(mock_bc_integration.bc_api_url + f"/api/v1/vulnerabilities/scan-results/{image_id_encoded}", encoded=True),
+            url=URL(mock_bc_integration.api_url + f"/api/v1/vulnerabilities/scan-results/{image_id_encoded}", encoded=True),
             payload=cached_scan_result,
             status=200,
         )
 
         # when
         runner_filter = RunnerFilter(checks=['BC_LIC_1'], run_image_referencer=True)
-        reports = GHA_Runner().run(root_folder=str(WORKFLOW_EXAMPLES_DIR), runner_filter=runner_filter)
+        reports = Dockerfile_Runner().run(root_folder=str(DOCKERFILE_EXAMPLES_DIR), runner_filter=runner_filter)
         sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
     # then
     assert not [c for c in sca_image_report.passed_checks + sca_image_report.failed_checks
@@ -267,7 +265,7 @@ def test_run_with_empty_scan_result(mock_bc_integration):
     }
     responses.add(
         method=responses.POST,
-        url=mock_bc_integration.bc_api_url + "/api/v1/vulnerabilities/packages/get-licenses-violations",
+        url=mock_bc_integration.api_url + "/api/v1/vulnerabilities/packages/get-licenses-violations",
         json=response_json,
         status=200
     )
@@ -292,18 +290,18 @@ def test_run_with_empty_scan_result(mock_bc_integration):
 
 @mock.patch.dict(os.environ, {"CKV_IGNORE_HIDDEN_DIRECTORIES": "false"})
 @mock.patch('checkov.sca_image.runner.Runner.get_image_cached_results', mock_scan_image)
-def test_run_with_image_cached_reports_env(mock_bc_integration, image_name2, cached_scan_result2):
-    image_id_encoded = quote_plus(f"image:{image_name2}")
+def test_run_with_image_cached_reports_env(mock_bc_integration, image_name, cached_scan_result2):
+    image_id_encoded = quote_plus(f"image:{image_name}")
 
     with aioresponses() as mock_response:
         mock_response.get(
-            url=URL(mock_bc_integration.bc_api_url + f"/api/v1/vulnerabilities/scan-results/{image_id_encoded}", encoded=True),
+            url=URL(mock_bc_integration.api_url + f"/api/v1/vulnerabilities/scan-results/{image_id_encoded}", encoded=True),
             payload=cached_scan_result2,
             status=200,
         )
 
         runner_filter = RunnerFilter(run_image_referencer=True)
-        reports = GHA_Runner().run(root_folder=str(WORKFLOW_IMAGE_EXAMPLES_DIR), runner_filter=runner_filter)
+        reports = Dockerfile_Runner().run(root_folder=str(DOCKERFILE_EXAMPLES_DIR), runner_filter=runner_filter)
         sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
     assert len(sca_image_report.passed_checks) == 0
@@ -316,18 +314,18 @@ def test_run_with_image_cached_reports_env(mock_bc_integration, image_name2, cac
 @mock.patch.dict(os.environ, {"CHECKOV_CREATE_SCA_IMAGE_REPORTS_FOR_IR": "False"})
 @mock.patch.dict(os.environ, {"CKV_IGNORE_HIDDEN_DIRECTORIES": "false"})
 @mock.patch('checkov.sca_image.runner.Runner.get_image_cached_results', mock_scan_image)
-def test_run_with_image_cached_reports_and_without_sca_reports_env(mock_bc_integration, image_name2,
+def test_run_with_image_cached_reports_and_without_sca_reports_env(mock_bc_integration, image_name,
                                                                    cached_scan_result2):
-    image_id_encoded = quote_plus(f"image:{image_name2}")
+    image_id_encoded = quote_plus(f"image:{image_name}")
     with aioresponses() as mock_response:
         mock_response.get(
-            url=URL(mock_bc_integration.bc_api_url + f"/api/v1/vulnerabilities/scan-results/{image_id_encoded}", encoded=True),
+            url=URL(mock_bc_integration.api_url + f"/api/v1/vulnerabilities/scan-results/{image_id_encoded}", encoded=True),
             payload=cached_scan_result2,
             status=200,
         )
 
         runner_filter = RunnerFilter(run_image_referencer=True)
-        reports = GHA_Runner().run(root_folder=str(WORKFLOW_IMAGE_EXAMPLES_DIR), runner_filter=runner_filter)
+        reports = Dockerfile_Runner().run(root_folder=str(DOCKERFILE_EXAMPLES_DIR), runner_filter=runner_filter)
         sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
     assert len(sca_image_report.passed_checks) == 0
@@ -343,7 +341,7 @@ def test_run_with_error_from_scan_results(mock_bc_integration, image_name2, cach
 
     responses.add(
         method=responses.GET,
-        url=mock_bc_integration.bc_api_url + f"/api/v1/vulnerabilities/scan-results/{image_id_encoded}",
+        url=mock_bc_integration.api_url + f"/api/v1/vulnerabilities/scan-results/{image_id_encoded}",
         json=cached_scan_result3,
         status=500,
     )

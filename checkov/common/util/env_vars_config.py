@@ -11,7 +11,7 @@ from checkov.version import version
 
 class EnvVarsConfig:
     def __init__(self) -> None:
-        self.BC_API_URL = normalize_bc_url(os.getenv("BC_API_URL", "https://www.bridgecrew.cloud"))
+        self.BC_API_URL = normalize_bc_url(os.getenv("BC_API_URL"))
         self.BC_ENABLE_PERSIST_GRAPHS = convert_str_to_bool(os.getenv("BC_ENABLE_PERSIST_GRAPHS", True))
         self.BC_PERSIST_GRAPHS_TIMEOUT = force_int(os.getenv("BC_PERSIST_GRAPHS_TIMEOUT", 60))
         self.BC_ROOT_DIR = os.getenv("BC_ROOT_DIR", "")
@@ -21,6 +21,7 @@ class EnvVarsConfig:
         self.CACHE_DIR = convert_str_to_bool(os.getenv("CKV_CACHE_DIR", str(Path(tempfile.gettempdir()) / "cache")))
         self.CHECK_FAIL_LEVEL = os.getenv("CHECKOV_CHECK_FAIL_LEVEL", CheckFailLevel.ERROR)
         self.CREATE_COMPLEX_VERTICES = convert_str_to_bool(os.getenv("CREATE_COMPLEX_VERTICES", True))
+        self.CHECKOV_ENABLE_DATAS_FOREACH_HANDLING = os.getenv('CHECKOV_ENABLE_DATAS_FOREACH_HANDLING', 'False')
         self.CREATE_EDGES = convert_str_to_bool(os.getenv("CREATE_EDGES", True))
         self.CREATE_MARKDOWN_HYPERLINKS = convert_str_to_bool(os.getenv("CHECKOV_CREATE_MARKDOWN_HYPERLINKS", False))
         self.CREATE_SCA_IMAGE_REPORTS_FOR_IR = convert_str_to_bool(
@@ -39,7 +40,7 @@ class EnvVarsConfig:
         self.GITHUB_CONFIG_FETCH_DATA = convert_str_to_bool(os.getenv("CKV_GITHUB_CONFIG_FETCH_DATA", True))
         self.GITLAB_CONF_DIR_NAME = os.getenv("CKV_GITLAB_CONF_DIR_NAME", "gitlab_conf")
         self.GITLAB_CONFIG_FETCH_DATA = convert_str_to_bool(os.getenv("CKV_GITLAB_CONFIG_FETCH_DATA", True))
-        self.GRAPH_FRAMEWORK = os.getenv("CHECKOV_GRAPH_FRAMEWORK", "IGRAPH")
+        self.GRAPH_FRAMEWORK = os.getenv("CHECKOV_GRAPH_FRAMEWORK", "RUSTWORKX")
         self.IGNORED_DIRECTORIES = os.getenv("CKV_IGNORED_DIRECTORIES", "node_modules,.terraform,.serverless")
         self.IGNORE_HIDDEN_DIRECTORIES = convert_str_to_bool(os.getenv("CKV_IGNORE_HIDDEN_DIRECTORIES", True))
         self.MAX_FILE_SIZE = force_int(os.getenv("CHECKOV_MAX_FILE_SIZE", 5_000_000))  # 5 MB is default limit
@@ -57,7 +58,6 @@ class EnvVarsConfig:
         self.RENDER_VARIABLES_ASYNC = convert_str_to_bool(os.getenv("RENDER_VARIABLES_ASYNC", False))
         self.RUN_IN_DOCKER = convert_str_to_bool(os.getenv("RUN_IN_DOCKER", False))
         self.REQUEST_MAX_TRIES = force_int(os.getenv("REQUEST_MAX_TRIES", 3))
-        self.RUN_SCA_PACKAGE_SCAN_V2 = convert_str_to_bool(os.getenv("CHECKOV_RUN_SCA_PACKAGE_SCAN_V2", True))
         self.RUN_SECRETS_MULTIPROCESS = convert_str_to_bool(os.getenv("RUN_SECRETS_MULTIPROCESS", False))
         self.SLEEP_BETWEEN_REQUEST_TRIES = force_int(os.getenv("SLEEP_BETWEEN_REQUEST_TRIES", 1))
         self.SLS_FILE_MASK = os.getenv("CKV_SLS_FILE_MASK", "serverless.yml,serverless.yaml").split(",")
@@ -71,10 +71,11 @@ class EnvVarsConfig:
         # is also defined as a flag, need to remove env var references in code
         self.BC_CA_BUNDLE = os.getenv("BC_CA_BUNDLE")
         # is also defined as a flag, need to remove env var references in code
-        self.PRISMA_API_URL = os.getenv("PRISMA_API_URL")
+        self.PRISMA_API_URL = os.getenv("PRISMA_API_URL", "https://api0.prismacloud.io")
         # need to fix usage, because the env var value is set inside the code
         self.GITHUB_CONF_DIR_PATH = os.getenv("CKV_GITHUB_CONF_DIR_PATH")
         self.ENABLE_DEFINITION_KEY = os.getenv("ENABLE_DEFINITION_KEY", False)
+        self.CKV_SUPPORT_ALL_RESOURCE_TYPE = os.getenv('CKV_SUPPORT_ALL_RESOURCE_TYPE', False)
 
 
 env_vars_config = EnvVarsConfig()
