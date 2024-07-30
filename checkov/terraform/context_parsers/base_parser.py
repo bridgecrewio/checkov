@@ -91,7 +91,7 @@ class BaseContextParser(ABC):
         """
         Collects checkov skip comments to all definition blocks
         :param definition_blocks: parsed definition blocks
-        :return: context enriched with with skipped checks per skipped entity
+        :return: context enriched with skipped checks per skipped entity
         """
         bc_id_mapping = metadata_integration.bc_to_ckv_id_mapping
         comments = [
@@ -125,6 +125,7 @@ class BaseContextParser(ABC):
                 if "start_line" in entity_context and "end_line" in entity_context \
                         and entity_context["start_line"] < skip_check_line_num < entity_context["end_line"]:
                     # No matter which ID was used to skip, save the pair of IDs in the appropriate fields
+                    skip_check_ids = skip_check["id"].split(',')
                     for skip_check_id in skip_check_ids:
                         single_skip_check = {"id": skip_check_id.strip(),
                                              "suppress_comment": skip_check["suppress_comment"]}
