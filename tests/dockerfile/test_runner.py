@@ -99,7 +99,7 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner(db_connector=self.db_connector())
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework=["all"],checks=["CKV_DOCKER_1", "CKV2_DOCKER_1"]))
-        self.assertEqual(len(report.passed_checks), 2)
+        self.assertEqual(len(report.passed_checks), 2), report.get_json()
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(report.failed_checks, [])
         self.assertEqual(report.skipped_checks, [])
@@ -127,9 +127,9 @@ class TestRunnerValid(unittest.TestCase):
         # then
         summary = report.get_summary()
 
-        self.assertEqual(summary["passed"], 1)
-        self.assertEqual(summary["failed"], 0)
-        self.assertEqual(summary["skipped"], 3)
+        self.assertEqual(summary["passed"], 1), report.get_json()
+        self.assertEqual(summary["failed"], 0), report.get_json()
+        self.assertEqual(summary["skipped"], 3), report.get_json()
         self.assertEqual(summary["parsing_errors"], 0)
 
         expected_skipped_cehcks = [record.check_id for record in report.skipped_checks]
