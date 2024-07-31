@@ -9,7 +9,7 @@ class TestMultipleSkips(unittest.TestCase):
 
     def test(self) -> None:
         # given
-        test_files_dir = Path(__file__).parent / "a example skip"
+        test_files_dir = Path(__file__).parent / "a_example_skip"
 
         # when
         report = Runner().run(root_folder=str(test_files_dir), runner_filter=RunnerFilter(checks=[]))
