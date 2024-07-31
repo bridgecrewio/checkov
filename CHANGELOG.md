@@ -1,6 +1,17 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.213...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.216...HEAD)
+
+## [3.2.216](https://github.com/bridgecrewio/checkov/compare/3.2.213...3.2.216) - 2024-07-30
+
+### Feature
+
+- **sast:** Verify that all sast policies are parsed correctly - [#6621](https://github.com/bridgecrewio/checkov/pull/6621)
+
+### Bug Fix
+
+- **secrets:** fix secrets duplication - [#6619](https://github.com/bridgecrewio/checkov/pull/6619)
+- **secrets:** fix secrets duplication - Revert - [#6623](https://github.com/bridgecrewio/checkov/pull/6623)
 
 ## [3.2.213](https://github.com/bridgecrewio/checkov/compare/3.2.209...3.2.213) - 2024-07-29
 
