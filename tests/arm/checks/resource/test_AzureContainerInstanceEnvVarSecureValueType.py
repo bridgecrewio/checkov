@@ -31,7 +31,7 @@ class TestAzureContainerInstanceEnvVarSecureValueType(unittest.TestCase):
         self.assertEqual(summary['passed'], len(passing_resources))
         self.assertEqual(summary['failed'], len(failing_resources))
         self.assertEqual(summary['skipped'], len(skipped_resources))
-        self.assertEqual(summary['parsing_errors'], 1)
+        self.assertEqual(summary['parsing_errors'], 0)
 
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)
