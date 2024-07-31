@@ -25,3 +25,12 @@ resource "azurerm_storage_account" "skip_invalid" {
   account_tier             = "Standard"
   account_replication_type = "GRS"
 }
+
+resource "azurerm_storage_account" "skip_all_checks" {
+  #checkov:skip=CKV_AZURE_33,CKV_AZURE_59,CKV_AZURE_999,CKV_AZURE_190: Skipping multiple checks
+  name                     = "storageaccountname"
+  resource_group_name      = "azurerm_resource_group.example.name"
+  location                 = "azurerm_resource_group.example.location"
+  account_tier             = "Standard"
+  account_replication_type = "GRS"
+}
