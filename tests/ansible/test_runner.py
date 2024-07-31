@@ -115,10 +115,10 @@ def test_runner_skipping_check(graph_connector):
     # then
     summary = report.get_summary()
 
-    assert summary["passed"] == 0
-    assert summary["failed"] == 2
-    assert summary["skipped"] == 3
-    assert summary["parsing_errors"] == 0
+    assert summary["passed"] == 0, report.get_json()
+    assert summary["failed"] == 2, report.get_json()
+    assert summary["skipped"] == 3, report.get_json()
+    assert summary["parsing_errors"] == 0, report.get_json()
 
     assert {check.check_id for check in report.skipped_checks} == {"CKV2_ANSIBLE_1", "CKV_AWS_88", "CKV_AWS_135"}
 

@@ -30,10 +30,10 @@ def test_runner_with_existing_graph():
     report = graph_runner.run(files=file_dir, runner_filter=RunnerFilter(framework=["github_actions"], checks=checks))
 
     # then
-    assert len(report.failed_checks) == 1
-    assert len(report.passed_checks) == 0
-    assert len(report.skipped_checks) == 0
-    assert len(report.parsing_errors) == 0
+    assert len(report.failed_checks) == 1, report.get_json()
+    assert len(report.passed_checks) == 0, report.get_json()
+    assert len(report.skipped_checks) == 0, report.get_json()
+    assert len(report.parsing_errors) == 0, report.get_json()
 
 
 if __name__ == "__main__":
