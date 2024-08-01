@@ -1,0 +1,19 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.Security/pricings",
+      "apiVersion": "2024-01-01",
+      "name": "KeyVaults",
+      "properties": {
+        "pricingTier": "Standard",
+        "extensions": [
+          {
+            "name": "KeyVaults"
+          }
+        ]
+      }
+    }
+  ]
+}

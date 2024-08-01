@@ -14,7 +14,7 @@ In order to use this feature, you first need to create an [API token using Prism
 
 ## Package scanning
 ```bash
-checkov -d . --framework sca_package --bc-api-key <access key>::<secret key> --prisma-api-url <prisma api url>
+checkov -d . --framework sca_package --bc-api-key <access key>::<secret key> --prisma-api-url <prisma api url> --repo-id <repo/name>
 ```
 
 ### Example output

@@ -22,6 +22,7 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         get_graph_checks_registry("cloudformation").checks = []
         get_graph_checks_registry("terraform").checks = []
         get_graph_checks_registry("kubernetes").checks = []
+        get_graph_checks_registry("bicep").checks = []
 
     def test_integration_valid(self):
         instance = BcPlatformIntegration()
@@ -218,11 +219,14 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         cfn_registry = get_graph_checks_registry("cloudformation").checks
         tf_registry = get_graph_checks_registry("terraform").checks
         k8s_registry = get_graph_checks_registry("kubernetes").checks
+        bicep_registry = get_graph_checks_registry("bicep").checks
         self.assertEqual(1, len(custom_policies_integration.bc_cloned_checks))
         self.assertEqual('kpande_AZR_1648821862291', tf_registry[0].id, cfn_registry[0].id)
         self.assertEqual('kpande_AZR_1648821862291', tf_registry[0].bc_id, cfn_registry[0].bc_id)
         self.assertEqual('kpande_kubernetes_1650378013211', k8s_registry[0].id)
         self.assertEqual('kpande_kubernetes_1650378013211', k8s_registry[0].bc_id)
+        self.assertEqual('kpande_bicep_1650378013212', bicep_registry[0].id)
+        self.assertEqual('kpande_bicep_1650378013212', bicep_registry[0].bc_id)
 
     def test_post_runner_with_cloned_checks(self):
         instance = BcPlatformIntegration()
@@ -441,6 +445,23 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
                     "Terraform",
                     "CloudFormation"
                 ],
+            },
+            {
+                "id": "policy_id_5",
+                "title": "Custom - ensure SQL pool valid create mode",
+                "severity": "HIGH",
+                "category": "General",
+                "guideline": "Custom - ensure",
+                "code": json.dumps({
+                    "value": "Recovery",
+                    "operator": "equals",
+                    "attribute": "createMode",
+                    "cond_type": "attribute",
+                    "resource_types": [
+                        "Microsoft.Synapse/workspaces/sqlPools"
+                    ]
+                }),
+                "benchmarks": {},
             }
         ]
 
@@ -512,6 +533,23 @@ def mock_custom_policies_response():
                 "benchmarks": {},
                 "frameworks": [
                     "Kubernetes"
+                ]
+            },
+            {
+                "id": "kpande_bicep_1650378013212",
+                "code": "{\"operator\":\"exists\",\"attribute\":\"spec.runAsUser.rule\",\"cond_type\":\"attribute\","
+                        "\"resource_types\":[\"PodSecurityPolicy\"]}",
+                "title": "bicep policy",
+                "guideline": "meaningful guideline for bicep policy",
+                "severity": "HIGH",
+                "pcSeverity": None,
+                "category": "bicep",
+                "pcPolicyId": None,
+                "additionalPcPolicyIds": None,
+                "sourceIncidentId": None,
+                "benchmarks": {},
+                "frameworks": [
+                    "bicep"
                 ]
             }
         ]

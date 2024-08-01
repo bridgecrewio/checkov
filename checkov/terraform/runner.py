@@ -362,7 +362,7 @@ class Runner(BaseTerraformRunner[_TerraformDefinitions, _TerraformContext, TFDef
                         logging.warning(f"Failed to get module name for resource {entity_id}. {str(e)}")
                         continue
                     module_name = full_definition_path[module_name_index]
-                caller_context = definition_context[module_full_path].get(BlockType.MODULE, {}).get(module_name)
+                caller_context = definition_context.get(module_full_path, {}).get(BlockType.MODULE, {}).get(module_name)
                 if not caller_context:
                     continue
                 caller_file_line_range = (caller_context.get("start_line", 1), caller_context.get("end_line", 1))

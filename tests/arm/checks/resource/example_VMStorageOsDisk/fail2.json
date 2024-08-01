@@ -1,0 +1,59 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2021-07-01",
+      "name": "fail-windows",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "Standard_DS1_v2"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "MicrosoftWindowsServer",
+            "offer": "WindowsServer",
+            "sku": "2019-Datacenter",
+            "version": "latest"
+          },
+          "dataDisks": [
+            {
+              "name": "mydatadisk1",
+              "caching": "ReadWrite",
+              "createOption": "Empty",
+              "managedDisk": {
+                "storageAccountType": "Standard_LRS"
+              },
+              "vhd": {
+                "uri": "someURI"
+              }
+            }
+          ]
+        },
+        "osProfile": {
+          "computerName": "hostname",
+          "adminUsername": "testadmin",
+          "adminPassword": "1111"
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', 'main')]"
+            }
+          ]
+        }
+      },
+      "tags": {
+        "environment": "staging"
+      }
+    }
+  ],
+  "parameters": {
+    "prefix": {
+      "type": "string",
+      "defaultValue": "myprefix"
+    }
+  }
+}

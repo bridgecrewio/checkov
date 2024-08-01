@@ -5,7 +5,7 @@
     {
       "type": "Microsoft.Web/sites/config",
       "apiVersion": "2021-02-01",
-      "name": "fail",
+      "name": "authsettingsV2",
       "properties": {
         "httpSettings": {
           "forwardProxy": {

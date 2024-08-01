@@ -265,3 +265,139 @@ resource "aws_wafv2_web_acl" "rule_group_count" {
     sampled_requests_enabled   = false
   }
 }
+
+
+#unknown
+resource "aws_wafv2_web_acl" "pass_dynamic" {
+  name  = "default-${var.scope}-web-acl"
+  scope = var.scope
+
+
+  default_action {
+    block {}
+  }
+
+
+  rule {
+    name     = "rule-${var.scope}-AWSManagedRulesCommonRuleSet"
+    priority = 1
+
+    override_action {
+      none {}
+    }
+
+    statement {
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesCommonRuleSet"
+        vendor_name = "AWS"
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "rule-${var.scope}-AWSManagedRulesCommonRuleSet"
+      sampled_requests_enabled   = true
+    }
+  }
+
+  rule {
+    name     = "AWS-AWSManagedRulesKnownBadInputsRuleSet"
+    priority = 2
+
+    override_action {
+      none {}
+    }
+
+    statement {
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesKnownBadInputsRuleSet"
+        vendor_name = "AWS"
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "rule-${var.scope}-AWSManagedRulesKnownBadInputsRuleSet"
+      sampled_requests_enabled   = true
+    }
+  }
+
+  dynamic "rule" {
+    for_each = var.dynamic_ip_set == "" ? [] : [1]
+
+    content {
+      name     = "rule-${var.scope}-ip-allowlist"
+      priority = 8
+
+      action {
+        allow {}
+      }
+
+      statement {
+        or_statement {
+          statement {
+            ip_set_reference_statement {
+              arn = aws_wafv2_ip_set.allow.arn
+            }
+          }
+          statement {
+            ip_set_reference_statement {
+              arn = data.aws_wafv2_ip_set.github-actions[0].arn
+            }
+          }
+        }
+      }
+
+      visibility_config {
+        cloudwatch_metrics_enabled = true
+        metric_name                = "rule-${var.scope}-ip-allowlist"
+        sampled_requests_enabled   = true
+      }
+    }
+  }
+
+
+  dynamic "rule" {
+    for_each = nonsensitive(var.review_token) == "" ? [] : [1]
+
+    content {
+      name     = "rule-${var.scope}-review-token-check"
+      priority = 30
+
+      action {
+        allow {}
+      }
+
+      statement {
+        byte_match_statement {
+          positional_constraint = "EXACTLY"
+          search_string         = var.review_token
+
+          field_to_match {
+            single_header {
+              name = "review-token"
+            }
+          }
+
+          text_transformation {
+            priority = 1
+            type     = "NONE"
+          }
+        }
+      }
+
+      visibility_config {
+        cloudwatch_metrics_enabled = true
+        metric_name                = "rule-${var.scope}-review-token-check"
+        sampled_requests_enabled   = true
+      }
+    }
+  }
+
+
+  visibility_config {
+    cloudwatch_metrics_enabled = true
+    metric_name                = "${var.scope}-web-acl"
+    sampled_requests_enabled   = true
+  }
+}

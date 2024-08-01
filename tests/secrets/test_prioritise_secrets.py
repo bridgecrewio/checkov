@@ -20,6 +20,10 @@ class TestPrioritiseSecrets(unittest.TestCase):
                                   check_result={"result": CheckResult.FAILED}, code_block=[(1, 'baz')],
                                   file_path='qux', file_line_range=[1, 2], resource='resource', evaluations=None,
                                   check_class='CheckClass', file_abs_path='abs_path'),
+            'key4': SecretsRecord(check_id='CKV_SECRET_192', check_name='foo',
+                                  check_result={"result": CheckResult.FAILED}, code_block=[(1, 'baz')],
+                                  file_path='qux', file_line_range=[1, 2], resource='resource', evaluations=None,
+                                  check_class='CheckClass', file_abs_path='abs_path'),
         }
         self.ENTROPY_CHECK_IDS = ENTROPY_CHECK_IDS
         self.GENERIC_PRIVATE_KEY_CHECK_IDS = GENERIC_PRIVATE_KEY_CHECK_IDS
@@ -34,6 +38,11 @@ class TestPrioritiseSecrets(unittest.TestCase):
         self.assertTrue(result)
         self.assertNotIn('key2', self.secret_records)
 
+    def test_generic_private_key_check_id_192_removed(self):
+        result = Runner._prioritise_secrets(self.secret_records, 'key4', 'CKV_SECRET_18')
+        self.assertTrue(result)
+        self.assertNotIn('key4', self.secret_records)
+
     def test_no_removal_entropy_check_id(self):
         result = Runner._prioritise_secrets(self.secret_records, 'key1', 'CKV_SECRET_6')
         self.assertFalse(result)
@@ -43,6 +52,11 @@ class TestPrioritiseSecrets(unittest.TestCase):
         result = Runner._prioritise_secrets(self.secret_records, 'key2', 'CKV_SECRET_10')
         self.assertFalse(result)
         self.assertIn('key2', self.secret_records)
+
+    def test_no_removal_generic_private_key_check_id_192(self):
+        result = Runner._prioritise_secrets(self.secret_records, 'key4', 'CKV_SECRET_192')
+        self.assertFalse(result)
+        self.assertIn('key4', self.secret_records)
 
     def test_no_removal_other_check_id(self):
         result = Runner._prioritise_secrets(self.secret_records, 'key3', 'CKV_SECRET_1000')

@@ -18,7 +18,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - name: security test
-        uses: jpetrucciani/bandit-check@0a848ad401dadaf2937e4c9cc9a4eeeea2d0b5df  # v1
+        uses: jpetrucciani/bandit-check@74c5ecc4297e374c7e9283bc81f649287bb14f34  # v1
         with:
           path: 'checkov'
   trufflehog-secrets:

@@ -17,6 +17,7 @@ class TestSSMParameterUsesCMK(unittest.TestCase):
 
         passing_resources = {
             "aws_ssm_parameter.pass",
+            "aws_ssm_parameter.pass2",
         }
 
         failing_resources = {

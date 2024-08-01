@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "comments": "Container registry for storing docker images",
+      "type": "Microsoft.ContainerRegistry/registries",
+      "apiVersion": "2020-11-01",
+      "name": "fail1",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "[parameters('acrSku')]",
+        "tier": "[parameters('acrSku')]"
+      },
+      "tags": {
+        "displayName": "Container Registry",
+        "container.registry": "[parameters('acrName')]"
+      },
+      "properties": {
+        "adminUserEnabled": "[parameters('acrAdminUserEnabled')]",
+        "zoneRedundancy":
+          "Disabled"
+      }
+    }
+  ]
+}

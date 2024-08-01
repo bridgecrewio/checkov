@@ -17,7 +17,8 @@ class TestRunUsingAPT(unittest.TestCase):
 
         passing_resources = {
             "/success/Dockerfile.",
-            "/success2/Dockerfile."
+            "/success2/Dockerfile.",
+            "/success3/Dockerfile.",
         }
         failing_resources = {
             "/failure/Dockerfile.RUN",

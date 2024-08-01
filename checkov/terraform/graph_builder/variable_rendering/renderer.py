@@ -58,6 +58,10 @@ KEY_VALUE_SEPERATOR = ' : '
 TYPE_REGEX = re.compile(r'^(\${)?([a-z]+)')
 CHECKOV_RENDER_MAX_LEN = force_int(os.getenv("CHECKOV_RENDER_MAX_LEN", "10000"))
 
+DATA_SPECIAL_KEYWORDS = {
+    "policy_data": "binding"
+}
+
 
 class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
     def __init__(self, local_graph: "TerraformLocalGraph") -> None:
@@ -182,6 +186,10 @@ class TerraformVariableRenderer(VariableRenderer["TerraformLocalGraph"]):
             value = attributes.get(key, None)
             if value is not None:
                 return value
+            special_key = DATA_SPECIAL_KEYWORDS.get(key, '')
+            value = attributes.get(special_key)
+            if attributes.get('block_type_') == BlockType.DATA and value is not None:
+                return {special_key: value}
 
         if attributes.get(CustomAttributes.BLOCK_TYPE) in (BlockType.VARIABLE, BlockType.TF_VARIABLE):
             var_type = attributes.get('type')
