@@ -1,6 +1,10 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.216...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.217...HEAD)
+
+## [3.2.217](https://github.com/bridgecrewio/checkov/compare/3.2.216...3.2.217) - 2024-07-31
+
+- no noteworthy changes
 
 ## [3.2.216](https://github.com/bridgecrewio/checkov/compare/3.2.213...3.2.216) - 2024-07-30
 
