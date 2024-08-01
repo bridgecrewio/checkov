@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import os
 import re
 from abc import ABC, abstractmethod
 from collections import defaultdict
@@ -13,10 +12,9 @@ import dpath
 
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import \
     integration as metadata_integration
-from checkov.common.comment.enum import COMMENT_REGEX
+from checkov.common.comment.enum import get_comment_regex
 from checkov.common.models.enums import ContextCategories
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
-from checkov.common.runners.base_runner import strtobool
 from checkov.terraform import TFDefinitionKey, get_abs_path
 from checkov.terraform.context_parsers.registry import parser_registry
 
@@ -96,37 +94,21 @@ class BaseContextParser(ABC):
         :param definition_blocks: parsed definition blocks
         :return: context enriched with skipped checks per skipped entity
         """
-        should_allow_multi_checks_skip = strtobool(os.getenv('CHECKOV_ALLOW_SKIP_MULTIPLE_ONE_LINE', 'False'))
         bc_id_mapping = metadata_integration.bc_to_ckv_id_mapping
-        if should_allow_multi_checks_skip:
-
-            comments = [
-                (
-                    line_num,
-                    {
-                        "id": match.group(2),
-                        "suppress_comment": match.group(3)[1:] if match.group(3) else "No comment provided",
-                    },
-                )
-                for (line_num, x) in self.file_lines
-                if self.is_optional_comment_line(x)
-                for match in [re.search(COMMENT_REGEX, x)]
-                if match
-            ]
-        else:
-            comments = [
-                (
-                    line_num,
-                    {
-                        "id": match.group(1),
-                        "suppress_comment": match.group(2)[1:] if match.group(2) else "No comment provided",
-                    },
-                )
-                for (line_num, x) in self.file_lines
-                if self.is_optional_comment_line(x)
-                for match in [re.search(COMMENT_REGEX, x)]
-                if match
-            ]
+        comment_regex = get_comment_regex()
+        comments = [
+            (
+                line_num,
+                {
+                    "id": match.group(2),
+                    "suppress_comment": match.group(3)[1:] if match.group(3) else "No comment provided",
+                },
+            )
+            for (line_num, x) in self.file_lines
+            if self.is_optional_comment_line(x)
+            for match in [re.search(comment_regex, x)]
+            if match
+        ]
         for entity_block in definition_blocks:
             skipped_checks = []
             entity_context_path = self.get_entity_context_path(entity_block)
