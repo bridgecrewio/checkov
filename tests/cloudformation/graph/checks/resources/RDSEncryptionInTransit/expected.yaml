@@ -1,0 +1,6 @@
+pass:
+  - "AWS::RDS::DBInstance.DB2PassInstance"
+  - "AWS::RDS::DBInstance.PostgresPassInstance"
+fail:
+  - "AWS::RDS::DBInstance.PostgresFailParam0Instance"
+  - "AWS::RDS::DBInstance.PostgresFailParamMissingInstance"
