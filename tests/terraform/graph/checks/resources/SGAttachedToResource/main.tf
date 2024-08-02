@@ -141,6 +141,36 @@ resource "aws_dms_replication_instance" "pass_dms" {
   vpc_security_group_ids     = [aws_security_group.pass_dms.id]
 }
 
+#DMS Serverless
+
+resource "aws_security_group" "pass_dms_serverless" {
+  ingress {
+    description = "TLS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_dms_replication_config" "pass_dms_serverless" {
+  replication_config_identifier = "dms"
+  resource_identifier           = "dms"
+  replication_type              = "cdc"
+  source_endpoint_arn           = "aws_dms_endpoint.source.endpoint_arn"
+  target_endpoint_arn           = "aws_dms_endpoint.target.endpoint_arn"
+  table_mappings                = <<EOF
+  {
+    "rules":[{"rule-type":"selection","rule-id":"1","rule-name":"1","rule-action":"include","object-locator":{"schema-name":"%%","table-name":"%%"}}]
+  }
+EOF
+
+  compute_config {
+    max_capacity_units           = "1"
+    vpc_security_group_ids       = [aws_security_group.pass_dms_serverless.id]
+  }
+}
+
 # DocDB
 
 resource "aws_security_group" "pass_docdb" {

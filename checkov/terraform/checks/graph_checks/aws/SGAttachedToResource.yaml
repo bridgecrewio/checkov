@@ -22,6 +22,7 @@ definition:
         - aws_dax_cluster
         - aws_db_instance
         - aws_dms_replication_instance
+        - aws_dms_replication_config
         - aws_docdb_cluster
         - aws_ec2_client_vpn_endpoint
         - aws_ec2_client_vpn_network_association
