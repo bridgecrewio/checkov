@@ -127,9 +127,9 @@ class TestRunnerValid(unittest.TestCase):
         # then
         summary = report.get_summary()
 
-        self.assertEqual(summary["passed"], 1), report.get_json()
-        self.assertEqual(summary["failed"], 0), report.get_json()
-        self.assertEqual(summary["skipped"], 3), report.get_json()
+        self.assertEqual(summary["passed"], 1)
+        self.assertEqual(summary["failed"], 0)
+        self.assertEqual(summary["skipped"], 3)
         self.assertEqual(summary["parsing_errors"], 0)
 
         expected_skipped_cehcks = [record.check_id for record in report.skipped_checks]

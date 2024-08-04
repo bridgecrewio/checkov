@@ -136,10 +136,10 @@ def test_multi_platform_dockerfile(mocker: MockerFixture):
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
     assert len(tf_report.resources) == 1
-    assert len(tf_report.passed_checks) == 30, tf_report.get_json()
-    assert len(tf_report.failed_checks) == 3, tf_report.get_json()
-    assert len(tf_report.skipped_checks) == 0, tf_report.get_json()
-    assert len(tf_report.parsing_errors) == 0, tf_report.get_json()
+    assert len(tf_report.passed_checks) == 30
+    assert len(tf_report.failed_checks) == 3
+    assert len(tf_report.skipped_checks) == 0
+    assert len(tf_report.parsing_errors) == 0
 
     assert len(sca_image_report.resources) == 1
     assert sca_image_report.resources == {
