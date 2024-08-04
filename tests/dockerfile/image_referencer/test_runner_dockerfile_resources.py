@@ -41,7 +41,7 @@ def test_simple_dockerfile(mocker: MockerFixture):
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
     assert len(tf_report.resources) == 1
-    assert len(tf_report.passed_checks) == 21, tf_report.get_json()
+    assert len(tf_report.passed_checks) == 21
     assert len(tf_report.failed_checks) == 2
     assert len(tf_report.skipped_checks) == 0
     assert len(tf_report.parsing_errors) == 0
@@ -93,7 +93,7 @@ def test_multi_stage_dockerfile(mocker: MockerFixture):
     sca_image_report = next(report for report in reports if report.check_type == CheckType.SCA_IMAGE)
 
     assert len(tf_report.resources) == 1
-    assert len(tf_report.passed_checks) == 38, tf_report.get_json()
+    assert len(tf_report.passed_checks) == 38
     assert len(tf_report.failed_checks) == 2
     assert len(tf_report.skipped_checks) == 0
     assert len(tf_report.parsing_errors) == 0

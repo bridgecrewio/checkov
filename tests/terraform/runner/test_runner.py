@@ -545,7 +545,7 @@ class TestRunnerValid(unittest.TestCase):
                                         'CKV_AWS_171', 'CKV_AWS_172', 'CKV_AWS_37', 'CKV_AWS_38', 'CKV_AWS_39',
                                         'CKV_AWS_107', 'CKV_AWS_110'],
                                 framework=['terraform']))
-        self.assertEqual(len(result.passed_checks), 51), result.get_json()
+        self.assertEqual(len(result.passed_checks), 51)
         self.assertEqual(len(result.failed_checks), 263)
         self.assertEqual(len(result.skipped_checks), 0)
 

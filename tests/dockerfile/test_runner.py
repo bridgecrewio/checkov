@@ -99,7 +99,7 @@ class TestRunnerValid(unittest.TestCase):
         runner = Runner(db_connector=self.db_connector())
         report = runner.run(root_folder=valid_dir_path, external_checks_dir=None,
                             runner_filter=RunnerFilter(framework=["all"],checks=["CKV_DOCKER_1", "CKV2_DOCKER_1"]))
-        self.assertEqual(len(report.passed_checks), 2), report.get_json()
+        self.assertEqual(len(report.passed_checks), 2)
         self.assertEqual(report.parsing_errors, [])
         self.assertEqual(report.failed_checks, [])
         self.assertEqual(report.skipped_checks, [])
