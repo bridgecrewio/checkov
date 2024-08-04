@@ -112,4 +112,3 @@ def get_all_graph_checks_registries() -> list[Registry]:
         if not _registry_instances.get(framework):
             _initialize_registry(framework)
     return list(_registry_instances[framework] for framework in graph_supported_iac_frameworks)
-
