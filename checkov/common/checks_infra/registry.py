@@ -107,9 +107,10 @@ def get_graph_checks_registry(check_type: str) -> Registry:
 
 
 def get_all_graph_checks_registries() -> list[Registry]:
-    for framework in GraphSupportedIACFrameworks:
-        framework = framework.lower()
+    graph_supported_iac_frameworks = [framework.value.lower() for framework in GraphSupportedIACFrameworks]
+    for framework in graph_supported_iac_frameworks:
+        framework = framework.value.lower()
         if not _registry_instances.get(framework):
             _initialize_registry(framework)
-    return list(_registry_instances[framework.lower()] for framework in GraphSupportedIACFrameworks)
+    return list(_registry_instances[framework] for framework in graph_supported_iac_frameworks)
 
