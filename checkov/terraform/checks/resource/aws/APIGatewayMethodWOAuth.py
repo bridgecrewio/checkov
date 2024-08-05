@@ -8,22 +8,81 @@ from checkov.common.models.enums import CheckCategories, CheckResult
 class APIGatewayMethodWOAuth(BaseResourceCheck):
     def __init__(self):
         name = "Ensure API gateway method has authorization or API key set"
-        id = "CKV2_AWS_300"
-        supported_resources = ['aws_api_gateway_method']
-        categories = [CheckCategories.NETWORKING]
+        id = "CKV2_AWS_70"
+        supported_resources = ('aws_api_gateway_method',)
+        categories = (CheckCategories.NETWORKING, )
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
-        g = self.graph.nodes()
-        return CheckResult.FAILED
+        # Pass if authorization is not NONE or if api_key_required = true (explicitly) or if http_methon is anything other than OPTIONS
+        if conf.get("authorization")[0] != 'NONE' or \
+                ("api_key_required" in conf and conf.get("api_key_required")[0]) or \
+                conf.get("http_method")[0] != "OPTIONS":
+            return CheckResult.PASSED
 
-        #provider_name = conf.get("provider")
-        #if provider_name and isinstance(provider_name, list):
-        #    providers = [g[1] for g in self.graph.nodes() if g[1].get('block_type_') == 'provider']
-        #    provider = next((prov for prov in providers if prov[CustomAttributes.BLOCK_NAME] == provider_name[0]), None)
-        #    if provider and provider.get("use_fips_endpoint") is True:
-        #        return CheckResult.PASSED
-        #return result
+        # Find connected `aws_api_gateway_rest_api` resources
+        rest_api_id = conf.get("rest_api_id")[0].rsplit('.', 1)[0]
+        connected_rest_api_nodes = [g for g in self.graph.nodes() if g[1].get(CustomAttributes.ID) == rest_api_id]
+        if connected_rest_api_nodes:
+            connected_rest_api = connected_rest_api_nodes[0][1]
+            # If only PRIVATE (only private not ["EDGE","PRIVATE"] as an example)
+            if "endpoint_configuration" in connected_rest_api and \
+                "types" in connected_rest_api.get("endpoint_configuration") and \
+                connected_rest_api.get("endpoint_configuration").get("types") == ["PRIVATE"]:
+                return CheckResult.PASSED
+            elif "policy" in connected_rest_api:
+                # Check that the policy doesn't allow for all principals to us action execute-api:Invoke
+                passed = True
+                for p in connected_rest_api.get("policy").get("Statement"):
+                    # Pass if there is any Deny for execute-api:Invoke
+                    if p.get("Effect") == "Deny" and p.get("Principal") == "*":
+                        if (isinstance(p.get("Action"), str) and p.get("Action") in ["execute-api:Invoke", "execute-api:*", "*"]) or \
+                                (isinstance(p.get("Action"), list) and any(p.get("Action") in ["execute-api:Invoke", "execute-api:*", "*"])):
+                            return CheckResult.PASSED
+                    # Fail if there is an Allow for execute-api:Invoke without a Deny or Conditions
+                    if p.get("Effect") == "Allow" and p.get("Principal") == "*" and "Condition" not in p:
+                        if (isinstance(p.get("Action"), str) and p.get("Action") in ["execute-api:Invoke",
+                                                                                     "execute-api:*", "*"]) or \
+                                (isinstance(p.get("Action"), list) and any(
+                                    p.get("Action") in ["execute-api:Invoke", "execute-api:*", "*"])):
+                            passed = False
+                if passed:
+                    return CheckResult.PASSED
+                else:
+                    return CheckResult.FAILED
+            else:
+                # Check for connected `aws_api_gateway_rest_api_policy`
+                # If so, check that it follows the rules above
+                connected_rest_api_policy_nodes = [g2 for g2 in self.graph.nodes()
+                                                   if g2[1].get(CustomAttributes.RESOURCE_TYPE) == "aws_api_gateway_rest_api_policy" and \
+                                                   g2[1].get("rest_api_id").rsplit('.', 1)[0] == rest_api_id]
+                policy_statement = connected_rest_api_policy_nodes[0][1].get("policy")
+                #TODO handle when policy is a data reference
+                if isinstance(policy_statement, dict):
+                    passed = True
+                    for p in policy_statement.get("Statement"):
+                        # Pass if there is any Deny for execute-api:Invoke
+                        if p.get("Effect") == "Deny" and p.get("Principal") == "*":
+                            if (isinstance(p.get("Action"), str) and p.get("Action") in ["execute-api:Invoke",
+                                                                                         "execute-api:*", "*"]) or \
+                                    (isinstance(p.get("Action"), list) and any(
+                                        p.get("Action") in ["execute-api:Invoke", "execute-api:*", "*"])):
+                                return CheckResult.PASSED
+                        # Fail if there is an Allow for execute-api:Invoke without a Deny or Conditions
+                        if p.get("Effect") == "Allow" and p.get("Principal") == "*" and "Condition" not in p:
+                            if (isinstance(p.get("Action"), str) and p.get("Action") in ["execute-api:Invoke",
+                                                                                         "execute-api:*", "*"]) or \
+                                    (isinstance(p.get("Action"), list) and any(
+                                        p.get("Action") in ["execute-api:Invoke", "execute-api:*", "*"])):
+                                passed = False
+                    if passed:
+                        return CheckResult.PASSED
+                    else:
+                        return CheckResult.FAILED
+            return CheckResult.UNKNOWN
+
+        # If there is no connected `aws_api_gateway_rest_api` then return UNKNOWN
+        return CheckResult.UNKNOWN
 
 
 check = APIGatewayMethodWOAuth()
