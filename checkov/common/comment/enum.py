@@ -1,8 +1,5 @@
 import re
-import os
 from typing import Pattern
-
-from checkov.common.runners.base_runner import strtobool
 
 # Default regex pattern
 COMMENT_REGEX = re.compile(r'(checkov:skip=|bridgecrew:skip=) *([A-Za-z_\d]+)(:[^\n]+)?')

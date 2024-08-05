@@ -16,7 +16,6 @@ from checkov.common.bridgecrew.integration_features.features.policy_metadata_int
 from checkov.common.comment.enum import get_comment_regex
 from checkov.common.models.enums import ContextCategories
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
-from checkov.common.runners.base_runner import strtobool
 from checkov.terraform import TFDefinitionKey, get_abs_path
 from checkov.terraform.context_parsers.registry import parser_registry
 
@@ -96,7 +95,7 @@ class BaseContextParser(ABC):
         :param definition_blocks: parsed definition blocks
         :return: context enriched with skipped checks per skipped entity
         """
-        should_allow_multi_checks_skip = strtobool(os.getenv('CHECKOV_ALLOW_SKIP_MULTIPLE_ONE_LINE', 'False'))
+        should_allow_multi_checks_skip = bool(os.getenv('CHECKOV_ALLOW_SKIP_MULTIPLE_ONE_LINE', 'False'))
         comment_regex = get_comment_regex(should_allow_multi_checks_skip)
         bc_id_mapping = metadata_integration.bc_to_ckv_id_mapping
         comments = [
