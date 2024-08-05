@@ -1,0 +1,13 @@
+pass:
+  - "aws_db_instance.pass_no_param"
+  - "aws_db_instance.postgres_pass1"
+  - "aws_db_instance.pass_other_fam"
+  - "aws_db_instance.mariadb_pass"
+  - "aws_db_instance.db2_pass"
+fail:
+  - "aws_db_instance.postgres_fail1"
+  - "aws_db_instance.postgres_fail_missing"
+  - "aws_db_instance.maria_fail_0"
+  - "aws_db_instance.mariadb_fail_missing"
+  - "aws_db_instance.db2_fail_0"
+  - "aws_db_instance.db2_fail_missing"
