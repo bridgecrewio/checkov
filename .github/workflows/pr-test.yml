@@ -59,7 +59,7 @@ jobs:
           python-venv-path: ${{ steps.get-venv.outputs.venv }}
           testing-framework: pytest
           mode: optimize
-          time-limit: 30 # approx 15% of the run time
+          confidence: high
           config-args: matrix_value=${{ matrix.python }} file_based_prediction=true
 
       - name: Unit tests
