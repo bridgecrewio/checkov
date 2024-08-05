@@ -493,8 +493,8 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
             Path(__file__).parent.parent.parent.parent / "checkov" / "terraform" / "checks" / "graph_checks"))
         checks = [parser.parse_raw_check(CustomPoliciesIntegration._convert_raw_check(p)) for p in policies]
         registry.checks = checks  # simulate that the policy downloader will do
-
-
+        
+        
 def mock_custom_policies_response():
     return {
         "customPolicies": [
