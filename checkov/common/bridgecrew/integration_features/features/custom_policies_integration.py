@@ -11,7 +11,7 @@ from checkov.common.bridgecrew.integration_features.base_integration_feature imp
 from checkov.common.bridgecrew.platform_integration import bc_integration
 from checkov.common.bridgecrew.severities import Severities
 from checkov.common.checks_infra.checks_parser import GraphCheckParser
-from checkov.common.checks_infra.registry import Registry, get_graph_checks_registry
+from checkov.common.checks_infra.registry import Registry, get_graph_checks_registry, get_all_graph_checks_registries
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 
 if TYPE_CHECKING:
@@ -79,17 +79,16 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
                     if check.frameworks:
                         for f in check.frameworks:
                             if f.lower() == "cloudformation":
-                                get_graph_checks_registry("cloudformation").checks.append(check)
+                                get_graph_checks_registry("cloudformation").custom_policies_checks.append(check)
                             elif f.lower() == "terraform":
-                                get_graph_checks_registry("terraform").checks.append(check)
+                                get_graph_checks_registry("terraform").custom_policies_checks.append(check)
                             elif f.lower() == "kubernetes":
-                                get_graph_checks_registry("kubernetes").checks.append(check)
+                                get_graph_checks_registry("kubernetes").custom_policies_checks.append(check)
                             elif f.lower() == "bicep":
-                                get_graph_checks_registry("bicep").checks.append(check)
-                    elif re.match(CFN_RESOURCE_TYPE_IDENTIFIER, check.resource_types[0]):
-                        get_graph_checks_registry("cloudformation").checks.append(check)
+                                get_graph_checks_registry("bicep").custom_policies_checks.append(check)
                     else:
-                        get_graph_checks_registry("terraform").checks.append(check)
+                        for registry in get_all_graph_checks_registries():
+                            registry.custom_policies_checks.append(check)
                 except Exception:
                     logging.debug(f"Failed to load policy id: {policy.get('id')}", exc_info=True)
             logging.debug(f'Found {len(policies)} custom policies from the platform.')
