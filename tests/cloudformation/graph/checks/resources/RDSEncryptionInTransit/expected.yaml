@@ -4,3 +4,9 @@ pass:
 fail:
   - "AWS::RDS::DBInstance.PostgresFailParam0Instance"
   - "AWS::RDS::DBInstance.PostgresFailParamMissingInstance"
+evaluated_keys:
+  - "resource_type"
+  - "Family"
+  - "Parameters/rds/force_ssl"
+  - "Parameters/require_secure_transport"
+  - "Parameters/db2comm"
