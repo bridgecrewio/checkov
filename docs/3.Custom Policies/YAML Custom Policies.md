@@ -21,7 +21,7 @@ The Metadata includes:
 * ID - `CKV2_<provider>_<number>`
 * Category
 * Guideline (optional)
-* Severity (optional) - can be `NONE`, `INFO`, `LOW`, `MEDIUM`, `MODERATE`, `HIGH`, `IMPORTANT`, `CRITICAL`, `OFF`
+* Severity (optional) - can be `INFO`, `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`
 
 The possible values for category are:
 
