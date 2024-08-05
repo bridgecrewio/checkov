@@ -58,7 +58,7 @@ jobs:
           auth: ${{ secrets.REDEFINE_CHECKOV_AUTH }}
           python-venv-path: ${{ steps.get-venv.outputs.venv }}
           testing-framework: pytest
-          mode: discover
+          mode: optimize
           time-limit: 30 # approx 15% of the run time
           config-args: matrix_value=${{ matrix.python }} file_based_prediction=true
 
