@@ -1,0 +1,11 @@
+pass:
+  - "aws_api_gateway_method.pass_auth"
+  - "aws_api_gateway_method.pass_passapikey"
+  - "aws_api_gateway_method.pass_httpmethod"
+  - "aws_api_gateway_method.pass_private"
+  - "aws_api_gateway_method.pass_deny"
+fail:
+  - "aws_api_gateway_method.fail1"
+  - "aws_api_gateway_method.fail2"
+  - "aws_api_gateway_method.fail3"
+  - "aws_api_gateway_method.fail4"
