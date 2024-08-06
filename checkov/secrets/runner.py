@@ -257,20 +257,22 @@ class Runner(BaseRunner[None, None, None]):
                     logging.info(
                         f"Removing secret due to UUID filtering: {PotentialSecret.hash_secret(secret.secret_value)}")
                     continue
-                if secret_key in secret_records.keys():
-                    is_prioritise = self._prioritise_secrets(secret_records, secret_key, check_id)
-                    if not is_prioritise:
-                        continue
                 bc_check_id = metadata_integration.get_bc_id(check_id)
                 if bc_check_id in secret_suppressions_id:
                     logging.debug(f'Secret was filtered - check {check_id} was suppressed')
                     continue
                 severity = metadata_integration.get_severity(check_id)
+                # this part removes suppressed checks
                 if not runner_filter.should_run_check(check_id=check_id, bc_check_id=bc_check_id, severity=severity,
                                                       report_type=CheckType.SECRETS):
                     logging.debug(
                         f'Check was suppress - should_run_check. check_id {check_id}')
                     continue
+                # this is after the suppression check so we won't remove any suppressed secrets
+                if secret_key in secret_records.keys():
+                    is_prioritise = self._prioritise_secrets(secret_records, secret_key, check_id)
+                    if not is_prioritise:
+                        continue
                 result: _CheckResult = {'result': CheckResult.FAILED}
                 try:
                     if runner_filter.enable_git_history_secret_scan and code_line is not None:
