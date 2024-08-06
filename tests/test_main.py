@@ -162,3 +162,19 @@ def test_run_custom_severity():
         assert report.failed_checks[0].severity.name == "HIGH"
 
 
+def test_run_without_custom_severity():
+    custom_banner = "custom banner"
+    resource_dir = Path(__file__).parent / "common/runner_registry/example_multi_iac"
+    extra_checks_dir_path = Path(__file__).parent / "common/checks_infra/examples"
+    argv = ["-d", str(resource_dir), "--framework", "terraform", "--external-checks-dir", str(extra_checks_dir_path), "--check", "CUSTOM_WITHOUT_SEVERITY"]
+
+    # when
+    ckv = Checkov()
+    ckv.parse_config(argv=argv)
+    ckv.run(banner=custom_banner)
+
+    # then
+    for report in ckv.scan_reports:
+        print(report.failed_checks[0].check_id)
+        assert report.failed_checks[0].check_id == "CUSTOM_WITHOUT_SEVERITY"
+        assert not report.failed_checks[0].severity
