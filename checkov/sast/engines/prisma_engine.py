@@ -1,4 +1,5 @@
 import ctypes
+import sys
 from datetime import datetime
 import json
 import logging
@@ -46,6 +47,7 @@ SAST_CORE_URL_PATTERN = re.compile(rf".*/(?P<name>v?{FILE_NAME_PATTERN.pattern})
 class PrismaEngine(SastEngine):
     def __init__(self) -> None:
         self.lib_path = ""
+        self.winmode = sys.platform.startswith('win')
         self.check_type = CheckType.SAST
         self.prisma_sast_dir_path = Path(bridgecrew_dir) / "sast"
         self.sast_platform_base_path = "api/v1/sast"
@@ -252,7 +254,10 @@ class PrismaEngine(SastEngine):
         if list_policies:
             return self.run_go_library_list_policies(document)
 
-        library = ctypes.cdll.LoadLibrary(self.lib_path)
+        # ToDo: Check on mac
+        # library = ctypes.cdll.LoadLibrary(self.lib_path)
+        library = ctypes.CDLL(self.lib_path, winmode=self.winmode)
+
         analyze_code = library.analyzeCode
         analyze_code.restype = ctypes.c_void_p
 
