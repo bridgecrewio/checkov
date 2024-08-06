@@ -40,15 +40,11 @@ The possible values for category are:
 
 The possible values for severity are:
 
-* NONE
 * INFO
 * LOW
 * MEDIUM
-* MODERATE
 * HIGH
-* IMPORTANT
 * CRITICAL
-* OFF
 
 ```yaml
 metadata:
