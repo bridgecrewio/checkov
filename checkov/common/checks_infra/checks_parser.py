@@ -203,7 +203,7 @@ class GraphCheckParser(BaseGraphCheckParser):
         check.category = raw_check.get("metadata", {}).get("category", "")
         check.frameworks = raw_check.get("metadata", {}).get("frameworks", [])
         severity = get_severity(raw_check.get("metadata", {}).get("severity", ""))
-        if severity != None:
+        if severity:
             check.severity = severity
         check.guideline = raw_check.get("metadata", {}).get("guideline")
         check.check_path = kwargs.get("check_path", "")
