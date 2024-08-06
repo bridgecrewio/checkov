@@ -157,7 +157,6 @@ def test_run_custom_severity():
 
     # then
     for report in ckv.scan_reports:
-        print(report.failed_checks[0].check_id)
         assert report.failed_checks[0].check_id == "CUSTOM_SEVERITY"
         assert report.failed_checks[0].severity.name == "HIGH"
 
