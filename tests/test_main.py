@@ -175,6 +175,5 @@ def test_run_without_custom_severity():
 
     # then
     for report in ckv.scan_reports:
-        print(report.failed_checks[0].check_id)
         assert report.failed_checks[0].check_id == "CUSTOM_WITHOUT_SEVERITY"
         assert not report.failed_checks[0].severity
