@@ -6,7 +6,7 @@ from checkov.common.models.enums import CheckCategories, CheckResult
 
 
 class APIGatewayMethodWOAuth(BaseResourceCheck):
-    def __init__(self):
+    def __init__(self) -> None:
         name = "Ensure API gateway method has authorization or API key set"
         id = "CKV2_AWS_70"
         supported_resources = ('aws_api_gateway_method',)
@@ -59,10 +59,11 @@ class APIGatewayMethodWOAuth(BaseResourceCheck):
             else:
                 # Check for connected `aws_api_gateway_rest_api_policy`
                 # If so, check that it follows the rules above
-                connected_rest_api_policy_nodes = [g2 for g2 in self.graph.nodes()
-                                                   if g2[1].get(
-                        CustomAttributes.RESOURCE_TYPE) == "aws_api_gateway_rest_api_policy" and
-                                                   g2[1].get("rest_api_id").rsplit('.', 1)[0] == rest_api_id]
+                connected_rest_api_policy_nodes = [
+                    g2 for g2 in self.graph.nodes()
+                    if g2[1].get(CustomAttributes.RESOURCE_TYPE) == "aws_api_gateway_rest_api_policy" and
+                       g2[1].get("rest_api_id").rsplit('.', 1)[0] == rest_api_id
+                ]
 
                 if connected_rest_api_policy_nodes:
                     policy_statement = connected_rest_api_policy_nodes[0][1].get("policy")
