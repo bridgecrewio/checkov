@@ -13,11 +13,34 @@ class APIGatewayMethodWOAuth(BaseResourceCheck):
         categories = (CheckCategories.NETWORKING, )
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
+    def _is_policy_secure(self, policy: Dict[str, Any]) -> bool:
+        # Check that the policy doesn't allow for all principals to us action execute-api:Invoke
+        passed = True
+        for p in policy.get("Statement"):
+            # Pass if there is any Deny for execute-api:Invoke
+            if p.get("Effect") == "Deny" and p.get("Principal") == "*":
+                if (isinstance(p.get("Action"), str) and p.get("Action") in ["execute-api:Invoke", "execute-api:*",
+                                                                             "*"]) or \
+                        (isinstance(p.get("Action"), list) and any(
+                            p.get("Action") in ["execute-api:Invoke", "execute-api:*", "*"])):
+                    return CheckResult.PASSED
+            # Fail if there is an Allow for execute-api:Invoke without a Deny or Conditions
+            if p.get("Effect") == "Allow" and p.get("Principal") == "*" and "Condition" not in p:
+                if (isinstance(p.get("Action"), str) and p.get("Action") in ["execute-api:Invoke",
+                                                                             "execute-api:*", "*"]) or \
+                        (isinstance(p.get("Action"), list) and any(
+                            p.get("Action") in ["execute-api:Invoke", "execute-api:*", "*"])):
+                    passed = False
+        if passed:
+            return CheckResult.PASSED
+        else:
+            return CheckResult.FAILED
+
     def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
         # Pass if authorization is not NONE or if api_key_required = true (explicitly) or if http_methon is anything other than OPTIONS
-        if conf.get("authorization")[0] != 'NONE' or \
-                ("api_key_required" in conf and conf.get("api_key_required")[0]) or \
-                conf.get("http_method")[0] != "OPTIONS":
+        if conf.get("authorization", [None])[0] != 'NONE' or \
+                conf.get("api_key_required", [False])[0] or \
+                conf.get("http_method", [None])[0] != "OPTIONS":
             return CheckResult.PASSED
 
         # Find connected `aws_api_gateway_rest_api` resources
@@ -31,25 +54,7 @@ class APIGatewayMethodWOAuth(BaseResourceCheck):
                 connected_rest_api.get("endpoint_configuration").get("types") == ["PRIVATE"]:
                 return CheckResult.PASSED
             elif "policy" in connected_rest_api:
-                # Check that the policy doesn't allow for all principals to us action execute-api:Invoke
-                passed = True
-                for p in connected_rest_api.get("policy").get("Statement"):
-                    # Pass if there is any Deny for execute-api:Invoke
-                    if p.get("Effect") == "Deny" and p.get("Principal") == "*":
-                        if (isinstance(p.get("Action"), str) and p.get("Action") in ["execute-api:Invoke", "execute-api:*", "*"]) or \
-                                (isinstance(p.get("Action"), list) and any(p.get("Action") in ["execute-api:Invoke", "execute-api:*", "*"])):
-                            return CheckResult.PASSED
-                    # Fail if there is an Allow for execute-api:Invoke without a Deny or Conditions
-                    if p.get("Effect") == "Allow" and p.get("Principal") == "*" and "Condition" not in p:
-                        if (isinstance(p.get("Action"), str) and p.get("Action") in ["execute-api:Invoke",
-                                                                                     "execute-api:*", "*"]) or \
-                                (isinstance(p.get("Action"), list) and any(
-                                    p.get("Action") in ["execute-api:Invoke", "execute-api:*", "*"])):
-                            passed = False
-                if passed:
-                    return CheckResult.PASSED
-                else:
-                    return CheckResult.FAILED
+                return self._is_policy_secure(connected_rest_api.get("policy"))
             else:
                 # Check for connected `aws_api_gateway_rest_api_policy`
                 # If so, check that it follows the rules above
@@ -59,26 +64,7 @@ class APIGatewayMethodWOAuth(BaseResourceCheck):
                 policy_statement = connected_rest_api_policy_nodes[0][1].get("policy")
                 #TODO handle when policy is a data reference
                 if isinstance(policy_statement, dict):
-                    passed = True
-                    for p in policy_statement.get("Statement"):
-                        # Pass if there is any Deny for execute-api:Invoke
-                        if p.get("Effect") == "Deny" and p.get("Principal") == "*":
-                            if (isinstance(p.get("Action"), str) and p.get("Action") in ["execute-api:Invoke",
-                                                                                         "execute-api:*", "*"]) or \
-                                    (isinstance(p.get("Action"), list) and any(
-                                        p.get("Action") in ["execute-api:Invoke", "execute-api:*", "*"])):
-                                return CheckResult.PASSED
-                        # Fail if there is an Allow for execute-api:Invoke without a Deny or Conditions
-                        if p.get("Effect") == "Allow" and p.get("Principal") == "*" and "Condition" not in p:
-                            if (isinstance(p.get("Action"), str) and p.get("Action") in ["execute-api:Invoke",
-                                                                                         "execute-api:*", "*"]) or \
-                                    (isinstance(p.get("Action"), list) and any(
-                                        p.get("Action") in ["execute-api:Invoke", "execute-api:*", "*"])):
-                                passed = False
-                    if passed:
-                        return CheckResult.PASSED
-                    else:
-                        return CheckResult.FAILED
+                    return self._is_policy_secure(policy_statement)
             return CheckResult.UNKNOWN
 
         # If there is no connected `aws_api_gateway_rest_api` then return UNKNOWN
