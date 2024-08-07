@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any
+from typing import Any, Dict
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.models.enums import CheckCategories, CheckResult
@@ -10,7 +10,7 @@ class APIGatewayMethodWOAuth(BaseResourceCheck):
         name = "Ensure API gateway method has authorization or API key set"
         id = "CKV2_AWS_70"
         supported_resources = ('aws_api_gateway_method',)
-        categories = (CheckCategories.NETWORKING, )
+        categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
     def _is_policy_secure(self, policy: Dict[str, Any]) -> bool:
@@ -37,7 +37,8 @@ class APIGatewayMethodWOAuth(BaseResourceCheck):
             return CheckResult.FAILED
 
     def scan_resource_conf(self, conf: dict[str, list[Any]]) -> CheckResult:
-        # Pass if authorization is not NONE or if api_key_required = true (explicitly) or if http_methon is anything other than OPTIONS
+        # Pass if authorization is not NONE or if api_key_required = true (explicitly) or if http_method is anything
+        # other than OPTIONS
         if conf.get("authorization", [None])[0] != 'NONE' or \
                 conf.get("api_key_required", [False])[0] or \
                 conf.get("http_method", [None])[0] != "OPTIONS":
@@ -50,8 +51,8 @@ class APIGatewayMethodWOAuth(BaseResourceCheck):
             connected_rest_api = connected_rest_api_nodes[0][1]
             # If only PRIVATE (only private not ["EDGE","PRIVATE"] as an example)
             if "endpoint_configuration" in connected_rest_api and \
-                "types" in connected_rest_api.get("endpoint_configuration") and \
-                connected_rest_api.get("endpoint_configuration").get("types") == ["PRIVATE"]:
+                    "types" in connected_rest_api.get("endpoint_configuration") and \
+                    connected_rest_api.get("endpoint_configuration").get("types") == ["PRIVATE"]:
                 return CheckResult.PASSED
             elif "policy" in connected_rest_api:
                 return self._is_policy_secure(connected_rest_api.get("policy"))
@@ -59,12 +60,17 @@ class APIGatewayMethodWOAuth(BaseResourceCheck):
                 # Check for connected `aws_api_gateway_rest_api_policy`
                 # If so, check that it follows the rules above
                 connected_rest_api_policy_nodes = [g2 for g2 in self.graph.nodes()
-                                                   if g2[1].get(CustomAttributes.RESOURCE_TYPE) == "aws_api_gateway_rest_api_policy" and \
+                                                   if g2[1].get(
+                        CustomAttributes.RESOURCE_TYPE) == "aws_api_gateway_rest_api_policy" and
                                                    g2[1].get("rest_api_id").rsplit('.', 1)[0] == rest_api_id]
-                policy_statement = connected_rest_api_policy_nodes[0][1].get("policy")
-                #TODO handle when policy is a data reference
-                if isinstance(policy_statement, dict):
-                    return self._is_policy_secure(policy_statement)
+
+                if connected_rest_api_policy_nodes:
+                    policy_statement = connected_rest_api_policy_nodes[0][1].get("policy")
+                    if isinstance(policy_statement, dict):
+                        return self._is_policy_secure(policy_statement)
+                else:
+                    return CheckResult.UNKNOWN
+            # TODO handle when policy is a data reference
             return CheckResult.UNKNOWN
 
         # If there is no connected `aws_api_gateway_rest_api` then return UNKNOWN
