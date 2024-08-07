@@ -1,3 +1,4 @@
+import pytest
 import unittest
 from pathlib import Path
 
@@ -213,6 +214,7 @@ class TestRunnerValid(unittest.TestCase):
         assert report.passed_checks[1].triggers[0] == {"workflow_dispatch", "schedule"}
         assert report.passed_checks[1].workflow_name == 'Supply Chain'
 
+    @pytest.mark.skip("Removed workflow")
     def test_runner_on_build(self):
         # given
         file_path = Path(__file__).parent.parent.parent / ".github/workflows/build.yml"
@@ -233,6 +235,7 @@ class TestRunnerValid(unittest.TestCase):
         assert report.passed_checks[8].triggers[0] == {'workflow_dispatch', 'push'}
         assert report.passed_checks[8].workflow_name == 'build'
 
+    @pytest.mark.skip("Removed workflow")
     def test_runner_on_codeql_analysis(self):
         # given
         file_path = Path(__file__).parent.parent.parent / ".github/workflows/codeql-analysis.yml"
