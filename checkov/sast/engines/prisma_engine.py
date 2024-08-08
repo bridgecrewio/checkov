@@ -268,7 +268,7 @@ class PrismaEngine(SastEngine):
         return self.create_report(result)
 
     def _sast_default_scan(self, sast_input: Dict[str, Any]) -> Dict[str, Any]:
-        library = ctypes.CDLL(self.lib_path, winmode=self.winmode)
+        library = ctypes.cdll.LoadLibrary(self.lib_path)
         analyze_code = library.analyzeCode
         analyze_code.restype = ctypes.c_void_p
         # send the document as a byte array of json format
