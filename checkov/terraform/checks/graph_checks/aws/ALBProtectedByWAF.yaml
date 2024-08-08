@@ -1,43 +1,44 @@
 metadata:
   id: "CKV2_AWS_28"
-  name: "Ensure public facing ALB are protected by WAF"
-  category: "NETWORKING"
+  name: "cs-public-resource-based-policy-sqs"
+  severity: "high"
+  guidelines: "public resource based policy - sqs"
+  category: "general"
+scope:
+  provider: "aws"
 definition:
-  and:
-    - cond_type: filter
-      value:
-        - aws_lb
-        - aws_alb
-      operator: within
-      attribute: resource_type
-    - or: 
-      - cond_type: connection
-        operator: exists
-        resource_types:
-        - aws_lb
-        - aws_alb
-        connected_resource_types:
-        - aws_wafv2_web_acl_association
-      - cond_type: connection
-        operator: exists
-        resource_types:
-        - aws_lb
-        - aws_alb
-        connected_resource_types:
-        - aws_wafregional_web_acl_association
-      - cond_type: attribute
-        value: true
-        attribute: internal
-        resource_types: 
-        - aws_lb
-        - aws_alb
-        operator: equals
-      - cond_type: attribute
-        resource_types:
-        - aws_lb
-        - aws_alb
-        attribute: load_balancer_type
-        operator: within
-        value:
-          - network
-          - gateway
+  or:
+    - and:
+        - cond_type: "attribute"
+          resource_types:
+            - "aws_sqs_queue"
+          attribute: "policy.Statement[?(@.Effect == 'Allow' & @.Principal == '*')]"
+          operator: "jsonpath_not_exists"
+        - cond_type: "attribute"
+          resource_types:
+            - "aws_sqs_queue"
+          attribute: "policy.Statement[?(@.Effect == 'Allow')].Principal.AWS[*]"
+          operator: "jsonpath_not_equals"
+          value: "*"
+        - cond_type: "attribute"
+          resource_types:
+            - "aws_sqs_queue"
+          attribute: "policy.Statement[?(@.Effect == 'Allow')].NotPrincipal"
+          operator: "jsonpath_not_exists"
+    - and:
+        - cond_type: "attribute"
+          resource_types:
+            - "aws_sqs_queue_policy"
+          attribute: "policy.Statement[?(@.Effect == 'Allow' & @.Principal == '*')]"
+          operator: "jsonpath_not_exists"
+        - cond_type: "attribute"
+          resource_types:
+            - "aws_sqs_queue_policy"
+          attribute: "policy.Statement[?(@.Effect == 'Allow')].Principal.AWS[*]"
+          operator: "jsonpath_not_equals"
+          value: "*"
+        - cond_type: "attribute"
+          resource_types:
+            - "aws_sqs_queue_policy"
+          attribute: "policy.Statement[?(@.Effect == 'Allow')].NotPrincipal"
+          operator: "jsonpath_not_exists"
