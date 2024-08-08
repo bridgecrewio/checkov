@@ -65,7 +65,7 @@ resource "aws_api_gateway_rest_api" "pass_passapikey" {
 }
 
 # Pass: Bad config, but no connected aws_api_gateway_rest_api
-resource "aws_api_gateway_method" "pass_noconnect1" {
+resource "aws_api_gateway_method" "skipped_noconnect1" {
   rest_api_id   = aws_api_gateway_rest_api.nonexistent.id
   resource_id   = aws_api_gateway_resource.example.id
   http_method   = "OPTIONS"
@@ -220,4 +220,80 @@ resource "aws_api_gateway_rest_api" "pass_deny" {
       }
     ]
   })
+}
+
+# Fail: Separate data block for policy
+resource "aws_api_gateway_method" "fail5" {
+  rest_api_id   = aws_api_gateway_rest_api.fail5.id
+  resource_id   = aws_api_gateway_resource.example.id
+  http_method   = "OPTIONS"
+  authorization = "NONE"
+  api_key_required = false
+}
+
+resource "aws_api_gateway_rest_api" "fail5" {
+  name = "example-rest-api"
+}
+
+data "aws_iam_policy_document" "fail5" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
+
+    actions   = ["execute-api:Invoke"]
+    resources = [aws_api_gateway_rest_api.fail5.execution_arn]
+  }
+}
+
+resource "aws_api_gateway_rest_api_policy" "fail5" {
+  rest_api_id = aws_api_gateway_rest_api.fail5.id
+  policy      = data.aws_iam_policy_document.fail5.json
+}
+
+# Pass: Separate data block for policy, deny
+resource "aws_api_gateway_method" "pass_deny2" {
+  rest_api_id   = aws_api_gateway_rest_api.pass_deny2.id
+  resource_id   = aws_api_gateway_resource.example.id
+  http_method   = "OPTIONS"
+  authorization = "NONE"
+  api_key_required = false
+}
+
+resource "aws_api_gateway_rest_api" "pass_deny2" {
+  name = "example-rest-api"
+}
+
+data "aws_iam_policy_document" "pass_deny2" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
+
+    actions   = ["execute-api:*"]
+    resources = ["*"]
+  }
+
+  statement {
+    effect = "Deny"
+
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
+
+    actions   = ["execute-api:Invoke"]
+    resources = ["*"]
+  }
+}
+
+resource "aws_api_gateway_rest_api_policy" "pass_deny2" {
+  rest_api_id = aws_api_gateway_rest_api.pass_deny2.id
+  policy      = data.aws_iam_policy_document.pass_deny2.json
 }
