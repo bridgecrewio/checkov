@@ -1,4 +1,5 @@
 import ctypes
+import subprocess
 import sys
 from datetime import datetime
 import json
@@ -254,29 +255,42 @@ class PrismaEngine(SastEngine):
         if list_policies:
             return self.run_go_library_list_policies(document)
 
-        # ToDo: Check on mac
-        # library = ctypes.cdll.LoadLibrary(self.lib_path)
-        library = ctypes.CDLL(self.lib_path, winmode=self.winmode)
-
-        analyze_code = library.analyzeCode
-        analyze_code.restype = ctypes.c_void_p
-
-        # send the document as a byte array of json format
-        analyze_code_output = analyze_code(json.dumps(document).encode('utf-8'))
-
-        # we dereference the pointer to a byte array
-        analyze_code_bytes = ctypes.string_at(analyze_code_output)
-
-        # convert our byte array to a string
-        analyze_code_string = analyze_code_bytes.decode('utf-8')
-        d = json.loads(analyze_code_string)
-
+        self.winmode = True
+        if self.winmode:
+            sast_report = self._windows_sast_scan(document)
+        else:
+            sast_report = self._sast_default_scan(document)
         try:
-            result = self.create_prisma_report(d)
+            result = self.create_prisma_report(sast_report)
         except ValidationError as e:
             result = create_empty_report(list(languages))
             result.errors = {REPORT_PARSING_ERRORS: [str(err) for err in e.errors()]}
         return self.create_report(result)
+
+    def _sast_default_scan(self, sast_input: Dict[str, Any]) -> Dict[str, Any]:
+        library = ctypes.CDLL(self.lib_path, winmode=self.winmode)
+        analyze_code = library.analyzeCode
+        analyze_code.restype = ctypes.c_void_p
+        # send the document as a byte array of json format
+        analyze_code_output = analyze_code(json.dumps(sast_input).encode('utf-8'))
+        # we dereference the pointer to a byte array
+        analyze_code_bytes = ctypes.string_at(analyze_code_output)
+        # convert our byte array to a string
+        analyze_code_string = analyze_code_bytes.decode('utf-8')
+        return json.loads(analyze_code_string)  # type: ignore
+
+    def _windows_sast_scan(self, sast_input: Dict[str, Any]) -> Dict[str, Any]:
+        checkov_input_path = os.path.join(f"{os.path.dirname(self.lib_path)}", "checkov_input.json")
+        sast_output_path = os.path.join(f"{os.path.dirname(self.lib_path)}", "sast_output.json")
+        with open(checkov_input_path, 'w') as f:
+            f.write(json.dumps(sast_input))
+        callargs = [self.lib_path, checkov_input_path, sast_output_path]
+        subprocess.run(callargs)
+
+        with open(sast_output_path, 'r') as f:
+            report = f.read()
+        parsed_report = json.loads(report)
+        return parsed_report
 
     def create_prisma_report(self, data: Dict[str, Any]) -> PrismaReport:
         if not data.get("imports"):
