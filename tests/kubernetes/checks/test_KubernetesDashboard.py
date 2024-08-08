@@ -16,8 +16,8 @@ class TestKubernetesDashboard(unittest.TestCase):
         report = runner.run(root_folder=test_files_dir, runner_filter=RunnerFilter(checks=[check.id]))
         summary = report.get_summary()
 
-        self.assertEqual(summary['passed'], 1)
-        self.assertEqual(summary['failed'], 3)
+        self.assertEqual(summary['passed'], 2)
+        self.assertEqual(summary['failed'], 4)
         self.assertEqual(summary['skipped'], 0)
         self.assertEqual(summary['parsing_errors'], 0)
 

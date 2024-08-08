@@ -4,7 +4,7 @@ import json
 import logging
 import typing
 from json import JSONDecodeError
-from typing import TypeVar, overload, Any, Dict
+from typing import TypeVar, overload, Any, Tuple, List
 
 import yaml
 
@@ -130,21 +130,26 @@ def convert_csv_string_arg_to_list(csv_string_arg: list[str] | str | None) -> li
         return csv_string_arg
 
 
-def convert_prisma_policy_filter_to_dict(filter_string: str) -> Dict[Any, Any]:
+def convert_prisma_policy_filter_to_params(filter_string: str) -> List[Tuple[str, str]]:
     """
-    Converts the filter string to a dict. For example:
+    Converts the filter string to a list of tuples. For example:
     'policy.label=label,cloud.type=aws' becomes -->
-    {'policy.label': 'label1', 'cloud.type': 'aws'}
-    Note that the API does not accept lists https://prisma.pan.dev/api/cloud/cspm/policy#operation/get-policies-v2
-    This is not allowed: policy.label=label1,label2
+    [('policy.label', 'label1'), ('cloud.type', 'aws')]
+
+    Multiple values for the same attribute, like policy.label, will be separate items in the tuple. For example,
+    'policy.label=label,policy.label=anotherlabel' becomes -->
+    [('policy.label', 'label1'), ('policy.label', 'anotherlabel')]
+
+    Note that the urllib3 library seems to work best with tuples only (not lists), so this result may need to be converted.
+    It is returned as a list so that it can be modified separately, and converted to a tuple only when ready
     """
-    filter_params = {}
+    filter_params: List[Tuple[str, str]] = []
     if isinstance(filter_string, str) and filter_string:
-        filter_string = "".join(filter_string.split())
-        try:
-            for f in filter_string.split(','):
+        for f in filter_string.split(','):
+            try:
                 f_name, f_value = f.split('=')
-                filter_params[f_name] = f_value
-        except (IndexError, ValueError) as e:
-            logging.debug(f"Invalid filter format: {e}")
+                filter_params.append((f_name.strip(), f_value.strip()))
+            except (IndexError, ValueError) as e:
+                logging.debug(f"Invalid filter format: {e}")
+
     return filter_params

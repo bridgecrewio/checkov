@@ -21,6 +21,7 @@ class EnvVarsConfig:
         self.CACHE_DIR = convert_str_to_bool(os.getenv("CKV_CACHE_DIR", str(Path(tempfile.gettempdir()) / "cache")))
         self.CHECK_FAIL_LEVEL = os.getenv("CHECKOV_CHECK_FAIL_LEVEL", CheckFailLevel.ERROR)
         self.CREATE_COMPLEX_VERTICES = convert_str_to_bool(os.getenv("CREATE_COMPLEX_VERTICES", True))
+        self.CHECKOV_ENABLE_DATAS_FOREACH_HANDLING = os.getenv('CHECKOV_ENABLE_DATAS_FOREACH_HANDLING', 'False')
         self.CREATE_EDGES = convert_str_to_bool(os.getenv("CREATE_EDGES", True))
         self.CREATE_MARKDOWN_HYPERLINKS = convert_str_to_bool(os.getenv("CHECKOV_CREATE_MARKDOWN_HYPERLINKS", False))
         self.CREATE_SCA_IMAGE_REPORTS_FOR_IR = convert_str_to_bool(
@@ -74,6 +75,7 @@ class EnvVarsConfig:
         # need to fix usage, because the env var value is set inside the code
         self.GITHUB_CONF_DIR_PATH = os.getenv("CKV_GITHUB_CONF_DIR_PATH")
         self.ENABLE_DEFINITION_KEY = os.getenv("ENABLE_DEFINITION_KEY", False)
+        self.CKV_SUPPORT_ALL_RESOURCE_TYPE = os.getenv('CKV_SUPPORT_ALL_RESOURCE_TYPE', False)
 
 
 env_vars_config = EnvVarsConfig()

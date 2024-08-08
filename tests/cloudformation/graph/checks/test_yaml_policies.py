@@ -39,11 +39,17 @@ class TestYamlPolicies(TestYamlPoliciesBase):
     def test_LambdaFunction(self):
         self.go("LambdaFunction")
 
+    def test_SageMakerIAMPolicyOverlyPermissiveToAllTraffic(self):
+        self.go("SageMakerIAMPolicyOverlyPermissiveToAllTraffic")
+
     def test_ALBRedirectHTTPtoHTTPS(self):
         self.go("ALBRedirectHTTPtoHTTPS")
 
     def test_AppSyncProtectedByWAF(self):
         self.go("AppSyncProtectedByWAF")
+
+    def test_RDSEncryptionInTransit(self):
+        self.go("RDSEncryptionInTransit")
 
     def test_registry_load(self):
         registry = self.get_checks_registry()

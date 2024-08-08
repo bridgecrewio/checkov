@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import itertools
 import logging
+import sys
 from collections import defaultdict
 from typing import List, Dict, Any
 
@@ -242,6 +243,11 @@ def create_iac_violations_overview_table_part(
         table_width: int, column_width: int, resource_violation_details_map: Dict[str, Dict[str, Any]]
 ) -> List[str]:
     iac_table_lines: List[str] = []
+
+    # on python 3.12 and above, the columns are smaller, need to make them wider in order to have consistency.
+    if sys.version_info >= (3, 12):
+        table_width += 3
+
     iac_table = PrettyTable(
         min_table_width=table_width,
         max_table_width=table_width
