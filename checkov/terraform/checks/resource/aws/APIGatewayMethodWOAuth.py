@@ -22,15 +22,15 @@ class APIGatewayMethodWOAuth(BaseResourceCheck):
                 if p.get("Effect") == "Deny" and p.get("Principal") == "*":
                     if (isinstance(p.get("Action"), str) and p.get("Action") in ["execute-api:Invoke", "execute-api:*",
                                                                                  "*"]) or \
-                            (isinstance(p.get("Action"), list) and any(
-                                p.get("Action") in ["execute-api:Invoke", "execute-api:*", "*"])):
+                            (isinstance(p.get("Action"), list) and
+                             any(action in ["execute-api:Invoke", "execute-api:*", "*"] for action in p.get("Action"))):
                         return CheckResult.PASSED
                 # Fail if there is an Allow for execute-api:Invoke without a Deny or Conditions
                 if p.get("Effect") == "Allow" and p.get("Principal") == "*" and "Condition" not in p:
                     if (isinstance(p.get("Action"), str) and p.get("Action") in ["execute-api:Invoke",
                                                                                  "execute-api:*", "*"]) or \
-                            (isinstance(p.get("Action"), list) and any(
-                                p.get("Action") in ["execute-api:Invoke", "execute-api:*", "*"])):
+                            (isinstance(p.get("Action"), list) and
+                             any(action in ["execute-api:Invoke", "execute-api:*", "*"] for action in p.get("Action"))):
                         passed = False
             if passed:
                 return CheckResult.PASSED
@@ -46,9 +46,8 @@ class APIGatewayMethodWOAuth(BaseResourceCheck):
                         p.get("principals").get("identifiers") == ["*"]:
                     if (isinstance(p.get("actions"), str) and p.get("actions") in
                         ["execute-api:Invoke", "execute-api:*", "*"]) or \
-                                        (isinstance(p.get("actions"), list) and
-                                         any(action in ["execute-api:Invoke", "execute-api:*", "*"] for
-                                             action in p.get("actions"))):
+                        (isinstance(p.get("actions"), list) and
+                         any(action in ["execute-api:Invoke", "execute-api:*", "*"] for action in p.get("actions"))):
                         return CheckResult.PASSED
                 # Fail if there is an Allow for execute-api:Invoke without a Deny or Conditions
                 if p.get("effect") and p.get("effect") == "Allow" and p.get("principals").get("identifiers") and \
