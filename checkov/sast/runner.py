@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 import os
-import sys
 from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.common.sast.consts import SastLanguages
 
