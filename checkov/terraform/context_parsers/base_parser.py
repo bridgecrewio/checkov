@@ -96,7 +96,7 @@ class BaseContextParser(ABC):
         :param definition_blocks: parsed definition blocks
         :return: context enriched with skipped checks per skipped entity
         """
-        should_allow_multi_checks_skip = strtobool(os.getenv('CHECKOV_ALLOW_SKIP_MULTIPLE_ONE_LINE', 'False'))
+        should_allow_multi_checks_skip = bool(strtobool(os.getenv('CHECKOV_ALLOW_SKIP_MULTIPLE_ONE_LINE', 'False')))
         comment_regex = get_comment_regex(should_allow_multi_checks_skip)
         bc_id_mapping = metadata_integration.bc_to_ckv_id_mapping
         comments = [
