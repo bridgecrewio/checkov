@@ -287,7 +287,7 @@ class PrismaEngine(SastEngine):
         callargs = [self.lib_path, checkov_input_path, sast_output_path]
         subprocess.run(callargs)
 
-        with open(sast_output_path, 'r') as f:
+        with open(sast_output_path, 'r', encoding='utf-8') as f:
             report = f.read()
         parsed_report = json.loads(report)
         return parsed_report
