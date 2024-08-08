@@ -44,7 +44,8 @@ class APIGatewayMethodWOAuth(BaseResourceCheck):
                 # Pass if there is any Deny for execute-api:Invoke
                 if p.get("effect") and p.get("effect") == "Deny" and p.get("principals").get("identifiers") and \
                         p.get("principals").get("identifiers") == ["*"]:
-                    if (isinstance(p.get("actions"), str) and p.get("actions") in ["execute-api:Invoke", "execute-api:*","*"]) or \
+                    if (isinstance(p.get("actions"), str) and p.get("actions") in
+                        ["execute-api:Invoke", "execute-api:*", "*"]) or \
                                         (isinstance(p.get("actions"), list) and
                                          any(action in ["execute-api:Invoke", "execute-api:*", "*"] for
                                              action in p.get("actions"))):
