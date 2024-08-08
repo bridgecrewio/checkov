@@ -1,6 +1,59 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.208...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.219...HEAD)
+
+## [3.2.219](https://github.com/bridgecrewio/checkov/compare/3.2.217...3.2.219) - 2024-08-05
+
+### Feature
+
+- **general:** support multiple frameworks in one custom policy - [#6587](https://github.com/bridgecrewio/checkov/pull/6587)
+- **terraform:** Add run policy for RDS encryption in transit - [#6631](https://github.com/bridgecrewio/checkov/pull/6631)
+
+### Documentation
+
+- **general:** Add OpenTofu - [#6627](https://github.com/bridgecrewio/checkov/pull/6627)
+
+## [3.2.217](https://github.com/bridgecrewio/checkov/compare/3.2.216...3.2.217) - 2024-07-31
+
+- no noteworthy changes
+
+## [3.2.216](https://github.com/bridgecrewio/checkov/compare/3.2.213...3.2.216) - 2024-07-30
+
+### Feature
+
+- **sast:** Verify that all sast policies are parsed correctly - [#6621](https://github.com/bridgecrewio/checkov/pull/6621)
+
+### Bug Fix
+
+- **secrets:** fix secrets duplication - [#6619](https://github.com/bridgecrewio/checkov/pull/6619)
+- **secrets:** fix secrets duplication - Revert - [#6623](https://github.com/bridgecrewio/checkov/pull/6623)
+
+## [3.2.213](https://github.com/bridgecrewio/checkov/compare/3.2.209...3.2.213) - 2024-07-29
+
+### Feature
+
+- **arm:** ARM AppServiceInstanceMinimum - CKV_AZURE_212 - [#6502](https://github.com/bridgecrewio/checkov/pull/6502)
+- **terraform:** - TF and CFN - Add a policy for ensuring AWS Bedrock Agent is encrypted with a CMK - [#6603](https://github.com/bridgecrewio/checkov/pull/6603)
+
+### Bug Fix
+
+- **ansible:** Fix CKV2_ANSIBLE_2 - [#6610](https://github.com/bridgecrewio/checkov/pull/6610)
+- **arm:** Support upper and lower disabled for CKV_AZURE_189 - [#6609](https://github.com/bridgecrewio/checkov/pull/6609)
+- **dockerfile:** Fix edge case with apt in domain - [#6611](https://github.com/bridgecrewio/checkov/pull/6611)
+- **terraform_plan:** Fix parsing other types of provisioners - [#6606](https://github.com/bridgecrewio/checkov/pull/6606)
+- **terraform:** add condition for CKV_AWS_353 - [#6607](https://github.com/bridgecrewio/checkov/pull/6607)
+- **terraform:** catch unknowns with WAF configs - [#6612](https://github.com/bridgecrewio/checkov/pull/6612)
+- **terraform:** Handle default for CKV_GCP_76 - [#6608](https://github.com/bridgecrewio/checkov/pull/6608)
+
+## [3.2.209](https://github.com/bridgecrewio/checkov/compare/3.2.208...3.2.209) - 2024-07-28
+
+### Feature
+
+- **cloudformation:** Enrich cloudsplaining eval keys - [#6602](https://github.com/bridgecrewio/checkov/pull/6602)
+
+### Documentation
+
+- **general:** add --repo-id to relevant examples with API key - [#6605](https://github.com/bridgecrewio/checkov/pull/6605)
 
 ## [3.2.208](https://github.com/bridgecrewio/checkov/compare/3.2.204...3.2.208) - 2024-07-25
 
