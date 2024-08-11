@@ -1,44 +1,82 @@
 metadata:
   id: "CKV2_AWS_20"
-  name: "cs-public-resource-based-policy-sqs"
-  severity: "high"
-  guidelines: "public resource based policy - sqs"
-  category: "general"
-scope:
-  provider: "aws"
+  name: "Ensure that ALB redirects HTTP requests into HTTPS ones"
+  category: "NETWORKING"
 definition:
-  or:
-    - and:
-        - cond_type: "attribute"
-          resource_types:
-            - "aws_sqs_queue"
-          attribute: "policy.Statement[?(@.Effect == 'Allow' & @.Principal == '*')]"
-          operator: "jsonpath_not_exists"
-        - cond_type: "attribute"
-          resource_types:
-            - "aws_sqs_queue"
-          attribute: "policy.Statement[?(@.Effect == 'Allow')].Principal.AWS[*]"
-          operator: "jsonpath_not_equals"
-          value: "*"
-        - cond_type: "attribute"
-          resource_types:
-            - "aws_sqs_queue"
-          attribute: "policy.Statement[?(@.Effect == 'Allow')].NotPrincipal"
-          operator: "jsonpath_not_exists"
-    - and:
-        - cond_type: "attribute"
-          resource_types:
-            - "aws_sqs_queue_policy"
-          attribute: "policy.Statement[?(@.Effect == 'Allow' & @.Principal == '*')]"
-          operator: "jsonpath_not_exists"
-        - cond_type: "attribute"
-          resource_types:
-            - "aws_sqs_queue_policy"
-          attribute: "policy.Statement[?(@.Effect == 'Allow')].Principal.AWS[*]"
-          operator: "jsonpath_not_equals"
-          value: "*"
-        - cond_type: "attribute"
-          resource_types:
-            - "aws_sqs_queue_policy"
-          attribute: "policy.Statement[?(@.Effect == 'Allow')].NotPrincipal"
-          operator: "jsonpath_not_exists"
+  and:
+    - cond_type: filter
+      value:
+        - aws_lb
+        - aws_alb
+      operator: within
+      attribute: resource_type
+    - or:
+      - cond_type: connection
+        operator: not_exists
+        resource_types:
+          - aws_lb
+          - aws_alb
+        connected_resource_types:
+          - aws_lb_listener
+          - aws_alb_listener
+      - and:
+          - cond_type: connection
+            operator: exists
+            resource_types:
+              - aws_lb
+              - aws_alb
+            connected_resource_types:
+              - aws_lb_listener
+              - aws_alb_listener
+          - or:
+              - and:
+                - cond_type: attribute
+                  attribute: port
+                  operator: not_equals
+                  value: "80"
+                  resource_types:
+                    - aws_lb_listener
+                    - aws_alb_listener
+                - cond_type: attribute
+                  attribute: protocol
+                  operator: not_equals
+                  value: HTTP
+                  resource_types:
+                    - aws_lb_listener
+                    - aws_alb_listener
+              - and:
+                  - cond_type: attribute
+                    attribute: port
+                    operator: equals
+                    value: "80"
+                    resource_types:
+                      - aws_lb_listener
+                      - aws_alb_listener
+                  - cond_type: attribute
+                    attribute: protocol
+                    operator: equals
+                    value: "HTTP"
+                    resource_types:
+                      - aws_lb_listener
+                      - aws_alb_listener
+                  - cond_type: attribute
+                    attribute: default_action.type
+                    operator: equals
+                    value: "redirect"
+                    resource_types:
+                      - aws_lb_listener
+                      - aws_alb_listener
+                  - cond_type: attribute
+                    attribute: default_action.redirect.*.port
+                    operator: equals
+                    value: "443"
+                    resource_types:
+                      - aws_lb_listener
+                      - aws_alb_listener
+                  - cond_type: attribute
+                    attribute: default_action.redirect.*.protocol
+                    operator: equals
+                    value: "HTTPS"
+                    resource_types:
+                      - aws_lb_listener
+                      - aws_alb_listener
