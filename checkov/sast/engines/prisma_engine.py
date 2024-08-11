@@ -255,7 +255,6 @@ class PrismaEngine(SastEngine):
         if list_policies:
             return self.run_go_library_list_policies(document)
 
-        self.winmode = True
         if self.winmode:
             sast_report = self._windows_sast_scan(document)
         else:
