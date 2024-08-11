@@ -77,7 +77,6 @@ GENERIC_PRIVATE_KEY_CHECK_IDS = {'CKV_SECRET_10', 'CKV_SECRET_13', 'CKV_SECRET_1
 
 CHECK_ID_TO_SECRET_TYPE = {v: k for k, v in SECRET_TYPE_TO_ID.items()}
 
-
 MAX_FILE_SIZE = int(os.getenv('CHECKOV_MAX_FILE_SIZE', '5000000'))  # 5 MB is default limit
 
 
@@ -148,8 +147,9 @@ class Runner(BaseRunner[None, None, None]):
             policies_list = customer_run_config.get('secretsPolicies', [])
             suppressions = customer_run_config.get('suppressions', [])
             if suppressions:
-                secret_suppressions_ids = [suppression['policyId']
-                                          for suppression in suppressions if (suppression['suppressionType'] == 'SecretsPolicy' or suppression['suppressionType'] == 'Policy')]
+                secret_suppressions_ids = [suppression['policyId'] for suppression in suppressions if (
+                                               suppression['suppressionType'] == 'SecretsPolicy' or
+                                               suppression['suppressionType'] == 'Policy')]
             if policies_list:
                 runnable_plugins: dict[str, str] = get_runnable_plugins(policies_list)
                 logging.info(f"Found {len(runnable_plugins)} runnable plugins")
@@ -240,7 +240,7 @@ class Runner(BaseRunner[None, None, None]):
                 # secret history
                 added_commit_hash, removed_commit_hash, code_line, added_by, removed_date, added_date = '', '', '', '', '', ''
                 if runner_filter.enable_git_history_secret_scan:
-                    enriched_potential_secret = git_history_scanner.\
+                    enriched_potential_secret = git_history_scanner. \
                         history_store.get_added_and_removed_commit_hash(key, secret, root_folder)
                     added_commit_hash = enriched_potential_secret.get('added_commit_hash') or ''
                     removed_commit_hash = enriched_potential_secret.get('removed_commit_hash') or ''
@@ -253,7 +253,8 @@ class Runner(BaseRunner[None, None, None]):
                     stripped = secret.secret_value.strip(',"')
                     if stripped != secret.secret_value:
                         secret_key = f'{key}_{secret.line_number}_{PotentialSecret.hash_secret(stripped)}'
-                if secret.secret_value and is_potential_uuid(secret.secret_value) and secret.check_id not in secrets_in_uuid_form:
+                if secret.secret_value and is_potential_uuid(
+                        secret.secret_value) and secret.check_id not in secrets_in_uuid_form:
                     logging.info(
                         f"Removing secret due to UUID filtering: {PotentialSecret.hash_secret(secret.secret_value)}")
                     continue
