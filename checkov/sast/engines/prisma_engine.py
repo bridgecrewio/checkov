@@ -1,5 +1,5 @@
 import ctypes
-import subprocess
+import subprocess  # nosec
 import sys
 from datetime import datetime
 import json
