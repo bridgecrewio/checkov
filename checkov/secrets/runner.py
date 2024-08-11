@@ -149,10 +149,7 @@ class Runner(BaseRunner[None, None, None]):
             if suppressions:
                 secret_suppressions_ids = [
                     suppression['policyId'] for suppression in suppressions
-                    if (
-                            suppression['suppressionType'] == 'SecretsPolicy' or
-                            suppression['suppressionType'] == 'Policy'
-                    )
+                    if suppression['suppressionType'] == 'SecretsPolicy' or suppression['suppressionType'] == 'Policy'
                 ]
             if policies_list:
                 runnable_plugins: dict[str, str] = get_runnable_plugins(policies_list)
