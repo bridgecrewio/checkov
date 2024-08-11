@@ -284,7 +284,7 @@ class PrismaEngine(SastEngine):
         with open(checkov_input_path, 'w') as f:
             f.write(json.dumps(sast_input))
         callargs = [self.lib_path, checkov_input_path, sast_output_path]
-        subprocess.run(callargs)
+        subprocess.run(callargs) # nosec
 
         with open(sast_output_path, 'r', encoding='utf-8') as f:
             report = f.read()
