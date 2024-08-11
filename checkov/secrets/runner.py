@@ -147,9 +147,13 @@ class Runner(BaseRunner[None, None, None]):
             policies_list = customer_run_config.get('secretsPolicies', [])
             suppressions = customer_run_config.get('suppressions', [])
             if suppressions:
-                secret_suppressions_ids = [suppression['policyId'] for suppression in suppressions if (
-                                               suppression['suppressionType'] == 'SecretsPolicy' or
-                                               suppression['suppressionType'] == 'Policy')]
+                secret_suppressions_ids = [
+                    suppression['policyId'] for suppression in suppressions
+                    if (
+                            suppression['suppressionType'] == 'SecretsPolicy' or
+                            suppression['suppressionType'] == 'Policy'
+                    )
+                ]
             if policies_list:
                 runnable_plugins: dict[str, str] = get_runnable_plugins(policies_list)
                 logging.info(f"Found {len(runnable_plugins)} runnable plugins")
