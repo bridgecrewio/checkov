@@ -111,7 +111,7 @@ resource "azurerm_network_interface" "pass_int_3" {
     name                          = "internal"
     subnet_id                     = var.prefix
     private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = []
+    public_ip_address_id          = ""
   }
 }
 
