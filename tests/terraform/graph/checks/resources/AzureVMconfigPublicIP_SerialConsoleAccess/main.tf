@@ -99,3 +99,55 @@ resource "azurerm_virtual_machine" "pass_vm" {
 #    storage_uri         = ""
 #  }
 }
+
+# Case 4: Pass case: "ip_configuration.public_ip_address_id" does exist but is empty
+
+resource "azurerm_network_interface" "pass_int_3" {
+  name                = "pass-nic"
+  location            = azurerm_resource_group.pud-rg.location
+  resource_group_name = azurerm_resource_group.pud-rg.name
+
+  ip_configuration {
+    name                          = "internal"
+    subnet_id                     = var.prefix
+    private_ip_address_allocation = "Dynamic"
+    public_ip_address_id          = ""
+  }
+}
+
+resource "azurerm_linux_virtual_machine" "pass_vm_3" {
+  name                = "pud-linux-vm"
+  resource_group_name = azurerm_resource_group.pud-rg.name
+  location            = azurerm_resource_group.pud-rg.location
+  size                = "Standard_F2"
+  admin_username      = "pud-admin"
+  network_interface_ids = [
+    azurerm_network_interface.pass_int_3.id,
+  ]
+}
+
+# Case 5: Pass case: "ip_configuration.public_ip_address_id" does exist but is null
+
+resource "azurerm_network_interface" "pass_int_4" {
+  name                = "pass-nic"
+  location            = azurerm_resource_group.pud-rg.location
+  resource_group_name = azurerm_resource_group.pud-rg.name
+
+  ip_configuration {
+    name                          = "internal"
+    subnet_id                     = var.prefix
+    private_ip_address_allocation = "Dynamic"
+    public_ip_address_id          = null
+  }
+}
+
+resource "azurerm_linux_virtual_machine" "pass_vm_4" {
+  name                = "pud-linux-vm"
+  resource_group_name = azurerm_resource_group.pud-rg.name
+  location            = azurerm_resource_group.pud-rg.location
+  size                = "Standard_F2"
+  admin_username      = "pud-admin"
+  network_interface_ids = [
+    azurerm_network_interface.pass_int_4.id,
+  ]
+}
