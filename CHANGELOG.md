@@ -1,6 +1,23 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.217...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.221...HEAD)
+
+## [3.2.221](https://github.com/bridgecrewio/checkov/compare/3.2.219...3.2.221) - 2024-08-12
+
+### Bug Fix
+
+- **terraform:** evaluate resource with double underscore - [#6642](https://github.com/bridgecrewio/checkov/pull/6642)
+
+## [3.2.219](https://github.com/bridgecrewio/checkov/compare/3.2.217...3.2.219) - 2024-08-05
+
+### Feature
+
+- **general:** support multiple frameworks in one custom policy - [#6587](https://github.com/bridgecrewio/checkov/pull/6587)
+- **terraform:** Add run policy for RDS encryption in transit - [#6631](https://github.com/bridgecrewio/checkov/pull/6631)
+
+### Documentation
+
+- **general:** Add OpenTofu - [#6627](https://github.com/bridgecrewio/checkov/pull/6627)
 
 ## [3.2.217](https://github.com/bridgecrewio/checkov/compare/3.2.216...3.2.217) - 2024-07-31
 
