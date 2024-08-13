@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.221...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.223...HEAD)
+
+## [3.2.223](https://github.com/bridgecrewio/checkov/compare/3.2.221...3.2.223) - 2024-08-13
+
+### Bug Fix
+
+- **secrets:** remove duplications in secrets - [#6648](https://github.com/bridgecrewio/checkov/pull/6648)
+- **secrets:** revert fixing duplications - [#6652](https://github.com/bridgecrewio/checkov/pull/6652)
 
 ## [3.2.221](https://github.com/bridgecrewio/checkov/compare/3.2.219...3.2.221) - 2024-08-12
 
