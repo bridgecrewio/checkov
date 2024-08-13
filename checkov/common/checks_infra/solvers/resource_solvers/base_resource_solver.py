@@ -51,7 +51,7 @@ class BaseResourceSolver(BaseSolver):
             result = self.get_operation(resource_type=data.get(CustomAttributes.RESOURCE_TYPE))
             if result:
                 passed_vertices.append(data)
-            else:
+            elif result is False:
                 failed_vertices.append(data)
 
         return passed_vertices, failed_vertices, []
