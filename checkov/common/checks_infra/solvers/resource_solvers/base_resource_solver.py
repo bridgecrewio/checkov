@@ -50,13 +50,13 @@ class BaseResourceSolver(BaseSolver):
         for _, data in graph_connector.nodes():
             result = self.get_operation(resource_type=data.get(CustomAttributes.RESOURCE_TYPE))
             if result is None:
-                continue
+                unknown_vertices.append(data)
             if result:
                 passed_vertices.append(data)
             else:
                 failed_vertices.append(data)
 
-        return passed_vertices, failed_vertices, []
+        return passed_vertices, failed_vertices, unknown_vertices
 
     def _process_node(self, data: dict[str, str], passed_vartices: list[dict[str, Any]],
                       failed_vertices: list[dict[str, Any]], unknown_vertices: list[dict[str, Any]]) -> None:
