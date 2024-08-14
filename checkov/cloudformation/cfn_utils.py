@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import copy
 import logging
 import os
 from typing import Optional, List, Tuple, Dict, Any, Callable
+from deepmerge import Merger
 
 import dpath
 
@@ -205,6 +207,7 @@ def get_files_definitions(
         path = filepath_fn(file) if filepath_fn else file
         try:
             template, template_lines = parse_result
+            template = enrich_resources_with_globals(template)
             if isinstance(template, dict) and isinstance(template.get("Resources"), dict) and isinstance(template_lines, list):
                 if validate_properties_in_resources_are_dict(template):
                     definitions[path] = template
@@ -236,3 +239,53 @@ def validate_properties_in_resources_are_dict(template: dict[str, Any]) -> bool:
         if 'Properties' in resource and not isinstance(resource['Properties'], dict) or "." in resource_name:
             return False
     return True
+
+
+def enrich_resources_with_globals(original_template: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Creates a new CloudFormation template dictionary with global properties applied to the resources.
+    :param original_template: The parsed CloudFormation template as a dictionary.
+    :return: A new CloudFormation template with enriched resources.
+    """
+    # Define a Merger object with strategies for merging
+    merger = Merger(
+        [
+            (dict, ["merge"]),  # for dictionaries, merge them
+        ],
+        ["override"],
+        ["override"]
+    )
+
+    new_template = copy.deepcopy(original_template)  # Create a deep copy of the original template
+
+    try:
+        # Check if Globals exist in the template
+        global_props = new_template.get('Globals', {})
+
+        # Supported AWS serverless type mappings to their corresponding Globals
+        supported_types_and_globals = {
+            "AWS::Serverless::Api": global_props.get('Api', {}),
+            "AWS::Serverless::Function": global_props.get('Function', {}),
+            "AWS::Serverless::HttpApi": global_props.get('HttpApi', {}),
+            "AWS::Serverless::SimpleTable": global_props.get('SimpleTable', {}),
+            "AWS::Serverless::StateMachine": global_props.get('StateMachine', {}),
+        }
+
+        # Iterate over the resources in the template copy
+        for resource_name, resource_details in new_template.get('Resources', {}).items():
+            resource_type = resource_details.get('Type', '')
+            global_properties = supported_types_and_globals.get(resource_type, {})
+            resource_properties = resource_details.setdefault('Properties', {})
+
+            # Merge the global properties first, then the individual resource properties to ensure resource
+            # properties take precedence over global properties
+            merged_properties = merger.merge(global_properties, resource_properties)
+
+            # Set the merged properties back into the resource details
+            resource_details['Properties'] = merged_properties
+
+    except Exception as e:
+        logging.warning(f"Failed to create a new template with enriched resources: {e}")
+        return original_template
+
+    return new_template  # Return the new template even if there were no globals to apply
