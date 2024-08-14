@@ -32,7 +32,7 @@ class BaseResourceSolver(BaseSolver):
         return lambda: True
 
     def run(
-        self, graph_connector: LibraryGraph
+            self, graph_connector: LibraryGraph
     ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
         executer = ThreadPoolExecutor()
         jobs = []
@@ -42,25 +42,27 @@ class BaseResourceSolver(BaseSolver):
 
         if isinstance(graph_connector, DiGraph):
             for _, data in graph_connector.nodes(data=True):
-                jobs.append(executer.submit(self._process_node, data, passed_vertices, failed_vertices, unknown_vertices))
+                jobs.append(
+                    executer.submit(self._process_node, data, passed_vertices, failed_vertices, unknown_vertices))
 
             concurrent.futures.wait(jobs)
             return passed_vertices, failed_vertices, unknown_vertices
 
         for _, data in graph_connector.nodes():
             result = self.get_operation(resource_type=data.get(CustomAttributes.RESOURCE_TYPE))
-            self._handle_result(data, failed_vertices, passed_vertices, result, unknown_vertices)
+            self._handle_result(result, data, passed_vertices, failed_vertices, unknown_vertices)
 
         return passed_vertices, failed_vertices, unknown_vertices
 
-    def _process_node(self, data: dict[str, str], passed_vartices: list[dict[str, Any]],
+    def _process_node(self, data: dict[str, str], passed_vertices: list[dict[str, Any]],
                       failed_vertices: list[dict[str, Any]], unknown_vertices: list[dict[str, Any]]) -> None:
         result = self.get_operation(data.get(CustomAttributes.RESOURCE_TYPE))  # type:ignore[arg-type]
         # A None indicate for UNKNOWN result - the vertex shouldn't be added to the passed or the failed vertices
-        self._handle_result(data, failed_vertices, passed_vartices, result, unknown_vertices)
+        self._handle_result(result, data, passed_vertices, failed_vertices, unknown_vertices)
 
     @staticmethod
-    def _handle_result(data, failed_vertices, passed_vertices, result, unknown_vertices):
+    def _handle_result(result: Optional[bool], data: dict[str, str], passed_vertices: list[dict[str, Any]],
+                       failed_vertices: list[dict[str, Any]], unknown_vertices: list[dict[str, Any]]) -> None:
         if result is None:
             unknown_vertices.append(data)
         elif result:
