@@ -1,0 +1,82 @@
+metadata:
+  id: "CKV2_AWS_69"
+  name: "Ensure AWS RDS database instance configured with encryption in transit"
+  category: "NETWORKING"
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - "AWS::RDS::DBInstance"
+      operator: within
+    - or:
+      - cond_type: "connection"
+        resource_types:
+          - "AWS::RDS::DBInstance"
+        connected_resource_types:
+          - "AWS::RDS::DBParameterGroup"
+        operator: "not_exists"
+      - and:
+        - cond_type: "connection"
+          resource_types:
+            - "AWS::RDS::DBInstance"
+          connected_resource_types:
+            - "AWS::RDS::DBParameterGroup"
+          operator: "exists"
+        - or:
+          - cond_type: "attribute"
+            resource_types:
+              - "AWS::RDS::DBParameterGroup"
+            attribute: "Family"
+            operator: "not_regex_match"
+            value: "(^postgres|.*sqlserver).*"
+          - and:
+            - cond_type: "attribute"
+              resource_types:
+                - "AWS::RDS::DBParameterGroup"
+              attribute: "Parameters.rds.force_ssl"
+              operator: "exists"
+            - cond_type: "attribute"
+              resource_types:
+                - "AWS::RDS::DBParameterGroup"
+              attribute: "Parameters.rds.force_ssl"
+              operator: "equals"
+              value: "1"
+        - or:
+          - cond_type: "attribute"
+            resource_types:
+              - "AWS::RDS::DBParameterGroup"
+            attribute: "Family"
+            operator: "not_regex_match"
+            value: "^(mariadb|mysql).*"
+          - and:
+            - cond_type: "attribute"
+              resource_types:
+                - "AWS::RDS::DBParameterGroup"
+              attribute: "Parameters.require_secure_transport"
+              operator: "exists"
+            - cond_type: "attribute"
+              resource_types:
+                - "AWS::RDS::DBParameterGroup"
+              attribute: "Parameters.require_secure_transport"
+              operator: "equals"
+              value: "1"
+        - or:
+          - cond_type: "attribute"
+            resource_types:
+              - "AWS::RDS::DBParameterGroup"
+            attribute: "Family"
+            operator: "not_regex_match"
+            value: ".*db2-ae.*"
+          - and:
+            - cond_type: "attribute"
+              resource_types:
+                - "AWS::RDS::DBParameterGroup"
+              attribute: "Parameters.db2comm"
+              operator: "exists"
+            - cond_type: "attribute"
+              resource_types:
+                - "AWS::RDS::DBParameterGroup"
+              attribute: "Parameters.db2comm"
+              operator: "equals"
+              value: "SSL"

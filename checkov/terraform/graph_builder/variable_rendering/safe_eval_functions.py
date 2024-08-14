@@ -355,7 +355,9 @@ SAFE_EVAL_DICT["formatdate"] = formatdate
 
 
 def evaluate(input_str: str) -> Any:
-    if "__" in input_str:
+    count_underscores = input_str.count("__")
+    # We are operating under the assumption that the function name will start and end with "__", ensuring that we have at least two of them
+    if count_underscores >= 2:
         logging.debug(f"got a substring with double underscore, which is not allowed. origin string: {input_str}")
         return input_str
     if input_str == "...":

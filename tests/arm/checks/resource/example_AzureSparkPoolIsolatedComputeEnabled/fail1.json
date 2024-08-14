@@ -1,0 +1,18 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.Synapse/workspaces/bigDataPools",
+      "apiVersion": "2021-02-01",
+      "name": "fail1",
+      "location": "East US",
+      "properties": {
+        "isComputeIsolationEnabled": false,
+        "storageAccountAccessKey": "string",
+        "storageContainerPath": "string",
+        "storageContainerSasKey": "string"
+      }
+    }
+  ]
+}

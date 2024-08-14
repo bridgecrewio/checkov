@@ -1,0 +1,33 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.Network/frontdoorWebApplicationFirewallPolicies",
+      "apiVersion": "2019-09-01",
+      "name": "fail3",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "managedRules": {
+          "managedRuleSets": [
+            {
+              "ruleSetType": "Microsoft_DefaultRuleSet",
+              "ruleSetVersion": "1.1",
+              "ruleGroupOverrides": [
+                {
+                  "ruleGroupName": "JAVA",
+                  "rules": [
+                    {
+                      "action": "Block",
+                      "ruleId": "944240"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -36,6 +36,8 @@ class WAFRuleHasAnyActions(BaseResourceCheck):
                 statements = rule.get('statement')
                 if statements and isinstance(statements, list):
                     for statement in statements:
+                        if not isinstance(statement, dict):
+                            continue
                         if statement.get('managed_rule_group_statement'):
                             passing = True
 

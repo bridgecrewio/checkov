@@ -86,25 +86,35 @@ def prepare_definition(definition: dict[str, Any]) -> dict[str, Any]:
         if block_type == COMMENT_FIELD_NAME or block_type in LINE_FIELD_NAMES:
             continue
 
-        definition_new[block_type] = []
-        for block_name, config in blocks.items():
-            if block_name == COMMENT_FIELD_NAME or block_name in LINE_FIELD_NAMES:
-                continue
-
-            if block_type in (BlockType.RESOURCE, BlockType.DATA):
-                # data/resource have an extra nested level resource_type -> resource_name -> resource_config
-                for resource_name, resource_config in config.items():
-                    if resource_name in IGNORE_FILED_NAMES:
-                        continue
-                    definition_new[block_type].append({block_name: {resource_name: hclify(obj=resource_config)}})
-            elif block_type == BlockType.PROVIDER:
-                # provider are stored as a list, which we need to move one level higher to add the name
-                for provider_config in config:
-                    definition_new[block_type].append({block_name: hclify(obj=provider_config)})
-            else:
-                definition_new[block_type].append({block_name: hclify(obj=config)})
+        definition_new[block_type] = handle_block_type(block_type=block_type, blocks=blocks)
 
     return definition_new
+
+
+def handle_block_type(block_type: str, blocks: dict[str, Any]) -> list[dict[str, Any]]:
+    result: list[dict[str, Any]] = []
+
+    for block_name, config in blocks.items():
+        if block_name == COMMENT_FIELD_NAME or block_name in LINE_FIELD_NAMES:
+            continue
+
+        if block_type in (BlockType.RESOURCE, BlockType.DATA):
+            # data/resource have an extra nested level resource_type -> resource_name -> resource_config
+            for resource_name, resource_config in config.items():
+                if resource_name in IGNORE_FILED_NAMES:
+                    continue
+                result.append({block_name: {resource_name: hclify(obj=resource_config)}})
+        elif block_type == BlockType.PROVIDER:
+            # provider are stored as a list, which we need to move one level higher to add the name
+            for provider_config in config:
+                result.append({block_name: hclify(obj=provider_config)})
+        elif block_type == BlockType.LOCALS:
+            # a local block is stored as single dict
+            return [hclify(obj=blocks)]
+        else:
+            result.append({block_name: hclify(obj=config)})
+
+    return result
 
 
 def hclify(

@@ -792,6 +792,27 @@ class TestRepoConfigIntegration(unittest.TestCase):
         repo_config_integration._set_exclusion_paths(vcs_config)
         self.assertEqual(repo_config_integration.skip_paths, set())
 
+    def test_skip_paths_no_repos(self):
+        vcs_config = {
+            "scannedFiles": {
+                "sections": [
+                    {
+                        "repos": [],
+                        "rule": {
+                            "excludePaths": []
+                        },
+                        "isDefault": True
+                    }
+                ]
+            }
+        }
+
+        instance = BcPlatformIntegration()
+        instance.repo_id = 'org/repo'
+        repo_config_integration = RepoConfigIntegration(instance)
+        repo_config_integration._set_exclusion_paths(vcs_config)
+        self.assertEqual(repo_config_integration.skip_paths, set())
+
     def test_skip_paths_multiple_one_match(self):
         vcs_config = {
             "scannedFiles": {

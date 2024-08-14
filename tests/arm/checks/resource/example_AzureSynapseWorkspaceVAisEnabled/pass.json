@@ -1,0 +1,24 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.Synapse/workspaces/vulnerabilityAssessments",
+      "apiVersion": "2021-02-01",
+      "name": "pass",
+      "location": "East US",
+      "properties": {
+        "recurringScans": {
+          "emails": [
+            "string"
+          ],
+          "emailSubscriptionAdmins": true,
+          "isEnabled": true
+        },
+        "storageAccountAccessKey": "string",
+        "storageContainerPath": "string",
+        "storageContainerSasKey": "string"
+      }
+    }
+  ]
+}

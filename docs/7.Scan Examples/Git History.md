@@ -20,12 +20,12 @@ Use `--secrets-history-timeout` to set how long the secrets scan will run on his
 
 A run with a timeout of `12h` by default:
 ```bash
-checkov -d <git dir> --scan-secrets-history --bc-api-key <your_api_key>
+checkov -d <git dir> --scan-secrets-history --bc-api-key <your_api_key> --repo-id <repo/name>
 ```
 
 A run with a timeout of `1h`:
 ```bash
-checkov -d <git dir> --scan-secrets-history --secrets-history-timeout 1h --bc-api-key <your_api_key>
+checkov -d <git dir> --scan-secrets-history --secrets-history-timeout 1h --bc-api-key <your_api_key> --repo-id <repo/name>
 ```
 
 ### Example output

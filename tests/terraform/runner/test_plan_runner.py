@@ -816,6 +816,7 @@ class TestRunnerValid(unittest.TestCase):
         assert report.passed_checks[0].file_path.endswith('.json')
         assert report.passed_checks[1].file_path.endswith('.json')
 
+    @mock.patch.dict(os.environ, {'EVAL_TF_PLAN_AFTER_UNKNOWN': 'True'})
     def test_plan_and_tf_combine_graph_with_missing_resources(self):
         tf_file_path = Path(__file__).parent / "resources/plan_and_tf_combine_graph_with_missing_resources/tfplan.json"
         repo_path = Path(__file__).parent / "resources/plan_and_tf_combine_graph_with_missing_resources"

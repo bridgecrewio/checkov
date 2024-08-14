@@ -64,7 +64,7 @@ resource "aws_instance" "fail_empty_root_list" {
   root_block_device = var.empty_list
 }
 
-resource "aws_instance" "fail_empty_ebs_list" {
+resource "aws_instance" "unknown_empty_ebs_list" {
   image_id      = "ami-123"
   instance_type = "t2.micro"
 

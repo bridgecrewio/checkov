@@ -11,6 +11,7 @@ import yaml
 from checkov.common.checks_infra.checks_parser import GraphCheckParser
 from checkov.common.graph.checks_infra.base_parser import BaseGraphCheckParser
 from checkov.common.graph.checks_infra.registry import BaseRegistry
+from checkov.common.graph.graph_builder.consts import GraphSource
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
 from checkov.runner_filter import RunnerFilter
 from checkov.common.checks_infra.resources_types import resources_types
@@ -20,6 +21,10 @@ if TYPE_CHECKING:
 
 CHECKS_POSSIBLE_ENDING = {".json", ".yaml", ".yml"}
 
+GraphSupportedIACFrameworks = [GraphSource.TERRAFORM, GraphSource.CLOUDFORMATION, GraphSource.KUBERNETES,
+                               GraphSource.TERRAFORM_PLAN, GraphSource.KUSTOMIZE, GraphSource.BICEP,
+                               GraphSource.GITHUB_ACTION, GraphSource.HELM, GraphSource.ANSIBLE]
+
 
 class Registry(BaseRegistry):
     def __init__(self, checks_dir: str, parser: BaseGraphCheckParser | None = None) -> None:
@@ -27,6 +32,7 @@ class Registry(BaseRegistry):
 
         super().__init__(parser)
         self.checks: list[BaseGraphCheck] = []
+        self.custom_policies_checks: list[BaseGraphCheck] = []
         self.checks_dir = checks_dir
         self.logger = logging.getLogger(__name__)
         add_resource_code_filter_to_logger(self.logger)
@@ -37,6 +43,7 @@ class Registry(BaseRegistry):
             return
 
         self._load_checks_from_dir(self.checks_dir, False)
+        self.checks += self.custom_policies_checks
 
     def _load_checks_from_dir(self, directory: str, external_check: bool) -> None:
         dir = os.path.expanduser(directory)
@@ -65,7 +72,8 @@ class Registry(BaseRegistry):
                             continue
 
                         check = self.parser.parse_raw_check(
-                            check_json, resources_types=self._get_resource_types(check_json), check_path=f'{root}/{file}'
+                            check_json, resources_types=self._get_resource_types(check_json),
+                            check_path=f'{root}/{file}'
                         )
                         if not any(c for c in self.checks if check.id == c.id):
                             if external_check:
@@ -85,10 +93,22 @@ class Registry(BaseRegistry):
 _registry_instances: dict[str, Registry] = {}
 
 
+def _initialize_registry(check_type: str) -> None:
+    _registry_instances[check_type] = Registry(
+        parser=GraphCheckParser(),
+        checks_dir=f"{Path(__file__).parent.parent.parent}/{check_type}/checks/graph_checks",
+    )
+
+
 def get_graph_checks_registry(check_type: str) -> Registry:
     if not _registry_instances.get(check_type):
-        _registry_instances[check_type] = Registry(
-            parser=GraphCheckParser(),
-            checks_dir=f"{Path(__file__).parent.parent.parent}/{check_type}/checks/graph_checks",
-        )
+        _initialize_registry(check_type)
     return _registry_instances[check_type]
+
+
+def get_all_graph_checks_registries() -> list[Registry]:
+    graph_supported_iac_frameworks = [framework.value.lower() for framework in GraphSupportedIACFrameworks]
+    for framework in graph_supported_iac_frameworks:
+        if not _registry_instances.get(framework):
+            _initialize_registry(framework)
+    return list(_registry_instances[framework] for framework in graph_supported_iac_frameworks)

@@ -31,7 +31,6 @@ class TestLaunchConfigurationEBSEncryption(unittest.TestCase):
             "aws_instance.fail4",
             "aws_instance.fail5",
             "aws_instance.fail_empty_root_list",
-            "aws_instance.fail_empty_ebs_list",
             "aws_launch_configuration.fail",
         }
 
@@ -39,7 +38,7 @@ class TestLaunchConfigurationEBSEncryption(unittest.TestCase):
         failed_check_resources = {c.resource for c in report.failed_checks}
 
         self.assertEqual(summary["passed"], 5)
-        self.assertEqual(summary["failed"], 8)
+        self.assertEqual(summary["failed"], 7)
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 

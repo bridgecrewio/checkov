@@ -16,7 +16,7 @@ class TestCfnYaml(unittest.TestCase):
         report = Runner().run(None, files=[test_files], runner_filter=RunnerFilter())
         summary = report.get_summary()
 
-        self.assertEqual(summary['passed'], 1)
+        self.assertEqual(summary['passed'], 2)
         self.assertEqual(summary['failed'], 3)
         self.assertEqual(summary['skipped'], 1)
         self.assertEqual(summary['parsing_errors'], 0)

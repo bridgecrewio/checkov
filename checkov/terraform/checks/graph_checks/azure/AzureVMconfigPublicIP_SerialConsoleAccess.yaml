@@ -50,3 +50,10 @@ definition:
       operator: length_less_than_or_equal
       value: 0
 
+    - cond_type: attribute
+      resource_types:
+        - azurerm_network_interface
+      attribute: ip_configuration.public_ip_address_id
+      operator: equals
+      value: null
+

@@ -1,0 +1,18 @@
+metadata: 
+  id: "CKV2_AZURE_53"
+  name: "Ensure Azure Synapse Workspace has extended audit logs"
+  category: "LOGGING"
+
+definition:
+  and:
+    - cond_type: filter
+      attribute: resource_type
+      value:
+        - azurerm_synapse_workspace
+      operator: within
+    - cond_type: connection
+      resource_types:
+        - azurerm_synapse_workspace
+      connected_resource_types:
+        - azurerm_synapse_workspace_extended_auditing_policy
+      operator: exists

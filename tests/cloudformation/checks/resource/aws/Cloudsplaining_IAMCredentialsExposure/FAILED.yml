@@ -7,8 +7,12 @@ Resources:
       PolicyName: IAMUpdateAccessKeyPolicy
       PolicyDocument:
         Statement:
-          - Action: 'iam:UpdateAccessKey'
-            Effect: Allow
+          - Effect: Allow
+            Action:
+            - 'iam:UpdateAccessKey'
+            - 'iam:UntagRole'
+            - 'iam:CreateAccessKey'
+            - 'iam:TagPolicy'
             Resource: '*'
       Roles:
         - example_role
