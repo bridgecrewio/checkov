@@ -49,12 +49,7 @@ class BaseResourceSolver(BaseSolver):
 
         for _, data in graph_connector.nodes():
             result = self.get_operation(resource_type=data.get(CustomAttributes.RESOURCE_TYPE))
-            if result is None:
-                unknown_vertices.append(data)
-            if result:
-                passed_vertices.append(data)
-            else:
-                failed_vertices.append(data)
+            self._handle_result(data, failed_vertices, passed_vertices, result, unknown_vertices)
 
         return passed_vertices, failed_vertices, unknown_vertices
 
@@ -62,9 +57,13 @@ class BaseResourceSolver(BaseSolver):
                       failed_vertices: list[dict[str, Any]], unknown_vertices: list[dict[str, Any]]) -> None:
         result = self.get_operation(data.get(CustomAttributes.RESOURCE_TYPE))  # type:ignore[arg-type]
         # A None indicate for UNKNOWN result - the vertex shouldn't be added to the passed or the failed vertices
+        self._handle_result(data, failed_vertices, passed_vartices, result, unknown_vertices)
+
+    @staticmethod
+    def _handle_result(data, failed_vertices, passed_vertices, result, unknown_vertices):
         if result is None:
             unknown_vertices.append(data)
         elif result:
-            passed_vartices.append(data)
+            passed_vertices.append(data)
         else:
             failed_vertices.append(data)
