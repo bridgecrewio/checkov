@@ -49,9 +49,11 @@ class BaseResourceSolver(BaseSolver):
 
         for _, data in graph_connector.nodes():
             result = self.get_operation(resource_type=data.get(CustomAttributes.RESOURCE_TYPE))
+            if result is None:
+                continue
             if result:
                 passed_vertices.append(data)
-            elif result is False:
+            else:
                 failed_vertices.append(data)
 
         return passed_vertices, failed_vertices, []
