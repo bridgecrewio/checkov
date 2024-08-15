@@ -1,13 +1,10 @@
 from __future__ import annotations
 
-import json
-import uuid
-from copy import deepcopy, copy
+from copy import deepcopy
 import logging
 import os
 from typing import Optional, List, Tuple, Dict, Any, Callable
 
-import boto3
 import dpath
 
 from checkov.cloudformation.checks.resource.base_registry import Registry
@@ -262,7 +259,7 @@ def enrich_resources_with_globals(original_template: Dict[str, Any]) -> Dict[str
         supported_types_and_globals = {f"AWS::Serverless::{type}": global_props.get(type, {}) for type in supported_types}
 
         # Iterate over the resources in the template copy
-        for resource_name, resource_details in new_template.get('Resources', {}).items():
+        for _resource_name, resource_details in new_template.get('Resources', {}).items():
             resource_type = resource_details.get('Type', '')
             if (resource_type not in supported_types_and_globals):
                 continue
@@ -282,6 +279,7 @@ def enrich_resources_with_globals(original_template: Dict[str, Any]) -> Dict[str
         return original_template
 
     return new_template  # Return the new template even if there were no globals to apply
+
 
 def deep_merge(dict1: DictNode, dict2: DictNode) -> DictNode:
     """
