@@ -240,7 +240,7 @@ def validate_properties_in_resources_are_dict(template: dict[str, Any]) -> bool:
     return True
 
 
-def enrich_resources_with_globals(original_template: Dict[str, Any]) -> Dict[str, Any]:
+def enrich_resources_with_globals(original_template: DictNode) -> DictNode:
     """
     Creates a new CloudFormation template dictionary with global properties applied to the resources.
     :param original_template: The parsed CloudFormation template as a dictionary.
