@@ -1,6 +1,18 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.223...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.228...HEAD)
+
+## [3.2.228](https://github.com/bridgecrewio/checkov/compare/3.2.223...3.2.228) - 2024-08-15
+
+### Feature
+
+- **terraform:** Add build policy to match run policy for API Method without Auth or API - [#6637](https://github.com/bridgecrewio/checkov/pull/6637)
+
+### Bug Fix
+
+- **secrets:** remove dups logic - [#6655](https://github.com/bridgecrewio/checkov/pull/6655)
+- **secrets:** Revert remove dups  - [#6656](https://github.com/bridgecrewio/checkov/pull/6656)
+- **terraform:** Don't pass existed resources in non_exists resource checks - [#6653](https://github.com/bridgecrewio/checkov/pull/6653)
 
 ## [3.2.223](https://github.com/bridgecrewio/checkov/compare/3.2.221...3.2.223) - 2024-08-13
 
