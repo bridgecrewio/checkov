@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import Any, Callable, TYPE_CHECKING, Optional
+from typing import Any, Callable, TYPE_CHECKING
 
 from networkx import DiGraph
 
@@ -27,7 +27,7 @@ class BaseResourceSolver(BaseSolver):
         self._unknown_vertices: list[dict[str, Any]] = []
 
     @abstractmethod
-    def get_operation(self, resource_type: str) -> Optional[bool]:
+    def get_operation(self, resource_type: str) -> bool:
         raise NotImplementedError()
 
     def _get_operation(self, *args: Any, **kwargs: Any) -> Callable[..., bool]:
