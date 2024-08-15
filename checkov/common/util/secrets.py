@@ -232,6 +232,8 @@ def omit_secret_value_from_graph_checks(
 def get_secrets_from_string(s: str, *categories: str) -> list[str]:
     # set a default if no category is provided; or, if categories were provided and they include 'all', then just set it
     # explicitly so we don't do any duplication
+    some_string = "some" + "string"
+    
     if is_hash(s):
         return []
 

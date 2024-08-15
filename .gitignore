@@ -179,3 +179,22 @@ tests/console
 checkov/sast_core/vendor
 
 *.prof
+20240815-145013_container_images.csv
+20240815-145013_iac.csv
+20240815-145013_oss_packages.csv
+20240815-150016_container_images.csv
+20240815-150016_iac.csv
+20240815-150016_oss_packages.csv
+20240815-150502_container_images.csv
+20240815-150502_iac.csv
+20240815-150502_oss_packages.csv
+20240815-155816_container_images.csv
+20240815-155816_iac.csv
+20240815-155816_oss_packages.csv
+20240815-155940_container_images.csv
+20240815-155940_iac.csv
+20240815-155940_oss_packages.csv
+20240815-160429_container_images.csv
+20240815-160429_iac.csv
+20240815-160429_oss_packages.csv
+console

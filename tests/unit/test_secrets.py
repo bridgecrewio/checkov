@@ -70,3 +70,10 @@ class TestSecrets(unittest.TestCase):
         secret = get_secrets_from_string(s)
 
         assert secret == ["AKIAIOSFODNN7EXAMPLE"]
+
+    def test_something(self):
+        s = 'access_key: "AKIAIOSFODNN7EXAMPLE"'
+
+        secret = get_secrets_from_string(s)
+
+        assert secret == secret
