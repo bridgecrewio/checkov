@@ -29,6 +29,9 @@ class Runner(YamlRunner, JsonRunner):
         self.file_extensions = [".json", ".yml", ".yaml"]
 
     def import_registry(self) -> BaseCheckRegistry:
+        something = "some" + "thing"
+        otherthing = "other" + "thing"
+
         from checkov.openapi.checks.registry import openapi_registry
 
         return openapi_registry
