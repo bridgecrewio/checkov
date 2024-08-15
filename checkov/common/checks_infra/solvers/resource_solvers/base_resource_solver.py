@@ -22,6 +22,9 @@ class BaseResourceSolver(BaseSolver):
         super().__init__(SolverType.RESOURCE)
         self.resource_types = resource_types
         self.vertices: list[dict[str, Any]] = []
+        self._passed_vertices: list[dict[str, Any]] = []
+        self._failed_vertices: list[dict[str, Any]] = []
+        self._unknown_vertices: list[dict[str, Any]] = []
 
     @abstractmethod
     def get_operation(self, resource_type: str) -> Optional[bool]:
@@ -31,41 +34,30 @@ class BaseResourceSolver(BaseSolver):
         # not needed
         return lambda: True
 
+    @abstractmethod
+    def _handle_result(self, result: bool, data: dict[str, str]) -> None:
+        raise NotImplementedError()
+
     def run(
             self, graph_connector: LibraryGraph
     ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
         executer = ThreadPoolExecutor()
         jobs = []
-        passed_vertices: list[dict[str, Any]] = []
-        failed_vertices: list[dict[str, Any]] = []
-        unknown_vertices: list[dict[str, Any]] = []
 
         if isinstance(graph_connector, DiGraph):
             for _, data in graph_connector.nodes(data=True):
-                jobs.append(
-                    executer.submit(self._process_node, data, passed_vertices, failed_vertices, unknown_vertices))
+                jobs.append(executer.submit(self._process_node, data))
 
             concurrent.futures.wait(jobs)
-            return passed_vertices, failed_vertices, unknown_vertices
+            return self._passed_vertices, self._failed_vertices, self._unknown_vertices
 
         for _, data in graph_connector.nodes():
             result = self.get_operation(resource_type=data.get(CustomAttributes.RESOURCE_TYPE))
-            self._handle_result(result, data, passed_vertices, failed_vertices, unknown_vertices)
+            self._handle_result(result, data)
 
-        return passed_vertices, failed_vertices, unknown_vertices
+        return self._passed_vertices, self._failed_vertices, self._unknown_vertices
 
-    def _process_node(self, data: dict[str, str], passed_vertices: list[dict[str, Any]],
-                      failed_vertices: list[dict[str, Any]], unknown_vertices: list[dict[str, Any]]) -> None:
+    def _process_node(self, data: dict[str, str]) -> None:
         result = self.get_operation(data.get(CustomAttributes.RESOURCE_TYPE))  # type:ignore[arg-type]
         # A None indicate for UNKNOWN result - the vertex shouldn't be added to the passed or the failed vertices
-        self._handle_result(result, data, passed_vertices, failed_vertices, unknown_vertices)
-
-    @staticmethod
-    def _handle_result(result: Optional[bool], data: dict[str, str], passed_vertices: list[dict[str, Any]],
-                       failed_vertices: list[dict[str, Any]], unknown_vertices: list[dict[str, Any]]) -> None:
-        if result is None:
-            unknown_vertices.append(data)
-        elif result:
-            passed_vertices.append(data)
-        else:
-            failed_vertices.append(data)
+        self._handle_result(result, data)
