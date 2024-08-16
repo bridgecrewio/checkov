@@ -1,3 +1,5 @@
+from typing import List, Any
+
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_value_check import BaseResourceValueCheck
 
@@ -25,6 +27,10 @@ class GoogleComputeBlockProjectSSH(BaseResourceValueCheck):
 
     def get_inspected_key(self):
         return 'metadata/block-project-ssh-keys'
+
+    def get_expected_values(self) -> List[Any]:
+        # GCP enables feature with any of the following values
+        return [True,"true","True","TRUE"]
 
 
 check = GoogleComputeBlockProjectSSH()
