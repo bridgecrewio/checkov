@@ -33,17 +33,17 @@ class Registry(BaseRegistry):
         super().__init__(parser)
         self.checks: list[BaseGraphCheck] = []
         self.custom_policies_checks: list[BaseGraphCheck] = []
+        self.custom_policies_loaded: bool = False
         self.checks_dir = checks_dir
         self.logger = logging.getLogger(__name__)
         add_resource_code_filter_to_logger(self.logger)
 
     def load_checks(self) -> None:
-        if self.checks:
-            # checks were previously loaded
-            return
-
-        self._load_checks_from_dir(self.checks_dir, False)
-        self.checks += self.custom_policies_checks
+        if not self.checks:
+            self._load_checks_from_dir(self.checks_dir, False)
+        if not self.custom_policies_loaded and self.custom_policies_checks:
+            self.checks += self.custom_policies_checks
+            self.custom_policies_loaded = True
 
     def _load_checks_from_dir(self, directory: str, external_check: bool) -> None:
         dir = os.path.expanduser(directory)
