@@ -41,6 +41,11 @@ class Registry(BaseRegistry):
     def load_checks(self) -> None:
         if not self.checks:
             self._load_checks_from_dir(self.checks_dir, False)
+
+        # the first time this runs, custom_policies_checks will not have been set yet, so we don't want to prematurely mark
+        # custom policies as loaded.
+        # this does mean that for a registry that has no custom policies to load, this condition will never be skipped (but it will also have no effect)
+        # maybe there is a better way to do it
         if not self.custom_policies_loaded and self.custom_policies_checks:
             self.checks += self.custom_policies_checks
             self.custom_policies_loaded = True
