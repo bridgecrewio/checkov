@@ -33,17 +33,22 @@ class Registry(BaseRegistry):
         super().__init__(parser)
         self.checks: list[BaseGraphCheck] = []
         self.custom_policies_checks: list[BaseGraphCheck] = []
+        self.custom_policies_loaded: bool = False
         self.checks_dir = checks_dir
         self.logger = logging.getLogger(__name__)
         add_resource_code_filter_to_logger(self.logger)
 
     def load_checks(self) -> None:
-        if self.checks:
-            # checks were previously loaded
-            return
+        if not self.checks:
+            self._load_checks_from_dir(self.checks_dir, False)
 
-        self._load_checks_from_dir(self.checks_dir, False)
-        self.checks += self.custom_policies_checks
+        # the first time this runs, custom_policies_checks will not have been set yet, so we don't want to prematurely mark
+        # custom policies as loaded.
+        # this does mean that for a registry that has no custom policies to load, this condition will never be skipped (but it will also have no effect)
+        # maybe there is a better way to do it
+        if not self.custom_policies_loaded and self.custom_policies_checks:
+            self.checks += self.custom_policies_checks
+            self.custom_policies_loaded = True
 
     def _load_checks_from_dir(self, directory: str, external_check: bool) -> None:
         dir = os.path.expanduser(directory)
