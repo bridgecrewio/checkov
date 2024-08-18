@@ -240,7 +240,7 @@ def validate_properties_in_resources_are_dict(template: dict[str, Any]) -> bool:
     return True
 
 
-def enrich_resources_with_globals(original_template: DictNode) -> DictNode:
+def enrich_resources_with_globals(original_template: dict[str, Any]) -> dict[str, Any]:
     """
     Creates a new CloudFormation template dictionary with global properties applied to the resources.
     :param original_template: The parsed CloudFormation template as a dictionary.
@@ -281,7 +281,7 @@ def enrich_resources_with_globals(original_template: DictNode) -> DictNode:
     return new_template  # Return the new template even if there were no globals to apply
 
 
-def deep_merge(dict1: DictNode, dict2: DictNode) -> DictNode:
+def deep_merge(dict1: dict[str, Any], dict2: dict[str, Any]) -> dict[str, Any]:
     """
     Performs a deep merge of dict1 and dict2, giving preference to values in dict1.
     :param dict1: First DictNode object, whose values have higher precedence.
