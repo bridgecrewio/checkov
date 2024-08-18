@@ -22,7 +22,7 @@ def loads(content: str) -> list[dict[str, Any]]:
         template = list(yaml.load_all(content, Loader=SafeLineLoader))
     except Exception as e:
         logging.warning(f'Fail to load yaml content, {e}')
-        template = {}  # type: ignore
+        template = [None]  # type: ignore
     # Convert an empty file to an empty dict
     if template is None:
         template = {}
