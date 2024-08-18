@@ -206,9 +206,9 @@ def get_files_definitions(
         path = filepath_fn(file) if filepath_fn else file
         try:
             template, template_lines = parse_result
-            template = enrich_resources_with_globals(template)
             if isinstance(template, dict) and isinstance(template.get("Resources"), dict) and isinstance(template_lines, list):
                 if validate_properties_in_resources_are_dict(template):
+                    template = enrich_resources_with_globals(template)
                     definitions[path] = template
                     definitions_raw[path] = template_lines
                 else:
@@ -281,7 +281,7 @@ def enrich_resources_with_globals(original_template: dict[str, Any]) -> dict[str
     return new_template  # Return the new template even if there were no globals to apply
 
 
-def deep_merge(dict1: dict[str, Any], dict2: dict[str, Any]) -> dict[str, Any]:
+def deep_merge(dict1: DictNode, dict2: DictNode) -> DictNode:
     """
     Performs a deep merge of dict1 and dict2, giving preference to values in dict1.
     :param dict1: First DictNode object, whose values have higher precedence.
