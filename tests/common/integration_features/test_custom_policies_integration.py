@@ -7,7 +7,8 @@ from checkov.common.bridgecrew.integration_features.features.custom_policies_int
     CustomPoliciesIntegration
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
 from checkov.common.checks_infra.checks_parser import GraphCheckParser
-from checkov.common.checks_infra.registry import Registry, get_all_graph_checks_registries, get_graph_checks_registry
+from checkov.common.checks_infra.registry import Registry, get_all_graph_checks_registries, get_graph_checks_registry, \
+    GraphSupportedIACFrameworks
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
@@ -19,10 +20,8 @@ from pathlib import Path
 
 class TestCustomPoliciesIntegration(unittest.TestCase):
     def tearDown(self) -> None:
-        get_graph_checks_registry("cloudformation").checks = []
-        get_graph_checks_registry("terraform").checks = []
-        get_graph_checks_registry("kubernetes").checks = []
-        get_graph_checks_registry("bicep").checks = []
+        for framework in GraphSupportedIACFrameworks:
+            get_graph_checks_registry(framework.value.lower()).checks = []
 
     def test_integration_valid(self):
         instance = BcPlatformIntegration()
