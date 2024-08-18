@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from copy import deepcopy
 import logging
 import os
 from typing import Optional, List, Tuple, Dict, Any, Callable
@@ -16,6 +15,7 @@ from checkov.common.parsers.node import DictNode, StrNode, ListNode
 from checkov.common.runners.base_runner import filter_ignored_paths
 from checkov.runner_filter import RunnerFilter
 from checkov.common.models.consts import YAML_COMMENT_MARK
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 
 CF_POSSIBLE_ENDINGS = frozenset((".yml", ".yaml", ".json", ".template"))
 TAG_FIELD_NAMES = ("Key", "Value")
@@ -247,7 +247,7 @@ def enrich_resources_with_globals(original_template: dict[str, Any]) -> dict[str
     :return: A new CloudFormation template with enriched resources.
     """
 
-    new_template = deepcopy(original_template)  # Create a deep copy of the original template
+    new_template = pickle_deepcopy(original_template)  # Create a deep copy of the original template
 
     try:
         # Check if Globals exist in the template
@@ -293,7 +293,7 @@ def deep_merge(dict1: DictNode, dict2: DictNode) -> DictNode:
 
     # Add all items from dict2 to the merged DictNode.
     for key, value in dict2.items():
-        merged[key] = deepcopy(value)
+        merged[key] = pickle_deepcopy(value)
 
     # Merge items from dict1, giving them precedence.
     for key, value in dict1.items():
@@ -303,7 +303,7 @@ def deep_merge(dict1: DictNode, dict2: DictNode) -> DictNode:
                 merged[key] = deep_merge(value, dict2[key])
             elif isinstance(value, ListNode) and isinstance(dict2[key], ListNode):
                 # If both values are ListNodes, prepend the items from dict2's ListNode to dict1's ListNode.
-                merged[key] = ListNode(deepcopy(dict2[key]) + value, dict1.start_mark, dict1.end_mark)
+                merged[key] = ListNode(pickle_deepcopy(dict2[key]) + value, dict1.start_mark, dict1.end_mark)
             else:
                 # If they are not both DictNodes or both ListNodes, the value from dict1 takes precedence.
                 merged[key] = value

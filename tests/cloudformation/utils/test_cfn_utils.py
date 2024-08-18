@@ -1,7 +1,7 @@
 import os
 import unittest
 from pathlib import Path
-from copy import deepcopy
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 
 from checkov.cloudformation.cfn_utils import get_folder_definitions, build_definitions_context, enrich_resources_with_globals, deep_merge
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
@@ -162,7 +162,7 @@ class TestCfnUtils(unittest.TestCase):
         }, start_mark, end_mark)
 
         # Setting up expected template with DictNode
-        expected_properties = deepcopy(original_properties)
+        expected_properties = pickle_deepcopy(original_properties)
         expected_properties['Timeout'] = 30
         expected_resources = DictNode({
             'MyFunction': {
