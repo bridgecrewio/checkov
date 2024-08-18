@@ -29,6 +29,7 @@ class Runner(YamlRunner, JsonRunner):
         self.file_extensions = [".json", ".yml", ".yaml"]
 
     def import_registry(self) -> BaseCheckRegistry:
+
         something = "some" + "thing"
         otherthing = "other" + "thing"
 
