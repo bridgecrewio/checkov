@@ -1,8 +1,9 @@
 import os
 import unittest
 from pathlib import Path
+from copy import deepcopy
 
-from checkov.cloudformation.cfn_utils import get_folder_definitions, build_definitions_context
+from checkov.cloudformation.cfn_utils import get_folder_definitions, build_definitions_context, enrich_resources_with_globals, deep_merge
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.bridgecrew.platform_integration import bc_integration, BcPlatformIntegration
 from checkov.common.parsers.node import DictNode
@@ -131,6 +132,88 @@ class TestCfnUtils(unittest.TestCase):
                 },
             ],
         )
+
+    def test_globals_absent(self):
+        original_template = {'Resources': {}}
+        enriched_template = enrich_resources_with_globals(original_template)
+        self.assertEqual(enriched_template, original_template)
+
+    def test_globals_no_resources(self):
+        original_template = {'Globals': {}, 'Resources': {}}
+        enriched_template = enrich_resources_with_globals(original_template)
+        self.assertEqual(enriched_template, original_template)
+
+    def test_globals_applicable(self):
+        start_mark = object()  # Placeholder for a real starting position in a file
+        end_mark = object()  # Placeholder for a real ending position in a file
+
+        # Setting up original template with DictNode
+        original_globals = DictNode({'Function': {'Timeout': 30}}, start_mark, end_mark)
+        original_properties = DictNode({'MemorySize': 128}, start_mark, end_mark)
+        original_resources = DictNode({
+            'MyFunction': {
+                'Type': 'AWS::Serverless::Function',
+                'Properties': original_properties
+            }
+        }, start_mark, end_mark)
+        original_template = DictNode({
+            'Globals': original_globals,
+            'Resources': original_resources
+        }, start_mark, end_mark)
+
+        # Setting up expected template with DictNode
+        expected_properties = deepcopy(original_properties)
+        expected_properties['Timeout'] = 30
+        expected_resources = DictNode({
+            'MyFunction': {
+                'Type': 'AWS::Serverless::Function',
+                'Properties': expected_properties
+            }
+        }, start_mark, end_mark)
+        expected_template = DictNode({
+            'Globals': original_globals,
+            'Resources': expected_resources
+        }, start_mark, end_mark)
+
+        # Performing the enrichment
+        enriched_template = enrich_resources_with_globals(original_template)
+        self.assertEqual(enriched_template, expected_template)
+
+    def test_deep_merge_non_conflicting(self):
+        # Example marks, in real cases these would be meaningful values
+        start_mark = object()
+        end_mark = object()
+
+        dict1 = DictNode({'a': 1}, start_mark, end_mark)
+        dict2 = DictNode({'b': 2}, start_mark, end_mark)
+        merged_result = deep_merge(dict1, dict2)
+
+        self.assertEqual(merged_result, DictNode({'a': 1, 'b': 2}, start_mark, end_mark))
+
+    def test_deep_merge_overlapping_scalars(self):
+        start_mark = object()
+        end_mark = object()
+
+        dict1 = DictNode({'a': 1}, start_mark, end_mark)
+        dict2 = DictNode({'a': 2}, start_mark, end_mark)
+        merged_result = deep_merge(dict1, dict2)
+
+        self.assertEqual(merged_result, DictNode({'a': 1}, start_mark, end_mark))
+
+    def test_deep_merge_recursive_dict_nodes(self):
+        start_mark = object()
+        end_mark = object()
+
+        dict1_inner = DictNode({'c': 3}, start_mark, end_mark)
+        dict1 = DictNode({'a': dict1_inner}, start_mark, end_mark)
+
+        dict2_inner = DictNode({'d': 4}, start_mark, end_mark)
+        dict2 = DictNode({'a': dict2_inner}, start_mark, end_mark)
+
+        merged_result = deep_merge(dict1, dict2)
+        expected_result = DictNode({'a': DictNode({'c': 3, 'd': 4}, start_mark, end_mark)}, start_mark, end_mark)
+
+        self.assertEqual(merged_result, expected_result)
 
 
 if __name__ == "__main__":
