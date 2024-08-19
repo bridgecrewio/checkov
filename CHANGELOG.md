@@ -1,6 +1,16 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.228...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.230...HEAD)
+
+## [3.2.230](https://github.com/bridgecrewio/checkov/compare/3.2.228...3.2.230) - 2024-08-18
+
+### Feature
+
+- **general:** Support multiple frameworks in custom policy - [#6666](https://github.com/bridgecrewio/checkov/pull/6666)
+
+### Bug Fix
+
+- **general:** revert support multiple frameworks in one custom policy - [#6664](https://github.com/bridgecrewio/checkov/pull/6664)
 
 ## [3.2.228](https://github.com/bridgecrewio/checkov/compare/3.2.223...3.2.228) - 2024-08-15
 
