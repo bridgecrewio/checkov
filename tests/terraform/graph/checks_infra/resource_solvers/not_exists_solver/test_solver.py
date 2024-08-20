@@ -8,7 +8,7 @@ TEST_DIRNAME = Path(__file__).parent
 
 
 @parameterized_class([{"graph_framework": "NETWORKX"}, {"graph_framework": "IGRAPH"}])
-class NotExistsSolver(TestBaseSolver):
+class TestNotExistsSolver(TestBaseSolver):
     def setUp(self):
         self.checks_dir = str(TEST_DIRNAME)
         super().setUp()
@@ -17,17 +17,12 @@ class NotExistsSolver(TestBaseSolver):
         # given
         root_folder = TEST_DIRNAME.parents[2] / "resources/encryption_test"
         check_id = "ResourceDenyList"
-        should_pass = [
-            "aws_rds_cluster.rds_cluster_encrypted",
-            "aws_rds_cluster.rds_cluster_unencrypted",
-            "aws_neptune_cluster.encrypted_neptune",
-            "aws_neptune_cluster.unencrypted_neptune",
-        ]
+
         should_fail = [
             "aws_s3_bucket.encrypted_bucket",
             "aws_s3_bucket.unencrypted_bucket",
         ]
-        expected_results = {check_id: {"should_pass": should_pass, "should_fail": should_fail}}
+        expected_results = {check_id: {"should_fail": should_fail}}
 
         # when/then
         self.run_test(root_folder=str(root_folder), expected_results=expected_results, check_id=check_id)

@@ -32,7 +32,6 @@ class Registry(BaseRegistry):
 
         super().__init__(parser)
         self.checks: list[BaseGraphCheck] = []
-        self.custom_policies_checks: list[BaseGraphCheck] = []
         self.checks_dir = checks_dir
         self.logger = logging.getLogger(__name__)
         add_resource_code_filter_to_logger(self.logger)
@@ -43,7 +42,6 @@ class Registry(BaseRegistry):
             return
 
         self._load_checks_from_dir(self.checks_dir, False)
-        self.checks += self.custom_policies_checks
 
     def _load_checks_from_dir(self, directory: str, external_check: bool) -> None:
         dir = os.path.expanduser(directory)

@@ -7,7 +7,8 @@ from checkov.common.bridgecrew.integration_features.features.custom_policies_int
     CustomPoliciesIntegration
 from checkov.common.bridgecrew.platform_integration import BcPlatformIntegration
 from checkov.common.checks_infra.checks_parser import GraphCheckParser
-from checkov.common.checks_infra.registry import Registry, get_all_graph_checks_registries, get_graph_checks_registry
+from checkov.common.checks_infra.registry import Registry, get_all_graph_checks_registries, get_graph_checks_registry, \
+    GraphSupportedIACFrameworks
 from checkov.common.models.enums import CheckResult
 from checkov.common.output.record import Record
 from checkov.common.output.report import Report
@@ -19,10 +20,8 @@ from pathlib import Path
 
 class TestCustomPoliciesIntegration(unittest.TestCase):
     def tearDown(self) -> None:
-        get_graph_checks_registry("cloudformation").custom_policies_checks = []
-        get_graph_checks_registry("terraform").custom_policies_checks = []
-        get_graph_checks_registry("kubernetes").custom_policies_checks = []
-        get_graph_checks_registry("bicep").custom_policies_checks = []
+        for framework in GraphSupportedIACFrameworks:
+            get_graph_checks_registry(framework.value.lower()).checks = []
 
     def test_integration_valid(self):
         instance = BcPlatformIntegration()
@@ -170,7 +169,7 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         registry = Registry(parser=GraphCheckParser(), checks_dir=str(
             Path(__file__).parent.parent.parent.parent / "checkov" / "terraform" / "checks" / "graph_checks"))
         checks = [parser.parse_raw_check(CustomPoliciesIntegration._convert_raw_check(p)) for p in policies]
-        registry.custom_policies_checks = checks  # simulate that the policy downloader will do
+        registry.checks = checks  # simulate that the policy downloader will do
 
         tf_runner = TerraformRunner(external_registries=[registry])
         cfn_runner = CFNRunner(external_registries=[registry])
@@ -216,10 +215,10 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         instance.customer_run_config_response = mock_custom_policies_response()
 
         custom_policies_integration.pre_scan()
-        cfn_registry = get_graph_checks_registry("cloudformation").custom_policies_checks
-        tf_registry = get_graph_checks_registry("terraform").custom_policies_checks
-        k8s_registry = get_graph_checks_registry("kubernetes").custom_policies_checks
-        bicep_registry = get_graph_checks_registry("bicep").custom_policies_checks
+        cfn_registry = get_graph_checks_registry("cloudformation").checks
+        tf_registry = get_graph_checks_registry("terraform").checks
+        k8s_registry = get_graph_checks_registry("kubernetes").checks
+        bicep_registry = get_graph_checks_registry("bicep").checks
         self.assertEqual(1, len(custom_policies_integration.bc_cloned_checks))
         self.assertEqual('kpande_AZR_1648821862291', tf_registry[0].id, cfn_registry[0].id)
         self.assertEqual('kpande_AZR_1648821862291', tf_registry[0].bc_id, cfn_registry[0].bc_id)
@@ -237,15 +236,15 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
         instance.customer_run_config_response = mock_multiple_frameworks_custom_policy_response()
 
         custom_policies_integration.pre_scan()
-        bicep_registry_custom_policies_checks = get_graph_checks_registry("bicep").custom_policies_checks
+        bicep_registry_checks = get_graph_checks_registry("bicep").checks
         all_graph_checks = get_all_graph_checks_registries()
         for registry in all_graph_checks:
             multiple_frameworks_custom_policy_exist = False
-            for check in registry.custom_policies_checks:
+            for check in registry.checks:
                 if check.bc_id == 'multiple_frameworks_policy_1625063607541':
                     multiple_frameworks_custom_policy_exist = True
             self.assertEqual(True, multiple_frameworks_custom_policy_exist)
-        self.assertEqual(2, len(bicep_registry_custom_policies_checks))
+        self.assertEqual(2, len(bicep_registry_checks))
 
     def test_post_runner_with_cloned_checks(self):
         instance = BcPlatformIntegration()
@@ -493,8 +492,8 @@ class TestCustomPoliciesIntegration(unittest.TestCase):
             Path(__file__).parent.parent.parent.parent / "checkov" / "terraform" / "checks" / "graph_checks"))
         checks = [parser.parse_raw_check(CustomPoliciesIntegration._convert_raw_check(p)) for p in policies]
         registry.checks = checks  # simulate that the policy downloader will do
-
-
+        
+        
 def mock_custom_policies_response():
     return {
         "customPolicies": [

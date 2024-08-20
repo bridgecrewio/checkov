@@ -79,16 +79,16 @@ class CustomPoliciesIntegration(BaseIntegrationFeature):
                     if check.frameworks:
                         for f in check.frameworks:
                             if f.lower() == "cloudformation":
-                                get_graph_checks_registry("cloudformation").custom_policies_checks.append(check)
+                                get_graph_checks_registry("cloudformation").checks.append(check)
                             elif f.lower() == "terraform":
-                                get_graph_checks_registry("terraform").custom_policies_checks.append(check)
+                                get_graph_checks_registry("terraform").checks.append(check)
                             elif f.lower() == "kubernetes":
-                                get_graph_checks_registry("kubernetes").custom_policies_checks.append(check)
+                                get_graph_checks_registry("kubernetes").checks.append(check)
                             elif f.lower() == "bicep":
-                                get_graph_checks_registry("bicep").custom_policies_checks.append(check)
+                                get_graph_checks_registry("bicep").checks.append(check)
                     else:
                         for registry in get_all_graph_checks_registries():
-                            registry.custom_policies_checks.append(check)
+                            registry.checks.append(check)
                 except Exception:
                     logging.debug(f"Failed to load policy id: {policy.get('id')}", exc_info=True)
             logging.debug(f'Found {len(policies)} custom policies from the platform.')

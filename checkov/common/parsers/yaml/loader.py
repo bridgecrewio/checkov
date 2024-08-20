@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from collections.abc import Hashable
 from pathlib import Path
 from typing import Any, TYPE_CHECKING
@@ -17,13 +18,14 @@ def loads(content: str) -> list[dict[str, Any]]:
     """
     Load the given YAML string
     """
-
-    template = list(yaml.load_all(content, Loader=SafeLineLoader))
-
+    try:
+        template = list(yaml.load_all(content, Loader=SafeLineLoader))
+    except Exception as e:
+        logging.warning(f'Fail to load yaml content, {e}')
+        template = [None]
     # Convert an empty file to an empty dict
     if template is None:
         template = {}
-
     return template
 
 
