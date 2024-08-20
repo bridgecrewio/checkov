@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.230...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.232...HEAD)
+
+## [3.2.232](https://github.com/bridgecrewio/checkov/compare/3.2.230...3.2.232) - 2024-08-19
+
+### Bug Fix
+
+- **general:** add try except to loads file - [#6668](https://github.com/bridgecrewio/checkov/pull/6668)
+- **secrets:** duplications suppressions for secrets - [#6665](https://github.com/bridgecrewio/checkov/pull/6665)
 
 ## [3.2.230](https://github.com/bridgecrewio/checkov/compare/3.2.228...3.2.230) - 2024-08-18
 
