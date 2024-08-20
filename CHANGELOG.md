@@ -1,6 +1,48 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.219...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.232...HEAD)
+
+## [3.2.232](https://github.com/bridgecrewio/checkov/compare/3.2.230...3.2.232) - 2024-08-19
+
+### Bug Fix
+
+- **general:** add try except to loads file - [#6668](https://github.com/bridgecrewio/checkov/pull/6668)
+- **secrets:** duplications suppressions for secrets - [#6665](https://github.com/bridgecrewio/checkov/pull/6665)
+
+## [3.2.230](https://github.com/bridgecrewio/checkov/compare/3.2.228...3.2.230) - 2024-08-18
+
+### Feature
+
+- **general:** Support multiple frameworks in custom policy - [#6666](https://github.com/bridgecrewio/checkov/pull/6666)
+
+### Bug Fix
+
+- **general:** revert support multiple frameworks in one custom policy - [#6664](https://github.com/bridgecrewio/checkov/pull/6664)
+
+## [3.2.228](https://github.com/bridgecrewio/checkov/compare/3.2.223...3.2.228) - 2024-08-15
+
+### Feature
+
+- **terraform:** Add build policy to match run policy for API Method without Auth or API - [#6637](https://github.com/bridgecrewio/checkov/pull/6637)
+
+### Bug Fix
+
+- **secrets:** remove dups logic - [#6655](https://github.com/bridgecrewio/checkov/pull/6655)
+- **secrets:** Revert remove dups  - [#6656](https://github.com/bridgecrewio/checkov/pull/6656)
+- **terraform:** Don't pass existed resources in non_exists resource checks - [#6653](https://github.com/bridgecrewio/checkov/pull/6653)
+
+## [3.2.223](https://github.com/bridgecrewio/checkov/compare/3.2.221...3.2.223) - 2024-08-13
+
+### Bug Fix
+
+- **secrets:** remove duplications in secrets - [#6648](https://github.com/bridgecrewio/checkov/pull/6648)
+- **secrets:** revert fixing duplications - [#6652](https://github.com/bridgecrewio/checkov/pull/6652)
+
+## [3.2.221](https://github.com/bridgecrewio/checkov/compare/3.2.219...3.2.221) - 2024-08-12
+
+### Bug Fix
+
+- **terraform:** evaluate resource with double underscore - [#6642](https://github.com/bridgecrewio/checkov/pull/6642)
 
 ## [3.2.219](https://github.com/bridgecrewio/checkov/compare/3.2.217...3.2.219) - 2024-08-05
 
