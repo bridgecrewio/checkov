@@ -289,6 +289,9 @@ class PrismaEngine(SastEngine):
         with open(sast_output_path, 'r', encoding='utf-8') as f:
             report = f.read()
         parsed_report = json.loads(report)
+        # cleanup
+        os.remove(checkov_input_path)
+        os.remove(sast_output_path)
         return parsed_report  # type: ignore
 
     def create_prisma_report(self, data: Dict[str, Any]) -> PrismaReport:
