@@ -1,6 +1,16 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.232...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.234...HEAD)
+
+## [3.2.234](https://github.com/bridgecrewio/checkov/compare/3.2.232...3.2.234) - 2024-08-20
+
+### Feature
+
+- **sast:** Adding support for sast in windows - [#6638](https://github.com/bridgecrewio/checkov/pull/6638)
+
+### Bug Fix
+
+- **secrets:** revert duplications suppressions for secrets - [#6674](https://github.com/bridgecrewio/checkov/pull/6674)
 
 ## [3.2.232](https://github.com/bridgecrewio/checkov/compare/3.2.230...3.2.232) - 2024-08-19
 
