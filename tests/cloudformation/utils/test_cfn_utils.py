@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 
-from checkov.cloudformation.cfn_utils import get_folder_definitions, build_definitions_context, enrich_resources_with_globals, deep_merge
+from checkov.cloudformation.cfn_utils import get_folder_definitions, build_definitions_context, enrich_resources_with_globals
 from checkov.common.bridgecrew.integration_features.features.policy_metadata_integration import integration as metadata_integration
 from checkov.common.bridgecrew.platform_integration import bc_integration, BcPlatformIntegration
 from checkov.common.parsers.node import DictNode
@@ -186,7 +186,7 @@ class TestCfnUtils(unittest.TestCase):
 
         dict1 = DictNode({'a': 1}, start_mark, end_mark)
         dict2 = DictNode({'b': 2}, start_mark, end_mark)
-        merged_result = deep_merge(dict1, dict2)
+        merged_result = DictNode.deep_merge(dict1, dict2)
 
         self.assertEqual(merged_result, DictNode({'a': 1, 'b': 2}, start_mark, end_mark))
 
@@ -196,7 +196,7 @@ class TestCfnUtils(unittest.TestCase):
 
         dict1 = DictNode({'a': 1}, start_mark, end_mark)
         dict2 = DictNode({'a': 2}, start_mark, end_mark)
-        merged_result = deep_merge(dict1, dict2)
+        merged_result = DictNode.deep_merge(dict1, dict2)
 
         self.assertEqual(merged_result, DictNode({'a': 1}, start_mark, end_mark))
 
@@ -210,7 +210,7 @@ class TestCfnUtils(unittest.TestCase):
         dict2_inner = DictNode({'d': 4}, start_mark, end_mark)
         dict2 = DictNode({'a': dict2_inner}, start_mark, end_mark)
 
-        merged_result = deep_merge(dict1, dict2)
+        merged_result = DictNode.deep_merge(dict1, dict2)
         expected_result = DictNode({'a': DictNode({'c': 3, 'd': 4}, start_mark, end_mark)}, start_mark, end_mark)
 
         self.assertEqual(merged_result, expected_result)

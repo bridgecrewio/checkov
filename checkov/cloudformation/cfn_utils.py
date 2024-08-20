@@ -269,7 +269,7 @@ def enrich_resources_with_globals(original_template: dict[str, Any]) -> dict[str
             for property in skip_properties:
                 global_properties.pop(property, None)
 
-            merged_properties = deep_merge(resource_properties, global_properties)
+            merged_properties = DictNode.deep_merge(resource_properties, global_properties)
 
             # Set the merged properties back into the resource details
             resource_details['Properties'] = merged_properties
@@ -279,36 +279,3 @@ def enrich_resources_with_globals(original_template: dict[str, Any]) -> dict[str
         return original_template
 
     return new_template  # Return the new template even if there were no globals to apply
-
-
-def deep_merge(dict1: DictNode, dict2: DictNode) -> DictNode:
-    """
-    Performs a deep merge of dict1 and dict2, giving preference to values in dict1.
-    :param dict1: First DictNode object, whose values have higher precedence.
-    :param dict2: Second DictNode object, to be merged with the first one.
-    :return: A new DictNode object with the deep merged values.
-    """
-    # Create a new DictNode for the merged result, initially empty.
-    merged = DictNode({}, dict1.start_mark, dict1.end_mark)
-
-    # Add all items from dict2 to the merged DictNode.
-    for key, value in dict2.items():
-        merged[key] = pickle_deepcopy(value)
-
-    # Merge items from dict1, giving them precedence.
-    for key, value in dict1.items():
-        if key in dict2:
-            if isinstance(value, DictNode) and isinstance(dict2[key], DictNode):
-                # If both values are DictNodes, merge recursively.
-                merged[key] = deep_merge(value, dict2[key])
-            elif isinstance(value, ListNode) and isinstance(dict2[key], ListNode):
-                # If both values are ListNodes, prepend the items from dict2's ListNode to dict1's ListNode.
-                merged[key] = ListNode(pickle_deepcopy(dict2[key]) + value, dict1.start_mark, dict1.end_mark)
-            else:
-                # If they are not both DictNodes or both ListNodes, the value from dict1 takes precedence.
-                merged[key] = value
-        else:
-            # If the key is only in dict1, directly copy the item from dict1.
-            merged[key] = value
-
-    return merged
