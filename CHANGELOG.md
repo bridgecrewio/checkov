@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.234...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.235...HEAD)
+
+## [3.2.235](https://github.com/bridgecrewio/checkov/compare/3.2.234...3.2.235) - 2024-08-21
+
+### Feature
+
+- **cloudformation:** SAM Globals support with CloudFormation - [#6657](https://github.com/bridgecrewio/checkov/pull/6657)
 
 ## [3.2.234](https://github.com/bridgecrewio/checkov/compare/3.2.232...3.2.234) - 2024-08-20
 
