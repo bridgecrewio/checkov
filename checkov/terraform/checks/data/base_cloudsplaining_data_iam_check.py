@@ -1,5 +1,7 @@
+import fnmatch
+import logging
 from abc import ABC
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Union
 
 from cloudsplaining.scan.policy_document import PolicyDocument
 
@@ -28,3 +30,24 @@ class BaseTerraformCloudsplainingDataIAMCheck(BaseDataCheck, BaseTerraformClouds
     def convert_to_iam_policy(self, conf: Dict[str, List[Any]]) -> PolicyDocument:
         converted_conf = convert_terraform_conf_to_iam_policy(conf)
         return PolicyDocument(converted_conf)
+
+    def cloudsplaining_enrich_evaluated_keys(self, policy: PolicyDocument,
+                                             violating_actions: Union[List[str], List[Dict[str, Any]]]) -> None:
+        try:
+            # in case we have violating actions for this policy we start looking for it through the statements
+            for stmt_idx, statement in enumerate(policy.statements):
+                actions = statement.statement.get('actions')  # get the actions for this statement
+                if actions:
+                    if isinstance(actions, str):
+                        for violating_action in violating_actions:
+                            if fnmatch.fnmatch(violating_action, actions):  # found the violating action in our list of actions
+                                self.evaluated_keys = [f"statement/[{stmt_idx}]/actions"]
+                                break
+                    if isinstance(actions, list):
+                        for action_idx, action in enumerate(actions):      # go through the actions of this statement and try to match one violation
+                            for violating_action in violating_actions:
+                                if fnmatch.fnmatch(violating_action, action):      # found the violating action in our list of actions
+                                    self.evaluated_keys.append(f"statement/[{stmt_idx}]/actions/[{action_idx}]/")
+                                    break
+        except Exception as e:
+            logging.warning(f'Failed enriching cloudsplaining evaluated keys due to: {e}')

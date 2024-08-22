@@ -29,7 +29,6 @@ class BaseTerraformCloudsplainingIAMScanner:
                 violations = self.cloudsplaining_analysis(policy_document)
                 if violations and hasattr(self, 'evaluated_keys'):
                     self.cloudsplaining_enrich_evaluated_keys(policy_document, violations)
-
             except Exception:
                 # this might occur with templated iam policies where ARN is not in place or similar
                 logging.debug(f"could not run cloudsplaining analysis on policy {conf}")
@@ -38,29 +37,6 @@ class BaseTerraformCloudsplainingIAMScanner:
                 logging.debug(f"detailed cloudsplainging finding: {json.dumps(violations, indent=2, default=str)}")
                 return CheckResult.FAILED
         return CheckResult.PASSED
-
-    def cloudsplaining_enrich_evaluated_keys(self, policy: PolicyDocument,
-                                             violating_actions: Union[List[str], List[Dict[str, Any]]]) -> None:
-        try:
-            # in case we have violating actions for this policy we start looking for it through the statements
-            for stmt_idx, statement in enumerate(policy.statements):
-                actions = statement.statement.get('Action')  # get the actions for this statement
-                if actions:
-                    if isinstance(actions, str):
-                        for violating_action in violating_actions:
-                            if fnmatch.fnmatch(violating_action, actions):  # found the violating action in our list of actions
-                                self.evaluated_keys = [f"policy/Statement/[{stmt_idx}]/Action"]
-                                break
-                    if isinstance(actions, list):
-                        for action_idx, action in enumerate(actions):      # go through the actions of this statement and try to match one violation
-                            for violating_action in violating_actions:
-                                if fnmatch.fnmatch(violating_action, action):      # found the violating action in our list of actions
-                                    self.evaluated_keys.append(
-                                        f"policy/Statement/[{stmt_idx}]/Action/[{action_idx}]/"
-                                    )
-                                    break
-        except Exception as e:
-            logging.warning(f'Failed enriching cloudsplaining evaluated keys due to: {e}')
 
     @property
     @abstractmethod
@@ -77,4 +53,9 @@ class BaseTerraformCloudsplainingIAMScanner:
 
     @abstractmethod
     def cloudsplaining_analysis(self, policy: PolicyDocument) -> Union[List[str], List[Dict[str, Any]]]:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def cloudsplaining_enrich_evaluated_keys(self, policy: PolicyDocument,
+                                             violating_actions: Union[List[str], List[Dict[str, Any]]]) -> None:
         raise NotImplementedError()
