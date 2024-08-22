@@ -10,6 +10,7 @@ from checkov.runner_filter import RunnerFilter
 from checkov.terraform.module_loading.content import ModuleContent
 from checkov.terraform.module_loading.registry import module_loader_registry
 from checkov.terraform.plan_runner import Runner as tf_plan_runner
+from checkov.terraform.tf_parser import TFParser
 
 
 class TestRunnerRegistryEnrichment(unittest.TestCase):
@@ -166,6 +167,7 @@ def test_enrichment_of_plan_report_with_external_modules(mocker: MockerFixture):
         checks=allowed_checks,
         framework=["terraform_plan"],
         download_external_modules=True,
+        external_modules_download_path="example/path",
     )
     runner_registry = RunnerRegistry(banner, runner_filter, tf_plan_runner())
 
@@ -180,6 +182,7 @@ def test_enrichment_of_plan_report_with_external_modules(mocker: MockerFixture):
             )
         }
 
+    parse_directory_spy = mocker.spy(TFParser, "parse_directory")
     mocker.patch("checkov.terraform.tf_parser.load_tf_modules", side_effect=_load_tf_modules)
 
     # when
@@ -198,6 +201,10 @@ def test_enrichment_of_plan_report_with_external_modules(mocker: MockerFixture):
 
     assert {c.check_id for c in report.passed_checks} == {"CKV_AWS_66"}
     assert {c.check_id for c in report.skipped_checks} == {"CKV_AWS_158"}
+
+    parse_directory_spy.assert_called()
+    call_args = parse_directory_spy.call_args
+    assert call_args.kwargs["external_modules_download_path"] == "example/path"
 
 
 if __name__ == "__main__":
