@@ -49,14 +49,14 @@ class BaseTerraformCloudsplainingIAMScanner:
                     if isinstance(actions, str):
                         for violating_action in violating_actions:
                             if fnmatch.fnmatch(violating_action, actions):  # found the violating action in our list of actions
-                                self.evaluated_keys = [f"Properties/PolicyDocument/Statement/[{stmt_idx}]/Action"]
+                                self.evaluated_keys = [f"policy/Statement/[{stmt_idx}]/Action"]
                                 break
                     if isinstance(actions, list):
                         for action_idx, action in enumerate(actions):      # go through the actions of this statement and try to match one violation
                             for violating_action in violating_actions:
                                 if fnmatch.fnmatch(violating_action, action):      # found the violating action in our list of actions
                                     self.evaluated_keys.append(
-                                        f"Properties/PolicyDocument/Statement/[{stmt_idx}]/Action/[{action_idx}]/"
+                                        f"policy/Statement/[{stmt_idx}]/Action/[{action_idx}]/"
                                     )
                                     break
         except Exception as e:
