@@ -6,31 +6,31 @@ definition:
   or:
     - cond_type: "attribute"
       resource_types:
-        - "aws_cloudfront_distribution"
-      attribute: "enabled"
+        - "AWS::CloudFront::Distribution"
+      attribute: "DistributionConfig.Enabled"
       operator: "equals"
       value: "false"
     - cond_type: "attribute"
       resource_types:
-        - "aws_cloudfront_distribution"
-      attribute: "origin.*.custom_origin_config"
+        - "AWS::CloudFront::Distribution"
+      attribute: "DistributionConfig.Origins.*.CustomOriginConfig"
       operator: "not_exists"
     - and:
       - cond_type: "attribute"
         resource_types:
-          - "aws_cloudfront_distribution"
-        attribute: origin[?(@.custom_origin_config.origin_protocol_policy != 'https-only')].domain_name
+          - "AWS::CloudFront::Distribution"
+        attribute: DistributionConfig.Origins[?(@.CustomOriginConfig.OriginProtocolPolicy != 'https-only')].DomainName
         operator: "jsonpath_not_contains"
         value: ".mediastore."
       - cond_type: "attribute"
         resource_types:
-          - "aws_cloudfront_distribution"
-        attribute: origin[?(@.custom_origin_config.origin_protocol_policy != 'https-only')].domain_name
+          - "AWS::CloudFront::Distribution"
+        attribute: DistributionConfig.Origins[?(@.CustomOriginConfig.OriginProtocolPolicy != 'https-only')].DomainName
         operator: "jsonpath_not_contains"
         value: ".mediapackage."
       - cond_type: "attribute"
         resource_types:
-          - "aws_cloudfront_distribution"
-        attribute: origin[?(@.custom_origin_config.origin_protocol_policy != 'https-only')].domain_name
+          - "AWS::CloudFront::Distribution"
+        attribute: DistributionConfig.Origins[?(@.CustomOriginConfig.OriginProtocolPolicy != 'https-only')].DomainName
         operator: "jsonpath_not_contains"
         value: ".elb."

@@ -1,0 +1,9 @@
+pass:
+  - "AWS::CloudFront::Distribution.ExamplePassDisabledDistribution"
+  - "AWS::CloudFront::Distribution.ExamplePassNoCustomOriginDistribution"
+  - "AWS::CloudFront::Distribution.ExamplePassHttpsOnlyDistribution"
+  - "AWS::CloudFront::Distribution.ExamplePassDomainDistribution"
+fail:
+  - "AWS::CloudFront::Distribution.ExampleFailDistribution"
+  - "AWS::CloudFront::Distribution.ExampleFailOneGoodOneBadDistribution"
+  - "AWS::CloudFront::Distribution.ExampleFailOneMissingOneBadDistribution"
