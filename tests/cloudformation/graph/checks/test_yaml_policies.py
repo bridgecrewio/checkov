@@ -55,7 +55,7 @@ class TestYamlPolicies(TestYamlPoliciesBase):
         self.go("ACMWildcardDomainName")
 
     def test_CloudfrontOriginNotHTTPSOnly.yaml(self):
-        self.go("CloudfrontOriginNotHTTPSOnly.yaml")
+        self.go("CloudfrontOriginNotHTTPSOnly")
 
     def test_registry_load(self):
         registry = self.get_checks_registry()
