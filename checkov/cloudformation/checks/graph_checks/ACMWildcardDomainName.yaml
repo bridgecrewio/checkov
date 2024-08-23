@@ -19,6 +19,6 @@ definition:
       - cond_type: "attribute"
         resource_types:
           - "AWS::CertificateManager::Certificate"
-            attribute: "SubjectAlternativeNames.*"
+        attribute: "SubjectAlternativeNames.*"
         operator: "not_contains"
         value: "*"
