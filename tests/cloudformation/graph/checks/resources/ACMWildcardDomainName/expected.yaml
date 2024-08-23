@@ -1,0 +1,7 @@
+pass:
+  - "AWS::CertificateManager::Certificate.ExamplePassCertificate"
+  - "AWS::CertificateManager::Certificate.ExamplePass2Certificate"
+fail:
+  - "AWS::CertificateManager::Certificate.ExampleFailCertificate"
+  - "AWS::CertificateManager::Certificate.ExampleFailBadSubjectCertificate"
+  - "AWS::CertificateManager::Certificate.ExampleFailBadDomainCertificate"

@@ -6,19 +6,19 @@ definition:
   and:
     - cond_type: "attribute"
       resource_types:
-        - "aws_acm_certificate"
-      attribute: "domain_name"
+        - "AWS::CertificateManager::Certificate"
+      attribute: "DomainName"
       operator: "not_contains"
       value: "*"
     - or:
       - cond_type: "attribute"
         resource_types:
-          - "aws_acm_certificate"
-        attribute: "subject_alternative_names"
+          - "AWS::CertificateManager::Certificate"
+        attribute: "SubjectAlternativeNames"
         operator: "not_exists"
       - cond_type: "attribute"
         resource_types:
-          - "aws_acm_certificate"
-        attribute: "subject_alternative_names.*"
+          - "AWS::CertificateManager::Certificate"
+            attribute: "SubjectAlternativeNames.*"
         operator: "not_contains"
         value: "*"
