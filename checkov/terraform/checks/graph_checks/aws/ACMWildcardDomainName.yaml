@@ -1,0 +1,24 @@
+metadata:
+  id: "CKV2_AWS_71"
+  name: "Ensure access control lists for S3 buckets are disabled"
+  category: "NETWORKING"
+definition:
+  and:
+    - cond_type: "attribute"
+      resource_types:
+        - "aws_acm_certificate"
+      attribute: "domain_name"
+      operator: "not_contains"
+      value: "*"
+    - or:
+      - cond_type: "attribute"
+        resource_types:
+          - "aws_acm_certificate"
+        attribute: "subject_alternative_names"
+        operator: "not_exists"
+      - cond_type: "attribute"
+        resource_types:
+          - "aws_acm_certificate"
+        attribute: "subject_alternative_names.*"
+        operator: "not_contains"
+        value: "*"
