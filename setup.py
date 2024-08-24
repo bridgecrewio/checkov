@@ -74,7 +74,7 @@ setup(
         "termcolor>=1.1.0,<2.4.0",
         "junit-xml>=1.9,<2.0",
         "dpath==2.1.3",
-        "pyyaml>=6.0.0,<7.0.0",
+        "pyyaml<7.0.0,>=6.0.0",
         "boto3>=1.28.0,<2.0.0",
         "gitpython>=3.1.30,<4.0.0",
         "jmespath>=1.0.0,<2.0.0",
@@ -107,7 +107,7 @@ setup(
         "spdx-tools>=0.8.0,<0.9.0",
         "license-expression<31.0.0,>=30.1.0",
         "rustworkx>=0.13.0,<0.14.0",
-        "pydantic>=2.0.0,<3.0.0",
+        "pydantic<3.0.0,>=2.0.0",
         "urllib3",
     ],
     dependency_links=[],  # keep it empty, needed for pipenv-setup
