@@ -7,3 +7,7 @@ fail:
   - "AWS::CloudFront::Distribution.ExampleFailDistribution"
   - "AWS::CloudFront::Distribution.ExampleFailOneGoodOneBadDistribution"
   - "AWS::CloudFront::Distribution.ExampleFailOneMissingOneBadDistribution"
+expected:
+  - "DistributionConfig/Enabled"
+  - "DistributionConfig/Origins[?(@/CustomOriginConfig/OriginProtocolPolicy != 'https-only')]/DomainName"
+  - "DistributionConfig/Origins/*/CustomOriginConfig"
