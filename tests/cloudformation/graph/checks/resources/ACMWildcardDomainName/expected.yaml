@@ -5,3 +5,7 @@ fail:
   - "AWS::CertificateManager::Certificate.ExampleFailCertificate"
   - "AWS::CertificateManager::Certificate.ExampleFailBadSubjectCertificate"
   - "AWS::CertificateManager::Certificate.ExampleFailBadDomainCertificate"
+evaluated_keys:
+  - "DomainName"
+  - "SubjectAlternativeNames"
+  - "SubjectAlternativeNames/*"
