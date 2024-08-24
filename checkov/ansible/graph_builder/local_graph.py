@@ -142,8 +142,11 @@ class AnsibleLocalGraph(ObjectLocalGraph):
         file_paths = get_scannable_file_paths(root_folder=root_folder)
 
         for file_path in file_paths:
-            result = parse_file(f=file_path)
-            if result is not None:
-                definitions[file_path] = result[0]
+            try:
+                result = parse_file(f=file_path)
+                if result is not None:
+                    definitions[file_path] = result[0]
+            except Exception as err:
+                logging.warning(f'fail to pars file {file_path}, {err}')
 
         return definitions

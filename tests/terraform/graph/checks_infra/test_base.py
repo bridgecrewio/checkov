@@ -39,7 +39,8 @@ class TestBaseSolver(TestCase):
 def verify_report(report, expected_results):
     for check_id in expected_results:
         found = False
-        for resource in expected_results[check_id]['should_pass']:
+        should_pass_checks = expected_results[check_id].get('should_pass', [])
+        for resource in should_pass_checks:
             for record in report.passed_checks:
                 if record.check_id == check_id and record.resource == resource:
                     found = True
@@ -47,7 +48,8 @@ def verify_report(report, expected_results):
             if not found:
                 return f"expected resource {resource} to pass in check {check_id}"
         found = False
-        for resource in expected_results[check_id]['should_fail']:
+        should_fail_checks = expected_results[check_id].get('should_fail', [])
+        for resource in should_fail_checks:
             for record in report.failed_checks:
                 if record.check_id == check_id and record.resource == resource:
                     found = True

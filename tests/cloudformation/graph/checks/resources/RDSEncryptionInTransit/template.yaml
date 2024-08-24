@@ -1,0 +1,58 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  DB2PassParam:
+    Type: "AWS::RDS::DBParameterGroup"
+    Properties:
+      Description: "My DB2 parameter group"
+      Family: "1db2-ae1"
+      Parameters:
+        db2comm: "SSL"
+    DeletionPolicy: Retain
+  DB2PassInstance:
+    Type: "AWS::RDS::DBInstance"
+    Properties:
+      DBParameterGroupName:
+        Ref: "DB2PassParam"
+      ApplyImmediately: true
+  PostgresPassParam:
+    Type: "AWS::RDS::DBParameterGroup"
+    Properties:
+      Description: "Description"
+      Family: "postgres123"
+      Parameters:
+        rds.force_ssl: "1"
+    DeletionPolicy: Retain
+  PostgresPassInstance:
+    Type: "AWS::RDS::DBInstance"
+    Properties:
+      DBParameterGroupName:
+        Ref: "PostgresPassParam"
+      ApplyImmediately: true
+  PostgresFailParam0:
+    Type: "AWS::RDS::DBParameterGroup"
+    Properties:
+      Description: "Description"
+      Family: "postgres123"
+      Parameters:
+        rds.force_ssl: "0"
+    DeletionPolicy: Retain
+  PostgresFailParam0Instance:
+    Type: "AWS::RDS::DBInstance"
+    Properties:
+      DBParameterGroupName:
+        Ref: "PostgresFailParam0"
+      ApplyImmediately: true
+  PostgresFailParamMissing:
+    Type: "AWS::RDS::DBParameterGroup"
+    Properties:
+      Description: "Description"
+      Family: "postgres123"
+      Parameters:
+        something_else: "0"
+    DeletionPolicy: Retain
+  PostgresFailParamMissingInstance:
+    Type: "AWS::RDS::DBInstance"
+    Properties:
+      DBParameterGroupName:
+        Ref: "PostgresFailParamMissing"
+      ApplyImmediately: true

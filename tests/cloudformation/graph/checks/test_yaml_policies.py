@@ -48,6 +48,9 @@ class TestYamlPolicies(TestYamlPoliciesBase):
     def test_AppSyncProtectedByWAF(self):
         self.go("AppSyncProtectedByWAF")
 
+    def test_RDSEncryptionInTransit(self):
+        self.go("RDSEncryptionInTransit")
+
     def test_registry_load(self):
         registry = self.get_checks_registry()
         self.assertGreater(len(registry.checks), 0)
