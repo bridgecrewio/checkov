@@ -19,6 +19,7 @@ from urllib.parse import urlparse
 import boto3
 import dpath
 import urllib3
+import urllib.parse
 from botocore.config import Config
 from botocore.exceptions import ClientError
 from cachetools import cached, TTLCache
@@ -57,7 +58,7 @@ from checkov.common.util.http_utils import (
     REQUEST_READ_TIMEOUT,
     REQUEST_RETRIES,
 )
-from checkov.common.util.type_forcers import convert_prisma_policy_filter_to_dict, convert_str_to_bool
+from checkov.common.util.type_forcers import convert_prisma_policy_filter_to_params, convert_str_to_bool
 from checkov.version import version as checkov_version
 
 if TYPE_CHECKING:
@@ -67,7 +68,7 @@ if TYPE_CHECKING:
     from checkov.secrets.coordinator import EnrichedSecret
     from mypy_boto3_s3.client import S3Client
     from typing_extensions import TypeGuard
-    from checkov.common.sast.report_types import Match
+    from checkov.common.sast.report_types import Match, SkippedCheck
 
 SLEEP_SECONDS = 1
 
@@ -85,8 +86,19 @@ ASSUME_ROLE_UNUATHORIZED_MESSAGE = 'is not authorized to perform: sts:AssumeRole
 FileToPersist = namedtuple('FileToPersist', 'full_file_path s3_file_key')
 
 DEFAULT_REGION = "us-west-2"
-GOV_CLOUD_REGION = 'us-gov-west-1'
 PRISMA_GOV_API_URL = 'https://api.gov.prismacloud.io'
+JAKARTA_API_URL = 'https://api.id.prismacloud.io'
+
+API_URL_REGION_MAP = {
+    PRISMA_GOV_API_URL: 'us-gov-west-1',
+    JAKARTA_API_URL: 'ap-southeast-3'
+}
+
+REGIONS_URL_NOT_SUPPORT_S3_ACCELERATE = {
+    PRISMA_GOV_API_URL,
+    JAKARTA_API_URL
+}
+
 MAX_RETRIES = 40
 
 CI_METADATA_EXTRACTOR = registry.get_extractor()
@@ -457,9 +469,10 @@ class BcPlatformIntegration:
 
         region = DEFAULT_REGION
         use_accelerate_endpoint = True
-        if self.prisma_api_url == PRISMA_GOV_API_URL:
-            region = GOV_CLOUD_REGION
+
+        if self.prisma_api_url in REGIONS_URL_NOT_SUPPORT_S3_ACCELERATE:
             use_accelerate_endpoint = False
+            region = API_URL_REGION_MAP[self.prisma_api_url]
 
         try:
             config = Config(
@@ -638,6 +651,23 @@ class BcPlatformIntegration:
 
                 return
 
+    def adjust_sast_skipped_checks_path(self, skipped_checks_by_file: Dict[str, List[SkippedCheck]]) -> None:
+        for filepath in list(skipped_checks_by_file.keys()):
+            new_filepath = None
+            for dir in self.scan_dir:
+                if filepath.startswith(os.path.abspath(dir)):
+                    file_dir = '/'.join(filepath.split('/')[0:-1])
+                    new_filepath = filepath.replace(os.path.abspath(file_dir), self.repo_path)  # type: ignore
+                    break
+            for file in self.scan_file:
+                if filepath == os.path.abspath(file):
+                    file_dir = '/'.join(filepath.split('/')[0:-1])
+                    new_filepath = filepath.replace(os.path.abspath(file_dir), self.repo_path)  # type: ignore
+                    break
+            if new_filepath:
+                skipped_checks_by_file[new_filepath] = skipped_checks_by_file[filepath]
+                skipped_checks_by_file.pop(filepath)
+
     @staticmethod
     def _delete_code_block_from_sast_report(report: Dict[str, Any]) -> None:
         if isinstance(report, dict):
@@ -667,6 +697,8 @@ class BcPlatformIntegration:
                 for _, match in match_by_check.items():
                     for m in match.matches:
                         self.adjust_sast_match_location_path(m)
+                self.adjust_sast_skipped_checks_path(report.sast_report.skipped_checks_by_file)
+
                 sast_scan_reports[report.check_type] = report.sast_report.model_dump(mode='json')
             if self.on_prem:
                 BcPlatformIntegration._delete_code_block_from_sast_report(sast_scan_reports)
@@ -957,7 +989,8 @@ class BcPlatformIntegration:
             self.get_public_run_config()
 
     def _get_run_config_query_params(self) -> str:
-        return f'module={"bc" if self.is_bc_token(self.bc_api_key) else "pc"}&enforcementv2=true'
+        # ignore mypy warning that this can be null
+        return f'module={"bc" if self.is_bc_token(self.bc_api_key) else "pc"}&enforcementv2=true&repoId={urllib.parse.quote(self.repo_id)}'  # type: ignore
 
     def get_run_config_url(self) -> str:
         return f'{self.platform_run_config_url}?{self._get_run_config_query_params()}'
@@ -1132,16 +1165,17 @@ class BcPlatformIntegration:
                 return filtered_policies
 
             logging.debug(f'Prisma policy URL: {self.prisma_policies_url}')
-            query_params = convert_prisma_policy_filter_to_dict(policy_filter)
+            query_params = convert_prisma_policy_filter_to_params(policy_filter)
             if self.is_valid_policy_filter(query_params, valid_filters=self.get_prisma_policy_filters()):
                 # If enabled and subtype are not explicitly set, use the only acceptable values.
-                query_params['policy.enabled'] = True
-                query_params['policy.subtype'] = 'build'
+                self.add_static_policy_filters(query_params)
+                logging.debug(f'Filter query params: {query_params}')
+
                 request = self.http.request(  # type:ignore[no-untyped-call]
                     "GET",
                     self.prisma_policies_url,
                     headers=headers,
-                    fields=query_params,
+                    fields=tuple(query_params),
                 )
                 logging.debug("Got Prisma build policy metadata")
                 filtered_policies = json.loads(request.data.decode("utf8"))
@@ -1150,6 +1184,17 @@ class BcPlatformIntegration:
             logging.warning(
                 f"Failed to get prisma build policy metadata from {self.prisma_policies_url}{response_message}", exc_info=True)
         return filtered_policies
+
+    @staticmethod
+    def add_static_policy_filters(query_params: list[tuple[str, str]]) -> list[tuple[str, str]]:
+        """
+        Adds policy.enabled = true, policy.subtype = build to the query params, if these are not already present. Modifies the list in place and also returns it.
+        """
+        if not any(p[0] == 'policy.enabled' for p in query_params):
+            query_params.append(('policy.enabled', 'true'))
+        if not any(p[0] == 'policy.subtype' for p in query_params):
+            query_params.append(('policy.subtype', 'build'))
+        return query_params
 
     def get_prisma_policy_filters(self) -> Dict[str, Dict[str, Any]]:
         request = None
@@ -1178,7 +1223,7 @@ class BcPlatformIntegration:
             return {}
 
     @staticmethod
-    def is_valid_policy_filter(policy_filter: dict[str, str], valid_filters: dict[str, dict[str, Any]] | None = None) -> bool:
+    def is_valid_policy_filter(policy_filter: list[tuple[str, str]], valid_filters: dict[str, dict[str, Any]] | None = None) -> bool:
         """
         Validates only the filter names
         """
@@ -1188,7 +1233,7 @@ class BcPlatformIntegration:
             return False
         if not valid_filters:
             return False
-        for filter_name, filter_value in policy_filter.items():
+        for filter_name, filter_value in policy_filter:
             if filter_name not in valid_filters.keys():
                 logging.warning(f"Invalid filter name: {filter_name}")
                 logging.warning(f"Available filter names: {', '.join(valid_filters.keys())}")
@@ -1384,6 +1429,12 @@ class BcPlatformIntegration:
             # If there are any query parameters, append them to the URI
             if parsed_url.query:
                 uri = f"{uri}?{parsed_url.query}"
+
+                # First encoding
+                encoded_uri = urllib.parse.quote(uri)
+
+                # Second encoding
+                uri = urllib.parse.quote(encoded_uri)
             # Check if the URL already contains GET parameters.
             if "?" in access_saml_url:
                 report_url = f"{access_saml_url}&{relay_state_param_name}={uri}"

@@ -51,7 +51,7 @@ class BaseAttributeSolver(BaseSolver):
 
         if isinstance(graph_connector, DiGraph):
             for _, data in graph_connector.nodes(data=True):
-                if (not self.resource_types or data.get(CustomAttributes.RESOURCE_TYPE) in self.resource_types) \
+                if self.resource_type_pred(data, self.resource_types) \
                         and data.get(CustomAttributes.BLOCK_TYPE) in SUPPORTED_BLOCK_TYPES:
                     jobs.append(executer.submit(
                         self._process_node, data, passed_vertices, failed_vertices, unknown_vertices))
@@ -60,8 +60,7 @@ class BaseAttributeSolver(BaseSolver):
             return passed_vertices, failed_vertices, unknown_vertices
 
         for _, data in graph_connector.nodes():
-            if (not self.resource_types or data.get(CustomAttributes.RESOURCE_TYPE) in self.resource_types) \
-                    and data.get(CustomAttributes.BLOCK_TYPE) in SUPPORTED_BLOCK_TYPES:
+            if self.resource_type_pred(data, self.resource_types) and data.get(CustomAttributes.BLOCK_TYPE) in SUPPORTED_BLOCK_TYPES:
                 jobs.append(executer.submit(
                     self._process_node, data, passed_vertices, failed_vertices, unknown_vertices))
 
@@ -151,10 +150,14 @@ class BaseAttributeSolver(BaseSolver):
         else:
             failed_vertices.append(data)
 
+    # override in case we need to check all values in a list
+    def should_check_all_condition(self) -> bool:
+        return self.is_jsonpath_check
+
     def _evaluate_attribute_matches(
         self, vertex: dict[str, Any], attribute_matches: list[str], filtered_attribute_matches: list[str]
     ) -> bool | None:
-        if self.is_jsonpath_check:
+        if self.should_check_all_condition():
             if self.resource_type_pred(vertex, self.resource_types) and all(
                 self._get_operation(vertex=vertex, attribute=attr) for attr in filtered_attribute_matches
             ):
