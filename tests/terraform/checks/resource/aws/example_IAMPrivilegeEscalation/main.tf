@@ -9,7 +9,7 @@ resource "aws_iam_policy" "privilege_escalation" {
       {
         "Effect": "Allow",
         "Action": [
-          "iam:updateloginprofile"
+          "iam:UpdateLoginProfile"
         ],
         "Resource": "*"
       }
