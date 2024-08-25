@@ -35,7 +35,7 @@ class TestcloudsplainingPrivilegeEscalation(unittest.TestCase):
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
-        self.assertEqual(['statement/[0]/actions/[0]/'], report.failed_checks[0].check_result.get('evaluated_keys'))
+        self.assertEqual(['statement/[0]/actions/[1]/'], report.failed_checks[0].check_result.get('evaluated_keys'))
 
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)
