@@ -54,13 +54,13 @@ class BaseTerraformCloudsplainingResourceIAMCheck(BaseResourceCheck, BaseTerrafo
                     if isinstance(actions, str):
                         for violating_action in violating_actions:
                             if fnmatch.fnmatch(violating_action.lower(), actions.lower()):  # found the violating action in our list of actions
-                                self.evaluated_keys = [f"policy/Statement/[{stmt_idx}]/Action"]
-                                break
+                                self.evaluated_keys.append(f"policy/Statement/[{stmt_idx}]/Action")
+                                return
                     if isinstance(actions, list):
                         for action_idx, action in enumerate(actions):  # go through the actions of this statement and try to match one violation
                             for violating_action in violating_actions:
                                 if isinstance(action, str) and fnmatch.fnmatch(violating_action.lower(), action.lower()):  # found the violating action in our list of actions
-                                    self.evaluated_keys.append(f"policy/Statement/[{stmt_idx}]/Action/[{action_idx}]/")
-                                    break
+                                    self.evaluated_keys.append(f"policy/Statement/[{stmt_idx}]/Action")
+                                    return
         except Exception as e:
             logging.warning(f'Failed enriching cloudsplaining evaluated keys due to: {e}')

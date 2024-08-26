@@ -221,6 +221,7 @@ def clean_parser_types_lst(values: list[Any]) -> list[Any]:
             str_values_in_lst.append(val)
         else:
             result_values.append(val)
+    str_values_in_lst.sort()
     result_values.extend(str_values_in_lst)
     return result_values
 
