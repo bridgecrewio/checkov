@@ -28,11 +28,10 @@ class NetworkIPsecAlgorithms(BaseResourceCheck):
             for algo in algorithms:
 
                 # Check for insecure algorithms, including null as a string (not a null value)
-                if isinstance(algo, list):
-                    for algo_item in algo:
-                        if algo_item in ('des', '3des', 'aes-128-cbc', 'aes-192-cbc', 'aes-256-cbc', 'null'):
-                            # Fail if any insecure algorithms are defined for use
-                            return CheckResult.FAILED
+                if algo[0] in ('des', '3des', 'aes-128-cbc', 'aes-192-cbc', 'aes-256-cbc', 'null'):
+
+                    # Fail if any insecure algorithms are defined for use
+                    return CheckResult.FAILED
 
             # If no fails have been found, this is a pass
             return CheckResult.PASSED

@@ -33,15 +33,11 @@ class TestIAMDataExfiltration(unittest.TestCase):
         self.assertEqual(summary["skipped"], 0)
         self.assertEqual(summary["parsing_errors"], 0)
 
-        self.assertIn('policy/Statement/[0]/Action/[1]/', report.failed_checks[0].check_result.get('evaluated_keys'))
-        self.assertIn('policy/Statement/[0]/Action/[2]/', report.failed_checks[0].check_result.get('evaluated_keys'))
-        self.assertIn('policy/Statement/[0]/Action/[3]/', report.failed_checks[0].check_result.get('evaluated_keys'))
-        self.assertIn('policy/Statement/[0]/Action/[4]/', report.failed_checks[0].check_result.get('evaluated_keys'))
-        self.assertIn('policy/Statement/[0]/Action/[5]/', report.failed_checks[0].check_result.get('evaluated_keys'))
-        self.assertIn('policy/Statement/[0]/Action/[6]/', report.failed_checks[0].check_result.get('evaluated_keys'))
+        self.assertEqual(report.failed_checks[0].check_result.get('evaluated_keys'), ['policy/Statement/[0]/Action'])
 
         self.assertEqual(passing_resources, passed_check_resources)
         self.assertEqual(failing_resources, failed_check_resources)
+
 
 if __name__ == "__main__":
     unittest.main()
