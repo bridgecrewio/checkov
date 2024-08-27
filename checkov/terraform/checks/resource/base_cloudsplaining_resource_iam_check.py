@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import fnmatch
+import logging
 from abc import ABC
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Union
 
 from cloudsplaining.scan.policy_document import PolicyDocument
 
@@ -41,3 +43,24 @@ class BaseTerraformCloudsplainingResourceIAMCheck(BaseResourceCheck, BaseTerrafo
             policy = conf['policy'][0]
 
         return PolicyDocument(policy)
+
+    def cloudsplaining_enrich_evaluated_keys(self, policy: PolicyDocument,
+                                             violating_actions: Union[List[str], List[Dict[str, Any]]]) -> None:
+        try:
+            # in case we have violating actions for this policy we start looking for it through the statements
+            for stmt_idx, statement in enumerate(policy.statements):
+                actions = statement.statement.get('Action')  # get the actions for this statement
+                if actions:
+                    if isinstance(actions, str):
+                        for violating_action in violating_actions:
+                            if fnmatch.fnmatch(violating_action.lower(), actions.lower()):  # found the violating action in our list of actions
+                                self.evaluated_keys.append(f"policy/Statement/[{stmt_idx}]/Action")
+                                return
+                    if isinstance(actions, list):
+                        for action in actions:  # go through the actions of this statement and try to match one violation
+                            for violating_action in violating_actions:
+                                if isinstance(action, str) and fnmatch.fnmatch(violating_action.lower(), action.lower()):  # found the violating action in our list of actions
+                                    self.evaluated_keys.append(f"policy/Statement/[{stmt_idx}]/Action")
+                                    return
+        except Exception as e:
+            logging.warning(f'Failed enriching cloudsplaining evaluated keys due to: {e}')
