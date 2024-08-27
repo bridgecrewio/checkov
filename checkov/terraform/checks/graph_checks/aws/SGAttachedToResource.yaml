@@ -23,6 +23,8 @@ definition:
         - aws_db_instance
         - aws_dms_replication_instance
         - aws_docdb_cluster
+        - aws_docdb_cluster
+        - aws_docdbelastic_cluster
         - aws_ec2_client_vpn_endpoint
         - aws_ec2_client_vpn_network_association
         - aws_ec2_spot_fleet_request
