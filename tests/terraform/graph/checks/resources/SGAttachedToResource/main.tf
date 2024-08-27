@@ -157,6 +157,31 @@ resource "aws_docdb_cluster" "pass_docdb" {
   vpc_security_group_ids = [aws_security_group.pass_docdb.id]
 }
 
+# DocDB Elastic
+
+resource "aws_security_group" "pass_docdbelastic" {
+  ingress {
+    description = "TLS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_docdbelastic_cluster" "pass_docdbelastic" {
+  name = "docdbelastic_cluster"
+
+  admin_user_name     = "admin"
+  admin_user_password = "4dm1np4ssw0rd"
+
+  auth_type      = "PLAIN_TEXT"
+  shard_capacity = 2
+  shard_count    = 1
+
+  vpc_security_group_ids = [aws_security_group.pass_docdbelastic.id]
+}
+
 # EC2
 
 resource "aws_security_group" "pass_ec2" {
