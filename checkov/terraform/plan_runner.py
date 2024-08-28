@@ -32,7 +32,6 @@ from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.plan_parser import TF_PLAN_RESOURCE_ADDRESS
 from checkov.terraform.plan_utils import create_definitions, build_definitions_context
 from checkov.terraform.deep_analysis_plan_graph_manager import DeepAnalysisGraphManager
-from common.util import data_structures_utils
 
 _TerraformPlanContext: TypeAlias = "dict[str, dict[str, Any]]"
 _TerraformPlanDefinitions: TypeAlias = "dict[str, dict[str, Any]]"

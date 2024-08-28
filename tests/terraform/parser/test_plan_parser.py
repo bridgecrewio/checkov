@@ -26,8 +26,8 @@ class TestPlanFileParser(unittest.TestCase):
         valid_plan_path = current_dir + "/resources/plan_tags/tfplan.json"
         tf_definition, _ = parse_tf_plan(valid_plan_path, {})
         file_provider_definition = tf_definition['provider']
-        self.assertTrue(file_provider_definition) # assert a provider exists
-        assert file_provider_definition[0].get('aws',{}).get('region', None) == 'us-west-2'
+        self.assertTrue(file_provider_definition)  # assert a provider exists
+        assert file_provider_definition[0].get('aws', {}).get('default').get('region', None) == ['us-west-2']
 
     def test_more_tags_values_are_flattened(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
