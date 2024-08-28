@@ -4,7 +4,7 @@ from typing import List, Dict, Any, Optional
 
 from checkov.common.checks.base_check import BaseCheck
 from checkov.common.models.enums import CheckCategories, CheckResult
-from checkov.terraform.checks.provider.registry import provider_registry
+from checkov.terraform.checks.provider.registry import provider_registry, plan_provider_registry
 
 
 class BaseProviderCheck(BaseCheck):
@@ -26,6 +26,7 @@ class BaseProviderCheck(BaseCheck):
         )
         self.supported_provider = supported_provider
         provider_registry.register(self)
+        plan_provider_registry.register(self)
 
     def scan_entity_conf(self, conf: Dict[str, List[Any]], entity_type: str) -> CheckResult:
         return self.scan_provider_conf(conf)

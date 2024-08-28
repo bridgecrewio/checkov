@@ -26,11 +26,13 @@ from checkov.common.output.report import Report, merge_reports
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.base_runner import BaseTerraformRunner
 from checkov.terraform.checks.data.registry import data_registry
+from checkov.terraform.checks.provider.registry import plan_provider_registry
 from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.plan_parser import TF_PLAN_RESOURCE_ADDRESS
 from checkov.terraform.plan_utils import create_definitions, build_definitions_context
 from checkov.terraform.deep_analysis_plan_graph_manager import DeepAnalysisGraphManager
+from common.util import data_structures_utils
 
 _TerraformPlanContext: TypeAlias = "dict[str, dict[str, Any]]"
 _TerraformPlanDefinitions: TypeAlias = "dict[str, dict[str, Any]]"
@@ -95,6 +97,7 @@ class Runner(BaseTerraformRunner[_TerraformPlanDefinitions, _TerraformPlanContex
     block_type_registries = {  # noqa: CCE003  # a static attribute
         'resource': resource_registry,
         'data': data_registry,
+        'provider': plan_provider_registry
     }
 
     def run(
@@ -199,8 +202,8 @@ class Runner(BaseTerraformRunner[_TerraformPlanDefinitions, _TerraformPlanContex
             logging.debug(f"Scanning file: {scanned_file}")
             for block_type in definition.keys():
                 if block_type in self.block_type_registries.keys():
-                    self.run_block(definition[block_type], None, full_file_path, root_folder, report, scanned_file,
-                                   block_type, runner_filter)
+                    self.run_block(definition[block_type], self.context, full_file_path, root_folder,
+                                   report, scanned_file, block_type, runner_filter)
 
     @staticmethod
     def _get_file_path(full_file_path: TFDefinitionKeyType, root_folder: str | pathlib.Path) -> tuple[str, str]:
@@ -237,8 +240,8 @@ class Runner(BaseTerraformRunner[_TerraformPlanDefinitions, _TerraformPlanContex
                 entity_context = self.get_entity_context(definition_path, full_file_path, entity)
                 entity_lines_range = [entity_context.get('start_line', 1), entity_context.get('end_line', 1)]
                 entity_code_lines = entity_context.get('code_lines', [])
-                entity_address = entity_context['address']
                 _, _, entity_config = registry.extract_entity_details(entity)
+                entity_address = entity_context.get('address') or entity_context.get(CustomAttributes.TF_RESOURCE_ADDRESS)
 
                 self._assign_graph_to_registry(registry)
                 results = registry.scan(scanned_file, entity, [], runner_filter, report_type=CheckType.TERRAFORM_PLAN)
@@ -290,9 +293,7 @@ class Runner(BaseTerraformRunner[_TerraformPlanDefinitions, _TerraformPlanContex
             raw_context['definition_path'] = entity[CustomAttributes.BLOCK_NAME].split('.')
         return raw_context
 
-    def get_entity_context(
-        self, definition_path: list[str], full_file_path: str, entity: dict[str, Any]
-    ) -> dict[str, Any]:
+    def get_entity_context(self, definition_path: list[str], full_file_path: str, entity: dict[str, Any]) -> dict[str, Any]:
         if not self.context:
             return {}
 

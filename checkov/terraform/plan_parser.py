@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional, Tuple, cast
 
 from checkov.common.graph.graph_builder import CustomAttributes
 from checkov.common.parsers.node import ListNode
-from checkov.common.util.consts import LINE_FIELD_NAMES, TRUE_AFTER_UNKNOWN
+from checkov.common.util.consts import LINE_FIELD_NAMES, TRUE_AFTER_UNKNOWN, START_LINE, END_LINE
 from checkov.common.util.type_forcers import force_list
 from checkov.terraform.context_parsers.tf_plan import parse
 
@@ -318,12 +318,20 @@ def _get_provider(template: dict[str, dict[str, Any]]) -> dict[str, dict[str, An
                 # Not a provider, skip
                 continue
             provider_map[provider_key] = {}
+            provider_alias = provider_data.get("alias", "default")
+            provider_map[provider_key][provider_alias] = {}
+            provider_map_entry = provider_map[provider_key][provider_alias]
             for field, value in provider_data.get('expressions', {}).items():
                 if field in LINE_FIELD_NAMES or not isinstance(value, dict):
                     continue  # don't care about line #s or non dicts
                 expression_value = value.get('constant_value', None)
                 if expression_value:
-                    provider_map[provider_key][field] = expression_value
+                    if isinstance(expression_value, str):
+                        expression_value = [expression_value]
+                    provider_map_entry[field] = expression_value
+            provider_map_entry['start_line'] = [provider_data.get(START_LINE, 1) - 1]
+            provider_map_entry['end_line'] = [provider_data.get(END_LINE, 1)]
+            provider_map_entry[TF_PLAN_RESOURCE_ADDRESS] = f"{provider_key}.{provider_alias}"
 
     return provider_map
 

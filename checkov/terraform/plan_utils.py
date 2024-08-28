@@ -65,7 +65,7 @@ def build_definitions_context(
     definitions_raw: Dict[str, List[Tuple[int, str]]]
 ) -> Dict[str, Dict[str, Any]]:
     definitions_context: dict[str, dict[str, Any]] = defaultdict(dict)
-    supported_block_types = ("data", "resource")
+    supported_block_types = ("data", "resource", "provider")
     for full_file_path, definition in definitions.items():
         for block_type in supported_block_types:
             entities = definition.get(block_type, [])
