@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import atexit
+from email.policy import default  # noqa: F401
 import itertools
 import json
 import logging
@@ -53,7 +54,7 @@ from checkov.common.runners.runner_registry import RunnerRegistry
 from checkov.common.sast.consts import SastLanguages
 from checkov.common.typing import LibraryGraph
 from checkov.common.util import prompt
-from checkov.common.util.banner import banner as checkov_banner, tool as checkov_tool
+from checkov.common.util.banner import banner as checkov_banner, default_tool as default_tool
 from checkov.common.util.config_utils import get_default_config_paths
 from checkov.common.util.ext_argument_parser import ExtArgumentParser, flatten_csv
 from checkov.common.util.runner_dependency_handler import RunnerDependencyHandler
@@ -179,6 +180,7 @@ class Checkov:
         self.normalize_config()
 
     def normalize_config(self) -> None:
+
         if not self.config.bc_api_key and not self.config.include_all_checkov_policies:
             # makes it easier to pick out policies later if we can just always rely on this flag without other context
             logger.debug('No API key present; setting include_all_checkov_policies to True')
@@ -238,7 +240,7 @@ class Checkov:
             logging.debug('No framework specified; setting to none')
             return []
 
-    def run(self, banner: str = checkov_banner, tool: str = checkov_tool, source_type: SourceType | None = None) -> int | None:
+    def run(self, banner: str = checkov_banner, tool: str = default_tool, source_type: SourceType | None = None) -> int | None:
         self.run_metadata = {
             "checkov_version": version,
             "python_executable": sys.executable,
@@ -250,7 +252,10 @@ class Checkov:
             "Python_implementation": platform.python_implementation()
         }
 
-        logger.debug(f'Run metadata: {json.dumps(self.run_metadata, indent=2)}')
+        logger.debug(f'Run metadata: {json.dumps(self.run_metadata, indent=2)}')  # noqa: E501
+
+        if self.config.tool_name:  # if the user specifies a tool name, use that
+            tool = self.config.tool_name
         try:
             if self.config.add_check:
                 resp = prompt.Prompt()
@@ -845,5 +850,6 @@ class Checkov:
 
 
 if __name__ == '__main__':
+    test_args = ["tool-name"  "test"]
     ckv = Checkov()
     sys.exit(ckv.run())
