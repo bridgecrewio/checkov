@@ -180,7 +180,6 @@ class Checkov:
         self.normalize_config()
 
     def normalize_config(self) -> None:
-
         if not self.config.bc_api_key and not self.config.include_all_checkov_policies:
             # makes it easier to pick out policies later if we can just always rely on this flag without other context
             logger.debug('No API key present; setting include_all_checkov_policies to True')
@@ -850,6 +849,5 @@ class Checkov:
 
 
 if __name__ == '__main__':
-    test_args = ["tool-name"  "test"]
     ckv = Checkov()
     sys.exit(ckv.run())
