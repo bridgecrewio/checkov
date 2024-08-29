@@ -17,7 +17,7 @@ class DangerousGitSync(BaseK8sContainerCheck):
     def scan_container_conf(self, metadata: Dict[str, Any], conf: Dict[str, Any]) -> CheckResult:
         self.evaluated_container_keys = ["env"]
         if conf.get("env") and isinstance(conf.get("env"), list):
-            for env in conf.get("env"):
+            for env in conf.get("env", []):
                 if env.get("name") and env.get("name") == "GITSYNC_GIT":
                     return CheckResult.FAILED
         return CheckResult.PASSED
