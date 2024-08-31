@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import os
 import sys
+
 from checkov.common.util.type_forcers import convert_str_to_bool
 from checkov.common.sast.consts import SastLanguages
 
@@ -14,7 +15,7 @@ from checkov.common.runners.base_runner import BaseRunner
 from checkov.common.sast.consts import SUPPORT_FILE_EXT, FILE_EXT_TO_SAST_LANG, CDKLanguages, CDK_CHECKS_DIR_PATH
 from checkov.runner_filter import RunnerFilter
 from checkov.sast.checks_infra.base_registry import Registry
-from checkov.sast.engines.prisma_engine import PrismaEngine
+from checkov.sast.engines.prisma_engine import PrismaEngine, get_machine
 
 from typing import List, Optional
 
@@ -43,11 +44,11 @@ class Runner(BaseRunner[None, None, None]):
             runner_filter: Optional[RunnerFilter] = None,
             collect_skip_comments: bool = True) -> List[Report]:
 
-        if sys.platform.startswith('win'):
-            logger.warning('Skip SAST for windows')
-            # TODO: Enable SAST for windows runners.
+        # We support only windows amd
+        if sys.platform.startswith('win') and not get_machine() == "amd64":
+            logger.warning('Skip SAST for windows arm')
+            # TODO: Enable SAST for windows arm runners.
             return [Report(self.check_type)]
-
         if not runner_filter:
             logger.warning('no runner filter')
             return [Report(self.check_type)]
