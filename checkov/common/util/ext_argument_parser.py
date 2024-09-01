@@ -558,8 +558,8 @@ class ExtArgumentParser(configargparse.ArgumentParser):
                  "Set your number of findings that will receive enhanced guidelines using CKV_OPENAI_MAX_FINDINGS",
         )
         self.add(
-            "--tool-name",
-            default=None,
+            "--custom-tool-name",
+            default="Checkov",
             help="Add a tool name if you want your output to be tagged with a specific tool name,"
                  "this is useful when integrating with other tools such as uploading SARIF files to github code scanning"
         )

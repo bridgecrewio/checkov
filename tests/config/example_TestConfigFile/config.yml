@@ -23,6 +23,3 @@ soft-fail: True
 branch: "master"
 check:
   - "CKV_DOCKER_1"
-tool-name:
-  - "sample-tool-name"
-

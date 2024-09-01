@@ -113,7 +113,7 @@ class TestCLIArgs(unittest.TestCase):
         self.assertEqual(ckv.config.skip_framework, ['arm'])
 
         # try using a non-standard tool name 
-        argv = ['--tool-name', 'non_standard_name']
+        argv = ['--custom-tool-name', 'non_standard_name']
         ckv = Checkov(argv=argv)
         self.assertEqual(ckv.config.tool, ['non_standard_name'])
 

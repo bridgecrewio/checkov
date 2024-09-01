@@ -125,7 +125,7 @@ The output can be created via the output flag
 ```shell
 checkov -d . -o sarif
 ```
-The tool.driver.name field can be customised using the --tool-name flag
+The tool.driver.name field can be customised using the --custom-tool-name flag
 
 
 

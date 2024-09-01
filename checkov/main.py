@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import atexit
-from email.policy import default  # noqa: F401
 import itertools
 import json
 import logging
@@ -251,10 +250,10 @@ class Checkov:
             "Python_implementation": platform.python_implementation()
         }
 
-        logger.debug(f'Run metadata: {json.dumps(self.run_metadata, indent=2)}')  # noqa: E501
+        logger.debug(f'Run metadata: {json.dumps(self.run_metadata, indent=2)}')
 
-        if self.config.tool_name:  # if the user specifies a tool name, use that
-            tool = self.config.tool_name
+        if self.config.custom_tool_name:  # if the user specifies a tool name, use that
+            tool = self.config.custom_tool_name
         try:
             if self.config.add_check:
                 resp = prompt.Prompt()
