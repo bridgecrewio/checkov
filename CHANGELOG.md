@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.238...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.239...HEAD)
+
+## [3.2.239](https://github.com/bridgecrewio/checkov/compare/3.2.238...3.2.239) - 2024-08-29
+
+### Feature
+
+- **general:** Add multiple checks to match runtime checks - [#6680](https://github.com/bridgecrewio/checkov/pull/6680)
 
 ## [3.2.238](https://github.com/bridgecrewio/checkov/compare/3.2.236...3.2.238) - 2024-08-27
 
