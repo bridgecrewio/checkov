@@ -57,10 +57,6 @@ class Runner(BaseRunner[None, None, None]):
             bc_integration.setup_http_manager()
             bc_integration.set_s3_client()
 
-        # Todo remove when golang is stable in platform
-        if SastLanguages.GOLANG in runner_filter.sast_languages:
-            runner_filter.sast_languages.remove(SastLanguages.GOLANG)
-
         # registry get all the paths
         self.registry.set_runner_filter(runner_filter)
         self.registry.add_external_dirs(external_checks_dir)
