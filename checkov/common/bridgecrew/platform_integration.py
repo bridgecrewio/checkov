@@ -112,6 +112,7 @@ REQUEST_METHODS_TO_RETRY = ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'PUT', 'TRACE', 
 class BcPlatformIntegration:
     def __init__(self) -> None:
         self.clean()
+        self.config_asyncio()
 
     def clean(self) -> None:
         self.bc_api_key = read_key()
@@ -361,11 +362,10 @@ class BcPlatformIntegration:
                     timeout=self.http_timeout,
                     retries=self.http_retry,
                 )
-        self.config_http_manager()
         logging.debug('Successfully set up HTTP manager')
 
     @staticmethod
-    def config_http_manager():
+    def config_asyncio():
         # on windows aiodns needs SelectorEventLoop
         if sys.platform == 'win32':
             asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
