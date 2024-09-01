@@ -23,9 +23,11 @@ class BaseTerraformCloudsplainingIAMScanner:
                 if self.cache_key not in BaseTerraformCloudsplainingIAMScanner.policy_document_cache.keys():
                     policy = self.convert_to_iam_policy(conf)
                     BaseTerraformCloudsplainingIAMScanner.policy_document_cache[self.cache_key] = policy
-                violations = self.cloudsplaining_analysis(
-                    BaseTerraformCloudsplainingIAMScanner.policy_document_cache[self.cache_key]
-                )
+
+                policy_document: PolicyDocument = BaseTerraformCloudsplainingIAMScanner.policy_document_cache[self.cache_key]
+                violations = self.cloudsplaining_analysis(policy_document)
+                if violations and hasattr(self, 'evaluated_keys'):
+                    self.cloudsplaining_enrich_evaluated_keys(policy_document, violations)
             except Exception:
                 # this might occur with templated iam policies where ARN is not in place or similar
                 logging.debug(f"could not run cloudsplaining analysis on policy {conf}")
@@ -50,4 +52,9 @@ class BaseTerraformCloudsplainingIAMScanner:
 
     @abstractmethod
     def cloudsplaining_analysis(self, policy: PolicyDocument) -> Union[List[str], List[Dict[str, Any]]]:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def cloudsplaining_enrich_evaluated_keys(self, policy: PolicyDocument,
+                                             violating_actions: Union[List[str], List[Dict[str, Any]]]) -> None:
         raise NotImplementedError()
