@@ -469,7 +469,7 @@ class TestRunnerValid(unittest.TestCase):
         for check_list in [aws_checks, gcp_checks, azure_checks]:
             check_list.sort(reverse=True, key=lambda s: int(s.split('_')[-1]))
 
-        for i in range(1, len(aws_checks) + 4):
+        for i in range(1, len(aws_checks) + 3):
             if f'CKV2_AWS_{i}' == 'CKV2_AWS_17':
                 # CKV2_AWS_17 was overly keen and those resources it checks are created by default
                 continue
@@ -487,6 +487,9 @@ class TestRunnerValid(unittest.TestCase):
                 continue
             if f'CKV2_AWS_{i}' == 'CKV2_AWS_67':
                 # Too many edge cases for ways to get a KMS key connected to S3
+                continue
+            if f'CKV2_AWS_{i}' == 'CKV2_AWS_70':
+                # Added as a Python check
                 continue
             self.assertIn(f'CKV2_AWS_{i}', aws_checks,
                           msg=f'The new AWS violation should have the ID "CKV2_AWS_{i}"')
