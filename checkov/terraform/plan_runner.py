@@ -241,6 +241,9 @@ class Runner(BaseTerraformRunner[_TerraformPlanDefinitions, _TerraformPlanContex
                 entity_code_lines = entity_context.get('code_lines', [])
                 _, _, entity_config = registry.extract_entity_details(entity)
                 entity_address = entity_context.get('address') or entity_context.get(CustomAttributes.TF_RESOURCE_ADDRESS)
+                if not entity_address:
+                    logging.warning('tf plan resource address should not be empty')
+                    continue
 
                 self._assign_graph_to_registry(registry)
                 results = registry.scan(scanned_file, entity, [], runner_filter, report_type=CheckType.TERRAFORM_PLAN)
