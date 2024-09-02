@@ -152,7 +152,7 @@ class Runner(BaseRunner[None, None, None]):
                                           for suppression in suppressions if suppression['suppressionType'] == 'SecretsPolicy']
             if policies_list:
                 runnable_plugins: dict[str, str] = get_runnable_plugins(policies_list)
-                logging.info(f"Found {len(runnable_plugins)} runnable plugins")
+                logging.debug(f"Found {len(runnable_plugins)} runnable plugins")
                 if len(runnable_plugins) > 0:
                     plugins_index += 1
                 for name, runnable_plugin in runnable_plugins.items():
@@ -164,7 +164,7 @@ class Runner(BaseRunner[None, None, None]):
                         'path': f'file://{work_path}/runnable_plugin_{plugins_index}.py'
                     })
                     plugins_index += 1
-                    logging.info(f"Loaded runnable plugin {name}")
+                    logging.debug(f"Loaded runnable plugin {name}")
         # load internal regex detectors
         detector_path = f"{current_dir}/plugins/custom_regex_detector.py"
         logging.info(f"Custom detector found at {detector_path}. Loading...")
@@ -227,7 +227,7 @@ class Runner(BaseRunner[None, None, None]):
                 self.pbar.close()
 
             secret_records: dict[str, SecretsRecord] = {}
-            secrets_in_uuid_form = ['CKV_SECRET_116']
+            secrets_in_uuid_form = ['CKV_SECRET_116', 'CKV_SECRET_30']
             for key, secret in secrets:
                 check_id = secret.check_id if secret.check_id else SECRET_TYPE_TO_ID.get(secret.type)
                 if not check_id:
@@ -390,7 +390,7 @@ class Runner(BaseRunner[None, None, None]):
         try:
             start_time = datetime.datetime.now()
             file_results = [*scan.scan_file(full_file_path)]
-            logging.info(f'file {full_file_path} results len {len(file_results)}')
+            logging.debug(f'file {full_file_path} results len {len(file_results)}')
             end_time = datetime.datetime.now()
             run_time = end_time - start_time
             if run_time > datetime.timedelta(seconds=10):
