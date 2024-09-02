@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.241...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.242...HEAD)
+
+## [3.2.242](https://github.com/bridgecrewio/checkov/compare/3.2.241...3.2.242) - 2024-09-02
+
+### Feature
+
+- **general:** add support for windows 10 for aiohttp - [#6696](https://github.com/bridgecrewio/checkov/pull/6696)
 
 ## [3.2.241](https://github.com/bridgecrewio/checkov/compare/3.2.239...3.2.241) - 2024-09-01
 
