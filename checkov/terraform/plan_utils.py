@@ -76,7 +76,8 @@ def build_definitions_context(
                 if len(definition_path) > 1:
                     resource_type = definition_path[0]
                     resource_name = definition_path[1]
-                    entity_id = entity.get(resource_type, {}).get(resource_name, {}).get(TF_PLAN_RESOURCE_ADDRESS)
+                    resource_type_dict = entity.get(resource_type, {})
+                    entity_id = resource_type_dict.get(resource_name, resource_type_dict).get(TF_PLAN_RESOURCE_ADDRESS)
                 else:
                     entity_id = definition_path[0]
 
@@ -114,14 +115,14 @@ def get_entity_context(
         if not resource_type_dict:
             continue
         resource_name = definition_path[1]
-        resource_defintion = resource_type_dict.get(resource_name, {})
-        if resource_defintion and resource_defintion.get(TF_PLAN_RESOURCE_ADDRESS) == entity_id:
-            entity_context['start_line'] = resource_defintion['start_line'][0]
-            entity_context['end_line'] = resource_defintion['end_line'][0]
+        resource_definition = resource_type_dict.get(resource_name, resource_type_dict)
+        if resource_definition and resource_definition.get(TF_PLAN_RESOURCE_ADDRESS) == entity_id:
+            entity_context['start_line'] = resource_definition['start_line'][0]
+            entity_context['end_line'] = resource_definition['end_line'][0]
             entity_context["code_lines"] = definitions_raw[full_file_path][
                 entity_context["start_line"] : entity_context["end_line"]
             ]
-            entity_context['address'] = resource_defintion[TF_PLAN_RESOURCE_ADDRESS]
+            entity_context['address'] = resource_definition[TF_PLAN_RESOURCE_ADDRESS]
             return entity_context
     return entity_context
 

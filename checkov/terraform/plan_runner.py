@@ -26,7 +26,7 @@ from checkov.common.output.report import Report, merge_reports
 from checkov.runner_filter import RunnerFilter
 from checkov.terraform.base_runner import BaseTerraformRunner
 from checkov.terraform.checks.data.registry import data_registry
-from checkov.terraform.checks.provider.registry import plan_provider_registry
+from checkov.terraform.checks.provider.registry import provider_registry
 from checkov.terraform.checks.resource.registry import resource_registry
 from checkov.terraform.context_parsers.registry import parser_registry
 from checkov.terraform.plan_parser import TF_PLAN_RESOURCE_ADDRESS
@@ -96,7 +96,7 @@ class Runner(BaseTerraformRunner[_TerraformPlanDefinitions, _TerraformPlanContex
     block_type_registries = {  # noqa: CCE003  # a static attribute
         'resource': resource_registry,
         'data': data_registry,
-        'provider': plan_provider_registry
+        'provider': provider_registry
     }
 
     def run(
@@ -302,7 +302,8 @@ class Runner(BaseTerraformRunner[_TerraformPlanDefinitions, _TerraformPlanContex
         if len(definition_path) > 1:
             resource_type = definition_path[0]
             resource_name = definition_path[1]
-            entity_id = entity.get(resource_type, {}).get(resource_name, {}).get(TF_PLAN_RESOURCE_ADDRESS)
+            resource_type_dict = entity.get(resource_type, {})
+            entity_id = resource_type_dict.get(resource_name, resource_type_dict).get(TF_PLAN_RESOURCE_ADDRESS)
         else:
             entity_id = definition_path[0]
         return cast("dict[str, Any]", self.context.get(full_file_path, {}).get(entity_id, {}))
