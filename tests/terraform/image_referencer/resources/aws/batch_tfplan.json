@@ -81,9 +81,6 @@
           },
           "region": {
             "constant_value": "us-west-2"
-          },
-          "access_key": {
-            "constant_value": "AKIAIOSFODNN7EXAMPLE"
           }
         }
       }
