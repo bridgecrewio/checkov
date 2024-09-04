@@ -279,11 +279,13 @@ class PrismaEngine(SastEngine):
         return json.loads(analyze_code_string)  # type: ignore
 
     def _windows_sast_scan(self, sast_input: Dict[str, Any]) -> Dict[str, Any]:
-        checkov_input_path = os.path.join(f"{os.path.dirname(self.lib_path)}", "checkov_input.json")
-        sast_output_path = os.path.join(f"{os.path.dirname(self.lib_path)}", "sast_output.json")
+        lib_dir_path = f"{os.path.dirname(self.lib_path)}"
+        checkov_input_path = os.path.join(lib_dir_path, "checkov_input.json")
+        sast_output_path = os.path.join(lib_dir_path, "sast_output.json")
         with open(checkov_input_path, 'w') as f:
             f.write(json.dumps(sast_input))
-        callargs = [self.lib_path, checkov_input_path, sast_output_path]
+        log_level_str = "set LOG_LEVEL=" + os.getenv("LOG_LEVEL", "INFO")
+        callargs = [log_level_str, self.lib_path, checkov_input_path, sast_output_path]
         subprocess.run(callargs)  # nosec B404, B603
 
         with open(sast_output_path, 'r', encoding='utf-8') as f:
