@@ -286,7 +286,7 @@ class PrismaEngine(SastEngine):
             f.write(json.dumps(sast_input))
         log_level_str = "set LOG_LEVEL=" + os.getenv("LOG_LEVEL", "INFO")
         callargs = [log_level_str, "&", self.lib_path, checkov_input_path, sast_output_path]
-        subprocess.run(callargs, shell=True)  # nosec B404, B603
+        subprocess.run(callargs, shell=True)  # nosec B404, B603, B602
 
         with open(sast_output_path, 'r', encoding='utf-8') as f:
             report = f.read()
