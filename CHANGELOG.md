@@ -1,6 +1,19 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.242...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.246...HEAD)
+
+## [3.2.246](https://github.com/bridgecrewio/checkov/compare/3.2.245...3.2.246) - 2024-09-05
+
+### Feature
+
+- **sast:** add log level when running sast in windows - [#6704](https://github.com/bridgecrewio/checkov/pull/6704)
+
+## [3.2.245](https://github.com/bridgecrewio/checkov/compare/3.2.242...3.2.245) - 2024-09-04
+
+### Feature
+
+- **kubernetes:** Add policy for git-sync code injection - [#6694](https://github.com/bridgecrewio/checkov/pull/6694)
+- **terraform_plan:** add support for provider in tf_plan framework - [#6690](https://github.com/bridgecrewio/checkov/pull/6690)
 
 ## [3.2.242](https://github.com/bridgecrewio/checkov/compare/3.2.241...3.2.242) - 2024-09-02
 
