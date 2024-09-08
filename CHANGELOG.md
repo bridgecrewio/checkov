@@ -1,6 +1,19 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.246...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.249...HEAD)
+
+## [3.2.249](https://github.com/bridgecrewio/checkov/compare/3.2.246...3.2.249) - 2024-09-08
+
+### Feature
+
+- **general:** revert packages read permissions - [#6706](https://github.com/bridgecrewio/checkov/pull/6706)
+- **terraform_plan:** remove secret - [#6705](https://github.com/bridgecrewio/checkov/pull/6705)
+
+### Bug Fix
+
+- **secrets:** fix suppression and duplication - [#6701](https://github.com/bridgecrewio/checkov/pull/6701)
+- **secrets:** Revert suppression and duplication - [#6708](https://github.com/bridgecrewio/checkov/pull/6708)
+- **terraform:** Fix foreach multi attributes in field - [#6707](https://github.com/bridgecrewio/checkov/pull/6707)
 
 ## [3.2.246](https://github.com/bridgecrewio/checkov/compare/3.2.245...3.2.246) - 2024-09-05
 
