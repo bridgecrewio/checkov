@@ -30,7 +30,7 @@ class GoogleComputeBlockProjectSSH(BaseResourceValueCheck):
 
     def get_expected_values(self) -> List[Any]:
         # GCP enables feature with any of the following values
-        return [True,"true","True","TRUE"]
+        return [True, "true", "True", "TRUE"]
 
 
 check = GoogleComputeBlockProjectSSH()
