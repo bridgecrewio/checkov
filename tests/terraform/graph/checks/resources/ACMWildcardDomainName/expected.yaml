@@ -1,0 +1,8 @@
+pass:
+    - "aws_acm_certificate.example_pass"
+    - "aws_acm_certificate.example_pass2"
+
+fail:
+    - "aws_acm_certificate.example_fail"
+    - "aws_acm_certificate.example_fail_bad_subject"
+    - "aws_acm_certificate.example_fail_bad_domain"

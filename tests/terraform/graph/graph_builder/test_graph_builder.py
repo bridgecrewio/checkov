@@ -373,13 +373,13 @@ class TestGraphBuilder(TestCase):
         self.check_edge(graph, resource_node, var_region_node, 'region')
         self.check_edge(graph, provider_node, var_aws_profile_node, 'profile')
         self.check_edge(graph, local_node, var_bucket_name_node, 'bucket_name')
-    
+
     def test_multiple_modules_with_connected_resources(self):
         valid_plan_path = os.path.realpath(os.path.join(TEST_DIRNAME, '../resources/modules_edges_tfplan/tfplan.json'))
         definitions, definitions_raw = create_definitions(root_folder=None, files=[valid_plan_path])
         graph_manager = TerraformGraphManager(db_connector=RustworkxConnector())
         tf_plan_local_graph = graph_manager.build_graph_from_definitions(definitions, render_variables=False)
-        self.assertTrue(tf_plan_local_graph.in_edges[2])
+        self.assertTrue(tf_plan_local_graph.in_edges[3])
 
 
 def build_new_key_for_tf_definition(key):

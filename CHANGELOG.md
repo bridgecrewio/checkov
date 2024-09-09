@@ -1,6 +1,68 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.235...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.249...HEAD)
+
+## [3.2.249](https://github.com/bridgecrewio/checkov/compare/3.2.246...3.2.249) - 2024-09-08
+
+### Feature
+
+- **general:** revert packages read permissions - [#6706](https://github.com/bridgecrewio/checkov/pull/6706)
+- **terraform_plan:** remove secret - [#6705](https://github.com/bridgecrewio/checkov/pull/6705)
+
+### Bug Fix
+
+- **secrets:** fix suppression and duplication - [#6701](https://github.com/bridgecrewio/checkov/pull/6701)
+- **secrets:** Revert suppression and duplication - [#6708](https://github.com/bridgecrewio/checkov/pull/6708)
+- **terraform:** Fix foreach multi attributes in field - [#6707](https://github.com/bridgecrewio/checkov/pull/6707)
+
+## [3.2.246](https://github.com/bridgecrewio/checkov/compare/3.2.245...3.2.246) - 2024-09-05
+
+### Feature
+
+- **sast:** add log level when running sast in windows - [#6704](https://github.com/bridgecrewio/checkov/pull/6704)
+
+## [3.2.245](https://github.com/bridgecrewio/checkov/compare/3.2.242...3.2.245) - 2024-09-04
+
+### Feature
+
+- **kubernetes:** Add policy for git-sync code injection - [#6694](https://github.com/bridgecrewio/checkov/pull/6694)
+- **terraform_plan:** add support for provider in tf_plan framework - [#6690](https://github.com/bridgecrewio/checkov/pull/6690)
+
+## [3.2.242](https://github.com/bridgecrewio/checkov/compare/3.2.241...3.2.242) - 2024-09-02
+
+### Feature
+
+- **general:** add support for windows 10 for aiohttp - [#6696](https://github.com/bridgecrewio/checkov/pull/6696)
+
+## [3.2.241](https://github.com/bridgecrewio/checkov/compare/3.2.239...3.2.241) - 2024-09-01
+
+### Feature
+
+- **sast:** remove the env var for Go - [#6697](https://github.com/bridgecrewio/checkov/pull/6697)
+
+### Bug Fix
+
+- **secrets:** add edge case for policy that looks like uuid - [#6698](https://github.com/bridgecrewio/checkov/pull/6698)
+
+## [3.2.239](https://github.com/bridgecrewio/checkov/compare/3.2.238...3.2.239) - 2024-08-29
+
+### Feature
+
+- **general:** Add multiple checks to match runtime checks - [#6680](https://github.com/bridgecrewio/checkov/pull/6680)
+
+## [3.2.238](https://github.com/bridgecrewio/checkov/compare/3.2.236...3.2.238) - 2024-08-27
+
+### Feature
+
+- **terraform:** add support for TF cloudsplaining evaluated_keys - [#6677](https://github.com/bridgecrewio/checkov/pull/6677)
+
+### Bug Fix
+
+- **secrets:** change logs form info to debug - [#6685](https://github.com/bridgecrewio/checkov/pull/6685)
+
+## [3.2.236](https://github.com/bridgecrewio/checkov/compare/3.2.235...3.2.236) - 2024-08-26
+
+- no noteworthy changes
 
 ## [3.2.235](https://github.com/bridgecrewio/checkov/compare/3.2.234...3.2.235) - 2024-08-21
 
