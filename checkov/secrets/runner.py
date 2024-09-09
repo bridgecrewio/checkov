@@ -152,6 +152,7 @@ class Runner(BaseRunner[None, None, None]):
                     suppression['policyId'] for suppression in suppressions
                     if suppression['suppressionType'] == 'SecretsPolicy' or suppression['suppressionType'] == 'Policy'
                 ]
+                logging.info(f'The secret_suppressions_ids are: {secret_suppressions_ids}')
             if policies_list:
                 runnable_plugins: dict[str, str] = get_runnable_plugins(policies_list)
                 logging.debug(f"Found {len(runnable_plugins)} runnable plugins")
