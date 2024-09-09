@@ -1,8 +1,8 @@
-from typing import Any, Dict, List
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 
 ALLOWED_SSL_MODES = ["TRUSTED_CLIENT_CERTIFICATE_REQUIRED"]
+
 
 class GoogleCloudSqlDatabaseRequireSsl(BaseResourceCheck):
     def __init__(self):
@@ -26,17 +26,23 @@ class GoogleCloudSqlDatabaseRequireSsl(BaseResourceCheck):
 
             if 'ssl_mode' in ipconfiguration:
                 ssl_mode = ipconfiguration['ssl_mode']
-                if set(ALLOWED_SSL_MODES).intersection(set(ssl_mode)):
+                ssl_mode = ssl_mode[0] if isinstance(ssl_mode, list) else ssl_mode
+
+                if ssl_mode in ALLOWED_SSL_MODES:
                     return CheckResult.PASSED
-                
+
             elif 'require_ssl' in ipconfiguration:
+
                 require_ssl = ipconfiguration['require_ssl']
-                if True in require_ssl:
+                require_ssl = require_ssl[0] if isinstance(require_ssl, list) else require_ssl
+
+                if require_ssl:
                     return CheckResult.PASSED
 
         return CheckResult.FAILED
 
     def get_inspected_keys(self):
-        return ['settings/[0]/ip_configuration/[0]/ssl_mode/[0]','settings/[0]/ip_configuration/[0]/require_ssl/[0]']
+        return ['settings/[0]/ip_configuration/[0]/ssl_mode/[0]', 'settings/[0]/ip_configuration/[0]/require_ssl/[0]']
+
 
 check = GoogleCloudSqlDatabaseRequireSsl()
