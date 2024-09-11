@@ -17,6 +17,7 @@ LOCATIONS_W_REDUNDANCY = [
     "Spain Central"
 ]
 
+
 class EventHubNamespaceZoneRedundant(BaseResourceValueCheck):
     def __init__(self) -> None:
         """
@@ -33,5 +34,6 @@ class EventHubNamespaceZoneRedundant(BaseResourceValueCheck):
 
     def get_expected_values(self):
         return LOCATIONS_W_REDUNDANCY
+
 
 check = EventHubNamespaceZoneRedundant()
