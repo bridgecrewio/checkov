@@ -1,0 +1,46 @@
+variables: 
+  templateFile: '$(Build.Repository.LocalPath)/tests/bicep/examples/checkovignore.bicep'
+  templateFileDir: '$(Build.Repository.LocalPath)/tests/bicep/examples'
+  iacReportScriptFolder: '$(Build.Repository.LocalPath)/checkovignore'
+
+name: 'CheckovIgnore-$(SourceBranchName)-$(Date:yyyyMMdd)$(Rev:r)'
+
+pool: 'linux-agent-pool'
+
+stages:
+- stage: checkov_scan
+  displayName: checkov scan
+  jobs:
+  - job: checkov_scan
+    displayName: checkov scan
+    steps:
+    # Checkov Ignore Checks
+    - task: Bash@3
+      name: Checkov_Ignore_Checks
+      inputs:
+        targetType: 'inline'
+        script: |
+          python3 checkov_ignore.py
+        workingDirectory: '$(iacReportScriptFolder)'
+      displayName: "Checkov Ignore Checks"
+
+    # Run Checkov Scan
+    - task: Bash@3
+      name: Run_Checkov_Scan
+      inputs:
+        targetType: 'inline'
+        script: |
+          echo "[INFO], Running Checkov scan..."
+          checkov --directory $(templateFileDir) --file $(templateFile) --framework bicep --soft-fail --quiet --compact --output junitxml \
+          --output-file-path $(System.DefaultWorkingDirectory)/ --skip-check $(SKIP_CHECKS) > results_checkov.xml
+      displayName: "Run Checkov for Compliance check"
+
+    # Publish Scan Result
+    - task: PublishTestResults@2
+      inputs:
+        testRunTitle: "Checkov Results"
+        failTaskOnFailedTests: true
+        testResultsFormat: "JUnit"
+        testResultsFiles: "results_checkov.xml"
+        searchFolder: "$(System.DefaultWorkingDirectory)"
+      displayName: "Publish Test results"

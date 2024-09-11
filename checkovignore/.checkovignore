@@ -1,0 +1,17 @@
+# listed ruleIDs will be ignored from the scan results
+ignore:
+  - id: "CKV_AZURE_151"
+    expiry: "2025-07-09"
+    created: "2024-07-09"
+    reason: "Not Required"
+    guideline: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-iam-policies/ensure-azure-windows-vm-enables-encryption
+  - id: "CKV_AZURE_50"
+    expiry: "2025-07-09"
+    created: "2024-07-09"
+    reason: "No Extensions are Installed on VM"
+    guideline: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-general-policies/bc-azr-general-14
+  - id: "CKV_AZURE_97"
+    expiry: "2025-07-09"
+    created: "2024-07-09"
+    reason: "Resource is not a VMSS"
+    guideline: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-general-policies/ensure-that-virtual-machine-scale-sets-have-encryption-at-host-enabled
