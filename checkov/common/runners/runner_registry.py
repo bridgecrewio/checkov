@@ -42,7 +42,7 @@ from checkov.common.resource_code_logger_filter import add_resource_code_filter_
 from checkov.common.sast.consts import CDKLanguages
 from checkov.common.typing import _ExitCodeThresholds, _BaseRunner, _ScaExitCodeThresholds, LibraryGraph
 from checkov.common.util import data_structures_utils
-from checkov.common.util.banner import tool as tool_name
+from checkov.common.util.banner import default_tool as tool_name
 from checkov.common.util.consts import S3_UPLOAD_DETAILS_MESSAGE
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.json_utils import CustomJSONEncoder
