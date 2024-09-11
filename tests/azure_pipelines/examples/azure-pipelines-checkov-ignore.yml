@@ -31,7 +31,7 @@ stages:
         targetType: 'inline'
         script: |
           echo "[INFO], Running Checkov scan..."
-          checkov --directory $(templateFileDir) --file $(templateFile) --framework bicep --soft-fail --quiet --compact --output junitxml \
+          checkov --file $(templateFile) --framework bicep --soft-fail --quiet --compact --output junitxml \
           --output-file-path $(System.DefaultWorkingDirectory)/ --skip-check $(SKIP_CHECKS) > results_checkov.xml
       displayName: "Run Checkov for Compliance check"
 
