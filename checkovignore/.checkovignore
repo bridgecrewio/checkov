@@ -5,8 +5,8 @@ ignore:
     created: "2024-07-09"
     reason: "Testing Skip Checks using checkovignore file"
     guideline: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-networking-policies/set-default-network-access-rule-for-storage-accounts-to-deny
-  - id: "CKV_AZURE_50"
+  - id: "CKV_AZURE_43"
     expiry: "2025-07-09"
     created: "2024-07-09"
     reason: "Testing Skip Checks using checkovignore file"
-    guideline: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-general-policies/ensure-cognitive-services-account-encryption-cmks-are-enabled
+    guideline:  https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-general-policies/ensure-cognitive-services-account-encryption-cmks-are-enabled
