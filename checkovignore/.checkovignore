@@ -1,17 +1,12 @@
-# listed ruleIDs will be ignored from the scan results
+# listed ruleIDs will be ignored from the scan results, if expiry date is in the future
 ignore:
-  - id: "CKV_AZURE_151"
+  - id: "CKV_AZURE_35"
     expiry: "2025-07-09"
     created: "2024-07-09"
-    reason: "Not Required"
-    guideline: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-iam-policies/ensure-azure-windows-vm-enables-encryption
+    reason: "Testing Skip Checks using checkovignore file"
+    guideline: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-networking-policies/set-default-network-access-rule-for-storage-accounts-to-deny
   - id: "CKV_AZURE_50"
     expiry: "2025-07-09"
     created: "2024-07-09"
-    reason: "No Extensions are Installed on VM"
-    guideline: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-general-policies/bc-azr-general-14
-  - id: "CKV_AZURE_97"
-    expiry: "2025-07-09"
-    created: "2024-07-09"
-    reason: "Resource is not a VMSS"
-    guideline: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-general-policies/ensure-that-virtual-machine-scale-sets-have-encryption-at-host-enabled
+    reason: "Testing Skip Checks using checkovignore file"
+    guideline: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/azure-policies/azure-general-policies/ensure-cognitive-services-account-encryption-cmks-are-enabled
