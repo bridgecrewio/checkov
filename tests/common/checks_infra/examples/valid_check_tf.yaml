@@ -1,0 +1,12 @@
+metadata:
+  name: "Ensure aws_s3_bucket is not us-east-1"
+  id: CUSTOM_SEVERITY
+  category: "GENERAL_SECURITY"
+  severity: HIGH
+definition:
+  cond_type: attribute
+  resource_types:
+    - aws_s3_bucket
+  attribute: region
+  operator: not_equals
+  value: us-east-1
