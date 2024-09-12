@@ -1,6 +1,18 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.251...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.253...HEAD)
+
+## [3.2.253](https://github.com/bridgecrewio/checkov/compare/3.2.251...3.2.253) - 2024-09-12
+
+### Feature
+
+- **general:** allow tool name field to be customised using cli arguments  - [#6692](https://github.com/bridgecrewio/checkov/pull/6692)
+- **secrets:** Change log level - [#6716](https://github.com/bridgecrewio/checkov/pull/6716)
+- **terraform:** Add check for local user in storage - [#6715](https://github.com/bridgecrewio/checkov/pull/6715)
+
+### Bug Fix
+
+- **terraform:** Update CKV_AZURE_228 for automatic calculation - [#6714](https://github.com/bridgecrewio/checkov/pull/6714)
 
 ## [3.2.251](https://github.com/bridgecrewio/checkov/compare/3.2.250...3.2.251) - 2024-09-11
 
