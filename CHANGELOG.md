@@ -1,6 +1,138 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.219...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.251...HEAD)
+
+## [3.2.251](https://github.com/bridgecrewio/checkov/compare/3.2.250...3.2.251) - 2024-09-11
+
+### Feature
+
+- **general:** add severity metadata to custom policy - [#6579](https://github.com/bridgecrewio/checkov/pull/6579)
+
+## [3.2.250](https://github.com/bridgecrewio/checkov/compare/3.2.249...3.2.250) - 2024-09-10
+
+### Bug Fix
+
+- **secrets:** fix suppressions and duplications - [#6710](https://github.com/bridgecrewio/checkov/pull/6710)
+
+## [3.2.249](https://github.com/bridgecrewio/checkov/compare/3.2.246...3.2.249) - 2024-09-08
+
+### Feature
+
+- **general:** revert packages read permissions - [#6706](https://github.com/bridgecrewio/checkov/pull/6706)
+- **terraform_plan:** remove secret - [#6705](https://github.com/bridgecrewio/checkov/pull/6705)
+
+### Bug Fix
+
+- **secrets:** fix suppression and duplication - [#6701](https://github.com/bridgecrewio/checkov/pull/6701)
+- **secrets:** Revert suppression and duplication - [#6708](https://github.com/bridgecrewio/checkov/pull/6708)
+- **terraform:** Fix foreach multi attributes in field - [#6707](https://github.com/bridgecrewio/checkov/pull/6707)
+
+## [3.2.246](https://github.com/bridgecrewio/checkov/compare/3.2.245...3.2.246) - 2024-09-05
+
+### Feature
+
+- **sast:** add log level when running sast in windows - [#6704](https://github.com/bridgecrewio/checkov/pull/6704)
+
+## [3.2.245](https://github.com/bridgecrewio/checkov/compare/3.2.242...3.2.245) - 2024-09-04
+
+### Feature
+
+- **kubernetes:** Add policy for git-sync code injection - [#6694](https://github.com/bridgecrewio/checkov/pull/6694)
+- **terraform_plan:** add support for provider in tf_plan framework - [#6690](https://github.com/bridgecrewio/checkov/pull/6690)
+
+## [3.2.242](https://github.com/bridgecrewio/checkov/compare/3.2.241...3.2.242) - 2024-09-02
+
+### Feature
+
+- **general:** add support for windows 10 for aiohttp - [#6696](https://github.com/bridgecrewio/checkov/pull/6696)
+
+## [3.2.241](https://github.com/bridgecrewio/checkov/compare/3.2.239...3.2.241) - 2024-09-01
+
+### Feature
+
+- **sast:** remove the env var for Go - [#6697](https://github.com/bridgecrewio/checkov/pull/6697)
+
+### Bug Fix
+
+- **secrets:** add edge case for policy that looks like uuid - [#6698](https://github.com/bridgecrewio/checkov/pull/6698)
+
+## [3.2.239](https://github.com/bridgecrewio/checkov/compare/3.2.238...3.2.239) - 2024-08-29
+
+### Feature
+
+- **general:** Add multiple checks to match runtime checks - [#6680](https://github.com/bridgecrewio/checkov/pull/6680)
+
+## [3.2.238](https://github.com/bridgecrewio/checkov/compare/3.2.236...3.2.238) - 2024-08-27
+
+### Feature
+
+- **terraform:** add support for TF cloudsplaining evaluated_keys - [#6677](https://github.com/bridgecrewio/checkov/pull/6677)
+
+### Bug Fix
+
+- **secrets:** change logs form info to debug - [#6685](https://github.com/bridgecrewio/checkov/pull/6685)
+
+## [3.2.236](https://github.com/bridgecrewio/checkov/compare/3.2.235...3.2.236) - 2024-08-26
+
+- no noteworthy changes
+
+## [3.2.235](https://github.com/bridgecrewio/checkov/compare/3.2.234...3.2.235) - 2024-08-21
+
+### Feature
+
+- **cloudformation:** SAM Globals support with CloudFormation - [#6657](https://github.com/bridgecrewio/checkov/pull/6657)
+
+## [3.2.234](https://github.com/bridgecrewio/checkov/compare/3.2.232...3.2.234) - 2024-08-20
+
+### Feature
+
+- **sast:** Adding support for sast in windows - [#6638](https://github.com/bridgecrewio/checkov/pull/6638)
+
+### Bug Fix
+
+- **secrets:** revert duplications suppressions for secrets - [#6674](https://github.com/bridgecrewio/checkov/pull/6674)
+
+## [3.2.232](https://github.com/bridgecrewio/checkov/compare/3.2.230...3.2.232) - 2024-08-19
+
+### Bug Fix
+
+- **general:** add try except to loads file - [#6668](https://github.com/bridgecrewio/checkov/pull/6668)
+- **secrets:** duplications suppressions for secrets - [#6665](https://github.com/bridgecrewio/checkov/pull/6665)
+
+## [3.2.230](https://github.com/bridgecrewio/checkov/compare/3.2.228...3.2.230) - 2024-08-18
+
+### Feature
+
+- **general:** Support multiple frameworks in custom policy - [#6666](https://github.com/bridgecrewio/checkov/pull/6666)
+
+### Bug Fix
+
+- **general:** revert support multiple frameworks in one custom policy - [#6664](https://github.com/bridgecrewio/checkov/pull/6664)
+
+## [3.2.228](https://github.com/bridgecrewio/checkov/compare/3.2.223...3.2.228) - 2024-08-15
+
+### Feature
+
+- **terraform:** Add build policy to match run policy for API Method without Auth or API - [#6637](https://github.com/bridgecrewio/checkov/pull/6637)
+
+### Bug Fix
+
+- **secrets:** remove dups logic - [#6655](https://github.com/bridgecrewio/checkov/pull/6655)
+- **secrets:** Revert remove dups  - [#6656](https://github.com/bridgecrewio/checkov/pull/6656)
+- **terraform:** Don't pass existed resources in non_exists resource checks - [#6653](https://github.com/bridgecrewio/checkov/pull/6653)
+
+## [3.2.223](https://github.com/bridgecrewio/checkov/compare/3.2.221...3.2.223) - 2024-08-13
+
+### Bug Fix
+
+- **secrets:** remove duplications in secrets - [#6648](https://github.com/bridgecrewio/checkov/pull/6648)
+- **secrets:** revert fixing duplications - [#6652](https://github.com/bridgecrewio/checkov/pull/6652)
+
+## [3.2.221](https://github.com/bridgecrewio/checkov/compare/3.2.219...3.2.221) - 2024-08-12
+
+### Bug Fix
+
+- **terraform:** evaluate resource with double underscore - [#6642](https://github.com/bridgecrewio/checkov/pull/6642)
 
 ## [3.2.219](https://github.com/bridgecrewio/checkov/compare/3.2.217...3.2.219) - 2024-08-05
 
