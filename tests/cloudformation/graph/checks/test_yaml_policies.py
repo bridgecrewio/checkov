@@ -51,6 +51,12 @@ class TestYamlPolicies(TestYamlPoliciesBase):
     def test_RDSEncryptionInTransit(self):
         self.go("RDSEncryptionInTransit")
 
+    def test_ACMWildcardDomainName(self):
+        self.go("ACMWildcardDomainName")
+
+    def test_CloudfrontOriginNotHTTPSOnly(self):
+        self.go("CloudfrontOriginNotHTTPSOnly")
+
     def test_registry_load(self):
         registry = self.get_checks_registry()
         self.assertGreater(len(registry.checks), 0)

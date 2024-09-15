@@ -16,7 +16,15 @@ class ResourceCloudSplainingPrivilegeEscalation(BaseTerraformCloudsplainingResou
         super().__init__(name=name, id=id)
 
     def cloudsplaining_analysis(self, policy: PolicyDocument) -> Union[List[str], List[Dict[str, Any]]]:
-        return policy.allows_privilege_escalation
+        escalations = policy.allows_privilege_escalation
+        flattened_escalations: list[str] = []
+        if escalations:
+            for escalation in escalations:
+                if isinstance(escalation, dict):
+                    flattened_escalations.extend(escalation.get('actions'))
+                else:
+                    flattened_escalations.append(escalation)
+        return flattened_escalations
 
 
 check = ResourceCloudSplainingPrivilegeEscalation()

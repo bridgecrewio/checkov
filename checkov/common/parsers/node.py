@@ -5,6 +5,7 @@ from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Type, Generator
 
 from checkov.common.resource_code_logger_filter import add_resource_code_filter_to_logger
+from checkov.common.util.data_structures_utils import pickle_deepcopy
 
 if TYPE_CHECKING:
     from checkov.common.parsers.json.decoder import Mark
@@ -145,6 +146,39 @@ class DictNode(dict):  # type:ignore[type-arg]  # either typing works or runtime
         else:
             if isinstance(self, type_t) or not type_t:
                 yield self, path[:]
+
+    @staticmethod
+    def deep_merge(dict1: DictNode, dict2: DictNode) -> DictNode:
+        """
+        Performs a deep merge of dict1 and dict2, giving preference to values in dict1.
+        :param dict1: First DictNode object, whose values have higher precedence.
+        :param dict2: Second DictNode object, to be merged with the first one.
+        :return: A new DictNode object with the deep merged values.
+        """
+        # Create a new DictNode for the merged result, initially empty.
+        merged = DictNode({}, dict1.start_mark, dict1.end_mark)
+
+        # Add all items from dict2 to the merged DictNode.
+        for key, value in dict2.items():
+            merged[key] = pickle_deepcopy(value)
+
+        # Merge items from dict1, giving them precedence.
+        for key, value in dict1.items():
+            if key in dict2:
+                if isinstance(value, DictNode) and isinstance(dict2[key], DictNode):
+                    # If both values are DictNodes, merge recursively.
+                    merged[key] = DictNode.deep_merge(value, dict2[key])
+                elif isinstance(value, ListNode) and isinstance(dict2[key], ListNode):
+                    # If both values are ListNodes, prepend the items from dict2's ListNode to dict1's ListNode.
+                    merged[key] = ListNode(pickle_deepcopy(dict2[key]) + value, dict1.start_mark, dict1.end_mark)
+                else:
+                    # If they are not both DictNodes or both ListNodes, the value from dict1 takes precedence.
+                    merged[key] = value
+            else:
+                # If the key is only in dict1, directly copy the item from dict1.
+                merged[key] = value
+
+        return merged
 
     def __getattr__(self, name: str) -> Any:
         raise TemplateAttributeError(f'{name} is invalid')

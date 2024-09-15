@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fail-deployment
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: blog
+  template:
+    metadata:
+      labels:
+        name: blog
+    spec:
+      containers:
+      - name: git-sync
+        image: registry.k8s.io/git-sync
+        args:
+          - -v=5
+        volumeMounts:
+        - name: markdown
+          mountPath: /tmp/git
+        - name: test
+          mountPath: /tmp/payload
+        env:
+        - name: GITSYNC_REPO
+          value: https://github.com/foo/bar.git
+        - name: GITSYNC_GIT
+          value: /tmp/payload/payload
+      volumes:
+      - name: markdown
+        emptyDir: {}
+      - name: test
+        emptyDir: {}
