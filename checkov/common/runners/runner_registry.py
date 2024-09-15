@@ -718,7 +718,7 @@ class RunnerRegistry:
 
     def remove_runner(self, runner: _BaseRunner) -> None:
         if runner in self.runners:
-            self.runners.remove(runner)
+            self.runners.remove(runner)  # type:ignore[arg-type] # existence is checked one line above
 
     @staticmethod
     def enrich_report_with_guidelines(scan_report: Report) -> None:

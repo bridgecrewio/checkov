@@ -16,7 +16,7 @@ from checkov.common.output.record import Record, DEFAULT_SEVERITY
 from checkov.common.output.common import compare_table_items_severity
 from checkov.policies_3d.record import Policy3dRecord
 
-TABLE_WIDTH = 136
+TABLE_WIDTH = 138
 
 
 def merge_line_with_previous_table(line: str, table: PrettyTable) -> str:

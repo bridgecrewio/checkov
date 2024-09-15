@@ -278,13 +278,9 @@ def create_cli_license_violations_table(file_path: str,
 def create_cli_cves_table(file_path: str, cve_count: CveCount, package_details_map: Dict[str, Dict[str, Any]],
                           lines_details_found: bool) -> str:
     columns = 7
-    table_width = 159
+    table_width = 165
     fixed_line_with = 159
     column_width = int(table_width / columns)
-
-    # on python 3.12 and above, the columns are smaller, need to make them wider in order to have consistency.
-    if sys.version_info >= (3, 12):
-        table_width = 165
 
     cve_table_lines = create_cve_summary_table_part(
         table_width=table_width, column_width=column_width, cve_count=cve_count
