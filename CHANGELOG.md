@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.253...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.254...HEAD)
+
+## [3.2.254](https://github.com/bridgecrewio/checkov/compare/3.2.253...3.2.254) - 2024-09-15
+
+### Bug Fix
+
+- **terraform:** Added ssl_mode attribute support to CKV_GCP_6 - [#6703](https://github.com/bridgecrewio/checkov/pull/6703)
 
 ## [3.2.253](https://github.com/bridgecrewio/checkov/compare/3.2.251...3.2.253) - 2024-09-12
 
