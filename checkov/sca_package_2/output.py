@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import itertools
 import logging
-import sys
 from collections import defaultdict
 from dataclasses import dataclass
 from typing import List, Union, Dict, Any
