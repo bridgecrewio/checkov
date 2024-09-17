@@ -1,11 +1,3 @@
-# config from cloud.resource where cloud.type = 'aws' AND api.name = 'aws-elb-describe-load-balancers' AND
-# json.rule = '((description.listenerDescriptions[*].listener.instanceProtocol equals HTTPS or
-# description.listenerDescriptions[*].listener.instanceProtocol equals SSL) and
-# (description.listenerDescriptions[*].listener.sslcertificateId is empty or
-# description.listenerDescriptions[*].listener.sslcertificateId does not exist)) or
-# description.listenerDescriptions[*].listener.instanceProtocol equals HTTP or
-# description.listenerDescriptions[*].listener.instanceProtocol equals TCP'
-
 # Fail: 1 bad, 1 good
 resource "aws_elb" "fail" {
   name               = "foobar-terraform-elb"
