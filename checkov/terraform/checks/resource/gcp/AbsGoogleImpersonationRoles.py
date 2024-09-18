@@ -11,7 +11,6 @@ IMPERSONATION_ROLES = [
     "roles/iam.serviceAccountTokenCreator",
     "roles/iam.workloadIdentityUser",
     "roles/dataproc.editor",
-    "roles/dataproc.admin",
     "roles/dataflow.developer",
     "roles/resourcemanager.folderAdmin",
     "roles/resourcemanager.folderIamAdmin",
