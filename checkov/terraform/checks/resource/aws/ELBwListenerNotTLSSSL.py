@@ -24,7 +24,6 @@ class ELBwListenerNotTLSSSL(BaseResourceCheck):
                             ('ssl_certificate_id' not in listener or listener.get('ssl_certificate_id') == ""):
                         return CheckResult.FAILED
 
-
         return CheckResult.PASSED
 
 
