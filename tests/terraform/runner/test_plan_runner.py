@@ -276,7 +276,7 @@ class TestRunnerValid(unittest.TestCase):
         self.assertEqual(report.get_exit_code({'soft_fail': False, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 1)
         self.assertEqual(report.get_exit_code({'soft_fail': True, 'soft_fail_checks': [], 'soft_fail_threshold': None, 'hard_fail_checks': [], 'hard_fail_threshold': None}), 0)
 
-        self.assertEqual(report.get_summary()["failed"], 106)
+        self.assertEqual(report.get_summary()["failed"], 107)
 
     def test_runner_child_modules(self):
         current_dir = os.path.dirname(os.path.realpath(__file__))
