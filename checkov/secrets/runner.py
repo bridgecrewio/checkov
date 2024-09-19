@@ -138,7 +138,7 @@ class Runner(BaseRunner[None, None, None]):
         customer_run_config = bc_integration.customer_run_config_response
         plugins_index = 0
         work_dir_obj = None
-        secret_suppressions_id: list[str] = []
+        secret_suppressions_ids: list[str] = []
         work_path = str(os.getenv('WORKDIR')) if os.getenv('WORKDIR') else None
         if work_path is None:
             work_dir_obj = tempfile.TemporaryDirectory()
@@ -148,8 +148,11 @@ class Runner(BaseRunner[None, None, None]):
             policies_list = customer_run_config.get('secretsPolicies', [])
             suppressions = customer_run_config.get('suppressions', [])
             if suppressions:
-                secret_suppressions_id = [suppression['policyId']
-                                          for suppression in suppressions if suppression['suppressionType'] == 'SecretsPolicy']
+                secret_suppressions_ids = [
+                    suppression['policyId'] for suppression in suppressions
+                    if suppression['suppressionType'] == 'SecretsPolicy' or suppression['suppressionType'] == 'Policy'
+                ]
+                logging.info(f'The secret_suppressions_ids are: {secret_suppressions_ids}')
             if policies_list:
                 runnable_plugins: dict[str, str] = get_runnable_plugins(policies_list)
                 logging.debug(f"Found {len(runnable_plugins)} runnable plugins")
@@ -248,21 +251,17 @@ class Runner(BaseRunner[None, None, None]):
                     added_by = enriched_potential_secret.get('added_by') or ''
                     removed_date = enriched_potential_secret.get('removed_date') or ''
                     added_date = enriched_potential_secret.get('added_date') or ''
-                    # run over secret key
-                    if isinstance(secret.secret_value, str) and secret.secret_value:
-                        stripped = secret.secret_value.strip(',"')
-                        if stripped != secret.secret_value:
-                            secret_key = f'{key}_{secret.line_number}_{PotentialSecret.hash_secret(stripped)}'
+                # run over secret key
+                if isinstance(secret.secret_value, str) and secret.secret_value:
+                    stripped = secret.secret_value.strip(',";\'')
+                    if stripped != secret.secret_value:
+                        secret_key = f'{key}_{secret.line_number}_{PotentialSecret.hash_secret(stripped)}'
                 if secret.secret_value and is_potential_uuid(secret.secret_value) and secret.check_id not in secrets_in_uuid_form:
                     logging.info(
                         f"Removing secret due to UUID filtering: {PotentialSecret.hash_secret(secret.secret_value)}")
                     continue
-                if secret_key in secret_records.keys():
-                    is_prioritise = self._prioritise_secrets(secret_records, secret_key, check_id)
-                    if not is_prioritise:
-                        continue
                 bc_check_id = metadata_integration.get_bc_id(check_id)
-                if bc_check_id in secret_suppressions_id:
+                if bc_check_id in secret_suppressions_ids:
                     logging.debug(f'Secret was filtered - check {check_id} was suppressed')
                     continue
                 severity = metadata_integration.get_severity(check_id)
@@ -271,6 +270,10 @@ class Runner(BaseRunner[None, None, None]):
                     logging.debug(
                         f'Check was suppress - should_run_check. check_id {check_id}')
                     continue
+                if secret_key in secret_records.keys():
+                    is_prioritise = self._prioritise_secrets(secret_records, secret_key, check_id)
+                    if not is_prioritise:
+                        continue
                 result: _CheckResult = {'result': CheckResult.FAILED}
                 try:
                     if runner_filter.enable_git_history_secret_scan and code_line is not None:

@@ -1,6 +1,78 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.239...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.254...HEAD)
+
+## [3.2.254](https://github.com/bridgecrewio/checkov/compare/3.2.253...3.2.254) - 2024-09-15
+
+### Bug Fix
+
+- **terraform:** Added ssl_mode attribute support to CKV_GCP_6 - [#6703](https://github.com/bridgecrewio/checkov/pull/6703)
+
+## [3.2.253](https://github.com/bridgecrewio/checkov/compare/3.2.251...3.2.253) - 2024-09-12
+
+### Feature
+
+- **general:** allow tool name field to be customised using cli arguments  - [#6692](https://github.com/bridgecrewio/checkov/pull/6692)
+- **secrets:** Change log level - [#6716](https://github.com/bridgecrewio/checkov/pull/6716)
+- **terraform:** Add check for local user in storage - [#6715](https://github.com/bridgecrewio/checkov/pull/6715)
+
+### Bug Fix
+
+- **terraform:** Update CKV_AZURE_228 for automatic calculation - [#6714](https://github.com/bridgecrewio/checkov/pull/6714)
+
+## [3.2.251](https://github.com/bridgecrewio/checkov/compare/3.2.250...3.2.251) - 2024-09-11
+
+### Feature
+
+- **general:** add severity metadata to custom policy - [#6579](https://github.com/bridgecrewio/checkov/pull/6579)
+
+## [3.2.250](https://github.com/bridgecrewio/checkov/compare/3.2.249...3.2.250) - 2024-09-10
+
+### Bug Fix
+
+- **secrets:** fix suppressions and duplications - [#6710](https://github.com/bridgecrewio/checkov/pull/6710)
+
+## [3.2.249](https://github.com/bridgecrewio/checkov/compare/3.2.246...3.2.249) - 2024-09-08
+
+### Feature
+
+- **general:** revert packages read permissions - [#6706](https://github.com/bridgecrewio/checkov/pull/6706)
+- **terraform_plan:** remove secret - [#6705](https://github.com/bridgecrewio/checkov/pull/6705)
+
+### Bug Fix
+
+- **secrets:** fix suppression and duplication - [#6701](https://github.com/bridgecrewio/checkov/pull/6701)
+- **secrets:** Revert suppression and duplication - [#6708](https://github.com/bridgecrewio/checkov/pull/6708)
+- **terraform:** Fix foreach multi attributes in field - [#6707](https://github.com/bridgecrewio/checkov/pull/6707)
+
+## [3.2.246](https://github.com/bridgecrewio/checkov/compare/3.2.245...3.2.246) - 2024-09-05
+
+### Feature
+
+- **sast:** add log level when running sast in windows - [#6704](https://github.com/bridgecrewio/checkov/pull/6704)
+
+## [3.2.245](https://github.com/bridgecrewio/checkov/compare/3.2.242...3.2.245) - 2024-09-04
+
+### Feature
+
+- **kubernetes:** Add policy for git-sync code injection - [#6694](https://github.com/bridgecrewio/checkov/pull/6694)
+- **terraform_plan:** add support for provider in tf_plan framework - [#6690](https://github.com/bridgecrewio/checkov/pull/6690)
+
+## [3.2.242](https://github.com/bridgecrewio/checkov/compare/3.2.241...3.2.242) - 2024-09-02
+
+### Feature
+
+- **general:** add support for windows 10 for aiohttp - [#6696](https://github.com/bridgecrewio/checkov/pull/6696)
+
+## [3.2.241](https://github.com/bridgecrewio/checkov/compare/3.2.239...3.2.241) - 2024-09-01
+
+### Feature
+
+- **sast:** remove the env var for Go - [#6697](https://github.com/bridgecrewio/checkov/pull/6697)
+
+### Bug Fix
+
+- **secrets:** add edge case for policy that looks like uuid - [#6698](https://github.com/bridgecrewio/checkov/pull/6698)
 
 ## [3.2.239](https://github.com/bridgecrewio/checkov/compare/3.2.238...3.2.239) - 2024-08-29
 

@@ -21,6 +21,7 @@ The Metadata includes:
 * ID - `CKV2_<provider>_<number>`
 * Category
 * Guideline (optional)
+* Severity (optional) - can be `INFO`, `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`
 
 The possible values for category are:
 
@@ -35,7 +36,15 @@ The possible values for category are:
 * KUBERNETES
 * APPLICATION_SECURITY
 * SUPPLY_CHAIN
-* API_SECURITY
+* API_SECURITY 
+
+The possible values for severity are:
+
+* INFO
+* LOW
+* MEDIUM
+* HIGH
+* CRITICAL
 
 ```yaml
 metadata:
@@ -43,6 +52,7 @@ metadata:
   name: "Ensure bucket has versioning and owner tag"
   category: "BACKUP_AND_RECOVERY"
   guideline: "https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ckv2_custom_1"
+  severity: "HIGH"
 ```
 
 ## Policy Definition
