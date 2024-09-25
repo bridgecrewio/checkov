@@ -4,7 +4,7 @@ from checkov.terraform.checks.resource.base_resource_check import BaseResourceCh
 class SagemakerEndpointConfigurationProductionVariantsSpecified(BaseResourceCheck):
     def __init__(self):
         name = "Ensure Amazon SageMaker endpoint configuration has at least one production variant specified"
-        id = "CKV_AWS_991" 
+        id = "CKV_AWS_376" 
         supported_resources = ['aws_sagemaker_endpoint_configuration']
         categories = [CheckCategories.AI_AND_ML]
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
