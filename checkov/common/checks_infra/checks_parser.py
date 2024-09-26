@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 from typing import Dict, Any, List, Optional, Type, TYPE_CHECKING
 
+from checkov.common.bridgecrew.severities import get_severity
 from checkov.common.checks_infra.solvers import (
     EqualsAttributeSolver,
     NotEqualsAttributeSolver,
@@ -201,6 +202,9 @@ class GraphCheckParser(BaseGraphCheckParser):
         check.name = raw_check.get("metadata", {}).get("name", "")
         check.category = raw_check.get("metadata", {}).get("category", "")
         check.frameworks = raw_check.get("metadata", {}).get("frameworks", [])
+        severity = get_severity(raw_check.get("metadata", {}).get("severity", ""))
+        if severity:
+            check.severity = severity
         check.guideline = raw_check.get("metadata", {}).get("guideline")
         check.check_path = kwargs.get("check_path", "")
         solver = self.get_check_solver(check)

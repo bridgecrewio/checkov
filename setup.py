@@ -80,7 +80,7 @@ setup(
         "jmespath>=1.0.0,<2.0.0",
         "tqdm<5.0.0,>=4.65.0",
         "packaging>=23.0,<24.0",
-        "cloudsplaining<0.7.0,>=0.6.2",
+        "cloudsplaining<0.8.0,>=0.7.0",
         "networkx<2.7",
         "dockerfile-parse<3.0.0,>=2.0.0",
         "docker>=6.0.1,<8.0.0",

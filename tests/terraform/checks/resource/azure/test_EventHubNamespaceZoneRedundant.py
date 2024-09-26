@@ -22,7 +22,6 @@ class TestEventHubNamespaceZoneRedundant(unittest.TestCase):
         }
         failing_resources = {
             'azurerm_eventhub_namespace.fail',
-            'azurerm_eventhub_namespace.fail2',
         }
         skipped_resources = {}
 

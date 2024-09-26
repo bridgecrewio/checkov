@@ -287,7 +287,7 @@ checkov -d /MyDirectory --framework secrets --repo-id ... --bc-api-key ... --ski
 ```
 
 One can mask values from scanning results by supplying a configuration file (using --config-file flag) with mask entry.
-The masking can apply on resource & value (or multiple values, seperated with a comma).
+The masking can apply on resource & value (or multiple values, separated with a comma).
 Examples:
 ```sh
 mask:
