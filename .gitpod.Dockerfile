@@ -1,5 +1,5 @@
 FROM gitpod/workspace-python
-RUN pyenv install 3.10.14
+RUN pyenv install 3.8.20
 RUN wget -q -O get_kustomize.sh https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh; \
  chmod 700 get_kustomize.sh; \
  mkdir -p /usr/local/bin; \
