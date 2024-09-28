@@ -17,7 +17,7 @@ class TestBaseRunner(unittest.TestCase):
         # escape the directory name (but leave the os separator unaltered)
         self.assertEqual(re_dir('.dir1/.dir2'), fr'(^|.*{sep})\.dir1/\.dir2($|{sep}.*)')
 
-    def tests_re_dir_test_pattern(self):
+    def tests_re_dir_pattern(self):
         dir_name_to_ignore = ".hidden"
         dir_name_to_ignore_re = re.compile(re_dir(dir_name_to_ignore))
         paths_to_ignore = [
