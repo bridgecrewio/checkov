@@ -43,7 +43,15 @@ def strtobool(val: str) -> int:
         raise ValueError("invalid boolean value %r for environment variable CKV_IGNORE_HIDDEN_DIRECTORIES" % (val,))
 
 
-IGNORED_DIRECTORIES_ENV = os.getenv("CKV_IGNORED_DIRECTORIES", "node_modules,.terraform,.serverless")
+def re_dir(path: str) -> str:
+    """Compile a regex pattern that matches paths containing the given directory at any level."""
+    return rf"(^|.*/){re.escape(path)}($|/.*)"
+
+
+IGNORED_DIRECTORIES_ENV = os.getenv(
+    "CKV_IGNORED_DIRECTORIES",
+    ",".join(re_dir(p) for p in ["node_modules", ".terraform", ".serverless"])
+)
 IGNORE_HIDDEN_DIRECTORY_ENV = strtobool(os.getenv("CKV_IGNORE_HIDDEN_DIRECTORIES", "True"))
 
 ignored_directories = IGNORED_DIRECTORIES_ENV.split(",")

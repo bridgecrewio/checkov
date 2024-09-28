@@ -4,10 +4,13 @@ import os
 import re
 from collections.abc import Iterable
 
-from checkov.common.runners.base_runner import ignored_directories, safe_remove
+from checkov.common.runners.base_runner import ignored_directories, safe_remove, re_dir
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 
-EXCLUDED_PATHS = [*ignored_directories, DEFAULT_EXTERNAL_MODULES_DIR, ".idea", ".git", "venv"]
+EXCLUDED_PATHS = [
+    *ignored_directories,
+    *(re_dir(p) for p in [DEFAULT_EXTERNAL_MODULES_DIR, ".idea", ".git", "venv"])
+]
 
 
 def filter_excluded_paths(
