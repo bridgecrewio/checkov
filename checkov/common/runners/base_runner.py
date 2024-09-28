@@ -45,7 +45,8 @@ def strtobool(val: str) -> int:
 
 def re_dir(path: str) -> str:
     """Compile a regex pattern that matches paths containing the given directory at any level."""
-    return rf"(^|.*/){re.escape(path)}($|/.*)"
+    sep = re.escape(os.sep)  # windows compatibility
+    return rf"(^|.*{sep}){re.escape(path)}($|{sep}.*)"
 
 
 IGNORED_DIRECTORIES_ENV = os.getenv(
