@@ -9,7 +9,10 @@ from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR
 
 EXCLUDED_PATHS = [
     *ignored_directories,
-    *(re_dir(p) for p in [DEFAULT_EXTERNAL_MODULES_DIR, ".idea", ".git", "venv"])
+    re_dir(DEFAULT_EXTERNAL_MODULES_DIR),
+    re_dir(".idea"),
+    re_dir(".git"),
+    re_dir("venv"),
 ]
 
 
