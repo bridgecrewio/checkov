@@ -3,11 +3,18 @@ import unittest
 from typing import Optional, List
 
 from checkov.common.output.report import Report
-from checkov.common.runners.base_runner import filter_ignored_paths, BaseRunner
+from checkov.common.runners.base_runner import filter_ignored_paths, BaseRunner, re_dir
 from checkov.runner_filter import RunnerFilter
 
 
 class TestBaseRunner(unittest.TestCase):
+
+    def test_re_dir(self):
+        sep = '\\' if os.name == 'nt' else '/'
+        # add regex prefix and suffix to the (unmodified) directory name
+        self.assertEqual(re_dir('dir'), fr'(^|.*{sep})dir($|{sep}.*)')
+        # escape the directory name (but leave the os separator unaltered)
+        self.assertEqual(re_dir('.dir1/.dir2'), fr'(^|.*{sep})\.dir1/\.dir2($|{sep}.*)')
 
     def test_filter_ignored_directories_regex_legacy(self):
         d_names = ['bin', 'integration_tests', 'tests', 'docs', '.github', 'checkov', 'venv', '.git', 'kubernetes', '.idea']
