@@ -17,7 +17,7 @@ jobs:
     env:
       PYTHON_VERSION: "3.8"
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v3
+      - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938  # v3
         with:
           token: ${{ secrets.GH_PAT_SECRET }}
       - name: Import GPG key
