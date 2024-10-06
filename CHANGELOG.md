@@ -1,6 +1,12 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.256...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.257...HEAD)
+
+## [3.2.257](https://github.com/bridgecrewio/checkov/compare/3.2.256...3.2.257) - 2024-10-06
+
+### Bug Fix
+
+- **ansible:** handle empty tasks - [#6751](https://github.com/bridgecrewio/checkov/pull/6751)
 
 ## [3.2.256](https://github.com/bridgecrewio/checkov/compare/3.2.254...3.2.256) - 2024-10-01
 
