@@ -43,7 +43,7 @@ from checkov.common.sast.consts import CDKLanguages
 from checkov.common.typing import _ExitCodeThresholds, _BaseRunner, _ScaExitCodeThresholds, LibraryGraph
 from checkov.common.util import data_structures_utils
 from checkov.common.util.banner import default_tool as tool_name
-from checkov.common.util.consts import S3_UPLOAD_DETAILS_MESSAGE
+from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, S3_UPLOAD_DETAILS_MESSAGE
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.json_utils import CustomJSONEncoder
 from checkov.common.util.secrets_omitter import SecretsOmitter
@@ -276,6 +276,7 @@ class RunnerRegistry:
             enriched_resources = RunnerRegistry.get_enriched_resources(
                 repo_roots=repo_root_for_plan_enrichment,
                 download_external_modules=self.runner_filter.download_external_modules,
+                external_modules_download_path=self.runner_filter.external_modules_download_path,
             )
             scan_report = Report("terraform_plan").enrich_plan_report(scan_report, enriched_resources)
             scan_report = Report("terraform_plan").handle_skipped_checks(scan_report, enriched_resources)
@@ -729,7 +730,7 @@ class RunnerRegistry:
 
     @staticmethod
     def get_enriched_resources(
-        repo_roots: list[str | Path], download_external_modules: bool
+        repo_roots: list[str | Path], download_external_modules: bool, external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR
     ) -> dict[str, dict[str, Any]]:
         from checkov.terraform.modules.module_objects import TFDefinitionKey
 
@@ -741,6 +742,7 @@ class RunnerRegistry:
                 directory=repo_root,  # assume plan file is in the repo-root
                 out_parsing_errors=parsing_errors,
                 download_external_modules=download_external_modules,
+                external_modules_download_path=external_modules_download_path,
             )
             repo_definitions[repo_root] = {'tf_definitions': tf_definitions, 'parsing_errors': parsing_errors}
 
