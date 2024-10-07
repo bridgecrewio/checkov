@@ -131,7 +131,9 @@ class ForeachAbstractHandler:
                                 if attrs[k][0] == dollar_wrapped_str_to_replace:
                                     attrs[k][0] = inner_value
                                     v_changed = True
-                                    continue
+                                    # Since we assigned a value to attrs[k][0] we don't need to check the value again for
+                                    # interpolations to replace, we can break out of the loop
+                                    break
                                 elif dollar_wrapped_str_to_replace in attrs[k][0]:
                                     str_to_replace = dollar_wrapped_str_to_replace
                                 attrs[k][0] = attrs[k][0].replace(str_to_replace, str(inner_value))
