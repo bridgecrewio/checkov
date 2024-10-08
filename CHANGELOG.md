@@ -1,6 +1,30 @@
 # CHANGELOG
 
-## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.254...HEAD)
+## [Unreleased](https://github.com/bridgecrewio/checkov/compare/3.2.257...HEAD)
+
+## [3.2.257](https://github.com/bridgecrewio/checkov/compare/3.2.256...3.2.257) - 2024-10-06
+
+### Bug Fix
+
+- **ansible:** handle empty tasks - [#6751](https://github.com/bridgecrewio/checkov/pull/6751)
+
+## [3.2.256](https://github.com/bridgecrewio/checkov/compare/3.2.254...3.2.256) - 2024-10-01
+
+### Feature
+
+- **terraform:** New checks - [#6720](https://github.com/bridgecrewio/checkov/pull/6720)
+
+### Bug Fix
+
+- **general:** Fix operator docs - [#6735](https://github.com/bridgecrewio/checkov/pull/6735)
+- **sca:** add Pipfile and Pipfile.lock to supported package files list - [#6746](https://github.com/bridgecrewio/checkov/pull/6746)
+- **terraform:** extend CKV2_AWS_5 to include DMS Serverless (#6628) - [#6630](https://github.com/bridgecrewio/checkov/pull/6630)
+- **terraform:** Remove dataproc.admin from multiple checks - [#6725](https://github.com/bridgecrewio/checkov/pull/6725)
+- **terraform:** Security group attached to an Elastic DocumentDB cluster is not recognized by check CKV2_AWS_5 - [#6687](https://github.com/bridgecrewio/checkov/pull/6687)
+
+### Documentation
+
+- **general:** update README.md - [#6719](https://github.com/bridgecrewio/checkov/pull/6719)
 
 ## [3.2.254](https://github.com/bridgecrewio/checkov/compare/3.2.253...3.2.254) - 2024-09-15
 
