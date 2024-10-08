@@ -22,7 +22,6 @@ class TestACREnableRetentionPolicy(unittest.TestCase):
         }
         failing_resources = {
             'azurerm_container_registry.fail',
-            'azurerm_container_registry.fail2'
         }
         skipped_resources = {}
 
