@@ -733,7 +733,6 @@ def load_or_die_quietly(
                 signal.signal(signal.SIGALRM, timeout_handler)
                 signal.alarm(parsing_timeout)
                 raw_data = hcl2.load(f)
-                signal.alarm(0)
                 non_malformed_definitions = validate_malformed_definitions(raw_data)
                 if clean_definitions:
                     return clean_bad_definitions(non_malformed_definitions)
