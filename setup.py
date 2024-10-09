@@ -106,7 +106,7 @@ setup(
         "openai<1.0.0",
         "spdx-tools>=0.8.0,<0.9.0",
         "license-expression<31.0.0,>=30.1.0",
-        "rustworkx>=0.13.0,<0.14.0",
+        "rustworkx>=0.13.0,<0.15.0",
         "pydantic<3.0.0,>=2.0.0",
         "botocore==1.34.25",
         "urllib3",
