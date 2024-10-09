@@ -671,7 +671,7 @@ class TFParser:
 
     @staticmethod
     def get_content_path(module_loader_registry: ModuleLoaderRegistry, root_dir: str, source: str, version: str) -> \
-    Optional[str]:
+            Optional[str]:
         content = module_loader_registry.load(root_dir, source, version)
         if not content or not content.loaded():
             logging.info(f'Got no content for {source}:{version}')
