@@ -31,8 +31,12 @@ class AnsibleLocalGraph(ObjectLocalGraph):
 
             for code_block in definition:
                 if ResourceType.TASKS in code_block:
-                    for task in code_block[ResourceType.TASKS]:
-                        self._process_blocks(file_path=file_path, task=task)
+                    tasks = code_block[ResourceType.TASKS]
+                    if tasks:  # Check if tasks is not None and not empty
+                        for task in tasks:
+                            self._process_blocks(file_path=file_path, task=task)
+                    else:
+                        self._process_blocks(file_path=file_path, task=code_block)
                 else:
                     self._process_blocks(file_path=file_path, task=code_block)
 

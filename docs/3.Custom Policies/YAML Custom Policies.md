@@ -108,15 +108,14 @@ definition:
 | `exists`                       | The attribute or connection appears in the <br>resource definition | None              | attribute: "name"<br>operator: exists |
 | `not_exists`                   | The attribute or connection does not <br>appear in the resource    | None              | attribute: "name"<br>operator: not_exists |
 | `one_exists`                   | At least one connection of a specific type <br>exists | None         | resource_types:<br>  - aws_vpc<br>connected_resource_types:<br>  - aws_flow_log<br>operator: one_exists<br>attribute: networking<br>cond_type: connection |
-| `any`                          | Any of a list of attribute values match what <br>the resource contains  | (List) Strings    | operator: "any"<br>value: <br>-"value1" |
-| `contains`                     | The values of a resource attribute includes <br>all of these values  | (List) Strings    | operator: "contains"<br>value: <br>-"value1" |
-| `not_contains`                 | The values of a resource attribute includes <br>all of these values  | (List) Strings    | operator: "not_contains"<br>value: <br>-"value1" |
-| `within`                       | Used with filter to focus the findings on a <br>specific resource type or with attribute to <br>provide a list of possible options  | String | cond_type: filter<br>attribute: resource_type<br>value:<br> - google_logging_organization_sink<br>operator: within |
-| `not_within`                   | Specify a list of unacceptable resource <br>and value options | (List) Strings | cond_type: attribute<br>attribute: 'subjects.*.kind'<br>operator: not_within<br>value:<br> - 'Node'<br>resource_types:<br> - ClusterRoleBinding |
-| `starting_with`                | The value must begin with a string                | String | operator: starting_with<br>value: terraform-aws-modules |
-| `not_starting_with`            | The value must not begin with a string            | String | operator: not_starting_with<br>value: terraform-aws-modules |
-| `ending_with`                  | The value used by the attribute must end <br>with this string | String | operator: not_ending_with<br>value: "-good" |
-| `not_ending_with`              | The value used by the attribute must not <br>end with this string | String | operator: ending_with<br>value: "-bad" |
+| `contains`                     | Checks if an attribute's value contains <br>the specified values, supporting nested structures  |  String    | operator: "contains"<br>value: <br>-"value1" |
+| `not_contains`                 | Checks if an attribute's value does not contain <br>the specified values, supporting nested structures  | String    | operator: "not_contains"<br>value: <br>-"value1" |
+| `within`                       | Checks if the attribute is within a given list of values  | (List) String | operator: within<br> - value1<br> - value2 |
+| `not_within`                   | Checks if the attribute is not within a given list of values | (List) Strings | operator: not_within<br>value:<br> - 'value1'<br> - 'value2' |
+| `starting_with`                | The attribute must begin with the value                | String | operator: starting_with<br>value: terraform-aws-modules |
+| `not_starting_with`            | The attribute must not begin with the value            | String | operator: not_starting_with<br>value: terraform-aws-modules |
+| `ending_with`                  | The value used by the attribute must end <br>with this string | String | operator: ending_with<br>value: "-good" |
+| `not_ending_with`              | The value used by the attribute must not <br>end with this string | String | operator: not_ending_with<br>value: "-bad" |
 | `greater_than`                 | The value used by the attribute must be <br>greater than this value | String, Int | operator: greater_than<br>value: "100" |
 | `greater_than_or_equal`        | The value used by the attribute must be <br>greater than or equal to this value | String, Int | operator: less_than_or_equal<br>value: "100" |
 | `less_than`                    | The value used by the attribute must be <br>less than this value | String, Int | operator: less_than<br>value: "100" |
