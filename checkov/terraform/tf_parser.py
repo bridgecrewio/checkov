@@ -31,6 +31,7 @@ from checkov.terraform.modules.module_objects import TFModule, TFDefinitionKey
 
 if TYPE_CHECKING:
     from typing_extensions import TypeGuard
+import signal
 
 
 def _filter_ignored_paths(root: str, paths: list[str], excluded_paths: list[str] | None) -> None:
@@ -82,16 +83,16 @@ class TFParser:
             return False
 
     def parse_directory(
-        self,
-        directory: str,
-        out_evaluations_context: Dict[TFDefinitionKey, Dict[str, EvaluationContext]] | None = None,
-        out_parsing_errors: Dict[str, Exception] | None = None,
-        env_vars: Mapping[str, str] | None = None,
-        download_external_modules: bool = False,
-        external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR,
-        excluded_paths: Optional[List[str]] = None,
-        vars_files: Optional[List[str]] = None,
-        external_modules_content_cache: Optional[Dict[str, ModuleContent | None]] = None,
+            self,
+            directory: str,
+            out_evaluations_context: Dict[TFDefinitionKey, Dict[str, EvaluationContext]] | None = None,
+            out_parsing_errors: Dict[str, Exception] | None = None,
+            env_vars: Mapping[str, str] | None = None,
+            download_external_modules: bool = False,
+            external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR,
+            excluded_paths: Optional[List[str]] = None,
+            vars_files: Optional[List[str]] = None,
+            external_modules_content_cache: Optional[Dict[str, ModuleContent | None]] = None,
     ) -> dict[TFDefinitionKey, dict[str, list[dict[str, Any]]]]:
         self._init(directory, out_evaluations_context, out_parsing_errors, env_vars,
                    download_external_modules, external_modules_download_path, excluded_paths)
@@ -138,15 +139,15 @@ class TFParser:
                 del self.out_definitions[key]
 
     def _internal_dir_load(
-        self,
-        directory: str,
-        module_loader_registry: ModuleLoaderRegistry,
-        dir_filter: Callable[[str], bool],
-        keys_referenced_as_modules: set[TFDefinitionKey],
-        specified_vars: Optional[Mapping[str, str]] = None,
-        vars_files: Optional[List[str]] = None,
-        excluded_paths: Optional[List[str]] = None,
-        nested_modules_data: dict[str, Any] | None = None,
+            self,
+            directory: str,
+            module_loader_registry: ModuleLoaderRegistry,
+            dir_filter: Callable[[str], bool],
+            keys_referenced_as_modules: set[TFDefinitionKey],
+            specified_vars: Optional[Mapping[str, str]] = None,
+            vars_files: Optional[List[str]] = None,
+            excluded_paths: Optional[List[str]] = None,
+            nested_modules_data: dict[str, Any] | None = None,
     ) -> None:
 
         dir_contents = list(os.scandir(directory))
@@ -177,11 +178,11 @@ class TFParser:
                 force_final_module_load = True
 
     def _load_files(
-        self,
-        files: list[os.DirEntry[str]],
+            self,
+            files: list[os.DirEntry[str]],
     ) -> list[tuple[str, dict[str, list[dict[str, Any]]] | None]]:
         def _load_file(
-            file: os.DirEntry[str]
+                file: os.DirEntry[str]
         ) -> tuple[tuple[str, dict[str, list[dict[str, Any]]] | None], dict[str, Exception]]:
             parsing_errors: dict[str, Exception] = {}
             result = load_or_die_quietly(file, parsing_errors)
@@ -263,7 +264,8 @@ class TFParser:
                         content_path = self.get_content_path(module_loader_registry, root_dir, source, version)
                         if not content_path:
                             continue
-                        new_nested_modules_data = {'module_name': module_call_name, 'file': file, 'nested_modules_data': nested_modules_data}
+                        new_nested_modules_data = {'module_name': module_call_name, 'file': file,
+                                                   'nested_modules_data': nested_modules_data}
                         self._internal_dir_load(
                             directory=content_path,
                             module_loader_registry=module_loader_registry,
@@ -307,22 +309,23 @@ class TFParser:
 
                         self.external_modules_source_map[(source, version)] = content_path
                     except Exception as e:
-                        logging.warning(f"Unable to load module - source: {source}, version: {version}, error: {str(e)}")
+                        logging.warning(
+                            f"Unable to load module - source: {source}, version: {version}, error: {str(e)}")
 
         if all_module_definitions:
             pickle_deep_merge(self.out_definitions, all_module_definitions)
         return skipped_a_module
 
     def parse_hcl_module(
-        self,
-        source_dir: str,
-        source: str,
-        download_external_modules: bool = False,
-        external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR,
-        parsing_errors: dict[str, Exception] | None = None,
-        excluded_paths: list[str] | None = None,
-        vars_files: list[str] | None = None,
-        external_modules_content_cache: dict[str, ModuleContent | None] | None = None,
+            self,
+            source_dir: str,
+            source: str,
+            download_external_modules: bool = False,
+            external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR,
+            parsing_errors: dict[str, Exception] | None = None,
+            excluded_paths: list[str] | None = None,
+            vars_files: list[str] | None = None,
+            external_modules_content_cache: dict[str, ModuleContent | None] | None = None,
     ) -> tuple[Module, dict[TFDefinitionKey, dict[str, Any]]]:
         tf_definitions = self.parse_directory(
             directory=source_dir, out_evaluations_context={},
@@ -339,15 +342,15 @@ class TFParser:
         return module, tf_definitions
 
     def parse_multi_graph_hcl_module(
-        self,
-        source_dir: str,
-        source: str,
-        download_external_modules: bool = False,
-        external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR,
-        parsing_errors: dict[str, Exception] | None = None,
-        excluded_paths: list[str] | None = None,
-        vars_files: list[str] | None = None,
-        external_modules_content_cache: dict[str, ModuleContent | None] | None = None,
+            self,
+            source_dir: str,
+            source: str,
+            download_external_modules: bool = False,
+            external_modules_download_path: str = DEFAULT_EXTERNAL_MODULES_DIR,
+            parsing_errors: dict[str, Exception] | None = None,
+            excluded_paths: list[str] | None = None,
+            vars_files: list[str] | None = None,
+            external_modules_content_cache: dict[str, ModuleContent | None] | None = None,
     ) -> list[tuple[Module, list[dict[TFDefinitionKey, dict[str, Any]]]]]:
         """
         This function is similar to parse_hcl_module, except that it creates a list of tuples instead of a single tuple.
@@ -368,7 +371,7 @@ class TFParser:
 
         definitions_dir_and_source_iterable = [(definitions, source_path, source) for source_path, definitions in
                                                dirs_to_definitions.items()]
-        modules_and_definitions_tuple: list[tuple[Module, list[dict[TFDefinitionKey, dict[str, Any]]]]] =\
+        modules_and_definitions_tuple: list[tuple[Module, list[dict[TFDefinitionKey, dict[str, Any]]]]] = \
             list(parallel_runner.run_function(self.parse_hcl_module_from_multi_tf_definitions,
                                               definitions_dir_and_source_iterable))
 
@@ -434,27 +437,27 @@ class TFParser:
 
     @overload
     def parse_hcl_module_from_tf_definitions(
-        self,
-        tf_definitions: dict[str, dict[str, Any]],
-        source_dir: str,
-        source: str,
+            self,
+            tf_definitions: dict[str, dict[str, Any]],
+            source_dir: str,
+            source: str,
     ) -> tuple[Module, dict[str, dict[str, Any]]]:
         ...
 
     @overload
     def parse_hcl_module_from_tf_definitions(
-        self,
-        tf_definitions: dict[TFDefinitionKey, dict[str, Any]],
-        source_dir: str,
-        source: str,
+            self,
+            tf_definitions: dict[TFDefinitionKey, dict[str, Any]],
+            source_dir: str,
+            source: str,
     ) -> tuple[Module, dict[TFDefinitionKey, dict[str, Any]]]:
         ...
 
     def parse_hcl_module_from_tf_definitions(
-        self,
-        tf_definitions: dict[str, dict[str, Any]] | dict[TFDefinitionKey, dict[str, Any]],
-        source_dir: str,
-        source: str,
+            self,
+            tf_definitions: dict[str, dict[str, Any]] | dict[TFDefinitionKey, dict[str, Any]],
+            source_dir: str,
+            source: str,
     ) -> tuple[Module, dict[str, dict[str, Any]] | dict[TFDefinitionKey, dict[str, Any]]]:
         module = self.get_new_module(
             source_dir=source_dir,
@@ -473,10 +476,10 @@ class TFParser:
         return module, tf_definitions
 
     def parse_hcl_module_from_multi_tf_definitions(
-        self,
-        tf_definitions: list[dict[TFDefinitionKey, dict[str, Any]]],
-        source_dir: str,
-        source: str,
+            self,
+            tf_definitions: list[dict[TFDefinitionKey, dict[str, Any]]],
+            source_dir: str,
+            source: str,
     ) -> tuple[Module, list[dict[TFDefinitionKey, dict[str, Any]]]]:
         module = self.get_new_module(
             source_dir=source_dir,
@@ -495,7 +498,7 @@ class TFParser:
         return module, tf_definitions
 
     def get_file_key_with_nested_data(
-        self, file: TFDefinitionKey | None, nested_data: dict[str, Any] | None
+            self, file: TFDefinitionKey | None, nested_data: dict[str, Any] | None
     ) -> TFDefinitionKey | None:
         if not nested_data or file is None:
             return file
@@ -504,7 +507,8 @@ class TFParser:
         return get_tf_definition_object_from_module_dependency(file, nested_str, nested_module_name)
 
     def get_new_nested_module_key(
-        self, key: TFDefinitionKey, file: TFDefinitionKey | None, module_name: str | None, nested_data: Optional[dict[str, Any]]
+            self, key: TFDefinitionKey, file: TFDefinitionKey | None, module_name: str | None,
+            nested_data: Optional[dict[str, Any]]
     ) -> TFDefinitionKey:
         if not nested_data or not file:
             return get_tf_definition_object_from_module_dependency(key, file, module_name)
@@ -544,7 +548,7 @@ class TFParser:
         return not self.get_dirname(file) != root_dir
 
     def get_module_source(
-        self, module_call_data: dict[str, Any], module_call_name: str, file: TFDefinitionKey
+            self, module_call_data: dict[str, Any], module_call_name: str, file: TFDefinitionKey
     ) -> Optional[str]:
         source = module_call_data.get("source")
         if not source or not isinstance(source, list):
@@ -555,7 +559,8 @@ class TFParser:
 
         if source.startswith("./") or source.startswith("../"):
             file_to_load = file.file_path
-            source = os.path.normpath(os.path.join(os.path.dirname(remove_module_dependency_from_path(file_to_load)), source))
+            source = os.path.normpath(
+                os.path.join(os.path.dirname(remove_module_dependency_from_path(file_to_load)), source))
         return source
 
     def add_external_vars_from_data(self, data: dict[str, Any], file: str) -> None:
@@ -573,10 +578,10 @@ class TFParser:
                         self.external_variables_data.append((var_name, default_value[0], file))
 
     def handle_variables(
-        self,
-        dir_contents: list[os.DirEntry[str]],
-        vars_files: None | list[str],
-        specified_vars: Mapping[str, str] | None,
+            self,
+            dir_contents: list[os.DirEntry[str]],
+            vars_files: None | list[str],
+            specified_vars: Mapping[str, str] | None,
     ) -> list[os.DirEntry[str]]:
         tf_files_to_load = []
         hcl_tfvars: Optional[os.DirEntry[str]] = None
@@ -665,7 +670,8 @@ class TFParser:
         return False
 
     @staticmethod
-    def get_content_path(module_loader_registry: ModuleLoaderRegistry, root_dir: str, source: str, version: str) -> Optional[str]:
+    def get_content_path(module_loader_registry: ModuleLoaderRegistry, root_dir: str, source: str, version: str) -> \
+    Optional[str]:
         content = module_loader_registry.load(root_dir, source, version)
         if not content or not content.loaded():
             logging.info(f'Got no content for {source}:{version}')
@@ -688,17 +694,18 @@ def is_nested_object(full_path: TFDefinitionKey) -> bool:
 
 
 def get_tf_definition_object_from_module_dependency(
-    path: TFDefinitionKey, module_dependency: TFDefinitionKey | None, module_dependency_name: str | None
+        path: TFDefinitionKey, module_dependency: TFDefinitionKey | None, module_dependency_name: str | None
 ) -> TFDefinitionKey:
     if not module_dependency:
         return path
     if not is_nested_object(module_dependency):
         return TFDefinitionKey(path.file_path, TFModule(path=module_dependency.file_path, name=module_dependency_name))
-    return TFDefinitionKey(path.file_path, TFModule(path=module_dependency.file_path, name=module_dependency_name, nested_tf_module=module_dependency.tf_source_modules))
+    return TFDefinitionKey(path.file_path, TFModule(path=module_dependency.file_path, name=module_dependency_name,
+                                                    nested_tf_module=module_dependency.tf_source_modules))
 
 
 def load_or_die_quietly(
-    file: str | Path | os.DirEntry[str], parsing_errors: dict[str, Exception], clean_definitions: bool = True
+        file: str | Path | os.DirEntry[str], parsing_errors: dict[str, Exception], clean_definitions: bool = True
 ) -> Optional[_Hcl2Payload]:
     """
     Load JSON or HCL, depending on filename.
@@ -717,7 +724,16 @@ def load_or_die_quietly(
             if file_name.endswith(".json"):
                 return cast("_Hcl2Payload", json.load(f))
             else:
+                parsing_timeout = int(os.getenv("HCL_PARSE_TIMEOUT_SEC", "1"))
+
+                def timeout_handler(signum, frame) -> None:  # type: ignore
+                    logging.debug(f"reached timeout when parsing file {file} using hcl2")
+                    raise Exception(f"file took more than {parsing_timeout} seconds to parse")
+
+                signal.signal(signal.SIGALRM, timeout_handler)
+                signal.alarm(parsing_timeout)
                 raw_data = hcl2.load(f)
+                signal.alarm(0)
                 non_malformed_definitions = validate_malformed_definitions(raw_data)
                 if clean_definitions:
                     return clean_bad_definitions(non_malformed_definitions)
