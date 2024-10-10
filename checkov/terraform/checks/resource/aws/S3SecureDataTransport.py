@@ -1,6 +1,7 @@
 from __future__ import annotations
-import json, re, ast
+import json
 from typing import Any, Dict
+
 from checkov.common.models.enums import CheckCategories, CheckResult
 from checkov.terraform.checks.resource.base_resource_check import BaseResourceCheck
 from checkov.common.graph.graph_builder import CustomAttributes
@@ -9,7 +10,7 @@ from checkov.common.graph.graph_builder import CustomAttributes
 class S3SecureDataTransport(BaseResourceCheck):
     def __init__(self):
         name = "Ensure AWS S3 bucket is configured with secure data transport policy"
-        id = "CKV_AWS_799" # UPDATE
+        id = "CKV_AWS_379"
         supported_resources = ('aws_s3_bucket_acl',)
         categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
@@ -20,16 +21,16 @@ class S3SecureDataTransport(BaseResourceCheck):
             for p in policy.get("Statement"):
                 if p.get("Effect") == "Allow":
                     condition = p.get("Condition")
-                    if condition and condition.get("Bool") and \
-                            'aws:SecureTransport' in condition.get("Bool") and \
-                            condition.get("Bool").get("aws:SecureTransport").lower() == "true":
+                    if (condition and condition.get("Bool") and
+                            'aws:SecureTransport' in condition.get("Bool") and
+                            condition.get("Bool").get("aws:SecureTransport").lower() == "true"):
                         return CheckResult.PASSED
                 elif p.get("Effect") == "Deny":
                     condition = p.get("Condition")
-                    if condition and condition.get("Bool") and \
-                            'aws:SecureTransport' in condition.get("Bool") and \
+                    if (condition and condition.get("Bool") and
+                            'aws:SecureTransport' in condition.get("Bool") and
                             (not condition.get("Bool").get("aws:SecureTransport") or
-                             condition.get("Bool").get("aws:SecureTransport").lower() == "false"):
+                             condition.get("Bool").get("aws:SecureTransport").lower() == "false")):
                         return CheckResult.PASSED
         elif policy.get("statement"):
             policy_statement = policy.get("statement")
@@ -37,17 +38,17 @@ class S3SecureDataTransport(BaseResourceCheck):
                 policy_statement = [policy_statement]
             for p in policy_statement:
                 # Pass if aws:SecureTransport exists
-                if (not p.get("effect") or p.get("effect") == "Allow") and p.get("condition") and \
-                    p.get("condition").get("test") and p.get("condition").get("test") == "Bool" and \
-                        p.get("condition").get("variable") and \
-                        p.get("condition").get("variable") == "aws:SecureTransport" and \
-                        p.get("condition").get("values") and p.get("condition").get("values")[0]:
+                if ((not p.get("effect") or p.get("effect") == "Allow") and p.get("condition") and
+                        p.get("condition").get("test") and p.get("condition").get("test") == "Bool" and
+                        p.get("condition").get("variable") and
+                        p.get("condition").get("variable") == "aws:SecureTransport" and
+                        p.get("condition").get("values") and p.get("condition").get("values")[0]):
                     return CheckResult.PASSED
-                elif (not p.get("effect") or p.get("effect") == "Deny") and p.get("condition") and \
-                    p.get("condition").get("test") and p.get("condition").get("test") == "Bool" and \
-                        p.get("condition").get("variable") and \
-                        p.get("condition").get("variable") == "aws:SecureTransport" and \
-                        p.get("condition").get("values") and not p.get("condition").get("values")[0]:
+                elif ((not p.get("effect") or p.get("effect") == "Deny") and p.get("condition") and
+                        p.get("condition").get("test") and p.get("condition").get("test") == "Bool" and
+                        p.get("condition").get("variable") and
+                        p.get("condition").get("variable") == "aws:SecureTransport" and
+                        p.get("condition").get("values") and not p.get("condition").get("values")[0]):
                     return CheckResult.PASSED
         return CheckResult.FAILED
 
@@ -84,8 +85,8 @@ class S3SecureDataTransport(BaseResourceCheck):
                     if not connected_public_access_block:
                         connected_public_access_block = [
                             g for g in self.graph.nodes()
-                            if g[1].get(CustomAttributes.RESOURCE_TYPE) == "aws_s3_bucket_public_access_block" and
-                               g[1].get("bucket").rsplit('.', 1)[0] == bucket_id
+                            if g[1].get(CustomAttributes.RESOURCE_TYPE) == "aws_s3_bucket_public_access_block"
+                            and g[1].get("bucket").rsplit('.', 1)[0] == bucket_id
                         ]
                     if connected_public_access_block:
                         if not connected_public_access_block[0][1].get('block_public_acls'):
@@ -100,8 +101,8 @@ class S3SecureDataTransport(BaseResourceCheck):
         bucket_id = conf.get("bucket")[0].rsplit('.', 1)[0]
         connected_website = [
             g for g in self.graph.nodes()
-            if g[1].get(CustomAttributes.RESOURCE_TYPE) == "aws_s3_bucket_website_configuration" and
-               g[1].get("bucket").rsplit('.', 1)[0] == bucket_id
+            if g[1].get(CustomAttributes.RESOURCE_TYPE) == "aws_s3_bucket_website_configuration"
+            and g[1].get("bucket").rsplit('.', 1)[0] == bucket_id
         ]
         if connected_website:
             return CheckResult.PASSED
@@ -109,8 +110,8 @@ class S3SecureDataTransport(BaseResourceCheck):
         # Ensures the aws:SecureTransport condition does not exist in any policy statement.
         connected_s3_bucket_policy = [
             g for g in self.graph.nodes()
-            if g[1].get(CustomAttributes.RESOURCE_TYPE) == "aws_s3_bucket_policy" and
-               g[1].get("bucket").rsplit('.', 1)[0] == bucket_id
+            if g[1].get(CustomAttributes.RESOURCE_TYPE) == "aws_s3_bucket_policy"
+            and g[1].get("bucket").rsplit('.', 1)[0] == bucket_id
         ]
 
         if connected_s3_bucket_policy:
@@ -123,17 +124,17 @@ class S3SecureDataTransport(BaseResourceCheck):
                 json_content = json_content.replace('""', '"')
                 try:
                     policy_statement = json.loads(json_content)
-                except json.JSONDecodeError as e:
-                    #print(f"Error decoding JSON: {e}")
+                except json.JSONDecodeError:
+                    # Error decoding JSON
                     return CheckResult.UNKNOWN
                 return self._is_policy_secure(policy_statement)
-            elif isinstance(policy_statement, str) and policy_statement.split('.')[0] == 'data' and \
-                    policy_statement.split('.')[-1] == 'json':
+            elif (isinstance(policy_statement, str) and policy_statement.split('.')[0] == 'data' and
+                  policy_statement.split('.')[-1] == 'json'):
                 target_id = '.'.join(policy_statement.split('.')[1:-1])
                 connected_iam_policy_doc = [
                     g2 for g2 in self.graph.nodes()
-                    if g2[1].get(CustomAttributes.BLOCK_TYPE) == "data" and
-                       g2[1].get(CustomAttributes.ID) == target_id
+                    if g2[1].get(CustomAttributes.BLOCK_TYPE) == "data"
+                    and g2[1].get(CustomAttributes.ID) == target_id
                 ]
 
                 if connected_iam_policy_doc[0][1].get("statement"):
