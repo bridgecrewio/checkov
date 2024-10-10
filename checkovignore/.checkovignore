@@ -1,0 +1,8 @@
+# listed ruleIDs will be ignored from the scan results, if expiry date is in the future
+ignore:
+  - id: "CKV_AZURE_35"
+    expiry: "2025-07-09"
+    created: "2024-07-09"
+  - id: "CKV_AZURE_43"
+    expiry: "2025-07-09"
+    created: "2024-07-09"
