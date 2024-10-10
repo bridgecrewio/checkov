@@ -33,7 +33,6 @@ from checkov.terraform.modules.module_objects import TFModule, TFDefinitionKey
 
 if TYPE_CHECKING:
     from typing_extensions import TypeGuard
-import signal
 
 
 def _filter_ignored_paths(root: str, paths: list[str], excluded_paths: list[str] | None) -> None:
