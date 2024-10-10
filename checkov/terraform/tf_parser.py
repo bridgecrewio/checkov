@@ -4,9 +4,10 @@ import json
 import logging
 import os
 import platform
+import threading
 from collections import defaultdict
 from pathlib import Path
-from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, cast, TYPE_CHECKING, overload
+from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, cast, TYPE_CHECKING, overload, TextIO
 
 import hcl2
 
@@ -725,16 +726,7 @@ def load_or_die_quietly(
             if file_name.endswith(".json"):
                 return cast("_Hcl2Payload", json.load(f))
             else:
-                parsing_timeout = int(os.getenv("HCL_PARSE_TIMEOUT_SEC", "10"))
-
-                timeout_class = ThreadingTimeout if platform.system() == 'Windows' else SignalTimeout
-                # mark the scan to finish within the timeout
-                with timeout_class(parsing_timeout) as to_ctx_mgr:
-                    raw_data = hcl2.load(f)
-                if to_ctx_mgr.state == to_ctx_mgr.TIMED_OUT:
-                    logging.debug(f"reached timeout when parsing file {file} using hcl2")
-                    raise Exception(f"file took more than {parsing_timeout} seconds to parse")
-
+                raw_data = __parse_with_timeout(f)
                 non_malformed_definitions = validate_malformed_definitions(raw_data)
                 if clean_definitions:
                     return clean_bad_definitions(non_malformed_definitions)
@@ -744,3 +736,24 @@ def load_or_die_quietly(
         logging.debug(f'failed while parsing file {file_path}', exc_info=True)
         parsing_errors[file_path] = e
         return None
+
+
+def __parse_with_timeout(f: TextIO) -> dict[str, list[dict[str, Any]]]:
+    # setting up timeout class
+    timeout_class = None
+    if platform.system() == 'Windows':
+        timeout_class = ThreadingTimeout
+    elif threading.current_thread() is threading.main_thread():
+        timeout_class = SignalTimeout
+
+    # if we're not running on the main thread, don't use timeout
+    if not timeout_class:
+        return hcl2.load(f)
+
+    parsing_timeout = int(os.getenv("HCL_PARSE_TIMEOUT_SEC", "10"))
+    with timeout_class(parsing_timeout) as to_ctx_mgr:
+        raw_data = hcl2.load(f)
+    if to_ctx_mgr.state == to_ctx_mgr.TIMED_OUT:
+        logging.debug(f"reached timeout when parsing file {f} using hcl2")
+        raise Exception(f"file took more than {parsing_timeout} seconds to parse")
+    return raw_data
