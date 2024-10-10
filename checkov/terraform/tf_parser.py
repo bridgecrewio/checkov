@@ -7,7 +7,7 @@ import platform
 import threading
 from collections import defaultdict
 from pathlib import Path
-from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, cast, TYPE_CHECKING, overload, TextIO
+from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, cast, TYPE_CHECKING, overload, TextIO, Type
 
 import hcl2
 
@@ -17,6 +17,7 @@ from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MO
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.deep_merge import pickle_deep_merge
 from checkov.common.util.stopit import ThreadingTimeout, SignalTimeout
+from checkov.common.util.stopit.utils import BaseTimeout
 from checkov.common.util.type_forcers import force_list
 from checkov.common.variables.context import EvaluationContext
 from checkov.terraform import validate_malformed_definitions, clean_bad_definitions
@@ -740,7 +741,7 @@ def load_or_die_quietly(
 
 def __parse_with_timeout(f: TextIO) -> dict[str, list[dict[str, Any]]]:
     # setting up timeout class
-    timeout_class = None
+    timeout_class: Optional[Type[BaseTimeout]] = None
     if platform.system() == 'Windows':
         timeout_class = ThreadingTimeout
     elif threading.current_thread() is threading.main_thread():
