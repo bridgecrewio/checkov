@@ -14,39 +14,40 @@ class S3SecureDataTransport(BaseResourceCheck):
         categories = (CheckCategories.NETWORKING,)
         super().__init__(name=name, id=id, categories=categories, supported_resources=supported_resources)
 
-    def _is_policy_secure(self, policy: Dict[str, Any]) -> bool:
-        # Check the aws:SecureTransport condition exists in any policy statement
-        passed = False
+    def _is_policy_secure(self, policy: Dict[str, Any]) -> CheckResult:
+        # Explicitly deny aws:SecureTransport = false or allow aws:SecureTransport = true
         if policy.get("Statement"):
             for p in policy.get("Statement"):
-                if p.get("Effect") == "Allow" and p.get("Principal") == "*":
-                    if (isinstance(p.get("Action"), str) and p.get("Action") in ["execute-api:Invoke", "execute-api:*",
-                                                                                 "*"]) or \
-                            (isinstance(p.get("Action"), list) and
-                             any(action in ["execute-api:Invoke", "execute-api:*", "*"] for action in p.get("Action"))):
+                if p.get("Effect") == "Allow":
+                    condition = p.get("Condition")
+                    if condition and condition.get("Bool") and \
+                            'aws:SecureTransport' in condition.get("Bool") and \
+                            condition.get("Bool").get("aws:SecureTransport").lower() == "true":
                         return CheckResult.PASSED
-                # Fail if there is an Allow for execute-api:Invoke without a Deny or Conditions
-                if p.get("Effect") == "Allow" and p.get("Principal") == "*" and "Condition" not in p:
-                    if (isinstance(p.get("Action"), str) and p.get("Action") in ["execute-api:Invoke",
-                                                                                 "execute-api:*", "*"]) or \
-                            (isinstance(p.get("Action"), list) and
-                             any(action in ["execute-api:Invoke", "execute-api:*", "*"] for action in p.get("Action"))):
-                        passed = False
-            if passed:
-                return CheckResult.PASSED
-            else:
-                return CheckResult.FAILED
+                elif p.get("Effect") == "Deny":
+                    condition = p.get("Condition")
+                    if condition and condition.get("Bool") and \
+                            'aws:SecureTransport' in condition.get("Bool") and \
+                            (not condition.get("Bool").get("aws:SecureTransport") or
+                             condition.get("Bool").get("aws:SecureTransport").lower() == "false"):
+                        return CheckResult.PASSED
         elif policy.get("statement"):
             policy_statement = policy.get("statement")
             if isinstance(policy_statement, dict):
                 policy_statement = [policy_statement]
             for p in policy_statement:
                 # Pass if aws:SecureTransport exists
-                if p.get("effect") and p.get("effect") == "Allow" and p.get("condition") and \
+                if (not p.get("effect") or p.get("effect") == "Allow") and p.get("condition") and \
                     p.get("condition").get("test") and p.get("condition").get("test") == "Bool" and \
                         p.get("condition").get("variable") and \
                         p.get("condition").get("variable") == "aws:SecureTransport" and \
                         p.get("condition").get("values") and p.get("condition").get("values")[0]:
+                    return CheckResult.PASSED
+                elif (not p.get("effect") or p.get("effect") == "Deny") and p.get("condition") and \
+                    p.get("condition").get("test") and p.get("condition").get("test") == "Bool" and \
+                        p.get("condition").get("variable") and \
+                        p.get("condition").get("variable") == "aws:SecureTransport" and \
+                        p.get("condition").get("values") and not p.get("condition").get("values")[0]:
                     return CheckResult.PASSED
         return CheckResult.FAILED
 
@@ -64,7 +65,8 @@ class S3SecureDataTransport(BaseResourceCheck):
                 g[1].get("bucket").rsplit('.', 1)[0] == bucket_id
             ]
             if connected_public_access_block:
-                if not connected_public_access_block[0][1].get('restrict_public_buckets'):
+                if (not connected_public_access_block[0][1].get('restrict_public_buckets') and
+                        not connected_public_access_block[0][1].get('block_public_acls')):
                     is_public = True
             else:
                 is_public = True
@@ -117,10 +119,12 @@ class S3SecureDataTransport(BaseResourceCheck):
                 return self._is_policy_secure(policy_statement)
             elif isinstance(policy_statement, str) and policy_statement.strip().startswith('jsonencode'):
                 json_content = policy_statement.replace("jsonencode(", "").replace(")", "")
+                json_content = json_content.replace("'", '"')
+                json_content = json_content.replace('""', '"')
                 try:
                     policy_statement = json.loads(json_content)
                 except json.JSONDecodeError as e:
-                    print(f"Error decoding JSON: {e}")
+                    #print(f"Error decoding JSON: {e}")
                     return CheckResult.UNKNOWN
                 return self._is_policy_secure(policy_statement)
             elif isinstance(policy_statement, str) and policy_statement.split('.')[0] == 'data' and \
