@@ -725,7 +725,7 @@ def load_or_die_quietly(
             if file_name.endswith(".json"):
                 return cast("_Hcl2Payload", json.load(f))
             else:
-                parsing_timeout = int(os.getenv("HCL_PARSE_TIMEOUT_SEC", "1"))
+                parsing_timeout = int(os.getenv("HCL_PARSE_TIMEOUT_SEC", "10"))
 
                 timeout_class = ThreadingTimeout if platform.system() == 'Windows' else SignalTimeout
                 # mark the scan to finish within the timeout
