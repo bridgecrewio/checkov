@@ -1796,6 +1796,7 @@ class TestRunnerValid(unittest.TestCase):
                 # then
                 self.assertEqual(len(runner.definitions), 1)
                 self.assertEqual(len(parsing_errors), 1)
+
     def test__parse_files_with_timout(self):
         for parallel_type in [ParallelizationType.FORK, ParallelizationType.SPAWN, ParallelizationType.NONE]:
             if parallel_runner.os == "Windows" and parallel_type == ParallelizationType.FORK:
