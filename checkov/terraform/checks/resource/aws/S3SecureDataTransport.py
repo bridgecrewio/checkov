@@ -62,8 +62,9 @@ class S3SecureDataTransport(BaseResourceCheck):
             bucket_id = conf.get("bucket")[0].rsplit('.', 1)[0]
             connected_public_access_block = [
                 g for g in self.graph.nodes()
-                if g[1].get(CustomAttributes.RESOURCE_TYPE) == "aws_s3_bucket_public_access_block" and
-                g[1].get("bucket").rsplit('.', 1)[0] == bucket_id
+                if g[1].get(CustomAttributes.RESOURCE_TYPE) == "aws_s3_bucket_public_access_block"
+                and isinstance(g[1].get("bucket"),str)
+                and g[1].get("bucket").rsplit('.', 1)[0] == bucket_id
             ]
             if connected_public_access_block:
                 if (not connected_public_access_block[0][1].get('restrict_public_buckets') and
@@ -86,6 +87,7 @@ class S3SecureDataTransport(BaseResourceCheck):
                         connected_public_access_block = [
                             g for g in self.graph.nodes()
                             if g[1].get(CustomAttributes.RESOURCE_TYPE) == "aws_s3_bucket_public_access_block"
+                            and isinstance(g[1].get("bucket"),str)
                             and g[1].get("bucket").rsplit('.', 1)[0] == bucket_id
                         ]
                     if connected_public_access_block:
@@ -102,6 +104,7 @@ class S3SecureDataTransport(BaseResourceCheck):
         connected_website = [
             g for g in self.graph.nodes()
             if g[1].get(CustomAttributes.RESOURCE_TYPE) == "aws_s3_bucket_website_configuration"
+            and isinstance(g[1].get("bucket"), str)
             and g[1].get("bucket").rsplit('.', 1)[0] == bucket_id
         ]
         if connected_website:
@@ -111,6 +114,7 @@ class S3SecureDataTransport(BaseResourceCheck):
         connected_s3_bucket_policy = [
             g for g in self.graph.nodes()
             if g[1].get(CustomAttributes.RESOURCE_TYPE) == "aws_s3_bucket_policy"
+            and isinstance(g[1].get("bucket"),str)
             and g[1].get("bucket").rsplit('.', 1)[0] == bucket_id
         ]
 
