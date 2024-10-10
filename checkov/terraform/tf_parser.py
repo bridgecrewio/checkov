@@ -16,6 +16,7 @@ from checkov.common.runners.base_runner import filter_ignored_paths, IGNORE_HIDD
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.deep_merge import pickle_deep_merge
+from checkov.common.util.env_vars_config import env_vars_config
 from checkov.common.util.stopit import ThreadingTimeout, SignalTimeout
 from checkov.common.util.stopit.utils import BaseTimeout
 from checkov.common.util.type_forcers import force_list
@@ -739,6 +740,7 @@ def load_or_die_quietly(
         return None
 
 
+# if we are not running in a thread, run the hcl2.load function with a timeout, to prevent from getting stuck in parsing.
 def __parse_with_timeout(f: TextIO) -> dict[str, list[dict[str, Any]]]:
     # setting up timeout class
     timeout_class: Optional[Type[BaseTimeout]] = None
@@ -751,7 +753,7 @@ def __parse_with_timeout(f: TextIO) -> dict[str, list[dict[str, Any]]]:
     if not timeout_class:
         return hcl2.load(f)
 
-    parsing_timeout = int(os.getenv("HCL_PARSE_TIMEOUT_SEC", "10"))
+    parsing_timeout = env_vars_config.HCL_PARSE_TIMEOUT_SEC
     with timeout_class(parsing_timeout) as to_ctx_mgr:
         raw_data = hcl2.load(f)
     if to_ctx_mgr.state == to_ctx_mgr.TIMED_OUT:
