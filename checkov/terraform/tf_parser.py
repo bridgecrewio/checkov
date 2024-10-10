@@ -753,7 +753,7 @@ def __parse_with_timeout(f: TextIO) -> dict[str, list[dict[str, Any]]]:
     if not timeout_class:
         return hcl2.load(f)
 
-    parsing_timeout = env_vars_config.HCL_PARSE_TIMEOUT_SEC
+    parsing_timeout = int(env_vars_config.HCL_PARSE_TIMEOUT_SEC)
     with timeout_class(parsing_timeout) as to_ctx_mgr:
         raw_data = hcl2.load(f)
     if to_ctx_mgr.state == to_ctx_mgr.TIMED_OUT:
