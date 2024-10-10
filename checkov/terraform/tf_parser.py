@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import platform
 from collections import defaultdict
 from pathlib import Path
 from typing import Optional, Dict, Mapping, Set, Tuple, Callable, Any, List, cast, TYPE_CHECKING, overload
@@ -14,6 +15,7 @@ from checkov.common.runners.base_runner import filter_ignored_paths, IGNORE_HIDD
 from checkov.common.util.consts import DEFAULT_EXTERNAL_MODULES_DIR, RESOLVED_MODULE_ENTRY_NAME
 from checkov.common.util.data_structures_utils import pickle_deepcopy
 from checkov.common.util.deep_merge import pickle_deep_merge
+from checkov.common.util.stopit import ThreadingTimeout, SignalTimeout
 from checkov.common.util.type_forcers import force_list
 from checkov.common.variables.context import EvaluationContext
 from checkov.terraform import validate_malformed_definitions, clean_bad_definitions
@@ -724,15 +726,16 @@ def load_or_die_quietly(
             if file_name.endswith(".json"):
                 return cast("_Hcl2Payload", json.load(f))
             else:
-                parsing_timeout = int(os.getenv("HCL_PARSE_TIMEOUT_SEC", "30"))
+                parsing_timeout = int(os.getenv("HCL_PARSE_TIMEOUT_SEC", "1"))
 
-                def timeout_handler(signum, frame) -> None:  # type: ignore
+                timeout_class = ThreadingTimeout if platform.system() == 'Windows' else SignalTimeout
+                # mark the scan to finish within the timeout
+                with timeout_class(parsing_timeout) as to_ctx_mgr:
+                    raw_data = hcl2.load(f)
+                if to_ctx_mgr.state == to_ctx_mgr.TIMED_OUT:
                     logging.debug(f"reached timeout when parsing file {file} using hcl2")
                     raise Exception(f"file took more than {parsing_timeout} seconds to parse")
 
-                signal.signal(signal.SIGALRM, timeout_handler)
-                signal.alarm(parsing_timeout)
-                raw_data = hcl2.load(f)
                 non_malformed_definitions = validate_malformed_definitions(raw_data)
                 if clean_definitions:
                     return clean_bad_definitions(non_malformed_definitions)
